@@ -9,7 +9,7 @@ Fixed-Wing Aircraft Sizing Tool
 Description
 ===========
 
-A longer description of your project goes here...
+A framework for rapid Overall Aircraft Design
 
 
 Note
