@@ -34,23 +34,37 @@ class OpenMDAOSystemFactory:
     """
     Class for providing OpenMDAO System objects depending on their properties.
     """
-    __INSTANCE_FIELD_NAME = "__instance__"
-
-    def __init__(self):
-        """
-        Constructor
-        """
+    __loader = Loader()
 
     @classmethod
-    def get_component(cls, required_properties: dict) -> System:
+    def explore_folder(cls, folder_path: str):
+        """
+        Explores provided folder for Systems to register (i.e. modules that use
+        OpenMDAOSystemFactory.register_component() )
+
+        :param folder_path:
+        """
+        cls.__loader.install_packages(folder_path)
+
+    @classmethod
+    def register_system(cls, system: SystemSubclass, properties: dict):
+        """
+        Registers the System (or subclass) instance as a service so it can later be retrieved.
+
+        :param system:
+        :param properties: properties that will be associated to the service
+        """
+        cls.__loader.context.register_service(SERVICE_OPENMDAO_SYSTEM, system, properties)
+
+    @classmethod
+    def get_system(cls, required_properties: dict) -> SystemSubclass:
         """
         Returns the first encountered System instance with properties that match all required properties.
         :param required_properties:
         :return: an OpenMDAO System instance
         """
 
-        loader = Loader()
-        components = loader.get_services(SERVICE_OPENMDAO_SYSTEM, required_properties)
+        components = cls.__loader.get_services(SERVICE_OPENMDAO_SYSTEM, required_properties)
 
         if not components:
             raise KeyError(
@@ -68,9 +82,8 @@ class OpenMDAOSystemFactory:
         :param required_properties:
         :return: an OpenMDAO SystemDescriptor
         """
-        loader = Loader()
-        context = loader.context
-        service_references = loader.get_service_references(SERVICE_OPENMDAO_SYSTEM, required_properties)
+        context = cls.__loader.context
+        service_references = cls.__loader.get_service_references(SERVICE_OPENMDAO_SYSTEM, required_properties)
 
         if not service_references:
             raise KeyError(
