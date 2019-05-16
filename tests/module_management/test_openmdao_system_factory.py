@@ -8,6 +8,9 @@ from fastoad.module_management.constants import SERVICE_OPENMDAO_SYSTEM
 # noinspection PyUnresolvedReferences
 # This import is needed for coverage report, though not explicitly used in this module
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from openmdao.api import Problem, ScipyOptimizeDriver  # , pyOptSparseDriver
+
+from tests.module_management.sellar_example.sellar import Sellar, ISellarFactory
 
 _logger = logging.getLogger(__name__)
 """Logger for this module"""
@@ -15,11 +18,9 @@ _logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
-def __install_component_packages():
+def __install_components():
     """
-    Uses provided loader for loading needed components
-    :param loader:
-    :return:
+    Loads needed components
     """
 
     OpenMDAOSystemFactory.explore_folder(pth.join(pth.dirname(__file__), "sellar_example"))
@@ -28,7 +29,6 @@ def __install_component_packages():
 def test_components_alone():
     """
     Simple test of existence of "openmdao.component" services
-    :return:
     """
     loader = Loader()
     loader.install_packages(pth.join(pth.dirname(__file__), "sellar_example"))
@@ -45,7 +45,7 @@ def test_get_component():
     Tests the retrieval of component according to properties
     """
 
-    __install_component_packages()
+    __install_components()
 
     # Get component 1 ##################################################################################################
     disc1_component = OpenMDAOSystemFactory.get_system({"Number": 1})
@@ -91,7 +91,7 @@ def test_get_component_descriptors():
     """
     Tests the retrieval of component descriptors according to properties
     """
-    __install_component_packages()
+    __install_components()
 
     # Get component 1 ##################################################################################################
     component_descriptors = OpenMDAOSystemFactory.get_system_descriptors({"Number": 1})
@@ -126,3 +126,66 @@ def test_get_component_descriptors():
 
     # Pelix framework has to be deleted for next tests to run smoothly
     Loader().framework.delete(True)
+
+
+def test_sellar():
+    def sellar_setup(sellar_instance: Sellar):
+        """
+        Sets up the Sellar problem, given a Sellar Group() instance.
+
+        Pure OpenMDAO scripting.
+        """
+        problem = Problem()
+        problem.model = sellar_instance
+
+        problem.driver = ScipyOptimizeDriver()
+
+        problem.driver.options['optimizer'] = 'SLSQP'
+        problem.driver.options['tol'] = 1.0e-08
+        # pb.driver.options['maxiter'] = 100
+        problem.driver.options['disp'] = True
+
+        problem.model.approx_totals()
+        problem.model.add_design_var('x', lower=0, upper=10)
+        problem.model.add_design_var('z', lower=0, upper=10)
+
+        problem.model.add_objective('f')
+
+        problem.model.add_constraint('g1', upper=0.)
+        problem.model.add_constraint('g2', upper=0.)
+
+        problem.setup()
+
+        return problem
+
+    class SellarComponentProviderByFast(ISellarFactory):
+        """
+        Provides Sellar components using OpenMDAOSystemFactory
+        """
+
+        @staticmethod
+        def create_disc1():
+            return OpenMDAOSystemFactory.get_system({"Number": 1})
+
+        @staticmethod
+        def create_disc2():
+            return OpenMDAOSystemFactory.get_system({"Number": 2})
+
+        @staticmethod
+        def create_functions():
+            return OpenMDAOSystemFactory.get_system({"Discipline": "function"})
+
+    __install_components()
+
+    classical_problem = sellar_setup(Sellar())  # Reference
+    fastoad_problem = sellar_setup(Sellar(SellarComponentProviderByFast))  # Using OpenMDAOSystemFactory
+
+    classical_problem.run_driver()
+    assert classical_problem['f'] != fastoad_problem['f']  # fastoad_problem has not run yet
+
+    fastoad_problem.run_driver()
+    assert classical_problem['f'] == fastoad_problem['f']  # both problems have run
+
+
+if __name__ == '__main__':
+    test_sellar()
