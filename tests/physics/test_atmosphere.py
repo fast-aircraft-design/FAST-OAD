@@ -15,10 +15,11 @@ Tests atmosphere functions
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import numpy as np
 import pytest
 from scipy.constants import foot
 
-from fastoad.utils.physics.atmosphere import atmosphere
+from fastoad.utils.physics.atmosphere import Atmosphere
 
 
 def test_atmosphere():
@@ -73,13 +74,41 @@ def test_atmosphere():
                     (14000, 10): (226.65, 0.2167, 14102, 6.7808e-05, 301.80)
                     }
 
-    for (alt, delta_temp), (expect_temp, expect_dens, expect_pres, expect_visc,
-                            expect_sos) in expectations.items():
-        actual_temp, actual_dens, actual_pres, actual_visc, actual_sos \
-            = atmosphere(alt / foot, delta_temp)
+    alt_list = []
+    expect_temp_list = []
+    expect_dens_list = []
+    expect_pres_list = []
+    expect_visc_list = []
+    expect_sos_list = []
+    for (alt, delta_temp), (expect_temp, expect_dens, expect_pres, expect_visc, expect_sos) in expectations.items():
 
-        assert expect_temp == pytest.approx(actual_temp, rel=1e-4)
-        assert expect_dens == pytest.approx(actual_dens, rel=1e-3)
-        assert expect_pres == pytest.approx(actual_pres, rel=1e-4)
-        assert expect_visc == pytest.approx(actual_visc, rel=1e-2)
-        assert expect_sos == pytest.approx(actual_sos, rel=1e-3)
+        atm = Atmosphere(alt / foot, delta_temp)
+
+        assert expect_temp == pytest.approx(atm.temperature, rel=1e-4)
+        assert expect_dens == pytest.approx(atm.density, rel=1e-3)
+        assert expect_pres == pytest.approx(atm.pressure, rel=1e-4)
+        assert expect_visc == pytest.approx(atm.kinematic_viscosity, rel=1e-2)
+        assert expect_sos == pytest.approx(atm.speed_of_sound, rel=1e-3)
+
+        # build lists for check of array computation
+        if delta_temp == 10:
+            alt_list.append(alt / foot)
+            expect_temp_list.append(expect_temp)
+            expect_dens_list.append(expect_dens)
+            expect_pres_list.append(expect_pres)
+            expect_visc_list.append(expect_visc)
+            expect_sos_list.append(expect_sos)
+
+    atm = Atmosphere(alt_list, 10)
+    assert expect_temp_list == pytest.approx(atm.temperature, rel=1e-4)
+    assert expect_dens_list == pytest.approx(atm.density, rel=1e-3)
+    assert expect_pres_list == pytest.approx(atm.pressure, rel=1e-4)
+    assert expect_visc_list == pytest.approx(atm.kinematic_viscosity, rel=1e-2)
+    assert expect_sos_list == pytest.approx(atm.speed_of_sound, rel=1e-3)
+
+    atm = Atmosphere(np.array(alt_list), 10)
+    assert expect_temp_list == pytest.approx(atm.temperature, rel=1e-4)
+    assert expect_dens_list == pytest.approx(atm.density, rel=1e-3)
+    assert expect_pres_list == pytest.approx(atm.pressure, rel=1e-4)
+    assert expect_visc_list == pytest.approx(atm.kinematic_viscosity, rel=1e-2)
+    assert expect_sos_list == pytest.approx(atm.speed_of_sound, rel=1e-3)
