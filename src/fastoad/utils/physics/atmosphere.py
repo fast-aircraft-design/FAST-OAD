@@ -49,7 +49,7 @@ class Atmosphere:
         else:
             self.__altitude = altitude_ft * foot
 
-        self.__out_shape = self.__altitude.squeeze().shape
+        self.__out_shape = self.__altitude.shape
 
         # Sets indices for tropopause
         self.__idx_tropo = self.__altitude < STRATOSPHERE_START
