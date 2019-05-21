@@ -20,19 +20,25 @@ from numbers import Number
 from typing import Union, Sequence
 
 import numpy as np
-from scipy.constants import foot
+from scipy.constants import foot, atmosphere, R
 
-GAS_CONSTANT = 287
-SEA_LEVEL_PRESSURE = 101325
+AIR_MOLAR_MASS = 28.9647e-3
+AIR_GAS_CONSTANT = R / AIR_MOLAR_MASS
+SEA_LEVEL_PRESSURE = atmosphere
 SEA_LEVEL_TEMPERATURE = 288.15
-STRATOSPHERE_START = 11000
+TROPOPAUSE = 11000
 
 
 class Atmosphere:
+    """
+        Simple implementation of International Standard Atmosphere
+    """
 
+    # pylint: disable=too-many-instance-attributes  # Needed for avoiding redoing computations
     def __init__(self, altitude_ft: Union[float, Sequence[float]], delta_t: float = 0.):
         """
-        Builds an atmosphere instance that will provide atmosphere values in the same shape as provided *altitude_ft*
+        Builds an atmosphere instance that will provide atmosphere values in the same shape as
+        provided *altitude_ft*
 
         :param altitude_ft: altitude in foots
         :param delta_t: temperature increment applied to whole temperature profile
@@ -52,8 +58,8 @@ class Atmosphere:
         self.__out_shape = self.__altitude.shape
 
         # Sets indices for tropopause
-        self.__idx_tropo = self.__altitude < STRATOSPHERE_START
-        self.__idx_strato = self.__altitude >= STRATOSPHERE_START
+        self.__idx_tropo = self.__altitude < TROPOPAUSE
+        self.__idx_strato = self.__altitude >= TROPOPAUSE
 
         # Outputs
         self.__temperature = None
@@ -64,45 +70,65 @@ class Atmosphere:
 
     @property
     def temperature(self):
+        """
+        :return: temperature in K
+        """
         if self.__temperature is None:
             self.__temperature = np.zeros(self.__out_shape)
-            self.__temperature[self.__idx_tropo] = SEA_LEVEL_TEMPERATURE - 0.0065 * self.__altitude[
-                self.__idx_tropo] + self.__delta_t
+            self.__temperature[self.__idx_tropo] = SEA_LEVEL_TEMPERATURE - 0.0065 \
+                                                   * self.__altitude[self.__idx_tropo] \
+                                                   + self.__delta_t
             self.__temperature[self.__idx_strato] = 216.65 + self.__delta_t
         return self.__return_value(self.__temperature)
 
     @property
     def pressure(self):
+        """
+        :return: pressure in Pa
+        """
         if self.__pressure is None:
             self.__pressure = np.zeros(self.__out_shape)
             self.__pressure[self.__idx_tropo] = \
-                SEA_LEVEL_PRESSURE * (1 - (self.__altitude[self.__idx_tropo] / 44330.78)) ** 5.25587611
+                SEA_LEVEL_PRESSURE * (1 -
+                                      (self.__altitude[self.__idx_tropo] / 44330.78)) ** 5.25587611
             self.__pressure[self.__idx_strato] = \
                 22632 * 2.718281 ** (1.7345725 - 0.0001576883 * self.__altitude[self.__idx_strato])
         return self.__return_value(self.__pressure)
 
     @property
     def density(self):
+        """
+        :return: density in kg/m3
+        """
         if self.__density is None:
-            self.__density = self.pressure / GAS_CONSTANT / self.temperature
+            self.__density = self.pressure / AIR_GAS_CONSTANT / self.temperature
         return self.__return_value(self.__density)
 
     @property
     def speed_of_sound(self):
+        """
+        :return: speed of sound in m/s
+        """
         if self.__speed_of_sound is None:
-            self.__speed_of_sound = (1.4 * GAS_CONSTANT * self.temperature) ** 0.5
+            self.__speed_of_sound = (1.4 * AIR_GAS_CONSTANT * self.temperature) ** 0.5
         return self.__return_value(self.__speed_of_sound)
 
     @property
     def kinematic_viscosity(self):
+        """
+        :return: kinematic viscosity in m2/s
+        """
         if self.__kinematic_viscosity is None:
-            self.__kinematic_viscosity = ((0.000017894 * (self.temperature / SEA_LEVEL_TEMPERATURE) ** (3 / 2)) * (
-                    (SEA_LEVEL_TEMPERATURE + 110.4) / (self.temperature + 110.4))) / self.density
+            self.__kinematic_viscosity = ((0.000017894 *
+                                           (self.temperature / SEA_LEVEL_TEMPERATURE) ** (3 / 2))
+                                          * ((SEA_LEVEL_TEMPERATURE + 110.4) /
+                                             (self.temperature + 110.4))
+                                          ) / self.density
         return self.__return_value(self.__kinematic_viscosity)
 
     def __return_value(self, value):
         """returns a float when needed"""
         if self.__float_expected:
             return float(value)
-        else:
-            return value
+
+        return value
