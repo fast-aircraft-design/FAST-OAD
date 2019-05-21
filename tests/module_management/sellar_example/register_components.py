@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-    Dummy conftest.py for fastoad.
-
-    If you don't know what this is for, just leave it empty.
-    Read more about conftest.py under:
-    https://pytest.org/latest/plugins.html
-"""
 
 #      This file is part of FAST : A framework for rapid Overall Aircraft Design
 #      Copyright (C) 2019  ONERA/ISAE
@@ -20,5 +13,13 @@
 #      GNU General Public License for more details.
 #      You should have received a copy of the GNU General Public License
 #      along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 
-# import pytest
+from .disc1 import Disc1
+from .disc2 import Disc2
+from .functions import Functions
+
+# This module makes components available through OpenMDAOSystemFactory
+OpenMDAOSystemFactory.register_system(Disc1(), {"Number": 1, "Discipline": "generic", "AnyProp": "Something"})
+OpenMDAOSystemFactory.register_system(Disc2(), {"Number": 2, "Discipline": "generic"})
+OpenMDAOSystemFactory.register_system(Functions(), {"Discipline": "function"})
