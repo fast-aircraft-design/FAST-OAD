@@ -32,6 +32,18 @@ TROPOPAUSE = 11000
 class Atmosphere:
     """
         Simple implementation of International Standard Atmosphere
+        for troposphere and stratosphere
+
+        Usage:
+        .. code-block:: python
+
+            >>> pressure = Atmosphere(30000).pressure # pressure at 30,000 feet, dISA = 0 K
+            >>> density = Atmosphere(5000, 10).density # density at 5,000 feet, dISA = 10 K
+
+            >>> atm = Atmosphere(np.arange(0,10001,1000, 15)) # init for altitudes from 0 to 10,000
+            >>> temperatures = atm.pressure # pressures for all defined altitudes
+            >>> viscosities = atm.kinematic_viscosity # viscosities for all defined altitudes
+
     """
 
     # pylint: disable=too-many-instance-attributes  # Needed for avoiding redoing computations
