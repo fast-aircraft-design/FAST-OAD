@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+    <foo unit="kg.K/Hz">4.e-2</foo>
+    <foo id="1">
+        <bar unit="attoparsec">42</bar>
+    </foo>
+    <foo id="2">
+        <bar>70</bar>
+    </foo>
+    <foo id="3">
+        <bar unit="ignored">non-numeric value</bar>
+    </foo>
+    <bar>another non-numeric value</bar>
+</root>
