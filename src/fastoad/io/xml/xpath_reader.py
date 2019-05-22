@@ -1,5 +1,19 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+XML reading based on XPath
+"""
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from typing import Optional, List, Tuple, Union
 
 from lxml import etree
@@ -10,9 +24,9 @@ UNIT_ATTRIBUTE = 'unit'
 
 class XPathReader:
     """
-    Helper class for easing usage of XPath in FAST context.
-    Assumption is that values are provided through dedicated tags (whatever the hierarchy depth) with an optional
-    "unit" attribute.
+    Helper class for easing usage of XPath in FAST context. Assumption is
+    that values are provided through dedicated tags (whatever the hierarchy
+    depth) with an optional "unit" attribute.
 
     e.g.: in ``my_file.xml``:
 
@@ -70,36 +84,41 @@ class XPathReader:
         Will return the first one anyway.
 
         :param xpath:XML Path
-        :return: value of provided XPath as a float. Returns None if value could not be converted.
+        :return: value of provided XPath as a float.
+        Returns None if value could not be converted.
         :raises KeyError:  if provided XPath does not exist
         """
         text = self.get_text(xpath)
 
         try:
-            value = float(text)
+            return float(text)
         except ValueError:
-            value = None
-        return value
+            return None
 
     def get_unit(self, xpath: str) -> Optional[str]:
         """
         Assumes provided XPath matches only one element.
 
         :param xpath:XML Path
-        :return:content of the "unit" attribute, if it exists. Returns "" otherwise
+        :return:content of the "unit" attribute, if it exists.
+        Returns None otherwise
         """
         element = self._get_element(xpath)
         if UNIT_ATTRIBUTE in element.attrib:
             return element.attrib[UNIT_ATTRIBUTE]
 
-    def get_values_and_units(self, xpath: str) -> List[Tuple[Union[str, float], Optional[str]]]:
+        return None
+
+    def get_values_and_units(self, xpath: str) -> List[
+        Tuple[Union[str, float], Optional[str]]]:
         """
         Returns a list of 2-tuples (value, unit) that match provided XPath.
 
-        *value* may be a float if it can be converted. If not, it will be a string.
+        *value* may be a float if it can be converted. If not, it will be a
+        string.
 
-        If *value* is a float and *unit* is available, *unit* will be provided as a string.
-        In other cases, *unit* will be None
+        If *value* is a float and *unit* is available, *unit* will be
+        provided as a string. In other cases, *unit* will be None
 
         :param xpath:XML Path
         :return: a list of tuples
@@ -128,5 +147,5 @@ class XPathReader:
         """
         if self.has_element(xpath):
             return self.tree.xpath(xpath)[0]
-        else:
-            raise KeyError("XPath not found")
+
+        raise KeyError('XPath not found')

@@ -1,3 +1,20 @@
+# -*- coding: utf-8 -*-
+"""
+Tests atmosphere functions
+"""
+
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import pytest
 from scipy.constants import foot
 
@@ -5,11 +22,18 @@ from fastoad.utils.physics.atmosphere import atmosphere
 
 
 def test_atmosphere():
+    """
+    Tests atmosphere functions
+    """
     # Altitudes in meters
-    # Values at disa=0 from
-    #       "Advanced Aircraft Design (Egbert TORENBEEK, Oxford, UK: John Wiley & Sons Ltd, 2013) Appendix B, p.397-398"
-    # Values at disa=10 from https://www.digitaldutch.com/atmoscalc/, with a 0.98749 factor on viscosity because
-    # at sea level and disa=0, the calculator gives 1.81206e-5 for dynamic viscosity, though ISA assumption is 1.7894e-5
+    #
+    # Values at disa=0 from "Advanced Aircraft Design (Egbert TORENBEEK,
+    # Oxford, UK: John Wiley & Sons Ltd, 2013) Appendix B, p.397-398"
+    #
+    # Values at disa=10 from https://www.digitaldutch.com/atmoscalc/,
+    # with a 0.98749 factor on viscosity because at sea level and disa=0,
+    # the calculator gives 1.81206e-5 for dynamic viscosity, though ISA
+    # assumption is 1.7894e-5
     expectations = {(0, 0): (288.15, 1.225, 101325, 1.460E-05, 340.29),
                     (500, 0): (284.90, 1.1673, 95461, 1.519E-05, 338.37),
                     (1000, 0): (281.65, 1.1117, 89874, 1.581E-05, 336.43),
@@ -49,8 +73,10 @@ def test_atmosphere():
                     (14000, 10): (226.65, 0.2167, 14102, 6.7808e-05, 301.80)
                     }
 
-    for (alt, delta_temp), (expect_temp, expect_dens, expect_pres, expect_visc, expect_sos) in expectations.items():
-        actual_temp, actual_dens, actual_pres, actual_visc, actual_sos = atmosphere(alt / foot, delta_temp)
+    for (alt, delta_temp), (expect_temp, expect_dens, expect_pres, expect_visc,
+                            expect_sos) in expectations.items():
+        actual_temp, actual_dens, actual_pres, actual_visc, actual_sos \
+            = atmosphere(alt / foot, delta_temp)
 
         assert expect_temp == pytest.approx(actual_temp, rel=1e-4)
         assert expect_dens == pytest.approx(actual_dens, rel=1e-3)

@@ -1,5 +1,22 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Test module for xpath_reader.py
+"""
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# pylint: disable=missing-docstring  # All looks self-explanatory enough
+# pylint: disable=redefined-outer-name  # needed for fixtures
 
 import os.path as pth
 
@@ -68,11 +85,16 @@ def test_get_unit(input_xml):
 
 
 def test_get_values_and_units(input_xml):
-    assert len(input_xml.get_values_and_units("/root/foot")) == 0
+    assert not input_xml.get_values_and_units("/root/foot")
     assert input_xml.get_values_and_units("/root") == [("", None)]
 
-    assert input_xml.get_values_and_units("/root/bar") == [("another non-numeric value", None)]
-    assert input_xml.get_values_and_units("/root/foo") == [(4.e-2, "kg.K/Hz"), ('', None), ('', None), ('', None)]
-    assert input_xml.get_values_and_units("/root/foo/bar") == [(42, "attoparsec")
+    assert input_xml.get_values_and_units("/root/bar") == [
+        ("another non-numeric value", None)]
+    assert input_xml.get_values_and_units("/root/foo") == [(4.e-2, "kg.K/Hz"),
+                                                           ('', None),
+                                                           ('', None),
+                                                           ('', None)]
+    assert input_xml.get_values_and_units("/root/foo/bar") == [
+        (42, "attoparsec")
         , (70, None)
         , ("non-numeric value", None)]
