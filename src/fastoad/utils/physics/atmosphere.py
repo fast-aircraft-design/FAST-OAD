@@ -2,33 +2,38 @@
 """
     Simple atmosphere function
 """
-#      This file is part of FAST : A framework for rapid Overall Aircraft Design
-#      Copyright (C) 2019  ONERA/ISAE
-#      FAST is free software: you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation, either version 3 of the License, or
-#      (at your option) any later version.
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#      You should have received a copy of the GNU General Public License
-#      along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from typing import Tuple
 
 from scipy.constants import foot
 
 
 # Simply derived from legacy version
-# TODO : returning 5 values in a row is not so convenient. Should be refactored a bit.
-def atmosphere(altitude_ft: float, delta_t: float = 0.) -> Tuple[float, float, float, float, float]:
+# TODO : returning 5 values in a row is not so convenient. Should be
+#  refactored a bit.
+def atmosphere(altitude_ft: float, delta_t: float = 0.) \
+        -> Tuple[float, float, float, float, float]:
     """
     Standard atmosphere data computation from given parameters.
 
     :param altitude_ft: altitude in feet
     :param delta_t: temperature offset in Kelvin degrees
-    :return: tuple containing temperature in Kelvin degrees, density in kg/m3,
-        pressure in kg/(m.s2) or Pa, kinematic viscosity in m2/s, speed of sound in m/s.
+    :return: tuple containing temperature in Kelvin degrees
+    , density in kg/m3
+    , pressure in kg/(m.s2) or Pa
+    , kinematic viscosity in m2/s
+    , speed of sound in m/s.
     """
     altitude_m = altitude_ft * foot
     if altitude_m <= 11000:

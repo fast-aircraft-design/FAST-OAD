@@ -1,18 +1,19 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-#      This file is part of FAST : A framework for rapid Overall Aircraft Design
-#      Copyright (C) 2019  ONERA/ISAE
-#      FAST is free software: you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation, either version 3 of the License, or
-#      (at your option) any later version.
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#      You should have received a copy of the GNU General Public License
-#      along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+Test module for openmdao_system_factory.py
+"""
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 import os.path as pth
@@ -22,11 +23,13 @@ from openmdao.api import Problem, ScipyOptimizeDriver  # , pyOptSparseDriver
 from fastoad.module_management.bundle_loader import Loader
 from fastoad.module_management.constants import SERVICE_OPENMDAO_SYSTEM
 # noinspection PyUnresolvedReferences
-# This import is needed for coverage report, though not explicitly used in this module
-from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
-from tests.module_management.sellar_example.sellar import Sellar, ISellarFactory
+# This import is needed for coverage report, though not explicitly used in this module  #pylint: disable=line-too-long
+from fastoad.module_management.openmdao_system_factory import \
+    OpenMDAOSystemFactory
+from tests.module_management.sellar_example.sellar import Sellar, \
+    ISellarFactory
 
-_logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
 
 logging.basicConfig(level=logging.DEBUG)
@@ -34,10 +37,13 @@ logging.basicConfig(level=logging.DEBUG)
 
 def __install_components():
     """
-    Loads needed components
+    Loads registered components
+
+    See sellar_example.register_components.py for the registering process
     """
 
-    OpenMDAOSystemFactory.explore_folder(pth.join(pth.dirname(__file__), "sellar_example"))
+    OpenMDAOSystemFactory.explore_folder(
+        pth.join(pth.dirname(__file__), "sellar_example"))
 
 
 def test_components_alone():
@@ -61,7 +67,7 @@ def test_get_component():
 
     __install_components()
 
-    # Get component 1 ##################################################################################################
+    # Get component 1 #########################################################
     disc1_component = OpenMDAOSystemFactory.get_system({"Number": 1})
     assert disc1_component is not None
     disc1_component.setup()
@@ -69,7 +75,7 @@ def test_get_component():
     disc1_component.compute({'z': [10., 10.], 'x': 10., 'y2': 10.}, outputs)
     assert outputs['y1'] == 118.
 
-    # Get component 1 ##################################################################################################
+    # Get component 1 #########################################################
     disc2_component = OpenMDAOSystemFactory.get_system({"Number": 2})
     assert disc2_component is not None
     disc2_component.setup()
@@ -77,11 +83,11 @@ def test_get_component():
     disc2_component.compute({'z': [10., 10.], 'y1': 4.}, outputs)
     assert outputs['y2'] == 22.
 
-    # Get component when several possible ##############################################################################
+    # Get component when several possible #####################################
     any_component = OpenMDAOSystemFactory.get_system({"Discipline": "generic"})
     assert any_component is disc1_component or any_component is disc2_component
 
-    # Error raised when property does not exists #######################################################################
+    # Error raised when property does not exists ##############################
     got_key_error = False
     try:
         OpenMDAOSystemFactory.get_system({"MissingProperty": -5})
@@ -89,7 +95,7 @@ def test_get_component():
         got_key_error = True
     assert got_key_error
 
-    # Error raised when no matching component ##########################################################################
+    # Error raised when no matching component #################################
     got_key_error = False
     try:
         OpenMDAOSystemFactory.get_system({"Number": -5})
@@ -107,8 +113,9 @@ def test_get_component_descriptors():
     """
     __install_components()
 
-    # Get component 1 ##################################################################################################
-    component_descriptors = OpenMDAOSystemFactory.get_system_descriptors({"Number": 1})
+    # Get component 1 #########################################################
+    component_descriptors = OpenMDAOSystemFactory.get_system_descriptors(
+        {"Number": 1})
     assert len(component_descriptors) == 1
     disc1_component = component_descriptors[0].get_system()
     assert component_descriptors[0].get_properties()["Discipline"] == "generic"
@@ -118,11 +125,12 @@ def test_get_component_descriptors():
     disc1_component.compute({'z': [10., 10.], 'x': 10., 'y2': 10.}, outputs)
     assert outputs['y1'] == 118.
 
-    # Get component when several possible ##############################################################################
-    component_descriptors = OpenMDAOSystemFactory.get_system_descriptors({"Discipline": "generic"})
+    # Get component when several possible #####################################
+    component_descriptors = OpenMDAOSystemFactory.get_system_descriptors(
+        {"Discipline": "generic"})
     assert len(component_descriptors) == 2
 
-    # Error raised when property does not exists #######################################################################
+    # Error raised when property does not exists ##############################
     got_key_error = False
     try:
         OpenMDAOSystemFactory.get_system_descriptors({"MissingProperty": -5})
@@ -130,7 +138,7 @@ def test_get_component_descriptors():
         got_key_error = True
     assert got_key_error
 
-    # Error raised when no matching component ##########################################################################
+    # Error raised when no matching component #################################
     got_key_error = False
     try:
         OpenMDAOSystemFactory.get_system_descriptors({"Number": -5})
@@ -143,6 +151,10 @@ def test_get_component_descriptors():
 
 
 def test_sellar():
+    """
+    Demonstrates usage of OpenMDAOSystemFactory in a simple Sellar problem
+    """
+
     def sellar_setup(sellar_instance: Sellar):
         """
         Sets up the Sellar problem, given a Sellar Group() instance.
@@ -192,13 +204,16 @@ def test_sellar():
     __install_components()
 
     classical_problem = sellar_setup(Sellar())  # Reference
-    fastoad_problem = sellar_setup(Sellar(SellarComponentProviderByFast))  # Using OpenMDAOSystemFactory
+    fastoad_problem = sellar_setup(
+        Sellar(SellarComponentProviderByFast))  # Using OpenMDAOSystemFactory
 
     classical_problem.run_driver()
-    assert classical_problem['f'] != fastoad_problem['f']  # fastoad_problem has not run yet
+    assert classical_problem['f'] != fastoad_problem[
+        'f']  # fastoad_problem has not run yet
 
     fastoad_problem.run_driver()
-    assert classical_problem['f'] == fastoad_problem['f']  # both problems have run
+    assert classical_problem['f'] == fastoad_problem[
+        'f']  # both problems have run
 
 
 if __name__ == '__main__':
