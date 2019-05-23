@@ -22,12 +22,13 @@ class EngineWeight(ExplicitComponent):
     """ Engine weight estimation (B1) """
 
     def setup(self):
-        self.add_input('propulsion_conventional:thrust_SL', val=np.nan)
+        self.add_input('propulsion_conventional:thrust_SL', val=np.nan
+                       , units="lbf")
         self.add_input('geometry:engine_number', val=np.nan)
         self.add_input('kfactors_b1:K_B1', val=1.)
-        self.add_input('kfactors_b1:offset_B1', val=0.)
+        self.add_input('kfactors_b1:offset_B1', val=0., units="kg")
 
-        self.add_output('weight_propulsion:B1')
+        self.add_output('weight_propulsion:B1', units="kg")
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):

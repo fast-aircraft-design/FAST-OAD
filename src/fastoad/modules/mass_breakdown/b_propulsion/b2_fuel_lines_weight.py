@@ -22,13 +22,13 @@ class FuelLinesWeight(ExplicitComponent):
     """ Fuel lines weight estimation (B2) """
 
     def setup(self):
-        self.add_input('geometry:wing_b_50', val=np.nan)
-        self.add_input('weight:MFW', val=np.nan)
-        self.add_input('weight_propulsion:B1', val=np.nan)
+        self.add_input('geometry:wing_b_50', val=np.nan, units="m")
+        self.add_input('weight:MFW', val=np.nan, units="kg")
+        self.add_input('weight_propulsion:B1', val=np.nan, units="kg")
         self.add_input('kfactors_b2:K_B2', val=1.)
-        self.add_input('kfactors_b2:offset_B2', val=0.)
+        self.add_input('kfactors_b2:offset_B2', val=0., units="kg")
 
-        self.add_output('weight_propulsion:B2')
+        self.add_output('weight_propulsion:B2', units="kg")
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
