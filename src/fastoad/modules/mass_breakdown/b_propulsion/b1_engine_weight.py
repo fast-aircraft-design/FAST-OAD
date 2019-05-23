@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of engine weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -18,27 +18,28 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
-class UnconsumablesWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                                B3 - unconsumables
-    # ---------------------------------------------------------------
+class EngineWeight(ExplicitComponent):
+    """ Engine weight estimation (B1) """
+
     def setup(self):
+        self.add_input('propulsion_conventional:thrust_SL', val=np.nan)
         self.add_input('geometry:engine_number', val=np.nan)
-        self.add_input('weight:MFW', val=np.nan)
-        self.add_input('kfactors_b3:K_B3', val=1.)
-        self.add_input('kfactors_b3:offset_B3', val=0.)
+        self.add_input('kfactors_b1:K_B1', val=1.)
+        self.add_input('kfactors_b1:offset_B1', val=0.)
 
-        self.add_output('weight_propulsion:B3')
+        self.add_output('weight_propulsion:B1')
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        sea_level_thrust = inputs['propulsion_conventional:thrust_SL']
         n_engines = inputs['geometry:engine_number']
-        MFW = inputs['weight:MFW']
-        K_B3 = inputs['kfactors_b3:K_B3']
-        offset_B3 = inputs['kfactors_b3:offset_B3']
+        k_b1 = inputs['kfactors_b1:K_B1']
+        offset_b1 = inputs['kfactors_b1:offset_B1']
 
-        temp_B3 = 25 * n_engines + 0.0035 * MFW
-        B3 = K_B3 * temp_B3 + offset_B3
+        if sea_level_thrust < 80000:
+            temp_b1 = 22.2e-3 * sea_level_thrust
+        else:
+            temp_b1 = 14.1e-3 * sea_level_thrust + 648
 
-        outputs['weight_propulsion:B3'] = B3
+        temp_b1 *= n_engines * 1.55
+        outputs['weight_propulsion:B1'] = k_b1 * temp_b1 + offset_b1

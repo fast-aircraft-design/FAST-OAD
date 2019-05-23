@@ -1,3 +1,6 @@
+"""
+Estimation of propulsion weight
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -10,6 +13,6 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from .engine_weight import EngineWeight
-from .fuel_lines_weight import FuelLinesWeight
-from .unconsumables_weight import UnconsumablesWeight
+from .b1_engine_weight import EngineWeight
+from .b2_fuel_lines_weight import FuelLinesWeight
+from .b3_unconsumables_weight import UnconsumablesWeight

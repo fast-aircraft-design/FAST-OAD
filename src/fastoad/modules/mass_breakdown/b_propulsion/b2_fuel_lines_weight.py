@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of fuel lines weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,11 +19,8 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FuelLinesWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                                B2 - fuel lines
-    # ----------------------------------------------------------------
+    """ Fuel lines weight estimation (B2) """
+
     def setup(self):
         self.add_input('geometry:wing_b_50', val=np.nan)
         self.add_input('weight:MFW', val=np.nan)
@@ -33,14 +30,13 @@ class FuelLinesWeight(ExplicitComponent):
 
         self.add_output('weight_propulsion:B2')
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
         b_50 = inputs['geometry:wing_b_50']
-        MFW = inputs['weight:MFW']
-        K_B2 = inputs['kfactors_b2:K_B2']
-        offset_B2 = inputs['kfactors_b2:offset_B2']
+        mfw = inputs['weight:MFW']
+        k_b2 = inputs['kfactors_b2:K_B2']
+        offset_b2 = inputs['kfactors_b2:offset_B2']
         weight_engines = inputs['weight_propulsion:B1']
 
-        temp_B2 = 0.02 * weight_engines + 2.0 * b_50 + 0.35 * MFW ** 0.66
-        B2 = K_B2 * temp_B2 + offset_B2
-
-        outputs['weight_propulsion:B2'] = B2
+        temp_b2 = 0.02 * weight_engines + 2.0 * b_50 + 0.35 * mfw ** 0.66
+        outputs['weight_propulsion:B2'] = k_b2 * temp_b2 + offset_b2
