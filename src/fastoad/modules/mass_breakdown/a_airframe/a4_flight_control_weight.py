@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of flight controls weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,11 +19,8 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FlightControlsWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                                A4 - Flight controls
-    # ---------------------------------------------------------------
+    """ Flight controls weight estimation (A4) """
+
     def setup(self):
         self.add_input('geometry:fuselage_length', val=np.nan)
         self.add_input('geometry:wing_b_50', val=np.nan)
@@ -35,17 +32,16 @@ class FlightControlsWeight(ExplicitComponent):
 
         self.add_output('weight_airframe:A4')
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
         fus_length = inputs['geometry:fuselage_length']
         b_50 = inputs['geometry:wing_b_50']
-        K_fc = inputs['kfactors_a4:K_fc']
-        K_A4 = inputs['kfactors_a4:K_A4']
-        offset_A4 = inputs['kfactors_a4:offset_A4']
+        k_fc = inputs['kfactors_a4:K_fc']
+        k_a4 = inputs['kfactors_a4:K_A4']
+        offset_a4 = inputs['kfactors_a4:offset_A4']
 
         max_nm = max(inputs['n1m1'], inputs['n2m2'])
 
-        temp_A4 = K_fc * max_nm * (fus_length ** 0.66 + b_50 ** 0.66)
+        temp_a4 = k_fc * max_nm * (fus_length ** 0.66 + b_50 ** 0.66)
 
-        A4 = K_A4 * temp_A4 + offset_A4
-
-        outputs['weight_airframe:A4'] = A4
+        outputs['weight_airframe:A4'] = k_a4 * temp_a4 + offset_a4

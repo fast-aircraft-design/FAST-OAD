@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of paint weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,11 +19,8 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class PaintWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                                A7 - Paint
-    # ---------------------------------------------------------------
+    """ Paint weight estimation (A7) """
+
     def setup(self):
         self.add_input('geometry:S_total', val=np.nan)
         self.add_input('kfactors_a7:K_A7', val=1.)
@@ -31,12 +28,11 @@ class PaintWeight(ExplicitComponent):
 
         self.add_output('weight_airframe:A7')
 
-    def compute(self, inputs, outputs):
-        S_total = inputs['geometry:S_total']
-        K_A7 = inputs['kfactors_a7:K_A7']
-        offset_A7 = inputs['kfactors_a7:offset_A7']
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        total_wet_surface = inputs['geometry:S_total']
+        k_a7 = inputs['kfactors_a7:K_A7']
+        offset_a7 = inputs['kfactors_a7:offset_A7']
 
-        temp_A7 = 0.180 * S_total
-        A7 = K_A7 * temp_A7 + offset_A7
-
-        outputs['weight_airframe:A7'] = A7
+        temp_a7 = 0.180 * total_wet_surface
+        outputs['weight_airframe:A7'] = k_a7 * temp_a7 + offset_a7

@@ -1,7 +1,6 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of landing gear weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -19,11 +18,8 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class LandingGearWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                                A5 - LG
-    # ---------------------------------------------------------------
+    """ Landing gear weight estimation (A5) """
+
     def setup(self):
         self.add_input('weight:MTOW', val=np.nan)
         self.add_input('kfactors_a5:K_A5', val=1.)
@@ -32,16 +28,18 @@ class LandingGearWeight(ExplicitComponent):
         self.add_output('weight_airframe:A51')
         self.add_output('weight_airframe:A52')
 
-    def compute(self, inputs, outputs):
-        MTOW = inputs['weight:MTOW']
-        K_A5 = inputs['kfactors_a5:K_A5']
-        offset_A5 = inputs['kfactors_a5:offset_A5']
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        mtow = inputs['weight:MTOW']
+        k_a5 = inputs['kfactors_a5:K_A5']
+        offset_a5 = inputs['kfactors_a5:offset_A5']
 
-        temp_A51 = 18.1 + 0.131 * MTOW ** 0.75 + 0.019 * MTOW + 2.23E-5 * MTOW ** 1.5
-        temp_A52 = 9.1 + 0.082 * MTOW ** 0.75 + 2.97E-6 * MTOW ** 1.5
+        temp_a51 = 18.1 + 0.131 * mtow ** 0.75 + 0.019 * mtow \
+                   + 2.23E-5 * mtow ** 1.5
+        temp_a52 = 9.1 + 0.082 * mtow ** 0.75 + 2.97E-6 * mtow ** 1.5
 
-        A51 = K_A5 * temp_A51 + offset_A5
-        A52 = K_A5 * temp_A52 + offset_A5
+        a51 = k_a5 * temp_a51 + offset_a5
+        a52 = k_a5 * temp_a52 + offset_a5
 
-        outputs['weight_airframe:A51'] = A51
-        outputs['weight_airframe:A52'] = A52
+        outputs['weight_airframe:A51'] = a51
+        outputs['weight_airframe:A52'] = a52

@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of pylons weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,17 +19,12 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class PylonsWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                                A6 - Pylons
-    # ---------------------------------------------------------------
+    """ Pylons weight estimation (A6) """
+
     def initialize(self):
         self.options.declare('engine_location', types=float, default=1.0)
 
     def setup(self):
-        self.engine_loc = self.options['engine_location']
-
         self.add_input('geometry:pylon_wet_area', val=np.nan)
         self.add_input('weight_propulsion:B1', val=np.nan)
         self.add_input('geometry:engine_number', val=np.nan)
@@ -38,19 +33,18 @@ class PylonsWeight(ExplicitComponent):
 
         self.add_output('weight_airframe:A6')
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
         wet_area_pylon = inputs['geometry:pylon_wet_area']
         weight_engine = inputs['weight_propulsion:B1']
         n_engines = inputs['geometry:engine_number']
-        K_A6 = inputs['kfactors_a6:K_A6']
-        offset_A6 = inputs['kfactors_a6:offset_A6']
+        k_a6 = inputs['kfactors_a6:K_A6']
+        offset_a6 = inputs['kfactors_a6:offset_A6']
 
-        if self.engine_loc == 1.0:
-            temp_A6 = 1.2 * wet_area_pylon ** 0.5 * (
-                        23 + 0.588 * (weight_engine / n_engines) ** 0.708) * n_engines
+        if self.options['engine_location'] == 1.0:
+            temp_a6 = 1.2 * wet_area_pylon ** 0.5 * (23 + 0.588 * (
+                    weight_engine / n_engines) ** 0.708) * n_engines
         else:
-            temp_A6 = 0.08 * weight_engine
+            temp_a6 = 0.08 * weight_engine
 
-        A6 = K_A6 * temp_A6 + offset_A6
-
-        outputs['weight_airframe:A6'] = A6
+        outputs['weight_airframe:A6'] = k_a6 * temp_a6 + offset_a6

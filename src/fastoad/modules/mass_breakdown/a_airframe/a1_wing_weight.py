@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA
+Estimation of wing weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -14,17 +14,13 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import math
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class WingWeight(ExplicitComponent):
-    # --------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                                A1 - Wing
-    # ----------------------------------------------------------------
+    """ Wing weight estimation (A1) """
+
     def setup(self):
         self.add_input('geometry:wing_toc_root', val=np.nan)
         self.add_input('geometry:wing_toc_kink', val=np.nan)
@@ -55,7 +51,9 @@ class WingWeight(ExplicitComponent):
 
         self.add_output('weight_airframe:A1')
 
-    def compute(self, inputs, outputs):
+    # pylint: disable=too-many-locals
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
         toc_root = inputs['geometry:wing_toc_root']
         toc_kink = inputs['geometry:wing_toc_kink']
         toc_tip = inputs['geometry:wing_toc_tip']
@@ -63,53 +61,52 @@ class WingWeight(ExplicitComponent):
         span = inputs['geometry:wing_span']
         l2_wing = inputs['geometry:wing_l2']
         sweep_25 = inputs['geometry:wing_sweep_25']
-        S_pf = inputs['geometry:wing_area_pf']
-        MTOW = inputs['weight:MTOW']
-        MLW = inputs['weight:MLW']
+        cantilevered_area = inputs['geometry:wing_area_pf']
+        mtow = inputs['weight:MTOW']
+        mlw = inputs['weight:MLW']
         max_nm = max(inputs['n1m1'], inputs['n2m2'])
 
         # K factors
-        K_A1 = inputs['kfactors_a1:K_A1']
-        offset_A1 = inputs['kfactors_a1:offset_A1']
-        K_A11 = inputs['kfactors_a1:K_A11']
-        offset_A11 = inputs['kfactors_a1:offset_A11']
-        K_A12 = inputs['kfactors_a1:K_A12']
-        offset_A12 = inputs['kfactors_a1:offset_A12']
-        K_A13 = inputs['kfactors_a1:K_A13']
-        offset_A13 = inputs['kfactors_a1:offset_A13']
-        K_A14 = inputs['kfactors_a1:K_A14']
-        offset_A14 = inputs['kfactors_a1:offset_A14']
-        K_A15 = inputs['kfactors_a1:K_A15']
-        offset_A15 = inputs['kfactors_a1:offset_A15']
-        K_voil = inputs['kfactors_a1:K_voil']
-        K_mvo = inputs['kfactors_a1:K_mvo']
+        k_a1 = inputs['kfactors_a1:K_A1']
+        offset_a1 = inputs['kfactors_a1:offset_A1']
+        k_a11 = inputs['kfactors_a1:K_A11']
+        offset_a11 = inputs['kfactors_a1:offset_A11']
+        k_a12 = inputs['kfactors_a1:K_A12']
+        offset_a12 = inputs['kfactors_a1:offset_A12']
+        k_a13 = inputs['kfactors_a1:K_A13']
+        offset_a13 = inputs['kfactors_a1:offset_A13']
+        k_a14 = inputs['kfactors_a1:K_A14']
+        offset_a14 = inputs['kfactors_a1:offset_A14']
+        k_a15 = inputs['kfactors_a1:K_A15']
+        offset_a15 = inputs['kfactors_a1:offset_A15']
+        k_voil = inputs['kfactors_a1:K_voil']
+        k_mvo = inputs['kfactors_a1:K_mvo']
 
         toc_mean = (3 * toc_root + 2 * toc_kink + toc_tip) / 6
 
-        temp_A11 = 5.922e-5 * K_voil * ((max_nm / (l2_wing * toc_mean)) \
-                                        * (span / math.cos(
-                    (sweep_25 / 180. * math.pi))) ** 2.0) ** 0.9
-        weight_A11 = K_A11 * temp_A11 + offset_A11
+        # A11=Mass of the wing due to flexion
+        temp_a11 = 5.922e-5 * k_voil * ((max_nm / (l2_wing * toc_mean)) * (
+                span / np.cos(np.radians(sweep_25))) ** 2.0) ** 0.9
+        weight_a11 = k_a11 * temp_a11 + offset_a11
 
         # A12=Mass of the wing due to shear
-        temp_A12 = 5.184e-4 * K_voil * (max_nm * span / \
-                                        math.cos((sweep_25 / 180. * math.pi))) ** 0.9
-        weight_A12 = K_A12 * temp_A12 + offset_A12
+        temp_a12 = 5.184e-4 * k_voil * (
+                max_nm * span / np.cos((np.radians(sweep_25)))) ** 0.9
+        weight_a12 = k_a12 * temp_a12 + offset_a12
 
         # A13=Mass of the wing due to the ribs
-        temp_A13 = K_voil * (1.7009 * wing_area + 10 ** (-3) * max_nm)
-        weight_A13 = K_A13 * temp_A13 + offset_A13
+        temp_a13 = k_voil * (1.7009 * wing_area + 10 ** (-3) * max_nm)
+        weight_a13 = k_a13 * temp_a13 + offset_a13
 
         # A14=Mass of the wing due to reinforcements
-        temp_A14 = 4.4e-3 * K_voil * MLW ** 1.0169
-        weight_A14 = K_A14 * temp_A14 + offset_A14
+        temp_a14 = 4.4e-3 * k_voil * mlw ** 1.0169
+        weight_a14 = k_a14 * temp_a14 + offset_a14
 
         # A15=Mass of the wing due to secondary parts
-        temp_A15 = 0.3285 * K_voil * MTOW ** 0.35 * S_pf * K_mvo
-        weight_A15 = K_A15 * temp_A15 + offset_A15
+        temp_a15 = 0.3285 * k_voil * mtow ** 0.35 * cantilevered_area * k_mvo
+        weight_a15 = k_a15 * temp_a15 + offset_a15
 
-        temp_A1 = weight_A11 + weight_A12 + weight_A13 + weight_A14 + weight_A15
+        temp_a1 = weight_a11 + weight_a12 + weight_a13 \
+                  + weight_a14 + weight_a15
 
-        A1 = K_A1 * temp_A1 + offset_A1
-
-        outputs['weight_airframe:A1'] = A1
+        outputs['weight_airframe:A1'] = k_a1 * temp_a1 + offset_a1
