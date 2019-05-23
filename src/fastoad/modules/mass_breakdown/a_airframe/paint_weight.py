@@ -18,20 +18,25 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
-class UpdateMLWandMZFW(ExplicitComponent):
-
+class PaintWeight(ExplicitComponent):
+    # ----------------------------------------------------------------
+    #                     COMPONENTS WEIGHT ESTIMATION
+    # ----------------------------------------------------------------
+    #                                A7 - Paint
+    # ---------------------------------------------------------------
     def setup(self):
-        self.add_input('weight:OEW', val=np.nan)
-        self.add_input('weight:Max_PL', val=np.nan)
+        self.add_input('geometry:S_total', val=np.nan)
+        self.add_input('kfactors_a7:K_A7', val=1.)
+        self.add_input('kfactors_a7:offset_A7', val=0.)
 
-        self.add_output('weight:MZFW')
-        self.add_output('weight:MLW')
+        self.add_output('weight_airframe:A7')
 
     def compute(self, inputs, outputs):
-        oew = inputs['weight:OEW'][0]
-        max_pl = inputs['weight:Max_PL'][0]
-        mzfw = oew + max_pl
-        mlw = 1.06 * mzfw
+        S_total = inputs['geometry:S_total']
+        K_A7 = inputs['kfactors_a7:K_A7']
+        offset_A7 = inputs['kfactors_a7:offset_A7']
 
-        outputs['weight:MZFW'] = mzfw
-        outputs['weight:MLW'] = mlw
+        temp_A7 = 0.180 * S_total
+        A7 = K_A7 * temp_A7 + offset_A7
+
+        outputs['weight_airframe:A7'] = A7

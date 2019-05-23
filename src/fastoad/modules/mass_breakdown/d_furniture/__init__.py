@@ -10,3 +10,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from .cargo_configuration_weight import CargoConfigurationWeight
+from .food_water_weight import FoodWaterWeight
+from .passenger_seats_weight import PassengerSeatsWeight
+from .security_kit_weight import SecurityKitWeight
+from .toilets_weight import ToiletsWeight

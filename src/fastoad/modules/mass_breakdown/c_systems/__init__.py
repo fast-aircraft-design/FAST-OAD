@@ -10,3 +10,9 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from .fixed_operational_systems_weight import FixedOperationalSystemsWeight
+from .flight_kit_weight import FlightKitWeight
+from .life_support_systems_weight import LifeSupportSystemsWeight
+from .navigation_systems_weight import NavigationSystemsWeight
+from .power_systems_weight import PowerSystemsWeight
+from .transmissions_systems_weight import TransmissionSystemsWeight

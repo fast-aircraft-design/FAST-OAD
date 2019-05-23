@@ -18,20 +18,22 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
-class UpdateMLWandMZFW(ExplicitComponent):
-
+class CrewWeight(ExplicitComponent):
+    # ----------------------------------------------------------------
+    #                     COMPONENTS WEIGHT ESTIMATION
+    # ----------------------------------------------------------------
+    #                     E - Crew
+    # ----------------------------------------------------------------
     def setup(self):
-        self.add_input('weight:OEW', val=np.nan)
-        self.add_input('weight:Max_PL', val=np.nan)
+        self.add_input('cabin:PNT', val=np.nan)
+        self.add_input('cabin:PNC', val=np.nan)
 
-        self.add_output('weight:MZFW')
-        self.add_output('weight:MLW')
+        self.add_output('weight_crew:E')
 
     def compute(self, inputs, outputs):
-        oew = inputs['weight:OEW'][0]
-        max_pl = inputs['weight:Max_PL'][0]
-        mzfw = oew + max_pl
-        mlw = 1.06 * mzfw
+        PNT = inputs['cabin:PNT']
+        PNC = inputs['cabin:PNC']
 
-        outputs['weight:MZFW'] = mzfw
-        outputs['weight:MLW'] = mlw
+        E = 85 * PNT + 75 * PNC
+
+        outputs['weight_crew:E'] = E
