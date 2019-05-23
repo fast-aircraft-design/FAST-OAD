@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of transmissions systems weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -18,37 +18,32 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class TransmissionSystemsWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                     C4 - Transmissions
-    # ----------------------------------------------------------------
+    """ Transmissions systems weight estimation (C4) """
+
     def initialize(self):
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.ac_type = self.options['ac_type']
-
         self.add_input('kfactors_c4:K_C4', val=1.)
         self.add_input('kfactors_c4:offset_C4', val=0.)
 
         self.add_output('weight_systems:C4')
 
-    def compute(self, inputs, outputs):
-        K_C4 = inputs['kfactors_c4:K_C4']
-        offset_C4 = inputs['kfactors_c4:offset_C4']
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        k_c4 = inputs['kfactors_c4:K_C4']
+        offset_c4 = inputs['kfactors_c4:offset_C4']
 
-        if self.ac_type == 1.0:
-            temp_C4 = 100.0
-        if self.ac_type == 2.0:
-            temp_C4 = 200.0
-        if self.ac_type == 3.0:
-            temp_C4 = 250.0
-        if self.ac_type == 4.0:
-            temp_C4 = 350.0
-        if self.ac_type == 5.0:
-            temp_C4 = 350.0
+        aircraft_type = self.options['ac_type']
+        if aircraft_type == 1.0:
+            temp_c4 = 100.0
+        elif aircraft_type == 2.0:
+            temp_c4 = 200.0
+        elif aircraft_type == 3.0:
+            temp_c4 = 250.0
+        elif aircraft_type in [4.0, 5.0]:
+            temp_c4 = 350.0
+        else:
+            raise ValueError("Unexpected aircraft type")
 
-        C4 = K_C4 * temp_C4 + offset_C4
-
-        outputs['weight_systems:C4'] = C4
+        outputs['weight_systems:C4'] = k_c4 * temp_c4 + offset_c4

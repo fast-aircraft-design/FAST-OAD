@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of life support systems weight
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -14,22 +14,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import numpy as np
-from math import sqrt, pi, cos
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class LifeSupportSystemsWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                                C2 - Life Support Systems
-    # ----------------------------------------------------------------
+    """ Life support systems weight estimation (C2) """
+
     def initialize(self):
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.ac_type = self.options['ac_type']
-
         self.add_input('geometry:fuselage_width_max', val=np.nan)
         self.add_input('geometry:fuselage_height_max', val=np.nan)
         self.add_input('geometry:fuselage_Lcabin', val=np.nan)
@@ -64,73 +58,67 @@ class LifeSupportSystemsWeight(ExplicitComponent):
         self.add_output('weight_systems:C26')
         self.add_output('weight_systems:C27')
 
-    def compute(self, inputs, outputs):
+    # pylint: disable=too-many-locals
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
         width_max = inputs['geometry:fuselage_width_max']
         height_max = inputs['geometry:fuselage_height_max']
         cabin_length = inputs['geometry:fuselage_Lcabin']
-        sweep_LE = inputs['geometry:wing_sweep_0']
+        sweep_leading_edge = inputs['geometry:wing_sweep_0']
         n_engines = inputs['geometry:engine_number']
         span = inputs['geometry:wing_span']
-        nacelle_dia = inputs['geometry:nacelle_dia']
-        NPAX1 = inputs['cabin:NPAX1']
+        nacelle_diameter = inputs['geometry:nacelle_dia']
+        npax1 = inputs['cabin:NPAX1']
         weight_engines = inputs['weight_propulsion:B1']
-        PNC = inputs['cabin:PNC']
-        PNT = inputs['cabin:PNT']
-        K_C21 = inputs['kfactors_c2:K_C21']
-        offset_C21 = inputs['kfactors_c2:offset_C21']
-        K_C22 = inputs['kfactors_c2:K_C22']
-        offset_C22 = inputs['kfactors_c2:offset_C22']
-        K_C23 = inputs['kfactors_c2:K_C23']
-        offset_C23 = inputs['kfactors_c2:offset_C23']
-        K_C24 = inputs['kfactors_c2:K_C24']
-        offset_C24 = inputs['kfactors_c2:offset_C24']
-        K_C25 = inputs['kfactors_c2:K_C25']
-        offset_C25 = inputs['kfactors_c2:offset_C25']
-        K_C26 = inputs['kfactors_c2:K_C26']
-        offset_C26 = inputs['kfactors_c2:offset_C26']
-        K_C27 = inputs['kfactors_c2:K_C27']
-        offset_C27 = inputs['kfactors_c2:offset_C27']
+        cabin_crew = inputs['cabin:PNC']
+        cockpit_crew = inputs['cabin:PNT']
+        k_c21 = inputs['kfactors_c2:K_C21']
+        offset_c21 = inputs['kfactors_c2:offset_C21']
+        k_c22 = inputs['kfactors_c2:K_C22']
+        offset_c22 = inputs['kfactors_c2:offset_C22']
+        k_c23 = inputs['kfactors_c2:K_C23']
+        offset_c23 = inputs['kfactors_c2:offset_C23']
+        k_c24 = inputs['kfactors_c2:K_C24']
+        offset_c24 = inputs['kfactors_c2:offset_C24']
+        k_c25 = inputs['kfactors_c2:K_C25']
+        offset_c25 = inputs['kfactors_c2:offset_C25']
+        k_c26 = inputs['kfactors_c2:K_C26']
+        offset_c26 = inputs['kfactors_c2:offset_C26']
+        k_c27 = inputs['kfactors_c2:K_C27']
+        offset_c27 = inputs['kfactors_c2:offset_C27']
 
-        fus_diam = sqrt(width_max * height_max)
+        fuselage_diameter = np.sqrt(width_max * height_max)
 
         # Mass of insulating system
-        temp_C21 = 9.3 * fus_diam * cabin_length
-        C21 = K_C21 * temp_C21 + offset_C21
+        temp_c21 = 9.3 * fuselage_diameter * cabin_length
+        outputs['weight_systems:C21'] = k_c21 * temp_c21 + offset_c21
 
         # Mass of air conditioning and pressurization system
-        if self.ac_type <= 3.0:
-            temp_C22 = 200 + 27 * NPAX1 ** 0.46 + 7.2 * (n_engines ** 0.7) * (
-                    NPAX1 ** 0.64) + NPAX1 + 0.0029 * NPAX1 ** 1.64
+        if self.options['ac_type'] <= 3.0:
+            temp_c22 = 200 + 27 * npax1 ** 0.46 + 7.2 * (n_engines ** 0.7) * (
+                    npax1 ** 0.64) + npax1 + 0.0029 * npax1 ** 1.64
         else:
-            temp_C22 = 450 + 51 * NPAX1 ** 0.46 + 7.2 * (n_engines ** 0.7) * (
-                    NPAX1 ** 0.64) + NPAX1 + 0.0029 * NPAX1 ** 1.64
-        C22 = K_C22 * temp_C22 + offset_C22
+            temp_c22 = 450 + 51 * npax1 ** 0.46 + 7.2 * (n_engines ** 0.7) * (
+                    npax1 ** 0.64) + npax1 + 0.0029 * npax1 ** 1.64
+        outputs['weight_systems:C22'] = k_c22 * temp_c22 + offset_c22
 
         # Mass of de-icing system
-        temp_C23 = 53 + 9.5 * nacelle_dia * n_engines + 1.9 * (span - width_max) / cos(
-            (sweep_LE / 180. * pi))
-        C23 = K_C23 * temp_C23 + offset_C23
+        temp_c23 = 53 + 9.5 * nacelle_diameter * n_engines + 1.9 * (
+                span - width_max) / np.cos(np.radians(sweep_leading_edge))
+        outputs['weight_systems:C23'] = k_c23 * temp_c23 + offset_c23
 
         # Mass of internal lighting system
-        temp_C24 = 1.4 * cabin_length * fus_diam
-        C24 = K_C24 * temp_C24 + offset_C24
+        temp_c24 = 1.4 * cabin_length * fuselage_diameter
+        outputs['weight_systems:C24'] = k_c24 * temp_c24 + offset_c24
 
         # Mass of seats and installation system
-        temp_C25 = 27 * PNT + 18 * PNC
-        C25 = K_C25 * temp_C25 + offset_C25
+        temp_c25 = 27 * cockpit_crew + 18 * cabin_crew
+        outputs['weight_systems:C25'] = k_c25 * temp_c25 + offset_c25
 
         # Mass of fixed oxygen
-        temp_C26 = 80 + 1.3 * NPAX1
-        C26 = K_C26 * temp_C26 + offset_C26
+        temp_c26 = 80 + 1.3 * npax1
+        outputs['weight_systems:C26'] = k_c26 * temp_c26 + offset_c26
 
         # Mass of permanent security kits
-        temp_C27 = 0.01 * weight_engines + 2.30 * NPAX1
-        C27 = K_C27 * temp_C27 + offset_C27
-
-        outputs['weight_systems:C21'] = C21
-        outputs['weight_systems:C22'] = C22
-        outputs['weight_systems:C23'] = C23
-        outputs['weight_systems:C24'] = C24
-        outputs['weight_systems:C25'] = C25
-        outputs['weight_systems:C26'] = C26
-        outputs['weight_systems:C27'] = C27
+        temp_c27 = 0.01 * weight_engines + 2.30 * npax1
+        outputs['weight_systems:C27'] = k_c27 * temp_c27 + offset_c27

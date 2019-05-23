@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of power systems weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,11 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class PowerSystemsWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                                C1 - Power Systems
-    # ----------------------------------------------------------------
+    """ Power systems weight estimation (C1) """
     def setup(self):
         self.add_input('cabin:NPAX1', val=np.nan)
         self.add_input('weight_airframe:A4', val=np.nan)
@@ -40,30 +36,32 @@ class PowerSystemsWeight(ExplicitComponent):
         self.add_output('weight_systems:C12')
         self.add_output('weight_systems:C13')
 
-    def compute(self, inputs, outputs):
-        NPAX1 = inputs['cabin:NPAX1']
-        A4 = inputs['weight_airframe:A4']
-        MTOW = inputs['weight:MTOW']
-        K_C11 = inputs['kfactors_c1:K_C11']
-        offset_C11 = inputs['kfactors_c1:offset_C11']
-        K_C12 = inputs['kfactors_c1:K_C12']
-        offset_C12 = inputs['kfactors_c1:offset_C12']
-        K_C13 = inputs['kfactors_c1:K_C13']
-        offset_C13 = inputs['kfactors_c1:offset_C13']
-        K_elec = inputs['kfactors_c1:K_elec']
+    # pylint: disable=too-many-locals
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        npax1 = inputs['cabin:NPAX1']
+        flight_controls_weight = inputs['weight_airframe:A4']
+        mtow = inputs['weight:MTOW']
+        k_c11 = inputs['kfactors_c1:K_C11']
+        offset_c11 = inputs['kfactors_c1:offset_C11']
+        k_c12 = inputs['kfactors_c1:K_C12']
+        offset_c12 = inputs['kfactors_c1:offset_C12']
+        k_c13 = inputs['kfactors_c1:K_C13']
+        offset_c13 = inputs['kfactors_c1:offset_C13']
+        k_elec = inputs['kfactors_c1:K_elec']
 
-        # Mass of auxiliairy power unit
-        temp_C11 = 11.3 * NPAX1 ** 0.64
-        C11 = K_C11 * temp_C11 + offset_C11
+        # Mass of auxiliary power unit
+        temp_c11 = 11.3 * npax1 ** 0.64
+        outputs['weight_systems:C11'] = k_c11 * temp_c11 + offset_c11
 
         # Mass of electric system
-        temp_C12 = K_elec * (0.444 * MTOW ** 0.66 + 2.54 * NPAX1 + 0.254 * A4)
-        C12 = K_C12 * temp_C12 + offset_C12
+        temp_c12 = k_elec * (
+                0.444 * mtow ** 0.66
+                + 2.54 * npax1 + 0.254 * flight_controls_weight)
+        outputs['weight_systems:C12'] = k_c12 * temp_c12 + offset_c12
 
         # Mass of the hydraulic system
-        temp_C13 = K_elec * (0.256 * MTOW ** 0.66 + 1.46 * NPAX1 + 0.146 * A4)
-        C13 = K_C13 * temp_C13 + offset_C13
-
-        outputs['weight_systems:C11'] = C11
-        outputs['weight_systems:C12'] = C12
-        outputs['weight_systems:C13'] = C13
+        temp_c13 = k_elec * (
+                0.256 * mtow ** 0.66 + 1.46 * npax1
+                + 0.146 * flight_controls_weight)
+        outputs['weight_systems:C13'] = k_c13 * temp_c13 + offset_c13

@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of flight kit weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -18,31 +18,25 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FlightKitWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                     C6 - Flight Kit
-    # ----------------------------------------------------------------
+    """ Flight kit weight estimation (C6) """
+
     def initialize(self):
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.ac_type = self.options['ac_type']
-
         self.add_input('kfactors_c6:K_C6', val=1.)
         self.add_input('kfactors_c6:offset_C6', val=0.)
 
         self.add_output('weight_systems:C6')
 
-    def compute(self, inputs, outputs):
-        K_C6 = inputs['kfactors_c6:K_C6']
-        offset_C6 = inputs['kfactors_c6:offset_C6']
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        k_c6 = inputs['kfactors_c6:K_C6']
+        offset_c6 = inputs['kfactors_c6:offset_C6']
 
-        if self.ac_type == 1.0:
-            temp_C6 = 10.0
+        if self.options['ac_type'] == 1.0:
+            temp_c6 = 10.0
         else:
-            temp_C6 = 45.0
+            temp_c6 = 45.0
 
-        C6 = K_C6 * temp_C6 + offset_C6
-
-        outputs['weight_systems:C6'] = C6
+        outputs['weight_systems:C6'] = k_c6 * temp_c6 + offset_c6

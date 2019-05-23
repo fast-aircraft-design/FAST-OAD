@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of fixed operational systems weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,11 +19,8 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FixedOperationalSystemsWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                     C5 - Fixed Operational Systems
-    # ----------------------------------------------------------------
+    """ Fixed operational systems weight estimation (C5) """
+
     def setup(self):
         self.add_input('geometry:fuselage_LAV', val=np.nan)
         self.add_input('geometry:fuselage_LAR', val=np.nan)
@@ -37,25 +34,30 @@ class FixedOperationalSystemsWeight(ExplicitComponent):
         self.add_output('weight_systems:C51')
         self.add_output('weight_systems:C52')
 
-    def compute(self, inputs, outputs):
-        LAV = inputs['geometry:fuselage_LAV']
-        LAR = inputs['geometry:fuselage_LAR']
-        fus_length = inputs['geometry:fuselage_length']
+    # pylint: disable=too-many-locals
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        front_section_length = inputs['geometry:fuselage_LAV']
+        aft_section_length = inputs['geometry:fuselage_LAR']
+        fuselage_length = inputs['geometry:fuselage_length']
         front_seat_number_eco = inputs['cabin:front_seat_number_eco']
         l2_wing = inputs['geometry:wing_l2']
-        container_number_front = inputs['cabin:container_number_front']
-        K_C5 = inputs['kfactors_c5:K_C5']
-        offset_C5 = inputs['kfactors_c5:offset_C5']
+        side_by_side_container_number = inputs['cabin:container_number_front']
+        k_c5 = inputs['kfactors_c5:K_C5']
+        offset_c5 = inputs['kfactors_c5:offset_C5']
 
-        L_cyl = fus_length - LAV - LAR
+        cylindrical_section_length = fuselage_length \
+                                     - front_section_length \
+                                     - aft_section_length
 
-        L_cargo = L_cyl + 0.864 * (front_seat_number_eco - 5) - 0.8 * l2_wing
+        cargo_compartment_length = cylindrical_section_length + 0.864 * (
+                front_seat_number_eco - 5) - 0.8 * l2_wing
 
-        temp_C51 = 100.
-        temp_C52 = 23.4 * L_cargo * container_number_front
+        # Radar
+        temp_c51 = 100.
+        outputs['weight_systems:C51'] = k_c5 * temp_c51 + offset_c5
 
-        C51 = K_C5 * temp_C51 + offset_C5
-        C52 = K_C5 * temp_C52 + offset_C5
-
-        outputs['weight_systems:C51'] = C51
-        outputs['weight_systems:C52'] = C52
+        # Cargo container systems
+        temp_c52 = 23.4 * cargo_compartment_length \
+                   * side_by_side_container_number
+        outputs['weight_systems:C52'] = k_c5 * temp_c52 + offset_c5
