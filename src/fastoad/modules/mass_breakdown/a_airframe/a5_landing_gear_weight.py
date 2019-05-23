@@ -21,12 +21,12 @@ class LandingGearWeight(ExplicitComponent):
     """ Landing gear weight estimation (A5) """
 
     def setup(self):
-        self.add_input('weight:MTOW', val=np.nan)
+        self.add_input('weight:MTOW', val=np.nan, units="kg")
         self.add_input('kfactors_a5:K_A5', val=1.)
-        self.add_input('kfactors_a5:offset_A5', val=0.)
+        self.add_input('kfactors_a5:offset_A5', val=0., units="kg")
 
-        self.add_output('weight_airframe:A51')
-        self.add_output('weight_airframe:A52')
+        self.add_output('weight_airframe:A51', units="kg")
+        self.add_output('weight_airframe:A52', units="kg")
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):

@@ -25,15 +25,15 @@ class EmpennageWeight(ExplicitComponent):
         self.options.declare('tail_type', types=float, default=0.)
 
     def setup(self):
-        self.add_input('geometry:ht_area', val=np.nan)
-        self.add_input('geometry:vt_area', val=np.nan)
+        self.add_input('geometry:ht_area', val=np.nan, units="m**2")
+        self.add_input('geometry:vt_area', val=np.nan, units="m**2")
         self.add_input('kfactors_a3:K_A31', val=1.)
-        self.add_input('kfactors_a3:offset_A31', val=0.)
+        self.add_input('kfactors_a3:offset_A31', val=0., units="kg")
         self.add_input('kfactors_a3:K_A32', val=1.)
-        self.add_input('kfactors_a3:offset_A32', val=0.)
+        self.add_input('kfactors_a3:offset_A32', val=0., units="kg")
 
-        self.add_output('weight_airframe:A31')
-        self.add_output('weight_airframe:A32')
+        self.add_output('weight_airframe:A31', units="kg")
+        self.add_output('weight_airframe:A32', units="kg")
 
     # pylint: disable=too-many-locals
     def compute(self, inputs, outputs

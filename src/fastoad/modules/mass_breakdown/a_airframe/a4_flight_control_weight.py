@@ -22,15 +22,15 @@ class FlightControlsWeight(ExplicitComponent):
     """ Flight controls weight estimation (A4) """
 
     def setup(self):
-        self.add_input('geometry:fuselage_length', val=np.nan)
-        self.add_input('geometry:wing_b_50', val=np.nan)
-        self.add_input('n1m1', val=np.nan)
-        self.add_input('n2m2', val=np.nan)
+        self.add_input('geometry:fuselage_length', val=np.nan, units="m")
+        self.add_input('geometry:wing_b_50', val=np.nan, units="m")
+        self.add_input('n1m1', val=np.nan, units="kg")
+        self.add_input('n2m2', val=np.nan, units="kg")
         self.add_input('kfactors_a4:K_fc', val=1.)
         self.add_input('kfactors_a4:K_A4', val=1.)
-        self.add_input('kfactors_a4:offset_A4', val=0.)
+        self.add_input('kfactors_a4:offset_A4', val=0., units="kg")
 
-        self.add_output('weight_airframe:A4')
+        self.add_output('weight_airframe:A4', units="kg")
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):

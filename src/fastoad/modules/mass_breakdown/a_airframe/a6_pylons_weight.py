@@ -25,13 +25,13 @@ class PylonsWeight(ExplicitComponent):
         self.options.declare('engine_location', types=float, default=1.0)
 
     def setup(self):
-        self.add_input('geometry:pylon_wet_area', val=np.nan)
-        self.add_input('weight_propulsion:B1', val=np.nan)
+        self.add_input('geometry:pylon_wet_area', val=np.nan, units="m**2")
+        self.add_input('weight_propulsion:B1', val=np.nan, units="kg")
         self.add_input('geometry:engine_number', val=np.nan)
         self.add_input('kfactors_a6:K_A6', val=1.)
-        self.add_input('kfactors_a6:offset_A6', val=0.)
+        self.add_input('kfactors_a6:offset_A6', val=0., units="kg")
 
-        self.add_output('weight_airframe:A6')
+        self.add_output('weight_airframe:A6', units="kg")
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):

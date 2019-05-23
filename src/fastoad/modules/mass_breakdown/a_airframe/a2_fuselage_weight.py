@@ -21,16 +21,16 @@ class FuselageWeight(ExplicitComponent):
     """ Fuselage weight estimation (A2) """
 
     def setup(self):
-        self.add_input('geometry:fuselage_wet_area', val=np.nan)
-        self.add_input('geometry:fuselage_width_max', val=np.nan)
-        self.add_input('geometry:fuselage_height_max', val=np.nan)
-        self.add_input('n1m1', val=np.nan)
+        self.add_input('geometry:fuselage_wet_area', val=np.nan, units="m**2")
+        self.add_input('geometry:fuselage_width_max', val=np.nan, units="m")
+        self.add_input('geometry:fuselage_height_max', val=np.nan, units="m")
+        self.add_input('n1m1', val=np.nan, units="kg")
         self.add_input('kfactors_a2:K_A2', val=1.)
-        self.add_input('kfactors_a2:offset_A2', val=0.)
+        self.add_input('kfactors_a2:offset_A2', val=0., units="kg")
         self.add_input('kfactors_a2:K_tr', val=1.)
         self.add_input('kfactors_a2:K_fus', val=1.)
 
-        self.add_output('weight_airframe:A2')
+        self.add_output('weight_airframe:A2', units="kg")
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
