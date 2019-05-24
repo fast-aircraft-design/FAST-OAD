@@ -25,7 +25,7 @@ class CrewWeight(ExplicitComponent):
         self.add_input('cabin:PNT', val=np.nan)
         self.add_input('cabin:PNC', val=np.nan)
 
-        self.add_output('weight_crew:E')
+        self.add_output('weight_crew:E', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
