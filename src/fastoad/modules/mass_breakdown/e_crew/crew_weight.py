@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of crew weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,21 +19,17 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class CrewWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                     E - Crew
-    # ----------------------------------------------------------------
+    """ crew weight estimation (E) """
+
     def setup(self):
         self.add_input('cabin:PNT', val=np.nan)
         self.add_input('cabin:PNC', val=np.nan)
 
         self.add_output('weight_crew:E')
 
-    def compute(self, inputs, outputs):
-        PNT = inputs['cabin:PNT']
-        PNC = inputs['cabin:PNC']
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        cockpit_crew = inputs['cabin:PNT']
+        cabin_crew = inputs['cabin:PNC']
 
-        E = 85 * PNT + 75 * PNC
-
-        outputs['weight_crew:E'] = E
+        outputs['weight_crew:E'] = 85 * cockpit_crew + 75 * cabin_crew
