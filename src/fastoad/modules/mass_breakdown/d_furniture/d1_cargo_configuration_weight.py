@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of cargo configuration weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,17 +19,12 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class CargoConfigurationWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                     D1 - Cargo configuration
-    # ----------------------------------------------------------------
+    """ Cargo configuration weight estimation (D1) """
+
     def initialize(self):
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.ac_type = self.options['ac_type']
-
         self.add_input('cabin:NPAX1', val=np.nan)
         self.add_input('cabin:container_number', val=np.nan)
         self.add_input('cabin:pallet_number', val=np.nan)
@@ -39,21 +34,20 @@ class CargoConfigurationWeight(ExplicitComponent):
 
         self.add_output('weight_furniture:D1')
 
-    def compute(self, inputs, outputs):
-        NPAX1 = inputs['cabin:NPAX1']
-        front_seat_number_eco = inputs['cabin:front_seat_number_eco']
-        container_number = inputs['cabin:container_number']
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        npax1 = inputs['cabin:NPAX1']
+        side_by_side_eco_seat_count = inputs['cabin:front_seat_number_eco']
+        container_count = inputs['cabin:container_number']
         pallet_number = inputs['cabin:pallet_number']
-        K_D1 = inputs['kfactors_d1:K_D1']
-        offset_D1 = inputs['kfactors_d1:offset_D1']
+        k_d1 = inputs['kfactors_d1:K_D1']
+        offset_d1 = inputs['kfactors_d1:offset_D1']
 
-        if self.ac_type == 6.0:
-            if front_seat_number_eco <= 6.0:
-                temp_D1 = 0.351 * (NPAX1 - 38)
+        if self.options['ac_type'] == 6.0:
+            if side_by_side_eco_seat_count <= 6.0:
+                temp_d1 = 0.351 * (npax1 - 38)
             else:
-                temp_D1 = 85 * container_number + 110 * pallet_number
-            D1 = K_D1 * temp_D1 + offset_D1
+                temp_d1 = 85 * container_count + 110 * pallet_number
+            outputs['weight_furniture:D1'] = k_d1 * temp_d1 + offset_d1
         else:
-            D1 = 0.
-
-        outputs['weight_furniture:D1'] = D1
+            outputs['weight_furniture:D1'] = 0.

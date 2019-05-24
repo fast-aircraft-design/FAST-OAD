@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of passenger seats weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,38 +19,33 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class PassengerSeatsWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                     D2 - Passenger Seats
-    # ----------------------------------------------------------------
+    """ Passenger seats weight estimation (D2) """
+
     def initialize(self):
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.ac_type = self.options['ac_type']
-
         self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('kfactors_d2:K_D2', val=1.)
         self.add_input('kfactors_d2:offset_D2', val=0.)
 
         self.add_output('weight_furniture:D2')
 
-    def compute(self, inputs, outputs):
-        NPAX = inputs['tlar:NPAX']
-        K_D2 = inputs['kfactors_d2:K_D2']
-        offset_D2 = inputs['kfactors_d2:offset_D2']
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        npax = inputs['tlar:NPAX']
+        k_d2 = inputs['kfactors_d2:K_D2']
+        offset_d2 = inputs['kfactors_d2:offset_D2']
 
-        if self.ac_type == 1.0:
-            K_PS = 9.0
-        if (self.ac_type == 2.0) or (self.ac_type == 3.0):
-            K_PS = 10.0
-        if (self.ac_type == 4.0) or (self.ac_type == 5.0):
-            K_PS = 11.0
-        if self.ac_type == 6.0:
-            K_PS = 0.
+        aircraft_type = self.options['ac_type']
+        if aircraft_type == 1.0:
+            k_ps = 9.0
+        if aircraft_type in (2.0, 3.0):
+            k_ps = 10.0
+        if aircraft_type in (4.0, 5.0):
+            k_ps = 11.0
+        if aircraft_type == 6.0:
+            k_ps = 0.
 
-        temp_D2 = K_PS * NPAX
-        D2 = K_D2 * temp_D2 + offset_D2
-
-        outputs['weight_furniture:D2'] = D2
+        temp_d2 = k_ps * npax
+        outputs['weight_furniture:D2'] = k_d2 * temp_d2 + offset_d2

@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of food water weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,32 +19,26 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FoodWaterWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                     D3 - Food and Water
-    # ----------------------------------------------------------------
+    """ Passenger food water weight estimation (D3) """
+
     def initialize(self):
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.ac_type = self.options['ac_type']
-
         self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('kfactors_d3:K_D3', val=1.)
         self.add_input('kfactors_d3:offset_D3', val=0.)
 
         self.add_output('weight_furniture:D3')
 
-    def compute(self, inputs, outputs):
-        NPAX = inputs['tlar:NPAX']
-        K_D3 = inputs['kfactors_d3:K_D3']
-        offset_D3 = inputs['kfactors_d3:offset_D3']
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        npax = inputs['tlar:NPAX']
+        k_d3 = inputs['kfactors_d3:K_D3']
+        offset_d3 = inputs['kfactors_d3:offset_D3']
 
-        if self.ac_type == 6.0:
-            D3 = 0.
+        if self.options['ac_type'] == 6.0:
+            outputs['weight_furniture:D3'] = 0.
         else:
-            temp_D3 = 8.75 * NPAX
-            D3 = K_D3 * temp_D3 + offset_D3
-
-        outputs['weight_furniture:D3'] = D3
+            temp_d3 = 8.75 * npax
+            outputs['weight_furniture:D3'] = k_d3 * temp_d3 + offset_d3

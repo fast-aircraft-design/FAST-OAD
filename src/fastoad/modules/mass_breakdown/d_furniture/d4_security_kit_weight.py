@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of security kit weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,32 +19,26 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class SecurityKitWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                     D4 - Security kit
-    # ----------------------------------------------------------------
+    """ Passenger security kit weight estimation (D4) """
+
     def initialize(self):
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.ac_type = self.options['ac_type']
-
         self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('kfactors_d4:K_D4', val=1.)
         self.add_input('kfactors_d4:offset_D4', val=0.)
 
         self.add_output('weight_furniture:D4')
 
-    def compute(self, inputs, outputs):
-        NPAX = inputs['tlar:NPAX']
-        K_D4 = inputs['kfactors_d4:K_D4']
-        offset_D4 = inputs['kfactors_d4:offset_D4']
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        npax = inputs['tlar:NPAX']
+        k_d4 = inputs['kfactors_d4:K_D4']
+        offset_d4 = inputs['kfactors_d4:offset_D4']
 
-        if self.ac_type == 6.0:
-            D4 = 0.
+        if self.options['ac_type'] == 6.0:
+            outputs['weight_furniture:D4'] = 0.
         else:
-            temp_D4 = 1.5 * NPAX
-            D4 = K_D4 * temp_D4 + offset_D4
-
-        outputs['weight_furniture:D4'] = D4
+            temp_d4 = 1.5 * npax
+            outputs['weight_furniture:D4'] = k_d4 * temp_d4 + offset_d4

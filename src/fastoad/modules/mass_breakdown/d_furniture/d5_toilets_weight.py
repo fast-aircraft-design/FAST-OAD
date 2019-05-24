@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of toilets weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,40 +19,37 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class ToiletsWeight(ExplicitComponent):
-    # ----------------------------------------------------------------
-    #                     COMPONENTS WEIGHT ESTIMATION
-    # ----------------------------------------------------------------
-    #                     D5 - Toilet
-    # ----------------------------------------------------------------
+    """ Toilets kit weight estimation (D5) """
+
     def initialize(self):
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.ac_type = self.options['ac_type']
-
         self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('kfactors_d5:K_D5', val=1.)
         self.add_input('kfactors_d5:offset_D5', val=0.)
 
         self.add_output('weight_furniture:D5')
 
-    def compute(self, inputs, outputs):
-        NPAX = inputs['tlar:NPAX']
-        K_D5 = inputs['kfactors_d5:K_D5']
-        offset_D5 = inputs['kfactors_d5:offset_D5']
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        npax = inputs['tlar:NPAX']
+        k_d5 = inputs['kfactors_d5:K_D5']
+        offset_d5 = inputs['kfactors_d5:offset_D5']
 
-        if self.ac_type == 1.0:
-            K_toilet = 0.1
-        if self.ac_type == 2.0:
-            K_toilet = 0.5
-        if self.ac_type == 3.0:
-            K_toilet = 1.0
-        if (self.ac_type == 4.0) or (self.ac_type == 5.0):
-            K_toilet = 1.5
-        if self.ac_type == 6.0:
-            K_toilet = 0.
+        aircraft_type = self.options['ac_type']
+        if aircraft_type == 1.0:
+            k_toilet = 0.1
+        elif aircraft_type == 2.0:
+            k_toilet = 0.5
+        elif aircraft_type == 3.0:
+            k_toilet = 1.0
+        elif aircraft_type in (4.0, 5.0):
+            k_toilet = 1.5
+        elif aircraft_type == 6.0:
+            k_toilet = 0.
+        else:
+            raise ValueError("Unexpected aircraft type")
 
-        temp_D5 = K_toilet * NPAX
-        D5 = K_D5 * temp_D5 + offset_D5
-
-        outputs['weight_furniture:D5'] = D5
+        temp_d5 = k_toilet * npax
+        outputs['weight_furniture:D5'] = k_d5 * temp_d5 + offset_d5
