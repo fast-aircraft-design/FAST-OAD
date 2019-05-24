@@ -113,7 +113,7 @@ class LinkWeightVariables(ExplicitComponent):
         :param subpart_names:
         """
         for name in get_subpart_weight_variables(category_name, subpart_names):
-            self.add_input(name, val=np.nan)
+            self.add_input(name, val=np.nan, units='kg')
 
     @staticmethod
     def __compute_category_weight(inputs: Vector, category_name: str,

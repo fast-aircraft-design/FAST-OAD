@@ -30,21 +30,21 @@ class Loads(ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:wing_span', val=np.nan)
-        self.add_input('weight:MZFW', val=np.nan)
-        self.add_input('weight:MFW', val=np.nan)
-        self.add_input('weight:MTOW', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing_span', val=np.nan, units='m')
+        self.add_input('weight:MZFW', val=np.nan, units='kg')
+        self.add_input('weight:MFW', val=np.nan, units='kg')
+        self.add_input('weight:MTOW', val=np.nan, units='kg')
         self.add_input('aerodynamics:Cl_alpha', val=np.nan)
-        self.add_input('loadcase1:U_gust', val=np.nan)
-        self.add_input('loadcase1:altitude', val=np.nan)
-        self.add_input('loadcase1:Vc_EAS', val=np.nan)
-        self.add_input('loadcase2:U_gust', val=np.nan)
-        self.add_input('loadcase2:altitude', val=np.nan)
-        self.add_input('loadcase2:Vc_EAS', val=np.nan)
+        self.add_input('loadcase1:U_gust', val=np.nan, units='m/s')
+        self.add_input('loadcase1:altitude', val=np.nan, units='ft')
+        self.add_input('loadcase1:Vc_EAS', val=np.nan, units='kt')
+        self.add_input('loadcase2:U_gust', val=np.nan, units='m/s')
+        self.add_input('loadcase2:altitude', val=np.nan, units='ft')
+        self.add_input('loadcase2:Vc_EAS', val=np.nan, units='kt')
 
-        self.add_output('n1m1')
-        self.add_output('n2m2')
+        self.add_output('n1m1', units='kg')
+        self.add_output('n2m2', units='kg')
 
     # pylint: disable=too-many-locals
     # pylint: disable=invalid-name

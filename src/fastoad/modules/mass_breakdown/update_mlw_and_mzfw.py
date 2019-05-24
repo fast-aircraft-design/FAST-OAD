@@ -25,11 +25,11 @@ class UpdateMLWandMZFW(ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input('weight:OEW', val=np.nan)
-        self.add_input('weight:Max_PL', val=np.nan)
+        self.add_input('weight:OEW', val=np.nan, units='kg')
+        self.add_input('weight:Max_PL', val=np.nan, units='kg')
 
-        self.add_output('weight:MZFW')
-        self.add_output('weight:MLW')
+        self.add_output('weight:MZFW', units='kg')
+        self.add_output('weight:MLW', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
