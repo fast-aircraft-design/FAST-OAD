@@ -22,17 +22,17 @@ class FixedOperationalSystemsWeight(ExplicitComponent):
     """ Fixed operational systems weight estimation (C5) """
 
     def setup(self):
-        self.add_input('geometry:fuselage_LAV', val=np.nan)
-        self.add_input('geometry:fuselage_LAR', val=np.nan)
-        self.add_input('geometry:fuselage_length', val=np.nan)
+        self.add_input('geometry:fuselage_LAV', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_LAR', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
         self.add_input('cabin:front_seat_number_eco', val=np.nan)
-        self.add_input('geometry:wing_l2', val=np.nan)
+        self.add_input('geometry:wing_l2', val=np.nan, units='m')
         self.add_input('cabin:container_number_front', val=np.nan)
         self.add_input('kfactors_c5:K_C5', val=1.)
-        self.add_input('kfactors_c5:offset_C5', val=0.)
+        self.add_input('kfactors_c5:offset_C5', val=0., units='kg')
 
-        self.add_output('weight_systems:C51')
-        self.add_output('weight_systems:C52')
+        self.add_output('weight_systems:C51', units='kg')
+        self.add_output('weight_systems:C52', units='kg')
 
     # pylint: disable=too-many-locals
     def compute(self, inputs, outputs

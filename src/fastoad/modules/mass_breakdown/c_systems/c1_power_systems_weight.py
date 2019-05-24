@@ -22,19 +22,19 @@ class PowerSystemsWeight(ExplicitComponent):
     """ Power systems weight estimation (C1) """
     def setup(self):
         self.add_input('cabin:NPAX1', val=np.nan)
-        self.add_input('weight_airframe:A4', val=np.nan)
-        self.add_input('weight:MTOW', val=np.nan)
+        self.add_input('weight_airframe:A4', val=np.nan, units='kg')
+        self.add_input('weight:MTOW', val=np.nan, units='kg')
         self.add_input('kfactors_c1:K_C11', val=1.)
-        self.add_input('kfactors_c1:offset_C11', val=0.)
+        self.add_input('kfactors_c1:offset_C11', val=0., units='kg')
         self.add_input('kfactors_c1:K_C12', val=1.)
-        self.add_input('kfactors_c1:offset_C12', val=0.)
+        self.add_input('kfactors_c1:offset_C12', val=0., units='kg')
         self.add_input('kfactors_c1:K_C13', val=1.)
-        self.add_input('kfactors_c1:offset_C13', val=0.)
+        self.add_input('kfactors_c1:offset_C13', val=0., units='kg')
         self.add_input('kfactors_c1:K_elec', val=1.)
 
-        self.add_output('weight_systems:C11')
-        self.add_output('weight_systems:C12')
-        self.add_output('weight_systems:C13')
+        self.add_output('weight_systems:C11', units='kg')
+        self.add_output('weight_systems:C12', units='kg')
+        self.add_output('weight_systems:C13', units='kg')
 
     # pylint: disable=too-many-locals
     def compute(self, inputs, outputs

@@ -25,12 +25,12 @@ class NavigationSystemsWeight(ExplicitComponent):
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.add_input('geometry:fuselage_length', val=np.nan)
-        self.add_input('geometry:wing_b_50', val=np.nan)
+        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
+        self.add_input('geometry:wing_b_50', val=np.nan, units='m')
         self.add_input('kfactors_c3:K_C3', val=1.)
-        self.add_input('kfactors_c3:offset_C3', val=0.)
+        self.add_input('kfactors_c3:offset_C3', val=0., units='kg')
 
-        self.add_output('weight_systems:C3')
+        self.add_output('weight_systems:C3', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):

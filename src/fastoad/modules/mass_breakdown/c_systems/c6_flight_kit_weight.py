@@ -25,9 +25,9 @@ class FlightKitWeight(ExplicitComponent):
 
     def setup(self):
         self.add_input('kfactors_c6:K_C6', val=1.)
-        self.add_input('kfactors_c6:offset_C6', val=0.)
+        self.add_input('kfactors_c6:offset_C6', val=0., units='kg')
 
-        self.add_output('weight_systems:C6')
+        self.add_output('weight_systems:C6', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):

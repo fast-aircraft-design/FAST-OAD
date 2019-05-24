@@ -25,9 +25,9 @@ class TransmissionSystemsWeight(ExplicitComponent):
 
     def setup(self):
         self.add_input('kfactors_c4:K_C4', val=1.)
-        self.add_input('kfactors_c4:offset_C4', val=0.)
+        self.add_input('kfactors_c4:offset_C4', val=0., units='kg')
 
-        self.add_output('weight_systems:C4')
+        self.add_output('weight_systems:C4', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
