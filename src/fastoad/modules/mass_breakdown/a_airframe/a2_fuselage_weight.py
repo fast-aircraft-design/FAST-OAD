@@ -18,6 +18,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FuselageWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Fuselage weight estimation (A2) """
 
     def setup(self):

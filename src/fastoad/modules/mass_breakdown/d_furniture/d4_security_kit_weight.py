@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class SecurityKitWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Passenger security kit weight estimation (D4) """
 
     def initialize(self):

@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FixedOperationalSystemsWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Fixed operational systems weight estimation (C5) """
 
     def setup(self):

@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class PylonsWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Pylons weight estimation (A6) """
 
     def initialize(self):

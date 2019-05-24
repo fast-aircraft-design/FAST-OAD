@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class PaintWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Paint weight estimation (A7) """
 
     def setup(self):

@@ -18,6 +18,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class LifeSupportSystemsWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Life support systems weight estimation (C2) """
 
     def initialize(self):

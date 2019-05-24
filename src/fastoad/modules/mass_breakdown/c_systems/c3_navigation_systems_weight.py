@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class NavigationSystemsWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Navigation systems weight estimation (C3) """
 
     def initialize(self):

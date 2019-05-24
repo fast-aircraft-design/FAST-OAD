@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FuelLinesWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Fuel lines weight estimation (B2) """
 
     def setup(self):

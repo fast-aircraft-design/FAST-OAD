@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FoodWaterWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Passenger food water weight estimation (D3) """
 
     def initialize(self):

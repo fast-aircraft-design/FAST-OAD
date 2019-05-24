@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class ToiletsWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Toilets kit weight estimation (D5) """
 
     def initialize(self):

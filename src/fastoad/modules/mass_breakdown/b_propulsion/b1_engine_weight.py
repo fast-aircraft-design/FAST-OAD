@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class EngineWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Engine weight estimation (B1) """
 
     def setup(self):

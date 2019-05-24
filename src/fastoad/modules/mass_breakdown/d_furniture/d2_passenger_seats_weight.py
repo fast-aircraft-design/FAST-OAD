@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class PassengerSeatsWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Passenger seats weight estimation (D2) """
 
     def initialize(self):

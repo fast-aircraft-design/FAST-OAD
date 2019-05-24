@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class CargoConfigurationWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Cargo configuration weight estimation (D1) """
 
     def initialize(self):

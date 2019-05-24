@@ -18,6 +18,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class LandingGearWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Landing gear weight estimation (A5) """
 
     def setup(self):

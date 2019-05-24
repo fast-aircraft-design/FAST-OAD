@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class PowerSystemsWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Power systems weight estimation (C1) """
     def setup(self):
         self.add_input('cabin:NPAX1', val=np.nan)

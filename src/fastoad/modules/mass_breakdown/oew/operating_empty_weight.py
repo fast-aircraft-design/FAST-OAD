@@ -45,6 +45,7 @@ class OperatingEmptyWeight(Group):
     """
 
     def initialize(self):
+        # TODO: Manage options through constants or enums
         self.options.declare('engine_location', types=float, default=1.0)
         self.options.declare('tail_type', types=float, default=0.)
         self.options.declare('ac_type', types=float, default=2.0)

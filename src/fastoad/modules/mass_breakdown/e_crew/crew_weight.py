@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class CrewWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ crew weight estimation (E) """
 
     def setup(self):

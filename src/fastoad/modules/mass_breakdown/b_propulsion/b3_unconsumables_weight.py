@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class UnconsumablesWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ unconsumables weight estimation (B2) """
 
     def setup(self):

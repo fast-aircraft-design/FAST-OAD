@@ -18,6 +18,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FlightKitWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Flight kit weight estimation (C6) """
 
     def initialize(self):

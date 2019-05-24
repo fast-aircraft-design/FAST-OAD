@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FlightControlsWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Flight controls weight estimation (A4) """
 
     def setup(self):

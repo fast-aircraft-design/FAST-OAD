@@ -18,6 +18,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class TransmissionSystemsWeight(ExplicitComponent):
+    # TODO: Document equations. Cite sources
     """ Transmissions systems weight estimation (C4) """
 
     def initialize(self):
