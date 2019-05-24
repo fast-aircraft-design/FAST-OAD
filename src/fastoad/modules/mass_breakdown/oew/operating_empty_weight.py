@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Estimation of Operating Empty Weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -14,6 +14,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from openmdao.api import Group
 
 from fastoad.modules.mass_breakdown.a_airframe import EmpennageWeight, \
@@ -38,6 +39,10 @@ from .link_weight_variables import LinkWeightVariables
 
 
 class OperatingEmptyWeight(Group):
+    """ Operating Empty Weight (OEW) estimation
+
+    This group aggregates weight from all components of the aircraft
+    """
 
     def initialize(self):
         self.options.declare('engine_location', types=float, default=1.0)
@@ -45,52 +50,65 @@ class OperatingEmptyWeight(Group):
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.engine_location = self.options['engine_location']
-        self.tail_type = self.options['tail_type']
-        self.ac_type = self.options['ac_type']
-
         # Airframe
         self.add_subsystem('loads', Loads(), promotes=['*'])
         self.add_subsystem('wing_weight', WingWeight(), promotes=['*'])
         self.add_subsystem('fuselage_weight', FuselageWeight(), promotes=['*'])
-        self.add_subsystem('empennage_weight', EmpennageWeight(engine_location=self.engine_location,
-                                                               tail_type=self.tail_type),
+        self.add_subsystem('empennage_weight', EmpennageWeight(),
                            promotes=['*'])
-        self.add_subsystem('flight_controls_weight', FlightControlsWeight(), promotes=['*'])
-        self.add_subsystem('landing_gear_weight', LandingGearWeight(), promotes=['*'])
+        self.add_subsystem('flight_controls_weight', FlightControlsWeight(),
+                           promotes=['*'])
+        self.add_subsystem('landing_gear_weight', LandingGearWeight(),
+                           promotes=['*'])
         # Engine have to be computed before pylons
         self.add_subsystem('engines_weight', EngineWeight(), promotes=['*'])
-        self.add_subsystem('pylons_weight', PylonsWeight(engine_location=self.engine_location),
-                           promotes=['*'])
+        self.add_subsystem('pylons_weight', PylonsWeight(), promotes=['*'])
         self.add_subsystem('paint_weight', PaintWeight(), promotes=['*'])
         # Propulsion
-        self.add_subsystem('fuel_lines_weight', FuelLinesWeight(), promotes=['*'])
-        self.add_subsystem('unconsumables_weight', UnconsumablesWeight(), promotes=['*'])
+        self.add_subsystem('fuel_lines_weight', FuelLinesWeight(),
+                           promotes=['*'])
+        self.add_subsystem('unconsumables_weight', UnconsumablesWeight(),
+                           promotes=['*'])
         # Systems
-        self.add_subsystem('power_systems_weight', PowerSystemsWeight(), promotes=['*'])
+        self.add_subsystem('power_systems_weight', PowerSystemsWeight(),
+                           promotes=['*'])
         self.add_subsystem('life_support_systems_weight',
-                           LifeSupportSystemsWeight(ac_type=self.ac_type),
+                           LifeSupportSystemsWeight(),
                            promotes=['*'])
         self.add_subsystem('navigation_systems_weight',
-                           NavigationSystemsWeight(ac_type=self.ac_type),
+                           NavigationSystemsWeight(),
                            promotes=['*'])
         self.add_subsystem('transmission_systems_weight',
-                           TransmissionSystemsWeight(ac_type=self.ac_type), promotes=['*'])
-        self.add_subsystem('fixed_operational_systems_weight', FixedOperationalSystemsWeight(),
+                           TransmissionSystemsWeight(),
                            promotes=['*'])
-        self.add_subsystem('flight_kit_weight', FlightKitWeight(ac_type=self.ac_type),
+        self.add_subsystem('fixed_operational_systems_weight',
+                           FixedOperationalSystemsWeight(),
+                           promotes=['*'])
+        self.add_subsystem('flight_kit_weight', FlightKitWeight(),
                            promotes=['*'])
         # Cargo and furniture
         self.add_subsystem('cargo_configuration_weight',
-                           CargoConfigurationWeight(ac_type=self.ac_type),
+                           CargoConfigurationWeight(),
                            promotes=['*'])
-        self.add_subsystem('passenger_seats_weight', PassengerSeatsWeight(ac_type=self.ac_type),
+        self.add_subsystem('passenger_seats_weight',
+                           PassengerSeatsWeight(),
                            promotes=['*'])
-        self.add_subsystem('food_water_weight', FoodWaterWeight(ac_type=self.ac_type),
+        self.add_subsystem('food_water_weight',
+                           FoodWaterWeight(),
                            promotes=['*'])
-        self.add_subsystem('security_kit_weight', SecurityKitWeight(ac_type=self.ac_type),
+        self.add_subsystem('security_kit_weight',
+                           SecurityKitWeight(),
                            promotes=['*'])
-        self.add_subsystem('toilets_weight', ToiletsWeight(ac_type=self.ac_type), promotes=['*'])
+        self.add_subsystem('toilets_weight', ToiletsWeight(), promotes=['*'])
         # Crew
         self.add_subsystem('crew_weight', CrewWeight(), promotes=['*'])
-        self.add_subsystem('link_variables', LinkWeightVariables(), promotes=['*'])
+        self.add_subsystem('link_variables', LinkWeightVariables(),
+                           promotes=['*'])
+
+    def configure(self):
+        # Update options for all subsystems
+        for key in self.options:
+            value = self.options[key]
+            for subsystem in self.system_iter():
+                if key in subsystem.options:
+                    subsystem.options[key] = value
