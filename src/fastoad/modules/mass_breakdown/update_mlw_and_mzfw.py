@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Main component for mass breakdown
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,6 +19,10 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class UpdateMLWandMZFW(ExplicitComponent):
+    """
+    Computes Maximum Landing Weight and Maximum Zero Fuel Weight from
+    Overall Empty Weight and Maximum Payload.
+    """
 
     def setup(self):
         self.add_input('weight:OEW', val=np.nan)
@@ -27,7 +31,8 @@ class UpdateMLWandMZFW(ExplicitComponent):
         self.add_output('weight:MZFW')
         self.add_output('weight:MLW')
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
         oew = inputs['weight:OEW'][0]
         max_pl = inputs['weight:Max_PL'][0]
         mzfw = oew + max_pl

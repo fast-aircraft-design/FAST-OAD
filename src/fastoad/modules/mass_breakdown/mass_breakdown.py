@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Main component for mass breakdown
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -23,19 +23,20 @@ from fastoad.modules.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
 
 
 class MassBreakdown(Group):
+    """
+    The top group for solving mass breakdown
+    """
 
     def initialize(self):
+        # TODO: Manage options through constants or enums
         self.options.declare('engine_location', types=float, default=1.0)
         self.options.declare('tail_type', types=float, default=0.)
         self.options.declare('ac_type', types=float, default=2.0)
 
     def setup(self):
-        self.engine_location = self.options['engine_location']
-        self.tail_type = self.options['tail_type']
-        self.ac_type = self.options['ac_type']
-
         self.add_subsystem('oew', OperatingEmptyWeight(), promotes=['*'])
-        self.add_subsystem('update_mzfw_and_mlw', UpdateMLWandMZFW(), promotes=['*'])
+        self.add_subsystem('update_mzfw_and_mlw', UpdateMLWandMZFW(),
+                           promotes=['*'])
 
     def configure(self):
         # Solvers setup
@@ -46,3 +47,12 @@ class MassBreakdown(Group):
         self.linear_solver = LinearBlockGS()
         #        self.linear_solver = ScipyKrylov()
         self.linear_solver.options['iprint'] = 0
+
+        # Update options for all subsystems
+        # TODO: this way of passing options through children should be
+        #  factorized
+        for key in self.options:
+            value = self.options[key]
+            for subsystem in self.system_iter():
+                if key in subsystem.options:
+                    subsystem.options[key] = value
