@@ -69,13 +69,13 @@ class LinkWeightVariables(ExplicitComponent):
         self.__add_weight_inputs('weight_propulsion', propulsion_names)
         self.__add_weight_inputs('weight_systems', systems_names)
         self.__add_weight_inputs('weight_furniture', furniture_names)
-        self.add_input('weight_crew:E', val=np.nan)
+        self.add_input('weight_crew:E', val=np.nan, units='kg')
 
-        self.add_output('weight_airframe:A')
-        self.add_output('weight_propulsion:B')
-        self.add_output('weight_systems:C')
-        self.add_output('weight_furniture:D')
-        self.add_output('weight:OEW')
+        self.add_output('weight_airframe:A', units='kg')
+        self.add_output('weight_propulsion:B', units='kg')
+        self.add_output('weight_systems:C', units='kg')
+        self.add_output('weight_furniture:D', units='kg')
+        self.add_output('weight:OEW', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
