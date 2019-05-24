@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA
+Load case computation
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -21,9 +21,14 @@ from fastoad.utils.physics.atmosphere import atmosphere
 
 
 class Loads(ExplicitComponent):
-    # --------------------------------------------------------------
-    #                     LOADS CALCULATIONS
-    # --------------------------------------------------------------
+    # TODO: Document equations. Cite sources
+    """
+    Computes gust load cases
+
+    Load case 1: with wings with almost no fuel
+    Load case 2: at maximum take-off width
+    """
+
     def setup(self):
         self.add_input('geometry:wing_area', val=np.nan)
         self.add_input('geometry:wing_span', val=np.nan)
@@ -41,48 +46,65 @@ class Loads(ExplicitComponent):
         self.add_output('n1m1')
         self.add_output('n2m2')
 
-    def compute(self, inputs, outputs):
-        DENSITY_SL = 1.225
+    # pylint: disable=too-many-locals
+    # pylint: disable=invalid-name
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        sea_level_density = 1.225
         wing_area = inputs['geometry:wing_area']
         span = inputs['geometry:wing_span']
-        MZFW = inputs['weight:MZFW']
-        MFW = inputs['weight:MFW']
-        MTOW = inputs['weight:MTOW']
-        CL_alpha = inputs['aerodynamics:Cl_alpha']
-        U_gust1 = inputs['loadcase1:U_gust']
+        mzfw = inputs['weight:MZFW']
+        mfw = inputs['weight:MFW']
+        mtow = inputs['weight:MTOW']
+        cl_alpha = inputs['aerodynamics:Cl_alpha']
+        u_gust1 = inputs['loadcase1:U_gust']
         alt_1 = inputs['loadcase1:altitude']
-        Vc_EAS1 = inputs['loadcase1:Vc_EAS']
-        U_gust2 = inputs['loadcase2:U_gust']
+        vc_eas1 = inputs['loadcase1:Vc_EAS']
+        u_gust2 = inputs['loadcase2:U_gust']
         alt_2 = inputs['loadcase2:altitude']
-        Vc_EAS2 = inputs['loadcase2:Vc_EAS']
+        vc_eas2 = inputs['loadcase2:Vc_EAS']
 
         # calculation of mean geometric chord
         chord_geom = wing_area / span
 
         # load case #1
-        m1 = 1.05 * MZFW
-        n_gust_1 = self.__n_gust(m1, wing_area, atmosphere(alt_1)[1], DENSITY_SL, chord_geom,
-                                 Vc_EAS1, CL_alpha,
-                                 U_gust1)
+        m1 = 1.05 * mzfw
+        n_gust_1 = self.__n_gust(m1, wing_area, atmosphere(alt_1)[1],
+                                 sea_level_density, chord_geom, vc_eas1,
+                                 cl_alpha, u_gust1)
         n1 = 1.5 * max(2.5, n_gust_1)
         n1m1 = n1 * m1
 
         # load case #2
-        n_gust_2 = self.__n_gust(MTOW, wing_area, atmosphere(alt_2)[1], DENSITY_SL, chord_geom,
-                                 Vc_EAS2, CL_alpha,
-                                 U_gust2)
+        n_gust_2 = self.__n_gust(mtow, wing_area, atmosphere(alt_2)[1],
+                                 sea_level_density, chord_geom, vc_eas2,
+                                 cl_alpha, u_gust2)
         n2 = 1.5 * max(2.5, n_gust_2)
-        MCV = min(0.8 * MFW, MTOW - MZFW)
-        n2m2 = n2 * (MTOW - 0.55 * MCV)
+        mcv = min(0.8 * mfw, mtow - mzfw)
+        n2m2 = n2 * (mtow - 0.55 * mcv)
 
         outputs['n1m1'] = n1m1
         outputs['n2m2'] = n2m2
 
     @staticmethod
-    def __n_gust(mass, wing_area, rho, rho_SL, chord_geom, vc_EAS, CL_alpha, U_gust):
-        mu_g = 2 * mass / rho / wing_area / chord_geom / CL_alpha
-        K_g = 0.88 * mu_g / (5.3 + mu_g)
-        n_gust = 1 + (rho_SL / 2 / 9.81) * K_g * U_gust * \
-                 (vc_EAS * 0.514444 * CL_alpha / mass / wing_area)
+    def __n_gust(mass, wing_area, rho, sea_level_density, chord_geom,
+                 vc_eas, cl_alpha, u_gust):
+        # TODO: better dosctring
+        """
+
+        :param mass:
+        :param wing_area:
+        :param rho:
+        :param sea_level_density:
+        :param chord_geom:
+        :param vc_eas: Vc (Equivalent AirSpeed)
+        :param cl_alpha:
+        :param u_gust:
+        :return:
+        """
+        mu_g = 2 * mass / rho / wing_area / chord_geom / cl_alpha
+        k_g = 0.88 * mu_g / (5.3 + mu_g)  # attenuation factor
+        n_gust = 1 + (sea_level_density / 2 / 9.81) * k_g * u_gust * (
+                vc_eas * 0.514444 * cl_alpha / mass / wing_area)
 
         return n_gust
