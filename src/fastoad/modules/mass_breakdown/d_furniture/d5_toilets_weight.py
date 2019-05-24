@@ -27,9 +27,9 @@ class ToiletsWeight(ExplicitComponent):
     def setup(self):
         self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('kfactors_d5:K_D5', val=1.)
-        self.add_input('kfactors_d5:offset_D5', val=0.)
+        self.add_input('kfactors_d5:offset_D5', val=0., units='kg')
 
-        self.add_output('weight_furniture:D5')
+        self.add_output('weight_furniture:D5', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):

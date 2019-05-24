@@ -27,9 +27,9 @@ class FoodWaterWeight(ExplicitComponent):
     def setup(self):
         self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('kfactors_d3:K_D3', val=1.)
-        self.add_input('kfactors_d3:offset_D3', val=0.)
+        self.add_input('kfactors_d3:offset_D3', val=0., units='kg')
 
-        self.add_output('weight_furniture:D3')
+        self.add_output('weight_furniture:D3', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):

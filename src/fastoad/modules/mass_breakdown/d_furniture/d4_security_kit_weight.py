@@ -27,9 +27,9 @@ class SecurityKitWeight(ExplicitComponent):
     def setup(self):
         self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('kfactors_d4:K_D4', val=1.)
-        self.add_input('kfactors_d4:offset_D4', val=0.)
+        self.add_input('kfactors_d4:offset_D4', val=0., units='kg')
 
-        self.add_output('weight_furniture:D4')
+        self.add_output('weight_furniture:D4', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):

@@ -27,9 +27,9 @@ class PassengerSeatsWeight(ExplicitComponent):
     def setup(self):
         self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('kfactors_d2:K_D2', val=1.)
-        self.add_input('kfactors_d2:offset_D2', val=0.)
+        self.add_input('kfactors_d2:offset_D2', val=0., units='kg')
 
-        self.add_output('weight_furniture:D2')
+        self.add_output('weight_furniture:D2', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):

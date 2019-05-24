@@ -30,9 +30,9 @@ class CargoConfigurationWeight(ExplicitComponent):
         self.add_input('cabin:pallet_number', val=np.nan)
         self.add_input('cabin:front_seat_number_eco', val=np.nan)
         self.add_input('kfactors_d1:K_D1', val=1.)
-        self.add_input('kfactors_d1:offset_D1', val=0.)
+        self.add_input('kfactors_d1:offset_D1', val=0., units='kg')
 
-        self.add_output('weight_furniture:D1')
+        self.add_output('weight_furniture:D1', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
