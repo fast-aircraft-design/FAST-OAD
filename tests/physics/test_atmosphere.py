@@ -1,15 +1,15 @@
-#      This file is part of FAST : A framework for rapid Overall Aircraft Design
-#      Copyright (C) 2019  ONERA/ISAE
-#      FAST is free software: you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation, either version 3 of the License, or
-#      (at your option) any later version.
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#      You should have received a copy of the GNU General Public License
-#      along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from numbers import Number
 
 import numpy as np
@@ -20,11 +20,12 @@ from fastoad.utils.physics.atmosphere import Atmosphere
 
 
 def test_atmosphere():
-    # Altitudes in meters
-    # Values at disa=0 from
-    #       "Advanced Aircraft Design (Egbert TORENBEEK, Oxford, UK: John Wiley & Sons Ltd, 2013) Appendix B, p.397-398"
-    # Values at disa=10 from https://www.digitaldutch.com/atmoscalc/, with a 0.98749 factor on viscosity because
-    # at sea level and disa=0, the calculator gives 1.81206e-5 for dynamic viscosity, though ISA assumption is 1.7894e-5
+    # Altitudes in meters Values at disa=0 from "Advanced Aircraft Design (
+    # Egbert TORENBEEK, Oxford, UK: John Wiley & Sons Ltd, 2013) Appendix B,
+    # p.397-398" Values at disa=10 from
+    # https://www.digitaldutch.com/atmoscalc/, with a 0.98749 factor on
+    # viscosity because at sea level and disa=0, the calculator gives
+    # 1.81206e-5 for dynamic viscosity, though ISA assumption is 1.7894e-5
     expectations = np.array([
         (0, 0, 288.15, 1.225, 101325, 1.460E-05, 340.29),
         (500, 0, 284.90, 1.1673, 95461, 1.519E-05, 338.37),
@@ -63,8 +64,8 @@ def test_atmosphere():
         (3000, 10, 278.65, 0.87650, 70108, 1.9877E-5, 334.64),
         (10000, 10, 233.15, 0.39500, 26436, 3.8106e-05, 306.10),
         (14000, 10, 226.65, 0.2167, 14102, 6.7808e-05, 301.80)
-    ], dtype=[('alt', 'f8'), ('dT', 'f4'), ('T', 'f4'), ('rho', 'f4'), ('P', 'f4'), ('visc', 'f4'),
-              ('SoS', 'f4')]
+    ], dtype=[('alt', 'f8'), ('dT', 'f4'), ('T', 'f4'), ('rho', 'f4')
+        , ('P', 'f4'), ('visc', 'f4'), ('SoS', 'f4')]
     )
 
     for values in expectations:
@@ -75,7 +76,8 @@ def test_atmosphere():
         assert values['T'] == pytest.approx(atm.temperature, rel=1e-4)
         assert values['rho'] == pytest.approx(atm.density, rel=1e-3)
         assert values['P'] == pytest.approx(atm.pressure, rel=1e-4)
-        assert values['visc'] == pytest.approx(atm.kinematic_viscosity, rel=1e-2)
+        assert values['visc'] == pytest.approx(atm.kinematic_viscosity,
+                                               rel=1e-2)
         assert values['SoS'] == pytest.approx(atm.speed_of_sound, rel=1e-3)
 
         # Checking with altitude provided as one-element list
@@ -85,7 +87,8 @@ def test_atmosphere():
         assert values['T'] == pytest.approx(atm.temperature, rel=1e-4)
         assert values['rho'] == pytest.approx(atm.density, rel=1e-3)
         assert values['P'] == pytest.approx(atm.pressure, rel=1e-4)
-        assert values['visc'] == pytest.approx(atm.kinematic_viscosity, rel=1e-2)
+        assert values['visc'] == pytest.approx(atm.kinematic_viscosity,
+                                               rel=1e-2)
         assert values['SoS'] == pytest.approx(atm.speed_of_sound, rel=1e-3)
 
     for delta_t in [0, 10]:
@@ -96,18 +99,24 @@ def test_atmosphere():
         assert isinstance(alt, np.ndarray)
         assert len(alt.shape) == 1
         atm = Atmosphere(alt, delta_t)
-        assert expectations['T'][idx] == pytest.approx(atm.temperature, rel=1e-4)
+        assert expectations['T'][idx] == pytest.approx(atm.temperature,
+                                                       rel=1e-4)
         assert expectations['rho'][idx] == pytest.approx(atm.density, rel=1e-3)
         assert expectations['P'][idx] == pytest.approx(atm.pressure, rel=1e-4)
-        assert expectations['visc'][idx] == pytest.approx(atm.kinematic_viscosity, rel=1e-2)
-        assert expectations['SoS'][idx] == pytest.approx(atm.speed_of_sound, rel=1e-3)
+        assert expectations['visc'][idx] == pytest.approx(
+            atm.kinematic_viscosity, rel=1e-2)
+        assert expectations['SoS'][idx] == pytest.approx(atm.speed_of_sound,
+                                                         rel=1e-3)
 
         # Checking with altitude provided as a list
         alt = (expectations['alt'][idx] / foot).tolist()
         assert isinstance(alt, list)
         atm = Atmosphere(alt, delta_t)
-        assert expectations['T'][idx] == pytest.approx(atm.temperature, rel=1e-4)
+        assert expectations['T'][idx] == pytest.approx(atm.temperature,
+                                                       rel=1e-4)
         assert expectations['rho'][idx] == pytest.approx(atm.density, rel=1e-3)
         assert expectations['P'][idx] == pytest.approx(atm.pressure, rel=1e-4)
-        assert expectations['visc'][idx] == pytest.approx(atm.kinematic_viscosity, rel=1e-2)
-        assert expectations['SoS'][idx] == pytest.approx(atm.speed_of_sound, rel=1e-3)
+        assert expectations['visc'][idx] == pytest.approx(
+            atm.kinematic_viscosity, rel=1e-2)
+        assert expectations['SoS'][idx] == pytest.approx(atm.speed_of_sound,
+                                                         rel=1e-3)
