@@ -1,43 +1,28 @@
 """
-    Estimation of horizontal tail volume coefficient
+    FAST - Copyright (c) 2016 ONERA ISAE
 """
 
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
-#  FAST is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 from fast.atmosphere import atmosphere
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeHTVolCoeff(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Horizontal tail volume coefficient estimation """
-    
+
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
 
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('cg_airframe:A51', val=np.nan)
-        self.add_input('cg_airframe:A52', val=np.nan)
-        self.add_input('weight:MTOW', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:wing_l0', val=np.nan)
-        self.add_input('cg:required_cg_range', val=np.nan)
+        self.add_input('cg_airframe:A51', val=16.)
+        self.add_input('cg_airframe:A52', val=3.)
+        self.add_input('weight:MTOW', val=74000.)
+        self.add_input('geometry:wing_area', val=124.)
+        self.add_input('geometry:wing_l0', val=4.2)
+        self.add_input('cg:required_cg_range', val=0.3)
         
-        self.add_output('delta_lg')
-        self.add_output('geometry:ht_vol_coeff')
+        self.add_output('delta_lg', val=13.)
+        self.add_output('geometry:ht_vol_coeff', val=1.)
         
         self.declare_partials('delta_lg', ['cg_airframe:A51', 'cg_airframe:A52'], method=deriv_method)
         self.declare_partials('geometry:ht_vol_coeff', '*', method=deriv_method)

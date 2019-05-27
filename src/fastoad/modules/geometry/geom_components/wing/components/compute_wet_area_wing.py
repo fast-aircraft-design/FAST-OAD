@@ -1,25 +1,10 @@
 """
-    Estimation of wing wet area
+    FAST - Copyright (c) 2016 ONERA ISAE
 """
 
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
-#  FAST is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeWetAreaWing(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Wing wet area estimation """
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
@@ -27,13 +12,13 @@ class ComputeWetAreaWing(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:wing_l2', val=np.nan)
-        self.add_input('geometry:wing_y2', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:fuselage_width_max', val=np.nan)
+        self.add_input('geometry:wing_l2', val=6.)
+        self.add_input('geometry:wing_y2', val=2.)
+        self.add_input('geometry:wing_area', val=124.)
+        self.add_input('geometry:fuselage_width_max', val=4.)
         
-        self.add_output('geometry:wing_area_pf')
-        self.add_output('geometry:wing_wet_area')
+        self.add_output('geometry:wing_area_pf', val=50.)
+        self.add_output('geometry:wing_wet_area', val=200.)
         
         self.declare_partials('geometry:wing_area_pf', ['geometry:wing_area', 'geometry:wing_y2',
                                                         'geometry:wing_l2'], method=deriv_method)

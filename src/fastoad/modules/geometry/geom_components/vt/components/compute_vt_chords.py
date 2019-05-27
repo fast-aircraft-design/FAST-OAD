@@ -1,27 +1,12 @@
 """
-    Estimation of vertical tail chords and span
+    FAST - Copyright (c) 2016 ONERA ISAE
 """
 
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
-#  FAST is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 import math
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeVTChords(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Vertical tail chords and span estimation """
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
@@ -29,13 +14,13 @@ class ComputeVTChords(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:vt_aspect_ratio', val=np.nan)
-        self.add_input('geometry:vt_area', val=np.nan)
-        self.add_input('geometry:vt_taper_ratio', val=np.nan)
+        self.add_input('geometry:vt_aspect_ratio', val=1.5)
+        self.add_input('geometry:vt_area', val=45.)
+        self.add_input('geometry:vt_taper_ratio', val=0.3)
 
-        self.add_output('geometry:vt_span')
-        self.add_output('geometry:vt_root_chord')
-        self.add_output('geometry:vt_tip_chord')
+        self.add_output('geometry:vt_span', val=10.)
+        self.add_output('geometry:vt_root_chord', val=6.)
+        self.add_output('geometry:vt_tip_chord', val=2.)
         
         self.declare_partials('geometry:vt_span', ['geometry:vt_aspect_ratio', 'geometry:vt_area'], method=deriv_method)
         self.declare_partials('geometry:vt_root_chord', '*', method=deriv_method)

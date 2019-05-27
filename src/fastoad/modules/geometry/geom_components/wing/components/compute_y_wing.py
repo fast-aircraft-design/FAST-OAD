@@ -1,43 +1,28 @@
 """
-    Estimation of wing Ys (sections span)
+    FAST - Copyright (c) 2016 ONERA ISAE
 """
 
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
-#  FAST is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 import math
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeYwing(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Wing Ys estimation """
-    
+        
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
 
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:wing_aspect_ratio', val=np.nan)
-        self.add_input('geometry:fuselage_width_max', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:wing_break', val=np.nan)
+        self.add_input('geometry:wing_aspect_ratio', val=9.48)
+        self.add_input('geometry:fuselage_width_max', val=4.)
+        self.add_input('geometry:wing_area', val=124.)
+        self.add_input('geometry:wing_break', val=0.4)
         
-        self.add_output('geometry:wing_span')
-        self.add_output('geometry:wing_y2')
-        self.add_output('geometry:wing_y3')
-        self.add_output('geometry:wing_y4')
+        self.add_output('geometry:wing_span', val=32.)
+        self.add_output('geometry:wing_y2', val=2.)
+        self.add_output('geometry:wing_y3', val=4.)
+        self.add_output('geometry:wing_y4', val=16.)
         
         self.declare_partials('geometry:wing_span', ['geometry:wing_area', 'geometry:wing_aspect_ratio'], method=deriv_method)
         self.declare_partials('geometry:wing_y2', 'geometry:fuselage_width_max', method=deriv_method)
