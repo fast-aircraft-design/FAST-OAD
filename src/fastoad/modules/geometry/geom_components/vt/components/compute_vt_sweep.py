@@ -1,12 +1,27 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of vertical tail sweeps
 """
 
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import numpy as np
 import math
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeVTSweep(ExplicitComponent):
+    # TODO: Document equations. Cite sources
+    """ Vertical tail sweeps estimation """
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
@@ -14,13 +29,13 @@ class ComputeVTSweep(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:vt_span', val=10.)
-        self.add_input('geometry:vt_root_chord', val=6.)
-        self.add_input('geometry:vt_tip_chord', val=2.)
-        self.add_input('geometry:vt_sweep_25', val=35.)
+        self.add_input('geometry:vt_span', val=np.nan)
+        self.add_input('geometry:vt_root_chord', val=np.nan)
+        self.add_input('geometry:vt_tip_chord', val=np.nan)
+        self.add_input('geometry:vt_sweep_25', val=np.nan)
         
-        self.add_output('geometry:vt_sweep_0', val=45.)
-        self.add_output('geometry:vt_sweep_100', val=10.)
+        self.add_output('geometry:vt_sweep_0')
+        self.add_output('geometry:vt_sweep_100')
         
         self.declare_partials('geometry:vt_sweep_0', '*', method=deriv_method)
         self.declare_partials('geometry:vt_sweep_100', '*', method=deriv_method)
