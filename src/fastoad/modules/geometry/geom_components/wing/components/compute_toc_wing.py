@@ -1,7 +1,20 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of wing ToC 
 """
 
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import numpy as np
 import os
 import math
 
@@ -10,6 +23,8 @@ from fast.Geometry.functions.airfoil_reshape import airfoil_reshape
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeToCWing(ExplicitComponent):
+    # TODO: Document equations. Cite sources
+    """ Wing ToC estimation """
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
@@ -17,13 +32,13 @@ class ComputeToCWing(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('tlar:cruise_Mach', val=0.78)
-        self.add_input('geometry:wing_sweep_25', val=25.)
+        self.add_input('tlar:cruise_Mach', val=np.nan)
+        self.add_input('geometry:wing_sweep_25', val=np.nan)
         
-        self.add_output('geometry:wing_toc_aero', val=0.128)
-        self.add_output('geometry:wing_toc_root', val=0.128)
-        self.add_output('geometry:wing_toc_kink', val=0.128)
-        self.add_output('geometry:wing_toc_tip', val=0.128)
+        self.add_output('geometry:wing_toc_aero')
+        self.add_output('geometry:wing_toc_root')
+        self.add_output('geometry:wing_toc_kink')
+        self.add_output('geometry:wing_toc_tip')
 
         self.declare_partials('geometry:wing_toc_aero', '*', method=deriv_method)
         self.declare_partials('geometry:wing_toc_root', '*', method=deriv_method)
@@ -39,7 +54,7 @@ class ComputeToCWing(ExplicitComponent):
         el_break = 0.94 * el_aero
         el_ext = 0.86 * el_aero
         
-        #Aifoil reshape according toc in different sections
+        #Airfoil reshape according toc in different sections
         f_path_resources = os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir,
                                         os.pardir, os.pardir, os.pardir,'resources')
         f_path_ori = os.path.join(f_path_resources, 'BACJ.txt')
