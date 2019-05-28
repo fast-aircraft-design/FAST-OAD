@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 XML reading based on XPath
 """
@@ -14,11 +13,12 @@ XML reading based on XPath
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Optional, List, Tuple, Union
+from typing import Optional, List, Tuple, Union, TextIO
 
 from lxml import etree
 
-UNIT_ATTRIBUTE = 'unit'
+from .constants import UNIT_ATTRIBUTE
+
 """label of tag attribute for providing units as a string"""
 
 
@@ -51,7 +51,7 @@ class XPathReader:
     See https://www.w3.org/TR/1999/REC-xpath-19991116/ for more info on XPath
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename: TextIO):
         """
         Constructor. Will parse the whole indicated file.
         :param filename: XML file

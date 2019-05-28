@@ -201,7 +201,6 @@ def test_compute_flight_controls_weight(input_xml: XPathReader):
     val = outputs['weight_airframe:A4']
     assert val == pytest.approx(716, abs=1)
 
-
 def test_compute_landing_gear_weight(input_xml: XPathReader):
     """ Tests landing gear weight computation from sample XML data """
     inputs = {
