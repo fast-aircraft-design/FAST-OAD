@@ -1,12 +1,27 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of horizontal tail center of gravity
 """
 
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import numpy as np
 import math 
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeHTcg(ExplicitComponent):
+    # TODO: Document equations. Cite sources
+    """ Horizontal tail center of gravity estimation """
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
@@ -14,16 +29,16 @@ class ComputeHTcg(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:ht_root_chord', val=4.5)
-        self.add_input('geometry:ht_tip_chord', val=1.5)
-        self.add_input('geometry:ht_lp', val=16.)
-        self.add_input('geometry:ht_span', val=12.)
-        self.add_input('geometry:wing_position', val=16.)
-        self.add_input('geometry:ht_sweep_25', val=28.)
-        self.add_input('geometry:ht_length', val=3.5)
-        self.add_input('geometry:ht_x0', val=16.)
+        self.add_input('geometry:ht_root_chord', val=np.nan)
+        self.add_input('geometry:ht_tip_chord', val=np.nan)
+        self.add_input('geometry:ht_lp', val=np.nan)
+        self.add_input('geometry:ht_span', val=np.nan)
+        self.add_input('geometry:wing_position', val=np.nan)
+        self.add_input('geometry:ht_sweep_25', val=np.nan)
+        self.add_input('geometry:ht_length', val=np.nan)
+        self.add_input('geometry:ht_x0', val=np.nan)
         
-        self.add_output('cg_airframe:A31', val=30.)
+        self.add_output('cg_airframe:A31')
         
         self.declare_partials('cg_airframe:A31', '*', method=deriv_method)
         

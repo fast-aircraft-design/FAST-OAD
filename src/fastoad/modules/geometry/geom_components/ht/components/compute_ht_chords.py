@@ -1,12 +1,27 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of horizontal tail chords and span
 """
 
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import numpy as np
 import math
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeHTChord(ExplicitComponent):
+    # TODO: Document equations. Cite sources
+    """ Horizontal tail chords and span estimation """
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
@@ -14,13 +29,13 @@ class ComputeHTChord(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:ht_aspect_ratio', val=4.5)
-        self.add_input('geometry:ht_area', val=70.)
-        self.add_input('geometry:ht_taper_ratio', val=0.3)
+        self.add_input('geometry:ht_aspect_ratio', val=np.nan)
+        self.add_input('geometry:ht_area', val=np.nan)
+        self.add_input('geometry:ht_taper_ratio', val=np.nan)
         
-        self.add_output('geometry:ht_span', val=12.)
-        self.add_output('geometry:ht_root_chord', val=4.5)
-        self.add_output('geometry:ht_tip_chord', val=1.5)
+        self.add_output('geometry:ht_span')
+        self.add_output('geometry:ht_root_chord')
+        self.add_output('geometry:ht_tip_chord')
         
         self.declare_partials('geometry:ht_span', ['geometry:ht_area', 'geometry:ht_aspect_ratio'], method=deriv_method)
         self.declare_partials('geometry:ht_root_chord', '*', method=deriv_method)

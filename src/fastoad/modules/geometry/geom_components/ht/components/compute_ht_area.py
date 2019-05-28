@@ -1,11 +1,26 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of horizontal tail area
 """
 
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeHTArea(ExplicitComponent):
-    
+    # TODO: Document equations. Cite sources
+    """ Horizontal tail area estimation """
+
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
 
@@ -18,16 +33,16 @@ class ComputeHTArea(ExplicitComponent):
         self.ac_family = self.options['ac_family']
         self.tail_type = self.options['tail_type']
         
-        self.add_input('geometry:fuselage_length', val=37.)
-        self.add_input('geometry:wing_position', val=16.)
-        self.add_input('geometry:ht_vol_coeff', val=1.)
-        self.add_input('geometry:wing_l0', val=4.2)
-        self.add_input('geometry:wing_area', val=124.)
-        self.add_input('geometry:ht_area', val=70.)
+        self.add_input('geometry:fuselage_length', val=np.nan)
+        self.add_input('geometry:wing_position', val=np.nan)
+        self.add_input('geometry:ht_vol_coeff', val=np.nan)
+        self.add_input('geometry:wing_l0', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan)
+        self.add_input('geometry:ht_area', val=np.nan)
         
-        self.add_output('geometry:ht_lp', val=16.)
-        self.add_output('geometry:ht_wet_area', val=140.)
-        self.add_output('delta_cm_takeoff', val=0.)
+        self.add_output('geometry:ht_lp')
+        self.add_output('geometry:ht_wet_area')
+        self.add_output('delta_cm_takeoff')
         
         self.declare_partials('geometry:ht_lp', ['geometry:fuselage_length', 'geometry:wing_position'], method=deriv_method)
         self.declare_partials('geometry:ht_wet_area', 'geometry:ht_area', method=deriv_method)     
