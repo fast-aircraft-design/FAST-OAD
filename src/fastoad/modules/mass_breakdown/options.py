@@ -1,6 +1,7 @@
 """
-Estimation of Operating Empty Weight
+Module for management of options and factorizing their definition.
 """
+
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,4 +14,21 @@ Estimation of Operating Empty Weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from .operating_empty_weight import OperatingEmptyWeight
+
+from openmdao.core.group import Group
+
+ENGINE_LOCATION_OPTION = 'engine_location'
+TAIL_TYPE_OPTION = 'tail_type'
+AIRCRAFT_TYPE_OPTION = 'ac_type'
+
+
+class OpenMdaoOptionDispatcherGroup(Group):
+    """ Helper class for transmitting option values to subsystems during self.configure() """
+
+    def configure(self):
+        """ Update options for all subsystems """
+        for key in self.options:
+            value = self.options[key]
+            for subsystem in self.system_iter():
+                if key in subsystem.options:
+                    subsystem.options[key] = value

@@ -16,19 +16,21 @@ Estimation of life support systems weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+
 
 class LifeSupportSystemsWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Life support systems weight estimation (C2) """
 
     def initialize(self):
-        self.options.declare('ac_type', types=float, default=2.0)
+        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
         self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
         self.add_input('geometry:fuselage_Lcabin', val=np.nan, units='m')
-        self.add_input('geometry:wing_sweep_0', val=np.nan, units='deg')
+        self.add_input('geometry:wing_sweep_0', val=np.nan, units='deg')  # TODO : as radians ?
         self.add_input('geometry:nacelle_dia', val=np.nan, units='m')
         self.add_input('geometry:engine_number', val=np.nan)
         self.add_input('cabin:NPAX1', val=np.nan)
@@ -95,7 +97,7 @@ class LifeSupportSystemsWeight(ExplicitComponent):
         outputs['weight_systems:C21'] = k_c21 * temp_c21 + offset_c21
 
         # Mass of air conditioning and pressurization system
-        if self.options['ac_type'] <= 3.0:
+        if self.options[AIRCRAFT_TYPE_OPTION] <= 3.0:
             temp_c22 = 200 + 27 * npax1 ** 0.46 + 7.2 * (n_engines ** 0.7) * (
                     npax1 ** 0.64) + npax1 + 0.0029 * npax1 ** 1.64
         else:

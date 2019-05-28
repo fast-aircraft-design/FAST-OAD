@@ -16,13 +16,15 @@ Estimation of flight kit weight
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+
 
 class FlightKitWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Flight kit weight estimation (C6) """
 
     def initialize(self):
-        self.options.declare('ac_type', types=float, default=2.0)
+        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
         self.add_input('kfactors_c6:K_C6', val=1.)
@@ -35,7 +37,7 @@ class FlightKitWeight(ExplicitComponent):
         k_c6 = inputs['kfactors_c6:K_C6']
         offset_c6 = inputs['kfactors_c6:offset_C6']
 
-        if self.options['ac_type'] == 1.0:
+        if self.options[AIRCRAFT_TYPE_OPTION] == 1.0:
             temp_c6 = 10.0
         else:
             temp_c6 = 45.0

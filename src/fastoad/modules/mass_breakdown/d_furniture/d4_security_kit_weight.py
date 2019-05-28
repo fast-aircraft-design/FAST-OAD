@@ -17,13 +17,15 @@ Estimation of security kit weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+
 
 class SecurityKitWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Passenger security kit weight estimation (D4) """
 
     def initialize(self):
-        self.options.declare('ac_type', types=float, default=2.0)
+        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
         self.add_input('tlar:NPAX', val=np.nan)
@@ -38,7 +40,7 @@ class SecurityKitWeight(ExplicitComponent):
         k_d4 = inputs['kfactors_d4:K_D4']
         offset_d4 = inputs['kfactors_d4:offset_D4']
 
-        if self.options['ac_type'] == 6.0:
+        if self.options[AIRCRAFT_TYPE_OPTION] == 6.0:
             outputs['weight_furniture:D4'] = 0.
         else:
             temp_d4 = 1.5 * npax

@@ -21,6 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 class PowerSystemsWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Power systems weight estimation (C1) """
+
     def setup(self):
         self.add_input('cabin:NPAX1', val=np.nan)
         self.add_input('weight_airframe:A4', val=np.nan, units='kg')
@@ -62,7 +63,5 @@ class PowerSystemsWeight(ExplicitComponent):
         outputs['weight_systems:C12'] = k_c12 * temp_c12 + offset_c12
 
         # Mass of the hydraulic system
-        temp_c13 = k_elec * (
-                0.256 * mtow ** 0.66 + 1.46 * npax1
-                + 0.146 * flight_controls_weight)
+        temp_c13 = k_elec * (0.256 * mtow ** 0.66 + 1.46 * npax1 + 0.146 * flight_controls_weight)
         outputs['weight_systems:C13'] = k_c13 * temp_c13 + offset_c13

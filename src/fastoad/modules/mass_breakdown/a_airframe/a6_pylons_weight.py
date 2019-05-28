@@ -17,22 +17,24 @@ Estimation of pylons weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.mass_breakdown.options import ENGINE_LOCATION_OPTION
+
 
 class PylonsWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Pylons weight estimation (A6) """
 
     def initialize(self):
-        self.options.declare('engine_location', types=float, default=1.0)
+        self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
 
     def setup(self):
-        self.add_input('geometry:pylon_wet_area', val=np.nan, units="m**2")
-        self.add_input('weight_propulsion:B1', val=np.nan, units="kg")
+        self.add_input('geometry:pylon_wet_area', val=np.nan, units='m**2')
+        self.add_input('weight_propulsion:B1', val=np.nan, units='kg')
         self.add_input('geometry:engine_number', val=np.nan)
         self.add_input('kfactors_a6:K_A6', val=1.)
-        self.add_input('kfactors_a6:offset_A6', val=0., units="kg")
+        self.add_input('kfactors_a6:offset_A6', val=0., units='kg')
 
-        self.add_output('weight_airframe:A6', units="kg")
+        self.add_output('weight_airframe:A6', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
@@ -42,9 +44,9 @@ class PylonsWeight(ExplicitComponent):
         k_a6 = inputs['kfactors_a6:K_A6']
         offset_a6 = inputs['kfactors_a6:offset_A6']
 
-        if self.options['engine_location'] == 1.0:
-            temp_a6 = 1.2 * wet_area_pylon ** 0.5 * (23 + 0.588 * (
-                    weight_engine / n_engines) ** 0.708) * n_engines
+        if self.options[ENGINE_LOCATION_OPTION] == 1.0:
+            temp_a6 = 1.2 * wet_area_pylon ** 0.5 * n_engines * (
+                    23 + 0.588 * (weight_engine / n_engines) ** 0.708)
         else:
             temp_a6 = 0.08 * weight_engine
 

@@ -22,12 +22,12 @@ class LandingGearWeight(ExplicitComponent):
     """ Landing gear weight estimation (A5) """
 
     def setup(self):
-        self.add_input('weight:MTOW', val=np.nan, units="kg")
+        self.add_input('weight:MTOW', val=np.nan, units='kg')
         self.add_input('kfactors_a5:K_A5', val=1.)
-        self.add_input('kfactors_a5:offset_A5', val=0., units="kg")
+        self.add_input('kfactors_a5:offset_A5', val=0., units='kg')
 
-        self.add_output('weight_airframe:A51', units="kg")
-        self.add_output('weight_airframe:A52', units="kg")
+        self.add_output('weight_airframe:A51', units='kg')
+        self.add_output('weight_airframe:A52', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
@@ -35,8 +35,7 @@ class LandingGearWeight(ExplicitComponent):
         k_a5 = inputs['kfactors_a5:K_A5']
         offset_a5 = inputs['kfactors_a5:offset_A5']
 
-        temp_a51 = 18.1 + 0.131 * mtow ** 0.75 + 0.019 * mtow \
-                   + 2.23E-5 * mtow ** 1.5
+        temp_a51 = 18.1 + 0.131 * mtow ** 0.75 + 0.019 * mtow + 2.23E-5 * mtow ** 1.5
         temp_a52 = 9.1 + 0.082 * mtow ** 0.75 + 2.97E-6 * mtow ** 1.5
 
         a51 = k_a5 * temp_a51 + offset_a5

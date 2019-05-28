@@ -17,13 +17,15 @@ Estimation of toilets weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+
 
 class ToiletsWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Toilets kit weight estimation (D5) """
 
     def initialize(self):
-        self.options.declare('ac_type', types=float, default=2.0)
+        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
         self.add_input('tlar:NPAX', val=np.nan)
@@ -38,7 +40,7 @@ class ToiletsWeight(ExplicitComponent):
         k_d5 = inputs['kfactors_d5:K_D5']
         offset_d5 = inputs['kfactors_d5:offset_D5']
 
-        aircraft_type = self.options['ac_type']
+        aircraft_type = self.options[AIRCRAFT_TYPE_OPTION]
         if aircraft_type == 1.0:
             k_toilet = 0.1
         elif aircraft_type == 2.0:
