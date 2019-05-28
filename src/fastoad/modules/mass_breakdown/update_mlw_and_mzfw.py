@@ -31,8 +31,7 @@ class UpdateMLWandMZFW(ExplicitComponent):
         self.add_output('weight:MZFW', units='kg')
         self.add_output('weight:MLW', units='kg')
 
-    def compute(self, inputs, outputs
-                , discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         oew = inputs['weight:OEW'][0]
         max_pl = inputs['weight:Max_PL'][0]
         mzfw = oew + max_pl

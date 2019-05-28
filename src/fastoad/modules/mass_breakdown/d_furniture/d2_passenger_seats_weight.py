@@ -17,13 +17,15 @@ Estimation of passenger seats weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+
 
 class PassengerSeatsWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Passenger seats weight estimation (D2) """
 
     def initialize(self):
-        self.options.declare('ac_type', types=float, default=2.0)
+        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
         self.add_input('tlar:NPAX', val=np.nan)
@@ -38,7 +40,7 @@ class PassengerSeatsWeight(ExplicitComponent):
         k_d2 = inputs['kfactors_d2:K_D2']
         offset_d2 = inputs['kfactors_d2:offset_D2']
 
-        aircraft_type = self.options['ac_type']
+        aircraft_type = self.options[AIRCRAFT_TYPE_OPTION]
         if aircraft_type == 1.0:
             k_ps = 9.0
         if aircraft_type in (2.0, 3.0):

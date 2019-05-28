@@ -23,11 +23,11 @@ class PaintWeight(ExplicitComponent):
     """ Paint weight estimation (A7) """
 
     def setup(self):
-        self.add_input('geometry:S_total', val=np.nan, units="m**2")
+        self.add_input('geometry:S_total', val=np.nan, units='m**2')
         self.add_input('kfactors_a7:K_A7', val=1.)
-        self.add_input('kfactors_a7:offset_A7', val=0., units="kg")
+        self.add_input('kfactors_a7:offset_A7', val=0., units='kg')
 
-        self.add_output('weight_airframe:A7', units="kg")
+        self.add_output('weight_airframe:A7', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
