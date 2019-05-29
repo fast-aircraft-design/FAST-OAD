@@ -15,4 +15,7 @@ Constants for the XML module
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 UNIT_ATTRIBUTE = 'unit'
+"""label of tag attribute for providing units as a string"""
+
 ROOT_TAG = 'aircraft'
+"""name of root element for XML files"""

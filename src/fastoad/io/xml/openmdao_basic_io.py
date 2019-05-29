@@ -13,6 +13,19 @@ Defines how OpenMDAO variables are serialized to XML
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from collections import namedtuple
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from typing import List
 
 import numpy as np
@@ -26,6 +39,9 @@ from fastoad.io.serialize import AbstractOpenMDAOVariableIO, SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE, ROOT_TAG
 
 PATH_SEPARATOR = ':'
+
+_OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
+""" Simple structure for standard OpenMDAO variable """
 
 
 class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
@@ -122,24 +138,18 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
             tree.write(self._data_source, pretty_print=True)
 
     @staticmethod
-    def __get_outputs(system: SystemSubclass) -> List['OutputVariable']:
+    def __get_outputs(system: SystemSubclass) -> List[_OutputVariable]:
         """ returns the list of outputs from provided system """
-        outputs: List[OutputVariable] = []
+
+        outputs: List[_OutputVariable] = []
         if isinstance(system, IndepVarComp):
             # Outputs are accessible using private member
             # pylint: disable=protected-access
             for (name, value, attributes) in system._indep_external:
-                outputs.append(OutputVariable(name, value, attributes['units']))
+                outputs.append(_OutputVariable(name, value, attributes['units']))
         else:
             # Using .list_outputs(), that requires the model to have run
             for (name, attributes) in system.list_outputs():
                 outputs.append(
-                    OutputVariable(name, attributes['value'], attributes.get('units', None)))
+                    _OutputVariable(name, attributes['value'], attributes.get('units', None)))
         return outputs
-
-
-class OutputVariable:
-    def __init__(self, name: str, value: Vector, units: str):
-        self.name = name
-        self.value = value
-        self.units = units
