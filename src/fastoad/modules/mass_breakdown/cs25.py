@@ -17,7 +17,7 @@ Load case computation
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.utils.physics.atmosphere import atmosphere
+from fastoad.utils.physics.atmosphere import Atmosphere
 
 
 class Loads(ExplicitComponent):
@@ -69,13 +69,13 @@ class Loads(ExplicitComponent):
 
         # load case #1
         m1 = 1.05 * mzfw
-        n_gust_1 = self.__n_gust(m1, wing_area, atmosphere(alt_1)[1], sea_level_density,
+        n_gust_1 = self.__n_gust(m1, wing_area, Atmosphere(alt_1).density, sea_level_density,
                                  chord_geom, vc_eas1, cl_alpha, u_gust1)
         n1 = 1.5 * max(2.5, n_gust_1)
         n1m1 = n1 * m1
 
         # load case #2
-        n_gust_2 = self.__n_gust(mtow, wing_area, atmosphere(alt_2)[1], sea_level_density,
+        n_gust_2 = self.__n_gust(mtow, wing_area, Atmosphere(alt_2).density, sea_level_density,
                                  chord_geom, vc_eas2, cl_alpha, u_gust2)
         n2 = 1.5 * max(2.5, n_gust_2)
         mcv = min(0.8 * mfw, mtow - mzfw)
