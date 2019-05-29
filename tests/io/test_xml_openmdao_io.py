@@ -37,8 +37,8 @@ def _check_basic_ivc(ivc: IndepVarComp):
     for (name, value, attributes) in ivc._indep_external:
         outputs.append(_OutputVariable(name, value, attributes['units']))
 
-    assert len(outputs) == 6
-    
+    assert len(outputs) == 9
+
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)
     assert outputs[0].name == 'geometry:total_surface'
@@ -64,6 +64,18 @@ def _check_basic_ivc(ivc: IndepVarComp):
     assert outputs[5].name == 'constants:k2'
     assert outputs[5].value == approx([10., 20.])
     assert outputs[5].units is None
+
+    assert outputs[6].name == 'constants:k3'
+    assert outputs[6].value == approx([100., 200., 300., 400.])
+    assert outputs[6].units == 'm/s'
+
+    assert outputs[7].name == 'constants:k4'
+    assert outputs[7].value == approx([-1, -2, -3])
+    assert outputs[7].units is None
+
+    assert outputs[8].name == 'constants:k5'
+    assert outputs[8].value == approx([100, 200, 400, 500, 600])
+    assert outputs[8].units is None
 
 
 def test_basic_xml_read_and_write_from_indepvarcomp():
@@ -130,4 +142,4 @@ def test_basic_xml_write_from_problem():
 
 
 if __name__ == '__main__':
-    test_basic_xml_read()
+    test_basic_xml_read_and_write_from_indepvarcomp()
