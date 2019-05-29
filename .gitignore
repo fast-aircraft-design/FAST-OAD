@@ -35,6 +35,9 @@ junit.xml
 coverage.xml
 .pytest_cache/
 
+# test results
+results/
+
 # Build and docs folder/files
 build/*
 dist/*
