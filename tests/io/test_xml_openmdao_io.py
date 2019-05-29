@@ -15,75 +15,77 @@ Tests basic XML serializer for OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
+from collections import namedtuple
+from typing import List
 
 from lxml import etree
+from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
 from openmdao.drivers.scipy_optimizer import ScipyOptimizeDriver
+from pytest import approx
 
-from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.openmdao_basic_io import OpenMdaoXmlIO
 from tests.sellar_example.sellar import Sellar
 
-
-def test_basic_xml_read():
-    """
-    Tests the creation of an IndepVarComp instance from XML file
-    """
-    filename = pth.join(pth.dirname(__file__), 'data', 'basic_openmdao.xml')
-    xml_io = OpenMdaoXmlIO(filename)
-
-    ivc = xml_io.read()
-
-    names = []
-    values = []
-    units = []
-
-    # pylint: disable=protected-access  # Only way to access defined outputs without a model run.
-    for (name, value, attribs) in ivc._indep_external:
-        names.append(name)
-        values.append(value)
-        units.append(attribs['units'])
-
-    assert names[0] == 'geometry:total_surface'
-    assert values[0] == 780.3
-    assert units[0] == 'm**2'
-
-    assert names[2] == 'geometry:wing:aspect_ratio'
-    assert values[2] == 9.8
-    assert units[2] is None
-
-    assert names[3] == 'geometry:fuselage:length'
-    assert values[3] == 40.
-    assert units[3] == 'm'
+_OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
 
 
-def test_basic_xml_write_from_indepvarcomp():
+def _check_basic_ivc(ivc: IndepVarComp):
+    """ Checks that provided IndepVarComp instance matches content of data/basic.xml file """
+
+    outputs: List[_OutputVariable] = []
+    for (name, value, attributes) in ivc._indep_external:
+        outputs.append(_OutputVariable(name, value, attributes['units']))
+
+    assert len(outputs) == 6
+    
+    # Using pytest.approx for numerical reason, but also because it works even if sequence types
+    # are different (lists, tuples, numpy arrays)
+    assert outputs[0].name == 'geometry:total_surface'
+    assert outputs[0].value == approx([780.3])
+    assert outputs[0].units == 'm**2'
+
+    assert outputs[1].name == 'geometry:wing:span'
+    assert outputs[1].value == approx([42])
+    assert outputs[1].units is 'm'
+
+    assert outputs[2].name == 'geometry:wing:aspect_ratio'
+    assert outputs[2].value == approx([9.8])
+    assert outputs[2].units is None
+
+    assert outputs[3].name == 'geometry:fuselage:length'
+    assert outputs[3].value == approx([40.])
+    assert outputs[3].units == 'm'
+
+    assert outputs[4].name == 'constants:k1'
+    assert outputs[4].value == approx([1., 2., 3.])
+    assert outputs[4].units == 'kg'
+
+    assert outputs[5].name == 'constants:k2'
+    assert outputs[5].value == approx([10., 20.])
+    assert outputs[5].units is None
+
+
+def test_basic_xml_read_and_write_from_indepvarcomp():
     """
     Tests the creation of an XML file from an IndepVarComp instance
     """
 
-    # Get the IndepVarComp instance
-    filename = pth.join(pth.dirname(__file__), 'data', 'basic_openmdao.xml')
+    # Check reading
+    filename = pth.join(pth.dirname(__file__), 'data', 'basic.xml')
     xml_read = OpenMdaoXmlIO(filename)
     ivc = xml_read.read()
+    _check_basic_ivc(ivc)
 
     # write it
-    new_filename = pth.join(pth.dirname(__file__), 'results', 'basic_openmdao.xml')
+    new_filename = pth.join(pth.dirname(__file__), 'results', 'basic.xml')
     xml_write = OpenMdaoXmlIO(new_filename)
     xml_write.write(ivc)
 
-    # check
-    ref_context = etree.iterparse(filename, events=("start", "end"))
-    result_context = etree.iterparse(new_filename, events=("start", "end"))
-
-    for (ref_action, ref_elem), (result_action, result_elem) in zip(ref_context, result_context):
-        assert ref_action == result_action
-        try:
-            assert ref_elem.text.strip() == result_elem.text.strip()  # identical text
-        except AssertionError:
-            assert float(ref_elem.text) == float(result_elem.text)  # identical value
-
-        assert ref_elem.attrib.get(UNIT_ATTRIBUTE, None) == result_elem.get(UNIT_ATTRIBUTE, None)
+    # check (read another IndepVarComp instance from new xml)
+    xml_check = OpenMdaoXmlIO(new_filename)
+    new_ivc = xml_check.read()
+    _check_basic_ivc(new_ivc)
 
 
 def test_basic_xml_write_from_problem():
@@ -125,3 +127,7 @@ def test_basic_xml_write_from_problem():
     assert len(tree.xpath('/aircraft/Functions/f')) == 1
     assert len(tree.xpath('/aircraft/Functions/g1')) == 1
     assert len(tree.xpath('/aircraft/Functions/g2')) == 1
+
+
+if __name__ == '__main__':
+    test_basic_xml_read()

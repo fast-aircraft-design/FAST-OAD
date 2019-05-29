@@ -25,4 +25,11 @@
             <length unit="m">40</length>
         </fuselage>
     </geometry>
+    <constants>
+        <k1 unit="kg">1.</k1>
+        <k1 unit="ignored">2.</k1>
+        <k1>3.</k1>
+        <k2>10.</k2>
+        <k2 unit="ignored">20.</k2>
+    </constants>
 </aircraft>

@@ -61,8 +61,8 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
     def read(self) -> IndepVarComp:
         context = etree.iterparse(self._data_source, events=("start", "end"))
 
-        ivc = IndepVarComp()
         current_path = []
+        outputs: dict[str, _OutputVariable] = {}
         elem: _Element
         for action, elem in context:
             if action == 'start':
@@ -73,13 +73,19 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
                 except ValueError:
                     value = None
                 if value is not None:
+                    #
                     # FIXME : if a list of values is provided
-                    # FIXME : if the path has already been encountered -> append ?
-                    ivc.add_output(name=self.path_separator.join(current_path[1:]), val=value,
-                                   units=units)
+                    name = self.path_separator.join(current_path[1:])
+                    if name not in outputs:
+                        outputs[name] = _OutputVariable(name, [value], units)
+                    else:
+                        outputs[name].value.append(value)
             elif action == 'end':
                 current_path.pop(-1)
 
+        ivc = IndepVarComp()
+        for name, value, units in outputs.values():
+            ivc.add_output(name, val=np.array(value), units=units)
         ivc.setup()
         return ivc
 
