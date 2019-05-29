@@ -33,14 +33,17 @@ class AbstractOpenMDAOVariableIO(ABC):
     @abstractmethod
     def read(self) -> IndepVarComp:
         """
+        Reads output variables from provided system.
 
         :return: an IndepVarComp() instance where outputs have been defined using provided source
         """
-        pass
 
     @abstractmethod
     def write(self, system: SystemSubclass):
         """
-        Writes output variables from provided system
+        Writes output variables from provided system.
+
+        Caution: in most cases, list_outputs() will be used, which requires the model to have run
+
+        :param system: any OpenMDAO core component
         """
-        pass

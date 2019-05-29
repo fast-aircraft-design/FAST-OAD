@@ -17,9 +17,12 @@ Tests basic XML serializer for OpenMDAO variables
 import os.path as pth
 
 from lxml import etree
+from openmdao.core.problem import Problem
+from openmdao.drivers.scipy_optimizer import ScipyOptimizeDriver
 
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.openmdao_basic_io import OpenMdaoXmlIO
+from tests.sellar_example.sellar import Sellar
 
 
 def test_basic_xml_read():
@@ -81,3 +84,44 @@ def test_basic_xml_write_from_indepvarcomp():
             assert float(ref_elem.text) == float(result_elem.text)  # identical value
 
         assert ref_elem.attrib.get(UNIT_ATTRIBUTE, None) == result_elem.get(UNIT_ATTRIBUTE, None)
+
+
+def test_basic_xml_write_from_problem():
+    """
+    Tests the creation of an XML file from OpenMDAO components
+    """
+    # Create and run the problem
+    problem = Problem()
+    problem.model = Sellar()
+
+    problem.driver = ScipyOptimizeDriver()
+
+    problem.driver.options['optimizer'] = 'SLSQP'
+    #
+    problem.model.approx_totals()
+    problem.model.add_design_var('x', lower=0, upper=10)
+    problem.model.add_design_var('z', lower=0, upper=10)
+
+    problem.model.add_objective('f')
+
+    problem.model.add_constraint('g1', upper=0.)
+    problem.model.add_constraint('g2', upper=0.)
+
+    problem.setup()
+    problem.run_driver()
+
+    # Write the XML file
+    filename = pth.join(pth.dirname(__file__), 'results', 'sellar.xml')
+    xml_write = OpenMdaoXmlIO(filename)
+    xml_write.path_separator = '.'
+    xml_write.write(problem.model)
+
+    # Check
+    tree = etree.parse(filename)
+    assert len(tree.xpath('/aircraft/indeps/x')) == 1
+    assert len(tree.xpath('/aircraft/indeps/z')) == 2
+    assert len(tree.xpath('/aircraft/Disc1/y1')) == 1
+    assert len(tree.xpath('/aircraft/Disc2/y2')) == 1
+    assert len(tree.xpath('/aircraft/Functions/f')) == 1
+    assert len(tree.xpath('/aircraft/Functions/g1')) == 1
+    assert len(tree.xpath('/aircraft/Functions/g2')) == 1

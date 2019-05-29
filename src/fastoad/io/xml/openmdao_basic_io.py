@@ -15,6 +15,7 @@ Defines how OpenMDAO variables are serialized to XML
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from typing import List
 
+import numpy as np
 from lxml import etree
 # pylint: disable=protected-access  # Useful for type hinting
 from lxml.etree import _Element
@@ -31,9 +32,15 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
     """
     Basic serializer for OpenMDAO variables
 
-    OpenMDAO variables named like "foo:bar" are read and written in XML at XPath "/aircraft/foo/bar"
-
+    Assuming self.path_separator is defined as ":", OpenMDAO variables named like "foo:bar" are
+    read and written in XML at XPath "/aircraft/foo/bar".
     """
+
+    def __init__(self, *args, **kwargs):
+        super(OpenMdaoXmlIO, self).__init__(*args, **kwargs)
+
+        self.path_separator = PATH_SEPARATOR
+        """ The separator that will be used in OpenMDAO variable names to match XML path """
 
     def read(self) -> IndepVarComp:
         context = etree.iterparse(self._data_source, events=("start", "end"))
@@ -52,7 +59,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
                 if value is not None:
                     # FIXME : if a list of values is provided
                     # FIXME : if the path has already been encountered -> append ?
-                    ivc.add_output(name=PATH_SEPARATOR.join(current_path[1:]), val=value,
+                    ivc.add_output(name=self.path_separator.join(current_path[1:]), val=value,
                                    units=units)
             elif action == 'end':
                 current_path.pop(-1)
@@ -66,7 +73,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         root = etree.Element(ROOT_TAG)
 
         for output in outputs:
-            path_components = output.name.split(':')
+            path_components = output.name.split(self.path_separator)
             element = root
 
             # Create path if needed
@@ -75,32 +82,48 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
 
                 children = element.xpath(path_component)
                 if not children:
+                    # Build path
                     new_element = etree.Element(path_component)
                     element.append(new_element)
                     element = new_element
                 else:
+                    # Use existing path
+                    # (Unicity of OpenMDAO variables makes that children should not have more that
+                    # one element)
                     element = children[0]
 
-            # Set value and units
-            if not children:
-                # Element has just been created
-                element.text = str(output.value)
-                if output.units:
-                    element.attrib[UNIT_ATTRIBUTE] = output.units
-            else:
-                # Elements with same path already existed : append
-                new_element = etree.Element(path_component)
-                new_element.text = output.value
-                if output.units:
-                    new_element.attrib[UNIT_ATTRIBUTE] = output.units
-                parent.append(new_element)
+            # At this point, unicity of OpenMDAO variables makes that element should have been
+            # created just now, meaning that 'children' list should be empty.
+            if children:
+                raise ValueError("Variable %s has already be processed")
 
-        tree = etree.ElementTree(root)
-        tree.write(self._data_source, pretty_print=True)
+            # Set value and units
+            if output.units:
+                element.attrib[UNIT_ATTRIBUTE] = output.units
+
+            if not isinstance(output.value, (np.ndarray, Vector, list)):
+                # Here, it should be a float
+                element.text = str(output.value)
+            else:
+                element.text = str(output.value[0])
+
+                # in that case, it may have several values
+                if len(output.value) > 1:
+                    # several values : create additional elements
+                    for value in output.value[1:]:
+                        element = etree.Element(path_components[-1])
+                        parent.append(element)
+                        element.text = str(value)
+                        if output.units:
+                            element.attrib[UNIT_ATTRIBUTE] = output.units
+
+            # Write
+            tree = etree.ElementTree(root)
+            tree.write(self._data_source, pretty_print=True)
 
     @staticmethod
     def __get_outputs(system: SystemSubclass) -> List['OutputVariable']:
-        """ returns the list of outputs from p """
+        """ returns the list of outputs from provided system """
         outputs: List[OutputVariable] = []
         if isinstance(system, IndepVarComp):
             # Outputs are accessible using private member
@@ -110,7 +133,8 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         else:
             # Using .list_outputs(), that requires the model to have run
             for (name, attributes) in system.list_outputs():
-                outputs.append(OutputVariable(name, attributes['value'], attributes['units']))
+                outputs.append(
+                    OutputVariable(name, attributes['value'], attributes.get('units', None)))
         return outputs
 
 
