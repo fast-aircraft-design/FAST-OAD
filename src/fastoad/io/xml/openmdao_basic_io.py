@@ -77,7 +77,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         return ivc
 
     def write(self, system: SystemSubclass):
-
+        # TODO: add possibility to ignore component context
         outputs = self._get_outputs(system)
         root = etree.Element(ROOT_TAG)
 
