@@ -13,6 +13,8 @@ Defines how OpenMDAO variables are serialized to XML
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import os
+import os.path as pth
 from collections import namedtuple
 from typing import List, Dict
 
@@ -68,7 +70,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         super(OpenMdaoXmlIO, self).__init__(*args, **kwargs)
 
         self.use_promoted_names = True
-        """ If True, promoted names will be used instead of "real" ones """
+        """If True, promoted names will be used instead of "real" ones."""
 
         self.path_separator = '/'
         """
@@ -82,32 +84,11 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
             # TODO: in this case, maybe try to dispatch the inputs to each component...
             raise ValueError('Cannot use dot "." in OpenMDAO variables.')
 
-        context = etree.iterparse(self._data_source, events=("start", "end"))
-
-        # Parse XML file
-        current_path = []
-        outputs: Dict[str, _OutputVariable] = {}
-        elem: _Element
-        for action, elem in context:
-            if action == 'start':
-                current_path.append(elem.tag)
-                units = elem.attrib.get(UNIT_ATTRIBUTE, None)
-                value = self._get_list_from_string(elem.text)
-
-                if value:
-                    name = self.path_separator.join(current_path[1:])
-                    if name not in outputs:
-                        # Add variable
-                        outputs[name] = _OutputVariable(name, value, units)
-                    else:
-                        # Variable already exists: append values
-                        outputs[name].value.extend(value)
-            elif action == 'end':
-                current_path.pop(-1)
+        outputs = self._read_xml()
 
         # Create IndepVarComp instance
         ivc = IndepVarComp()
-        for name, value, units in outputs.values():
+        for name, value, units in outputs:
             ivc.add_output(name, val=np.array(value), units=units)
         return ivc
 
@@ -120,11 +101,10 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
             element = root
 
             children = []
-            # Create path if needed
+            # Create XML path if needed
             for path_component in path_components:
                 parent = element
 
-                print(path_component)
                 children = element.xpath(path_component)
                 if not children:
                     # Build path
@@ -139,22 +119,21 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
 
             # At this point, unicity of OpenMDAO variables makes that element should have been
             # created just now, meaning that 'children' list should be empty.
-            if children:
-                raise ValueError("Variable %s has already be processed")
+            assert not children, "Variable %s has already be processed" % output.name
 
             # Set value and units
             if output.units:
                 element.attrib[UNIT_ATTRIBUTE] = output.units
 
+            # Filling value for already created element
             if not isinstance(output.value, (np.ndarray, Vector, list)):
                 # Here, it should be a float
                 element.text = str(output.value)
             else:
                 element.text = str(output.value[0])
 
-                # in that case, it may have several values
+                # But if more than one value, create additional elements
                 if len(output.value) > 1:
-                    # several values : create additional elements
                     for value in output.value[1:]:
                         element = etree.Element(path_components[-1])
                         parent.append(element)
@@ -164,7 +143,48 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
 
             # Write
             tree = etree.ElementTree(root)
+            dirname = pth.dirname(self._data_source)
+            if not pth.exists(dirname):
+                os.makedirs(dirname)
             tree.write(self._data_source, pretty_print=True)
+
+    def _read_xml(self) -> List[_OutputVariable]:
+        """
+        Reads self.data_source as a XML file
+
+        Variable value will be a list of one or more values.
+        Variable units will be a string, or None if no unit provided.
+
+        :return: list of variables (name, value, units) from data source
+        """
+
+        context = etree.iterparse(self._data_source, events=("start", "end"))
+
+        # Intermediate storing as a dict for easy access according to name when appending new values
+        outputs: Dict[str, _OutputVariable] = {}
+
+        current_path = []
+
+        elem: _Element
+        for action, elem in context:
+            if action == 'start':
+                current_path.append(elem.tag)
+                units = elem.attrib.get(UNIT_ATTRIBUTE, None)
+                value = None
+                if elem.text:
+                    value = self._get_list_from_string(elem.text)
+                if value:
+                    name = self.path_separator.join(current_path[1:])
+                    if name not in outputs:
+                        # Add variable
+                        outputs[name] = _OutputVariable(name, value, units)
+                    else:
+                        # Variable already exists: append values (here the dict is useful)
+                        outputs[name].value.extend(value)
+            else:  # action == 'end':
+                current_path.pop(-1)
+
+        return list(outputs.values())
 
     def _get_outputs(self, system: SystemSubclass) -> List[_OutputVariable]:
         """ returns the list of outputs from provided system """
@@ -209,17 +229,21 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         # Deals with multiple values in same element. numpy.fromstring can parse a string,
         # but we have to test with either ' ' or ',' as separator. The longest result should be
         # the good one.
-        try:
-            value1 = np.fromstring(text_value, dtype=float, sep=' ').tolist()
-        except ValueError:
-            value1 = []
-
-        try:
-            value2 = np.fromstring(text_value, dtype=float, sep=',').tolist()
-        except ValueError:
-            value2 = []
+        value1 = np.fromstring(text_value, dtype=float, sep=' ').tolist()
+        value2 = np.fromstring(text_value, dtype=float, sep=',').tolist()
 
         if not value1 and not value2:
             return None
 
         return value1 if len(value1) > len(value2) else value2
+
+    def _create_openmdao_code(self) -> str:  # pragma: no cover
+        """dev utility for generating code"""
+        outputs = self._read_xml()
+
+        lines = ['ivc = IndepVarComp()']
+        for name, value, units in outputs:
+            lines.append("ivc.add_output('%s', val=%s%s)" %
+                         (name, value, ", units='%s'" % units if units else ''))
+
+        return '\n'.join(lines)

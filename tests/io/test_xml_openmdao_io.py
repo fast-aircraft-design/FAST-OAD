@@ -13,11 +13,12 @@ Tests basic XML serializer for OpenMDAO variables
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import os.path as pth
+import shutil
 from collections import namedtuple
 from typing import List
 
+import numpy as np
 from lxml import etree
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
@@ -34,7 +35,7 @@ def _check_basic_ivc(ivc: IndepVarComp):
     """ Checks that provided IndepVarComp instance matches content of data/basic.xml file """
 
     outputs: List[_OutputVariable] = []
-    for (name, value, attributes) in ivc._indep_external:
+    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
         outputs.append(_OutputVariable(name, value, attributes['units']))
 
     assert len(outputs) == 9
@@ -47,7 +48,7 @@ def _check_basic_ivc(ivc: IndepVarComp):
 
     assert outputs[1].name == 'geometry/wing/span'
     assert outputs[1].value == approx([42])
-    assert outputs[1].units is 'm'
+    assert outputs[1].units == 'm'
 
     assert outputs[2].name == 'geometry/wing/aspect_ratio'
     assert outputs[2].value == approx([9.8])
@@ -82,15 +83,40 @@ def test_basic_xml_read_and_write_from_indepvarcomp():
     """
     Tests the creation of an XML file from an IndepVarComp instance
     """
+    data_folder = pth.join(pth.dirname(__file__), 'data')
+    result_folder = pth.join(pth.dirname(__file__), 'results')
 
-    # Check reading
-    filename = pth.join(pth.dirname(__file__), 'data', 'basic.xml')
+    # Cgeck write hand-made component
+    ivc = IndepVarComp()
+    ivc.add_output('geometry/total_surface', val=[780.3], units='m**2')
+    ivc.add_output('geometry/wing/span', val=42.0, units='m')
+    ivc.add_output('geometry/wing/aspect_ratio', val=[9.8])
+    ivc.add_output('geometry/fuselage/length', val=40.0, units='m')
+    ivc.add_output('constants/k1', val=[1.0, 2.0, 3.0], units='kg')
+    ivc.add_output('constants/k2', val=[10.0, 20.0])
+    ivc.add_output('constants/k3', val=np.array([100.0, 200.0, 300.0, 400.0]), units='m/s')
+    ivc.add_output('constants/k4', val=[-1.0, -2.0, -3.0])
+    ivc.add_output('constants/k5', val=[100.0, 200.0, 400.0, 500.0, 600.0])
+    # Try writing with non-existing folder
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
+    filename = pth.join(result_folder, 'handmade.xml')
+    xml_write = OpenMdaoXmlIO(filename)
+    xml_write.write(ivc)
+
+    # check (read another IndepVarComp instance from  xml)
+    xml_check = OpenMdaoXmlIO(filename)
+    new_ivc = xml_check.read()
+    _check_basic_ivc(new_ivc)
+
+    # Check reading hand-made XML (with some format twists)
+    filename = pth.join(data_folder, 'basic.xml')
     xml_read = OpenMdaoXmlIO(filename)
     ivc = xml_read.read()
     _check_basic_ivc(ivc)
 
-    # write it
-    new_filename = pth.join(pth.dirname(__file__), 'results', 'basic.xml')
+    # write it (with existing destination folder)
+    new_filename = pth.join(result_folder, 'basic.xml')
     xml_write = OpenMdaoXmlIO(new_filename)
     xml_write.write(ivc)
 
@@ -104,6 +130,8 @@ def test_basic_xml_write_from_problem():
     """
     Tests the creation of an XML file from OpenMDAO components
     """
+    result_folder = pth.join(pth.dirname(__file__), 'results')
+
     # Create and run the problem
     problem = Problem()
     problem.model = Sellar()
@@ -125,7 +153,7 @@ def test_basic_xml_write_from_problem():
     problem.run_driver()
 
     # Write the XML file
-    filename = pth.join(pth.dirname(__file__), 'results', 'sellar.xml')
+    filename = pth.join(result_folder, 'sellar.xml')
     xml_write = OpenMdaoXmlIO(filename)
     xml_write.use_promoted_names = False
     xml_write.path_separator = '.'
@@ -140,6 +168,23 @@ def test_basic_xml_write_from_problem():
     assert len(tree.xpath('/aircraft/Functions/f')) == 1
     assert len(tree.xpath('/aircraft/Functions/g1')) == 1
     assert len(tree.xpath('/aircraft/Functions/g2')) == 1
+
+    # Write the XML file using promoted names
+    filename = pth.join(pth.dirname(__file__), 'results', 'sellar.xml')
+    xml_write = OpenMdaoXmlIO(filename)
+    xml_write.use_promoted_names = True
+    xml_write.path_separator = '.'
+    xml_write.write(problem.model)
+
+    # Check
+    tree = etree.parse(filename)
+    assert len(tree.xpath('/aircraft/x')) == 1
+    assert len(tree.xpath('/aircraft/z')) == 2
+    assert len(tree.xpath('/aircraft/y1')) == 1
+    assert len(tree.xpath('/aircraft/y2')) == 1
+    assert len(tree.xpath('/aircraft/f')) == 1
+    assert len(tree.xpath('/aircraft/g1')) == 1
+    assert len(tree.xpath('/aircraft/g2')) == 1
 
 
 if __name__ == '__main__':

@@ -27,13 +27,23 @@
     </geometry>
     <constants>
         <k1 units="kg">1.</k1>
-        <k1 units="ignored">2.</k1>
-        <k1>3.</k1>
+        <k1 units="ignored">2.
+        </k1> <!-- value will be appended, but only first specified units will apply -->
+        <k1>3.</k1> <!-- value will be appended, but only first specified units will apply -->
+
         <k2>10.</k2>
-        <k2 units="ignored">20.</k2>
-        <k3 units="m/s">100. 200. 300. 400.</k3>
-        <k4>[-1., -2, -3.]</k4>
-        <k5>[ 100. 200. ]</k5>
-        <k5>400., 500., 600.</k5><!-- Continuation of previous line -->
+        <k2 units="ignored">20.
+        </k2> <!-- value will be appended, but only first specified units will apply -->
+
+        <k3 units="m/s">100. 200. 300. 400.</k3> <!-- value list, space-separated -->
+
+        <k4>[-1., -2, -3.]</k4> <!-- value list, brackets + comma-separated -->
+
+        <k5>[ 100. 200. ]</k5> <!-- value list, brackets + space-separated -->
+        <k5>400., 500., 600.
+        </k5><!-- value list, comma-separated + continuation of previous line -->
+
+        <k6 units="whatever"></k6> <!-- no value, will be ignored -->
+        <k7 units="attoparsec">not a float</k7> <!-- no float, will be ignored -->
     </constants>
 </aircraft>
