@@ -42,7 +42,7 @@ class XPathReader:
 
         >>> XPathReader('my_file.xml').get_float('/root/foo/bar')
         42.0
-        >>> XPathReader('my_file.xml').get_unit('/root/foo/bar')
+        >>> XPathReader('my_file.xml').get_units('/root/foo/bar')
         'attoparsec'
 
 
@@ -93,7 +93,7 @@ class XPathReader:
         except ValueError:
             return None
 
-    def get_unit(self, xpath: str) -> Optional[str]:
+    def get_units(self, xpath: str) -> Optional[str]:
         """
         Assumes provided XPath matches only one element.
 

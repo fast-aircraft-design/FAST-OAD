@@ -14,7 +14,7 @@ Constants for the XML module
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-UNIT_ATTRIBUTE = 'unit'
+UNIT_ATTRIBUTE = 'units'
 """label of tag attribute for providing units as a string"""
 
 ROOT_TAG = 'aircraft'

@@ -33,8 +33,21 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
     """
     Basic serializer for OpenMDAO variables
 
-    Assuming self.path_separator is defined as ":", OpenMDAO variables named like "foo:bar" are
-    read and written in XML at XPath "/aircraft/foo/bar".
+    Assuming self.path_separator is defined as ":", an OpenMDAO variable named like "foo:bar"
+    with units "m/s" will be read and written as:
+
+    .. code-block:: xml
+
+    <aircraft>
+        <foo>
+            <bar units="m/s" >150.0</bar>
+        </foo>
+    <aircraft>
+
+
+
+
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -78,7 +91,6 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         return ivc
 
     def write(self, system: SystemSubclass):
-        # TODO: add possibility to ignore component context
         outputs = self._get_outputs(system)
         root = etree.Element(ROOT_TAG)
 
