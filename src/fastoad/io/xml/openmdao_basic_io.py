@@ -33,17 +33,35 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
     """
     Basic serializer for OpenMDAO variables
 
-    Assuming self.path_separator is defined as ":", an OpenMDAO variable named like "foo:bar"
-    with units "m/s" will be read and written as:
+    Assuming self.path_separator is defined as ``:``, an OpenMDAO variable named like ``foo:bar``
+    with units ``m/s`` will be read and written as:
 
-    .. code-block:: xml
+    .. code:: xml
 
-    <aircraft>
-        <foo>
-            <bar units="m/s" >150.0</bar>
-        </foo>
-    <aircraft>
+        <aircraft>
+            <foo>
+                <bar units="m/s" >`42.0</bar>
+            </foo>
+        <aircraft>
 
+    When writing outputs of a model, OpenMDAO component hierarchy  may be used by defining
+
+     .. code:: python
+
+        self.path_separator = '.'  # Not allowed for writing !
+        self.use_promoted_names = False
+
+    This way an OpenMDAO variable like ``componentA.subcomponent2.my_var`` will be written as:
+
+    .. code:: xml
+
+        <aircraft>
+            <componentA>
+                <subcomponent2>
+                    <my_var units="m/s" >72.0</my_var>
+                </subcomponent2>
+            <componentA>
+        <aircraft>
     """
 
     def __init__(self, *args, **kwargs):
@@ -53,9 +71,17 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         """ If True, promoted names will be used instead of "real" ones """
 
         self.path_separator = '/'
-        """ The separator that will be used in OpenMDAO variable names to match XML path """
+        """
+        The separator that will be used in OpenMDAO variable names to match XML path.
+        Warning: The dot "." can be used when writing, but not when reading.
+        """
 
     def read(self) -> IndepVarComp:
+        # Check separator, as OpenMDAO won't accept the dot.
+        if self.path_separator == '.':
+            # TODO: in this case, maybe try to dispatch the inputs to each component...
+            raise ValueError('Cannot use dot "." in OpenMDAO variables.')
+
         context = etree.iterparse(self._data_source, events=("start", "end"))
 
         # Parse XML file

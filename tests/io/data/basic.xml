@@ -34,6 +34,6 @@
         <k3 units="m/s">100. 200. 300. 400.</k3>
         <k4>[-1., -2, -3.]</k4>
         <k5>[ 100. 200. ]</k5>
-        <k5>400., 500., 600.</k5>
+        <k5>400., 500., 600.</k5><!-- Continuation of previous line -->
     </constants>
 </aircraft>
