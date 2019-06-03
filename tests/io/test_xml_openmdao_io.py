@@ -127,6 +127,7 @@ def test_basic_xml_write_from_problem():
     # Write the XML file
     filename = pth.join(pth.dirname(__file__), 'results', 'sellar.xml')
     xml_write = OpenMdaoXmlIO(filename)
+    xml_write.use_promoted_names = False
     xml_write.path_separator = '.'
     xml_write.write(problem.model)
 

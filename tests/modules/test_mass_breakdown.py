@@ -22,6 +22,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
 
 from fastoad.io.xml import XPathReader
+from fastoad.io.xml.openmdao_basic_io import OpenMdaoXmlIO
 from fastoad.modules.mass_breakdown.a_airframe import EmpennageWeight, \
     FlightControlsWeight, \
     FuselageWeight, \
@@ -200,6 +201,7 @@ def test_compute_flight_controls_weight(input_xml: XPathReader):
     component.compute(inputs, outputs)
     val = outputs['weight_airframe:A4']
     assert val == pytest.approx(716, abs=1)
+
 
 def test_compute_landing_gear_weight(input_xml: XPathReader):
     """ Tests landing gear weight computation from sample XML data """
@@ -681,6 +683,10 @@ def test_loop_compute_oew(input_xml: XPathReader):
 
     mass_computation.run_model()
 
+    writer = OpenMdaoXmlIO(pth.join(pth.dirname(__file__), "data", "test.xml"))
+    writer.use_promoted_names = True
+    writer.path_separator = ':'
+    writer.write(model)
     oew = mass_computation['weight:OEW']
     assert oew == pytest.approx(42060, abs=1)
 

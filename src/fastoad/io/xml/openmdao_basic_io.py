@@ -25,8 +25,6 @@ from openmdao.vectors.vector import Vector
 from fastoad.io.serialize import AbstractOpenMDAOVariableIO, SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE, ROOT_TAG
 
-PATH_SEPARATOR = ':'
-
 _OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
 """ Simple structure for standard OpenMDAO variable """
 
@@ -42,7 +40,10 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
     def __init__(self, *args, **kwargs):
         super(OpenMdaoXmlIO, self).__init__(*args, **kwargs)
 
-        self.path_separator = PATH_SEPARATOR
+        self.use_promoted_names = True
+        """ If True, promoted names will be used instead of "real" ones """
+
+        self.path_separator = ':'
         """ The separator that will be used in OpenMDAO variable names to match XML path """
 
     def read(self) -> IndepVarComp:
@@ -90,6 +91,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
             for path_component in path_components:
                 parent = element
 
+                print(path_component)
                 children = element.xpath(path_component)
                 if not children:
                     # Build path
@@ -131,8 +133,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
             tree = etree.ElementTree(root)
             tree.write(self._data_source, pretty_print=True)
 
-    @staticmethod
-    def _get_outputs(system: SystemSubclass) -> List[_OutputVariable]:
+    def _get_outputs(self, system: SystemSubclass) -> List[_OutputVariable]:
         """ returns the list of outputs from provided system """
 
         outputs: List[_OutputVariable] = []
@@ -143,7 +144,10 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
                 outputs.append(_OutputVariable(name, value, attributes['units']))
         else:
             # Using .list_outputs(), that requires the model to have run
-            for (name, attributes) in system.list_outputs():
+            for (name, attributes) in system.list_outputs(prom_name=self.use_promoted_names,
+                                                          out_stream=None):
+                if self.use_promoted_names:
+                    name = attributes['prom_name']
                 outputs.append(
                     _OutputVariable(name, attributes['value'], attributes.get('units', None)))
         return outputs
