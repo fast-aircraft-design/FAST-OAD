@@ -83,7 +83,6 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         ivc = IndepVarComp()
         for name, value, units in outputs.values():
             ivc.add_output(name, val=np.array(value), units=units)
-        ivc.setup()
         return ivc
 
     def write(self, system: SystemSubclass):
