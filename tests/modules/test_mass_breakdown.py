@@ -674,6 +674,10 @@ def test_loop_compute_oew(input_xml: XPathReader):
     _add_outputs(ivc, input_xml)
     ivc.add_output('weight:Max_PL', input_xml.get_float('Aircraft/weight/Max_PL'), units='kg')
 
+    writer = OpenMdaoXmlIO(pth.join(pth.dirname(__file__), "data", "ivc.xml"))
+    writer.path_separator = ':'
+    writer.write(ivc)
+
     mass_computation = Problem()
     model = mass_computation.model
     model.add_subsystem('design_variables', ivc, promotes=['*'])
@@ -687,6 +691,7 @@ def test_loop_compute_oew(input_xml: XPathReader):
     writer.use_promoted_names = True
     writer.path_separator = ':'
     writer.write(model)
+
     oew = mass_computation['weight:OEW']
     assert oew == pytest.approx(42060, abs=1)
 

@@ -44,10 +44,6 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         </foo>
     <aircraft>
 
-
-
-
-
     """
 
     def __init__(self, *args, **kwargs):
@@ -56,7 +52,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         self.use_promoted_names = True
         """ If True, promoted names will be used instead of "real" ones """
 
-        self.path_separator = ':'
+        self.path_separator = '/'
         """ The separator that will be used in OpenMDAO variable names to match XML path """
 
     def read(self) -> IndepVarComp:
