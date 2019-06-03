@@ -153,6 +153,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         else:
             # Using .list_outputs(), that requires the model to have run
             for (name, attributes) in system.list_outputs(prom_name=self.use_promoted_names,
+                                                          units=True,
                                                           out_stream=None):
                 if self.use_promoted_names:
                     name = attributes['prom_name']
