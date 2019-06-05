@@ -71,17 +71,17 @@ def test_get_float(input_xml):
 
 
 def test_get_unit(input_xml):
-    assert input_xml.get_unit("/root") is None
+    assert input_xml.get_units("/root") is None
     got_key_error = False
     try:
-        _ = input_xml.get_unit("/root/foot")
+        _ = input_xml.get_units("/root/foot")
     except KeyError:
         got_key_error = True
     assert got_key_error
 
-    assert input_xml.get_unit("/root/bar") is None
-    assert input_xml.get_unit("/root/foo") == "kg.K/Hz"
-    assert input_xml.get_unit("/root/foo/bar") == "attoparsec"
+    assert input_xml.get_units("/root/bar") is None
+    assert input_xml.get_units("/root/foo") == "kg.K/Hz"
+    assert input_xml.get_units("/root/foo/bar") == "attoparsec"
 
 
 def test_get_values_and_units(input_xml):

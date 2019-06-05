@@ -15,7 +15,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# pylint: disable=missing-docstring
 
 import abc
 from typing import Type
@@ -23,12 +22,12 @@ from typing import Type
 from openmdao.api import Group, IndepVarComp
 from openmdao.api import NonlinearBlockGS, ScipyKrylov
 
-from tests.module_management.sellar_example.disc1 import Disc1
-from tests.module_management.sellar_example.disc2 import Disc2
-from tests.module_management.sellar_example.functions import Functions
+from .disc1 import Disc1
+from .disc2 import Disc2
+from .functions import Functions
 
 
-class ISellarFactory:
+class ISellarFactory(abc.ABC):
     """
     The interface for providing Sellar components. Is used by Sellar()
     """
@@ -36,22 +35,22 @@ class ISellarFactory:
     @staticmethod
     @abc.abstractmethod
     def create_disc1():
-        pass
+        """ Provides an instance for discipline 1 """
 
     @staticmethod
     @abc.abstractmethod
     def create_disc2():
-        pass
+        """ Provides an instance for discipline 2 """
 
     @staticmethod
     @abc.abstractmethod
     def create_functions():
-        pass
+        """ Provides an instance for functions """
 
 
 class StandardSellarFactory(ISellarFactory):
     """
-    Provides "standard" components
+    Provides components through standard Python import
     """
 
     @staticmethod
@@ -98,13 +97,11 @@ class Sellar(Group):
 
     def setup(self):
         indeps = self.add_subsystem('indeps', IndepVarComp(), promotes=['*'])
-
         indeps.add_output('x', 2)
         indeps.add_output('z', [5, 2])
         self.add_subsystem('Disc1', self._sellar_factory.create_disc1(),
                            promotes=['x', 'z', 'y1', 'y2'])
         self.add_subsystem('Disc2', self._sellar_factory.create_disc2(),
                            promotes=['z', 'y1', 'y2'])
-        self.add_subsystem('Functions',
-                           self._sellar_factory.create_functions(),
+        self.add_subsystem('Functions', self._sellar_factory.create_functions(),
                            promotes=['x', 'z', 'y1', 'y2', 'f', 'g1', 'g2'])

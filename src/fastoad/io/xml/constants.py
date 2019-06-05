@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-  Sellar functions
+Constants for the XML module
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -14,24 +13,9 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from math import exp
 
-from tests.module_management.sellar_example.functions_base import FunctionsBase
+UNIT_ATTRIBUTE = 'units'
+"""label of tag attribute for providing units as a string"""
 
-
-class Functions(FunctionsBase):
-    """ An OpenMDAO component to encapsulate Functions discipline """
-
-    # pylint: disable=invalid-name
-    # pylint: disable=arguments-differ
-    def compute(self, inputs, outputs):
-        """ Functions computation """
-
-        z2 = inputs['z'][1]
-        x1 = inputs['x']
-        y1 = inputs['y1']
-        y2 = inputs['y2']
-
-        outputs['f'] = x1 ** 2 + z2 + y1 + exp(-y2)
-        outputs['g1'] = 3.16 - y1
-        outputs['g2'] = y2 - 24.0
+ROOT_TAG = 'aircraft'
+"""name of root element for XML files"""
