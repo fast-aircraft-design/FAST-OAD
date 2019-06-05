@@ -37,9 +37,6 @@ class Xfoil(ExplicitComponent):
         self.options.declare('xfoil_dir',
                              default=os.path.join(os.path.dirname(__file__), os.pardir, 'XFOIL'),
                              types=str)
-        self.options.declare('result_dir',
-                             default=os.path.join(os.path.dirname(__file__), os.pardir, 'result'),
-                             types=str)
         self.options.declare('tmp_dir',
                              default=os.path.join(os.path.dirname(__file__), 'tmp'),
                              types=str)
@@ -53,7 +50,6 @@ class Xfoil(ExplicitComponent):
 
     def setup(self):
         self.xfoildir = self.options['xfoil_dir']
-        self.resultdir = self.options['result_dir']
         self.tmpdir = self.options['tmp_dir']
         self.resourcesdir = self.options['resources_dir']
         self.xfoil_result = self.options['xfoil_result']
@@ -66,9 +62,9 @@ class Xfoil(ExplicitComponent):
         self.add_output('aerodynamics:Cl_max_clean')
 
     def compute(self, inputs, outputs):
-        el_aero = inputs['geometry:wing_toc_aero'][0]
-        reynolds = inputs['xfoil:reynolds'][0]
-        mach = inputs['xfoil:mach'][0]
+        el_aero = inputs['geometry:wing_toc_aero']
+        reynolds = inputs['xfoil:reynolds']
+        mach = inputs['xfoil:mach']
 
         self._prepare_run(el_aero, reynolds, mach, self.resourcesdir)
         subprocess.call(os.path.join(self.tmpdir, Xfoil.xfoil_cmd))
@@ -77,7 +73,7 @@ class Xfoil(ExplicitComponent):
         #        cl_max_2d = 2.0
 
         outputs['aerodynamics:Cl_max_clean'] = \
-            cl_max_2d * 0.9 * cos(inputs['geometry:wing_sweep_25'][0] / 180. * pi)
+            cl_max_2d * 0.9 * cos(inputs['geometry:wing_sweep_25'] / 180. * pi)
 
     def _prepare_run(self, el_aero, reynolds, mach, resourcesdir, logfile=False):
         f_path_ori = os.path.join(self.resourcesdir, Xfoil.xfoil_bacj_template)
@@ -162,7 +158,7 @@ class Xfoil(ExplicitComponent):
                 print('Cl max not found!')
         else:
             max_CL = 1.9
-            print('Xfoil result file not found')
+            print('Xfoil results file not found')
 
         return max_CL
 

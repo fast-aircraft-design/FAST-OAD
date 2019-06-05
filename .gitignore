@@ -12,6 +12,7 @@ __pycache__/*
 .cache/*
 .*.swp
 */.ipynb_checkpoints/*
+tmp/
 
 # Project files
 .ropeproject
@@ -19,6 +20,7 @@ __pycache__/*
 .pydevproject
 .settings
 .idea
+.vscode
 tags
 
 # Package files
@@ -50,3 +52,7 @@ MANIFEST
 
 # Per-project virtualenvs
 .venv*/
+venv*/
+
+# External tools
+/XFOIL
