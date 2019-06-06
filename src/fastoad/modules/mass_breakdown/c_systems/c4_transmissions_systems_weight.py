@@ -16,13 +16,15 @@ Estimation of transmissions systems weight
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+
 
 class TransmissionSystemsWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Transmissions systems weight estimation (C4) """
 
     def initialize(self):
-        self.options.declare('ac_type', types=float, default=2.0)
+        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
         self.add_input('kfactors_c4:K_C4', val=1.)
@@ -35,7 +37,7 @@ class TransmissionSystemsWeight(ExplicitComponent):
         k_c4 = inputs['kfactors_c4:K_C4']
         offset_c4 = inputs['kfactors_c4:offset_C4']
 
-        aircraft_type = self.options['ac_type']
+        aircraft_type = self.options[AIRCRAFT_TYPE_OPTION]
         if aircraft_type == 1.0:
             temp_c4 = 100.0
         elif aircraft_type == 2.0:

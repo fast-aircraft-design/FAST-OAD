@@ -17,13 +17,15 @@ Estimation of navigation systems weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+
 
 class NavigationSystemsWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Navigation systems weight estimation (C3) """
 
     def initialize(self):
-        self.options.declare('ac_type', types=float, default=2.0)
+        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
         self.add_input('geometry:fuselage_length', val=np.nan, units='m')
@@ -40,7 +42,7 @@ class NavigationSystemsWeight(ExplicitComponent):
         k_c3 = inputs['kfactors_c3:K_C3']
         offset_c3 = inputs['kfactors_c3:offset_C3']
 
-        aircraft_type = self.options['ac_type']
+        aircraft_type = self.options[AIRCRAFT_TYPE_OPTION]
         if aircraft_type == 1.0:
             base_weight = 150
         elif aircraft_type == 2.0:

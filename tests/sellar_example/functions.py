@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    Sellar discipline 1
+  Sellar functions
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,22 +14,24 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from tests.module_management.sellar_example.disc1_base import Disc1Base
+from math import exp
+
+from .functions_base import FunctionsBase
 
 
-class Disc1(Disc1Base):
-    """ An OpenMDAO component to encapsulate Disc1 discipline """
+class Functions(FunctionsBase):
+    """ An OpenMDAO component to encapsulate Functions discipline """
 
     # pylint: disable=invalid-name
-    def compute(self, inputs, outputs
-                , discrete_inputs=None, discrete_outputs=None):
-        """
-        Evaluates the equation
-        y1 = z1**2 + z2 + x1 - 0.2*y2
-        """
-        z1 = inputs['z'][0]
+    # pylint: disable=arguments-differ
+    def compute(self, inputs, outputs):
+        """ Functions computation """
+
         z2 = inputs['z'][1]
         x1 = inputs['x']
+        y1 = inputs['y1']
         y2 = inputs['y2']
 
-        outputs['y1'] = z1 ** 2 + z2 + x1 - 0.2 * y2
+        outputs['f'] = x1 ** 2 + z2 + y1 + exp(-y2)
+        outputs['g1'] = 3.16 - y1
+        outputs['g2'] = y2 - 24.0

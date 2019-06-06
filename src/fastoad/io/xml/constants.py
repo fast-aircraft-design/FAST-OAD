@@ -1,5 +1,5 @@
 """
-Estimation of Operating Empty Weight
+Constants for the XML module
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -13,4 +13,9 @@ Estimation of Operating Empty Weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from .operating_empty_weight import OperatingEmptyWeight
+
+UNIT_ATTRIBUTE = 'units'
+"""label of tag attribute for providing units as a string"""
+
+ROOT_TAG = 'aircraft'
+"""name of root element for XML files"""

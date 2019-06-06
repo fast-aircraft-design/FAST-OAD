@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 """
-Estimation of paint weight
+    Sellar discipline 1
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -14,26 +15,22 @@ Estimation of paint weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+from .disc1_base import Disc1Base
 
 
-class PaintWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Paint weight estimation (A7) """
+class Disc1(Disc1Base):
+    """ An OpenMDAO component to encapsulate Disc1 discipline """
 
-    def setup(self):
-        self.add_input('geometry:S_total', val=np.nan, units='m**2')
-        self.add_input('kfactors_a7:K_A7', val=1.)
-        self.add_input('kfactors_a7:offset_A7', val=0., units='kg')
-
-        self.add_output('weight_airframe:A7', units='kg')
-
+    # pylint: disable=invalid-name
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        total_wet_surface = inputs['geometry:S_total']
-        k_a7 = inputs['kfactors_a7:K_A7']
-        offset_a7 = inputs['kfactors_a7:offset_A7']
+        """
+        Evaluates the equation
+        y1 = z1**2 + z2 + x1 - 0.2*y2
+        """
+        z1 = inputs['z'][0]
+        z2 = inputs['z'][1]
+        x1 = inputs['x']
+        y2 = inputs['y2']
 
-        temp_a7 = 0.180 * total_wet_surface
-        outputs['weight_airframe:A7'] = k_a7 * temp_a7 + offset_a7
+        outputs['y1'] = z1 ** 2 + z2 + x1 - 0.2 * y2

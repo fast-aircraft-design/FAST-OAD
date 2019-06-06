@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 XML reading based on XPath
 """
@@ -18,8 +17,7 @@ from typing import Optional, List, Tuple, Union
 
 from lxml import etree
 
-UNIT_ATTRIBUTE = 'unit'
-"""label of tag attribute for providing units as a string"""
+from .constants import UNIT_ATTRIBUTE
 
 
 class XPathReader:
@@ -44,14 +42,14 @@ class XPathReader:
 
         >>> XPathReader('my_file.xml').get_float('/root/foo/bar')
         42.0
-        >>> XPathReader('my_file.xml').get_unit('/root/foo/bar')
+        >>> XPathReader('my_file.xml').get_units('/root/foo/bar')
         'attoparsec'
 
 
     See https://www.w3.org/TR/1999/REC-xpath-19991116/ for more info on XPath
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename: str):
         """
         Constructor. Will parse the whole indicated file.
         :param filename: XML file
@@ -95,7 +93,7 @@ class XPathReader:
         except ValueError:
             return None
 
-    def get_unit(self, xpath: str) -> Optional[str]:
+    def get_units(self, xpath: str) -> Optional[str]:
         """
         Assumes provided XPath matches only one element.
 

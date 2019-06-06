@@ -17,13 +17,15 @@ Estimation of cargo configuration weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+
 
 class CargoConfigurationWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Cargo configuration weight estimation (D1) """
 
     def initialize(self):
-        self.options.declare('ac_type', types=float, default=2.0)
+        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
         self.add_input('cabin:NPAX1', val=np.nan)
@@ -44,7 +46,7 @@ class CargoConfigurationWeight(ExplicitComponent):
         k_d1 = inputs['kfactors_d1:K_D1']
         offset_d1 = inputs['kfactors_d1:offset_D1']
 
-        if self.options['ac_type'] == 6.0:
+        if self.options[AIRCRAFT_TYPE_OPTION] == 6.0:
             if side_by_side_eco_seat_count <= 6.0:
                 temp_d1 = 0.351 * (npax1 - 38)
             else:

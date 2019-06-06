@@ -17,13 +17,15 @@ Estimation of food water weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+
 
 class FoodWaterWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Passenger food water weight estimation (D3) """
 
     def initialize(self):
-        self.options.declare('ac_type', types=float, default=2.0)
+        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
         self.add_input('tlar:NPAX', val=np.nan)
@@ -38,7 +40,7 @@ class FoodWaterWeight(ExplicitComponent):
         k_d3 = inputs['kfactors_d3:K_D3']
         offset_d3 = inputs['kfactors_d3:offset_D3']
 
-        if self.options['ac_type'] == 6.0:
+        if self.options[AIRCRAFT_TYPE_OPTION] == 6.0:
             outputs['weight_furniture:D3'] = 0.
         else:
             temp_d3 = 8.75 * npax
