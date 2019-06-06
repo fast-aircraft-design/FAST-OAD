@@ -18,44 +18,23 @@ from fastoad.modules.aerodynamics.xfoil import Xfoil
 from tests.conftest import root_folder
 
 XFOIL_DIR = os.path.join(root_folder, 'XFOIL')
-TMP_DIR = os.path.join(root_folder, 'tmp')
+XFOIL_RESULT = os.path.join(os.path.dirname(__file__), 'tmp', 'xfoil_result.txt')  # make
 RESOURCE_DIR = os.path.join(os.path.dirname(__file__), 'resources')
 
 
 @pytest.fixture(scope='module')
 def xfoil():
-    if not os.path.exists(TMP_DIR):
-        os.makedirs(TMP_DIR)
-
+    # Setup
     xfoil = Xfoil()
     xfoil.options['xfoil_dir'] = XFOIL_DIR
-    xfoil.options['tmp_dir'] = TMP_DIR
     xfoil.options['resources_dir'] = RESOURCE_DIR
-    xfoil.options['xfoil_result'] = os.path.join(TMP_DIR, 'xfoil_result.txt')
-
-    _cleanup_xfoil_files()  # remove if any
+    xfoil.options['xfoil_result'] = XFOIL_RESULT
     xfoil.setup()
-    yield xfoil
 
-    try:
-        _cleanup_xfoil_files()
-        os.rmdir(TMP_DIR)
-    except OSError:
-        pass
+    return xfoil
 
 
-def _cleanup_xfoil_files():
-    try:
-        for f in [Xfoil.xfoil_script_filename, Xfoil.xfoil_cmd,
-                  Xfoil.xfoil_result_filename, Xfoil.xfoil_bacj_new]:
-            fpath = os.path.join(TMP_DIR, f)
-            if os.path.exists(fpath):
-                os.remove(fpath)
-    except OSError:
-        pass
-
-
-def test_successful_run(xfoil):
+def test_compute(xfoil):
     inputs = {'geometry:wing_toc_aero': 0.12840,
               'xfoil:reynolds': 18000000,
               'xfoil:mach': 0.20,

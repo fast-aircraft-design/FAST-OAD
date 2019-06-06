@@ -14,7 +14,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
+import shutil
 import subprocess
+import tempfile
 
 from math import cos, pi, fabs
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -24,8 +26,8 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 class Xfoil(ExplicitComponent):
     xfoil_exe = 'xfoil.exe'
     xfoil_cmd = 'run_xfoil.bat'
-    xfoil_script_filename = 'xfoil_script.txt'
-    xfoil_result_filename = 'xfoil_result.txt'
+    xfoil_script_filename = 'in.txt'
+    xfoil_result_filename = 'out.txt'
     xfoil_log = 'xfoil.log'
 
     # we use airfoil of Boeing aircraft,data from
@@ -37,9 +39,6 @@ class Xfoil(ExplicitComponent):
         self.options.declare('xfoil_dir',
                              default=os.path.join(os.path.dirname(__file__), os.pardir, 'XFOIL'),
                              types=str)
-        self.options.declare('tmp_dir',
-                             default=os.path.join(os.path.dirname(__file__), 'tmp'),
-                             types=str)
         self.options.declare('resources_dir',
                              default=os.path.join(os.path.dirname(__file__), 'resources'),
                              types=str)
@@ -50,7 +49,7 @@ class Xfoil(ExplicitComponent):
 
     def setup(self):
         self.xfoildir = self.options['xfoil_dir']
-        self.tmpdir = self.options['tmp_dir']
+        self.tmpdir = tempfile.TemporaryDirectory()
         self.resourcesdir = self.options['resources_dir']
         self.xfoil_result = self.options['xfoil_result']
 
@@ -65,77 +64,23 @@ class Xfoil(ExplicitComponent):
         el_aero = inputs['geometry:wing_toc_aero']
         reynolds = inputs['xfoil:reynolds']
         mach = inputs['xfoil:mach']
-
-        self._prepare_run(el_aero, reynolds, mach, self.resourcesdir)
-        subprocess.call(os.path.join(self.tmpdir, Xfoil.xfoil_cmd))
+        sweep_25 = inputs['geometry:wing_sweep_25']
+        self._prepare_run(el_aero, reynolds, mach)
+        subprocess.call(os.path.join(self.tmpdir.name, Xfoil.xfoil_cmd))
+        os.makedirs(os.path.dirname(self.xfoil_result), exist_ok=True)
+        shutil.move(self.tmp_xfoil_result, self.xfoil_result)
 
         cl_max_2d = self.get_max_cl()
         #        cl_max_2d = 2.0
 
         outputs['aerodynamics:Cl_max_clean'] = \
-            cl_max_2d * 0.9 * cos(inputs['geometry:wing_sweep_25'] / 180. * pi)
+            cl_max_2d * 0.9 * cos(sweep_25 / 180. * pi)
 
-    def _prepare_run(self, el_aero, reynolds, mach, resourcesdir, logfile=False):
-        f_path_ori = os.path.join(self.resourcesdir, Xfoil.xfoil_bacj_template)
-        f_path_new = os.path.join(self.tmpdir, Xfoil.xfoil_bacj_new)
-
-        # TODO : this is a geometry operation and should be done outside this module
-        airfoil_reshape(el_aero, f_path_ori, f_path_new)
-
-        f_path = os.path.join(self.tmpdir, Xfoil.xfoil_script_filename)
-
-        script_file = open(f_path, "w")
-        script_file.write('load' + "\n")
-
-        script_file.write(os.path.join(self.tmpdir, 'BACJ-new.txt') + "\n")
-        script_file.write('plop' + "\n")
-        script_file.write('g' + "\n")
-        script_file.write('' + "\n")
-        script_file.write('oper' + "\n")
-        script_file.write('re' + "\n")
-        script_file.write(str(reynolds) + "\n")
-        script_file.write('m' + "\n")
-        script_file.write(str(mach) + "\n")
-        script_file.write('visc' + "\n")
-        script_file.write('iter' + "\n")
-        script_file.write('500' + "\n")
-        script_file.write('pacc' + "\n")
-        script_file.write(self.xfoil_result + "\n")
-        script_file.write('' + "\n")
-        script_file.write('aseq' + "\n")
-        script_file.write('0' + "\n")
-        script_file.write('30' + "\n")
-        script_file.write('0.5' + "\n")
-        script_file.write('pacc' + "\n")
-        script_file.write('' + "\n")
-        script_file.write('quit' + "\n")
-        script_file.close()
-        if os.path.isfile(self.xfoil_result):
-            os.remove(self.xfoil_result)
-
-        f_path = os.path.join(self.tmpdir, Xfoil.xfoil_cmd)
-        cmd_file = open(f_path, "w")
-        cmd_file.write('@echo off' + "\n")
-
-        xfoildir = os.path.abspath(self.xfoildir)
-        cmd = os.path.join(xfoildir, Xfoil.xfoil_exe) + ' <' + \
-              os.path.join(self.tmpdir, Xfoil.xfoil_script_filename)
-        if logfile:
-            if os.path.isfile(os.path.join(self.tmpdir, Xfoil.xfoil_log)):
-                os.remove(os.path.join(self.tmpdir, Xfoil.xfoil_log))
-            cmd += ' > ' + \
-                   os.path.join(self.tmpdir, Xfoil.xfoil_log) + ' 2>&1' + "\n"
-
-        cmd_file.write(cmd)
-        cmd_file.close()
-
-    def _run_once(self):
-        subprocess.call(
-            os.path.join(self.tmpdir, Xfoil.xfoil_cmd))
+        self._cleanup_xfoil_files()
 
     def get_max_cl(self):
         """
-        Returns: 
+        Returns:
             maximum lift coefficient Cl value if successful, None otherwise.
         """
         if os.path.isfile(self.xfoil_result):
@@ -161,6 +106,67 @@ class Xfoil(ExplicitComponent):
             print('Xfoil results file not found')
 
         return max_CL
+
+    def _prepare_run(self, el_aero, reynolds, mach, logfile=False):
+        f_path_ori = os.path.join(self.resourcesdir, Xfoil.xfoil_bacj_template)
+        f_path_new = os.path.join(self.tmpdir.name, Xfoil.xfoil_bacj_new)
+
+        # TODO : this is a geometry operation and should be done outside this module
+        airfoil_reshape(el_aero, f_path_ori, f_path_new)
+
+        f_path = os.path.join(self.tmpdir.name, Xfoil.xfoil_script_filename)
+        self.tmp_xfoil_result = os.path.join(self.tmpdir.name, Xfoil.xfoil_result_filename)
+
+        script_file = open(f_path, 'w')
+        script_file.write('load' + '\n')
+
+        script_file.write(os.path.join(self.tmpdir.name, 'BACJ-new.txt') + '\n')
+        script_file.write('plop' + '\n')
+        script_file.write('g' + '\n')
+        script_file.write('' + '\n')
+        script_file.write('oper' + '\n')
+        script_file.write('re' + '\n')
+        script_file.write(str(reynolds) + '\n')
+        script_file.write('m' + '\n')
+        script_file.write(str(mach) + '\n')
+        script_file.write('visc' + '\n')
+        script_file.write('iter' + '\n')
+        script_file.write('500' + '\n')
+        script_file.write('pacc' + '\n')
+        script_file.write(self.tmp_xfoil_result + '\n')
+        script_file.write('' + '\n')
+        script_file.write('aseq' + '\n')
+        script_file.write('0' + '\n')
+        script_file.write('30' + '\n')
+        script_file.write('0.5' + '\n')
+        script_file.write('pacc' + '\n')
+        script_file.write('' + '\n')
+        script_file.write('quit' + '\n')
+        script_file.close()
+
+        f_path = os.path.join(self.tmpdir.name, Xfoil.xfoil_cmd)
+        cmd_file = open(f_path, 'w')
+        cmd_file.write('@echo off' + '\n')
+
+        xfoildir = os.path.abspath(self.xfoildir)
+        cmd = os.path.join(xfoildir, Xfoil.xfoil_exe) + ' <' + \
+              os.path.join(self.tmpdir.name, Xfoil.xfoil_script_filename)
+        if logfile:
+            if os.path.isfile(os.path.join(self.tmpdir.name, Xfoil.xfoil_log)):
+                os.remove(os.path.join(self.tmpdir.name, Xfoil.xfoil_log))
+            cmd += ' > ' + \
+                   os.path.join(self.tmpdir.name, Xfoil.xfoil_log) + ' 2>&1' + "\n"
+
+        cmd_file.write(cmd)
+        cmd_file.close()
+
+    def _run_once(self):
+        subprocess.call(
+            os.path.join(self.tmpdir.name, Xfoil.xfoil_cmd))
+
+    def _cleanup_xfoil_files(self):
+
+        self.tmpdir.cleanup()
 
 
 # FIXME: to be removed after reshape operation is put outside this module
