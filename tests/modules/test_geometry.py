@@ -30,6 +30,8 @@ from fastoad.modules.geometry.cg_components.compute_cg_loadcase1 \
     import ComputeCGLoadCase1
 from fastoad.modules.geometry.cg_components.compute_cg_others \
     import ComputeOthersCG
+from fastoad.modules.geometry.cg_components.compute_cg_ratio_aft \
+    import ComputeCGratioAft
 
 
 
@@ -227,6 +229,155 @@ def test_compute_cg_others(input_xml: XPathReader):
     assert x_cg_rear_fret == pytest.approx(20.87, abs=10)
     x_cg_front_fret = outputs['cg:cg_front_fret']
     assert x_cg_front_fret == pytest.approx(9.94, abs=10)
+
+def test_compute_cg_ratio_aft(input_xml: XPathReader):
+    """ Tests computation of center of gravity with aft estimation """
+    inputs = {
+        'cg_airframe:A1': input_xml.get_float(
+            'Aircraft/balance/airframe/CG_A1'),
+        'cg_airframe:A2': input_xml.get_float(
+            'Aircraft/balance/airframe/CG_A2'),
+        'cg_airframe:A31': input_xml.get_float(
+            'Aircraft/balance/airframe/CG_A31'),
+        'cg_airframe:A32': input_xml.get_float(
+            'Aircraft/balance/airframe/CG_A32'),
+        'cg_airframe:A4': input_xml.get_float(
+            'Aircraft/balance/airframe/CG_A4'),
+        'cg_airframe:A51': input_xml.get_float(
+            'Aircraft/balance/airframe/CG_A51'),
+        'cg_airframe:A52': input_xml.get_float(
+            'Aircraft/balance/airframe/CG_A52'),
+        'cg_airframe:A6': input_xml.get_float(
+            'Aircraft/balance/airframe/CG_A6'),
+        'cg_airframe:A7': input_xml.get_float(
+            'Aircraft/balance/airframe/CG_A7'),
+        'weight_airframe:A1': input_xml.get_float(
+            'Aircraft/weight/airframe/weight_A1'),
+        'weight_airframe:A2': input_xml.get_float(
+            'Aircraft/weight/airframe/weight_A2'),
+        'weight_airframe:A31': input_xml.get_float(
+            'Aircraft/weight/airframe/weight_A31'),
+        'weight_airframe:A32': input_xml.get_float(
+            'Aircraft/weight/airframe/weight_A32'),
+        'weight_airframe:A4': input_xml.get_float(
+            'Aircraft/weight/airframe/weight_A4'),
+        'weight_airframe:A51': input_xml.get_float(
+            'Aircraft/weight/airframe/weight_A51'),
+        'weight_airframe:A52': input_xml.get_float(
+            'Aircraft/weight/airframe/weight_A52'),
+        'weight_airframe:A6': input_xml.get_float(
+            'Aircraft/weight/airframe/weight_A6'),
+        'weight_airframe:A7': input_xml.get_float(
+            'Aircraft/weight/airframe/weight_A7'),
+        'cg_propulsion:B1': input_xml.get_float(
+            'Aircraft/balance/propulsion/CG_B1'),
+        'cg_propulsion:B2': input_xml.get_float(
+            'Aircraft/balance/propulsion/CG_B2'),
+        'cg_propulsion:B3': input_xml.get_float(
+            'Aircraft/balance/propulsion/CG_B3'),
+        'weight_propulsion:B1': input_xml.get_float(
+            'Aircraft/weight/propulsion/weight_B1'),
+        'weight_propulsion:B2': input_xml.get_float(
+            'Aircraft/weight/propulsion/weight_B2'),
+        'weight_propulsion:B3': input_xml.get_float(
+            'Aircraft/weight/propulsion/weight_B3'),
+        'cg_systems:C11': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C11'),
+        'cg_systems:C12': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C12'),
+        'cg_systems:C13': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C13'),
+        'cg_systems:C21': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C21'),
+        'cg_systems:C22': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C22'),
+        'cg_systems:C23': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C23'),
+        'cg_systems:C24': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C24'),
+        'cg_systems:C25': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C25'),
+        'cg_systems:C26': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C26'),
+        'cg_systems:C27': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C27'),
+        'cg_systems:C3': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C3'),
+        'cg_systems:C4': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C4'),
+        'cg_systems:C51': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C51'),
+        'cg_systems:C52': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C52'),
+        'cg_systems:C6': input_xml.get_float(
+            'Aircraft/balance/systems/CG_C6'),
+        'weight_systems:C11': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C11'),
+        'weight_systems:C12': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C12'),
+        'weight_systems:C13': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C13'),
+        'weight_systems:C21': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C21'),
+        'weight_systems:C22': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C22'),
+        'weight_systems:C23': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C23'),
+        'weight_systems:C24': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C24'),
+        'weight_systems:C25': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C25'),
+        'weight_systems:C26': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C26'),
+        'weight_systems:C27': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C27'),
+        'weight_systems:C3': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C3'),
+        'weight_systems:C4': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C4'),
+        'weight_systems:C51': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C51'),
+        'weight_systems:C52': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C52'),
+        'weight_systems:C6': input_xml.get_float(
+            'Aircraft/weight/systems/weight_C6'),
+        'cg_furniture:D1': input_xml.get_float(
+            'Aircraft/balance/furniture/CG_D1'),
+        'cg_furniture:D2': input_xml.get_float(
+            'Aircraft/balance/furniture/CG_D2'),
+        'cg_furniture:D3': input_xml.get_float(
+            'Aircraft/balance/furniture/CG_D3'),
+        'cg_furniture:D4': input_xml.get_float(
+            'Aircraft/balance/furniture/CG_D4'),
+        'cg_furniture:D5': input_xml.get_float(
+            'Aircraft/balance/furniture/CG_D5'),
+        'weight_furniture:D1': input_xml.get_float(
+            'Aircraft/weight/furniture/weight_D1'),
+        'weight_furniture:D2': input_xml.get_float(
+            'Aircraft/weight/furniture/weight_D2'),
+        'weight_furniture:D3': input_xml.get_float(
+            'Aircraft/weight/furniture/weight_D3'),
+        'weight_furniture:D4': input_xml.get_float(
+            'Aircraft/weight/furniture/weight_D4'),
+        'weight_furniture:D5': input_xml.get_float(
+            'Aircraft/weight/furniture/weight_D5'),
+        'geometry:wing_l0': input_xml.get_float(
+            'Aircraft/geometry/wing/l0_wing'),
+        'geometry:wing_position': input_xml.get_float(
+            'Aircraft/geometry/wing/fa_length')
+    }
+
+    component = ComputeCGratioAft()
+    component.setup()
+    outputs = {}
+    component.compute(inputs, outputs)
+    x_cg_plane_up = outputs['x_cg_plane_up']
+    assert x_cg_plane_up == pytest.approx(699570.01, abs=10)
+    x_cg_plane_down = outputs['x_cg_plane_down']
+    assert x_cg_plane_down == pytest.approx(40979.11, abs=10)
+    cg_ratio_aft = outputs['cg_ratio_aft']
+    assert cg_ratio_aft == pytest.approx(0.3878464534, abs=10)
+
 
 # pylint: disable=too-many-statements
 def _add_outputs(ivc: IndepVarComp, input_xml: XPathReader):
