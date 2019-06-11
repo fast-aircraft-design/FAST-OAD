@@ -1,3 +1,6 @@
+"""
+Test module for XFOIL component
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -10,35 +13,41 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# pylint: disable=redefined-outer-name  # needed for fixtures
+
 import os
 
 import pytest
 
-from fastoad.modules.aerodynamics.xfoil import Xfoil
+from fastoad.modules.aerodynamics.xfoil import XfoilPolar
 from tests.conftest import root_folder
 
-XFOIL_DIR = os.path.join(root_folder, 'XFOIL')
-XFOIL_RESULT = os.path.join(os.path.dirname(__file__), 'tmp', 'xfoil_result.txt')  # make
+XFOIL_EXE = os.path.join(root_folder, 'XFOIL', 'xfoil.exe')
+XFOIL_RESULTS = os.path.join(os.path.dirname(__file__), 'results')
 INPUT_PROFILE = os.path.join(os.path.dirname(__file__), 'data', 'BACJ-new.txt')
 
 
 @pytest.fixture(scope='module')
 def xfoil():
+    """ Prepares the XFOIL component"""
     # Setup
-    xfoil = Xfoil()
-    xfoil.options['xfoil_dir'] = XFOIL_DIR
-    xfoil.options['input_profile'] = INPUT_PROFILE
-    xfoil.options['xfoil_result'] = XFOIL_RESULT
+    xfoil = XfoilPolar()
+    xfoil.options['xfoil_exe_path'] = XFOIL_EXE
+    xfoil.options['profile_path'] = INPUT_PROFILE
+    xfoil.options['result_folder_path'] = XFOIL_RESULTS
     xfoil.setup()
 
     return xfoil
 
 
 def test_compute(xfoil):
+    """ Tests a simple XFOIL run"""
     inputs = {'xfoil:reynolds': 18000000,
               'xfoil:mach': 0.20,
               'geometry:wing_sweep_25': 25.,
               }
     outputs = {}
     xfoil.compute(inputs, outputs)
-    assert xfoil.get_max_cl() == 1.9408
+    assert outputs['aerodynamics:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
+    assert outputs['aerodynamics:Cl_max_clean'] == pytest.approx(1.5831, 1e-4)
