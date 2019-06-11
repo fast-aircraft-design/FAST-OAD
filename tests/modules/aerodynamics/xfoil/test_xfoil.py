@@ -19,7 +19,7 @@ from tests.conftest import root_folder
 
 XFOIL_DIR = os.path.join(root_folder, 'XFOIL')
 XFOIL_RESULT = os.path.join(os.path.dirname(__file__), 'tmp', 'xfoil_result.txt')  # make
-RESOURCE_DIR = os.path.join(os.path.dirname(__file__), 'resources')
+INPUT_PROFILE = os.path.join(os.path.dirname(__file__), 'data', 'BACJ-new.txt')
 
 
 @pytest.fixture(scope='module')
@@ -27,7 +27,7 @@ def xfoil():
     # Setup
     xfoil = Xfoil()
     xfoil.options['xfoil_dir'] = XFOIL_DIR
-    xfoil.options['resources_dir'] = RESOURCE_DIR
+    xfoil.options['input_profile'] = INPUT_PROFILE
     xfoil.options['xfoil_result'] = XFOIL_RESULT
     xfoil.setup()
 
@@ -35,8 +35,7 @@ def xfoil():
 
 
 def test_compute(xfoil):
-    inputs = {'geometry:wing_toc_aero': 0.12840,
-              'xfoil:reynolds': 18000000,
+    inputs = {'xfoil:reynolds': 18000000,
               'xfoil:mach': 0.20,
               'geometry:wing_sweep_25': 25.,
               }

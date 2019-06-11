@@ -18,7 +18,7 @@ import shutil
 import subprocess
 import tempfile
 
-from math import cos, pi, fabs
+from math import cos, pi
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -30,18 +30,11 @@ class Xfoil(ExplicitComponent):
     xfoil_result_filename = 'out.txt'
     xfoil_log = 'xfoil.log'
 
-    # we use airfoil of Boeing aircraft,data from
-    # "http://m-selig.ae.illinois.edu/ads/coord_database.html"
-    xfoil_bacj_template = 'BACJ.txt'
-    xfoil_bacj_new = 'BACJ-new.txt'
-
     def initialize(self):
         self.options.declare('xfoil_dir',
                              default=os.path.join(os.path.dirname(__file__), os.pardir, 'XFOIL'),
                              types=str)
-        self.options.declare('resources_dir',
-                             default=os.path.join(os.path.dirname(__file__), 'resources'),
-                             types=str)
+        self.options.declare('input_profile', types=str)
         self.options.declare('xfoil_result',
                              default=os.path.join(os.path.dirname(__file__),
                                                   'tmp', Xfoil.xfoil_result_filename),
@@ -50,10 +43,9 @@ class Xfoil(ExplicitComponent):
     def setup(self):
         self.xfoildir = self.options['xfoil_dir']
         self.tmpdir = tempfile.TemporaryDirectory()
-        self.resourcesdir = self.options['resources_dir']
+        self.input_profile = self.options['input_profile']
         self.xfoil_result = self.options['xfoil_result']
 
-        self.add_input('geometry:wing_toc_aero', val=0.128)
         self.add_input('xfoil:reynolds', val=1e7)
         self.add_input('xfoil:mach', val=0.2)
         self.add_input('geometry:wing_sweep_25', val=25.)
@@ -61,11 +53,10 @@ class Xfoil(ExplicitComponent):
         self.add_output('aerodynamics:Cl_max_clean')
 
     def compute(self, inputs, outputs):
-        el_aero = inputs['geometry:wing_toc_aero']
         reynolds = inputs['xfoil:reynolds']
         mach = inputs['xfoil:mach']
         sweep_25 = inputs['geometry:wing_sweep_25']
-        self._prepare_run(el_aero, reynolds, mach)
+        self._prepare_run(reynolds, mach)
         subprocess.call(os.path.join(self.tmpdir.name, Xfoil.xfoil_cmd))
         os.makedirs(os.path.dirname(self.xfoil_result), exist_ok=True)
         shutil.move(self.tmp_xfoil_result, self.xfoil_result)
@@ -107,20 +98,17 @@ class Xfoil(ExplicitComponent):
 
         return max_CL
 
-    def _prepare_run(self, el_aero, reynolds, mach, logfile=False):
-        f_path_ori = os.path.join(self.resourcesdir, Xfoil.xfoil_bacj_template)
-        f_path_new = os.path.join(self.tmpdir.name, Xfoil.xfoil_bacj_new)
+    def _prepare_run(self, reynolds, mach, logfile=False):
 
-        # TODO : this is a geometry operation and should be done outside this module
-        airfoil_reshape(el_aero, f_path_ori, f_path_new)
-
+        tmp_profile = os.path.join(self.tmpdir.name, 'profile.txt')
+        shutil.copy(self.input_profile, tmp_profile)
         f_path = os.path.join(self.tmpdir.name, Xfoil.xfoil_script_filename)
         self.tmp_xfoil_result = os.path.join(self.tmpdir.name, Xfoil.xfoil_result_filename)
 
         script_file = open(f_path, 'w')
         script_file.write('load' + '\n')
 
-        script_file.write(os.path.join(self.tmpdir.name, 'BACJ-new.txt') + '\n')
+        script_file.write(tmp_profile + '\n')
         script_file.write('plop' + '\n')
         script_file.write('g' + '\n')
         script_file.write('' + '\n')
@@ -167,41 +155,3 @@ class Xfoil(ExplicitComponent):
     def _cleanup_xfoil_files(self):
 
         self.tmpdir.cleanup()
-
-
-# FIXME: to be removed after reshape operation is put outside this module
-def airfoil_reshape(toc_mean, f_path_ori, f_path_new):
-    fichier = open(f_path_ori, "r")
-    l1 = fichier.readlines()
-    fichier.close()
-    b = []
-    for i, elem in enumerate(l1):
-        if i >= 1:
-            a = elem
-            b.append(list(map(float, a.split("\t"))))
-        else:
-            pass
-    t = []
-    for i, elem in enumerate(b):
-        for j in range(i + 1, len(b) - 1):
-            if (b[j][0] <= elem[0] and b[j + 1][0] >= elem[0]
-            ) or (b[j][0] >= elem[0] and b[j + 1][0] <= elem[0]):
-                t_down = b[j][
-                             1] + (elem[0] - b[j][0]) / (b[j + 1][0] - b[j][0]) * (
-                                 b[j + 1][1] - b[j][1])
-                t_up = elem[1]
-                t.append(fabs(t_down) + fabs(t_up))
-    toc = max(t)
-    factor = toc_mean / toc
-
-    fichier = open(f_path_new, "w")
-    fichier.write("Wing\n")
-    for i, elem in enumerate(l1):
-        if i >= 1:
-            a = elem
-            b = a.split("\t")
-            fichier.write(
-                str(float(b[0])) + ' \t' + str((float(b[1])) * factor) + "\n")
-        else:
-            pass
-    fichier.close()
