@@ -80,7 +80,7 @@ class ComputeTanksCG(ExplicitComponent):
         width_max = inputs['geometry:fuselage_width_max']
 
         f_airfoil = os.path.join(
-            os.path.dirname(__file__), os.pardir, os.pardir, 'resources', 'airfoil_f_15_15.dat')
+            os.path.dirname(__file__), os.pardir, 'resources', 'airfoil_f_15_15.dat')
         airfoil_file = open(f_airfoil, 'r')
         node_number = int(airfoil_file.readline())
         for _ in range(1, node_number):
@@ -109,7 +109,7 @@ class ComputeTanksCG(ExplicitComponent):
         xy_up = []
         xy_down = []
         f_airfoil = os.path.join(
-            os.path.dirname(__file__), os.pardir, os.pardir, 'resources', 'airfoil_f_15_12.dat')
+            os.path.dirname(__file__), os.pardir, 'resources', 'airfoil_f_15_12.dat')
         airfoil_file = open(f_airfoil, 'r')
         node_number = int(airfoil_file.readline())
         for _ in range(1, node_number):
@@ -139,7 +139,7 @@ class ComputeTanksCG(ExplicitComponent):
         xy_up = []
         xy_down = []
         f_airfoil = os.path.join(
-            os.path.dirname(__file__), os.pardir, os.pardir, 'resources', 'airfoil_f_15_11.dat')
+            os.path.dirname(__file__), os.pardir, 'resources', 'airfoil_f_15_11.dat')
         airfoil_file = open(f_airfoil, 'r')
         node_number = int(airfoil_file.readline())
         for _ in range(1, node_number):
