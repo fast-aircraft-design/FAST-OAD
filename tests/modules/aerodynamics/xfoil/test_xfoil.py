@@ -16,16 +16,17 @@ Test module for XFOIL component
 
 # pylint: disable=redefined-outer-name  # needed for fixtures
 
-import os
+import os.path as pth
+import shutil
 
 import pytest
 
 from fastoad.modules.aerodynamics.xfoil import XfoilPolar
 from tests.conftest import root_folder
 
-XFOIL_EXE = os.path.join(root_folder, 'XFOIL', 'xfoil.exe')
-XFOIL_RESULTS = os.path.join(os.path.dirname(__file__), 'results')
-INPUT_PROFILE = os.path.join(os.path.dirname(__file__), 'data', 'BACJ-new.txt')
+XFOIL_EXE = pth.join(root_folder, 'XFOIL', 'xfoil.exe')
+XFOIL_RESULTS = pth.join(pth.dirname(__file__), 'results')
+INPUT_PROFILE = pth.join(pth.dirname(__file__), 'data', 'BACJ-new.txt')
 
 
 @pytest.fixture(scope='module')
@@ -35,7 +36,6 @@ def xfoil():
     xfoil = XfoilPolar()
     xfoil.options['xfoil_exe_path'] = XFOIL_EXE
     xfoil.options['profile_path'] = INPUT_PROFILE
-    xfoil.options['result_folder_path'] = XFOIL_RESULTS
     xfoil.setup()
 
     return xfoil
@@ -43,6 +43,10 @@ def xfoil():
 
 def test_compute(xfoil):
     """ Tests a simple XFOIL run"""
+
+    if pth.exists(XFOIL_RESULTS):
+        shutil.rmtree(XFOIL_RESULTS)
+
     inputs = {'xfoil:reynolds': 18000000,
               'xfoil:mach': 0.20,
               'geometry:wing_sweep_25': 25.,
@@ -51,3 +55,12 @@ def test_compute(xfoil):
     xfoil.compute(inputs, outputs)
     assert outputs['aerodynamics:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
     assert outputs['aerodynamics:Cl_max_clean'] == pytest.approx(1.5831, 1e-4)
+    assert not pth.exists(XFOIL_RESULTS)
+
+    xfoil.options['result_folder_path'] = XFOIL_RESULTS
+    outputs = {}
+    xfoil.compute(inputs, outputs)
+    assert outputs['aerodynamics:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
+    assert outputs['aerodynamics:Cl_max_clean'] == pytest.approx(1.5831, 1e-4)
+    assert pth.exists(XFOIL_RESULTS)
+    assert pth.exists(pth.join(XFOIL_RESULTS, 'polar_result.txt'))

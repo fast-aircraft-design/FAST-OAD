@@ -36,11 +36,14 @@ class XfoilPolar(ExternalCodeComp):
     Runs a polar computation with XFOIL and returns the max lift coefficient
     """
 
+    _xfoil_output_names = ['alpha', 'CL', 'CD', 'CDp', 'CM', 'Top_Xtr', 'Bot_Xtr']
+    """Column names in XFOIL polar result"""
+
     def initialize(self):
         self.options.declare('xfoil_exe_path', types=str)
         self.options.declare('profile_path',
                              default=os.path.join(os.path.dirname(__file__), 'BACJ.txt'), types=str)
-        self.options.declare('result_folder_path', types=str)
+        self.options.declare('result_folder_path', default='', types=str)
         self.options.declare('result_polar_file_name', default=_RESULT_FILE_NAME, types=str)
 
     def setup(self):
@@ -57,13 +60,17 @@ class XfoilPolar(ExternalCodeComp):
         self.add_output('aerodynamics:Cl_max_2D')
         self.add_output('aerodynamics:Cl_max_clean')
 
+        for name in self._xfoil_output_names:
+            self.add_output('xfoil:%s' % name)
+
     def compute(self, inputs, outputs):
 
         # Create result folder first (if it must fail, let it fail as soon as possible)
-        result_folder_path = self.options['result_folder_path']
-        os.makedirs(result_folder_path, exist_ok=True)
-        stdout_file_path = pth.join(result_folder_path, _STDOUT_FILE_NAME)
-        polar_file_path = pth.join(result_folder_path, self.options['result_polar_file_name'])
+        if self.options['result_folder_path'] != '':
+            result_folder_path = self.options['result_folder_path']
+            os.makedirs(result_folder_path, exist_ok=True)
+            stdout_file_path = pth.join(result_folder_path, _STDOUT_FILE_NAME)
+            polar_file_path = pth.join(result_folder_path, self.options['result_polar_file_name'])
 
         # Get inputs
         reynolds = inputs['xfoil:reynolds']
@@ -91,40 +98,51 @@ class XfoilPolar(ExternalCodeComp):
         current_working_directory = os.getcwd()
         os.chdir(tmp_directory.name)
         super(XfoilPolar, self).compute(inputs, outputs)
-        shutil.move(_STDOUT_FILE_NAME, stdout_file_path)
         os.chdir(current_working_directory)
 
         # Post-process
+        tmp_stdout_file_path = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
         tmp_result_file_path = pth.join(tmp_directory.name, _RESULT_FILE_NAME)
-        cl_max_2d = self._get_max_cl(tmp_result_file_path)
+        result_array = self._read_polar(tmp_result_file_path)
+        if result_array is not None:
+            for name in self._xfoil_output_names:
+                outputs['xfoil:%s' % name] = result_array[name]
+            cl_max_2d = self._get_max_cl(result_array['alpha'], result_array['CL'])
+        else:
+            cl_max_2d = 1.9
 
         outputs['aerodynamics:Cl_max_2D'] = cl_max_2d
         outputs['aerodynamics:Cl_max_clean'] = cl_max_2d * 0.9 * np.cos(np.radians(sweep_25))
 
-        shutil.move(tmp_result_file_path, polar_file_path)
+        if self.options['result_folder_path'] != '':
+            shutil.move(tmp_stdout_file_path, stdout_file_path)
+            shutil.move(tmp_result_file_path, polar_file_path)
         tmp_directory.cleanup()
 
     @staticmethod
-    def _get_max_cl(xfoil_result_file_path):
+    def _read_polar(xfoil_result_file_path: str) -> np.ndarray:
         """
-            :param xfoil_result_file_path:
-            :return: maximum lift coefficient Cl value.
+        :param xfoil_result_file_path:
+        :return: numpy array with XFoil polar results
         """
         if os.path.isfile(xfoil_result_file_path):
+            dtypes = [(name, 'f8') for name in XfoilPolar._xfoil_output_names]
             result_array = np.genfromtxt(xfoil_result_file_path, skip_header=12,
-                                         dtype=[('alpha', 'f8'), ('CL', 'f8'), ('CD', 'f8'),
-                                                ('CDp', 'f8'), ('CM', 'f8'), ('Top_Xtr', 'f8'),
-                                                ('Bot_Xtr', 'f8')])
-            alpha = result_array['alpha']
-            lift_coeff = result_array['CL']
-
-            if max(alpha) >= 5.0:
-                max_cl = max(lift_coeff)
-            else:
-                max_cl = 1.9
-                _LOGGER.error('CL max not found!')
+                                         dtype=dtypes)
+            return result_array
         else:
-            max_cl = 1.9
             _LOGGER.error('XFOIL results file not found')
 
-        return max_cl
+    @staticmethod
+    def _get_max_cl(alpha: np.ndarray, lift_coeff: np.ndarray) -> float:
+        """
+
+        :param alpha:
+        :param lift_coeff: CL
+        :return: max CL if enough alpha computed
+        """
+        if max(alpha) >= 5.0:
+            return max(lift_coeff)
+        else:
+            _LOGGER.error('CL max not found!')
+            return 1.9
