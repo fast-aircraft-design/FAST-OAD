@@ -49,6 +49,7 @@ def input_xml() -> XPathReader:
     """
     :return: access to the sample xml data
     """
+    # TODO: have more consistency in input data (no need for the whole CeRAS01_baseline.xml)
     return XPathReader(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
