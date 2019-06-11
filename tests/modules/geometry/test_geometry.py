@@ -39,6 +39,16 @@ from fastoad.modules.geometry.cg_components.compute_cg_others \
     import ComputeOthersCG
 from fastoad.modules.geometry.cg_components.compute_cg_ratio_aft \
     import ComputeCGratioAft
+from fastoad.modules.geometry.cg_components.compute_cg_tanks \
+    import ComputeTanksCG
+from fastoad.modules.geometry.cg_components.compute_cg_wing \
+    import ComputeWingCG
+from fastoad.modules.geometry.cg_components.compute_global_cg \
+    import ComputeGlobalCG
+from fastoad.modules.geometry.cg_components.compute_max_cg_ratio \
+    import ComputeMaxCGratio
+from fastoad.modules.geometry.cg_components.compute_static_margin \
+    import ComputeStaticMargin
 
 
 
@@ -82,8 +92,8 @@ def test_compute_aero_center(input_xml: XPathReader):
     outputs = {}
     component.compute(inputs, outputs)
     x_ac_ratio = outputs['x_ac_ratio']
-    print(x_ac_ratio)
     assert x_ac_ratio == pytest.approx(0.537521, abs=1e-6)
+
 
 def test_compute_cg_control_surfaces(input_xml: XPathReader):
     """ Tests computation of control surfaces center of gravity """
@@ -114,6 +124,7 @@ def test_compute_cg_control_surfaces(input_xml: XPathReader):
     x_cg_control_absolute = outputs['cg_airframe:A4']
     assert x_cg_control_absolute == pytest.approx(19.24, abs=1e-2)
 
+
 def test_compute_cg_loadcase1(input_xml: XPathReader):
     """ Tests computation of center of gravity for load case 1 """
     
@@ -140,6 +151,7 @@ def test_compute_cg_loadcase1(input_xml: XPathReader):
     component.compute(inputs, outputs)
     cg_ratio_lc1 = outputs['cg_ratio_lc1']
     assert cg_ratio_lc1 == pytest.approx(0.364924, abs=1e-6)
+
 
 def test_compute_cg_loadcase2(input_xml: XPathReader):
     """ Tests computation of center of gravity for load case 2 """
@@ -172,6 +184,7 @@ def test_compute_cg_loadcase2(input_xml: XPathReader):
     cg_ratio_lc2 = outputs['cg_ratio_lc2']
     assert cg_ratio_lc2 == pytest.approx(0.285139, abs=1e-6)
 
+
 def test_compute_cg_loadcase3(input_xml: XPathReader):
     """ Tests computation of center of gravity for load case 3 """
     
@@ -199,6 +212,7 @@ def test_compute_cg_loadcase3(input_xml: XPathReader):
     cg_ratio_lc3 = outputs['cg_ratio_lc3']
     assert cg_ratio_lc3 == pytest.approx(0.386260, abs=1e-6)
 
+
 def test_compute_cg_loadcase4(input_xml: XPathReader):
     """ Tests computation of center of gravity for load case 4 """
     
@@ -225,6 +239,7 @@ def test_compute_cg_loadcase4(input_xml: XPathReader):
     component.compute(inputs, outputs)
     cg_ratio_lc4 = outputs['cg_ratio_lc4']
     assert cg_ratio_lc4 == pytest.approx(0.388971, abs=1e-6)
+
 
 def test_compute_cg_others(input_xml: XPathReader):
     """ Tests computation of other components center of gravity """
@@ -318,6 +333,7 @@ def test_compute_cg_others(input_xml: XPathReader):
     assert x_cg_rear_fret == pytest.approx(20.87, abs=1e-2)
     x_cg_front_fret = outputs['cg:cg_front_fret']
     assert x_cg_front_fret == pytest.approx(9.94, abs=1e-2)
+
 
 def test_compute_cg_ratio_aft(input_xml: XPathReader):
     """ Tests computation of center of gravity with aft estimation """
@@ -466,3 +482,147 @@ def test_compute_cg_ratio_aft(input_xml: XPathReader):
     assert x_cg_plane_down == pytest.approx(40979.11, abs=1e-2)
     cg_ratio_aft = outputs['cg_ratio_aft']
     assert cg_ratio_aft == pytest.approx(0.387846, abs=1e-6)
+
+
+def test_compute_cg_tanks(input_xml: XPathReader):
+    """ Tests computation of tanks center of gravity """
+    inputs = {
+        'geometry:wing_front_spar_ratio_root': input_xml.get_float(
+            'Aircraft/geometry/wing/front/root'),
+        'geometry:wing_front_spar_ratio_kink': input_xml.get_float(
+            'Aircraft/geometry/wing/front/middle'),
+        'geometry:wing_front_spar_ratio_tip': input_xml.get_float(
+            'Aircraft/geometry/wing/front/tip'),
+        'geometry:wing_rear_spar_ratio_root': input_xml.get_float(
+            'Aircraft/geometry/wing/rear/root'),
+        'geometry:wing_rear_spar_ratio_kink': input_xml.get_float(
+            'Aircraft/geometry/wing/rear/middle'),
+        'geometry:wing_rear_spar_ratio_tip': input_xml.get_float(
+            'Aircraft/geometry/wing/rear/tip'),
+        'geometry:wing_l0': input_xml.get_float(
+            'Aircraft/geometry/wing/l0_wing'),
+        'geometry:wing_x0': input_xml.get_float(
+            'Aircraft/geometry/wing/x0_wing'),
+        'geometry:wing_l2': input_xml.get_float(
+            'Aircraft/geometry/wing/l2_wing'),
+        'geometry:wing_l3': input_xml.get_float(
+            'Aircraft/geometry/wing/l3_wing'),
+        'geometry:wing_l4': input_xml.get_float(
+            'Aircraft/geometry/wing/l4_wing'),
+        'geometry:wing_y2': input_xml.get_float(
+            'Aircraft/geometry/wing/y2_wing'),
+        'geometry:wing_x3': input_xml.get_float(
+            'Aircraft/geometry/wing/x3_wing'),
+        'geometry:wing_y3': input_xml.get_float(
+            'Aircraft/geometry/wing/y3_wing'),
+        'geometry:wing_y4': input_xml.get_float(
+            'Aircraft/geometry/wing/y4_wing'),
+        'geometry:wing_x4': input_xml.get_float(
+            'Aircraft/geometry/wing/x4_wing'),
+        'geometry:wing_position': input_xml.get_float(
+            'Aircraft/geometry/wing/fa_length'),
+        'geometry:fuselage_width_max': input_xml.get_float(
+            'Aircraft/geometry/fuselage/width_max')
+    }
+
+    component = ComputeTanksCG()
+    component.setup()
+    outputs = {}
+    component.compute(inputs, outputs)
+    x_cg_tank = outputs['cg:cg_tank']
+    assert x_cg_tank == pytest.approx(16.05, abs=1e-2)
+
+
+def test_compute_cg_wing(input_xml: XPathReader):
+    """ Tests computation of wing center of gravity """
+    inputs = {
+        'geometry:wing_break': input_xml.get_float(
+            'Aircraft/geometry/wing/wing_break'),
+        'geometry:wing_front_spar_ratio_root': input_xml.get_float(
+            'Aircraft/geometry/wing/front/root'),
+        'geometry:wing_front_spar_ratio_kink': input_xml.get_float(
+            'Aircraft/geometry/wing/front/middle'),
+        'geometry:wing_front_spar_ratio_tip': input_xml.get_float(
+            'Aircraft/geometry/wing/front/tip'),
+        'geometry:wing_rear_spar_ratio_root': input_xml.get_float(
+            'Aircraft/geometry/wing/rear/root'),
+        'geometry:wing_rear_spar_ratio_kink': input_xml.get_float(
+            'Aircraft/geometry/wing/rear/middle'),
+        'geometry:wing_rear_spar_ratio_tip': input_xml.get_float(
+            'Aircraft/geometry/wing/rear/tip'),
+        'geometry:wing_span': input_xml.get_float(
+            'Aircraft/geometry/wing/span'),
+        'geometry:wing_l0': input_xml.get_float(
+            'Aircraft/geometry/wing/l0_wing'),
+        'geometry:wing_x0': input_xml.get_float(
+            'Aircraft/geometry/wing/x0_wing'),
+        'geometry:wing_l2': input_xml.get_float(
+            'Aircraft/geometry/wing/l2_wing'),
+        'geometry:wing_l3': input_xml.get_float(
+            'Aircraft/geometry/wing/l3_wing'),
+        'geometry:wing_l4': input_xml.get_float(
+            'Aircraft/geometry/wing/l4_wing'),
+        'geometry:wing_y2': input_xml.get_float(
+            'Aircraft/geometry/wing/y2_wing'),
+        'geometry:wing_x3': input_xml.get_float(
+            'Aircraft/geometry/wing/x3_wing'),
+        'geometry:wing_y3': input_xml.get_float(
+            'Aircraft/geometry/wing/y3_wing'),
+        'geometry:wing_y4': input_xml.get_float(
+            'Aircraft/geometry/wing/y4_wing'),
+        'geometry:wing_x4': input_xml.get_float(
+            'Aircraft/geometry/wing/x4_wing'),
+        'geometry:wing_position': input_xml.get_float(
+            'Aircraft/geometry/wing/fa_length')
+    }
+
+    component = ComputeWingCG()
+    component.setup()
+    outputs = {}
+    component.compute(inputs, outputs)
+    x_cg_absolute = outputs['cg_airframe:A1']
+    assert x_cg_absolute == pytest.approx(16.67, abs=1e-2)
+
+
+def test_compute_global_cg(input_xml: XPathReader):
+    """ Tests computation of global center of gravity """
+    # TODO: Implement this test function.
+    assert 1.0 == pytest.approx(1.0, abs=1e-1)
+
+
+def test_compute_max_cg_ratio(input_xml: XPathReader):
+    """ Tests computation of maximum center of gravity ratio """
+    inputs = {
+        'cg_ratio_aft': 0.387846,
+        'cg_ratio_lc1': 0.364924,
+        'cg_ratio_lc2': 0.285139,
+        'cg_ratio_lc3': 0.386260,
+        'cg_ratio_lc4': 0.388971
+    }
+
+    component = ComputeMaxCGratio()
+    component.setup()
+    outputs = {}
+    component.compute(inputs, outputs)
+    cg_ratio = outputs['cg_ratio']
+    assert cg_ratio == pytest.approx(0.388971, abs=1e-6)
+
+def test_compute_static_margin(input_xml: XPathReader):
+    """ Tests computation of static margin """
+    inputs = {
+        'cg_ratio': 0.388971, 
+        'x_ac_ratio': 0.537521, 
+        'geometry:wing_l0': input_xml.get_float(
+            'Aircraft/geometry/wing/l0_wing'),
+        'geometry:wing_position': input_xml.get_float(
+            'Aircraft/geometry/wing/fa_length')
+    }
+
+    component = ComputeStaticMargin()
+    component.setup()
+    outputs = {}
+    component.compute(inputs, outputs)
+    static_margin = outputs['static_margin']
+    assert static_margin == pytest.approx(0.098550, abs=1e-6)
+    cg = outputs['cg:CG']
+    assert cg == pytest.approx(17.3, abs=1e-1)

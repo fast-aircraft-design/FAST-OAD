@@ -14,12 +14,12 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from fast.geometry.cg_components.compute_cg_ratio_aft import ComputeCGratioAft
-from fast.geometry.cg_components.compute_cg_loadcase1 import ComputeCGLoadCase1
-from fast.geometry.cg_components.compute_cg_loadcase2 import ComputeCGLoadCase2
-from fast.geometry.cg_components.compute_cg_loadcase3 import ComputeCGLoadCase3
-from fast.geometry.cg_components.compute_cg_loadcase4 import ComputeCGLoadCase4
-from fast.geometry.cg_components.compute_max_cg_ratio import ComputeMaxCGratio
+from fastoad.modules.geometry.cg_components.compute_cg_ratio_aft import ComputeCGratioAft
+from fastoad.modules.geometry.cg_components.compute_cg_loadcase1 import ComputeCGLoadCase1
+from fastoad.modules.geometry.cg_components.compute_cg_loadcase2 import ComputeCGLoadCase2
+from fastoad.modules.geometry.cg_components.compute_cg_loadcase3 import ComputeCGLoadCase3
+from fastoad.modules.geometry.cg_components.compute_cg_loadcase4 import ComputeCGLoadCase4
+from fastoad.modules.geometry.cg_components.compute_max_cg_ratio import ComputeMaxCGratio
 
 from openmdao.api import Group
 
