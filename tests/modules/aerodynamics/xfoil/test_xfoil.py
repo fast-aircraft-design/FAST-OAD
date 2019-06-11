@@ -21,7 +21,7 @@ import shutil
 
 import pytest
 
-from fastoad.modules.aerodynamics.xfoil import XfoilPolar
+from fastoad.modules.aerodynamics.xfoil import XfoilPolar, XfoilPoint
 from tests.conftest import root_folder
 
 XFOIL_EXE = pth.join(root_folder, 'XFOIL', 'xfoil.exe')
@@ -29,24 +29,16 @@ XFOIL_RESULTS = pth.join(pth.dirname(__file__), 'results')
 INPUT_PROFILE = pth.join(pth.dirname(__file__), 'data', 'BACJ-new.txt')
 
 
-@pytest.fixture(scope='module')
-def xfoil():
-    """ Prepares the XFOIL component"""
-    # Setup
+def test_polar_compute():
+    """ Tests a simple XFOIL run"""
+
     xfoil = XfoilPolar()
     xfoil.options['xfoil_exe_path'] = XFOIL_EXE
     xfoil.options['profile_path'] = INPUT_PROFILE
     xfoil.setup()
 
-    return xfoil
-
-
-def test_compute(xfoil):
-    """ Tests a simple XFOIL run"""
-
     if pth.exists(XFOIL_RESULTS):
         shutil.rmtree(XFOIL_RESULTS)
-
     inputs = {'xfoil:reynolds': 18000000,
               'xfoil:mach': 0.20,
               'geometry:wing_sweep_25': 25.,
@@ -64,3 +56,21 @@ def test_compute(xfoil):
     assert outputs['aerodynamics:Cl_max_clean'] == pytest.approx(1.5831, 1e-4)
     assert pth.exists(XFOIL_RESULTS)
     assert pth.exists(pth.join(XFOIL_RESULTS, 'polar_result.txt'))
+
+
+def test_point_compute():
+    """ Tests a simple XFOIL run"""
+
+    xfoil = XfoilPoint()
+    xfoil.options['xfoil_exe_path'] = XFOIL_EXE
+    xfoil.options['profile_path'] = INPUT_PROFILE
+    xfoil.options['result_folder_path'] = pth.join(XFOIL_RESULTS, 'point')
+    xfoil.setup()
+
+    inputs = {'xfoil:reynolds': 18000000,
+              'xfoil:mach': 0.20,
+              'xfoil:alpha': 1.,
+              }
+    outputs = {}
+    xfoil.compute(inputs, outputs)
+    assert outputs['xfoil:CL'] == pytest.approx(0.3870, 1e-4)
