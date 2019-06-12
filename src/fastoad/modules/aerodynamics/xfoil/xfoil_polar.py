@@ -18,6 +18,7 @@ import os
 import os.path as pth
 
 import numpy as np
+from openmdao.utils.file_wrap import InputFileGenerator
 
 from fastoad.modules.aerodynamics.xfoil.xfoil_computation import XfoilInputFileGenerator, \
     XfoilComputation
@@ -65,21 +66,20 @@ class XfoilPolar(XfoilComputation):
         """
         if max(alpha) >= 5.0:
             return max(lift_coeff)
-        else:
-            _LOGGER.error('CL max not found!')
-            return 1.9
+
+        _LOGGER.error('CL max not found!')
+        return 1.9
 
 
+# pylint: disable=too-few-public-methods
 class PolarIFG(XfoilInputFileGenerator):
-
-    def get_template(self):
-        return pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME)
-
-    def transfer_vars(self):
-        self.mark_anchor('RE')
-        self.transfer_var(self.inputs['profile:reynolds'], 1, 1)
-        self.mark_anchor('M')
-        self.transfer_var(self.inputs['profile:mach'], 1, 1)
+    """ Input file generator for a polar XFOIL computation """
 
     def __init__(self):
-        super(PolarIFG, self).__init__()
+        super(PolarIFG, self).__init__(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
+
+    def _transfer_vars(self, parser: InputFileGenerator, inputs: dict):
+        parser.mark_anchor('RE')
+        parser.transfer_var(inputs['profile:reynolds'], 1, 1)
+        parser.mark_anchor('M')
+        parser.transfer_var(inputs['profile:mach'], 1, 1)

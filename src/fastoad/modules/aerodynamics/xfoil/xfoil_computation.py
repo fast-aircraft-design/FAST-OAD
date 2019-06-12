@@ -19,13 +19,13 @@ import os.path as pth
 import shutil
 import tempfile
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import TypeVar, Optional
 
 import numpy as np
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 
-IFGSubclass = TypeVar('IFGSubclass', bound=InputFileGenerator)
+IFGSubclass = TypeVar('IFGSubclass', bound='XfoilInputFileGenerator')
 
 _INPUT_FILE_NAME = 'input.txt'
 _STDOUT_FILE_NAME = 'xfoil_calc.log'
@@ -81,10 +81,8 @@ class XfoilComputation(ExternalCodeComp):
         shutil.copy(self.options['profile_path'], tmp_profile_file_path)
 
         # input file
-        parser = self.options['input_file_generator']
-        parser.inputs = inputs
-        parser.set_generated_file(pth.join(tmp_directory.name, _INPUT_FILE_NAME))
-        parser.generate()
+        parser: IFGSubclass = self.options['input_file_generator']
+        parser.generate(pth.join(tmp_directory.name, _INPUT_FILE_NAME), inputs)
 
         # Run XFOIL
         current_working_directory = os.getcwd()
@@ -106,7 +104,7 @@ class XfoilComputation(ExternalCodeComp):
         tmp_directory.cleanup()
 
     @staticmethod
-    def _read_polar(xfoil_result_file_path: str) -> np.ndarray:
+    def _read_polar(xfoil_result_file_path: str) -> Optional[np.ndarray]:
         """
         :param xfoil_result_file_path:
         :return: numpy array with XFoil polar results
@@ -116,11 +114,13 @@ class XfoilComputation(ExternalCodeComp):
             result_array = np.genfromtxt(xfoil_result_file_path, skip_header=12,
                                          dtype=dtypes)
             return result_array
-        else:
-            _LOGGER.error('XFOIL results file not found')
+
+        _LOGGER.error('XFOIL results file not found')
+        return None
 
 
-class XfoilInputFileGenerator(InputFileGenerator, ABC):
+# pylint: disable=too-few-public-methods
+class XfoilInputFileGenerator(ABC):
     """
     Abstract class for generating XFOIL standard input
 
@@ -128,29 +128,32 @@ class XfoilInputFileGenerator(InputFileGenerator, ABC):
 
     .. code-block:: python
 
-        parser = MyXfoilInputFileGenerator()
-        parser.inputs = my_inputs
-        parser.set_generated_file(my_target_file_path)
-        parser.generate()
+        parser = MyXfoilInputFileGenerator(my_template_file_path)
+        parser.apply_values(my_target_file_path, my_openmdao_inputs)
 
     """
 
     @abstractmethod
-    def get_template(self):
-        """  :return: the path of template file """
+    def _transfer_vars(self, parser: InputFileGenerator, inputs: dict):
+        """
+        The place where to apply self.mark_anchor() and self.transfer_var()
+        :param parser:
+        :param inputs:
+        """
 
-    @abstractmethod
-    def transfer_vars(self):
-        """ The place where to apply self.mark_anchor() and self.transfer_var() """
-
-    def __init__(self):
+    def __init__(self, template_path):
         super(XfoilInputFileGenerator, self).__init__()
+        self._template_path = template_path
         self.inputs: dict = None
 
-    def generate(self, return_data=False):
-        if self.inputs is None:
-            raise AttributeError("self.inputs should be defined.")
-        self.set_template_file(pth.join(os.path.dirname(__file__), self.get_template()))
-        self.reset_anchor()
-        self.transfer_vars()
-        super(XfoilInputFileGenerator, self).generate()
+    def generate(self, target_file_path: str, inputs: dict):
+        """
+        Generates target file using provided inputs
+        :param target_file_path:
+        :param inputs:
+        """
+        parser = InputFileGenerator()
+        parser.set_template_file(self._template_path)
+        parser.set_generated_file(target_file_path)
+        self._transfer_vars(parser, inputs)
+        parser.generate()

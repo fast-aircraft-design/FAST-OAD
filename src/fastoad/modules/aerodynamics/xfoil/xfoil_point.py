@@ -18,9 +18,10 @@ import os
 import os.path as pth
 
 import numpy as np
+from openmdao.utils.file_wrap import InputFileGenerator
 
-from fastoad.modules.aerodynamics.xfoil.xfoil_computation import XfoilInputFileGenerator
-from . import XfoilComputation
+from fastoad.modules.aerodynamics.xfoil.xfoil_computation import XfoilInputFileGenerator, \
+    XfoilComputation
 
 _INPUT_FILE_NAME = 'point_input.txt'
 
@@ -38,18 +39,17 @@ class XfoilPoint(XfoilComputation):
         self.add_input('profile:alpha', val=np.nan)
 
 
+# pylint: disable=too-few-public-methods
 class PointIFG(XfoilInputFileGenerator):
-
-    def get_template(self):
-        return pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME)
-
-    def transfer_vars(self):
-        self.mark_anchor('RE')
-        self.transfer_var(self.inputs['profile:reynolds'], 1, 1)
-        self.mark_anchor('M')
-        self.transfer_var(self.inputs['profile:mach'], 1, 1)
-        self.mark_anchor('ALFA')
-        self.transfer_var(self.inputs['profile:alpha'], 1, 1)
+    """ Input file generator for a single alpha XFOIL computation """
 
     def __init__(self):
-        super(PointIFG, self).__init__()
+        super(PointIFG, self).__init__(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
+
+    def _transfer_vars(self, parser: InputFileGenerator, inputs: dict):
+        parser.mark_anchor('RE')
+        parser.transfer_var(inputs['profile:reynolds'], 1, 1)
+        parser.mark_anchor('M')
+        parser.transfer_var(inputs['profile:mach'], 1, 1)
+        parser.mark_anchor('ALFA')
+        parser.transfer_var(inputs['profile:alpha'], 1, 1)
