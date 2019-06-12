@@ -44,8 +44,6 @@ class PointIFG(XfoilInputFileGenerator):
         return pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME)
 
     def transfer_vars(self):
-        if self.inputs is None:
-            raise AttributeError("self.inputs should be defined.")
         self.mark_anchor('RE')
         self.transfer_var(self.inputs['profile:reynolds'], 1, 1)
         self.mark_anchor('M')
@@ -55,7 +53,3 @@ class PointIFG(XfoilInputFileGenerator):
 
     def __init__(self):
         super(PointIFG, self).__init__()
-        self.inputs: dict = None
-
-    def generate(self, return_data=False):
-        super(PointIFG, self).generate()

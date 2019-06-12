@@ -121,7 +121,19 @@ class XfoilComputation(ExternalCodeComp):
 
 
 class XfoilInputFileGenerator(InputFileGenerator, ABC):
-    """ Abstract class for generating XFOIL standard input """
+    """
+    Abstract class for generating XFOIL standard input
+
+    To be used with:
+
+    .. code-block:: python
+
+        parser = MyXfoilInputFileGenerator()
+        parser.inputs = my_inputs
+        parser.set_generated_file(my_target_file_path)
+        parser.generate()
+
+    """
 
     @abstractmethod
     def get_template(self):
@@ -133,8 +145,12 @@ class XfoilInputFileGenerator(InputFileGenerator, ABC):
 
     def __init__(self):
         super(XfoilInputFileGenerator, self).__init__()
-        self.set_template_file(pth.join(os.path.dirname(__file__), self.get_template()))
+        self.inputs: dict = None
 
     def generate(self, return_data=False):
+        if self.inputs is None:
+            raise AttributeError("self.inputs should be defined.")
+        self.set_template_file(pth.join(os.path.dirname(__file__), self.get_template()))
+        self.reset_anchor()
         self.transfer_vars()
         super(XfoilInputFileGenerator, self).generate()
