@@ -83,16 +83,16 @@ class XfoilPolar(ExternalCodeComp):
         # profile file
         shutil.copy(self.options['profile_path'], tmp_profile_file_path)
 
-        # input file
+        # standard input file
         parser = InputFileGenerator()
         parser.set_template_file(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
         parser.set_generated_file(tmp_stdin_file_path)
         parser.mark_anchor('LOAD')
         parser.transfer_var(tmp_profile_file_path, 1, 1)
         parser.mark_anchor('RE')
-        parser.transfer_var(reynolds, 1, 1)
+        parser.transfer_var(float(reynolds), 1, 1)
         parser.mark_anchor('M')
-        parser.transfer_var(mach, 1, 1)
+        parser.transfer_var(float(mach), 1, 1)
         parser.mark_anchor(_RESULT_FILE_NAME)
         parser.transfer_var(tmp_result_file_path, 0, 1)
         parser.generate()
@@ -133,8 +133,9 @@ class XfoilPolar(ExternalCodeComp):
             result_array = np.genfromtxt(xfoil_result_file_path, skip_header=12,
                                          dtype=dtypes)
             return result_array
-        else:
-            _LOGGER.error('XFOIL results file not found')
+
+        _LOGGER.error('XFOIL results file not found')
+        return None
 
     @staticmethod
     def _get_max_cl(alpha: np.ndarray, lift_coeff: np.ndarray) -> float:
@@ -146,6 +147,6 @@ class XfoilPolar(ExternalCodeComp):
         """
         if max(alpha) >= 5.0:
             return max(lift_coeff)
-        else:
-            _LOGGER.error('CL max not found!')
-            return 1.9
+
+        _LOGGER.error('CL max not found!')
+        return 1.9

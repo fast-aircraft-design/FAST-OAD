@@ -1,3 +1,4 @@
+""" Module for OpenMDAO-embedded XFOIL """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
