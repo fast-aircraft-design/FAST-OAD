@@ -47,10 +47,6 @@ class XfoilPolar(ExternalCodeComp):
         self.options.declare('result_polar_file_name', default=_RESULT_FILE_NAME, types=str)
 
     def setup(self):
-        self.options['external_input_files'] = [_INPUT_FILE_NAME, _PROFILE_FILE_NAME]
-        self.options['external_output_files'] = [_RESULT_FILE_NAME]
-        self.stdin = _INPUT_FILE_NAME
-        self.stdout = _STDOUT_FILE_NAME
         self.options['command'] = [self.options['xfoil_exe_path']]
 
         self.add_input('xfoil:reynolds', val=np.nan)
@@ -78,31 +74,38 @@ class XfoilPolar(ExternalCodeComp):
         sweep_25 = inputs['geometry:wing_sweep_25']
 
         # Pre-processing
-        tmp_directory = tempfile.TemporaryDirectory()
+        tmp_directory = tempfile.TemporaryDirectory(prefix='xfl')
+        tmp_profile_file_path = pth.join(tmp_directory.name, _PROFILE_FILE_NAME)
+        tmp_stdin_file_path = pth.join(tmp_directory.name, _INPUT_FILE_NAME)
+        tmp_stdout_file_path = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
+        tmp_result_file_path = pth.join(tmp_directory.name, _RESULT_FILE_NAME)
 
         # profile file
-        tmp_profile_file_path = pth.join(tmp_directory.name, _PROFILE_FILE_NAME)
         shutil.copy(self.options['profile_path'], tmp_profile_file_path)
 
         # input file
         parser = InputFileGenerator()
         parser.set_template_file(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
-        parser.set_generated_file(pth.join(tmp_directory.name, _INPUT_FILE_NAME))
+        parser.set_generated_file(tmp_stdin_file_path)
+        parser.mark_anchor('LOAD')
+        parser.transfer_var(tmp_profile_file_path, 1, 1)
         parser.mark_anchor('RE')
         parser.transfer_var(reynolds, 1, 1)
         parser.mark_anchor('M')
         parser.transfer_var(mach, 1, 1)
+        parser.mark_anchor(_RESULT_FILE_NAME)
+        parser.transfer_var(tmp_result_file_path, 0, 1)
         parser.generate()
 
+        self.stdin = tmp_stdin_file_path
+        self.stdout = tmp_stdout_file_path
+
         # Run XFOIL
-        current_working_directory = os.getcwd()
-        os.chdir(tmp_directory.name)
+        self.options['external_input_files'] = [tmp_stdin_file_path, tmp_profile_file_path]
+        self.options['external_output_files'] = [tmp_result_file_path]
         super(XfoilPolar, self).compute(inputs, outputs)
-        os.chdir(current_working_directory)
 
         # Post-process
-        tmp_stdout_file_path = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
-        tmp_result_file_path = pth.join(tmp_directory.name, _RESULT_FILE_NAME)
         result_array = self._read_polar(tmp_result_file_path)
         if result_array is not None:
             for name in self._xfoil_output_names:
