@@ -18,20 +18,24 @@ import os
 import os.path as pth
 import shutil
 import tempfile
+from abc import ABC, abstractmethod
+from typing import TypeVar
 
 import numpy as np
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 
-_INPUT_FILE_NAME = 'polar_input.txt'
-_STDOUT_FILE_NAME = 'polar_calc.log'
+IFGSubclass = TypeVar('IFGSubclass', bound=InputFileGenerator)
+
+_INPUT_FILE_NAME = 'input.txt'
+_STDOUT_FILE_NAME = 'xfoil_calc.log'
 _PROFILE_FILE_NAME = 'profile.txt'  # as specified in input file
 _RESULT_FILE_NAME = 'result.txt'  # as specified in input file
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class XfoilPolar(ExternalCodeComp):
+class XfoilComputation(ExternalCodeComp):
     """
     Runs a polar computation with XFOIL and returns the max lift coefficient
     """
@@ -45,6 +49,7 @@ class XfoilPolar(ExternalCodeComp):
                              default=os.path.join(os.path.dirname(__file__), 'BACJ.txt'), types=str)
         self.options.declare('result_folder_path', default='', types=str)
         self.options.declare('result_polar_file_name', default=_RESULT_FILE_NAME, types=str)
+        self.options.declare('input_file_generator', types=object)  # types=IFGSubclass
 
     def setup(self):
         self.options['external_input_files'] = [_INPUT_FILE_NAME, _PROFILE_FILE_NAME]
@@ -53,12 +58,8 @@ class XfoilPolar(ExternalCodeComp):
         self.stdout = _STDOUT_FILE_NAME
         self.options['command'] = [self.options['xfoil_exe_path']]
 
-        self.add_input('xfoil:reynolds', val=np.nan)
-        self.add_input('xfoil:mach', val=np.nan)
-        self.add_input('geometry:wing_sweep_25', val=np.nan)
-
-        self.add_output('aerodynamics:Cl_max_2D')
-        self.add_output('aerodynamics:Cl_max_clean')
+        self.add_input('profile:reynolds', val=np.nan)
+        self.add_input('profile:mach', val=np.nan)
 
         for name in self._xfoil_output_names:
             self.add_output('xfoil:%s' % name)
@@ -72,11 +73,6 @@ class XfoilPolar(ExternalCodeComp):
             stdout_file_path = pth.join(result_folder_path, _STDOUT_FILE_NAME)
             polar_file_path = pth.join(result_folder_path, self.options['result_polar_file_name'])
 
-        # Get inputs
-        reynolds = inputs['profile:reynolds']
-        mach = inputs['profile:mach']
-        sweep_25 = inputs['geometry:wing_sweep_25']
-
         # Pre-processing
         tmp_directory = tempfile.TemporaryDirectory()
 
@@ -85,19 +81,15 @@ class XfoilPolar(ExternalCodeComp):
         shutil.copy(self.options['profile_path'], tmp_profile_file_path)
 
         # input file
-        parser = InputFileGenerator()
-        parser.set_template_file(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
+        parser = self.options['input_file_generator']
+        parser.inputs = inputs
         parser.set_generated_file(pth.join(tmp_directory.name, _INPUT_FILE_NAME))
-        parser.mark_anchor('RE')
-        parser.transfer_var(reynolds, 1, 1)
-        parser.mark_anchor('M')
-        parser.transfer_var(mach, 1, 1)
         parser.generate()
 
         # Run XFOIL
         current_working_directory = os.getcwd()
         os.chdir(tmp_directory.name)
-        super(XfoilPolar, self).compute(inputs, outputs)
+        super(XfoilComputation, self).compute(inputs, outputs)
         os.chdir(current_working_directory)
 
         # Post-process
@@ -107,12 +99,6 @@ class XfoilPolar(ExternalCodeComp):
         if result_array is not None:
             for name in self._xfoil_output_names:
                 outputs['xfoil:%s' % name] = result_array[name]
-            cl_max_2d = self._get_max_cl(result_array['alpha'], result_array['CL'])
-        else:
-            cl_max_2d = 1.9
-
-        outputs['aerodynamics:Cl_max_2D'] = cl_max_2d
-        outputs['aerodynamics:Cl_max_clean'] = cl_max_2d * 0.9 * np.cos(np.radians(sweep_25))
 
         if self.options['result_folder_path'] != '':
             shutil.move(tmp_stdout_file_path, stdout_file_path)
@@ -126,23 +112,29 @@ class XfoilPolar(ExternalCodeComp):
         :return: numpy array with XFoil polar results
         """
         if os.path.isfile(xfoil_result_file_path):
-            dtypes = [(name, 'f8') for name in XfoilPolar._xfoil_output_names]
+            dtypes = [(name, 'f8') for name in XfoilComputation._xfoil_output_names]
             result_array = np.genfromtxt(xfoil_result_file_path, skip_header=12,
                                          dtype=dtypes)
             return result_array
         else:
             _LOGGER.error('XFOIL results file not found')
 
-    @staticmethod
-    def _get_max_cl(alpha: np.ndarray, lift_coeff: np.ndarray) -> float:
-        """
 
-        :param alpha:
-        :param lift_coeff: CL
-        :return: max CL if enough alpha computed
-        """
-        if max(alpha) >= 5.0:
-            return max(lift_coeff)
-        else:
-            _LOGGER.error('CL max not found!')
-            return 1.9
+class XfoilInputFileGenerator(InputFileGenerator, ABC):
+    """ Abstract class for generating XFOIL standard input """
+
+    @abstractmethod
+    def get_template(self):
+        """  :return: the path of template file """
+
+    @abstractmethod
+    def transfer_vars(self):
+        """ The place where to apply self.mark_anchor() and self.transfer_var() """
+
+    def __init__(self):
+        super(XfoilInputFileGenerator, self).__init__()
+        self.set_template_file(pth.join(os.path.dirname(__file__), self.get_template()))
+
+    def generate(self, return_data=False):
+        self.transfer_vars()
+        super(XfoilInputFileGenerator, self).generate()

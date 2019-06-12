@@ -11,5 +11,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from .xfoil_computation import XfoilComputation
 from .xfoil_point import XfoilPoint
 from .xfoil_polar import XfoilPolar

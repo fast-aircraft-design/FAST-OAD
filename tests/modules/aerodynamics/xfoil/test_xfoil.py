@@ -39,8 +39,8 @@ def test_polar_compute():
 
     if pth.exists(XFOIL_RESULTS):
         shutil.rmtree(XFOIL_RESULTS)
-    inputs = {'xfoil:reynolds': 18000000,
-              'xfoil:mach': 0.20,
+    inputs = {'profile:reynolds': 18000000,
+              'profile:mach': 0.20,
               'geometry:wing_sweep_25': 25.,
               }
     outputs = {}
@@ -49,13 +49,13 @@ def test_polar_compute():
     assert outputs['aerodynamics:Cl_max_clean'] == pytest.approx(1.5831, 1e-4)
     assert not pth.exists(XFOIL_RESULTS)
 
-    xfoil.options['result_folder_path'] = XFOIL_RESULTS
+    xfoil.options['result_folder_path'] = pth.join(XFOIL_RESULTS, 'polar')
     outputs = {}
     xfoil.compute(inputs, outputs)
     assert outputs['aerodynamics:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
     assert outputs['aerodynamics:Cl_max_clean'] == pytest.approx(1.5831, 1e-4)
     assert pth.exists(XFOIL_RESULTS)
-    assert pth.exists(pth.join(XFOIL_RESULTS, 'polar_result.txt'))
+    assert pth.exists(pth.join(XFOIL_RESULTS, 'polar', 'result.txt'))
 
 
 def test_point_compute():
@@ -67,9 +67,9 @@ def test_point_compute():
     xfoil.options['result_folder_path'] = pth.join(XFOIL_RESULTS, 'point')
     xfoil.setup()
 
-    inputs = {'xfoil:reynolds': 18000000,
-              'xfoil:mach': 0.20,
-              'xfoil:alpha': 1.,
+    inputs = {'profile:reynolds': 18000000,
+              'profile:mach': 0.20,
+              'profile:alpha': 1.,
               }
     outputs = {}
     xfoil.compute(inputs, outputs)

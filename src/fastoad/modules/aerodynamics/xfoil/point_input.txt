@@ -12,7 +12,7 @@ VISC
 ITER
 500
 PACC
-point_result.txt
+result.txt
 
 ALFA
 alpha_value

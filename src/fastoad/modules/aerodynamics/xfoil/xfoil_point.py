@@ -16,113 +16,46 @@ This module launches XFOIL computations
 import logging
 import os
 import os.path as pth
-import shutil
-import tempfile
 
 import numpy as np
-from openmdao.components.external_code_comp import ExternalCodeComp
-from openmdao.utils.file_wrap import InputFileGenerator
+
+from fastoad.modules.aerodynamics.xfoil.xfoil_computation import XfoilInputFileGenerator
+from . import XfoilComputation
 
 _INPUT_FILE_NAME = 'point_input.txt'
-_STDOUT_FILE_NAME = 'point_calc.log'
-_PROFILE_FILE_NAME = 'profile.txt'  # as specified in input file
-_RESULT_FILE_NAME = 'point_result.txt'  # as specified in input file
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class XfoilPoint(ExternalCodeComp):
+class XfoilPoint(XfoilComputation):
     """
-    Runs a polar computation with XFOIL and returns the max lift coefficient
+    Runs a point computation with XFOIL and returns the max lift coefficient
     """
-
-    _xfoil_output_names = ['alpha', 'CL', 'CD', 'CDp', 'CM', 'Top_Xtr', 'Bot_Xtr']
-    """Column names in XFOIL polar result"""
-
-    def initialize(self):
-        self.options.declare('xfoil_exe_path', types=str)
-        self.options.declare('profile_path',
-                             default=os.path.join(os.path.dirname(__file__), 'BACJ.txt'), types=str)
-        self.options.declare('result_folder_path', default='', types=str)
-        self.options.declare('result_polar_file_name', default=_RESULT_FILE_NAME, types=str)
 
     def setup(self):
-        self.options['external_input_files'] = [_INPUT_FILE_NAME, _PROFILE_FILE_NAME]
-        self.options['external_output_files'] = [_RESULT_FILE_NAME]
-        self.stdin = _INPUT_FILE_NAME
-        self.stdout = _STDOUT_FILE_NAME
-        self.options['command'] = [self.options['xfoil_exe_path']]
+        super(XfoilPoint, self).setup()
+        self.options['input_file_generator'] = PointIFG()
+        self.add_input('profile:alpha', val=np.nan)
 
-        self.add_input('xfoil:reynolds', val=np.nan)
-        self.add_input('xfoil:mach', val=np.nan)
-        self.add_input('xfoil:alpha', val=np.nan)
 
-        for name in self._xfoil_output_names:
-            if name != 'alpha':
-                self.add_output('xfoil:%s' % name)
+class PointIFG(XfoilInputFileGenerator):
 
-    def compute(self, inputs, outputs):
+    def get_template(self):
+        return pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME)
 
-        # Create result folder first (if it must fail, let it fail as soon as possible)
-        if self.options['result_folder_path'] != '':
-            result_folder_path = self.options['result_folder_path']
-            os.makedirs(result_folder_path, exist_ok=True)
-            stdout_file_path = pth.join(result_folder_path, _STDOUT_FILE_NAME)
-            polar_file_path = pth.join(result_folder_path, self.options['result_polar_file_name'])
+    def transfer_vars(self):
+        if self.inputs is None:
+            raise AttributeError("self.inputs should be defined.")
+        self.mark_anchor('RE')
+        self.transfer_var(self.inputs['profile:reynolds'], 1, 1)
+        self.mark_anchor('M')
+        self.transfer_var(self.inputs['profile:mach'], 1, 1)
+        self.mark_anchor('ALFA')
+        self.transfer_var(self.inputs['profile:alpha'], 1, 1)
 
-        # Get inputs
-        reynolds = inputs['xfoil:reynolds']
-        mach = inputs['xfoil:mach']
-        alpha = inputs['xfoil:alpha']
+    def __init__(self):
+        super(PointIFG, self).__init__()
+        self.inputs: dict = None
 
-        # Pre-processing
-        tmp_directory = tempfile.TemporaryDirectory()
-
-        # profile file
-        tmp_profile_file_path = pth.join(tmp_directory.name, _PROFILE_FILE_NAME)
-        shutil.copy(self.options['profile_path'], tmp_profile_file_path)
-
-        # input file
-        parser = InputFileGenerator()
-        parser.set_template_file(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
-        parser.set_generated_file(pth.join(tmp_directory.name, _INPUT_FILE_NAME))
-        parser.mark_anchor('RE')
-        parser.transfer_var(reynolds, 1, 1)
-        parser.mark_anchor('M')
-        parser.transfer_var(mach, 1, 1)
-        parser.mark_anchor('ALFA')
-        parser.transfer_var(alpha, 1, 1)
-        parser.generate()
-
-        # Run XFOIL
-        current_working_directory = os.getcwd()
-        os.chdir(tmp_directory.name)
-        super(XfoilPoint, self).compute(inputs, outputs)
-        os.chdir(current_working_directory)
-
-        # Post-process
-        tmp_stdout_file_path = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
-        tmp_result_file_path = pth.join(tmp_directory.name, _RESULT_FILE_NAME)
-        result_array = self._read_polar(tmp_result_file_path)
-        if result_array is not None:
-            for name in self._xfoil_output_names:
-                outputs['xfoil:%s' % name] = result_array[name]
-
-        if self.options['result_folder_path'] != '':
-            shutil.move(tmp_stdout_file_path, stdout_file_path)
-            shutil.move(tmp_result_file_path, polar_file_path)
-        tmp_directory.cleanup()
-
-    @staticmethod
-    def _read_polar(xfoil_result_file_path: str) -> np.ndarray:
-        """
-        :param xfoil_result_file_path:
-        :return: numpy array with XFoil polar results
-        """
-        if os.path.isfile(xfoil_result_file_path):
-            dtypes = [(name, 'f8') for name in XfoilPoint._xfoil_output_names]
-            result_array = np.genfromtxt(xfoil_result_file_path, skip_header=12,
-                                         dtype=dtypes)
-            return result_array
-        else:
-            _LOGGER.error('XFOIL results file not found')
+    def generate(self, return_data=False):
+        super(PointIFG, self).generate()
