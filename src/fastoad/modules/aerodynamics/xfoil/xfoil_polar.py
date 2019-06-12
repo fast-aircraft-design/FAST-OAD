@@ -79,7 +79,20 @@ class PolarIFG(XfoilInputFileGenerator):
         super(PolarIFG, self).__init__(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
 
     def _transfer_vars(self, parser: InputFileGenerator, inputs: dict):
+        reynolds = inputs['profile:reynolds']
+        mach = inputs['profile:mach']
+
+        # in case some are arrays...
+        try:
+            reynolds = reynolds[0]
+        except:
+            pass
+        try:
+            mach = mach[0]
+        except:
+            pass
+
         parser.mark_anchor('RE')
-        parser.transfer_var(inputs['profile:reynolds'], 1, 1)
+        parser.transfer_var(reynolds, 1, 1)
         parser.mark_anchor('M')
-        parser.transfer_var(inputs['profile:mach'], 1, 1)
+        parser.transfer_var(mach, 1, 1)

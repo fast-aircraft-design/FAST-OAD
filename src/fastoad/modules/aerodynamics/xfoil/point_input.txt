@@ -1,5 +1,3 @@
-LOAD
-profile.txt
 PLOP
 g
 
@@ -12,7 +10,7 @@ VISC
 ITER
 500
 PACC
-result.txt
+result_file
 
 ALFA
 alpha_value

@@ -29,8 +29,9 @@ IFGSubclass = TypeVar('IFGSubclass', bound='XfoilInputFileGenerator')
 
 _INPUT_FILE_NAME = 'input.txt'
 _STDOUT_FILE_NAME = 'xfoil_calc.log'
-_PROFILE_FILE_NAME = 'profile.txt'  # as specified in input file
-_RESULT_FILE_NAME = 'result.txt'  # as specified in input file
+_PROFILE_FILE_NAME = 'profile.txt'
+_RESULT_FILE_NAME = 'result.txt'
+_RESULT_PLACE_FOLDER = 'result_file'  # as specified in input file
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,17 +53,14 @@ class XfoilComputation(ExternalCodeComp):
         self.options.declare('input_file_generator', types=object)  # types=IFGSubclass
 
     def setup(self):
-        self.options['external_input_files'] = [_INPUT_FILE_NAME, _PROFILE_FILE_NAME]
-        self.options['external_output_files'] = [_RESULT_FILE_NAME]
-        self.stdin = _INPUT_FILE_NAME
-        self.stdout = _STDOUT_FILE_NAME
-        self.options['command'] = [self.options['xfoil_exe_path']]
 
         self.add_input('profile:reynolds', val=np.nan)
         self.add_input('profile:mach', val=np.nan)
 
         for name in self._xfoil_output_names:
             self.add_output('xfoil:%s' % name)
+
+        self.declare_partials(of='xfoil:CL', wrt='profile:alpha', method='fd', step=0.4)
 
     def compute(self, inputs, outputs):
 
@@ -74,27 +72,31 @@ class XfoilComputation(ExternalCodeComp):
             polar_file_path = pth.join(result_folder_path, self.options['result_polar_file_name'])
 
         # Pre-processing
-        tmp_directory = tempfile.TemporaryDirectory()
+        tmp_directory = tempfile.TemporaryDirectory(prefix='xfl')
+        tmp_profile_file_path = pth.join(tmp_directory.name, _PROFILE_FILE_NAME)
+        tmp_stdin_file_path = pth.join(tmp_directory.name, _INPUT_FILE_NAME)
+        tmp_stdout_file_path = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
+        tmp_result_file_path = pth.join(tmp_directory.name, _RESULT_FILE_NAME)
 
         # profile file
-        tmp_profile_file_path = pth.join(tmp_directory.name, _PROFILE_FILE_NAME)
         shutil.copy(self.options['profile_path'], tmp_profile_file_path)
 
         # input file
         parser: IFGSubclass = self.options['input_file_generator']
-        parser.generate(pth.join(tmp_directory.name, _INPUT_FILE_NAME), inputs)
+        parser.generate(tmp_stdin_file_path, tmp_result_file_path, inputs)
+        self.stdin = tmp_stdin_file_path
+        self.stdout = tmp_stdout_file_path
+
+        self.options['external_input_files'] = [tmp_stdin_file_path, tmp_profile_file_path]
+        self.options['external_output_files'] = [tmp_result_file_path]
+        self.options['command'] = [self.options['xfoil_exe_path'], tmp_profile_file_path]
 
         # Run XFOIL
-        current_working_directory = os.getcwd()
-        os.chdir(tmp_directory.name)
         super(XfoilComputation, self).compute(inputs, outputs)
-        os.chdir(current_working_directory)
 
         # Post-process
-        tmp_stdout_file_path = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
-        tmp_result_file_path = pth.join(tmp_directory.name, _RESULT_FILE_NAME)
         result_array = self._read_polar(tmp_result_file_path)
-        if result_array is not None:
+        if result_array is not None and result_array.size > 0:
             for name in self._xfoil_output_names:
                 outputs['xfoil:%s' % name] = result_array[name]
 
@@ -141,19 +143,22 @@ class XfoilInputFileGenerator(ABC):
         :param inputs:
         """
 
-    def __init__(self, template_path):
+    def __init__(self, template_path: str):
         super(XfoilInputFileGenerator, self).__init__()
         self._template_path = template_path
-        self.inputs: dict = None
 
-    def generate(self, target_file_path: str, inputs: dict):
+    def generate(self, target_file_path: str, result_file_path: str, inputs: dict):
         """
         Generates target file using provided inputs
         :param target_file_path:
+        :param result_file_path:
         :param inputs:
         """
         parser = InputFileGenerator()
         parser.set_template_file(self._template_path)
         parser.set_generated_file(target_file_path)
         self._transfer_vars(parser, inputs)
+        parser.reset_anchor()
+        parser.mark_anchor(_RESULT_PLACE_FOLDER)
+        parser.transfer_var(result_file_path, 0, 1)
         parser.generate()
