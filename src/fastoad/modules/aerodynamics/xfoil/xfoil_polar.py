@@ -14,14 +14,12 @@ This module launches XFOIL computations
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
-import os
 import os.path as pth
 
 import numpy as np
-from openmdao.utils.file_wrap import InputFileGenerator
 
-from fastoad.modules.aerodynamics.xfoil.xfoil_computation import XfoilInputFileGenerator, \
-    XfoilComputation
+from fastoad.modules.aerodynamics.xfoil.xfoil_computation import XfoilComputation, \
+    XfoilInputFileGenerator
 
 _INPUT_FILE_NAME = 'polar_input.txt'
 
@@ -35,13 +33,11 @@ class XfoilPolar(XfoilComputation):
 
     def setup(self):
         super(XfoilPolar, self).setup()
-        self.options['input_file_generator'] = PolarIFG()
+        self.options['input_file_generator'] = XfoilInputFileGenerator(
+            pth.join(pth.dirname(__file__), _INPUT_FILE_NAME))
         self.add_input('geometry:wing_sweep_25', val=np.nan)
         self.add_output('aerodynamics:Cl_max_2D')
         self.add_output('aerodynamics:Cl_max_clean')
-
-    _xfoil_output_names = ['alpha', 'CL', 'CD', 'CDp', 'CM', 'Top_Xtr', 'Bot_Xtr']
-    """Column names in XFOIL polar result"""
 
     def compute(self, inputs, outputs):
 
@@ -69,30 +65,3 @@ class XfoilPolar(XfoilComputation):
 
         _LOGGER.error('CL max not found!')
         return 1.9
-
-
-# pylint: disable=too-few-public-methods
-class PolarIFG(XfoilInputFileGenerator):
-    """ Input file generator for a polar XFOIL computation """
-
-    def __init__(self):
-        super(PolarIFG, self).__init__(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
-
-    def _transfer_vars(self, parser: InputFileGenerator, inputs: dict):
-        reynolds = inputs['profile:reynolds']
-        mach = inputs['profile:mach']
-
-        # in case some are arrays...
-        try:
-            reynolds = reynolds[0]
-        except:
-            pass
-        try:
-            mach = mach[0]
-        except:
-            pass
-
-        parser.mark_anchor('RE')
-        parser.transfer_var(reynolds, 1, 1)
-        parser.mark_anchor('M')
-        parser.transfer_var(mach, 1, 1)

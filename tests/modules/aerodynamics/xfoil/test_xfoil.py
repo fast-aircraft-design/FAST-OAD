@@ -32,7 +32,7 @@ XFOIL_RESULTS = pth.join(pth.dirname(__file__), 'results')
 INPUT_PROFILE = pth.join(pth.dirname(__file__), 'data', 'BACJ-new.txt')
 
 
-def test_polar_compute():
+def test_cl_max_from_polar():
     """ Tests a simple XFOIL run"""
 
     xfoil = XfoilPolar()
@@ -61,25 +61,47 @@ def test_polar_compute():
     assert pth.exists(pth.join(XFOIL_RESULTS, 'polar', 'result.txt'))
 
 
+# @pytest.mark.skip('XFOIL gives different results than with complete polar.')
+# TODO: try and figure out how to make things consistent
 def test_point_compute():
-    """ Tests a simple XFOIL run"""
+    """ Tests a single alpha XFOIL run"""
 
     xfoil = XfoilPoint()
     xfoil.options['xfoil_exe_path'] = XFOIL_EXE
     xfoil.options['profile_path'] = INPUT_PROFILE
-    xfoil.options['result_folder_path'] = pth.join(XFOIL_RESULTS, 'point')
     xfoil.setup()
 
+    # Same result as in polar
+    inputs = {'profile:reynolds': 18000000, 'profile:mach': 0.20, 'profile:alpha': 20.}
+    outputs = {}
+    xfoil.compute(inputs, outputs)
+    assert outputs['xfoil:CL'] == pytest.approx(1.9226, 1e-4)
+
+    # XFOIL computation fails
+    inputs['profile:alpha'] = 21.
+    outputs = {}
+    xfoil.compute(inputs, outputs)
+    assert 'xfoil:CL' not in outputs
+
+    # Same result as in polar (identified maximum)
+    inputs['profile:alpha'] = 21.5
+    outputs = {}
+    xfoil.compute(inputs, outputs)
+    assert outputs['xfoil:CL'] == pytest.approx(1.9408, 1e-4)
+
+    # AoA = 20.28°: larger CL than max from polar computation
     inputs = {'profile:reynolds': 18000000,
               'profile:mach': 0.20,
-              'profile:alpha': 1.,
+              'profile:alpha': 20.28,
               }
     outputs = {}
     xfoil.compute(inputs, outputs)
-    assert outputs['xfoil:CL'] == pytest.approx(0.3870, 1e-4)
+    assert outputs['xfoil:CL'] == pytest.approx(1.9844, 1e-4)
 
 
-def test_cl_max():
+@pytest.mark.skip('Need to be refined, as XFOIL results can be unreliable when not using polar')
+def test_cl_max_from_openmdao():
+    """ Tests how to get CL max using OpenMDAO """
     xfoil = XfoilPoint()
     xfoil.options['xfoil_exe_path'] = XFOIL_EXE
     xfoil.options['profile_path'] = INPUT_PROFILE

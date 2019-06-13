@@ -46,28 +46,18 @@ class PointIFG(XfoilInputFileGenerator):
     def __init__(self):
         super(PointIFG, self).__init__(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
 
-    def _transfer_vars(self, parser: InputFileGenerator, inputs: dict):
-        reynolds = inputs['profile:reynolds']
-        mach = inputs['profile:mach']
+    @staticmethod
+    def _transfer_vars(parser: InputFileGenerator, inputs: dict):
+        super(PointIFG, PointIFG)._transfer_vars(parser, inputs)
+        parser.reset_anchor()
+
         alpha = inputs['profile:alpha']
 
-        # in case some are arrays...
-        try:
-            reynolds = reynolds[0]
-        except:
-            pass
-        try:
-            mach = mach[0]
-        except:
-            pass
+        # in case it can be an arrays...
         try:
             alpha = alpha[0]
-        except:
+        except TypeError:
             pass
 
-        parser.mark_anchor('RE')
-        parser.transfer_var(reynolds, 1, 1)
-        parser.mark_anchor('M')
-        parser.transfer_var(mach, 1, 1)
         parser.mark_anchor('ALFA')
         parser.transfer_var(round(alpha, 2), 1, 1)

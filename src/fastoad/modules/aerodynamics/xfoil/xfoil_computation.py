@@ -18,7 +18,6 @@ import os
 import os.path as pth
 import shutil
 import tempfile
-from abc import ABC, abstractmethod
 from typing import TypeVar, Optional
 
 import numpy as np
@@ -122,7 +121,7 @@ class XfoilComputation(ExternalCodeComp):
 
 
 # pylint: disable=too-few-public-methods
-class XfoilInputFileGenerator(ABC):
+class XfoilInputFileGenerator():
     """
     Abstract class for generating XFOIL standard input
 
@@ -135,13 +134,29 @@ class XfoilInputFileGenerator(ABC):
 
     """
 
-    @abstractmethod
-    def _transfer_vars(self, parser: InputFileGenerator, inputs: dict):
+    @staticmethod
+    def _transfer_vars(parser: InputFileGenerator, inputs: dict):
         """
         The place where to apply self.mark_anchor() and self.transfer_var()
         :param parser:
         :param inputs:
         """
+        # Transfer Reynolds and Mach (always used)
+        reynolds = inputs['profile:reynolds']
+        mach = inputs['profile:mach']
+        # in case some are arrays...
+        try:
+            reynolds = reynolds[0]
+        except TypeError:
+            pass
+        try:
+            mach = mach[0]
+        except TypeError:
+            pass
+        parser.mark_anchor('RE')
+        parser.transfer_var(reynolds, 1, 1)
+        parser.mark_anchor('M')
+        parser.transfer_var(mach, 1, 1)
 
     def __init__(self, template_path: str):
         super(XfoilInputFileGenerator, self).__init__()
@@ -158,7 +173,10 @@ class XfoilInputFileGenerator(ABC):
         parser.set_template_file(self._template_path)
         parser.set_generated_file(target_file_path)
         self._transfer_vars(parser, inputs)
+
+        # Set result file
         parser.reset_anchor()
         parser.mark_anchor(_RESULT_PLACE_FOLDER)
         parser.transfer_var(result_file_path, 0, 1)
+
         parser.generate()
