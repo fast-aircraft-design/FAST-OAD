@@ -25,6 +25,7 @@ from openmdao.utils.file_wrap import InputFileGenerator
 
 _INPUT_FILE_NAME = 'polar_input.txt'
 _STDOUT_FILE_NAME = 'polar_calc.log'
+_STDERR_FILE_NAME = 'polar_calc.err'
 _PROFILE_FILE_NAME = 'profile.txt'  # as specified in input file
 _RESULT_FILE_NAME = 'polar_result.txt'  # as specified in input file
 
@@ -62,22 +63,21 @@ class XfoilPolar(ExternalCodeComp):
     def compute(self, inputs, outputs):
 
         # Create result folder first (if it must fail, let it fail as soon as possible)
-        if self.options['result_folder_path'] != '':
-            result_folder_path = self.options['result_folder_path']
+        result_folder_path = self.options['result_folder_path']
+        if result_folder_path != '':
             os.makedirs(result_folder_path, exist_ok=True)
-            stdout_file_path = pth.join(result_folder_path, _STDOUT_FILE_NAME)
-            polar_file_path = pth.join(result_folder_path, self.options['result_polar_file_name'])
 
         # Get inputs
         reynolds = inputs['xfoil:reynolds']
         mach = inputs['xfoil:mach']
         sweep_25 = inputs['geometry:wing_sweep_25']
 
-        # Pre-processing
+        # Pre-processing (populating temp directory)
         tmp_directory = tempfile.TemporaryDirectory(prefix='xfl')
         tmp_profile_file_path = pth.join(tmp_directory.name, _PROFILE_FILE_NAME)
-        tmp_stdin_file_path = pth.join(tmp_directory.name, _INPUT_FILE_NAME)
-        tmp_stdout_file_path = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
+        self.stdin = pth.join(tmp_directory.name, _INPUT_FILE_NAME)
+        self.stdout = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
+        self.stderr = pth.join(tmp_directory.name, _STDERR_FILE_NAME)
         tmp_result_file_path = pth.join(tmp_directory.name, _RESULT_FILE_NAME)
 
         # profile file
@@ -86,7 +86,7 @@ class XfoilPolar(ExternalCodeComp):
         # standard input file
         parser = InputFileGenerator()
         parser.set_template_file(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
-        parser.set_generated_file(tmp_stdin_file_path)
+        parser.set_generated_file(self.stdin)
         parser.mark_anchor('LOAD')
         parser.transfer_var(tmp_profile_file_path, 1, 1)
         parser.mark_anchor('RE')
@@ -97,15 +97,12 @@ class XfoilPolar(ExternalCodeComp):
         parser.transfer_var(tmp_result_file_path, 0, 1)
         parser.generate()
 
-        self.stdin = tmp_stdin_file_path
-        self.stdout = tmp_stdout_file_path
-
         # Run XFOIL
-        self.options['external_input_files'] = [tmp_stdin_file_path, tmp_profile_file_path]
+        self.options['external_input_files'] = [self.stdin, tmp_profile_file_path]
         self.options['external_output_files'] = [tmp_result_file_path]
         super(XfoilPolar, self).compute(inputs, outputs)
 
-        # Post-process
+        # Post-processing
         result_array = self._read_polar(tmp_result_file_path)
         if result_array is not None:
             for name in self._xfoil_output_names:
@@ -117,9 +114,21 @@ class XfoilPolar(ExternalCodeComp):
         outputs['aerodynamics:Cl_max_2D'] = cl_max_2d
         outputs['aerodynamics:Cl_max_clean'] = cl_max_2d * 0.9 * np.cos(np.radians(sweep_25))
 
+        # Getting output files if needed
         if self.options['result_folder_path'] != '':
-            shutil.move(tmp_stdout_file_path, stdout_file_path)
-            shutil.move(tmp_result_file_path, polar_file_path)
+            if pth.exists(tmp_result_file_path):
+                polar_file_path = pth.join(result_folder_path,
+                                           self.options['result_polar_file_name'])
+                shutil.move(tmp_result_file_path, polar_file_path)
+
+            if pth.exists(self.stdout):
+                stdout_file_path = pth.join(result_folder_path, _STDOUT_FILE_NAME)
+                shutil.move(self.stdout, stdout_file_path)
+
+            if pth.exists(self.stderr):
+                stderr_file_path = pth.join(result_folder_path, _STDERR_FILE_NAME)
+                shutil.move(self.stderr, stderr_file_path)
+
         tmp_directory.cleanup()
 
     @staticmethod
