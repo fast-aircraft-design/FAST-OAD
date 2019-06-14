@@ -218,16 +218,16 @@ class OpenVSP(ExplicitComponent):
                           '\n')
         fichier.close()
         f_vsp_temp = os.path.join(self.tmpdir, vspaero_basename + '.lod')
-        if os.path.isfile(f_vsp_temp):
-            os.remove(os.path.join(self.tmpdir, vspaero_basename + '.lod'))
-            os.remove(os.path.join(self.tmpdir, vspaero_basename + '.adb'))
-            os.remove(
-                os.path.join(
-                    self.tmpdir,
-                    vspaero_basename + '.history'))
-            os.remove(os.path.join(self.tmpdir, vspaero_basename + '.csv'))
-            os.remove(
-                os.path.join(self.tmpdir, vspaero_basename + '.vspaero'))
+        # if os.path.isfile(f_vsp_temp):
+        # os.remove(os.path.join(self.tmpdir, vspaero_basename + '.lod'))
+        # os.remove(os.path.join(self.tmpdir, vspaero_basename + '.adb'))
+        # os.remove(
+        #     os.path.join(
+        #         self.tmpdir,
+        #         vspaero_basename + '.history'))
+        # os.remove(os.path.join(self.tmpdir, vspaero_basename + '.csv'))
+        # os.remove(
+        #     os.path.join(self.tmpdir, vspaero_basename + '.vspaero'))
 
     # use equations to calculate the oswald coefficient, in order not to use
     # vspaero

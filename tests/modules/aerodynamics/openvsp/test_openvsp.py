@@ -100,7 +100,7 @@ def test_run(inputs):
     openvsp.setup()
 
     inputs['AoA_min'] = 0.0
-    inputs['AoA_max'] = 0.1
+    inputs['AoA_max'] = 0.5
     inputs['AoA_step'] = 0.1
     inputs['openvsp:mach'] = 0.75
     inputs['openvsp:altitude'] = 32000
@@ -114,6 +114,23 @@ def test_run(inputs):
 
     assert pth.exists(pth.join(TMP_DIR, OpenVSP.result_filename))
     # os.remove(pth.join(TMP_DIR, OpenVSP.result_filename))
+
+# def test_run_takeoff(inputs):
+#
+#     inputs['AoA_min'] = 0.0
+#     inputs['AoA_max'] = 0.1
+#     inputs['AoA_step'] = 0.1
+#     inputs['openvsp:mach'] = 0.75
+#     inputs['openvsp:altitude'] = 32000
+#
+#     self.openvsp.run(0.0, 0.1, 0.1, 0.75, 32000, takeoff=True)
+#     self.assertTrue(
+#         pth.exists(pth.join(TMP_DIR, OpenVSP.vspscript_filename)))
+#     os.remove(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
+#     self.assertTrue(
+#         pth.exists(pth.join(TMP_DIR, OpenVSP.takeoff_result_filename)))
+#     os.remove(pth.join(TMP_DIR, OpenVSP.takeoff_result_filename))
+
 
 # class TestOpenVSP(unittest.TestCase):
 #     fpath = pth.join(pth.dirname(__file__), 'data', 'A320base_units.xml')
