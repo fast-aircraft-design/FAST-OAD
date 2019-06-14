@@ -18,8 +18,9 @@ import os
 
 import win32event
 import win32process
-from fast.atmosphere import atmosphere
 from openmdao.core.explicitcomponent import ExplicitComponent
+
+from fastoad.utils.physics import Atmosphere
 
 
 class OpenVSP(ExplicitComponent):
@@ -49,25 +50,25 @@ class OpenVSP(ExplicitComponent):
     takeoff_result_filename = 'Result_of_vsp_takeoff.txt'
 
     def initialize(self):
-        self.metadata.declare('ovsp_dir',
-                              default=os.path.join(os.path.dirname(__file__), os.pardir,
+        self.options.declare('ovsp_dir',
+                             default=os.path.join(os.path.dirname(__file__), os.pardir,
                                                    'OpenVSP-3.5.1-win32'),
-                              types=str)
-        self.metadata.declare('result_dir',
-                              default=os.path.join(os.path.dirname(__file__), os.pardir, 'result'),
-                              types=str)
-        self.metadata.declare('tmp_dir',
-                              default=os.path.join(os.path.dirname(__file__), os.pardir, 'tmp'),
-                              types=str)
-        self.metadata.declare('openvsp_aero', default=False, types=bool)
-        self.metadata.declare('takeoff_flag', default=False, types=bool)
+                             types=str)
+        self.options.declare('result_dir',
+                             default=os.path.join(os.path.dirname(__file__), os.pardir, 'result'),
+                             types=str)
+        self.options.declare('tmp_dir',
+                             default=os.path.join(os.path.dirname(__file__), os.pardir, 'tmp'),
+                             types=str)
+        self.options.declare('openvsp_aero', default=False, types=bool)
+        self.options.declare('takeoff_flag', default=False, types=bool)
 
     def setup(self):
-        self.ovspdir = self.metadata['ovsp_dir']
-        self.resultdir = self.metadata['result_dir']
-        self.tmpdir = self.metadata['tmp_dir']
-        self.openvsp_aero = self.metadata['openvsp_aero']
-        self.takeoff_flag = self.metadata['takeoff_flag']
+        self.ovspdir = self.options['ovsp_dir']
+        self.resultdir = self.options['result_dir']
+        self.tmpdir = self.options['tmp_dir']
+        self.openvsp_aero = self.options['openvsp_aero']
+        self.takeoff_flag = self.options['takeoff_flag']
 
         if self.openvsp_aero:
             self.add_input('AoA_min_hs', val=0.)
@@ -96,29 +97,29 @@ class OpenVSP(ExplicitComponent):
 
     def compute(self, inputs, outputs):
         if self.openvsp_aero:
-            AoA_min = inputs['AoA_min_hs'][0]
-            AoA_max = inputs['AoA_max_hs'][0]
-            step = inputs['AoA_step_hs'][0]
-            mach = inputs['tlar:cruise_Mach'][0]
-            altitude = inputs['sizing_mission:cruise_altitude'][0]
+            AoA_min = inputs['AoA_min_hs']
+            AoA_max = inputs['AoA_max_hs']
+            step = inputs['AoA_step_hs']
+            mach = inputs['tlar:cruise_Mach']
+            altitude = inputs['sizing_mission:cruise_altitude']
         else:
-            AoA_min = inputs['AoA_min'][0]
-            AoA_max = inputs['AoA_max'][0]
-            step = inputs['AoA_step'][0]
-            mach = inputs['openvsp:mach'][0]
-            altitude = inputs['openvsp:altitude'][0]
+            AoA_min = inputs['AoA_min']
+            AoA_max = inputs['AoA_max']
+            step = inputs['AoA_step']
+            mach = inputs['openvsp:mach']
+            altitude = inputs['openvsp:altitude']
 
-        l2_wing = inputs['geometry:wing_l2'][0]
-        y2_wing = inputs['geometry:wing_y2'][0]
-        y3_wing = inputs['geometry:wing_y3'][0]
-        y4_wing = inputs['geometry:wing_y4'][0]
-        l4_wing = inputs['geometry:wing_l4'][0]
-        l3_wing = inputs['geometry:wing_l3'][0]
-        x3_wing = inputs['geometry:wing_x3'][0]
-        x4_wing = inputs['geometry:wing_x4'][0]
-        sref = inputs['geometry:wing_area'][0]
-        cref = inputs['geometry:wing_l0'][0]
-        bref = inputs['geometry:wing_span'][0]
+        l2_wing = inputs['geometry:wing_l2']
+        y2_wing = inputs['geometry:wing_y2']
+        y3_wing = inputs['geometry:wing_y3']
+        y4_wing = inputs['geometry:wing_y4']
+        l4_wing = inputs['geometry:wing_l4']
+        l3_wing = inputs['geometry:wing_l3']
+        x3_wing = inputs['geometry:wing_x3']
+        x4_wing = inputs['geometry:wing_x4']
+        sref = inputs['geometry:wing_area']
+        cref = inputs['geometry:wing_l0']
+        bref = inputs['geometry:wing_span']
 
         AoA_vector = [AoA_min, AoA_max, step]
         condition_vector = [mach, altitude]
@@ -363,9 +364,10 @@ class OpenVSP(ExplicitComponent):
         Cref = wing_param_v[1]
         Bref = wing_param_v[2]
 
-        temperature, rho, pression, viscosity, sos = atmosphere(altitude)
-        V_inf = sos * mach
-        Re = V_inf * Cref / viscosity
+        atmosphere = Atmosphere(altitude)
+        # temperature, rho, pression, viscosity, sos = Atmosphere(altitude)
+        V_inf = atmosphere.speed_of_sound * mach
+        Re = V_inf * Cref / atmosphere.kinematic_viscosity
         fichier = open(os.path.join(self.tmpdir, filename), "w")
         fichier.write("Sref = ")
         fichier.write(str(Sref))
@@ -382,313 +384,10 @@ class OpenVSP(ExplicitComponent):
         fichier.write("\nVinf = ")
         fichier.write(str(V_inf))
         fichier.write("\nRho = ")
-        fichier.write(str(rho))
+        fichier.write(str(atmosphere.density))
         fichier.write("\nReCref = ")
         fichier.write(str(Re))
         fichier.write("\nClMax = -1.000000\nMaxTurningAngle = -1.000000 \n\
         Symmetry = No \nFarDist = -1.000000\nNumWakeNodes = " + str(multiprocessing.cpu_count()) + " \nWakeIters = 5 \n\
         NumberOfRotors = 0")
         fichier.close()
-
-
-def Convert_OpenVSP_2_AVL(user_data, user_drivers):
-    # ==================================================================================================<
-    #####--------Initializing progam--------#####
-    print("\n### Initializing program...\n")
-    # ---------Loading generic librairies--------#
-    import os
-    import time
-    import shutil
-    import winsound
-
-    # --------- Creating generic methods --------#
-    def ExitProgram():
-        print('\n#####     END      #####\n')
-
-    #    def err():
-    #        winsound.Beep(200, 200 )
-    #        winsound.Beep(150, 400 )
-    #    def success():
-    #        for i in range(1,2):
-    #            winsound.Beep(300*i, 100 )
-    #            winsound.Beep(400*i, 100 )
-    #            winsound.Beep(100*i, 100 )
-
-    # ---------- Requesting input files ---------#
-    """Prompt code"""  # SOURCE: http://stackoverflow.com/questions/3579568/choosing-a-file-in-python-with-simple-dialog
-    if user_drivers['Prompt_vsp3_file'] or user_drivers['Prompt_xml_file']:
-        from Tkinter import Tk
-        from tkFileDialog import askopenfilename  # file searcher
-        Tk().withdraw()  # we don't want a full GUI, so keep the root window from appearing
-
-        if user_drivers['Prompt_xml_file']:
-            if user_drivers['Prompt_vsp3_file']:
-                print("     No need to ask for vsp3 file.")
-            f_type = 'XML';
-            f_format = '.xml'
-        else:
-            if user_drivers['Prompt_vsp3_file']: f_type = 'OpenVSP';f_format = '.vsp3'
-
-        print("\nSelect your " + f_type + " file *" + f_format)
-        askedfile = askopenfilename()  # show an "Open" dialog box and return the path to the selected file
-        filedir = os.path.dirname(askedfile)
-        if '.vsp3' in askedfile or '.xml' in askedfile:
-            print("     Loading '" + os.path.basename(askedfile) + "' in:\n" + filedir)
-            user_data['vehicle_name'] = str(os.path.basename(askedfile).split(f_format)[0])
-            if 'VEGA' in filedir:
-                if '\\OpenVSP' in filedir:
-                    user_data['pathdir'] = filedir.split('\\OpenVSP')[0]
-                elif '\\Input' in filedir:
-                    user_data['pathdir'] = filedir.split('\\Input')[0]
-
-            else:
-                print("\n### This file is not in the correct 'VEGA' folder template!")
-                print(
-                    "\n-->  Please put the file in the right directory or fix the folder template then try again.")
-                ExitProgram()
-        else:
-            user_data['vehicle_name'] = None
-            print("\n### It is not a " + f_format + " file !")
-            print("\n-->  Please import a", f_format, "file")
-            ExitProgram()
-    elif user_drivers['DoXMLtoAVL'] and not user_drivers['Prompt_xml_file'] and not user_data[
-        'vehicle_name']:
-        print("\n### Can't convert from XML to AVL without asking the file!")
-        print("\n\n-->  Check 'Import .xml' then try again.")
-        winsound.Beep(200, 200)
-        winsound.Beep(150, 400)
-        ExitProgram()
-
-    # If 'user_data['pathdir']' doesn't exist the program stops
-    try:
-        user_data['pathdir']
-    except NameError:
-        print("\n### Default path is unknown...");
-        ExitProgram()
-
-    # -------------Setting work paths------------#
-    VEGAdir = os.path.join(os.getcwd(), 'VEGA')
-    #    VEGAdir = user_data['pathdir'] # work directory for an aircraft multi disciplinary analysis
-    #    inputdir =  VEGAdir+'\\Input' # where the .csv file has been exported by OpenVSP/DegenGeom
-    #    aerodir =   VEGAdir+'\\Aerodynamics'
-    #    avldir =    aerodir+'\\AVL' # AVL input directory
-    openvspdir = VEGAdir + '\\OpenVSP'
-    #    codedir =   VEGAdir+'\\Code' # Python files folder
-    inputdir = os.path.join(VEGAdir, 'Input')
-    #    inputdir = VEGAdir
-    aerodir = os.path.join(VEGAdir, 'Aerodynamics')
-    avldir = os.path.join(aerodir, 'AVL')
-    #    openvspdir = os.path.join(os.getcwd(),'OpenVSP-3.5.1-win32')
-    codedir = os.path.join(VEGAdir, 'Code')
-    print(avldir)
-    VEGAready = True  # This variable allows the program to run, otherwise it will stop the process
-    #    ERRORS = [] # List of all errors that could lead to critical mistakes
-
-    # --------Checking work paths existence------#
-    if os.path.exists(VEGAdir):  # We are checking for existing folders in the work directory
-        os.chdir(VEGAdir)
-        print("Work path set to:\n     ", VEGAdir)
-        print("\nChecking the paths...")
-        if not os.path.exists(inputdir):
-            VEGAready = False
-            print("### 'Input' folder is missing")
-        if not os.path.exists(aerodir):
-            VEGAready = False
-            print("### 'Aerodynamics' folder is missing")
-        if not os.path.exists(avldir):
-            VEGAready = False
-            print("### 'AVL' folder is missing")
-        if not os.path.exists(openvspdir):
-            VEGAready = False
-            print("### 'OpenVSP' folder is missing")
-        #    if not os.path.exists(weightsdir):
-        #        VEGAready = False
-        #        print("### 'Weights' folder is missing")
-        #    if not os.path.exists(inertia):
-        #        VEGAready = False
-        #        print("### 'Inertia' folder is missing")
-        #    if not os.path.exists(propuldir):
-        #        VEGAready = False
-        #        print("### 'Propulsion' folder is missing")
-        #    if not os.path.exists(simdir):
-        #        VEGAready = False
-        #        print("### 'Simulator' folder is missing")
-        if not os.path.exists(codedir):
-            VEGAready = False
-            print("### 'Code' folder is missing")
-
-        if VEGAready: print("     VEGA's folders are ready.")
-    else:
-        VEGAready = False
-    print("### Work path not found !")
-
-    # ------------Getting input files------------#
-    #    os.chdir(VEGAdir) # We are going to look for files in the work folder
-    VEGAdir = os.path.join(os.getcwd(), '/VEGA')
-    main_xml_file = user_data['vehicle_name'] + '.xml'  # Reference input file of the vehicle
-    vsp3_file = user_data['vehicle_name'] + '.vsp3'  # Input file for OpenVSP
-    degengeom_file = user_data['vehicle_name'] + '_DegenGeom.csv'  # File generated with OpenVSP
-
-    if os.path.exists(inputdir + '\\' + main_xml_file):  # Checking if the reference xml file exists
-        print("\n     Found file: " + main_xml_file)
-    else:
-        print("\n     Main XML file not found, continuing process...")
-    if os.path.exists(openvspdir + '\\' + degengeom_file):  # Checking if the csv file exists
-        print("     Found file: " + degengeom_file.split('.csv')[0])
-    else:
-        if user_drivers['DoOpenVSPtoAVLconversion']: print(
-            "\n     CSV file not found, continuing...")
-    if os.path.exists(openvspdir + '\\' + vsp3_file):  # Checking if the vsp3 file exists
-        print("     Found file: " + vsp3_file.split(openvspdir + '.vsp3')[0])
-    else:
-        if user_drivers['DoOpenVSPtoAVLconversion']:
-            if user_drivers['DoXMLtoAVL']:
-                print("\n     VSP3 file not found, continuing...")
-            else:
-                VEGAready = False
-                print("\n     Working with the input XML...")
-                print("\n/!\# Needed VSP3 file not found #/!\ \n")
-                print("-->  Put a .vsp3 file into the 'OpenVSP' folder here, then try again:")
-                print("     " + inputdir)
-        else:
-            if user_drivers['DoRunAVL']:
-                print("\n     Skipping OpenVSP-to-AVL conversion, running AVL")
-            else:
-                print("\n     Nothing to run...")
-
-    # -----------Import custom libraries---------#
-    os.chdir(codedir)
-    #    import OpenVSP2AVL_vsp3reader as VSP3Reader # VSP3 reader functions
-    #    import OpenVSP2AVL_avlwriter #as writeAVL # Code generating .avl file
-    import OpenVSP2AVL_degengeom  # as DegenGeom # Extracts data from .csv file
-    #    import OpenVSP2AVL_runavl #as RunAVL # We automatically run AVL after writing the .avl file.
-    import XMLGeometryExtractor  # Geometry parser from the input XML
-
-    if not VEGAready:
-        print("\n\n-->  Check work directories and files then try again.")
-        ExitProgram()
-
-    #####--------Program initialized--------#####
-
-    #####---------Launching program---------#####
-    init_time = time.time()
-    print("\nLaunching program on", time.ctime())
-
-    # ==================================================================================================<
-    # ----------- Getting XML Geometry-----------#
-    if user_drivers['DoXMLtoAVL']:
-        os.chdir(inputdir)
-        xml_geometry = XMLGeometryExtractor.getXMLGeom(main_xml_file)
-
-    # ------ Generate VSP3 Geometry from XML ----#
-    os.chdir(openvspdir)
-    if user_drivers['DoXMLtoAVL']:
-        if os.path.exists(main_xml_file):
-            os.remove(main_xml_file)
-
-        os.chdir(inputdir)
-        shutil.copy(main_xml_file, openvspdir)
-
-        os.chdir(openvspdir)
-        XMLGeometryExtractor.createVSP3Geom(main_xml_file, inputdir, xml_geometry)
-        while not os.path.exists(vsp3_file):
-            print('.')
-        if os.path.exists(main_xml_file):
-            os.remove(main_xml_file)
-
-            # ------ Generate DegenGeom from OpenVSP ----#
-    if user_drivers['DoOpenVSPtoAVLconversion']:
-        print("\n## Initializing OpenVSP-2-AVL conversion ##")
-        #    os.chdir(openvspdir)
-        if os.path.exists(vsp3_file):  # and not os.path.exists(degengeom_file):
-            OpenVSP2AVL_degengeom.writeCSVfile(vsp3_file)
-
-    #    #-------Reading DegenGeom from OpenVSP------#
-    #        while not os.path.exists(degengeom_file):
-    #            print('.')
-    #        VSP3Data = VSP3Reader.getVSP3data(vsp3_file)
-    #        degengeom_components = OpenVSP2AVL_degengeom.getCSVcomponents(degengeom_file,VSP3Data)
-    #        for dcomp in degengeom_components:
-    #            if user_drivers['Dev']['components_data']:
-    #                print("     "+dcomp.name),
-    #                if dcomp.IsFin: print("(Vertical surface)"),
-    #                if dcomp.span: print("\n        span =",dcomp.span),
-    #                if dcomp.area: print(", area =",dcomp.area),
-    #                if dcomp.mac: print(MAC =",dcomp.mac)
-    #            if not dcomp.mac: print("     MAC hasn't been calculated for "+dcomp.name)
-    #
-    #        if user_drivers['MergeAllComponents']:
-    #            for c in degengeom_components:
-    #                c.component = 1 # Set component "1" to all surfaces and bodies
-    #            print('\n/!\ "COMPONENT = 1" has been set for every surfaces and bodies!')
-    #
-    #    #-------- Postprocessing finished ----------#
-    #    #==================================================================================================<
-    #    #------------ Writing AVL file--------------#
-    #        os.chdir(avldir)
-    #        if degengeom_components:
-    #            if user_drivers['DoXMLtoAVL']:
-    #                updated_components = OpenVSP2AVL_degengeom.componentCompletion(degengeom_components,xml_geometry)
-    #            else:
-    #                updated_components = OpenVSP2AVL_degengeom.UpdateAllComponents(degengeom_components)
-    #
-    #            if user_drivers['Dev']['components_list']:
-    #                print("\nDev - components_list:")
-    #                for c in updated_components:
-    #                    print(c.name)
-    #
-    #            if user_drivers['Dev']['sections_list']:
-    #                print("\nDev - sections_list:")
-    #                for c in updated_components:
-    #                    print("\n",c.name,c.sections)
-    #
-    #            if user_drivers['Dev']['sections_coords']:
-    #                print("\nDev - sections_coords:")
-    #                for c in updated_components:
-    #                    print("\n",c.name)
-    #                    for s in c.sections:
-    #                        if len(s.coordinates)>1:
-    #                            print(s.name.split(c.name+"_")[1], s.coordinates[0], s.coordinates[-1])
-    #
-    #            if user_drivers['Dev']['controls_list']:
-    #                print("\nDev - controls_list:")
-    #                for c in updated_components:
-    #                    print("\n",c.name)
-    #                    for s in c.sections:
-    #                        if not s.controls == []:
-    #                            print(s.name,s.controls)
-    #                        else:
-    #                            print(s.name,"has no controls.")
-    #
-    #            avl_file = OpenVSP2AVL_avlwriter.writeAVLfile(user_data,updated_components)
-    #
-    #        else:
-    #            print("No components have been found in the degenerated geometry !")
-    #
-    #        print('\n## Conversion finished ###\n')
-    #
-    #        if user_drivers['ViewDegenGeometry']:
-    #            import GeometryViewer # this allows the user to show a cloud of coordinates into a graph
-    #            GeometryViewer.showDegenGeom(degengeom_components)
-    #
-    #    #--- Running AVL then exporting results ----#
-    #
-    #    #==================================================================================================<
-    #    os.chdir(avldir)
-    #    if user_drivers['DoRunAVL']:
-    #        if not user_drivers['DoOpenVSPtoAVLconversion']:
-    #            avl_file = user_data['vehicle_name']+".avl"
-    #        print
-    #        OpenVSP2AVL_runavl.runAVL(avldir,avl_file,aerodir+'\\Results')
-
-    print("\nElapsed process time:", round(time.time() - init_time, 2), "seconds")
-    print("Finished on", time.ctime())
-
-    # from tkMessageBox import showinfo
-    # showinfo("FINISHED!", "Elapsed process time: "+str(round(time.time()-init_time,3))+" seconds\nFinished on "+str(time.ctime()))
-
-    # print('\n## Errors list ###\n')
-    # for err in ERRORS:
-    #    print(err)
-
-    ExitProgram()

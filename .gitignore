@@ -56,3 +56,4 @@ venv*/
 
 # External tools
 /XFOIL
+/openVSP*
