@@ -13,14 +13,39 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import multiprocessing
 import os
 
+import numpy as np
 import win32event
 import win32process
+from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.utils.physics import Atmosphere
+
+
+class OpenVSPGeom(ExternalCodeComp):
+    def initialize(self):
+        self.options.declare('openvsp_exe_path', types=str)
+        self.options.declare('result_folder_path', default='', types=str)
+
+    def setup(self):
+        self.add_input('geometry:wing_l2', val=np.nan, units='m')
+        self.add_input('geometry:wing_y2', val=np.nan, units='m')
+        self.add_input('geometry:wing_l3', val=np.nan, units='m')
+        self.add_input('geometry:wing_x3', val=np.nan, units='m')
+        self.add_input('geometry:wing_y3', val=np.nan, units='m')
+        self.add_input('geometry:wing_l4', val=np.nan, units='m')
+        self.add_input('geometry:wing_x4', val=np.nan, units='m')
+        self.add_input('geometry:wing_y4', val=np.nan, units='m')
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing_span', val=np.nan, units='m')
+        self.add_input('geometry:wing_l0', val=np.nan, units='m')
+
+    def compute(self, inputs, outputs):
+        pass
 
 
 class OpenVSP(ExplicitComponent):
@@ -52,7 +77,7 @@ class OpenVSP(ExplicitComponent):
     def initialize(self):
         self.options.declare('ovsp_dir',
                              default=os.path.join(os.path.dirname(__file__), os.pardir,
-                                                   'OpenVSP-3.5.1-win32'),
+                                                  'OpenVSP-3.5.1-win32'),
                              types=str)
         self.options.declare('result_dir',
                              default=os.path.join(os.path.dirname(__file__), os.pardir, 'result'),
@@ -138,9 +163,9 @@ class OpenVSP(ExplicitComponent):
         self._write_vsp_file(wing_geometry_vector)
         self._write_vspaero_file(condition_vector, wing_parameter_vector)
 
-        AoA_min = AoA_vector[0]
-        AoA_max = AoA_vector[1]
-        step = AoA_vector[2]
+        AoA_min = float(AoA_vector[0])
+        AoA_max = float(AoA_vector[1])
+        step = float(AoA_vector[2])
 
         alpha_vector = []
         result_cl = []
@@ -235,6 +260,9 @@ class OpenVSP(ExplicitComponent):
     def _write_vsp_file(
             self, wing_geom_v, filename=vspscript_filename,
             resourcesdir=os.path.join(os.path.dirname(__file__), 'resources')):
+
+        for i, value in enumerate(wing_geom_v):
+            wing_geom_v[i] = float(value)
         l2_wing = wing_geom_v[0]
         y2_wing = wing_geom_v[1]
         l3_wing = wing_geom_v[2]
@@ -358,6 +386,12 @@ class OpenVSP(ExplicitComponent):
     # ----------------------------------------------------------------
     def _write_vspaero_file(self, cond_v, wing_param_v,
                             filename=vspaero_filename):
+
+        for i, value in enumerate(cond_v):
+            cond_v[i] = float(value)
+        for i, value in enumerate(wing_param_v):
+            wing_param_v[i] = float(value)
+
         mach = cond_v[0]
         altitude = cond_v[1]
         Sref = wing_param_v[0]

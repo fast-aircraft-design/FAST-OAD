@@ -12,19 +12,18 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 import os.path as pth
-import shutil
 
 import numpy as np
 import pytest
 from openmdao.core.problem import Problem
 
-from fastoad.io.xml import XPathReader
+from fastoad.io.xml.openmdao_basic_io import OpenMdaoXmlIO
 from fastoad.modules.aerodynamics.external import OpenVSP
 from tests.conftest import root_folder
 
 OPENVSP_DIR = pth.join(root_folder, 'OpenVSP-3.5.1-win32')
 OPENVSP_RESULTS = pth.join(pth.dirname(__file__), 'results')
-
+INPUT_FILE = pth.join(pth.dirname(__file__), 'data', 'inputs.xml')
 TMP_DIR = pth.join(pth.dirname(__file__), 'tmp')
 
 
@@ -40,37 +39,29 @@ def get_OpenVSP():
 
 
 @pytest.fixture(scope="module")
-def inputs():
-    reader = XPathReader(pth.join(pth.dirname(__file__), 'data', 'A320base_units.xml'))
-
-    inputs = {
-        'geometry:wing_l2': reader.get_float('Aircraft/geometry/wing/l2_wing'),
-        'geometry:wing_y2': reader.get_float('Aircraft/geometry/wing/y2_wing'),
-        'geometry:wing_l3': reader.get_float('Aircraft/geometry/wing/l3_wing'),
-        'geometry:wing_x3': reader.get_float('Aircraft/geometry/wing/x3_wing'),
-        'geometry:wing_y3': reader.get_float('Aircraft/geometry/wing/y3_wing'),
-        'geometry:wing_l4': reader.get_float('Aircraft/geometry/wing/l4_wing'),
-        'geometry:wing_x4': reader.get_float('Aircraft/geometry/wing/x4_wing'),
-        'geometry:wing_y4': reader.get_float('Aircraft/geometry/wing/y4_wing'),
-        'geometry:wing_area': reader.get_float('Aircraft/geometry/wing/wing_area'),
-        'geometry:wing_span': reader.get_float('Aircraft/geometry/wing/span'),
-        'geometry:wing_l0': reader.get_float('Aircraft/geometry/wing/l0_wing'),
-    }
-
-    return inputs
+def indep_vars():
+    reader = OpenMdaoXmlIO(INPUT_FILE)
+    reader.path_separator = ':'
+    ivc = reader.read()
+    return ivc
 
 
-def test_run(inputs):
+def test_compute(indep_vars):
     openvsp = get_OpenVSP()
     openvsp.setup()
+
+    inputs = {}
+    outputs = {}
+    for (name, value, _) in indep_vars._indep_external:
+        inputs[name] = value
+
+    print(inputs)
 
     inputs['AoA_min'] = 0.0
     inputs['AoA_max'] = 0.2
     inputs['AoA_step'] = 0.1
     inputs['openvsp:mach'] = 0.75
     inputs['openvsp:altitude'] = 32000
-
-    outputs = {}
 
     openvsp.compute(inputs, outputs)
 
@@ -90,7 +81,7 @@ def test_run(inputs):
     assert CDi == pytest.approx([8.0e-05, 1.2e-04], abs=0.00005)
     assert CDtot == pytest.approx(0.00804, abs=0.00005)
 
-    shutil.rmtree(TMP_DIR)
+    # shutil.rmtree(TMP_DIR)
 
 
 def test_run_openmdao(indep_vars):
@@ -124,4 +115,4 @@ def test_run_openmdao(indep_vars):
     assert CDi == pytest.approx([1.2e-04, 1.7e-04, 2.2e-04, 2.9e-04], abs=0.00005)
     assert CDtot == pytest.approx(0.00804, abs=0.00005)
 
-    os.remove(pth.join(TMP_DIR, OpenVSP.result_filename))
+    # shutil.rmtree(TMP_DIR)
