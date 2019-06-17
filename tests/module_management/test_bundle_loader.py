@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test module for bundle_loader.py
 """
@@ -21,7 +20,7 @@ import os.path as pth
 import pelix
 from pelix.framework import FrameworkFactory
 
-from fastoad.module_management.bundle_loader import Loader
+from fastoad.module_management import BundleLoader
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -35,9 +34,12 @@ def test_init_bundle_loader_from_scratch():
     Pelix framework
     """
 
+    if FrameworkFactory.is_framework_running():
+        FrameworkFactory.get_framework().delete(True)
+
     assert not FrameworkFactory.is_framework_running()
 
-    loader = Loader()
+    loader = BundleLoader()
     _ = loader.framework  # a first call for initiating the framework
     framework = FrameworkFactory.get_framework()
     assert FrameworkFactory.is_framework_running()
@@ -49,7 +51,7 @@ def test_init_bundle_loader_from_scratch():
     assert FrameworkFactory.is_framework_running()
 
     # Another instance gets back the framework
-    loader = Loader()
+    loader = BundleLoader()
     assert framework is loader.framework
 
     # Framework has to be deleted for next tests to run smoothly
@@ -61,6 +63,10 @@ def test_init_bundle_loader_with_running_framework():
     Tests that creating a Loader instance with an already running Pelix
     framework will work and enforce a correct configuration of the framework.
     """
+
+    if FrameworkFactory.is_framework_running():
+        FrameworkFactory.get_framework().delete(True)
+
     framework = pelix.framework.create_framework(())
     assert framework.get_bundle_by_name("pelix.ipopo.core") is None
     assert FrameworkFactory.is_framework_running()
@@ -69,13 +75,13 @@ def test_init_bundle_loader_with_running_framework():
     # pelix.ipopo.core bundle.
     # This bundle is expected to be added to the framework at Loader
     # initialization
-    loader = Loader()
+    loader = BundleLoader()
     assert framework is loader.framework
     assert loader.framework.get_bundle_by_name("pelix.ipopo.core") is not None
     del loader
 
     # Same as above, but now, existing framework HAS pelix.ipopo.core bundle
-    loader = Loader()
+    loader = BundleLoader()
     assert framework is loader.framework
     assert loader.framework.get_bundle_by_name("pelix.ipopo.core") is not None
     del loader
@@ -91,7 +97,7 @@ def test_install_packages():
     """
     Tests installation of bundles in a folder
     """
-    loader = Loader()
+    loader = BundleLoader()
 
     loader.install_packages(
         pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
@@ -106,7 +112,7 @@ def test_get_service_references():
     """
     Tests the method for retrieving service references according to properties
     """
-    loader = Loader()
+    loader = BundleLoader()
     loader.install_packages(
         pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
 
@@ -163,7 +169,7 @@ def test_get_services():
     """
     Tests the method for retrieving services according to properties
     """
-    loader = Loader()
+    loader = BundleLoader()
     loader.install_packages(
         pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
 

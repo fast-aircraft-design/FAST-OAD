@@ -15,7 +15,11 @@ FAST : A framework for rapid Overall Aircraft Design
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os.path as pth
+
 from pkg_resources import get_distribution, DistributionNotFound
+
+from fastoad.module_management import BundleLoader
 
 try:
     # Change here if project is renamed and does not equal the package name
@@ -25,3 +29,7 @@ except DistributionNotFound:
     __version__ = 'unknown'
 finally:
     del get_distribution, DistributionNotFound
+
+# Loading bundles
+loader = BundleLoader()
+loader.install_packages(pth.dirname(__file__))
