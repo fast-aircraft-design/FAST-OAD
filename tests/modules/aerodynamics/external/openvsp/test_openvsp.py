@@ -16,7 +16,7 @@ import os.path as pth
 import pytest
 
 from fastoad.io.xml import XPathReader
-from fastoad.modules.aerodynamics.openvsp.openvsp import OpenVSP
+from fastoad.modules.aerodynamics.external import OpenVSP
 from tests.conftest import root_folder
 
 OPENVSP_DIR = pth.join(root_folder, 'OpenVSP-3.5.1-win32')
