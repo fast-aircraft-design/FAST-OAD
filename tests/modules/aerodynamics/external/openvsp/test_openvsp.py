@@ -13,6 +13,7 @@
 import os
 import os.path as pth
 
+import numpy as np
 import pytest
 
 from fastoad.io.xml import XPathReader
@@ -57,44 +58,6 @@ def inputs():
     return inputs
 
 
-def test_write_vspfile(inputs):
-    openvsp = get_OpenVSP()
-    openvsp.setup()
-    filename = 'test.vspscript'
-
-    geometry_vector = [
-        inputs['geometry:wing_l2'],
-        inputs['geometry:wing_y2'],
-        inputs['geometry:wing_y3'],
-        inputs['geometry:wing_x3'],
-        inputs['geometry:wing_y3'],
-        inputs['geometry:wing_l4'],
-        inputs['geometry:wing_x4'],
-        inputs['geometry:wing_y4']
-    ]
-
-    openvsp._write_vsp_file(geometry_vector, filename)
-    assert pth.exists(pth.join(TMP_DIR, filename))
-    os.remove(pth.join(TMP_DIR, filename))
-
-
-def test_write_vspaero_file(inputs):
-    openvsp = get_OpenVSP()
-    openvsp.setup()
-    filename = 'test.vspaero'
-
-    wing_params = [
-        inputs['geometry:wing_area'],
-        inputs['geometry:wing_l0'],
-        inputs['geometry:wing_span']
-    ]
-
-    openvsp._write_vspaero_file((0.75, 35000), wing_params, filename)
-    assert pth.exists(pth.join(TMP_DIR, filename))
-
-    # os.remove(pth.join(TMP_DIR, filename))
-
-
 def test_run(inputs):
     openvsp = get_OpenVSP()
     openvsp.setup()
@@ -110,74 +73,17 @@ def test_run(inputs):
     openvsp.compute(inputs, outputs)
 
     assert pth.exists(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
-    # os.remove(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
+    os.remove(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
 
     assert pth.exists(pth.join(TMP_DIR, OpenVSP.result_filename))
-    # os.remove(pth.join(TMP_DIR, OpenVSP.result_filename))
 
-# def test_run_takeoff(inputs):
-#
-#     inputs['AoA_min'] = 0.0
-#     inputs['AoA_max'] = 0.1
-#     inputs['AoA_step'] = 0.1
-#     inputs['openvsp:mach'] = 0.75
-#     inputs['openvsp:altitude'] = 32000
-#
-#     self.openvsp.run(0.0, 0.1, 0.1, 0.75, 32000, takeoff=True)
-#     self.assertTrue(
-#         pth.exists(pth.join(TMP_DIR, OpenVSP.vspscript_filename)))
-#     os.remove(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
-#     self.assertTrue(
-#         pth.exists(pth.join(TMP_DIR, OpenVSP.takeoff_result_filename)))
-#     os.remove(pth.join(TMP_DIR, OpenVSP.takeoff_result_filename))
+    results = np.genfromtxt(os.path.join(TMP_DIR, OpenVSP.result_filename), delimiter=',')
+    CL = results[:, 0]
+    CDi = results[:, 1]
+    CDtot = results[:, 2]
 
+    assert CL == pytest.approx([0.03893, 0.04901, 0.05909, 0.06918, 0.07926])
+    assert CDi == pytest.approx([8.0e-05, 1.2e-04, 1.7e-04, 2.2e-04, 2.9e-04])
+    assert CDtot == pytest.approx(0.00804)
 
-# class TestOpenVSP(unittest.TestCase):
-#     fpath = pth.join(pth.dirname(__file__), 'data', 'A320base_units.xml')
-#
-#     def setUp(self):
-#         aircraft_xml = AircraftXml(self.fpath)
-#         self.aircraft = aircraft_xml.get_aircraft()
-#         if not pth.exists(TMP_DIR):
-#             os.makedirs(TMP_DIR)
-#         if not pth.exists(OPENVSP_RESULTS):
-#             os.makedirs(OPENVSP_RESULTS)
-#         self.openvsp = OpenVSP(
-#             self.aircraft, resultdir=OPENVSP_RESULTS, tmpdir=TMP_DIR)
-#
-#     def tearDown(self):
-#         try:
-#             os.rmdir(TMP_DIR)
-#             os.rmdir(OPENVSP_RESULTS)
-#         except OSError:
-#             pass
-#
-#     def test_write_vspfile(self):
-#         filename = 'test.vspscript'
-#         self.openvsp._write_vsp_file(filename)
-#         self.assertTrue(pth.exists(pth.join(TMP_DIR, filename)))
-#         os.remove(pth.join(TMP_DIR, filename))
-#
-#     def test_write_vspaero_file(self):
-#         filename = 'test.vspaero'
-#         self.openvsp._write_vspaero_file(0.75, 35000, filename)
-#         self.assertTrue(pth.exists(pth.join(TMP_DIR, filename)))
-#         os.remove(pth.join(TMP_DIR, filename))
-#
-#     def test_run(self):
-#         self.openvsp.run(0.0, 0.1, 0.1, 0.75, 32000)
-#         self.assertTrue(
-#             pth.exists(pth.join(TMP_DIR, OpenVSP.vspscript_filename)))
-#         os.remove(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
-#         self.assertTrue(
-#             pth.exists(pth.join(TMP_DIR, OpenVSP.result_filename)))
-#         os.remove(pth.join(TMP_DIR, OpenVSP.result_filename))
-#
-#     def test_run_takeoff(self):
-#         self.openvsp.run(0.0, 0.1, 0.1, 0.75, 32000, takeoff=True)
-#         self.assertTrue(
-#             pth.exists(pth.join(TMP_DIR, OpenVSP.vspscript_filename)))
-#         os.remove(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
-#         self.assertTrue(
-#             pth.exists(pth.join(TMP_DIR, OpenVSP.takeoff_result_filename)))
-#         os.remove(pth.join(TMP_DIR, OpenVSP.takeoff_result_filename))
+    os.remove(pth.join(TMP_DIR, OpenVSP.result_filename))
