@@ -1,6 +1,3 @@
-"""
-The place for module-level constants
-"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,6 +10,3 @@ The place for module-level constants
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-SERVICE_OPENMDAO_SYSTEM = 'fast.openmdao.system'
-SERVICE_RESULT_FOLDER_PROVIDER = 'fast.result.folder'

@@ -27,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
 
 
-class Loader:
+class BundleLoader:
     """
     Helper class for loading Pelix bundles.
     """
@@ -43,7 +43,7 @@ class Loader:
         """
         Returns the Pelix framework instance. If None is running, a new one
         will be started and initialized. The framework will continue after
-        deletion of this Loader instance and will be reused by next instances.
+        deletion of this BundleLoader instance and will be reused by next instances.
 
         :return: Pelix framework instance
         """
@@ -90,6 +90,26 @@ class Loader:
 
         return bundles, failed
 
+    def get_service(self, service_name: str) -> Optional[object]:
+        """
+        Returns the service that match *service_name*.
+
+        If there are more than one service that mach *service_name*, only the first one is
+        returned.
+
+        If several services are expected, please use :meth:`get_services` instead.
+
+        :param service_name:
+        :return: the service instance, or None if not found
+        """
+        services = self.get_services(service_name)
+        if services is not None:
+            if len(services) > 1:
+                _LOGGER.warning('More than one service found for spec %s', service_name)
+            return services[0]
+
+        return None
+
     def get_services(self
                      , service_name: str
                      , properties: dict = None
@@ -97,7 +117,9 @@ class Loader:
             -> Optional[list]:
         """
         Returns the services that match *service_name* and provided
-        *properties* (if provided) In order to have access to service
+        *properties* (if provided).
+
+        In order to have access to service
         metadata such a properties, please use
         :meth:`get_service_references` instead.
 
