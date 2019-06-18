@@ -586,9 +586,20 @@ def test_compute_cg_wing(input_xml: XPathReader):
 
 def test_compute_global_cg(input_xml: XPathReader):
     """ Tests computation of global center of gravity """
-    # TODO: Implement this test function.
-    assert 1.0 == pytest.approx(1.0, abs=1e-1)
+    reader = OpenMdaoXmlIO(pth.join(pth.dirname(__file__), "data", "geometry_inputs.xml"))
+    reader.path_separator = ':'
+    input_vars = reader.read()
+    
+    global_cg_computation = Problem()
+    model = global_cg_computation.model
+    model.add_subsystem('design_variables', input_vars, promotes=['*'])
+    model.add_subsystem('global_cg', ComputeGlobalCG(), promotes=['*'])
 
+    global_cg_computation.setup()
+    global_cg_computation.run_model()
+
+    cg_ratio = global_cg_computation['cg_ratio']
+    assert cg_ratio == pytest.approx(0.388971, abs=1e-6)
 
 def test_compute_max_cg_ratio(input_xml: XPathReader):
     """ Tests computation of maximum center of gravity ratio """
