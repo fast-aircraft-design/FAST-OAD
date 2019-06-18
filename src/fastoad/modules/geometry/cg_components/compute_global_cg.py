@@ -33,9 +33,9 @@ class ComputeGlobalCG(Group):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_subsystem('cg_ratio_aft', ComputeCGratioAft(), promotes=['*'], deriv_method=deriv_method)
-        self.add_subsystem('cg_ratio_lc1', ComputeCGLoadCase1(), promotes=['*'], deriv_method=deriv_method)
-        self.add_subsystem('cg_ratio_lc2', ComputeCGLoadCase2(), promotes=['*'], deriv_method=deriv_method)
-        self.add_subsystem('cg_ratio_lc3', ComputeCGLoadCase3(), promotes=['*'], deriv_method=deriv_method)
-        self.add_subsystem('cg_ratio_lc4', ComputeCGLoadCase4(), promotes=['*'], deriv_method=deriv_method)
-        self.add_subsystem('cg_ratio_max', ComputeMaxCGratio(), promotes=['*'], deriv_method=deriv_method)
+        self.add_subsystem('cg_ratio_aft', ComputeCGratioAft(deriv_method=deriv_method), promotes=['*'])
+        self.add_subsystem('cg_ratio_lc1', ComputeCGLoadCase1(deriv_method=deriv_method), promotes=['*'])
+        self.add_subsystem('cg_ratio_lc2', ComputeCGLoadCase2(deriv_method=deriv_method), promotes=['*'])
+        self.add_subsystem('cg_ratio_lc3', ComputeCGLoadCase3(deriv_method=deriv_method), promotes=['*'])
+        self.add_subsystem('cg_ratio_lc4', ComputeCGLoadCase4(deriv_method=deriv_method), promotes=['*'])
+        self.add_subsystem('cg_ratio_max', ComputeMaxCGratio(deriv_method=deriv_method), promotes=['*'])
