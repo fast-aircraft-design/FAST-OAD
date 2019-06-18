@@ -1,5 +1,5 @@
 """
-The place for module-level constants
+Just checking that Pelix framework is automatically started
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -14,5 +14,12 @@ The place for module-level constants
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SERVICE_OPENMDAO_SYSTEM = 'fast.openmdao.system'
-SERVICE_RESULT_FOLDER_PROVIDER = 'fast.result.folder'
+from pelix.framework import FrameworkFactory
+
+
+def test_pelix_framework_is_started():
+    """
+    Tests that Pelix framework is automatically started
+    """
+
+    assert FrameworkFactory.is_framework_running()

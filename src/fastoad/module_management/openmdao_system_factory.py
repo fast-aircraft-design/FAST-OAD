@@ -21,7 +21,7 @@ from typing import List, TypeVar
 
 from openmdao.core.system import System
 
-from .bundle_loader import Loader
+from . import BundleLoader
 from .constants import SERVICE_OPENMDAO_SYSTEM
 
 _LOGGER = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class OpenMDAOSystemFactory:
     """
     Class for providing OpenMDAO System objects depending on their properties.
     """
-    __loader = Loader()
+    __loader = BundleLoader()
 
     @classmethod
     def explore_folder(cls, folder_path: str):

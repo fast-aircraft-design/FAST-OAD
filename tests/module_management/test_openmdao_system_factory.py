@@ -19,10 +19,8 @@ import os.path as pth
 
 from openmdao.api import Problem, ScipyOptimizeDriver  # , pyOptSparseDriver
 
-from fastoad.module_management.bundle_loader import Loader
+from fastoad.module_management import BundleLoader
 from fastoad.module_management.constants import SERVICE_OPENMDAO_SYSTEM
-# noinspection PyUnresolvedReferences
-# This import is needed for coverage report, though not explicitly used in this module
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 from tests.sellar_example.sellar import Sellar, ISellarFactory
 
@@ -47,7 +45,7 @@ def test_components_alone():
     """
     Simple test of existence of "openmdao.component" services
     """
-    loader = Loader()
+    loader = BundleLoader()
     loader.install_packages(pth.join(pth.dirname(__file__), '..', 'sellar_example'))
 
     services = loader.get_services(SERVICE_OPENMDAO_SYSTEM)
@@ -101,7 +99,7 @@ def test_get_component():
     assert got_key_error
 
     # Pelix framework has to be deleted for next tests to run smoothly
-    Loader().framework.delete(True)
+    BundleLoader().framework.delete(True)
 
 
 def test_get_component_descriptors():
@@ -144,7 +142,7 @@ def test_get_component_descriptors():
     assert got_key_error
 
     # Pelix framework has to be deleted for next tests to run smoothly
-    Loader().framework.delete(True)
+    BundleLoader().framework.delete(True)
 
 
 def test_sellar():
