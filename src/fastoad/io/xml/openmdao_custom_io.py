@@ -1,3 +1,6 @@
+"""
+Defines how OpenMDAO variables are serialized to XML using a conversion table
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -10,6 +13,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import os.path as pth
 from collections import namedtuple
@@ -21,6 +25,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.vectors.vector import Vector
 
 from fastoad.io.serialize import AbstractOpenMDAOVariableIO, SystemSubclass
+from fastoad.io.xml.translator import VarXpathTranslator
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
 from .xpath_reader import XPathReader
 
@@ -32,19 +37,19 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
     def __init__(self, *args, **kwargs):
         super(OpenMdaoCustomXmlIO, self).__init__(*args, **kwargs)
+
         self.use_promoted_names = True
         """If True, promoted names will be used instead of "real" ones."""
-        self._var_names = None
-        self._xpaths = None
-        self._units = None
+
+        self._translator = VarXpathTranslator()
+
         self._xml_unit_attribute = UNIT_ATTRIBUTE
 
     def set_translation_table(self, var_names: Sequence[str], xpaths: Sequence[str]):
         if len(var_names) != len(xpaths):
             raise IndexError('lists var_names and xpaths should have same length (%i and %i)' %
                              (len(var_names), len(xpaths)))
-        self._var_names = var_names
-        self._xpaths = xpaths
+        self._translator.set(var_names, xpaths)
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
         reader = XPathReader(self._data_source)
@@ -54,7 +59,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
         ivc = IndepVarComp()
 
-        for var_name, xpath in zip(self._var_names, self._xpaths):
+        for var_name, xpath in zip(self._translator.variable_names, self._translator.xpaths):
             if (only is None or var_name in only) and not (
                     ignore is not None and var_name in ignore):
                 if not xpath.startswith('/'):
@@ -66,22 +71,22 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
         return ivc
 
-    # TODO: Should unify this with OpenMdaoXmlIO.write()
     def write(self, system: SystemSubclass, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
         outputs = self._get_outputs(system)
-        root = etree.Element(ROOT_TAG)
+        self._write(outputs, ignore, only)
 
+    def _write(self, outputs, ignore, only):
+        root = etree.Element(ROOT_TAG)
         for output in outputs:
             if not (only is None or output.name in only):
                 continue
             if ignore is not None and output.name in ignore:
                 continue
-            if output.name not in self._var_names:
+            if output.name not in self._translator.variable_names:
                 continue
 
-            i = self._var_names.index(output.name)
-            xpath = self._xpaths[i]
+            xpath = self._translator.get_xpath(output.name)
 
             if xpath.startswith('/'):
                 xpath = xpath[1:]
@@ -128,7 +133,6 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                         element.text = str(value)
                         if output.units:
                             element.attrib[UNIT_ATTRIBUTE] = output.units
-
         # Write
         tree = etree.ElementTree(root)
         dirname = pth.dirname(self._data_source)
