@@ -55,6 +55,7 @@ class XPathReader:
         :param filename: XML file
         """
         self.tree = etree.parse(filename)
+        self.unit_attribute_name = UNIT_ATTRIBUTE
         """The element tree provided by :meth:`lxml.etree.parse`"""
 
     def has_element(self, xpath: str) -> bool:
@@ -103,7 +104,7 @@ class XPathReader:
         """
         element = self._get_element(xpath)
         if UNIT_ATTRIBUTE in element.attrib:
-            return element.attrib[UNIT_ATTRIBUTE]
+            return element.attrib[self.unit_attribute_name]
 
         return None
 
@@ -127,7 +128,7 @@ class XPathReader:
             value = element.text.strip()
             try:
                 value = float(value)
-                unit = element.attrib.get(UNIT_ATTRIBUTE, None)
+                unit = element.attrib.get(self.unit_attribute_name, None)
             except ValueError:
                 unit = None
             result.append((value, unit))
