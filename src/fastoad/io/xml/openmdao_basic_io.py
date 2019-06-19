@@ -78,7 +78,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         Warning: The dot "." can be used when writing, but not when reading.
         """
 
-    def read(self) -> IndepVarComp:
+    def read(self, only: List[str] = None, ignore: List[str] = None) -> IndepVarComp:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == '.':
             # TODO: in this case, maybe try to dispatch the inputs to each component...
@@ -89,14 +89,18 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         # Create IndepVarComp instance
         ivc = IndepVarComp()
         for name, value, units in outputs:
-            ivc.add_output(name, val=np.array(value), units=units)
+            if (only is None or name in only) and not (ignore is not None and name in ignore):
+                ivc.add_output(name, val=np.array(value), units=units)
         return ivc
 
-    def write(self, system: SystemSubclass):
+    def write(self, system: SystemSubclass, only: List[str] = None, ignore: List[str] = None):
         outputs = self._get_outputs(system)
         root = etree.Element(ROOT_TAG)
 
         for output in outputs:
+            if (not (only is None or output.name in only)) or (
+                    ignore is not None and output.name in ignore):
+                continue
             path_components = output.name.split(self.path_separator)
             element = root
 

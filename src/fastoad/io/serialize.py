@@ -14,7 +14,7 @@ Defines interfaces for reading and writing OpenMDAO variable values
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from abc import abstractmethod, ABC
-from typing import TypeVar, IO
+from typing import TypeVar, IO, List
 
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.system import System
@@ -31,19 +31,25 @@ class AbstractOpenMDAOVariableIO(ABC):
         self._data_source = data_source
 
     @abstractmethod
-    def read(self) -> IndepVarComp:
+    def read(self, only: List[str] = None, ignore: List[str] = None) -> IndepVarComp:
         """
         Reads output variables from provided system.
 
+        :param only: List of OpenMDAO variable names that should be read. Other names will be ignored. If None, all
+                     variables will be read.
+        :param ignore: List of OpenMDAO variable names that should be ignored when reading.
         :return: an IndepVarComp() instance where outputs have been defined using provided source
         """
 
     @abstractmethod
-    def write(self, system: SystemSubclass):
+    def write(self, system: SystemSubclass, only: List[str] = None, ignore: List[str] = None):
         """
         Writes output variables from provided system.
 
         Caution: in most cases, list_outputs() will be used, which requires the model to have run
 
+        :param only: List of OpenMDAO variable names that should be written. Other names will be ignored. If None, all
+                     variables will be written.
+        :param ignore: List of OpenMDAO variable names that should be ignored when writing
         :param system: any OpenMDAO core component
         """
