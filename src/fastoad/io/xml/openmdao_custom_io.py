@@ -21,8 +21,8 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.vectors.vector import Vector
 
 from fastoad.io.serialize import AbstractOpenMDAOVariableIO, SystemSubclass
-from . import XPathReader
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
+from .xpath_reader import XPathReader
 
 _OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
 """ Simple structure for standard OpenMDAO variable """
