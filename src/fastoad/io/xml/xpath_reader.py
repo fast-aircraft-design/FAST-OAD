@@ -16,6 +16,7 @@ XML reading based on XPath
 from typing import Optional, List, Tuple, Union
 
 from lxml import etree
+from lxml.etree import _ElementTree  # pylint: disable=protected-access  # Useful for type hinting
 
 from .constants import UNIT_ATTRIBUTE
 
@@ -54,7 +55,7 @@ class XPathReader:
         Constructor. Will parse the whole indicated file.
         :param filename: XML file
         """
-        self.tree = etree.parse(filename)
+        self.tree: _ElementTree = etree.parse(filename)
         self.unit_attribute_name = UNIT_ATTRIBUTE
         """The element tree provided by :meth:`lxml.etree.parse`"""
 
@@ -108,6 +109,8 @@ class XPathReader:
 
         return None
 
+    # FIXME : there is no need for having different units for each returned value. Having a list
+    #         of value is fine, but only one value for units is enough
     def get_values_and_units(self, xpath: str) -> List[
         Tuple[Union[str, float], Optional[str]]]:
         """

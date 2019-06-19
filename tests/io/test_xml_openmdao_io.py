@@ -246,7 +246,3 @@ def test_basic_xml_write_from_problem():
     assert len(tree.xpath('/aircraft/f')) == 1
     assert len(tree.xpath('/aircraft/g1')) == 1
     assert len(tree.xpath('/aircraft/g2')) == 1
-
-
-if __name__ == '__main__':
-    test_basic_xml_read_and_write_from_indepvarcomp()

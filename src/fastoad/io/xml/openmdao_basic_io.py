@@ -16,7 +16,7 @@ Defines how OpenMDAO variables are serialized to XML
 import os
 import os.path as pth
 from collections import namedtuple
-from typing import List, Dict
+from typing import Dict, Sequence
 
 import numpy as np
 from lxml import etree
@@ -78,7 +78,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
         Warning: The dot "." can be used when writing, but not when reading.
         """
 
-    def read(self, only: List[str] = None, ignore: List[str] = None) -> IndepVarComp:
+    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == '.':
             # TODO: in this case, maybe try to dispatch the inputs to each component...
@@ -93,7 +93,8 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
                 ivc.add_output(name, val=np.array(value), units=units)
         return ivc
 
-    def write(self, system: SystemSubclass, only: List[str] = None, ignore: List[str] = None):
+    def write(self, system: SystemSubclass, only: Sequence[str] = None,
+              ignore: Sequence[str] = None):
         outputs = self._get_outputs(system)
         root = etree.Element(ROOT_TAG)
 
@@ -152,7 +153,7 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
                 os.makedirs(dirname)
             tree.write(self._data_source, pretty_print=True)
 
-    def _read_xml(self) -> List[_OutputVariable]:
+    def _read_xml(self) -> Sequence[_OutputVariable]:
         """
         Reads self.data_source as a XML file
 
@@ -190,10 +191,10 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
 
         return list(outputs.values())
 
-    def _get_outputs(self, system: SystemSubclass) -> List[_OutputVariable]:
+    def _get_outputs(self, system: SystemSubclass) -> Sequence[_OutputVariable]:
         """ returns the list of outputs from provided system """
 
-        outputs: List[_OutputVariable] = []
+        outputs: Sequence[_OutputVariable] = []
         if isinstance(system, IndepVarComp):
             # Outputs are accessible using private member
             # pylint: disable=protected-access
