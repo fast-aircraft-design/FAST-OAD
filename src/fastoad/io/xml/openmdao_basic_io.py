@@ -146,12 +146,12 @@ class OpenMdaoXmlIO(AbstractOpenMDAOVariableIO):
                         if output.units:
                             element.attrib[UNIT_ATTRIBUTE] = output.units
 
-            # Write
-            tree = etree.ElementTree(root)
-            dirname = pth.dirname(self._data_source)
-            if not pth.exists(dirname):
-                os.makedirs(dirname)
-            tree.write(self._data_source, pretty_print=True)
+        # Write
+        tree = etree.ElementTree(root)
+        dirname = pth.dirname(self._data_source)
+        if not pth.exists(dirname):
+            os.makedirs(dirname)
+        tree.write(self._data_source, pretty_print=True)
 
     def _read_xml(self) -> Sequence[_OutputVariable]:
         """

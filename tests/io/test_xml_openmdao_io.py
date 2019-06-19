@@ -85,7 +85,9 @@ def test_basic_xml_read_and_write_from_indepvarcomp():
     Tests the creation of an XML file from an IndepVarComp instance
     """
     data_folder = pth.join(pth.dirname(__file__), 'data')
-    result_folder = pth.join(pth.dirname(__file__), 'results')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'basic_xml')
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
 
     # Check write hand-made component
     ivc = IndepVarComp()
@@ -129,7 +131,9 @@ def test_basic_xml_read_and_write_from_indepvarcomp():
 
 def test_basic_xml_partial_read_and_write_from_indepvarcomp():
     data_folder = pth.join(pth.dirname(__file__), 'data')
-    result_folder = pth.join(pth.dirname(__file__), 'results')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'basic_partial_xml')
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
 
     # Read full IndepVarComp
     filename = pth.join(data_folder, 'basic.xml')
@@ -191,7 +195,9 @@ def test_basic_xml_write_from_problem():
     """
     Tests the creation of an XML file from OpenMDAO components
     """
-    result_folder = pth.join(pth.dirname(__file__), 'results')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'sellar')
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
 
     # Create and run the problem
     problem = Problem()
@@ -231,7 +237,7 @@ def test_basic_xml_write_from_problem():
     assert len(tree.xpath('/aircraft/Functions/g2')) == 1
 
     # Write the XML file using promoted names
-    filename = pth.join(pth.dirname(__file__), 'results', 'sellar.xml')
+    filename = pth.join(result_folder, 'sellar.xml')
     xml_write = OpenMdaoXmlIO(filename)
     xml_write.use_promoted_names = True
     xml_write.path_separator = '.'
