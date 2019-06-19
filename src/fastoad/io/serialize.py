@@ -35,8 +35,8 @@ class AbstractOpenMDAOVariableIO(ABC):
         """
         Reads output variables from provided system.
 
-        :param only: List of OpenMDAO variable names that should be read. Other names will be ignored. If None, all
-                     variables will be read.
+        :param only: List of OpenMDAO variable names that should be read. Other names will be
+                     ignored. If None, all variables will be read.
         :param ignore: List of OpenMDAO variable names that should be ignored when reading.
         :return: an IndepVarComp() instance where outputs have been defined using provided source
         """
@@ -48,8 +48,8 @@ class AbstractOpenMDAOVariableIO(ABC):
 
         Caution: in most cases, list_outputs() will be used, which requires the model to have run
 
-        :param only: List of OpenMDAO variable names that should be written. Other names will be ignored. If None, all
-                     variables will be written.
+        :param only: List of OpenMDAO variable names that should be written. Other names will be
+                     ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
         :param system: any OpenMDAO core component
         """
