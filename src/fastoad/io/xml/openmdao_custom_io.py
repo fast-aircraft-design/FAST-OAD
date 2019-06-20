@@ -17,7 +17,7 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 import os
 import os.path as pth
 from collections import namedtuple
-from typing import Sequence, List
+from typing import Sequence, List, IO, Union
 
 import numpy as np
 from lxml import etree
@@ -66,23 +66,49 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                              (len(var_names), len(xpaths)))
         self._translator.set(var_names, xpaths)
 
+    def read_translation_table(self, source: Union[str, IO]):
+        """
+        Reads a file that sets how OpenMDAO variable are matched to XML Path.
+        Provided file should have 2 comma-separated columns:
+         - first one with OpenMDAO names
+         - second one with their matching XPath
+
+        :param source:
+        :return:
+        """
+
+        arr = np.genfromtxt(source, delimiter=',')
+        self._translator.set(arr[:, 0], arr[:, 1])
+
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
+        outputs = self.read_values()
+
+        ivc = IndepVarComp()
+        for output in outputs:
+            ivc.add_output(output.name, output.value, units=output.units)
+
+        return ivc
+
+    def read_values(self, only: Sequence[str] = None,
+                    ignore: Sequence[str] = None) -> List[OutputVariable]:
         reader = XPathReader(self._data_source)
         reader.unit_attribute_name = self._xml_unit_attribute
 
         root_tag = reader.tree.getroot().tag
 
-        ivc = IndepVarComp()
+        outputs = []
 
         for var_name, xpath in zip(self._translator.variable_names, self._translator.xpaths):
             if (only is None or var_name in only) and not (
                     ignore is not None and var_name in ignore):
                 if not xpath.startswith('/'):
                     xpath = '/' + root_tag + '/' + xpath
-                values, units = reader.get_values_and_units(xpath)
-                ivc.add_output(var_name, values, units=units)
 
-        return ivc
+                values, units = reader.get_values_and_units(xpath)
+                outputs.append(OutputVariable(var_name, values, units))
+
+        return outputs
+
 
     def write(self, system: SystemSubclass, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
