@@ -1,5 +1,5 @@
 """
-Package for handling XML files
+Readers for legacy XML format
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -14,6 +14,18 @@ Package for handling XML files
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .openmdao_basic_io import OpenMdaoXmlIO
-from .openmdao_custom_io import OpenMdaoCustomXmlIO
-from .xpath_reader import XPathReader
+import os.path as pth
+
+from fastoad.io.xml import OpenMdaoCustomXmlIO
+
+CONVERSION_FILE = pth.join(pth.dirname(__file__), 'resources', 'legacy1.txt')
+
+
+class OpenMdaoLegacy1XmlIO(OpenMdaoCustomXmlIO):
+    """
+    Reader for legacy XML format (version "1")
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.read_translation_table(CONVERSION_FILE)

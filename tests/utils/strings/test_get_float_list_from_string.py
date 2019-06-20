@@ -1,6 +1,3 @@
-"""
-Package for handling XML files
-"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,7 +10,15 @@ Package for handling XML files
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from fastoad.utils.strings import get_float_list_from_string
 
-from .openmdao_basic_io import OpenMdaoXmlIO
-from .openmdao_custom_io import OpenMdaoCustomXmlIO
-from .xpath_reader import XPathReader
+
+def test_get_float_list_from_string():
+    assert [1., 2., 3.] == get_float_list_from_string('[ 1, 2., 3]')
+    assert [1., 2., 3., 4.] == get_float_list_from_string('[ 1 2.  3 4]')
+    assert [1., 2., 3.] == get_float_list_from_string(' 1, 2., 3')
+    assert [1., 2.] == get_float_list_from_string(' 1 2 ')
+    assert [1.] == get_float_list_from_string(' 1 dummy 2 ')
+    assert [1.] == get_float_list_from_string(' 1     ')
+    assert get_float_list_from_string(' dummy ') is None
+    assert get_float_list_from_string('') is None

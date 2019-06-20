@@ -25,6 +25,7 @@ from openmdao.core.problem import Problem
 from openmdao.drivers.scipy_optimizer import ScipyOptimizeDriver
 from pytest import approx
 
+from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_basic_io import OpenMdaoXmlIO
 from tests.sellar_example.sellar import Sellar
 
@@ -84,9 +85,11 @@ def test_basic_xml_read_and_write_from_indepvarcomp():
     Tests the creation of an XML file from an IndepVarComp instance
     """
     data_folder = pth.join(pth.dirname(__file__), 'data')
-    result_folder = pth.join(pth.dirname(__file__), 'results')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'basic_xml')
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
 
-    # Cgeck write hand-made component
+    # Check write hand-made component
     ivc = IndepVarComp()
     ivc.add_output('geometry/total_surface', val=[780.3], units='m**2')
     ivc.add_output('geometry/wing/span', val=42.0, units='m')
@@ -126,11 +129,75 @@ def test_basic_xml_read_and_write_from_indepvarcomp():
     _check_basic_ivc(new_ivc)
 
 
+def test_basic_xml_partial_read_and_write_from_indepvarcomp():
+    data_folder = pth.join(pth.dirname(__file__), 'data')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'basic_partial_xml')
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
+
+    # Read full IndepVarComp
+    filename = pth.join(data_folder, 'basic.xml')
+    xml_read = OpenMdaoXmlIO(filename)
+    ivc = xml_read.read(ignore=['does_not_exist'])
+    _check_basic_ivc(ivc)
+
+    # Add something to ignore and write it
+    ivc.add_output('should_be_ignored/pointless', val=0.0)
+    ivc.add_output('should_also_be_ignored', val=-10.0)
+
+    badvar_filename = pth.join(result_folder, 'with_bad_var.xml')
+    xml_write = OpenMdaoXmlIO(badvar_filename)
+    xml_write.write(ivc, ignore=['does_not_exist'])  # Check with non-existent var in ignore list
+
+    reader = XPathReader(badvar_filename)
+    assert reader.get_float('should_be_ignored/pointless') == 0.0
+    assert reader.get_float('should_also_be_ignored') == -10.0
+
+    # Check partial reading with 'ignore'
+    xml_read = OpenMdaoXmlIO(badvar_filename)
+    new_ivc = xml_read.read(ignore=['should_be_ignored/pointless', 'should_also_be_ignored'])
+    _check_basic_ivc(new_ivc)
+
+    # Check partial reading with 'only'
+    ok_vars = ['geometry/total_surface',
+               'geometry/wing/span',
+               'geometry/wing/aspect_ratio',
+               'geometry/fuselage/length',
+               'constants/k1',
+               'constants/k2',
+               'constants/k3',
+               'constants/k4',
+               'constants/k5'
+               ]
+    new_ivc2 = xml_read.read(only=ok_vars)
+    _check_basic_ivc(new_ivc2)
+
+    # Check partial writing with 'ignore'
+    varok_filename = pth.join(result_folder, 'with_bad_var.xml')
+    xml_write = OpenMdaoXmlIO(varok_filename)
+    xml_write.write(ivc, ignore=['should_be_ignored/pointless', 'should_also_be_ignored'])
+
+    xml_read = OpenMdaoXmlIO(varok_filename)
+    new_ivc = xml_read.read()
+    _check_basic_ivc(new_ivc)
+
+    # Check partial writing with 'only'
+    varok2_filename = pth.join(result_folder, 'with_bad_var.xml')
+    xml_write = OpenMdaoXmlIO(varok2_filename)
+    xml_write.write(ivc, only=ok_vars)
+
+    xml_read = OpenMdaoXmlIO(varok2_filename)
+    new_ivc = xml_read.read()
+    _check_basic_ivc(new_ivc)
+
+
 def test_basic_xml_write_from_problem():
     """
     Tests the creation of an XML file from OpenMDAO components
     """
-    result_folder = pth.join(pth.dirname(__file__), 'results')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'sellar')
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
 
     # Create and run the problem
     problem = Problem()
@@ -170,7 +237,7 @@ def test_basic_xml_write_from_problem():
     assert len(tree.xpath('/aircraft/Functions/g2')) == 1
 
     # Write the XML file using promoted names
-    filename = pth.join(pth.dirname(__file__), 'results', 'sellar.xml')
+    filename = pth.join(result_folder, 'sellar.xml')
     xml_write = OpenMdaoXmlIO(filename)
     xml_write.use_promoted_names = True
     xml_write.path_separator = '.'
@@ -185,7 +252,3 @@ def test_basic_xml_write_from_problem():
     assert len(tree.xpath('/aircraft/f')) == 1
     assert len(tree.xpath('/aircraft/g1')) == 1
     assert len(tree.xpath('/aircraft/g2')) == 1
-
-
-if __name__ == '__main__':
-    test_basic_xml_read_and_write_from_indepvarcomp()
