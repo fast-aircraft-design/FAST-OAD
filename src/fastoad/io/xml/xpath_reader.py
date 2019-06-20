@@ -18,6 +18,7 @@ from typing import Optional, List, Tuple, Union
 from lxml import etree
 from lxml.etree import _ElementTree  # pylint: disable=protected-access  # Useful for type hinting
 
+from fastoad.utils.strings import get_float_list_from_string
 from .constants import UNIT_ATTRIBUTE
 
 
@@ -109,34 +110,43 @@ class XPathReader:
 
         return None
 
-    # FIXME : there is no need for having different units for each returned value. Having a list
-    #         of value is fine, but only one value for units is enough
-    def get_values_and_units(self, xpath: str) -> List[
-        Tuple[Union[str, float], Optional[str]]]:
+    def get_values_and_units(self, xpath: str) -> Optional[Tuple[List[Union[str, float]],
+                                                                 Optional[str]]]:
         """
-        Returns a list of 2-tuples (value, unit) that match provided XPath.
+        Returns a tuple with a list of values and a string for units from provided XPath.
 
-        *value* may be a float if it can be converted. If not, it will be a
-        string.
+        For each element that matches XPath, the value will be converted as a list of floats if
+        possible. If not, it will be kept as a single string.
+        Returned list will the concatenation of obtained results for all element that matches Xpath.
 
-        If *value* is a float and *unit* is available, *unit* will be
-        provided as a string. In other cases, *unit* will be None
+        String for units will be retrieved from first element that matches XPath. Will be None if
+        no tag is present.
+
+        If required XPath does not exist, None will be returned
 
         :param xpath:XML Path
-        :return: a list of tuples
+        :return: a tuple (list, string) or None if XPath is not found
         """
-        result = []
+
         elements = self.tree.xpath(xpath)
+
+        # Units are retrieved from first element only
+        if not elements:
+            return None
+
+        values = []
+        units = elements[0].attrib.get(self.unit_attribute_name, None)
+
         for element in elements:
             value = element.text.strip()
-            try:
-                value = float(value)
-                unit = element.attrib.get(self.unit_attribute_name, None)
-            except ValueError:
-                unit = None
-            result.append((value, unit))
+            if value != '':
+                float_list = get_float_list_from_string(value)
+                if float_list is None:
+                    values.append(value)
+                else:
+                    values += float_list
 
-        return result
+        return values, units
 
     def _get_element(self, xpath: str):
         """

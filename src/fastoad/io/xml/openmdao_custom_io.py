@@ -79,9 +79,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                     ignore is not None and var_name in ignore):
                 if not xpath.startswith('/'):
                     xpath = '/' + root_tag + '/' + xpath
-                values_units = reader.get_values_and_units(xpath)
-                units = values_units[0][1]
-                values = [val[0] for val in values_units]
+                values, units = reader.get_values_and_units(xpath)
                 ivc.add_output(var_name, values, units=units)
 
         return ivc

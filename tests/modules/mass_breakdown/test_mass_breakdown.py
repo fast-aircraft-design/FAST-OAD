@@ -56,11 +56,11 @@ def input_xml() -> XPathReader:
 
 def test_compute_loads(input_xml: XPathReader):
     """ Tests computation of sizing loads """
-    [(lc1_u_gust, _), (lc2_u_gust, _)] = input_xml.get_values_and_units(
+    ([lc1_u_gust, lc2_u_gust], _) = input_xml.get_values_and_units(
         'Aircraft/weight/sizing_cases/SizingCase/U_gust')
-    [(lc1_alt, _), (lc1_alt, _)] = input_xml.get_values_and_units(
+    ([lc1_alt, lc2_alt], _) = input_xml.get_values_and_units(
         'Aircraft/weight/sizing_cases/SizingCase/altitude')
-    [(lc1_vc_eas, _), (lc1_vc_eas, _)] = input_xml.get_values_and_units(
+    ([lc1_vc_eas, lc2_vc_eas], _) = input_xml.get_values_and_units(
         'Aircraft/weight/sizing_cases/SizingCase/Vc_EAS')
     inputs = {
         'geometry:wing_area': input_xml.get_float(
@@ -76,8 +76,8 @@ def test_compute_loads(input_xml: XPathReader):
         'loadcase1:altitude': lc1_alt,
         'loadcase1:Vc_EAS': lc1_vc_eas,
         'loadcase2:U_gust': lc2_u_gust,
-        'loadcase2:altitude': lc1_alt,
-        'loadcase2:Vc_EAS': lc1_vc_eas
+        'loadcase2:altitude': lc2_alt,
+        'loadcase2:Vc_EAS': lc2_vc_eas
     }
     component = Loads()
     component.setup()
