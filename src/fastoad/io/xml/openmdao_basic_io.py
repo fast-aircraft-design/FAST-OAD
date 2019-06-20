@@ -23,6 +23,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.io.serialize import SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
+from fastoad.utils.strings import get_float_list_from_string
 from .openmdao_custom_io import OpenMdaoCustomXmlIO, OutputVariable
 
 
@@ -124,7 +125,7 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
                 units = elem.attrib.get(UNIT_ATTRIBUTE, None)
                 value = None
                 if elem.text:
-                    value = self._get_list_from_string(elem.text)
+                    value = get_float_list_from_string(elem.text)
                 if value:
                     name = self.path_separator.join(current_path[1:])
                     if name not in outputs:
@@ -138,36 +139,7 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
 
         return list(outputs.values())
 
-    @staticmethod
-    def _get_list_from_string(text: str):
-        """
-        Parses the provided string and returns a list if possible.
 
-        If provided text is not numeric, None is returned.
-        Otherwise, accepted text patterns are:
-
-        .. code-block::
-
-            '[ 1, 2., 3]'
-            '[ 1 2.  3]'
-            ' 1, 2., 3'
-            ' 1 2.  3'
-        """
-
-        text_value = text.strip().strip('[]')
-        if not text_value:
-            return None
-
-        # Deals with multiple values in same element. numpy.fromstring can parse a string,
-        # but we have to test with either ' ' or ',' as separator. The longest result should be
-        # the good one.
-        value1 = np.fromstring(text_value, dtype=float, sep=' ').tolist()
-        value2 = np.fromstring(text_value, dtype=float, sep=',').tolist()
-
-        if not value1 and not value2:
-            return None
-
-        return value1 if len(value1) > len(value2) else value2
 
     def _create_openmdao_code(self) -> str:  # pragma: no cover
         """dev utility for generating code"""
