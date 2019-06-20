@@ -21,7 +21,7 @@ from typing import Sequence, List, IO, Union
 
 import numpy as np
 from lxml import etree
-from lxml.etree import _Element
+from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.vectors.vector import Vector
 
@@ -77,11 +77,11 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         :return:
         """
 
-        arr = np.genfromtxt(source, delimiter=',')
+        arr = np.genfromtxt(source, dtype=str, delimiter=',')
         self._translator.set(arr[:, 0], arr[:, 1])
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
-        outputs = self.read_values()
+        outputs = self._read_values()
 
         ivc = IndepVarComp()
         for output in outputs:
@@ -89,8 +89,16 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
         return ivc
 
-    def read_values(self, only: Sequence[str] = None,
-                    ignore: Sequence[str] = None) -> List[OutputVariable]:
+    def _read_values(self, only: Sequence[str] = None,
+                     ignore: Sequence[str] = None) -> List[OutputVariable]:
+        """
+        Reads output variables from provided system.
+
+        :param only: List of OpenMDAO variable names that should be read. Other names will be
+                     ignored. If None, all variables will be read.
+        :param ignore: List of OpenMDAO variable names that should be ignored when reading.
+        :return: a list of OutputVariable instance
+        """
         reader = XPathReader(self._data_source)
         reader.unit_attribute_name = self._xml_unit_attribute
 
@@ -108,7 +116,6 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                 outputs.append(OutputVariable(var_name, values, units))
 
         return outputs
-
 
     def write(self, system: SystemSubclass, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
