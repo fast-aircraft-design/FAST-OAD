@@ -14,6 +14,7 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 import os.path as pth
 from collections import namedtuple
@@ -21,6 +22,7 @@ from typing import Sequence, List, IO, Union
 
 import numpy as np
 from lxml import etree
+from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.vectors.vector import Vector
@@ -29,6 +31,9 @@ from fastoad.io.serialize import AbstractOpenMDAOVariableIO, SystemSubclass
 from fastoad.io.xml.translator import VarXpathTranslator
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
 from .xpath_reader import XPathReader
+
+# Logger for this module
+_LOGGER = logging.getLogger(__name__)
 
 OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
 """ Simple structure for standard OpenMDAO variable """
@@ -98,7 +103,12 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                      ignored. If None, all variables will be read.
         :param ignore: List of OpenMDAO variable names that should be ignored when reading.
         :return: a list of OutputVariable instance
+        :raise ValueError: if translation table is not set or does nto contain a required variable
         """
+
+        if len(self._translator.variable_names) == 0:
+            raise ValueError('Translation table is not set.')
+
         reader = XPathReader(self._data_source)
         reader.unit_attribute_name = self._xml_unit_attribute
 
@@ -106,14 +116,21 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
         outputs = []
 
-        for var_name, xpath in zip(self._translator.variable_names, self._translator.xpaths):
-            if (only is None or var_name in only) and not (
-                    ignore is not None and var_name in ignore):
-                if not xpath.startswith('/'):
-                    xpath = '/' + root_tag + '/' + xpath
+        if only is not None:
+            var_names = only
+        else:
+            var_names = self._translator.variable_names
 
-                values, units = reader.get_values_and_units(xpath)
-                outputs.append(OutputVariable(var_name, values, units))
+        if ignore is not None:
+            var_names = [name for name in var_names if name not in ignore]
+
+        for var_name in var_names:
+            xpath = self._translator.get_xpath(var_name)
+            if not xpath.startswith('/'):
+                xpath = '/' + root_tag + '/' + xpath
+
+            values, units = reader.get_values_and_units(xpath)
+            outputs.append(OutputVariable(var_name, values, units))
 
         return outputs
 
@@ -131,17 +148,19 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         :param only: List of OpenMDAO variable names that should be written. Other names will be
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
-        """
+        :raise ValueError: if translation table is not set or does nto contain a required xpath
+       """
         root = etree.Element(ROOT_TAG)
-        for output in outputs:
-            print(output.name)
 
-            if not (only is None or output.name in only):
-                continue
-            if ignore is not None and output.name in ignore:
-                continue
-            if output.name not in self._translator.variable_names:
-                continue
+        if only is None:
+            used_outputs = outputs
+        else:
+            used_outputs = [output for output in outputs if output.name in only]
+
+        if ignore is not None:
+            used_outputs = [output for output in used_outputs if output.name not in ignore]
+
+        for output in used_outputs:
 
             xpath = self._translator.get_xpath(output.name)
             element = self._create_xpath(root, xpath)
@@ -202,6 +221,8 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         :param xpath:
         :return: created element
         """
+        input_xpath = xpath
+
         if xpath.startswith('/'):
             xpath = xpath[1:]
         path_components = xpath.split('/')
@@ -209,7 +230,12 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         children = []
         # Create XML path if needed
         for path_component in path_components:
-            children = element.xpath(path_component)
+            try:
+                children = element.xpath(path_component)
+            except XPathEvalError:
+                _LOGGER.error(
+                    'Could not evaluate provided XPath %s' % input_xpath)
+                raise
             if not children:
                 # Build path
                 new_element = etree.Element(path_component)

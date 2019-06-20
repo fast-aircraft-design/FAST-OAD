@@ -18,6 +18,7 @@ import shutil
 from collections import namedtuple
 from typing import List
 
+import pytest
 from openmdao.core.indepvarcomp import IndepVarComp
 from pytest import approx
 
@@ -27,8 +28,8 @@ from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
 _OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
 
 
-def _check_basic_ivc(ivc: IndepVarComp):
-    """ Checks that provided IndepVarComp instance matches content of data/basic.xml file """
+def _check_basic2_ivc(ivc: IndepVarComp):
+    """ Checks that provided IndepVarComp instance matches content of data/basic2.xml file """
 
     outputs: List[_OutputVariable] = []
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
@@ -55,7 +56,7 @@ def _check_basic_ivc(ivc: IndepVarComp):
     assert outputs[3].units == 'm'
 
 
-def test_basic_xml_read_and_write_from_indepvarcomp():
+def test_custom_xml_read_and_write_from_indepvarcomp():
     """
     Tests the creation of an XML file from an IndepVarComp instance
     """
@@ -74,16 +75,36 @@ def test_basic_xml_read_and_write_from_indepvarcomp():
               'wing/aspect_ratio',
               'fuselage_length']
 
-    # test read
+    # test read ---------------------------------------------------------------
     filename = pth.join(data_folder, 'basic2.xml')
     xml_read = OpenMdaoCustomXmlIO(filename)
+
+    # test without setting translation table
+    with pytest.raises(ValueError) as exc_info:
+        _ = xml_read.read()
+    assert exc_info is not None
+
+    # test with setting a bad translation table
+    with pytest.raises(ValueError) as exc_info:
+        _ = xml_read.read()
+    assert exc_info is not None
+
+
+    # test after setting translation table
     xml_read.set_translation_table(var_names, xpaths)
     ivc = xml_read.read()
-    _check_basic_ivc(ivc)
+    _check_basic2_ivc(ivc)
 
-    # test write
+    # test write --------------------------------------------------------------
     new_filename = pth.join(result_folder, 'basic2.xml')
     xml_write = OpenMdaoCustomXmlIO(new_filename)
+
+    # test without setting translation table
+    with pytest.raises(ValueError) as exc_info:
+        xml_write.write(ivc)
+    assert exc_info is not None
+
+    # test after setting translation table
     xml_write.set_translation_table(var_names, xpaths)
     xml_write.write(ivc)
 
@@ -91,7 +112,11 @@ def test_basic_xml_read_and_write_from_indepvarcomp():
     xml_check = OpenMdaoCustomXmlIO(new_filename)
     xml_check.set_translation_table(var_names, xpaths)
     new_ivc = xml_check.read()
-    _check_basic_ivc(new_ivc)
+    _check_basic2_ivc(new_ivc)
+
+
+def test_custom_xml_read_translation_table():
+    pass
 
 
 def _check_read_only_ivc(ivc: IndepVarComp):

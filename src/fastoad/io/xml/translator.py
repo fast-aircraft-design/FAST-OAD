@@ -37,8 +37,8 @@ class VarXpathTranslator:
         if len(var_names) != len(xpaths):
             raise IndexError('lists var_names and xpaths should have same length (%i and %i)' %
                              (len(var_names), len(xpaths)))
-        self._var_names = var_names
-        self._xpaths = xpaths
+        self._var_names = list(var_names)
+        self._xpaths = list(xpaths)
 
     @property
     def variable_names(self) -> Sequence[str]:
@@ -55,19 +55,21 @@ class VarXpathTranslator:
 
         :param var_name: OpenMDAO variable name
         :return: XPath that matches var_name
+        :raise ValueError: if var_name is unknown
         """
         if var_name in self._var_names:
             i = self._var_names.index(var_name)
             return self._xpaths[i]
-        return None
+        raise ValueError('Unknown variable %s' % var_name)
 
     def get_variable_name(self, xpath: str) -> str:
         """
 
         :param xpath: XML Path
         :return: OpenMDAO variable name that matches xpath
-        """
+        :raise ValueError: if xpath is unknown
+       """
         if xpath in self._xpaths:
             i = self._xpaths.index(xpath)
             return self._var_names[i]
-        return None
+        raise ValueError('Unknown xpath %s' % xpath)
