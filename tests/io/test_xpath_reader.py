@@ -85,16 +85,10 @@ def test_get_unit(input_xml):
 
 
 def test_get_values_and_units(input_xml):
-    assert not input_xml.get_values_and_units("/root/foot")
-    assert input_xml.get_values_and_units("/root") == [("", None)]
+    assert input_xml.get_values_and_units("/root/foot") is None
+    assert input_xml.get_values_and_units("/root") == ([], None)
 
-    assert input_xml.get_values_and_units("/root/bar") == [
-        ("another non-numeric value", None)]
-    assert input_xml.get_values_and_units("/root/foo") == [(4.e-2, "kg.K/Hz"),
-                                                           ('', None),
-                                                           ('', None),
-                                                           ('', None)]
-    assert input_xml.get_values_and_units("/root/foo/bar") == [
-        (42, "attoparsec")
-        , (70, None)
-        , ("non-numeric value", None)]
+    assert input_xml.get_values_and_units("/root/bar") == (["another non-numeric value"], None)
+    assert input_xml.get_values_and_units("/root/foo") == ([4.e-2], "kg.K/Hz")
+    assert input_xml.get_values_and_units("/root/foo/bar") == ([42, 70, "non-numeric value"],
+                                                               "attoparsec")
