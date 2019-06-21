@@ -125,8 +125,8 @@ def test_compute_cg_control_surfaces(input_xml):
     problem.setup(mode='fwd')
     problem.run_model()
 
-    x_cg_control_absolute = problem['cg_airframe:A4']
-    assert x_cg_control_absolute == pytest.approx(19.24, abs=1e-2)
+    x_cg_a4 = problem['cg_airframe:A4']
+    assert x_cg_a4 == pytest.approx(19.24, abs=1e-2)
 
 
 def test_compute_cg_loadcase1(input_xml):
