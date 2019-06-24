@@ -12,9 +12,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 import os.path as pth
+import shutil
 
 import numpy as np
 import pytest
+from openmdao.core.problem import Problem
 
 from fastoad.io.xml import XPathReader
 from fastoad.modules.aerodynamics.external import OpenVSP
@@ -63,7 +65,7 @@ def test_run(inputs):
     openvsp.setup()
 
     inputs['AoA_min'] = 0.0
-    inputs['AoA_max'] = 0.5
+    inputs['AoA_max'] = 0.2
     inputs['AoA_step'] = 0.1
     inputs['openvsp:mach'] = 0.75
     inputs['openvsp:altitude'] = 32000
@@ -82,8 +84,44 @@ def test_run(inputs):
     CDi = results[:, 1]
     CDtot = results[:, 2]
 
-    assert CL == pytest.approx([0.03893, 0.04901, 0.05909, 0.06918, 0.07926])
-    assert CDi == pytest.approx([8.0e-05, 1.2e-04, 1.7e-04, 2.2e-04, 2.9e-04])
-    assert CDtot == pytest.approx(0.00804)
+    # Result depends marginally on number of used cpu count. So tolerance is set to 0.5 lift count
+    # and 0.5 drag count
+    assert CL == pytest.approx([0.03893, 0.04901], abs=0.005)
+    assert CDi == pytest.approx([8.0e-05, 1.2e-04], abs=0.00005)
+    assert CDtot == pytest.approx(0.00804, abs=0.00005)
+
+    shutil.rmtree(TMP_DIR)
+
+
+def test_run_openmdao(indep_vars):
+    indep_vars.add_output('AoA_min', 0.1)
+    indep_vars.add_output('AoA_max', 0.5)
+    indep_vars.add_output('AoA_step', 0.1)
+    indep_vars.add_output('openvsp:mach', 0.75)
+    indep_vars.add_output('openvsp:altitude', 32000)
+
+    openvsp_computation = Problem()
+    model = openvsp_computation.model
+    model.add_subsystem('design_variables', indep_vars, promotes=['*'])
+    model.add_subsystem('openvsp', get_OpenVSP(), promotes=['*'])
+
+    openvsp_computation.setup(mode='fwd')
+    openvsp_computation.run_model()
+
+    assert pth.exists(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
+    os.remove(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
+
+    assert pth.exists(pth.join(TMP_DIR, OpenVSP.result_filename))
+
+    results = np.genfromtxt(os.path.join(TMP_DIR, OpenVSP.result_filename), delimiter=',')
+    CL = results[:, 0]
+    CDi = results[:, 1]
+    CDtot = results[:, 2]
+
+    # Result depends marginally on number of used cpu count. So tolerance is set to 0.5 lift count
+    # and 0.5 drag count
+    assert CL == pytest.approx([0.04901, 0.05909, 0.06918, 0.07926], abs=0.005)
+    assert CDi == pytest.approx([1.2e-04, 1.7e-04, 2.2e-04, 2.9e-04], abs=0.00005)
+    assert CDtot == pytest.approx(0.00804, abs=0.00005)
 
     os.remove(pth.join(TMP_DIR, OpenVSP.result_filename))
