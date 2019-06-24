@@ -81,7 +81,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         self._translator.set(arr[:, 0], arr[:, 1])
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
-        outputs = self._read_values()
+        outputs = self._read_values(only=only, ignore=ignore)
 
         ivc = IndepVarComp()
         for output in outputs:

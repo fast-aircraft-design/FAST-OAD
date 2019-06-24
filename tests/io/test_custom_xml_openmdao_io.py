@@ -22,6 +22,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from pytest import approx
 
 from fastoad.io.xml import OpenMdaoCustomXmlIO
+from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
 
 _OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
 
@@ -91,3 +92,43 @@ def test_basic_xml_read_and_write_from_indepvarcomp():
     xml_check.set_translation_table(var_names, xpaths)
     new_ivc = xml_check.read()
     _check_basic_ivc(new_ivc)
+
+
+def _check_read_only_ivc(ivc: IndepVarComp):
+    """ Checks that provided IndepVarComp instance matches content of data/basic.xml file """
+
+    outputs: List[_OutputVariable] = []
+    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
+        outputs.append(_OutputVariable(name, value, attributes['units']))
+
+    assert len(outputs) == 11
+
+
+def test_basic_xml_read_only():
+    """
+    Tests the reading of an XML file to generate an IndepVarComp instance only for requested variables
+    """
+    data_folder = pth.join(pth.dirname(__file__), 'data')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'custom_xml')
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
+
+    var_names = [
+        'geometry:wing_x0',
+        'geometry:wing_l0',
+        'geometry:wing_l1',
+        'geometry:fuselage_width_max',
+        'geometry:fuselage_length',
+        'geometry:wing_position',
+        'geometry:wing_area',
+        'geometry:ht_area',
+        'geometry:ht_lp',
+        'aerodynamics:Cl_alpha',
+        'aerodynamics:Cl_alpha_ht'
+    ]
+
+    # test read only
+    filename = pth.join(data_folder, 'CeRAS01_baseline.xml')
+    xml_read = OpenMdaoLegacy1XmlIO(filename)
+    ivc = xml_read.read(only=var_names)
+    _check_read_only_ivc(ivc)
