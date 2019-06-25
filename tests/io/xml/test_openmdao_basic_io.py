@@ -25,8 +25,8 @@ from openmdao.core.problem import Problem
 from openmdao.drivers.scipy_optimizer import ScipyOptimizeDriver
 from pytest import approx
 
+from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.io.xml import XPathReader
-from fastoad.io.xml.openmdao_basic_io import OpenMdaoXmlIO
 from tests.sellar_example.sellar import Sellar
 
 _OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])

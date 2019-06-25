@@ -29,7 +29,7 @@ _OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
 
 
 def _check_basic2_ivc(ivc: IndepVarComp):
-    """ Checks that provided IndepVarComp instance matches content of data/basic2.xml file """
+    """ Checks that provided IndepVarComp instance matches content of data/custom.xml file """
 
     outputs: List[_OutputVariable] = []
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
@@ -76,7 +76,7 @@ def test_custom_xml_read_and_write_from_indepvarcomp():
               'fuselage_length']
 
     # test read ---------------------------------------------------------------
-    filename = pth.join(data_folder, 'basic2.xml')
+    filename = pth.join(data_folder, 'custom.xml')
     xml_read = OpenMdaoCustomXmlIO(filename)
 
     # test without setting translation table
@@ -96,7 +96,7 @@ def test_custom_xml_read_and_write_from_indepvarcomp():
     _check_basic2_ivc(ivc)
 
     # test write --------------------------------------------------------------
-    new_filename = pth.join(result_folder, 'basic2.xml')
+    new_filename = pth.join(result_folder, 'custom.xml')
     xml_write = OpenMdaoCustomXmlIO(new_filename)
 
     # test without setting translation table
