@@ -83,7 +83,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                      ignored. If None, all variables will be read.
         :param ignore: List of OpenMDAO variable names that should be ignored when reading.
         :return: a list of OutputVariable instance
-        :raise ValueError: if translation table is not set or does nto contain a required variable
+        :raise ValueError: if translation table is not set or does not contain a required variable
         """
 
         if self._translator is None:
@@ -110,6 +110,9 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                 xpath = '/' + root_tag + '/' + xpath
 
             values, units = reader.get_values_and_units(xpath)
+            if values is None:
+                raise ValueError('XPath "%" not found' % xpath)
+
             outputs.append(OutputVariable(var_name, values, units))
 
         return outputs

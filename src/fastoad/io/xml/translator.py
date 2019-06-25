@@ -22,24 +22,32 @@ import numpy as np
 class VarXpathTranslator:
     """
     Allows to convert OpenMDAO variable names from and to XPath, using a provided conversion table.
+
+    At instantiation, user can provide (as keyword arguments only):
+     - variable_names and xpaths (see :meth:`set`)
+     - translation file (see :meth:`read_translation_table`)
     """
 
-    def __init__(self):
-        self._var_names = []
-        self._xpaths = []
+    def __init__(self, *, variable_names: Sequence[str] = None, xpaths: Sequence[str] = None,
+                 source: Union[str, IO] = None):
+        if variable_names is not None and xpaths is not None:
+            self.set(variable_names, xpaths)
 
-    def set(self, var_names: Sequence[str], xpaths: Sequence[str]):
+        if source is not None:
+            self.read_translation_table(source)
+
+    def set(self, variable_names: Sequence[str], xpaths: Sequence[str]):
         """
         Sets the "conversion table", i.e. two lists where each element matches the other with same
         index. Provided lists must have the same length.
 
-        :param var_names: List of OpenMDAO variable names
+        :param variable_names: List of OpenMDAO variable names
         :param xpaths: List of XML Paths
         """
-        if len(var_names) != len(xpaths):
+        if variable_names is None or xpaths is None or len(variable_names) != len(xpaths):
             raise IndexError('lists var_names and xpaths should have same length (%i and %i)' %
-                             (len(var_names), len(xpaths)))
-        self._var_names = list(var_names)
+                             (len(variable_names), len(xpaths)))
+        self._variable_names = list(variable_names)
         self._xpaths = list(xpaths)
 
     def read_translation_table(self, source: Union[str, IO]):
@@ -58,7 +66,7 @@ class VarXpathTranslator:
     @property
     def variable_names(self) -> Sequence[str]:
         """ List of variable names as set in :meth:`set`"""
-        return self._var_names
+        return self._variable_names
 
     @property
     def xpaths(self) -> Sequence[str]:
@@ -72,8 +80,8 @@ class VarXpathTranslator:
         :return: XPath that matches var_name
         :raise ValueError: if var_name is unknown
         """
-        if var_name in self._var_names:
-            i = self._var_names.index(var_name)
+        if var_name in self._variable_names:
+            i = self._variable_names.index(var_name)
             return self._xpaths[i]
         raise ValueError('Unknown variable %s' % var_name)
 
@@ -86,5 +94,5 @@ class VarXpathTranslator:
        """
         if xpath in self._xpaths:
             i = self._xpaths.index(xpath)
-            return self._var_names[i]
+            return self._variable_names[i]
         raise ValueError('Unknown xpath %s' % xpath)

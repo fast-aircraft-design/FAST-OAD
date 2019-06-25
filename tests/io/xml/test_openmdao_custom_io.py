@@ -84,18 +84,15 @@ def test_custom_xml_read_and_write_from_indepvarcomp():
         _ = xml_read.read()
     assert exc_info is not None
 
-    # FIXME
-    # # test with setting a bad translation table
-    # with pytest.raises(ValueError) as exc_info:
-    #     xml_read.set_translation_table(var_names, xpaths)
-    #     xml_read.set_translation_table(var_names + ['toto'], xpaths + ['toto'])
-    #
-    #     _ = xml_read.read()
-    # assert exc_info is not None
+    # test with setting a bad translation table
+    with pytest.raises(ValueError) as exc_info:
+        xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['toto'],
+                                                   xpaths=xpaths + ['toto']))
+        _ = xml_read.read()
+    assert exc_info is not None
 
     # test after setting translation table
-    translator = VarXpathTranslator()
-    translator.set(var_names, xpaths)
+    translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
     xml_read.set_translator(translator)
     ivc = xml_read.read()
     _check_basic2_ivc(ivc)
