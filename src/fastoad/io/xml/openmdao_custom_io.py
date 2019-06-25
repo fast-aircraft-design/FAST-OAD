@@ -45,6 +45,19 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
     user must provide, using :meth:`set_translator`, a VarXpathTranslator instance that tells how
     OpenMDAO variable names should be converted from/to XPath.
+
+    Note: XPath are always considered relatively to the root. Therefore, "foo/bar" should be
+    provided to match following XML structure:
+
+    .. code-block:: xml
+
+        <root>
+            <foo>
+                <bar>
+                    "some value"
+                </bar>
+            </foo>
+        </root>
     """
 
     def __init__(self, *args, **kwargs):
@@ -106,12 +119,9 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
         for var_name in var_names:
             xpath = self._translator.get_xpath(var_name)
-            if not xpath.startswith('/'):
-                xpath = '/' + root_tag + '/' + xpath
-
             values, units = reader.get_values_and_units(xpath)
             if values is None:
-                raise ValueError('XPath "%" not found' % xpath)
+                raise ValueError('XPath "%s" not found' % xpath)
 
             outputs.append(OutputVariable(var_name, values, units))
 
@@ -210,7 +220,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         input_xpath = xpath
 
         if xpath.startswith('/'):
-            xpath = xpath[1:]
+            xpath = xpath[1:]  # needed to avoid empty string at first place after split
         path_components = xpath.split('/')
         element = root
         children = []

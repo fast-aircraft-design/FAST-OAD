@@ -113,13 +113,77 @@ def test_custom_xml_read_and_write_from_indepvarcomp():
     # check written data
     assert pth.isfile(new_filename)
     xml_check = OpenMdaoCustomXmlIO(new_filename)
+
+    xpaths = ['total_area',
+              'wing/span',
+              'wing/aspect_ratio',
+              'fuselage_length']
+    translator.set(var_names, xpaths)
     xml_check.set_translator(translator)
     new_ivc = xml_check.read()
     _check_basic2_ivc(new_ivc)
 
 
-def test_custom_xml_read_translation_table():
-    pass
+def test_custom_xml_read_and_write_with_translation_table():
+    data_folder = pth.join(pth.dirname(__file__), 'data')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'custom_xml_with_translation_table')
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
+
+    # test read ---------------------------------------------------------------
+    filename = pth.join(data_folder, 'custom.xml')
+    xml_read = OpenMdaoCustomXmlIO(filename)
+
+    # test after setting translation table
+    translator = VarXpathTranslator(source=pth.join(data_folder, 'custom_translation.txt'))
+    xml_read.set_translator(translator)
+    ivc = xml_read.read()
+    _check_basic2_ivc(ivc)
+
+
+def test_custom_xml_read_and_write_with_only_or_ignore():
+    data_folder = pth.join(pth.dirname(__file__), 'data')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'custom_xml_with_translation_table')
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
+
+    var_names = ['geometry:total_surface',
+                 'geometry:wing:span',
+                 'geometry:wing:aspect_ratio',
+                 'geometry:fuselage:length']
+
+    xpaths = ['total_area',
+              'wing/span',
+              'wing/aspect_ratio',
+              'fuselage_length']
+
+    # test read ---------------------------------------------------------------
+    filename = pth.join(data_folder, 'custom.xml')
+    xml_read = OpenMdaoCustomXmlIO(filename)
+
+    translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
+    xml_read.set_translator(translator)
+
+    # test with "only"
+    ivc = xml_read.read(only=['geometry:wing:span'])
+    outputs: List[_OutputVariable] = []
+    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
+        outputs.append(_OutputVariable(name, value, attributes['units']))
+    assert len(outputs) == 1
+    assert outputs[0].name == 'geometry:wing:span'
+    assert outputs[0].value == approx([42])
+    assert outputs[0].units == 'm'
+
+    # test with "ignore"
+    ivc = xml_read.read(
+        ignore=['geometry:total_surface', 'geometry:wing:aspect_ratio', 'geometry:fuselage:length'])
+    outputs: List[_OutputVariable] = []
+    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
+        outputs.append(_OutputVariable(name, value, attributes['units']))
+    assert len(outputs) == 1
+    assert outputs[0].name == 'geometry:wing:span'
+    assert outputs[0].value == approx([42])
+    assert outputs[0].units == 'm'
 
 # def _check_read_only_ivc(ivc: IndepVarComp):
 #     """ Checks that provided IndepVarComp instance matches content of data/basic.xml file """
