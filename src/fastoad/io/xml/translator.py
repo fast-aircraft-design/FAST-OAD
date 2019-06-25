@@ -14,7 +14,9 @@ Conversion from OpenMDAO variables to XPath
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Sequence
+from typing import Sequence, Union, IO
+
+import numpy as np
 
 
 class VarXpathTranslator:
@@ -39,6 +41,19 @@ class VarXpathTranslator:
                              (len(var_names), len(xpaths)))
         self._var_names = list(var_names)
         self._xpaths = list(xpaths)
+
+    def read_translation_table(self, source: Union[str, IO]):
+        """
+        Reads a file that sets how OpenMDAO variable are matched to XML Path.
+        Provided file should have 2 comma-separated columns:
+         - first one with OpenMDAO names
+         - second one with their matching XPath
+
+        :param source:
+        """
+
+        arr = np.genfromtxt(source, dtype=str, delimiter=',', autostrip=True)
+        self.set(arr[:, 0], arr[:, 1])
 
     @property
     def variable_names(self) -> Sequence[str]:

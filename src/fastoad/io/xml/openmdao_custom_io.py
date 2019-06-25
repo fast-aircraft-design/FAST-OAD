@@ -64,11 +64,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
         :param var_names:
         :param xpaths:
-        :return:
         """
-        if len(var_names) != len(xpaths):
-            raise IndexError('lists var_names and xpaths should have same length (%i and %i)' %
-                             (len(var_names), len(xpaths)))
         self._translator.set(var_names, xpaths)
 
     def read_translation_table(self, source: Union[str, IO]):
@@ -79,11 +75,8 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
          - second one with their matching XPath
 
         :param source:
-        :return:
         """
-
-        arr = np.genfromtxt(source, dtype=str, delimiter=',')
-        self._translator.set(arr[:, 0], arr[:, 1])
+        self._translator.read_translation_table(source)
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
         outputs = self._read_values(only=only, ignore=ignore)

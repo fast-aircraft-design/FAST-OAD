@@ -14,13 +14,16 @@ Test module for translator.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os.path as pth
+
 import pytest
 
 from fastoad.io.xml.translator import VarXpathTranslator
 
 
-def test_translator():
-    """ Tests all methods of VarXpathTranslator"""
+def test_translator_with_set():
+    """ Tests VarXpathTranslator using set() for providing translation data"""
+
     translator = VarXpathTranslator()
     indices = range(10)
     var_list = ['var%i' % i for i in indices]
@@ -49,3 +52,27 @@ def test_translator():
     with pytest.raises(ValueError) as exc_info:
         _ = translator.get_variable_name('unknown_path')
     assert exc_info is not None
+
+
+def test_translator_with_read():
+    """ Tests VarXpathTranslator using read() for providing translation data"""
+
+    data_file = pth.join(pth.dirname(__file__), 'data', 'custom_translation.txt')
+    translator = VarXpathTranslator()
+    translator.read_translation_table(data_file)
+
+    var_list = ['geometry:total_surface',
+                'geometry:wing:span',
+                'geometry:wing:aspect_ratio',
+                'geometry:fuselage:length']
+    xpath_list = ['total_area',
+                  'wing/span',
+                  'wing/aspect_ratio',
+                  'fuselage_length']
+
+    assert translator.variable_names == var_list
+    assert translator.xpaths == xpath_list
+
+    for var_name, xpath in zip(var_list, xpath_list):
+        assert translator.get_variable_name(xpath) == var_name
+        assert translator.get_xpath(var_name) == xpath
