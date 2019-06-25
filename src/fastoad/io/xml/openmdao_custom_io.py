@@ -18,7 +18,7 @@ import logging
 import os
 import os.path as pth
 from collections import namedtuple
-from typing import Sequence, List, IO, Union
+from typing import Sequence, List
 
 import numpy as np
 from lxml import etree
@@ -43,40 +43,27 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
     """
     Customizable serializer for OpenMDAO variables
 
-    Using self.set_translation_table, user can tell how OpenMDAO variable names should be converted
-    from/to XPath.
+    user must provide, using :meth:`set_translator`, a VarXpathTranslator instance that tells how
+    OpenMDAO variable names should be converted from/to XPath.
     """
 
     def __init__(self, *args, **kwargs):
-        super(OpenMdaoCustomXmlIO, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.use_promoted_names = True
         """If True, promoted names will be used instead of "real" ones."""
 
-        self._translator = VarXpathTranslator()
-
+        self._translator = None
         self._xml_unit_attribute = UNIT_ATTRIBUTE
 
-    def set_translation_table(self, var_names: Sequence[str], xpaths: Sequence[str]):
+    def set_translator(self, translator: VarXpathTranslator):
         """
-        Sets how OpenMDAO variable are matched to XML Path.
-        Provided list must have the same length.
+        Sets the VarXpathTranslator() instance that rules how OpenMDAO variable are matched to
+        XML Path.
 
-        :param var_names:
-        :param xpaths:
+        :param translator:
         """
-        self._translator.set(var_names, xpaths)
-
-    def read_translation_table(self, source: Union[str, IO]):
-        """
-        Reads a file that sets how OpenMDAO variable are matched to XML Path.
-        Provided file should have 2 comma-separated columns:
-         - first one with OpenMDAO names
-         - second one with their matching XPath
-
-        :param source:
-        """
-        self._translator.read_translation_table(source)
+        self._translator = translator
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
         outputs = self._read_values(only=only, ignore=ignore)
@@ -99,8 +86,8 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         :raise ValueError: if translation table is not set or does nto contain a required variable
         """
 
-        if len(self._translator.variable_names) == 0:
-            raise ValueError('Translation table is not set.')
+        if self._translator is None:
+            raise ValueError('Missing translator instance')
 
         reader = XPathReader(self._data_source)
         reader.unit_attribute_name = self._xml_unit_attribute
@@ -143,6 +130,9 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
         :raise ValueError: if translation table is not set or does nto contain a required xpath
        """
+        if self._translator is None:
+            raise ValueError('Missing translator instance')
+
         root = etree.Element(ROOT_TAG)
 
         if only is None:

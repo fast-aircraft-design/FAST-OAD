@@ -17,6 +17,7 @@ Readers for legacy XML format
 import os.path as pth
 
 from fastoad.io.xml import OpenMdaoCustomXmlIO
+from fastoad.io.xml.translator import VarXpathTranslator
 
 CONVERSION_FILE = pth.join(pth.dirname(__file__), 'resources', 'legacy1.txt')
 
@@ -28,4 +29,7 @@ class OpenMdaoLegacy1XmlIO(OpenMdaoCustomXmlIO):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.read_translation_table(CONVERSION_FILE)
+        translator = VarXpathTranslator()
+        translator.read_translation_table(CONVERSION_FILE)
+
+        self.set_translator(translator)
