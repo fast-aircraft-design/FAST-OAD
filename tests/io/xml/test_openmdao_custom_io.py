@@ -19,6 +19,7 @@ from collections import namedtuple
 from typing import List
 
 import pytest
+from lxml.etree import XPathEvalError
 from openmdao.core.indepvarcomp import IndepVarComp
 from pytest import approx
 
@@ -84,10 +85,17 @@ def test_custom_xml_read_and_write_from_indepvarcomp():
         _ = xml_read.read()
     assert exc_info is not None
 
-    # test with setting a bad translation table
+    # test with setting a bad translation table (missing xpath)
     with pytest.raises(ValueError) as exc_info:
-        xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['toto'],
-                                                   xpaths=xpaths + ['toto']))
+        xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['dummy_var'],
+                                                   xpaths=xpaths + ['dummy_xpath']))
+        _ = xml_read.read()
+    assert exc_info is not None
+
+    # test with setting a bad translation table (bad xpath)
+    with pytest.raises(XPathEvalError) as exc_info:
+        xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['dummy_var'],
+                                                   xpaths=xpaths + ['bad:xpath']))
         _ = xml_read.read()
     assert exc_info is not None
 

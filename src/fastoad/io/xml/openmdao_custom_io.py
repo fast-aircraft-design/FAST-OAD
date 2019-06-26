@@ -119,7 +119,13 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
         for var_name in var_names:
             xpath = self._translator.get_xpath(var_name)
-            values, units = reader.get_values_and_units(xpath)
+            try:
+                values, units = reader.get_values_and_units(xpath)
+            except XPathEvalError:
+                _LOGGER.error(
+                    'Could not evaluate provided XPath %s (is path_separator correctly set?)',
+                    xpath)
+                raise
             if values is None:
                 raise ValueError('XPath "%s" not found' % xpath)
 
@@ -230,7 +236,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                 children = element.xpath(path_component)
             except XPathEvalError:
                 _LOGGER.error(
-                    'Could not evaluate provided XPath %s' % input_xpath)
+                    'Could not evaluate provided XPath %s', input_xpath)
                 raise
             if not children:
                 # Build path
