@@ -84,19 +84,22 @@ class XfoilPolar(ExternalCodeComp):
         #           On Windows, the default (user-dependent) tmp dir can exceed the limit.
         #           Therefore, as a second choice, tmp dir is created as close of user home
         #           directory as possible.
+        tmp_candidates = []
         for tmp_base_path in [None, pth.join(Path.home().name, '.fast')]:
             if tmp_base_path is not None:
                 os.makedirs(tmp_base_path, exist_ok=True)
             tmp_directory = tempfile.TemporaryDirectory(prefix='x', dir=tmp_base_path)
+            tmp_candidates.append(tmp_directory.name)
             tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
             tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
 
-            if max(len(tmp_profile_file_path), len(tmp_result_file_path)) > _XFOIL_PATH_LIMIT:
-                raise IOError(
-                    'Could not create a tmp directory where file path will respects XFOIL '
-                    'limitation (%i): %s' % (_XFOIL_PATH_LIMIT, tmp_directory.name))
-            else:
+            if max(len(tmp_profile_file_path), len(tmp_result_file_path)) <= _XFOIL_PATH_LIMIT:
                 break
+
+        if max(len(tmp_profile_file_path), len(tmp_result_file_path)) > _XFOIL_PATH_LIMIT:
+            raise IOError(
+                'Could not create a tmp directory where file path will respects XFOIL '
+                'limitation (%i): tried %s' % (_XFOIL_PATH_LIMIT, tmp_candidates))
 
         self.stdin = pth.join(tmp_directory.name, _INPUT_FILE_NAME)
         self.stdout = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
