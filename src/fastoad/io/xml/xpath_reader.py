@@ -110,8 +110,8 @@ class XPathReader:
 
         return None
 
-    def get_values_and_units(self, xpath: str) -> Optional[Tuple[List[Union[str, float]],
-                                                                 Optional[str]]]:
+    def get_values_and_units(self, xpath: str) -> Tuple[Optional[List[Union[str, float]]],
+                                                        Optional[str]]:
         """
         Returns a tuple with a list of values and a string for units from provided XPath.
 
@@ -125,14 +125,14 @@ class XPathReader:
         If required XPath does not exist, None will be returned
 
         :param xpath:XML Path
-        :return: a tuple (list, string) or None if XPath is not found
+        :return: a tuple (list, string) or (None, None) if XPath is not found
         """
 
         elements = self.tree.xpath(xpath)
 
         # Units are retrieved from first element only
         if not elements:
-            return None
+            return None, None
 
         values = []
         units = elements[0].attrib.get(self.unit_attribute_name, None)

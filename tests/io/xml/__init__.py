@@ -1,6 +1,3 @@
-"""
-Readers for legacy XML format
-"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,23 +10,3 @@ Readers for legacy XML format
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-import os.path as pth
-
-from fastoad.io.xml import OpenMdaoCustomXmlIO
-from fastoad.io.xml.translator import VarXpathTranslator
-
-CONVERSION_FILE_1 = pth.join(pth.dirname(__file__), 'resources', 'legacy1.txt')
-
-
-class OpenMdaoLegacy1XmlIO(OpenMdaoCustomXmlIO):
-    """
-    Reader for legacy XML format (version "1")
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        translator = VarXpathTranslator()
-        translator.read_translation_table(CONVERSION_FILE_1)
-
-        self.set_translator(translator)

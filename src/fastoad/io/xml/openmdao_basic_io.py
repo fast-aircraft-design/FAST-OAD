@@ -23,6 +23,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.io.serialize import SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
+from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.utils.strings import get_float_list_from_string
 from .openmdao_custom_io import OpenMdaoCustomXmlIO, OutputVariable
 
@@ -98,7 +99,10 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
             names.append(output.name)
             xpaths.append(xpath)
 
-        self._translator.set(names, xpaths)
+        translator = VarXpathTranslator()
+        translator.set(names, xpaths)
+        self.set_translator(translator)
+
         self._write(outputs, only, ignore)
 
     def _read_xml(self) -> Sequence[OutputVariable]:
@@ -138,8 +142,6 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
                 current_path.pop(-1)
 
         return list(outputs.values())
-
-
 
     def _create_openmdao_code(self) -> str:  # pragma: no cover
         """dev utility for generating code"""

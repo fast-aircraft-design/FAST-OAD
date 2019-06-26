@@ -85,7 +85,7 @@ def test_get_unit(input_xml):
 
 
 def test_get_values_and_units(input_xml):
-    assert input_xml.get_values_and_units("/root/foot") is None
+    assert input_xml.get_values_and_units("/root/foot") == (None, None)
     assert input_xml.get_values_and_units("/root") == ([], None)
 
     assert input_xml.get_values_and_units("/root/bar") == (["another non-numeric value"], None)
