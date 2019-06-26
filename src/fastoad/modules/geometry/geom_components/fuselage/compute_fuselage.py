@@ -26,6 +26,7 @@ class ComputeFuselageGeometry(ExplicitComponent):
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
+        self.options.declare('cabin_sizing', default=True)
 
     def setup(self):
         deriv_method = self.options['deriv_method']
@@ -88,7 +89,7 @@ class ComputeFuselageGeometry(ExplicitComponent):
                                                              'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
 
     def compute(self, inputs, outputs):
-        cabin_sizing = True
+        cabin_sizing = self.options['cabin_sizing']
         front_seat_number_eco = inputs['cabin:front_seat_number_eco']
         WSeco = inputs['cabin:WSeco']
         LSeco = inputs['cabin:LSeco']

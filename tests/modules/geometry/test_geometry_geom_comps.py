@@ -72,7 +72,7 @@ def test_compute_fuselage(xpath_reader: XPathReader, input_xml):
     Nrows = problem['cabin:Nrows']
     assert Nrows == pytest.approx(26, abs=1)
     cg_systems_c6 = problem['cg_systems:C6']
-    assert cg_systems_c6 == pytest.approx(13.5, abs=1e-1)
+    assert cg_systems_c6 == pytest.approx(7.47, abs=1e-2)
     cg_furniture_d2 = problem['cg_furniture:D2']
     assert cg_furniture_d2 == pytest.approx(16.62, abs=1e-2)
     cg_pl_cg_pax = problem['cg_pl:CG_PAX']
@@ -90,7 +90,7 @@ def test_compute_fuselage(xpath_reader: XPathReader, input_xml):
     fuselage_Lpax = problem['geometry:fuselage_Lpax']
     assert fuselage_Lpax == pytest.approx(22.87, abs=1e-2)
     fuselage_Lcabin = problem['geometry:fuselage_Lcabin']
-    assert fuselage_Lcabin == pytest.approx(30.0, abs=1e-1)
+    assert fuselage_Lcabin == pytest.approx(30.38, abs=1e-2)
     fuselage_wet_area = problem['geometry:fuselage_wet_area']
     assert fuselage_wet_area == pytest.approx(401.956, abs=1e-3)
     pnc = problem['cabin:PNC']
