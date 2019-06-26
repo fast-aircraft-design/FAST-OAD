@@ -37,7 +37,7 @@ class ComputeFuselageGeometry(ExplicitComponent):
         self.add_input('cabin:Waisle', val=np.nan)
         self.add_input('cabin:Wexit', val=np.nan)
         self.add_input('tlar:NPAX', val=np.nan)
-        self.add_input('cabin:Nrows', val=np.nan)
+        # self.add_input('cabin:Nrows', val=np.nan)
 #        self.add_input('geometry:fuselage_length', val=np.nan)
 #        self.add_input('geometry:fuselage_width_max', val=np.nan)
 #        self.add_input('geometry:fuselage_height_max', val=np.nan)
@@ -46,7 +46,8 @@ class ComputeFuselageGeometry(ExplicitComponent):
 #        self.add_input('geometry:fuselage_Lpax', val=np.nan)
         self.add_input('geometry:engine_number', val=np.nan)
 
-#        self.add_output('cabin:NPAX1')
+        self.add_output('cabin:NPAX1')
+        self.add_output('cabin:Nrows')
         self.add_output('cg_systems:C6')
         self.add_output('cg_furniture:D2')
         self.add_output('cg_pl:CG_PAX')
@@ -60,6 +61,9 @@ class ComputeFuselageGeometry(ExplicitComponent):
         self.add_output('geometry:fuselage_wet_area')
         self.add_output('cabin:PNC')
 
+        self.declare_partials('cabin:NPAX1', ['tlar:NPAX'], method=deriv_method)
+        self.declare_partials('cabin:Nrows', ['cabin:front_seat_number_eco',
+                                                              'tlar:NPAX'], method=deriv_method)
         self.declare_partials('geometry:fuselage_width_max', ['cabin:front_seat_number_eco', 'cabin:WSeco',
                                                               'cabin:Waisle'], method=deriv_method)
         self.declare_partials('geometry:fuselage_height_max', ['cabin:front_seat_number_eco', 'cabin:WSeco',
@@ -69,18 +73,18 @@ class ComputeFuselageGeometry(ExplicitComponent):
         self.declare_partials('geometry:fuselage_LAR', ['cabin:front_seat_number_eco', 'cabin:WSeco',
                                                         'cabin:Waisle'], method=deriv_method)
         self.declare_partials('geometry:fuselage_Lpax', [
-                              'cabin:Nrows', 'cabin:LSeco', 'cabin:Wexit'], method=deriv_method)
-        self.declare_partials('geometry:fuselage_length', ['cabin:Nrows', 'cabin:front_seat_number_eco', 'cabin:Waisle',
+                              'cabin:LSeco', 'cabin:Wexit'], method=deriv_method)
+        self.declare_partials('geometry:fuselage_length', ['cabin:front_seat_number_eco', 'cabin:Waisle',
                                                            'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
-        self.declare_partials('geometry:fuselage_Lcabin', ['cabin:Nrows', 'cabin:front_seat_number_eco', 'cabin:Waisle',
+        self.declare_partials('geometry:fuselage_Lcabin', ['cabin:front_seat_number_eco', 'cabin:Waisle',
                                                            'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
-        self.declare_partials('cg_systems:C6', ['cabin:Nrows', 'cabin:front_seat_number_eco', 'cabin:WSeco',
+        self.declare_partials('cg_systems:C6', ['cabin:front_seat_number_eco', 'cabin:WSeco',
                                                 'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
-        self.declare_partials('cg_furniture:D2', ['cabin:Nrows', 'cabin:front_seat_number_eco', 'cabin:WSeco',
+        self.declare_partials('cg_furniture:D2', ['cabin:front_seat_number_eco', 'cabin:WSeco',
                                                   'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
-        self.declare_partials('cg_pl:CG_PAX', ['cabin:Nrows', 'cabin:front_seat_number_eco', 'cabin:WSeco',
+        self.declare_partials('cg_pl:CG_PAX', ['cabin:front_seat_number_eco', 'cabin:WSeco',
                                                'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
-        self.declare_partials('geometry:fuselage_wet_area', ['cabin:Nrows', 'cabin:front_seat_number_eco', 'cabin:Waisle',
+        self.declare_partials('geometry:fuselage_wet_area', ['cabin:front_seat_number_eco', 'cabin:Waisle',
                                                              'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
 
     def compute(self, inputs, outputs):
@@ -91,7 +95,6 @@ class ComputeFuselageGeometry(ExplicitComponent):
         Waisle = inputs['cabin:Waisle']
         Wexit = inputs['cabin:Wexit']
         NPAX = inputs['tlar:NPAX']
-        nrows = inputs['cabin:Nrows']
         n_engines = inputs['geometry:engine_number']
 
         if cabin_sizing:
@@ -100,12 +103,12 @@ class ComputeFuselageGeometry(ExplicitComponent):
                 Waisle + (front_seat_number_eco + 2) * 0.051 + 0.05
 
             # Number of rows = Npax / N
-#            npax_1 = int(1.05 * NPAX)
-#            nrows = int(npax_1 / front_seat_number_eco)
+            npax_1 = int(1.05 * NPAX)
+            Nrows = int(npax_1 / front_seat_number_eco)
             pnc = int((NPAX+17)/35)
             # Length of pax cabin = Length of seat area + Width of 1 Emergency
             # exits
-            lpax = (nrows * LSeco) + 1 * Wexit
+            lpax = (Nrows * LSeco) + 1 * Wexit
             l_cyl = lpax - (2 * front_seat_number_eco - 4) * LSeco
             r_i = wcabin / 2
             radius = 1.06 * r_i
@@ -125,7 +128,8 @@ class ComputeFuselageGeometry(ExplicitComponent):
             x_cg_c6 = lav - (front_seat_number_eco - 4) * LSeco + lpax * 0.1
             x_cg_d2 = lav - (front_seat_number_eco - 4) * LSeco + lpax / 2
 
-#            outputs['cabin:NPAX1'] = npax_1
+            outputs['cabin:Nrows'] = Nrows 
+            outputs['cabin:NPAX1'] = npax_1
             outputs['cg_systems:C6'] = x_cg_c6
             outputs['cg_furniture:D2'] = x_cg_d2
             outputs['cg_pl:CG_PAX'] = x_cg_d2

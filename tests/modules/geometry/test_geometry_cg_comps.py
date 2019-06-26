@@ -1,5 +1,5 @@
 """
-Test module for geometry functions
+Test module for geometry functions of cg components
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -24,31 +24,31 @@ from openmdao.core.problem import Problem
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_basic_io import OpenMdaoXmlIO
 from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
-from fastoad.modules.geometry.cg_components.compute_aero_center \
+from fastoad.modules.geometry.cg_components \
     import ComputeAeroCenter
-from fastoad.modules.geometry.cg_components.compute_cg_control_surfaces \
+from fastoad.modules.geometry.cg_components \
     import ComputeControlSurfacesCG
-from fastoad.modules.geometry.cg_components.compute_cg_loadcase1 \
+from fastoad.modules.geometry.cg_components \
     import ComputeCGLoadCase1
-from fastoad.modules.geometry.cg_components.compute_cg_loadcase2 \
+from fastoad.modules.geometry.cg_components \
     import ComputeCGLoadCase2
-from fastoad.modules.geometry.cg_components.compute_cg_loadcase3 \
+from fastoad.modules.geometry.cg_components \
     import ComputeCGLoadCase3
-from fastoad.modules.geometry.cg_components.compute_cg_loadcase4 \
+from fastoad.modules.geometry.cg_components \
     import ComputeCGLoadCase4
-from fastoad.modules.geometry.cg_components.compute_cg_others \
+from fastoad.modules.geometry.cg_components \
     import ComputeOthersCG
-from fastoad.modules.geometry.cg_components.compute_cg_ratio_aft \
+from fastoad.modules.geometry.cg_components \
     import ComputeCGratioAft
-from fastoad.modules.geometry.cg_components.compute_cg_tanks \
+from fastoad.modules.geometry.cg_components \
     import ComputeTanksCG
-from fastoad.modules.geometry.cg_components.compute_cg_wing \
+from fastoad.modules.geometry.cg_components \
     import ComputeWingCG
-from fastoad.modules.geometry.cg_components.compute_global_cg \
+from fastoad.modules.geometry.cg_components \
     import ComputeGlobalCG
-from fastoad.modules.geometry.cg_components.compute_max_cg_ratio \
+from fastoad.modules.geometry.cg_components \
     import ComputeMaxCGratio
-from fastoad.modules.geometry.cg_components.compute_static_margin \
+from fastoad.modules.geometry.cg_components \
     import ComputeStaticMargin
 
 
