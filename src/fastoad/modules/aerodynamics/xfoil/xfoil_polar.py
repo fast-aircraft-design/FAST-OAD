@@ -13,11 +13,13 @@ This module launches XFOIL computations
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import logging
 import os
 import os.path as pth
 import shutil
 import tempfile
+from pathlib import Path
 
 import numpy as np
 from openmdao.components.external_code_comp import ExternalCodeComp
@@ -26,10 +28,12 @@ from openmdao.utils.file_wrap import InputFileGenerator
 _INPUT_FILE_NAME = 'polar_input.txt'
 _STDOUT_FILE_NAME = 'polar_calc.log'
 _STDERR_FILE_NAME = 'polar_calc.err'
-_PROFILE_FILE_NAME = 'profile.txt'  # as specified in input file
-_RESULT_FILE_NAME = 'polar_result.txt'  # as specified in input file
+_TMP_PROFILE_FILE_NAME = 'in'  # as short as possible to avoid problems of path length
+_TMP_RESULT_FILE_NAME = 'out'  # as short as possible to avoid problems of path length
 
 _LOGGER = logging.getLogger(__name__)
+
+_XFOIL_PATH_LIMIT = 64
 
 
 class XfoilPolar(ExternalCodeComp):
@@ -45,7 +49,7 @@ class XfoilPolar(ExternalCodeComp):
         self.options.declare('profile_path',
                              default=os.path.join(os.path.dirname(__file__), 'BACJ.txt'), types=str)
         self.options.declare('result_folder_path', default='', types=str)
-        self.options.declare('result_polar_file_name', default=_RESULT_FILE_NAME, types=str)
+        self.options.declare('result_polar_file_name', default='polar_result.txt', types=str)
 
     def setup(self):
         self.options['command'] = [self.options['xfoil_exe_path']]
@@ -73,12 +77,30 @@ class XfoilPolar(ExternalCodeComp):
         sweep_25 = inputs['geometry:wing_sweep_25']
 
         # Pre-processing (populating temp directory)
-        tmp_directory = tempfile.TemporaryDirectory(prefix='xfl')
-        tmp_profile_file_path = pth.join(tmp_directory.name, _PROFILE_FILE_NAME)
+        # Dev Note: XFOIL fails if length of provided file path exceeds 64 characters.
+        #           Changing working directory to the tmp dir would allow to just provide file name,
+        #           but it is not really safe (at least, it does mess with the coverage report).
+        #           Then the point is to get a tmp directory with a short path.
+        #           On Windows, the default (user-dependent) tmp dir can exceed the limit.
+        #           Therefore, as a second choice, tmp dir is created as close of user home
+        #           directory as possible.
+        for tmp_base_path in [None, pth.join(Path.home().name, '.fast')]:
+            if tmp_base_path is not None:
+                os.makedirs(tmp_base_path, exist_ok=True)
+            tmp_directory = tempfile.TemporaryDirectory(prefix='x', dir=tmp_base_path)
+            tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
+            tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
+
+            if max(len(tmp_profile_file_path), len(tmp_result_file_path)) > _XFOIL_PATH_LIMIT:
+                raise IOError(
+                    'Could not create a tmp directory where file path will respects XFOIL '
+                    'limitation (%i): %s' % (_XFOIL_PATH_LIMIT, tmp_directory.name))
+            else:
+                break
+
         self.stdin = pth.join(tmp_directory.name, _INPUT_FILE_NAME)
         self.stdout = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
         self.stderr = pth.join(tmp_directory.name, _STDERR_FILE_NAME)
-        tmp_result_file_path = pth.join(tmp_directory.name, _RESULT_FILE_NAME)
 
         # profile file
         shutil.copy(self.options['profile_path'], tmp_profile_file_path)
@@ -93,8 +115,8 @@ class XfoilPolar(ExternalCodeComp):
         parser.transfer_var(float(reynolds), 1, 1)
         parser.mark_anchor('M')
         parser.transfer_var(float(mach), 1, 1)
-        parser.mark_anchor(_RESULT_FILE_NAME)
-        parser.transfer_var(tmp_result_file_path, 0, 1)
+        parser.mark_anchor('PACC')
+        parser.transfer_var(tmp_result_file_path, 1, 1)
         parser.generate()
 
         # Run XFOIL
