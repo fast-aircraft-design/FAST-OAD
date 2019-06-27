@@ -13,9 +13,4 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os.path as pth
 
-root_folder = pth.dirname(pth.dirname(__file__))
-# @pytest.fixture(scope="session")
-# def root_folder():
-#     return pth.join(pth.dirname(__file__), os.pardir)
