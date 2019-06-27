@@ -1,0 +1,95 @@
+
+//==== Create A Multi Section Wing and Change Some Parameters ====//
+void main()
+{
+    //==== Add Wing ====//
+    string wid = AddGeom( "WING", "");
+
+    //===== Insert A Couple More Sections =====//
+    InsertXSec( wid, 1, XS_FOUR_SERIES );
+    InsertXSec( wid, 1, XS_FOUR_SERIES );
+    InsertXSec( wid, 1, XS_FOUR_SERIES );
+
+    //===== Cut The Original Section =====//
+    CutXSec( wid, 1 );
+
+    //===== Change Driver =====//
+    SetDriverGroup( wid, 1, AREA_WSECT_DRIVER, ROOTC_WSECT_DRIVER, TIPC_WSECT_DRIVER );
+
+    SetParmVal( wid, "RotateAirfoilMatchDideralFlag", "WingGeom", 1.0 );
+
+    //===== Change Some Parameters 1st Section ====//
+    SetParmVal( wid, "Root_Chord", "XSec_1", 6.26 );
+    SetParmVal( wid, "Tip_Chord", "XSec_1", 6.26 );
+    SetParmVal( wid, "Area", "XSec_1", 12.269599999999999 );
+    SetParmVal( wid, "Sweep", "XSec_1", 0.0 );
+
+    //==== Because Sections Are Connected Change One Section At A Time Then Update ====//
+    Update();
+
+    //===== Change Some Parameters 2nd Section ====//
+    SetParmVal( wid, "Tip_Chord", "XSec_2", 3.985 );
+    SetParmVal( wid, "Span", "XSec_2", 4.361 );
+    SetParmVal( wid, "Sweep", "XSec_2", 20.74 );
+    SetParmVal( wid, "Sweep_Location", "XSec_2", 0.17419 );
+    SetParmVal( wid, "Sec_Sweep_Location", "XSec_2", 0.9871 );
+    SetParmVal( wid, "Twist", "XSec_2", 0.5 );
+    SetParmVal( wid, "Twist_Location", "XSec_2", 0.25 );
+    SetParmVal( wid, "Dihedral", "XSec_2", 5.0 );
+    Update();
+
+    //===== Change Some Parameters 3rd Section ====//
+    SetParmVal( wid, "Tip_Chord", "XSec_3", 1.882 );
+    SetParmVal( wid, "Span", "XSec_3", 9.48 );
+    SetParmVal( wid, "Area", "XSec_3", 27.80958 );
+    SetParmVal( wid, "Sweep", "XSec_3", 24.54 );
+    SetParmVal( wid, "Twist", "XSec_3", 0.3 );
+    SetParmVal( wid, "Twist_Location", "XSec_3", 0.25 );
+    SetParmVal( wid, "Dihedral", "XSec_3", 5.0 );
+    Update();
+
+    //==== Change Airfoil 0 ====//
+    string xsec_surf0 = GetXSecSurf( wid, 0 );
+    ChangeXSecShape( xsec_surf0, 0, XS_FILE_AIRFOIL );
+    string xsec0 = GetXSec( xsec_surf0, 0 );
+    ReadFileAirfoil( xsec0, "d:/cdavid/pychprojs/fast-oad/src/fastoad/modules/aerodynamics/external/openvsp/resources/airfoil_f_15_15.dat");
+
+    Update();
+
+    //==== Change Airfoil 1====//
+    string xsec_surf = GetXSecSurf( wid, 1 );
+    ChangeXSecShape( xsec_surf, 1, XS_FILE_AIRFOIL );
+    string xsec1 = GetXSec( xsec_surf, 1 );
+    ReadFileAirfoil( xsec1, "d:/cdavid/pychprojs/fast-oad/src/fastoad/modules/aerodynamics/external/openvsp/resources/airfoil_f_15_15.dat");
+
+    Update();
+
+    //==== Change Airfoil 2====//
+    string xsec_surf2 = GetXSecSurf( wid, 2 );
+    ChangeXSecShape( xsec_surf2, 2, XS_FILE_AIRFOIL );
+    string xsec2 = GetXSec( xsec_surf2, 2 );
+    ReadFileAirfoil( xsec2, "d:/cdavid/pychprojs/fast-oad/src/fastoad/modules/aerodynamics/external/openvsp/resources/airfoil_f_15_12.dat");
+
+    Update();
+
+    //==== Change Airfoil 3====//
+    string xsec_surf3 = GetXSecSurf( wid, 3 );
+    ChangeXSecShape( xsec_surf3, 3, XS_FILE_AIRFOIL );
+    string xsec3 = GetXSec( xsec_surf3, 3 );
+    ReadFileAirfoil( xsec3, "d:/cdavid/pychprojs/fast-oad/src/fastoad/modules/aerodynamics/external/openvsp/resources/airfoil_f_15_11.dat");
+
+    Update();
+
+    //==== Check For API Errors ====//
+    while ( GetNumTotalErrors() > 0 )
+    {
+        ErrorObj err = PopLastError();
+        Print( err.GetErrorString() );
+    }
+
+    //==== Set File Name ====//
+    SetComputationFileName( DEGEN_GEOM_CSV_TYPE, "D:/cdavid/PyChProjs/FAST-OAD/tests/modules/aerodynamics/external/openvsp/tmp/wing_openvsp_DegenGeom.csv" );
+
+    //==== Run Degen Geom ====//
+    ComputeDegenGeom( SET_ALL, DEGEN_GEOM_CSV_TYPE );
+}

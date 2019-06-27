@@ -46,50 +46,12 @@ def indep_vars():
     return ivc
 
 
-def test_compute(indep_vars):
-    openvsp = get_OpenVSP()
-    openvsp.setup()
-
-    inputs = {}
-    outputs = {}
-    for (name, value, _) in indep_vars._indep_external:
-        inputs[name] = value
-
-    print(inputs)
-
-    inputs['AoA_min'] = 0.0
-    inputs['AoA_max'] = 0.2
-    inputs['AoA_step'] = 0.1
-    inputs['openvsp:mach'] = 0.75
-    inputs['openvsp:altitude'] = 32000
-
-    openvsp.compute(inputs, outputs)
-
-    assert pth.exists(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
-    os.remove(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
-
-    assert pth.exists(pth.join(TMP_DIR, OpenVSP.result_filename))
-
-    results = np.genfromtxt(os.path.join(TMP_DIR, OpenVSP.result_filename), delimiter=',')
-    CL = results[:, 0]
-    CDi = results[:, 1]
-    CDtot = results[:, 2]
-
-    # Result depends marginally on number of used cpu count. So tolerance is set to 0.5 lift count
-    # and 0.5 drag count
-    assert CL == pytest.approx([0.03893, 0.04901], abs=0.005)
-    assert CDi == pytest.approx([8.0e-05, 1.2e-04], abs=0.00005)
-    assert CDtot == pytest.approx(0.00804, abs=0.00005)
-
-    # shutil.rmtree(TMP_DIR)
-
-
 def test_run_openmdao(indep_vars):
-    indep_vars.add_output('AoA_min', 0.1)
-    indep_vars.add_output('AoA_max', 0.5)
-    indep_vars.add_output('AoA_step', 0.1)
-    indep_vars.add_output('openvsp:mach', 0.75)
-    indep_vars.add_output('openvsp:altitude', 32000)
+    indep_vars.add_output('AoA_min', 0.)
+    indep_vars.add_output('AoA_max', 2.5)
+    indep_vars.add_output('AoA_step', 0.5)
+    indep_vars.add_output('openvsp:mach', 0.2)
+    indep_vars.add_output('openvsp:altitude', 0)
 
     openvsp_computation = Problem()
     model = openvsp_computation.model
@@ -100,7 +62,7 @@ def test_run_openmdao(indep_vars):
     openvsp_computation.run_model()
 
     assert pth.exists(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
-    os.remove(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
+    # os.remove(pth.join(TMP_DIR, OpenVSP.vspscript_filename))
 
     assert pth.exists(pth.join(TMP_DIR, OpenVSP.result_filename))
 
@@ -111,6 +73,7 @@ def test_run_openmdao(indep_vars):
 
     # Result depends marginally on number of used cpu count. So tolerance is set to 0.5 lift count
     # and 0.5 drag count
+    # TODO: fix VSPAero computation and put correct values in assert
     assert CL == pytest.approx([0.04901, 0.05909, 0.06918, 0.07926], abs=0.005)
     assert CDi == pytest.approx([1.2e-04, 1.7e-04, 2.2e-04, 2.9e-04], abs=0.00005)
     assert CDtot == pytest.approx(0.00804, abs=0.00005)

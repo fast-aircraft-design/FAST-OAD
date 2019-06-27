@@ -16,37 +16,59 @@
 
 import multiprocessing
 import os
+import os.path as pth
 
-import numpy as np
 import win32event
 import win32process
-from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.utils.physics import Atmosphere
 
+_WING_GEOMETRY_PARAMETERS = ['l0', 'span', 'area', 'l2', 'y2', 'l3', 'x3', 'y3', 'l4', 'x4', 'y4']
+_VSPSCRIPT_NAME = 'wing_openvsp.script'  # name of the resource file
+_RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
 
-class OpenVSPGeom(ExternalCodeComp):
-    def initialize(self):
-        self.options.declare('openvsp_exe_path', types=str)
-        self.options.declare('result_folder_path', default='', types=str)
 
-    def setup(self):
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:wing_y2', val=np.nan, units='m')
-        self.add_input('geometry:wing_l3', val=np.nan, units='m')
-        self.add_input('geometry:wing_x3', val=np.nan, units='m')
-        self.add_input('geometry:wing_y3', val=np.nan, units='m')
-        self.add_input('geometry:wing_l4', val=np.nan, units='m')
-        self.add_input('geometry:wing_x4', val=np.nan, units='m')
-        self.add_input('geometry:wing_y4', val=np.nan, units='m')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-
-    def compute(self, inputs, outputs):
-        pass
-
+# class OpenVSPGeom(ExternalCodeComp):
+#     def initialize(self):
+#         self.options.declare('openvsp_exe_path', types=str)
+#         self.options.declare('result_folder_path', default='', types=str)
+#
+#     def setup(self):
+#         self.add_input('geometry:wing_l2', val=np.nan, units='m')
+#         self.add_input('geometry:wing_y2', val=np.nan, units='m')
+#         self.add_input('geometry:wing_l3', val=np.nan, units='m')
+#         self.add_input('geometry:wing_x3', val=np.nan, units='m')
+#         self.add_input('geometry:wing_y3', val=np.nan, units='m')
+#         self.add_input('geometry:wing_l4', val=np.nan, units='m')
+#         self.add_input('geometry:wing_x4', val=np.nan, units='m')
+#         self.add_input('geometry:wing_y4', val=np.nan, units='m')
+#         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+#         self.add_input('geometry:wing_span', val=np.nan, units='m')
+#         self.add_input('geometry:wing_l0', val=np.nan, units='m')
+#
+#     def compute(self, inputs, outputs):
+#         tmp_directory = tempfile.TemporaryDirectory(prefix='openvsp')
+#
+#         wing_geometry = {param_name: inputs['geometry:%s' % param_name]
+#                          for param_name in _WING_GEOMETRY_PARAMETERS}
+#
+#         template_vspscript_path = pth.join(_RESOURCE_FOLDER_PATH, _VSPSCRIPT_NAME)
+#         tmp_vspscript_path = pth.join(tmp_directory, _VSPSCRIPT_NAME)
+#
+#         self._generate_vspscript(template_vspscript_path, tmp_vspscript_path, wing_geometry)
+#
+#     def _generate_vspscript(self, template_path, script_path, wing_geometry):
+#
+#         parser = InputFileGenerator()
+#         parser.set_template_file(template_path)
+#         parser.set_generated_file(script_path)
+#         parser.mark_anchor('LOAD')
+#         parser.transfer_var(tmp_profile_file_path, 1, 1)
+#         parser.generate()
+#
+# class WingGeometry
+#
 
 class OpenVSP(ExplicitComponent):
     """Wrapper for OpenVSP tool: see http://www.openvsp.org/
