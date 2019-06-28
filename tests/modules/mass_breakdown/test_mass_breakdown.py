@@ -18,8 +18,6 @@ Test module for mass breakdown functions
 import os.path as pth
 
 import pytest
-from openmdao.core.indepvarcomp import IndepVarComp
-from openmdao.core.problem import Problem
 
 from fastoad.io.xml.openmdao_basic_io import OpenMdaoXmlIO
 from fastoad.modules.mass_breakdown.a_airframe import EmpennageWeight, \
@@ -41,6 +39,7 @@ from fastoad.modules.mass_breakdown.d_furniture import \
 from fastoad.modules.mass_breakdown.e_crew import CrewWeight
 from fastoad.modules.mass_breakdown.mass_breakdown import MassBreakdown, OperatingEmptyWeight
 from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+from tests.testing_utilities import run_system
 
 
 def get_indep_var_comp(var_names):
@@ -49,19 +48,6 @@ def get_indep_var_comp(var_names):
     reader.path_separator = ':'
     ivc = reader.read(only=var_names)
     return ivc
-
-
-def run_component(component, input_vars: IndepVarComp):
-    """ Runs and returns an OpenMDAO problem with provided component and data"""
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('component', component, promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
-
-    return problem
 
 
 def test_compute_loads():
@@ -81,7 +67,7 @@ def test_compute_loads():
 
                   ]
     ivc = get_indep_var_comp(input_list)
-    problem = run_component(Loads(), ivc)
+    problem = run_system(Loads(), ivc)
 
     n1m1 = problem['n1m1']
     n2m2 = problem['n2m2']
@@ -120,7 +106,7 @@ def test_compute_wing_weight():
     ivc.add_output('n1m1', 241000, units='kg')
     ivc.add_output('n2m2', 250000, units='kg')
 
-    problem = run_component(WingWeight(), ivc)
+    problem = run_system(WingWeight(), ivc)
 
     val = problem['weight_airframe:A1']
     assert val == pytest.approx(7681, abs=1)
@@ -141,7 +127,7 @@ def test_compute_fuselage_weight():
     ivc = get_indep_var_comp(input_list)
     ivc.add_output('n1m1', 241000, units='kg')
 
-    problem = run_component(FuselageWeight(), ivc)
+    problem = run_system(FuselageWeight(), ivc)
 
     val = problem['weight_airframe:A2']
     assert val == pytest.approx(8828, abs=1)
@@ -159,7 +145,7 @@ def test_compute_empennage_weight():
     ]
 
     ivc = get_indep_var_comp(input_list)
-    problem = run_component(EmpennageWeight(), ivc)
+    problem = run_system(EmpennageWeight(), ivc)
     val1 = problem['weight_airframe:A31']
     val2 = problem['weight_airframe:A32']
     assert val1 == pytest.approx(754, abs=1)
@@ -178,7 +164,7 @@ def test_compute_flight_controls_weight():
     ivc = get_indep_var_comp(input_list)
     ivc.add_output('n1m1', 241000, units='kg')
     ivc.add_output('n2m2', 250000, units='kg')
-    problem = run_component(FlightControlsWeight(), ivc)
+    problem = run_system(FlightControlsWeight(), ivc)
 
     val = problem['weight_airframe:A4']
     assert val == pytest.approx(716, abs=1)
@@ -192,7 +178,7 @@ def test_compute_landing_gear_weight():
         'kfactors_a5:offset_A5',
     ]
     ivc = get_indep_var_comp(input_list)
-    problem = run_component(LandingGearWeight(), ivc)
+    problem = run_system(LandingGearWeight(), ivc)
 
     val1 = problem['weight_airframe:A51']
     val2 = problem['weight_airframe:A52']
@@ -210,7 +196,7 @@ def test_compute_pylons_weight():
     ]
     ivc = get_indep_var_comp(input_list)
     ivc.add_output('weight_propulsion:B1', 7161.33, units='kg')
-    problem = run_component(PylonsWeight(), ivc)
+    problem = run_system(PylonsWeight(), ivc)
 
     val = problem['weight_airframe:A6']
     assert val == pytest.approx(1212, abs=1)
@@ -224,7 +210,7 @@ def test_compute_paint_weight():
         'kfactors_a7:offset_A7',
     ]
     ivc = get_indep_var_comp(input_list)
-    problem = run_component(PaintWeight(), ivc)
+    problem = run_system(PaintWeight(), ivc)
 
     val = problem['weight_airframe:A7']
     assert val == pytest.approx(141.1, abs=0.1)
@@ -239,7 +225,7 @@ def test_compute_engine_weight():
         'kfactors_b1:offset_B1',
     ]
     ivc = get_indep_var_comp(input_list)
-    problem = run_component(EngineWeight(), ivc)
+    problem = run_system(EngineWeight(), ivc)
 
     val = problem['weight_propulsion:B1']
     assert val == pytest.approx(7161, abs=1)
@@ -255,7 +241,7 @@ def test_compute_fuel_lines_weight():
     ]
     ivc = get_indep_var_comp(input_list)
     ivc.add_output('weight_propulsion:B1', 7161.33, units='kg')
-    problem = run_component(FuelLinesWeight(), ivc)
+    problem = run_system(FuelLinesWeight(), ivc)
 
     val = problem['weight_propulsion:B2']
     assert val == pytest.approx(457, abs=1)
@@ -270,7 +256,7 @@ def test_compute_unconsumables_weight():
         'kfactors_b3:offset_B3',
     ]
     ivc = get_indep_var_comp(input_list)
-    problem = run_component(UnconsumablesWeight(), ivc)
+    problem = run_system(UnconsumablesWeight(), ivc)
 
     val = problem['weight_propulsion:B3']
     assert val == pytest.approx(122, abs=1)
@@ -291,7 +277,7 @@ def test_compute_power_systems_weight():
     ivc = get_indep_var_comp(input_list)
     ivc.add_output('cabin:NPAX1', 150)
     ivc.add_output('weight_airframe:A4', 700, units='kg')
-    problem = run_component(PowerSystemsWeight(), ivc)
+    problem = run_system(PowerSystemsWeight(), ivc)
 
     val1 = problem['weight_systems:C11']
     val2 = problem['weight_systems:C12']
@@ -331,7 +317,7 @@ def test_compute_life_support_systems_weight():
     ivc = get_indep_var_comp(input_list)
     ivc.add_output('cabin:NPAX1', 150)
     ivc.add_output('weight_propulsion:B1', 7161.33, units='kg')
-    problem = run_component(LifeSupportSystemsWeight(), ivc)
+    problem = run_system(LifeSupportSystemsWeight(), ivc)
 
     val1 = problem['weight_systems:C21']
     val2 = problem['weight_systems:C22']
@@ -361,29 +347,29 @@ def test_compute_navigation_systems_weight():
     component = NavigationSystemsWeight()
 
     component.options[AIRCRAFT_TYPE_OPTION] = 1.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C3'] == pytest.approx(193, abs=1)
 
     component.options[AIRCRAFT_TYPE_OPTION] = 2.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C3'] == pytest.approx(493, abs=1)
 
     component.options[AIRCRAFT_TYPE_OPTION] = 3.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C3'] == pytest.approx(743, abs=1)
 
     component.options[AIRCRAFT_TYPE_OPTION] = 4.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C3'] == pytest.approx(843, abs=1)
 
     component.options[AIRCRAFT_TYPE_OPTION] = 5.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C3'] == pytest.approx(843, abs=1)
 
     got_value_error = False
     try:
         component.options[AIRCRAFT_TYPE_OPTION] = 6.
-        problem = run_component(component, ivc)
+        problem = run_system(component, ivc)
     except ValueError:
         got_value_error = True
     assert got_value_error
@@ -400,25 +386,25 @@ def test_compute_transmissions_systems_weight():
     component = TransmissionSystemsWeight()
 
     component.options[AIRCRAFT_TYPE_OPTION] = 1.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C4'] == pytest.approx(100, abs=1)
     component.options[AIRCRAFT_TYPE_OPTION] = 2.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C4'] == pytest.approx(200, abs=1)
     component.options[AIRCRAFT_TYPE_OPTION] = 3.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C4'] == pytest.approx(250, abs=1)
     component.options[AIRCRAFT_TYPE_OPTION] = 4.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C4'] == pytest.approx(350, abs=1)
     component.options[AIRCRAFT_TYPE_OPTION] = 5.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C4'] == pytest.approx(350, abs=1)
 
     got_value_error = False
     try:
         component.options[AIRCRAFT_TYPE_OPTION] = 6.
-        problem = run_component(component, ivc)
+        problem = run_system(component, ivc)
     except ValueError:
         got_value_error = True
     assert got_value_error
@@ -440,7 +426,7 @@ def test_compute_fixed_operational_systems_weight():
     ]
 
     ivc = get_indep_var_comp(input_list)
-    problem = run_component(FixedOperationalSystemsWeight(), ivc)
+    problem = run_system(FixedOperationalSystemsWeight(), ivc)
 
     val1 = problem['weight_systems:C51']
     val2 = problem['weight_systems:C52']
@@ -458,11 +444,11 @@ def test_compute_flight_kit_weight():
     component = FlightKitWeight()
 
     component.options[AIRCRAFT_TYPE_OPTION] = 1.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C6'] == pytest.approx(10, abs=1)
 
     component.options[AIRCRAFT_TYPE_OPTION] = 5.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     assert problem['weight_systems:C6'] == pytest.approx(45, abs=1)
 
 
@@ -479,12 +465,12 @@ def test_compute_cargo_configuration_weight():
     ivc.add_output('cabin:NPAX1', 150)
     component = CargoConfigurationWeight()
 
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     val = problem['weight_furniture:D1']
     assert val == 0.
 
     component.options['ac_type'] = 6.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     val = problem['weight_furniture:D1']
     assert val == pytest.approx(39.3, abs=0.1)
 
@@ -500,12 +486,12 @@ def test_compute_passenger_seats_weight():
     ivc = get_indep_var_comp(input_list)
     component = PassengerSeatsWeight()
 
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     val = problem['weight_furniture:D2']
     assert val == pytest.approx(1500, abs=1)
 
     component.options['ac_type'] = 6.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     val = problem['weight_furniture:D2']
     assert val == 0.
 
@@ -521,12 +507,12 @@ def test_compute_food_water_weight():
     ivc = get_indep_var_comp(input_list)
     component = FoodWaterWeight()
 
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     val = problem['weight_furniture:D3']
     assert val == pytest.approx(1312, abs=1)
 
     component.options['ac_type'] = 6.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     val = problem['weight_furniture:D3']
     assert val == 0.
 
@@ -542,12 +528,12 @@ def test_compute_security_kit_weight():
     ivc = get_indep_var_comp(input_list)
     component = SecurityKitWeight()
 
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     val = problem['weight_furniture:D4']
     assert val == pytest.approx(225, abs=1)
 
     component.options['ac_type'] = 6.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     val = problem['weight_furniture:D4']
     assert val == 0.
 
@@ -563,12 +549,12 @@ def test_compute_toilets_weight():
     ivc = get_indep_var_comp(input_list)
     component = ToiletsWeight()
 
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     val = problem['weight_furniture:D5']
     assert val == pytest.approx(75, abs=0.1)
 
     component.options['ac_type'] = 6.
-    problem = run_component(component, ivc)
+    problem = run_system(component, ivc)
     val = problem['weight_furniture:D5']
     assert val == 0.
 
@@ -580,7 +566,7 @@ def test_compute_crew_weight():
         'cabin:PNC',
     ]
     ivc = get_indep_var_comp(input_list)
-    problem = run_component(CrewWeight(), ivc)
+    problem = run_system(CrewWeight(), ivc)
 
     val = problem['weight_crew:E']
     assert val == pytest.approx(470, abs=1)
@@ -594,13 +580,7 @@ def test_evaluate_oew():
     reader.path_separator = ':'
     input_vars = reader.read()
 
-    mass_computation = Problem()
-    model = mass_computation.model
-    model.add_subsystem('design_variables', input_vars, promotes=['*'])
-    model.add_subsystem('compute_oew', OperatingEmptyWeight(), promotes=['*'])
-
-    mass_computation.setup(mode='fwd')
-    mass_computation.run_model()
+    mass_computation = run_system(OperatingEmptyWeight(), input_vars, setup_mode='fwd')
 
     oew = mass_computation['weight:OEW']
     assert oew == pytest.approx(41591, abs=1)
@@ -614,13 +594,7 @@ def test_loop_compute_oew():
     reader.path_separator = ':'
     input_vars = reader.read(ignore=['weight:MLW', 'weight:MZFW'])
 
-    mass_computation = Problem()
-    model = mass_computation.model
-    model.add_subsystem('design_variables', input_vars, promotes=['*'])
-    model.add_subsystem('mass_breakdown', MassBreakdown(), promotes=['*'])
-
-    mass_computation.setup()
-    mass_computation.run_model()
+    mass_computation = run_system(MassBreakdown(), input_vars)
 
     oew = mass_computation['weight:OEW']
     assert oew == pytest.approx(42060, abs=1)
