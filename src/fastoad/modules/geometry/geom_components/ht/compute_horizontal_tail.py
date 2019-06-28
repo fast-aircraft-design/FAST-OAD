@@ -14,13 +14,13 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from fastoad.geometry.geom_components.ht.components.compute_ht_vol_coeff import ComputeHTVolCoeff
-from fastoad.geometry.geom_components.ht.components.compute_ht_area import ComputeHTArea
-from fastoad.geometry.geom_components.ht.components.compute_ht_chords import ComputeHTChord
-from fastoad.geometry.geom_components.ht.components.compute_ht_mac import ComputeHTMAC
-from fastoad.geometry.geom_components.ht.components.compute_ht_cg import ComputeHTcg
-from fastoad.geometry.geom_components.ht.components.compute_ht_sweep import ComputeHTSweep
-from fastoad.geometry.geom_components.ht.components.compute_ht_cl_alpha import ComputeHTClalpha
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTVolCoeff
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTArea
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTChord
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTMAC
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTcg
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTSweep
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTClalpha
 
 from openmdao.api import Group
 

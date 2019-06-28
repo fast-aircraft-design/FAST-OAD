@@ -2,7 +2,7 @@
     FAST - Copyright (c) 2016 ONERA ISAE
 """
 
-from fastoad.geometry.geom_components.ht.compute_horizontal_tail import ComputeHorizontalTailGeometry
+from fastoad.geometry.geom_components.ht import ComputeHorizontalTailGeometry
 from fastoad.geometry.geom_components.vt.compute_vertical_tail import ComputeVerticalTailGeometry
 from fastoad.geometry.geom_components.update_mlg import UpdateMLG
 from fastoad.geometry.geom_components.compute_total_area import ComputeTotalArea

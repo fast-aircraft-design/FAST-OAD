@@ -30,7 +30,7 @@ class ComputeHTClalpha(ExplicitComponent):
         deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:ht_aspect_ratio', val=np.nan)
-        self.add_input('tlar:cruise_Mach', val=npn.nan)
+        self.add_input('tlar:cruise_Mach', val=np.nan)
         self.add_input('geometry:ht_sweep_25', val=np.nan)
         
         self.add_output('aerodynamics:Cl_alpha_ht')

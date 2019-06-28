@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import numpy as np
-from fast.atmosphere import atmosphere
+from fastoad.utils.physics.atmosphere import Atmosphere
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -51,7 +51,12 @@ class ComputeHTVolCoeff(ExplicitComponent):
         required_cg_range = inputs['cg:required_cg_range']
         
         delta_lg = cg_A51 - cg_A52
-        temperature, rho, pression, viscosity, sos = atmosphere(0)
+        atm = Atmosphere(0.)
+        temperature = atm.temperature
+        rho = atm.density
+        pression = atm.pressure 
+        viscosity = atm.kinematic_viscosity
+        sos = atm.speed_of_sound
         vspeed = sos * 0.2  # assume the corresponding Mach of VR is 0.2
 
         cm_wheel = 0.08 * delta_lg * mtow * 9.81 / \
