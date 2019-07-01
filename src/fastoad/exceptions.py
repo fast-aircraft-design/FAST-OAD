@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
 """
-  Sellar functions
+Module for custom Exception classes
 """
+
+
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,23 +16,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-from openmdao.api import ExplicitComponent
 
+class NoSetupError(Exception):
+    """
+    No Setup Error.
 
-class FunctionsBase(ExplicitComponent):
-    """ An OpenMDAO base component to encapsulate Functions discipline """
+    This exception indicates that a setup of the OpenMDAO instance has not been done, but was
+    expected to be.
+    """
 
-    def setup(self):
-        self.add_input('x', val=2, desc='')
-        self.add_input('z', val=[np.nan, np.nan],
-                       desc='')  # NaN as default for testing connexion check
-        self.add_input('y1', val=1.0, desc='')
-        self.add_input('y2', val=1.0, desc='')
-
-        self.add_output('f', val=1.0, desc='')
-
-        self.add_output('g1', val=1.0, desc='')
-
-        self.add_output('g2', val=1.0, desc='')
-        self.declare_partials('*', '*')
+    pass
