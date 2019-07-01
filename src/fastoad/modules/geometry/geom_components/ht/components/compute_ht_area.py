@@ -70,7 +70,9 @@ class ComputeHTArea(ExplicitComponent):
             wet_area_ht = 2 * 0.8 * s_h
         else:
             print('Error in the tailplane positioning')
+
+        delta_cm_takeoff =  s_h * lp_ht / wing_area / l0_wing - ht_vol_coeff
         
         outputs['geometry:ht_lp'] = lp_ht
         outputs['geometry:ht_wet_area'] = wet_area_ht
-        outputs['delta_cm_takeoff'] = s_h * lp_ht / wing_area / l0_wing - ht_vol_coeff
+        outputs['delta_cm_takeoff'] = delta_cm_takeoff

@@ -29,6 +29,8 @@ from fastoad.modules.geometry.geom_components.fuselage \
 from fastoad.modules.geometry.geom_components.ht.components \
     import ComputeHTArea, ComputeHTcg, ComputeHTMAC, ComputeHTChord, \
             ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
+from fastoad.modules.geometry.geom_components.ht \
+    import ComputeHorizontalTailGeometry
 
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
@@ -109,7 +111,6 @@ def test_compute_ht_area(xpath_reader: XPathReader, input_xml):
         'geometry:ht_vol_coeff',
         'geometry:wing_l0',
         'geometry:wing_area',
-        'tlar:NPAX',
         'geometry:ht_area'
     ]
 
@@ -146,7 +147,7 @@ def test_compute_ht_cg(xpath_reader: XPathReader, input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('geometry:ht_x0', 3.141)
+    input_vars.add_output('geometry:ht_x0', 1.656)
 
     problem = Problem()
     model = problem.model
@@ -183,7 +184,7 @@ def test_compute_ht_mac(xpath_reader: XPathReader, input_xml):
     length = problem['geometry:ht_length']
     assert length == pytest.approx(3.141, abs=1e-3)
     x0 = problem['geometry:ht_x0']
-    assert length == pytest.approx(3.141, abs=1e-3)
+    assert x0 == pytest.approx(1.656, abs=1e-3)
     y0 = problem['geometry:ht_y0']
     assert y0 == pytest.approx(2.519, abs=1e-3)
 
@@ -290,3 +291,64 @@ def test_compute_vol_co(xpath_reader: XPathReader, input_xml):
     assert delta_lg == pytest.approx(12.93, abs=1e-2)
     vol_coeff = problem['geometry:ht_vol_coeff']
     assert vol_coeff == pytest.approx(1.117, abs=1e-3)
+
+
+def test_geometry_global(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the global HT geometry components """
+
+    input_list = [
+        'cg_airframe:A51',
+        'cg_airframe:A52',
+        'weight:MTOW',
+        'geometry:wing_area',
+        'geometry:wing_l0',
+        'cg:required_cg_range',
+        'geometry:fuselage_length',
+        'geometry:wing_position',
+        'geometry:ht_area',
+        'geometry:ht_taper_ratio',
+        'geometry:ht_aspect_ratio',
+        'geometry:ht_sweep_25',
+        'tlar:cruise_Mach'        
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    problem = Problem()
+    model = problem.model
+    model.add_subsystem('inputs', input_vars, promotes=['*'])
+    model.add_subsystem('geometry', ComputeHorizontalTailGeometry(), promotes=['*'])
+
+    problem.setup(mode='fwd')
+    problem.run_model()
+
+    delta_lg = problem['delta_lg']
+    assert delta_lg == pytest.approx(12.93, abs=1e-2)
+    vol_coeff = problem['geometry:ht_vol_coeff']
+    assert vol_coeff == pytest.approx(1.117, abs=1e-3)
+    lp = problem['geometry:ht_lp']
+    assert lp == pytest.approx(17.675, abs=1e-3)
+    wet_area = problem['geometry:ht_wet_area']
+    assert wet_area == pytest.approx(70.34, abs=1e-2)
+    delta_cm_takeoff = problem['delta_cm_takeoff']
+    assert delta_cm_takeoff == pytest.approx(0.000138, abs=1e-6)
+    span = problem['geometry:ht_span']
+    assert span == pytest.approx(12.28, abs=1e-2)
+    root_chord = problem['geometry:ht_root_chord']
+    assert root_chord == pytest.approx(4.406, abs=1e-3)
+    tip_chord = problem['geometry:ht_tip_chord']
+    assert tip_chord == pytest.approx(1.322, abs=1e-3)
+    length = problem['geometry:ht_length']
+    assert length == pytest.approx(3.141, abs=1e-3)
+    x0 = problem['geometry:ht_x0']
+    assert x0 == pytest.approx(1.656, abs=1e-3)
+    y0 = problem['geometry:ht_y0']
+    assert y0 == pytest.approx(2.519, abs=1e-3)
+    cg_a31 = problem['cg_airframe:A31']
+    assert cg_a31 == pytest.approx(34.58, abs=1e-2)
+    sweep_0 = problem['geometry:ht_sweep_0']
+    assert sweep_0 == pytest.approx(33.317, abs=1e-3)
+    sweep_100 = problem['geometry:ht_sweep_100']
+    assert sweep_100 == pytest.approx(8.81, abs=1e-2)
+    cl = problem['aerodynamics:Cl_alpha_ht']
+    assert cl == pytest.approx(3.47, abs=1e-2)
