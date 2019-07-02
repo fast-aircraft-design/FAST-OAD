@@ -1,6 +1,3 @@
-"""
-Test package
-"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,7 +10,3 @@ Test package
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-import os.path as pth
-
-root_folder = pth.dirname(pth.dirname(__file__))

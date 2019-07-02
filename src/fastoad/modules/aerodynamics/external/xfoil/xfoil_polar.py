@@ -85,7 +85,7 @@ class XfoilPolar(ExternalCodeComp):
         #           Therefore, as a second choice, tmp dir is created as close of user home
         #           directory as possible.
         tmp_candidates = []
-        for tmp_base_path in [None, pth.join(Path.home().name, '.fast')]:
+        for tmp_base_path in [None, pth.join(str(Path.home()), '.fast')]:
             if tmp_base_path is not None:
                 os.makedirs(tmp_base_path, exist_ok=True)
             tmp_directory = tempfile.TemporaryDirectory(prefix='x', dir=tmp_base_path)
@@ -95,6 +95,8 @@ class XfoilPolar(ExternalCodeComp):
 
             if max(len(tmp_profile_file_path), len(tmp_result_file_path)) <= _XFOIL_PATH_LIMIT:
                 break
+
+            tmp_directory.cleanup()
 
         if max(len(tmp_profile_file_path), len(tmp_result_file_path)) > _XFOIL_PATH_LIMIT:
             raise IOError(

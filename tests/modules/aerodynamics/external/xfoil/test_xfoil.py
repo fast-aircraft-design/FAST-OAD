@@ -21,8 +21,8 @@ import shutil
 
 import pytest
 
-from fastoad.modules.aerodynamics.xfoil import XfoilPolar
-from tests.conftest import root_folder
+from fastoad.modules.aerodynamics.external.xfoil import XfoilPolar
+from tests import root_folder
 
 XFOIL_EXE = pth.join(root_folder, 'XFOIL', 'xfoil.exe')
 XFOIL_RESULTS = pth.join(pth.dirname(__file__), 'results')
