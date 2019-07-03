@@ -26,18 +26,23 @@ AERO_INPUT_FILE_PATH = pth.join(DATA_FOLDER_PATH, 'aerodynamics_inputs.xml')
 
 
 def create_inputs():
-    classes = [ComputeDeltaHighLift]
+    """
+    Completes 'aerodynamics_inputs.xml' with needed data for required componenets.
+    Data are retrieved from 'CeRAS01_baseline.xml'
+    """
+    components = [ComputeDeltaHighLift(), ComputeDeltaHighLift()]
+    components[1].options['landing_flag'] = True
 
     ceras_reader = OpenMdaoLegacy1XmlIO(CERAS_FILE_PATH)
     aero_io = OpenMdaoXmlIO(AERO_INPUT_FILE_PATH)
     aero_io.path_separator = ':'
 
-    for clazz in classes:
+    for component in components:
         ivc_aero = aero_io.read()
         problem = Problem()
-        problem.model.add_subsystem('inputs', ivc_aero)
-        problem.model.add_subsystem('component', clazz())
-        problem.setup()
+        problem.model.add_subsystem('inputs', ivc_aero, promotes=['*'])
+        problem.model.add_subsystem('component', component, promotes=['*'])
+        problem.setup(mode='fwd')
         mandatory, optional = get_unconnected_inputs(problem)
         vars = mandatory + optional
         var_names = [var.split('.')[-1] for var in vars]
@@ -48,8 +53,7 @@ def create_inputs():
                 if name == var_name:
                     ivc_aero.add_output(var_name, val=value, units=attributes['units'])
                     break
-        if var_name:
-            aero_io.write(ivc_aero)
+        aero_io.write(ivc_aero)
 
 
 if __name__ == '__main__':

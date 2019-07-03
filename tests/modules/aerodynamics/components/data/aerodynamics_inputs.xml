@@ -14,17 +14,19 @@
   -->
 
 <aircraft>
-    <geometry>
-        <wing_area units="m**2">124.843</wing_area>
-        <wing_sweep_0 units="deg">27.554</wing_sweep_0>
-        <wing_sweep_100_outer units="deg">16.696</wing_sweep_100_outer>
-        <flap_chord_ratio>0.197</flap_chord_ratio>
-        <flap_span_ratio>0.8</flap_span_ratio>
-        <slat_chord_ratio>0.177</slat_chord_ratio>
-        <slat_span_ratio>0.9</slat_span_ratio>
-    </geometry>
-    <sizing_mission>
-        <flap_angle_to units="deg">10.0</flap_angle_to>
-        <slat_angle_to units="deg">18.0</slat_angle_to>
-    </sizing_mission>
+  <geometry>
+    <useless>0.9</useless>
+    <wing_sweep_0 units="deg">27.554</wing_sweep_0>
+    <wing_sweep_100_outer units="deg">16.696</wing_sweep_100_outer>
+    <flap_chord_ratio>0.197</flap_chord_ratio>
+    <flap_span_ratio>0.8</flap_span_ratio>
+    <slat_chord_ratio>0.177</slat_chord_ratio>
+    <slat_span_ratio>0.9</slat_span_ratio>
+  </geometry>
+  <sizing_mission>
+    <flap_angle_to units="deg">10.0</flap_angle_to>
+    <slat_angle_to units="deg">18.0</slat_angle_to>
+    <flap_angle_landing units="deg">30.0</flap_angle_landing>
+    <slat_angle_landing units="deg">20.0</slat_angle_landing>
+  </sizing_mission>
 </aircraft>
