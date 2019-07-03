@@ -250,6 +250,6 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                 element = children[0]
         # At this point, unicity of OpenMDAO variables makes that element should have been
         # created just now, meaning that 'children' list should be empty.
-        assert not children, "XPath %s has already be processed" % xpath
+        assert not children, "XPath %s has already been processed" % xpath
 
         return element
