@@ -32,4 +32,5 @@ class OpenMdaoLegacy1XmlIO(OpenMdaoCustomXmlIO):
         translator = VarXpathTranslator()
         translator.read_translation_table(CONVERSION_FILE_1)
 
+        self._xml_unit_attribute = 'unit'
         self.set_translator(translator)

@@ -67,7 +67,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         """If True, promoted names will be used instead of "real" ones."""
 
         self._translator = None
-        self._xml_unit_attribute = UNIT_ATTRIBUTE
+        self._xml_unit_attribute = UNIT_ATTRIBUTE  # TODO : this setting should be public
 
     def set_translator(self, translator: VarXpathTranslator):
         """
