@@ -1,0 +1,30 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2019  ONERA/ISAE
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<aircraft>
+    <geometry>
+        <wing_area units="m**2">124.843</wing_area>
+        <wing_sweep_0 units="deg">27.554</wing_sweep_0>
+        <wing_sweep_100_outer units="deg">16.696</wing_sweep_100_outer>
+        <flap_chord_ratio>0.197</flap_chord_ratio>
+        <flap_span_ratio>0.8</flap_span_ratio>
+        <slat_chord_ratio>0.177</slat_chord_ratio>
+        <slat_span_ratio>0.9</slat_span_ratio>
+    </geometry>
+    <sizing_mission>
+        <flap_angle_to units="deg">10.0</flap_angle_to>
+        <slat_angle_to units="deg">18.0</slat_angle_to>
+    </sizing_mission>
+</aircraft>
