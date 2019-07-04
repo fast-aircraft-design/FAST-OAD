@@ -45,9 +45,9 @@
     <weight>
         <MTOW units="kg">75797.99</MTOW>
         <MFW units="kg">20569.81</MFW>
-        <MLW unit="kg">64870.14</MLW>
-        <MZFW unit="kg">61198.25</MZFW>
-        <Max_PL unit="kg">25000</Max_PL>
+        <MLW units="kg">64870.14</MLW>
+        <MZFW units="kg">61198.25</MZFW>
+        <Max_PL units="kg">25000</Max_PL>
     </weight>
     <cabin>
         <NPAX1>157</NPAX1>
