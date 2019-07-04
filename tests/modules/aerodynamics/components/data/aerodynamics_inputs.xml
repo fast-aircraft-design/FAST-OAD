@@ -22,6 +22,13 @@
     <flap_span_ratio>0.8</flap_span_ratio>
     <slat_chord_ratio>0.177</slat_chord_ratio>
     <slat_span_ratio>0.9</slat_span_ratio>
+    <wing_span units="m">31.603</wing_span>
+    <fuselage_height_max units="m">4.06</fuselage_height_max>
+    <fuselage_width_max units="m">3.92</fuselage_width_max>
+    <wing_l2 units="m">6.26</wing_l2>
+    <wing_l4 units="m">1.882</wing_l4>
+    <wing_sweep_25 units="deg">25.0</wing_sweep_25>
+    <wing_area units="m**2">124.843</wing_area>
   </geometry>
   <sizing_mission>
     <flap_angle_to units="deg">10.0</flap_angle_to>
@@ -29,4 +36,7 @@
     <flap_angle_landing units="deg">30.0</flap_angle_landing>
     <slat_angle_landing units="deg">20.0</slat_angle_landing>
   </sizing_mission>
+  <tlar>
+    <cruise_Mach>0.78</cruise_Mach>
+  </tlar>
 </aircraft>

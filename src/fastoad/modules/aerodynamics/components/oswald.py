@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Computation of Oswald coefficient
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -15,17 +15,53 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import math
 import numpy as np
-from math import pi
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class OswaldCoefficient(ExplicitComponent):
-
+    # TODO: Document equations. Cite sources
+    """ Computes Oswald efficiency number """
     def setup(self):
-        self.add_input('geometry:wing_aspect_ratio', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing_span', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
+        self.add_input('geometry:wing_l2', val=np.nan, units='m')
+        self.add_input('geometry:wing_l4', val=np.nan, units='m')
+        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
+        self.add_input('tlar:cruise_Mach', val=np.nan)
 
         self.add_output('oswald_coeff', val=np.nan)
 
     def compute(self, inputs, outputs):
-        outputs['oswald_coeff'] = 1 / pi / 0.8 / inputs['geometry:wing_aspect_ratio']
+        wing_area = inputs['geometry:wing_area']
+        span = inputs['geometry:wing_span'] / math.cos(5. / 180 * math.pi)
+        height_fus = inputs['geometry:fuselage_height_max']
+        width_fus = inputs['geometry:fuselage_width_max']
+        l2_wing = inputs['geometry:wing_l2']
+        l4_wing = inputs['geometry:wing_l4']
+        sweep_25 = inputs['geometry:wing_sweep_25']
+        mach = inputs['tlar:cruise_Mach']
+
+        aspect_ratio = span ** 2 / wing_area
+        df = math.sqrt(width_fus * height_fus)
+        lamda = l4_wing / l2_wing
+        delta_lamda = -0.357 + 0.45 * \
+                      math.exp(0.0375 * sweep_25 / 180. * math.pi)
+        lamda = lamda - delta_lamda
+        f_lamda = 0.0524 * lamda ** 4 - 0.15 * lamda ** 3 + \
+                  0.1659 * lamda ** 2 - 0.0706 * lamda + 0.0119
+        e_theory = 1 / (1 + f_lamda * aspect_ratio)
+
+        if mach <= 0.4:
+            ke_m = 1.
+        else:
+            ke_m = -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
+
+        ke_f = 1 - 2 * (df / span) ** 2
+        coef_e = e_theory * ke_f * ke_m * 0.9
+        coef_k = 1. / (math.pi * aspect_ratio * coef_e)
+
+        outputs['oswald_coeff'] = coef_k

@@ -35,6 +35,7 @@ from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
 from fastoad.modules.aerodynamics.components.high_lift_drag import DeltaCDHighLift
 from fastoad.modules.aerodynamics.components.high_lift_lift import DeltaCLHighLift
+from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
 from tests.testing_utilities import run_system
 
 
@@ -132,3 +133,24 @@ def test_high_lift_aero():
 
     cl = get_cl_cd(22, 20, 0.2, True)[0]
     assert cl == pytest.approx(0.935, abs=1e-3)
+
+
+def test_oswald():
+    """ Tests OswaldCoefficient """
+    input_list = ['geometry:wing_area',
+                  'geometry:wing_span',
+                  'geometry:fuselage_height_max',
+                  'geometry:fuselage_width_max',
+                  'geometry:wing_l2',
+                  'geometry:wing_l4',
+                  'geometry:wing_sweep_25',
+                  ]
+
+    def get_coeff(mach):
+        ivc = get_indep_var_comp(input_list)
+        ivc.add_output('tlar:cruise_Mach', mach)
+        problem = run_system(OswaldCoefficient(), ivc)
+        return problem['oswald_coeff']
+
+    assert get_coeff(0.2) == pytest.approx(0.0465, abs=1e-4)
+    assert get_coeff(0.8) == pytest.approx(0.0530, abs=1e-4)
