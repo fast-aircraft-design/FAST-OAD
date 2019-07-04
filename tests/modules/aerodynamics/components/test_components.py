@@ -17,21 +17,11 @@ test module for modules in aerodynamics/components
 
 import os.path as pth
 
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
-#  FAST is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import numpy as np
 import pytest
 
 from fastoad.io.xml import OpenMdaoXmlIO
+from fastoad.modules.aerodynamics.components.cd0 import CD0
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
 from fastoad.modules.aerodynamics.components.high_lift_drag import DeltaCDHighLift
 from fastoad.modules.aerodynamics.components.high_lift_lift import DeltaCLHighLift
@@ -154,3 +144,51 @@ def test_oswald():
 
     assert get_coeff(0.2) == pytest.approx(0.0465, abs=1e-4)
     assert get_coeff(0.8) == pytest.approx(0.0530, abs=1e-4)
+
+
+def test_cd0():
+    """ Tests CD0 (test of the group for comparison to legacy) """
+    input_list = ['geometry:fuselage_height_max',
+                  'geometry:fuselage_length',
+                  'geometry:fuselage_wet_area',
+                  'geometry:fuselage_width_max',
+                  'geometry:wing_area',
+                  'geometry:ht_length',
+                  'geometry:ht_sweep_25',
+                  'geometry:ht_toc',
+                  'geometry:ht_wet_area',
+                  'geometry:wing_area',
+                  'geometry:engine_number',
+                  'geometry:fan_length',
+                  'geometry:nacelle_length',
+                  'geometry:nacelle_wet_area',
+                  'geometry:pylon_length',
+                  'geometry:pylon_wet_area',
+                  'geometry:wing_area',
+                  'geometry:S_total',
+                  'geometry:vt_length',
+                  'geometry:vt_sweep_25',
+                  'geometry:vt_toc',
+                  'geometry:vt_wet_area',
+                  'geometry:wing_area',
+                  'geometry:wing_area',
+                  'geometry:wing_l0',
+                  'geometry:wing_sweep_25',
+                  'geometry:wing_toc_aero',
+                  'geometry:wing_wet_area'
+                  ]
+
+    def get_cd0(static_pressure, temperature, mach):
+        reynolds = 47899 * (
+                static_pressure * mach * ((1 + 0.126 * mach ** 2) * temperature + 110.4)) / (
+                           temperature ** 2 * (1 + 0.126 * mach ** 2) ** (5 / 2))
+        ivc = get_indep_var_comp(input_list)
+        ivc.add_output('tlar:cruise_Mach', mach)
+        ivc.add_output('reynolds_high_speed', reynolds)
+        cl = np.arange(150) / 150.
+        ivc.add_output('cl_high_speed', cl)
+        problem = run_system(CD0(), ivc)
+        return problem['cd0_total_high_speed']
+
+    assert get_cd0(24000, 219, 0.78)[75] == pytest.approx(0.01973, abs=1e-4)  # CL = 0.5
+    assert get_cd0(101325, 288, 0.2)[140] == pytest.approx(0.02822, abs=1e-4)  # CL = 0.933

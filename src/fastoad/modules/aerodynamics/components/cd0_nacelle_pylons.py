@@ -19,7 +19,7 @@ import math
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.modules.aerodynamics.constants import ARRAY_SIZE
+from fastoad.modules.aerodynamics.constants import POLAR_POINT_COUNT
 
 
 class Cd0NacelleAndPylons(ExplicitComponent):
@@ -29,7 +29,7 @@ class Cd0NacelleAndPylons(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        nans_array = np.full(ARRAY_SIZE, np.nan)
+        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
             self.add_input('reynolds_low_speed', val=np.nan)
             self.add_input('Mach_low_speed', val=np.nan)
@@ -42,13 +42,13 @@ class Cd0NacelleAndPylons(ExplicitComponent):
             self.add_output('cd0_nacelle_high_speed')
             self.add_output('cd0_pylon_high_speed')
 
-        self.add_input('geometry:pylon_length', val=np.nan)
-        self.add_input('geometry:nacelle_length', val=np.nan)
-        self.add_input('geometry:pylon_wet_area', val=np.nan)
-        self.add_input('geometry:nacelle_wet_area', val=np.nan)
+        self.add_input('geometry:pylon_length', val=np.nan, units='m')
+        self.add_input('geometry:nacelle_length', val=np.nan, units='m')
+        self.add_input('geometry:pylon_wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:nacelle_wet_area', val=np.nan, units='m**2')
         self.add_input('geometry:engine_number', val=np.nan)
-        self.add_input('geometry:fan_length', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
+        self.add_input('geometry:fan_length', val=np.nan, units='m')
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
 
     def compute(self, inputs, outputs):
         pylon_length = inputs['geometry:pylon_length']

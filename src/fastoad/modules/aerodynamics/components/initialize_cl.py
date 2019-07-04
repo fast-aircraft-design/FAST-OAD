@@ -18,7 +18,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.modules.aerodynamics.constants import ARRAY_SIZE
+from fastoad.modules.aerodynamics.constants import POLAR_POINT_COUNT
 
 
 class InitializeClPolar(ExplicitComponent):
@@ -34,7 +34,7 @@ class InitializeClPolar(ExplicitComponent):
         self.add_input('kfactors_aero:K_winglet_Cl', val=np.nan)
         self.add_input('kfactors_aero:Offset_winglet_Cl', val=np.nan)
 
-        nans_array = np.full(ARRAY_SIZE, np.nan)
+        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
             self.add_output('cl_low_speed', val=nans_array)
         else:
@@ -47,7 +47,7 @@ class InitializeClPolar(ExplicitComponent):
         offset_winglet_cl = inputs['kfactors_aero:Offset_winglet_Cl']
 
         cl = []
-        for i in range(ARRAY_SIZE):
+        for i in range(POLAR_POINT_COUNT):
             cl_iteration = i / 100.
             cl.append(cl_iteration * k_cl * k_winglet_cl + offset_cl + offset_winglet_cl)
 

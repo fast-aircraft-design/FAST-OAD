@@ -19,7 +19,7 @@ import math
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.modules.aerodynamics.constants import ARRAY_SIZE
+from fastoad.modules.aerodynamics.constants import POLAR_POINT_COUNT
 
 
 class Cd0Fuselage(ExplicitComponent):
@@ -28,7 +28,7 @@ class Cd0Fuselage(ExplicitComponent):
 
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
-        nans_array = np.full(ARRAY_SIZE, np.nan)
+        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
             self.add_input('reynolds_low_speed', val=np.nan)
             self.add_input('cl_low_speed', val=nans_array)
@@ -40,11 +40,11 @@ class Cd0Fuselage(ExplicitComponent):
             self.add_input('tlar:cruise_Mach', val=np.nan)
             self.add_output('cd0_fuselage_high_speed', val=nans_array)
 
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:fuselage_length', val=np.nan)
-        self.add_input('geometry:fuselage_width_max', val=np.nan)
-        self.add_input('geometry:fuselage_height_max', val=np.nan)
-        self.add_input('geometry:fuselage_wet_area', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_wet_area', val=np.nan, units='m**2')
 
     def compute(self, inputs, outputs):
         height_max = inputs['geometry:fuselage_height_max']
@@ -61,17 +61,13 @@ class Cd0Fuselage(ExplicitComponent):
             mach = inputs['tlar:cruise_Mach']
             re_hs = inputs['reynolds_high_speed']
 
-        cd0_fus = []
-        cf_fus_hs = 0.455 / ((1 + 0.126 * mach ** 2) * (math.log10(re_hs * fus_length)) ** (2.58))
+        cf_fus_hs = 0.455 / ((1 + 0.126 * mach ** 2) * (math.log10(re_hs * fus_length)) ** 2.58)
 
-        cd0_friction_fus_hs = (0.98 + 0.745 * math.sqrt(height_max *
-                                                        width_max) / fus_length) * \
-                              cf_fus_hs * wet_area_fus / wing_area
-        for cl_val in cl:
-            cd0_upsweep_fus_hs = (
-                                         0.0029 * cl_val ** 2 - 0.0066 * cl_val + 0.0043) * (
-                                         0.67 * 3.6 * height_max * width_max) / wing_area
-            cd0_fus.append(cd0_friction_fus_hs + cd0_upsweep_fus_hs)
+        cd0_friction_fus_hs = (0.98 + 0.745 * math.sqrt(
+            height_max * width_max) / fus_length) * cf_fus_hs * wet_area_fus / wing_area
+        cd0_upsweep_fus_hs = (0.0029 * cl ** 2 - 0.0066 * cl + 0.0043) * (
+                0.67 * 3.6 * height_max * width_max) / wing_area
+        cd0_fus = cd0_friction_fus_hs + cd0_upsweep_fus_hs
 
         if self.low_speed_aero:
             outputs['cd0_fuselage_low_speed'] = cd0_fus

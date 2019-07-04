@@ -16,6 +16,7 @@ from openmdao.core.problem import Problem
 
 from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
+from fastoad.modules.aerodynamics.components.cd0 import CD0
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
 from fastoad.openmdao.connections_utils import get_unconnected_inputs
 from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
@@ -31,12 +32,17 @@ def create_inputs():
     Completes 'aerodynamics_inputs.xml' with needed data for required componenets.
     Data are retrieved from 'CeRAS01_baseline.xml'
     """
-    components = [ComputeDeltaHighLift(), ComputeDeltaHighLift(), OswaldCoefficient()]
-    components[1].options['landing_flag'] = True
+    components = [ComputeDeltaHighLift(),
+                  ComputeDeltaHighLift(landing_flag=True),
+                  OswaldCoefficient(),
+                  CD0()]
 
     ceras_reader = OpenMdaoLegacy1XmlIO(CERAS_FILE_PATH)
     aero_io = OpenMdaoXmlIO(AERO_INPUT_FILE_PATH)
     aero_io.path_separator = ':'
+
+    # Variables that are part of the process but not expected in XML file
+    ignore_list = ['xfoil:mach', 'reynolds_high_speed', 'cl_high_speed']
 
     for component in components:
         ivc_aero = aero_io.read()
@@ -47,7 +53,7 @@ def create_inputs():
         mandatory, optional = get_unconnected_inputs(problem)
         vars = mandatory + optional
         var_names = [var.split('.')[-1] for var in vars]
-        ivc_ceras = ceras_reader.read(only=var_names, ignore=['xfoil:mach'])
+        ivc_ceras = ceras_reader.read(only=var_names, ignore=ignore_list)
 
         for var_name in var_names:
             for (name, value, attributes) in ivc_ceras._indep_external:

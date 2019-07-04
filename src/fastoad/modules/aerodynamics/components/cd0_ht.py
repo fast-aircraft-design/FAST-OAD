@@ -28,11 +28,11 @@ class Cd0HorizontalTail(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('geometry:ht_length', val=np.nan)
+        self.add_input('geometry:ht_length', val=np.nan, units='m')
         self.add_input('geometry:ht_toc', val=np.nan)
-        self.add_input('geometry:ht_sweep_25', val=np.nan)
-        self.add_input('geometry:ht_wet_area', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
+        self.add_input('geometry:ht_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:ht_wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         if self.low_speed_aero:
             self.add_input('reynolds_low_speed', val=np.nan)
             self.add_input('Mach_low_speed', val=np.nan)

@@ -17,7 +17,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.modules.aerodynamics.constants import ARRAY_SIZE
+from fastoad.modules.aerodynamics.constants import POLAR_POINT_COUNT
 
 
 class Cd0Total(ExplicitComponent):
@@ -29,7 +29,7 @@ class Cd0Total(ExplicitComponent):
 
         self.add_input('geometry:S_total', val=np.nan)
 
-        nans_array = np.full(ARRAY_SIZE, np.nan)
+        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
             self.add_input('cd0_wing_low_speed', val=nans_array)
             self.add_input('cd0_fuselage_low_speed', val=nans_array)
@@ -68,10 +68,8 @@ class Cd0Total(ExplicitComponent):
         k_parasite = - 2.39 * pow(10, -12) * wet_area_total ** 3 + 2.58 * pow(
             10, -8) * wet_area_total ** 2 - 0.89 * pow(10, -4) * wet_area_total + 0.163
 
-        cd0_total = []
-        for i, elem in enumerate(cd0_wing):
-            cd0_total_hs = cd0_wing[i] + cd0_fus[i] + cd0_ht + cd0_vt + cd0_nac + cd0_pylon
-            cd0_total.append(cd0_total_hs + k_parasite * k_techno * cd0_total_hs)
+        cd0_total_hs = cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_nac + cd0_pylon
+        cd0_total = cd0_total_hs * (1. + k_parasite * k_techno)
 
         if self.low_speed_aero:
             outputs['cd0_total_low_speed'] = cd0_total

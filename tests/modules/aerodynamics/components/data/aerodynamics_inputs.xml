@@ -29,6 +29,26 @@
     <wing_l4 units="m">1.882</wing_l4>
     <wing_sweep_25 units="deg">25.0</wing_sweep_25>
     <wing_area units="m**2">124.843</wing_area>
+      <wing_toc_aero>0.128</wing_toc_aero>
+      <wing_wet_area units="m**2">200.607</wing_wet_area>
+      <wing_l0 units="m">4.457</wing_l0>
+      <fuselage_length units="m">37.507</fuselage_length>
+      <fuselage_wet_area units="m**2">401.956</fuselage_wet_area>
+      <ht_length units="m">3.141</ht_length>
+      <ht_toc>0.1</ht_toc>
+      <ht_sweep_25 units="deg">28.0</ht_sweep_25>
+      <ht_wet_area units="m**2">70.341</ht_wet_area>
+      <vt_length units="m">4.161</vt_length>
+      <vt_toc>0.1</vt_toc>
+      <vt_sweep_25 units="deg">35.0</vt_sweep_25>
+      <vt_wet_area units="m**2">52.749</vt_wet_area>
+      <pylon_length units="m">5.733</pylon_length>
+      <nacelle_length units="m">5.211</nacelle_length>
+      <pylon_wet_area units="m**2">7.563</pylon_wet_area>
+      <nacelle_wet_area units="m**2">21.609</nacelle_wet_area>
+      <engine_number>2.0</engine_number>
+      <fan_length units="m">3.127</fan_length>
+      <S_total units="m**2">784.007</S_total>
   </geometry>
   <sizing_mission>
     <flap_angle_to units="deg">10.0</flap_angle_to>

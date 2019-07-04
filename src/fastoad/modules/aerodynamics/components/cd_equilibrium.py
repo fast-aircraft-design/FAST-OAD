@@ -18,7 +18,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.modules.aerodynamics.constants import ARRAY_SIZE
+from fastoad.modules.aerodynamics.constants import POLAR_POINT_COUNT
 
 
 class CdEquilibrium(ExplicitComponent):
@@ -28,7 +28,7 @@ class CdEquilibrium(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        nans_array = np.full(ARRAY_SIZE, np.nan)
+        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
             self.add_input('cl_low_speed', val=nans_array)
             self.add_output('cd_eq_low_speed', val=nans_array)

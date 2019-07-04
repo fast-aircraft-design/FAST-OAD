@@ -17,7 +17,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.modules.aerodynamics.constants import ARRAY_SIZE
+from fastoad.modules.aerodynamics.constants import POLAR_POINT_COUNT
 
 
 class ComputePolar(ExplicitComponent):
@@ -32,7 +32,7 @@ class ComputePolar(ExplicitComponent):
         self.add_input('kfactors_aero:K_winglet_Cd', val=np.nan)
         self.add_input('kfactors_aero:Offset_winglet_Cd', val=np.nan)
 
-        nans_array = np.full(ARRAY_SIZE, np.nan)
+        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
             self.add_input('cl_low_speed', val=nans_array)
             self.add_input('cd0_total_low_speed', val=nans_array)
@@ -41,10 +41,11 @@ class ComputePolar(ExplicitComponent):
             self.add_input('oswald_coeff', val=np.nan)
             cl = []
             cd = []
-            for i in range(ARRAY_SIZE):
+            for i in range(POLAR_POINT_COUNT):
                 cl.append(i / 100)
                 cd.append(0.033)
-            self.add_output('aerodynamics:ClCd_low_speed', val=[cd, cl], shape=(2, ARRAY_SIZE))
+            self.add_output('aerodynamics:ClCd_low_speed', val=[cd, cl],
+                            shape=(2, POLAR_POINT_COUNT))
         else:
             self.add_input('cl_high_speed', val=nans_array)
             self.add_input('cd0_total_high_speed', val=nans_array)
@@ -53,10 +54,10 @@ class ComputePolar(ExplicitComponent):
             self.add_input('oswald_coeff', val=np.nan)
             cl = []
             cd = []
-            for i in range(ARRAY_SIZE):
+            for i in range(POLAR_POINT_COUNT):
                 cl.append(i / 100)
                 cd.append(0.033)
-            self.add_output('aerodynamics:ClCd', val=[cd, cl], shape=(2, ARRAY_SIZE))
+            self.add_output('aerodynamics:ClCd', val=[cd, cl], shape=(2, POLAR_POINT_COUNT))
             self.add_output('aerodynamics:L_D_max')
             self.add_output('aerodynamics:Cl_opt', val=np.nan)
             self.add_output('aerodynamics:Cd_opt', val=np.nan)
