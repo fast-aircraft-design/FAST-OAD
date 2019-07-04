@@ -105,8 +105,6 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         reader = XPathReader(self._data_source)
         reader.unit_attribute_name = self._xml_unit_attribute
 
-        root_tag = reader.tree.getroot().tag
-
         outputs = []
 
         if only is not None:
@@ -128,6 +126,11 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                 raise
             if values is None:
                 raise ValueError('XPath "%s" not found' % xpath)
+
+            # For compatibility with legacy files
+            if units is not None:
+                units = units.replace('²', '**2')
+                units = units.replace('°', 'deg')
 
             outputs.append(OutputVariable(var_name, values, units))
 
