@@ -68,11 +68,11 @@ class Cd0Wing(ExplicitComponent):
         # cd0 wing
         # factor of relative thickness
         ke_cd0_wing = 4.688 * el_aero ** 2 + 3.146 * el_aero
-        k_phi_cd0_wing = 1 - 0.000178 * sweep_25 ** 2 - 0.0065 * sweep_25  # sweep_25 in degrees
+        k_phi_cd0_wing = 1 - 0.000178 * sweep_25 ** 2 - 0.0065 * sweep_25
 
-        kc_cd0_wing = 2.859 * (cl / (np.cos(sweep_25 / 180. * np.pi)) ** 2) ** 3 - 1.849 * (
-                cl / (np.cos(sweep_25 / 180. * np.pi)) ** 2) ** 2 + 0.382 * (
-                              cl / np.cos(sweep_25 / 180. * np.pi) ** 2) + 0.06  # sweep factor
+        kc_cd0_wing = 2.859 * (cl / np.cos(np.radians(sweep_25)) ** 2) ** 3 - \
+                      1.849 * (cl / np.cos(np.radians(sweep_25)) ** 2) ** 2 + \
+                      0.382 * (cl / np.cos(np.radians(sweep_25)) ** 2) + 0.06  # sweep factor
 
         cd0_wing = ((ke_cd0_wing + kc_cd0_wing) * k_phi_cd0_wing +
                     ki_arrow_cd0 + 1) * cf_wing_hs * wet_area_wing / wing_area

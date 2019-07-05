@@ -57,12 +57,11 @@ class Cd0VerticalTail(ExplicitComponent):
 
         ki_arrow_cd0 = 0.04
 
-        cf_vt_hs = 0.455 / ((1 + 0.126 * mach ** 2) * (math.log10(re_hs * vt_length)) ** (2.58))
+        cf_vt_hs = 0.455 / ((1 + 0.126 * mach ** 2) * (math.log10(re_hs * vt_length)) ** 2.58)
         ke_cd0_vt = 4.688 * el_vt ** 2 + 3.146 * el_vt
-        k_phi_cd0_vt = 1 - 0.000178 * \
-                       (sweep_25_vt) ** 2 - 0.0065 * (sweep_25_vt)  # sweep_25 in degrees
-        cd0_vt_hs = (ke_cd0_vt * k_phi_cd0_vt + ki_arrow_cd0 / 4 + 1) * \
-                    cf_vt_hs * wet_area_vt / wing_area
+        k_phi_cd0_vt = 1 - 0.000178 * sweep_25_vt ** 2 - 0.0065 * sweep_25_vt
+        cd0_vt_hs = (ke_cd0_vt * k_phi_cd0_vt + ki_arrow_cd0 / 4 + 1
+                     ) * cf_vt_hs * wet_area_vt / wing_area
 
         if self.low_speed_aero:
             outputs['cd0_vt_low_speed'] = cd0_vt_hs
