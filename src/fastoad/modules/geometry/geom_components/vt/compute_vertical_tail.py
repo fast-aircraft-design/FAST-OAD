@@ -14,15 +14,15 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from fastoad.geometry.geom_components.vt.components.compute_vt_distance import ComputeVTDistance
-from fastoad.geometry.geom_components.vt.components.compute_vt_clalpha import ComputeVTClalpha
-from fastoad.geometry.geom_components.vt.components.compute_cn_beta import ComputeCnBeta
-from fastoad.geometry.geom_components.vt.components.compute_vt_area import ComputeVTArea
-from fastoad.geometry.geom_components.vt.components.compute_vt_vol_coeff import ComputeVTVolCoeff
-from fastoad.geometry.geom_components.vt.components.compute_vt_chords import ComputeVTChords
-from fastoad.geometry.geom_components.vt.components.compute_vt_mac import ComputeVTMAC
-from fastoad.geometry.geom_components.vt.components.compute_vt_cg import ComputeVTcg
-from fastoad.geometry.geom_components.vt.components.compute_vt_sweep import ComputeVTSweep
+from fastoad.modules.geometry.geom_components.vt.components.compute_vt_distance import ComputeVTDistance
+from fastoad.modules.geometry.geom_components.vt.components.compute_vt_clalpha import ComputeVTClalpha
+from fastoad.modules.geometry.geom_components.vt.components.compute_cn_beta import ComputeCnBeta
+from fastoad.modules.geometry.geom_components.vt.components.compute_vt_area import ComputeVTArea
+from fastoad.modules.geometry.geom_components.vt.components.compute_vt_vol_coeff import ComputeVTVolCoeff
+from fastoad.modules.geometry.geom_components.vt.components.compute_vt_chords import ComputeVTChords
+from fastoad.modules.geometry.geom_components.vt.components.compute_vt_mac import ComputeVTMAC
+from fastoad.modules.geometry.geom_components.vt.components.compute_vt_cg import ComputeVTcg
+from fastoad.modules.geometry.geom_components.vt.components.compute_vt_sweep import ComputeVTSweep
 
 from openmdao.api import Group
 

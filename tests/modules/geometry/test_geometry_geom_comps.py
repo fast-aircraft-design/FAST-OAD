@@ -16,6 +16,7 @@ Test module for geometry functions of cg components
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
 import os.path as pth
+from tests.testing_utilities import run_system
 
 import pytest
 from openmdao.core.indepvarcomp import IndepVarComp
@@ -31,6 +32,12 @@ from fastoad.modules.geometry.geom_components.ht.components \
             ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
 from fastoad.modules.geometry.geom_components.ht \
     import ComputeHorizontalTailGeometry
+from fastoad.modules.geometry.geom_components.vt.components \
+    import ComputeVTArea, ComputeVTcg, ComputeVTMAC, ComputeVTChords, \
+            ComputeVTClalpha, ComputeCnBeta, ComputeVTSweep, \
+                ComputeVTVolCoeff, ComputeVTDistance
+from fastoad.modules.geometry.geom_components.vt \
+    import ComputeVerticalTailGeometry
 
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
@@ -265,7 +272,7 @@ def test_compute_ht_sweep(xpath_reader: XPathReader, input_xml):
     assert sweep_100 == pytest.approx(8.81, abs=1e-2)
 
 
-def test_compute_vol_co(xpath_reader: XPathReader, input_xml):
+def test_compute_ht_vol_co(xpath_reader: XPathReader, input_xml):
     """ Tests computation of the horizontal volume coeeficient """
 
     input_list = [
@@ -293,7 +300,7 @@ def test_compute_vol_co(xpath_reader: XPathReader, input_xml):
     assert vol_coeff == pytest.approx(1.117, abs=1e-3)
 
 
-def test_geometry_global(xpath_reader: XPathReader, input_xml):
+def test_geometry_global_ht(xpath_reader: XPathReader, input_xml):
     """ Tests computation of the global HT geometry components """
 
     input_list = [
@@ -352,3 +359,270 @@ def test_geometry_global(xpath_reader: XPathReader, input_xml):
     assert sweep_100 == pytest.approx(8.81, abs=1e-2)
     cl = problem['aerodynamics:Cl_alpha_ht']
     assert cl == pytest.approx(3.47, abs=1e-2)
+
+
+def test_compute_vt_cn(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the yawing moment due to sideslip """
+
+    input_list = [
+        'geometry:fuselage_length',
+        'geometry:fuselage_width_max',
+        'geometry:fuselage_height_max',
+        'geometry:fuselage_LAV',
+        'geometry:fuselage_LAR',
+        'tlar:cruise_Mach',
+        'geometry:wing_area',
+        'geometry:wing_span'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeCnBeta()
+
+    problem = run_system(component, input_vars)
+
+    dcn_beta = problem['dcn_beta']
+    assert dcn_beta == pytest.approx(0.258348, abs=1e-6)
+
+def test_compute_vt_area(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the vertical tail area """
+
+    input_list = [
+        'geometry:wing_l0',
+        'geometry:wing_area',
+        'geometry:wing_span',
+        'geometry:vt_lp', 
+        'geometry:vt_area', 
+        'aerodynamics:Cl_alpha_vt'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    input_vars.add_output('cg_ratio', 0.364924)
+    input_vars.add_output('dcn_beta', 0.258348)
+
+    component = ComputeVTArea()
+
+    problem = run_system(component, input_vars)
+
+    wet_area = problem['geometry:vt_wet_area']
+    assert wet_area == pytest.approx(52.75, abs=1e-2)
+    delta_cn = problem['delta_cn']
+    assert delta_cn == pytest.approx(0.002014, abs=1e-6)
+
+
+def test_compute_vt_cg(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the vertical tail center of gravity """
+
+    input_list = [
+        'geometry:vt_root_chord',
+        'geometry:vt_tip_chord',
+        'geometry:vt_lp',
+        'geometry:vt_span',
+        'geometry:wing_position',
+        'geometry:vt_sweep_25',
+        'geometry:vt_length'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    input_vars.add_output('geometry:vt_x0', 2.321)
+
+    component = ComputeVTcg()
+
+    problem = run_system(component, input_vars)
+
+    cg_a32 = problem['cg_airframe:A32']
+    assert cg_a32 == pytest.approx(35.11, abs=1e-2)
+
+
+def test_compute_vt_mac(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the vertical tail mac """
+
+    input_list = [
+        'geometry:vt_root_chord',
+        'geometry:vt_tip_chord',
+        'geometry:vt_span',
+        'geometry:vt_sweep_25'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeVTMAC()
+
+    problem = run_system(component, input_vars)
+
+    length = problem['geometry:vt_length']
+    assert length == pytest.approx(4.161, abs=1e-3)
+    x0 = problem['geometry:vt_x0']
+    assert x0 == pytest.approx(2.321, abs=1e-3)
+    z0 = problem['geometry:vt_z0']
+    assert z0 == pytest.approx(2.716, abs=1e-3)
+
+
+def test_compute_vt_chords(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the vertical tail chords """
+
+    input_list = [
+        'geometry:vt_aspect_ratio',
+        'geometry:vt_area',
+        'geometry:vt_taper_ratio'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeVTChords()
+
+    problem = run_system(component, input_vars)
+
+    span = problem['geometry:vt_span']
+    assert span == pytest.approx(6.62, abs=1e-2)
+    root_chord = problem['geometry:vt_root_chord']
+    assert root_chord == pytest.approx(5.837, abs=1e-3)
+    tip_chord = problem['geometry:vt_tip_chord']
+    assert tip_chord == pytest.approx(1.751, abs=1e-3)
+
+
+def test_compute_vt_sweep(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the vertical tail sweep """
+
+    input_list = [
+        'geometry:vt_root_chord',
+        'geometry:vt_tip_chord',
+        'geometry:vt_span',
+        'geometry:vt_sweep_25'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeVTSweep()
+
+    problem = run_system(component, input_vars)
+
+    sweep_0 = problem['geometry:vt_sweep_0']
+    assert sweep_0 == pytest.approx(40.515, abs=1e-3)
+    sweep_100 = problem['geometry:vt_sweep_100']
+    assert sweep_100 == pytest.approx(13.35, abs=1e-2)
+
+
+def test_compute_vt_distance(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the vertical tail distance """
+
+    input_list = [
+        'geometry:fuselage_length',
+        'geometry:wing_position'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+
+    component = ComputeVTDistance()
+
+    problem = run_system(component, input_vars)
+
+    lp_vt = problem['geometry:vt_lp']
+    assert lp_vt == pytest.approx(16.55, abs=1e-2)
+    k_ar_effective = problem['k_ar_effective']
+    assert k_ar_effective == pytest.approx(1.55, abs=1e-2)
+
+def test_compute_vt_cl(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the vertical tail lift coefficient """
+
+    input_list = [
+        'geometry:vt_aspect_ratio',
+        'tlar:cruise_Mach',
+        'geometry:vt_sweep_25'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    input_vars.add_output('k_ar_effective', 1.55)
+
+    component = ComputeVTClalpha()
+
+    problem = run_system(component, input_vars)
+
+    cl = problem['aerodynamics:Cl_alpha_vt']
+    assert cl == pytest.approx(2.55, abs=1e-2)
+
+
+def test_compute_vt_vol_co(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the vertical volume coefficient """
+
+    input_list = [
+        'geometry:vt_area',
+        'geometry:vt_lp',
+        'geometry:wing_area',
+        'geometry:wing_span',
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeVTVolCoeff()
+
+    problem = run_system(component, input_vars)
+    
+    vol_coeff = problem['geometry:vt_vol_coeff']
+    assert vol_coeff == pytest.approx(0.105, abs=1e-3)
+
+
+def test_geometry_global_vt(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the global VT geometry components """
+
+    input_list = [
+        'geometry:wing_area',
+        'geometry:fuselage_length',
+        'geometry:wing_position',
+        'geometry:vt_area',
+        'geometry:vt_taper_ratio',
+        'geometry:vt_aspect_ratio',
+        'geometry:vt_sweep_25',
+        'geometry:fuselage_LAR',
+        'geometry:fuselage_LAV',
+        'geometry:fuselage_height_max',
+        'geometry:fuselage_width_max',
+        'geometry:wing_span',
+        'tlar:cruise_Mach',
+        'geometry:wing_l0'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    input_vars.add_output('cg_ratio', 0.364924)
+
+    component = ComputeVerticalTailGeometry()
+
+    problem = run_system(component, input_vars)
+
+    dcn_beta = problem['dcn_beta']
+    assert dcn_beta == pytest.approx(0.258348, abs=1e-6)
+    wet_area = problem['geometry:vt_wet_area']
+    assert wet_area == pytest.approx(52.75, abs=1e-2)
+    delta_cn = problem['delta_cn']
+    assert delta_cn == pytest.approx(0.001641, abs=1e-6)
+    length = problem['geometry:vt_length']
+    assert length == pytest.approx(4.161, abs=1e-3)
+    x0 = problem['geometry:vt_x0']
+    assert x0 == pytest.approx(2.321, abs=1e-3)
+    z0 = problem['geometry:vt_z0']
+    assert z0 == pytest.approx(2.716, abs=1e-3)
+    # cg_a32 = problem['cg_airframe:A32']
+    # assert cg_a32 == pytest.approx(35.11, abs=1e-2)
+    span = problem['geometry:vt_span']
+    assert span == pytest.approx(6.62, abs=1e-2)
+    root_chord = problem['geometry:vt_root_chord']
+    assert root_chord == pytest.approx(5.837, abs=1e-3)
+    tip_chord = problem['geometry:vt_tip_chord']
+    assert tip_chord == pytest.approx(1.751, abs=1e-3)
+    sweep_0 = problem['geometry:vt_sweep_0']
+    assert sweep_0 == pytest.approx(40.514, abs=1e-3)
+    sweep_100 = problem['geometry:vt_sweep_100']
+    assert sweep_100 == pytest.approx(13.35, abs=1e-2)
+    lp_vt = problem['geometry:vt_lp']
+    assert lp_vt == pytest.approx(16.55, abs=1e-2)
+    k_ar_effective = problem['k_ar_effective']
+    assert k_ar_effective == pytest.approx(1.55, abs=1e-2)    
+    cl = problem['aerodynamics:Cl_alpha_vt']
+    assert cl == pytest.approx(2.55, abs=1e-2)
+    vol_coeff = problem['geometry:vt_vol_coeff']
+    assert vol_coeff == pytest.approx(0.105, abs=1e-3)

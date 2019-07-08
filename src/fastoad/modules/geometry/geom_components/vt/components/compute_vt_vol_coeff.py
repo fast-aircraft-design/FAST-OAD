@@ -27,12 +27,12 @@ class ComputeVTVolCoeff(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:vt_area', val=45.)
-        self.add_input('geometry:vt_lp', val=18.)
-        self.add_input('geometry:wing_area', val=124.)
-        self.add_input('geometry:wing_span', val=32.)
+        self.add_input('geometry:vt_area', val=np.nan)
+        self.add_input('geometry:vt_lp', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan)
+        self.add_input('geometry:wing_span', val=np.nan)
         
-        self.add_output('geometry:vt_vol_coeff', val=0.1)
+        self.add_output('geometry:vt_vol_coeff')
         
         self.declare_partials('geometry:vt_vol_coeff', '*', method=deriv_method)
         
