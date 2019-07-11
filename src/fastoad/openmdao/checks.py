@@ -43,11 +43,18 @@ def get_unconnected_inputs(problem: Problem, logger: Logger = None) -> Tuple[Lis
     """
 
     # pylint: disable=protected-access #  needed for OpenMDAO introspection
-    if not problem.model._var_allprocs_prom2abs_list:
+    if isinstance(problem, Problem):
+        model = problem.model
+    elif isinstance(problem, System):
+        model = problem
+    else:
+        raise TypeError('Unknown class for retrieving inputs.')
+
+    if not model._var_allprocs_prom2abs_list:
         raise NoSetupError('Analysis of unconnected inputs cannot be done without prior setup.')
 
-    prom2abs: dict = problem.model._var_allprocs_prom2abs_list['input']
-    connexions: dict = problem.model._conn_global_abs_in2out
+    prom2abs: dict = model._var_allprocs_prom2abs_list['input']
+    connexions: dict = model._conn_global_abs_in2out
 
     mandatory_unconnected = []
     optional_unconnected = []
@@ -58,7 +65,7 @@ def get_unconnected_inputs(problem: Problem, logger: Logger = None) -> Tuple[Lis
         unconnected = [a for a in abs_names if a not in connexions or len(connexions[a]) == 0]
         if unconnected:
             for abs_name in abs_names:
-                value = _get_value_from_absolute_name(problem.model, abs_name)
+                value = _get_value_from_absolute_name(model, abs_name)
                 if np.all(np.isnan(value)):
                     mandatory_unconnected.append(abs_name)
                 else:
@@ -74,7 +81,7 @@ def get_unconnected_inputs(problem: Problem, logger: Logger = None) -> Tuple[Lis
             logger.warning(
                 'Following inputs are not connected so their default value will be used:')
             for abs_name in sorted(optional_unconnected):
-                value = _get_value_from_absolute_name(problem.model, abs_name)
+                value = _get_value_from_absolute_name(model, abs_name)
                 logger.warning('    %s : %s', abs_name, value)
 
     return mandatory_unconnected, optional_unconnected

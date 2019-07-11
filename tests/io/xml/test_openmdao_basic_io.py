@@ -28,16 +28,17 @@ from pytest import approx
 from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.io.xml import XPathReader
 from tests.sellar_example.sellar import Sellar
+from tests.io.xml.data.mass_breakdown.mass_breakdown import MassBreakdown
 
-_OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
+_Variable = namedtuple('_Variable', ['name', 'value', 'units'])
 
 
 def _check_basic_ivc(ivc: IndepVarComp):
     """ Checks that provided IndepVarComp instance matches content of data/basic.xml file """
 
-    outputs: List[_OutputVariable] = []
+    outputs: List[_Variable] = []
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(_OutputVariable(name, value, attributes['units']))
+        outputs.append(_Variable(name, value, attributes['units']))
 
     assert len(outputs) == 9
 
@@ -79,6 +80,16 @@ def _check_basic_ivc(ivc: IndepVarComp):
     assert outputs[8].value == approx([100, 200, 400, 500, 600])
     assert outputs[8].units is None
 
+def _compare_xml(xml_1, xml_2):
+    """ Checks that both xml files are the same """
+    are_same = True
+    with open(xml_1, 'r') as xml_1, open(xml_2, 'r') as xml_2:
+        xml_1 = xml_1.readlines()
+        xml_2 = xml_2.readlines()
+        for i, line in enumerate(xml_1):
+            if are_same == True:
+                are_same = (xml_1[i] == xml_2[i])
+    return are_same
 
 def test_basic_xml_read_and_write_from_indepvarcomp():
     """
@@ -252,3 +263,35 @@ def test_basic_xml_write_from_problem():
     assert len(tree.xpath('/aircraft/f')) == 1
     assert len(tree.xpath('/aircraft/g1')) == 1
     assert len(tree.xpath('/aircraft/g2')) == 1
+
+def test_write_xml_from_indepvarcomp_system_inputs():
+    data_folder = pth.join(pth.dirname(__file__), 'data')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'xml_system_inputs')
+    if pth.exists(result_folder):
+        shutil.rmtree(result_folder)
+
+    # Read full IndepVarComp
+    filename = pth.join(result_folder, 'xml_system_inputs.xml')
+    xml_read = OpenMdaoXmlIO(filename)
+    xml_read.path_separator = ':'
+
+    system = MassBreakdown()
+
+    problem = Problem()
+    problem.model = system
+    problem.setup()
+    problem.run_model()
+
+    xml_read.write_inputs(problem, optional_inputs=True)
+    ref_file = pth.join(data_folder, 'xml_mass_breakdown_inputs_ref.xml')
+
+    assert _compare_xml(filename, ref_file)
+
+    filename = pth.join(result_folder, 'xml_system_inputs_no_opt.xml')
+    xml_read = OpenMdaoXmlIO(filename)
+    xml_read.path_separator = ':'
+
+    xml_read.write_inputs(problem, optional_inputs=False)
+    ref_file = pth.join(data_folder, 'xml_mass_breakdown_inputs_no_opt_ref.xml')
+
+    assert _compare_xml(filename, ref_file)

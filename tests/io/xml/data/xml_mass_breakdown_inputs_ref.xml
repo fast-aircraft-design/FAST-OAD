@@ -1,0 +1,226 @@
+<aircraft>
+  <geometry>
+    <wing_area units="m**2">nan</wing_area>
+    <wing_span units="m">nan</wing_span>
+    <wing_toc_root>nan</wing_toc_root>
+    <wing_toc_kink>nan</wing_toc_kink>
+    <wing_toc_tip>nan</wing_toc_tip>
+    <wing_l2 units="m">nan</wing_l2>
+    <wing_sweep_25 units="deg">nan</wing_sweep_25>
+    <wing_area_pf units="m**2">nan</wing_area_pf>
+    <fuselage_wet_area units="m**2">nan</fuselage_wet_area>
+    <fuselage_width_max units="m">nan</fuselage_width_max>
+    <fuselage_height_max units="m">nan</fuselage_height_max>
+    <ht_area units="m**2">nan</ht_area>
+    <vt_area units="m**2">nan</vt_area>
+    <fuselage_length units="m">nan</fuselage_length>
+    <wing_b_50 units="m">nan</wing_b_50>
+    <engine_number>nan</engine_number>
+    <pylon_wet_area units="m**2">nan</pylon_wet_area>
+    <S_total units="m**2">nan</S_total>
+    <fuselage_Lcabin units="m">nan</fuselage_Lcabin>
+    <wing_sweep_0 units="deg">nan</wing_sweep_0>
+    <nacelle_dia units="m">nan</nacelle_dia>
+    <fuselage_LAV units="m">nan</fuselage_LAV>
+    <fuselage_LAR units="m">nan</fuselage_LAR>
+  </geometry>
+  <weight>
+    <MFW units="kg">nan</MFW>
+    <MTOW units="kg">nan</MTOW>
+    <Max_PL units="kg">nan</Max_PL>
+    <MZFW units="kg">1.0</MZFW>
+    <MLW units="kg">1.0</MLW>
+    <OEW units="kg">nan</OEW>
+  </weight>
+  <aerodynamics>
+    <Cl_alpha>nan</Cl_alpha>
+  </aerodynamics>
+  <loadcase1>
+    <U_gust units="m/s">nan</U_gust>
+    <altitude units="ft">nan</altitude>
+    <Vc_EAS units="kt">nan</Vc_EAS>
+  </loadcase1>
+  <loadcase2>
+    <U_gust units="m/s">nan</U_gust>
+    <altitude units="ft">nan</altitude>
+    <Vc_EAS units="kt">nan</Vc_EAS>
+  </loadcase2>
+  <propulsion_conventional>
+    <thrust_SL units="lbf">nan</thrust_SL>
+  </propulsion_conventional>
+  <cabin>
+    <NPAX1>nan</NPAX1>
+    <PNT>nan</PNT>
+    <PNC>nan</PNC>
+    <front_seat_number_eco>nan</front_seat_number_eco>
+    <container_number_front>nan</container_number_front>
+    <container_number>nan</container_number>
+    <pallet_number>nan</pallet_number>
+  </cabin>
+  <tlar>
+    <NPAX>nan</NPAX>
+  </tlar>
+  <n1m1 units="kg">3.9375</n1m1>
+  <n2m2 units="kg">nan</n2m2>
+  <kfactors_a1>
+    <K_A1>1.0</K_A1>
+    <offset_A1 units="kg">0.0</offset_A1>
+    <K_A11>1.0</K_A11>
+    <offset_A11 units="kg">0.0</offset_A11>
+    <K_A12>1.0</K_A12>
+    <offset_A12 units="kg">0.0</offset_A12>
+    <K_A13>1.0</K_A13>
+    <offset_A13 units="kg">0.0</offset_A13>
+    <K_A14>1.0</K_A14>
+    <offset_A14 units="kg">0.0</offset_A14>
+    <K_A15>1.0</K_A15>
+    <offset_A15 units="kg">0.0</offset_A15>
+    <K_voil>1.0</K_voil>
+    <K_mvo>1.0</K_mvo>
+  </kfactors_a1>
+  <kfactors_a2>
+    <K_A2>1.0</K_A2>
+    <offset_A2 units="kg">0.0</offset_A2>
+    <K_tr>1.0</K_tr>
+    <K_fus>1.0</K_fus>
+  </kfactors_a2>
+  <kfactors_a3>
+    <K_A31>1.0</K_A31>
+    <offset_A31 units="kg">0.0</offset_A31>
+    <K_A32>1.0</K_A32>
+    <offset_A32 units="kg">0.0</offset_A32>
+  </kfactors_a3>
+  <kfactors_a4>
+    <K_fc>1.0</K_fc>
+    <K_A4>1.0</K_A4>
+    <offset_A4 units="kg">0.0</offset_A4>
+  </kfactors_a4>
+  <kfactors_a5>
+    <K_A5>1.0</K_A5>
+    <offset_A5 units="kg">0.0</offset_A5>
+  </kfactors_a5>
+  <kfactors_b1>
+    <K_B1>1.0</K_B1>
+    <offset_B1 units="kg">0.0</offset_B1>
+  </kfactors_b1>
+  <weight_propulsion>
+    <B1 units="kg">nan</B1>
+    <B2 units="kg">nan</B2>
+    <B3 units="kg">nan</B3>
+  </weight_propulsion>
+  <kfactors_a6>
+    <K_A6>1.0</K_A6>
+    <offset_A6 units="kg">0.0</offset_A6>
+  </kfactors_a6>
+  <kfactors_a7>
+    <K_A7>1.0</K_A7>
+    <offset_A7 units="kg">0.0</offset_A7>
+  </kfactors_a7>
+  <kfactors_b2>
+    <K_B2>1.0</K_B2>
+    <offset_B2 units="kg">0.0</offset_B2>
+  </kfactors_b2>
+  <kfactors_b3>
+    <K_B3>1.0</K_B3>
+    <offset_B3 units="kg">0.0</offset_B3>
+  </kfactors_b3>
+  <weight_airframe>
+    <A4 units="kg">nan</A4>
+    <A1 units="kg">nan</A1>
+    <A2 units="kg">nan</A2>
+    <A31 units="kg">nan</A31>
+    <A32 units="kg">nan</A32>
+    <A51 units="kg">nan</A51>
+    <A52 units="kg">nan</A52>
+    <A6 units="kg">nan</A6>
+    <A7 units="kg">nan</A7>
+  </weight_airframe>
+  <kfactors_c1>
+    <K_C11>1.0</K_C11>
+    <offset_C11 units="kg">0.0</offset_C11>
+    <K_C12>1.0</K_C12>
+    <offset_C12 units="kg">0.0</offset_C12>
+    <K_C13>1.0</K_C13>
+    <offset_C13 units="kg">0.0</offset_C13>
+    <K_elec>1.0</K_elec>
+  </kfactors_c1>
+  <kfactors_c2>
+    <K_C21>1.0</K_C21>
+    <offset_C21 units="kg">0.0</offset_C21>
+    <K_C22>1.0</K_C22>
+    <offset_C22 units="kg">0.0</offset_C22>
+    <K_C23>1.0</K_C23>
+    <offset_C23 units="kg">0.0</offset_C23>
+    <K_C24>1.0</K_C24>
+    <offset_C24 units="kg">0.0</offset_C24>
+    <K_C25>1.0</K_C25>
+    <offset_C25 units="kg">0.0</offset_C25>
+    <K_C26>1.0</K_C26>
+    <offset_C26 units="kg">0.0</offset_C26>
+    <K_C27>1.0</K_C27>
+    <offset_C27 units="kg">0.0</offset_C27>
+  </kfactors_c2>
+  <kfactors_c3>
+    <K_C3>1.0</K_C3>
+    <offset_C3 units="kg">0.0</offset_C3>
+  </kfactors_c3>
+  <kfactors_c4>
+    <K_C4>1.0</K_C4>
+    <offset_C4 units="kg">0.0</offset_C4>
+  </kfactors_c4>
+  <kfactors_c5>
+    <K_C5>1.0</K_C5>
+    <offset_C5 units="kg">0.0</offset_C5>
+  </kfactors_c5>
+  <kfactors_c6>
+    <K_C6>1.0</K_C6>
+    <offset_C6 units="kg">0.0</offset_C6>
+  </kfactors_c6>
+  <kfactors_d1>
+    <K_D1>1.0</K_D1>
+    <offset_D1 units="kg">0.0</offset_D1>
+  </kfactors_d1>
+  <kfactors_d2>
+    <K_D2>1.0</K_D2>
+    <offset_D2 units="kg">0.0</offset_D2>
+  </kfactors_d2>
+  <kfactors_d3>
+    <K_D3>1.0</K_D3>
+    <offset_D3 units="kg">0.0</offset_D3>
+  </kfactors_d3>
+  <kfactors_d4>
+    <K_D4>1.0</K_D4>
+    <offset_D4 units="kg">0.0</offset_D4>
+  </kfactors_d4>
+  <kfactors_d5>
+    <K_D5>1.0</K_D5>
+    <offset_D5 units="kg">0.0</offset_D5>
+  </kfactors_d5>
+  <weight_systems>
+    <C11 units="kg">nan</C11>
+    <C12 units="kg">nan</C12>
+    <C13 units="kg">nan</C13>
+    <C21 units="kg">nan</C21>
+    <C22 units="kg">nan</C22>
+    <C23 units="kg">nan</C23>
+    <C24 units="kg">nan</C24>
+    <C25 units="kg">nan</C25>
+    <C26 units="kg">nan</C26>
+    <C27 units="kg">nan</C27>
+    <C3 units="kg">nan</C3>
+    <C4 units="kg">200.0</C4>
+    <C51 units="kg">100.0</C51>
+    <C52 units="kg">nan</C52>
+    <C6 units="kg">45.0</C6>
+  </weight_systems>
+  <weight_furniture>
+    <D1 units="kg">0.0</D1>
+    <D2 units="kg">nan</D2>
+    <D3 units="kg">nan</D3>
+    <D4 units="kg">nan</D4>
+    <D5 units="kg">nan</D5>
+  </weight_furniture>
+  <weight_crew>
+    <E units="kg">nan</E>
+  </weight_crew>
+</aircraft>

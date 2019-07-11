@@ -26,15 +26,16 @@ from pytest import approx
 from fastoad.io.xml import OpenMdaoCustomXmlIO
 from fastoad.io.xml.translator import VarXpathTranslator
 
-_OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
+
+_Variable = namedtuple('_Variable', ['name', 'value', 'units'])
 
 
 def _check_basic2_ivc(ivc: IndepVarComp):
     """ Checks that provided IndepVarComp instance matches content of data/custom.xml file """
 
-    outputs: List[_OutputVariable] = []
+    outputs: List[_Variable] = []
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(_OutputVariable(name, value, attributes['units']))
+        outputs.append(_Variable(name, value, attributes['units']))
 
     assert len(outputs) == 4
 
@@ -148,7 +149,6 @@ def test_custom_xml_read_and_write_with_translation_table():
     ivc = xml_read.read()
     _check_basic2_ivc(ivc)
 
-
 def test_custom_xml_read_and_write_with_only_or_ignore():
     data_folder = pth.join(pth.dirname(__file__), 'data')
     result_folder = pth.join(pth.dirname(__file__), 'results', 'custom_xml_with_translation_table')
@@ -174,9 +174,9 @@ def test_custom_xml_read_and_write_with_only_or_ignore():
 
     # test with "only"
     ivc = xml_read.read(only=['geometry:wing:span'])
-    outputs: List[_OutputVariable] = []
+    outputs: List[_Variable] = []
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(_OutputVariable(name, value, attributes['units']))
+        outputs.append(_Variable(name, value, attributes['units']))
     assert len(outputs) == 1
     assert outputs[0].name == 'geometry:wing:span'
     assert outputs[0].value == approx([42])
@@ -185,10 +185,13 @@ def test_custom_xml_read_and_write_with_only_or_ignore():
     # test with "ignore"
     ivc = xml_read.read(
         ignore=['geometry:total_surface', 'geometry:wing:aspect_ratio', 'geometry:fuselage:length'])
-    outputs: List[_OutputVariable] = []
+    outputs: List[_Variable] = []
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(_OutputVariable(name, value, attributes['units']))
+        outputs.append(_Variable(name, value, attributes['units']))
     assert len(outputs) == 1
     assert outputs[0].name == 'geometry:wing:span'
     assert outputs[0].value == approx([42])
     assert outputs[0].units == 'm'
+
+
+    

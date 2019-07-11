@@ -25,8 +25,8 @@ from fastoad.io.serialize import SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.utils.strings import get_float_list_from_string
-from .openmdao_custom_io import OpenMdaoCustomXmlIO, OutputVariable
-
+from .openmdao_custom_io import OpenMdaoCustomXmlIO, Variable
+from fastoad.openmdao.extractor import build_ivc_of_unconnected_inputs
 
 class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
     """
@@ -104,8 +104,13 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
         self.set_translator(translator)
 
         self._write(outputs, only, ignore)
+        
+    def write_inputs(self, system: SystemSubclass, optional_inputs : bool = True, only: Sequence[str] = None,
+              ignore: Sequence[str] = None):
+        ivc_inputs = build_ivc_of_unconnected_inputs(system, optional_inputs=optional_inputs)
+        self.write(ivc_inputs, only=only, ignore=ignore)
 
-    def _read_xml(self) -> Sequence[OutputVariable]:
+    def _read_xml(self) -> Sequence[Variable]:
         """
         Reads self.data_source as a XML file
 
@@ -118,7 +123,7 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
         context = etree.iterparse(self._data_source, events=("start", "end"))
 
         # Intermediate storing as a dict for easy access according to name when appending new values
-        outputs: Dict[str, OutputVariable] = {}
+        outputs: Dict[str, Variable] = {}
 
         current_path = []
 
@@ -134,7 +139,7 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
                     name = self.path_separator.join(current_path[1:])
                     if name not in outputs:
                         # Add variable
-                        outputs[name] = OutputVariable(name, value, units)
+                        outputs[name] = Variable(name, value, units)
                     else:
                         # Variable already exists: append values (here the dict is useful)
                         outputs[name].value.extend(value)
