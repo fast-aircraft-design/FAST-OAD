@@ -154,17 +154,6 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
        """
         if self._translator is None:
             raise ValueError('Missing translator instance')
-        elif self._translator == 'default':
-            var_names = []
-            xpaths = []
-
-            for variable in variables:
-                var_name = variable.name
-                var_names.append(var_name)
-                xpath = var_name.replace(':', '/')
-                xpaths.append(xpath)
-            translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
-            self._translator = translator
 
         root = etree.Element(ROOT_TAG)
 

@@ -15,7 +15,7 @@ Extract OpenMDAO elements
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from logging import Logger
-from typing import TypeVar, Tuple, List
+from typing import TypeVar, Tuple, List, Union
 from collections import namedtuple
 
 import numpy as np
@@ -27,13 +27,14 @@ from fastoad.openmdao.checks import get_unconnected_inputs
 from fastoad.exceptions import NoSetupError
 
 Variable = namedtuple('_Variable', ['name', 'value', 'units'])
+SystemSubclass = TypeVar('SystemSubclass', bound=System)
 
-def get_vars_of_unconnected_inputs(problem: Problem, logger: Logger = None) -> List[Variable]:
+def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass], logger: Logger = None) -> List[Variable]:
     """
     This function returns an list of Variable containing all the relative
     information of unconnected inputs of a Problem or System.
 
-    :param problem: OpenMDAO Problem instance to inspect
+    :param problem: OpenMDAO Problem or System instance to inspect
     :param logger: optional logger instance
     :return: IndepVarComp Component
     """
