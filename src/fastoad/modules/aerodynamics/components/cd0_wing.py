@@ -63,7 +63,7 @@ class Cd0Wing(ExplicitComponent):
 
         ki_arrow_cd0 = 0.04
         # Friction coefficients
-        cf_wing_hs = 0.455 / ((1 + 0.126 * mach ** 2) * (np.log10(re_hs * l0_wing)) ** 2.58)
+        cf_wing_hs = 0.455 / ((1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(re_hs * l0_wing)) ** 2.58)
 
         # cd0 wing
         # factor of relative thickness

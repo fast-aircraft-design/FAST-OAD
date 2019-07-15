@@ -61,7 +61,8 @@ class Cd0Fuselage(ExplicitComponent):
             mach = inputs['tlar:cruise_Mach']
             re_hs = inputs['reynolds_high_speed']
 
-        cf_fus_hs = 0.455 / ((1 + 0.126 * mach ** 2) * (math.log10(re_hs * fus_length)) ** 2.58)
+        cf_fus_hs = 0.455 / (
+                (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(re_hs * fus_length)) ** 2.58)
 
         cd0_friction_fus_hs = (0.98 + 0.745 * math.sqrt(
             height_max * width_max) / fus_length) * cf_fus_hs * wet_area_fus / wing_area

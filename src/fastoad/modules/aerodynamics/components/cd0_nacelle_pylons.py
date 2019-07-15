@@ -66,8 +66,9 @@ class Cd0NacelleAndPylons(ExplicitComponent):
             re_hs = inputs['reynolds_high_speed']
 
         cf_pylon_hs = 0.455 / (
-                (1 + 0.126 * mach ** 2) * (math.log10(re_hs * pylon_length)) ** (2.58))
-        cf_nac_hs = 0.455 / ((1 + 0.126 * mach ** 2) * (math.log10(re_hs * nac_length)) ** (2.58))
+                (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(re_hs * pylon_length)) ** 2.58)
+        cf_nac_hs = 0.455 / (
+                (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(re_hs * nac_length)) ** 2.58)
 
         # cd0 Pylon
         el_pylon = 0.06
