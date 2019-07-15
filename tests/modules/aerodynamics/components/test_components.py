@@ -24,6 +24,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.modules.aerodynamics.components.cd0 import CD0
 from fastoad.modules.aerodynamics.components.cd_compressibility import CdCompressibility
+from fastoad.modules.aerodynamics.components.cd_equilibrium import CdEquilibrium
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
 from fastoad.modules.aerodynamics.components.high_lift_drag import DeltaCDHighLift
 from fastoad.modules.aerodynamics.components.high_lift_lift import DeltaCLHighLift
@@ -214,3 +215,16 @@ def test_cd_compressibility():
 
     assert get_cd_compressibility(0.78, 0.5) == pytest.approx(0.000451, abs=1e-5)
     assert get_cd_compressibility(0.2, 0.933) == pytest.approx(0.0, abs=1e-10)
+
+
+def test_cd_trim():
+    """ Tests CdTrim """
+
+    def get_cd_trim(cl):
+        ivc = IndepVarComp()
+        ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
+        problem = run_system(CdEquilibrium(), ivc)
+        return problem['cd_eq_high_speed'][0]
+
+    assert get_cd_trim(0.5) == pytest.approx(0.0002945, abs=1e-5)
+    assert get_cd_trim(0.933) == pytest.approx(0.0005497, abs=1e-5)
