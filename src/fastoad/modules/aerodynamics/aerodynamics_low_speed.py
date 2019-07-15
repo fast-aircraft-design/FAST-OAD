@@ -38,7 +38,7 @@ from fastoad.modules.aerodynamics.components.cd0_total import Cd0Total
 from fastoad.modules.aerodynamics.components.cd0_vt import Cd0VerticalTail
 from fastoad.modules.aerodynamics.components.cd0_wing import Cd0Wing
 from fastoad.modules.aerodynamics.components.cd_compressibility import CdCompressibility
-from fastoad.modules.aerodynamics.components.cd_equilibrium import CdEquilibrium
+from fastoad.modules.aerodynamics.components.cd_trim import CdTrim
 from fastoad.modules.aerodynamics.components.compute_low_speed_aero import \
     ComputeAerodynamicsLowSpeed
 from fastoad.modules.aerodynamics.components.compute_polar import ComputePolar
@@ -65,5 +65,5 @@ class AerodynamicsLowSpeed(Group):
                            promotes=['*'])
         self.add_subsystem('cd0_total', Cd0Total(low_speed_aero=True), promotes=['*'])
         self.add_subsystem('cd_comp', CdCompressibility(low_speed_aero=True), promotes=['*'])
-        self.add_subsystem('cd_eq', CdEquilibrium(low_speed_aero=True), promotes=['*'])
+        self.add_subsystem('cd_trim', CdTrim(low_speed_aero=True), promotes=['*'])
         self.add_subsystem('get_polar', ComputePolar(low_speed_aero=True), promotes=['*'])

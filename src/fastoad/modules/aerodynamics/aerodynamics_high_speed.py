@@ -23,7 +23,7 @@ from fastoad.modules.aerodynamics.components.cd0_total import Cd0Total
 from fastoad.modules.aerodynamics.components.cd0_vt import Cd0VerticalTail
 from fastoad.modules.aerodynamics.components.cd0_wing import Cd0Wing
 from fastoad.modules.aerodynamics.components.cd_compressibility import CdCompressibility
-from fastoad.modules.aerodynamics.components.cd_equilibrium import CdEquilibrium
+from fastoad.modules.aerodynamics.components.cd_trim import CdTrim
 from fastoad.modules.aerodynamics.components.compute_max_cl_landing import ComputeMaxClLanding
 from fastoad.modules.aerodynamics.components.compute_polar import ComputePolar
 from fastoad.modules.aerodynamics.components.compute_reynolds import ComputeReynolds
@@ -43,6 +43,6 @@ class AerodynamicsHighSpeed(Group):
         self.add_subsystem('cd0_nac_pylons', Cd0NacelleAndPylons(), promotes=['*'])
         self.add_subsystem('cd0_total', Cd0Total(), promotes=['*'])
         self.add_subsystem('cd_comp', CdCompressibility(), promotes=['*'])
-        self.add_subsystem('cd_eq', CdEquilibrium(), promotes=['*'])
+        self.add_subsystem('cd_trim', CdTrim(), promotes=['*'])
         self.add_subsystem('get_polar', ComputePolar(), promotes=['*'])
         self.add_subsystem('compute_max_cl_landing', ComputeMaxClLanding(), promotes=['*'])

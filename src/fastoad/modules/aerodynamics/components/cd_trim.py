@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 from fastoad.modules.aerodynamics.constants import POLAR_POINT_COUNT
 
 
-class CdEquilibrium(ExplicitComponent):
+class CdTrim(ExplicitComponent):
     def initialize(self):
         self.options.declare('low_speed_aero', default=False, types=bool)
 
@@ -31,10 +31,10 @@ class CdEquilibrium(ExplicitComponent):
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
             self.add_input('cl_low_speed', val=nans_array)
-            self.add_output('cd_eq_low_speed', val=nans_array)
+            self.add_output('cd_trim_low_speed', val=nans_array)
         else:
             self.add_input('cl_high_speed', val=nans_array)
-            self.add_output('cd_eq_high_speed', val=nans_array)
+            self.add_output('cd_trim_high_speed', val=nans_array)
 
     def compute(self, inputs, outputs):
         if self.low_speed_aero:
@@ -42,12 +42,12 @@ class CdEquilibrium(ExplicitComponent):
         else:
             cl = inputs['cl_high_speed']
 
-        cd_eq = []
+        cd_trim = []
 
         for cl_val in cl:
-            cd_eq.append(5.89 * pow(10, -4) * cl_val)
+            cd_trim.append(5.89 * pow(10, -4) * cl_val)
 
         if self.low_speed_aero:
-            outputs['cd_eq_low_speed'] = cd_eq
+            outputs['cd_trim_low_speed'] = cd_trim
         else:
-            outputs['cd_eq_high_speed'] = cd_eq
+            outputs['cd_trim_high_speed'] = cd_trim
