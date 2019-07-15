@@ -26,6 +26,7 @@ from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaH
 from fastoad.modules.aerodynamics.components.high_lift_drag import DeltaCDHighLift
 from fastoad.modules.aerodynamics.components.high_lift_lift import DeltaCLHighLift
 from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
+from fastoad.utils.physics import Atmosphere
 from tests.testing_utilities import run_system
 
 
@@ -182,6 +183,7 @@ def test_cd0():
         reynolds = 47899 * (
                 static_pressure * mach * ((1 + 0.126 * mach ** 2) * temperature + 110.4)) / (
                            temperature ** 2 * (1 + 0.126 * mach ** 2) ** (5 / 2))
+
         ivc = get_indep_var_comp(input_list)
         ivc.add_output('tlar:cruise_Mach', mach)
         ivc.add_output('reynolds_high_speed', reynolds)
@@ -190,5 +192,9 @@ def test_cd0():
         problem = run_system(CD0(), ivc)
         return problem['cd0_total_high_speed']
 
-    assert get_cd0(24000, 219, 0.78)[75] == pytest.approx(0.01973, abs=1e-4)  # CL = 0.5
-    assert get_cd0(101325, 288, 0.2)[140] == pytest.approx(0.02822, abs=1e-4)  # CL = 0.933
+    atm = Atmosphere(35000)
+    assert get_cd0(atm.pressure, atm.temperature,
+                   0.78)[75] == pytest.approx(0.01973, abs=1e-4)  # CL = 0.5
+    atm = Atmosphere(0)
+    assert get_cd0(atm.pressure, atm.temperature,
+                   0.2)[140] == pytest.approx(0.02822, abs=1e-4)  # CL = 0.933
