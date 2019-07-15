@@ -19,9 +19,11 @@ import os.path as pth
 
 import numpy as np
 import pytest
+from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.modules.aerodynamics.components.cd0 import CD0
+from fastoad.modules.aerodynamics.components.cd_compressibility import CdCompressibility
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
 from fastoad.modules.aerodynamics.components.high_lift_drag import DeltaCDHighLift
 from fastoad.modules.aerodynamics.components.high_lift_lift import DeltaCLHighLift
@@ -188,7 +190,7 @@ def test_cd0():
         ivc.add_output('tlar:cruise_Mach', mach)
         ivc.add_output('reynolds_high_speed', reynolds)
         cl = np.arange(150) / 150.
-        ivc.add_output('cl_high_speed', cl)
+        ivc.add_output('cl_high_speed', cl)  # needed because size of input array is fixed
         problem = run_system(CD0(), ivc)
         return problem['cd0_total_high_speed']
 
@@ -198,3 +200,17 @@ def test_cd0():
     atm = Atmosphere(0)
     assert get_cd0(atm.pressure, atm.temperature,
                    0.2)[140] == pytest.approx(0.02822, abs=1e-4)  # CL = 0.933
+
+
+def test_cd_compressibility():
+    """ Tests CdCompressibility """
+
+    def get_cd_compressibility(mach, cl):
+        ivc = IndepVarComp()
+        ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
+        ivc.add_output('tlar:cruise_Mach', mach)
+        problem = run_system(CdCompressibility(), ivc)
+        return problem['cd_comp_high_speed'][0]
+
+    assert get_cd_compressibility(0.78, 0.5) == pytest.approx(0.000451, abs=1e-5)
+    assert get_cd_compressibility(0.2, 0.933) == pytest.approx(0.0, abs=1e-10)
