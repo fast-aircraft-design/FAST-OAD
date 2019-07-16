@@ -26,7 +26,7 @@ from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.utils.strings import get_float_list_from_string
 from .openmdao_custom_io import OpenMdaoCustomXmlIO, Variable
-from fastoad.openmdao.extractor import build_ivc_of_unconnected_inputs
+from fastoad.openmdao.utils import build_ivc_of_unconnected_inputs
 
 class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
     """
@@ -107,6 +107,18 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
         
     def write_inputs(self, system: SystemSubclass, optional_inputs : bool = True, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
+        """
+        Write inputs of a System to an xml file
+
+        optional_inputs is a Boolean to specify if the inputs shall also 
+            include the ones with default values.
+
+        :param system: OpenMDAO System instance to read.
+        :param optional_inputs: Boolean for optional inputs.
+        :param only: List of OpenMDAO variable names that should be written. Other names will be
+                     ignored. If None, all variables will be written.
+        :param ignore: List of OpenMDAO variable names that should be ignored when writting.
+        """
         ivc_inputs = build_ivc_of_unconnected_inputs(system, optional_inputs=optional_inputs)
         self.write(ivc_inputs, only=only, ignore=ignore)
 

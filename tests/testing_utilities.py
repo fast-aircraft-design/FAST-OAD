@@ -21,7 +21,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
 from openmdao.core.system import System
 
-from fastoad.openmdao.checks import get_unconnected_inputs
+from fastoad.openmdao.utils import get_unconnected_inputs
 
 SystemSubclass = TypeVar('SystemSubclass', bound=System)
 
