@@ -55,8 +55,15 @@
     <slat_angle_to units="deg">18.0</slat_angle_to>
     <flap_angle_landing units="deg">30.0</flap_angle_landing>
     <slat_angle_landing units="deg">20.0</slat_angle_landing>
+      <cruise_altitude units="ft">35000.0</cruise_altitude>
   </sizing_mission>
   <tlar>
     <cruise_Mach>0.78</cruise_Mach>
   </tlar>
+    <kfactors_aero>
+        <K_Cd>1.0</K_Cd>
+        <Offset_Cd>0.0</Offset_Cd>
+        <K_winglet_Cd>1.0</K_winglet_Cd>
+        <Offset_winglet_Cd>0.0</Offset_winglet_Cd>
+    </kfactors_aero>
 </aircraft>

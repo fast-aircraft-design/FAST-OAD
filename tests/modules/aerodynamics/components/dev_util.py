@@ -17,9 +17,13 @@ from openmdao.core.problem import Problem
 from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
 from fastoad.modules.aerodynamics.components.cd0 import CD0
+from fastoad.modules.aerodynamics.components.cd_compressibility import CdCompressibility
+from fastoad.modules.aerodynamics.components.cd_trim import CdTrim
+from fastoad.modules.aerodynamics.components.compute_polar import ComputePolar
+from fastoad.modules.aerodynamics.components.compute_reynolds import ComputeReynolds
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
-from fastoad.openmdao.connections_utils import get_unconnected_inputs
 from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
+from fastoad.openmdao.connections_utils import get_unconnected_inputs
 from tests import root_folder
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
@@ -35,14 +39,19 @@ def create_inputs():
     components = [ComputeDeltaHighLift(),
                   ComputeDeltaHighLift(landing_flag=True),
                   OswaldCoefficient(),
-                  CD0()]
+                  CD0(),
+                  CdCompressibility(),
+                  CdTrim(),
+                  ComputeReynolds(),
+                  ComputePolar()]
 
     ceras_reader = OpenMdaoLegacy1XmlIO(CERAS_FILE_PATH)
     aero_io = OpenMdaoXmlIO(AERO_INPUT_FILE_PATH)
     aero_io.path_separator = ':'
 
     # Variables that are part of the process but not expected in XML file
-    ignore_list = ['xfoil:mach', 'reynolds_high_speed', 'cl_high_speed']
+    ignore_list = ['xfoil:mach', 'reynolds_high_speed', 'cl_high_speed', 'cd0_total_high_speed',
+                   'cd_trim_high_speed', 'cd_comp_high_speed', 'oswald_coeff']
 
     for component in components:
         ivc_aero = aero_io.read()
