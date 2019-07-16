@@ -15,18 +15,18 @@ Checks of OpenMDAO problems
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from logging import Logger
-from typing import TypeVar, Tuple, List
+from typing import TypeVar, Tuple, List, Union
 
 import numpy as np
 from openmdao.core.problem import Problem
 from openmdao.core.system import System
 
+
 from fastoad.exceptions import NoSetupError
 
-SystemSubclass = TypeVar('SystemSubclass', bound=System)
+from fastoad.openmdao.types import Variable, SystemSubclass
 
-
-def get_unconnected_inputs(problem: Problem, logger: Logger = None) -> Tuple[List[str], List[str]]:
+def get_unconnected_inputs(problem: Union[Problem, SystemSubclass], logger: Logger = None) -> Tuple[List[str], List[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
     Assumes problem.setup() has been run.
@@ -37,7 +37,7 @@ def get_unconnected_inputs(problem: Problem, logger: Logger = None) -> Tuple[Lis
     If a logger is provided, it will issue errors for the first category, and warnings for the
     second one.
 
-    :param problem: OpenMDAO Problem instance to inspect
+    :param problem: OpenMDAO Problem or System instance to inspect
     :param logger: optional logger instance
     :return: tuple(list of missing mandatory inputs, list of missing optional inputs)
     """

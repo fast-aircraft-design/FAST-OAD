@@ -27,7 +27,7 @@ from .constants import SERVICE_OPENMDAO_SYSTEM
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
 
-SystemSubclass = TypeVar('SystemSubclass', bound=System)
+from fastoad.openmdao.types import SystemSubclass
 
 
 class SystemDescriptor:

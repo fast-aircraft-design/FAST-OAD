@@ -15,7 +15,6 @@ Tests basic XML serializer for OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os.path as pth
 import shutil
-from collections import namedtuple
 from typing import List
 
 import numpy as np
@@ -30,15 +29,15 @@ from fastoad.io.xml import XPathReader
 from tests.sellar_example.sellar import Sellar
 from tests.io.xml.data.mass_breakdown.mass_breakdown import MassBreakdown
 
-_Variable = namedtuple('_Variable', ['name', 'value', 'units'])
+from fastoad.openmdao.types import Variable
 
 
 def _check_basic_ivc(ivc: IndepVarComp):
     """ Checks that provided IndepVarComp instance matches content of data/basic.xml file """
 
-    outputs: List[_Variable] = []
+    outputs: List[Variable] = []
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(_Variable(name, value, attributes['units']))
+        outputs.append(Variable(name, value, attributes['units']))
 
     assert len(outputs) == 9
 

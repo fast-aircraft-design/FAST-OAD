@@ -17,7 +17,6 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 import logging
 import os
 import os.path as pth
-from collections import namedtuple
 from typing import Sequence, List
 
 import numpy as np
@@ -35,9 +34,7 @@ from .xpath_reader import XPathReader
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
-Variable = namedtuple('_Variable', ['name', 'value', 'units'])
-""" Simple structure for standard OpenMDAO variable """
-
+from fastoad.openmdao.types import Variable
 
 class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
     """
@@ -158,14 +155,14 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         root = etree.Element(ROOT_TAG)
 
         if only is None:
-            used_variables = variables
+            usedVariables = variables
         else:
-            used_variables = [variable for variable in variables if variable.name in only]
+            usedVariables = [variable for variable in variables if variable.name in only]
 
         if ignore is not None:
-            used_variables = [variable for variable in used_variables if variable.name not in ignore]
+            usedVariables = [variable for variable in usedVariables if variable.name not in ignore]
 
-        for variable in used_variables:
+        for variable in usedVariables:
 
             xpath = self._translator.get_xpath(variable.name)
             element = self._create_xpath(root, xpath)

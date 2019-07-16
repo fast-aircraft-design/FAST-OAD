@@ -17,9 +17,8 @@ from abc import abstractmethod, ABC
 from typing import TypeVar, IO, List
 
 from openmdao.core.indepvarcomp import IndepVarComp
-from openmdao.core.system import System
 
-SystemSubclass = TypeVar('SystemSubclass', bound=System)
+from fastoad.openmdao.types import SystemSubclass
 
 
 class AbstractOpenMDAOVariableIO(ABC):

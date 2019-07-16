@@ -14,12 +14,11 @@ Test module for OpenMDAO extractor
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from collections import namedtuple
 from tests.io.xml.data.mass_breakdown.mass_breakdown import MassBreakdown
 from openmdao.api import Problem
 import numpy as np
 
-Variable = namedtuple('_Variable', ['name', 'value', 'units'])
+from fastoad.openmdao.types import Variable
 
 from fastoad.openmdao.extractor import get_vars_of_unconnected_inputs, build_ivc_of_unconnected_inputs
 

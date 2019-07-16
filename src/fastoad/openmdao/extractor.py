@@ -16,7 +16,6 @@ Extract OpenMDAO elements
 
 from logging import Logger
 from typing import TypeVar, Tuple, List, Union
-from collections import namedtuple
 
 import numpy as np
 from openmdao.core.problem import Problem
@@ -26,8 +25,7 @@ from openmdao.api import IndepVarComp
 from fastoad.openmdao.checks import get_unconnected_inputs
 from fastoad.exceptions import NoSetupError
 
-Variable = namedtuple('_Variable', ['name', 'value', 'units'])
-SystemSubclass = TypeVar('SystemSubclass', bound=System)
+from fastoad.openmdao.types import Variable, SystemSubclass
 
 def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass], logger: Logger = None) -> List[Variable]:
     """
