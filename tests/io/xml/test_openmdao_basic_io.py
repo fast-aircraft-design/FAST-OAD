@@ -81,13 +81,35 @@ def _check_basic_ivc(ivc: IndepVarComp):
 
 def _compare_xml(xml_1, xml_2):
     """ Checks that both xml files are the same """
+    xml_1_read = OpenMdaoXmlIO(xml_1)
+    ivc_1 = xml_1_read.read()
+    xml_2_read = OpenMdaoXmlIO(xml_2)
+    ivc_2 = xml_2_read.read()
+    are_same = _compare_ivc(ivc_1, ivc_2)
+    return are_same
+    
+def _compare_ivc(ivc_1, ivc_2):
+    """ Checks that both ivc are the same """
     are_same = True
-    with open(xml_1, 'r') as xml_1, open(xml_2, 'r') as xml_2:
-        xml_1 = xml_1.readlines()
-        xml_2 = xml_2.readlines()
-        for i, line in enumerate(xml_1):
-            if are_same == True:
-                are_same = (xml_1[i] == xml_2[i])
+
+    outputs_1 = {}
+    for (name, value, attributes) in ivc_1._indep_external:
+        outputs_1[name] = Variable(name, value, attributes['units'])
+    outputs_2 = {}
+    for (name, value, attributes) in ivc_2._indep_external:
+        outputs_2[name] = Variable(name, value, attributes['units'])
+    # Check
+    for i, (key, value) in enumerate(outputs_1.items()):
+        if are_same:
+            if key in outputs_2.keys():
+                var_1 = outputs_1[key]
+                var_2 = outputs_2[key]
+                are_same = (var_1.name == var_2.name) and \
+                    (str(var_1.value) == str(var_2.value)) and \
+                        (var_1.units == var_2.units)
+            else:
+                are_same = False
+
     return are_same
 
 def test_basic_xml_read_and_write_from_indepvarcomp():
