@@ -232,7 +232,7 @@ def test_cd_trim():
 def test_polar():
     """ Tests ComputePolar """
 
-    # Need to plug Cd, Reynolds and Oswald
+    # Need to plug Cd modules, Reynolds and Oswald
 
     input_list = ['kfactors_aero:K_Cd',
                   'kfactors_aero:Offset_Cd',
@@ -286,7 +286,10 @@ def test_polar():
     cd = problem['aerodynamics:ClCd'][0, :]
     cl = problem['aerodynamics:ClCd'][1, :]
 
-    assert cd[cl == 0.] == pytest.approx(0.02380, abs=1e-5)
-    assert cd[cl == 0.2] == pytest.approx(0.02226, abs=1e-5)
-    assert cd[cl == 0.42] == pytest.approx(0.02896, abs=1e-5)
-    assert cd[cl == 0.85] == pytest.approx(0.11780, abs=1e-5)
+    assert cd[cl == 0.] == pytest.approx(0.023806, abs=1e-6)
+    assert cd[cl == 0.2] == pytest.approx(0.022265, abs=1e-6)
+    assert cd[cl == 0.42] == pytest.approx(0.028969, abs=1e-6)
+    assert cd[cl == 0.85] == pytest.approx(0.117816, abs=1e-6)
+
+    assert problem['aerodynamics:Cl_opt'] == pytest.approx(0.54, abs=1e-3)
+    assert problem['aerodynamics:Cd_opt'] == pytest.approx(0.0355032, abs=1e-6)
