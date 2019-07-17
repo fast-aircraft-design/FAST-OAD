@@ -19,12 +19,15 @@ import os.path as pth
 
 import numpy as np
 import pytest
+from openmdao.core.group import Group
 from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.modules.aerodynamics.components.cd0 import CD0
 from fastoad.modules.aerodynamics.components.cd_compressibility import CdCompressibility
 from fastoad.modules.aerodynamics.components.cd_trim import CdTrim
+from fastoad.modules.aerodynamics.components.compute_polar import ComputePolar
+from fastoad.modules.aerodynamics.components.compute_reynolds import ComputeReynolds
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
 from fastoad.modules.aerodynamics.components.high_lift_drag import DeltaCDHighLift
 from fastoad.modules.aerodynamics.components.high_lift_lift import DeltaCLHighLift
@@ -156,6 +159,89 @@ def test_cd0():
                   'geometry:fuselage_length',
                   'geometry:fuselage_wet_area',
                   'geometry:fuselage_width_max',
+                  'geometry:ht_length',
+                  'geometry:ht_sweep_25',
+                  'geometry:ht_toc',
+                  'geometry:ht_wet_area',
+                  'geometry:wing_area',
+                  'geometry:engine_number',
+                  'geometry:fan_length',
+                  'geometry:nacelle_length',
+                  'geometry:nacelle_wet_area',
+                  'geometry:pylon_length',
+                  'geometry:pylon_wet_area',
+                  'geometry:S_total',
+                  'geometry:vt_length',
+                  'geometry:vt_sweep_25',
+                  'geometry:vt_toc',
+                  'geometry:vt_wet_area',
+                  'geometry:wing_area',
+                  'geometry:wing_l0',
+                  'geometry:wing_sweep_25',
+                  'geometry:wing_toc_aero',
+                  'geometry:wing_wet_area'
+                  ]
+
+    def get_cd0(static_pressure, temperature, mach, cl):
+        reynolds = 47899 * (
+                static_pressure * mach * ((1 + 0.126 * mach ** 2) * temperature + 110.4)) / (
+                           temperature ** 2 * (1 + 0.126 * mach ** 2) ** (5 / 2))
+
+        ivc = get_indep_var_comp(input_list)
+        ivc.add_output('tlar:cruise_Mach', mach)
+        ivc.add_output('reynolds_high_speed', reynolds)
+        ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
+        problem = run_system(CD0(), ivc)
+        return problem['cd0_total_high_speed'][0]
+
+    atm = Atmosphere(35000)
+    assert get_cd0(atm.pressure, atm.temperature,
+                   0.78, 0.5) == pytest.approx(0.0197474, abs=1e-6)  # CL = 0.5
+    atm = Atmosphere(0)
+    assert get_cd0(atm.pressure, atm.temperature,
+                   0.2, 0.9) == pytest.approx(0.0272726, abs=1e-6)  # CL = 0.933
+
+
+def test_cd_compressibility():
+    """ Tests CdCompressibility """
+
+    def get_cd_compressibility(mach, cl):
+        ivc = IndepVarComp()
+        ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
+        ivc.add_output('tlar:cruise_Mach', mach)
+        problem = run_system(CdCompressibility(), ivc)
+        return problem['cd_comp_high_speed'][0]
+
+    assert get_cd_compressibility(0.78, 0.5) == pytest.approx(0.000451, abs=1e-6)
+    assert get_cd_compressibility(0.2, 0.9) == pytest.approx(0.0, abs=1e-10)
+
+
+def test_cd_trim():
+    """ Tests CdTrim """
+
+    def get_cd_trim(cl):
+        ivc = IndepVarComp()
+        ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
+        problem = run_system(CdTrim(), ivc)
+        return problem['cd_trim_high_speed'][0]
+
+    assert get_cd_trim(0.5) == pytest.approx(0.0002945, abs=1e-6)
+    assert get_cd_trim(0.9) == pytest.approx(0.0005301, abs=1e-6)
+
+
+def test_polar():
+    """ Tests ComputePolar """
+
+    # Need to plug Cd, Reynolds and Oswald
+
+    input_list = ['kfactors_aero:K_Cd',
+                  'kfactors_aero:Offset_Cd',
+                  'kfactors_aero:K_winglet_Cd',
+                  'kfactors_aero:Offset_winglet_Cd',
+                  'geometry:fuselage_height_max',
+                  'geometry:fuselage_length',
+                  'geometry:fuselage_wet_area',
+                  'geometry:fuselage_width_max',
                   'geometry:wing_area',
                   'geometry:ht_length',
                   'geometry:ht_sweep_25',
@@ -174,57 +260,33 @@ def test_cd0():
                   'geometry:vt_sweep_25',
                   'geometry:vt_toc',
                   'geometry:vt_wet_area',
-                  'geometry:wing_area',
-                  'geometry:wing_area',
                   'geometry:wing_l0',
                   'geometry:wing_sweep_25',
                   'geometry:wing_toc_aero',
-                  'geometry:wing_wet_area'
+                  'geometry:wing_wet_area',
+                  'geometry:wing_span',
+                  'geometry:wing_l2',
+                  'geometry:wing_l4',
+                  'tlar:cruise_Mach',
+                  'sizing_mission:cruise_altitude'
                   ]
+    group = Group()
+    group.add_subsystem('reynolds', ComputeReynolds(), promotes=['*'])
+    group.add_subsystem('oswald', OswaldCoefficient(), promotes=['*'])
+    group.add_subsystem('cd0', CD0(), promotes=['*'])
+    group.add_subsystem('cd_compressibility', CdCompressibility(), promotes=['*'])
+    group.add_subsystem('cd_trim', CdTrim(), promotes=['*'])
+    group.add_subsystem('polar', ComputePolar(), promotes=['*'])
 
-    def get_cd0(static_pressure, temperature, mach):
-        reynolds = 47899 * (
-                static_pressure * mach * ((1 + 0.126 * mach ** 2) * temperature + 110.4)) / (
-                           temperature ** 2 * (1 + 0.126 * mach ** 2) ** (5 / 2))
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output('cl_high_speed', np.arange(0., 1.5, 0.01))
 
-        ivc = get_indep_var_comp(input_list)
-        ivc.add_output('tlar:cruise_Mach', mach)
-        ivc.add_output('reynolds_high_speed', reynolds)
-        cl = np.arange(150) / 150.
-        ivc.add_output('cl_high_speed', cl)  # needed because size of input array is fixed
-        problem = run_system(CD0(), ivc)
-        return problem['cd0_total_high_speed']
+    problem = run_system(group, ivc)
 
-    atm = Atmosphere(35000)
-    assert get_cd0(atm.pressure, atm.temperature,
-                   0.78)[75] == pytest.approx(0.01973, abs=1e-4)  # CL = 0.5
-    atm = Atmosphere(0)
-    assert get_cd0(atm.pressure, atm.temperature,
-                   0.2)[140] == pytest.approx(0.02822, abs=1e-4)  # CL = 0.933
+    cd = problem['aerodynamics:ClCd'][0, :]
+    cl = problem['aerodynamics:ClCd'][1, :]
 
-
-def test_cd_compressibility():
-    """ Tests CdCompressibility """
-
-    def get_cd_compressibility(mach, cl):
-        ivc = IndepVarComp()
-        ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
-        ivc.add_output('tlar:cruise_Mach', mach)
-        problem = run_system(CdCompressibility(), ivc)
-        return problem['cd_comp_high_speed'][0]
-
-    assert get_cd_compressibility(0.78, 0.5) == pytest.approx(0.000451, abs=1e-5)
-    assert get_cd_compressibility(0.2, 0.933) == pytest.approx(0.0, abs=1e-10)
-
-
-def test_cd_trim():
-    """ Tests CdTrim """
-
-    def get_cd_trim(cl):
-        ivc = IndepVarComp()
-        ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
-        problem = run_system(CdTrim(), ivc)
-        return problem['cd_trim_high_speed'][0]
-
-    assert get_cd_trim(0.5) == pytest.approx(0.0002945, abs=1e-5)
-    assert get_cd_trim(0.933) == pytest.approx(0.0005497, abs=1e-5)
+    assert cd[cl == 0.] == pytest.approx(0.02380, abs=1e-5)
+    assert cd[cl == 0.2] == pytest.approx(0.02226, abs=1e-5)
+    assert cd[cl == 0.42] == pytest.approx(0.02896, abs=1e-5)
+    assert cd[cl == 0.85] == pytest.approx(0.11780, abs=1e-5)
