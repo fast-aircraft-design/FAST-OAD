@@ -27,7 +27,7 @@ class Cd0Total(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('geometry:S_total', val=np.nan)
+        self.add_input('geometry:S_total', val=np.nan, units='m**2')
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
