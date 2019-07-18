@@ -49,6 +49,8 @@
       <engine_number>2.0</engine_number>
       <fan_length units="m">3.127</fan_length>
       <S_total units="m**2">784.007</S_total>
+      <wing_aspect_ratio>9.48</wing_aspect_ratio>
+      <wing_toc_tip>0.11</wing_toc_tip>
   </geometry>
   <sizing_mission>
     <flap_angle_to units="deg">10.0</flap_angle_to>
