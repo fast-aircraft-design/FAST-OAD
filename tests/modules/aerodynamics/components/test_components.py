@@ -18,9 +18,9 @@ test module for modules in aerodynamics/components
 import os.path as pth
 
 import numpy as np
-import pytest
 from openmdao.core.group import Group
 from openmdao.core.indepvarcomp import IndepVarComp
+from pytest import approx
 
 from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.modules.aerodynamics.components.cd0 import CD0
@@ -57,11 +57,11 @@ def test_high_lift_drag():
         problem = run_system(DeltaCDHighLift(), ivc)
         return problem['delta_cd']
 
-    assert get_cd(18, 0) == pytest.approx(0.01033, abs=1e-5)
-    assert get_cd(18, 10) == pytest.approx(0.01430, abs=1e-5)
-    assert get_cd(22, 15) == pytest.approx(0.01866, abs=1e-5)
-    assert get_cd(22, 20) == pytest.approx(0.02220, abs=1e-5)
-    assert get_cd(27, 35) == pytest.approx(0.04644, abs=1e-5)
+    assert get_cd(18, 0) == approx(0.01033, abs=1e-5)
+    assert get_cd(18, 10) == approx(0.01430, abs=1e-5)
+    assert get_cd(22, 15) == approx(0.01866, abs=1e-5)
+    assert get_cd(22, 20) == approx(0.02220, abs=1e-5)
+    assert get_cd(27, 35) == approx(0.04644, abs=1e-5)
 
 
 def test_high_lift_drag():
@@ -82,17 +82,17 @@ def test_high_lift_drag():
         problem = run_system(DeltaCLHighLift(), ivc)
         return problem['delta_cl']
 
-    assert get_cl(18, 0, 0.2) == pytest.approx(0.062, abs=1e-3)
-    assert get_cl(18, 10, 0.2) == pytest.approx(0.516, abs=1e-3)
-    assert get_cl(22, 15, 0.2) == pytest.approx(0.741, abs=1e-3)
-    assert get_cl(22, 20, 0.2) == pytest.approx(0.935, abs=1e-3)
-    assert get_cl(27, 35, 0.2) == pytest.approx(1.344, abs=1e-3)
+    assert get_cl(18, 0, 0.2) == approx(0.062, abs=1e-3)
+    assert get_cl(18, 10, 0.2) == approx(0.516, abs=1e-3)
+    assert get_cl(22, 15, 0.2) == approx(0.741, abs=1e-3)
+    assert get_cl(22, 20, 0.2) == approx(0.935, abs=1e-3)
+    assert get_cl(27, 35, 0.2) == approx(1.344, abs=1e-3)
 
-    assert get_cl(18, 0, 0.4) == pytest.approx(0.062, abs=1e-3)
-    assert get_cl(18, 10, 0.4) == pytest.approx(0.547, abs=1e-3)
-    assert get_cl(22, 15, 0.4) == pytest.approx(0.787, abs=1e-3)
-    assert get_cl(22, 20, 0.4) == pytest.approx(0.994, abs=1e-3)
-    assert get_cl(27, 35, 0.4) == pytest.approx(1.431, abs=1e-3)
+    assert get_cl(18, 0, 0.4) == approx(0.062, abs=1e-3)
+    assert get_cl(18, 10, 0.4) == approx(0.547, abs=1e-3)
+    assert get_cl(22, 15, 0.4) == approx(0.787, abs=1e-3)
+    assert get_cl(22, 20, 0.4) == approx(0.994, abs=1e-3)
+    assert get_cl(27, 35, 0.4) == approx(1.431, abs=1e-3)
 
 
 def test_high_lift_aero():
@@ -121,15 +121,15 @@ def test_high_lift_aero():
             return problem['delta_cl_takeoff'], problem['delta_cd_takeoff']
 
     cl, cd = get_cl_cd(18, 10, 0.2, False)
-    assert cl == pytest.approx(0.516, abs=1e-3)
-    assert cd == pytest.approx(0.01430, abs=1e-5)
+    assert cl == approx(0.516, abs=1e-3)
+    assert cd == approx(0.01430, abs=1e-5)
 
     cl, cd = get_cl_cd(27, 35, 0.4, False)
-    assert cl == pytest.approx(1.431, abs=1e-3)
-    assert cd == pytest.approx(0.04644, abs=1e-5)
+    assert cl == approx(1.431, abs=1e-3)
+    assert cd == approx(0.04644, abs=1e-5)
 
     cl = get_cl_cd(22, 20, 0.2, True)[0]
-    assert cl == pytest.approx(0.935, abs=1e-3)
+    assert cl == approx(0.935, abs=1e-3)
 
 
 def test_oswald():
@@ -149,8 +149,8 @@ def test_oswald():
         problem = run_system(OswaldCoefficient(), ivc)
         return problem['oswald_coeff']
 
-    assert get_coeff(0.2) == pytest.approx(0.0465, abs=1e-4)
-    assert get_coeff(0.8) == pytest.approx(0.0530, abs=1e-4)
+    assert get_coeff(0.2) == approx(0.0465, abs=1e-4)
+    assert get_coeff(0.8) == approx(0.0530, abs=1e-4)
 
 
 def test_cd0():
@@ -195,11 +195,11 @@ def test_cd0():
         return problem['cd0_total_high_speed'][0]
 
     atm = Atmosphere(35000)
-    assert get_cd0(atm.pressure, atm.temperature,
-                   0.78, 0.5) == pytest.approx(0.0197474, abs=1e-6)  # CL = 0.5
+    assert get_cd0(atm.pressure, atm.temperature, 0.78, 0.5) == approx(0.0197474,
+                                                                       abs=1e-6)  # CL = 0.5
     atm = Atmosphere(0)
-    assert get_cd0(atm.pressure, atm.temperature,
-                   0.2, 0.9) == pytest.approx(0.0272726, abs=1e-6)  # CL = 0.933
+    assert get_cd0(atm.pressure, atm.temperature, 0.2, 0.9) == approx(0.0272726,
+                                                                      abs=1e-6)  # CL = 0.933
 
 
 def test_cd_compressibility():
@@ -212,8 +212,8 @@ def test_cd_compressibility():
         problem = run_system(CdCompressibility(), ivc)
         return problem['cd_comp_high_speed'][0]
 
-    assert get_cd_compressibility(0.78, 0.5) == pytest.approx(0.000451, abs=1e-6)
-    assert get_cd_compressibility(0.2, 0.9) == pytest.approx(0.0, abs=1e-10)
+    assert get_cd_compressibility(0.78, 0.5) == approx(0.000451, abs=1e-6)
+    assert get_cd_compressibility(0.2, 0.9) == approx(0.0, abs=1e-10)
 
 
 def test_cd_trim():
@@ -225,8 +225,8 @@ def test_cd_trim():
         problem = run_system(CdTrim(), ivc)
         return problem['cd_trim_high_speed'][0]
 
-    assert get_cd_trim(0.5) == pytest.approx(0.0002945, abs=1e-6)
-    assert get_cd_trim(0.9) == pytest.approx(0.0005301, abs=1e-6)
+    assert get_cd_trim(0.5) == approx(0.0002945, abs=1e-6)
+    assert get_cd_trim(0.9) == approx(0.0005301, abs=1e-6)
 
 
 def test_polar():
@@ -286,10 +286,10 @@ def test_polar():
     cd = problem['aerodynamics:ClCd'][0, :]
     cl = problem['aerodynamics:ClCd'][1, :]
 
-    assert cd[cl == 0.] == pytest.approx(0.023806, abs=1e-6)
-    assert cd[cl == 0.2] == pytest.approx(0.022265, abs=1e-6)
-    assert cd[cl == 0.42] == pytest.approx(0.028969, abs=1e-6)
-    assert cd[cl == 0.85] == pytest.approx(0.117816, abs=1e-6)
+    assert cd[cl == 0.] == approx(0.023806, abs=1e-6)
+    assert cd[cl == 0.2] == approx(0.022265, abs=1e-6)
+    assert cd[cl == 0.42] == approx(0.028969, abs=1e-6)
+    assert cd[cl == 0.85] == approx(0.117816, abs=1e-6)
 
-    assert problem['aerodynamics:Cl_opt'] == pytest.approx(0.54, abs=1e-3)
-    assert problem['aerodynamics:Cd_opt'] == pytest.approx(0.0355032, abs=1e-6)
+    assert problem['aerodynamics:Cl_opt'] == approx(0.54, abs=1e-3)
+    assert problem['aerodynamics:Cd_opt'] == approx(0.0355032, abs=1e-6)
