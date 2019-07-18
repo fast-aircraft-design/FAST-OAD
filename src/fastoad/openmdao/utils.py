@@ -127,18 +127,20 @@ def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass], logg
     mandatory_unconnected_vars = []
     optional_unconnected_vars = []
     memorize = []
-    # Using .list_inputs(), that requires the model to have run
-    for (name, attributes) in model.list_inputs(prom_name=True,
-                                                    units=True,
-                                                    out_stream=None):
-        if attributes['prom_name'] not in memorize:
-            if name in mandatory_unconnected:
+    prom2abs = model._var_allprocs_prom2abs_list['input']
+
+    for prom_name in prom2abs.keys():
+        # Pick first abs_name
+        abs_name = prom2abs[prom_name][0]
+        meta = model._var_abs2meta[abs_name]
+        if prom_name not in memorize:
+            if abs_name in mandatory_unconnected:
                 mandatory_unconnected_vars.append(
-                    Variable(attributes['prom_name'], attributes['value'], attributes.get('units', None)))
+                    Variable(prom_name, meta.get('value'), meta.get('units', None)))
             else:
                 optional_unconnected_vars.append(
-                    Variable(attributes['prom_name'], attributes['value'], attributes.get('units', None)))
-            memorize.append(attributes['prom_name'])
+                    Variable(prom_name, meta.get('value'), meta.get('units', None)))
+            memorize.append(prom_name)
 
     return mandatory_unconnected_vars, optional_unconnected_vars
 

@@ -301,7 +301,6 @@ def test_write_xml_from_indepvarcomp_system_inputs():
     problem = Problem()
     problem.model = system
     problem.setup()
-    problem.run_model()
 
     xml_read.write_inputs(problem, optional_inputs=True)
     ref_file = pth.join(data_folder, 'xml_mass_breakdown_inputs_ref.xml')

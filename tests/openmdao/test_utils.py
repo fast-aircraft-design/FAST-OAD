@@ -135,7 +135,6 @@ def test_get_variables_of_unconnected_inputs():
     problem = Problem()
     problem.model = system
     problem.setup()
-    problem.run_model()
     
     mandatory_vars_prom, optional_vars_prom = get_vars_of_unconnected_inputs(problem)
 
@@ -152,7 +151,6 @@ def test_build_ivc_of_unconnected_inputs():
     problem = Problem()
     problem.model = system
     problem.setup()
-    problem.run_model()
 
     ivc_no_opt = build_ivc_of_unconnected_inputs(problem, optional_inputs=False)
     ivc_with_opt = build_ivc_of_unconnected_inputs(problem, optional_inputs=True)

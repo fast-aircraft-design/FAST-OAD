@@ -28,8 +28,8 @@
     <MFW units="kg">nan</MFW>
     <MTOW units="kg">nan</MTOW>
     <Max_PL units="kg">nan</Max_PL>
-    <MZFW units="kg">1.0</MZFW>
-    <MLW units="kg">1.0</MLW>
+    <MZFW units="kg">nan</MZFW>
+    <MLW units="kg">nan</MLW>
     <OEW units="kg">nan</OEW>
   </weight>
   <aerodynamics>
@@ -60,7 +60,7 @@
   <tlar>
     <NPAX>nan</NPAX>
   </tlar>
-  <n1m1 units="kg">3.9375</n1m1>
+  <n1m1 units="kg">nan</n1m1>
   <n2m2 units="kg">nan</n2m2>
   <kfactors_a1>
     <K_A1>1.0</K_A1>
@@ -208,13 +208,13 @@
     <C26 units="kg">nan</C26>
     <C27 units="kg">nan</C27>
     <C3 units="kg">nan</C3>
-    <C4 units="kg">200.0</C4>
-    <C51 units="kg">100.0</C51>
+    <C4 units="kg">nan</C4>
+    <C51 units="kg">nan</C51>
     <C52 units="kg">nan</C52>
-    <C6 units="kg">45.0</C6>
+    <C6 units="kg">nan</C6>
   </weight_systems>
   <weight_furniture>
-    <D1 units="kg">0.0</D1>
+    <D1 units="kg">nan</D1>
     <D2 units="kg">nan</D2>
     <D3 units="kg">nan</D3>
     <D4 units="kg">nan</D4>
