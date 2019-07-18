@@ -22,18 +22,18 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 class ComputeAerodynamicsLowSpeed(ExplicitComponent):
 
     def setup(self):
-        self.add_input('geometry:fuselage_width_max', val=np.nan)
-        self.add_input('geometry:fuselage_height_max', val=np.nan)
-        self.add_input('geometry:wing_span', val=np.nan)
+        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
+        self.add_input('geometry:wing_span', val=np.nan, units='m')
         self.add_input('geometry:wing_aspect_ratio', val=np.nan)
-        self.add_input('geometry:wing_l4', val=np.nan)
-        self.add_input('geometry:wing_sweep_25', val=np.nan)
-        self.add_input('geometry:wing_l2', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
+        self.add_input('geometry:wing_l4', val=np.nan, units='m')
+        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:wing_l2', val=np.nan, units='m')
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing_toc_tip', val=np.nan)
 
-        self.add_output('aerodynamics:Cl_alpha_low')
-        self.add_output('aerodynamics:Cl_0_AoA')
+        self.add_output('aerodynamics:Cl_alpha_low', val=np.nan, units='1/rad')
+        self.add_output('aerodynamics:Cl_0_AoA', val=np.nan)
 
     def compute(self, inputs, outputs):
         width_max = inputs['geometry:fuselage_width_max']
@@ -58,4 +58,4 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
                             (wing_area - l2_wing * width_max) / wing_area * fact_F
 
         outputs['aerodynamics:Cl_alpha_low'] = cl_alpha_wing_low
-        outputs['aerodynamics:Cl_0_AoA'] = 0.02
+        outputs['aerodynamics:Cl_0_AoA'] = 0.02  # FIXME: hard-coded value
