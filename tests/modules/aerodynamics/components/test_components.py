@@ -26,6 +26,8 @@ from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.modules.aerodynamics.components.cd0 import CD0
 from fastoad.modules.aerodynamics.components.cd_compressibility import CdCompressibility
 from fastoad.modules.aerodynamics.components.cd_trim import CdTrim
+from fastoad.modules.aerodynamics.components.compute_low_speed_aero import \
+    ComputeAerodynamicsLowSpeed
 from fastoad.modules.aerodynamics.components.compute_polar import ComputePolar
 from fastoad.modules.aerodynamics.components.compute_reynolds import ComputeReynolds
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
@@ -293,3 +295,22 @@ def test_polar():
 
     assert problem['aerodynamics:Cl_opt'] == approx(0.54, abs=1e-3)
     assert problem['aerodynamics:Cd_opt'] == approx(0.0355032, abs=1e-6)
+
+
+def test_low_speed_aero():
+    input_list = [
+        'geometry:fuselage_width_max',
+        'geometry:fuselage_height_max',
+        'geometry:wing_span',
+        'geometry:wing_aspect_ratio',
+        'geometry:wing_l4',
+        'geometry:wing_sweep_25',
+        'geometry:wing_l2',
+        'geometry:wing_area',
+        'geometry:wing_toc_tip',
+    ]
+    ivc = get_indep_var_comp(input_list)
+
+    problem = run_system(ComputeAerodynamicsLowSpeed(), ivc)
+
+    assert problem['aerodynamics:Cl_alpha_low'] == approx(5.0, abs=1e-1)
