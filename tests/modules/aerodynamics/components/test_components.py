@@ -120,13 +120,13 @@ def test_high_lift_aero():
         else:
             return problem['delta_cl_takeoff'], problem['delta_cd_takeoff']
 
-    cl_cd = get_cl_cd(18, 10, 0.2, False)
-    assert cl_cd[0] == pytest.approx(0.516, abs=1e-3)
-    assert cl_cd[1] == pytest.approx(0.01430, abs=1e-5)
+    cl, cd = get_cl_cd(18, 10, 0.2, False)
+    assert cl == pytest.approx(0.516, abs=1e-3)
+    assert cd == pytest.approx(0.01430, abs=1e-5)
 
-    cl_cd = get_cl_cd(27, 35, 0.4, False)
-    assert cl_cd[0] == pytest.approx(1.431, abs=1e-3)
-    assert cl_cd[1] == pytest.approx(0.04644, abs=1e-5)
+    cl, cd = get_cl_cd(27, 35, 0.4, False)
+    assert cl == pytest.approx(1.431, abs=1e-3)
+    assert cd == pytest.approx(0.04644, abs=1e-5)
 
     cl = get_cl_cd(22, 20, 0.2, True)[0]
     assert cl == pytest.approx(0.935, abs=1e-3)
