@@ -40,7 +40,7 @@ class Cd0HorizontalTail(ExplicitComponent):
         else:
             self.add_input('reynolds_high_speed', val=np.nan)
             self.add_input('tlar:cruise_Mach', val=np.nan)
-            self.add_output('cd0_ht_high_speed')
+            self.add_output('cd0_ht_high_speed', val=np.nan)
 
     def compute(self, inputs, outputs):
         el_ht = inputs['geometry:ht_toc']

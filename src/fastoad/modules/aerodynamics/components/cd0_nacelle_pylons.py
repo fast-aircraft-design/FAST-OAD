@@ -33,14 +33,14 @@ class Cd0NacelleAndPylons(ExplicitComponent):
         if self.low_speed_aero:
             self.add_input('reynolds_low_speed', val=np.nan)
             self.add_input('Mach_low_speed', val=np.nan)
-            self.add_output('cd0_nacelle_low_speed')
-            self.add_output('cd0_pylon_low_speed')
+            self.add_output('cd0_nacelle_low_speed', val=np.nan)
+            self.add_output('cd0_pylon_low_speed', val=np.nan)
         else:
             self.add_input('reynolds_high_speed', val=np.nan)
             self.add_input('cl_high_speed', val=nans_array)
             self.add_input('tlar:cruise_Mach', val=np.nan)
-            self.add_output('cd0_nacelle_high_speed')
-            self.add_output('cd0_pylon_high_speed')
+            self.add_output('cd0_nacelle_high_speed', val=np.nan)
+            self.add_output('cd0_pylon_high_speed', val=np.nan)
 
         self.add_input('geometry:pylon_length', val=np.nan, units='m')
         self.add_input('geometry:nacelle_length', val=np.nan, units='m')

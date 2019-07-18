@@ -58,7 +58,7 @@ class ComputePolar(ExplicitComponent):
                 cl.append(i / 100)
                 cd.append(0.033)
             self.add_output('aerodynamics:ClCd', val=[cd, cl], shape=(2, POLAR_POINT_COUNT))
-            self.add_output('aerodynamics:L_D_max')
+            self.add_output('aerodynamics:L_D_max', val=np.nan)
             self.add_output('aerodynamics:Cl_opt', val=np.nan)
             self.add_output('aerodynamics:Cd_opt', val=np.nan)
 
