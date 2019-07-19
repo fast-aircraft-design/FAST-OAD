@@ -16,6 +16,7 @@ from openmdao.core.problem import Problem
 
 from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
+from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastoad.modules.aerodynamics.components.cd0 import CD0
 from fastoad.modules.aerodynamics.components.cd_compressibility import CdCompressibility
 from fastoad.modules.aerodynamics.components.cd_trim import CdTrim
@@ -47,6 +48,7 @@ def create_inputs():
                   ComputeReynolds(),
                   ComputePolar(),
                   ComputeAerodynamicsLowSpeed(),
+                  AerodynamicsHighSpeed(),
                   ]
 
     ceras_reader = OpenMdaoLegacy1XmlIO(CERAS_FILE_PATH)

@@ -40,7 +40,8 @@ from tests.testing_utilities import run_system
 
 def get_indep_var_comp(var_names):
     """ Reads required input data and returns an IndepVarcomp() instance"""
-    reader = OpenMdaoXmlIO(pth.join(pth.dirname(__file__), "data", "aerodynamics_inputs.xml"))
+    reader = OpenMdaoXmlIO(
+        pth.join(pth.dirname(pth.dirname(__file__)), "data", "aerodynamics_inputs.xml"))
     reader.path_separator = ':'
     ivc = reader.read(only=var_names)
     return ivc
