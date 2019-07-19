@@ -67,5 +67,10 @@
         <Offset_Cd>0.0</Offset_Cd>
         <K_winglet_Cd>1.0</K_winglet_Cd>
         <Offset_winglet_Cd>0.0</Offset_winglet_Cd>
+        <K_Cl>1.0</K_Cl>
+        <Offset_Cl>0.0</Offset_Cl>
+        <K_winglet_Cl>1.0</K_winglet_Cl>
+        <Offset_winglet_Cl>0.0</Offset_winglet_Cl>
+        <K_HL_LDG>1.0</K_HL_LDG>
     </kfactors_aero>
 </aircraft>
