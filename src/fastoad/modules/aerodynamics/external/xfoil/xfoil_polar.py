@@ -30,7 +30,7 @@ _STDOUT_FILE_NAME = 'polar_calc.log'
 _STDERR_FILE_NAME = 'polar_calc.err'
 _TMP_PROFILE_FILE_NAME = 'in'  # as short as possible to avoid problems of path length
 _TMP_RESULT_FILE_NAME = 'out'  # as short as possible to avoid problems of path length
-
+_DEFAULT_XFOIL_EXE_PATH = pth.join(pth.dirname(__file__), 'xfoil6.99', 'xfoil.exe')
 _LOGGER = logging.getLogger(__name__)
 
 _XFOIL_PATH_LIMIT = 64
@@ -45,9 +45,9 @@ class XfoilPolar(ExternalCodeComp):
     """Column names in XFOIL polar result"""
 
     def initialize(self):
-        self.options.declare('xfoil_exe_path', types=str)
+        self.options.declare('xfoil_exe_path', default=_DEFAULT_XFOIL_EXE_PATH, types=str)
         self.options.declare('profile_path',
-                             default=os.path.join(os.path.dirname(__file__), 'BACJ.txt'), types=str)
+                             default=pth.join(pth.dirname(__file__), 'BACJ.txt'), types=str)
         self.options.declare('result_folder_path', default='', types=str)
         self.options.declare('result_polar_file_name', default='polar_result.txt', types=str)
 

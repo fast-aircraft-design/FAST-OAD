@@ -22,9 +22,7 @@ import shutil
 import pytest
 
 from fastoad.modules.aerodynamics.external.xfoil import XfoilPolar
-from tests import root_folder
 
-XFOIL_EXE = pth.join(root_folder, 'XFOIL', 'xfoil.exe')
 XFOIL_RESULTS = pth.join(pth.dirname(__file__), 'results')
 INPUT_PROFILE = pth.join(pth.dirname(__file__), 'data', 'BACJ-new.txt')
 
@@ -34,7 +32,6 @@ def xfoil():
     """ Prepares the XFOIL component"""
     # Setup
     xfoil = XfoilPolar()
-    xfoil.options['xfoil_exe_path'] = XFOIL_EXE
     xfoil.options['profile_path'] = INPUT_PROFILE
     xfoil.setup()
 
