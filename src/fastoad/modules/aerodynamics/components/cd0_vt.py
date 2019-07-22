@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
-
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -28,18 +28,18 @@ class Cd0VerticalTail(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('geometry:vt_length', val=4.)
-        self.add_input('geometry:vt_toc', val=0.1)
-        self.add_input('geometry:vt_sweep_25', val=28.)
-        self.add_input('geometry:vt_wet_area', val=60.)
-        self.add_input('geometry:wing_area', val=124.)
+        self.add_input('geometry:vt_length', val=np.nan)
+        self.add_input('geometry:vt_toc', val=np.nan)
+        self.add_input('geometry:vt_sweep_25', val=np.nan)
+        self.add_input('geometry:vt_wet_area', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan)
         if self.low_speed_aero:
-            self.add_input('reynolds_low_speed', val=1e3)
-            self.add_input('Mach_low_speed', val=0.4)
+            self.add_input('reynolds_low_speed', val=np.nan)
+            self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('cd0_vt_low_speed')
         else:
-            self.add_input('reynolds_high_speed', val=1e3)
-            self.add_input('tlar:cruise_Mach', val=0.78)
+            self.add_input('reynolds_high_speed', val=np.nan)
+            self.add_input('tlar:cruise_Mach', val=np.nan)
             self.add_output('cd0_vt_high_speed')
 
     def compute(self, inputs, outputs):
@@ -68,4 +68,3 @@ class Cd0VerticalTail(ExplicitComponent):
             outputs['cd0_vt_low_speed'] = cd0_vt_hs
         else:
             outputs['cd0_vt_high_speed'] = cd0_vt_hs
-

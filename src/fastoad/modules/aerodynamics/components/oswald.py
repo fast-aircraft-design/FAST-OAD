@@ -15,17 +15,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
 from math import pi
-
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class OswaldCoefficient(ExplicitComponent):
 
     def setup(self):
-        self.add_input('geometry:wing_aspect_ratio', val=9.48)
+        self.add_input('geometry:wing_aspect_ratio', val=np.nan)
 
-        self.add_output('oswald_coeff', val=0.04)
+        self.add_output('oswald_coeff', val=np.nan)
 
     def compute(self, inputs, outputs):
         outputs['oswald_coeff'] = 1 / pi / 0.8 / inputs['geometry:wing_aspect_ratio']

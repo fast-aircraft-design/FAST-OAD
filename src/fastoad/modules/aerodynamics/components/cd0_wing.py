@@ -16,8 +16,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
-
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+
+from fastoad.modules.aerodynamics.constants import ARRAY_SIZE
 
 
 class Cd0Wing(ExplicitComponent):
@@ -27,22 +29,23 @@ class Cd0Wing(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
+        nans_array = np.full(ARRAY_SIZE, np.nan)
         if self.low_speed_aero:
-            self.add_input('reynolds_low_speed', val=1e3)
-            self.add_input('cl_low_speed', shape=(150))
-            self.add_input('Mach_low_speed', val=0.1)
-            self.add_output('cd0_wing_low_speed', shape=(150))
+            self.add_input('reynolds_low_speed', val=np.nan)
+            self.add_input('cl_low_speed', val=nans_array)
+            self.add_input('Mach_low_speed', val=np.nan)
+            self.add_output('cd0_wing_low_speed', val=nans_array)
         else:
-            self.add_input('reynolds_high_speed', val=1e3)
-            self.add_input('cl_high_speed', shape=(150))
-            self.add_input('tlar:cruise_Mach', val=0.78)
-            self.add_output('cd0_wing_high_speed', shape=(150))
+            self.add_input('reynolds_high_speed', val=np.nan)
+            self.add_input('cl_high_speed', val=nans_array)
+            self.add_input('tlar:cruise_Mach', val=np.nan)
+            self.add_output('cd0_wing_high_speed', val=nans_array)
 
-        self.add_input('geometry:wing_area', val=124.)
-        self.add_input('geometry:wing_toc_aero', val=0.128)
-        self.add_input('geometry:wing_wet_area', val=200.)
-        self.add_input('geometry:wing_l0', val=4.2)
-        self.add_input('geometry:wing_sweep_25', val=25)
+        self.add_input('geometry:wing_area', val=np.nan)
+        self.add_input('geometry:wing_toc_aero', val=np.nan)
+        self.add_input('geometry:wing_wet_area', val=np.nan)
+        self.add_input('geometry:wing_l0', val=np.nan)
+        self.add_input('geometry:wing_sweep_25', val=np.nan)
 
     def compute(self, inputs, outputs):
         wing_area = inputs['geometry:wing_area']

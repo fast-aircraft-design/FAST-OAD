@@ -17,6 +17,8 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.aerodynamics.constants import ARRAY_SIZE
+
 
 class ComputePolar(ExplicitComponent):
     def initialize(self):
@@ -25,38 +27,39 @@ class ComputePolar(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('kfactors_aero:K_Cd', val=1.)
-        self.add_input('kfactors_aero:Offset_Cd', val=0.)
-        self.add_input('kfactors_aero:K_winglet_Cd', val=1.)
-        self.add_input('kfactors_aero:Offset_winglet_Cd', val=0.)
+        self.add_input('kfactors_aero:K_Cd', val=np.nan)
+        self.add_input('kfactors_aero:Offset_Cd', val=np.nan)
+        self.add_input('kfactors_aero:K_winglet_Cd', val=np.nan)
+        self.add_input('kfactors_aero:Offset_winglet_Cd', val=np.nan)
 
+        nans_array = np.full(ARRAY_SIZE, np.nan)
         if self.low_speed_aero:
-            self.add_input('cl_low_speed', val=np.ones((150)), shape=(150))
-            self.add_input('cd0_total_low_speed', val=1e-4 * np.ones(150), shape=(150))
-            self.add_input('cd_eq_low_speed', val=1e-4 * np.ones(150), shape=(150))
-            self.add_input('cd_comp_low_speed', val=1e-4 * np.ones(150), shape=(150))
-            self.add_input('oswald_coeff', val=0.04)
+            self.add_input('cl_low_speed', val=nans_array)
+            self.add_input('cd0_total_low_speed', val=nans_array)
+            self.add_input('cd_eq_low_speed', val=nans_array)
+            self.add_input('cd_comp_low_speed', val=nans_array)
+            self.add_input('oswald_coeff', val=np.nan)
             cl = []
             cd = []
-            for i in range(150):
+            for i in range(ARRAY_SIZE):
                 cl.append(i / 100)
                 cd.append(0.033)
-            self.add_output('aerodynamics:ClCd_low_speed', val=[cd, cl], shape=(2, 150))
+            self.add_output('aerodynamics:ClCd_low_speed', val=[cd, cl], shape=(2, ARRAY_SIZE))
         else:
-            self.add_input('cl_high_speed', val=np.ones(150), shape=(150))
-            self.add_input('cd0_total_high_speed', val=1e-4 * np.ones(150), shape=(150))
-            self.add_input('cd_eq_high_speed', val=1e-4 * np.ones(150), shape=(150))
-            self.add_input('cd_comp_high_speed', val=1e-4 * np.ones(150), shape=(150))
-            self.add_input('oswald_coeff', val=0.04)
+            self.add_input('cl_high_speed', val=nans_array)
+            self.add_input('cd0_total_high_speed', val=nans_array)
+            self.add_input('cd_eq_high_speed', val=nans_array)
+            self.add_input('cd_comp_high_speed', val=nans_array)
+            self.add_input('oswald_coeff', val=np.nan)
             cl = []
             cd = []
-            for i in range(150):
+            for i in range(ARRAY_SIZE):
                 cl.append(i / 100)
                 cd.append(0.033)
-            self.add_output('aerodynamics:ClCd', val=[cd, cl], shape=(2, 150))
+            self.add_output('aerodynamics:ClCd', val=[cd, cl], shape=(2, ARRAY_SIZE))
             self.add_output('aerodynamics:L_D_max')
-            self.add_output('aerodynamics:Cl_opt', val=0.55)
-            self.add_output('aerodynamics:Cd_opt', val=0.03)
+            self.add_output('aerodynamics:Cl_opt', val=np.nan)
+            self.add_output('aerodynamics:Cd_opt', val=np.nan)
 
     def compute(self, inputs, outputs):
         coef_k = inputs['oswald_coeff']

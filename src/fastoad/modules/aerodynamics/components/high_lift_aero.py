@@ -17,6 +17,7 @@
 import os
 
 import math
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy import interpolate
 
@@ -35,22 +36,22 @@ class ComputeDeltaHighLift(ExplicitComponent):
         self.landing = self.options['landing_flag']
 
         if self.landing == True:
-            self.add_input('sizing_mission:flap_angle_landing', val=30.)
-            self.add_input('sizing_mission:slat_angle_landing', val=20.)
-            self.add_output('delta_cl_landing', val=0.)
+            self.add_input('sizing_mission:flap_angle_landing', val=np.nan)
+            self.add_input('sizing_mission:slat_angle_landing', val=np.nan)
+            self.add_output('delta_cl_landing', val=np.nan)
         else:
-            self.add_input('sizing_mission:flap_angle_to', val=18.)
-            self.add_input('sizing_mission:slat_angle_to', val=10.)
-            self.add_output('delta_cl_takeoff', val=0.5)
-            self.add_output('delta_cd_takeoff', val=0.)
+            self.add_input('sizing_mission:flap_angle_to', val=np.nan)
+            self.add_input('sizing_mission:slat_angle_to', val=np.nan)
+            self.add_output('delta_cl_takeoff', val=np.nan)
+            self.add_output('delta_cd_takeoff', val=np.nan)
 
-        self.add_input('geometry:wing_sweep_0', val=27.)
-        self.add_input('geometry:wing_sweep_100_outer', val=16.)
-        self.add_input('geometry:flap_chord_ratio', val=0.197)
-        self.add_input('geometry:flap_span_ratio', val=0.8)
-        self.add_input('geometry:slat_chord_ratio', val=0.177)
-        self.add_input('geometry:slat_span_ratio', val=0.9)
-        self.add_input('xfoil:mach', val=0.2)
+        self.add_input('geometry:wing_sweep_0', val=np.nan)
+        self.add_input('geometry:wing_sweep_100_outer', val=np.nan)
+        self.add_input('geometry:flap_chord_ratio', val=np.nan)
+        self.add_input('geometry:flap_span_ratio', val=np.nan)
+        self.add_input('geometry:slat_chord_ratio', val=np.nan)
+        self.add_input('geometry:slat_span_ratio', val=np.nan)
+        self.add_input('xfoil:mach', val=np.nan)
 
     def compute(self, inputs, outputs):
         """  Calculates the cl produced by flap and slat.

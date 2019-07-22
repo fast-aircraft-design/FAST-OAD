@@ -15,7 +15,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+
+from fastoad.modules.aerodynamics.constants import ARRAY_SIZE
 
 
 class InitializeClPolar(ExplicitComponent):
@@ -26,15 +29,16 @@ class InitializeClPolar(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('kfactors_aero:K_Cl', val=1.)
-        self.add_input('kfactors_aero:Offset_Cl', val=0.)
-        self.add_input('kfactors_aero:K_winglet_Cl', val=1.)
-        self.add_input('kfactors_aero:Offset_winglet_Cl', val=0.)
+        self.add_input('kfactors_aero:K_Cl', val=np.nan)
+        self.add_input('kfactors_aero:Offset_Cl', val=np.nan)
+        self.add_input('kfactors_aero:K_winglet_Cl', val=np.nan)
+        self.add_input('kfactors_aero:Offset_winglet_Cl', val=np.nan)
 
+        nans_array = np.full(ARRAY_SIZE, np.nan)
         if self.low_speed_aero:
-            self.add_output('cl_low_speed', shape=(150))
+            self.add_output('cl_low_speed', val=nans_array)
         else:
-            self.add_output('cl_high_speed', shape=(150))
+            self.add_output('cl_high_speed', val=nans_array)
 
     def compute(self, inputs, outputs):
         k_cl = inputs['kfactors_aero:K_Cl']
@@ -43,7 +47,7 @@ class InitializeClPolar(ExplicitComponent):
         offset_winglet_cl = inputs['kfactors_aero:Offset_winglet_Cl']
 
         cl = []
-        for i in range(150):
+        for i in range(ARRAY_SIZE):
             cl_iteration = i / 100.
             cl.append(cl_iteration * k_cl * k_winglet_cl + offset_cl + offset_winglet_cl)
 
@@ -51,4 +55,3 @@ class InitializeClPolar(ExplicitComponent):
             outputs['cl_low_speed'] = cl
         else:
             outputs['cl_high_speed'] = cl
-

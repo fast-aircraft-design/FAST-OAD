@@ -16,6 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.utils.physics import Atmosphere
@@ -30,11 +31,11 @@ class ComputeReynolds(ExplicitComponent):
         self.low_speed_aero = self.options['low_speed_aero']
 
         if self.low_speed_aero:
-            self.add_input('Mach_low_speed', val=0.4)
+            self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('reynolds_low_speed')
         else:
-            self.add_input('tlar:cruise_Mach', val=0.78)
-            self.add_input('sizing_mission:cruise_altitude', val=35000.)
+            self.add_input('tlar:cruise_Mach', val=np.nan)
+            self.add_input('sizing_mission:cruise_altitude', val=np.nan)
             self.add_output('reynolds_high_speed')
 
     def compute(self, inputs, outputs):

@@ -15,6 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.utils.physics import Atmosphere
@@ -23,10 +24,10 @@ from fastoad.utils.physics import Atmosphere
 class Prepare2dRun(ExplicitComponent):
 
     def setup(self):
-        self.add_input('geometry:wing_l0', val=4.2)
-        self.add_input('tlar:v_approach', val=132.)
-        self.add_output('xfoil:reynolds', val=1e7)
-        self.add_output('xfoil:mach', val=0.2)
+        self.add_input('geometry:wing_l0', val=np.nan)
+        self.add_input('tlar:v_approach', val=np.nan)
+        self.add_output('xfoil:reynolds', val=np.nan)
+        self.add_output('xfoil:mach', val=np.nan)
 
     def compute(self, inputs, outputs):
         l0_wing = inputs['geometry:wing_l0']

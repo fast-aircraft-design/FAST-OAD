@@ -16,8 +16,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
-
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+
+from fastoad.modules.aerodynamics.constants import ARRAY_SIZE
 
 
 class Cd0NacelleAndPylons(ExplicitComponent):
@@ -27,25 +29,26 @@ class Cd0NacelleAndPylons(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
+        nans_array = np.full(ARRAY_SIZE, np.nan)
         if self.low_speed_aero:
-            self.add_input('reynolds_low_speed', val=1e3)
-            self.add_input('Mach_low_speed', val=0.4)
+            self.add_input('reynolds_low_speed', val=np.nan)
+            self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('cd0_nacelle_low_speed')
             self.add_output('cd0_pylon_low_speed')
         else:
-            self.add_input('reynolds_high_speed', val=1e3)
-            self.add_input('cl_high_speed', shape=(150))
-            self.add_input('tlar:cruise_Mach', val=0.78)
+            self.add_input('reynolds_high_speed', val=np.nan)
+            self.add_input('cl_high_speed', val=nans_array)
+            self.add_input('tlar:cruise_Mach', val=np.nan)
             self.add_output('cd0_nacelle_high_speed')
             self.add_output('cd0_pylon_high_speed')
 
-        self.add_input('geometry:pylon_length', val=6.)
-        self.add_input('geometry:nacelle_length', val=4.)
-        self.add_input('geometry:pylon_wet_area', val=50.)
-        self.add_input('geometry:nacelle_wet_area', val=50.)
-        self.add_input('geometry:engine_number', val=2.)
-        self.add_input('geometry:fan_length', val=2.5)
-        self.add_input('geometry:wing_area', val=124.)
+        self.add_input('geometry:pylon_length', val=np.nan)
+        self.add_input('geometry:nacelle_length', val=np.nan)
+        self.add_input('geometry:pylon_wet_area', val=np.nan)
+        self.add_input('geometry:nacelle_wet_area', val=np.nan)
+        self.add_input('geometry:engine_number', val=np.nan)
+        self.add_input('geometry:fan_length', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan)
 
     def compute(self, inputs, outputs):
         pylon_length = inputs['geometry:pylon_length']
@@ -63,7 +66,7 @@ class Cd0NacelleAndPylons(ExplicitComponent):
             re_hs = inputs['reynolds_high_speed']
 
         cf_pylon_hs = 0.455 / (
-                    (1 + 0.126 * mach ** 2) * (math.log10(re_hs * pylon_length)) ** (2.58))
+                (1 + 0.126 * mach ** 2) * (math.log10(re_hs * pylon_length)) ** (2.58))
         cf_nac_hs = 0.455 / ((1 + 0.126 * mach ** 2) * (math.log10(re_hs * nac_length)) ** (2.58))
 
         # cd0 Pylon
@@ -83,5 +86,3 @@ class Cd0NacelleAndPylons(ExplicitComponent):
         else:
             outputs['cd0_pylon_high_speed'] = cd0_pylon_hs
             outputs['cd0_nacelle_high_speed'] = cd0_nac_hs
-
-
