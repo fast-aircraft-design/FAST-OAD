@@ -61,6 +61,7 @@
   </sizing_mission>
   <tlar>
     <cruise_Mach>0.78</cruise_Mach>
+    <v_approach units="kt">132.0</v_approach>
   </tlar>
     <kfactors_aero>
         <K_Cd>1.0</K_Cd>

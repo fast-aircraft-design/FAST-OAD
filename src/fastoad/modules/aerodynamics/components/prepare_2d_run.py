@@ -24,8 +24,8 @@ from fastoad.utils.physics import Atmosphere
 class Prepare2dRun(ExplicitComponent):
 
     def setup(self):
-        self.add_input('geometry:wing_l0', val=np.nan)
-        self.add_input('tlar:v_approach', val=np.nan)
+        self.add_input('geometry:wing_l0', val=np.nan, units='m')
+        self.add_input('tlar:v_approach', val=np.nan, units='kt')
         self.add_output('xfoil:reynolds', val=np.nan)
         self.add_output('xfoil:mach', val=np.nan)
 

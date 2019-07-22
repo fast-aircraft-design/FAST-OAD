@@ -56,7 +56,7 @@ class XfoilPolar(ExternalCodeComp):
 
         self.add_input('xfoil:reynolds', val=np.nan)
         self.add_input('xfoil:mach', val=np.nan)
-        self.add_input('geometry:wing_sweep_25', val=np.nan)
+        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
 
         self.add_output('aerodynamics:Cl_max_2D')
         self.add_output('aerodynamics:Cl_max_clean')
