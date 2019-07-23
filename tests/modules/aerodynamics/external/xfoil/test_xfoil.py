@@ -20,44 +20,35 @@ import os.path as pth
 import shutil
 
 import pytest
+from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.modules.aerodynamics.external.xfoil import XfoilPolar
+from tests.testing_utilities import run_system
 
 XFOIL_RESULTS = pth.join(pth.dirname(__file__), 'results')
 INPUT_PROFILE = pth.join(pth.dirname(__file__), 'data', 'BACJ-new.txt')
 
 
-@pytest.fixture(scope='module')
-def xfoil():
-    """ Prepares the XFOIL component"""
-    # Setup
-    xfoil = XfoilPolar()
-    xfoil.options['profile_path'] = INPUT_PROFILE
-    xfoil.setup()
-
-    return xfoil
-
-
-def test_compute(xfoil):
+def test_compute():
     """ Tests a simple XFOIL run"""
 
     if pth.exists(XFOIL_RESULTS):
         shutil.rmtree(XFOIL_RESULTS)
 
-    inputs = {'xfoil:reynolds': 18000000,
-              'xfoil:mach': 0.20,
-              'geometry:wing_sweep_25': 25.,
-              }
-    outputs = {}
-    xfoil.compute(inputs, outputs)
-    assert outputs['aerodynamics:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
-    assert outputs['aerodynamics:Cl_max_clean'] == pytest.approx(1.5831, 1e-4)
+    ivc = IndepVarComp()
+    ivc.add_output('xfoil:reynolds', 18000000)
+    ivc.add_output('xfoil:mach', 0.20)
+    ivc.add_output('geometry:wing_sweep_25', 25.)
+
+    xfoil_comp = XfoilPolar(profile_path=INPUT_PROFILE)
+    problem = run_system(xfoil_comp, ivc)
+    assert problem['aerodynamics:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
+    assert problem['aerodynamics:Cl_max_clean'] == pytest.approx(1.5831, 1e-4)
     assert not pth.exists(XFOIL_RESULTS)
 
-    xfoil.options['result_folder_path'] = XFOIL_RESULTS
-    outputs = {}
-    xfoil.compute(inputs, outputs)
-    assert outputs['aerodynamics:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
-    assert outputs['aerodynamics:Cl_max_clean'] == pytest.approx(1.5831, 1e-4)
+    xfoil_comp = XfoilPolar(profile_path=INPUT_PROFILE, result_folder_path=XFOIL_RESULTS)
+    problem = run_system(xfoil_comp, ivc)
+    assert problem['aerodynamics:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
+    assert problem['aerodynamics:Cl_max_clean'] == pytest.approx(1.5831, 1e-4)
     assert pth.exists(XFOIL_RESULTS)
     assert pth.exists(pth.join(XFOIL_RESULTS, 'polar_result.txt'))

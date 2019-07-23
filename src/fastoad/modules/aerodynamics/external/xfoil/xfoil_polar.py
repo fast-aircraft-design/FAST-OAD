@@ -58,11 +58,9 @@ class XfoilPolar(ExternalCodeComp):
         self.add_input('xfoil:mach', val=np.nan)
         self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
 
-        self.add_output('aerodynamics:Cl_max_2D')
-        self.add_output('aerodynamics:Cl_max_clean')
+        self.add_output('aerodynamics:Cl_max_2D', val=np.nan)
+        self.add_output('aerodynamics:Cl_max_clean', val=np.nan)
 
-        for name in self._xfoil_output_names:
-            self.add_output('xfoil:%s' % name)
 
     def compute(self, inputs, outputs):
 
@@ -132,8 +130,6 @@ class XfoilPolar(ExternalCodeComp):
         # Post-processing
         result_array = self._read_polar(tmp_result_file_path)
         if result_array is not None:
-            for name in self._xfoil_output_names:
-                outputs['xfoil:%s' % name] = result_array[name]
             cl_max_2d = self._get_max_cl(result_array['alpha'], result_array['CL'])
         else:
             cl_max_2d = 1.9
