@@ -155,14 +155,14 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         root = etree.Element(ROOT_TAG)
 
         if only is None:
-            usedVariables = variables
+            used_variables = variables
         else:
-            usedVariables = [variable for variable in variables if variable.name in only]
+            used_variables = [variable for variable in variables if variable.name in only]
 
         if ignore is not None:
-            usedVariables = [variable for variable in usedVariables if variable.name not in ignore]
+            used_variables = [variable for variable in used_variables if variable.name not in ignore]
 
-        for variable in usedVariables:
+        for variable in used_variables:
 
             xpath = self._translator.get_xpath(variable.name)
             element = self._create_xpath(root, xpath)
