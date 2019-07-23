@@ -1,5 +1,5 @@
 """
-Defines how OpenMDAO Variables are serialized to XML
+Defines how OpenMDAO variables are serialized to XML
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -30,9 +30,9 @@ from fastoad.openmdao.utils import build_ivc_of_unconnected_inputs
 
 class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
     """
-    Basic serializer for OpenMDAO Variables
+    Basic serializer for OpenMDAO variables
 
-    Assuming self.path_separator is defined as ``:``, an OpenMDAO Variable named like ``foo:bar``
+    Assuming self.path_separator is defined as ``:``, an OpenMDAO variable named like ``foo:bar``
     with units ``m/s`` will be read and written as:
 
     .. code:: xml
@@ -50,7 +50,7 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
         self.path_separator = '.'  # Not allowed for writing !
         self.use_promoted_names = False
 
-    This way an OpenMDAO Variable like ``componentA.subcomponent2.my_var`` will be written as:
+    This way an OpenMDAO variable like ``componentA.subcomponent2.my_var`` will be written as:
 
     .. code:: xml
 
@@ -68,7 +68,7 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
 
         self.path_separator = '/'
         """
-        The separator that will be used in OpenMDAO Variable names to match XML path.
+        The separator that will be used in OpenMDAO variable names to match XML path.
         Warning: The dot "." can be used when writing, but not when reading.
         """
 
@@ -76,7 +76,7 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == '.':
             # TODO: in this case, maybe try to dispatch the inputs to each component...
-            raise ValueError('Cannot use dot "." in OpenMDAO Variables.')
+            raise ValueError('Cannot use dot "." in OpenMDAO variables.')
 
         outputs = self._read_xml()
 
