@@ -24,6 +24,10 @@ class OswaldCoefficient(ExplicitComponent):
     # TODO: Document equations. Cite sources (M. Nita and D. Scholz)
     # FIXME: output the real Oswald coefficient (coef_e instead of coef_k)
     """ Computes Oswald efficiency number """
+
+    def initialize(self):
+        self.options.declare('low_speed_aero', default=False, types=bool)
+
     def setup(self):
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing_span', val=np.nan, units='m')
@@ -32,9 +36,14 @@ class OswaldCoefficient(ExplicitComponent):
         self.add_input('geometry:wing_l2', val=np.nan, units='m')
         self.add_input('geometry:wing_l4', val=np.nan, units='m')
         self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
-        self.add_input('tlar:cruise_Mach', val=np.nan)
 
-        self.add_output('oswald_coeff', val=np.nan)
+        if self.options['low_speed_aero']:
+            self.add_input('Mach_low_speed', val=np.nan)
+            self.add_output('oswald_coeff_low_speed', val=np.nan)
+        else:
+            self.add_input('tlar:cruise_Mach', val=np.nan)
+            self.add_output('oswald_coeff_high_speed', val=np.nan)
+
 
     def compute(self, inputs, outputs):
         wing_area = inputs['geometry:wing_area']
@@ -44,7 +53,10 @@ class OswaldCoefficient(ExplicitComponent):
         l2_wing = inputs['geometry:wing_l2']
         l4_wing = inputs['geometry:wing_l4']
         sweep_25 = inputs['geometry:wing_sweep_25']
-        mach = inputs['tlar:cruise_Mach']
+        if self.options['low_speed_aero']:
+            mach = inputs['Mach_low_speed']
+        else:
+            mach = inputs['tlar:cruise_Mach']
 
         aspect_ratio = span ** 2 / wing_area
         df = math.sqrt(width_fus * height_fus)
@@ -65,4 +77,7 @@ class OswaldCoefficient(ExplicitComponent):
         coef_e = e_theory * ke_f * ke_m * 0.9
         coef_k = 1. / (math.pi * aspect_ratio * coef_e)
 
-        outputs['oswald_coeff'] = coef_k
+        if self.options['low_speed_aero']:
+            outputs['oswald_coeff_low_speed'] = coef_k
+        else:
+            outputs['oswald_coeff_high_speed'] = coef_k

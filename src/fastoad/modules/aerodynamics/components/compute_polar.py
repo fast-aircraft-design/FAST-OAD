@@ -38,7 +38,7 @@ class ComputePolar(ExplicitComponent):
             self.add_input('cd0_total_low_speed', val=nans_array)
             self.add_input('cd_trim_low_speed', val=nans_array)
             self.add_input('cd_comp_low_speed', val=nans_array)
-            self.add_input('oswald_coeff', val=np.nan)
+            self.add_input('oswald_coeff_low_speed', val=np.nan)
             cl = []
             cd = []
             for i in range(POLAR_POINT_COUNT):
@@ -51,7 +51,7 @@ class ComputePolar(ExplicitComponent):
             self.add_input('cd0_total_high_speed', val=nans_array)
             self.add_input('cd_trim_high_speed', val=nans_array)
             self.add_input('cd_comp_high_speed', val=nans_array)
-            self.add_input('oswald_coeff', val=np.nan)
+            self.add_input('oswald_coeff_high_speed', val=np.nan)
             cl = []
             cd = []
             for i in range(POLAR_POINT_COUNT):
@@ -63,7 +63,6 @@ class ComputePolar(ExplicitComponent):
             self.add_output('aerodynamics:Cd_opt', val=np.nan)
 
     def compute(self, inputs, outputs):
-        coef_k = inputs['oswald_coeff']
         k_cd = inputs['kfactors_aero:K_Cd']
         offset_cd = inputs['kfactors_aero:Offset_Cd']
         k_winglet_cd = inputs['kfactors_aero:K_winglet_Cd']
@@ -73,11 +72,13 @@ class ComputePolar(ExplicitComponent):
             cd0 = inputs['cd0_total_low_speed']
             cd_trim = inputs['cd_trim_low_speed']
             cd_c = inputs['cd_comp_low_speed']
+            coef_k = inputs['oswald_coeff_low_speed']
         else:
             cl = inputs['cl_high_speed']
             cd0 = inputs['cd0_total_high_speed']
             cd_trim = inputs['cd_trim_high_speed']
             cd_c = inputs['cd_comp_high_speed']
+            coef_k = inputs['oswald_coeff_high_speed']
 
         cd = []
         for i, cl_val in enumerate(cl):

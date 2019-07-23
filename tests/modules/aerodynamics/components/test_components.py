@@ -150,7 +150,7 @@ def test_oswald():
         ivc = get_indep_var_comp(input_list)
         ivc.add_output('tlar:cruise_Mach', mach)
         problem = run_system(OswaldCoefficient(), ivc)
-        return problem['oswald_coeff']
+        return problem['oswald_coeff_high_speed']
 
     assert get_coeff(0.2) == approx(0.0465, abs=1e-4)
     assert get_coeff(0.8) == approx(0.0530, abs=1e-4)

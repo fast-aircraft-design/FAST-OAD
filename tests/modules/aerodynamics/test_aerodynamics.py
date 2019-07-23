@@ -23,7 +23,6 @@ from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.modules.aerodynamics.aerodynamics_2d import Aerodynamics2d
 from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
-from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
 from tests.testing_utilities import run_system
 
 
@@ -90,7 +89,6 @@ def test_aerodynamics_high_speed():
 
     ivc = get_indep_var_comp(input_list)
     system = Group()
-    system.add_subsystem('compute_oswald_coeff', OswaldCoefficient(), promotes=['*'])
     system.add_subsystem('aero_2d', Aerodynamics2d(), promotes=['*'])
     system.add_subsystem('delta_cl_landing', ComputeDeltaHighLift(landing_flag=True),
                          promotes=['*'])

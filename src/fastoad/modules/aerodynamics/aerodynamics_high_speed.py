@@ -28,12 +28,14 @@ from fastoad.modules.aerodynamics.components.compute_max_cl_landing import Compu
 from fastoad.modules.aerodynamics.components.compute_polar import ComputePolar
 from fastoad.modules.aerodynamics.components.compute_reynolds import ComputeReynolds
 from fastoad.modules.aerodynamics.components.initialize_cl import InitializeClPolar
+from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
 
 
 class AerodynamicsHighSpeed(Group):
 
     def setup(self):
         #        self.add_subsystem('compute_oswald_coeff', OswaldCoefficient(), promotes=['*'])
+        self.add_subsystem('compute_oswald_coeff', OswaldCoefficient(), promotes=['*'])
         self.add_subsystem('comp_re', ComputeReynolds(), promotes=['*'])
         self.add_subsystem('initialize_cl', InitializeClPolar(), promotes=['*'])
         self.add_subsystem('cd0_wing', Cd0Wing(), promotes=['*'])
