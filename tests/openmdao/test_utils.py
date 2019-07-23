@@ -22,7 +22,6 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
 
 from fastoad.exceptions import NoSetupError
-from fastoad.openmdao.utils import get_unconnected_inputs
 from tests.sellar_example.disc1 import Disc1
 # Logger for this module
 from tests.sellar_example.disc2 import Disc2
@@ -34,7 +33,8 @@ import numpy as np
 
 from fastoad.openmdao.types import Variable
 
-from fastoad.openmdao.utils import get_vars_of_unconnected_inputs, build_ivc_of_unconnected_inputs
+from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
+    get_vars_of_unconnected_inputs, build_ivc_of_unconnected_inputs
 
 _LOGGER = logging.getLogger(__name__)
 

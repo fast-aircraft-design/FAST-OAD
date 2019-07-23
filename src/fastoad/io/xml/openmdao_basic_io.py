@@ -26,7 +26,7 @@ from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.utils.strings import get_float_list_from_string
 from .openmdao_custom_io import OpenMdaoCustomXmlIO, Variable
-from fastoad.openmdao.utils import build_ivc_of_unconnected_inputs
+from fastoad.openmdao.connections_utils import build_ivc_of_unconnected_inputs
 
 class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
     """

@@ -1,5 +1,5 @@
 """
-Checks of OpenMDAO problems
+Utility functions for OpenMDAO classes/instances
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
