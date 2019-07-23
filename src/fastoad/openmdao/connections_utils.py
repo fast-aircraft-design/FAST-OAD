@@ -106,7 +106,7 @@ def _get_value_from_absolute_name(system: SystemSubclass, name):
 
 def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass], logger: Logger = None) -> List[Variable]:
     """
-    This function returns an list of Variable containing all the relative
+    This function returns a list of Variable containing all the relative
     information of unconnected inputs of a Problem or System.
 
     :param problem: OpenMDAO Problem or System instance to inspect
