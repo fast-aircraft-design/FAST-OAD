@@ -16,6 +16,7 @@ Computation of lift and drag increment due to high-lift devices
 
 import warnings
 
+import numpy as np
 from openmdao.components.add_subtract_comp import AddSubtractComp
 from openmdao.core.group import Group
 
@@ -38,11 +39,15 @@ class ComputeDeltaHighLift(Group):
         link_inputs = AddSubtractComp()
         link_inputs.add_equation('mach', 'xfoil:mach')
         if self.options['landing_flag']:
-            link_inputs.add_equation('slat_angle', 'sizing_mission:slat_angle_landing', units='deg')
-            link_inputs.add_equation('flap_angle', 'sizing_mission:flap_angle_landing', units='deg')
+            link_inputs.add_equation('slat_angle', 'sizing_mission:slat_angle_landing', val=np.nan,
+                                     units='deg')
+            link_inputs.add_equation('flap_angle', 'sizing_mission:flap_angle_landing', val=np.nan,
+                                     units='deg')
         else:
-            link_inputs.add_equation('slat_angle', 'sizing_mission:slat_angle_to', units='deg')
-            link_inputs.add_equation('flap_angle', 'sizing_mission:flap_angle_to', units='deg')
+            link_inputs.add_equation('slat_angle', 'sizing_mission:slat_angle_to', val=np.nan,
+                                     units='deg')
+            link_inputs.add_equation('flap_angle', 'sizing_mission:flap_angle_to', val=np.nan,
+                                     units='deg')
 
         self.add_subsystem('link_inputs', link_inputs, promotes=['*'])
 
