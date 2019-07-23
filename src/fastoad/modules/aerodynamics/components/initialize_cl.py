@@ -46,10 +46,8 @@ class InitializeClPolar(ExplicitComponent):
         k_winglet_cl = inputs['kfactors_aero:K_winglet_Cl']
         offset_winglet_cl = inputs['kfactors_aero:Offset_winglet_Cl']
 
-        cl = []
-        for i in range(POLAR_POINT_COUNT):
-            cl_iteration = i / 100.
-            cl.append(cl_iteration * k_cl * k_winglet_cl + offset_cl + offset_winglet_cl)
+        # FIXME: initialization of CL range should be done more directly, without these coefficients
+        cl = np.arange(0., 1.5, 0.01) * k_cl * k_winglet_cl + offset_cl + offset_winglet_cl
 
         if self.low_speed_aero:
             outputs['cl_low_speed'] = cl

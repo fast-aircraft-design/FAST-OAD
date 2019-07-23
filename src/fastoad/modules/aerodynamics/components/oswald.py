@@ -21,7 +21,8 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class OswaldCoefficient(ExplicitComponent):
-    # TODO: Document equations. Cite sources
+    # TODO: Document equations. Cite sources (M. Nita and D. Scholz)
+    # FIXME: output the real Oswald coefficient (coef_e instead of coef_k)
     """ Computes Oswald efficiency number """
     def setup(self):
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
