@@ -142,10 +142,10 @@ def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass],
         if prom_name not in memorize:
             if abs_name in mandatory_unconnected:
                 mandatory_unconnected_vars.append(
-                    Variable(prom_name, meta.get('value'), meta.get('units', None)))
+                    Variable(prom_name, meta['value'], meta['units']))
             else:
                 optional_unconnected_vars.append(
-                    Variable(prom_name, meta.get('value'), meta.get('units', None)))
+                    Variable(prom_name, meta['value'], meta['units']))
             memorize.append(prom_name)
 
     return mandatory_unconnected_vars, optional_unconnected_vars
