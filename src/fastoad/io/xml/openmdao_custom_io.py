@@ -28,13 +28,13 @@ from openmdao.vectors.vector import Vector
 
 from fastoad.io.serialize import AbstractOpenMDAOVariableIO, SystemSubclass
 from fastoad.io.xml.translator import VarXpathTranslator
+from fastoad.openmdao.types import Variable
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
 from .xpath_reader import XPathReader
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
-from fastoad.openmdao.types import Variable
 
 class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
     """
@@ -160,7 +160,8 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
             used_variables = [variable for variable in variables if variable.name in only]
 
         if ignore is not None:
-            used_variables = [variable for variable in used_variables if variable.name not in ignore]
+            used_variables = [variable for variable in used_variables
+                if variable.name not in ignore]
 
         for variable in used_variables:
 

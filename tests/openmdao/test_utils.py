@@ -20,8 +20,13 @@ import pytest
 from openmdao.core.group import Group
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
+import numpy as np
 
 from fastoad.exceptions import NoSetupError
+from fastoad.openmdao.types import Variable
+from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
+    get_vars_of_unconnected_inputs, build_ivc_of_unconnected_inputs
+
 from tests.sellar_example.disc1 import Disc1
 # Logger for this module
 from tests.sellar_example.disc2 import Disc2
@@ -29,12 +34,7 @@ from tests.sellar_example.functions import Functions
 from tests.sellar_example.sellar import Sellar
 
 from tests.io.xml.data.mass_breakdown.mass_breakdown import MassBreakdown
-import numpy as np
 
-from fastoad.openmdao.types import Variable
-
-from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
-    get_vars_of_unconnected_inputs, build_ivc_of_unconnected_inputs
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -135,7 +135,7 @@ def test_get_variables_of_unconnected_inputs():
     problem = Problem()
     problem.model = system
     problem.setup()
-    
+
     mandatory_vars_prom, optional_vars_prom = get_vars_of_unconnected_inputs(problem)
 
     assert (str(known_optional_var_prom) in [str(i) for i in optional_vars_prom])
@@ -154,7 +154,7 @@ def test_build_ivc_of_unconnected_inputs():
 
     ivc_no_opt = build_ivc_of_unconnected_inputs(problem, optional_inputs=False)
     ivc_with_opt = build_ivc_of_unconnected_inputs(problem, optional_inputs=True)
-    
+
     outputs_no_opt = []
     for (name, value, attributes) in ivc_no_opt._indep_external:  # pylint: disable=protected-access
         outputs_no_opt.append(Variable(name, value, attributes['units']))

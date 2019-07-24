@@ -15,7 +15,7 @@ Utility functions for OpenMDAO classes/instances
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from logging import Logger
-from typing import TypeVar, Tuple, List, Union
+from typing import Tuple, List, Union
 
 import numpy as np
 from openmdao.core.problem import Problem
@@ -28,7 +28,8 @@ from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.types import Variable, SystemSubclass
 
 
-def get_unconnected_inputs(problem: Union[Problem, SystemSubclass], logger: Logger = None) -> Tuple[List[str], List[str]]:
+def get_unconnected_inputs(problem: Union[Problem, SystemSubclass],
+                           logger: Logger = None) -> Tuple[List[str], List[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
     Assumes problem.setup() has been run.
@@ -44,7 +45,6 @@ def get_unconnected_inputs(problem: Union[Problem, SystemSubclass], logger: Logg
     :return: tuple(list of missing mandatory inputs, list of missing optional inputs)
     """
 
-    # pylint: disable=protected-access #  needed for OpenMDAO introspection
     if isinstance(problem, Problem):
         model = problem.model
     elif isinstance(problem, System):
@@ -52,9 +52,11 @@ def get_unconnected_inputs(problem: Union[Problem, SystemSubclass], logger: Logg
     else:
         raise TypeError('Unknown class for retrieving inputs.')
 
+    # pylint: disable=protected-access #  needed for OpenMDAO introspection
     if not model._var_allprocs_prom2abs_list:
         raise NoSetupError('Analysis of unconnected inputs cannot be done without prior setup.')
 
+    # pylint: disable=protected-access #  needed for OpenMDAO introspection
     prom2abs: dict = model._var_allprocs_prom2abs_list['input']
     connexions: dict = model._conn_global_abs_in2out
 
@@ -104,7 +106,9 @@ def _get_value_from_absolute_name(system: SystemSubclass, name):
 
     return None
 
-def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass], logger: Logger = None) -> List[Variable]:
+
+def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass],
+                                   ) -> List[Variable]:
     """
     This function returns a list of Variable containing all the relative
     information of unconnected inputs of a Problem or System.
@@ -121,12 +125,14 @@ def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass], logg
         model = problem
     else:
         raise TypeError('Unknown class for retrieving inputs.')
-    
+
     mandatory_unconnected, optional_unconnected = get_unconnected_inputs(model)
 
     mandatory_unconnected_vars = []
     optional_unconnected_vars = []
     memorize = []
+
+    # pylint: disable=protected-access #  needed for OpenMDAO introspection
     prom2abs = model._var_allprocs_prom2abs_list['input']
 
     for prom_name in prom2abs.keys():
@@ -145,17 +151,17 @@ def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass], logg
     return mandatory_unconnected_vars, optional_unconnected_vars
 
 
-def build_ivc_of_unconnected_inputs(problem: Problem, optional_inputs: bool = False, logger: Logger = None) -> IndepVarComp:
+def build_ivc_of_unconnected_inputs(problem: Problem,
+                                    optional_inputs: bool = False) -> IndepVarComp:
     """
     This function returns an OpenMDAO IndepVarComp Component containing
     all the unconnected inputs of a Problem or System.
 
-    optional_inputs is a Boolean to specify if the IndepVarComp shall contain also the 
+    optional_inputs is a Boolean to specify if the IndepVarComp shall contain also the
     optional inputs.
 
     :param problem: OpenMDAO Problem instance to inspect
     :param optional_inputs: Boolean for optional inputs
-    :param logger: optional logger instance
     :return: IndepVarComp Component
     """
 
@@ -166,9 +172,9 @@ def build_ivc_of_unconnected_inputs(problem: Problem, optional_inputs: bool = Fa
         model = problem
     else:
         raise TypeError('Unknown class for retrieving inputs.')
-        
+
     mandatory_unconnected_vars, optional_unconnected_vars \
-        = get_vars_of_unconnected_inputs(problem)
+        = get_vars_of_unconnected_inputs(model)
 
     ivc = IndepVarComp()
 
