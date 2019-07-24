@@ -154,7 +154,7 @@ def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass],
 def build_ivc_of_unconnected_inputs(problem: Problem,
                                     optional_inputs: bool = False) -> IndepVarComp:
     """
-    This function returns an OpenMDAO IndepVarComp Component containing
+    This function returns an OpenMDAO IndepVarComp instance containing
     all the unconnected inputs of a Problem or System.
 
     optional_inputs is a Boolean to specify if the IndepVarComp shall contain also the
