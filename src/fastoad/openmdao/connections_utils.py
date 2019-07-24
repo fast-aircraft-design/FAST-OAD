@@ -130,25 +130,22 @@ def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass],
 
     mandatory_unconnected_vars = []
     optional_unconnected_vars = []
-    memorize = []
 
     # pylint: disable=protected-access #  needed for OpenMDAO introspection
     prom2abs = model._var_allprocs_prom2abs_list['input']
     
-    # TODO: This should  be optimized as the list of prom variables is used in 
+    # TODO: This should  be optimized as the list of prom names is used in 
     # get_unconnected_inputs
     for prom_name in prom2abs.keys():
         # Pick first abs_name
         abs_name = prom2abs[prom_name][0]
         meta = model._var_abs2meta[abs_name]
-        if prom_name not in memorize:
-            if abs_name in mandatory_unconnected:
-                mandatory_unconnected_vars.append(
-                    Variable(prom_name, meta['value'], meta['units']))
-            else:
-                optional_unconnected_vars.append(
-                    Variable(prom_name, meta['value'], meta['units']))
-            memorize.append(prom_name)
+        if abs_name in mandatory_unconnected:
+            mandatory_unconnected_vars.append(
+                Variable(prom_name, meta['value'], meta['units']))
+        else:
+            optional_unconnected_vars.append(
+                Variable(prom_name, meta['value'], meta['units']))
 
     return mandatory_unconnected_vars, optional_unconnected_vars
 
