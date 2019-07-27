@@ -29,13 +29,13 @@ class ComputeVTSweep(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:vt_span', val=np.nan)
-        self.add_input('geometry:vt_root_chord', val=np.nan)
-        self.add_input('geometry:vt_tip_chord', val=np.nan)
-        self.add_input('geometry:vt_sweep_25', val=np.nan)
+        self.add_input('geometry:vt_span', val=np.nan, units='m')
+        self.add_input('geometry:vt_root_chord', val=np.nan, units='m')
+        self.add_input('geometry:vt_tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:vt_sweep_25', val=np.nan, units='deg')
         
-        self.add_output('geometry:vt_sweep_0')
-        self.add_output('geometry:vt_sweep_100')
+        self.add_output('geometry:vt_sweep_0', units='deg')
+        self.add_output('geometry:vt_sweep_100', units='deg')
         
         self.declare_partials('geometry:vt_sweep_0', '*', method=deriv_method)
         self.declare_partials('geometry:vt_sweep_100', '*', method=deriv_method)

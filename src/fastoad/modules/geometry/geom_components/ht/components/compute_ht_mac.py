@@ -29,14 +29,14 @@ class ComputeHTMAC(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:ht_root_chord', val=np.nan)
-        self.add_input('geometry:ht_tip_chord', val=np.nan)
-        self.add_input('geometry:ht_sweep_25', val=np.nan)
-        self.add_input('geometry:ht_span', val=np.nan)
+        self.add_input('geometry:ht_root_chord', val=np.nan, units='m')
+        self.add_input('geometry:ht_tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:ht_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:ht_span', val=np.nan, units='m')
         
-        self.add_output('geometry:ht_length')
-        self.add_output('geometry:ht_x0')
-        self.add_output('geometry:ht_y0')
+        self.add_output('geometry:ht_length', units='m')
+        self.add_output('geometry:ht_x0', units='m')
+        self.add_output('geometry:ht_y0', units='m')
         
         self.declare_partials('geometry:ht_length', ['geometry:ht_root_chord', 'geometry:ht_tip_chord'], method=deriv_method)
         self.declare_partials('geometry:ht_x0', ['geometry:ht_root_chord', 'geometry:ht_tip_chord',

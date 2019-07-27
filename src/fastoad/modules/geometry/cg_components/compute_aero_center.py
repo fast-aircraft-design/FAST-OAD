@@ -28,15 +28,15 @@ class ComputeAeroCenter(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:wing_x0', val=np.nan)
-        self.add_input('geometry:wing_l0', val=np.nan)
-        self.add_input('geometry:wing_l1', val=np.nan)
-        self.add_input('geometry:fuselage_width_max', val=np.nan)
-        self.add_input('geometry:fuselage_length', val=np.nan)
-        self.add_input('geometry:wing_position', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:ht_area', val=np.nan)
-        self.add_input('geometry:ht_lp', val=np.nan)
+        self.add_input('geometry:wing_x0', val=np.nan, units='m')
+        self.add_input('geometry:wing_l0', val=np.nan, units='m')
+        self.add_input('geometry:wing_l1', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
+        self.add_input('geometry:wing_position', val=np.nan, units='m')
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:ht_area', val=np.nan, units='m**2')
+        self.add_input('geometry:ht_lp', val=np.nan, units='m')
         self.add_input('aerodynamics:Cl_alpha', val=np.nan)
         self.add_input('aerodynamics:Cl_alpha_ht', val=np.nan)
 

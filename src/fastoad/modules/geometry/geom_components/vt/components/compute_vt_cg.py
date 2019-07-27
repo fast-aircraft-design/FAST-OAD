@@ -29,16 +29,16 @@ class ComputeVTcg(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:vt_length', val=np.nan)
-        self.add_input('geometry:vt_root_chord', val=np.nan)
-        self.add_input('geometry:vt_tip_chord', val=np.nan)
-        self.add_input('geometry:vt_lp', val=np.nan)
-        self.add_input('geometry:vt_x0', val=np.nan)
-        self.add_input('geometry:vt_sweep_25', val=np.nan)
-        self.add_input('geometry:vt_span', val=np.nan)
-        self.add_input('geometry:wing_position', val=np.nan)
+        self.add_input('geometry:vt_length', val=np.nan, units='m')
+        self.add_input('geometry:vt_root_chord', val=np.nan, units='m')
+        self.add_input('geometry:vt_tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:vt_lp', val=np.nan, units='m')
+        self.add_input('geometry:vt_x0', val=np.nan, units='m')
+        self.add_input('geometry:vt_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:vt_span', val=np.nan, units='m')
+        self.add_input('geometry:wing_position', val=np.nan, units='m')
         
-        self.add_output('cg_airframe:A32')
+        self.add_output('cg_airframe:A32', units='m')
         
         self.declare_partials('cg_airframe:A32', '*', method=deriv_method)
         

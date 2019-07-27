@@ -29,18 +29,18 @@ class ComputeSweepWing(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:wing_x3', val=np.nan)
-        self.add_input('geometry:wing_x4', val=np.nan)
-        self.add_input('geometry:wing_y2', val=np.nan)
-        self.add_input('geometry:wing_y3', val=np.nan)
-        self.add_input('geometry:wing_y4', val=np.nan)
-        self.add_input('geometry:wing_l2', val=np.nan)
-        self.add_input('geometry:wing_l3', val=np.nan)
-        self.add_input('geometry:wing_l4', val=np.nan)
+        self.add_input('geometry:wing_x3', val=np.nan, units='m')
+        self.add_input('geometry:wing_x4', val=np.nan, units='m')
+        self.add_input('geometry:wing_y2', val=np.nan, units='m')
+        self.add_input('geometry:wing_y3', val=np.nan, units='m')
+        self.add_input('geometry:wing_y4', val=np.nan, units='m')
+        self.add_input('geometry:wing_l2', val=np.nan, units='m')
+        self.add_input('geometry:wing_l3', val=np.nan, units='m')
+        self.add_input('geometry:wing_l4', val=np.nan, units='m')
         
-        self.add_output('geometry:wing_sweep_0')
-        self.add_output('geometry:wing_sweep_100_inner')
-        self.add_output('geometry:wing_sweep_100_outer')
+        self.add_output('geometry:wing_sweep_0', units='deg')
+        self.add_output('geometry:wing_sweep_100_inner', units='deg')
+        self.add_output('geometry:wing_sweep_100_outer', units='deg')
         
         self.declare_partials('geometry:wing_sweep_0', ['geometry:wing_x3', 'geometry:wing_y2',
                                                         'geometry:wing_y3'], method=deriv_method)

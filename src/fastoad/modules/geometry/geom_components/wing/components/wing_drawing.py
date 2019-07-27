@@ -30,12 +30,12 @@ class WingDrawing(ExplicitComponent):
     def setup(self):
         self.result_dir = self.options['result_dir']
         
-        self.add_input('geometry:wing_x4', val=np.nan)
-        self.add_input('geometry:wing_y2', val=np.nan)
-        self.add_input('geometry:wing_y3', val=np.nan)
-        self.add_input('geometry:wing_y4', val=np.nan)
-        self.add_input('geometry:wing_l2', val=np.nan)
-        self.add_input('geometry:wing_l4', val=np.nan)
+        self.add_input('geometry:wing_x4', val=np.nan, units='m')
+        self.add_input('geometry:wing_y2', val=np.nan, units='m')
+        self.add_input('geometry:wing_y3', val=np.nan, units='m')
+        self.add_input('geometry:wing_y4', val=np.nan, units='m')
+        self.add_input('geometry:wing_l2', val=np.nan, units='m')
+        self.add_input('geometry:wing_l4', val=np.nan, units='m')
         
     def compute(self, inputs, outputs):
         x = [0, inputs['geometry:wing_y2_wing'], inputs['geometry:wing_y4'], 

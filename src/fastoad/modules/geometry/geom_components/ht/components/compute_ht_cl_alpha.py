@@ -31,7 +31,7 @@ class ComputeHTClalpha(ExplicitComponent):
 
         self.add_input('geometry:ht_aspect_ratio', val=np.nan)
         self.add_input('tlar:cruise_Mach', val=np.nan)
-        self.add_input('geometry:ht_sweep_25', val=np.nan)
+        self.add_input('geometry:ht_sweep_25', val=np.nan, units='deg')
         
         self.add_output('aerodynamics:Cl_alpha_ht')
         

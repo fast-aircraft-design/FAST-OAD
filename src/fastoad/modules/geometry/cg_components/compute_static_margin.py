@@ -29,11 +29,11 @@ class ComputeStaticMargin(ExplicitComponent):
 
         self.add_input('cg_ratio', val=np.nan)
         self.add_input('x_ac_ratio', val=np.nan)
-        self.add_input('geometry:wing_position', val=np.nan)
-        self.add_input('geometry:wing_l0', val=np.nan)
+        self.add_input('geometry:wing_position', val=np.nan, units='m')
+        self.add_input('geometry:wing_l0', val=np.nan, units='m')
         
         self.add_output('static_margin')
-        self.add_output('cg:CG')
+        self.add_output('cg:CG', units='m')
         
         self.declare_partials('static_margin', ['cg_ratio', 'x_ac_ratio'], method=deriv_method)
         self.declare_partials('cg:CG', ['geometry:wing_position', 'cg_ratio', 'geometry:wing_l0'], method=deriv_method)

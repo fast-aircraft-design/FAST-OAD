@@ -30,14 +30,14 @@ class ComputeYwing(ExplicitComponent):
         deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_aspect_ratio', val=np.nan)
-        self.add_input('geometry:fuselage_width_max', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
+        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing_break', val=np.nan)
         
-        self.add_output('geometry:wing_span')
-        self.add_output('geometry:wing_y2')
-        self.add_output('geometry:wing_y3')
-        self.add_output('geometry:wing_y4')
+        self.add_output('geometry:wing_span', units='m')
+        self.add_output('geometry:wing_y2', units='m')
+        self.add_output('geometry:wing_y3', units='m')
+        self.add_output('geometry:wing_y4', units='m')
         
         self.declare_partials('geometry:wing_span', ['geometry:wing_area', 'geometry:wing_aspect_ratio'], method=deriv_method)
         self.declare_partials('geometry:wing_y2', 'geometry:fuselage_width_max', method=deriv_method)

@@ -28,17 +28,17 @@ class ComputeControlSurfacesCG(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:wing_l0', val=np.nan)
-        self.add_input('geometry:wing_x0', val=np.nan)
-        self.add_input('geometry:wing_y0', val=np.nan)
-        self.add_input('geometry:wing_l2', val=np.nan)
-        self.add_input('geometry:wing_l3', val=np.nan)
-        self.add_input('geometry:wing_y2', val=np.nan)
-        self.add_input('geometry:wing_x3', val=np.nan)
-        self.add_input('geometry:wing_y3', val=np.nan)
-        self.add_input('geometry:wing_position', val=np.nan)
+        self.add_input('geometry:wing_l0', val=np.nan, units='m')
+        self.add_input('geometry:wing_x0', val=np.nan, units='m')
+        self.add_input('geometry:wing_y0', val=np.nan, units='m')
+        self.add_input('geometry:wing_l2', val=np.nan, units='m')
+        self.add_input('geometry:wing_l3', val=np.nan, units='m')
+        self.add_input('geometry:wing_y2', val=np.nan, units='m')
+        self.add_input('geometry:wing_x3', val=np.nan, units='m')
+        self.add_input('geometry:wing_y3', val=np.nan, units='m')
+        self.add_input('geometry:wing_position', val=np.nan, units='m')
 
-        self.add_output('cg_airframe:A4')
+        self.add_output('cg_airframe:A4', units='m')
 
         self.declare_partials('*', '*', method=deriv_method)
 

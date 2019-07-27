@@ -31,7 +31,7 @@ class ComputeVTClalpha(ExplicitComponent):
 
         self.add_input('tlar:cruise_Mach', val=np.nan)
         self.add_input('geometry:vt_aspect_ratio', val=np.nan)
-        self.add_input('geometry:vt_sweep_25', val=np.nan)
+        self.add_input('geometry:vt_sweep_25', val=np.nan, units='deg')
         self.add_input('k_ar_effective', val=np.nan)
 
         self.add_output('aerodynamics:Cl_alpha_vt')

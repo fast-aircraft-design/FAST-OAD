@@ -157,7 +157,7 @@ def test_compute_ht_cg(xpath_reader: XPathReader, input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('geometry:ht_x0', 1.656)
+    input_vars.add_output('geometry:ht_x0', 1.656, units='m')
 
     problem = Problem()
     model = problem.model
@@ -429,7 +429,7 @@ def test_compute_vt_cg(xpath_reader: XPathReader, input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('geometry:vt_x0', 2.321)
+    input_vars.add_output('geometry:vt_x0', 2.321, units='m')
 
     component = ComputeVTcg()
 

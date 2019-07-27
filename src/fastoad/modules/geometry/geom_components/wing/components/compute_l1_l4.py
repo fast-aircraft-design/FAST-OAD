@@ -29,16 +29,16 @@ class ComputeL1AndL4Wing(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:wing_y2', val=np.nan)
-        self.add_input('geometry:wing_y3', val=np.nan)
-        self.add_input('geometry:wing_span', val=np.nan)
-        self.add_input('geometry:fuselage_width_max', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing_y2', val=np.nan, units='m')
+        self.add_input('geometry:wing_y3', val=np.nan, units='m')
+        self.add_input('geometry:wing_span', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
         self.add_input('geometry:wing_taper_ratio', val=np.nan)
-        self.add_input('geometry:wing_sweep_25', val=np.nan)
+        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
         
-        self.add_output('geometry:wing_l1')
-        self.add_output('geometry:wing_l4')
+        self.add_output('geometry:wing_l1', units='m')
+        self.add_output('geometry:wing_l4', units='m')
         
         self.declare_partials('geometry:wing_l1', '*', method=deriv_method)
         self.declare_partials('geometry:wing_l4', '*', method=deriv_method)

@@ -29,14 +29,14 @@ class ComputeVTMAC(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:vt_root_chord', val=np.nan)
-        self.add_input('geometry:vt_tip_chord', val=np.nan)
-        self.add_input('geometry:vt_sweep_25', val=np.nan)
-        self.add_input('geometry:vt_span', val=np.nan)
+        self.add_input('geometry:vt_root_chord', val=np.nan, units='m')
+        self.add_input('geometry:vt_tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:vt_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:vt_span', val=np.nan, units='m')
     
-        self.add_output('geometry:vt_length')
-        self.add_output('geometry:vt_x0')
-        self.add_output('geometry:vt_z0')
+        self.add_output('geometry:vt_length', units='m')
+        self.add_output('geometry:vt_x0', units='m')
+        self.add_output('geometry:vt_z0', units='m')
 
         self.declare_partials('geometry:vt_length', ['geometry:vt_root_chord', 'geometry:vt_tip_chord'])
         self.declare_partials('geometry:vt_x0', '*', method=deriv_method)

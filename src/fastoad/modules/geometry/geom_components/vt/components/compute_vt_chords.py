@@ -30,12 +30,12 @@ class ComputeVTChords(ExplicitComponent):
         deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:vt_aspect_ratio', val=np.nan)
-        self.add_input('geometry:vt_area', val=np.nan)
+        self.add_input('geometry:vt_area', val=np.nan, units='m**2')
         self.add_input('geometry:vt_taper_ratio', val=np.nan)
 
-        self.add_output('geometry:vt_span')
-        self.add_output('geometry:vt_root_chord')
-        self.add_output('geometry:vt_tip_chord')
+        self.add_output('geometry:vt_span', units='m')
+        self.add_output('geometry:vt_root_chord', units='m')
+        self.add_output('geometry:vt_tip_chord', units='m')
         
         self.declare_partials('geometry:vt_span', ['geometry:vt_aspect_ratio', 'geometry:vt_area'], method=deriv_method)
         self.declare_partials('geometry:vt_root_chord', '*', method=deriv_method)

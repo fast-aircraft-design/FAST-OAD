@@ -29,14 +29,14 @@ class ComputeB50(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:wing_x4', val=np.nan)
-        self.add_input('geometry:wing_y2', val=np.nan)
-        self.add_input('geometry:wing_y4', val=np.nan)
-        self.add_input('geometry:wing_l1', val=np.nan)
-        self.add_input('geometry:wing_l4', val=np.nan)
-        self.add_input('geometry:wing_span', val=np.nan)
+        self.add_input('geometry:wing_x4', val=np.nan, units='m')
+        self.add_input('geometry:wing_y2', val=np.nan, units='m')
+        self.add_input('geometry:wing_y4', val=np.nan, units='m')
+        self.add_input('geometry:wing_l1', val=np.nan, units='m')
+        self.add_input('geometry:wing_l4', val=np.nan, units='m')
+        self.add_input('geometry:wing_span', val=np.nan, units='m')
         
-        self.add_output('geometry:wing_b_50')
+        self.add_output('geometry:wing_b_50', units='m')
         
         self.declare_partials('geometry:wing_b_50', '*', method=deriv_method)
 

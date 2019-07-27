@@ -44,33 +44,33 @@ class ComputeCGratioAft(ExplicitComponent):
         self.furniture_names = self.options['furniture_names']
         
         for name in range(len(self.airframe_names)):
-            self.add_input('cg_airframe:'+self.airframe_names[name], val=np.nan)
-            self.add_input('weight_airframe:'+self.airframe_names[name], val=np.nan)
+            self.add_input('cg_airframe:'+self.airframe_names[name], val=np.nan, units='m')
+            self.add_input('weight_airframe:'+self.airframe_names[name], val=np.nan, units='kg')
             self.declare_partials('x_cg_plane_up', ['weight_airframe:'+self.airframe_names[name],
                                    'cg_airframe:'+self.airframe_names[name]], method=deriv_method)
             self.declare_partials('x_cg_plane_down', 'weight_airframe:'+self.airframe_names[name], method=deriv_method)
         for name in range(len(self.propulsion_names)):
-            self.add_input('cg_propulsion:'+self.propulsion_names[name], val=np.nan)   
-            self.add_input('weight_propulsion:'+self.propulsion_names[name], val=np.nan)
+            self.add_input('cg_propulsion:'+self.propulsion_names[name], val=np.nan, units='m')   
+            self.add_input('weight_propulsion:'+self.propulsion_names[name], val=np.nan, units='kg')
             self.declare_partials('x_cg_plane_up', ['weight_propulsion:'+self.propulsion_names[name],
                                    'cg_propulsion:'+self.propulsion_names[name]], method=deriv_method)
             self.declare_partials('x_cg_plane_down', 'weight_propulsion:'+self.propulsion_names[name], method=deriv_method)          
         for name in range(len(self.systems_names)):
-            self.add_input('cg_systems:'+self.systems_names[name], val=np.nan)
-            self.add_input('weight_systems:'+self.systems_names[name], val=np.nan)
+            self.add_input('cg_systems:'+self.systems_names[name], val=np.nan, units='m')
+            self.add_input('weight_systems:'+self.systems_names[name], val=np.nan, units='kg')
             self.declare_partials('x_cg_plane_up', ['weight_systems:'+self.systems_names[name],
                                    'cg_systems:'+self.systems_names[name]], method=deriv_method)
             self.declare_partials('x_cg_plane_down', 'weight_systems:'+self.systems_names[name], method=deriv_method)          
         for name in range(len(self.furniture_names)):
-            self.add_input('cg_furniture:'+self.furniture_names[name], val=np.nan)
-            self.add_input('weight_furniture:'+self.furniture_names[name], val=np.nan)
+            self.add_input('cg_furniture:'+self.furniture_names[name], val=np.nan, units='m')
+            self.add_input('weight_furniture:'+self.furniture_names[name], val=np.nan, units='kg')
             self.declare_partials('x_cg_plane_up', ['weight_furniture:'+self.furniture_names[name],
                                    'cg_furniture:'+self.furniture_names[name]], method=deriv_method)
             self.declare_partials('x_cg_plane_down', 'weight_furniture:'+self.furniture_names[name], method=deriv_method)          
 
             
-        self.add_input('geometry:wing_l0', val=np.nan)
-        self.add_input('geometry:wing_position', val=np.nan)
+        self.add_input('geometry:wing_l0', val=np.nan, units='m')
+        self.add_input('geometry:wing_position', val=np.nan, units='m')
         
         self.add_output('x_cg_plane_up')
         self.add_output('x_cg_plane_down')

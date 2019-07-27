@@ -29,11 +29,11 @@ class ComputeHTVolCoeff(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('cg_airframe:A51', val=np.nan)
-        self.add_input('cg_airframe:A52', val=np.nan)
-        self.add_input('weight:MTOW', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:wing_l0', val=np.nan)
+        self.add_input('cg_airframe:A51', val=np.nan, units='m')
+        self.add_input('cg_airframe:A52', val=np.nan, units='m')
+        self.add_input('weight:MTOW', val=np.nan, units='kg')
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing_l0', val=np.nan, units='m')
         self.add_input('cg:required_cg_range', val=np.nan)
         
         self.add_output('delta_lg')

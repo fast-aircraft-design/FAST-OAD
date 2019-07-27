@@ -33,7 +33,7 @@ class ComputeToCWing(ExplicitComponent):
         deriv_method = self.options['deriv_method']
 
         self.add_input('tlar:cruise_Mach', val=np.nan)
-        self.add_input('geometry:wing_sweep_25', val=np.nan)
+        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
         
         self.add_output('geometry:wing_toc_aero')
         self.add_output('geometry:wing_toc_root')

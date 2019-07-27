@@ -29,15 +29,15 @@ class ComputeVTArea(ExplicitComponent):
 
 #        self.add_input('geometry:wing_position', val=np.nan)
         self.add_input('cg_ratio', val=np.nan)
-        self.add_input('geometry:wing_l0', val=np.nan)
+        self.add_input('geometry:wing_l0', val=np.nan, units='m')
         self.add_input('dcn_beta', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:wing_span', val=np.nan)
-        self.add_input('geometry:vt_lp', val=np.nan)
-        self.add_input('geometry:vt_area', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing_span', val=np.nan, units='m')
+        self.add_input('geometry:vt_lp', val=np.nan, units='m')
+        self.add_input('geometry:vt_area', val=np.nan, units='m**2')
         self.add_input('aerodynamics:Cl_alpha_vt', val=np.nan)
         
-        self.add_output('geometry:vt_wet_area')
+        self.add_output('geometry:vt_wet_area', units='m**2')
         self.add_output('delta_cn')
         
         self.declare_partials('geometry:vt_wet_area', 'geometry:vt_area')

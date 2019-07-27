@@ -29,16 +29,16 @@ class ComputeHTcg(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:ht_root_chord', val=np.nan)
-        self.add_input('geometry:ht_tip_chord', val=np.nan)
-        self.add_input('geometry:ht_lp', val=np.nan)
-        self.add_input('geometry:ht_span', val=np.nan)
-        self.add_input('geometry:wing_position', val=np.nan)
-        self.add_input('geometry:ht_sweep_25', val=np.nan)
-        self.add_input('geometry:ht_length', val=np.nan)
-        self.add_input('geometry:ht_x0', val=np.nan)
+        self.add_input('geometry:ht_root_chord', val=np.nan, units='m')
+        self.add_input('geometry:ht_tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:ht_lp', val=np.nan, units='m')
+        self.add_input('geometry:ht_span', val=np.nan, units='m')
+        self.add_input('geometry:wing_position', val=np.nan, units='m')
+        self.add_input('geometry:ht_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:ht_length', val=np.nan, units='m')
+        self.add_input('geometry:ht_x0', val=np.nan, units='m')
         
-        self.add_output('cg_airframe:A31')
+        self.add_output('cg_airframe:A31', units='m')
         
         self.declare_partials('cg_airframe:A31', '*', method=deriv_method)
         

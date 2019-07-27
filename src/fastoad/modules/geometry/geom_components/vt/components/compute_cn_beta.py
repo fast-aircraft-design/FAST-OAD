@@ -29,14 +29,14 @@ class ComputeCnBeta(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:fuselage_width_max', val=np.nan)
-        self.add_input('geometry:fuselage_height_max', val=np.nan)
-        self.add_input('geometry:fuselage_length', val=np.nan)
-        self.add_input('geometry:fuselage_LAV', val=np.nan)
-        self.add_input('geometry:fuselage_LAR', val=np.nan)
+        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_LAV', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_LAR', val=np.nan, units='m')
         self.add_input('tlar:cruise_Mach', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:wing_span', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing_span', val=np.nan, units='m')
     
         self.add_output('dcn_beta')
         

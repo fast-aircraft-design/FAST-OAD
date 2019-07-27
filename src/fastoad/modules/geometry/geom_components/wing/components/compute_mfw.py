@@ -27,12 +27,12 @@ class ComputeMFW(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:wing_area', val=np.nan)
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing_aspect_ratio', val=np.nan)
         self.add_input('geometry:wing_toc_root', val=np.nan)
         self.add_input('geometry:wing_toc_tip', val=np.nan)
         
-        self.add_output('weight:MFW')
+        self.add_output('weight:MFW', units='kg')
         
         self.declare_partials('weight:MFW', '*', method=deriv_method)
         

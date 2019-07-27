@@ -27,11 +27,11 @@ class ComputeCGLoadCase3(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
         
-        self.add_input('geometry:wing_l0', val=np.nan)
-        self.add_input('geometry:wing_position', val=np.nan)
-        self.add_input('cg:cg_pax', val=np.nan)
-        self.add_input('cg:cg_rear_fret', val=np.nan)
-        self.add_input('cg:cg_front_fret', val=np.nan)
+        self.add_input('geometry:wing_l0', val=np.nan, units='m')
+        self.add_input('geometry:wing_position', val=np.nan, units='m')
+        self.add_input('cg:cg_pax', val=np.nan, units='m')
+        self.add_input('cg:cg_rear_fret', val=np.nan, units='m')
+        self.add_input('cg:cg_front_fret', val=np.nan, units='m')
         self.add_input('tlar:NPAX', val=np.nan)    
         self.add_input('x_cg_plane_up', val=np.nan)
         self.add_input('x_cg_plane_down', val=np.nan)

@@ -33,15 +33,15 @@ class ComputeHTArea(ExplicitComponent):
         self.ac_family = self.options['ac_family']
         self.tail_type = self.options['tail_type']
         
-        self.add_input('geometry:fuselage_length', val=np.nan)
-        self.add_input('geometry:wing_position', val=np.nan)
+        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
+        self.add_input('geometry:wing_position', val=np.nan, units='m')
         self.add_input('geometry:ht_vol_coeff', val=np.nan)
-        self.add_input('geometry:wing_l0', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan)
-        self.add_input('geometry:ht_area', val=np.nan)
+        self.add_input('geometry:wing_l0', val=np.nan, units='m')
+        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:ht_area', val=np.nan, units='m**2')
         
-        self.add_output('geometry:ht_lp')
-        self.add_output('geometry:ht_wet_area')
+        self.add_output('geometry:ht_lp', units='m')
+        self.add_output('geometry:ht_wet_area', units='m**2')
         self.add_output('delta_cm_takeoff')
         
         self.declare_partials('geometry:ht_lp', ['geometry:fuselage_length', 'geometry:wing_position'], method=deriv_method)

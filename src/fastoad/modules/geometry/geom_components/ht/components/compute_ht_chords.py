@@ -30,12 +30,12 @@ class ComputeHTChord(ExplicitComponent):
         deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:ht_aspect_ratio', val=np.nan)
-        self.add_input('geometry:ht_area', val=np.nan)
+        self.add_input('geometry:ht_area', val=np.nan, units='m**2')
         self.add_input('geometry:ht_taper_ratio', val=np.nan)
         
-        self.add_output('geometry:ht_span')
-        self.add_output('geometry:ht_root_chord')
-        self.add_output('geometry:ht_tip_chord')
+        self.add_output('geometry:ht_span', units='m')
+        self.add_output('geometry:ht_root_chord', units='m')
+        self.add_output('geometry:ht_tip_chord', units='m')
         
         self.declare_partials('geometry:ht_span', ['geometry:ht_area', 'geometry:ht_aspect_ratio'], method=deriv_method)
         self.declare_partials('geometry:ht_root_chord', '*', method=deriv_method)
