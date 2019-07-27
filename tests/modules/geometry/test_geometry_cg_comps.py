@@ -246,7 +246,6 @@ def test_compute_cg_loadcase4(input_xml):
     cg_ratio_lc4 = problem['cg_ratio_lc4']
     assert cg_ratio_lc4 == pytest.approx(0.388971, abs=1e-6)
 
-
 def test_compute_cg_others(input_xml):
     """ Tests computation of other components center of gravity """
 
@@ -333,7 +332,6 @@ def test_compute_cg_others(input_xml):
     assert x_cg_rear_fret == pytest.approx(20.87, abs=1e-2)
     x_cg_front_fret = problem['cg:cg_front_fret']
     assert x_cg_front_fret == pytest.approx(9.94, abs=1e-2)
-
 
 def test_compute_cg_ratio_aft(input_xml):
     """ Tests computation of center of gravity with aft estimation """
@@ -644,6 +642,3 @@ def test_compute_static_margin(input_xml):
     assert static_margin == pytest.approx(0.098550, abs=1e-6)
     cg = problem['cg:CG']
     assert cg == pytest.approx(17.3, abs=1e-1)
-
-
-
