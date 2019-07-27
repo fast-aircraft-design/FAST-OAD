@@ -39,6 +39,9 @@ from fastoad.modules.geometry.geom_components.vt.components \
 from fastoad.modules.geometry.geom_components.vt \
     import ComputeVerticalTailGeometry
 
+from fastoad.modules.geometry.geom_components.wing.components \
+    import ComputeB50
+
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
     """
@@ -626,3 +629,24 @@ def test_geometry_global_vt(xpath_reader: XPathReader, input_xml):
     assert cl == pytest.approx(2.55, abs=1e-2)
     vol_coeff = problem['geometry:vt_vol_coeff']
     assert vol_coeff == pytest.approx(0.105, abs=1e-3)
+
+def test_geometry_wing_b50(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing B50 """
+
+    input_list = [
+        'geometry:wing_x4',
+        'geometry:wing_y2',
+        'geometry:wing_y4',
+        'geometry:wing_l1',
+        'geometry:wing_l4',
+        'geometry:wing_span'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeB50()
+
+    problem = run_system(component, input_vars)
+
+    wing_b_50 = problem['geometry:wing_b_50']
+    assert wing_b_50 == pytest.approx(34.166, abs=1e-3)
