@@ -1,0 +1,31 @@
+<aircraft>
+  <geometry>
+    <wing_toc_root>nan</wing_toc_root>
+    <wing_toc_kink>nan</wing_toc_kink>
+    <wing_toc_tip>nan</wing_toc_tip>
+    <wing_area units="m**2">nan</wing_area>
+    <wing_span units="m">nan</wing_span>
+    <wing_l2 units="m">nan</wing_l2>
+    <wing_sweep_25 units="deg">nan</wing_sweep_25>
+    <wing_area_pf units="m**2">nan</wing_area_pf>
+    <fuselage_wet_area units="m**2">nan</fuselage_wet_area>
+    <fuselage_width_max units="m">nan</fuselage_width_max>
+    <fuselage_height_max units="m">nan</fuselage_height_max>
+    <ht_area units="m**2">nan</ht_area>
+    <vt_area units="m**2">nan</vt_area>
+    <fuselage_length units="m">nan</fuselage_length>
+    <wing_b_50 units="m">nan</wing_b_50>
+    <pylon_wet_area units="m**2">nan</pylon_wet_area>
+    <engine_number>nan</engine_number>
+    <S_total units="m**2">nan</S_total>
+  </geometry>
+  <weight>
+    <MTOW units="kg">nan</MTOW>
+    <MLW units="kg">nan</MLW>
+  </weight>
+  <n1m1 units="kg">nan</n1m1>
+  <n2m2 units="kg">nan</n2m2>
+  <weight_propulsion>
+    <B1 units="kg">nan</B1>
+  </weight_propulsion>
+</aircraft>

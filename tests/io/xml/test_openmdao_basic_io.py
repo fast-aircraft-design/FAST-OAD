@@ -27,7 +27,7 @@ from pytest import approx
 from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.io.xml import XPathReader
 from tests.sellar_example.sellar import Sellar
-from tests.io.xml.data.mass_breakdown.mass_breakdown import MassBreakdown
+from tests.io.xml.data.a_airframe.airframe import Airframe
 
 from fastoad.openmdao.types import Variable
 
@@ -296,14 +296,14 @@ def test_write_xml_from_indepvarcomp_system_inputs():
     xml_read = OpenMdaoXmlIO(filename)
     xml_read.path_separator = ':'
 
-    system = MassBreakdown()
+    system = Airframe()
 
     problem = Problem()
     problem.model = system
     problem.setup()
 
     xml_read.write_inputs(problem, optional_inputs=True)
-    ref_file = pth.join(data_folder, 'xml_mass_breakdown_inputs_ref.xml')
+    ref_file = pth.join(data_folder, 'xml_airframe_inputs_ref.xml')
 
     assert _compare_xml(filename, ref_file)
 
@@ -312,6 +312,6 @@ def test_write_xml_from_indepvarcomp_system_inputs():
     xml_read.path_separator = ':'
 
     xml_read.write_inputs(problem, optional_inputs=False)
-    ref_file = pth.join(data_folder, 'xml_mass_breakdown_inputs_no_opt_ref.xml')
+    ref_file = pth.join(data_folder, 'xml_airframe_inputs_no_opt_ref.xml')
 
     assert _compare_xml(filename, ref_file)
