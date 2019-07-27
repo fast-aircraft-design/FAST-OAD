@@ -436,7 +436,7 @@ def test_compute_vt_cg(xpath_reader: XPathReader, input_xml):
     problem = run_system(component, input_vars)
 
     cg_a32 = problem['cg_airframe:A32']
-    assert cg_a32 == pytest.approx(35.11, abs=1e-2)
+    assert cg_a32 == pytest.approx(34.265, abs=1e-3)
 
 
 def test_compute_vt_mac(xpath_reader: XPathReader, input_xml):
@@ -609,8 +609,8 @@ def test_geometry_global_vt(xpath_reader: XPathReader, input_xml):
     assert x0 == pytest.approx(2.321, abs=1e-3)
     z0 = problem['geometry:vt_z0']
     assert z0 == pytest.approx(2.716, abs=1e-3)
-    # cg_a32 = problem['cg_airframe:A32']
-    # assert cg_a32 == pytest.approx(35.11, abs=1e-2)
+    cg_a32 = problem['cg_airframe:A32']
+    assert cg_a32 == pytest.approx(34.265, abs=1e-3)
     span = problem['geometry:vt_span']
     assert span == pytest.approx(6.62, abs=1e-2)
     root_chord = problem['geometry:vt_root_chord']
