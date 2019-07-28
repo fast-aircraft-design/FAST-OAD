@@ -18,7 +18,7 @@ import numpy as np
 import os
 import math
 
-from fast.Geometry.functions.airfoil_reshape import airfoil_reshape
+from fastoad.modules.geometry.functions.airfoil_reshape import airfoil_reshape
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 

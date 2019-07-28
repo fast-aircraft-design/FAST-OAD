@@ -14,7 +14,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from fastoad.geometry.geom_components.wing.components.compute_y_wing import ComputeYwing
+from fastoad.geometry.geom_components.wing.components.compute_y_wing import ComputeYWing
 from fastoad.geometry.geom_components.wing.components.compute_l1_l4 import ComputeL1AndL4Wing
 from fastoad.geometry.geom_components.wing.components.compute_l2_l3 import ComputeL2AndL3Wing
 from fastoad.geometry.geom_components.wing.components.compute_x_wing import ComputeXWing
@@ -42,7 +42,7 @@ class ComputeWingGeometry(Group):
 
         self.display = self.options['display_flag']
         
-        self.add_subsystem('y_wing', ComputeYwing(deriv_method=deriv_method), promotes=['*'])
+        self.add_subsystem('y_wing', ComputeYWing(deriv_method=deriv_method), promotes=['*'])
         self.add_subsystem('l14_wing', ComputeL1AndL4Wing(deriv_method=deriv_method), promotes=['*'])
         self.add_subsystem('l2l3_wing', ComputeL2AndL3Wing(deriv_method=deriv_method), promotes=['*'])
         self.add_subsystem('x_wing', ComputeXWing(deriv_method=deriv_method), promotes=['*'])

@@ -40,7 +40,9 @@ from fastoad.modules.geometry.geom_components.vt \
     import ComputeVerticalTailGeometry
 
 from fastoad.modules.geometry.geom_components.wing.components \
-    import ComputeB50
+    import ComputeB50, ComputeCLalpha, ComputeL1AndL4Wing, \
+    ComputeL2AndL3Wing, ComputeMACWing, ComputeMFW, ComputeSweepWing, \
+    ComputeToCWing, ComputeWetAreaWing, ComputeXWing, ComputeYWing
 
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
@@ -650,3 +652,266 @@ def test_geometry_wing_b50(xpath_reader: XPathReader, input_xml):
 
     wing_b_50 = problem['geometry:wing_b_50']
     assert wing_b_50 == pytest.approx(34.166, abs=1e-3)
+
+def test_geometry_wing_cl_alpha(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing lift coefficient """
+
+    input_list = [
+        'tlar:cruise_Mach',
+        'geometry:fuselage_width_max',
+        'geometry:fuselage_height_max',
+        'geometry:wing_area',
+        'geometry:wing_l2',
+        'geometry:wing_l4',
+        'geometry:wing_toc_tip',
+        'geometry:wing_sweep_25',
+        'geometry:wing_aspect_ratio',
+        'geometry:wing_span',
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeCLalpha()
+
+    problem = run_system(component, input_vars)
+
+    Cl_alpha = problem['aerodynamics:Cl_alpha']
+    assert Cl_alpha == pytest.approx(6.49, abs=1e-2)
+
+def test_geometry_wing_l1_l4(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing chords (l1 and l4) """
+
+    input_list = [
+        'geometry:wing_area',
+        'geometry:wing_y2',
+        'geometry:wing_y3',
+        'geometry:wing_span',
+        'geometry:fuselage_width_max',
+        'geometry:wing_taper_ratio',
+        'geometry:wing_sweep_25',
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeL1AndL4Wing()
+
+    problem = run_system(component, input_vars)
+
+    l1 = problem['geometry:wing_l1']
+    assert l1 == pytest.approx(4.953, abs=1e-3)
+    l4 = problem['geometry:wing_l4']
+    assert l4 == pytest.approx(1.882, abs=1e-3)
+
+def test_geometry_wing_l2_l3(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing chords (l2 and l3) """
+
+    input_list = [
+        'geometry:wing_span',
+        'geometry:fuselage_width_max',
+        'geometry:wing_taper_ratio',
+        'geometry:wing_sweep_25',
+        'geometry:wing_l1',
+        'geometry:wing_l4',
+        'geometry:wing_y2',
+        'geometry:wing_y3',
+        'geometry:wing_y4'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeL2AndL3Wing()
+
+    problem = run_system(component, input_vars)
+
+    l2 = problem['geometry:wing_l2']
+    assert l2 == pytest.approx(6.26, abs=1e-2)
+    l3 = problem['geometry:wing_l3']
+    assert l3 == pytest.approx(3.985, abs=1e-3)
+
+def test_geometry_wing_mac(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing mean aerodynamic chord """
+
+    input_list = [
+        'geometry:wing_area',
+        'geometry:wing_x3',
+        'geometry:wing_x4',
+        'geometry:wing_y2',
+        'geometry:wing_y3',
+        'geometry:wing_y4',
+        'geometry:wing_l2',
+        'geometry:wing_l3',
+        'geometry:wing_l4'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeMACWing()
+
+    problem = run_system(component, input_vars)
+
+    l0 = problem['geometry:wing_l0']
+    assert l0 == pytest.approx(4.457, abs=1e-3)
+    x0 = problem['geometry:wing_x0']
+    assert x0 == pytest.approx(2.361, abs=1e-3)
+    y0 = problem['geometry:wing_y0']
+    assert y0 == pytest.approx(6.293, abs=1e-3)
+
+def test_geometry_wing_mfw(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing max fuel weight """
+
+    input_list = [
+        'geometry:wing_area',
+        'geometry:wing_aspect_ratio',
+        'geometry:wing_toc_root',
+        'geometry:wing_toc_tip'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeMFW()
+
+    problem = run_system(component, input_vars)
+
+    MFW = problem['weight:MFW']
+    assert MFW == pytest.approx(19284.7, abs=1e-1)
+
+def test_geometry_wing_mfw(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing max fuel weight """
+
+    input_list = [
+        'geometry:wing_area',
+        'geometry:wing_aspect_ratio',
+        'geometry:wing_toc_root',
+        'geometry:wing_toc_tip'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeMFW()
+
+    problem = run_system(component, input_vars)
+
+    MFW = problem['weight:MFW']
+    assert MFW == pytest.approx(19284.7, abs=1e-1)
+
+def test_geometry_wing_sweep(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing sweeps """
+
+    input_list = [
+        'geometry:wing_x3',
+        'geometry:wing_x4',
+        'geometry:wing_y2',
+        'geometry:wing_y3',
+        'geometry:wing_y4',
+        'geometry:wing_l2',
+        'geometry:wing_l3',
+        'geometry:wing_l4'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeSweepWing()
+
+    problem = run_system(component, input_vars)
+
+    sweep_0 = problem['geometry:wing_sweep_0']
+    assert sweep_0 == pytest.approx(27.55, abs=1e-2)
+    sweep_100_inner = problem['geometry:wing_sweep_100_inner']
+    assert sweep_100_inner == pytest.approx(0.0, abs=1e-1)
+    sweep_100_outer = problem['geometry:wing_sweep_100_outer']
+    assert sweep_100_outer == pytest.approx(16.7, abs=1e-1)
+"""
+def test_geometry_wing_toc(xpath_reader: XPathReader, input_xml):
+    # Tests computation of the wing ToC
+
+    input_list = [
+        'tlar:cruise_Mach',
+        'geometry:wing_sweep_25'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeToCWing()
+
+    problem = run_system(component, input_vars)
+
+    toc_aero = problem['geometry:wing_toc_aero']
+    assert toc_aero == pytest.approx(0.128, abs=1e-3)
+    toc_root = problem['geometry:wing_toc_root']
+    assert toc_root == pytest.approx(0.159, abs=1e-3)
+    toc_kink = problem['geometry:wing_toc_kink']
+    assert toc_kink == pytest.approx(0.121, abs=1e-3)
+    toc_tip = problem['geometry:wing_toc_tip']
+    assert toc_tip == pytest.approx(0.11, abs=1e-2)
+
+"""
+
+def test_geometry_wing_wet_area(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing wet area """
+
+    input_list = [
+        'geometry:wing_l2',
+        'geometry:wing_y2',
+        'geometry:wing_area',
+        'geometry:fuselage_width_max'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeWetAreaWing()
+
+    problem = run_system(component, input_vars)
+
+    area_pf = problem['geometry:wing_area_pf']
+    assert area_pf == pytest.approx(100.303, abs=1e-3)
+    wet_area = problem['geometry:wing_wet_area']
+    assert wet_area == pytest.approx(200.607, abs=1e-3)
+
+def test_geometry_wing_x(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing Xs """
+
+    input_list = [
+        'geometry:wing_l1',
+        'geometry:wing_l3',
+        'geometry:wing_l4',
+        'geometry:wing_y2',
+        'geometry:wing_y3',
+        'geometry:wing_y4',
+        'geometry:wing_sweep_25'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeXWing()
+
+    problem = run_system(component, input_vars)
+
+    x3 = problem['geometry:wing_x3']
+    assert x3 == pytest.approx(2.275, abs=1e-3)
+    x4 = problem['geometry:wing_x4']
+    assert x4 == pytest.approx(7.222, abs=1e-3)
+
+def test_geometry_wing_y(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the wing Ys """
+
+    input_list = [
+        'geometry:wing_aspect_ratio',
+        'geometry:fuselage_width_max',
+        'geometry:wing_area',
+        'geometry:wing_break'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeYWing()
+
+    problem = run_system(component, input_vars)
+
+    span = problem['geometry:wing_span']
+    assert span == pytest.approx(34.4, abs=1e-1)
+    y2 = problem['geometry:wing_y2']
+    assert y2 == pytest.approx(1.96, abs=1e-2)
+    y3 = problem['geometry:wing_y3']
+    assert y3 == pytest.approx(6.88, abs=1e-2)
+    y4 = problem['geometry:wing_y4']
+    assert y4 == pytest.approx(17.2, abs=1e-1)

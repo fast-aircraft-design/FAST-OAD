@@ -19,7 +19,7 @@ import math
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-class ComputeYwing(ExplicitComponent):
+class ComputeYWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing Ys estimation """
     
