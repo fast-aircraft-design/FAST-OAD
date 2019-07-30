@@ -82,7 +82,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'FAST-OAD'
-copyright = u'2019, Christophe DAVID'
+copyright = u'2019, ONERA/ISAE'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
