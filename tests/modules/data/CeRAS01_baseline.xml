@@ -166,7 +166,7 @@
                 <cruise id="234">
                     <fuel_cruise unit="kg">586.64</fuel_cruise>
                     <time_cruise unit="min">17.0</time_cruise>
-                    <cruise_altitude unit="in">35000</cruise_altitude>
+                    <cruise_altitude unit="ft">35000</cruise_altitude>
                     <hr_cruise>0</hr_cruise>
                 </cruise>
                 <descent id="195">
