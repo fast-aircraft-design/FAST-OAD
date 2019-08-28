@@ -46,15 +46,9 @@ class ComputeReynolds(ExplicitComponent):
             mach = inputs['tlar:cruise_Mach']
             altitude = inputs['sizing_mission:cruise_altitude']
 
-        atm = Atmosphere(altitude, altitude_in_feet=False)
-        t = atm.temperature
-        ps = t * atm.density * 287.1
+        reynolds = Atmosphere(altitude, altitude_in_feet=False).get_unitary_reynolds(mach)
 
         if self.low_speed_aero:
-            outputs['reynolds_low_speed'] = 47899 * (
-                    ps * mach * ((1 + 0.126 * mach ** 2) * t + 110.4)
-            ) / (t ** 2 * (1 + 0.126 * mach ** 2) ** (5 / 2))
+            outputs['reynolds_low_speed'] = reynolds
         else:
-            outputs['reynolds_high_speed'] = 47899 * (
-                    ps * mach * ((1 + 0.126 * mach ** 2) * t + 110.4)
-            ) / (t ** 2 * (1 + 0.126 * mach ** 2) ** (5 / 2))
+            outputs['reynolds_high_speed'] = reynolds

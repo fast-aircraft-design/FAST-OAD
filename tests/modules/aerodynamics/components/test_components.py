@@ -185,10 +185,8 @@ def test_cd0():
                   'geometry:wing_wet_area'
                   ]
 
-    def get_cd0(static_pressure, temperature, mach, cl):
-        reynolds = 47899 * (
-                static_pressure * mach * ((1 + 0.126 * mach ** 2) * temperature + 110.4)) / (
-                           temperature ** 2 * (1 + 0.126 * mach ** 2) ** (5 / 2))
+    def get_cd0(alt, mach, cl):
+        reynolds = Atmosphere(alt).get_unitary_reynolds(mach)
 
         ivc = get_indep_var_comp(input_list)
         ivc.add_output('tlar:cruise_Mach', mach)
@@ -197,11 +195,8 @@ def test_cd0():
         problem = run_system(CD0(), ivc)
         return problem['cd0_total_high_speed'][0]
 
-    atm = Atmosphere(35000)
-    assert get_cd0(atm.pressure, atm.temperature, 0.78, 0.5) == approx(0.01975,
-                                                                       abs=1e-5)  # CL = 0.5
-    atm = Atmosphere(0)
-    assert get_cd0(atm.pressure, atm.temperature, 0.2, 0.9) == approx(0.02727, abs=1e-5)
+    assert get_cd0(35000, 0.78, 0.5) == approx(0.01975, abs=1e-5)
+    assert get_cd0(0, 0.2, 0.9) == approx(0.02727, abs=1e-5)
 
 
 def test_cd_compressibility():
