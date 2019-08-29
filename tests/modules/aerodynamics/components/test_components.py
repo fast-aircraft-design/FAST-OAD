@@ -214,8 +214,13 @@ def test_cd_compressibility():
         problem = run_system(CdCompressibility(), ivc)
         return problem['cd_comp_high_speed'][0]
 
-    assert get_cd_compressibility(0.78, 0.5) == approx(0.000451, abs=1e-6)
-    assert get_cd_compressibility(0.2, 0.9) == approx(0.0, abs=1e-10)
+    assert get_cd_compressibility(0.78, 0.2) == approx(0.00028, abs=1e-5)
+    assert get_cd_compressibility(0.78, 0.35) == approx(0.00028, abs=1e-5)
+    assert get_cd_compressibility(0.78, 0.5) == approx(0.00045, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.2) == approx(0.00359, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.35) == approx(0.00359, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.5) == approx(0.00580, abs=1e-5)
+    assert get_cd_compressibility(0.2, 0.9) == approx(0.0, abs=1e-5)
 
 
 def test_cd_trim():
@@ -288,8 +293,8 @@ def test_polar():
     cd = problem['aerodynamics:ClCd'][0, :]
     cl = problem['aerodynamics:ClCd'][1, :]
 
-    assert cd[cl == 0.] == approx(0.02381, abs=1e-5)
-    assert cd[cl == 0.2] == approx(0.02227, abs=1e-5)
+    assert cd[cl == 0.] == approx(0.02030, abs=1e-5)
+    assert cd[cl == 0.2] == approx(0.02209, abs=1e-5)
     assert cd[cl == 0.42] == approx(0.02897, abs=1e-5)
     assert cd[cl == 0.85] == approx(0.11782, abs=1e-5)
 

@@ -15,8 +15,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 from math import exp
+
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.modules.aerodynamics.constants import POLAR_POINT_COUNT
@@ -50,8 +51,9 @@ class CdCompressibility(ExplicitComponent):
         cd_comp = []
 
         for cl_val in cl:
-            m_charac_comp = - 0.5 * cl_val ** 2 + 0.35 * \
-                            cl_val + 0.765  # phi = 28deg, el_aero = 0.12, cl >= 0.35
+            # FIXME: The computed characteristic Mach is for sweep angle 28° and relative thickness
+            #        of 0.12. It should be corrected according to actual values
+            m_charac_comp = - 0.5 * max(0.35, cl_val) ** 2 + 0.35 * max(0.35, cl_val) + 0.765
             cd_comp.append(0.002 * exp(42.58 * (m - m_charac_comp)))
 
         if self.low_speed_aero:
