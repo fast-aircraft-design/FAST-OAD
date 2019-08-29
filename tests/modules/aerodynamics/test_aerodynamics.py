@@ -103,7 +103,7 @@ def test_aerodynamics_high_speed():
     assert cd[cl == 0.] == approx(0.02030, abs=1e-5)
     assert cd[cl == 0.2] == approx(0.02209, abs=1e-5)
     assert cd[cl == 0.42] == approx(0.02897, abs=1e-5)
-    assert cd[cl == 0.85] == approx(0.11782, abs=1e-5)
+    assert cd[cl == 0.85] == approx(0.11781, abs=1e-5)
 
     assert problem['aerodynamics:Cl_opt'] == approx(0.54, abs=1e-3)
     assert problem['aerodynamics:Cd_opt'] == approx(0.03550, abs=1e-5)
