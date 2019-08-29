@@ -100,13 +100,13 @@ def test_aerodynamics_high_speed():
     cd = problem['aerodynamics:ClCd'][0, :]
     cl = problem['aerodynamics:ClCd'][1, :]
 
-    assert cd[cl == 0.] == approx(0.023806, abs=1e-6)
-    assert cd[cl == 0.2] == approx(0.022265, abs=1e-6)
-    assert cd[cl == 0.42] == approx(0.028969, abs=1e-6)
-    assert cd[cl == 0.85] == approx(0.117816, abs=1e-6)
+    assert cd[cl == 0.] == approx(0.02381, abs=1e-5)
+    assert cd[cl == 0.2] == approx(0.02227, abs=1e-5)
+    assert cd[cl == 0.42] == approx(0.02897, abs=1e-5)
+    assert cd[cl == 0.85] == approx(0.11782, abs=1e-5)
 
     assert problem['aerodynamics:Cl_opt'] == approx(0.54, abs=1e-3)
-    assert problem['aerodynamics:Cd_opt'] == approx(0.0355032, abs=1e-6)
+    assert problem['aerodynamics:Cd_opt'] == approx(0.03550, abs=1e-5)
 
 
 def test_aerodynamics_low_speed():
@@ -171,7 +171,7 @@ def test_aerodynamics_low_speed():
     cd = problem['aerodynamics:ClCd_low_speed'][0, :]
     cl = problem['aerodynamics:ClCd_low_speed'][1, :]
 
-    assert cd[cl == 0.] == approx(0.021732, abs=1e-6)
-    assert cd[cl == 0.2] == approx(0.023386, abs=1e-6)
-    assert cd[cl == 0.42] == approx(0.029739, abs=1e-6)
-    assert cd[cl == 0.85] == approx(0.060104, abs=1e-6)
+    assert cd[cl == 0.] == approx(0.02173, abs=1e-5)
+    assert cd[cl == 0.2] == approx(0.02339, abs=1e-5)
+    assert cd[cl == 0.42] == approx(0.02974, abs=1e-5)
+    assert cd[cl == 0.85] == approx(0.06010, abs=1e-5)

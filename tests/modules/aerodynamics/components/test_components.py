@@ -198,11 +198,10 @@ def test_cd0():
         return problem['cd0_total_high_speed'][0]
 
     atm = Atmosphere(35000)
-    assert get_cd0(atm.pressure, atm.temperature, 0.78, 0.5) == approx(0.0197474,
-                                                                       abs=1e-6)  # CL = 0.5
+    assert get_cd0(atm.pressure, atm.temperature, 0.78, 0.5) == approx(0.01975,
+                                                                       abs=1e-5)  # CL = 0.5
     atm = Atmosphere(0)
-    assert get_cd0(atm.pressure, atm.temperature, 0.2, 0.9) == approx(0.0272726,
-                                                                      abs=1e-6)  # CL = 0.933
+    assert get_cd0(atm.pressure, atm.temperature, 0.2, 0.9) == approx(0.02727, abs=1e-5)
 
 
 def test_cd_compressibility():
@@ -289,13 +288,13 @@ def test_polar():
     cd = problem['aerodynamics:ClCd'][0, :]
     cl = problem['aerodynamics:ClCd'][1, :]
 
-    assert cd[cl == 0.] == approx(0.023806, abs=1e-6)
-    assert cd[cl == 0.2] == approx(0.022265, abs=1e-6)
-    assert cd[cl == 0.42] == approx(0.028969, abs=1e-6)
-    assert cd[cl == 0.85] == approx(0.117816, abs=1e-6)
+    assert cd[cl == 0.] == approx(0.02381, abs=1e-5)
+    assert cd[cl == 0.2] == approx(0.02227, abs=1e-5)
+    assert cd[cl == 0.42] == approx(0.02897, abs=1e-5)
+    assert cd[cl == 0.85] == approx(0.11782, abs=1e-5)
 
     assert problem['aerodynamics:Cl_opt'] == approx(0.54, abs=1e-3)
-    assert problem['aerodynamics:Cd_opt'] == approx(0.0355032, abs=1e-6)
+    assert problem['aerodynamics:Cd_opt'] == approx(0.03550, abs=1e-5)
 
 
 def test_low_speed_aero():
