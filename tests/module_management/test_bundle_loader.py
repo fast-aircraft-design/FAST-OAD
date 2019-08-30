@@ -192,8 +192,7 @@ def test_get_services():
     assert len(services) == 1
 
     # Existing service, 2 properties, case insensitivity
-    services = loader.get_services("hello.world",
-                                   {"Prop1": 1, "Prop2": "says.hello"})
+    services = loader.get_services("hello.world", {"Prop1": 1, "Prop2": "says.hello"})
     assert len(services) == 1
     greet_service = services[0]
     assert greet_service.hello("Dolly") == "Hello, Dolly!"
@@ -205,11 +204,9 @@ def test_get_services():
     assert greet_service.hello() == "Hi, World!"
 
     # Existing service, case sensitivity
-    services = loader.get_services("hello.world", {"Prop2": "SAYS.HELLO"},
-                                   True)
+    services = loader.get_services("hello.world", {"Prop2": "SAYS.HELLO"}, True)
     assert services is None
-    services = loader.get_services("hello.world", {"Prop2": "Says.Hello"},
-                                   True)
+    services = loader.get_services("hello.world", {"Prop2": "Says.Hello"}, True)
     assert len(services) == 1
     river = services[0]
     assert river.hello("Sweetie") == "Hello, Sweetie!"
@@ -238,6 +235,54 @@ def test_instantiate_component():
     # now one more service is instantiated
     services = loader.get_services("hello.world")
     assert len(services) == 3
+
+    # Pelix framework has to be deleted for next tests to run smoothly
+    loader.framework.delete(True)
+
+
+def test_get_factory_names():
+    """
+    Tests the method for retrieving factories according to properties
+    """
+    loader = BundleLoader()
+    loader.install_packages(
+        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+
+    # Missing service
+    factory_names = loader.get_factory_names("does.not.exists")
+    assert not factory_names
+
+    # Existing services, no property provided
+    factory_names = loader.get_factory_names("hello.world")
+    assert len(factory_names) == 3
+
+    # Existing services, property provided does not apply
+    factory_names = loader.get_factory_names("hello.world", {"Not A Property": 1})
+    assert len(factory_names) == 0
+
+    # Existing services, 1 property provided
+    factory_names = loader.get_factory_names("hello.world", {"Instantiated": True})
+    assert len(factory_names) == 2
+    factory_names = loader.get_factory_names("hello.world", {"Prop1": 1})
+    assert len(factory_names) == 1
+
+    # Existing service, 2 properties, case insensitivity
+    factory_names = loader.get_factory_names("hello.world", {"Prop1": 1, "Prop2": "says.hello"})
+    assert len(factory_names) == 1
+    greet_service = loader.instantiate_component(factory_names[0], 'greeter1')
+    assert greet_service.hello("Dolly") == "Hello, Dolly!"
+
+    # Existing service, case insensitivity
+    factory_names = loader.get_factory_names("hello.world", {"Prop2": "SAYS.HI"})
+    assert len(factory_names) == 1
+    greet_service = loader.instantiate_component(factory_names[0], 'greeter2')
+    assert greet_service.hello() == "Hi, World!"
+
+    # Existing service, case sensitivity
+    factory_names = loader.get_factory_names("hello.world", {"Prop2": "SAYS.HELLO"}, True)
+    assert not factory_names
+    factory_names = loader.get_factory_names("hello.world", {"Prop2": "Says.Hello"}, True)
+    assert len(factory_names) == 2
 
     # Pelix framework has to be deleted for next tests to run smoothly
     loader.framework.delete(True)

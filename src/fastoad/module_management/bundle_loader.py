@@ -168,6 +168,48 @@ class BundleLoader:
                                                              , ldap_filter)
         return references
 
+    def get_factory_names(self, factory_name: str
+                          , properties: dict = None
+                          , case_sensitive: bool = False) -> List[str]:
+        """
+        travels the availabale factory names to find what factories match *factory_name* and
+        provided *properties* (if provided)
+
+        :param factory_name:
+        :param properties:
+        :param case_sensitive: if False, case of property values will be
+        ignored
+        :return: the list of factory names
+        """
+        with use_ipopo(self.context) as ipopo:
+            all_names = ipopo.get_factories()
+            names = []
+            for name in all_names:
+                details = ipopo.get_factory_details(name)
+                to_be_kept = True
+                if factory_name not in details['services'][0]:
+                    to_be_kept = False
+                elif properties is not None:
+                    factory_properties: dict = details['properties']
+                    if case_sensitive:
+                        to_be_kept = all(item in factory_properties.items()
+                                         for item in properties.items())
+                    else:
+                        for prop_name, prop_value in properties.items():
+                            if prop_name not in factory_properties.keys():
+                                to_be_kept = False
+                                break
+                            factory_prop_value = factory_properties[prop_name]
+                            if isinstance(prop_value, str):
+                                prop_value = prop_value.lower()
+                                factory_prop_value = factory_prop_value.lower()
+                            if prop_value != factory_prop_value:
+                                to_be_kept = False
+                                break
+                if to_be_kept:
+                    names.append(name)
+        return names
+
     def instantiate_component(self, factory_name: str,
                               instance_name: str,
                               properties: dict = None

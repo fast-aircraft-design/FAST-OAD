@@ -51,7 +51,7 @@ class Greetings2:
 
 
 @ComponentFactory("another-hello-world-factory")
-@Provides("hello.world")
+@Provides(["hello.world", "hello.world.no.instance"])
 @Property("Prop1", None, 3)
 @Property("Prop2", None, "Says.Hello")
 @Property("Instantiated", None, False)
