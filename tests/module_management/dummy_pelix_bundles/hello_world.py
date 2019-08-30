@@ -51,11 +51,11 @@ class Greetings2:
 
 
 @ComponentFactory("another-hello-world-factory")
-@Provides("hello.world.no.instance")
+@Provides("hello.world")
 @Property("Prop1", None, 3)
 @Property("Prop2", None, "Says.Hello")
 @Property("Instantiated", None, False)
-# Not instantiating this one for testing the case
+# Not instantiating this one
 class OtherGreetings:
     def hello(self, name="World"):
         return "Hello again, {0}!".format(name)

@@ -16,12 +16,12 @@ Basis for registering and retrieving services
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import List, Tuple, Set, Union, Optional
+from typing import List, Tuple, Set, Union, Optional, Any
 
 import pelix
 from pelix.framework import FrameworkFactory, Framework, Bundle, BundleContext
 from pelix.internals.registry import ServiceReference
-from pelix.ipopo.constants import SERVICE_IPOPO
+from pelix.ipopo.constants import SERVICE_IPOPO, use_ipopo
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -134,6 +134,7 @@ class BundleLoader:
         services = None
         if references is not None:
             services = [self.context.get_service(ref) for ref in references]
+
         return services
 
     def get_service_references(self
@@ -171,3 +172,17 @@ class BundleLoader:
         references = self.context.get_all_service_references(service_name
                                                              , ldap_filter)
         return references
+
+    def instantiate_component(self, factory_name: str,
+                              instance_name: str,
+                              properties: dict = None
+                              ) -> Any:
+        """
+        Instantiates a component from given factory
+        :param factory_name: name of the factory
+        :param instance_name: Name of the instance to be started
+        :param properties: Initial properties of the component instance
+        :return: the component instance
+        """
+        with use_ipopo(self.context) as ipopo:
+            return ipopo.instantiate(factory_name, instance_name, properties)

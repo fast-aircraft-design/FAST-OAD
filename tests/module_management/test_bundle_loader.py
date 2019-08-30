@@ -216,3 +216,28 @@ def test_get_services():
 
     # Pelix framework has to be deleted for next tests to run smoothly
     loader.framework.delete(True)
+
+
+def test_instantiate_component():
+    """
+    Tests the method for instantiating a component from factory name
+    """
+    loader = BundleLoader()
+    loader.install_packages(
+        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+
+    # 2 services should already be instantiated
+    services = loader.get_services("hello.world")
+    assert len(services) == 2
+
+    song = loader.instantiate_component("another-hello-world-factory", "instance")
+    assert song.hello("Sweetie") == "Hello again, Sweetie!"
+    assert song.Prop1 == 3
+    assert song.Prop2 == "Says.Hello"
+
+    # now one more service is instantiated
+    services = loader.get_services("hello.world")
+    assert len(services) == 3
+
+    # Pelix framework has to be deleted for next tests to run smoothly
+    loader.framework.delete(True)
