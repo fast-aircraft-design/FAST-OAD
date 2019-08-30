@@ -102,18 +102,17 @@ def test_get_component():
     BundleLoader().framework.delete(True)
 
 
-def test_get_component_descriptors():
+def test_get_systems():
     """
     Tests the retrieval of component descriptors according to properties
     """
     __install_components()
 
     # Get component 1 #########################################################
-    component_descriptors = OpenMDAOSystemFactory.get_system_descriptors(
-        {'Number': 1})
-    assert len(component_descriptors) == 1
-    disc1_component = component_descriptors[0].get_system()
-    assert component_descriptors[0].get_properties()['Discipline'] == 'generic'
+    systems = OpenMDAOSystemFactory.get_systems({'Number': 1})
+    assert len(systems) == 1
+    disc1_component = systems[0]
+    assert disc1_component.Discipline == 'generic'
     assert disc1_component is not None
     disc1_component.setup()
     outputs = {}
@@ -121,14 +120,13 @@ def test_get_component_descriptors():
     assert outputs['y1'] == 118.
 
     # Get component when several possible #####################################
-    component_descriptors = OpenMDAOSystemFactory.get_system_descriptors(
-        {'Discipline': 'generic'})
-    assert len(component_descriptors) == 2
+    systems = OpenMDAOSystemFactory.get_systems({'Discipline': 'generic'})
+    assert len(systems) == 2
 
     # Error raised when property does not exists ##############################
     got_key_error = False
     try:
-        OpenMDAOSystemFactory.get_system_descriptors({'MissingProperty': -5})
+        OpenMDAOSystemFactory.get_systems({'MissingProperty': -5})
     except KeyError:
         got_key_error = True
     assert got_key_error
@@ -136,7 +134,7 @@ def test_get_component_descriptors():
     # Error raised when no matching component #################################
     got_key_error = False
     try:
-        OpenMDAOSystemFactory.get_system_descriptors({'Number': -5})
+        OpenMDAOSystemFactory.get_systems({'Number': -5})
     except KeyError:
         got_key_error = True
     assert got_key_error

@@ -30,29 +30,6 @@ _LOGGER = logging.getLogger(__name__)
 from fastoad.openmdao.types import SystemSubclass
 
 
-class SystemDescriptor:
-    """
-    Simple wrapper class for associating an OpenMDAO System (or derived)
-    instance and its user-defined metadata
-    """
-
-    def __init__(self, system: SystemSubclass, properties: dict):
-        self._system = system
-        self._properties = properties
-
-    def get_system(self) -> SystemSubclass:
-        """
-        :return: the OpenMDAO System (or derived) instance
-        """
-        return self._system
-
-    def get_properties(self) -> dict:
-        """
-        :return: the properties associated to the OpenMDAO system
-        """
-        return self._properties
-
-
 class OpenMDAOSystemFactory:
     """
     Class for providing OpenMDAO System objects depending on their properties.
@@ -106,8 +83,8 @@ class OpenMDAOSystemFactory:
         return components[0]
 
     @classmethod
-    def get_system_descriptors(cls, required_properties: dict) \
-            -> List[SystemDescriptor]:
+    def get_systems(cls, required_properties: dict) \
+            -> List[SystemSubclass]:
         """
         Returns the first encountered System instance with properties that
         match all required properties.
@@ -125,7 +102,5 @@ class OpenMDAOSystemFactory:
                 'No OpenMDAO system found with these properties: %s'
                 % required_properties)
 
-        descriptors = [SystemDescriptor(context.get_service(ref)
-                                        , ref.get_properties())
-                       for ref in service_references]
+        descriptors = [context.get_service(ref) for ref in service_references]
         return descriptors

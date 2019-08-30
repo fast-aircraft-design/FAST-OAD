@@ -119,10 +119,6 @@ class BundleLoader:
         Returns the services that match *service_name* and provided
         *properties* (if provided).
 
-        In order to have access to service
-        metadata such a properties, please use
-        :meth:`get_service_references` instead.
-
         :param service_name:
         :param properties:
         :param case_sensitive: if False, case of property values will be
@@ -153,8 +149,7 @@ class BundleLoader:
         :return: a list of ServiceReference instances
         """
 
-        # Dev Note: simple wrapper for
-        # BundleContext.get_all_service_references()
+        # Dev Note: simple wrapper for BundleContext.get_all_service_references()
 
         if case_sensitive:
             operator = '='
