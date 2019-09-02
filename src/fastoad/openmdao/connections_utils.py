@@ -126,15 +126,15 @@ def get_vars_of_unconnected_inputs(problem: Union[Problem, SystemSubclass],
     else:
         raise TypeError('Unknown class for retrieving inputs.')
 
-    mandatory_unconnected, optional_unconnected = get_unconnected_inputs(model)
+    mandatory_unconnected, _ = get_unconnected_inputs(model)
 
     mandatory_unconnected_vars = []
     optional_unconnected_vars = []
 
     # pylint: disable=protected-access #  needed for OpenMDAO introspection
     prom2abs = model._var_allprocs_prom2abs_list['input']
-    
-    # TODO: This should  be optimized as the list of prom names is used in 
+
+    # TODO: This should  be optimized as the list of prom names is used in
     # get_unconnected_inputs
     for prom_name in prom2abs.keys():
         # Pick first abs_name

@@ -18,13 +18,12 @@ import shutil
 from typing import List
 
 import pytest
+from pytest import approx
 from lxml.etree import XPathEvalError
 from openmdao.core.indepvarcomp import IndepVarComp
-from pytest import approx
 
 from fastoad.io.xml import OpenMdaoCustomXmlIO
 from fastoad.io.xml.translator import VarXpathTranslator
-
 from fastoad.openmdao.types import Variable
 
 def _check_basic2_ivc(ivc: IndepVarComp):
@@ -55,7 +54,7 @@ def _check_basic2_ivc(ivc: IndepVarComp):
     assert outputs[3].units == 'm'
 
 
-def test_custom_xml_read_and_write_from_indepvarcomp():
+def test_custom_xml_read_and_write_from_ivc():
     """
     Tests the creation of an XML file from an IndepVarComp instance
     """
@@ -131,6 +130,9 @@ def test_custom_xml_read_and_write_from_indepvarcomp():
 
 
 def test_custom_xml_read_and_write_with_translation_table():
+    """
+    Tests the creation of an XML file with a translation table
+    """
     data_folder = pth.join(pth.dirname(__file__), 'data')
     result_folder = pth.join(pth.dirname(__file__), 'results', 'custom_xml_with_translation_table')
     if pth.exists(result_folder):
@@ -147,6 +149,9 @@ def test_custom_xml_read_and_write_with_translation_table():
     _check_basic2_ivc(ivc)
 
 def test_custom_xml_read_and_write_with_only_or_ignore():
+    """
+    Tests the creation of an XML file with only and ignore options
+    """
     data_folder = pth.join(pth.dirname(__file__), 'data')
     result_folder = pth.join(pth.dirname(__file__), 'results', 'custom_xml_with_translation_table')
     if pth.exists(result_folder):
@@ -189,6 +194,3 @@ def test_custom_xml_read_and_write_with_only_or_ignore():
     assert outputs[0].name == 'geometry:wing:span'
     assert outputs[0].value == approx([42])
     assert outputs[0].units == 'm'
-
-
-    
