@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Basis for registering and retrieving services
 """
@@ -16,12 +15,14 @@ Basis for registering and retrieving services
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import re
 from typing import List, Tuple, Set, Union, Optional, Any
 
 import pelix
 from pelix.framework import FrameworkFactory, Framework, Bundle, BundleContext
 from pelix.internals.registry import ServiceReference
 from pelix.ipopo.constants import SERVICE_IPOPO, use_ipopo
+from pelix.ipopo.decorators import ComponentFactory, Provides, Property
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -168,17 +169,37 @@ class BundleLoader:
                                                              , ldap_filter)
         return references
 
-    def get_factory_names(self, factory_name: str
+    @classmethod
+    def register_factory(cls, component_class: type,
+                         factory_name: str,
+                         service_names: Union[List[str], str],
+                         properties: dict = None) -> type:
+        """
+        Registers provided class as iPOPO component factory.
+
+        :param component_class: the class of the components that will be provided by the factory
+        :param factory_name: the name of the factory
+        :param service_names: the service(s) that will be provided by the components
+        :param properties: the properties associated to the factory
+        :return: the input class, amended by iPOPO
+        """
+        obj = Provides(service_names)(component_class)
+
+        for key, value in properties.items():
+            obj = Property(field=cls._fieldify(key), name=key, value=value)(obj)
+
+        return ComponentFactory(factory_name)(obj)
+
+    def get_factory_names(self, service_name: str
                           , properties: dict = None
                           , case_sensitive: bool = False) -> List[str]:
         """
-        travels the availabale factory names to find what factories match *factory_name* and
-        provided *properties* (if provided)
+        Browses the available factory names to find what factories provide `service_name`
+        and match provided `properties` (if provided)
 
-        :param factory_name:
+        :param service_name:
         :param properties:
-        :param case_sensitive: if False, case of property values will be
-        ignored
+        :param case_sensitive: if False, case of property values will be ignored
         :return: the list of factory names
         """
         with use_ipopo(self.context) as ipopo:
@@ -187,7 +208,7 @@ class BundleLoader:
             for name in all_names:
                 details = ipopo.get_factory_details(name)
                 to_be_kept = True
-                if factory_name not in details['services'][0]:
+                if service_name not in details['services'][0]:
                     to_be_kept = False
                 elif properties is not None:
                     factory_properties: dict = details['properties']
@@ -223,3 +244,14 @@ class BundleLoader:
         """
         with use_ipopo(self.context) as ipopo:
             return ipopo.instantiate(factory_name, instance_name, properties)
+
+    @staticmethod
+    def _fieldify(name: str) -> str:
+        """
+        Converts a string into a valid field name, i.e. replaces all spaces and
+        non-word characters with an underscore.
+
+        :param name: the string to fieldify
+        :return: the field version of `name`
+        """
+        return re.compile(r'[\W_]+').sub('_', name).strip('_')

@@ -23,22 +23,23 @@ Basic "Hello World" services
 from pelix.ipopo.decorators import ComponentFactory, Provides, Instantiate, \
     Property
 
+from fastoad import BundleLoader
+
+
+# First, let's register 2 factories the iPOPO way
 
 # Define the component factory, with a given name
 @ComponentFactory("hello-world-factory")
-# Defines the service to provide when the component is active
 @Provides("hello.world")
 @Property("Prop1", None, 1)
 @Property("Prop2", None, "Says.Hello")
 @Property("Instantiated", None, True)
-# A component must be instantiated as soon as the bundle is active
 @Instantiate("provider")
 class Greetings1:
     def hello(self, name="World"):
         return "Hello, {0}!".format(name)
 
 
-# Another instance for the same service
 @ComponentFactory("hello-world-factory2")
 @Provides("hello.world")
 @Property("Prop1", None, 2)
@@ -50,12 +51,18 @@ class Greetings2:
         return "Hi, {0}!".format(name)
 
 
-@ComponentFactory("another-hello-world-factory")
-@Provides(["hello.world", "hello.world.no.instance"])
-@Property("Prop1", None, 3)
-@Property("Prop2", None, "Says.Hello")
-@Property("Instantiated", None, False)
-# Not instantiating this one
+# Register the factory without instantiating with our wrapping of iPOPO
 class OtherGreetings:
     def hello(self, name="World"):
         return "Hello again, {0}!".format(name)
+
+
+loader = BundleLoader()
+loader.register_factory(OtherGreetings,
+                        factory_name="another-hello-world-factory",
+                        service_names=["hello.world", "hello.world.no.instance"],
+                        properties={
+                            "Prop1": 3,
+                            "Prop2": "Says.Hello",
+                            "Instantiated": False}
+                        )
