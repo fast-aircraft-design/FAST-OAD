@@ -145,16 +145,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         :raise ValueError: if translation table is not set or does nto contain a required xpath
        """
         variables = self._get_outputs(system)
-
-        if only is None:
-            used_variables = variables
-        else:
-            used_variables = [variable for variable in variables if variable.name in only]
-
-        if ignore is not None:
-            used_variables = [variable for variable in used_variables
-                if variable.name not in ignore]
-
+        used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         self._write(used_variables)
 
     def _write(self, variables: Sequence[Variable]):
@@ -259,3 +250,27 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         assert not children, "XPath %s has already been processed" % xpath
 
         return element
+
+    @staticmethod
+    def _filter_variables(variables: Sequence[Variable], only: Sequence[str] = None,
+              ignore: Sequence[str] = None) -> Sequence[Variable]:
+        """
+        filters the variables such that the ones in arg only are kept and the ones in
+        arg ignore are removed.
+
+        :param variables:
+        :param only: List of OpenMDAO variable names that should be written. Other names will be
+                     ignored. If None, all variables will be written.
+        :param ignore: List of OpenMDAO variable names that should be ignored when writing
+        :return: filtered variables
+        """
+        if only is None:
+            used_variables = variables
+        else:
+            used_variables = [variable for variable in variables if variable.name in only]
+
+        if ignore is not None:
+            used_variables = [variable for variable in used_variables
+                if variable.name not in ignore]
+
+        return used_variables

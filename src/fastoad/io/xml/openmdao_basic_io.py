@@ -104,14 +104,7 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
         translator.set(names, xpaths)
         self.set_translator(translator)
 
-        if only is None:
-            used_variables = variables
-        else:
-            used_variables = [variable for variable in variables if variable.name in only]
-
-        if ignore is not None:
-            used_variables = [variable for variable in used_variables
-                if variable.name not in ignore]
+        used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
         self._write(used_variables)
 
