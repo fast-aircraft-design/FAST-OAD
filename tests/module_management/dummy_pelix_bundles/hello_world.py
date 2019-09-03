@@ -32,7 +32,7 @@ from fastoad import BundleLoader
 @ComponentFactory("hello-world-factory")
 @Provides("hello.world")
 @Property("Prop1", None, 1)
-@Property("Prop2", None, "Says.Hello")
+@Property("Prop_2", "Prop 2", "Says.Hello")
 @Property("Instantiated", None, True)
 @Instantiate("provider")
 class Greetings1:
@@ -43,7 +43,7 @@ class Greetings1:
 @ComponentFactory("hello-world-factory2")
 @Provides("hello.world")
 @Property("Prop1", None, 2)
-@Property("Prop2", None, "Says.Hi")
+@Property("Prop_2", "Prop 2", "Says.Hi")
 @Property("Instantiated", None, True)
 @Instantiate("provider2")
 class Greetings2:
@@ -58,11 +58,11 @@ class OtherGreetings:
 
 
 loader = BundleLoader()
-loader.register_factory(OtherGreetings,
-                        factory_name="another-hello-world-factory",
-                        service_names=["hello.world", "hello.world.no.instance"],
-                        properties={
-                            "Prop1": 3,
-                            "Prop2": "Says.Hello",
-                            "Instantiated": False}
-                        )
+print(loader.register_factory(OtherGreetings,
+                              factory_name="another-hello-world-factory",
+                              service_names=["hello.world", "hello.world.no.instance"],
+                              properties={
+                                  "Prop1": 3,
+                                  "Prop 2": "Says.Hello",
+                                  "Instantiated": False}
+                              ).__dict__)

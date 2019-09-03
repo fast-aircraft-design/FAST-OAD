@@ -139,24 +139,24 @@ def test_get_service_references():
 
     service_refs = loader.get_service_references("hello.world"
                                                  , {"Prop1": 1
-                                                     , "Prop2": "says.hello"})
+                                                     , "Prop 2": "says.hello"})
     assert len(service_refs) == 1
     greet_service = loader.context.get_service(service_refs[0])
     assert greet_service.hello("Dolly") == "Hello, Dolly!"
 
     # Existing service, case insensitivity
     service_refs = loader.get_service_references("hello.world",
-                                                 {"Prop2": "SAYS.HI"})
+                                                 {"Prop 2": "SAYS.HI"})
     assert len(service_refs) == 1
     greet_service = loader.context.get_service(service_refs[0])
     assert greet_service.hello() == "Hi, World!"
 
     # Existing service, case sensitivity
     service_refs = loader.get_service_references("hello.world",
-                                                 {"Prop2": "SAYS.HELLO"}, True)
+                                                 {"Prop 2": "SAYS.HELLO"}, True)
     assert service_refs is None
     service_refs = loader.get_service_references("hello.world",
-                                                 {"Prop2": "Says.Hello"}, True)
+                                                 {"Prop 2": "Says.Hello"}, True)
     assert len(service_refs) == 1
     river = loader.context.get_service(service_refs[0])
     assert river.hello("Sweetie") == "Hello, Sweetie!"
@@ -192,21 +192,21 @@ def test_get_services():
     assert len(services) == 1
 
     # Existing service, 2 properties, case insensitivity
-    services = loader.get_services("hello.world", {"Prop1": 1, "Prop2": "says.hello"})
+    services = loader.get_services("hello.world", {"Prop1": 1, "Prop 2": "says.hello"})
     assert len(services) == 1
     greet_service = services[0]
     assert greet_service.hello("Dolly") == "Hello, Dolly!"
 
     # Existing service, case insensitivity
-    services = loader.get_services("hello.world", {"Prop2": "SAYS.HI"})
+    services = loader.get_services("hello.world", {"Prop 2": "SAYS.HI"})
     assert len(services) == 1
     greet_service = services[0]
     assert greet_service.hello() == "Hi, World!"
 
     # Existing service, case sensitivity
-    services = loader.get_services("hello.world", {"Prop2": "SAYS.HELLO"}, True)
+    services = loader.get_services("hello.world", {"Prop 2": "SAYS.HELLO"}, True)
     assert services is None
-    services = loader.get_services("hello.world", {"Prop2": "Says.Hello"}, True)
+    services = loader.get_services("hello.world", {"Prop 2": "Says.Hello"}, True)
     assert len(services) == 1
     river = services[0]
     assert river.hello("Sweetie") == "Hello, Sweetie!"
@@ -230,7 +230,7 @@ def test_instantiate_component():
     song = loader.instantiate_component("another-hello-world-factory", "instance")
     assert song.hello("Sweetie") == "Hello again, Sweetie!"
     assert song.Prop1 == 3
-    assert song.Prop2 == "Says.Hello"
+    assert song.Prop_2 == "Says.Hello"
 
     # now one more service is instantiated
     services = loader.get_services("hello.world")
@@ -267,21 +267,21 @@ def test_get_factory_names():
     assert len(factory_names) == 1
 
     # Existing service, 2 properties, case insensitivity
-    factory_names = loader.get_factory_names("hello.world", {"Prop1": 1, "Prop2": "says.hello"})
+    factory_names = loader.get_factory_names("hello.world", {"Prop1": 1, "Prop 2": "says.hello"})
     assert len(factory_names) == 1
     greet_service = loader.instantiate_component(factory_names[0], 'greeter1')
     assert greet_service.hello("Dolly") == "Hello, Dolly!"
 
     # Existing service, case insensitivity
-    factory_names = loader.get_factory_names("hello.world", {"Prop2": "SAYS.HI"})
+    factory_names = loader.get_factory_names("hello.world", {"Prop 2": "SAYS.HI"})
     assert len(factory_names) == 1
     greet_service = loader.instantiate_component(factory_names[0], 'greeter2')
     assert greet_service.hello() == "Hi, World!"
 
     # Existing service, case sensitivity
-    factory_names = loader.get_factory_names("hello.world", {"Prop2": "SAYS.HELLO"}, True)
+    factory_names = loader.get_factory_names("hello.world", {"Prop 2": "SAYS.HELLO"}, True)
     assert not factory_names
-    factory_names = loader.get_factory_names("hello.world", {"Prop2": "Says.Hello"}, True)
+    factory_names = loader.get_factory_names("hello.world", {"Prop 2": "Says.Hello"}, True)
     assert len(factory_names) == 2
 
     # Pelix framework has to be deleted for next tests to run smoothly
