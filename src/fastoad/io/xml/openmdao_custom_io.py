@@ -135,24 +135,16 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
     def write(self, system: SystemSubclass, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
-        outputs = self._get_outputs(system)
-        self._write(outputs, ignore, only)
-
-    def _write(self, variables: Sequence[Variable], only: Sequence[str] = None,
-               ignore: Sequence[str] = None):
         """
-        Writes variables to defined XML
+        Writes OpenMDAO system variables to defined XML
 
-        :param variables:
+        :param system: instance of OpenMDAO System sub class
         :param only: List of OpenMDAO variable names that should be written. Other names will be
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
         :raise ValueError: if translation table is not set or does nto contain a required xpath
        """
-        if self._translator is None:
-            raise ValueError('Missing translator instance')
-
-        root = etree.Element(ROOT_TAG)
+        variables = self._get_outputs(system)
 
         if only is None:
             used_variables = variables
@@ -163,7 +155,20 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
             used_variables = [variable for variable in used_variables
                 if variable.name not in ignore]
 
-        for variable in used_variables:
+        self._write(used_variables)
+
+    def _write(self, variables: Sequence[Variable]):
+        """
+        Writes variables to defined XML
+        :param variables:
+        :raise ValueError: if translation table is not set or does nto contain a required xpath
+       """
+        if self._translator is None:
+            raise ValueError('Missing translator instance')
+
+        root = etree.Element(ROOT_TAG)
+
+        for variable in variables:
 
             xpath = self._translator.get_xpath(variable.name)
             element = self._create_xpath(root, xpath)

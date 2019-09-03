@@ -90,21 +90,30 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
 
     def write(self, system: SystemSubclass, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
-        outputs = self._get_outputs(system)
+        variables = self._get_outputs(system)
 
         names = []
         xpaths = []
-        for output in outputs:
-            path_components = output.name.split(self.path_separator)
+        for variable in variables:
+            path_components = variable.name.split(self.path_separator)
             xpath = '/'.join(path_components)
-            names.append(output.name)
+            names.append(variable.name)
             xpaths.append(xpath)
 
         translator = VarXpathTranslator()
         translator.set(names, xpaths)
         self.set_translator(translator)
 
-        self._write(outputs, only, ignore)
+        if only is None:
+            used_variables = variables
+        else:
+            used_variables = [variable for variable in variables if variable.name in only]
+
+        if ignore is not None:
+            used_variables = [variable for variable in used_variables
+                if variable.name not in ignore]
+
+        self._write(used_variables)
 
     def write_inputs(self, system: SystemSubclass, optional_inputs: bool = True,
         only: Sequence[str] = None,
