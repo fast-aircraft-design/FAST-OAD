@@ -18,8 +18,8 @@ from typing import TypeVar
 
 from openmdao.core.system import System
 
-""" Simple structure for standard OpenMDAO variable """
 Variable = namedtuple('Variable', ['name', 'value', 'units'])
+""" Simple structure for standard OpenMDAO variable """
 
-""" OpenMDAO System subclass """
 SystemSubclass = TypeVar('SystemSubclass', bound=System)
+""" OpenMDAO System subclass """
