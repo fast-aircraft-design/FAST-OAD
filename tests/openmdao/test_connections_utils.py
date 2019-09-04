@@ -123,6 +123,7 @@ def _test_problem(problem, expected_missing_mandatory_variables,
 
 
 def test_get_variables_of_unconnected_inputs():
+
     def _test_and_check(problem,
                         expected_mandatory_vars: List[Variable],
                         expected_optional_vars: List[Variable]):
@@ -135,10 +136,11 @@ def test_get_variables_of_unconnected_inputs():
             [str(i) for i in expected_optional_vars])
 
     # Check with an ExplicitComponent
+    problem = Problem(Disc1())
     expected_mandatory_vars = [Variable(name='x', value=np.array([np.nan]), units=None)]
     expected_optional_vars = [Variable(name='z', value=np.array([5., 2.]), units=None),
                               Variable(name='y2', value=np.array([1.]), units=None)]
-    _test_and_check(Disc1(), expected_mandatory_vars, expected_optional_vars)
+    _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
     # Check with a Group
     group = Group()
