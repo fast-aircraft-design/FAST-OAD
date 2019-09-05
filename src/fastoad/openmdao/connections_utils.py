@@ -110,26 +110,28 @@ def get_vars_of_unconnected_inputs(problem: Problem,
     :return: IndepVarComp Component
     """
 
-    mandatory_unconnected, _ = get_unconnected_inputs(problem)
+    mandatory_unconnected, optional_unconnected = get_unconnected_inputs(problem)
     model = problem.model
 
     mandatory_unconnected_vars = []
     optional_unconnected_vars = []
 
-    prom2abs = model._var_allprocs_prom2abs_list['input']
-
-    # TODO: This should be optimized as the list of prom names is used in
-    #       get_unconnected_inputs
-    for prom_name in prom2abs.keys():
-        # Pick first abs_name
-        abs_name = prom2abs[prom_name][0]
-        meta = model._var_abs2meta[abs_name]
-        if abs_name in mandatory_unconnected:
+    processes_prom_names = []
+    for abs_name in mandatory_unconnected:
+        prom_name = model._var_abs2prom['input'][abs_name]
+        if prom_name not in processes_prom_names:
+            processes_prom_names.append(prom_name)
+            metadata = model._var_abs2meta[abs_name]
             mandatory_unconnected_vars.append(
-                Variable(prom_name, meta['value'], meta['units']))
-        else:
+                Variable(prom_name, metadata['value'], metadata['units']))
+
+    for abs_name in optional_unconnected:
+        prom_name = model._var_abs2prom['input'][abs_name]
+        if prom_name not in processes_prom_names:
+            processes_prom_names.append(prom_name)
+            metadata = model._var_abs2meta[abs_name]
             optional_unconnected_vars.append(
-                Variable(prom_name, meta['value'], meta['units']))
+                Variable(prom_name, metadata['value'], metadata['units']))
 
     return mandatory_unconnected_vars, optional_unconnected_vars
 
