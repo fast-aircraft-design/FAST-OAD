@@ -67,7 +67,7 @@ def test_high_lift_drag():
     assert get_cd(27, 35) == approx(0.04644, abs=1e-5)
 
 
-def test_high_lift_drag():
+def test_high_lift_lift():
     """ Tests DeltaCLHighLift """
     input_list = ['geometry:wing_sweep_0',
                   'geometry:wing_sweep_100_outer',
@@ -109,19 +109,19 @@ def test_high_lift_aero():
                   ]
 
     def get_cl_cd(slat_angle, flap_angle, mach, landing_flag):
-        id = 'landing' if landing_flag else 'to'
+        phase = 'landing' if landing_flag else 'to'
 
         ivc = get_indep_var_comp(input_list)
-        ivc.add_output('sizing_mission:slat_angle_%s' % id, slat_angle, units='deg')
-        ivc.add_output('sizing_mission:flap_angle_%s' % id, flap_angle, units='deg')
+        ivc.add_output('sizing_mission:slat_angle_%s' % phase, slat_angle, units='deg')
+        ivc.add_output('sizing_mission:flap_angle_%s' % phase, flap_angle, units='deg')
         ivc.add_output('xfoil:mach', mach)
         component = ComputeDeltaHighLift()
         component.options['landing_flag'] = landing_flag
         problem = run_system(component, ivc)
         if landing_flag:
             return problem['delta_cl_landing']
-        else:
-            return problem['delta_cl_takeoff'], problem['delta_cd_takeoff']
+
+        return problem['delta_cl_takeoff'], problem['delta_cd_takeoff']
 
     cl, cd = get_cl_cd(18, 10, 0.2, False)
     assert cl == approx(0.516, abs=1e-3)
@@ -298,6 +298,7 @@ def test_polar():
 
 
 def test_low_speed_aero():
+    """ Tests group ComputeAerodynamicsLowSpeed """
     input_list = [
         'geometry:fuselage_width_max',
         'geometry:fuselage_height_max',

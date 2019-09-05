@@ -69,12 +69,13 @@ def create_inputs():
         problem.model.add_subsystem('component', component, promotes=['*'])
         problem.setup(mode='fwd')
         mandatory, optional = get_unconnected_inputs(problem)
-        vars = mandatory + optional
-        var_names = [var.split('.')[-1] for var in vars]
+        unconnected_vars = mandatory + optional
+        var_names = [var.split('.')[-1] for var in unconnected_vars]
         ivc_ceras = ceras_reader.read(only=var_names, ignore=ignore_list)
 
         for var_name in var_names:
-            for (name, value, attributes) in ivc_ceras._indep_external:
+            for (name, value,
+                 attributes) in ivc_ceras._indep_external:  # pylint: disable=protected-access
                 if name == var_name:
                     ivc_aero.add_output(var_name, val=value, units=attributes['units'])
                     break

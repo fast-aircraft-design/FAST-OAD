@@ -110,6 +110,7 @@ def test_aerodynamics_high_speed():
 
 
 def test_aerodynamics_low_speed():
+    """ Tests AerodynamicsLowSpeed """
     input_list = [
         'geometry:engine_number',
         'geometry:fan_length',
