@@ -15,27 +15,25 @@ Test module for OpenMDAO checks
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from typing import List
 
+import numpy as np
 import pytest
 from openmdao.core.group import Group
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
-import numpy as np
 
 from fastoad.exceptions import NoSetupError
-from fastoad.openmdao.types import Variable
 from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
     get_vars_of_unconnected_inputs, build_ivc_of_unconnected_inputs
-
+from fastoad.openmdao.types import Variable
+from tests.io.xml.data.a_airframe.airframe import Airframe
 from tests.sellar_example.disc1 import Disc1
-# Logger for this module
 from tests.sellar_example.disc2 import Disc2
 from tests.sellar_example.functions import Functions
 from tests.sellar_example.sellar import Sellar
 
-from tests.io.xml.data.a_airframe.airframe import Airframe
-
-
+# Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -107,14 +105,14 @@ def _test_problem(problem, expected_missing_mandatory_variables,
     """ Tests get_unconnected_inputs for provided problem """
     # Check without setup  -> error
     with pytest.raises(NoSetupError) as exc_info:
-        _, _ = get_unconnected_inputs(problem, _LOGGER)
+        _, _ = get_unconnected_inputs(problem, logger=_LOGGER)
     assert exc_info is not None
 
     # Check after setup
     problem.setup()
 
     # with logger provided
-    mandatory, optional = get_unconnected_inputs(problem, _LOGGER)
+    mandatory, optional = get_unconnected_inputs(problem, logger=_LOGGER)
     assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)
     assert sorted(optional) == sorted(expected_missing_optional_variables)
 
@@ -124,34 +122,55 @@ def _test_problem(problem, expected_missing_mandatory_variables,
     assert sorted(optional) == sorted(expected_missing_optional_variables)
 
 
-
 def test_get_variables_of_unconnected_inputs():
+    def _test_and_check(problem,
+                        expected_mandatory_vars: List[Variable],
+                        expected_optional_vars: List[Variable]):
+        problem.setup()
+        mandatory_vars_prom, optional_vars_prom = get_vars_of_unconnected_inputs(problem)
 
-    known_optional_var_prom = Variable('kfactors_a1:K_A1', np.array([1.]), None)
-    known_mandatory_var_prom = Variable('geometry:wing_area', np.array([np.nan]), 'm**2')
+        assert set([str(i) for i in mandatory_vars_prom]) == set(
+            [str(i) for i in expected_mandatory_vars])
+        assert set([str(i) for i in optional_vars_prom]) == set(
+            [str(i) for i in expected_optional_vars])
 
-    system = Airframe()
+    # Check with an ExplicitComponent
+    expected_mandatory_vars = [Variable(name='x', value=np.array([np.nan]), units=None)]
+    expected_optional_vars = [Variable(name='z', value=np.array([5., 2.]), units=None),
+                              Variable(name='y2', value=np.array([1.]), units=None)]
+    _test_and_check(Disc1(), expected_mandatory_vars, expected_optional_vars)
 
-    problem = Problem()
-    problem.model = system
-    problem.setup()
+    # Check with a Group
+    group = Group()
+    group.add_subsystem('disc1', Disc1(), promotes=['*'])
+    group.add_subsystem('disc2', Disc2(), promotes=['*'])
+    problem = Problem(group)
 
-    mandatory_vars_prom, optional_vars_prom = get_vars_of_unconnected_inputs(problem)
+    expected_mandatory_vars = [Variable(name='x', value=np.array([np.nan]), units=None)]
+    expected_optional_vars = [Variable(name='z', value=np.array([5., 2.]), units=None)]
+    _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
-    assert len(optional_vars_prom) == 31
-    assert len(mandatory_vars_prom) == 23
-    assert (str(known_optional_var_prom) in [str(i) for i in optional_vars_prom])
-    assert (str(known_mandatory_var_prom) in [str(i) for i in mandatory_vars_prom])
+    # Check with the whole Sellar problem.
+    # 'z' variable should now be mandatory, because it is so in Functions
+    group = Group()
+    group.add_subsystem('disc1', Disc1(), promotes=['*'])
+    group.add_subsystem('disc2', Disc2(), promotes=['*'])
+    group.add_subsystem('functions', Functions(), promotes=['*'])
+    problem = Problem(group)
+
+    expected_mandatory_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
+                               Variable(name='z', value=np.array([np.nan, np.nan]), units=None)]
+    expected_optional_vars = []
+    _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
+
 
 def test_build_ivc_of_unconnected_inputs():
-
     known_optional_var_prom = Variable('kfactors_a1:K_A1', np.array([1.]), None)
     known_mandatory_var_prom = Variable('geometry:wing_area', np.array([np.nan]), 'm**2')
 
     system = Airframe()
 
-    problem = Problem()
-    problem.model = system
+    problem = Problem(system)
     problem.setup()
 
     ivc_no_opt = build_ivc_of_unconnected_inputs(problem, optional_inputs=False)
@@ -162,7 +181,9 @@ def test_build_ivc_of_unconnected_inputs():
         outputs_no_opt.append(Variable(name, value, attributes['units']))
 
     outputs_with_opt = []
-    for (name, value, attributes) in ivc_with_opt._indep_external:  # pylint: disable=protected-access
+    for (
+            name, value,
+            attributes) in ivc_with_opt._indep_external:  # pylint: disable=protected-access
         outputs_with_opt.append(Variable(name, value, attributes['units']))
 
     assert len(outputs_with_opt) == 54
