@@ -202,6 +202,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                 outputs.append(Variable(name, value, attributes['units']))
         else:
             # Using .list_outputs(), that requires the model to have run
+            # TODO: this limitation may be removed by using OpenMDAO private attributes
             for (name, attributes) in system.list_outputs(prom_name=self.use_promoted_names,
                                                           units=True,
                                                           out_stream=None):

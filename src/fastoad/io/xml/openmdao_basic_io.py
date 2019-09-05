@@ -109,23 +109,16 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
 
         self._write(used_variables)
 
-    def write_inputs(self, problem: Problem, optional_inputs: bool = True,
-                     only: Sequence[str] = None,
-                     ignore: Sequence[str] = None):
+    def write_inputs(self, problem: Problem, optional_inputs: bool = True):
         """
         Write inputs of a Problem to an xml file
 
-        optional_inputs is a Boolean to specify if the inputs shall also
-        include the ones with default values.
-
         :param problem: OpenMDAO Problem instance to read.
-        :param optional_inputs: Boolean for optional inputs.
-        :param only: List of OpenMDAO variable names that should be written. Other names will be
-                     ignored. If None, all variables will be written.
-        :param ignore: List of OpenMDAO variable names that should be ignored when writing.
+        :param optional_inputs: if True, inputs with non-NaN values will also
+                                be written.
         """
         ivc_inputs = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=optional_inputs)
-        self.write(ivc_inputs, only=only, ignore=ignore)
+        self.write(ivc_inputs)
 
     def _read_xml(self) -> Sequence[Variable]:
         """

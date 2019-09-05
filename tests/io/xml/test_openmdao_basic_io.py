@@ -27,9 +27,7 @@ from pytest import approx
 from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.io.xml import XPathReader
 from fastoad.openmdao.types import Variable
-
 from tests.sellar_example.sellar import Sellar
-from tests.io.xml.data.a_airframe.airframe import Airframe
 
 
 def _check_basic_ivc(ivc: IndepVarComp):
@@ -79,40 +77,6 @@ def _check_basic_ivc(ivc: IndepVarComp):
     assert outputs[8].value == approx([100, 200, 400, 500, 600])
     assert outputs[8].units is None
 
-def _compare_xml(xml_1, xml_2):
-    """ Checks that both xml files are the same """
-    xml_1_read = OpenMdaoXmlIO(xml_1)
-    ivc_1 = xml_1_read.read()
-    xml_2_read = OpenMdaoXmlIO(xml_2)
-    ivc_2 = xml_2_read.read()
-    are_same = _compare_ivc(ivc_1, ivc_2)
-    return are_same
-
-def _compare_ivc(ivc_1, ivc_2):
-    """ Checks that both ivc are the same """
-    are_same = True
-
-    outputs_1 = {}
-    # pylint: disable=protected-access  #  needed for OpenMDAO introspection
-    for (name, value, attributes) in ivc_1._indep_external:
-        outputs_1[name] = Variable(name, value, attributes['units'])
-    outputs_2 = {}
-    # pylint: disable=protected-access #  needed for OpenMDAO introspection
-    for (name, value, attributes) in ivc_2._indep_external:
-        outputs_2[name] = Variable(name, value, attributes['units'])
-    # Check
-    for _, (key, value) in enumerate(outputs_1.items()):
-        if are_same:
-            if key in outputs_2.keys():
-                var_1 = outputs_1[key]
-                var_2 = outputs_2[key]
-                are_same = (var_1.name == var_2.name) and \
-                    (str(var_1.value) == str(var_2.value)) and \
-                        (var_1.units == var_2.units)
-            else:
-                are_same = False
-
-    return are_same
 
 def test_basic_xml_read_and_write_from_ivc():
     """
@@ -289,37 +253,3 @@ def test_basic_xml_write_from_problem():
     assert len(tree.xpath('/aircraft/f')) == 1
     assert len(tree.xpath('/aircraft/g1')) == 1
     assert len(tree.xpath('/aircraft/g2')) == 1
-
-def test_write_xml_from_ivc_system_inputs():
-    """
-    Tests the creation of an XML file from OpenMDAO ivc
-    """
-    data_folder = pth.join(pth.dirname(__file__), 'data')
-    result_folder = pth.join(pth.dirname(__file__), 'results', 'xml_system_inputs')
-    if pth.exists(result_folder):
-        shutil.rmtree(result_folder)
-
-    # Read full IndepVarComp
-    filename = pth.join(result_folder, 'xml_system_inputs.xml')
-    xml_read = OpenMdaoXmlIO(filename)
-    xml_read.path_separator = ':'
-
-    system = Airframe()
-
-    problem = Problem()
-    problem.model = system
-    problem.setup()
-
-    xml_read.write_inputs(problem, optional_inputs=True)
-    ref_file = pth.join(data_folder, 'xml_airframe_inputs_ref.xml')
-
-    assert _compare_xml(filename, ref_file)
-
-    filename = pth.join(result_folder, 'xml_system_inputs_no_opt.xml')
-    xml_read = OpenMdaoXmlIO(filename)
-    xml_read.path_separator = ':'
-
-    xml_read.write_inputs(problem, optional_inputs=False)
-    ref_file = pth.join(data_folder, 'xml_airframe_inputs_no_opt_ref.xml')
-
-    assert _compare_xml(filename, ref_file)
