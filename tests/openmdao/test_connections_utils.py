@@ -25,9 +25,8 @@ from openmdao.core.problem import Problem
 
 from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
-    get_vars_of_unconnected_inputs, build_ivc_of_unconnected_inputs
+    build_ivc_of_unconnected_inputs
 from fastoad.openmdao.types import Variable
-from tests.io.xml.data.a_airframe.airframe import Airframe
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
 from tests.sellar_example.functions import Functions
@@ -122,18 +121,22 @@ def _test_problem(problem, expected_missing_mandatory_variables,
     assert sorted(optional) == sorted(expected_missing_optional_variables)
 
 
-def test_get_variables_of_unconnected_inputs():
-
-    def _test_and_check(problem,
+def test_build_ivc_of_unconnected_inputs():
+    def _test_and_check(problem: Problem,
                         expected_mandatory_vars: List[Variable],
                         expected_optional_vars: List[Variable]):
         problem.setup()
-        mandatory_vars_prom, optional_vars_prom = get_vars_of_unconnected_inputs(problem)
-
-        assert set([str(i) for i in mandatory_vars_prom]) == set(
+        ivc = build_ivc_of_unconnected_inputs(problem, optional_inputs=False)
+        ivc_vars = [Variable(name, value, attributes['units'])
+                    for (name, value, attributes) in ivc._indep_external]
+        assert set([str(i) for i in ivc_vars]) == set(
             [str(i) for i in expected_mandatory_vars])
-        assert set([str(i) for i in optional_vars_prom]) == set(
-            [str(i) for i in expected_optional_vars])
+
+        ivc = build_ivc_of_unconnected_inputs(problem, optional_inputs=True)
+        ivc_vars = [Variable(name, value, attributes['units'])
+                    for (name, value, attributes) in ivc._indep_external]
+        assert set([str(i) for i in ivc_vars]) == set(
+            [str(i) for i in expected_mandatory_vars + expected_optional_vars])
 
     # Check with an ExplicitComponent
     problem = Problem(Disc1())
@@ -165,32 +168,3 @@ def test_get_variables_of_unconnected_inputs():
     expected_optional_vars = []
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
-
-def test_build_ivc_of_unconnected_inputs():
-    known_optional_var_prom = Variable('kfactors_a1:K_A1', np.array([1.]), None)
-    known_mandatory_var_prom = Variable('geometry:wing_area', np.array([np.nan]), 'm**2')
-
-    system = Airframe()
-
-    problem = Problem(system)
-    problem.setup()
-
-    ivc_no_opt = build_ivc_of_unconnected_inputs(problem, optional_inputs=False)
-    ivc_with_opt = build_ivc_of_unconnected_inputs(problem, optional_inputs=True)
-
-    outputs_no_opt = []
-    for (name, value, attributes) in ivc_no_opt._indep_external:  # pylint: disable=protected-access
-        outputs_no_opt.append(Variable(name, value, attributes['units']))
-
-    outputs_with_opt = []
-    for (
-            name, value,
-            attributes) in ivc_with_opt._indep_external:  # pylint: disable=protected-access
-        outputs_with_opt.append(Variable(name, value, attributes['units']))
-
-    assert len(outputs_with_opt) == 54
-    assert len(outputs_no_opt) == 23
-    assert not (str(known_optional_var_prom) in [str(i) for i in outputs_no_opt])
-    assert (str(known_optional_var_prom) in [str(i) for i in outputs_with_opt])
-    assert (str(known_mandatory_var_prom) in [str(i) for i in outputs_no_opt])
-    assert (str(known_mandatory_var_prom) in [str(i) for i in outputs_with_opt])

@@ -99,8 +99,8 @@ def _get_value_from_absolute_name(system: SystemSubclass, name):
     return None
 
 
-def get_vars_of_unconnected_inputs(problem: Problem,
-                                   ) -> Tuple[List[Variable], List[Variable]]:
+def _get_vars_of_unconnected_inputs(problem: Problem,
+                                    ) -> Tuple[List[Variable], List[Variable]]:
     """
     This function returns a list of Variable containing all the relative
     information of unconnected inputs of a Problem or System.
@@ -150,7 +150,7 @@ def build_ivc_of_unconnected_inputs(problem: Problem,
     :return: IndepVarComp Component
     """
 
-    mandatory_unconnected_vars, optional_unconnected_vars = get_vars_of_unconnected_inputs(problem)
+    mandatory_unconnected_vars, optional_unconnected_vars = _get_vars_of_unconnected_inputs(problem)
 
     ivc = IndepVarComp()
 
