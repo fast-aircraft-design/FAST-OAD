@@ -126,13 +126,13 @@ def test_build_ivc_of_unconnected_inputs():
                         expected_mandatory_vars: List[Variable],
                         expected_optional_vars: List[Variable]):
         problem.setup()
-        ivc = build_ivc_of_unconnected_inputs(problem, optional_inputs=False)
+        ivc = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=False)
         ivc_vars = [Variable(name, value, attributes['units'])
                     for (name, value, attributes) in ivc._indep_external]
         assert set([str(i) for i in ivc_vars]) == set(
             [str(i) for i in expected_mandatory_vars])
 
-        ivc = build_ivc_of_unconnected_inputs(problem, optional_inputs=True)
+        ivc = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=True)
         ivc_vars = [Variable(name, value, attributes['units'])
                     for (name, value, attributes) in ivc._indep_external]
         assert set([str(i) for i in ivc_vars]) == set(
@@ -141,7 +141,7 @@ def test_build_ivc_of_unconnected_inputs():
     # Check with an ExplicitComponent
     problem = Problem(Disc1())
     expected_mandatory_vars = [Variable(name='x', value=np.array([np.nan]), units=None)]
-    expected_optional_vars = [Variable(name='z', value=np.array([5., 2.]), units=None),
+    expected_optional_vars = [Variable(name='z', value=np.array([5., 2.]), units='m**2'),
                               Variable(name='y2', value=np.array([1.]), units=None)]
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
@@ -152,7 +152,7 @@ def test_build_ivc_of_unconnected_inputs():
     problem = Problem(group)
 
     expected_mandatory_vars = [Variable(name='x', value=np.array([np.nan]), units=None)]
-    expected_optional_vars = [Variable(name='z', value=np.array([5., 2.]), units=None)]
+    expected_optional_vars = [Variable(name='z', value=np.array([5., 2.]), units='m**2')]
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
     # Check with the whole Sellar problem.
@@ -164,7 +164,7 @@ def test_build_ivc_of_unconnected_inputs():
     problem = Problem(group)
 
     expected_mandatory_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
-                               Variable(name='z', value=np.array([np.nan, np.nan]), units=None)]
+                               Variable(name='z', value=np.array([np.nan, np.nan]), units='m**2')]
     expected_optional_vars = []
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 

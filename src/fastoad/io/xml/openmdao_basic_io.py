@@ -124,7 +124,7 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing.
         """
-        ivc_inputs = build_ivc_of_unconnected_inputs(problem, optional_inputs=optional_inputs)
+        ivc_inputs = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=optional_inputs)
         self.write(ivc_inputs, only=only, ignore=ignore)
 
     def _read_xml(self) -> Sequence[Variable]:

@@ -22,7 +22,6 @@ from openmdao.api import IndepVarComp
 from openmdao.core.problem import Problem
 
 from fastoad.exceptions import NoSetupError
-from fastoad.openmdao.types import Variable, SystemSubclass
 
 
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
@@ -61,7 +60,7 @@ def get_unconnected_inputs(problem: Problem,
         unconnected = [a for a in abs_names if a not in connexions or len(connexions[a]) == 0]
         if unconnected:
             for abs_name in abs_names:
-                value = _get_value_from_absolute_name(model, abs_name)
+                value = model._var_abs2meta[abs_name]['value']
                 if np.all(np.isnan(value)):
                     mandatory_unconnected.append(abs_name)
                 else:
@@ -77,88 +76,55 @@ def get_unconnected_inputs(problem: Problem,
             logger.warning(
                 'Following inputs are not connected so their default value will be used:')
             for abs_name in sorted(optional_unconnected):
-                value = _get_value_from_absolute_name(model, abs_name)
+                value = model._var_abs2meta[abs_name]['value']
                 logger.warning('    %s : %s', abs_name, value)
 
     return mandatory_unconnected, optional_unconnected
 
 
-def _get_value_from_absolute_name(system: SystemSubclass, name):
+def build_ivc_of_unconnected_inputs(problem: Problem,
+                                    with_optional_inputs: bool = False) -> IndepVarComp:
     """
+    This function returns an OpenMDAO IndepVarComp instance containing
+    all the unconnected inputs of a Problem.
 
-    :param system: any OpenMDAO system instance
-    :param name: absolute name of OpenMDAO variable
-    :return: currently associated value to identified variable, or None if variable could not be
-             found.
+    If *optional_inputs* is False, only inputs that have numpy.nan as default value (hence
+    considered as mandatory) will be in returned instance. Otherwise, all unconnected inputs will
+    be in returned instance.
+
+    :param problem: OpenMDAO Problem instance to inspect
+    :param with_optional_inputs: If True, returned instance will contain all unconnected inputs.
+                            Otherwise, it will contain only mandatory ones.
+    :return: IndepVarComp instance
     """
-
-    if name in system._var_abs2meta:
-        metadata: dict = system._var_abs2meta[name]
-        return metadata.get('value')
-
-    return None
-
-
-def _get_vars_of_unconnected_inputs(problem: Problem,
-                                    ) -> Tuple[List[Variable], List[Variable]]:
-    """
-    This function returns a list of Variable containing all the relative
-    information of unconnected inputs of a Problem or System.
-
-    :param problem: OpenMDAO Problem or System instance to inspect
-    :param logger: optional logger instance
-    :return: IndepVarComp Component
-    """
+    ivc = IndepVarComp()
 
     mandatory_unconnected, optional_unconnected = get_unconnected_inputs(problem)
     model = problem.model
 
-    mandatory_unconnected_vars = []
-    optional_unconnected_vars = []
+    # processed_prom_names will store promoted names that have been already processed, so that
+    # it won't be stored twice.
+    # By processing mandatory variable first, a promoted variable that would be mandatory somewhere
+    # and optional elsewhere will be retained as mandatory (and associated value will be NaN),
+    # which is fine.
+    # For promoted names that link to several optional variables and no mandatory ones, associated
+    # value will be the first encountered one, and this is as good a choice as any other.
+    processed_prom_names = []
 
-    processes_prom_names = []
-    for abs_name in mandatory_unconnected:
-        prom_name = model._var_abs2prom['input'][abs_name]
-        if prom_name not in processes_prom_names:
-            processes_prom_names.append(prom_name)
-            metadata = model._var_abs2meta[abs_name]
-            mandatory_unconnected_vars.append(
-                Variable(prom_name, metadata['value'], metadata['units']))
+    def _add_outputs(unconnected_names):
+        """ Fills ivc with data associated to each provided var"""
+        for abs_name in unconnected_names:
+            prom_name = model._var_abs2prom['input'][abs_name]
+            if prom_name not in processed_prom_names:
+                processed_prom_names.append(prom_name)
+                metadata = model._var_abs2meta[abs_name]
+                ivc.add_output(prom_name,
+                               val=metadata['value'],
+                               units=metadata['units'],
+                               desc=metadata['desc'])
 
-    for abs_name in optional_unconnected:
-        prom_name = model._var_abs2prom['input'][abs_name]
-        if prom_name not in processes_prom_names:
-            processes_prom_names.append(prom_name)
-            metadata = model._var_abs2meta[abs_name]
-            optional_unconnected_vars.append(
-                Variable(prom_name, metadata['value'], metadata['units']))
-
-    return mandatory_unconnected_vars, optional_unconnected_vars
-
-
-def build_ivc_of_unconnected_inputs(problem: Problem,
-                                    optional_inputs: bool = False) -> IndepVarComp:
-    """
-    This function returns an OpenMDAO IndepVarComp instance containing
-    all the unconnected inputs of a Problem or System.
-
-    optional_inputs is a Boolean to specify if the IndepVarComp shall contain also the
-    optional inputs.
-
-    :param problem: OpenMDAO Problem instance to inspect
-    :param optional_inputs: Boolean for optional inputs
-    :return: IndepVarComp Component
-    """
-
-    mandatory_unconnected_vars, optional_unconnected_vars = _get_vars_of_unconnected_inputs(problem)
-
-    ivc = IndepVarComp()
-
-    for var in mandatory_unconnected_vars:
-        ivc.add_output(var.name, var.value, units=var.units)
-
-    if optional_inputs:
-        for var in optional_unconnected_vars:
-            ivc.add_output(var.name, var.value, units=var.units)
+    _add_outputs(mandatory_unconnected)
+    if with_optional_inputs:
+        _add_outputs(optional_unconnected)
 
     return ivc
