@@ -44,6 +44,8 @@ from fastoad.modules.geometry.geom_components.wing.components \
     ComputeL2AndL3Wing, ComputeMACWing, ComputeMFW, ComputeSweepWing, \
     ComputeToCWing, ComputeWetAreaWing, ComputeXWing, ComputeYWing
 
+from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
+
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
     """
@@ -821,9 +823,8 @@ def test_geometry_wing_sweep(xpath_reader: XPathReader, input_xml):
     sweep_100_outer = problem['geometry:wing_sweep_100_outer']
     assert sweep_100_outer == pytest.approx(16.7, abs=1e-1)
 
-"""
 def test_geometry_wing_toc(xpath_reader: XPathReader, input_xml):
-    # Tests computation of the wing ToC
+    """ Tests computation of the wing ToC (Thickness of Chord) """
 
     input_list = [
         'tlar:cruise_Mach',
@@ -844,7 +845,7 @@ def test_geometry_wing_toc(xpath_reader: XPathReader, input_xml):
     assert toc_kink == pytest.approx(0.121, abs=1e-3)
     toc_tip = problem['geometry:wing_toc_tip']
     assert toc_tip == pytest.approx(0.11, abs=1e-2)
-"""
+
 
 def test_geometry_wing_wet_area(xpath_reader: XPathReader, input_xml):
     """ Tests computation of the wing wet area """
@@ -915,3 +916,11 @@ def test_geometry_wing_y(xpath_reader: XPathReader, input_xml):
     assert y3 == pytest.approx(6.88, abs=1e-2)
     y4 = problem['geometry:wing_y4']
     assert y4 == pytest.approx(17.2, abs=1e-1)
+
+
+# TODO: One module for drawing the wing shall be externalized from OpenMDAO
+
+def test_geometry_global_wing(xpath_reader: XPathReader, input_xml):
+    """ Tests computation of the global wing geometry components """
+
+    pass
