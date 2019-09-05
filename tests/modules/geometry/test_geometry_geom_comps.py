@@ -321,7 +321,7 @@ def test_geometry_global_ht(xpath_reader: XPathReader, input_xml):
         'geometry:ht_taper_ratio',
         'geometry:ht_aspect_ratio',
         'geometry:ht_sweep_25',
-        'tlar:cruise_Mach'        
+        'tlar:cruise_Mach'
     ]
 
     input_vars = input_xml.read(only=input_list)
@@ -396,8 +396,8 @@ def test_compute_vt_area(xpath_reader: XPathReader, input_xml):
         'geometry:wing_l0',
         'geometry:wing_area',
         'geometry:wing_span',
-        'geometry:vt_lp', 
-        'geometry:vt_area', 
+        'geometry:vt_lp',
+        'geometry:vt_area',
         'aerodynamics:Cl_alpha_vt'
     ]
 
@@ -566,7 +566,7 @@ def test_compute_vt_vol_co(xpath_reader: XPathReader, input_xml):
     component = ComputeVTVolCoeff()
 
     problem = run_system(component, input_vars)
-    
+
     vol_coeff = problem['geometry:vt_vol_coeff']
     assert vol_coeff == pytest.approx(0.105, abs=1e-3)
 
@@ -626,7 +626,7 @@ def test_geometry_global_vt(xpath_reader: XPathReader, input_xml):
     lp_vt = problem['geometry:vt_lp']
     assert lp_vt == pytest.approx(16.55, abs=1e-2)
     k_ar_effective = problem['k_ar_effective']
-    assert k_ar_effective == pytest.approx(1.55, abs=1e-2)    
+    assert k_ar_effective == pytest.approx(1.55, abs=1e-2)
     cl = problem['aerodynamics:Cl_alpha_vt']
     assert cl == pytest.approx(2.55, abs=1e-2)
     vol_coeff = problem['geometry:vt_vol_coeff']
@@ -820,6 +820,7 @@ def test_geometry_wing_sweep(xpath_reader: XPathReader, input_xml):
     assert sweep_100_inner == pytest.approx(0.0, abs=1e-1)
     sweep_100_outer = problem['geometry:wing_sweep_100_outer']
     assert sweep_100_outer == pytest.approx(16.7, abs=1e-1)
+
 """
 def test_geometry_wing_toc(xpath_reader: XPathReader, input_xml):
     # Tests computation of the wing ToC
@@ -843,7 +844,6 @@ def test_geometry_wing_toc(xpath_reader: XPathReader, input_xml):
     assert toc_kink == pytest.approx(0.121, abs=1e-3)
     toc_tip = problem['geometry:wing_toc_tip']
     assert toc_tip == pytest.approx(0.11, abs=1e-2)
-
 """
 
 def test_geometry_wing_wet_area(xpath_reader: XPathReader, input_xml):
