@@ -17,7 +17,6 @@ Test module for geometry general functions
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
 import os
 
-import pytest
 from tests.testing_utilities import compare_text_files
 
 from fastoad.modules.geometry.functions.airfoil_reshape import airfoil_reshape

@@ -18,7 +18,6 @@ Test module for geometry functions of cg components
 import os.path as pth
 
 import pytest
-from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
 
 from fastoad.io.xml import XPathReader
@@ -69,7 +68,7 @@ def input_xml() -> OpenMdaoLegacy1XmlIO:
     return OpenMdaoLegacy1XmlIO(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
-def test_compute_aero_center(xpath_reader: XPathReader, input_xml):
+def test_compute_aero_center(input_xml):
     """ Tests computation of aerodynamic center """
 
     input_list = [
@@ -114,7 +113,7 @@ def test_compute_cg_control_surfaces(input_xml):
         'geometry:wing_y3',
         'geometry:wing_position'
     ]
-    
+
     input_vars = input_xml.read(only=input_list)
 
     problem = Problem()
@@ -131,7 +130,7 @@ def test_compute_cg_control_surfaces(input_xml):
 
 def test_compute_cg_loadcase1(input_xml):
     """ Tests computation of center of gravity for load case 1 """
-    
+
     input_list = [
         'geometry:wing_l0',
         'geometry:wing_position',
@@ -160,7 +159,7 @@ def test_compute_cg_loadcase1(input_xml):
 
 def test_compute_cg_loadcase2(input_xml):
     """ Tests computation of center of gravity for load case 2 """
-    
+
     input_list = [
         'geometry:wing_l0',
         'geometry:wing_position',
@@ -191,7 +190,7 @@ def test_compute_cg_loadcase2(input_xml):
 
 def test_compute_cg_loadcase3(input_xml):
     """ Tests computation of center of gravity for load case 3 """
-    
+
     input_list = [
         'geometry:wing_l0',
         'geometry:wing_position',
@@ -229,7 +228,7 @@ def test_compute_cg_loadcase4(input_xml):
         'cg:cg_front_fret',
         'tlar:NPAX'
     ]
-    
+
     input_vars = input_xml.read(only=input_list)
 
     input_vars.add_output('x_cg_plane_up', 699570.01)
@@ -336,7 +335,7 @@ def test_compute_cg_others(input_xml):
 def test_compute_cg_ratio_aft(input_xml):
     """ Tests computation of center of gravity with aft estimation """
 
-    input_list = [ 
+    input_list = [
         'cg_airframe:A1',
         'cg_airframe:A2',
         'cg_airframe:A31',
@@ -403,7 +402,7 @@ def test_compute_cg_ratio_aft(input_xml):
         'weight_furniture:D5',
         'geometry:wing_l0',
         'geometry:wing_position'
-    ] 
+    ]
 
     input_vars = input_xml.read(only=input_list)
 
@@ -464,7 +463,7 @@ def test_compute_cg_tanks(input_xml):
 def test_compute_cg_wing(input_xml):
     """ Tests computation of wing center of gravity """
 
-    input_list = [ 
+    input_list = [
         'geometry:wing_break',
         'geometry:wing_front_spar_ratio_root',
         'geometry:wing_front_spar_ratio_kink',
@@ -502,7 +501,7 @@ def test_compute_cg_wing(input_xml):
 
 def test_compute_global_cg(input_xml):
     """ Tests computation of global center of gravity """
-    
+
     input_list = [
         'geometry:wing_l0',
         'geometry:wing_position',
@@ -587,7 +586,7 @@ def test_compute_global_cg(input_xml):
 
     problem.setup(mode='fwd')
     problem.run_model()
- 
+
     cg_ratio = problem['cg_ratio']
     assert cg_ratio == pytest.approx(0.388971, abs=1e-6)
 
@@ -637,8 +636,8 @@ def test_compute_static_margin(input_xml):
 
     problem.setup(mode='fwd')
     problem.run_model()
-    
+
     static_margin = problem['static_margin']
     assert static_margin == pytest.approx(0.098550, abs=1e-6)
-    cg = problem['cg:CG']
-    assert cg == pytest.approx(17.3, abs=1e-1)
+    cg_global = problem['cg:CG']
+    assert cg_global == pytest.approx(17.3, abs=1e-1)

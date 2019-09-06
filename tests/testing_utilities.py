@@ -44,11 +44,11 @@ def run_system(component: SystemSubclass, input_vars: IndepVarComp, setup_mode='
 
     return problem
 
+
 def compare_text_files(file1: str, file2: str):
     """
     :param file1: first file.
     :param file2: second file.
-
     :return: True if text files are the same
     """
     are_same = True
