@@ -126,7 +126,7 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         outputs['geometry:y_nacell'] = y_nacell
         outputs['cg_propulsion:B1'] = x_nacell_cg_absolute
         
-        #Wet surfaces 
+        # Wet surfaces
         wet_area_nac = 0.0004 * thrust_SL * 0.225 + 11      # By engine
         wet_area_pylon = 0.35 * wet_area_nac
         

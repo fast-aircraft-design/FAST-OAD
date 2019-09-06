@@ -45,6 +45,9 @@ from fastoad.modules.geometry.geom_components.wing.components \
 
 from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
 
+from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
+    ComputeNacelleAndPylonsGeometry
+
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
     """
@@ -969,3 +972,47 @@ def test_geometry_global_wing(input_xml):
     assert wing_y3 == pytest.approx(6.88, abs=1e-2)
     wing_y4 = problem['geometry:wing_y4']
     assert wing_y4 == pytest.approx(17.2, abs=1e-1)
+
+def test_geometry_nacelle_pylons(input_xml):
+    """ Tests computation of the nacelle and pylons component """
+
+    input_list = [
+        'propulsion_conventional:thrust_SL',
+        'geometry:y_ratio_engine',
+        'geometry:wing_span',
+        'geometry:wing_l0',
+        'geometry:wing_x0',
+        'geometry:wing_l2',
+        'geometry:wing_y2',
+        'geometry:wing_l3',
+        'geometry:wing_y3',
+        'geometry:wing_x3',
+        'geometry:wing_position',
+        'geometry:fuselage_length',
+        'geometry:fuselage_width_max'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeNacelleAndPylonsGeometry()
+
+    problem = run_system(component, input_vars)
+
+    pylon_length = problem['geometry:pylon_length']
+    assert pylon_length == pytest.approx(5.733, abs=1e-3)
+    fan_length = problem['geometry:fan_length']
+    assert fan_length == pytest.approx(3.127, abs=1e-3)
+    nacelle_length = problem['geometry:nacelle_length']
+    assert nacelle_length == pytest.approx(5.211, abs=1e-3)
+    nacelle_dia = problem['geometry:nacelle_dia']
+    assert nacelle_dia == pytest.approx(2.172, abs=1e-3)
+    lg_height = problem['geometry:LG_height']
+    assert lg_height == pytest.approx(3.041, abs=1e-3)
+    y_nacell = problem['geometry:y_nacell']
+    assert y_nacell == pytest.approx(5.373, abs=1e-3)
+    pylon_wet_area = problem['geometry:pylon_wet_area']
+    assert pylon_wet_area == pytest.approx(7.563, abs=1e-3)
+    nacelle_wet_area = problem['geometry:nacelle_wet_area']
+    assert nacelle_wet_area == pytest.approx(21.609, abs=1e-3)
+    cg_b1 = problem['cg_propulsion:B1']
+    assert cg_b1 == pytest.approx(13.5, abs=1e-1)
