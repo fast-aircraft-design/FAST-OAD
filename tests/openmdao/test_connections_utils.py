@@ -15,20 +15,24 @@ Test module for OpenMDAO checks
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from typing import List
 
+import numpy as np
 import pytest
 from openmdao.core.group import Group
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
 
 from fastoad.exceptions import NoSetupError
-from fastoad.openmdao.checks import get_unconnected_inputs
+from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
+    build_ivc_of_unconnected_inputs
+from fastoad.openmdao.types import Variable
 from tests.sellar_example.disc1 import Disc1
-# Logger for this module
 from tests.sellar_example.disc2 import Disc2
 from tests.sellar_example.functions import Functions
 from tests.sellar_example.sellar import Sellar
 
+# Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -100,14 +104,14 @@ def _test_problem(problem, expected_missing_mandatory_variables,
     """ Tests get_unconnected_inputs for provided problem """
     # Check without setup  -> error
     with pytest.raises(NoSetupError) as exc_info:
-        _, _ = get_unconnected_inputs(problem, _LOGGER)
+        _, _ = get_unconnected_inputs(problem, logger=_LOGGER)
     assert exc_info is not None
 
     # Check after setup
     problem.setup()
 
     # with logger provided
-    mandatory, optional = get_unconnected_inputs(problem, _LOGGER)
+    mandatory, optional = get_unconnected_inputs(problem, logger=_LOGGER)
     assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)
     assert sorted(optional) == sorted(expected_missing_optional_variables)
 
@@ -115,3 +119,52 @@ def _test_problem(problem, expected_missing_mandatory_variables,
     mandatory, optional = get_unconnected_inputs(problem)
     assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)
     assert sorted(optional) == sorted(expected_missing_optional_variables)
+
+
+def test_build_ivc_of_unconnected_inputs():
+    def _test_and_check(problem: Problem,
+                        expected_mandatory_vars: List[Variable],
+                        expected_optional_vars: List[Variable]):
+        problem.setup()
+        ivc = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=False)
+        ivc_vars = [Variable(name, value, attributes['units'])
+                    for (name, value, attributes) in ivc._indep_external]
+        assert set([str(i) for i in ivc_vars]) == set(
+            [str(i) for i in expected_mandatory_vars])
+
+        ivc = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=True)
+        ivc_vars = [Variable(name, value, attributes['units'])
+                    for (name, value, attributes) in ivc._indep_external]
+        assert set([str(i) for i in ivc_vars]) == set(
+            [str(i) for i in expected_mandatory_vars + expected_optional_vars])
+
+    # Check with an ExplicitComponent
+    problem = Problem(Disc1())
+    expected_mandatory_vars = [Variable(name='x', value=np.array([np.nan]), units=None)]
+    expected_optional_vars = [Variable(name='z', value=np.array([5., 2.]), units='m**2'),
+                              Variable(name='y2', value=np.array([1.]), units=None)]
+    _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
+
+    # Check with a Group
+    group = Group()
+    group.add_subsystem('disc1', Disc1(), promotes=['*'])
+    group.add_subsystem('disc2', Disc2(), promotes=['*'])
+    problem = Problem(group)
+
+    expected_mandatory_vars = [Variable(name='x', value=np.array([np.nan]), units=None)]
+    expected_optional_vars = [Variable(name='z', value=np.array([5., 2.]), units='m**2')]
+    _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
+
+    # Check with the whole Sellar problem.
+    # 'z' variable should now be mandatory, because it is so in Functions
+    group = Group()
+    group.add_subsystem('disc1', Disc1(), promotes=['*'])
+    group.add_subsystem('disc2', Disc2(), promotes=['*'])
+    group.add_subsystem('functions', Functions(), promotes=['*'])
+    problem = Problem(group)
+
+    expected_mandatory_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
+                               Variable(name='z', value=np.array([np.nan, np.nan]), units='m**2')]
+    expected_optional_vars = []
+    _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
+

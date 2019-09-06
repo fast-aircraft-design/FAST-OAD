@@ -17,7 +17,6 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 import logging
 import os
 import os.path as pth
-from collections import namedtuple
 from typing import Sequence, List
 
 import numpy as np
@@ -29,14 +28,12 @@ from openmdao.vectors.vector import Vector
 
 from fastoad.io.serialize import AbstractOpenMDAOVariableIO, SystemSubclass
 from fastoad.io.xml.translator import VarXpathTranslator
+from fastoad.openmdao.types import Variable
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
 from .xpath_reader import XPathReader
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
-
-OutputVariable = namedtuple('_OutputVariable', ['name', 'value', 'units'])
-""" Simple structure for standard OpenMDAO variable """
 
 
 class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
@@ -88,14 +85,14 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         return ivc
 
     def _read_values(self, only: Sequence[str] = None,
-                     ignore: Sequence[str] = None) -> List[OutputVariable]:
+                     ignore: Sequence[str] = None) -> List[Variable]:
         """
         Reads output variables from provided system.
 
         :param only: List of OpenMDAO variable names that should be read. Other names will be
                      ignored. If None, all variables will be read.
         :param ignore: List of OpenMDAO variable names that should be ignored when reading.
-        :return: a list of OutputVariable instance
+        :return: a list of Variable instance
         :raise ValueError: if translation table is not set or does not contain a required variable
         """
 
@@ -132,24 +129,29 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                 units = units.replace('²', '**2')
                 units = units.replace('°', 'deg')
 
-            outputs.append(OutputVariable(var_name, values, units))
+            outputs.append(Variable(var_name, values, units))
 
         return outputs
 
     def write(self, system: SystemSubclass, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
-        outputs = self._get_outputs(system)
-        self._write(outputs, ignore, only)
-
-    def _write(self, outputs: Sequence[OutputVariable], only: Sequence[str] = None,
-               ignore: Sequence[str] = None):
         """
-        Writes outputs to defined XML
+        Writes OpenMDAO system variables to defined XML
 
-        :param outputs:
+        :param system: instance of OpenMDAO System sub class
         :param only: List of OpenMDAO variable names that should be written. Other names will be
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
+        :raise ValueError: if translation table is not set or does nto contain a required xpath
+       """
+        variables = self._get_outputs(system)
+        used_variables = self._filter_variables(variables, only=only, ignore=ignore)
+        self._write(used_variables)
+
+    def _write(self, variables: Sequence[Variable]):
+        """
+        Writes variables to defined XML
+        :param variables:
         :raise ValueError: if translation table is not set or does nto contain a required xpath
        """
         if self._translator is None:
@@ -157,39 +159,31 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
         root = etree.Element(ROOT_TAG)
 
-        if only is None:
-            used_outputs = outputs
-        else:
-            used_outputs = [output for output in outputs if output.name in only]
+        for variable in variables:
 
-        if ignore is not None:
-            used_outputs = [output for output in used_outputs if output.name not in ignore]
-
-        for output in used_outputs:
-
-            xpath = self._translator.get_xpath(output.name)
+            xpath = self._translator.get_xpath(variable.name)
             element = self._create_xpath(root, xpath)
 
             # Set value and units
-            if output.units:
-                element.attrib[UNIT_ATTRIBUTE] = output.units
+            if variable.units:
+                element.attrib[UNIT_ATTRIBUTE] = variable.units
 
             # Filling value for already created element
-            if not isinstance(output.value, (np.ndarray, Vector, list)):
+            if not isinstance(variable.value, (np.ndarray, Vector, list)):
                 # Here, it should be a float
-                element.text = str(output.value)
+                element.text = str(variable.value)
             else:
-                element.text = str(output.value[0])
+                element.text = str(variable.value[0])
 
                 # But if more than one value, create additional elements
                 parent = element.getparent()
-                if len(output.value) > 1:
-                    for value in output.value[1:]:
+                if len(variable.value) > 1:
+                    for value in variable.value[1:]:
                         element = etree.Element(element.tag)
                         parent.append(element)
                         element.text = str(value)
-                        if output.units:
-                            element.attrib[UNIT_ATTRIBUTE] = output.units
+                        if variable.units:
+                            element.attrib[UNIT_ATTRIBUTE] = variable.units
         # Write
         tree = etree.ElementTree(root)
         dirname = pth.dirname(self._data_source)
@@ -197,24 +191,25 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
             os.makedirs(dirname)
         tree.write(self._data_source, pretty_print=True)
 
-    def _get_outputs(self, system: SystemSubclass) -> List[OutputVariable]:
+    def _get_outputs(self, system: SystemSubclass) -> List[Variable]:
         """ returns the list of outputs from provided system """
 
-        outputs: List[OutputVariable] = []
+        outputs: List[Variable] = []
         if isinstance(system, IndepVarComp):
             # Outputs are accessible using private member
             # pylint: disable=protected-access
             for (name, value, attributes) in system._indep_external:
-                outputs.append(OutputVariable(name, value, attributes['units']))
+                outputs.append(Variable(name, value, attributes['units']))
         else:
             # Using .list_outputs(), that requires the model to have run
+            # TODO: this limitation may be removed by using OpenMDAO private attributes
             for (name, attributes) in system.list_outputs(prom_name=self.use_promoted_names,
                                                           units=True,
                                                           out_stream=None):
                 if self.use_promoted_names:
                     name = attributes['prom_name']
                 outputs.append(
-                    OutputVariable(name, attributes['value'], attributes.get('units', None)))
+                    Variable(name, attributes['value'], attributes.get('units', None)))
         return outputs
 
     @staticmethod
@@ -256,3 +251,27 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         assert not children, "XPath %s has already been processed" % xpath
 
         return element
+
+    @staticmethod
+    def _filter_variables(variables: Sequence[Variable], only: Sequence[str] = None,
+              ignore: Sequence[str] = None) -> Sequence[Variable]:
+        """
+        filters the variables such that the ones in arg only are kept and the ones in
+        arg ignore are removed.
+
+        :param variables:
+        :param only: List of OpenMDAO variable names that should be written. Other names will be
+                     ignored. If None, all variables will be written.
+        :param ignore: List of OpenMDAO variable names that should be ignored when writing
+        :return: filtered variables
+        """
+        if only is None:
+            used_variables = variables
+        else:
+            used_variables = [variable for variable in variables if variable.name in only]
+
+        if ignore is not None:
+            used_variables = [variable for variable in used_variables
+                if variable.name not in ignore]
+
+        return used_variables

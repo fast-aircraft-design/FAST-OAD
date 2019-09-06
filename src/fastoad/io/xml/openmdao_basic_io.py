@@ -20,12 +20,14 @@ import numpy as np
 from lxml import etree
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.core.indepvarcomp import IndepVarComp
+from openmdao.core.problem import Problem
 
 from fastoad.io.serialize import SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.translator import VarXpathTranslator
+from fastoad.openmdao.connections_utils import build_ivc_of_unconnected_inputs
 from fastoad.utils.strings import get_float_list_from_string
-from .openmdao_custom_io import OpenMdaoCustomXmlIO, OutputVariable
+from .openmdao_custom_io import OpenMdaoCustomXmlIO, Variable
 
 
 class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
@@ -89,36 +91,49 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
 
     def write(self, system: SystemSubclass, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
-        outputs = self._get_outputs(system)
+        variables = self._get_outputs(system)
 
         names = []
         xpaths = []
-        for output in outputs:
-            path_components = output.name.split(self.path_separator)
+        for variable in variables:
+            path_components = variable.name.split(self.path_separator)
             xpath = '/'.join(path_components)
-            names.append(output.name)
+            names.append(variable.name)
             xpaths.append(xpath)
 
         translator = VarXpathTranslator()
         translator.set(names, xpaths)
         self.set_translator(translator)
 
-        self._write(outputs, only, ignore)
+        used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
-    def _read_xml(self) -> Sequence[OutputVariable]:
+        self._write(used_variables)
+
+    def write_inputs(self, problem: Problem, optional_inputs: bool = True):
+        """
+        Write inputs of a Problem to an xml file
+
+        :param problem: OpenMDAO Problem instance to read.
+        :param optional_inputs: if True, inputs with non-NaN values will also
+                                be written.
+        """
+        ivc_inputs = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=optional_inputs)
+        self.write(ivc_inputs)
+
+    def _read_xml(self) -> Sequence[Variable]:
         """
         Reads self.data_source as a XML file
 
         Variable value will be a list of one or more values.
         Variable units will be a string, or None if no unit provided.
 
-        :return: list of variables (name, value, units) from data source
+        :return: list of Variables (name, value, units) from data source
         """
 
         context = etree.iterparse(self._data_source, events=("start", "end"))
 
         # Intermediate storing as a dict for easy access according to name when appending new values
-        outputs: Dict[str, OutputVariable] = {}
+        outputs: Dict[str, Variable] = {}
 
         current_path = []
 
@@ -133,8 +148,8 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
                 if value:
                     name = self.path_separator.join(current_path[1:])
                     if name not in outputs:
-                        # Add variable
-                        outputs[name] = OutputVariable(name, value, units)
+                        # Add Variable
+                        outputs[name] = Variable(name, value, units)
                     else:
                         # Variable already exists: append values (here the dict is useful)
                         outputs[name].value.extend(value)

@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-    Sellar discipline 2
+Types to interact with OpenMDAO
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -14,15 +13,13 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from openmdao.api import ExplicitComponent
+from collections import namedtuple
+from typing import TypeVar
 
+from openmdao.core.system import System
 
-class Disc2Base(ExplicitComponent):
-    """ An OpenMDAO base component to encapsulate Disc2 discipline """
+Variable = namedtuple('Variable', ['name', 'value', 'units'])
+""" Simple structure for standard OpenMDAO variable """
 
-    def setup(self):
-        self.add_input('z', val=[5, 2], desc='', units='m**2')  # for testing non-None units
-        self.add_input('y1', val=1.0, desc='')
-
-        self.add_output('y2', val=1.0, desc='')
-        self.declare_partials('*', '*')
+SystemSubclass = TypeVar('SystemSubclass', bound=System)
+""" OpenMDAO System subclass """
