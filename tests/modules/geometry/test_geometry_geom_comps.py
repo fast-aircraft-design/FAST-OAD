@@ -1041,3 +1041,24 @@ def test_geometry_total_area(input_xml):
 
     total_surface = problem['geometry:S_total']
     assert total_surface == pytest.approx(783.997, abs=1e-3)
+
+
+def test_geometry_update_mlg(input_xml):
+    """ Tests computation of the main landing gear """
+
+    input_list = [
+        'geometry:wing_l0',
+        'geometry:wing_position',
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    input_vars.add_output('cg_ratio', 0.364924)
+    input_vars.add_output('delta_lg', 12.93)
+
+    component = UpdateMLG()
+
+    problem = run_system(component, input_vars)
+
+    cg_a51 = problem['cg_airframe:A51']
+    assert cg_a51 == pytest.approx(18.00, abs=1e-2)
