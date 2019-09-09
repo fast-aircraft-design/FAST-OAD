@@ -24,29 +24,7 @@ from tests.testing_utilities import run_system
 
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
-from fastoad.modules.geometry.geom_components.fuselage \
-    import ComputeFuselageGeometry
-from fastoad.modules.geometry.geom_components.ht.components \
-    import ComputeHTArea, ComputeHTcg, ComputeHTMAC, ComputeHTChord, \
-            ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
-from fastoad.modules.geometry.geom_components.ht \
-    import ComputeHorizontalTailGeometry
-from fastoad.modules.geometry.geom_components.vt.components \
-    import ComputeVTArea, ComputeVTcg, ComputeVTMAC, ComputeVTChords, \
-            ComputeVTClalpha, ComputeCnBeta, ComputeVTSweep, \
-                ComputeVTVolCoeff, ComputeVTDistance
-from fastoad.modules.geometry.geom_components.vt \
-    import ComputeVerticalTailGeometry
-
-from fastoad.modules.geometry.geom_components.wing.components \
-    import ComputeB50, ComputeCLalpha, ComputeL1AndL4Wing, \
-    ComputeL2AndL3Wing, ComputeMACWing, ComputeMFW, ComputeSweepWing, \
-    ComputeToCWing, ComputeWetAreaWing, ComputeXWing, ComputeYWing
-
-from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
-
-from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
-    ComputeNacelleAndPylonsGeometry
+from fastoad.modules.geometry import GetCG, Geometry
 
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
@@ -65,23 +43,16 @@ def input_xml() -> OpenMdaoLegacy1XmlIO:
     return OpenMdaoLegacy1XmlIO(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
-def test_geometry_wing_wet_area(input_xml):
-    """ Tests computation of the wing wet area """
+def test_geometry_get_cg(input_xml):
+    """ Tests computation of the cg estimation """
 
-    input_list = [
-        'geometry:wing_l2',
-        'geometry:wing_y2',
-        'geometry:wing_area',
-        'geometry:fuselage_width_max'
-    ]
+    input_list = []
 
     input_vars = input_xml.read(only=input_list)
 
-    component = ComputeWetAreaWing()
+    component = GetCG()
 
     problem = run_system(component, input_vars)
 
     area_pf = problem['geometry:wing_area_pf']
     assert area_pf == pytest.approx(100.303, abs=1e-3)
-    wet_area = problem['geometry:wing_wet_area']
-    assert wet_area == pytest.approx(200.607, abs=1e-3)

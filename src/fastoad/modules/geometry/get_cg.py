@@ -2,16 +2,16 @@
     FAST - Copyright (c) 2016 ONERA ISAE
 """
 
-from fastoad.geometry.geom_components.ht import ComputeHorizontalTailGeometry
-from fastoad.geometry.geom_components.vt.compute_vertical_tail import ComputeVerticalTailGeometry
-from fastoad.geometry.geom_components.update_mlg import UpdateMLG
-from fastoad.geometry.geom_components.compute_total_area import ComputeTotalArea
-from fastoad.geometry.cg_components.compute_global_cg import ComputeGlobalCG
-from fastoad.geometry.cg_components.compute_cg_control_surfaces import ComputeControlSurfacesCG
-from fastoad.geometry.cg_components.compute_cg_wing import ComputeWingCG
-from fastoad.geometry.cg_components.compute_cg_tanks import ComputeTanksCG
-from fastoad.geometry.cg_components.compute_cg_others import ComputeOthersCG
-from fastoad.MassBreakdown.mass_breakdown import MassBreakdown
+from fastoad.modules.geometry.geom_components.ht import ComputeHorizontalTailGeometry
+from fastoad.modules.geometry.geom_components.vt.compute_vertical_tail import ComputeVerticalTailGeometry
+from fastoad.modules.geometry.geom_components.update_mlg import UpdateMLG
+from fastoad.modules.geometry.geom_components.compute_total_area import ComputeTotalArea
+from fastoad.modules.geometry.cg_components.compute_global_cg import ComputeGlobalCG
+from fastoad.modules.geometry.cg_components.compute_cg_control_surfaces import ComputeControlSurfacesCG
+from fastoad.modules.geometry.cg_components.compute_cg_wing import ComputeWingCG
+from fastoad.modules.geometry.cg_components.compute_cg_tanks import ComputeTanksCG
+from fastoad.modules.geometry.cg_components.compute_cg_others import ComputeOthersCG
+from fastoad.modules.mass_breakdown.mass_breakdown import MassBreakdown
 
 from openmdao.api import Group, NonlinearBlockGS, LinearBlockGS, ScipyKrylov, DirectSolver
 
@@ -40,9 +40,10 @@ class GetCG(Group):
                                                                      tail_type=self.tail_type, deriv_method=deriv_method), promotes=['*'])
         self.add_subsystem('compute_total_area',
                            ComputeTotalArea(deriv_method=deriv_method), promotes=['*'])
+        # TODO: Add deriv option to mass breakdown
         self.add_subsystem('compute_mass_breakdown', MassBreakdown(engine_location=self.engine_location,
                                                                    tail_type=self.tail_type,
-                                                                   ac_type=self.ac_type, deriv_method=deriv_method), promotes=['*'])
+                                                                   ac_type=self.ac_type), promotes=['*'])
         self.add_subsystem('compute_cg_wing', ComputeWingCG(deriv_method=deriv_method), promotes=['*'])
         self.add_subsystem('compute_cg_control_surface',
                            ComputeControlSurfacesCG(deriv_method=deriv_method), promotes=['*'])
