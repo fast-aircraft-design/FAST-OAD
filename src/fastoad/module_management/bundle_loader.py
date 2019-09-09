@@ -238,18 +238,36 @@ class BundleLoader:
         return names
 
     def instantiate_component(self, factory_name: str,
-                              instance_name: str,
                               properties: dict = None
                               ) -> Any:
         """
         Instantiates a component from given factory
         :param factory_name: name of the factory
-        :param instance_name: Name of the instance to be started
         :param properties: Initial properties of the component instance
         :return: the component instance
         """
         with use_ipopo(self.context) as ipopo:
-            return ipopo.instantiate(factory_name, instance_name, properties)
+            return ipopo.instantiate(factory_name,
+                                     self.get_instance_name(factory_name),
+                                     properties)
+
+    def get_instance_name(self, base_name: str):
+        """
+        Creates an instance name that is not currently used by iPOPO
+
+        :param base_name: the beginning of the instance name
+        :return: the created instance name
+        """
+        with use_ipopo(self.context) as ipopo:
+            instances = ipopo.get_instances()
+            instance_names = [i[0] for i in instances]
+            i = 0
+            name = '%s_%i' % (base_name, i)
+            while name in instance_names:
+                i = i + 1
+                name = '%s_%i' % (base_name, i)
+
+            return name
 
     @staticmethod
     def _fieldify(name: str) -> str:

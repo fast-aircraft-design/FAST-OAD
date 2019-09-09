@@ -227,7 +227,7 @@ def test_instantiate_component():
     services = loader.get_services("hello.world")
     assert len(services) == 2
 
-    song = loader.instantiate_component("another-hello-world-factory", "instance")
+    song = loader.instantiate_component("another-hello-world-factory")
     assert song.hello("Sweetie") == "Hello again, Sweetie!"
     assert song.Prop1 == 3
     assert song.Prop_2 == "Says.Hello"
@@ -277,13 +277,13 @@ def test_get_factory_names():
     # Existing service, 2 properties, case insensitivity
     factory_names = loader.get_factory_names("hello.world", {"Prop1": 1, "Prop 2": "says.hello"})
     assert len(factory_names) == 1
-    greet_service = loader.instantiate_component(factory_names[0], 'greeter1')
+    greet_service = loader.instantiate_component(factory_names[0])
     assert greet_service.hello("Dolly") == "Hello, Dolly!"
 
     # Existing service, case insensitivity
     factory_names = loader.get_factory_names("hello.world", {"Prop 2": "SAYS.HI"})
     assert len(factory_names) == 1
-    greet_service = loader.instantiate_component(factory_names[0], 'greeter2')
+    greet_service = loader.instantiate_component(factory_names[0])
     assert greet_service.hello() == "Hi, World!"
 
     # Existing service, case sensitivity
