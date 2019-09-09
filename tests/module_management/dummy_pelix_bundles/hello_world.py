@@ -23,12 +23,13 @@ Basic "Hello World" services
 from pelix.ipopo.decorators import ComponentFactory, Provides, Instantiate, \
     Property
 
-from fastoad import BundleLoader
+# Define the component factory, with a given name
+from fastoad.module_management import BundleLoader
 
 
 # First, let's register 2 factories the iPOPO way
 
-# Define the component factory, with a given name
+
 @ComponentFactory("hello-world-factory")
 @Provides("hello.world")
 @Property("Prop1", None, 1)
@@ -61,10 +62,9 @@ loader = BundleLoader()
 print(loader.register_factory(OtherGreetings,
                               factory_name="another-hello-world-factory",
                               service_names=["hello.world", "hello.world.no.instance"],
-                              properties={
-                                  "Prop1": 3,
-                                  "Prop 2": "Says.Hello",
-                                  "Instantiated": False}
+                              properties={"Prop1": 3,
+                                          "Prop 2": "Says.Hello",
+                                          "Instantiated": False}
                               ).__dict__)
 
 
@@ -78,8 +78,7 @@ loader = BundleLoader()
 print(loader.register_factory(OtherGreetings2,
                               factory_name="hello-universe-factory",
                               service_names=["hello.universe"],
-                              properties={
-                                  "Prop1": 4,
-                                  "Prop 2": "Says.Hello",
-                                  "Instantiated": False}
+                              properties={"Prop1": 4,
+                                          "Prop 2": "Says.Hello",
+                                          "Instantiated": False}
                               ).__dict__)

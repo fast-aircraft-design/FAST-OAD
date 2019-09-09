@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 FAST : A framework for rapid Overall Aircraft Design
 """
@@ -17,8 +16,7 @@ FAST : A framework for rapid Overall Aircraft Design
 
 from pkg_resources import get_distribution, DistributionNotFound
 
-from fastoad import initialize_framework
-from fastoad.module_management import BundleLoader
+from . import initialize_framework
 
 try:
     # Change here if project is renamed and does not equal the package name
