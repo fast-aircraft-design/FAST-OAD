@@ -16,6 +16,9 @@ Test module for subfolder_provider.py
 import os.path as pth
 import shutil
 
+import pytest
+
+from fastoad.initialize_framework import load
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.constants import SERVICE_RESULT_FOLDER_PROVIDER
 from fastoad.utils.files.subfolder_provider import SubfolderProvider
@@ -24,7 +27,13 @@ FOLDER_NAME = 'my_result'
 ROOT_FOLDER_PATH = pth.dirname(__file__)
 
 
-def test_result_folder_provider():
+@pytest.fixture
+def framework_load():
+    # Load FAST framework
+    load()
+
+
+def test_result_folder_provider(framework_load):
     """ Tests SubfolderProvider"""
     provider: SubfolderProvider
 
@@ -60,9 +69,9 @@ def test_result_folder_provider():
 
 def test_other_call_to_result_folder_provider():
     """ Checks that the root folder setting persists during run """
+    # Requires that previous test has been run.
     provider: SubfolderProvider
 
-    loader = BundleLoader()
-    provider = loader.get_service(SERVICE_RESULT_FOLDER_PROVIDER)
+    provider = BundleLoader().get_service(SERVICE_RESULT_FOLDER_PROVIDER)
     assert provider is not None
     assert provider.get_subfolder_path() == ROOT_FOLDER_PATH

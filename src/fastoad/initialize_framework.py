@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-FAST : A framework for rapid Overall Aircraft Design
+Initialization of FAST underlying framework
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -15,19 +14,15 @@ FAST : A framework for rapid Overall Aircraft Design
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from pkg_resources import get_distribution, DistributionNotFound
 
-from fastoad import initialize_framework
+import os.path as pth
+
 from fastoad.module_management import BundleLoader
 
-try:
-    # Change here if project is renamed and does not equal the package name
-    DIST_NAME = 'FAST-OAD'
-    __version__ = get_distribution(DIST_NAME).version
-except DistributionNotFound:
-    __version__ = 'unknown'
-finally:
-    del get_distribution, DistributionNotFound
 
-# Loading bundles
-initialize_framework.load()
+def load():
+    """
+    Loads inner packages of FAST
+    """
+    loader = BundleLoader()
+    loader.install_packages(pth.dirname(__file__))
