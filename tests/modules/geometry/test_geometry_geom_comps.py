@@ -1040,4 +1040,4 @@ def test_geometry_total_area(input_xml):
     problem = run_system(component, input_vars)
 
     total_surface = problem['geometry:S_total']
-    assert total_surface == pytest.approx(5.733, abs=1e-3)
+    assert total_surface == pytest.approx(783.997, abs=1e-3)
