@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Demonstrates a way to register components in OpenMDAOSystemFactory
+Demonstrates how to register components in OpenMDAOSystemFactory
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -15,49 +14,17 @@ Demonstrates a way to register components in OpenMDAOSystemFactory
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from pelix.ipopo.decorators import ComponentFactory, Provides, Property, Instantiate
-
-from fastoad.module_management.constants import SERVICE_OPENMDAO_SYSTEM
+from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 from .disc1 import Disc1
 from .disc2 import Disc2
 from .functions import Functions
 
-
-## Though service registering is done with decorators, following lines are
-## kept to show an alternate way
-# OpenMDAOSystemFactory.register_system(Disc1()
-#                                       , {"Number": 1
-#                                           , "Discipline": "generic"
-#                                           , "AnyProp": "Something"})
-# OpenMDAOSystemFactory.register_system(Disc2()
-#                                       , {"Number": 2
-#                                           , "Discipline": "generic"})
-# OpenMDAOSystemFactory.register_system(Functions()
-#                                       , {"Discipline": "function"})
-#
-
-@ComponentFactory("sellar.disc1.factory")
-@Provides(SERVICE_OPENMDAO_SYSTEM)
-@Property("Number", None, 1)
-@Property("Discipline", None, "generic")
-@Property("AnyProp", None, "Something")
-@Instantiate("disc1")
-class Disc1Service(Disc1):
-    pass
-
-
-@ComponentFactory("sellar.disc2.factory")
-@Provides(SERVICE_OPENMDAO_SYSTEM)
-@Property("Number", None, 2)
-@Property("Discipline", None, "generic")
-@Instantiate("disc2")
-class Disc2Service(Disc2):
-    pass
-
-
-@ComponentFactory("sellar.functions.factory")
-@Provides(SERVICE_OPENMDAO_SYSTEM)
-@Property("Discipline", None, "function")
-@Instantiate("functions")
-class FunctionsService(Functions):
-    pass
+OpenMDAOSystemFactory.register_system(Disc1, 'sellar.disc1'
+                                      , {'Number': 1
+                                          , 'Discipline': 'generic'
+                                          , 'AnyProp': 'Something'})
+OpenMDAOSystemFactory.register_system(Disc2, 'sellar.disc2'
+                                      , {'Number': 2
+                                          , 'Discipline': 'generic'})
+OpenMDAOSystemFactory.register_system(Functions, 'sellar.functions'
+                                      , {'Discipline': 'function'})
