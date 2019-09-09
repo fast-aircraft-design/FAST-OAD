@@ -190,12 +190,15 @@ class BundleLoader:
 
         return ComponentFactory(factory_name)(obj)
 
-    def get_factory_names(self, service_name: str
+    def get_factory_names(self, service_name: str = None
                           , properties: dict = None
                           , case_sensitive: bool = False) -> List[str]:
         """
-        Browses the available factory names to find what factories provide `service_name`
-        and match provided `properties` (if provided)
+        Browses the available factory names to find what factories provide `service_name` (if
+        provided) and match provided `properties` (if provided).
+
+        if neither service_name nor properties are provided, all registered factory
+        names are returned.
 
         :param service_name:
         :param properties:
@@ -204,13 +207,16 @@ class BundleLoader:
         """
         with use_ipopo(self.context) as ipopo:
             all_names = ipopo.get_factories()
+            if not service_name and not properties:
+                return all_names
+
             names = []
             for name in all_names:
                 details = ipopo.get_factory_details(name)
                 to_be_kept = True
-                if service_name not in details['services'][0]:
+                if service_name and service_name not in details['services'][0]:
                     to_be_kept = False
-                elif properties is not None:
+                elif properties:
                     factory_properties: dict = details['properties']
                     if case_sensitive:
                         to_be_kept = all(item in factory_properties.items()

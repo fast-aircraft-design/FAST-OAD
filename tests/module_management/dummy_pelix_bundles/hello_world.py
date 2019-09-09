@@ -51,7 +51,7 @@ class Greetings2:
         return "Hi, {0}!".format(name)
 
 
-# Register the factory without instantiating with our wrapping of iPOPO
+# Register factories without instantiating with our wrapping of iPOPO
 class OtherGreetings:
     def hello(self, name="World"):
         return "Hello again, {0}!".format(name)
@@ -63,6 +63,23 @@ print(loader.register_factory(OtherGreetings,
                               service_names=["hello.world", "hello.world.no.instance"],
                               properties={
                                   "Prop1": 3,
+                                  "Prop 2": "Says.Hello",
+                                  "Instantiated": False}
+                              ).__dict__)
+
+
+class OtherGreetings2:
+    def hello(self, name="Universe"):
+        return "Hello again, {0}!".format(name)
+
+
+# This one provides a different service
+loader = BundleLoader()
+print(loader.register_factory(OtherGreetings2,
+                              factory_name="hello-universe-factory",
+                              service_names=["hello.universe"],
+                              properties={
+                                  "Prop1": 4,
                                   "Prop 2": "Says.Hello",
                                   "Instantiated": False}
                               ).__dict__)

@@ -252,9 +252,17 @@ def test_get_factory_names():
     factory_names = loader.get_factory_names("does.not.exists")
     assert not factory_names
 
+    # Get all factories
+    factory_names = loader.get_factory_names()
+    assert len(factory_names) == 4
+
     # Existing services, no property provided
     factory_names = loader.get_factory_names("hello.world")
     assert len(factory_names) == 3
+
+    # No service provided, but properties
+    factory_names = loader.get_factory_names(properties={"Instantiated": False})
+    assert len(factory_names) == 2
 
     # Existing services, property provided does not apply
     factory_names = loader.get_factory_names("hello.world", {"Not A Property": 1})
