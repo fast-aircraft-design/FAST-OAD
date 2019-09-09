@@ -27,15 +27,15 @@ class ComputeTotalArea(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('geometry:wing_wet_area', val=200., units='m**2')
-        self.add_input('geometry:fuselage_wet_area', val=400., units='m**2')
-        self.add_input('geometry:ht_wet_area', val=100., units='m**2')
-        self.add_input('geometry:vt_wet_area', val=100., units='m**2')
-        self.add_input('geometry:nacelle_wet_area', val=50., units='m**2')
-        self.add_input('geometry:pylon_wet_area', val=50., units='m**2')
-        self.add_input('geometry:engine_number', val=2.)
-        
-        self.add_output('geometry:S_total', val=800., units='m**2')
+        self.add_input('geometry:wing_wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:fuselage_wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:ht_wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:vt_wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:nacelle_wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:pylon_wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:engine_number', val=np.nan)
+
+        self.add_output('geometry:S_total', units='m**2')
         
         self.declare_partials('geometry:S_total', '*', method=deriv_method)
         
@@ -51,4 +51,4 @@ class ComputeTotalArea(ExplicitComponent):
         wet_area_total = wet_area_wing + wet_area_fus + wet_area_ht + wet_area_vt + \
             n_engines * (wet_area_nac + wet_area_pylon)
 
-        outputs['geometry:S_total'] = wet_area_total 
+        outputs['geometry:S_total'] = wet_area_total

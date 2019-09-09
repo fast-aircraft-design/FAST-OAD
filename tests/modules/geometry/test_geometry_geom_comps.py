@@ -48,6 +48,8 @@ from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
 from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
     ComputeNacelleAndPylonsGeometry
 
+from fastoad.modules.geometry.geom_components import ComputeTotalArea, UpdateMLG
+
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
     """
@@ -1016,3 +1018,26 @@ def test_geometry_nacelle_pylons(input_xml):
     assert nacelle_wet_area == pytest.approx(21.609, abs=1e-3)
     cg_b1 = problem['cg_propulsion:B1']
     assert cg_b1 == pytest.approx(13.5, abs=1e-1)
+
+
+def test_geometry_total_area(input_xml):
+    """ Tests computation of the total area """
+
+    input_list = [
+        'geometry:wing_wet_area',
+        'geometry:fuselage_wet_area',
+        'geometry:ht_wet_area',
+        'geometry:vt_wet_area',
+        'geometry:nacelle_wet_area',
+        'geometry:pylon_wet_area',
+        'geometry:engine_number',
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    component = ComputeTotalArea()
+
+    problem = run_system(component, input_vars)
+
+    total_surface = problem['geometry:S_total']
+    assert total_surface == pytest.approx(5.733, abs=1e-3)
