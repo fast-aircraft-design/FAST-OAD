@@ -48,7 +48,12 @@ class ConfiguredProblem(om.Problem):
             # TODO: raise correct exception
             raise Exception("no problem defined")
         else:
-            self.model = self._parse_problem_table(problem_definition)
+            try:
+                self.model = self._parse_problem_table(problem_definition)
+            except BadOpenMDAOInstructionError as e:
+                err = BadOpenMDAOInstructionError(e, PROBLEM_TABLE_TAG)
+                _LOGGER.error(err)
+                raise err
 
     def _parse_problem_table(self, table):
         if not isinstance(table, dict):
@@ -61,9 +66,33 @@ class ConfiguredProblem(om.Problem):
             component = om.Group()
             for key, value in table.items():
                 if isinstance(value, dict):
-                    sub_component = self._parse_problem_table(value)
+                    try:
+                        sub_component = self._parse_problem_table(value)
+                    except BadOpenMDAOInstructionError as e:
+                        raise BadOpenMDAOInstructionError(e, key)
                     component.add_subsystem(key, sub_component, promotes=['*'])
                 else:
-                    setattr(component, key, eval(value))
+                    try:
+                        setattr(component, key, eval(value))
+                    except Exception as e:
+                        raise BadOpenMDAOInstructionError(e, key, value)
 
         return component
+
+
+class BadOpenMDAOInstructionError(Exception):
+    def __init__(self, original_exception: Exception, key, value=None):
+        if hasattr(original_exception, 'key'):
+            self.key = '%s.%s' % (key, original_exception.key)
+        else:
+            self.key = key
+        if hasattr(original_exception, 'value'):
+            self.value = '%s.%s' % (value, original_exception.value)
+        else:
+            self.value = value
+        if hasattr(original_exception, 'original_exception'):
+            self.original_exception = original_exception.original_exception
+        else:
+            self.original_exception = original_exception
+        super().__init__(self, 'Attribute or value not recognized : %s = "%s"\nOriginal error: %s' %
+                         (self.key, self.value, self.original_exception))

@@ -16,12 +16,23 @@ Test module for configuration.py
 
 import os.path as pth
 
+import openmdao.api as om
+
 from fastoad.io.configuration import ConfiguredProblem
 
 
 def test_problem_definition():
     problem = ConfiguredProblem()
-    problem.load(pth.join(pth.dirname(__file__), 'data', 'test.toml'))
+    problem.load(pth.join(pth.dirname(__file__), 'data', 'valid_sellar.toml'))
 
+    problem.driver = om.ScipyOptimizeDriver()
+    problem.driver.options['optimizer'] = 'SLSQP'
     problem.setup()
-    problem.check_config()
+
+    assert problem.model.group is not None
+    assert problem.model.group.disc1 is not None
+    assert problem.model.group.disc2 is not None
+    assert problem.model.functions is not None
+    print(problem.driver.options)
+    assert problem.driver.options['optimizer'] == 'SLSQP'
+    assert isinstance(problem.model.group.nonlinear_solver, om.NonlinearBlockGS)
