@@ -1,0 +1,19 @@
+
+
+title = "Sellar"
+
+module_folders = [
+  "../../sellar_example"
+]
+
+[problem]
+    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+    [problem.group]
+        nonlinear_solver = "om.NonlinearBlockGS()"
+        linear_solver = "om.ScipyKrylov()"
+    [problem.group.disc1]
+        id = "sellar.disc1"
+    [problem.group.disc2]
+        id = "sellar.disc2"
+    [problem.functions]
+        id = "sellar.functions"
