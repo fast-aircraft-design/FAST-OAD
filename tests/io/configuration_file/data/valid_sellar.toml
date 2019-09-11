@@ -3,7 +3,7 @@
 title = "Sellar"
 
 module_folders = [
-  "../../sellar_example"
+  "../../../sellar_example"
 ]
 
 [problem]
