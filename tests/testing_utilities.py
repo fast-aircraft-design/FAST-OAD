@@ -15,17 +15,14 @@ Convenience functions for helping tests
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import TypeVar
 
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
-from openmdao.core.system import System
 
 from fastoad.openmdao.connections_utils import get_unconnected_inputs
-
-SystemSubclass = TypeVar('SystemSubclass', bound=System)
-
 # Logger for this module
+from fastoad.openmdao.types import SystemSubclass
+
 _LOGGER = logging.getLogger(__name__)
 
 
