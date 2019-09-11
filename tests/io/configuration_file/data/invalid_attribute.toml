@@ -3,8 +3,7 @@
 title = "Sellar"
 
 module_folders = [
-  "../../../sellar_example",
-  "d:/path/does/not/exist" # will only trigger a warning
+  "../../../sellar_example"
 ]
 
 [problem]
@@ -16,5 +15,9 @@ module_folders = [
             id = "sellar.disc1"
         [problem.cycle.disc2]
             id = "sellar.disc2"
+        [problem.cycle.other_group]
+            nonlinear_solver = "om.NonlinearBlockGS(unknown=1)" # this option is unknown
     [problem.functions]
         id = "sellar.functions"
+
+

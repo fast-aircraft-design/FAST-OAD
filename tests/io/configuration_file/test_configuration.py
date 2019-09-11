@@ -17,11 +17,14 @@ Test module for configuration.py
 import os.path as pth
 
 import openmdao.api as om
+import pytest
 
-from fastoad.io.configuration import ConfiguredProblem
+from fastoad.io.configuration import ConfiguredProblem, FASTConfigurationNoProblemDefined, \
+    FASTConfigurationBadOpenMDAOInstructionError
 
 
 def test_problem_definition():
+    # Reading of correct problem definition
     problem = ConfiguredProblem()
     problem.load(pth.join(pth.dirname(__file__), 'data', 'valid_sellar.toml'))
 
@@ -35,3 +38,16 @@ def test_problem_definition():
     assert isinstance(problem.driver, om.ScipyOptimizeDriver)
     assert problem.driver.options['optimizer'] == 'SLSQP'
     assert isinstance(problem.model.cycle.nonlinear_solver, om.NonlinearBlockGS)
+
+    # Missing problem
+    problem = ConfiguredProblem()
+    with pytest.raises(FASTConfigurationNoProblemDefined) as exc_info:
+        problem.load(pth.join(pth.dirname(__file__), 'data', 'missing_problem.toml'))
+    assert exc_info is not None
+
+    # Incorrect attribute
+    problem = ConfiguredProblem()
+    with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
+        problem.load(pth.join(pth.dirname(__file__), 'data', 'invalid_attribute.toml'))
+    assert exc_info is not None
+    assert exc_info.value.key == 'problem.cycle.other_group.nonlinear_solver'
