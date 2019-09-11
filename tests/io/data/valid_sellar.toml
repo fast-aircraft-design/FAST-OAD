@@ -8,12 +8,12 @@ module_folders = [
 
 [problem]
     driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
-    [problem.group]
+    [problem.cycle]
         nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
         linear_solver = "om.ScipyKrylov()"
-    [problem.group.disc1]
+    [problem.cycle.disc1]
         id = "sellar.disc1"
-    [problem.group.disc2]
+    [problem.cycle.disc2]
         id = "sellar.disc2"
     [problem.functions]
         id = "sellar.functions"

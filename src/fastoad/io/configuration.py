@@ -16,6 +16,7 @@
 
 import logging
 import os.path as pth
+from typing import Union
 
 import openmdao.api as om
 import toml
@@ -23,6 +24,7 @@ import toml
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 
 # Logger for this module
+
 _LOGGER = logging.getLogger(__name__)
 
 FOLDERS_KEY = 'module_folders'
@@ -49,28 +51,33 @@ class ConfiguredProblem(om.Problem):
             raise Exception("no problem defined")
         else:
             try:
-                self.model = self._parse_problem_table(problem_definition)
+                self._parse_problem_table(self, PROBLEM_TABLE_TAG, problem_definition)
             except BadOpenMDAOInstructionError as e:
                 err = BadOpenMDAOInstructionError(e, PROBLEM_TABLE_TAG)
                 _LOGGER.error(err)
                 raise err
 
-    def _parse_problem_table(self, table):
+    def _parse_problem_table(self, component: Union[om.Problem, om.Group], identifier, table: dict):
         if not isinstance(table, dict):
             # TODO: raise correct exception
             raise Exception("incorrect problem definition")
 
-        if COMPONENT_ID_KEY in table:
-            component = OpenMDAOSystemFactory.get_system(table[COMPONENT_ID_KEY])
+        if identifier == PROBLEM_TABLE_TAG:
+            group = component.model
         else:
-            component = om.Group()
+            group = component
+
+        if COMPONENT_ID_KEY in table:
+            sub_component = OpenMDAOSystemFactory.get_system(table[COMPONENT_ID_KEY])
+            group.add_subsystem(identifier, sub_component, promotes=['*'])
+        else:
             for key, value in table.items():
                 if isinstance(value, dict):
+                    sub_component = group.add_subsystem(key, om.Group(), promotes=['*'])
                     try:
-                        sub_component = self._parse_problem_table(value)
+                        self._parse_problem_table(sub_component, key, value)
                     except BadOpenMDAOInstructionError as e:
                         raise BadOpenMDAOInstructionError(e, key)
-                    component.add_subsystem(key, sub_component, promotes=['*'])
                 else:
                     try:
                         setattr(component, key, eval(value))

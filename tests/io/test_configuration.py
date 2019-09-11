@@ -25,14 +25,13 @@ def test_problem_definition():
     problem = ConfiguredProblem()
     problem.load(pth.join(pth.dirname(__file__), 'data', 'valid_sellar.toml'))
 
-    problem.driver = om.ScipyOptimizeDriver()
-    problem.driver.options['optimizer'] = 'SLSQP'
     problem.setup()
 
-    assert problem.model.group is not None
-    assert problem.model.group.disc1 is not None
-    assert problem.model.group.disc2 is not None
+    assert problem.model.cycle is not None
+    assert problem.model.cycle.disc1 is not None
+    assert problem.model.cycle.disc2 is not None
     assert problem.model.functions is not None
-    print(problem.driver.options)
+
+    assert isinstance(problem.driver, om.ScipyOptimizeDriver)
     assert problem.driver.options['optimizer'] == 'SLSQP'
-    assert isinstance(problem.model.group.nonlinear_solver, om.NonlinearBlockGS)
+    assert isinstance(problem.model.cycle.nonlinear_solver, om.NonlinearBlockGS)
