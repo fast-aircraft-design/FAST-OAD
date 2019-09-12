@@ -15,30 +15,41 @@ main
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import os.path as pth
 
 from fastoad.io.configuration import ConfiguredProblem
-from fastoad.io.xml import OpenMdaoXmlIO
 
 
 def main():
     parser = argparse.ArgumentParser(description='FAST main program')
     parser.add_argument('conf_file', type=str, help='the file for configuring the problem')
-    parser.add_argument('--gen_input_file',
+    parser.add_argument('--gen_input_file', action='store_true',
                         help='generates a template file that contains needed inputs')
-    parser.add_argument('--input_file', dest='input_file',
+    parser.add_argument('--run', action='store_true',
                         help='runs the problem with provided input file')
 
     args = parser.parse_args()
 
     if args.conf_file:
         problem = ConfiguredProblem()
-        problem.load(args.conf_file)
-        problem.setup()
+        problem.configure(args.conf_file)
+
+        problem.model.approx_totals()
+
+        # FIXME: put these settings in conf file
+        problem.model.add_design_var('x', lower=0, upper=10)
+        problem.model.add_design_var('z', lower=0, upper=10)
+
+        problem.model.add_objective('f')
+
+        problem.model.add_constraint('g1', upper=0.)
+        problem.model.add_constraint('g2', upper=0.)
 
         if args.gen_input_file:
-            writer = OpenMdaoXmlIO(pth.abspath(args.gen_input_file))
-            writer.write_inputs(problem)
+            problem.write_needed_inputs()
+        elif args.run:
+            problem.read_inputs()
+            problem.run_driver()
+            problem.write_outputs()
 
 
 if __name__ == '__main__':
