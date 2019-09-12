@@ -34,6 +34,9 @@ KEY_INPUT_FILE = 'input_file'
 KEY_OUTPUT_FILE = 'output_file'
 KEY_COMPONENT_ID = 'id'
 TABLE_PROBLEM = 'problem'
+TABLES_DESIGN_VAR = 'design_var'
+TABLES_OBJECTIVE = 'objective'
+TABLES_CONSTRAINT = 'constraint'
 
 
 class ConfiguredProblem(om.Problem):
@@ -45,6 +48,7 @@ class ConfiguredProblem(om.Problem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._toml_dict = {}
         self._input_file = None
         self._output_file = None
 
@@ -58,19 +62,19 @@ class ConfiguredProblem(om.Problem):
         # it does not look useful for us, so it is not mentioned in docstring.
 
         conf_dirname = pth.dirname(pth.abspath(conf_file))  # for resolving relative paths
-        toml_dict = toml.load(conf_file)
+        self._toml_dict = toml.load(conf_file)
 
         # I/O files
-        input_file = toml_dict.get(KEY_INPUT_FILE)
+        input_file = self._toml_dict.get(KEY_INPUT_FILE)
         if input_file:
             self._input_file = pth.join(conf_dirname, input_file)
 
-        output_file = toml_dict.get(KEY_OUTPUT_FILE)
+        output_file = self._toml_dict.get(KEY_OUTPUT_FILE)
         if output_file:
             self._output_file = pth.join(conf_dirname, output_file)
 
         # Looking for modules to register
-        module_folder_paths = toml_dict.get(KEY_FOLDERS, [])
+        module_folder_paths = self._toml_dict.get(KEY_FOLDERS, [])
         for folder_path in module_folder_paths:
             folder_path = pth.join(conf_dirname, folder_path)
             if not pth.exists(folder_path):
@@ -79,7 +83,7 @@ class ConfiguredProblem(om.Problem):
                 OpenMDAOSystemFactory.explore_folder(folder_path)
 
         # Read problem definition
-        problem_definition = toml_dict.get(TABLE_PROBLEM)
+        problem_definition = self._toml_dict.get(TABLE_PROBLEM)
         if not problem_definition:
             raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_PROBLEM)
 
@@ -89,6 +93,16 @@ class ConfiguredProblem(om.Problem):
             log_err = err.__class__(err, TABLE_PROBLEM)
             _LOGGER.error(log_err)
             raise log_err
+
+        # Objectives
+        objective_tables = self._toml_dict.get(TABLES_OBJECTIVE, [])
+        for objective_table in objective_tables:
+            self.model.add_objective(**objective_table)
+
+        # Constraints
+        constraint_tables = self._toml_dict.get(TABLES_CONSTRAINT, [])
+        for constraint_table in constraint_tables:
+            self.model.add_constraint(**constraint_table)
 
         self.setup()
 
@@ -102,6 +116,12 @@ class ConfiguredProblem(om.Problem):
         if self._input_file:
             reader = OpenMdaoXmlIO(self._input_file)
             self.model.add_subsystem('inputs', reader.read(), promotes=['*'])
+
+            # Design variables
+            design_var_tables = self._toml_dict.get(TABLES_DESIGN_VAR, [])
+            for design_var_table in design_var_tables:
+                self.model.add_design_var(**design_var_table)
+
             self.setup()
 
     def write_outputs(self):
