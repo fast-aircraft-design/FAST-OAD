@@ -43,7 +43,7 @@ class OpenMDAOSystemFactory:
         cls._loader.install_packages(folder_path)
 
     @classmethod
-    def register_system(cls, system_class: type, identifier: str, properties: dict):
+    def register_system(cls, system_class: type, identifier: str, properties: dict = None):
         """
         Registers the System (or subclass) so it can later be retrieved and
         instantiated.
@@ -52,8 +52,7 @@ class OpenMDAOSystemFactory:
         :param identifier:
         :param properties: properties that will be associated to the service
         """
-        cls._loader.register_factory(system_class, identifier,
-                                     SERVICE_OPENMDAO_SYSTEM, properties)
+        cls._loader.register_factory(system_class, identifier, SERVICE_OPENMDAO_SYSTEM, properties)
 
     @classmethod
     def get_system(cls, identifier: str) -> SystemSubclass:

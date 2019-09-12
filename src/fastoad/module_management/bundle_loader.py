@@ -185,8 +185,9 @@ class BundleLoader:
         """
         obj = Provides(service_names)(component_class)
 
-        for key, value in properties.items():
-            obj = Property(field=cls._fieldify(key), name=key, value=value)(obj)
+        if properties:
+            for key, value in properties.items():
+                obj = Property(field=cls._fieldify(key), name=key, value=value)(obj)
 
         return ComponentFactory(factory_name)(obj)
 

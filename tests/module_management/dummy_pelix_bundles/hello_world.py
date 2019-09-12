@@ -59,13 +59,13 @@ class OtherGreetings:
 
 
 loader = BundleLoader()
-print(loader.register_factory(OtherGreetings,
-                              factory_name="another-hello-world-factory",
-                              service_names=["hello.world", "hello.world.no.instance"],
-                              properties={"Prop1": 3,
-                                          "Prop 2": "Says.Hello",
-                                          "Instantiated": False}
-                              ).__dict__)
+loader.register_factory(OtherGreetings,
+                        factory_name="another-hello-world-factory",
+                        service_names=["hello.world", "hello.world.no.instance"],
+                        properties={"Prop1": 3,
+                                    "Prop 2": "Says.Hello",
+                                    "Instantiated": False}
+                        )
 
 
 class OtherGreetings2:
@@ -73,12 +73,9 @@ class OtherGreetings2:
         return "Hello again, {0}!".format(name)
 
 
-# This one provides a different service
+# This one provides a different service and tests registering without properties
 loader = BundleLoader()
-print(loader.register_factory(OtherGreetings2,
-                              factory_name="hello-universe-factory",
-                              service_names=["hello.universe"],
-                              properties={"Prop1": 4,
-                                          "Prop 2": "Says.Hello",
-                                          "Instantiated": False}
-                              ).__dict__)
+loader.register_factory(OtherGreetings2,
+                        factory_name="hello-universe-factory",
+                        service_names=["hello.universe"]
+                        )
