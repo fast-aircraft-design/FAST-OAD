@@ -19,3 +19,22 @@ output_file = "outputs.xml"
       id = "sellar.disc2"
   [problem.functions]
     id = "sellar.functions"
+
+[[design_var]]
+  name = "x"
+  lower = 0
+  upper = 10
+[[design_var]]
+  name = "z"
+  lower = 0
+  upper = 10
+
+[[objective]]
+  name = "f"
+
+[[constraint]]
+  name = "g1"
+  upper = 0
+[[constraint]]
+  name = "g2"
+  upper = 0

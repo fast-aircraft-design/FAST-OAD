@@ -35,15 +35,6 @@ def main():
 
         problem.model.approx_totals()
 
-        # FIXME: put these settings in conf file
-        problem.model.add_design_var('x', lower=0, upper=10)
-        problem.model.add_design_var('z', lower=0, upper=10)
-
-        problem.model.add_objective('f')
-
-        problem.model.add_constraint('g1', upper=0.)
-        problem.model.add_constraint('g2', upper=0.)
-
         if args.gen_input_file:
             problem.write_needed_inputs()
         elif args.run:
