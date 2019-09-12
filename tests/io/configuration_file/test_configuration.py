@@ -26,7 +26,7 @@ from fastoad.io.configuration import ConfiguredProblem, FASTConfigurationNoProbl
 def test_problem_definition():
     # Reading of correct problem definition
     problem = ConfiguredProblem()
-    problem.load(pth.join(pth.dirname(__file__), 'data', 'valid_sellar.toml'))
+    problem.configure(pth.join(pth.dirname(__file__), 'data', 'valid_sellar.toml'))
 
     problem.setup()
 
@@ -42,12 +42,12 @@ def test_problem_definition():
     # Missing problem
     problem = ConfiguredProblem()
     with pytest.raises(FASTConfigurationNoProblemDefined) as exc_info:
-        problem.load(pth.join(pth.dirname(__file__), 'data', 'missing_problem.toml'))
+        problem.configure(pth.join(pth.dirname(__file__), 'data', 'missing_problem.toml'))
     assert exc_info is not None
 
     # Incorrect attribute
     problem = ConfiguredProblem()
     with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
-        problem.load(pth.join(pth.dirname(__file__), 'data', 'invalid_attribute.toml'))
+        problem.configure(pth.join(pth.dirname(__file__), 'data', 'invalid_attribute.toml'))
     assert exc_info is not None
     assert exc_info.value.key == 'problem.cycle.other_group.nonlinear_solver'

@@ -7,6 +7,10 @@ module_folders = [
   "d:/path/does/not/exist" # will only trigger a warning
 ]
 
+input_file = "inputs.xml"
+output_file = "outputs.xml"
+
+
 [problem]
     driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
     [problem.cycle]

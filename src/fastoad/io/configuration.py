@@ -22,15 +22,18 @@ from typing import Union
 import openmdao.api as om
 import toml
 
+from fastoad.io.xml import OpenMdaoXmlIO
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 
 # Logger for this module
 
 _LOGGER = logging.getLogger(__name__)
 
-FOLDERS_KEY = 'module_folders'
-PROBLEM_TABLE_TAG = 'problem'
-COMPONENT_ID_KEY = 'id'
+KEY_FOLDERS = 'module_folders'
+KEY_INPUT_FILE = 'input_file'
+KEY_OUTPUT_FILE = 'output_file'
+KEY_COMPONENT_ID = 'id'
+TABLE_PROBLEM = 'problem'
 
 
 class ConfiguredProblem(om.Problem):
@@ -39,7 +42,13 @@ class ConfiguredProblem(om.Problem):
     a TOML file.
     """
 
-    def load(self, conf_file):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._input_file = None
+        self._output_file = None
+
+    def configure(self, conf_file):
         """
         Reads definition of the current problem in given file.
 
@@ -48,30 +57,57 @@ class ConfiguredProblem(om.Problem):
         # Dev note: toml.load would also accept an array of files as input, but
         # it does not look useful for us, so it is not mentioned in docstring.
 
-        conf_dirname = pth.dirname(conf_file)  # for resolving relative paths
+        conf_dirname = pth.dirname(pth.abspath(conf_file))  # for resolving relative paths
         toml_dict = toml.load(conf_file)
 
+        # I/O files
+        input_file = toml_dict.get(KEY_INPUT_FILE)
+        if input_file:
+            self._input_file = pth.join(conf_dirname, input_file)
+
+        output_file = toml_dict.get(KEY_OUTPUT_FILE)
+        if output_file:
+            self._output_file = pth.join(conf_dirname, output_file)
+
         # Looking for modules to register
-        module_folder_paths = toml_dict.get(FOLDERS_KEY, [])
+        module_folder_paths = toml_dict.get(KEY_FOLDERS, [])
         for folder_path in module_folder_paths:
-            if not pth.isabs(folder_path):
-                folder_path = pth.join(conf_dirname, folder_path)
+            folder_path = pth.join(conf_dirname, folder_path)
             if not pth.exists(folder_path):
                 _LOGGER.warning('SKIPPED %s: it does not exist.')
             else:
                 OpenMDAOSystemFactory.explore_folder(folder_path)
 
         # Read problem definition
-        problem_definition = toml_dict.get(PROBLEM_TABLE_TAG)
+        problem_definition = toml_dict.get(TABLE_PROBLEM)
         if not problem_definition:
-            raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % PROBLEM_TABLE_TAG)
+            raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_PROBLEM)
 
         try:
-            self._parse_problem_table(self, PROBLEM_TABLE_TAG, problem_definition)
+            self._parse_problem_table(self, TABLE_PROBLEM, problem_definition)
         except FASTConfigurationBaseKeyBuildingError as err:
-            log_err = err.__class__(err, PROBLEM_TABLE_TAG)
+            log_err = err.__class__(err, TABLE_PROBLEM)
             _LOGGER.error(log_err)
             raise log_err
+
+        self.setup()
+
+    def write_needed_inputs(self):
+        if self._input_file:
+            print(self._input_file)
+            writer = OpenMdaoXmlIO(self._input_file)
+            writer.write_inputs(self)
+
+    def read_inputs(self):
+        if self._input_file:
+            reader = OpenMdaoXmlIO(self._input_file)
+            self.model.add_subsystem('inputs', reader.read(), promotes=['*'])
+            self.setup()
+
+    def write_outputs(self):
+        if self._output_file:
+            writer = OpenMdaoXmlIO(self._output_file)
+            writer.write(self.model)
 
     def _parse_problem_table(self, component: Union[om.Problem, om.Group], identifier, table: dict):
         """
@@ -84,15 +120,15 @@ class ConfiguredProblem(om.Problem):
         """
         assert isinstance(table, dict), "table should be a dictionary"
 
-        if identifier == PROBLEM_TABLE_TAG:  # component is a Problem
+        if identifier == TABLE_PROBLEM:  # component is a Problem
             group = component.model
         else:  # component is a Group
             assert isinstance(component, om.Group)
             group = component
 
         # Assessing sub-components
-        if COMPONENT_ID_KEY in table:  # table defines a non-Group component
-            sub_component = OpenMDAOSystemFactory.get_system(table[COMPONENT_ID_KEY])
+        if KEY_COMPONENT_ID in table:  # table defines a non-Group component
+            sub_component = OpenMDAOSystemFactory.get_system(table[KEY_COMPONENT_ID])
             group.add_subsystem(identifier, sub_component, promotes=['*'])
         else:
             for key, value in table.items():
