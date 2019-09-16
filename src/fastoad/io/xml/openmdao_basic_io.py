@@ -168,3 +168,22 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
                          (name, value, ", units='%s'" % units if units else ''))
 
         return '\n'.join(lines)
+
+    @staticmethod
+    def create_updated_xml(original_xml: str, reference_xml: str, updated_xml: str):
+        """
+        Creates an xml file with respect to original and reference xml files
+        :param original_xml: file name of the original xml
+        :param reference_xml: file name of the reference xml
+        :param updated_xml: file name of the resulting xml
+        """
+        original_xml = OpenMdaoXmlIO(original_xml)
+        original_ivc = original_xml.read()
+
+        reference_xml = OpenMdaoXmlIO(reference_xml)
+        reference_ivc = reference_xml.read()
+
+        updated_ivc = OpenMdaoXmlIO._update_ivc(original_ivc, reference_ivc)
+        updated_xml = OpenMdaoXmlIO(updated_xml)
+
+        updated_xml.write(updated_ivc)

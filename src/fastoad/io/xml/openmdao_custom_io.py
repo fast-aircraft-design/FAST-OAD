@@ -213,6 +213,31 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         return outputs
 
     @staticmethod
+    def _update_ivc(original_ivc: IndepVarComp, reference_ivc: IndepVarComp) -> IndepVarComp:
+        """
+        Updates the default values of an ivc with respect to another ivc
+        :param original_ivc: ivc to be updated
+        :param reference_ivc: ivc containing the default values for update
+        :return updated_ivc: resulting ivc of the update
+        """
+        original_variables = {}
+        # pylint: disable=protected-access
+        for (name, value, attributes) in original_ivc._indep_external:
+            original_variables[name] = Variable(name, value, attributes['units'])
+
+        # pylint: disable=protected-access
+        for (name, value, attributes) in reference_ivc._indep_external:
+            if name in original_variables.keys():
+                original_variables[name] = Variable(name, value, attributes['units'])
+                print(name, value)
+
+        updated_ivc = IndepVarComp()
+        for i, (key, variable) in enumerate(original_variables.items()):
+            updated_ivc.add_output(variable.name, variable.value, units=variable.units)
+
+        return updated_ivc
+
+    @staticmethod
     def _create_xpath(root: _Element, xpath: str) -> _Element:
         """
         Creates required XML Path from provided root element
