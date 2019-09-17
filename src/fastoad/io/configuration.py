@@ -48,7 +48,7 @@ class ConfiguredProblem(om.Problem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._toml_dict = {}
+        self._conf_dict = {}
         self._input_file = None
         self._output_file = None
 
@@ -62,19 +62,23 @@ class ConfiguredProblem(om.Problem):
         # it does not look useful for us, so it is not mentioned in docstring.
 
         conf_dirname = pth.dirname(pth.abspath(conf_file))  # for resolving relative paths
-        self._toml_dict = toml.load(conf_file)
+        self._conf_dict = toml.load(conf_file)
+
+        # FIXME: Structure of configuration file will have to be checked more thoroughly, like
+        #        producing errors if missing data I/O files
+
 
         # I/O files
-        input_file = self._toml_dict.get(KEY_INPUT_FILE)
+        input_file = self._conf_dict.get(KEY_INPUT_FILE)
         if input_file:
             self._input_file = pth.join(conf_dirname, input_file)
 
-        output_file = self._toml_dict.get(KEY_OUTPUT_FILE)
+        output_file = self._conf_dict.get(KEY_OUTPUT_FILE)
         if output_file:
             self._output_file = pth.join(conf_dirname, output_file)
 
         # Looking for modules to register
-        module_folder_paths = self._toml_dict.get(KEY_FOLDERS, [])
+        module_folder_paths = self._conf_dict.get(KEY_FOLDERS, [])
         for folder_path in module_folder_paths:
             folder_path = pth.join(conf_dirname, folder_path)
             if not pth.exists(folder_path):
@@ -83,7 +87,7 @@ class ConfiguredProblem(om.Problem):
                 OpenMDAOSystemFactory.explore_folder(folder_path)
 
         # Read problem definition
-        problem_definition = self._toml_dict.get(TABLE_PROBLEM)
+        problem_definition = self._conf_dict.get(TABLE_PROBLEM)
         if not problem_definition:
             raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_PROBLEM)
 
@@ -94,37 +98,42 @@ class ConfiguredProblem(om.Problem):
             _LOGGER.error(log_err)
             raise log_err
 
-        # Objectives
-        objective_tables = self._toml_dict.get(TABLES_OBJECTIVE, [])
-        for objective_table in objective_tables:
-            self.model.add_objective(**objective_table)
-
-        # Constraints
-        constraint_tables = self._toml_dict.get(TABLES_CONSTRAINT, [])
-        for constraint_table in constraint_tables:
-            self.model.add_constraint(**constraint_table)
+        # Objectives and constraints are based on problem outputs, so concerned variables
+        # are expected to be defined by now (unlike design variables that will be
+        # defined after reading inputs)
+        self._add_objectives()
+        self._add_constraints()
 
         self.setup()
 
     def write_needed_inputs(self):
+        """
+        Once problem is configured, creates the configured input file with all
+        needed inputs of the problem, with default values taken from component
+        definitions.
+        """
         if self._input_file:
             print(self._input_file)
             writer = OpenMdaoXmlIO(self._input_file)
             writer.write_inputs(self)
 
     def read_inputs(self):
+        """
+        Once problem is configured, reads inputs from the configured input file.
+        """
         if self._input_file:
             reader = OpenMdaoXmlIO(self._input_file)
             self.model.add_subsystem('inputs', reader.read(), promotes=['*'])
 
-            # Design variables
-            design_var_tables = self._toml_dict.get(TABLES_DESIGN_VAR, [])
-            for design_var_table in design_var_tables:
-                self.model.add_design_var(**design_var_table)
+            # Now all variables should be available, design vars can be defined.
+            self._add_design_vars()
 
             self.setup()
 
     def write_outputs(self):
+        """
+        Once problem is run, writes all outputs in the configured output file.
+        """
         if self._output_file:
             writer = OpenMdaoXmlIO(self._output_file)
             writer.write(self.model)
@@ -163,22 +172,42 @@ class ConfiguredProblem(om.Problem):
                 else:
                     # value is an attribute of current component and will be literally interpreted
                     try:
-                        # FIXME: maybe there is a better way to do that
+                        # FIXME: remove this eval()
                         setattr(component, key, eval(value))  # pylint:disable=eval-used
                     except Exception as err:
                         raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
         return component
 
+    def _add_constraints(self):
+        """  Adds constraints as instructed in configuration file """
+        # Constraints
+        constraint_tables = self._conf_dict.get(TABLES_CONSTRAINT, [])
+        for constraint_table in constraint_tables:
+            self.model.add_constraint(**constraint_table)
 
+    def _add_objectives(self):
+        """  Adds objectives as instructed in configuration file """
+        objective_tables = self._conf_dict.get(TABLES_OBJECTIVE, [])
+        for objective_table in objective_tables:
+            self.model.add_objective(**objective_table)
+
+    def _add_design_vars(self):
+        """  Adds design variables as instructed in configuration file """
+        design_var_tables = self._conf_dict.get(TABLES_DESIGN_VAR, [])
+        for design_var_table in design_var_tables:
+            self.model.add_design_var(**design_var_table)
+
+
+# TODO: put Exceptions in a dedicated place?
 class FASTConfigurationBaseKeyBuildingError(Exception):
     """
     Class for being raised from bottom to top of TOML dict so that in the end, the message
     provides the full qualified name of the problematic key.
 
-    using `new_err = FASTConfigurationBaseKeyBuilding(err, 'new_err_key', <value>)`:
+    using `new_err = FASTConfigurationBaseKeyBuildingError(err, 'new_err_key', <value>)`:
 
-    - if err is a FASTConfigurationBaseKeyBuilding instance with err.key=='err_key':
+    - if err is a FASTConfigurationBaseKeyBuildingError instance with err.key=='err_key':
         - new_err.key will be 'new_err_key.err_key'
         - new_err.value will be err.value (no need to provide a value here)
         - new_err.original_exception will be err.original_exception

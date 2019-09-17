@@ -7,8 +7,8 @@ module_folders = [
   "d:/path/does/not/exist" # will only trigger a warning
 ]
 
-input_file = "inputs.xml"
-output_file = "outputs.xml"
+input_file = "../results/inputs.xml"
+output_file = "../results/outputs.xml"
 
 
 [problem]

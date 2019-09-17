@@ -24,21 +24,6 @@ from fastoad.io.configuration import ConfiguredProblem, FASTConfigurationNoProbl
 
 
 def test_problem_definition():
-    # Reading of correct problem definition
-    problem = ConfiguredProblem()
-    problem.configure(pth.join(pth.dirname(__file__), 'data', 'valid_sellar.toml'))
-
-    problem.setup()
-
-    assert problem.model.cycle is not None
-    assert problem.model.cycle.disc1 is not None
-    assert problem.model.cycle.disc2 is not None
-    assert problem.model.functions is not None
-
-    assert isinstance(problem.driver, om.ScipyOptimizeDriver)
-    assert problem.driver.options['optimizer'] == 'SLSQP'
-    assert isinstance(problem.model.cycle.nonlinear_solver, om.NonlinearBlockGS)
-
     # Missing problem
     problem = ConfiguredProblem()
     with pytest.raises(FASTConfigurationNoProblemDefined) as exc_info:
@@ -51,3 +36,26 @@ def test_problem_definition():
         problem.configure(pth.join(pth.dirname(__file__), 'data', 'invalid_attribute.toml'))
     assert exc_info is not None
     assert exc_info.value.key == 'problem.cycle.other_group.nonlinear_solver'
+
+    # Reading of correct problem definition
+    problem = ConfiguredProblem()
+    problem.configure(pth.join(pth.dirname(__file__), 'data', 'valid_sellar.toml'))
+    problem.setup()
+
+    assert problem.model.cycle is not None
+    assert problem.model.cycle.disc1 is not None
+    assert problem.model.cycle.disc2 is not None
+    assert problem.model.functions is not None
+
+    assert isinstance(problem.driver, om.ScipyOptimizeDriver)
+    assert problem.driver.options['optimizer'] == 'SLSQP'
+    assert isinstance(problem.model.cycle.nonlinear_solver, om.NonlinearBlockGS)
+
+    # Just running these methods to check there is no crash. As simples assemblies of
+    # other methods, their results should already be unit-tested.
+    problem.write_needed_inputs()
+    problem.read_inputs()
+
+    problem.run_driver()
+
+    problem.write_outputs()
