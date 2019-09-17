@@ -26,7 +26,7 @@ output_file = "outputs.xml"
   upper = 10
 [[design_var]]
   name = "category1/z"
-  lower = 0
+  lower = [-10,0]
   upper = 10
 
 [[objective]]
