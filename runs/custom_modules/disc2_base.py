@@ -21,8 +21,8 @@ class Disc2Base(ExplicitComponent):
     """ An OpenMDAO base component to encapsulate Disc2 discipline """
 
     def setup(self):
-        self.add_input('z', val=[5, 2], desc='')  # for testing non-None units
-        self.add_input('y1', val=1.0, desc='')
+        self.add_input('category1/z', val=[5, 2], desc='')  # for testing non-None units
+        self.add_input('y_vars/y1', val=1.0, desc='')
 
-        self.add_output('y2', val=1.0, desc='')
-        self.declare_partials('*', '*')
+        self.add_output('y_vars/y2', val=1.0, desc='')
+        self.declare_partials('*', '*', method='fd')

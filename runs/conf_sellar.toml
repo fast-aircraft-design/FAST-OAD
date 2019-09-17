@@ -21,20 +21,20 @@ output_file = "outputs.xml"
     id = "sellar.functions"
 
 [[design_var]]
-  name = "x"
+  name = "category1/x"
   lower = 0
   upper = 10
 [[design_var]]
-  name = "z"
+  name = "category1/z"
   lower = 0
   upper = 10
 
 [[objective]]
-  name = "f"
+  name = "funcs/f"
 
 [[constraint]]
-  name = "g1"
+  name = "funcs/g1"
   upper = 0
 [[constraint]]
-  name = "g2"
+  name = "funcs/g2"
   upper = 0

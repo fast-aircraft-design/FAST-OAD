@@ -1,5 +1,5 @@
 """
-  Sellar functions
+    Sellar discipline 1
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -14,21 +14,22 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.api import ExplicitComponent
+from .disc1_base import Disc1Base
 
 
-class FunctionsBase(ExplicitComponent):
-    """ An OpenMDAO base component to encapsulate Functions discipline """
+class Disc1(Disc1Base):
+    """ An OpenMDAO component to encapsulate Disc1 discipline """
 
-    def setup(self):
-        self.add_input('category1/x', val=2, desc='')
-        self.add_input('category1/z', val=[5.0, 2.0], desc='')
-        self.add_input('y_vars/y1', val=1.0, desc='')
-        self.add_input('y_vars/y2', val=1.0, desc='')
+    # pylint: disable=invalid-name
+    def compute(self, inputs, outputs
+                , discrete_inputs=None, discrete_outputs=None):
+        """
+        Evaluates the equation
+        y1 = z1**3 + z2 + x1 - 0.5*y2
+        """
+        z1 = inputs['category1/z'][0]
+        z2 = inputs['category1/z'][1]
+        x1 = inputs['category1/x']
+        y2 = inputs['y_vars/y2']
 
-        self.add_output('funcs/f', val=1.0, desc='')
-
-        self.add_output('funcs/g1', val=1.0, desc='')
-
-        self.add_output('funcs/g2', val=1.0, desc='')
-        self.declare_partials('*', '*', method='fd')
+        outputs['y_vars/y1'] = z1 ** 3 + z2 + x1 - 0.5 * y2

@@ -1,5 +1,5 @@
 """
-  Sellar functions
+Demonstrates how to register components in OpenMDAOSystemFactory
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -14,21 +14,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.api import ExplicitComponent
+from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from .disc1bis import Disc1
 
-
-class FunctionsBase(ExplicitComponent):
-    """ An OpenMDAO base component to encapsulate Functions discipline """
-
-    def setup(self):
-        self.add_input('category1/x', val=2, desc='')
-        self.add_input('category1/z', val=[5.0, 2.0], desc='')
-        self.add_input('y_vars/y1', val=1.0, desc='')
-        self.add_input('y_vars/y2', val=1.0, desc='')
-
-        self.add_output('funcs/f', val=1.0, desc='')
-
-        self.add_output('funcs/g1', val=1.0, desc='')
-
-        self.add_output('funcs/g2', val=1.0, desc='')
-        self.declare_partials('*', '*', method='fd')
+OpenMDAOSystemFactory.register_system(Disc1, 'sellar.disc1bis')

@@ -27,9 +27,9 @@ class Disc1(Disc1Base):
         Evaluates the equation
         y1 = z1**2 + z2 + x1 - 0.2*y2
         """
-        z1 = inputs['z'][0]
-        z2 = inputs['z'][1]
-        x1 = inputs['x']
-        y2 = inputs['y2']
+        z1 = inputs['category1/z'][0]
+        z2 = inputs['category1/z'][1]
+        x1 = inputs['category1/x']
+        y2 = inputs['y_vars/y2']
 
-        outputs['y1'] = z1 ** 2 + z2 + x1 - 0.2 * y2
+        outputs['y_vars/y1'] = z1 ** 2 + z2 + x1 - 0.2 * y2
