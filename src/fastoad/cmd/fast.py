@@ -22,7 +22,7 @@ from fastoad.io.configuration import ConfiguredProblem
 def main():
     parser = argparse.ArgumentParser(description='FAST main program')
     parser.add_argument('conf_file', type=str, help='the file for configuring the problem')
-    parser.add_argument('--gen_input_file', action='store_true',
+    parser.add_argument('--gen_inputs', action='store_true',
                         help='generates a template file that contains needed inputs')
     parser.add_argument('--run', action='store_true',
                         help='runs the problem with provided input file')
@@ -35,7 +35,7 @@ def main():
 
         problem.model.approx_totals()
 
-        if args.gen_input_file:
+        if args.gen_inputs:
             problem.write_needed_inputs()
         elif args.run:
             problem.read_inputs()
