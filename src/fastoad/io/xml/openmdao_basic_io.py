@@ -172,10 +172,11 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
     @staticmethod
     def create_updated_xml(original_xml: str, reference_xml: str, updated_xml: str):
         """
-        Creates an xml file with respect to original and reference xml files
-        :param original_xml: file name of the original xml
-        :param reference_xml: file name of the reference xml
-        :param updated_xml: file name of the resulting xml
+        Creates an xml file which is a copy of an original xml file and that is then updated with the default values of
+        a reference xml file
+        :param original_xml:name of file of the original xml
+        :param reference_xml: name of file that will provide reference values
+        :param updated_xml: name of file (copy of original_xml) that will be updated with reference values
         """
         original_xml = OpenMdaoXmlIO(original_xml)
         original_ivc = original_xml.read()

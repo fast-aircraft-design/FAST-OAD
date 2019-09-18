@@ -15,16 +15,16 @@
   -->
 
 <!--
- This file contains readable DATA in a "random" format for being read using
- a translation table
+ This file contains readable DATA in FAST "native" format, meaning that XML
+ paths are automatically cpnverted into OpenMDAO variable names.
+ It also uses several mechanism for specifying multiple-value variables
 -->
-
 <aircraft>
     <geometry>
-        <total_surface units="m**2">600.0</total_surface>
+        <total_surface units="m**2">780.3</total_surface>
         <wing>
-            <span units="m">69.3</span>
-            <aspect_ratio>8.0</aspect_ratio>
+            <span units="m">42</span>
+            <aspect_ratio>9.8</aspect_ratio>
         </wing>
         <fuselage>
             <length units="m">40</length>

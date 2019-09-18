@@ -261,9 +261,9 @@ def test_basic_xml_update():
     data_folder = pth.join(pth.dirname(__file__), 'data')
     result_folder = pth.join(pth.dirname(__file__), 'results', 'xml_update')
 
-    original_filename = pth.join(data_folder, 'basic.xml')
-    reference_filename = pth.join(data_folder, 'custom_reference.xml')
-    updated_filename = pth.join(result_folder, 'custom_updated.xml')
+    original_filename = pth.join(data_folder, 'xml_update_original.xml')
+    reference_filename = pth.join(data_folder, 'xml_update_reference.xml')
+    updated_filename = pth.join(result_folder, 'xml_update_updated.xml')
 
     OpenMdaoXmlIO.create_updated_xml(original_filename, reference_filename, updated_filename)
 
