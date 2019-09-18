@@ -253,3 +253,64 @@ def test_basic_xml_write_from_problem():
     assert len(tree.xpath('/aircraft/f')) == 1
     assert len(tree.xpath('/aircraft/g1')) == 1
     assert len(tree.xpath('/aircraft/g2')) == 1
+
+def test_basic_xml_update():
+    """
+    Tests the creation of an update XML file from original and reference xml files
+    """
+    data_folder = pth.join(pth.dirname(__file__), 'data')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'xml_update')
+
+    original_filename = pth.join(data_folder, 'xml_update_original.xml')
+    reference_filename = pth.join(data_folder, 'xml_update_reference.xml')
+    updated_filename = pth.join(result_folder, 'xml_update_updated.xml')
+
+    OpenMdaoXmlIO.create_updated_xml(original_filename, reference_filename, updated_filename)
+
+    updated_xml = OpenMdaoXmlIO(updated_filename)
+
+    ivc = updated_xml.read()
+
+    outputs: List[Variable] = []
+    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
+        outputs.append(Variable(name, value, attributes['units']))
+
+    assert len(outputs) == 9
+
+    assert outputs[0].name == 'geometry/total_surface'
+    assert outputs[0].value == approx([600.0])
+    assert outputs[0].units == 'm**2'
+
+    assert outputs[1].name == 'geometry/wing/span'
+    assert outputs[1].value == approx([69.3])
+    assert outputs[1].units == 'm'
+
+    assert outputs[2].name == 'geometry/wing/aspect_ratio'
+    assert outputs[2].value == approx([8.0])
+    assert outputs[2].units is None
+
+    assert outputs[3].name == 'geometry/fuselage/length'
+    assert outputs[3].value == approx([40.])
+    assert outputs[3].units == 'm'
+
+    assert outputs[4].name == 'constants/k1'
+    assert outputs[4].value == approx([1., 2., 3.])
+    assert outputs[4].units == 'kg'
+
+    assert outputs[5].name == 'constants/k2'
+    assert outputs[5].value == approx([10., 20.])
+    assert outputs[5].units is None
+
+    assert outputs[6].name == 'constants/k3'
+    assert outputs[6].value == approx([100., 200., 300., 400.])
+    assert outputs[6].units == 'm/s'
+
+    assert outputs[7].name == 'constants/k4'
+    assert outputs[7].value == approx([-1, -2, -3])
+    assert outputs[7].units is None
+
+    assert outputs[8].name == 'constants/k5'
+    assert outputs[8].value == approx([100, 200, 400, 500, 600])
+    assert outputs[8].units is None
+
+
