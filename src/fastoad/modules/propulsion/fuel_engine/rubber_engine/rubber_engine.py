@@ -27,6 +27,11 @@ ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
 
 
 class RubberEngine(object):
+    """
+    Parametric turbofan engine.
+
+
+    """
 
     def __init__(self, bpr, opr, t4, d_t4_cl, d_t4_cr, f0, mach_max, hm):
         self.bpr, self.opr, self.t4, self.d_t4_cl, self.d_t4_cr = bpr, opr, t4, d_t4_cl, d_t4_cr
@@ -164,62 +169,51 @@ class RubberEngine(object):
     # ----------------------------------------------------------------
 
     def max_thrust(self, atmosphere: Atmosphere, mach, delta_t4):
-
-        # ---------------------------------------------------
-        # mach effect calculation
-        # ---------------------------------------------------
-
-        vect = [(self.opr - 30) ** 2, (self.opr - 30), 1., self.t4, delta_t4]
-
-        f_ms = np.dot(vect, ALPHA[0]) * self.bpr + np.dot(vect, BETA[0])
-        g_ms = np.dot(vect, ALPHA[1]) * self.bpr + np.dot(vect, BETA[1])
-        f_fm = np.dot(vect, ALPHA[2]) * self.bpr + np.dot(vect, BETA[2])
-        g_fm = np.dot(vect, ALPHA[3]) * self.bpr + np.dot(vect, BETA[3])
-
-        ms_11000 = A_MS * self.t4 + B_MS * self.bpr + C_MS * (self.opr - 30) + \
-                   D_MS * delta_t4 + E_MS
-
-        fm_11000 = A_FM * self.t4 + B_FM * self.bpr + C_FM * (self.opr - 30) + \
-                   D_FM * delta_t4 + E_FM
-
+        """ Computation of maximum thrust as described in E. Roux thesis report"""
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
-        if altitude <= 11000:
-            m_s = ms_11000 + f_ms * (altitude - 11000) ** 2 + g_ms * (altitude - 11000)
-            f_m = fm_11000 + f_fm * (altitude - 11000) ** 2 + g_fm * (altitude - 11000)
-        else:
-            m_s = ms_11000
-            f_m = fm_11000
 
-        alpha_mach_effect = (1 - f_m) / (m_s * m_s)
+        def _mach_effect():
+            """ Computation of Mach effect """
+            vect = [(self.opr - 30) ** 2, (self.opr - 30), 1., self.t4, delta_t4]
 
-        mach_effect = alpha_mach_effect * (mach - m_s) ** 2 + f_m
-        # ---------------------------------------------------
+            f_ms = np.dot(vect, ALPHA[0]) * self.bpr + np.dot(vect, BETA[0])
+            g_ms = np.dot(vect, ALPHA[1]) * self.bpr + np.dot(vect, BETA[1])
+            f_fm = np.dot(vect, ALPHA[2]) * self.bpr + np.dot(vect, BETA[2])
+            g_fm = np.dot(vect, ALPHA[3]) * self.bpr + np.dot(vect, BETA[3])
 
-        # ---------------------------------------------------
-        # altitude effect calculation
-        # ---------------------------------------------------
+            ms_11000 = A_MS * self.t4 + B_MS * self.bpr + C_MS * (self.opr - 30) + \
+                       D_MS * delta_t4 + E_MS
 
-        k = 1 + 1.2e-3 * delta_t4
-        nf = 0.98 + 8e-4 * delta_t4
+            fm_11000 = A_FM * self.t4 + B_FM * self.bpr + C_FM * (self.opr - 30) + \
+                       D_FM * delta_t4 + E_FM
 
-        if altitude <= 11000:
-            height = k * ((atmosphere.density / ATM_SEA_LEVEL.density) ** nf) * \
-                     (1 / (1 - (0.04 * math.sin((math.pi * altitude) / 11000))))
-        else:
-            height = k * ((ATM_TROPOPAUSE.density / ATM_SEA_LEVEL.density) ** nf) \
-                     * atmosphere.density / ATM_TROPOPAUSE.density
-        # ---------------------------------------------------
+            if altitude <= 11000:
+                m_s = ms_11000 + f_ms * (altitude - 11000) ** 2 + g_ms * (altitude - 11000)
+                f_m = fm_11000 + f_fm * (altitude - 11000) ** 2 + g_fm * (altitude - 11000)
+            else:
+                m_s = ms_11000
+                f_m = fm_11000
 
-        # ---------------------------------------------------
-        # Residuals
-        # ---------------------------------------------------
+            alpha_mach_effect = (1 - f_m) / (m_s * m_s)
 
-        res = -4.51e-3 * self.bpr + 2.19e-5 * self.t4 - 3.09e-4 * (self.opr - 30) + 0.945
-        # ---------------------------------------------------
+            return alpha_mach_effect * (mach - m_s) ** 2 + f_m
 
-        fmax = (self.f0 * mach_effect * height * res) / 10
+        def _altitude_effect():
+            """ Computation of altitude effect """
+            k = 1 + 1.2e-3 * delta_t4
+            nf = 0.98 + 8e-4 * delta_t4
 
-        return fmax
+            if altitude <= 11000:
+                return k * ((atmosphere.density / ATM_SEA_LEVEL.density) ** nf) * \
+                       (1 / (1 - (0.04 * math.sin((math.pi * altitude) / 11000))))
+            return k * ((ATM_TROPOPAUSE.density / ATM_SEA_LEVEL.density) ** nf) \
+                   * atmosphere.density / ATM_TROPOPAUSE.density
+
+        def _residuals():
+            """ Computation of residuals """
+            return -4.51e-3 * self.bpr + 2.19e-5 * self.t4 - 3.09e-4 * (self.opr - 30) + 0.945
+
+        return (self.f0 * _mach_effect() * _altitude_effect() * _residuals()) / 10
 
     def installed_weight(self):
         """
