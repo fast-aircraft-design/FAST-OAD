@@ -22,7 +22,7 @@ from openmdao.core.problem import Problem
 
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
-from fastoad.modules.geometry import GetCG
+from fastoad.modules.geometry import GetCG, Geometry
 
 
 @pytest.fixture(scope="module")
@@ -63,3 +63,26 @@ def test_geometry_get_cg():
     assert cg_ratio == pytest.approx(0.387640, abs=1e-6)
     cg_airframe_a51 = problem['cg_airframe:A51']
     assert cg_airframe_a51 == pytest.approx(18.11, abs=1e-1)
+
+
+def test_geometry_geometry_global():
+    """ Tests computation of the global geometry """
+
+    input_xml_file_name = pth.join(pth.dirname(__file__), "data", "global_geometry_inputs.xml")
+
+    input_xml = OpenMdaoLegacy1XmlIO(input_xml_file_name)
+
+    input_vars = input_xml.read()
+
+    problem = Problem()
+    model = problem.model
+
+    model.add_subsystem('inputs', input_vars, promotes=['*'])
+    model.add_subsystem('geometry', Geometry(), promotes=['*'])
+
+    problem.setup(mode='fwd')
+    problem.run_model()
+    static_margin = problem['static_margin']
+    assert static_margin == pytest.approx(0.103091, abs=1e-6)
+    cg_global = problem['cg:CG']
+    assert cg_global == pytest.approx(17.3, abs=1e-1)
