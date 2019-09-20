@@ -17,12 +17,13 @@ Parametric turbofan engine
 
 import math
 
+import numpy as np
+
 from fastoad.utils.physics import Atmosphere
 from .constants import ALPHA, BETA, A_MS, B_MS, C_MS, E_MS, D_MS, A_FM, D_FM, E_FM, B_FM, C_FM
 
 ATM_SEA_LEVEL = Atmosphere(0)
 ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
-
 
 
 class RubberEngine(object):
@@ -164,33 +165,17 @@ class RubberEngine(object):
 
     def max_thrust(self, atmosphere: Atmosphere, mach, delta_t4):
 
-        f_ms = (ALPHA[0][0] * (self.opr - 30) ** 2 + ALPHA[0][1] *
-                (self.opr - 30) + ALPHA[0][2] + ALPHA[0][3] * self.t4 +
-                ALPHA[0][4] * delta_t4) * self.bpr + BETA[0][0] * \
-               (self.opr - 30) ** 2 + BETA[0][1] * (self.opr - 30) \
-               + BETA[0][2] + BETA[0][3] * self.t4 + BETA[0][4] * delta_t4
-
-        g_ms = (ALPHA[1][0] * (self.opr - 30) ** 2 + ALPHA[1][1] *
-                (self.opr - 30) + ALPHA[1][2] + ALPHA[1][3] * self.t4 +
-                ALPHA[1][4] * delta_t4) * self.bpr + BETA[1][0] * \
-               (self.opr - 30) ** 2 + BETA[1][1] * (self.opr - 30) \
-               + BETA[1][2] + BETA[1][3] * self.t4 + BETA[1][4] * delta_t4
-
-        f_fm = (ALPHA[2][0] * (self.opr - 30) ** 2 + ALPHA[2][1] *
-                (self.opr - 30) + ALPHA[2][2] + ALPHA[2][3] * self.t4 +
-                ALPHA[2][4] * delta_t4) * self.bpr + BETA[2][0] * \
-               (self.opr - 30) ** 2 + BETA[2][1] * (self.opr - 30) \
-               + BETA[2][2] + BETA[2][3] * self.t4 + BETA[2][4] * delta_t4
-
-        g_fm = (ALPHA[3][0] * (self.opr - 30) ** 2 + ALPHA[3][1] *
-                (self.opr - 30) + ALPHA[3][2] + ALPHA[3][3] * self.t4 +
-                ALPHA[3][4] * delta_t4) * self.bpr + BETA[3][0] * \
-               (self.opr - 30) ** 2 + BETA[3][1] * (self.opr - 30) \
-               + BETA[3][2] + BETA[3][3] * self.t4 + BETA[3][4] * delta_t4
-
         # ---------------------------------------------------
         # mach effect calculation
         # ---------------------------------------------------
+
+        vect = [(self.opr - 30) ** 2, (self.opr - 30), 1., self.t4, delta_t4]
+
+        f_ms = np.dot(vect, ALPHA[0]) * self.bpr + np.dot(vect, BETA[0])
+        g_ms = np.dot(vect, ALPHA[1]) * self.bpr + np.dot(vect, BETA[1])
+        f_fm = np.dot(vect, ALPHA[2]) * self.bpr + np.dot(vect, BETA[2])
+        g_fm = np.dot(vect, ALPHA[3]) * self.bpr + np.dot(vect, BETA[3])
+
         ms_11000 = A_MS * self.t4 + B_MS * self.bpr + C_MS * (self.opr - 30) + \
                    D_MS * delta_t4 + E_MS
 
