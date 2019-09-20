@@ -20,11 +20,10 @@ import os.path as pth
 import pytest
 from openmdao.core.problem import Problem
 
-from tests.testing_utilities import run_system
-
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
-from fastoad.modules.geometry import GetCG, Geometry
+from fastoad.modules.geometry import GetCG
+
 
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
@@ -43,16 +42,24 @@ def input_xml() -> OpenMdaoLegacy1XmlIO:
     return OpenMdaoLegacy1XmlIO(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
-def test_geometry_get_cg(input_xml):
+def test_geometry_get_cg():
     """ Tests computation of the cg estimation """
 
-    input_list = []
+    input_xml_file_name = pth.join(pth.dirname(__file__), "data", "get_cg_inputs.xml")
 
-    input_vars = input_xml.read(only=input_list)
+    input_xml = OpenMdaoLegacy1XmlIO(input_xml_file_name)
 
-    component = GetCG()
+    input_vars = input_xml.read()
 
-    problem = run_system(component, input_vars)
+    problem = Problem()
+    model = problem.model
+    model.add_subsystem('inputs', input_vars, promotes=['*'])
+    model.add_subsystem('geometry', GetCG(), promotes=['*'])
 
-    area_pf = problem['geometry:wing_area_pf']
-    assert area_pf == pytest.approx(100.303, abs=1e-3)
+    problem.setup(mode='fwd')
+
+    problem.run_model()
+    cg_ratio = problem['cg_ratio']
+    assert cg_ratio == pytest.approx(0.387640, abs=1e-6)
+    cg_airframe_a51 = problem['cg_airframe:A51']
+    assert cg_airframe_a51 == pytest.approx(18.11, abs=1e-1)
