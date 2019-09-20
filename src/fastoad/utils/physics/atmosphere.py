@@ -55,24 +55,30 @@ class Atmosphere:
     """
 
     # pylint: disable=too-many-instance-attributes  # Needed for avoiding redoing computations
-    def __init__(self, altitude_ft: Union[float, Sequence[float]], delta_t: float = 0.):
+    def __init__(self,
+                 altitude: Union[float, Sequence[float]],
+                 delta_t: float = 0.,
+                 altitude_in_feet: bool = True):
         """
         Builds an atmosphere instance that will provide atmosphere values
 
-        :param altitude_ft: altitude in foots
+        :param altitude: altitude in foots
         :param delta_t: temperature increment applied to whole temperature profile
+        :param altitude_in_feet: if True, altitude should be provided in feet. Otherwise,
+                                 it should be provided in meters
         """
 
         self.__delta_t = delta_t
 
         # Floats will be provided as output if altitude is a scalar
-        self.__float_expected = isinstance(altitude_ft, Number)
+        self.__float_expected = isinstance(altitude, Number)
 
-        # For convenience, let's have altitude as numpy arrays in all cases
-        if not isinstance(altitude_ft, np.ndarray):
-            self.__altitude = np.array(altitude_ft) * foot
+        # For convenience, let's have altitude as numpy arrays and in meters in all cases
+        unit_coeff = foot if altitude_in_feet else 1.
+        if not isinstance(altitude, np.ndarray):
+            self.__altitude = np.array(altitude) * unit_coeff
         else:
-            self.__altitude = altitude_ft * foot
+            self.__altitude = altitude * unit_coeff
 
         self.__out_shape = self.__altitude.shape
 
@@ -87,8 +93,26 @@ class Atmosphere:
         self.__speed_of_sound = None
         self.__kinematic_viscosity = None
 
+    def get_altitude(self, altitude_in_feet: bool = True) -> Union[float, Sequence[float]]:
+        """
+        :param altitude_in_feet: if True, altitude is returned in feet. Otherwise,
+                                 it is returned in meters
+        :return: altitude provided at instantiation
+        """
+        if altitude_in_feet:
+            return self.__return_value(self.__altitude / foot)
+        return self.__return_value(self.__altitude)
+
     @property
-    def temperature(self):
+    def delta_t(self) -> Union[float, Sequence[float]]:
+        """
+        Temperature increment applied to whole temperature profile as
+        provided at instantiation
+        """
+        return self.__delta_t
+
+    @property
+    def temperature(self) -> Union[float, Sequence[float]]:
         """ Temperature in K """
         if self.__temperature is None:
             self.__temperature = np.zeros(self.__out_shape)
@@ -99,7 +123,7 @@ class Atmosphere:
         return self.__return_value(self.__temperature)
 
     @property
-    def pressure(self):
+    def pressure(self) -> Union[float, Sequence[float]]:
         """ Pressure in Pa """
         if self.__pressure is None:
             self.__pressure = np.zeros(self.__out_shape)
@@ -111,21 +135,21 @@ class Atmosphere:
         return self.__return_value(self.__pressure)
 
     @property
-    def density(self):
+    def density(self) -> Union[float, Sequence[float]]:
         """ Density in kg/m3 """
         if self.__density is None:
             self.__density = self.pressure / AIR_GAS_CONSTANT / self.temperature
         return self.__return_value(self.__density)
 
     @property
-    def speed_of_sound(self):
+    def speed_of_sound(self) -> Union[float, Sequence[float]]:
         """ Speed of sound in m/s """
         if self.__speed_of_sound is None:
             self.__speed_of_sound = (1.4 * AIR_GAS_CONSTANT * self.temperature) ** 0.5
         return self.__return_value(self.__speed_of_sound)
 
     @property
-    def kinematic_viscosity(self):
+    def kinematic_viscosity(self) -> Union[float, Sequence[float]]:
         """ Kinematic viscosity in m2/s """
         if self.__kinematic_viscosity is None:
             self.__kinematic_viscosity = ((0.000017894 *

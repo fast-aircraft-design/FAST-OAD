@@ -107,11 +107,14 @@ def test_atmosphere():
             atm.kinematic_viscosity, rel=1e-2)
         assert expectations['SoS'][idx] == pytest.approx(atm.speed_of_sound,
                                                          rel=1e-3)
+        # Additional check for get_altitude in meters
+        assert expectations['alt'][idx] == pytest.approx(atm.get_altitude(altitude_in_feet=False),
+                                                         rel=1e-3)
 
-        # Checking with altitude provided as a list
-        alt = (expectations['alt'][idx] / foot).tolist()
+        # Checking with altitude provided as a list and in meters
+        alt = expectations['alt'][idx].tolist()
         assert isinstance(alt, list)
-        atm = Atmosphere(alt, delta_t)
+        atm = Atmosphere(alt, delta_t, altitude_in_feet=False)
         assert expectations['T'][idx] == pytest.approx(atm.temperature,
                                                        rel=1e-4)
         assert expectations['rho'][idx] == pytest.approx(atm.density, rel=1e-3)
@@ -120,3 +123,5 @@ def test_atmosphere():
             atm.kinematic_viscosity, rel=1e-2)
         assert expectations['SoS'][idx] == pytest.approx(atm.speed_of_sound,
                                                          rel=1e-3)
+        # Additional check for get_altitude in feet
+        assert expectations['alt'][idx] / foot == pytest.approx(atm.get_altitude(), rel=1e-3)
