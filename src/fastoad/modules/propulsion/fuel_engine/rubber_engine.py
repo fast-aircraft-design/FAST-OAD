@@ -1,0 +1,397 @@
+"""
+Parametric turbofan engine
+"""
+
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import math
+
+
+class RubberEngine(object):
+
+    def __init__(self, bpr, opr, t4, d_t4_cl, d_t4_cr, f0, mach_max, hm):
+        self.bpr, self.opr, self.t4, self.d_t4_cl, self.d_t4_cr = bpr, opr, t4, d_t4_cl, d_t4_cr
+        self.f0, self.mach_max, self.hm = f0, mach_max, hm
+        self.altitude = None
+        self.temperature = None
+        self.altitude = None
+        self.density = None
+        self.mach = None
+        self.delta_t_4 = None
+
+    def compute_manual(self, mach, altitude, thrust_rate, phase='MTO'):
+        """
+        #----------------------------------------------------------------
+        # DEFINITION OF THE sfc CALCULATION FUNCTION
+        #----------------------------------------------------------------
+        # from Elodie Roux [see her PhD Thesis]
+        #
+        #----------------------------------------------------------------
+        # INPUTS
+        #    -mach number
+        #    -Flight altitude [m]
+        #    -Flight temperature [K]
+        #    -Overall Pressure Ratio
+        #    -By-Pass Ratio
+        #
+        # OUTPUTS
+        #    -sfc in [kg/s/N]
+        #----------------------------------------------------------------
+        """
+        self.altitude = altitude * 0.3048
+        self.mach = mach
+        self.temperature, self.density, _, _ = self._atmosphere(self.altitude)
+
+        if phase == 'MTO':
+            self.delta_t_4 = 0
+        elif phase == 'CLIMB':
+            self.delta_t_4 = self.d_t4_cl
+        elif phase == 'FI':
+            self.delta_t_4 = self.d_t4_cr
+        else:
+            raise RuntimeError()
+
+        # Calcul de poussee max (fonction MaxThrust du modele ER)
+        fmax_0 = self._max_thrust()
+
+        fc = thrust_rate * fmax_0 * 10
+
+        # Calcul de conso specifique a poussee max
+        sfc_0 = self._sfc_calc_at_max_thrust()
+
+        # Calcul de conso specifique en regime reduit
+        delta_h = self.altitude - self.hm
+        fi = -9.6e-5 * delta_h + 0.85
+        if delta_h < -89:
+            csrmin = 0.998
+        else:
+            csrmin = -3.385e-5 * delta_h + 0.995
+
+        adir = (1 - csrmin) / (1 - fi) ** 2
+        csr = adir * (thrust_rate - fi) ** 2 + csrmin
+
+        sfc = sfc_0 * csr
+        if sfc > 2.0 / 36000.0:
+            sfc = 2.0 / 36000.0
+
+        return fc, sfc
+
+    def compute_regulated(self, mach, altitude, drag, phase='CRZ'):
+        self.altitude = altitude * 0.3048
+        self.mach = mach
+        self.temperature, self.density, _, _ = self._atmosphere(self.altitude)
+
+        # Initialisation de la temperature turbine pour la phase courante
+        if phase == 'MTO':
+            self.delta_t_4 = 0
+        elif phase == 'CLIMB':
+            self.delta_t_4 = self.d_t4_cl
+        elif phase == 'FI':
+            self.delta_t_4 = self.d_t4_cr
+        elif phase == 'CRZ':
+            self.delta_t_4 = self.d_t4_cr
+        else:
+            raise RuntimeError()
+
+        # Calcul de poussee max (fonction MaxThrust du modele ER)
+        fmax_0 = self._max_thrust()
+
+        thrust_rate = drag / fmax_0 / 10
+
+        # Calcul de conso specifique a poussee max
+        sfc_0 = self._sfc_calc_at_max_thrust()
+
+        # Calcul de conso specifique en regime reduit
+        delta_h = self.altitude - self.hm
+        fi = -9.6e-5 * delta_h + 0.85
+        if delta_h < -89:
+            csrmin = 0.998
+        else:
+            csrmin = -3.385e-5 * delta_h + 0.995
+
+        adir = (1 - csrmin) / (1 - fi) ** 2
+        csr = adir * (thrust_rate - fi) ** 2 + csrmin
+
+        sfc = sfc_0 * csr
+        if sfc > 2.0 / 36000.0:
+            sfc = 2.0 / 36000.0
+
+        return sfc, thrust_rate
+
+    def _sfc_calc_at_max_thrust(self):
+        global a1, a2, b1, b2, c
+
+        if self.altitude == 0:
+            a1 = 6.54e-7
+            a2 = 8.54e-6
+            b1 = -6.58e-7
+            b2 = 1.32e-5
+            c = -1.05e-7
+
+        if self.altitude > 0:
+            if self.altitude <= 11000:
+                a1 = -(7.44e-13) * self.altitude + 6.54e-7
+                a2 = -(3.32e-10) * self.altitude + 8.54e-6
+                b1 = -(3.47e-11) * self.altitude - 6.58e-7
+                b2 = (4.23e-10) * self.altitude + 1.32e-5
+                c = - 1.05e-7
+            else:
+                a1 = 6.45e-7
+                a2 = 4.89e-6
+                b1 = -1.04e-6
+                b2 = 1.79e-5
+                c = -1.05e-7
+
+        sfc = self.mach * (a1 * self.bpr + a2) + math.sqrt(self.temperature / 288.15) \
+              * (b1 * self.bpr + b2) + (self.opr - 30) * ((7.4e-13
+                                                           * (self.opr - 30) * self.altitude) + c)
+
+        return sfc
+
+    # ----------------------------------------------------------------
+    # DEFINITION OF THE MAX THRUST FUNCTION
+    # ----------------------------------------------------------------
+    # from Elodie Roux [see her PhD Thesis]
+    #
+    # ----------------------------------------------------------------
+    # INPUT
+    #     -mach:       mach number
+    #         -altitude:   Flight altitude [m]
+    #         -t4:         Turbine Inlet temperature [degK]
+    #         -delta_t_4:   Difference between t4 operational and t4 conceptual
+    #         -opr:        Overall pressure ratio
+    #         -bpr:        By-Pass Ratio
+    #         -density:    density at given altitude [kg/m3]
+    #         -f0:         Max Thrust @ SL and no speed [N]
+    #
+    # OUTPUTS
+    #    -Fmax [daN]
+    # ----------------------------------------------------------------
+
+    def _max_thrust(self):
+        # ---------------------------------------------------
+        # Constant definition
+        # ---------------------------------------------------
+        density_0 = 1.225
+        density_11000 = 0.364
+
+        a_ms = -2.74e-4
+        a_fm = 2.67e-4
+        b_ms = 1.91e-2
+        b_fm = -2.35e-2
+        c_ms = 1.21e-3
+        c_fm = -1.32e-3
+        d_ms = -8.48e-4
+        d_fm = 3.14e-4
+        e_ms = 8.96e-1
+        e_fm = 5.22e-1
+
+        alpha_mat = [[1.79e-12, 4.29e-13, -5.24e-14, -4.51e-14, -4.57e-12],
+                     [1.17e-8, -8.80e-8, -5.25e-9, -3.19e-9, 5.52e-8],
+                     [-5.37e-13, -1.26e-12, 1.29e-14, 2.39e-14, 2.35e-12],
+                     [-3.18e-9, 2.76e-8, 1.97e-9, 1.17e-9, -2.26e-8]]
+
+        beta_mat = [[1.70e-12, 1.51e-12, 1.48e-9, -7.59e-14, -1.07e-11],
+                    [-3.48e-9, -8.41e-8, 2.56e-5, -2.00e-8, -7.17e-8],
+                    [-3.89e-13, -2.05e-12, -9.28e-10, 1.30e-13, 5.39e-12],
+                    [1.77e-9, 2.62e-8, -8.87e-6, 6.66e-9, 4.43e-8]]
+
+        f_ms = (alpha_mat[0][0] * (self.opr - 30) ** 2 + alpha_mat[0][1] *
+                (self.opr - 30) + alpha_mat[0][2] + alpha_mat[0][3] * self.t4 +
+                alpha_mat[0][4] * self.delta_t_4) * self.bpr + beta_mat[0][0] * \
+               (self.opr - 30) ** 2 + beta_mat[0][1] * (self.opr - 30) \
+               + beta_mat[0][2] + beta_mat[0][3] * self.t4 + beta_mat[0][4] * self.delta_t_4
+
+        g_ms = (alpha_mat[1][0] * (self.opr - 30) ** 2 + alpha_mat[1][1] *
+                (self.opr - 30) + alpha_mat[1][2] + alpha_mat[1][3] * self.t4 +
+                alpha_mat[1][4] * self.delta_t_4) * self.bpr + beta_mat[1][0] * \
+               (self.opr - 30) ** 2 + beta_mat[1][1] * (self.opr - 30) \
+               + beta_mat[1][2] + beta_mat[1][3] * self.t4 + beta_mat[1][4] * self.delta_t_4
+
+        f_fm = (alpha_mat[2][0] * (self.opr - 30) ** 2 + alpha_mat[2][1] *
+                (self.opr - 30) + alpha_mat[2][2] + alpha_mat[2][3] * self.t4 +
+                alpha_mat[2][4] * self.delta_t_4) * self.bpr + beta_mat[2][0] * \
+               (self.opr - 30) ** 2 + beta_mat[2][1] * (self.opr - 30) \
+               + beta_mat[2][2] + beta_mat[2][3] * self.t4 + beta_mat[2][4] * self.delta_t_4
+
+        g_fm = (alpha_mat[3][0] * (self.opr - 30) ** 2 + alpha_mat[3][1] *
+                (self.opr - 30) + alpha_mat[3][2] + alpha_mat[3][3] * self.t4 +
+                alpha_mat[3][4] * self.delta_t_4) * self.bpr + beta_mat[3][0] * \
+               (self.opr - 30) ** 2 + beta_mat[3][1] * (self.opr - 30) \
+               + beta_mat[3][2] + beta_mat[3][3] * self.t4 + beta_mat[3][4] * self.delta_t_4
+
+        # ---------------------------------------------------
+        # mach effect calculation
+        # ---------------------------------------------------
+        ms_11000 = a_ms * self.t4 + b_ms * self.bpr + c_ms * (self.opr - 30) + \
+                   d_ms * self.delta_t_4 + e_ms
+
+        fm_11000 = a_fm * self.t4 + b_fm * self.bpr + c_fm * (self.opr - 30) + \
+                   d_fm * self.delta_t_4 + e_fm
+
+        if self.altitude <= 11000:
+            m_s = ms_11000 + f_ms * (self.altitude - 11000) ** 2 + g_ms * (self.altitude - 11000)
+            f_m = fm_11000 + f_fm * (self.altitude - 11000) ** 2 + g_fm * (self.altitude - 11000)
+        else:
+            m_s = ms_11000
+            f_m = fm_11000
+
+        alpha_mach_effect = (1 - f_m) / (m_s * m_s)
+
+        mach_effect = alpha_mach_effect * (self.mach - m_s) ** 2 + f_m
+        # ---------------------------------------------------
+
+        # ---------------------------------------------------
+        # altitude effect calculation
+        # ---------------------------------------------------
+
+        k = 1 + 1.2e-3 * self.delta_t_4
+        nf = 0.98 + 8e-4 * self.delta_t_4
+
+        if self.altitude <= 11000:
+            height = k * ((self.density / density_0) ** nf) * \
+                     (1 / (1 - (0.04 * math.sin((math.pi * self.altitude) / 11000))))
+        else:
+            height = k * ((density_11000 / density_0) ** nf) * self.density / density_11000
+        # ---------------------------------------------------
+
+        # ---------------------------------------------------
+        # Residuals
+        # ---------------------------------------------------
+
+        res = -4.51e-3 * self.bpr + 2.19e-5 * self.t4 - 3.09e-4 * (self.opr - 30) + 0.945
+        # ---------------------------------------------------
+
+        fmax = (self.f0 * mach_effect * height * res) / 10
+
+        return fmax
+
+    def installed_weight(self):
+        """
+        #        #TORENBEEK MODEL with CORRECTION by EROUX
+        #        #---------------------------------------------------
+        #        #see PhD p. 69 and 72 (correction of the model)
+        #        #---------------------------------------------------
+        #
+        #        #---------------------------------------------------
+        #        #Constant definition
+        #        #---------------------------------------------------
+        #        T_0 = 288.15
+        #        Gamma_heat = 1.4
+        #
+        #        Eta_c = 0.85
+        #        Eta_f = 0.85
+        #        Eta_t = 0.88
+        #        Eta_n = 0.97
+        #
+        #        Eta_tf = Eta_t * Eta_f
+        #
+        #        installation_factor = 1.2
+        #
+        #        C1 = (self.t4/T_0)-((self.opr**((Gamma_heat-1)/Gamma_heat)-1)/Eta_c)
+        #
+        #        C2 = 1-(((self.opr**((Gamma_heat-1)/Gamma_heat))-1) / (self.t4/T_0*Eta_c*Eta_t) )
+        #
+        #        C3 = 1-(1.01/(self.opr**((Gamma_heat-1)/Gamma_heat)*C2))
+        #
+        #        G0 = C1 * C3
+        #
+        #        C4 = (10*self.opr**(1/4))/(340.43*(math.sqrt(5*Eta_n*(1+Eta_tf*self.bpr)*G0)))
+        #
+        #        C5 = C4 + (0.0122 * (1-(1/math.sqrt(1+0.75*self.bpr))))
+        #
+        #        weight = self.f0 * C5
+        #
+        #        installed_weight = installation_factor * weight
+        #
+        #        #installed_weight = self.f0 *  installation_factor * (C4+(0.0122*
+        #
+        #        #Correction factor from EROUX
+        #
+        #        #installed_weight =  installed_weight /
+        #                                    (1+(((7.26e-3)/100)*installed_weight)-20.8/100)
+        # Model by EROUX
+        #---------------------------------------------------
+        # see PhD p. 69 and 72 (correction of the model)
+        #---------------------------------------------------
+        """
+        installation_factor = 1.2
+
+        if self.f0 < 80000:
+            weight = 22.2e-3 * self.f0
+        else:
+            weight = 14.1e-3 * self.f0 + 648
+
+        installed_weight = installation_factor * weight
+
+        return installed_weight
+
+    def length(self):
+        """
+        # Model by Raymer
+        #---------------------------------------------------
+        # see 3rd edition of the conceptual design book p. 235
+        #---------------------------------------------------
+        """
+        length = 0.49 * (self.f0 / 1000) ** 0.4 * self.mach_max ** 0.2
+
+        return length
+
+    def nacelle_diameter(self):
+        """
+        # Model by Raymer
+        #---------------------------------------------------
+        # see 3rd edition of the conceptual design book p. 235
+        #---------------------------------------------------
+        """
+        diameter = 0.15 * (self.f0 / 1000) ** 0.5 * math.exp(0.04 * self.bpr)
+
+        # Nacelle size is derived from Kroo notes
+        # http://adg.stanford.edu/aa241/propulsion/nacelledesign.html
+        nacelle_diameter = diameter * 1.1
+
+        return nacelle_diameter
+
+    # FIXME: use atmosphere module
+    @staticmethod
+    def _atmosphere(altitude):
+        """
+        #----------------------------------------------------------------
+        # DEFINITION OF THE ATMOSPHERE FUNCTION
+        #----------------------------------------------------------------
+        # Valid for an altitude between 0 and 15000 m
+        #
+        #----------------------------------------------------------------
+        # INPUTS
+        #    -altitude (m)
+        #
+        # OUTPUTS
+        #    -temperature [deg K]
+        #    -Densityt [kg/m3]
+        #    -viscosity [
+        #    -sos [m/s]
+        #----------------------------------------------------------------
+        """
+        if altitude <= 11000:
+            temperature = (288.15 - 0.0065 * altitude)
+            density = ((temperature / (288.15)) ** -((9.81 / -0.0065 / 287) + 1) * 1.225)
+            viscosity = ((0.000001458) * temperature ** (3 / 2)) * (1 / (temperature + 110.4))
+            sos = (1.4 * 287 * temperature) ** 0.5
+        else:
+            temperature = 216.65
+            density = math.exp(-(9.81 / 287 / temperature) * (altitude - 11000)) * 0.364
+            viscosity = ((0.000001458) * temperature ** (3 / 2)) * (1 / (temperature + 110.4))
+            sos = (1.4 * 287 * temperature) ** 0.5
+
+        return temperature, density, viscosity, sos
