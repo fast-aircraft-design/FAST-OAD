@@ -20,12 +20,10 @@ import numpy as np
 from lxml import etree
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.core.indepvarcomp import IndepVarComp
-from openmdao.core.problem import Problem
 
 from fastoad.io.serialize import SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.openmdao.connections_utils import build_ivc_of_unconnected_inputs
 from fastoad.utils.strings import get_float_list_from_string
 from .openmdao_custom_io import OpenMdaoCustomXmlIO, Variable
 
@@ -109,16 +107,6 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
 
         self._write(used_variables)
 
-    def write_inputs(self, problem: Problem, optional_inputs: bool = True):
-        """
-        Write inputs of a Problem to an xml file
-
-        :param problem: OpenMDAO Problem instance to read.
-        :param optional_inputs: if True, inputs with non-NaN values will also
-                                be written.
-        """
-        ivc_inputs = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=optional_inputs)
-        self.write(ivc_inputs)
 
     def _read_xml(self) -> Sequence[Variable]:
         """
@@ -172,11 +160,12 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
     @staticmethod
     def create_updated_xml(original_xml: str, reference_xml: str, updated_xml: str):
         """
-        Creates an xml file which is a copy of an original xml file and that is then updated with the default values of
-        a reference xml file
+        Creates an xml file which is a copy of an original xml file and that is then updated
+        with the default values of a reference xml file
         :param original_xml:name of file of the original xml
         :param reference_xml: name of file that will provide reference values
-        :param updated_xml: name of file (copy of original_xml) that will be updated with reference values
+        :param updated_xml: name of file (copy of original_xml) that will be
+        updated with reference values
         """
         original_xml = OpenMdaoXmlIO(original_xml)
         original_ivc = original_xml.read()

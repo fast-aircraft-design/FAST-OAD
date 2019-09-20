@@ -19,7 +19,6 @@ from typing import List
 
 import pytest
 from pytest import approx
-from lxml.etree import XPathEvalError
 from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.io.xml import OpenMdaoCustomXmlIO
@@ -82,19 +81,24 @@ def test_custom_xml_read_and_write_from_ivc():
         _ = xml_read.read()
     assert exc_info is not None
 
-    # test with setting a bad translation table (missing xpath)
+    # test with setting a bad translation table (missing variable name in the translator)
+    filename = pth.join(data_folder, 'custom_additional_var.xml')
+    xml_read = OpenMdaoCustomXmlIO(filename)
     with pytest.raises(ValueError) as exc_info:
-        xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['dummy_var'],
-                                                   xpaths=xpaths + ['dummy_xpath']))
+        xml_read.set_translator(VarXpathTranslator(variable_names=var_names,
+                                                   xpaths=xpaths))
         _ = xml_read.read()
     assert exc_info is not None
 
     # test with setting a bad translation table (bad xpath)
-    with pytest.raises(XPathEvalError) as exc_info:
-        xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['dummy_var'],
+    with pytest.raises(ValueError) as exc_info:
+        xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['additional_var'],
                                                    xpaths=xpaths + ['bad:xpath']))
         _ = xml_read.read()
     assert exc_info is not None
+
+    filename = pth.join(data_folder, 'custom.xml')
+    xml_read = OpenMdaoCustomXmlIO(filename)
 
     # test after setting translation table
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
