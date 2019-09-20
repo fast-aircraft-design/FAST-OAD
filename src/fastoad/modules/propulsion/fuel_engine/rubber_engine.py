@@ -31,6 +31,15 @@ class RubberEngine(object):
         self.delta_t_4 = None
 
     def compute_manual(self, mach, altitude, thrust_rate, phase='MTO'):
+        _, fc, sfc = self.compute(mach, altitude, phase, thrust_rate=thrust_rate)
+        return fc, sfc
+
+    def compute_regulated(self, mach, altitude, drag, phase='CRZ'):
+
+        thrust_rate, _, sfc = self.compute(mach, altitude, phase, fc=drag)
+        return sfc, thrust_rate
+
+    def compute(self, mach, altitude, phase, thrust_rate=None, fc=None):
         """
         #----------------------------------------------------------------
         # DEFINITION OF THE sfc CALCULATION FUNCTION
@@ -53,46 +62,8 @@ class RubberEngine(object):
         self.mach = mach
         self.temperature, self.density, _, _ = self._atmosphere(self.altitude)
 
-        if phase == 'MTO':
-            self.delta_t_4 = 0
-        elif phase == 'CLIMB':
-            self.delta_t_4 = self.d_t4_cl
-        elif phase == 'FI':
-            self.delta_t_4 = self.d_t4_cr
-        else:
-            raise RuntimeError()
-
-        # Calcul de poussee max (fonction MaxThrust du modele ER)
-        fmax_0 = self._max_thrust()
-
-        fc = thrust_rate * fmax_0 * 10
-
-        # Calcul de conso specifique a poussee max
-        sfc_0 = self._sfc_calc_at_max_thrust()
-
-        # Calcul de conso specifique en regime reduit
-        delta_h = self.altitude - self.hm
-        fi = -9.6e-5 * delta_h + 0.85
-        if delta_h < -89:
-            csrmin = 0.998
-        else:
-            csrmin = -3.385e-5 * delta_h + 0.995
-
-        adir = (1 - csrmin) / (1 - fi) ** 2
-        csr = adir * (thrust_rate - fi) ** 2 + csrmin
-
-        sfc = sfc_0 * csr
-        if sfc > 2.0 / 36000.0:
-            sfc = 2.0 / 36000.0
-
-        return fc, sfc
-
-    def compute_regulated(self, mach, altitude, drag, phase='CRZ'):
-        self.altitude = altitude * 0.3048
-        self.mach = mach
-        self.temperature, self.density, _, _ = self._atmosphere(self.altitude)
-
         # Initialisation de la temperature turbine pour la phase courante
+        # FIXME: use enums. Raise a better Exception
         if phase == 'MTO':
             self.delta_t_4 = 0
         elif phase == 'CLIMB':
@@ -107,7 +78,10 @@ class RubberEngine(object):
         # Calcul de poussee max (fonction MaxThrust du modele ER)
         fmax_0 = self._max_thrust()
 
-        thrust_rate = drag / fmax_0 / 10
+        if thrust_rate is None:
+            thrust_rate = fc / fmax_0 / 10
+        else:
+            fc = thrust_rate * fmax_0 * 10
 
         # Calcul de conso specifique a poussee max
         sfc_0 = self._sfc_calc_at_max_thrust()
@@ -127,7 +101,7 @@ class RubberEngine(object):
         if sfc > 2.0 / 36000.0:
             sfc = 2.0 / 36000.0
 
-        return sfc, thrust_rate
+        return thrust_rate, fc, sfc
 
     def _sfc_calc_at_max_thrust(self):
         global a1, a2, b1, b2, c
