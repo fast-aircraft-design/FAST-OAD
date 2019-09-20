@@ -15,10 +15,10 @@ Test module for rubber_engine.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import numpy as np
 
 from fastoad.modules.propulsion.fuel_engine.rubber_engine import RubberEngine
+from fastoad.utils.physics import Atmosphere
 
 
 def test_compute_manual():
@@ -96,59 +96,35 @@ def test_nacelle_diameter():
     np.testing.assert_allclose(engine.nacelle_diameter(), 3.25, rtol=1e-2)
 
 
-def test__max_thrust():
+def test_max_thrust():
     engine = RubberEngine(5, 30, 1500, 0, 0, 10, 0, 0)  # f0=10 so that output is simply fmax/f0
     machs = np.arange(0, 1.01, 0.1)
-
-    engine.mach = machs
 
     # Check against simplified (but analytically equivalent) formulas
     # As in p 59. of Roux PhD report, but with correct coefficients (yes, those in report
     # are not consistent with the complete formula nor the figure 2.19 just below.
 
     # Check cruise
-    engine.altitude = 11000
-    engine.temperature, engine.density, _, _ = engine._atmosphere(engine.altitude)
-    engine.delta_t_4 = -100
-    max_thrust_ratio = engine._max_thrust()
-    ref_max_thrust_ratio = 0.949 * engine.density / 1.225 * (
+    atm = Atmosphere(11000, altitude_in_feet=False)
+    max_thrust_ratio = engine.max_thrust(atm, machs, -100)
+    ref_max_thrust_ratio = 0.949 * atm.density / 1.225 * (
             1 - 0.681 * machs + 0.511 * machs ** 2)
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-2)
 
     # Check Take-off
-    engine.altitude = 0
-    engine.temperature, engine.density, _, _ = engine._atmosphere(engine.altitude)
-    engine.delta_t_4 = 0
-    max_thrust_ratio = engine._max_thrust()
-    ref_max_thrust_ratio = 0.955 * engine.density / 1.225 * (
+    atm = Atmosphere(0, altitude_in_feet=False)
+    max_thrust_ratio = engine.max_thrust(atm, machs, 0)
+    ref_max_thrust_ratio = 0.955 * atm.density / 1.225 * (
             1 - 0.730 * machs + 0.359 * machs ** 2)
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-2)
 
     # Check Cruise with compression rate != 30 and bypass ratio != 5
-    engine.bpr = 4
-    engine.opr = 35
-    engine.altitude = 13000
-    engine.temperature, engine.density, _, _ = engine._atmosphere(engine.altitude)
-    engine.delta_t_4 = -50
-    max_thrust_ratio = engine._max_thrust()
-    ref_max_thrust_ratio = 0.969 * engine.density / 1.225 * (
+    engine = RubberEngine(4, 35, 1500, 0, 0, 10, 0, 0)  # f0=10 so that output is simply fmax/f0
+    atm = Atmosphere(13000, altitude_in_feet=False)
+    max_thrust_ratio = engine.max_thrust(atm, machs, -50)
+    ref_max_thrust_ratio = 0.969 * atm.density / 1.225 * (
             1 - 0.636 * machs + 0.521 * machs ** 2)
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-2)
-
-    # # Same plot as figure 2.19 of e. Roux PhD report for visual check
-    # engine.delta_t_4 = 0
-    # altitudes = np.arange(0, 20001, 4000)
-    # plt.figure()
-    # for alt in altitudes:
-    #     engine.altitude = alt
-    #     engine.temperature, engine.density, _, _ = engine._atmosphere(alt)
-    #     max_thrust_ratio = engine._max_thrust()
-    #     plt.plot(machs, max_thrust_ratio, label='%s' % alt)
-    # plt.legend()
-    # plt.xlabel('Mach')
-    # plt.ylabel('Fmax/F0')
-    # plt.grid()
-    # plt.show()
 
 
 def test__sfc_calc_at_max_thrust():

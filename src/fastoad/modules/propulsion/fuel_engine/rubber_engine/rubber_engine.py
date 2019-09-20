@@ -17,6 +17,13 @@ Parametric turbofan engine
 
 import math
 
+from fastoad.utils.physics import Atmosphere
+from .constants import ALPHA, BETA, A_MS, B_MS, C_MS, E_MS, D_MS, A_FM, D_FM, E_FM, B_FM, C_FM
+
+ATM_SEA_LEVEL = Atmosphere(0)
+ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
+
+
 
 class RubberEngine(object):
 
@@ -58,6 +65,8 @@ class RubberEngine(object):
         #    -sfc in [kg/s/N]
         #----------------------------------------------------------------
         """
+        atmosphere = Atmosphere(altitude)
+
         self.altitude = altitude * 0.3048
         self.mach = mach
         self.temperature, self.density, _, _ = self._atmosphere(self.altitude)
@@ -76,7 +85,7 @@ class RubberEngine(object):
             raise RuntimeError()
 
         # Calcul de poussee max (fonction MaxThrust du modele ER)
-        fmax_0 = self._max_thrust()
+        fmax_0 = self.max_thrust(atmosphere, self.mach, self.delta_t_4)
 
         if thrust_rate is None:
             thrust_rate = fc / fmax_0 / 10
@@ -153,91 +162,67 @@ class RubberEngine(object):
     #    -Fmax [daN]
     # ----------------------------------------------------------------
 
-    def _max_thrust(self):
-        # ---------------------------------------------------
-        # Constant definition
-        # ---------------------------------------------------
-        density_0 = 1.225
-        density_11000 = 0.364
+    def max_thrust(self, atmosphere: Atmosphere, mach, delta_t4):
 
-        a_ms = -2.74e-4
-        a_fm = 2.67e-4
-        b_ms = 1.91e-2
-        b_fm = -2.35e-2
-        c_ms = 1.21e-3
-        c_fm = -1.32e-3
-        d_ms = -8.48e-4
-        d_fm = 3.14e-4
-        e_ms = 8.96e-1
-        e_fm = 5.22e-1
+        f_ms = (ALPHA[0][0] * (self.opr - 30) ** 2 + ALPHA[0][1] *
+                (self.opr - 30) + ALPHA[0][2] + ALPHA[0][3] * self.t4 +
+                ALPHA[0][4] * delta_t4) * self.bpr + BETA[0][0] * \
+               (self.opr - 30) ** 2 + BETA[0][1] * (self.opr - 30) \
+               + BETA[0][2] + BETA[0][3] * self.t4 + BETA[0][4] * delta_t4
 
-        alpha_mat = [[1.79e-12, 4.29e-13, -5.24e-14, -4.51e-14, -4.57e-12],
-                     [1.17e-8, -8.80e-8, -5.25e-9, -3.19e-9, 5.52e-8],
-                     [-5.37e-13, -1.26e-12, 1.29e-14, 2.39e-14, 2.35e-12],
-                     [-3.18e-9, 2.76e-8, 1.97e-9, 1.17e-9, -2.26e-8]]
+        g_ms = (ALPHA[1][0] * (self.opr - 30) ** 2 + ALPHA[1][1] *
+                (self.opr - 30) + ALPHA[1][2] + ALPHA[1][3] * self.t4 +
+                ALPHA[1][4] * delta_t4) * self.bpr + BETA[1][0] * \
+               (self.opr - 30) ** 2 + BETA[1][1] * (self.opr - 30) \
+               + BETA[1][2] + BETA[1][3] * self.t4 + BETA[1][4] * delta_t4
 
-        beta_mat = [[1.70e-12, 1.51e-12, 1.48e-9, -7.59e-14, -1.07e-11],
-                    [-3.48e-9, -8.41e-8, 2.56e-5, -2.00e-8, -7.17e-8],
-                    [-3.89e-13, -2.05e-12, -9.28e-10, 1.30e-13, 5.39e-12],
-                    [1.77e-9, 2.62e-8, -8.87e-6, 6.66e-9, 4.43e-8]]
+        f_fm = (ALPHA[2][0] * (self.opr - 30) ** 2 + ALPHA[2][1] *
+                (self.opr - 30) + ALPHA[2][2] + ALPHA[2][3] * self.t4 +
+                ALPHA[2][4] * delta_t4) * self.bpr + BETA[2][0] * \
+               (self.opr - 30) ** 2 + BETA[2][1] * (self.opr - 30) \
+               + BETA[2][2] + BETA[2][3] * self.t4 + BETA[2][4] * delta_t4
 
-        f_ms = (alpha_mat[0][0] * (self.opr - 30) ** 2 + alpha_mat[0][1] *
-                (self.opr - 30) + alpha_mat[0][2] + alpha_mat[0][3] * self.t4 +
-                alpha_mat[0][4] * self.delta_t_4) * self.bpr + beta_mat[0][0] * \
-               (self.opr - 30) ** 2 + beta_mat[0][1] * (self.opr - 30) \
-               + beta_mat[0][2] + beta_mat[0][3] * self.t4 + beta_mat[0][4] * self.delta_t_4
-
-        g_ms = (alpha_mat[1][0] * (self.opr - 30) ** 2 + alpha_mat[1][1] *
-                (self.opr - 30) + alpha_mat[1][2] + alpha_mat[1][3] * self.t4 +
-                alpha_mat[1][4] * self.delta_t_4) * self.bpr + beta_mat[1][0] * \
-               (self.opr - 30) ** 2 + beta_mat[1][1] * (self.opr - 30) \
-               + beta_mat[1][2] + beta_mat[1][3] * self.t4 + beta_mat[1][4] * self.delta_t_4
-
-        f_fm = (alpha_mat[2][0] * (self.opr - 30) ** 2 + alpha_mat[2][1] *
-                (self.opr - 30) + alpha_mat[2][2] + alpha_mat[2][3] * self.t4 +
-                alpha_mat[2][4] * self.delta_t_4) * self.bpr + beta_mat[2][0] * \
-               (self.opr - 30) ** 2 + beta_mat[2][1] * (self.opr - 30) \
-               + beta_mat[2][2] + beta_mat[2][3] * self.t4 + beta_mat[2][4] * self.delta_t_4
-
-        g_fm = (alpha_mat[3][0] * (self.opr - 30) ** 2 + alpha_mat[3][1] *
-                (self.opr - 30) + alpha_mat[3][2] + alpha_mat[3][3] * self.t4 +
-                alpha_mat[3][4] * self.delta_t_4) * self.bpr + beta_mat[3][0] * \
-               (self.opr - 30) ** 2 + beta_mat[3][1] * (self.opr - 30) \
-               + beta_mat[3][2] + beta_mat[3][3] * self.t4 + beta_mat[3][4] * self.delta_t_4
+        g_fm = (ALPHA[3][0] * (self.opr - 30) ** 2 + ALPHA[3][1] *
+                (self.opr - 30) + ALPHA[3][2] + ALPHA[3][3] * self.t4 +
+                ALPHA[3][4] * delta_t4) * self.bpr + BETA[3][0] * \
+               (self.opr - 30) ** 2 + BETA[3][1] * (self.opr - 30) \
+               + BETA[3][2] + BETA[3][3] * self.t4 + BETA[3][4] * delta_t4
 
         # ---------------------------------------------------
         # mach effect calculation
         # ---------------------------------------------------
-        ms_11000 = a_ms * self.t4 + b_ms * self.bpr + c_ms * (self.opr - 30) + \
-                   d_ms * self.delta_t_4 + e_ms
+        ms_11000 = A_MS * self.t4 + B_MS * self.bpr + C_MS * (self.opr - 30) + \
+                   D_MS * delta_t4 + E_MS
 
-        fm_11000 = a_fm * self.t4 + b_fm * self.bpr + c_fm * (self.opr - 30) + \
-                   d_fm * self.delta_t_4 + e_fm
+        fm_11000 = A_FM * self.t4 + B_FM * self.bpr + C_FM * (self.opr - 30) + \
+                   D_FM * delta_t4 + E_FM
 
-        if self.altitude <= 11000:
-            m_s = ms_11000 + f_ms * (self.altitude - 11000) ** 2 + g_ms * (self.altitude - 11000)
-            f_m = fm_11000 + f_fm * (self.altitude - 11000) ** 2 + g_fm * (self.altitude - 11000)
+        altitude = atmosphere.get_altitude(altitude_in_feet=False)
+        if altitude <= 11000:
+            m_s = ms_11000 + f_ms * (altitude - 11000) ** 2 + g_ms * (altitude - 11000)
+            f_m = fm_11000 + f_fm * (altitude - 11000) ** 2 + g_fm * (altitude - 11000)
         else:
             m_s = ms_11000
             f_m = fm_11000
 
         alpha_mach_effect = (1 - f_m) / (m_s * m_s)
 
-        mach_effect = alpha_mach_effect * (self.mach - m_s) ** 2 + f_m
+        mach_effect = alpha_mach_effect * (mach - m_s) ** 2 + f_m
         # ---------------------------------------------------
 
         # ---------------------------------------------------
         # altitude effect calculation
         # ---------------------------------------------------
 
-        k = 1 + 1.2e-3 * self.delta_t_4
-        nf = 0.98 + 8e-4 * self.delta_t_4
+        k = 1 + 1.2e-3 * delta_t4
+        nf = 0.98 + 8e-4 * delta_t4
 
-        if self.altitude <= 11000:
-            height = k * ((self.density / density_0) ** nf) * \
-                     (1 / (1 - (0.04 * math.sin((math.pi * self.altitude) / 11000))))
+        if altitude <= 11000:
+            height = k * ((atmosphere.density / ATM_SEA_LEVEL.density) ** nf) * \
+                     (1 / (1 - (0.04 * math.sin((math.pi * altitude) / 11000))))
         else:
-            height = k * ((density_11000 / density_0) ** nf) * self.density / density_11000
+            height = k * ((ATM_TROPOPAUSE.density / ATM_SEA_LEVEL.density) ** nf) \
+                     * atmosphere.density / ATM_TROPOPAUSE.density
         # ---------------------------------------------------
 
         # ---------------------------------------------------
@@ -332,7 +317,7 @@ class RubberEngine(object):
         diameter = 0.15 * (self.f0 / 1000) ** 0.5 * math.exp(0.04 * self.bpr)
 
         # Nacelle size is derived from Kroo notes
-        # http://adg.stanford.edu/aa241/propulsion/nacelledesign.html
+        # https://web.archive.org/web/20010307121417/http://adg.stanford.edu/aa241/propulsion/nacelledesign.html
         nacelle_diameter = diameter * 1.1
 
         return nacelle_diameter
