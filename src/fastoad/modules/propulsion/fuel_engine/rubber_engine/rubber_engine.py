@@ -16,6 +16,7 @@ Parametric turbofan engine
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
+from typing import Union, Sequence
 
 import numpy as np
 
@@ -28,9 +29,12 @@ ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
 
 class RubberEngine(object):
     """
-    Parametric turbofan engine.
+    Parametric turbofan engine
 
+    Computes engine characteristics using analytical model from following sources:
 
+    .. bibliography:: ../refs.bib
+       :list: bullet
     """
 
     def __init__(self, bpr, opr, t4, d_t4_cl, d_t4_cr, f0, mach_max, hm):
@@ -94,9 +98,9 @@ class RubberEngine(object):
         fmax_0 = self.max_thrust(atmosphere, self.mach, self.delta_t_4)
 
         if thrust_rate is None:
-            thrust_rate = fc / fmax_0 / 10
+            thrust_rate = fc / fmax_0
         else:
-            fc = thrust_rate * fmax_0 * 10
+            fc = thrust_rate * fmax_0
 
         # Calcul de conso specifique a poussee max
         sfc_0 = self._sfc_calc_at_max_thrust()
@@ -148,28 +152,21 @@ class RubberEngine(object):
 
         return sfc
 
-    # ----------------------------------------------------------------
-    # DEFINITION OF THE MAX THRUST FUNCTION
-    # ----------------------------------------------------------------
-    # from Elodie Roux [see her PhD Thesis]
-    #
-    # ----------------------------------------------------------------
-    # INPUT
-    #     -mach:       mach number
-    #         -altitude:   Flight altitude [m]
-    #         -t4:         Turbine Inlet temperature [degK]
-    #         -delta_t_4:   Difference between t4 operational and t4 conceptual
-    #         -opr:        Overall pressure ratio
-    #         -bpr:        By-Pass Ratio
-    #         -density:    density at given altitude [kg/m3]
-    #         -f0:         Max Thrust @ SL and no speed [N]
-    #
-    # OUTPUTS
-    #    -Fmax [daN]
-    # ----------------------------------------------------------------
+    def max_thrust(self, atmosphere: Atmosphere,
+                   mach: Union[float, Sequence[float]],
+                   delta_t4: float) -> Union[float, Sequence[float]]:
+        """
+        Computation of maximum thrust
 
-    def max_thrust(self, atmosphere: Atmosphere, mach, delta_t4):
-        """ Computation of maximum thrust as described in E. Roux thesis report"""
+        Uses model described in :cite:`roux:2005`, p.57-58
+
+
+        :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
+        :param mach: Mach number(s) (should be between 0.05 and 1.0)
+        :param delta_t4: difference between operational and design values of
+                         temperature at turbine input in K
+        :return: maximum thrust in N
+        """
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
 
         def _mach_effect():
@@ -187,12 +184,12 @@ class RubberEngine(object):
             fm_11000 = A_FM * self.t4 + B_FM * self.bpr + C_FM * (self.opr - 30) + \
                        D_FM * delta_t4 + E_FM
 
-            if altitude <= 11000:
-                m_s = ms_11000 + f_ms * (altitude - 11000) ** 2 + g_ms * (altitude - 11000)
-                f_m = fm_11000 + f_fm * (altitude - 11000) ** 2 + g_fm * (altitude - 11000)
-            else:
-                m_s = ms_11000
-                f_m = fm_11000
+            # Following coefficients are constant for alt >=11000m.
+            # We use numpy to implement that so we are safe if altitude is a sequence.
+            bound_altitude = np.minimum(11000, altitude)
+
+            m_s = ms_11000 + f_ms * (bound_altitude - 11000) ** 2 + g_ms * (bound_altitude - 11000)
+            f_m = fm_11000 + f_fm * (bound_altitude - 11000) ** 2 + g_fm * (bound_altitude - 11000)
 
             alpha_mach_effect = (1 - f_m) / (m_s * m_s)
 
@@ -213,7 +210,7 @@ class RubberEngine(object):
             """ Computation of residuals """
             return -4.51e-3 * self.bpr + 2.19e-5 * self.t4 - 3.09e-4 * (self.opr - 30) + 0.945
 
-        return (self.f0 * _mach_effect() * _altitude_effect() * _residuals()) / 10
+        return self.f0 * _mach_effect() * _altitude_effect() * _residuals()
 
     def installed_weight(self):
         """

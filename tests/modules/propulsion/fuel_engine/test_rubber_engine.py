@@ -97,12 +97,15 @@ def test_nacelle_diameter():
 
 
 def test_max_thrust():
-    engine = RubberEngine(5, 30, 1500, 0, 0, 10, 0, 0)  # f0=10 so that output is simply fmax/f0
-    machs = np.arange(0, 1.01, 0.1)
+    """
+    Checks model against simplified (but analytically equivalent) formulas
+    as in p. 59 of :cite:`roux:2005`, but with correct coefficients (yes, those in report
+    are not consistent with the complete formula nor the figure 2.19 just below)
 
-    # Check against simplified (but analytically equivalent) formulas
-    # As in p 59. of Roux PhD report, but with correct coefficients (yes, those in report
-    # are not consistent with the complete formula nor the figure 2.19 just below.
+    .. bibliography:: ../refs.bib
+    """
+    engine = RubberEngine(5, 30, 1500, 0, 0, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
+    machs = np.arange(0, 1.01, 0.1)
 
     # Check cruise
     atm = Atmosphere(11000, altitude_in_feet=False)
@@ -119,7 +122,7 @@ def test_max_thrust():
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-2)
 
     # Check Cruise with compression rate != 30 and bypass ratio != 5
-    engine = RubberEngine(4, 35, 1500, 0, 0, 10, 0, 0)  # f0=10 so that output is simply fmax/f0
+    engine = RubberEngine(4, 35, 1500, 0, 0, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
     atm = Atmosphere(13000, altitude_in_feet=False)
     max_thrust_ratio = engine.max_thrust(atm, machs, -50)
     ref_max_thrust_ratio = 0.969 * atm.density / 1.225 * (
