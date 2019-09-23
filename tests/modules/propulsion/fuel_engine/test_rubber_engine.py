@@ -130,49 +130,35 @@ def test_max_thrust():
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-2)
 
 
-def test__sfc_calc_at_max_thrust():
+def test_sfc_at_max_thrust():
     cfm56_3c1 = RubberEngine(6, 25.7, 0, 0, 0, 0, 0, 0)
 
-    cfm56_3c1.altitude = 0
-    cfm56_3c1.mach = 0
-    cfm56_3c1.temperature, cfm56_3c1.density, _, _ = cfm56_3c1._atmosphere(cfm56_3c1.altitude)
-    sfc = cfm56_3c1._sfc_calc_at_max_thrust()
+    atm = Atmosphere(0, altitude_in_feet=False)
+    sfc = cfm56_3c1.sfc_at_max_thrust(atm, 0)
     np.testing.assert_allclose(sfc, 0.970e-5, rtol=1e-2)
 
-    cfm56_3c1.altitude = 10668
-    cfm56_3c1.mach = 0.8
-    cfm56_3c1.temperature, cfm56_3c1.density, _, _ = cfm56_3c1._atmosphere(cfm56_3c1.altitude)
-    sfc = cfm56_3c1._sfc_calc_at_max_thrust()
+    atm = Atmosphere(10668, altitude_in_feet=False)
+    sfc = cfm56_3c1.sfc_at_max_thrust(atm, 0.8)
     np.testing.assert_allclose(sfc, 1.78e-5, rtol=1e-2)  # value is different from PhD report
 
-    cfm56_3c1.altitude = 13000  # for testing above 11000, though no ref value in PhD report
-    cfm56_3c1.mach = 0.8
-    cfm56_3c1.temperature, cfm56_3c1.density, _, _ = cfm56_3c1._atmosphere(cfm56_3c1.altitude)
-    sfc = cfm56_3c1._sfc_calc_at_max_thrust()
+    atm = Atmosphere(13000, altitude_in_feet=False)
+    sfc = cfm56_3c1.sfc_at_max_thrust(atm, 0.8)
     np.testing.assert_allclose(sfc, 1.77e-5, rtol=1e-2)  # value is different from PhD report
 
     trent900 = RubberEngine(7.14, 41, 0, 0, 0, 0, 0, 0)
-    trent900.altitude = 0
-    trent900.mach = 0
-    trent900.temperature, trent900.density, _, _ = trent900._atmosphere(trent900.altitude)
-    sfc = trent900._sfc_calc_at_max_thrust()
+    atm = Atmosphere(0, altitude_in_feet=False)
+    sfc = trent900.sfc_at_max_thrust(atm, 0)
     np.testing.assert_allclose(sfc, 0.735e-5, rtol=1e-2)
 
-    trent900.altitude = 9144
-    trent900.mach = 0.8
-    trent900.temperature, trent900.density, _, _ = trent900._atmosphere(trent900.altitude)
-    sfc = trent900._sfc_calc_at_max_thrust()
+    atm = Atmosphere(9144, altitude_in_feet=False)
+    sfc = trent900.sfc_at_max_thrust(atm, 0.8)
     np.testing.assert_allclose(sfc, 1.68e-5, rtol=1e-2)  # value is different from PhD report
 
     pw2037 = RubberEngine(6, 31.8, 0, 0, 0, 0, 0, 0)
-    pw2037.altitude = 0
-    pw2037.mach = 0
-    pw2037.temperature, pw2037.density, _, _ = pw2037._atmosphere(pw2037.altitude)
-    sfc = pw2037._sfc_calc_at_max_thrust()
+    atm = Atmosphere(0, altitude_in_feet=False)
+    sfc = pw2037.sfc_at_max_thrust(atm, 0)
     np.testing.assert_allclose(sfc, 0.906e-5, rtol=1e-2)
 
-    pw2037.altitude = 10668
-    pw2037.mach = 0.85
-    pw2037.temperature, pw2037.density, _, _ = pw2037._atmosphere(pw2037.altitude)
-    sfc = pw2037._sfc_calc_at_max_thrust()
+    atm = Atmosphere(10668, altitude_in_feet=False)
+    sfc = pw2037.sfc_at_max_thrust(atm, 0.85)
     np.testing.assert_allclose(sfc, 1.74e-5, rtol=1e-2)  # value is different from PhD report

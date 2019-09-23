@@ -103,7 +103,7 @@ class RubberEngine(object):
             fc = thrust_rate * fmax_0
 
         # Calcul de conso specifique a poussee max
-        sfc_0 = self._sfc_calc_at_max_thrust()
+        sfc_0 = self.sfc_at_max_thrust(atmosphere, self.mach)
 
         # Calcul de conso specifique en regime reduit
         delta_h = self.altitude - self.hm
@@ -122,33 +122,22 @@ class RubberEngine(object):
 
         return thrust_rate, fc, sfc
 
-    def _sfc_calc_at_max_thrust(self):
-        global a1, a2, b1, b2, c
+    def sfc_at_max_thrust(self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]):
 
-        if self.altitude == 0:
-            a1 = 6.54e-7
-            a2 = 8.54e-6
-            b1 = -6.58e-7
-            b2 = 1.32e-5
-            c = -1.05e-7
+        altitude = atmosphere.get_altitude(False)
+        # Following coefficients are constant for alt<=0 and alt >=11000m.
+        # We use numpy to implement that so we are safe if altitude is a sequence.
+        bound_altitude = np.minimum(11000, np.maximum(0, altitude))
+        a1 = -7.44e-13 * bound_altitude + 6.54e-7
+        a2 = -3.32e-10 * bound_altitude + 8.54e-6
+        b1 = -3.47e-11 * bound_altitude - 6.58e-7
+        b2 = 4.23e-10 * bound_altitude + 1.32e-5
+        c = - 1.05e-7
 
-        if self.altitude > 0:
-            if self.altitude <= 11000:
-                a1 = -(7.44e-13) * self.altitude + 6.54e-7
-                a2 = -(3.32e-10) * self.altitude + 8.54e-6
-                b1 = -(3.47e-11) * self.altitude - 6.58e-7
-                b2 = (4.23e-10) * self.altitude + 1.32e-5
-                c = - 1.05e-7
-            else:
-                a1 = 6.45e-7
-                a2 = 4.89e-6
-                b1 = -1.04e-6
-                b2 = 1.79e-5
-                c = -1.05e-7
-
-        sfc = self.mach * (a1 * self.bpr + a2) + math.sqrt(self.temperature / 288.15) \
-              * (b1 * self.bpr + b2) + (self.opr - 30) * ((7.4e-13
-                                                           * (self.opr - 30) * self.altitude) + c)
+        theta = atmosphere.temperature / ATM_SEA_LEVEL.temperature
+        sfc = mach * (a1 * self.bpr + a2) + \
+              (b1 * self.bpr + b2) * np.sqrt(theta) + \
+              ((7.4e-13 * (self.opr - 30) * altitude) + c) * (self.opr - 30)
 
         return sfc
 
