@@ -123,6 +123,15 @@ class RubberEngine(object):
         return thrust_rate, fc, sfc
 
     def sfc_at_max_thrust(self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]):
+        """
+        Computation of Specific Fuel Consumption at maximum thrust
+
+        Uses model described in :cite:`roux:2005`, p.41.
+
+        :param atmosphere: Atmosphere instance at intended altitude
+        :param mach: Mach number(s) (should be <=20km)
+        :return: SFC
+        """
 
         altitude = atmosphere.get_altitude(False)
         # Following coefficients are constant for alt<=0 and alt >=11000m.
@@ -148,7 +157,6 @@ class RubberEngine(object):
         Computation of maximum thrust
 
         Uses model described in :cite:`roux:2005`, p.57-58
-
 
         :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
         :param mach: Mach number(s) (should be between 0.05 and 1.0)

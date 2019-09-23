@@ -131,6 +131,10 @@ def test_max_thrust():
 
 
 def test_sfc_at_max_thrust():
+    """
+    Checks model against values from :cite:`roux:2005` p.40
+    (only for ground/Mach=0 values, as cruise values of the report look flawed)
+    """
     cfm56_3c1 = RubberEngine(6, 25.7, 0, 0, 0, 0, 0, 0)
 
     atm = Atmosphere(0, altitude_in_feet=False)
