@@ -14,15 +14,16 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 import math
+import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+
 
 class ComputeYWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing Ys estimation """
-    
+
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
 
@@ -33,18 +34,25 @@ class ComputeYWing(ExplicitComponent):
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing_break', val=np.nan)
-        
+
         self.add_output('geometry:wing_span', units='m')
         self.add_output('geometry:wing_y2', units='m')
         self.add_output('geometry:wing_y3', units='m')
         self.add_output('geometry:wing_y4', units='m')
-        
-        self.declare_partials('geometry:wing_span', ['geometry:wing_area', 'geometry:wing_aspect_ratio'], method=deriv_method)
-        self.declare_partials('geometry:wing_y2', 'geometry:fuselage_width_max', method=deriv_method)
-        self.declare_partials('geometry:wing_y3', ['geometry:wing_area', 'geometry:wing_aspect_ratio',
-                                                'geometry:wing_break'], method=deriv_method)
-        self.declare_partials('geometry:wing_y4', ['geometry:wing_area', 'geometry:wing_aspect_ratio'], method=deriv_method)
-        
+
+        self.declare_partials('geometry:wing_span', ['geometry:wing_area',
+                                                     'geometry:wing_aspect_ratio'],
+                              method=deriv_method)
+        self.declare_partials('geometry:wing_y2', 'geometry:fuselage_width_max',
+                              method=deriv_method)
+        self.declare_partials('geometry:wing_y3', ['geometry:wing_area',
+                                                   'geometry:wing_aspect_ratio',
+                                                   'geometry:wing_break'],
+                              method=deriv_method)
+        self.declare_partials('geometry:wing_y4', ['geometry:wing_area',
+                                                   'geometry:wing_aspect_ratio'],
+                              method=deriv_method)
+
     def compute(self, inputs, outputs):
         lambda_wing = inputs['geometry:wing_aspect_ratio']
         wing_area = inputs['geometry:wing_area']
@@ -57,7 +65,7 @@ class ComputeYWing(ExplicitComponent):
         y4_wing = span / 2.
         y2_wing = width_max / 2.
         y3_wing = y4_wing * wing_break
-    
+
         outputs['geometry:wing_span'] = span
         outputs['geometry:wing_y2'] = y2_wing
         outputs['geometry:wing_y3'] = y3_wing

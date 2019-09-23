@@ -14,8 +14,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 import math
+import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -39,13 +39,13 @@ class ComputeCLalpha(ExplicitComponent):
         self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
         self.add_input('geometry:wing_aspect_ratio', val=np.nan)
         self.add_input('geometry:wing_span', val=np.nan, units='m')
-        
+
         self.add_output('aerodynamics:Cl_alpha')
-        
+
         self.declare_partials('aerodynamics:Cl_alpha', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
-        cruise_Mach = inputs['tlar:cruise_Mach']
+        cruise_mach = inputs['tlar:cruise_Mach']
         width_max = inputs['geometry:fuselage_width_max']
         height_max = inputs['geometry:fuselage_height_max']
         span = inputs['geometry:wing_span']
@@ -55,14 +55,14 @@ class ComputeCLalpha(ExplicitComponent):
         l2_wing = inputs['geometry:wing_l2']
         l4_wing = inputs['geometry:wing_l4']
         sweep_25 = inputs['geometry:wing_sweep_25']
-        
-        beta = math.sqrt(1 - cruise_Mach**2)
+
+        beta = math.sqrt(1 - cruise_mach**2)
         d_f = math.sqrt(width_max * height_max)
-        fact_F = 1.07 * (1 + d_f / span)**2
+        fact_f = 1.07 * (1 + d_f / span)**2
         lambda_wing_eff = lambda_wing * (1 + 1.9 * l4_wing * el_ext / span)
         cl_alpha_wing = 2 * math.pi * lambda_wing_eff / \
             (2 + math.sqrt(4 + lambda_wing_eff**2 * beta**2 / 0.95**2 * (
                 1 + (math.tan(sweep_25 / 180. * math.pi))**2 / beta**2))) * \
-            (wing_area - l2_wing * width_max) / wing_area * fact_F
-            
+            (wing_area - l2_wing * width_max) / wing_area * fact_f
+
         outputs['aerodynamics:Cl_alpha'] = cl_alpha_wing

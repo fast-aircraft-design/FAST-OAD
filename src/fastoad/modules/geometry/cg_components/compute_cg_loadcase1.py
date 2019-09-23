@@ -23,7 +23,7 @@ class ComputeCGLoadCase1(ExplicitComponent):
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
-    
+
     def setup(self):
         deriv_method = self.options['deriv_method']
 
@@ -32,14 +32,14 @@ class ComputeCGLoadCase1(ExplicitComponent):
         self.add_input('cg:cg_pax', val=np.nan, units='m')
         self.add_input('cg:cg_rear_fret', val=np.nan, units='m')
         self.add_input('cg:cg_front_fret', val=np.nan, units='m')
-        self.add_input('tlar:NPAX', val=np.nan)    
+        self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('x_cg_plane_up', val=np.nan)
         self.add_input('x_cg_plane_down', val=np.nan)
-        
+
         self.add_output('cg_ratio_lc1')
-        
+
         self.declare_partials('*', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         l0_wing = inputs['geometry:wing_l0']
         fa_length = inputs['geometry:wing_position']
@@ -49,7 +49,7 @@ class ComputeCGLoadCase1(ExplicitComponent):
         npax = inputs['tlar:NPAX']
         x_cg_plane_up = inputs['x_cg_plane_up']
         x_cg_plane_down = inputs['x_cg_plane_down']
-        
+
         weight_pax = npax * 80.
         weight_rear_fret = 1.
         weight_front_fret = 0.

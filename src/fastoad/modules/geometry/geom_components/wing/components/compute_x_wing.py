@@ -14,10 +14,11 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 import math
+import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+
 
 class ComputeXWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
@@ -36,17 +37,17 @@ class ComputeXWing(ExplicitComponent):
         self.add_input('geometry:wing_y3', val=np.nan, units='m')
         self.add_input('geometry:wing_y4', val=np.nan, units='m')
         self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
-        
+
         self.add_output('geometry:wing_x3', units='m')
         self.add_output('geometry:wing_x4', units='m')
-        
+
         self.declare_partials('geometry:wing_x3', ['geometry:wing_l1', 'geometry:wing_y2',
                                                    'geometry:wing_y3', 'geometry:wing_l3',
                                                    'geometry:wing_sweep_25'], method=deriv_method)
         self.declare_partials('geometry:wing_x4', ['geometry:wing_l1', 'geometry:wing_y2',
                                                    'geometry:wing_y4', 'geometry:wing_l4',
                                                    'geometry:wing_sweep_25'], method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         y2_wing = inputs['geometry:wing_y2']
         y3_wing = inputs['geometry:wing_y3']
@@ -55,15 +56,13 @@ class ComputeXWing(ExplicitComponent):
         l3_wing = inputs['geometry:wing_l3']
         l4_wing = inputs['geometry:wing_l4']
         sweep_25 = inputs['geometry:wing_sweep_25']
-    
+
         x3_wing = 1. / 4. * l1_wing + \
-            (y3_wing - y2_wing) * \
-            math.tan(sweep_25 / 180. * math.pi) - 1. / 4. * l3_wing
+                  (y3_wing - y2_wing) * \
+                  math.tan(sweep_25 / 180. * math.pi) - 1. / 4. * l3_wing
         x4_wing = 1. / 4. * l1_wing + \
-            (y4_wing - y2_wing) * \
-            math.tan(sweep_25 / 180. * math.pi) - 1. / 4. * l4_wing
-            
+                  (y4_wing - y2_wing) * \
+                  math.tan(sweep_25 / 180. * math.pi) - 1. / 4. * l4_wing
+
         outputs['geometry:wing_x3'] = x3_wing
         outputs['geometry:wing_x4'] = x4_wing
-        
- 

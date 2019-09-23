@@ -26,28 +26,30 @@ class ComputeHTArea(ExplicitComponent):
 
         self.options.declare('ac_family', types=float, default=1.)
         self.options.declare('tail_type', types=float, default=0.)
-        
-    def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.ac_family = self.options['ac_family']
         self.tail_type = self.options['tail_type']
-        
+
+    def setup(self):
+        deriv_method = self.options['deriv_method']
+
         self.add_input('geometry:fuselage_length', val=np.nan, units='m')
         self.add_input('geometry:wing_position', val=np.nan, units='m')
         self.add_input('geometry:ht_vol_coeff', val=np.nan)
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:ht_area', val=np.nan, units='m**2')
-        
+
         self.add_output('geometry:ht_lp', units='m')
         self.add_output('geometry:ht_wet_area', units='m**2')
         self.add_output('delta_cm_takeoff')
-        
-        self.declare_partials('geometry:ht_lp', ['geometry:fuselage_length', 'geometry:wing_position'], method=deriv_method)
-        self.declare_partials('geometry:ht_wet_area', 'geometry:ht_area', method=deriv_method)     
+
+        self.declare_partials('geometry:ht_lp',
+                              ['geometry:fuselage_length', 'geometry:wing_position'],
+                              method=deriv_method)
+        self.declare_partials('geometry:ht_wet_area', 'geometry:ht_area', method=deriv_method)
         self.declare_partials('delta_cm_takeoff', '*', method=deriv_method)
-            
+
     def compute(self, inputs, outputs):
         fus_length = inputs['geometry:fuselage_length']
         fa_length = inputs['geometry:wing_position']
@@ -60,9 +62,9 @@ class ComputeHTArea(ExplicitComponent):
             if self.ac_family == 1.0:
                 lp_ht = fus_length - fa_length
             elif self.ac_family == 2.0:
-                lp_ht = 7.7 
+                lp_ht = 7.7
         else:
-            lp_ht = 0.91 * fus_length - fa_length           
+            lp_ht = 0.91 * fus_length - fa_length
 
         if self.tail_type == 0.:
             wet_area_ht = 2 * s_h
@@ -71,8 +73,8 @@ class ComputeHTArea(ExplicitComponent):
         else:
             print('Error in the tailplane positioning')
 
-        delta_cm_takeoff =  s_h * lp_ht / wing_area / l0_wing - ht_vol_coeff
-        
+        delta_cm_takeoff = s_h * lp_ht / wing_area / l0_wing - ht_vol_coeff
+
         outputs['geometry:ht_lp'] = lp_ht
         outputs['geometry:ht_wet_area'] = wet_area_ht
         outputs['delta_cm_takeoff'] = delta_cm_takeoff

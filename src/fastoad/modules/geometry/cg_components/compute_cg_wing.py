@@ -23,7 +23,7 @@ class ComputeWingCG(ExplicitComponent):
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
-    
+
     def setup(self):
         deriv_method = self.options['deriv_method']
 
@@ -45,12 +45,12 @@ class ComputeWingCG(ExplicitComponent):
         self.add_input('geometry:wing_x4', val=np.nan, units='m')
         self.add_input('geometry:wing_y4', val=np.nan, units='m')
         self.add_input('geometry:wing_position', val=np.nan, units='m')
-    
+
         self.add_output('cg_airframe:A1', units='m')
-        
+
         self.declare_partials('cg_airframe:A1', '*', method=deriv_method)
 
-    def compute(self, inputs, outputs):    
+    def compute(self, inputs, outputs):
         wing_break = inputs['geometry:wing_break']
         front_spar_ratio_root = inputs['geometry:wing_front_spar_ratio_root']
         front_spar_ratio_middle = inputs['geometry:wing_front_spar_ratio_kink']
@@ -69,7 +69,7 @@ class ComputeWingCG(ExplicitComponent):
         y4_wing = inputs['geometry:wing_y4']
         x4_wing = inputs['geometry:wing_x4']
         fa_length = inputs['geometry:wing_position']
-        
+
         if wing_break >= 0.35:
             y_cg = span / 2 * 0.35
             l_cg = (y3_wing - y_cg) / (y3_wing - y2_wing) * \
@@ -98,7 +98,7 @@ class ComputeWingCG(ExplicitComponent):
                                        rear_spar_ratio_middle -
                                        l4_wing * rear_spar_ratio_tip) + \
                 l4_wing * rear_spar_ratio_tip
-                
+
             x_cg = (y_cg - y3_wing) / (y4_wing - y3_wing) * x4_wing + \
                 front_spar_cg + (l_cg - front_spar_cg - rear_spar_cg) * 0.7
         x_cg_absolute = fa_length - 0.25 * x0_wing + (x_cg - x0_wing)

@@ -14,10 +14,11 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
-import os 
+import os
 import math
-from scipy import interpolate 
+
+import numpy as np
+from scipy import interpolate
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -27,9 +28,9 @@ class ComputeTanksCG(ExplicitComponent):
 
     def initialize(self):
         self.options.declare('ratio', default=0.2, types=float)
-        
-    def setup(self):
         self.ratio = self.options['ratio']
+
+    def setup(self):
         self.add_input('geometry:wing_front_spar_ratio_root', val=np.nan)
         self.add_input('geometry:wing_front_spar_ratio_kink', val=np.nan)
         self.add_input('geometry:wing_front_spar_ratio_tip', val=np.nan)
@@ -46,13 +47,13 @@ class ComputeTanksCG(ExplicitComponent):
         self.add_input('geometry:wing_y3', val=np.nan, units='m')
         self.add_input('geometry:wing_x4', val=np.nan, units='m')
         self.add_input('geometry:wing_y4', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')      
+        self.add_input('geometry:wing_position', val=np.nan, units='m')
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        
+
         self.add_output('cg:cg_tank', units='m')
-        
+
         self.declare_partials('cg:cg_tank', '*', method='fd')
-        
+
     def compute(self, inputs, outputs):
         x_up = []
         x_down = []

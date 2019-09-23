@@ -14,8 +14,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import math
 import numpy as np
-import math 
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -35,9 +35,9 @@ class ComputeB50(ExplicitComponent):
         self.add_input('geometry:wing_l1', val=np.nan, units='m')
         self.add_input('geometry:wing_l4', val=np.nan, units='m')
         self.add_input('geometry:wing_span', val=np.nan, units='m')
-        
+
         self.add_output('geometry:wing_b_50', units='m')
-        
+
         self.declare_partials('geometry:wing_b_50', '*', method=deriv_method)
 
     def compute(self, inputs, outputs):
@@ -47,10 +47,9 @@ class ComputeB50(ExplicitComponent):
         l1_wing = inputs['geometry:wing_l1']
         l4_wing = inputs['geometry:wing_l4']
         span = inputs['geometry:wing_span']
-            
+
         sweep_50 = math.atan(
             (x4_wing + l4_wing * 0.5 - 0.5 * l1_wing) / (y4_wing - y2_wing))
         b_50 = span / math.cos(sweep_50)
-    
+
         outputs['geometry:wing_b_50'] = b_50
-        

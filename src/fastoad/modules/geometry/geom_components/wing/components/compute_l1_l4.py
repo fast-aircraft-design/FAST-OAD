@@ -14,8 +14,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 import math
+import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -36,13 +36,13 @@ class ComputeL1AndL4Wing(ExplicitComponent):
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
         self.add_input('geometry:wing_taper_ratio', val=np.nan)
         self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
-        
+
         self.add_output('geometry:wing_l1', units='m')
         self.add_output('geometry:wing_l4', units='m')
-        
+
         self.declare_partials('geometry:wing_l1', '*', method=deriv_method)
         self.declare_partials('geometry:wing_l4', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         wing_area = inputs['geometry:wing_area']
         span = inputs['geometry:wing_span']
@@ -51,15 +51,14 @@ class ComputeL1AndL4Wing(ExplicitComponent):
         sweep_25 = inputs['geometry:wing_sweep_25']
         width_max = inputs['geometry:fuselage_width_max']
         taper_ratio = inputs['geometry:wing_taper_ratio']
-        
+
         l1_wing = (wing_area - (y3_wing - y2_wing) * (y3_wing + y2_wing) *
                    math.tan(sweep_25 / 180. * math.pi)) / \
                    ((1. + taper_ratio) / 2. * (span - width_max) + width_max - \
                     (3. * (1. - taper_ratio) * (y3_wing - y2_wing) * (y3_wing + y2_wing))
                     / (2. * (span - width_max)))
-        
+
         l4_wing = l1_wing * taper_ratio
-        
+
         outputs['geometry:wing_l1'] = l1_wing
         outputs['geometry:wing_l4'] = l4_wing
-        

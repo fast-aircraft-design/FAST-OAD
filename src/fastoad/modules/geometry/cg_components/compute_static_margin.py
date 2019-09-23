@@ -23,7 +23,7 @@ class ComputeStaticMargin(ExplicitComponent):
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
-    
+
     def setup(self):
         deriv_method = self.options['deriv_method']
 
@@ -31,19 +31,21 @@ class ComputeStaticMargin(ExplicitComponent):
         self.add_input('x_ac_ratio', val=np.nan)
         self.add_input('geometry:wing_position', val=np.nan, units='m')
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        
+
         self.add_output('static_margin')
         self.add_output('cg:CG', units='m')
-        
+
         self.declare_partials('static_margin', ['cg_ratio', 'x_ac_ratio'], method=deriv_method)
-        self.declare_partials('cg:CG', ['geometry:wing_position', 'cg_ratio', 'geometry:wing_l0'], method=deriv_method)
-        
+        self.declare_partials('cg:CG',
+                              ['geometry:wing_position', 'cg_ratio', 'geometry:wing_l0'],
+                              method=deriv_method)
+
     def compute(self, inputs, outputs):
         cg_ratio = inputs['cg_ratio']
-        cg_ratio += 0.05 
+        cg_ratio += 0.05
         ac_ratio = inputs['x_ac_ratio']
         l0_wing = inputs['geometry:wing_l0']
         fa_length = inputs['geometry:wing_position']
 
         outputs['cg:CG'] = fa_length - 0.25 * l0_wing + cg_ratio * l0_wing
-        outputs['static_margin'] = ac_ratio - cg_ratio        
+        outputs['static_margin'] = ac_ratio - cg_ratio

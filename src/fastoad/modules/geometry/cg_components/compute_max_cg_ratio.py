@@ -22,21 +22,21 @@ class ComputeMaxCGratio(ExplicitComponent):
     """ Maximum center of gravity ratio estimation """
 
     def initialize(self):
-        
+
         self.options.declare('deriv_method', default='fd')
-    
+
     def setup(self):
         deriv_method = self.options['deriv_method']
-    
+
         self.add_input('cg_ratio_aft', val=np.nan)
-        
+
         for i in range(4):
             self.add_input('cg_ratio_lc'+str(i+1), val=np.nan)
-            
+
         self.add_output('cg_ratio')
-        
+
         self.declare_partials('*', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         outputs['cg_ratio'] = max(inputs['cg_ratio_aft'], inputs['cg_ratio_lc1'],
                inputs['cg_ratio_lc2'], inputs['cg_ratio_lc3'], inputs['cg_ratio_lc4'])

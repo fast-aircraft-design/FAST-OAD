@@ -17,6 +17,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeTotalArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Total aircraft wet area estimation """
@@ -36,9 +37,9 @@ class ComputeTotalArea(ExplicitComponent):
         self.add_input('geometry:engine_number', val=np.nan)
 
         self.add_output('geometry:S_total', units='m**2')
-        
+
         self.declare_partials('geometry:S_total', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         wet_area_wing = inputs['geometry:wing_wet_area']
         wet_area_fus = inputs['geometry:fuselage_wet_area']
@@ -47,8 +48,8 @@ class ComputeTotalArea(ExplicitComponent):
         wet_area_nac = inputs['geometry:nacelle_wet_area']
         wet_area_pylon = inputs['geometry:pylon_wet_area']
         n_engines = inputs['geometry:engine_number']
-        
+
         wet_area_total = wet_area_wing + wet_area_fus + wet_area_ht + wet_area_vt + \
-            n_engines * (wet_area_nac + wet_area_pylon)
+                         n_engines * (wet_area_nac + wet_area_pylon)
 
         outputs['geometry:S_total'] = wet_area_total

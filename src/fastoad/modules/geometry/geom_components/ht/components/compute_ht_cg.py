@@ -14,10 +14,11 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import math
 import numpy as np
-import math 
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+
 
 class ComputeHTcg(ExplicitComponent):
     # TODO: Document equations. Cite sources
@@ -37,11 +38,11 @@ class ComputeHTcg(ExplicitComponent):
         self.add_input('geometry:ht_sweep_25', val=np.nan, units='deg')
         self.add_input('geometry:ht_length', val=np.nan, units='m')
         self.add_input('geometry:ht_x0', val=np.nan, units='m')
-        
+
         self.add_output('cg_airframe:A31', units='m')
-        
+
         self.declare_partials('cg_airframe:A31', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         root_chord = inputs['geometry:ht_root_chord']
         tip_chord = inputs['geometry:ht_tip_chord']
@@ -51,7 +52,7 @@ class ComputeHTcg(ExplicitComponent):
         lp_ht = inputs['geometry:ht_lp']
         mac_ht = inputs['geometry:ht_length']
         x0_ht = inputs['geometry:ht_x0']
-        
+
         tmp = (root_chord * 0.25 + b_h / 2 *
                  math.tan(sweep_25_ht / 180. * math.pi) - tip_chord * 0.25)
 
@@ -59,5 +60,5 @@ class ComputeHTcg(ExplicitComponent):
         x_cg_ht = 0.42 * l_cg + 0.38 * tmp
         x_cg_ht_absolute = lp_ht + fa_length - \
             0.25 * mac_ht + (x_cg_ht - x0_ht)
-            
+
         outputs['cg_airframe:A31'] = x_cg_ht_absolute

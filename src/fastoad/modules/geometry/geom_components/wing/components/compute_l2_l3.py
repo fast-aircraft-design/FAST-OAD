@@ -14,8 +14,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import math
 import numpy as np
-import math 
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -38,17 +38,25 @@ class ComputeL2AndL3Wing(ExplicitComponent):
         self.add_input('geometry:wing_y4', val=np.nan, units='m')
         self.add_input('geometry:wing_taper_ratio', val=np.nan)
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        
+
         self.add_output('geometry:wing_l2', units='m')
         self.add_output('geometry:wing_l3', units='m')
-        
-        self.declare_partials('geometry:wing_l2', ['geometry:wing_l1', 'geometry:wing_y2',
-                                                   'geometry:wing_y3', 'geometry:wing_taper_ratio', 
-                                                   'geometry:wing_span', 'geometry:fuselage_width_max',
-                                                   'geometry:wing_sweep_25'], method=deriv_method)
-        self.declare_partials('geometry:wing_l3', ['geometry:wing_l1', 'geometry:wing_l4', 'geometry:wing_y2',
-                                                   'geometry:wing_y3', 'geometry:wing_y4'], method=deriv_method)
-        
+
+        self.declare_partials('geometry:wing_l2', ['geometry:wing_l1',
+                                                   'geometry:wing_y2',
+                                                   'geometry:wing_y3',
+                                                   'geometry:wing_taper_ratio',
+                                                   'geometry:wing_span',
+                                                   'geometry:fuselage_width_max',
+                                                   'geometry:wing_sweep_25'],
+                              method=deriv_method)
+        self.declare_partials('geometry:wing_l3', ['geometry:wing_l1',
+                                                   'geometry:wing_l4',
+                                                   'geometry:wing_y2',
+                                                   'geometry:wing_y3',
+                                                   'geometry:wing_y4'],
+                              method=deriv_method)
+
     def compute(self, inputs, outputs):
         l1_wing = inputs['geometry:wing_l1']
         l4_wing = inputs['geometry:wing_l4']
@@ -59,7 +67,7 @@ class ComputeL2AndL3Wing(ExplicitComponent):
         width_max = inputs['geometry:fuselage_width_max']
         taper_ratio = inputs['geometry:wing_taper_ratio']
         sweep_25 = inputs['geometry:wing_sweep_25']
-        
+
         l2_wing = (l1_wing +
                    (y3_wing -
                     y2_wing) *
@@ -68,7 +76,6 @@ class ComputeL2AndL3Wing(ExplicitComponent):
 
         l3_wing = l4_wing + (l1_wing - l4_wing) * \
             (y4_wing - y3_wing) / (y4_wing - y2_wing)
-            
+
         outputs['geometry:wing_l2'] = l2_wing
         outputs['geometry:wing_l3'] = l3_wing
-        

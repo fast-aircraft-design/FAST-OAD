@@ -23,23 +23,23 @@ class ComputeCGLoadCase4(ExplicitComponent):
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
-    
+
     def setup(self):
         deriv_method = self.options['deriv_method']
-        
+
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
         self.add_input('geometry:wing_position', val=np.nan, units='m')
         self.add_input('cg:cg_pax', val=np.nan, units='m')
         self.add_input('cg:cg_rear_fret', val=np.nan, units='m')
         self.add_input('cg:cg_front_fret', val=np.nan, units='m')
-        self.add_input('tlar:NPAX', val=np.nan)    
+        self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('x_cg_plane_up', val=np.nan)
         self.add_input('x_cg_plane_down', val=np.nan)
-        
+
         self.add_output('cg_ratio_lc4')
-        
+
         self.declare_partials('*', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         l0_wing = inputs['geometry:wing_l0']
         fa_length = inputs['geometry:wing_position']
@@ -49,7 +49,7 @@ class ComputeCGLoadCase4(ExplicitComponent):
         npax = inputs['tlar:NPAX']
         x_cg_plane_up = inputs['x_cg_plane_up']
         x_cg_plane_down = inputs['x_cg_plane_down']
-        
+
         weight_pax = npax * 90.
         weight_rear_fret = npax * 30.
         weight_front_fret = npax * 10.
@@ -61,5 +61,5 @@ class ComputeCGLoadCase4(ExplicitComponent):
         x_cg_plane_pl_4 = (x_cg_plane_up + weight_pl * x_cg_pl_4) / \
             (x_cg_plane_down + weight_pl)  # forward
         cg_ratio_pl_4 = (x_cg_plane_pl_4 - fa_length + 0.25 * l0_wing) / l0_wing
-              
+
         outputs['cg_ratio_lc4'] = cg_ratio_pl_4

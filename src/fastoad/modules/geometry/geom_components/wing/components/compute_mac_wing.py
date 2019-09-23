@@ -36,11 +36,11 @@ class ComputeMACWing(ExplicitComponent):
         self.add_input('geometry:wing_l2', val=np.nan, units='m')
         self.add_input('geometry:wing_l3', val=np.nan, units='m')
         self.add_input('geometry:wing_l4', val=np.nan, units='m')
-        
+
         self.add_output('geometry:wing_l0', units='m')
         self.add_output('geometry:wing_x0', units='m')
         self.add_output('geometry:wing_y0', units='m')
-        
+
         self.declare_partials('geometry:wing_l0', ['geometry:wing_y2', 'geometry:wing_y3',
                                                    'geometry:wing_y4', 'geometry:wing_l2',
                                                    'geometry:wing_l3', 'geometry:wing_l4',
@@ -54,7 +54,7 @@ class ComputeMACWing(ExplicitComponent):
                                                    'geometry:wing_y4', 'geometry:wing_l2',
                                                    'geometry:wing_l3', 'geometry:wing_l4',
                                                    'geometry:wing_area'], method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         wing_area = inputs['geometry:wing_area']
         x3_wing = inputs['geometry:wing_x3']
@@ -65,7 +65,7 @@ class ComputeMACWing(ExplicitComponent):
         l2_wing = inputs['geometry:wing_l2']
         l3_wing = inputs['geometry:wing_l3']
         l4_wing = inputs['geometry:wing_l4']
-        
+
         l0_wing = (3 * y2_wing * l2_wing ** 2 + (y3_wing - y2_wing) *
                    (l2_wing ** 2 + l3_wing ** 2 + l2_wing * l3_wing) + (y4_wing - y3_wing)
                    * (l3_wing ** 2 + l4_wing ** 2 + l3_wing * l4_wing)) * (2 / (3 * wing_area))
@@ -81,8 +81,7 @@ class ComputeMACWing(ExplicitComponent):
                    (l4_wing
                     * (y3_wing + 2 * y4_wing) + l3_wing * (y4_wing + 2 * y3_wing))) / \
             (3 * wing_area)
-            
+
         outputs['geometry:wing_l0'] = l0_wing
         outputs['geometry:wing_x0'] = x0_wing
         outputs['geometry:wing_y0'] = y0_wing
-        

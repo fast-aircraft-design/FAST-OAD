@@ -21,7 +21,6 @@ import pytest
 from openmdao.core.problem import Problem
 
 from fastoad.io.xml import XPathReader
-from fastoad.io.xml.openmdao_basic_io import OpenMdaoXmlIO
 from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
 from fastoad.modules.geometry.cg_components \
     import ComputeAeroCenter

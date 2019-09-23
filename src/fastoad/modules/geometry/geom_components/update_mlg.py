@@ -17,6 +17,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class UpdateMLG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Main landing gear center of gravity estimation """
@@ -33,17 +34,17 @@ class UpdateMLG(ExplicitComponent):
         self.add_input('delta_lg', val=np.nan)
 
         self.add_output('cg_airframe:A51', units='m')
-        
+
         self.declare_partials('cg_airframe:A51', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         l0_wing = inputs['geometry:wing_l0']
         fa_length = inputs['geometry:wing_position']
         cg_ratio = inputs['cg_ratio']
         delta_lg = inputs['delta_lg']
-        
+
         x_cg = fa_length - 0.25 * l0_wing + cg_ratio * l0_wing
-        
+
         cg_airframe_a51 = x_cg + 0.08 * delta_lg
-        
+
         outputs['cg_airframe:A51'] = cg_airframe_a51

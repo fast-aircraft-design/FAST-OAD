@@ -17,6 +17,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeWetAreaWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing wet area estimation """
@@ -31,23 +32,27 @@ class ComputeWetAreaWing(ExplicitComponent):
         self.add_input('geometry:wing_y2', val=np.nan, units='m')
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        
+
         self.add_output('geometry:wing_area_pf')
         self.add_output('geometry:wing_wet_area', units='m**2')
-        
-        self.declare_partials('geometry:wing_area_pf', ['geometry:wing_area', 'geometry:wing_y2',
-                                                        'geometry:wing_l2'], method=deriv_method)
-        self.declare_partials('geometry:wing_wet_area', ['geometry:wing_area', 'geometry:wing_l2',
-                                                         'geometry:fuselage_width_max'], method=deriv_method)
-        
+
+        self.declare_partials('geometry:wing_area_pf', ['geometry:wing_area',
+                                                        'geometry:wing_y2',
+                                                        'geometry:wing_l2'],
+                              method=deriv_method)
+        self.declare_partials('geometry:wing_wet_area', ['geometry:wing_area',
+                                                         'geometry:wing_l2',
+                                                         'geometry:fuselage_width_max'],
+                              method=deriv_method)
+
     def compute(self, inputs, outputs):
-         wing_area = inputs['geometry:wing_area']
-         l2_wing = inputs['geometry:wing_l2']
-         y2_wing = inputs['geometry:wing_y2']
-         width_max = inputs['geometry:fuselage_width_max']
-         
-         s_pf = wing_area - 2 * l2_wing * y2_wing 
-         wet_area_wing = 2 * (wing_area - width_max * l2_wing)
-         
-         outputs['geometry:wing_area_pf'] = s_pf
-         outputs['geometry:wing_wet_area'] = wet_area_wing
+        wing_area = inputs['geometry:wing_area']
+        l2_wing = inputs['geometry:wing_l2']
+        y2_wing = inputs['geometry:wing_y2']
+        width_max = inputs['geometry:fuselage_width_max']
+
+        s_pf = wing_area - 2 * l2_wing * y2_wing
+        wet_area_wing = 2 * (wing_area - width_max * l2_wing)
+
+        outputs['geometry:wing_area_pf'] = s_pf
+        outputs['geometry:wing_wet_area'] = wet_area_wing

@@ -14,8 +14,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import math
 import numpy as np
-import math 
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -32,19 +32,19 @@ class ComputeHTClalpha(ExplicitComponent):
         self.add_input('geometry:ht_aspect_ratio', val=np.nan)
         self.add_input('tlar:cruise_Mach', val=np.nan)
         self.add_input('geometry:ht_sweep_25', val=np.nan, units='deg')
-        
+
         self.add_output('aerodynamics:Cl_alpha_ht')
-        
+
         self.declare_partials('aerodynamics:Cl_alpha_ht', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
-        cruise_Mach = inputs['tlar:cruise_Mach']
+        cruise_mach = inputs['tlar:cruise_Mach']
         lambda_ht = inputs['geometry:ht_aspect_ratio']
         sweep_25_ht = inputs['geometry:ht_sweep_25']
-        
-        beta = math.sqrt(1 - cruise_Mach**2)
+
+        beta = math.sqrt(1 - cruise_mach**2)
         cl_alpha_ht = 0.8 * 2 * math.pi * lambda_ht / \
             (2 + math.sqrt(4 + lambda_ht**2 * beta**2 / 0.95 **
                            2 * (1 + (math.tan(sweep_25_ht / 180. * math.pi))**2 / beta**2)))
-            
+
         outputs['aerodynamics:Cl_alpha_ht'] = cl_alpha_ht

@@ -86,23 +86,27 @@ class ComputeOthersCG(ExplicitComponent):
         self.declare_partials(['cg_systems:C22', 'cg_systems:C25', 'cg_systems:C26',
                                'cg_systems:C52'], 'cg_furniture:D2', method=deriv_method)
         self.declare_partials('cg_systems:C23', [
-                              'geometry:wing_position', 'geometry:wing_l0'], method=deriv_method)
-        self.declare_partials('cg_systems:C27', ['weight_propulsion:B1', 'cg_propulsion:B1',
-                                                 'cabin:NPAX1', 'cg_furniture:D2'], method=deriv_method)
+            'geometry:wing_position', 'geometry:wing_l0'], method=deriv_method)
+        self.declare_partials('cg_systems:C27',
+                              ['weight_propulsion:B1', 'cg_propulsion:B1',
+                               'cabin:NPAX1', 'cg_furniture:D2'], method=deriv_method)
         self.declare_partials(
             'cg_systems:C3', 'geometry:fuselage_LAV', method=deriv_method)
-        self.declare_partials('cg_furniture:D3', ['geometry:fuselage_length', 'geometry:fuselage_LAR',
-                                                  'cabin:LSeco',  'cabin:front_seat_number_eco'], method=deriv_method)
+        self.declare_partials('cg_furniture:D3',
+                              ['geometry:fuselage_length', 'geometry:fuselage_LAR',
+                               'cabin:LSeco', 'cabin:front_seat_number_eco'], method=deriv_method)
         self.declare_partials(
             ['cg_furniture:D4', 'cg_furniture:D5'], 'cg_furniture:D2', method=deriv_method)
         self.declare_partials(
             'cg:cg_pax', 'cg_furniture:D2', method=deriv_method)
-        self.declare_partials('cg:cg_rear_fret', ['geometry:fuselage_LAR', 'geometry:wing_l0', 'geometry:wing_x0',
-                                                  'geometry:wing_l2', 'cabin:front_seat_number_eco',
-                                                  'cabin:LSeco', 'geometry:wing_position',
-                                                  'geometry:fuselage_length'], method=deriv_method)
-        self.declare_partials('cg:cg_front_fret', ['geometry:fuselage_LAV', 'geometry:wing_l0',
-                                                   'geometry:wing_x0', 'geometry:wing_position'], method=deriv_method)
+        self.declare_partials('cg:cg_rear_fret',
+                              ['geometry:fuselage_LAR', 'geometry:wing_l0', 'geometry:wing_x0',
+                               'geometry:wing_l2', 'cabin:front_seat_number_eco', 'cabin:LSeco',
+                               'geometry:wing_position', 'geometry:fuselage_length'],
+                                method=deriv_method)
+        self.declare_partials('cg:cg_front_fret',
+                              ['geometry:fuselage_LAV', 'geometry:wing_l0',
+                               'geometry:wing_x0', 'geometry:wing_position'], method=deriv_method)
 
     def compute(self, inputs, outputs):
         x0_wing = inputs['geometry:wing_x0']
@@ -117,7 +121,7 @@ class ComputeOthersCG(ExplicitComponent):
         weight_engines = inputs['weight_propulsion:B1']
         npax1 = inputs['cabin:NPAX1']
         front_seat_number_eco = inputs['cabin:front_seat_number_eco']
-        LSeco = inputs['cabin:LSeco']
+        ls_eco = inputs['cabin:LSeco']
 
         x_cg_a2 = 0.45 * fus_length
 
@@ -142,26 +146,26 @@ class ComputeOthersCG(ExplicitComponent):
                     x_cg_b1 +
                     2.3 * npax1 *
                     x_cg_d2) / (
-                        0.01 * weight_engines +
-                        2.3 * npax1)
+                           0.01 * weight_engines +
+                           2.3 * npax1)
         x_cg_c3 = lav * 0.8
         x_cg_c4 = 0.5 * fus_length
         x_cg_c51 = 0.02 * fus_length
         x_cg_c52 = x_cg_d2
 
-        x_cg_d3 = lav + (fus_length - lav - lar) + LSeco * \
-            front_seat_number_eco + 0.92 + 0.432
+        x_cg_d3 = lav + (fus_length - lav - lar) + ls_eco * \
+                  front_seat_number_eco + 0.92 + 0.432
         x_cg_d5 = x_cg_d2
 
         length_front_fret = (fa_length - 0.25 * l0_wing - x0_wing - lav)
         x_cg_front_fret = lav + length_front_fret * 0.5
 
         length_rear_fret = fus_length - lar + (
-            front_seat_number_eco - 5) * \
-            LSeco - (lav + length_front_fret + 0.8 * l2_wing)
+                front_seat_number_eco - 5) * \
+                           ls_eco - (lav + length_front_fret + 0.8 * l2_wing)
 
         x_cg_rear_fret = lav + length_front_fret + \
-            0.8 * l2_wing + length_rear_fret * 0.5
+                         0.8 * l2_wing + length_rear_fret * 0.5
 
         x_cg_pl = x_cg_d2
 

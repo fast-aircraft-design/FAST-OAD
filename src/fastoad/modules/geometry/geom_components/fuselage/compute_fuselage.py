@@ -14,8 +14,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 from math import sqrt
+import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -55,54 +55,65 @@ class ComputeFuselageGeometry(ExplicitComponent):
         self.add_output('cabin:PNC')
 
         self.declare_partials('cabin:NPAX1', ['tlar:NPAX'], method=deriv_method)
-        self.declare_partials('cabin:Nrows', ['cabin:front_seat_number_eco',
-                                                              'tlar:NPAX'], method=deriv_method)
-        self.declare_partials('geometry:fuselage_width_max', ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                                                              'cabin:Waisle'], method=deriv_method)
-        self.declare_partials('geometry:fuselage_height_max', ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                                                               'cabin:Waisle'], method=deriv_method)
-        self.declare_partials('geometry:fuselage_LAV', ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                                                        'cabin:Waisle'], method=deriv_method)
-        self.declare_partials('geometry:fuselage_LAR', ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                                                        'cabin:Waisle'], method=deriv_method)
+        self.declare_partials('cabin:Nrows',
+                              ['cabin:front_seat_number_eco', 'tlar:NPAX'],
+                              method=deriv_method)
+        self.declare_partials('geometry:fuselage_width_max',
+                              ['cabin:front_seat_number_eco', 'cabin:WSeco',
+                               'cabin:Waisle'], method=deriv_method)
+        self.declare_partials('geometry:fuselage_height_max',
+                              ['cabin:front_seat_number_eco', 'cabin:WSeco',
+                               'cabin:Waisle'], method=deriv_method)
+        self.declare_partials('geometry:fuselage_LAV',
+                              ['cabin:front_seat_number_eco', 'cabin:WSeco',
+                               'cabin:Waisle'], method=deriv_method)
+        self.declare_partials('geometry:fuselage_LAR',
+                              ['cabin:front_seat_number_eco', 'cabin:WSeco',
+                               'cabin:Waisle'], method=deriv_method)
         self.declare_partials('geometry:fuselage_Lpax', [
                               'cabin:LSeco', 'cabin:Wexit'], method=deriv_method)
-        self.declare_partials('geometry:fuselage_length', ['cabin:front_seat_number_eco', 'cabin:Waisle',
-                                                           'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
-        self.declare_partials('geometry:fuselage_Lcabin', ['cabin:front_seat_number_eco', 'cabin:Waisle',
-                                                           'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
-        self.declare_partials('cg_systems:C6', ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                                                'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
-        self.declare_partials('cg_furniture:D2', ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                                                  'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
-        self.declare_partials('cg_pl:CG_PAX', ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                                               'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
-        self.declare_partials('geometry:fuselage_wet_area', ['cabin:front_seat_number_eco', 'cabin:Waisle',
-                                                             'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
+        self.declare_partials('geometry:fuselage_length',
+                              ['cabin:front_seat_number_eco', 'cabin:Waisle',
+                               'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
+        self.declare_partials('geometry:fuselage_Lcabin',
+                              ['cabin:front_seat_number_eco', 'cabin:Waisle',
+                               'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
+        self.declare_partials('cg_systems:C6',
+                              ['cabin:front_seat_number_eco', 'cabin:WSeco',
+                               'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
+        self.declare_partials('cg_furniture:D2',
+                              ['cabin:front_seat_number_eco', 'cabin:WSeco',
+                               'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
+        self.declare_partials('cg_pl:CG_PAX',
+                              ['cabin:front_seat_number_eco', 'cabin:WSeco',
+                               'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
+        self.declare_partials('geometry:fuselage_wet_area',
+                              ['cabin:front_seat_number_eco', 'cabin:Waisle',
+                               'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
 
     def compute(self, inputs, outputs):
         cabin_sizing = self.options['cabin_sizing']
         front_seat_number_eco = inputs['cabin:front_seat_number_eco']
-        WSeco = inputs['cabin:WSeco']
-        LSeco = inputs['cabin:LSeco']
-        Waisle = inputs['cabin:Waisle']
-        Wexit = inputs['cabin:Wexit']
-        NPAX = inputs['tlar:NPAX']
+        ws_eco = inputs['cabin:WSeco']
+        ls_eco = inputs['cabin:LSeco']
+        w_aisle = inputs['cabin:Waisle']
+        w_exit = inputs['cabin:Wexit']
+        npax = inputs['tlar:NPAX']
         n_engines = inputs['geometry:engine_number']
 
         if cabin_sizing:
             # Cabin width = N * seat width + Aisle width + (N+2)*2"+2 * 1"
-            wcabin = front_seat_number_eco * WSeco + \
-                Waisle + (front_seat_number_eco + 2) * 0.051 + 0.05
+            wcabin = front_seat_number_eco * ws_eco + \
+                w_aisle + (front_seat_number_eco + 2) * 0.051 + 0.05
 
             # Number of rows = Npax / N
-            npax_1 = int(1.05 * NPAX)
-            Nrows = int(npax_1 / front_seat_number_eco)
-            pnc = int((NPAX+17)/35)
+            npax_1 = int(1.05 * npax)
+            n_rows = int(npax_1 / front_seat_number_eco)
+            pnc = int((npax+17)/35)
             # Length of pax cabin = Length of seat area + Width of 1 Emergency
             # exits
-            lpax = (Nrows * LSeco) + 1 * Wexit
-            l_cyl = lpax - (2 * front_seat_number_eco - 4) * LSeco
+            lpax = (n_rows * ls_eco) + 1 * w_exit
+            l_cyl = lpax - (2 * front_seat_number_eco - 4) * ls_eco
             r_i = wcabin / 2
             radius = 1.06 * r_i
             # Cylindrical fuselage
@@ -118,10 +129,10 @@ class ComputeFuselageGeometry(ExplicitComponent):
 
             fus_length = lav + lar + l_cyl
             cabin_length = 0.81 * fus_length
-            x_cg_c6 = lav - (front_seat_number_eco - 4) * LSeco + lpax * 0.1
-            x_cg_d2 = lav - (front_seat_number_eco - 4) * LSeco + lpax / 2
+            x_cg_c6 = lav - (front_seat_number_eco - 4) * ls_eco + lpax * 0.1
+            x_cg_d2 = lav - (front_seat_number_eco - 4) * ls_eco + lpax / 2
 
-            outputs['cabin:Nrows'] = Nrows 
+            outputs['cabin:Nrows'] = n_rows
             outputs['cabin:NPAX1'] = npax_1
             outputs['cg_systems:C6'] = x_cg_c6
             outputs['cg_furniture:D2'] = x_cg_d2
@@ -160,9 +171,8 @@ class ComputeFuselageGeometry(ExplicitComponent):
             outputs['geometry:fuselage_Lcabin'] = cabin_length
             outputs['cabin:PNC'] = pnc
 
-        # equivalent diameter of the fuselage
+        # Equivalent diameter of the fuselage
         fus_dia = sqrt(b_f * h_f)
-#        cyl_length = fus_length - lav - lar
         wet_area_nose = 2.45 * fus_dia * lav
         wet_area_cyl = 3.1416 * fus_dia * l_cyl
         wet_area_tail = 2.3 * fus_dia * lar
