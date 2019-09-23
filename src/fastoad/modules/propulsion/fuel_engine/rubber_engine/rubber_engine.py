@@ -40,12 +40,6 @@ class RubberEngine(object):
     def __init__(self, bpr, opr, t4, d_t4_cl, d_t4_cr, f0, mach_max, hm):
         self.bpr, self.opr, self.t4, self.d_t4_cl, self.d_t4_cr = bpr, opr, t4, d_t4_cl, d_t4_cr
         self.f0, self.mach_max, self.hm = f0, mach_max, hm
-        self.altitude = None
-        self.temperature = None
-        self.altitude = None
-        self.density = None
-        self.mach = None
-        self.delta_t_4 = None
 
     def compute_manual(self, mach, altitude, thrust_rate, phase='MTO'):
         _, fc, sfc = self.compute(mach, altitude, phase, thrust_rate=thrust_rate)
@@ -75,27 +69,23 @@ class RubberEngine(object):
         #    -sfc in [kg/s/N]
         #----------------------------------------------------------------
         """
-        atmosphere = Atmosphere(altitude)
-
-        self.altitude = altitude * 0.3048
-        self.mach = mach
-        self.temperature, self.density, _, _ = self._atmosphere(self.altitude)
+        atmosphere = Atmosphere(altitude, altitude_in_feet=False)
 
         # Initialisation de la temperature turbine pour la phase courante
         # FIXME: use enums. Raise a better Exception
         if phase == 'MTO':
-            self.delta_t_4 = 0
+            delta_t_4 = 0
         elif phase == 'CLIMB':
-            self.delta_t_4 = self.d_t4_cl
+            delta_t_4 = self.d_t4_cl
         elif phase == 'FI':
-            self.delta_t_4 = self.d_t4_cr
+            delta_t_4 = self.d_t4_cr
         elif phase == 'CRZ':
-            self.delta_t_4 = self.d_t4_cr
+            delta_t_4 = self.d_t4_cr
         else:
             raise RuntimeError()
 
         # Calcul de poussee max (fonction MaxThrust du modele ER)
-        fmax_0 = self.max_thrust(atmosphere, self.mach, self.delta_t_4)
+        fmax_0 = self.max_thrust(atmosphere, mach, delta_t_4)
 
         if thrust_rate is None:
             thrust_rate = fc / fmax_0
@@ -103,10 +93,10 @@ class RubberEngine(object):
             fc = thrust_rate * fmax_0
 
         # Calcul de conso specifique a poussee max
-        sfc_0 = self.sfc_at_max_thrust(atmosphere, self.mach)
+        sfc_0 = self.sfc_at_max_thrust(atmosphere, mach)
 
         # Calcul de conso specifique en regime reduit
-        delta_h = self.altitude - self.hm
+        delta_h = altitude - self.hm
         fi = -9.6e-5 * delta_h + 0.85
         if delta_h < -89:
             csrmin = 0.998
@@ -294,36 +284,3 @@ class RubberEngine(object):
         nacelle_diameter = diameter * 1.1
 
         return nacelle_diameter
-
-    # FIXME: use atmosphere module
-    @staticmethod
-    def _atmosphere(altitude):
-        """
-        #----------------------------------------------------------------
-        # DEFINITION OF THE ATMOSPHERE FUNCTION
-        #----------------------------------------------------------------
-        # Valid for an altitude between 0 and 15000 m
-        #
-        #----------------------------------------------------------------
-        # INPUTS
-        #    -altitude (m)
-        #
-        # OUTPUTS
-        #    -temperature [deg K]
-        #    -Densityt [kg/m3]
-        #    -viscosity [
-        #    -sos [m/s]
-        #----------------------------------------------------------------
-        """
-        if altitude <= 11000:
-            temperature = (288.15 - 0.0065 * altitude)
-            density = ((temperature / (288.15)) ** -((9.81 / -0.0065 / 287) + 1) * 1.225)
-            viscosity = ((0.000001458) * temperature ** (3 / 2)) * (1 / (temperature + 110.4))
-            sos = (1.4 * 287 * temperature) ** 0.5
-        else:
-            temperature = 216.65
-            density = math.exp(-(9.81 / 287 / temperature) * (altitude - 11000)) * 0.364
-            viscosity = ((0.000001458) * temperature ** (3 / 2)) * (1 / (temperature + 110.4))
-            sos = (1.4 * 287 * temperature) ** 0.5
-
-        return temperature, density, viscosity, sos

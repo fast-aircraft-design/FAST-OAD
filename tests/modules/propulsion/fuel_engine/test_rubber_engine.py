@@ -23,7 +23,7 @@ from fastoad.utils.physics import Atmosphere
 
 def test_compute_manual():
     engine = RubberEngine(5, 30, 1500, -50, -100, 1, 0.95,
-                          15000)  # f0=1 so that output is simply fc/f0
+                          10000)  # f0=1 so that output is simply fc/f0
     fc, sfc = engine.compute_manual(0, 0, 0.8, 'MTO')
     np.testing.assert_allclose(fc, 0.955 * 0.8, rtol=1e-2)
     np.testing.assert_allclose(sfc, 0.993e-5, rtol=1e-2)
@@ -37,17 +37,17 @@ def test_compute_manual():
     np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
 
     fc, sfc = engine.compute_manual(0.8, 10000, 0.4, 'FI')
-    np.testing.assert_allclose(fc, 0.152, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.90e-5, rtol=1e-2)
+    np.testing.assert_allclose(fc, 0.0967, rtol=1e-2)
+    np.testing.assert_allclose(sfc, 1.84e-5, rtol=1e-2)
 
-    fc, sfc = engine.compute_manual(0.8, 13000, 0.4, 'FI')
-    np.testing.assert_allclose(fc, 0.146, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.90e-5, rtol=1e-2)
+    fc, sfc = engine.compute_manual(0.8, 13000, 0.7, 'FI')
+    np.testing.assert_allclose(fc, 0.113, rtol=1e-2)
+    np.testing.assert_allclose(sfc, 1.57e-5, rtol=1e-2)
 
 
 def test_compute_regulated():
     engine = RubberEngine(5, 30, 1500, -50, -100, 1, 0.95,
-                          15000)  # f0=1 so that input drag in drag/f0
+                          10000)  # f0=1 so that input drag in drag/f0
     sfc, thrust_rate = engine.compute_regulated(0, 0, 0.955 * 0.8, 'MTO')
     np.testing.assert_allclose(thrust_rate, 0.8, rtol=1e-2)
     np.testing.assert_allclose(sfc, 0.993e-5, rtol=1e-2)
@@ -60,13 +60,13 @@ def test_compute_regulated():
     np.testing.assert_allclose(thrust_rate, 0.5, rtol=1e-2)
     np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
 
-    sfc, thrust_rate = engine.compute_regulated(0.8, 10000, 0.152, 'FI')
+    sfc, thrust_rate = engine.compute_regulated(0.8, 10000, 0.0967, 'FI')
     np.testing.assert_allclose(thrust_rate, 0.4, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.90e-5, rtol=1e-2)
+    np.testing.assert_allclose(sfc, 1.84e-5, rtol=1e-2)
 
-    sfc, thrust_rate = engine.compute_regulated(0.8, 13000, 0.146, 'FI')
-    np.testing.assert_allclose(thrust_rate, 0.4, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.90e-5, rtol=1e-2)
+    sfc, thrust_rate = engine.compute_regulated(0.8, 13000, 0.113, 'FI')
+    np.testing.assert_allclose(thrust_rate, 0.7, rtol=1e-2)
+    np.testing.assert_allclose(sfc, 1.57e-5, rtol=1e-2)
 
 
 def test_installed_weight():
