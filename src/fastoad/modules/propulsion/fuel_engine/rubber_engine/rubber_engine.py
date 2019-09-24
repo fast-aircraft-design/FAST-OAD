@@ -99,18 +99,7 @@ class RubberEngine(object):
         # Calcul de conso specifique a poussee max
         sfc_0 = self.sfc_at_max_thrust(atmosphere, mach)
 
-        # Calcul de conso specifique en regime reduit
-        delta_h = altitude - self.hm
-        fi = -9.6e-5 * delta_h + 0.85
-        if delta_h < -89:
-            csrmin = 0.998
-        else:
-            csrmin = -3.385e-5 * delta_h + 0.995
-
-        adir = (1 - csrmin) / (1 - fi) ** 2
-        csr = adir * (thrust_rate - fi) ** 2 + csrmin
-
-        sfc = sfc_0 * csr
+        sfc = sfc_0 * self.sfc_ratio(altitude, thrust_rate)
         if sfc > 2.0 / 36000.0:
             sfc = 2.0 / 36000.0
 
@@ -158,6 +147,40 @@ class RubberEngine(object):
               ((7.4e-13 * (self.opr - 30) * altitude) + c) * (self.opr - 30)
 
         return sfc
+
+    def sfc_ratio(self,
+                  altitude: Union[float, Sequence[float]],
+                  thrust_rate: Union[float, Sequence[float]],
+                  mach: Union[float, Sequence[float]] = 0.8
+                  ) -> Union[float, Sequence[float]]:
+        """
+        Computation of ratio :math:`\\frac{SFC(F)}{SFC(Fmax)}`, given altitude
+        and thrust_rate :math:`\\frac{F}{Fmax}`.
+
+        Uses model described in :cite:`roux:2002`, p.85.
+
+        Warning: this model is very limited
+
+        :param altitude:
+        :param thrust_rate:
+        :param mach: only used for logger checks as model is made for Mach~0.8
+        :return:
+        """
+
+        # Check definition domain
+        if np.any(thrust_rate < 0.5):
+            _LOGGER.warning("SFC RATIO computation for thrust rate below 50% may be unreliable.")
+        if np.any(mach < 0.75) or np.any(mach > 0.85):
+            _LOGGER.warning(
+                "SFC RATIO computation for Mach number other than Mach 0.8 may be unreliable.")
+
+        delta_h = altitude - self.hm
+        fi = -9.6e-5 * delta_h + 0.85
+
+        sfc_ratio_min = np.minimum(0.998, -3.385e-5 * delta_h + 0.995)
+
+        coeff = (1 - sfc_ratio_min) / (1 - fi) ** 2
+        return coeff * (thrust_rate - fi) ** 2 + sfc_ratio_min
 
     def max_thrust(self, atmosphere: Atmosphere,
                    mach: Union[float, Sequence[float]],
