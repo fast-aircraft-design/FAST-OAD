@@ -4,7 +4,7 @@
 from openmdao.api import Group
 
 from fastoad.modules.geometry.geom_components.fuselage.compute_fuselage \
-    import ComputeFuselageGeometry
+    import ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizing
 from fastoad.modules.geometry.geom_components.wing.compute_wing import ComputeWingGeometry
 from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
     ComputeNacelleAndPylonsGeometry
@@ -24,17 +24,26 @@ class Geometry(Group):
         self.options.declare('tail_type', types=float, default=0.0)
         self.options.declare('ac_family', types=float, default=1.0)
         self.options.declare('ac_type', types=float, default=2.0)
+        self.options.declare('cabin_sizing', default=True)
 
         self.engine_location = self.options['engine_location']
         self.tail_type = self.options['tail_type']
         self.ac_family = self.options['ac_family']
         self.ac_type = self.options['ac_type']
+        self.cabin_sizing = self.options['cabin_sizing']
 
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_subsystem('compute_fuselage',
-                           ComputeFuselageGeometry(deriv_method=deriv_method), promotes=['*'])
+        if self.cabin_sizing:
+            self.add_subsystem('compute_fuselage',
+                               ComputeFuselageGeometryCabinSizing(deriv_method=deriv_method),
+                               promotes=['*'])
+        else:
+            self.add_subsystem('compute_fuselage',
+                               ComputeFuselageGeometryBasic(deriv_method=deriv_method),
+                               promotes=['*'])
+
         self.add_subsystem('compute_wing',
                            ComputeWingGeometry(deriv_method=deriv_method), promotes=['*'])
         self.add_subsystem('compute_engine_nacelle',

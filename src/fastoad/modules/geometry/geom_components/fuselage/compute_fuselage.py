@@ -20,13 +20,90 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
-class ComputeFuselageGeometry(ExplicitComponent):
+class ComputeFuselageGeometryBasic(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Geometry of fuselase part A - Cabin (Commercial) estimation """
+    """ Geometry of fuselage part A - Cabin (Commercial) estimation """
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
-        self.options.declare('cabin_sizing', default=True)
+
+    def setup(self):
+        deriv_method = self.options['deriv_method']
+
+        self.add_input('tlar:NPAX', val=np.nan)
+        self.add_input('geometry:fus_length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_LAV', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_LAR', val=np.nan, units='m')
+        self.add_input('geometry:fuselage_Lpax', val=np.nan, units='m')
+
+        self.add_output('cabin:NPAX1')
+        self.add_output('cg_pl:CG_PAX', units='m')
+        self.add_output('cg_systems:C6', units='m')
+        self.add_output('cg_furniture:D2', units='m')
+        self.add_output('geometry:fuselage_Lcabin', units='m')
+        self.add_output('geometry:fuselage_wet_area', units='m**2')
+        self.add_output('cabin:PNC')
+
+        self.declare_partials('cabin:NPAX1',
+                              ['tlar:NPAX'], method=deriv_method)
+        self.declare_partials('cg_pl:CG_PAX',
+                              ['geometry:fuselage_LAV', 'geometry:fuselage_Lpax'],
+                              method=deriv_method)
+        self.declare_partials('cg_systems:C6',
+                              ['geometry:fuselage_LAV', 'geometry:fuselage_Lpax'],
+                              method=deriv_method)
+        self.declare_partials('cg_furniture:D2',
+                              ['geometry:fuselage_LAV', 'geometry:fuselage_Lpax'],
+                              method=deriv_method)
+        self.declare_partials('geometry:fuselage_Lcabin',
+                              ['geometry:fus_length'], method=deriv_method)
+        self.declare_partials('geometry:fuselage_wet_area',
+                              ['geometry:fuselage_width_max', 'geometry:fuselage_height_max',
+                               'geometry:fuselage_LAV', 'geometry:fuselage_LAR',
+                               'geometry:fus_length'], method=deriv_method)
+        self.declare_partials('cabin:PNC',
+                              ['tlar:NPAX'], method=deriv_method)
+
+    def compute(self, inputs, outputs):
+        npax_1 = inputs['tlar:NPAX']
+        fus_length = inputs['geometry:fus_length']
+        b_f = inputs['geometry:fuselage_width_max']
+        h_f = inputs['geometry:fuselage_height_max']
+        lav = inputs['geometry:fuselage_LAV']
+        lar = inputs['geometry:fuselage_LAR']
+        lpax = inputs['geometry:fuselage_Lpax']
+
+        l_cyl = fus_length - lav - lar
+        cabin_length = 0.81 * fus_length
+        x_cg_passenger = lav + lpax/2.0
+        x_cg_d2 = lav + 0.35*lpax
+        x_cg_c6 = lav + 0.1*lpax
+        pnc = int((npax_1+17)/35)
+
+        # Equivalent diameter of the fuselage
+        fus_dia = sqrt(b_f * h_f)
+        wet_area_nose = 2.45 * fus_dia * lav
+        wet_area_cyl = 3.1416 * fus_dia * l_cyl
+        wet_area_tail = 2.3 * fus_dia * lar
+        wet_area_fus = (wet_area_nose + wet_area_cyl + wet_area_tail)
+
+        outputs['cabin:NPAX1'] = npax_1
+        outputs['cg_pl:CG_PAX'] = x_cg_passenger
+        outputs['cg_systems:C6'] = x_cg_c6
+        outputs['cg_furniture:D2'] = x_cg_d2
+        outputs['geometry:fuselage_Lcabin'] = cabin_length
+        outputs['cabin:PNC'] = pnc
+        outputs['geometry:fuselage_wet_area'] = wet_area_fus
+
+
+class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
+    # TODO: Document equations. Cite sources
+    """ Geometry of fuselage part A - Cabin (Commercial) estimation """
+
+    def initialize(self):
+        self.options.declare('deriv_method', default='fd')
 
     def setup(self):
         deriv_method = self.options['deriv_method']
@@ -92,7 +169,6 @@ class ComputeFuselageGeometry(ExplicitComponent):
                                'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
 
     def compute(self, inputs, outputs):
-        cabin_sizing = self.options['cabin_sizing']
         front_seat_number_eco = inputs['cabin:front_seat_number_eco']
         ws_eco = inputs['cabin:WSeco']
         ls_eco = inputs['cabin:LSeco']
@@ -101,75 +177,35 @@ class ComputeFuselageGeometry(ExplicitComponent):
         npax = inputs['tlar:NPAX']
         n_engines = inputs['geometry:engine_number']
 
-        if cabin_sizing:
-            # Cabin width = N * seat width + Aisle width + (N+2)*2"+2 * 1"
-            wcabin = front_seat_number_eco * ws_eco + \
-                w_aisle + (front_seat_number_eco + 2) * 0.051 + 0.05
+        # Cabin width = N * seat width + Aisle width + (N+2)*2"+2 * 1"
+        wcabin = front_seat_number_eco * ws_eco + \
+            w_aisle + (front_seat_number_eco + 2) * 0.051 + 0.05
 
-            # Number of rows = Npax / N
-            npax_1 = int(1.05 * npax)
-            n_rows = int(npax_1 / front_seat_number_eco)
-            pnc = int((npax+17)/35)
-            # Length of pax cabin = Length of seat area + Width of 1 Emergency
-            # exits
-            lpax = (n_rows * ls_eco) + 1 * w_exit
-            l_cyl = lpax - (2 * front_seat_number_eco - 4) * ls_eco
-            r_i = wcabin / 2
-            radius = 1.06 * r_i
-            # Cylindrical fuselage
-            b_f = 2 * radius
-            # 0.14m is the distance between both lobe centers of the fuselage
-            h_f = b_f + 0.14
-            lav = 1.7 * h_f
+        # Number of rows = Npax / N
+        npax_1 = int(1.05 * npax)
+        n_rows = int(npax_1 / front_seat_number_eco)
+        pnc = int((npax+17)/35)
+        # Length of pax cabin = Length of seat area + Width of 1 Emergency
+        # exits
+        lpax = (n_rows * ls_eco) + 1 * w_exit
+        l_cyl = lpax - (2 * front_seat_number_eco - 4) * ls_eco
+        r_i = wcabin / 2
+        radius = 1.06 * r_i
+        # Cylindrical fuselage
+        b_f = 2 * radius
+        # 0.14m is the distance between both lobe centers of the fuselage
+        h_f = b_f + 0.14
+        lav = 1.7 * h_f
 
-            if n_engines == 3.0:
-                lar = 3.0 * h_f
-            else:
-                lar = 3.60 * h_f
-
-            fus_length = lav + lar + l_cyl
-            cabin_length = 0.81 * fus_length
-            x_cg_c6 = lav - (front_seat_number_eco - 4) * ls_eco + lpax * 0.1
-            x_cg_d2 = lav - (front_seat_number_eco - 4) * ls_eco + lpax / 2
-
-            outputs['cabin:Nrows'] = n_rows
-            outputs['cabin:NPAX1'] = npax_1
-            outputs['cg_systems:C6'] = x_cg_c6
-            outputs['cg_furniture:D2'] = x_cg_d2
-            outputs['cg_pl:CG_PAX'] = x_cg_d2
-            outputs['geometry:fuselage_length'] = fus_length
-            outputs['geometry:fuselage_width_max'] = b_f
-            outputs['geometry:fuselage_height_max'] = h_f
-            outputs['geometry:fuselage_LAV'] = lav
-            outputs['geometry:fuselage_LAR'] = lar
-            outputs['geometry:fuselage_Lpax'] = lpax
-            outputs['geometry:fuselage_Lcabin'] = cabin_length
-            outputs['cabin:PNC'] = pnc
+        if n_engines == 3.0:
+            lar = 3.0 * h_f
         else:
-            npax_1 = inputs['tlar:NPAX']
-            fus_length = inputs['geometry:fus_length']
-            b_f = self.aircraft.vars_geometry['geometry:fuselage_width_max']
-            h_f = self.aircraft.vars_geometry['geometry:fuselage_height_max']
-            lav = self.aircraft.vars_geometry['geometry:fuselage_LAV']
-            lar = self.aircraft.vars_geometry['geometry:fuselage_LAR']
-            lpax = self.aircraft.vars_geometry['geometry:fuselage_Lpax']
-            cabin_length = 0.81 * fus_length
-            x_cg_passenger = lav + lpax/2.0
-            x_cg_d2 = lav + 0.35*lpax
-            x_cg_c6 = lav + 0.1*lpax
-            pnc = int((npax_1+17)/35)
-            outputs['cabin:NPAX1'] = npax_1
-            outputs['cg_pl:CG_PAX'] = x_cg_passenger
-            outputs['cg_systems:C6'] = x_cg_c6
-            outputs['cg_furniture:D2'] = x_cg_d2
-            outputs['geometry:fuselage_length'] = fus_length
-            outputs['geometry:fuselage_width_max'] = b_f
-            outputs['geometry:fuselage_height_max'] = h_f
-            outputs['geometry:fuselage_LAV'] = lav
-            outputs['geometry:fuselage_LAR'] = lar
-            outputs['geometry:fuselage_Lpax'] = lpax
-            outputs['geometry:fuselage_Lcabin'] = cabin_length
-            outputs['cabin:PNC'] = pnc
+            lar = 3.60 * h_f
+
+        fus_length = lav + lar + l_cyl
+        cabin_length = 0.81 * fus_length
+        x_cg_c6 = lav - (front_seat_number_eco - 4) * ls_eco + lpax * 0.1
+        x_cg_d2 = lav - (front_seat_number_eco - 4) * ls_eco + lpax / 2
 
         # Equivalent diameter of the fuselage
         fus_dia = sqrt(b_f * h_f)
@@ -178,4 +214,17 @@ class ComputeFuselageGeometry(ExplicitComponent):
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = (wet_area_nose + wet_area_cyl + wet_area_tail)
 
+        outputs['cabin:Nrows'] = n_rows
+        outputs['cabin:NPAX1'] = npax_1
+        outputs['cg_systems:C6'] = x_cg_c6
+        outputs['cg_furniture:D2'] = x_cg_d2
+        outputs['cg_pl:CG_PAX'] = x_cg_d2
+        outputs['geometry:fuselage_length'] = fus_length
+        outputs['geometry:fuselage_width_max'] = b_f
+        outputs['geometry:fuselage_height_max'] = h_f
+        outputs['geometry:fuselage_LAV'] = lav
+        outputs['geometry:fuselage_LAR'] = lar
+        outputs['geometry:fuselage_Lpax'] = lpax
+        outputs['geometry:fuselage_Lcabin'] = cabin_length
+        outputs['cabin:PNC'] = pnc
         outputs['geometry:fuselage_wet_area'] = wet_area_fus
