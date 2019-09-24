@@ -12,6 +12,9 @@ from fastoad.modules.geometry.get_cg import GetCG
 from fastoad.modules.geometry.cg_components.compute_aero_center import ComputeAeroCenter
 from fastoad.modules.geometry.cg_components.compute_static_margin import ComputeStaticMargin
 
+from fastoad.modules.geometry.options import AIRCRAFT_FAMILY_OPTION, \
+    TAIL_TYPE_OPTION, ENGINE_LOCATION_OPTION, AIRCRAFT_TYPE_OPTION, CABIN_SIZING_OPTION
+
 
 class Geometry(Group):
     """ Overall geometry model """
@@ -19,17 +22,17 @@ class Geometry(Group):
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
 
-        self.options.declare('engine_location', types=float, default=1.0)
-        self.options.declare('tail_type', types=float, default=0.0)
-        self.options.declare('ac_family', types=float, default=1.0)
-        self.options.declare('ac_type', types=float, default=2.0)
-        self.options.declare('cabin_sizing', types=float, default=1.0)
+        self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
+        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.0)
+        self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
+        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
+        self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
 
-        self.engine_location = self.options['engine_location']
-        self.tail_type = self.options['tail_type']
-        self.ac_family = self.options['ac_family']
-        self.ac_type = self.options['ac_type']
-        self.cabin_sizing = self.options['cabin_sizing']
+        self.engine_location = self.options[ENGINE_LOCATION_OPTION]
+        self.tail_type = self.options[TAIL_TYPE_OPTION]
+        self.ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
+        self.ac_type = self.options[AIRCRAFT_TYPE_OPTION]
+        self.cabin_sizing = self.options[CABIN_SIZING_OPTION]
 
     def setup(self):
         deriv_method = self.options['deriv_method']

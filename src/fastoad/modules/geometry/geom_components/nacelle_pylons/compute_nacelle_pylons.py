@@ -19,6 +19,9 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.geometry.options import AIRCRAFT_FAMILY_OPTION, ENGINE_LOCATION_OPTION
+
+
 class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Nacelle and pylon geometry estimation """
@@ -26,11 +29,11 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
 
-        self.options.declare('engine_location', types=float, default=1.0)
-        self.options.declare('ac_family', types=float, default=1.0)
+        self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
+        self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
 
-        self.engine_loc = self.options['engine_location']
-        self.ac_family = self.options['ac_family']
+        self.engine_loc = self.options[ENGINE_LOCATION_OPTION]
+        self.ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
 
     def setup(self):
         deriv_method = self.options['deriv_method']

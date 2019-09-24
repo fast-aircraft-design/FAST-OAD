@@ -17,6 +17,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeVTVolCoeff(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail volume coefficient estimation """
@@ -31,11 +32,13 @@ class ComputeVTVolCoeff(ExplicitComponent):
         self.add_input('geometry:vt_lp', val=np.nan, units='m')
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing_span', val=np.nan, units='m')
-        
+
         self.add_output('geometry:vt_vol_coeff')
-        
+
         self.declare_partials('geometry:vt_vol_coeff', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
-        outputs['geometry:vt_vol_coeff'] = inputs['geometry:vt_area'] * inputs['geometry:vt_lp'] / \
-            (inputs['geometry:wing_area'] * inputs['geometry:wing_span'])
+        outputs['geometry:vt_vol_coeff'] = inputs['geometry:vt_area'] * \
+                                           inputs['geometry:vt_lp'] / \
+                                           (inputs['geometry:wing_area'] * \
+                                            inputs['geometry:wing_span'])

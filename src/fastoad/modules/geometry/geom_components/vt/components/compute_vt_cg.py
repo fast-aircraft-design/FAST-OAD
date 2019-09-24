@@ -14,10 +14,11 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import math
 import numpy as np
-import math 
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+
 
 class ComputeVTcg(ExplicitComponent):
     # TODO: Document equations. Cite sources
@@ -37,11 +38,11 @@ class ComputeVTcg(ExplicitComponent):
         self.add_input('geometry:vt_sweep_25', val=np.nan, units='deg')
         self.add_input('geometry:vt_span', val=np.nan, units='m')
         self.add_input('geometry:wing_position', val=np.nan, units='m')
-        
+
         self.add_output('cg_airframe:A32', units='m')
-        
+
         self.declare_partials('cg_airframe:A32', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         root_chord = inputs['geometry:vt_root_chord']
         tip_chord = inputs['geometry:vt_tip_chord']
@@ -51,11 +52,11 @@ class ComputeVTcg(ExplicitComponent):
         x0_vt = inputs['geometry:vt_x0']
         sweep_25_vt = inputs['geometry:vt_sweep_25']
         b_v = inputs['geometry:vt_span']
-    
-        tmp = root_chord * 0.25 + b_v * math.tan(sweep_25_vt / 180. * math.pi) - tip_chord * 0.25    
+
+        tmp = root_chord * 0.25 + b_v * math.tan(sweep_25_vt / 180. * math.pi) - tip_chord * 0.25
         l_cg_vt = (1 - 0.55) * (root_chord - tip_chord) + tip_chord
         x_cg_vt = 0.42 * l_cg_vt + 0.55 * tmp
         x_cg_vt_absolute = lp_vt + fa_length - \
-            0.25 * mac_vt + (x_cg_vt - x0_vt)
-            
+                           0.25 * mac_vt + (x_cg_vt - x0_vt)
+
         outputs['cg_airframe:A32'] = x_cg_vt_absolute

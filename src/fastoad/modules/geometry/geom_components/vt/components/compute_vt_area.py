@@ -17,6 +17,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeVTArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail area estimation """
@@ -27,7 +28,7 @@ class ComputeVTArea(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-#        self.add_input('geometry:wing_position', val=np.nan)
+        #        self.add_input('geometry:wing_position', val=np.nan)
         self.add_input('cg_ratio', val=np.nan)
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
         self.add_input('dcn_beta', val=np.nan)
@@ -36,14 +37,14 @@ class ComputeVTArea(ExplicitComponent):
         self.add_input('geometry:vt_lp', val=np.nan, units='m')
         self.add_input('geometry:vt_area', val=np.nan, units='m**2')
         self.add_input('aerodynamics:Cl_alpha_vt', val=np.nan)
-        
+
         self.add_output('geometry:vt_wet_area', units='m**2')
         self.add_output('delta_cn')
-        
+
         self.declare_partials('geometry:vt_wet_area', 'geometry:vt_area')
 
         self.declare_partials('delta_cn', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         wing_area = inputs['geometry:wing_area']
         span = inputs['geometry:wing_span']
@@ -53,10 +54,8 @@ class ComputeVTArea(ExplicitComponent):
         dcn_beta = inputs['dcn_beta']
         cl_alpha_vt = inputs['aerodynamics:Cl_alpha_vt']
         lp_vt = inputs['geometry:vt_lp']
-        
-#        x_ca_vt = fa_length + lp_vt
-#        x_cg_plane_aft_abs = fa_length - 0.25 * l0_wing + x_cg_plane * l0_wing   
-        dxca_xcg = lp_vt + 0.25 * l0_wing - x_cg_plane * l0_wing   
+
+        dxca_xcg = lp_vt + 0.25 * l0_wing - x_cg_plane * l0_wing
         delta_cn = s_v * dxca_xcg / wing_area / span * cl_alpha_vt - dcn_beta
         wet_area_vt = 2.1 * s_v
 

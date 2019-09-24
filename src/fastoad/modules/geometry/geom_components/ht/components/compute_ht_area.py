@@ -17,6 +17,8 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.modules.geometry.options import AIRCRAFT_FAMILY_OPTION, TAIL_TYPE_OPTION
+
 class ComputeHTArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Horizontal tail area estimation """
@@ -24,11 +26,11 @@ class ComputeHTArea(ExplicitComponent):
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
 
-        self.options.declare('ac_family', types=float, default=1.)
-        self.options.declare('tail_type', types=float, default=0.)
+        self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.)
+        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
 
-        self.ac_family = self.options['ac_family']
-        self.tail_type = self.options['tail_type']
+        self.ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
+        self.tail_type = self.options[TAIL_TYPE_OPTION]
 
     def setup(self):
         deriv_method = self.options['deriv_method']

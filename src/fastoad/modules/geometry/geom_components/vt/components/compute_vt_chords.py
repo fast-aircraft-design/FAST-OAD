@@ -14,10 +14,11 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 import math
+import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+
 
 class ComputeVTChords(ExplicitComponent):
     # TODO: Document equations. Cite sources
@@ -36,16 +37,18 @@ class ComputeVTChords(ExplicitComponent):
         self.add_output('geometry:vt_span', units='m')
         self.add_output('geometry:vt_root_chord', units='m')
         self.add_output('geometry:vt_tip_chord', units='m')
-        
-        self.declare_partials('geometry:vt_span', ['geometry:vt_aspect_ratio', 'geometry:vt_area'], method=deriv_method)
+
+        self.declare_partials('geometry:vt_span',
+                              ['geometry:vt_aspect_ratio', 'geometry:vt_area'],
+                              method=deriv_method)
         self.declare_partials('geometry:vt_root_chord', '*', method=deriv_method)
         self.declare_partials('geometry:vt_tip_chord', '*', method=deriv_method)
-        
+
     def compute(self, inputs, outputs):
         lambda_vt = inputs['geometry:vt_aspect_ratio']
         s_v = inputs['geometry:vt_area']
         taper_v = inputs['geometry:vt_taper_ratio']
-        
+
         b_v = math.sqrt(lambda_vt * s_v)
         root_chord = s_v * 2 / (1 + taper_v) / b_v
         tip_chord = root_chord * taper_v

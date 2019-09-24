@@ -24,17 +24,19 @@ from fastoad.modules.geometry.geom_components.ht.components import ComputeHTcg
 from fastoad.modules.geometry.geom_components.ht.components import ComputeHTSweep
 from fastoad.modules.geometry.geom_components.ht.components import ComputeHTClalpha
 
+from fastoad.modules.geometry.options import AIRCRAFT_FAMILY_OPTION, TAIL_TYPE_OPTION
+
 
 class ComputeHorizontalTailGeometry(Group):
     """ Horizontal tail geometry estimation """
 
     def initialize(self):
         self.options.declare('deriv_method', default='fd')
-        self.options.declare('tail_type', types=float, default=0.)
-        self.options.declare('ac_family', types=float, default=1.0)
+        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
+        self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
 
-        self.tail_type = self.options['tail_type']
-        self.ac_family = self.options['ac_family']
+        self.tail_type = self.options[TAIL_TYPE_OPTION]
+        self.ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
 
     def setup(self):
         deriv_method = self.options['deriv_method']
