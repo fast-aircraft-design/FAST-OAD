@@ -25,7 +25,7 @@ from tests.testing_utilities import run_system
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
 from fastoad.modules.geometry.geom_components.fuselage \
-    import ComputeFuselageGeometry
+    import ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizing
 from fastoad.modules.geometry.geom_components.ht.components \
     import ComputeHTArea, ComputeHTcg, ComputeHTMAC, ComputeHTChord, \
             ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
@@ -85,7 +85,7 @@ def test_compute_fuselage(input_xml):
     problem = Problem()
     model = problem.model
     model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeFuselageGeometry(), promotes=['*'])
+    model.add_subsystem('geometry', ComputeFuselageGeometryCabinSizing(), promotes=['*'])
 
     problem.setup(mode='fwd')
     problem.run_model()
