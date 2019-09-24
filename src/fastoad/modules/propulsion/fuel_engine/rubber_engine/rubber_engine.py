@@ -15,6 +15,7 @@ Parametric turbofan engine
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import math
 from typing import Union, Sequence
 
@@ -22,6 +23,9 @@ import numpy as np
 
 from fastoad.utils.physics import Atmosphere
 from .constants import ALPHA, BETA, A_MS, B_MS, C_MS, E_MS, D_MS, A_FM, D_FM, E_FM, B_FM, C_FM
+
+# Logger for this module
+_LOGGER = logging.getLogger(__name__)
 
 ATM_SEA_LEVEL = Atmosphere(0)
 ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
@@ -124,6 +128,21 @@ class RubberEngine(object):
         """
 
         altitude = atmosphere.get_altitude(False)
+
+        # Check definition domain
+        if np.any(altitude > 20000):
+            _LOGGER.warning(
+                "MAX THRUST SFC computation for altitude above 20000 may be unreliable.")
+        if self.bpr < 3.0:
+            _LOGGER.warning(
+                "MAX THRUST SFC computation for bypass ratio below 3.0 may be unreliable.")
+        if self.opr < 20.0:
+            _LOGGER.warning(
+                "MAX THRUST SFC computation for overall pressure ratio below 20 may be unreliable.")
+        if self.opr > 40.0:
+            _LOGGER.warning(
+                "MAX THRUST SFC computation for overall pressure ratio above 40 may be unreliable.")
+
         # Following coefficients are constant for alt<=0 and alt >=11000m.
         # We use numpy to implement that so we are safe if altitude is a sequence.
         bound_altitude = np.minimum(11000, np.maximum(0, altitude))
@@ -151,10 +170,37 @@ class RubberEngine(object):
         :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
         :param mach: Mach number(s) (should be between 0.05 and 1.0)
         :param delta_t4: difference between operational and design values of
-                         temperature at turbine input in K
+                         turbine inlet temperature in K
         :return: maximum thrust in N
         """
+
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
+
+        # Check definition domain
+        if np.any(altitude > 20000):
+            _LOGGER.warning("MAX THRUST computation for altitude above 20000 may be unreliable.")
+        if np.any(mach < 0.05):
+            _LOGGER.warning("MAX THRUST computation for Mach number below 0.05 may be unreliable.")
+        if np.any(mach > 1.):
+            _LOGGER.warning("MAX THRUST computation for Mach number above 1.0 may be unreliable.")
+        if self.bpr < 3.0:
+            _LOGGER.warning("MAX THRUST computation for bypass ratio below 3.0 may be unreliable.")
+        if self.bpr > 6.0:
+            _LOGGER.warning("MAX THRUST computation for bypass ratio above 6.0 may be unreliable.")
+        if self.t4 < 1400:
+            _LOGGER.warning("MAX THRUST computation for T4 below 1400K may be unreliable.")
+        if self.t4 > 1500:
+            _LOGGER.warning("MAX THRUST computation for T4 above 1600K may be unreliable.")
+        if self.opr < 20.0:
+            _LOGGER.warning(
+                "MAX THRUST computation for overall pressure ratio below 20 may be unreliable.")
+        if self.opr > 40.0:
+            _LOGGER.warning(
+                "MAX THRUST computation for overall pressure ratio above 40 may be unreliable.")
+        if np.any(delta_t4 < -100):
+            _LOGGER.warning("MAX THRUST computation for Delta_T4 below -100K may be unreliable.")
+        if np.any(delta_t4 > 0):
+            _LOGGER.warning("MAX THRUST computation for Delta_T4 above 0K may be unreliable.")
 
         def _mach_effect():
             """ Computation of Mach effect """
