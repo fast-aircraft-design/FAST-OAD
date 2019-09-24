@@ -138,20 +138,16 @@ def test_sfc_at_max_thrust():
 
     .. bibliography:: ../refs.bib
     """
+
+    # Check with arrays
     cfm56_3c1 = RubberEngine(6, 25.7, 0, 0, 0, 0, 0, 0)
+    atm = Atmosphere([0, 10668, 13000], altitude_in_feet=False)
+    sfc = cfm56_3c1.sfc_at_max_thrust(atm, [0, 0.8, 0.8])
+    # Note: value for alt==10668 is different from PhD report
+    #       alt=13000 is here just for testing in stratosphere
+    np.testing.assert_allclose(sfc, [0.970e-5, 1.78e-5, 1.77e-5], rtol=1e-2)
 
-    atm = Atmosphere(0, altitude_in_feet=False)
-    sfc = cfm56_3c1.sfc_at_max_thrust(atm, 0)
-    np.testing.assert_allclose(sfc, 0.970e-5, rtol=1e-2)
-
-    atm = Atmosphere(10668, altitude_in_feet=False)
-    sfc = cfm56_3c1.sfc_at_max_thrust(atm, 0.8)
-    np.testing.assert_allclose(sfc, 1.78e-5, rtol=1e-2)  # value is different from PhD report
-
-    atm = Atmosphere(13000, altitude_in_feet=False)
-    sfc = cfm56_3c1.sfc_at_max_thrust(atm, 0.8)
-    np.testing.assert_allclose(sfc, 1.77e-5, rtol=1e-2)  # value is different from PhD report
-
+    # Check with scalars
     trent900 = RubberEngine(7.14, 41, 0, 0, 0, 0, 0, 0)
     atm = Atmosphere(0, altitude_in_feet=False)
     sfc = trent900.sfc_at_max_thrust(atm, 0)
@@ -161,6 +157,7 @@ def test_sfc_at_max_thrust():
     sfc = trent900.sfc_at_max_thrust(atm, 0.8)
     np.testing.assert_allclose(sfc, 1.68e-5, rtol=1e-2)  # value is different from PhD report
 
+    # Check with arrays
     pw2037 = RubberEngine(6, 31.8, 0, 0, 0, 0, 0, 0)
     atm = Atmosphere(0, altitude_in_feet=False)
     sfc = pw2037.sfc_at_max_thrust(atm, 0)
