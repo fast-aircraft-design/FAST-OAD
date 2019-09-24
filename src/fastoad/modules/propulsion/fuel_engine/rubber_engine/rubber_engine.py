@@ -23,7 +23,8 @@ from typing import Union, Sequence, Tuple
 import numpy as np
 
 from fastoad.utils.physics import Atmosphere
-from .constants import ALPHA, BETA, A_MS, B_MS, C_MS, E_MS, D_MS, A_FM, D_FM, E_FM, B_FM, C_FM
+from .constants import ALPHA, BETA, A_MS, B_MS, C_MS, E_MS, D_MS, A_FM, D_FM, E_FM, B_FM, C_FM, \
+    MAX_SFC_RATIO_COEFF
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -170,10 +171,6 @@ class RubberEngine:
         sfc_0 = self.sfc_at_max_thrust(atmosphere, mach)
         sfc = sfc_0 * self.sfc_ratio(altitude, thrust_rate)
 
-        # FIXME: As model can diverge at a specific altitude, SFC value is limited.
-        #        The model should be fixed.
-        sfc = np.minimum(sfc, 2.0 / 36000.0)
-
         return sfc, thrust_rate, thrust
 
     def sfc_at_max_thrust(self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]):
@@ -225,7 +222,7 @@ class RubberEngine:
         Computation of ratio :math:`\\frac{SFC(F)}{SFC(Fmax)}`, given altitude
         and thrust_rate :math:`\\frac{F}{Fmax}`.
 
-        Uses model described in :cite:`roux:2002`, p.85.
+        Uses a patched version of model described in :cite:`roux:2002`, p.85.
 
         Warning: this model is very limited
 
@@ -248,9 +245,24 @@ class RubberEngine:
         delta_h = altitude - self.design_alt
         thrust_ratio_at_min_sfc_ratio = -9.6e-5 * delta_h + 0.85  # =Fi in model
 
-        min_sfc_ratio = np.minimum(0.998, -3.385e-5 * delta_h + 0.995)  # CSRmin in the model
+        min_sfc_ratio = np.minimum(0.998, -3.385e-5 * delta_h + 0.995)
 
-        coeff = (1 - min_sfc_ratio) / (1 - thrust_ratio_at_min_sfc_ratio) ** 2  # =a in the model
+        # Get sfc_ratio_min closer to 1 when Fi closes to 1, to
+        # respect coeff<=MAX_SFC_RATIO_COEFF
+        # pylint: disable=unsupported-assignment-operation  # pylint is wrong
+        min_sfc_ratio = np.maximum(min_sfc_ratio, 1 - MAX_SFC_RATIO_COEFF * (
+                1 - thrust_ratio_at_min_sfc_ratio) ** 2)
+        coeff = (1 - min_sfc_ratio) / (1 - thrust_ratio_at_min_sfc_ratio) ** 2
+
+        # When thrust_ratio_at_min_sfc_ratio==1. (so min_sfc_ratio==1 also),
+        # coeff has to be affected by hand
+        if np.shape(coeff) != ():
+            min_sfc_ratio[thrust_ratio_at_min_sfc_ratio == 1.0] = 1.0
+            coeff[thrust_ratio_at_min_sfc_ratio == 1.0] = MAX_SFC_RATIO_COEFF
+        elif thrust_ratio_at_min_sfc_ratio == 1.0:
+            min_sfc_ratio = 1.0
+            coeff = MAX_SFC_RATIO_COEFF
+
         return coeff * (thrust_rate - thrust_ratio_at_min_sfc_ratio) ** 2 + min_sfc_ratio
 
     def max_thrust(self, atmosphere: Atmosphere,

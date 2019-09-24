@@ -41,7 +41,7 @@ def test_compute_manual():
               FlightPhase.CLIMB, FlightPhase.IDLE,
               FlightPhase.CRUISE]
     expected_fc = [0.955 * 0.8, 0.389, 0.357, 0.0967, 0.113]
-    expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.57e-5]
+    expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.60e-5]
 
     sfc, fc = engine.compute_manual(machs, altitudes, thrust_rates, phases)
     np.testing.assert_allclose(fc, expected_fc, rtol=1e-2)
@@ -81,7 +81,7 @@ def test_compute_regulated():
               FlightPhase.CLIMB, FlightPhase.IDLE,
               FlightPhase.CRUISE]
     expected_thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.57e-5]
+    expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.60e-5]
 
     sfc, thrust_rates = engine.compute_regulated(machs, altitudes, fc, phases)
     np.testing.assert_allclose(thrust_rates, expected_thrust_rates, rtol=1e-2)
@@ -198,13 +198,19 @@ def test_sfc_ratio():
     engine = RubberEngine(0, 0, 0, 0, 0, 0, 0, design_alt)
 
     # Test values taken from method report (plots p. 80, see roux:2002 in refs.bib)
-    # + values where model fails (around dh=-1562.5)
+    # + values where original model fails (around dh=-1562.5)
     altitudes = design_alt + np.array([-2370, -1564, -1562.5, -1560, -846, 678, 2202, 3726])
 
     ratio = engine.sfc_ratio(altitudes, 0.8)
-
-    assert ratio == pytest.approx([1.024, 3864.6, np.inf, 1386.6, 1.005, 0.972, 0.936, 0.917],
+    assert ratio == pytest.approx([1.024, 1.020, 1.020, 1.020, 1.005, 0.977, 0.948, 0.918],
                                   rel=1e-3)
+    ratio = engine.sfc_ratio(altitudes, 0.6)
+    assert ratio == pytest.approx([1.074, 1.080, 1.080, 1.080, 1.044, 0.994, 0.935, 0.877],
+                                  rel=1e-3)
+    assert engine.sfc_ratio(altitudes, 1.0) == pytest.approx(1.0, rel=1e-3)
+
+    # Because there some code differs when we have scalars:
+    assert engine.sfc_ratio(design_alt - 1562.5, 0.6) == pytest.approx(1.080, rel=1e-3)
 
 
 def test_inconsistent_arrays():
