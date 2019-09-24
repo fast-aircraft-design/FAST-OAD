@@ -23,7 +23,7 @@ class Geometry(Group):
         self.options.declare('tail_type', types=float, default=0.0)
         self.options.declare('ac_family', types=float, default=1.0)
         self.options.declare('ac_type', types=float, default=2.0)
-        self.options.declare('cabin_sizing', default=True)
+        self.options.declare('cabin_sizing', types=float, default=1.0)
 
         self.engine_location = self.options['engine_location']
         self.tail_type = self.options['tail_type']
@@ -34,7 +34,7 @@ class Geometry(Group):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        if self.cabin_sizing:
+        if self.cabin_sizing == 1.0:
             self.add_subsystem('compute_fuselage',
                                ComputeFuselageGeometryCabinSizing(deriv_method=deriv_method),
                                promotes=['*'])
