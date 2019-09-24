@@ -67,8 +67,8 @@ def input_xml() -> OpenMdaoLegacy1XmlIO:
     return OpenMdaoLegacy1XmlIO(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
-def test_compute_fuselage(input_xml):
-    """ Tests computation of the fuselage """
+def test_compute_fuselage_cabin_sizing(input_xml):
+    """ Tests computation of the fuselage with cabin sizing """
 
     input_list = [
         'cabin:WSeco',
@@ -116,6 +116,42 @@ def test_compute_fuselage(input_xml):
     assert fuselage_lcabin == pytest.approx(30.38, abs=1e-2)
     fuselage_wet_area = problem['geometry:fuselage_wet_area']
     assert fuselage_wet_area == pytest.approx(401.956, abs=1e-3)
+    pnc = problem['cabin:PNC']
+    assert pnc == pytest.approx(4, abs=1)
+
+def test_compute_fuselage_basic(input_xml):
+    """ Tests computation of the fuselage with no cabin sizing """
+
+    input_list = [
+        'cabin:NPAX1',
+        'geometry:fuselage_length',
+        'geometry:fuselage_width_max',
+        'geometry:fuselage_height_max',
+        'geometry:fuselage_LAV',
+        'geometry:fuselage_LAR',
+        'geometry:fuselage_Lpax'
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+
+    problem = Problem()
+    model = problem.model
+    model.add_subsystem('inputs', input_vars, promotes=['*'])
+    model.add_subsystem('geometry', ComputeFuselageGeometryBasic(), promotes=['*'])
+
+    problem.setup(mode='fwd')
+    problem.run_model()
+
+    cg_systems_c6 = problem['cg_systems:C6']
+    assert cg_systems_c6 == pytest.approx(9.19, abs=1e-2)
+    cg_furniture_d2 = problem['cg_furniture:D2']
+    assert cg_furniture_d2 == pytest.approx(14.91, abs=1e-2)
+    cg_pl_cg_pax = problem['cg_pl:CG_PAX']
+    assert cg_pl_cg_pax == pytest.approx(18.34, abs=1e-2)
+    fuselage_lcabin = problem['geometry:fuselage_Lcabin']
+    assert fuselage_lcabin == pytest.approx(30.38, abs=1e-2)
+    fuselage_wet_area = problem['geometry:fuselage_wet_area']
+    assert fuselage_wet_area == pytest.approx(401.962, abs=1e-3)
     pnc = problem['cabin:PNC']
     assert pnc == pytest.approx(4, abs=1)
 

@@ -51,8 +51,11 @@ def test_geometry_get_cg():
 
     input_vars = input_xml.read()
 
+    input_vars.add_output('geometry:fuselage_Lcabin', val=0.81*37.507, units='m')
+
     problem = Problem()
     model = problem.model
+
     model.add_subsystem('inputs', input_vars, promotes=['*'])
     model.add_subsystem('geometry', GetCG(), promotes=['*'])
 
@@ -60,7 +63,7 @@ def test_geometry_get_cg():
 
     problem.run_model()
     cg_ratio = problem['cg_ratio']
-    assert cg_ratio == pytest.approx(0.387640, abs=1e-6)
+    assert cg_ratio == pytest.approx(0.387185, abs=1e-6)
     cg_airframe_a51 = problem['cg_airframe:A51']
     assert cg_airframe_a51 == pytest.approx(18.11, abs=1e-1)
 

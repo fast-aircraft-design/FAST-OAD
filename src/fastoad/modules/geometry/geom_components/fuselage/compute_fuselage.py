@@ -30,15 +30,14 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
     def setup(self):
         deriv_method = self.options['deriv_method']
 
-        self.add_input('tlar:NPAX', val=np.nan)
-        self.add_input('geometry:fus_length', val=np.nan, units='m')
+        self.add_input('cabin:NPAX1', val=np.nan)
+        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
         self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
         self.add_input('geometry:fuselage_LAV', val=np.nan, units='m')
         self.add_input('geometry:fuselage_LAR', val=np.nan, units='m')
         self.add_input('geometry:fuselage_Lpax', val=np.nan, units='m')
 
-        self.add_output('cabin:NPAX1')
         self.add_output('cg_pl:CG_PAX', units='m')
         self.add_output('cg_systems:C6', units='m')
         self.add_output('cg_furniture:D2', units='m')
@@ -46,8 +45,6 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         self.add_output('geometry:fuselage_wet_area', units='m**2')
         self.add_output('cabin:PNC')
 
-        self.declare_partials('cabin:NPAX1',
-                              ['tlar:NPAX'], method=deriv_method)
         self.declare_partials('cg_pl:CG_PAX',
                               ['geometry:fuselage_LAV', 'geometry:fuselage_Lpax'],
                               method=deriv_method)
@@ -58,17 +55,17 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
                               ['geometry:fuselage_LAV', 'geometry:fuselage_Lpax'],
                               method=deriv_method)
         self.declare_partials('geometry:fuselage_Lcabin',
-                              ['geometry:fus_length'], method=deriv_method)
+                              ['geometry:fuselage_length'], method=deriv_method)
         self.declare_partials('geometry:fuselage_wet_area',
                               ['geometry:fuselage_width_max', 'geometry:fuselage_height_max',
                                'geometry:fuselage_LAV', 'geometry:fuselage_LAR',
-                               'geometry:fus_length'], method=deriv_method)
+                               'geometry:fuselage_length'], method=deriv_method)
         self.declare_partials('cabin:PNC',
-                              ['tlar:NPAX'], method=deriv_method)
+                              ['cabin:NPAX1'], method=deriv_method)
 
     def compute(self, inputs, outputs):
-        npax_1 = inputs['tlar:NPAX']
-        fus_length = inputs['geometry:fus_length']
+        npax_1 = inputs['cabin:NPAX1']
+        fus_length = inputs['geometry:fuselage_length']
         b_f = inputs['geometry:fuselage_width_max']
         h_f = inputs['geometry:fuselage_height_max']
         lav = inputs['geometry:fuselage_LAV']
@@ -89,7 +86,6 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = (wet_area_nose + wet_area_cyl + wet_area_tail)
 
-        outputs['cabin:NPAX1'] = npax_1
         outputs['cg_pl:CG_PAX'] = x_cg_passenger
         outputs['cg_systems:C6'] = x_cg_c6
         outputs['cg_furniture:D2'] = x_cg_d2

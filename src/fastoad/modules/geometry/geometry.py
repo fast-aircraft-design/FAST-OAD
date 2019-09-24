@@ -13,7 +13,6 @@ from fastoad.modules.geometry.cg_components.compute_aero_center import ComputeAe
 from fastoad.modules.geometry.cg_components.compute_static_margin import ComputeStaticMargin
 
 
-
 class Geometry(Group):
     """ Overall geometry model """
 
