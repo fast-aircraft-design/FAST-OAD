@@ -28,7 +28,7 @@ def test_compute_manual():
                           10000)  # f0=1 so that output is simply fc/f0
 
     # Test with scalars
-    fc, sfc = engine.compute_manual(0, 0, 0.8, FlightPhase.MTO)
+    sfc, fc = engine.compute_manual(0, 0, 0.8, FlightPhase.MTO)
     np.testing.assert_allclose(fc, 0.955 * 0.8, rtol=1e-2)
     np.testing.assert_allclose(sfc, 0.993e-5, rtol=1e-2)
 
@@ -42,7 +42,7 @@ def test_compute_manual():
     expected_fc = [0.955 * 0.8, 0.389, 0.357, 0.0967, 0.113]
     expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.57e-5]
 
-    fc, sfc = engine.compute_manual(machs, altitudes, thrust_rates, phases)
+    sfc, fc = engine.compute_manual(machs, altitudes, thrust_rates, phases)
     np.testing.assert_allclose(fc, expected_fc, rtol=1e-2)
     np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
 
@@ -52,7 +52,7 @@ def test_compute_manual():
     expected_fc = [0.955 * 0.8, 0.389]
     expected_sfc = [0.993e-5, 1.35e-5]
 
-    fc, sfc = engine.compute_manual(machs, 0, thrust_rates, FlightPhase.MTO)
+    sfc, fc = engine.compute_manual(machs, 0, thrust_rates, FlightPhase.MTO)
     np.testing.assert_allclose(fc, expected_fc, rtol=1e-2)
     np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
 
@@ -62,7 +62,7 @@ def test_compute_manual():
     expected_fc = [0.389, 0.357]
     expected_sfc = [1.35e-5, 1.35e-5]
 
-    fc, sfc = engine.compute_manual(0.3, altitudes, 0.5, phases)
+    sfc, fc = engine.compute_manual(0.3, altitudes, 0.5, phases)
     np.testing.assert_allclose(fc, expected_fc, rtol=1e-2)
     np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
 

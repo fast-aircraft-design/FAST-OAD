@@ -64,16 +64,39 @@ class RubberEngine(object):
         # ... so check that all FlightPhase values are in dict
         assert any([key in self.dt4_values.keys() for key in FlightPhase])
 
-    def compute_manual(self, mach, altitude, thrust_rate,
-                       phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.MTO):
-        _, fc, sfc = self.compute(mach, altitude, self._get_delta_t4(phase),
+    def compute_manual(self, mach: Union[float, Sequence[float]],
+                       altitude: Union[float, Sequence[float]],
+                       thrust_rate: Union[float, Sequence[float]] = None,
+                       phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.MTO) \
+            -> Tuple[Union[float, Sequence[float]],
+                     Union[float, Sequence[float]]]:
+        """
+
+        :param mach:
+        :param altitude:
+        :param thrust_rate:
+        :param phase:
+        :return: SFC, thrust
+        """
+        sfc, _, fc = self.compute(mach, altitude, self._get_delta_t4(phase),
                                   thrust_rate=thrust_rate)
-        return fc, sfc
+        return sfc, fc
 
-    def compute_regulated(self, mach, altitude, drag,
-                          phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.CRUISE):
+    def compute_regulated(self, mach: Union[float, Sequence[float]],
+                          altitude: Union[float, Sequence[float]],
+                          drag: Union[float, Sequence[float]] = None,
+                          phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.CRUISE) \
+            -> Tuple[Union[float, Sequence[float]],
+                     Union[float, Sequence[float]]]:
+        """
 
-        thrust_rate, _, sfc = self.compute(mach, altitude, self._get_delta_t4(phase), thrust=drag)
+        :param mach:
+        :param altitude:
+        :param drag:
+        :param phase:
+        :return: SFC, needed thrust rate
+        """
+        sfc, thrust_rate, _ = self.compute(mach, altitude, self._get_delta_t4(phase), thrust=drag)
         return sfc, thrust_rate
 
     def _get_delta_t4(self, phase: Union[FlightPhase, Sequence[FlightPhase]]) \
@@ -118,7 +141,7 @@ class RubberEngine(object):
         :param delta_t4:
         :param thrust_rate: between 0.0 and 1.0. If None, thrust should be provided.
         :param thrust: in Newtons. If None, thrust_rate should be provided.
-        :return: thrust rate, thrust, SFC
+        :return: SFC, thrust rate, thrust
         """
         atmosphere = Atmosphere(altitude, altitude_in_feet=False)
 
@@ -136,7 +159,7 @@ class RubberEngine(object):
         #        The model should be fixed.
         sfc = np.minimum(sfc, 2.0 / 36000.0)
 
-        return thrust_rate, thrust, sfc
+        return sfc, thrust_rate, thrust
 
     def sfc_at_max_thrust(self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]):
         """
