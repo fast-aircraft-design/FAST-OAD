@@ -17,6 +17,7 @@ Parametric turbofan engine
 
 import logging
 import math
+from enum import Enum
 from typing import Union, Sequence
 
 import numpy as np
@@ -31,6 +32,13 @@ ATM_SEA_LEVEL = Atmosphere(0)
 ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
 
 
+class FlightPhase(Enum):
+    MTO = 'MTO'
+    CLIMB = 'CLIMB'
+    FI = 'FI'
+    CRUISE = 'CRUISE'
+
+
 class RubberEngine(object):
     """
     Parametric turbofan engine
@@ -42,19 +50,52 @@ class RubberEngine(object):
     """
 
     def __init__(self, bpr, opr, t4, d_t4_cl, d_t4_cr, f0, mach_max, hm):
-        self.bpr, self.opr, self.t4, self.d_t4_cl, self.d_t4_cr = bpr, opr, t4, d_t4_cl, d_t4_cr
+        self.bpr, self.opr, self.t4 = bpr, opr, t4
         self.f0, self.mach_max, self.hm = f0, mach_max, hm
 
-    def compute_manual(self, mach, altitude, thrust_rate, phase='MTO'):
-        _, fc, sfc = self.compute(mach, altitude, phase, thrust_rate=thrust_rate)
+        # This dictionary is expected to have a dT4 value for all FlightPhase values
+        self.dt4_values = {
+            FlightPhase.MTO: 0.,
+            FlightPhase.CLIMB: d_t4_cl,
+            FlightPhase.CRUISE: d_t4_cr,
+            FlightPhase.FI: d_t4_cr
+        }
+
+        # Check that all FlightPhase values are in dict
+        assert any([key in self.dt4_values.keys() for key in FlightPhase])
+
+    def compute_manual(self, mach, altitude, thrust_rate,
+                       phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.MTO):
+        _, fc, sfc = self.compute(mach, altitude, self._get_delta_t4(phase),
+                                  thrust_rate=thrust_rate)
         return fc, sfc
 
-    def compute_regulated(self, mach, altitude, drag, phase='CRZ'):
+    def compute_regulated(self, mach, altitude, drag,
+                          phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.CRUISE):
 
-        thrust_rate, _, sfc = self.compute(mach, altitude, phase, fc=drag)
+        thrust_rate, _, sfc = self.compute(mach, altitude, self._get_delta_t4(phase), fc=drag)
         return sfc, thrust_rate
 
-    def compute(self, mach, altitude, phase, thrust_rate=None, fc=None):
+    def _get_delta_t4(self, phase: Union[FlightPhase, Sequence[FlightPhase]]) \
+            -> Union[float, Sequence[float]]:
+        """
+        :param phase:
+        :return: DeltaT4 according to phase
+        """
+
+        if np.shape(phase) == ():  # phase is a scalar
+            return self.dt4_values[phase]
+
+        # Here phase is a sequence. Ensure now it is a numpy array
+        phase_array = np.asarray(phase)
+
+        delta_t4 = np.empty(phase_array.shape, 'np.float64')
+        for phase_value, dt4_value in self.dt4_values.items():
+            delta_t4[phase == phase_value] = dt4_value
+
+        return delta_t4
+
+    def compute(self, mach, altitude, delta_t_4, thrust_rate=None, fc=None):
         """
         #----------------------------------------------------------------
         # DEFINITION OF THE sfc CALCULATION FUNCTION
@@ -74,19 +115,6 @@ class RubberEngine(object):
         #----------------------------------------------------------------
         """
         atmosphere = Atmosphere(altitude, altitude_in_feet=False)
-
-        # Initialisation de la temperature turbine pour la phase courante
-        # FIXME: use enums. Raise a better Exception
-        if phase == 'MTO':
-            delta_t_4 = 0
-        elif phase == 'CLIMB':
-            delta_t_4 = self.d_t4_cl
-        elif phase == 'FI':
-            delta_t_4 = self.d_t4_cr
-        elif phase == 'CRZ':
-            delta_t_4 = self.d_t4_cr
-        else:
-            raise RuntimeError()
 
         # Calcul de poussee max (fonction MaxThrust du modele ER)
         fmax_0 = self.max_thrust(atmosphere, mach, delta_t_4)
@@ -184,7 +212,7 @@ class RubberEngine(object):
 
     def max_thrust(self, atmosphere: Atmosphere,
                    mach: Union[float, Sequence[float]],
-                   delta_t4: float) -> Union[float, Sequence[float]]:
+                   delta_t4: Union[float, Sequence[float]]) -> Union[float, Sequence[float]]:
         """
         Computation of maximum thrust
 

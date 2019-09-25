@@ -15,6 +15,7 @@ Constants for rubber engine analytical models
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 # Constants for computation of maximum thrust
 A_MS = -2.74e-4
 A_FM = 2.67e-4

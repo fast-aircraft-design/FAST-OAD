@@ -19,29 +19,30 @@ import numpy as np
 from pytest import approx
 
 from fastoad.modules.propulsion.fuel_engine.rubber_engine import RubberEngine
+from fastoad.modules.propulsion.fuel_engine.rubber_engine.rubber_engine import FlightPhase
 from fastoad.utils.physics import Atmosphere
 
 
 def test_compute_manual():
     engine = RubberEngine(5, 30, 1500, -50, -100, 1, 0.95,
                           10000)  # f0=1 so that output is simply fc/f0
-    fc, sfc = engine.compute_manual(0, 0, 0.8, 'MTO')
+    fc, sfc = engine.compute_manual(0, 0, 0.8, FlightPhase.MTO)
     np.testing.assert_allclose(fc, 0.955 * 0.8, rtol=1e-2)
     np.testing.assert_allclose(sfc, 0.993e-5, rtol=1e-2)
 
-    fc, sfc = engine.compute_manual(0.3, 0, 0.5, 'MTO')
+    fc, sfc = engine.compute_manual(0.3, 0, 0.5, FlightPhase.MTO)
     np.testing.assert_allclose(fc, 0.389, rtol=1e-2)
     np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
 
-    fc, sfc = engine.compute_manual(0.3, 0, 0.5, 'CLIMB')
+    fc, sfc = engine.compute_manual(0.3, 0, 0.5, FlightPhase.CLIMB)
     np.testing.assert_allclose(fc, 0.357, rtol=1e-2)
     np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
 
-    fc, sfc = engine.compute_manual(0.8, 10000, 0.4, 'FI')
+    fc, sfc = engine.compute_manual(0.8, 10000, 0.4, FlightPhase.FI)
     np.testing.assert_allclose(fc, 0.0967, rtol=1e-2)
     np.testing.assert_allclose(sfc, 1.84e-5, rtol=1e-2)
 
-    fc, sfc = engine.compute_manual(0.8, 13000, 0.7, 'FI')
+    fc, sfc = engine.compute_manual(0.8, 13000, 0.7, FlightPhase.CRUISE)
     np.testing.assert_allclose(fc, 0.113, rtol=1e-2)
     np.testing.assert_allclose(sfc, 1.57e-5, rtol=1e-2)
 
@@ -49,23 +50,23 @@ def test_compute_manual():
 def test_compute_regulated():
     engine = RubberEngine(5, 30, 1500, -50, -100, 1, 0.95,
                           10000)  # f0=1 so that input drag in drag/f0
-    sfc, thrust_rate = engine.compute_regulated(0, 0, 0.955 * 0.8, 'MTO')
+    sfc, thrust_rate = engine.compute_regulated(0, 0, 0.955 * 0.8, FlightPhase.MTO)
     np.testing.assert_allclose(thrust_rate, 0.8, rtol=1e-2)
     np.testing.assert_allclose(sfc, 0.993e-5, rtol=1e-2)
 
-    sfc, thrust_rate = engine.compute_regulated(0.3, 0, 0.389, 'MTO')
+    sfc, thrust_rate = engine.compute_regulated(0.3, 0, 0.389, FlightPhase.MTO)
     np.testing.assert_allclose(thrust_rate, 0.5, rtol=1e-2)
     np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
 
-    sfc, thrust_rate = engine.compute_regulated(0.3, 0, 0.357, 'CLIMB')
+    sfc, thrust_rate = engine.compute_regulated(0.3, 0, 0.357, FlightPhase.CLIMB)
     np.testing.assert_allclose(thrust_rate, 0.5, rtol=1e-2)
     np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
 
-    sfc, thrust_rate = engine.compute_regulated(0.8, 10000, 0.0967, 'FI')
+    sfc, thrust_rate = engine.compute_regulated(0.8, 10000, 0.0967, FlightPhase.FI)
     np.testing.assert_allclose(thrust_rate, 0.4, rtol=1e-2)
     np.testing.assert_allclose(sfc, 1.84e-5, rtol=1e-2)
 
-    sfc, thrust_rate = engine.compute_regulated(0.8, 13000, 0.113, 'FI')
+    sfc, thrust_rate = engine.compute_regulated(0.8, 13000, 0.113, FlightPhase.CRUISE)
     np.testing.assert_allclose(thrust_rate, 0.7, rtol=1e-2)
     np.testing.assert_allclose(sfc, 1.57e-5, rtol=1e-2)
 
