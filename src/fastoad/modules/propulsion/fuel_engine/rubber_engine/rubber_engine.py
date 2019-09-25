@@ -18,7 +18,7 @@ Parametric turbofan engine
 import logging
 import math
 from enum import Enum
-from typing import Union, Sequence
+from typing import Union, Sequence, Tuple
 
 import numpy as np
 
@@ -33,6 +33,7 @@ ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
 
 
 class FlightPhase(Enum):
+    """ Enumeration of flight phases"""
     MTO = 'MTO'
     CLIMB = 'CLIMB'
     FI = 'FI'
@@ -60,7 +61,7 @@ class RubberEngine(object):
             FlightPhase.FI: d_t4_cr
         }
 
-        # Check that all FlightPhase values are in dict
+        # ... so check that all FlightPhase values are in dict
         assert any([key in self.dt4_values.keys() for key in FlightPhase])
 
     def compute_manual(self, mach, altitude, thrust_rate,
@@ -72,7 +73,7 @@ class RubberEngine(object):
     def compute_regulated(self, mach, altitude, drag,
                           phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.CRUISE):
 
-        thrust_rate, _, sfc = self.compute(mach, altitude, self._get_delta_t4(phase), fc=drag)
+        thrust_rate, _, sfc = self.compute(mach, altitude, self._get_delta_t4(phase), thrust=drag)
         return sfc, thrust_rate
 
     def _get_delta_t4(self, phase: Union[FlightPhase, Sequence[FlightPhase]]) \
@@ -94,42 +95,48 @@ class RubberEngine(object):
 
         return delta_t4
 
-    def compute(self, mach, altitude, delta_t_4, thrust_rate=None, fc=None):
+    def compute(self,
+                mach: Union[float, Sequence[float]],
+                altitude: Union[float, Sequence[float]],
+                delta_t4: Union[float, Sequence[float]],
+                thrust_rate: Union[float, Sequence[float]] = None,
+                thrust: Union[float, Sequence[float]] = None) \
+            -> Tuple[Union[float, Sequence[float]],
+                     Union[float, Sequence[float]],
+                     Union[float, Sequence[float]]]:
         """
-        #----------------------------------------------------------------
-        # DEFINITION OF THE sfc CALCULATION FUNCTION
-        #----------------------------------------------------------------
-        # from Elodie Roux [see her PhD Thesis]
-        #
-        #----------------------------------------------------------------
-        # INPUTS
-        #    -mach number
-        #    -Flight altitude [m]
-        #    -Flight temperature [K]
-        #    -Overall Pressure Ratio
-        #    -By-Pass Ratio
-        #
-        # OUTPUTS
-        #    -sfc in [kg/s/N]
-        #----------------------------------------------------------------
+        Computes Specific Fuel Consumption according to provided conditions.
+
+        Inputs can be floats, lists or arrays.
+        Inputs that are not floats must all have the same size.
+
+        *thrust_rate* and *thrust* are linked, so only one is required (it
+        thrust_rate is provided, thrust is ignored)
+
+        :param mach:
+        :param altitude:
+        :param delta_t4:
+        :param thrust_rate: between 0.0 and 1.0. If None, thrust should be provided.
+        :param thrust: in Newtons. If None, thrust_rate should be provided.
+        :return: thrust rate, thrust, SFC
         """
         atmosphere = Atmosphere(altitude, altitude_in_feet=False)
 
-        # Calcul de poussee max (fonction MaxThrust du modele ER)
-        fmax_0 = self.max_thrust(atmosphere, mach, delta_t_4)
+        max_thrust = self.max_thrust(atmosphere, mach, delta_t4)
 
         if thrust_rate is None:
-            thrust_rate = fc / fmax_0
+            thrust_rate = thrust / max_thrust
         else:
-            fc = thrust_rate * fmax_0
+            thrust = thrust_rate * max_thrust
 
-        # Calcul de conso specifique a poussee max
         sfc_0 = self.sfc_at_max_thrust(atmosphere, mach)
-
         sfc = sfc_0 * self.sfc_ratio(altitude, thrust_rate)
+
+        # FIXME: As model can diverge at a specific altitude, SFC value is limited.
+        #        The model should be fixed.
         sfc = np.minimum(sfc, 2.0 / 36000.0)
 
-        return thrust_rate, fc, sfc
+        return thrust_rate, thrust, sfc
 
     def sfc_at_max_thrust(self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]):
         """
