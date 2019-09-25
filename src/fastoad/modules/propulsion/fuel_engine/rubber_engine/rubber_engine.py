@@ -46,7 +46,6 @@ class RubberEngine(object):
     Computes engine characteristics using analytical model from following sources:
 
     .. bibliography:: ../refs.bib
-       :list: bullet
     """
 
     def __init__(self, bpr, opr, t4, d_t4_cl, d_t4_cr, f0, mach_max, hm):
