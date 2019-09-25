@@ -26,49 +26,65 @@ from fastoad.utils.physics import Atmosphere
 def test_compute_manual():
     engine = RubberEngine(5, 30, 1500, -50, -100, 1, 0.95,
                           10000)  # f0=1 so that output is simply fc/f0
+
+    # Test with scalars
     fc, sfc = engine.compute_manual(0, 0, 0.8, FlightPhase.MTO)
     np.testing.assert_allclose(fc, 0.955 * 0.8, rtol=1e-2)
     np.testing.assert_allclose(sfc, 0.993e-5, rtol=1e-2)
 
-    fc, sfc = engine.compute_manual(0.3, 0, 0.5, FlightPhase.MTO)
-    np.testing.assert_allclose(fc, 0.389, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
+    # Test full arrays
+    machs = [0, 0.3, 0.3, 0.8, 0.8]
+    altitudes = [0, 0, 0, 10000, 13000]
+    thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
+    phases = [FlightPhase.MTO, FlightPhase.MTO,
+              FlightPhase.CLIMB, FlightPhase.FI,
+              FlightPhase.CRUISE]
+    expected_fc = [0.955 * 0.8, 0.389, 0.357, 0.0967, 0.113]
+    expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.57e-5]
 
-    fc, sfc = engine.compute_manual(0.3, 0, 0.5, FlightPhase.CLIMB)
-    np.testing.assert_allclose(fc, 0.357, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
+    fc, sfc = engine.compute_manual(machs, altitudes, thrust_rates, phases)
+    np.testing.assert_allclose(fc, expected_fc, rtol=1e-2)
+    np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
 
-    fc, sfc = engine.compute_manual(0.8, 10000, 0.4, FlightPhase.FI)
-    np.testing.assert_allclose(fc, 0.0967, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.84e-5, rtol=1e-2)
+    # Test scalars + arrays 1
+    machs = [0, 0.3, ]
+    thrust_rates = [0.8, 0.5]
+    expected_fc = [0.955 * 0.8, 0.389]
+    expected_sfc = [0.993e-5, 1.35e-5]
 
-    fc, sfc = engine.compute_manual(0.8, 13000, 0.7, FlightPhase.CRUISE)
-    np.testing.assert_allclose(fc, 0.113, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.57e-5, rtol=1e-2)
+    fc, sfc = engine.compute_manual(machs, 0, thrust_rates, FlightPhase.MTO)
+    np.testing.assert_allclose(fc, expected_fc, rtol=1e-2)
+    np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
+
+    # Test scalars + arrays 2
+    altitudes = [0, 0]
+    phases = [FlightPhase.MTO, FlightPhase.CLIMB, ]
+    expected_fc = [0.389, 0.357]
+    expected_sfc = [1.35e-5, 1.35e-5]
+
+    fc, sfc = engine.compute_manual(0.3, altitudes, 0.5, phases)
+    np.testing.assert_allclose(fc, expected_fc, rtol=1e-2)
+    np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
 
 
 def test_compute_regulated():
     engine = RubberEngine(5, 30, 1500, -50, -100, 1, 0.95,
                           10000)  # f0=1 so that input drag in drag/f0
-    sfc, thrust_rate = engine.compute_regulated(0, 0, 0.955 * 0.8, FlightPhase.MTO)
-    np.testing.assert_allclose(thrust_rate, 0.8, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 0.993e-5, rtol=1e-2)
 
-    sfc, thrust_rate = engine.compute_regulated(0.3, 0, 0.389, FlightPhase.MTO)
-    np.testing.assert_allclose(thrust_rate, 0.5, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
+    # Test full arrays
+    # (it's enough because compute_regulated() and compute_manual() are very close)
+    machs = [0, 0.3, 0.3, 0.8, 0.8]
+    altitudes = [0, 0, 0, 10000, 13000]
+    fc = [0.955 * 0.8, 0.389, 0.357, 0.0967, 0.113]
+    phases = [FlightPhase.MTO, FlightPhase.MTO,
+              FlightPhase.CLIMB, FlightPhase.FI,
+              FlightPhase.CRUISE]
+    expected_thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
+    expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.57e-5]
 
-    sfc, thrust_rate = engine.compute_regulated(0.3, 0, 0.357, FlightPhase.CLIMB)
-    np.testing.assert_allclose(thrust_rate, 0.5, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
-
-    sfc, thrust_rate = engine.compute_regulated(0.8, 10000, 0.0967, FlightPhase.FI)
-    np.testing.assert_allclose(thrust_rate, 0.4, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.84e-5, rtol=1e-2)
-
-    sfc, thrust_rate = engine.compute_regulated(0.8, 13000, 0.113, FlightPhase.CRUISE)
-    np.testing.assert_allclose(thrust_rate, 0.7, rtol=1e-2)
-    np.testing.assert_allclose(sfc, 1.57e-5, rtol=1e-2)
+    sfc, thrust_rates = engine.compute_regulated(machs, altitudes, fc, phases)
+    np.testing.assert_allclose(thrust_rates, expected_thrust_rates, rtol=1e-2)
+    np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
 
 
 def test_installed_weight():

@@ -89,9 +89,9 @@ class RubberEngine(object):
         # Here phase is a sequence. Ensure now it is a numpy array
         phase_array = np.asarray(phase)
 
-        delta_t4 = np.empty(phase_array.shape, 'np.float64')
+        delta_t4 = np.empty(phase_array.shape)
         for phase_value, dt4_value in self.dt4_values.items():
-            delta_t4[phase == phase_value] = dt4_value
+            delta_t4[phase_array == phase_value] = dt4_value
 
         return delta_t4
 
@@ -128,8 +128,7 @@ class RubberEngine(object):
         sfc_0 = self.sfc_at_max_thrust(atmosphere, mach)
 
         sfc = sfc_0 * self.sfc_ratio(altitude, thrust_rate)
-        if sfc > 2.0 / 36000.0:
-            sfc = 2.0 / 36000.0
+        sfc = np.minimum(sfc, 2.0 / 36000.0)
 
         return thrust_rate, fc, sfc
 
@@ -145,6 +144,7 @@ class RubberEngine(object):
         """
 
         altitude = atmosphere.get_altitude(False)
+        mach = np.asarray(mach)
 
         # Check definition domain
         if np.any(altitude > 20000):
@@ -195,6 +195,10 @@ class RubberEngine(object):
         :return:
         """
 
+        altitude = np.asarray(altitude)
+        thrust_rate = np.asarray(thrust_rate)
+        mach = np.asarray(mach)
+
         # Check definition domain
         if np.any(thrust_rate < 0.5):
             _LOGGER.warning("SFC RATIO computation for thrust rate below 50% may be unreliable.")
@@ -226,6 +230,8 @@ class RubberEngine(object):
         """
 
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
+        mach = np.asarray(mach)
+        delta_t4 = np.asarray(delta_t4)
 
         # Check definition domain
         if np.any(altitude > 20000):
@@ -257,10 +263,17 @@ class RubberEngine(object):
             """ Computation of Mach effect """
             vect = [(self.opr - 30) ** 2, (self.opr - 30), 1., self.t4, delta_t4]
 
-            f_ms = np.dot(vect, ALPHA[0]) * self.bpr + np.dot(vect, BETA[0])
-            g_ms = np.dot(vect, ALPHA[1]) * self.bpr + np.dot(vect, BETA[1])
-            f_fm = np.dot(vect, ALPHA[2]) * self.bpr + np.dot(vect, BETA[2])
-            g_fm = np.dot(vect, ALPHA[3]) * self.bpr + np.dot(vect, BETA[3])
+            def _calc_coef(a_coeffs, b_coeffs):
+                # We don't use np.dot because delta_t4 can be a sequence
+                return (a_coeffs[0] * vect[0] + a_coeffs[1] * vect[1] +
+                        a_coeffs[2] + a_coeffs[3] * vect[3] + a_coeffs[4] * vect[4]) * self.bpr + \
+                       (b_coeffs[0] * vect[0] + b_coeffs[1] * vect[1] +
+                        b_coeffs[2] + b_coeffs[3] * vect[3] + b_coeffs[4] * vect[4])
+
+            f_ms = _calc_coef(ALPHA[0], BETA[0])
+            g_ms = _calc_coef(ALPHA[1], BETA[1])
+            f_fm = _calc_coef(ALPHA[2], BETA[2])
+            g_fm = _calc_coef(ALPHA[3], BETA[3])
 
             ms_11000 = A_MS * self.t4 + B_MS * self.bpr + C_MS * (self.opr - 30) + \
                        D_MS * delta_t4 + E_MS
@@ -284,11 +297,34 @@ class RubberEngine(object):
             k = 1 + 1.2e-3 * delta_t4
             nf = 0.98 + 8e-4 * delta_t4
 
-            if altitude <= 11000:
-                return k * ((atmosphere.density / ATM_SEA_LEVEL.density) ** nf) * \
-                       (1 / (1 - (0.04 * math.sin((math.pi * altitude) / 11000))))
-            return k * ((ATM_TROPOPAUSE.density / ATM_SEA_LEVEL.density) ** nf) \
-                   * atmosphere.density / ATM_TROPOPAUSE.density
+            def _troposhere_effect(density, altitude, k, nf):
+                return k * ((density / ATM_SEA_LEVEL.density) ** nf) * \
+                       (1 / (1 - (0.04 * np.sin((np.pi * altitude) / 11000))))
+
+            def _stratosphere_effect(density, k, nf):
+                return k * ((ATM_TROPOPAUSE.density / ATM_SEA_LEVEL.density) ** nf) \
+                       * density / ATM_TROPOPAUSE.density
+
+            if np.shape(altitude) == ():
+
+                if altitude <= 11000:
+                    h = _troposhere_effect(atmosphere.density, altitude, k, nf)
+                else:
+                    h = _stratosphere_effect(atmosphere.density, k, nf)
+            else:
+                h = np.empty(np.shape(altitude))
+                idx = altitude <= 11000
+                if np.shape(delta_t4) == ():
+                    h[idx] = _troposhere_effect(atmosphere.density[idx], altitude[idx], k, nf)
+                    idx = np.logical_not(idx)
+                    h[not idx] = _stratosphere_effect(atmosphere.density[idx], k, nf)
+                else:
+                    h[idx] = _troposhere_effect(atmosphere.density[idx], altitude[idx],
+                                                k[idx], nf[idx])
+                    idx = np.logical_not(idx)
+                    h[idx] = _stratosphere_effect(atmosphere.density[idx], k[idx], nf[idx])
+
+            return h
 
         def _residuals():
             """ Computation of residuals """
