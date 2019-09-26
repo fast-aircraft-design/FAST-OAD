@@ -40,6 +40,7 @@ class FlightPhase(Enum):
     CRUISE = 'Cruise'
 
 
+# TODO: check that input array sizes are consistent
 class RubberEngine:
     """
     Parametric turbofan engine
@@ -364,7 +365,7 @@ class RubberEngine:
                 if np.shape(delta_t4) == ():
                     h[idx] = _troposhere_effect(atmosphere.density[idx], altitude[idx], k, nf)
                     idx = np.logical_not(idx)
-                    h[not idx] = _stratosphere_effect(atmosphere.density[idx], k, nf)
+                    h[idx] = _stratosphere_effect(atmosphere.density[idx], k, nf)
                 else:
                     h[idx] = _troposhere_effect(atmosphere.density[idx], altitude[idx],
                                                 k[idx], nf[idx])

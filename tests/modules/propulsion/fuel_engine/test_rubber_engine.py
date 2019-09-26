@@ -125,26 +125,32 @@ def test_max_thrust():
     engine = RubberEngine(5, 30, 1500, 0, 0, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
     machs = np.arange(0, 1.01, 0.1)
 
-    # Check cruise
+    # Check with cruise altitude
     atm = Atmosphere(11000, altitude_in_feet=False)
     max_thrust_ratio = engine.max_thrust(atm, machs, -100)
-    ref_max_thrust_ratio = 0.949 * atm.density / 1.225 * (
-            1 - 0.681 * machs + 0.511 * machs ** 2)
+    ref_max_thrust_ratio = 0.949 * atm.density / 1.225 * (1 - 0.681 * machs + 0.511 * machs ** 2)
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-2)
 
-    # Check Take-off
+    # Check with Takeoff altitude
     atm = Atmosphere(0, altitude_in_feet=False)
     max_thrust_ratio = engine.max_thrust(atm, machs, 0)
-    ref_max_thrust_ratio = 0.955 * atm.density / 1.225 * (
-            1 - 0.730 * machs + 0.359 * machs ** 2)
+    ref_max_thrust_ratio = 0.955 * atm.density / 1.225 * (1 - 0.730 * machs + 0.359 * machs ** 2)
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-2)
 
-    # Check Cruise with compression rate != 30 and bypass ratio != 5
+    # Check Cruise above 11000 with compression rate != 30 and bypass ratio != 5
     engine = RubberEngine(4, 35, 1500, 0, 0, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
     atm = Atmosphere(13000, altitude_in_feet=False)
     max_thrust_ratio = engine.max_thrust(atm, machs, -50)
-    ref_max_thrust_ratio = 0.969 * atm.density / 1.225 * (
-            1 - 0.636 * machs + 0.521 * machs ** 2)
+    ref_max_thrust_ratio = 0.969 * atm.density / 1.225 * (1 - 0.636 * machs + 0.521 * machs ** 2)
+    np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-2)
+
+    # Check with compression rate != 30 and bypass ratio != 5 and an array for altitudes (as
+    # many values as mach numbers)
+    engine = RubberEngine(6, 22, 1500, 0, 0, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
+    atm = Atmosphere(np.arange(3000, 13100, 1000), altitude_in_feet=False)
+    max_thrust_ratio = engine.max_thrust(atm, machs, -50)
+    ref_max_thrust_ratio = [0.698, 0.592, 0.501, 0.426, 0.364, 0.315,
+                            0.277, 0.248, 0.228, 0.200, 0.178]
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-2)
 
 
