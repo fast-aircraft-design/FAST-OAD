@@ -69,8 +69,8 @@ class RubberEngine:
                  mto_thrust: float,
                  maximum_mach: float,
                  design_altitude: float):
-        """ constructor """
         # pylint: disable=too-many-arguments  # they define the engine
+        """ constructor """
 
         self.bypass_ratio = bypass_ratio
         self.overall_pressure_ratio = overall_pressure_ratio
@@ -128,25 +128,6 @@ class RubberEngine:
         sfc, thrust_rate, _ = self.compute(mach, altitude, self._get_delta_t4(phase), thrust=drag)
         return sfc, thrust_rate
 
-    def _get_delta_t4(self, phase: Union[FlightPhase, Sequence[FlightPhase]]) \
-            -> Union[float, Sequence[float]]:
-        """
-        :param phase:
-        :return: DeltaT4 according to phase
-        """
-
-        if np.shape(phase) == ():  # phase is a scalar
-            return self.dt4_values[phase]
-
-        # Here phase is a sequence. Ensure now it is a numpy array
-        phase_array = np.asarray(phase)
-
-        delta_t4 = np.empty(phase_array.shape)
-        for phase_value, dt4_value in self.dt4_values.items():
-            delta_t4[phase_array == phase_value] = dt4_value
-
-        return delta_t4
-
     def compute(self,
                 mach: Union[float, Sequence[float]],
                 altitude: Union[float, Sequence[float]],
@@ -156,6 +137,7 @@ class RubberEngine:
             -> Tuple[Union[float, Sequence[float]],
                      Union[float, Sequence[float]],
                      Union[float, Sequence[float]]]:
+        # pylint: disable=too-many-arguments  # they define the engine
         """
         Computes Specific Fuel Consumption according to provided conditions.
 
@@ -218,6 +200,8 @@ class RubberEngine:
             _LOGGER.warning(
                 "MAX THRUST SFC computation for overall pressure ratio above 40 may be unreliable.")
 
+        # pylint: disable=invalid-name  # coefficients are named after model
+
         # Following coefficients are constant for alt<=0 and alt >=11000m.
         # We use numpy to implement that so we are safe if altitude is a sequence.
         bound_altitude = np.minimum(11000, np.maximum(0, altitude))
@@ -266,12 +250,12 @@ class RubberEngine:
                 "SFC RATIO computation for Mach number other than Mach 0.8 may be unreliable.")
 
         delta_h = altitude - self.design_alt
-        fi = -9.6e-5 * delta_h + 0.85
+        thrust_ratio_at_min_sfc_ratio = -9.6e-5 * delta_h + 0.85  # =Fi in model
 
-        sfc_ratio_min = np.minimum(0.998, -3.385e-5 * delta_h + 0.995)
+        min_sfc_ratio = np.minimum(0.998, -3.385e-5 * delta_h + 0.995)  # CSRmin in the model
 
-        coeff = (1 - sfc_ratio_min) / (1 - fi) ** 2
-        return coeff * (thrust_rate - fi) ** 2 + sfc_ratio_min
+        coeff = (1 - min_sfc_ratio) / (1 - thrust_ratio_at_min_sfc_ratio) ** 2  # =a in the model
+        return coeff * (thrust_rate - thrust_ratio_at_min_sfc_ratio) ** 2 + min_sfc_ratio
 
     def max_thrust(self, atmosphere: Atmosphere,
                    mach: Union[float, Sequence[float]],
@@ -287,6 +271,8 @@ class RubberEngine:
                          turbine inlet temperature in K
         :return: maximum thrust in N
         """
+        # pylint: disable=too-many-statements  # the model is complex and separated in 3 local
+        #                                        functions, so I guess it is acceptable
 
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
         mach = np.asarray(mach)
@@ -337,12 +323,10 @@ class RubberEngine:
             g_fm = _calc_coef(ALPHA[3], BETA[3])
 
             ms_11000 = A_MS * self.t_4 + B_MS * self.bypass_ratio + C_MS * (
-                    self.overall_pressure_ratio - 30) + \
-                       D_MS * delta_t4 + E_MS
+                    self.overall_pressure_ratio - 30) + D_MS * delta_t4 + E_MS
 
             fm_11000 = A_FM * self.t_4 + B_FM * self.bypass_ratio + C_FM * (
-                    self.overall_pressure_ratio - 30) + \
-                       D_FM * delta_t4 + E_FM
+                    self.overall_pressure_ratio - 30) + D_FM * delta_t4 + E_FM
 
             # Following coefficients are constant for alt >=11000m.
             # We use numpy to implement that so we are safe if altitude is a sequence.
@@ -357,6 +341,7 @@ class RubberEngine:
 
         def _altitude_effect():
             """ Computation of altitude effect """
+            # pylint: disable=invalid-name  # coefficients are named after model
             k = 1 + 1.2e-3 * delta_t4
             nf = 0.98 + 8e-4 * delta_t4
 
@@ -369,7 +354,6 @@ class RubberEngine:
                        * density / ATM_TROPOPAUSE.density
 
             if np.shape(altitude) == ():
-
                 if altitude <= 11000:
                     h = _troposhere_effect(atmosphere.density, altitude, k, nf)
                 else:
@@ -481,3 +465,22 @@ class RubberEngine:
         nacelle_diameter = diameter * 1.1
 
         return nacelle_diameter
+
+    def _get_delta_t4(self, phase: Union[FlightPhase, Sequence[FlightPhase]]) \
+            -> Union[float, Sequence[float]]:
+        """
+        :param phase:
+        :return: DeltaT4 according to phase
+        """
+
+        if np.shape(phase) == ():  # phase is a scalar
+            return self.dt4_values[phase]
+
+        # Here phase is a sequence. Ensure now it is a numpy array
+        phase_array = np.asarray(phase)
+
+        delta_t4 = np.empty(phase_array.shape)
+        for phase_value, dt4_value in self.dt4_values.items():
+            delta_t4[phase_array == phase_value] = dt4_value
+
+        return delta_t4
