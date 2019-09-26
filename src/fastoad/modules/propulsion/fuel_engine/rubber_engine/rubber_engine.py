@@ -50,13 +50,13 @@ class RubberEngine:
 
     :param bypass_ratio:
     :param overall_pressure_ratio:
-    :param turbine_inlet_temperature: also noted T4
-    :param delta_t4_climb: difference between T4 during climb and design T4
-    :param delta_t4_cruise: difference between T4 during cruise and design T4
-    :param mto_thrust: Maximum TakeOff thrust, i.e. maximum thrust on ground at speed 0,
-                       also noted F0
+    :param turbine_inlet_temperature: (unit=K) also noted T4
+    :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4 in K
+    :param delta_t4_cruise: (unit=K) difference between T4 during cruise and design T4
+    :param mto_thrust: (unit=N) Maximum TakeOff thrust, i.e. maximum thrust
+                       on ground at speed 0, also noted F0
     :param maximum_mach:
-    :param design_altitude:
+    :param design_altitude: (unit=m)
 
     """
 
@@ -100,10 +100,10 @@ class RubberEngine:
         Computes Specific Fuel Consumption according to provided conditions.
 
         :param mach:
-        :param altitude:
+        :param altitude: (unit=m)
         :param thrust_rate:
         :param phase:
-        :return: SFC, thrust (in N)
+        :return: SFC (in kg/s/N), thrust (in N)
         """
         sfc, _, thrust = self.compute(mach, altitude, self._get_delta_t4(phase),
                                       thrust_rate=thrust_rate)
@@ -120,10 +120,10 @@ class RubberEngine:
         Thrust rate is adjusted to compensate provided drag
 
         :param mach:
-        :param altitude: in meters
-        :param drag: in Newtons
+        :param altitude: (unit=m)
+        :param drag: (unit=N)
         :param phase:
-        :return: SFC, needed thrust rate
+        :return: SFC (in kg/s/N), needed thrust rate
         """
         sfc, thrust_rate, _ = self.compute(mach, altitude, self._get_delta_t4(phase), thrust=drag)
         return sfc, thrust_rate
@@ -148,11 +148,11 @@ class RubberEngine:
         thrust_rate is provided, thrust is ignored)
 
         :param mach:
-        :param altitude: in meters
-        :param delta_t4:
+        :param altitude: (unit=m)
+        :param delta_t4: (unit=K)
         :param thrust_rate: between 0.0 and 1.0. If None, thrust should be provided.
-        :param thrust: in Newtons. If None, thrust_rate should be provided.
-        :return: SFC, thrust rate, thrust (in N)
+        :param thrust: (unit=N) if None, thrust_rate should be provided.
+        :return: SFC (in kg/s/N), thrust rate, thrust (in N)
         """
         atmosphere = Atmosphere(altitude, altitude_in_feet=False)
 
@@ -179,8 +179,8 @@ class RubberEngine:
         Uses model described in :cite:`roux:2005`, p.41.
 
         :param atmosphere: Atmosphere instance at intended altitude
-        :param mach: Mach number(s) (should be <=20km)
-        :return: SFC
+        :param mach: Mach number(s)
+        :return: SFC (in kg/s/N)
         """
 
         altitude = atmosphere.get_altitude(False)
@@ -235,7 +235,7 @@ class RubberEngine:
         :param altitude:
         :param thrust_rate:
         :param mach: only used for logger checks as model is made for Mach~0.8
-        :return:
+        :return: SFC ratio
         """
 
         altitude = np.asarray(altitude)
@@ -267,9 +267,9 @@ class RubberEngine:
 
         :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
         :param mach: Mach number(s) (should be between 0.05 and 1.0)
-        :param delta_t4: difference between operational and design values of
+        :param delta_t4: (unit=K) difference between operational and design values of
                          turbine inlet temperature in K
-        :return: maximum thrust in N
+        :return: maximum thrust (in N)
         """
         # pylint: disable=too-many-statements  # the model is complex and separated in 3 local
         #                                        functions, so I guess it is acceptable
@@ -380,54 +380,13 @@ class RubberEngine:
 
         return self.f_0 * _mach_effect() * _altitude_effect() * _residuals()
 
-    def installed_weight(self):
+    def installed_weight(self) -> float:
         """
-        #        #TORENBEEK MODEL with CORRECTION by EROUX
-        #        #---------------------------------------------------
-        #        #see PhD p. 69 and 72 (correction of the model)
-        #        #---------------------------------------------------
-        #
-        #        #---------------------------------------------------
-        #        #Constant definition
-        #        #---------------------------------------------------
-        #        T_0 = 288.15
-        #        Gamma_heat = 1.4
-        #
-        #        Eta_c = 0.85
-        #        Eta_f = 0.85
-        #        Eta_t = 0.88
-        #        Eta_n = 0.97
-        #
-        #        Eta_tf = Eta_t * Eta_f
-        #
-        #        installation_factor = 1.2
-        #
-        #        C1 = (self.t4/T_0)-((self.opr**((Gamma_heat-1)/Gamma_heat)-1)/Eta_c)
-        #
-        #        C2 = 1-(((self.opr**((Gamma_heat-1)/Gamma_heat))-1) / (self.t4/T_0*Eta_c*Eta_t) )
-        #
-        #        C3 = 1-(1.01/(self.opr**((Gamma_heat-1)/Gamma_heat)*C2))
-        #
-        #        G0 = C1 * C3
-        #
-        #        C4 = (10*self.opr**(1/4))/(340.43*(math.sqrt(5*Eta_n*(1+Eta_tf*self.bpr)*G0)))
-        #
-        #        C5 = C4 + (0.0122 * (1-(1/math.sqrt(1+0.75*self.bpr))))
-        #
-        #        weight = self.f0 * C5
-        #
-        #        installed_weight = installation_factor * weight
-        #
-        #        #installed_weight = self.f0 *  installation_factor * (C4+(0.0122*
-        #
-        #        #Correction factor from EROUX
-        #
-        #        #installed_weight =  installed_weight /
-        #                                    (1+(((7.26e-3)/100)*installed_weight)-20.8/100)
-        # Model by EROUX
-        #---------------------------------------------------
-        # see PhD p. 69 and 72 (correction of the model)
-        #---------------------------------------------------
+        Computes weight of installed engine, depending on MTO thrust (F0)
+
+        Uses model described in :cite:`roux:2005`, p.74
+
+        :return: installed weight (in kg)
         """
         installation_factor = 1.2
 
@@ -441,29 +400,30 @@ class RubberEngine:
         return installed_weight
 
     def length(self):
+        # TODO: update model reference with last edition of Raymer
         """
-        # Model by Raymer
-        #---------------------------------------------------
-        # see 3rd edition of the conceptual design book p. 235
-        #---------------------------------------------------
+        Computes engine length from MTO thrust and maximum Mach
+
+        Model from :cite:`raymer:1999`, p.74
+
+        :return: engine length (in m)
         """
         length = 0.49 * (self.f_0 / 1000) ** 0.4 * self.mach_max ** 0.2
 
         return length
 
     def nacelle_diameter(self):
+        # TODO: update model reference with last edition of Raymer
         """
-        # Model by Raymer
-        #---------------------------------------------------
-        # see 3rd edition of the conceptual design book p. 235
-        #---------------------------------------------------
+        Computes nacelle diameter from MTO thrust and bypass ratio
+
+        Model of engine diameter from :cite:`raymer:1999`, p.235.
+        Nacelle diameter is considered 10% greater (:cite:`kroo:2001`)
+
+        :return: nacelle diameter (in m)
         """
-        diameter = 0.15 * (self.f_0 / 1000) ** 0.5 * math.exp(0.04 * self.bypass_ratio)
-
-        # Nacelle size is derived from Kroo notes
-        # https://web.archive.org/web/20010307121417/http://adg.stanford.edu/aa241/propulsion/nacelledesign.html
-        nacelle_diameter = diameter * 1.1
-
+        engine_diameter = 0.15 * (self.f_0 / 1000) ** 0.5 * math.exp(0.04 * self.bypass_ratio)
+        nacelle_diameter = engine_diameter * 1.1
         return nacelle_diameter
 
     def _get_delta_t4(self, phase: Union[FlightPhase, Sequence[FlightPhase]]) \
