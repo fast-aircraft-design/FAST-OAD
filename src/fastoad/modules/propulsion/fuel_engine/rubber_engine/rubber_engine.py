@@ -40,7 +40,6 @@ class FlightPhase(Enum):
     CRUISE = 'Cruise'
 
 
-# TODO: check that input array sizes are consistent
 class RubberEngine:
     """
     Parametric turbofan engine
@@ -157,6 +156,10 @@ class RubberEngine:
         """
         atmosphere = Atmosphere(altitude, altitude_in_feet=False)
 
+        self._check_array_consistency(
+            {'mach': mach, 'altitude': altitude, 'delta_t4': delta_t4, 'thrust_rate': thrust_rate,
+             'thrust': thrust})
+
         max_thrust = self.max_thrust(atmosphere, mach, delta_t4)
 
         if thrust_rate is None:
@@ -187,25 +190,18 @@ class RubberEngine:
         altitude = atmosphere.get_altitude(False)
         mach = np.asarray(mach)
 
-        # Check definition domain
-        if np.any(altitude > 20000):
-            _LOGGER.warning(
-                "MAX THRUST SFC computation for altitude above 20000 may be unreliable.")
-        if self.bypass_ratio < 3.0:
-            _LOGGER.warning(
-                "MAX THRUST SFC computation for bypass ratio below 3.0 may be unreliable.")
-        if self.overall_pressure_ratio < 20.0:
-            _LOGGER.warning(
-                "MAX THRUST SFC computation for overall pressure ratio below 20 may be unreliable.")
-        if self.overall_pressure_ratio > 40.0:
-            _LOGGER.warning(
-                "MAX THRUST SFC computation for overall pressure ratio above 40 may be unreliable.")
-
-        # pylint: disable=invalid-name  # coefficients are named after model
+        self._check_definition_domain('MAX THRUST computation',
+                                      {'altitude': (altitude, None, 20000),
+                                       'Mach number': (mach, 0.05, 0.1),
+                                       'overall pressure ratio': (self.bypass_ratio, 3.0, None),
+                                       'bypass ratio': (self.bypass_ratio, 20.0, 40.0)
+                                       })
 
         # Following coefficients are constant for alt<=0 and alt >=11000m.
         # We use numpy to implement that so we are safe if altitude is a sequence.
         bound_altitude = np.minimum(11000, np.maximum(0, altitude))
+
+        # pylint: disable=invalid-name  # coefficients are named after model
         a1 = -7.44e-13 * bound_altitude + 6.54e-7
         a2 = -3.32e-10 * bound_altitude + 8.54e-6
         b1 = -3.47e-11 * bound_altitude - 6.58e-7
@@ -243,12 +239,11 @@ class RubberEngine:
         thrust_rate = np.asarray(thrust_rate)
         mach = np.asarray(mach)
 
-        # Check definition domain
-        if np.any(thrust_rate < 0.5):
-            _LOGGER.warning("SFC RATIO computation for thrust rate below 50% may be unreliable.")
-        if np.any(mach < 0.75) or np.any(mach > 0.85):
-            _LOGGER.warning(
-                "SFC RATIO computation for Mach number other than Mach 0.8 may be unreliable.")
+        self._check_definition_domain('MAX THRUST computation',
+                                      {'altitude': (altitude, None, 20000),
+                                       'Mach number': (mach, 0.75, 0.85),
+                                       'thrust rate': (thrust_rate, 0.5, 1.0),
+                                       })
 
         delta_h = altitude - self.design_alt
         thrust_ratio_at_min_sfc_ratio = -9.6e-5 * delta_h + 0.85  # =Fi in model
@@ -272,38 +267,19 @@ class RubberEngine:
                          turbine inlet temperature in K
         :return: maximum thrust (in N)
         """
-        # pylint: disable=too-many-statements  # the model is complex and separated in 3 local
-        #                                        functions, so I guess it is acceptable
 
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
         mach = np.asarray(mach)
         delta_t4 = np.asarray(delta_t4)
 
-        # Check definition domain
-        if np.any(altitude > 20000):
-            _LOGGER.warning("MAX THRUST computation for altitude above 20000 may be unreliable.")
-        if np.any(mach < 0.05):
-            _LOGGER.warning("MAX THRUST computation for Mach number below 0.05 may be unreliable.")
-        if np.any(mach > 1.):
-            _LOGGER.warning("MAX THRUST computation for Mach number above 1.0 may be unreliable.")
-        if self.bypass_ratio < 3.0:
-            _LOGGER.warning("MAX THRUST computation for bypass ratio below 3.0 may be unreliable.")
-        if self.bypass_ratio > 6.0:
-            _LOGGER.warning("MAX THRUST computation for bypass ratio above 6.0 may be unreliable.")
-        if self.t_4 < 1400:
-            _LOGGER.warning("MAX THRUST computation for T4 below 1400K may be unreliable.")
-        if self.t_4 > 1500:
-            _LOGGER.warning("MAX THRUST computation for T4 above 1600K may be unreliable.")
-        if self.overall_pressure_ratio < 20.0:
-            _LOGGER.warning(
-                "MAX THRUST computation for overall pressure ratio below 20 may be unreliable.")
-        if self.overall_pressure_ratio > 40.0:
-            _LOGGER.warning(
-                "MAX THRUST computation for overall pressure ratio above 40 may be unreliable.")
-        if np.any(delta_t4 < -100):
-            _LOGGER.warning("MAX THRUST computation for Delta_T4 below -100K may be unreliable.")
-        if np.any(delta_t4 > 0):
-            _LOGGER.warning("MAX THRUST computation for Delta_T4 above 0K may be unreliable.")
+        self._check_definition_domain('MAX THRUST computation',
+                                      {'altitude': (altitude, None, 20000),
+                                       'Mach number': (mach, 0.05, 0.1),
+                                       'overall pressure ratio': (self.bypass_ratio, 3.0, 6.0),
+                                       'bypass ratio': (self.bypass_ratio, 20.0, 40.0),
+                                       'T4': (self.t_4, 1400.0, 1600.0),
+                                       'Delta_T4': (delta_t4, -100.0, 0.0),
+                                       })
 
         def _mach_effect():
             """ Computation of Mach effect """
@@ -445,3 +421,77 @@ class RubberEngine:
             delta_t4[phase_array == phase_value] = dt4_value
 
         return delta_t4
+
+    @staticmethod
+    def _check_array_consistency(arrays: dict):
+        """
+        Checks that provided arrays have shapes that allow them to be broadcast together
+
+        The *arrays* dictionary is expected to have following structure:
+            - key : name of the variable as it should appear in error message
+            - value = the actual variable (numpy array, sequence or scalar)
+
+        :param arrays: see description above
+        :raise:FastInconsistentArraySizesException
+        """
+
+        # Arrays are consistent if they have same shape after squeezing
+        # so this is what is compared.
+        # But for error message, original shape will be kept
+        ref_array_shape = ()
+        ref_array_squeezed_shape = ()
+        ref_identifier = ''
+
+        for identifier, values in arrays.items():
+            # Check size
+            array_squeezed_shape = np.shape(np.squeeze(values))
+            if array_squeezed_shape != ():
+                if ref_array_squeezed_shape == ():
+                    ref_array_squeezed_shape = array_squeezed_shape
+                    ref_array_shape = np.shape(values)
+                    ref_identifier = identifier
+                elif ref_array_squeezed_shape != array_squeezed_shape:
+                    raise FastInconsistentArraySizesException(
+                        '"%s" and "%s" have incompatible sizes: %s and %s' % (
+                            ref_identifier, identifier, ref_array_shape, np.shape(values)))
+
+    @staticmethod
+    def _check_definition_domain(operation_name: str, arrays: dict):
+        """
+        Checks that provided arrays have values inside limits.
+        Logs a warning for each array that does not respect a limit.
+
+        The *arrays* dictionary is expected to have following structure:
+            - key : name of the variable as it should appear in logger message
+            - value = tuple with 3 members:
+                - the actual variable (numpy array, sequence or scalar)
+                - the lower limit of the domain definition
+                - the upper limit of the domain definition
+
+        :param operation_name: for logging
+        :param arrays: see description above
+        :return: True if all bounds are respected. False otherwise
+        """
+
+        msg_lower_limit = operation_name + ' for %s below %s may be unreliable.'
+        msg_upper_limit = operation_name + ' for %s above %s may be unreliable.'
+
+        status = True
+
+        for identifier, (values, low_limit, high_limit) in arrays.items():
+            # Check bounds
+            if low_limit is not None and np.any(values < low_limit):
+                _LOGGER.warning(msg_lower_limit, identifier, low_limit)
+                status = False
+            if high_limit is not None and np.any(values > high_limit):
+                _LOGGER.warning(msg_upper_limit, identifier, high_limit)
+                status = False
+
+        return status
+
+
+class FastInconsistentArraySizesException(Exception):
+    """
+    Raised when arrays of different size are provided, when they should have
+    the same size
+    """
