@@ -34,31 +34,57 @@ ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
 
 class FlightPhase(Enum):
     """ Enumeration of flight phases"""
-    MTO = 'MTO'
-    CLIMB = 'CLIMB'
-    FI = 'FI'
-    CRUISE = 'CRUISE'
+    TAKEOFF = 'Takeoff'
+    CLIMB = 'Climb'
+    IDLE = 'Fight Idle'
+    CRUISE = 'Cruise'
 
 
-class RubberEngine(object):
+class RubberEngine:
     """
     Parametric turbofan engine
 
     Computes engine characteristics using analytical model from following sources:
 
     .. bibliography:: ../refs.bib
+
+    :param bypass_ratio:
+    :param overall_pressure_ratio:
+    :param turbine_inlet_temperature: also noted T4
+    :param delta_t4_climb: difference between T4 during climb and design T4
+    :param delta_t4_cruise: difference between T4 during cruise and design T4
+    :param mto_thrust: Maximum TakeOff thrust, i.e. maximum thrust on ground at speed 0,
+                       also noted F0
+    :param maximum_mach:
+    :param design_altitude:
+
     """
 
-    def __init__(self, bpr, opr, t4, d_t4_cl, d_t4_cr, f0, mach_max, hm):
-        self.bpr, self.opr, self.t4 = bpr, opr, t4
-        self.f0, self.mach_max, self.hm = f0, mach_max, hm
+    def __init__(self,
+                 bypass_ratio: float,
+                 overall_pressure_ratio: float,
+                 turbine_inlet_temperature: float,
+                 delta_t4_climb: float,
+                 delta_t4_cruise: float,
+                 mto_thrust: float,
+                 maximum_mach: float,
+                 design_altitude: float):
+        """ constructor """
+        # pylint: disable=too-many-arguments  # they define the engine
+
+        self.bypass_ratio = bypass_ratio
+        self.overall_pressure_ratio = overall_pressure_ratio
+        self.t_4 = turbine_inlet_temperature
+        self.f_0 = mto_thrust
+        self.mach_max = maximum_mach
+        self.design_alt = design_altitude
 
         # This dictionary is expected to have a dT4 value for all FlightPhase values
         self.dt4_values = {
-            FlightPhase.MTO: 0.,
-            FlightPhase.CLIMB: d_t4_cl,
-            FlightPhase.CRUISE: d_t4_cr,
-            FlightPhase.FI: d_t4_cr
+            FlightPhase.TAKEOFF: 0.,
+            FlightPhase.CLIMB: delta_t4_climb,
+            FlightPhase.CRUISE: delta_t4_cruise,
+            FlightPhase.IDLE: delta_t4_cruise
         }
 
         # ... so check that all FlightPhase values are in dict
@@ -67,20 +93,21 @@ class RubberEngine(object):
     def compute_manual(self, mach: Union[float, Sequence[float]],
                        altitude: Union[float, Sequence[float]],
                        thrust_rate: Union[float, Sequence[float]] = None,
-                       phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.MTO) \
+                       phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.TAKEOFF) \
             -> Tuple[Union[float, Sequence[float]],
                      Union[float, Sequence[float]]]:
         """
+        Computes Specific Fuel Consumption according to provided conditions.
 
         :param mach:
         :param altitude:
         :param thrust_rate:
         :param phase:
-        :return: SFC, thrust
+        :return: SFC, thrust (in N)
         """
-        sfc, _, fc = self.compute(mach, altitude, self._get_delta_t4(phase),
-                                  thrust_rate=thrust_rate)
-        return sfc, fc
+        sfc, _, thrust = self.compute(mach, altitude, self._get_delta_t4(phase),
+                                      thrust_rate=thrust_rate)
+        return sfc, thrust
 
     def compute_regulated(self, mach: Union[float, Sequence[float]],
                           altitude: Union[float, Sequence[float]],
@@ -89,10 +116,12 @@ class RubberEngine(object):
             -> Tuple[Union[float, Sequence[float]],
                      Union[float, Sequence[float]]]:
         """
+        Computes Specific Fuel Consumption according to provided conditions.
+        Thrust rate is adjusted to compensate provided drag
 
         :param mach:
-        :param altitude:
-        :param drag:
+        :param altitude: in meters
+        :param drag: in Newtons
         :param phase:
         :return: SFC, needed thrust rate
         """
@@ -137,11 +166,11 @@ class RubberEngine(object):
         thrust_rate is provided, thrust is ignored)
 
         :param mach:
-        :param altitude:
+        :param altitude: in meters
         :param delta_t4:
         :param thrust_rate: between 0.0 and 1.0. If None, thrust should be provided.
         :param thrust: in Newtons. If None, thrust_rate should be provided.
-        :return: SFC, thrust rate, thrust
+        :return: SFC, thrust rate, thrust (in N)
         """
         atmosphere = Atmosphere(altitude, altitude_in_feet=False)
 
@@ -179,13 +208,13 @@ class RubberEngine(object):
         if np.any(altitude > 20000):
             _LOGGER.warning(
                 "MAX THRUST SFC computation for altitude above 20000 may be unreliable.")
-        if self.bpr < 3.0:
+        if self.bypass_ratio < 3.0:
             _LOGGER.warning(
                 "MAX THRUST SFC computation for bypass ratio below 3.0 may be unreliable.")
-        if self.opr < 20.0:
+        if self.overall_pressure_ratio < 20.0:
             _LOGGER.warning(
                 "MAX THRUST SFC computation for overall pressure ratio below 20 may be unreliable.")
-        if self.opr > 40.0:
+        if self.overall_pressure_ratio > 40.0:
             _LOGGER.warning(
                 "MAX THRUST SFC computation for overall pressure ratio above 40 may be unreliable.")
 
@@ -199,9 +228,10 @@ class RubberEngine(object):
         c = - 1.05e-7
 
         theta = atmosphere.temperature / ATM_SEA_LEVEL.temperature
-        sfc = mach * (a1 * self.bpr + a2) + \
-              (b1 * self.bpr + b2) * np.sqrt(theta) + \
-              ((7.4e-13 * (self.opr - 30) * altitude) + c) * (self.opr - 30)
+        sfc = mach * (a1 * self.bypass_ratio + a2) + \
+              (b1 * self.bypass_ratio + b2) * np.sqrt(theta) + \
+              ((7.4e-13 * (self.overall_pressure_ratio - 30) * altitude) + c) * (
+                      self.overall_pressure_ratio - 30)
 
         return sfc
 
@@ -235,7 +265,7 @@ class RubberEngine(object):
             _LOGGER.warning(
                 "SFC RATIO computation for Mach number other than Mach 0.8 may be unreliable.")
 
-        delta_h = altitude - self.hm
+        delta_h = altitude - self.design_alt
         fi = -9.6e-5 * delta_h + 0.85
 
         sfc_ratio_min = np.minimum(0.998, -3.385e-5 * delta_h + 0.995)
@@ -269,18 +299,18 @@ class RubberEngine(object):
             _LOGGER.warning("MAX THRUST computation for Mach number below 0.05 may be unreliable.")
         if np.any(mach > 1.):
             _LOGGER.warning("MAX THRUST computation for Mach number above 1.0 may be unreliable.")
-        if self.bpr < 3.0:
+        if self.bypass_ratio < 3.0:
             _LOGGER.warning("MAX THRUST computation for bypass ratio below 3.0 may be unreliable.")
-        if self.bpr > 6.0:
+        if self.bypass_ratio > 6.0:
             _LOGGER.warning("MAX THRUST computation for bypass ratio above 6.0 may be unreliable.")
-        if self.t4 < 1400:
+        if self.t_4 < 1400:
             _LOGGER.warning("MAX THRUST computation for T4 below 1400K may be unreliable.")
-        if self.t4 > 1500:
+        if self.t_4 > 1500:
             _LOGGER.warning("MAX THRUST computation for T4 above 1600K may be unreliable.")
-        if self.opr < 20.0:
+        if self.overall_pressure_ratio < 20.0:
             _LOGGER.warning(
                 "MAX THRUST computation for overall pressure ratio below 20 may be unreliable.")
-        if self.opr > 40.0:
+        if self.overall_pressure_ratio > 40.0:
             _LOGGER.warning(
                 "MAX THRUST computation for overall pressure ratio above 40 may be unreliable.")
         if np.any(delta_t4 < -100):
@@ -290,12 +320,14 @@ class RubberEngine(object):
 
         def _mach_effect():
             """ Computation of Mach effect """
-            vect = [(self.opr - 30) ** 2, (self.opr - 30), 1., self.t4, delta_t4]
+            vect = [(self.overall_pressure_ratio - 30) ** 2, (self.overall_pressure_ratio - 30), 1.,
+                    self.t_4, delta_t4]
 
             def _calc_coef(a_coeffs, b_coeffs):
                 # We don't use np.dot because delta_t4 can be a sequence
                 return (a_coeffs[0] * vect[0] + a_coeffs[1] * vect[1] +
-                        a_coeffs[2] + a_coeffs[3] * vect[3] + a_coeffs[4] * vect[4]) * self.bpr + \
+                        a_coeffs[2] + a_coeffs[3] * vect[3] + a_coeffs[4] * vect[
+                            4]) * self.bypass_ratio + \
                        (b_coeffs[0] * vect[0] + b_coeffs[1] * vect[1] +
                         b_coeffs[2] + b_coeffs[3] * vect[3] + b_coeffs[4] * vect[4])
 
@@ -304,10 +336,12 @@ class RubberEngine(object):
             f_fm = _calc_coef(ALPHA[2], BETA[2])
             g_fm = _calc_coef(ALPHA[3], BETA[3])
 
-            ms_11000 = A_MS * self.t4 + B_MS * self.bpr + C_MS * (self.opr - 30) + \
+            ms_11000 = A_MS * self.t_4 + B_MS * self.bypass_ratio + C_MS * (
+                    self.overall_pressure_ratio - 30) + \
                        D_MS * delta_t4 + E_MS
 
-            fm_11000 = A_FM * self.t4 + B_FM * self.bpr + C_FM * (self.opr - 30) + \
+            fm_11000 = A_FM * self.t_4 + B_FM * self.bypass_ratio + C_FM * (
+                    self.overall_pressure_ratio - 30) + \
                        D_FM * delta_t4 + E_FM
 
             # Following coefficients are constant for alt >=11000m.
@@ -357,9 +391,10 @@ class RubberEngine(object):
 
         def _residuals():
             """ Computation of residuals """
-            return -4.51e-3 * self.bpr + 2.19e-5 * self.t4 - 3.09e-4 * (self.opr - 30) + 0.945
+            return -4.51e-3 * self.bypass_ratio + 2.19e-5 * self.t_4 - 3.09e-4 * (
+                    self.overall_pressure_ratio - 30) + 0.945
 
-        return self.f0 * _mach_effect() * _altitude_effect() * _residuals()
+        return self.f_0 * _mach_effect() * _altitude_effect() * _residuals()
 
     def installed_weight(self):
         """
@@ -412,10 +447,10 @@ class RubberEngine(object):
         """
         installation_factor = 1.2
 
-        if self.f0 < 80000:
-            weight = 22.2e-3 * self.f0
+        if self.f_0 < 80000:
+            weight = 22.2e-3 * self.f_0
         else:
-            weight = 14.1e-3 * self.f0 + 648
+            weight = 14.1e-3 * self.f_0 + 648
 
         installed_weight = installation_factor * weight
 
@@ -428,7 +463,7 @@ class RubberEngine(object):
         # see 3rd edition of the conceptual design book p. 235
         #---------------------------------------------------
         """
-        length = 0.49 * (self.f0 / 1000) ** 0.4 * self.mach_max ** 0.2
+        length = 0.49 * (self.f_0 / 1000) ** 0.4 * self.mach_max ** 0.2
 
         return length
 
@@ -439,7 +474,7 @@ class RubberEngine(object):
         # see 3rd edition of the conceptual design book p. 235
         #---------------------------------------------------
         """
-        diameter = 0.15 * (self.f0 / 1000) ** 0.5 * math.exp(0.04 * self.bpr)
+        diameter = 0.15 * (self.f_0 / 1000) ** 0.5 * math.exp(0.04 * self.bypass_ratio)
 
         # Nacelle size is derived from Kroo notes
         # https://web.archive.org/web/20010307121417/http://adg.stanford.edu/aa241/propulsion/nacelledesign.html
