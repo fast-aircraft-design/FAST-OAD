@@ -32,13 +32,14 @@ class Atmosphere:
     Simple implementation of International Standard Atmosphere
     for troposphere and stratosphere.
 
-    Atmosphere properties a provided in the same "shape" as provided
+    Atmosphere properties are provided in the same "shape" as provided
     altitude:
-        - if altitude is given as a float, returned values will be floats
-        - if altitude is given as a sequence (list, 1D numpy array, ...), returned
-          values will be 1D numpy arrays
-        - if altitude is given as nD numpy array, returned values will be nD numpy
-        arrays
+
+    - if altitude is given as a float, returned values will be floats
+    - if altitude is given as a sequence (list, 1D numpy array, ...), returned
+      values will be 1D numpy arrays
+    - if altitude is given as nD numpy array, returned values will be nD numpy
+      arrays
 
     Usage:
 
