@@ -22,6 +22,7 @@ import pytest
 from pelix.framework import FrameworkFactory
 
 from fastoad.module_management import BundleLoader
+from fastoad.module_management.bundle_loader import FastDuplicateFactoryError
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -101,6 +102,28 @@ def test_install_packages(delete_framework):
 
     loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
     assert loader.framework.get_bundle_by_name("dummy_pelix_bundles.hello_world") is not None
+
+
+def test_register_factory(delete_framework):
+    """
+    Tests that register_factory raises correctly an error when finding
+    duplicate names
+    (Real test are done when trying to get components registered in register_components.py)
+    """
+
+    class Greetings1:
+        def hello(self, name="World"):
+            return "Hello, {0}!".format(name)
+
+    class Greetings2:
+        def hello(self, name="World"):
+            return "Hi, {0}!".format(name)
+
+    loader = BundleLoader()
+    loader.register_factory(Greetings1, 'hello-world-factory', 'hello.world')
+    with pytest.raises(FastDuplicateFactoryError) as exc_info:
+        loader.register_factory(Greetings2, 'hello-world-factory', 'hello.world.again')
+    assert exc_info.value.factory_name == 'hello-world-factory'
 
 
 def test_get_service_references(delete_framework):

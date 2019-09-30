@@ -28,54 +28,52 @@ from fastoad.module_management import BundleLoader
 
 
 # First, let's register 2 factories the iPOPO way
-
-
-@ComponentFactory("hello-world-factory")
-@Provides("hello.world")
-@Property("Prop1", None, 1)
-@Property("Prop_2", "Prop 2", "Says.Hello")
-@Property("Instantiated", None, True)
-@Instantiate("provider")
+@ComponentFactory('hello-world-factory')
+@Provides('hello.world')
+@Property('Prop1', None, 1)
+@Property('Prop_2', 'Prop 2', 'Says.Hello')
+@Property('Instantiated', None, True)
+@Instantiate('provider')
 class Greetings1:
-    def hello(self, name="World"):
-        return "Hello, {0}!".format(name)
+    def hello(self, name='World'):
+        return 'Hello, {0}!'.format(name)
 
 
-@ComponentFactory("hello-world-factory2")
-@Provides("hello.world")
-@Property("Prop1", None, 2)
-@Property("Prop_2", "Prop 2", "Says.Hi")
-@Property("Instantiated", None, True)
-@Instantiate("provider2")
+@ComponentFactory('hello-world-factory2')
+@Provides('hello.world')
+@Property('Prop1', None, 2)
+@Property('Prop_2', 'Prop 2', 'Says.Hi')
+@Property('Instantiated', None, True)
+@Instantiate('provider2')
 class Greetings2:
-    def hello(self, name="World"):
-        return "Hi, {0}!".format(name)
+    def hello(self, name='World'):
+        return 'Hi, {0}!'.format(name)
 
 
 # Register factories without instantiating with our wrapping of iPOPO
 class OtherGreetings:
-    def hello(self, name="World"):
-        return "Hello again, {0}!".format(name)
+    def hello(self, name='World'):
+        return 'Hello again, {0}!'.format(name)
 
 
 loader = BundleLoader()
 loader.register_factory(OtherGreetings,
-                        factory_name="another-hello-world-factory",
-                        service_names=["hello.world", "hello.world.no.instance"],
-                        properties={"Prop1": 3,
-                                    "Prop 2": "Says.Hello",
-                                    "Instantiated": False}
+                        factory_name='another-hello-world-factory',
+                        service_names=['hello.world', 'hello.world.no.instance'],
+                        properties={'Prop1': 3,
+                                    'Prop 2': 'Says.Hello',
+                                    'Instantiated': False}
                         )
 
 
 class OtherGreetings2:
-    def hello(self, name="Universe"):
-        return "Hello again, {0}!".format(name)
+    def hello(self, name='Universe'):
+        return 'Hello again, {0}!'.format(name)
 
 
 # This one provides a different service and tests registering without properties
 loader = BundleLoader()
 loader.register_factory(OtherGreetings2,
-                        factory_name="hello-universe-factory",
-                        service_names=["hello.universe"]
+                        factory_name='hello-universe-factory',
+                        service_names=['hello.universe']
                         )

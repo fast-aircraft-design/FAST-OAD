@@ -18,6 +18,7 @@ The base layer for registering and retrieving OpenMDAO systems
 import logging
 from typing import List
 
+from fastoad.module_management.bundle_loader import FastDuplicateFactoryError
 from fastoad.openmdao.types import SystemSubclass
 from . import BundleLoader
 from .constants import SERVICE_OPENMDAO_SYSTEM
@@ -51,8 +52,14 @@ class OpenMDAOSystemFactory:
         :param system_class:
         :param identifier:
         :param properties: properties that will be associated to the service
+        :raise FastDuplicateOpenMDAOSystemNameException:
         """
-        cls._loader.register_factory(system_class, identifier, SERVICE_OPENMDAO_SYSTEM, properties)
+        try:
+            cls._loader.register_factory(system_class, identifier, SERVICE_OPENMDAO_SYSTEM,
+                                         properties)
+        except FastDuplicateFactoryError as err:
+            # Just a more specialized error message
+            raise FastDuplicateOpenMDAOSystemIdentifierException(err.factory_name)
 
     @classmethod
     def get_system(cls, identifier: str) -> SystemSubclass:
@@ -114,3 +121,12 @@ class OpenMDAOSystemFactory:
                 ': %s' % required_properties)
 
         return factory_names
+
+
+class FastDuplicateOpenMDAOSystemIdentifierException(FastDuplicateFactoryError):
+    """
+    Raised when trying to register an OpenMDAO System with an already used identifier
+    """
+
+    def __str__(self):
+        return 'Tried to register a system with an already used identifier : %s' % self.factory_name

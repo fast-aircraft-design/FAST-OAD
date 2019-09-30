@@ -37,7 +37,7 @@ class BundleLoader:
         """
         Constructor
         """
-        self.__framework: Framework = None
+        self._framework: Framework = None
 
     @property
     def framework(self) -> Framework:
@@ -49,16 +49,16 @@ class BundleLoader:
         :return: Pelix framework instance
         """
         if FrameworkFactory.is_framework_running():
-            self.__framework = FrameworkFactory.get_framework()
+            self._framework = FrameworkFactory.get_framework()
             # Do not use self.context, because it will call back this.
-            context = self.__framework.get_bundle_context()
+            context = self._framework.get_bundle_context()
             if not context.get_service_reference(SERVICE_IPOPO):
-                self.__framework.install_bundle(SERVICE_IPOPO)
+                self._framework.install_bundle(SERVICE_IPOPO)
         else:
-            self.__framework = pelix.framework.create_framework(())
-            self.__framework.install_bundle(SERVICE_IPOPO)
-            self.__framework.start()
-        return self.__framework
+            self._framework = pelix.framework.create_framework(())
+            self._framework.install_bundle(SERVICE_IPOPO)
+            self._framework.start()
+        return self._framework
 
     @property
     def context(self) -> BundleContext:
@@ -169,8 +169,7 @@ class BundleLoader:
                                                              , ldap_filter)
         return references
 
-    @classmethod
-    def register_factory(cls, component_class: type,
+    def register_factory(self, component_class: type,
                          factory_name: str,
                          service_names: Union[List[str], str],
                          properties: dict = None) -> type:
@@ -182,14 +181,24 @@ class BundleLoader:
         :param service_names: the service(s) that will be provided by the components
         :param properties: the properties associated to the factory
         :return: the input class, amended by iPOPO
+        :raise FastDuplicateFactoryError:
         """
         obj = Provides(service_names)(component_class)
+        with use_ipopo(self.context) as ipopo:
+            if ipopo.is_registered_factory(factory_name):
+                raise FastDuplicateFactoryError(factory_name)
 
-        if properties:
-            for key, value in properties.items():
-                obj = Property(field=cls._fieldify(key), name=key, value=value)(obj)
+            if properties:
+                for key, value in properties.items():
+                    obj = Property(field=self._fieldify(key), name=key, value=value)(obj)
 
-        return ComponentFactory(factory_name)(obj)
+            factory = ComponentFactory(factory_name)(obj)
+
+            # When using factory immediately, manually registering is needed
+            if not ipopo.is_registered_factory(factory_name):
+                ipopo.register_factory(self.context, factory)
+
+            return factory
 
     def get_factory_names(self, service_name: str = None
                           , properties: dict = None
@@ -280,3 +289,16 @@ class BundleLoader:
         :return: the field version of `name`
         """
         return re.compile(r'[\W_]+').sub('_', name).strip('_')
+
+
+class FastDuplicateFactoryError(Exception):
+    """
+    Raised when trying to register a factory with an already used name
+    """
+
+    def __init__(self, factory_name):
+        super().__init__()
+        self.factory_name = factory_name
+
+    def __str__(self):
+        return 'Name "%s" is already used.' % self.factory_name
