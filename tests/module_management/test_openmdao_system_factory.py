@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def framework_load_unload():
     # Starts Pelix framework and load components
     OpenMDAOSystemFactory.explore_folder(pth.join(pth.dirname(__file__), '..', 'sellar_example'))

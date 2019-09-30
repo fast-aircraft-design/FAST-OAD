@@ -18,6 +18,7 @@ import logging
 import os.path as pth
 
 import pelix
+import pytest
 from pelix.framework import FrameworkFactory
 
 from fastoad.module_management import BundleLoader
@@ -28,15 +29,23 @@ _LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
-def test_init_bundle_loader_from_scratch():
-    """
-    Tests that creating a Loader instance will start a correctly configured
-    Pelix framework
-    """
+@pytest.fixture()
+def delete_framework():
+    """ Ensures framework is deleted before and after running tests"""
+    if FrameworkFactory.is_framework_running():
+        FrameworkFactory.get_framework().delete(True)
+
+    yield
 
     if FrameworkFactory.is_framework_running():
         FrameworkFactory.get_framework().delete(True)
 
+
+def test_init_bundle_loader_from_scratch(delete_framework):
+    """
+    Tests that creating a Loader instance will start a correctly configured
+    Pelix framework
+    """
     assert not FrameworkFactory.is_framework_running()
 
     loader = BundleLoader()
@@ -54,18 +63,12 @@ def test_init_bundle_loader_from_scratch():
     loader = BundleLoader()
     assert framework is loader.framework
 
-    # Framework has to be deleted for next tests to run smoothly
-    framework.delete(True)
 
-
-def test_init_bundle_loader_with_running_framework():
+def test_init_bundle_loader_with_running_framework(delete_framework):
     """
     Tests that creating a Loader instance with an already running Pelix
     framework will work and enforce a correct configuration of the framework.
     """
-
-    if FrameworkFactory.is_framework_running():
-        FrameworkFactory.get_framework().delete(True)
 
     framework = pelix.framework.create_framework(())
     assert framework.get_bundle_by_name("pelix.ipopo.core") is None
@@ -89,11 +92,8 @@ def test_init_bundle_loader_with_running_framework():
     # Framework outlives the Loader
     assert FrameworkFactory.is_framework_running()
 
-    # Framework has to be deleted for next tests to run smoothly
-    framework.delete(True)
 
-
-def test_install_packages():
+def test_install_packages(delete_framework):
     """
     Tests installation of bundles in a folder
     """
@@ -102,11 +102,8 @@ def test_install_packages():
     loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
     assert loader.framework.get_bundle_by_name("dummy_pelix_bundles.hello_world") is not None
 
-    # Pelix framework has to be deleted for next tests to run smoothly
-    loader.framework.delete(True)
 
-
-def test_get_service_references():
+def test_get_service_references(delete_framework):
     """
     Tests the method for retrieving service references according to properties
     """
@@ -154,11 +151,8 @@ def test_get_service_references():
     river = loader.context.get_service(service_refs[0])
     assert river.hello("Sweetie") == "Hello, Sweetie!"
 
-    # Pelix framework has to be deleted for next tests to run smoothly
-    loader.framework.delete(True)
 
-
-def test_get_services():
+def test_get_services(delete_framework):
     """
     Tests the method for retrieving services according to properties
     """
@@ -204,11 +198,8 @@ def test_get_services():
     river = services[0]
     assert river.hello("Sweetie") == "Hello, Sweetie!"
 
-    # Pelix framework has to be deleted for next tests to run smoothly
-    loader.framework.delete(True)
 
-
-def test_instantiate_component():
+def test_instantiate_component(delete_framework):
     """
     Tests the method for instantiating a component from factory name
     """
@@ -229,11 +220,8 @@ def test_instantiate_component():
     services = loader.get_services("hello.world")
     assert len(services) == 3
 
-    # Pelix framework has to be deleted for next tests to run smoothly
-    loader.framework.delete(True)
 
-
-def test_get_factory_names():
+def test_get_factory_names(delete_framework):
     """
     Tests the method for retrieving factories according to properties
     """
@@ -286,6 +274,3 @@ def test_get_factory_names():
     assert not factory_names
     factory_names = loader.get_factory_names("hello.world", {"Prop 2": "Says.Hello"}, True)
     assert len(factory_names) == 2
-
-    # Pelix framework has to be deleted for next tests to run smoothly
-    loader.framework.delete(True)
