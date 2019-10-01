@@ -65,29 +65,16 @@ class OpenMDAOSystemFactory:
     def get_system(cls, identifier: str) -> SystemSubclass:
         """
 
-        :param identifier:
-        :return:
+        :param identifier: identifier of the registered class
+        :return: an OpenMDAO system instantiated from the registered class
         """
 
-        return cls._loader.instantiate_component(identifier)
+        try:
+            system = cls._loader.instantiate_component(identifier)
+        except TypeError:
+            raise FastUnknownOpenMDAOSystemIdentifierError(identifier)
 
-    @classmethod
-    def get_system_from_properties(cls, required_properties: dict) -> SystemSubclass:
-        """
-        Returns the first encountered System instance with properties that
-        match all required properties.
-
-        :param required_properties:
-        :return: an OpenMDAO System (or subclass) instance
-        """
-
-        factory_names = cls._get_system_factory_names(required_properties)
-
-        if len(factory_names) > 1:
-            _LOGGER.warning('More than one OpenMDAO system found with these '
-                            'properties: %s', required_properties)
-            _LOGGER.warning('Returning first one.')
-        return cls._loader.instantiate_component(factory_names[0])
+        return system
 
     @classmethod
     def get_systems_from_properties(cls, required_properties: dict) \
@@ -116,9 +103,7 @@ class OpenMDAOSystemFactory:
         factory_names = cls._loader.get_factory_names(SERVICE_OPENMDAO_SYSTEM, required_properties)
 
         if not factory_names:
-            raise KeyError(
-                'No OpenMDAO system found with these properties'
-                ': %s' % required_properties)
+            raise FastNoOpenMDAOSystemFoundError(required_properties)
 
         return factory_names
 
@@ -130,3 +115,23 @@ class FastDuplicateOpenMDAOSystemIdentifierException(FastDuplicateFactoryError):
 
     def __str__(self):
         return 'Tried to register a system with an already used identifier : %s' % self.factory_name
+
+
+class FastNoOpenMDAOSystemFoundError(Exception):
+    """
+    Raised when no registered OpenMDAO system could be found from asked properties
+    """
+
+    def __init__(self, properties):
+        super().__init__('No OpenMDAO system found with these properties: %s' % properties)
+        self.properties = properties
+
+
+class FastUnknownOpenMDAOSystemIdentifierError(Exception):
+    """
+    Raised when no OpenMDAO system is registered with asked identifier
+    """
+
+    def __init__(self, identifier):
+        super().__init__('No OpenMDAO system found with this identifier: %s' % identifier)
+        self.identifier = identifier

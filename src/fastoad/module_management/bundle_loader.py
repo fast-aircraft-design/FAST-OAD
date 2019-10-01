@@ -275,8 +275,5 @@ class FastDuplicateFactoryError(Exception):
     """
 
     def __init__(self, factory_name):
-        super().__init__()
+        super().__init__('Name "%s" is already used.' % factory_name)
         self.factory_name = factory_name
-
-    def __str__(self):
-        return 'Name "%s" is already used.' % self.factory_name

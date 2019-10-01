@@ -22,7 +22,8 @@ from openmdao.api import Problem, ScipyOptimizeDriver  # , pyOptSparseDriver
 
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.constants import SERVICE_OPENMDAO_SYSTEM
-from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory, \
+    FastNoOpenMDAOSystemFoundError, FastUnknownOpenMDAOSystemIdentifierError
 from tests.sellar_example.sellar import Sellar, ISellarFactory
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,52 +57,25 @@ def test_get_system(framework_load_unload):
     """
 
     # Get component 1 #########################################################
-    disc1 = OpenMDAOSystemFactory.get_system('sellar.disc1')
-    disc2 = OpenMDAOSystemFactory.get_system('sellar.disc2')
-    functions = OpenMDAOSystemFactory.get_system('sellar.functions')
-
-
-def test_get_system_from_properties(framework_load_unload):
-    """
-    Tests the retrieval of component according to properties
-    """
-
-    # Get component 1 #########################################################
-    disc1_component = OpenMDAOSystemFactory.get_system_from_properties({'Number': 1})
+    disc1_component = OpenMDAOSystemFactory.get_system('sellar.disc1')
+    assert disc1_component._Discipline == 'generic'
     assert disc1_component is not None
     disc1_component.setup()
     outputs = {}
     disc1_component.compute({'z': [10., 10.], 'x': 10., 'y2': 10.}, outputs)
     assert outputs['y1'] == 118.
 
-    # Get component 1 #########################################################
-    disc2_component = OpenMDAOSystemFactory.get_system_from_properties({'Number': 2})
+    # Get component 2 #########################################################
+    disc2_component = OpenMDAOSystemFactory.get_system('sellar.disc2')
     assert disc2_component is not None
     disc2_component.setup()
     outputs = {}
     disc2_component.compute({'z': [10., 10.], 'y1': 4.}, outputs)
     assert outputs['y2'] == 22.
 
-    # Get component when several possible #####################################
-    any_component = OpenMDAOSystemFactory.get_system_from_properties({'Discipline': 'generic'})
-    assert type(any_component) is type(disc1_component) \
-           or type(any_component) is type(disc2_component)
-
-    # Error raised when property does not exists ##############################
-    got_key_error = False
-    try:
-        OpenMDAOSystemFactory.get_system_from_properties({'MissingProperty': -5})
-    except KeyError:
-        got_key_error = True
-    assert got_key_error
-
-    # Error raised when no matching component #################################
-    got_key_error = False
-    try:
-        OpenMDAOSystemFactory.get_system_from_properties({'Number': -5})
-    except KeyError:
-        got_key_error = True
-    assert got_key_error
+    # Get unknown component
+    with pytest.raises(FastUnknownOpenMDAOSystemIdentifierError):
+        OpenMDAOSystemFactory.get_system('unknown.identifier')
 
 
 def test_get_systems_from_properties(framework_load_unload):
@@ -120,25 +94,27 @@ def test_get_systems_from_properties(framework_load_unload):
     disc1_component.compute({'z': [10., 10.], 'x': 10., 'y2': 10.}, outputs)
     assert outputs['y1'] == 118.
 
+    # Get component 2 #########################################################
+    systems = OpenMDAOSystemFactory.get_systems_from_properties({'Number': 2})
+    assert len(systems) == 1
+    disc2_component = systems[0]
+    assert disc2_component is not None
+    disc2_component.setup()
+    outputs = {}
+    disc2_component.compute({'z': [10., 10.], 'y1': 4.}, outputs)
+    assert outputs['y2'] == 22.
+
     # Get component when several possible #####################################
     systems = OpenMDAOSystemFactory.get_systems_from_properties({'Discipline': 'generic'})
     assert len(systems) == 2
 
     # Error raised when property does not exists ##############################
-    got_key_error = False
-    try:
+    with pytest.raises(FastNoOpenMDAOSystemFoundError):
         OpenMDAOSystemFactory.get_systems_from_properties({'MissingProperty': -5})
-    except KeyError:
-        got_key_error = True
-    assert got_key_error
 
     # Error raised when no matching component #################################
-    got_key_error = False
-    try:
+    with pytest.raises(FastNoOpenMDAOSystemFoundError):
         OpenMDAOSystemFactory.get_systems_from_properties({'Number': -5})
-    except KeyError:
-        got_key_error = True
-    assert got_key_error
 
 
 def test_sellar(framework_load_unload):
