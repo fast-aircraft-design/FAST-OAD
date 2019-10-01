@@ -100,6 +100,13 @@ def test_custom_xml_read_and_write_from_ivc():
     filename = pth.join(data_folder, 'custom.xml')
     xml_read = OpenMdaoCustomXmlIO(filename)
 
+    # test with setting a bad translation with an additional var not present in the xml
+    # we expect that all goes on well
+    xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['additional_var'],
+                                                   xpaths=xpaths + ['bad:xpath']))
+    ivc = xml_read.read()
+    _check_basic2_ivc(ivc)
+
     # test after setting translation table
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
     xml_read.set_translator(translator)
