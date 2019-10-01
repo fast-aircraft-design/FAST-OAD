@@ -30,8 +30,8 @@ from fastoad.module_management import BundleLoader
 # First, let's register 2 factories the iPOPO way
 @ComponentFactory('hello-world-factory')
 @Provides('hello.world')
-@Property('Prop1', None, 1)
-@Property('Prop_2', 'Prop 2', 'Says.Hello')
+@Property('_Prop1', 'Prop1', 1)
+@Property('_Prop_2', 'Prop 2', 'Says.Hello')
 @Property('Instantiated', None, True)
 @Instantiate('provider')
 class Greetings1:
@@ -41,8 +41,8 @@ class Greetings1:
 
 @ComponentFactory('hello-world-factory2')
 @Provides('hello.world')
-@Property('Prop1', None, 2)
-@Property('Prop_2', 'Prop 2', 'Says.Hi')
+@Property('_Prop1', 'Prop1', 2)
+@Property('_Prop_2', 'Prop 2', 'Says.Hi')
 @Property('Instantiated', None, True)
 @Instantiate('provider2')
 class Greetings2:

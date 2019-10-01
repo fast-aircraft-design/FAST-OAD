@@ -37,16 +37,13 @@ class BundleLoader:
         """
         Constructor
         """
-        self._framework: Framework = None
+        self._framework = None
 
     @property
     def framework(self) -> Framework:
         """
-        Returns the Pelix framework instance. If None is running, a new one
-        will be started and initialized. The framework will continue after
-        deletion of this BundleLoader instance and will be reused by next instances.
-
-        :return: Pelix framework instance
+        The currently running Pelix framework instance, or a new one if none is running (anyway,
+        the framework instance will continue after deletion of this BundleLoader instance)
         """
         if FrameworkFactory.is_framework_running():
             self._framework = FrameworkFactory.get_framework()
@@ -63,7 +60,7 @@ class BundleLoader:
     @property
     def context(self) -> BundleContext:
         """
-        :return: BundleContext instance of runnning Pelix framework
+        BundleContext instance of running Pelix framework
         """
         return self.framework.get_bundle_context()
 
@@ -91,26 +88,6 @@ class BundleLoader:
 
         return bundles, failed
 
-    def get_service(self, service_name: str) -> Optional[object]:
-        """
-        Returns the service that match *service_name*.
-
-        If there are more than one service that mach *service_name*, only the first one is
-        returned.
-
-        If several services are expected, please use :meth:`get_services` instead.
-
-        :param service_name:
-        :return: the service instance, or None if not found
-        """
-        services = self.get_services(service_name)
-        if services is not None:
-            if len(services) > 1:
-                _LOGGER.warning('More than one service found for spec %s', service_name)
-            return services[0]
-
-        return None
-
     def get_services(self
                      , service_name: str
                      , properties: dict = None
@@ -123,51 +100,16 @@ class BundleLoader:
         :param service_name:
         :param properties:
         :param case_sensitive: if False, case of property values will be
-        ignored
+                               ignored
         :return: the list of service instances
         """
-        references = self.get_service_references(service_name, properties
-                                                 , case_sensitive)
+        references = self._get_service_references(service_name, properties
+                                                  , case_sensitive)
         services = None
         if references is not None:
             services = [self.context.get_service(ref) for ref in references]
 
         return services
-
-    def get_service_references(self
-                               , service_name: str
-                               , properties: dict = None
-                               , case_sensitive: bool = False) \
-            -> Optional[List[ServiceReference]]:
-        """
-        Returns the service references that match *service_name* and
-        provided *properties* (if provided)
-
-        :param service_name:
-        :param properties:
-        :param case_sensitive: if False, case of property values will be
-        ignored
-        :return: a list of ServiceReference instances
-        """
-
-        # Dev Note: simple wrapper for BundleContext.get_all_service_references()
-
-        if case_sensitive:
-            operator = '='
-        else:
-            operator = '~='
-
-        if not properties:
-            ldap_filter = None
-        else:
-            ldap_filter = '(&' + ''.join(
-                ['({0}{1}{2})'.format(key, operator, value)
-                 for key, value in properties.items()]) + ')'
-            _LOGGER.debug(ldap_filter)
-
-        references = self.context.get_all_service_references(service_name
-                                                             , ldap_filter)
-        return references
 
     def register_factory(self, component_class: type,
                          factory_name: str,
@@ -190,7 +132,7 @@ class BundleLoader:
 
             if properties:
                 for key, value in properties.items():
-                    obj = Property(field=self._fieldify(key), name=key, value=value)(obj)
+                    obj = Property(field='_' + self._fieldify(key), name=key, value=value)(obj)
 
             factory = ComponentFactory(factory_name)(obj)
 
@@ -252,16 +194,17 @@ class BundleLoader:
                               ) -> Any:
         """
         Instantiates a component from given factory
+
         :param factory_name: name of the factory
         :param properties: Initial properties of the component instance
         :return: the component instance
         """
         with use_ipopo(self.context) as ipopo:
             return ipopo.instantiate(factory_name,
-                                     self.get_instance_name(factory_name),
+                                     self._get_instance_name(factory_name),
                                      properties)
 
-    def get_instance_name(self, base_name: str):
+    def _get_instance_name(self, base_name: str):
         """
         Creates an instance name that is not currently used by iPOPO
 
@@ -278,6 +221,41 @@ class BundleLoader:
                 name = '%s_%i' % (base_name, i)
 
             return name
+
+    def _get_service_references(self
+                                , service_name: str
+                                , properties: dict = None
+                                , case_sensitive: bool = False) \
+            -> Optional[List[ServiceReference]]:
+        """
+        Returns the service references that match *service_name* and
+        provided *properties* (if provided)
+
+        :param service_name:
+        :param properties:
+        :param case_sensitive: if False, case of property values will be
+                               ignored
+        :return: a list of ServiceReference instances
+        """
+
+        # Dev Note: simple wrapper for BundleContext.get_all_service_references()
+
+        if case_sensitive:
+            operator = '='
+        else:
+            operator = '~='
+
+        if not properties:
+            ldap_filter = None
+        else:
+            ldap_filter = '(&' + ''.join(
+                ['({0}{1}{2})'.format(key, operator, value)
+                 for key, value in properties.items()]) + ')'
+            _LOGGER.debug(ldap_filter)
+
+        references = self.context.get_all_service_references(service_name
+                                                             , ldap_filter)
+        return references
 
     @staticmethod
     def _fieldify(name: str) -> str:

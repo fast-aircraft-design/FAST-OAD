@@ -113,7 +113,7 @@ def test_get_systems_from_properties(framework_load_unload):
     systems = OpenMDAOSystemFactory.get_systems_from_properties({'Number': 1})
     assert len(systems) == 1
     disc1_component = systems[0]
-    assert disc1_component.Discipline == 'generic'
+    assert disc1_component._Discipline == 'generic'
     assert disc1_component is not None
     disc1_component.setup()
     outputs = {}

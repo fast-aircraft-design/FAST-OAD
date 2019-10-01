@@ -38,7 +38,7 @@ def test_result_folder_provider(framework_load):
     provider: SubfolderProvider
 
     loader = BundleLoader()
-    provider = loader.get_service(SERVICE_RESULT_FOLDER_PROVIDER)
+    provider = loader.get_services(SERVICE_RESULT_FOLDER_PROVIDER)[0]
     assert provider is not None
 
     expected_folder_path = pth.join(ROOT_FOLDER_PATH, FOLDER_NAME)
@@ -72,6 +72,6 @@ def test_other_call_to_result_folder_provider():
     # Requires that previous test has been run.
     provider: SubfolderProvider
 
-    provider = BundleLoader().get_service(SERVICE_RESULT_FOLDER_PROVIDER)
+    provider = BundleLoader().get_services(SERVICE_RESULT_FOLDER_PROVIDER)[0]
     assert provider is not None
     assert provider.get_subfolder_path() == ROOT_FOLDER_PATH

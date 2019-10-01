@@ -126,55 +126,6 @@ def test_register_factory(delete_framework):
     assert exc_info.value.factory_name == 'hello-world-factory'
 
 
-def test_get_service_references(delete_framework):
-    """
-    Tests the method for retrieving service references according to properties
-    """
-    loader = BundleLoader()
-    loader.install_packages(
-        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
-
-    # Missing service
-    service_refs = loader.get_service_references("does.not.exists")
-    assert service_refs is None
-
-    # Existing service, but not instantiated
-    service_refs = loader.get_service_references("hello.world.no.instance")
-    assert service_refs is None
-
-    # Existing services, no property provided
-    service_refs = loader.get_service_references("hello.world")
-    assert len(service_refs) == 2
-
-    # Existing services, 1 property provided
-    service_refs = loader.get_service_references("hello.world", {"Instantiated": True})
-    assert len(service_refs) == 2
-    service_refs = loader.get_service_references("hello.world", {"Prop1": 1})
-    assert len(service_refs) == 1
-
-    # Existing service, 2 properties, case insensitivity
-
-    service_refs = loader.get_service_references("hello.world",
-                                                 {"Prop1": 1, "Prop 2": "says.hello"})
-    assert len(service_refs) == 1
-    greet_service = loader.context.get_service(service_refs[0])
-    assert greet_service.hello("Dolly") == "Hello, Dolly!"
-
-    # Existing service, case insensitivity
-    service_refs = loader.get_service_references("hello.world", {"Prop 2": "SAYS.HI"})
-    assert len(service_refs) == 1
-    greet_service = loader.context.get_service(service_refs[0])
-    assert greet_service.hello() == "Hi, World!"
-
-    # Existing service, case sensitivity
-    service_refs = loader.get_service_references("hello.world", {"Prop 2": "SAYS.HELLO"}, True)
-    assert service_refs is None
-    service_refs = loader.get_service_references("hello.world", {"Prop 2": "Says.Hello"}, True)
-    assert len(service_refs) == 1
-    river = loader.context.get_service(service_refs[0])
-    assert river.hello("Sweetie") == "Hello, Sweetie!"
-
-
 def test_get_services(delete_framework):
     """
     Tests the method for retrieving services according to properties
@@ -236,8 +187,8 @@ def test_instantiate_component(delete_framework):
 
     song = loader.instantiate_component("another-hello-world-factory")
     assert song.hello("Sweetie") == "Hello again, Sweetie!"
-    assert song.Prop1 == 3
-    assert song.Prop_2 == "Says.Hello"
+    assert song._Prop1 == 3
+    assert song._Prop_2 == "Says.Hello"
 
     # now one more service is instantiated
     services = loader.get_services("hello.world")
