@@ -17,7 +17,14 @@ Module for custom Exception classes
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-class NoSetupError(Exception):
+class FastError(Exception):
+    """
+    Base Class for exceptions related to the FAST framework.
+    """
+
+    pass
+
+class NoSetupError(FastError):
     """
     No Setup Error.
 
