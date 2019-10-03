@@ -23,39 +23,57 @@ Basic "Hello World" services
 from pelix.ipopo.decorators import ComponentFactory, Provides, Instantiate, \
     Property
 
-
 # Define the component factory, with a given name
-@ComponentFactory("hello-world-factory")
-# Defines the service to provide when the component is active
-@Provides("hello.world")
-@Property("Prop1", None, 1)
-@Property("Prop2", None, "Says.Hello")
-@Property("Instantiated", None, True)
-# A component must be instantiated as soon as the bundle is active
-@Instantiate("provider")
+from fastoad.module_management import BundleLoader
+
+
+# First, let's register 2 factories the iPOPO way
+@ComponentFactory('hello-world-factory')
+@Provides('hello.world')
+@Property('_Prop1', 'Prop1', 1)
+@Property('_Prop_2', 'Prop 2', 'Says.Hello')
+@Property('Instantiated', None, True)
+@Instantiate('provider')
 class Greetings1:
-    def hello(self, name="World"):
-        return "Hello, {0}!".format(name)
+    def hello(self, name='World'):
+        return 'Hello, {0}!'.format(name)
 
 
-# Another instance for the same service
-@ComponentFactory("hello-world-factory2")
-@Provides("hello.world")
-@Property("Prop1", None, 2)
-@Property("Prop2", None, "Says.Hi")
-@Property("Instantiated", None, True)
-@Instantiate("provider2")
+@ComponentFactory('hello-world-factory2')
+@Provides('hello.world')
+@Property('_Prop1', 'Prop1', 2)
+@Property('_Prop_2', 'Prop 2', 'Says.Hi')
+@Property('Instantiated', None, True)
+@Instantiate('provider2')
 class Greetings2:
-    def hello(self, name="World"):
-        return "Hi, {0}!".format(name)
+    def hello(self, name='World'):
+        return 'Hi, {0}!'.format(name)
 
 
-@ComponentFactory("another-hello-world-factory")
-@Provides("hello.world.no.instance")
-@Property("Prop1", None, 3)
-@Property("Prop2", None, "Says.Hello")
-@Property("Instantiated", None, False)
-# Not instantiating this one for testing the case
+# Register factories without instantiating with our wrapping of iPOPO
 class OtherGreetings:
-    def hello(self, name="World"):
-        return "Hello again, {0}!".format(name)
+    def hello(self, name='World'):
+        return 'Hello again, {0}!'.format(name)
+
+
+loader = BundleLoader()
+loader.register_factory(OtherGreetings,
+                        factory_name='another-hello-world-factory',
+                        service_names=['hello.world', 'hello.world.no.instance'],
+                        properties={'Prop1': 3,
+                                    'Prop 2': 'Says.Hello',
+                                    'Instantiated': False}
+                        )
+
+
+class OtherGreetings2:
+    def hello(self, name='Universe'):
+        return 'Hello again, {0}!'.format(name)
+
+
+# This one provides a different service and tests registering without properties
+loader = BundleLoader()
+loader.register_factory(OtherGreetings2,
+                        factory_name='hello-universe-factory',
+                        service_names=['hello.universe']
+                        )

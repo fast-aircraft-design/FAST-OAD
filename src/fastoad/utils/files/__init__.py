@@ -10,10 +10,3 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-# Registers the service
-from fastoad import BundleLoader
-from fastoad.module_management.constants import SERVICE_RESULT_FOLDER_PROVIDER
-from .subfolder_provider import SubfolderProvider
-
-BundleLoader().context.register_service(SERVICE_RESULT_FOLDER_PROVIDER, SubfolderProvider(), {})

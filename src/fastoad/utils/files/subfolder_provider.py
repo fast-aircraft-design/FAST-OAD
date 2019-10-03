@@ -18,7 +18,14 @@ import os
 import os.path as pth
 from typing import List, Union
 
+from pelix.ipopo.decorators import SingletonFactory, Provides, Instantiate
 
+from fastoad.module_management.constants import SERVICE_RESULT_FOLDER_PROVIDER
+
+
+@SingletonFactory('org.fast.subfolderprovider.factory')
+@Provides(SERVICE_RESULT_FOLDER_PROVIDER)
+@Instantiate('org.fast.subfolderprovider')
 class SubfolderProvider:
     """
     Service for providing subfolders after having set once a unique root folder.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Basis for registering and retrieving services
 """
@@ -16,12 +15,14 @@ Basis for registering and retrieving services
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import List, Tuple, Set, Union, Optional
+import re
+from typing import List, Tuple, Set, Union, Optional, Any
 
 import pelix
 from pelix.framework import FrameworkFactory, Framework, Bundle, BundleContext
 from pelix.internals.registry import ServiceReference
-from pelix.ipopo.constants import SERVICE_IPOPO
+from pelix.ipopo.constants import SERVICE_IPOPO, use_ipopo
+from pelix.ipopo.decorators import ComponentFactory, Provides, Property
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -36,33 +37,30 @@ class BundleLoader:
         """
         Constructor
         """
-        self.__framework: Framework = None
+        self._framework = None
 
     @property
     def framework(self) -> Framework:
         """
-        Returns the Pelix framework instance. If None is running, a new one
-        will be started and initialized. The framework will continue after
-        deletion of this BundleLoader instance and will be reused by next instances.
-
-        :return: Pelix framework instance
+        The currently running Pelix framework instance, or a new one if none is running (anyway,
+        the framework instance will continue after deletion of this BundleLoader instance)
         """
         if FrameworkFactory.is_framework_running():
-            self.__framework = FrameworkFactory.get_framework()
+            self._framework = FrameworkFactory.get_framework()
             # Do not use self.context, because it will call back this.
-            context = self.__framework.get_bundle_context()
+            context = self._framework.get_bundle_context()
             if not context.get_service_reference(SERVICE_IPOPO):
-                self.__framework.install_bundle(SERVICE_IPOPO)
+                self._framework.install_bundle(SERVICE_IPOPO)
         else:
-            self.__framework = pelix.framework.create_framework(())
-            self.__framework.install_bundle(SERVICE_IPOPO)
-            self.__framework.start()
-        return self.__framework
+            self._framework = pelix.framework.create_framework(())
+            self._framework.install_bundle(SERVICE_IPOPO)
+            self._framework.start()
+        return self._framework
 
     @property
     def context(self) -> BundleContext:
         """
-        :return: BundleContext instance of runnning Pelix framework
+        BundleContext instance of running Pelix framework
         """
         return self.framework.get_bundle_context()
 
@@ -90,26 +88,6 @@ class BundleLoader:
 
         return bundles, failed
 
-    def get_service(self, service_name: str) -> Optional[object]:
-        """
-        Returns the service that match *service_name*.
-
-        If there are more than one service that mach *service_name*, only the first one is
-        returned.
-
-        If several services are expected, please use :meth:`get_services` instead.
-
-        :param service_name:
-        :return: the service instance, or None if not found
-        """
-        services = self.get_services(service_name)
-        if services is not None:
-            if len(services) > 1:
-                _LOGGER.warning('More than one service found for spec %s', service_name)
-            return services[0]
-
-        return None
-
     def get_services(self
                      , service_name: str
                      , properties: dict = None
@@ -119,27 +97,135 @@ class BundleLoader:
         Returns the services that match *service_name* and provided
         *properties* (if provided).
 
-        In order to have access to service
-        metadata such a properties, please use
-        :meth:`get_service_references` instead.
-
         :param service_name:
         :param properties:
         :param case_sensitive: if False, case of property values will be
-        ignored
+                               ignored
         :return: the list of service instances
         """
-        references = self.get_service_references(service_name, properties
-                                                 , case_sensitive)
+        references = self._get_service_references(service_name, properties
+                                                  , case_sensitive)
         services = None
         if references is not None:
             services = [self.context.get_service(ref) for ref in references]
+
         return services
 
-    def get_service_references(self
-                               , service_name: str
-                               , properties: dict = None
-                               , case_sensitive: bool = False) \
+    def register_factory(self, component_class: type,
+                         factory_name: str,
+                         service_names: Union[List[str], str],
+                         properties: dict = None) -> type:
+        """
+        Registers provided class as iPOPO component factory.
+
+        :param component_class: the class of the components that will be provided by the factory
+        :param factory_name: the name of the factory
+        :param service_names: the service(s) that will be provided by the components
+        :param properties: the properties associated to the factory
+        :return: the input class, amended by iPOPO
+        :raise FastDuplicateFactoryError:
+        """
+        obj = Provides(service_names)(component_class)
+        with use_ipopo(self.context) as ipopo:
+            if ipopo.is_registered_factory(factory_name):
+                raise FastDuplicateFactoryError(factory_name)
+
+            if properties:
+                for key, value in properties.items():
+                    obj = Property(field='_' + self._fieldify(key), name=key, value=value)(obj)
+
+            factory = ComponentFactory(factory_name)(obj)
+
+            # When using factory immediately, manually registering is needed
+            if not ipopo.is_registered_factory(factory_name):
+                ipopo.register_factory(self.context, factory)
+
+            return factory
+
+    def get_factory_names(self, service_name: str = None
+                          , properties: dict = None
+                          , case_sensitive: bool = False) -> List[str]:
+        """
+        Browses the available factory names to find what factories provide `service_name` (if
+        provided) and match provided `properties` (if provided).
+
+        if neither service_name nor properties are provided, all registered factory
+        names are returned.
+
+        :param service_name:
+        :param properties:
+        :param case_sensitive: if False, case of property values will be ignored
+        :return: the list of factory names
+        """
+        with use_ipopo(self.context) as ipopo:
+            all_names = ipopo.get_factories()
+            if not service_name and not properties:
+                return all_names
+
+            names = []
+            for name in all_names:
+                details = ipopo.get_factory_details(name)
+                to_be_kept = True
+                if service_name and service_name not in details['services'][0]:
+                    to_be_kept = False
+                elif properties:
+                    factory_properties: dict = details['properties']
+                    if case_sensitive:
+                        to_be_kept = all(item in factory_properties.items()
+                                         for item in properties.items())
+                    else:
+                        for prop_name, prop_value in properties.items():
+                            if prop_name not in factory_properties.keys():
+                                to_be_kept = False
+                                break
+                            factory_prop_value = factory_properties[prop_name]
+                            if isinstance(prop_value, str):
+                                prop_value = prop_value.lower()
+                                factory_prop_value = factory_prop_value.lower()
+                            if prop_value != factory_prop_value:
+                                to_be_kept = False
+                                break
+                if to_be_kept:
+                    names.append(name)
+        return names
+
+    def instantiate_component(self, factory_name: str,
+                              properties: dict = None
+                              ) -> Any:
+        """
+        Instantiates a component from given factory
+
+        :param factory_name: name of the factory
+        :param properties: Initial properties of the component instance
+        :return: the component instance
+        """
+        with use_ipopo(self.context) as ipopo:
+            return ipopo.instantiate(factory_name,
+                                     self._get_instance_name(factory_name),
+                                     properties)
+
+    def _get_instance_name(self, base_name: str):
+        """
+        Creates an instance name that is not currently used by iPOPO
+
+        :param base_name: the beginning of the instance name
+        :return: the created instance name
+        """
+        with use_ipopo(self.context) as ipopo:
+            instances = ipopo.get_instances()
+            instance_names = [i[0] for i in instances]
+            i = 0
+            name = '%s_%i' % (base_name, i)
+            while name in instance_names:
+                i = i + 1
+                name = '%s_%i' % (base_name, i)
+
+            return name
+
+    def _get_service_references(self
+                                , service_name: str
+                                , properties: dict = None
+                                , case_sensitive: bool = False) \
             -> Optional[List[ServiceReference]]:
         """
         Returns the service references that match *service_name* and
@@ -148,12 +234,11 @@ class BundleLoader:
         :param service_name:
         :param properties:
         :param case_sensitive: if False, case of property values will be
-        ignored
+                               ignored
         :return: a list of ServiceReference instances
         """
 
-        # Dev Note: simple wrapper for
-        # BundleContext.get_all_service_references()
+        # Dev Note: simple wrapper for BundleContext.get_all_service_references()
 
         if case_sensitive:
             operator = '='
@@ -171,3 +256,24 @@ class BundleLoader:
         references = self.context.get_all_service_references(service_name
                                                              , ldap_filter)
         return references
+
+    @staticmethod
+    def _fieldify(name: str) -> str:
+        """
+        Converts a string into a valid field name, i.e. replaces all spaces and
+        non-word characters with an underscore.
+
+        :param name: the string to fieldify
+        :return: the field version of `name`
+        """
+        return re.compile(r'[\W_]+').sub('_', name).strip('_')
+
+
+class FastDuplicateFactoryError(Exception):
+    """
+    Raised when trying to register a factory with an already used name
+    """
+
+    def __init__(self, factory_name):
+        super().__init__('Name "%s" is already used.' % factory_name)
+        self.factory_name = factory_name
