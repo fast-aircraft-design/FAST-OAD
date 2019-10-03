@@ -25,10 +25,13 @@ from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.vectors.vector import Vector
+from openmdao.core.problem import Problem
 
+from fastoad.exceptions import XPathError
 from fastoad.io.serialize import AbstractOpenMDAOVariableIO, SystemSubclass
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.types import Variable
+from fastoad.openmdao.connections_utils import build_ivc_of_unconnected_inputs
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
 from .xpath_reader import XPathReader
 
@@ -107,22 +110,25 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         if only is not None:
             var_names = only
         else:
-            var_names = self._translator.variable_names
+            xpaths = reader.get_all_elements_with_no_child_xpath()
+            var_names = []
+            for xpath in xpaths:
+                try:
+                    var_names.append(self._translator.get_variable_name(xpath))
+                except XPathError as err:
+                    _LOGGER.warning('The xpath %s does not have any \
+                                    variable affected in the translator.' % err.xpath
+                                    )
+                    continue
 
         if ignore is not None:
             var_names = [name for name in var_names if name not in ignore]
 
         for var_name in var_names:
+
             xpath = self._translator.get_xpath(var_name)
-            try:
-                values, units = reader.get_values_and_units(xpath)
-            except XPathEvalError:
-                _LOGGER.error(
-                    'Could not evaluate provided XPath %s (is path_separator correctly set?)',
-                    xpath)
-                raise
-            if values is None:
-                raise ValueError('XPath "%s" not found' % xpath)
+
+            values, units = reader.get_values_and_units(xpath)
 
             # For compatibility with legacy files
             if units is not None:
@@ -147,6 +153,17 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         variables = self._get_outputs(system)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         self._write(used_variables)
+
+    def write_inputs(self, problem: Problem, optional_inputs: bool = True):
+        """
+        Write inputs of a Problem to an xml file
+
+        :param problem: OpenMDAO Problem instance to read.
+        :param optional_inputs: if True, inputs with non-NaN values will also
+                                be written.
+        """
+        ivc_inputs = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=optional_inputs)
+        self.write(ivc_inputs)
 
     def _write(self, variables: Sequence[Variable]):
         """
@@ -229,10 +246,9 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         for (name, value, attributes) in reference_ivc._indep_external:
             if name in original_variables.keys():
                 original_variables[name] = Variable(name, value, attributes['units'])
-                print(name, value)
 
         updated_ivc = IndepVarComp()
-        for i, (key, variable) in enumerate(original_variables.items()):
+        for _, (_, variable) in enumerate(original_variables.items()):
             updated_ivc.add_output(variable.name, variable.value, units=variable.units)
 
         return updated_ivc
@@ -279,7 +295,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
     @staticmethod
     def _filter_variables(variables: Sequence[Variable], only: Sequence[str] = None,
-              ignore: Sequence[str] = None) -> Sequence[Variable]:
+                          ignore: Sequence[str] = None) -> Sequence[Variable]:
         """
         filters the variables such that the ones in arg only are kept and the ones in
         arg ignore are removed.
@@ -297,6 +313,6 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
 
         if ignore is not None:
             used_variables = [variable for variable in used_variables
-                if variable.name not in ignore]
+                              if variable.name not in ignore]
 
         return used_variables

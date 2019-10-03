@@ -33,9 +33,11 @@ def test_legacy1():
     xml_read = OpenMdaoLegacy1XmlIO(filename)
     ivc = xml_read.read()
     inputs = ivc._indep_external  # pylint: disable=protected-access
+
     # check that here are as many inputs as lines in conversion file
     with open(CONVERSION_FILE_1) as conversion_file:
         conversion_count = len(conversion_file.readlines())
+
     assert len(inputs) == conversion_count
 
     for inp in inputs:

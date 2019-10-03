@@ -18,6 +18,7 @@ import os.path as pth
 
 import pytest
 
+from fastoad.exceptions import XPathError, VariableError
 from fastoad.io.xml.translator import VarXpathTranslator
 
 
@@ -45,11 +46,11 @@ def test_translator_with_set():
         assert translator.get_xpath('var%i' % i) == 'xpath%i' % i
         assert translator.get_variable_name('xpath%i' % i) == 'var%i' % i
 
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(VariableError) as exc_info:
         _ = translator.get_xpath('unknown_var')
     assert exc_info is not None
 
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(XPathError) as exc_info:
         _ = translator.get_variable_name('unknown_path')
     assert exc_info is not None
 

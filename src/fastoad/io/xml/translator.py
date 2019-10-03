@@ -18,6 +18,8 @@ from typing import Sequence, Union, IO
 
 import numpy as np
 
+from fastoad.exceptions import XPathError, VariableError
+
 
 class VarXpathTranslator:
     """
@@ -78,21 +80,21 @@ class VarXpathTranslator:
 
         :param var_name: OpenMDAO variable name
         :return: XPath that matches var_name
-        :raise ValueError: if var_name is unknown
+        :raise VariableError: if var_name is unknown
         """
         if var_name in self._variable_names:
             i = self._variable_names.index(var_name)
             return self._xpaths[i]
-        raise ValueError('Unknown variable %s' % var_name)
+        raise VariableError(var_name)
 
     def get_variable_name(self, xpath: str) -> str:
         """
 
         :param xpath: XML Path
         :return: OpenMDAO variable name that matches xpath
-        :raise ValueError: if xpath is unknown
+        :raise XPathError: if xpath is unknown
        """
         if xpath in self._xpaths:
             i = self._xpaths.index(xpath)
             return self._variable_names[i]
-        raise ValueError('Unknown xpath %s' % xpath)
+        raise XPathError(xpath)

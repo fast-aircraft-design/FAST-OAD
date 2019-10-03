@@ -17,7 +17,13 @@ Module for custom Exception classes
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-class NoSetupError(Exception):
+class FastError(Exception):
+    """
+    Base Class for exceptions related to the FAST framework.
+    """
+
+
+class NoSetupError(FastError):
     """
     No Setup Error.
 
@@ -25,4 +31,38 @@ class NoSetupError(Exception):
     expected to be.
     """
 
-    pass
+
+class XMLReadError(FastError):
+    """
+    XML file read Error.
+
+    This exception indicates that an error occurred when reading an xml file.
+    """
+
+
+class XPathError(XMLReadError):
+    """
+    XML path Error.
+
+    This exception indicates that the xpath given for the variable does not correspond
+    to the xml file.
+    """
+
+    def __init__(self, xpath):
+        super(XPathError, self).__init__(
+            'Unknown xpath %s' % xpath)
+        self.xpath = xpath
+
+
+class VariableError(XMLReadError):
+    """
+    XML path Error.
+
+    This exception indicates that the variable given does not have an xpath in the
+    translator file.
+    """
+
+    def __init__(self, variable):
+        super(VariableError, self).__init__(
+            'Unknown variable %s' % variable)
+        self.variable = variable

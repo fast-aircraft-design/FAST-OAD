@@ -161,3 +161,17 @@ class XPathReader:
             return self.tree.xpath(xpath)[0]
 
         raise KeyError('XPath not found')
+
+    def get_all_elements_with_no_child_xpath(self):
+        """
+        Returns the xpath of elements that have no child.
+
+        :return: list of xpaths of element with no child
+        """
+        xpaths = []
+        for elem in self.tree.iter():
+            value = elem.text.strip()
+            if value != '':
+                xpaths.append(self.tree.getelementpath(elem))
+
+        return xpaths
