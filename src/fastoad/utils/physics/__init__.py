@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This package contains utilities regarding physics
 """
