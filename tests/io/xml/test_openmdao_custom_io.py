@@ -81,21 +81,14 @@ def test_custom_xml_read_and_write_from_ivc():
         _ = xml_read.read()
     assert exc_info is not None
 
-    # test with setting a bad translation table (missing variable name in the translator)
+    # test with setting a non-exhaustive translation table (missing variable name in the translator)
+    # we expect that the variable is not included in the ivc
     filename = pth.join(data_folder, 'custom_additional_var.xml')
     xml_read = OpenMdaoCustomXmlIO(filename)
-    with pytest.raises(ValueError) as exc_info:
-        xml_read.set_translator(VarXpathTranslator(variable_names=var_names,
-                                                   xpaths=xpaths))
-        _ = xml_read.read()
-    assert exc_info is not None
-
-    # test with setting a bad translation table (bad xpath)
-    with pytest.raises(ValueError) as exc_info:
-        xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['additional_var'],
-                                                   xpaths=xpaths + ['bad:xpath']))
-        _ = xml_read.read()
-    assert exc_info is not None
+    xml_read.set_translator(VarXpathTranslator(variable_names=var_names,
+                                               xpaths=xpaths))
+    ivc = xml_read.read()
+    _check_basic2_ivc(ivc)
 
     filename = pth.join(data_folder, 'custom.xml')
     xml_read = OpenMdaoCustomXmlIO(filename)
@@ -103,7 +96,7 @@ def test_custom_xml_read_and_write_from_ivc():
     # test with setting a bad translation with an additional var not present in the xml
     # we expect that all goes on well
     xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['additional_var'],
-                                                   xpaths=xpaths + ['bad:xpath']))
+                                               xpaths=xpaths + ['bad:xpath']))
     ivc = xml_read.read()
     _check_basic2_ivc(ivc)
 
