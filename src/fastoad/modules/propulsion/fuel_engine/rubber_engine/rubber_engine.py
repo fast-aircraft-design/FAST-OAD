@@ -17,7 +17,7 @@ Parametric turbofan engine
 
 import logging
 import math
-from enum import Enum
+from enum import IntEnum
 from typing import Union, Sequence, Tuple
 
 import numpy as np
@@ -33,12 +33,12 @@ ATM_SEA_LEVEL = Atmosphere(0)
 ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
 
 
-class FlightPhase(Enum):
-    """ Enumeration of flight phases"""
-    TAKEOFF = 'Takeoff'
-    CLIMB = 'Climb'
-    IDLE = 'Fight Idle'
-    CRUISE = 'Cruise'
+class FlightPhase(IntEnum):
+    """ Enumeration of flight phases """
+    TAKEOFF = 1
+    CLIMB = 2
+    CRUISE = 3
+    IDLE = 4
 
 
 class RubberEngine:
@@ -112,21 +112,21 @@ class RubberEngine:
 
     def compute_regulated(self, mach: Union[float, Sequence[float]],
                           altitude: Union[float, Sequence[float]],
-                          drag: Union[float, Sequence[float]] = None,
+                          thrust: Union[float, Sequence[float]] = None,
                           phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.CRUISE) \
             -> Tuple[Union[float, Sequence[float]],
                      Union[float, Sequence[float]]]:
         """
         Computes Specific Fuel Consumption according to provided conditions.
-        Thrust rate is adjusted to compensate provided drag
+        Thrust rate is adjusted to deliver required thrust.
 
         :param mach:
         :param altitude: (unit=m)
-        :param drag: (unit=N)
+        :param thrust: (unit=N)
         :param phase:
         :return: SFC (in kg/s/N), needed thrust rate
         """
-        sfc, thrust_rate, _ = self.compute(mach, altitude, self._get_delta_t4(phase), thrust=drag)
+        sfc, thrust_rate, _ = self.compute(mach, altitude, self._get_delta_t4(phase), thrust=thrust)
         return sfc, thrust_rate
 
     def compute(self,

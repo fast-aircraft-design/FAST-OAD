@@ -29,9 +29,13 @@ def test_compute_manual():
                           10000)  # f0=1 so that output is simply fc/f0
 
     # Test with scalars
-    sfc, fc = engine.compute_manual(0, 0, 0.8, FlightPhase.TAKEOFF)
+    sfc, fc = engine.compute_manual(0, 0, 0.8, FlightPhase.TAKEOFF)  # with phase as FlightPhase
     np.testing.assert_allclose(fc, 0.955 * 0.8, rtol=1e-2)
     np.testing.assert_allclose(sfc, 0.993e-5, rtol=1e-2)
+
+    sfc, fc = engine.compute_manual(0.3, 0, 0.5, FlightPhase.CLIMB.value)  # with phase as int
+    np.testing.assert_allclose(fc, 0.357, rtol=1e-2)
+    np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
 
     # Test full arrays
     machs = [0, 0.3, 0.3, 0.8, 0.8]
@@ -39,7 +43,7 @@ def test_compute_manual():
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
     phases = [FlightPhase.TAKEOFF, FlightPhase.TAKEOFF,
               FlightPhase.CLIMB, FlightPhase.IDLE,
-              FlightPhase.CRUISE]
+              FlightPhase.CRUISE.value]  # mix FlightPhase with integers
     expected_fc = [0.955 * 0.8, 0.389, 0.357, 0.0967, 0.113]
     expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.60e-5]
 
@@ -59,7 +63,7 @@ def test_compute_manual():
 
     # Test scalars + arrays 2
     altitudes = [0, 0]
-    phases = [FlightPhase.TAKEOFF, FlightPhase.CLIMB, ]
+    phases = [FlightPhase.TAKEOFF.value, FlightPhase.CLIMB.value, ]
     expected_fc = [0.389, 0.357]
     expected_sfc = [1.35e-5, 1.35e-5]
 
