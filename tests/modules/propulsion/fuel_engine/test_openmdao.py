@@ -17,9 +17,9 @@ Test module for OpenMDAO versions of RubberEngine
 import openmdao.api as om
 import pytest
 
+from fastoad.constants import FlightPhase
 from fastoad.modules.propulsion.fuel_engine.rubber_engine.openmdao import ManualRubberEngine, \
     RegulatedRubberEngine
-from fastoad.modules.propulsion.fuel_engine.rubber_engine.rubber_engine import FlightPhase
 from tests.testing_utilities import run_system
 
 

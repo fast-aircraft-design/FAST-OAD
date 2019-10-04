@@ -17,11 +17,11 @@ Parametric turbofan engine
 
 import logging
 import math
-from enum import IntEnum
 from typing import Union, Sequence, Tuple
 
 import numpy as np
 
+from fastoad.constants import FlightPhase
 from fastoad.utils.physics import Atmosphere
 from .constants import ALPHA, BETA, A_MS, B_MS, C_MS, E_MS, D_MS, A_FM, D_FM, E_FM, B_FM, C_FM, \
     MAX_SFC_RATIO_COEFF
@@ -31,14 +31,6 @@ _LOGGER = logging.getLogger(__name__)
 
 ATM_SEA_LEVEL = Atmosphere(0)
 ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
-
-
-class FlightPhase(IntEnum):
-    """ Enumeration of flight phases """
-    TAKEOFF = 1
-    CLIMB = 2
-    CRUISE = 3
-    IDLE = 4
 
 
 class RubberEngine:
