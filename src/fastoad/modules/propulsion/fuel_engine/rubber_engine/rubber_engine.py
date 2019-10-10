@@ -22,8 +22,6 @@ from typing import Union, Sequence, Tuple
 import numpy as np
 
 from fastoad.constants import FlightPhase
-from fastoad.modules.propulsion.fuel_engine.rubber_engine.exceptions import \
-    FastInconsistentArraySizesException
 from fastoad.utils.physics import Atmosphere
 from .constants import ALPHA, BETA, A_MS, B_MS, C_MS, E_MS, D_MS, A_FM, D_FM, E_FM, B_FM, C_FM, \
     MAX_SFC_RATIO_COEFF
@@ -94,6 +92,9 @@ class RubberEngine:
         """
         Computes Specific Fuel Consumption according to provided conditions.
 
+        Inputs can be floats, lists or arrays.
+        Inputs that are not floats must all have the same shape (numpy speaking).
+
         :param mach:
         :param altitude: (unit=m)
         :param thrust_rate:
@@ -113,6 +114,9 @@ class RubberEngine:
         """
         Computes Specific Fuel Consumption according to provided conditions.
         Thrust rate is adjusted to deliver required thrust.
+
+        Inputs can be floats, lists or arrays.
+        Inputs that are not floats must all have the same shape (numpy speaking).
 
         :param mach:
         :param altitude: (unit=m)
@@ -137,9 +141,9 @@ class RubberEngine:
         Computes Specific Fuel Consumption according to provided conditions.
 
         Inputs can be floats, lists or arrays.
-        Inputs that are not floats must all have the same size.
+        Inputs that are not floats must all have the same shape (numpy speaking).
 
-        *thrust_rate* and *thrust* are linked, so only one is required (it
+        *thrust_rate* and *thrust* are linked, so only one is required (if
         thrust_rate is provided, thrust is ignored)
 
         :param mach:
@@ -150,10 +154,6 @@ class RubberEngine:
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
         """
         atmosphere = Atmosphere(altitude, altitude_in_feet=False)
-
-        self._check_array_consistency(
-            {'mach': mach, 'altitude': altitude, 'delta_t4': delta_t4, 'thrust_rate': thrust_rate,
-             'thrust': thrust})
 
         max_thrust = self.max_thrust(atmosphere, mach, delta_t4)
 
@@ -427,39 +427,6 @@ class RubberEngine:
             delta_t4[phase_array == phase_value] = dt4_value
 
         return delta_t4
-
-    @staticmethod
-    def _check_array_consistency(arrays: dict):
-        """
-        Checks that provided arrays have shapes that allow them to be broadcast together
-
-        The *arrays* dictionary is expected to have following structure:
-            - key : name of the variable as it should appear in error message
-            - value = the actual variable (numpy array, sequence or scalar)
-
-        :param arrays: see description above
-        :raise:FastInconsistentArraySizesException
-        """
-
-        # Arrays are consistent if they have same shape after squeezing
-        # so this is what is compared.
-        # But for error message, original shape will be kept
-        ref_array_shape = ()
-        ref_array_squeezed_shape = ()
-        ref_identifier = ''
-
-        for identifier, values in arrays.items():
-            # Check size
-            array_squeezed_shape = np.shape(np.squeeze(values))
-            if array_squeezed_shape != ():
-                if ref_array_squeezed_shape == ():
-                    ref_array_squeezed_shape = array_squeezed_shape
-                    ref_array_shape = np.shape(values)
-                    ref_identifier = identifier
-                elif ref_array_squeezed_shape != array_squeezed_shape:
-                    raise FastInconsistentArraySizesException(
-                        '"%s" and "%s" have incompatible sizes: %s and %s' % (
-                            ref_identifier, identifier, ref_array_shape, np.shape(values)))
 
     @staticmethod
     def _check_definition_domain(operation_name: str, arrays: dict):

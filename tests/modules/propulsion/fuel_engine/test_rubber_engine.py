@@ -20,8 +20,6 @@ import pytest
 
 from fastoad.constants import FlightPhase
 from fastoad.modules.propulsion.fuel_engine.rubber_engine import RubberEngine
-from fastoad.modules.propulsion.fuel_engine.rubber_engine.exceptions import \
-    FastInconsistentArraySizesException
 from fastoad.utils.physics import Atmosphere
 
 
@@ -216,21 +214,3 @@ def test_sfc_ratio():
 
     # Because there some code differs when we have scalars:
     assert engine.sfc_ratio(design_alt - 1562.5, 0.6) == pytest.approx(1.080, rel=1e-3)
-
-
-def test_inconsistent_arrays():
-    """ check the correct exception is triggered when arrays of different shapes are provided """
-
-    engine = RubberEngine(5, 30, 1500, -50, -100, 90000, 0.95, 10000)
-
-    with pytest.raises(FastInconsistentArraySizesException):
-        engine.compute([0.2, 0.3, 0.5], [0, 10000], -50, 0.85)
-
-    # This one works
-    engine.compute([0.2, 0.3], [10000], np.array([-50]), 0.85)
-
-    with pytest.raises(FastInconsistentArraySizesException):
-        engine.compute([0.2, 0.3, 0.5], 0, [-50, 0], [0.85])
-
-    with pytest.raises(FastInconsistentArraySizesException):
-        engine.compute(0.5, 0, [-50, 0], (0.2, 0.5, 0.8))
