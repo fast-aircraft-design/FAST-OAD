@@ -16,7 +16,8 @@ Constants for rubber engine analytical models
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-# Constants for computation of maximum thrust
+# Constants for computation of maximum thrust ---------------------------------
+# (see E. Roux model definition in roux:2005)
 A_MS = -2.74e-4
 A_FM = 2.67e-4
 B_MS = 1.91e-2
@@ -37,6 +38,8 @@ BETA = [[1.70e-12, 1.51e-12, 1.48e-9, -7.59e-14, -1.07e-11],
         [-3.48e-9, -8.41e-8, 2.56e-5, -2.00e-8, -7.17e-8],
         [-3.89e-13, -2.05e-12, -9.28e-10, 1.30e-13, 5.39e-12],
         [1.77e-9, 2.62e-8, -8.87e-6, 6.66e-9, 4.43e-8]]
+# -----------------------------------------------------------------------------
 
-# Constants for computation of SFC ratio
+# Constants for computation of SFC ratio --------------------------------------
 MAX_SFC_RATIO_COEFF = 0.5
+# -----------------------------------------------------------------------------
