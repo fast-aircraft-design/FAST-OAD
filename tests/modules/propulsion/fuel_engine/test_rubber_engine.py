@@ -20,7 +20,7 @@ import pytest
 
 from fastoad.constants import FlightPhase
 from fastoad.modules.propulsion.fuel_engine.rubber_engine import RubberEngine
-from fastoad.modules.propulsion.fuel_engine.rubber_engine.rubber_engine import \
+from fastoad.modules.propulsion.fuel_engine.rubber_engine.exceptions import \
     FastInconsistentArraySizesException
 from fastoad.utils.physics import Atmosphere
 

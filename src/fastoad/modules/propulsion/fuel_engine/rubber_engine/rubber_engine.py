@@ -22,6 +22,8 @@ from typing import Union, Sequence, Tuple
 import numpy as np
 
 from fastoad.constants import FlightPhase
+from fastoad.modules.propulsion.fuel_engine.rubber_engine.exceptions import \
+    FastInconsistentArraySizesException
 from fastoad.utils.physics import Atmosphere
 from .constants import ALPHA, BETA, A_MS, B_MS, C_MS, E_MS, D_MS, A_FM, D_FM, E_FM, B_FM, C_FM, \
     MAX_SFC_RATIO_COEFF
@@ -492,10 +494,3 @@ class RubberEngine:
                 status = False
 
         return status
-
-
-class FastInconsistentArraySizesException(Exception):
-    """
-    Raised when arrays of different size are provided, when they should have
-    the same size
-    """
