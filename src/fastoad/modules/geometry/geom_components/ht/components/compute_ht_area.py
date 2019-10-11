@@ -62,6 +62,7 @@ class ComputeHTArea(ExplicitComponent):
             if self.ac_family == 1.0:
                 lp_ht = fus_length - fa_length
             elif self.ac_family == 2.0:
+                # TODO: remove this hard coded value
                 lp_ht = 7.7
         else:
             lp_ht = 0.91 * fus_length - fa_length

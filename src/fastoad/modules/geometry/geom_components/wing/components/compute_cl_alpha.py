@@ -20,6 +20,7 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
+# TODO: This belongs more to aerodynamics than geometry
 class ComputeCLalpha(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing lift coefficient estimation """

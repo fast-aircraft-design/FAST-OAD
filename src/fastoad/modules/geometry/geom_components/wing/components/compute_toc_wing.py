@@ -23,6 +23,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 from fastoad.modules.geometry.functions import airfoil_reshape
 
 
+# TODO: computes relative thickness and generates profiles --> decompose
 class ComputeToCWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing ToC estimation """

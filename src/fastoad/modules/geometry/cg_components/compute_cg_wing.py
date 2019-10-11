@@ -66,6 +66,7 @@ class ComputeWingCG(ExplicitComponent):
         x4_wing = inputs['geometry:wing_x4']
         fa_length = inputs['geometry:wing_position']
 
+        # TODO: make this constant an option
         if wing_break >= 0.35:
             y_cg = span / 2 * 0.35
             l_cg = (y3_wing - y_cg) / (y3_wing - y2_wing) * \

@@ -55,6 +55,8 @@ class ComputeTanksCG(ExplicitComponent):
         self.declare_partials('cg:cg_tank', '*', method='fd')
 
     def compute(self, inputs, outputs):
+
+        # TODO: decompose into a function to make the code more clear
         x_up = []
         x_down = []
         y_up = []

@@ -17,6 +17,8 @@
 
 from math import fabs
 
+
+# TODO: decompose reading and writing into distinct functions
 def airfoil_reshape(toc_mean: float, f_path_ori: str, f_path_new: str):
     """
     Generates a new airfoil file based on the mean ToC (Thickness of Chord)
@@ -37,6 +39,7 @@ def airfoil_reshape(toc_mean: float, f_path_ori: str, f_path_new: str):
     l_1 = file.readlines()
     file.close()
     b_i = []
+    # TODO: use numpy instead of for
     for i, elem in enumerate(l_1):
         if i >= 1:
             a_i = elem

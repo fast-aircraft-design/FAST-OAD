@@ -23,6 +23,7 @@ class ComputeCGratioAft(ExplicitComponent):
 
     def initialize(self):
 
+        # TODO: make this more generic
         airframe_names = ['A1', 'A2', 'A31', 'A32', 'A4', 'A51', 'A52', 'A6', 'A7']
         propulsion_names = ['B1', 'B2', 'B3']
         systems_names = ['C11', 'C12', 'C13', 'C21', 'C22', 'C23', 'C24', 'C25',

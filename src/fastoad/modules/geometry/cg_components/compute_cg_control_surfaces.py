@@ -49,6 +49,8 @@ class ComputeControlSurfacesCG(ExplicitComponent):
         y3_wing = inputs['geometry:wing_y3']
         fa_length = inputs['geometry:wing_position']
 
+        # TODO: build generic functions to estimate the chord, leading edge,
+        # trailing edge with respect to span wise position
         x_leading_edge = x3_wing * (y0_wing - y2_wing) / (y3_wing - y2_wing)
         l_cg_control = l2_wing + \
             (y0_wing - y2_wing) / (y3_wing - y2_wing) * (l3_wing - l2_wing)

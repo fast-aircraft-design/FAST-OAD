@@ -17,7 +17,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-
+# TODO: This belongs more to mass breakdown than geometry
 class ComputeMFW(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Max fuel weight estimation """
@@ -39,6 +39,7 @@ class ComputeMFW(ExplicitComponent):
         el_emp = inputs['geometry:wing_toc_root']
         el_ext = inputs['geometry:wing_toc_tip']
 
+        # TODO: remove hard coded value
         mfw = 224 * (wing_area ** 1.5 * lambda_wing ** (-0.4)
                      * (0.6 * el_emp + 0.4 * el_ext)) + 1570
 

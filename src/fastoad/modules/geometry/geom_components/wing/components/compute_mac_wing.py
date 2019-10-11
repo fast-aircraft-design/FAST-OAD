@@ -18,6 +18,7 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
+# TODO: it would be good to have a function to compute MAC for HT, VT and WING
 class ComputeMACWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing mean aerodynamic chord estimation """

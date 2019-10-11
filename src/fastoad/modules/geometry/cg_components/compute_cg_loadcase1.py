@@ -46,6 +46,7 @@ class ComputeCGLoadCase1(ExplicitComponent):
         x_cg_plane_up = inputs['x_cg_plane_up']
         x_cg_plane_down = inputs['x_cg_plane_down']
 
+        # TODO: factorize the four load cases as they are relatively similar
         weight_pax = npax * 80.
         weight_rear_fret = 1.
         weight_front_fret = 0.

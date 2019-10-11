@@ -38,6 +38,7 @@ class ComputeOthersCG(ExplicitComponent):
         self.add_input('cabin:front_seat_number_eco', val=np.nan)
         self.add_input('cabin:LSeco', val=np.nan, units='inch')
 
+        # TODO: add description of these CGs
         self.add_output('cg_airframe:A2', units='m')
         self.add_output('cg_airframe:A52', units='m')
         self.add_output('cg_airframe:A6', units='m')

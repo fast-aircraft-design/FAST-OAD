@@ -16,7 +16,7 @@ Module for management of options and factorizing their definition.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from openmdao.core.group import Group
-
+# TODO: make options enums and are redundant with mass breakdown
 ENGINE_LOCATION_OPTION = 'engine_location'
 TAIL_TYPE_OPTION = 'tail_type'
 AIRCRAFT_TYPE_OPTION = 'ac_type'

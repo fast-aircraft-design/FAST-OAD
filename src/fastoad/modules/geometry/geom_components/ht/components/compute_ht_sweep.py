@@ -44,6 +44,7 @@ class ComputeHTSweep(ExplicitComponent):
         sweep_25_ht = inputs['geometry:ht_sweep_25']
 
         half_span = b_h / 2.
+        # TODO: The unit conversion can be handled by OpenMDAO
         sweep_0_ht = (math.pi / 2 -
                       math.atan(half_span /
                                 (0.25 * root_chord - 0.25 *
