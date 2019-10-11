@@ -52,7 +52,7 @@ class ComputeAeroCenter(ExplicitComponent):
         lp_ht = inputs['geometry:ht_lp']
         cl_alpha_wing = inputs['aerodynamics:Cl_alpha']
         cl_alpha_ht = inputs['aerodynamics:Cl_alpha_ht']
-
+        # TODO: make variable name is computation sequence more english
         x0_25 = fa_length - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing
         ratio_x025 = x0_25 / fus_length
         # fitting result of Raymer book, figure 16.14
