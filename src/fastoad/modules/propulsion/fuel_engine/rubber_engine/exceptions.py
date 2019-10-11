@@ -1,9 +1,7 @@
 """
-This module provides a parametric model for turbofan:
-
-- as a pure Python
-- as OpenMDAO modules
+Exceptions for rubber_engine package
 """
+
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -18,5 +16,6 @@ This module provides a parametric model for turbofan:
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .openmdao import OMRubberEngine
-from .rubber_engine import RubberEngine
+
+class FastRubberEngineInconsistentInputParametersError(Exception):
+    """ Raised when provied parameter combination is incorrect """

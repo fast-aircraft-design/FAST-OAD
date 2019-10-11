@@ -17,11 +17,13 @@ Parametric turbofan engine
 
 import logging
 import math
-from typing import Union, Sequence, Tuple
+from typing import Union, Sequence, Tuple, Optional
 
 import numpy as np
 
 from fastoad.constants import FlightPhase
+from fastoad.modules.propulsion.fuel_engine.rubber_engine.exceptions import \
+    FastRubberEngineInconsistentInputParametersError
 from fastoad.utils.physics import Atmosphere
 from .constants import ALPHA, BETA, A_MS, B_MS, C_MS, E_MS, D_MS, A_FM, D_FM, E_FM, B_FM, C_FM, \
     MAX_SFC_RATIO_COEFF
@@ -83,89 +85,168 @@ class RubberEngine:
         # ... so check that all FlightPhase values are in dict
         assert any([key in self.dt4_values.keys() for key in FlightPhase])
 
-    def compute_manual(self, mach: Union[float, Sequence[float]],
-                       altitude: Union[float, Sequence[float]],
-                       thrust_rate: Union[float, Sequence[float]] = None,
-                       phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.TAKEOFF) \
-            -> Tuple[Union[float, Sequence[float]],
-                     Union[float, Sequence[float]]]:
+    def compute_flight_points(self,
+                              mach: Union[float, Sequence],
+                              altitude: Union[float, Sequence],
+                              phase: Union[FlightPhase, Sequence],
+                              use_thrust_rate: Optional[Union[bool, Sequence]] = None,
+                              thrust_rate: Optional[Union[float, Sequence]] = None,
+                              thrust: Optional[Union[float, Sequence]] = None) \
+            -> Tuple[Union[float, Sequence],
+                     Union[float, Sequence],
+                     Union[float, Sequence]]:
+        # pylint: disable=too-many-arguments  # they define the trajectory
         """
         Computes Specific Fuel Consumption according to provided conditions.
 
-        Inputs can be floats, lists or arrays.
-        Inputs that are not floats must all have the same shape (numpy speaking).
+        see :meth:`compute_flight_points_from_dt4` for more info
 
-        :param mach:
-        :param altitude: (unit=m)
-        :param thrust_rate:
-        :param phase:
-        :return: SFC (in kg/s/N), thrust (in N)
-        """
-        sfc, _, thrust = self.compute(mach, altitude, self._get_delta_t4(phase),
-                                      thrust_rate=thrust_rate)
-        return sfc, thrust
+        The specificity of current method is that is use flight phases as inputs
 
-    def compute_regulated(self, mach: Union[float, Sequence[float]],
-                          altitude: Union[float, Sequence[float]],
-                          thrust: Union[float, Sequence[float]] = None,
-                          phase: Union[FlightPhase, Sequence[FlightPhase]] = FlightPhase.CRUISE) \
-            -> Tuple[Union[float, Sequence[float]],
-                     Union[float, Sequence[float]]]:
-        """
-        Computes Specific Fuel Consumption according to provided conditions.
-        Thrust rate is adjusted to deliver required thrust.
-
-        Inputs can be floats, lists or arrays.
-        Inputs that are not floats must all have the same shape (numpy speaking).
-
-        :param mach:
-        :param altitude: (unit=m)
-        :param thrust: (unit=N)
-        :param phase:
-        :return: SFC (in kg/s/N), needed thrust rate
-        """
-        sfc, thrust_rate, _ = self.compute(mach, altitude, self._get_delta_t4(phase), thrust=thrust)
-        return sfc, thrust_rate
-
-    def compute(self,
-                mach: Union[float, Sequence[float]],
-                altitude: Union[float, Sequence[float]],
-                delta_t4: Union[float, Sequence[float]],
-                thrust_rate: Union[float, Sequence[float]] = None,
-                thrust: Union[float, Sequence[float]] = None) \
-            -> Tuple[Union[float, Sequence[float]],
-                     Union[float, Sequence[float]],
-                     Union[float, Sequence[float]]]:
-        # pylint: disable=too-many-arguments  # they define the engine
-        """
-        Computes Specific Fuel Consumption according to provided conditions.
-
-        Inputs can be floats, lists or arrays.
-        Inputs that are not floats must all have the same shape (numpy speaking).
-
-        *thrust_rate* and *thrust* are linked, so only one is required (if
-        thrust_rate is provided, thrust is ignored)
-
-        :param mach:
-        :param altitude: (unit=m)
-        :param delta_t4: (unit=K)
-        :param thrust_rate: between 0.0 and 1.0. If None, thrust should be provided.
-        :param thrust: (unit=N) if None, thrust_rate should be provided.
+        :param mach: Mach number
+        :param altitude: (unit=m) altitude w.r.t. to sea level
+        :param phase: flight phase
+        :param use_thrust_rate: tells if thrust_rate or thrust should be used (works element-wise)
+        :param thrust_rate: thrust rate (unit=none)
+        :param thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
         """
+        return self.compute_flight_points_from_dt4(mach, altitude, self._get_delta_t4(phase),
+                                                   use_thrust_rate, thrust_rate, thrust)
+
+    def compute_flight_points_from_dt4(self,
+                                       mach: Union[float, Sequence],
+                                       altitude: Union[float, Sequence],
+                                       delta_t4: Union[float, Sequence],
+                                       use_thrust_rate: Optional[Union[bool, Sequence]] = None,
+                                       thrust_rate: Optional[Union[float, Sequence]] = None,
+                                       thrust: Optional[Union[float, Sequence]] = None) \
+            -> Tuple[Union[float, Sequence],
+                     Union[float, Sequence],
+                     Union[float, Sequence]]:
+        # pylint: disable=too-many-arguments  # they define the trajectory
+        """
+        Computes Specific Fuel Consumption according to provided conditions.
+
+        Each input can be a float, a list or an array.
+        Inputs that are not floats must all have the same shape (numpy speaking).
+
+        About use_thrust_rate, thrust_rate and thrust
+        ---------------------------------------------
+
+            *use_thrust_rate* tells if a flight point should be computed using *thrust_rate*
+            or *thrust* as input.
+
+            - if *use_thrust_rate* is None, the considered input will be the provided one
+            between *thrust_rate* and *thrust* (if both are provided, *thrust_rate* will be used)
+
+            - if *use_thrust_rate* is True or False (i.e., not a sequence), the considered input
+            will be taken accordingly, and should of course not be None.
+
+            - if *use_thrust_rate* is a sequence or array, *thrust_rate* and *thrust* should be
+            provided and have the same shape as *use_thrust_rate*. The method will consider for
+            each element which input will be used according to *use_thrust_rate*
+
+
+        :param mach: Mach number
+        :param altitude: (unit=m) altitude w.r.t. to sea level
+        :param delta_t4: (unit=K) difference between operational and design values of
+                         turbine inlet temperature in K
+        :param use_thrust_rate: tells if thrust_rate or thrust should be used (works element-wise)
+        :param thrust_rate: thrust rate (unit=none)
+        :param thrust: required thrust (unit=N)
+        :return: SFC (in kg/s/N), thrust rate, thrust (in N)
+        """
+        mach = np.asarray(mach)
+        altitude = np.asarray(altitude)
+        delta_t4 = np.asarray(delta_t4)
+
+        use_thrust_rate, thrust_rate, thrust = self._check_thrust_inputs(use_thrust_rate,
+                                                                         thrust_rate, thrust)
+
+        use_thrust_rate = np.asarray(use_thrust_rate, dtype=bool)
+        thrust_rate = np.asarray(thrust_rate)
+        thrust = np.asarray(thrust)
+
         atmosphere = Atmosphere(altitude, altitude_in_feet=False)
 
         max_thrust = self.max_thrust(atmosphere, mach, delta_t4)
 
-        if thrust_rate is None:
-            thrust_rate = thrust / max_thrust
+        # We compute thrust values from thrust rates when needed
+        idx = use_thrust_rate
+        if np.size(max_thrust) == 1:
+            maximum_thrust = max_thrust
+            out_thrust_rate = thrust_rate
+            out_thrust = thrust
         else:
-            thrust = thrust_rate * max_thrust
+            out_thrust_rate = np.full(np.shape(max_thrust), thrust_rate.item()) if np.size(
+                thrust_rate) == 1 else thrust_rate
+            out_thrust = np.full(np.shape(max_thrust), thrust.item()) if np.size(
+                thrust) == 1 else thrust
 
+            maximum_thrust = max_thrust[idx]
+
+        out_thrust[idx] = out_thrust_rate[idx] * maximum_thrust
+
+        # thrust_rate is obtained from entire thrust vector (could be optimized if needed,
+        # as some thrust rates that are computed may have been provided as input)
+        out_thrust_rate = thrust / max_thrust
+
+        # Now SFC can be computed
         sfc_0 = self.sfc_at_max_thrust(atmosphere, mach)
-        sfc = sfc_0 * self.sfc_ratio(altitude, thrust_rate)
+        sfc = sfc_0 * self.sfc_ratio(altitude, out_thrust_rate)
 
-        return sfc, thrust_rate, thrust
+        return sfc, out_thrust_rate, out_thrust
+
+    @staticmethod
+    def _check_thrust_inputs(use_thrust_rate, thrust_rate, thrust):
+        """ Checks that inputs are consistent and return them in proper shape """
+        # Check inputs: if use_thrust_rate is None, we will use the provided input between
+        # thrust_rate and thrust
+        if use_thrust_rate is None:
+            if thrust_rate is not None:
+                use_thrust_rate = True
+                thrust = np.empty_like(thrust_rate)
+            elif thrust is not None:
+                use_thrust_rate = False
+                thrust_rate = np.empty_like(thrust)
+            else:
+                raise FastRubberEngineInconsistentInputParametersError(
+                    'When use_thrust_rate is None, either thrust_rate or thrust should be provided.'
+                )
+
+        elif np.size(use_thrust_rate) == 1:
+            # Check inputs: if use_thrust_rate is a scalar, the matching input(thrust_rate or
+            # thrust) must be provided.
+            if use_thrust_rate:
+                if thrust_rate is None:
+                    raise FastRubberEngineInconsistentInputParametersError(
+                        'When use_thrust_rate is True, thrust_rate should be provided.'
+                    )
+                thrust = np.empty_like(thrust_rate)
+            else:
+                if thrust is None:
+                    raise FastRubberEngineInconsistentInputParametersError(
+                        'When use_thrust_rate is False, thrust should be provided.'
+                    )
+                thrust_rate = np.empty_like(thrust)
+
+        else:
+            # Check inputs: if use_thrust_rate is not a scalar, both thrust_rate and thrust must be
+            # provided and have the same shape as use_thrust_rate
+            if thrust_rate is None or thrust is None:
+                raise FastRubberEngineInconsistentInputParametersError(
+                    'When use_thrust_rate is a sequence, both thrust_rate and thrust should be '
+                    'provided.'
+                )
+            if np.shape(thrust_rate) != np.shape(use_thrust_rate) or np.shape(thrust) != np.shape(
+                    use_thrust_rate):
+                raise FastRubberEngineInconsistentInputParametersError(
+                    'When use_thrust_rate is a sequence, both thrust_rate and thrust should have '
+                    'same shape as use_thrust_rate'
+                )
+
+        return use_thrust_rate, thrust_rate, thrust
 
     def sfc_at_max_thrust(self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]):
         """
@@ -250,7 +331,7 @@ class RubberEngine:
 
         # When thrust_ratio_at_min_sfc_ratio==1. (so min_sfc_ratio==1 also),
         # coeff has to be affected by hand
-        if np.shape(coeff) != ():
+        if np.size(coeff) != 1:
             min_sfc_ratio[thrust_ratio_at_min_sfc_ratio == 1.0] = 1.0
             coeff[thrust_ratio_at_min_sfc_ratio == 1.0] = MAX_SFC_RATIO_COEFF
         elif thrust_ratio_at_min_sfc_ratio == 1.0:
@@ -336,7 +417,7 @@ class RubberEngine:
                 return k * ((ATM_TROPOPAUSE.density / ATM_SEA_LEVEL.density) ** nf) \
                        * density / ATM_TROPOPAUSE.density
 
-            if np.shape(altitude) == ():
+            if np.size(altitude) == 1:
                 if altitude <= 11000:
                     h = _troposhere_effect(atmosphere.density, altitude, k, nf)
                 else:
@@ -344,7 +425,7 @@ class RubberEngine:
             else:
                 h = np.empty(np.shape(altitude))
                 idx = altitude <= 11000
-                if np.shape(delta_t4) == ():
+                if np.size(delta_t4) == 1:
                     h[idx] = _troposhere_effect(atmosphere.density[idx], altitude[idx], k, nf)
                     idx = np.logical_not(idx)
                     h[idx] = _stratosphere_effect(atmosphere.density[idx], k, nf)
@@ -416,7 +497,7 @@ class RubberEngine:
         :return: DeltaT4 according to phase
         """
 
-        if np.shape(phase) == ():  # phase is a scalar
+        if np.size(phase) == 1:  # phase is a scalar
             return self.dt4_values[phase]
 
         # Here phase is a sequence. Ensure now it is a numpy array

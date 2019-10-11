@@ -23,71 +23,64 @@ from fastoad.modules.propulsion.fuel_engine.rubber_engine import RubberEngine
 from fastoad.utils.physics import Atmosphere
 
 
-def test_compute_manual():
+def test_compute_flight_points():
     engine = RubberEngine(5, 30, 1500, -50, -100, 1, 0.95,
                           10000)  # f0=1 so that output is simply fc/f0
 
     # Test with scalars
-    sfc, fc = engine.compute_manual(0, 0, 0.8, FlightPhase.TAKEOFF)  # with phase as FlightPhase
-    np.testing.assert_allclose(fc, 0.955 * 0.8, rtol=1e-2)
+    sfc, thrust_rate, thrust = engine.compute_flight_points(0, 0, FlightPhase.TAKEOFF,
+                                                            thrust_rate=0.8)  # with phase as FlightPhase
+    np.testing.assert_allclose(thrust, 0.955 * 0.8, rtol=1e-2)
     np.testing.assert_allclose(sfc, 0.993e-5, rtol=1e-2)
 
-    sfc, fc = engine.compute_manual(0.3, 0, 0.5, FlightPhase.CLIMB.value)  # with phase as int
-    np.testing.assert_allclose(fc, 0.357, rtol=1e-2)
+    sfc, thrust_rate, thrust = engine.compute_flight_points(0.3, 0, FlightPhase.CLIMB.value,
+                                                            thrust=0.357)  # with phase as int
+    np.testing.assert_allclose(thrust_rate, 0.5, rtol=1e-2)
     np.testing.assert_allclose(sfc, 1.35e-5, rtol=1e-2)
 
     # Test full arrays
+    # 2D arrays are used, where first line is for thrust rates, and second line
+    # is for thrust values.
+    # As thrust rates and thrust values match, thrust rate results are 2 equal
+    # lines and so are thrust value results.
     machs = [0, 0.3, 0.3, 0.8, 0.8]
     altitudes = [0, 0, 0, 10000, 13000]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
+    thrusts = [0.955 * 0.8, 0.389, 0.357, 0.0967, 0.113]
     phases = [FlightPhase.TAKEOFF, FlightPhase.TAKEOFF,
               FlightPhase.CLIMB, FlightPhase.IDLE,
               FlightPhase.CRUISE.value]  # mix FlightPhase with integers
-    expected_fc = [0.955 * 0.8, 0.389, 0.357, 0.0967, 0.113]
     expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.60e-5]
 
-    sfc, fc = engine.compute_manual(machs, altitudes, thrust_rates, phases)
-    np.testing.assert_allclose(fc, expected_fc, rtol=1e-2)
-    np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
+    sfc, thrust_rate, thrust = engine.compute_flight_points([machs, machs],
+                                                            [altitudes, altitudes],
+                                                            [phases, phases],
+                                                            [[True] * 5, [False] * 5],
+                                                            [thrust_rates, [0] * 5],
+                                                            [[0] * 5, thrusts])
+    np.testing.assert_allclose(sfc, [expected_sfc, expected_sfc], rtol=1e-2)
+    np.testing.assert_allclose(thrust_rate, [thrust_rates, thrust_rates], rtol=1e-2)
+    np.testing.assert_allclose(thrust, [thrusts, thrusts], rtol=1e-2)
 
     # Test scalars + arrays 1
     machs = [0, 0.3, ]
     thrust_rates = [0.8, 0.5]
-    expected_fc = [0.955 * 0.8, 0.389]
+    expected_thrust = [0.955 * 0.8, 0.389]
     expected_sfc = [0.993e-5, 1.35e-5]
 
-    sfc, fc = engine.compute_manual(machs, 0, thrust_rates, FlightPhase.TAKEOFF)
-    np.testing.assert_allclose(fc, expected_fc, rtol=1e-2)
+    sfc, _, thrust = engine.compute_flight_points(machs, 0, FlightPhase.TAKEOFF,
+                                                  thrust_rate=thrust_rates)
+    np.testing.assert_allclose(thrust, expected_thrust, rtol=1e-2)
     np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
 
     # Test scalars + arrays 2
     altitudes = [0, 0]
     phases = [FlightPhase.TAKEOFF.value, FlightPhase.CLIMB.value, ]
-    expected_fc = [0.389, 0.357]
+    expected_thrust = [0.389, 0.357]
     expected_sfc = [1.35e-5, 1.35e-5]
 
-    sfc, fc = engine.compute_manual(0.3, altitudes, 0.5, phases)
-    np.testing.assert_allclose(fc, expected_fc, rtol=1e-2)
-    np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
-
-
-def test_compute_regulated():
-    engine = RubberEngine(5, 30, 1500, -50, -100, 1, 0.95,
-                          10000)  # f0=1 so that input drag in drag/f0
-
-    # Test full arrays
-    # (it's enough because compute_regulated() and compute_manual() are very close)
-    machs = [0, 0.3, 0.3, 0.8, 0.8]
-    altitudes = [0, 0, 0, 10000, 13000]
-    fc = [0.955 * 0.8, 0.389, 0.357, 0.0967, 0.113]
-    phases = [FlightPhase.TAKEOFF, FlightPhase.TAKEOFF,
-              FlightPhase.CLIMB, FlightPhase.IDLE,
-              FlightPhase.CRUISE]
-    expected_thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.60e-5]
-
-    sfc, thrust_rates = engine.compute_regulated(machs, altitudes, fc, phases)
-    np.testing.assert_allclose(thrust_rates, expected_thrust_rates, rtol=1e-2)
+    sfc, _, thrust = engine.compute_flight_points(0.3, altitudes, phases, thrust_rate=0.5)
+    np.testing.assert_allclose(thrust, expected_thrust, rtol=1e-2)
     np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-2)
 
 
