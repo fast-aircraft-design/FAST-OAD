@@ -95,7 +95,7 @@ def test_compute_aero_center(input_xml):
     problem.run_model()
 
     x_ac_ratio = problem['x_ac_ratio']
-    assert x_ac_ratio == pytest.approx(0.537521, abs=1e-6)
+    assert x_ac_ratio == pytest.approx(0.422638, abs=1e-6)
 
 
 def test_compute_cg_control_surfaces(input_xml):
