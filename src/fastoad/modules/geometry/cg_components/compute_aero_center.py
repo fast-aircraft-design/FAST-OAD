@@ -56,7 +56,7 @@ class ComputeAeroCenter(ExplicitComponent):
         x0_25 = fa_length - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing
         ratio_x025 = x0_25 / fus_length
         # fitting result of Raymer book, figure 16.14
-        k_h = 0.01222 - 7.40541E-4 * ratio_x025 + 2.1956E-5 * ratio_x025**2
+        k_h = 0.01222 - 7.40541E-4 * ratio_x025 * 100 + 2.1956E-5 * (ratio_x025 * 100)**2
         # equation from Raymer book, eqn 16.22
         cm_alpha_fus = k_h * width_max**2 * \
             fus_length / (l0_wing * wing_area) * 180. / np.pi
