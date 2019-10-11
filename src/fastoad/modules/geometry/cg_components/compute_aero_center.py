@@ -59,12 +59,12 @@ class ComputeAeroCenter(ExplicitComponent):
         k_h = 0.01222 - 7.40541E-4 * ratio_x025 + 2.1956E-5 * ratio_x025**2
         # equation from Raymer book, eqn 16.22
         cm_alpha_fus = k_h * width_max**2 * \
-            fus_length / (l0_wing * wing_area) * 57.3
-        x_ca_plane = (cl_alpha_wing * (fa_length - cm_alpha_fus / cl_alpha_wing) +
+            fus_length / (l0_wing * wing_area) * 180. / np.pi
+        x_ca_plane = (cl_alpha_wing * fa_length / l0_wing - cm_alpha_fus +
                       cl_alpha_ht * (1 - 0.4) * 0.9 *
-                      s_h / wing_area * (lp_ht + fa_length)) / \
-            (cl_alpha_wing +
-             cl_alpha_ht * (1 - 0.4) * 0.9 * s_h / wing_area)
-        x_aero_center = (x_ca_plane - fa_length + 0.25 * l0_wing) / l0_wing
+                      s_h / wing_area * (lp_ht + fa_length) / l0_wing) / \
+                     (cl_alpha_wing +
+                      cl_alpha_ht * (1 - 0.4) * 0.9 * s_h / wing_area)
+        x_aero_center = x_ca_plane - fa_length / l0_wing + 0.25
 
         outputs['x_ac_ratio'] = x_aero_center
