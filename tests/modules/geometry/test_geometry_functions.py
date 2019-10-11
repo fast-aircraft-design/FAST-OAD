@@ -19,7 +19,7 @@ import os
 
 from tests.testing_utilities import compare_text_files
 
-from fastoad.modules.geometry.functions.airfoil_reshape import airfoil_reshape
+from fastoad.modules.geometry.functions import airfoil_reshape
 
 def test_reshape_airfoil():
     """ Tests the reshape of the airfoil """

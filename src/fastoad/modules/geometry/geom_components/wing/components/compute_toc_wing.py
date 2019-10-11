@@ -20,7 +20,7 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.modules.geometry.functions.airfoil_reshape import airfoil_reshape
+from fastoad.modules.geometry.functions import airfoil_reshape
 
 
 class ComputeToCWing(ExplicitComponent):
