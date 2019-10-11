@@ -24,11 +24,7 @@ class ComputeHTMAC(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Horizontal tail mean aerodynamic chord estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:ht_root_chord', val=np.nan, units='m')
         self.add_input('geometry:ht_tip_chord', val=np.nan, units='m')
@@ -41,14 +37,14 @@ class ComputeHTMAC(ExplicitComponent):
 
         self.declare_partials('geometry:ht_length',
                               ['geometry:ht_root_chord', 'geometry:ht_tip_chord'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:ht_x0',
                               ['geometry:ht_root_chord', 'geometry:ht_tip_chord',
                                'geometry:ht_sweep_25', 'geometry:ht_span'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:ht_y0',
                               ['geometry:ht_root_chord', 'geometry:ht_tip_chord',
-                               'geometry:ht_span'], method=deriv_method)
+                               'geometry:ht_span'], method='fd')
 
     def compute(self, inputs, outputs):
         root_chord = inputs['geometry:ht_root_chord']

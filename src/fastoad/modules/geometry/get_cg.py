@@ -32,7 +32,6 @@ class GetCG(Group):
     """ Model that computes the global center of gravity """
 
     def initialize(self):
-        self.options.declare('deriv_method', default='fd')
 
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.0)
@@ -45,20 +44,17 @@ class GetCG(Group):
         self.ac_type = self.options[AIRCRAFT_TYPE_OPTION]
 
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_subsystem('compute_ht',
                            ComputeHorizontalTailGeometry(ac_family=self.ac_family,
-                                                         tail_type=self.tail_type,
-                                                         deriv_method=deriv_method),
+                                                         tail_type=self.tail_type),
                            promotes=['*'])
         self.add_subsystem('compute_vt',
                            ComputeVerticalTailGeometry(ac_family=self.ac_family,
-                                                       tail_type=self.tail_type,
-                                                       deriv_method=deriv_method),
+                                                       tail_type=self.tail_type),
                            promotes=['*'])
         self.add_subsystem('compute_total_area',
-                           ComputeTotalArea(deriv_method=deriv_method),
+                           ComputeTotalArea(),
                            promotes=['*'])
         # TODO: Add deriv option to mass breakdown
         self.add_subsystem('compute_mass_breakdown',
@@ -67,21 +63,21 @@ class GetCG(Group):
                                          ac_type=self.ac_type),
                            promotes=['*'])
         self.add_subsystem('compute_cg_wing',
-                           ComputeWingCG(deriv_method=deriv_method),
+                           ComputeWingCG(),
                            promotes=['*'])
         self.add_subsystem('compute_cg_control_surface',
-                           ComputeControlSurfacesCG(deriv_method=deriv_method),
+                           ComputeControlSurfacesCG(),
                            promotes=['*'])
         self.add_subsystem('compute_cg_tanks',
                            ComputeTanksCG(), promotes=['*'])
         self.add_subsystem('compute_cg_others',
-                           ComputeOthersCG(deriv_method=deriv_method),
+                           ComputeOthersCG(),
                            promotes=['*'])
         self.add_subsystem('compute_cg',
-                           ComputeGlobalCG(deriv_method=deriv_method),
+                           ComputeGlobalCG(),
                            promotes=['*'])
         self.add_subsystem('update_mlg',
-                           UpdateMLG(deriv_method=deriv_method),
+                           UpdateMLG(),
                            promotes=['*'])
 
         # Solvers setup

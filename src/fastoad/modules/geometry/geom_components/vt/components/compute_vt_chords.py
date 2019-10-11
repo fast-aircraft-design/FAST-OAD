@@ -24,11 +24,7 @@ class ComputeVTChords(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail chords and span estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:vt_aspect_ratio', val=np.nan)
         self.add_input('geometry:vt_area', val=np.nan, units='m**2')
@@ -40,9 +36,9 @@ class ComputeVTChords(ExplicitComponent):
 
         self.declare_partials('geometry:vt_span',
                               ['geometry:vt_aspect_ratio', 'geometry:vt_area'],
-                              method=deriv_method)
-        self.declare_partials('geometry:vt_root_chord', '*', method=deriv_method)
-        self.declare_partials('geometry:vt_tip_chord', '*', method=deriv_method)
+                              method='fd')
+        self.declare_partials('geometry:vt_root_chord', '*', method='fd')
+        self.declare_partials('geometry:vt_tip_chord', '*', method='fd')
 
     def compute(self, inputs, outputs):
         lambda_vt = inputs['geometry:vt_aspect_ratio']

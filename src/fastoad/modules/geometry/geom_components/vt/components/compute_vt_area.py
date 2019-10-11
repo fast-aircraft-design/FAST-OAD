@@ -22,11 +22,7 @@ class ComputeVTArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail area estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         #        self.add_input('geometry:wing_position', val=np.nan)
         self.add_input('cg_ratio', val=np.nan)
@@ -43,7 +39,7 @@ class ComputeVTArea(ExplicitComponent):
 
         self.declare_partials('geometry:vt_wet_area', 'geometry:vt_area')
 
-        self.declare_partials('delta_cn', '*', method=deriv_method)
+        self.declare_partials('delta_cn', '*', method='fd')
 
     def compute(self, inputs, outputs):
         wing_area = inputs['geometry:wing_area']

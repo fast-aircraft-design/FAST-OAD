@@ -24,11 +24,7 @@ class ComputeVTMAC(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail mean aerodynamic chord estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:vt_root_chord', val=np.nan, units='m')
         self.add_input('geometry:vt_tip_chord', val=np.nan, units='m')
@@ -41,10 +37,10 @@ class ComputeVTMAC(ExplicitComponent):
 
         self.declare_partials('geometry:vt_length',
                               ['geometry:vt_root_chord', 'geometry:vt_tip_chord'])
-        self.declare_partials('geometry:vt_x0', '*', method=deriv_method)
+        self.declare_partials('geometry:vt_x0', '*', method='fd')
         self.declare_partials('geometry:vt_z0',
                               ['geometry:vt_root_chord', 'geometry:vt_tip_chord',
-                               'geometry:vt_span'], method=deriv_method)
+                               'geometry:vt_span'], method='fd')
 
     def compute(self, inputs, outputs):
         root_chord = inputs['geometry:vt_root_chord']

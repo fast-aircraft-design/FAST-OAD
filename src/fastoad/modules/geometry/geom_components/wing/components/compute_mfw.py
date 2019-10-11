@@ -22,11 +22,7 @@ class ComputeMFW(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Max fuel weight estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing_aspect_ratio', val=np.nan)
@@ -35,7 +31,7 @@ class ComputeMFW(ExplicitComponent):
 
         self.add_output('weight:MFW', units='kg')
 
-        self.declare_partials('weight:MFW', '*', method=deriv_method)
+        self.declare_partials('weight:MFW', '*', method='fd')
 
     def compute(self, inputs, outputs):
         wing_area = inputs['geometry:wing_area']

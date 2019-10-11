@@ -19,15 +19,12 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeL2AndL3Wing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing chords (l2 and l3) estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_span', val=np.nan, units='m')
         self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
@@ -49,13 +46,13 @@ class ComputeL2AndL3Wing(ExplicitComponent):
                                                    'geometry:wing_span',
                                                    'geometry:fuselage_width_max',
                                                    'geometry:wing_sweep_25'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:wing_l3', ['geometry:wing_l1',
                                                    'geometry:wing_l4',
                                                    'geometry:wing_y2',
                                                    'geometry:wing_y3',
                                                    'geometry:wing_y4'],
-                              method=deriv_method)
+                              method='fd')
 
     def compute(self, inputs, outputs):
         l1_wing = inputs['geometry:wing_l1']
@@ -75,7 +72,7 @@ class ComputeL2AndL3Wing(ExplicitComponent):
                     3. / 2. * (1. - taper_ratio) / (span - width_max) * l1_wing))
 
         l3_wing = l4_wing + (l1_wing - l4_wing) * \
-            (y4_wing - y3_wing) / (y4_wing - y2_wing)
+                  (y4_wing - y3_wing) / (y4_wing - y2_wing)
 
         outputs['geometry:wing_l2'] = l2_wing
         outputs['geometry:wing_l3'] = l3_wing

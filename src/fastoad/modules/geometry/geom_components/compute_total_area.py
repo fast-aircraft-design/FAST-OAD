@@ -22,11 +22,7 @@ class ComputeTotalArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Total aircraft wet area estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_wet_area', val=np.nan, units='m**2')
         self.add_input('geometry:fuselage_wet_area', val=np.nan, units='m**2')
@@ -38,7 +34,7 @@ class ComputeTotalArea(ExplicitComponent):
 
         self.add_output('geometry:S_total', units='m**2')
 
-        self.declare_partials('geometry:S_total', '*', method=deriv_method)
+        self.declare_partials('geometry:S_total', '*', method='fd')
 
     def compute(self, inputs, outputs):
         wet_area_wing = inputs['geometry:wing_wet_area']

@@ -22,7 +22,6 @@ class ComputeCGratioAft(ExplicitComponent):
     """ Center of gravity ratio with aft estimation """
 
     def initialize(self):
-        self.options.declare('deriv_method', default='fd')
 
         airframe_names = ['A1', 'A2', 'A31', 'A32', 'A4', 'A51', 'A52', 'A6', 'A7']
         propulsion_names = ['B1', 'B2', 'B3']
@@ -41,39 +40,38 @@ class ComputeCGratioAft(ExplicitComponent):
         self.furniture_names = self.options['furniture_names']
 
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         for name in range(len(self.airframe_names)):
             self.add_input('cg_airframe:'+self.airframe_names[name], val=np.nan, units='m')
             self.add_input('weight_airframe:'+self.airframe_names[name], val=np.nan, units='kg')
             self.declare_partials('x_cg_plane_up', ['weight_airframe:'+self.airframe_names[name],
-                                   'cg_airframe:'+self.airframe_names[name]], method=deriv_method)
+                                   'cg_airframe:'+self.airframe_names[name]], method='fd')
             self.declare_partials('x_cg_plane_down', 'weight_airframe:'+self.airframe_names[name],
-                                  method=deriv_method)
+                                  method='fd')
         for name in range(len(self.propulsion_names)):
             self.add_input('cg_propulsion:'+self.propulsion_names[name], val=np.nan, units='m')
             self.add_input('weight_propulsion:'+self.propulsion_names[name], val=np.nan, units='kg')
             self.declare_partials('x_cg_plane_up',
                                   ['weight_propulsion:'+self.propulsion_names[name],
                                    'cg_propulsion:'+self.propulsion_names[name]],
-                                   method=deriv_method)
+                                   method='fd')
             self.declare_partials('x_cg_plane_down',
                                   'weight_propulsion:'+self.propulsion_names[name],
-                                  method=deriv_method)
+                                  method='fd')
         for name in range(len(self.systems_names)):
             self.add_input('cg_systems:'+self.systems_names[name], val=np.nan, units='m')
             self.add_input('weight_systems:'+self.systems_names[name], val=np.nan, units='kg')
             self.declare_partials('x_cg_plane_up', ['weight_systems:'+self.systems_names[name],
-                                   'cg_systems:'+self.systems_names[name]], method=deriv_method)
+                                   'cg_systems:'+self.systems_names[name]], method='fd')
             self.declare_partials('x_cg_plane_down', 'weight_systems:'+self.systems_names[name],
-                                  method=deriv_method)
+                                  method='fd')
         for name in range(len(self.furniture_names)):
             self.add_input('cg_furniture:'+self.furniture_names[name], val=np.nan, units='m')
             self.add_input('weight_furniture:'+self.furniture_names[name], val=np.nan, units='kg')
             self.declare_partials('x_cg_plane_up', ['weight_furniture:'+self.furniture_names[name],
-                                   'cg_furniture:'+self.furniture_names[name]], method=deriv_method)
+                                   'cg_furniture:'+self.furniture_names[name]], method='fd')
             self.declare_partials('x_cg_plane_down', 'weight_furniture:'+self.furniture_names[name],
-                                  method=deriv_method)
+                                  method='fd')
 
 
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
@@ -83,7 +81,7 @@ class ComputeCGratioAft(ExplicitComponent):
         self.add_output('x_cg_plane_down')
         self.add_output('cg_ratio_aft')
 
-        self.declare_partials('cg_ratio_aft', '*', method=deriv_method)
+        self.declare_partials('cg_ratio_aft', '*', method='fd')
 
 
     def compute(self, inputs, outputs):

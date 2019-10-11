@@ -19,15 +19,12 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeHTClalpha(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Horizontal tail lift coefficient estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:ht_aspect_ratio', val=np.nan)
         self.add_input('tlar:cruise_Mach', val=np.nan)
@@ -35,16 +32,16 @@ class ComputeHTClalpha(ExplicitComponent):
 
         self.add_output('aerodynamics:Cl_alpha_ht')
 
-        self.declare_partials('aerodynamics:Cl_alpha_ht', '*', method=deriv_method)
+        self.declare_partials('aerodynamics:Cl_alpha_ht', '*', method='fd')
 
     def compute(self, inputs, outputs):
         cruise_mach = inputs['tlar:cruise_Mach']
         lambda_ht = inputs['geometry:ht_aspect_ratio']
         sweep_25_ht = inputs['geometry:ht_sweep_25']
 
-        beta = math.sqrt(1 - cruise_mach**2)
+        beta = math.sqrt(1 - cruise_mach ** 2)
         cl_alpha_ht = 0.8 * 2 * math.pi * lambda_ht / \
-            (2 + math.sqrt(4 + lambda_ht**2 * beta**2 / 0.95 **
-                           2 * (1 + (math.tan(sweep_25_ht / 180. * math.pi))**2 / beta**2)))
+                      (2 + math.sqrt(4 + lambda_ht ** 2 * beta ** 2 / 0.95 **
+                                     2 * (1 + (math.tan(sweep_25_ht / 180. * math.pi)) ** 2 / beta ** 2)))
 
         outputs['aerodynamics:Cl_alpha_ht'] = cl_alpha_ht

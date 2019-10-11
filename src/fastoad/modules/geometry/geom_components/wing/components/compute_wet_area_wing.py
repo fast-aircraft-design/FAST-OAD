@@ -22,11 +22,7 @@ class ComputeWetAreaWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing wet area estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_l2', val=np.nan, units='m')
         self.add_input('geometry:wing_y2', val=np.nan, units='m')
@@ -39,11 +35,11 @@ class ComputeWetAreaWing(ExplicitComponent):
         self.declare_partials('geometry:wing_area_pf', ['geometry:wing_area',
                                                         'geometry:wing_y2',
                                                         'geometry:wing_l2'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:wing_wet_area', ['geometry:wing_area',
                                                          'geometry:wing_l2',
                                                          'geometry:fuselage_width_max'],
-                              method=deriv_method)
+                              method='fd')
 
     def compute(self, inputs, outputs):
         wing_area = inputs['geometry:wing_area']

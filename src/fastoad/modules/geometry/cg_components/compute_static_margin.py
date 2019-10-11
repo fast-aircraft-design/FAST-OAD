@@ -21,11 +21,7 @@ class ComputeStaticMargin(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Static margin estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('cg_ratio', val=np.nan)
         self.add_input('x_ac_ratio', val=np.nan)
@@ -35,10 +31,10 @@ class ComputeStaticMargin(ExplicitComponent):
         self.add_output('static_margin')
         self.add_output('cg:CG', units='m')
 
-        self.declare_partials('static_margin', ['cg_ratio', 'x_ac_ratio'], method=deriv_method)
+        self.declare_partials('static_margin', ['cg_ratio', 'x_ac_ratio'], method='fd')
         self.declare_partials('cg:CG',
                               ['geometry:wing_position', 'cg_ratio', 'geometry:wing_l0'],
-                              method=deriv_method)
+                              method='fd')
 
     def compute(self, inputs, outputs):
         cg_ratio = inputs['cg_ratio']

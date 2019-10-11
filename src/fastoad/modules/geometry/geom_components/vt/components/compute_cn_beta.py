@@ -24,11 +24,7 @@ class ComputeCnBeta(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Yawing moment due to sideslip estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
         self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
@@ -41,7 +37,7 @@ class ComputeCnBeta(ExplicitComponent):
 
         self.add_output('dcn_beta')
 
-        self.declare_partials('dcn_beta', '*', method=deriv_method)
+        self.declare_partials('dcn_beta', '*', method='fd')
 
     def compute(self, inputs, outputs):
         fus_length = inputs['geometry:fuselage_length']

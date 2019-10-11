@@ -28,21 +28,17 @@ class ComputeGlobalCG(Group):
     # TODO: Document equations. Cite sources
     """ Global center of gravity estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_subsystem('cg_ratio_aft',
-                           ComputeCGratioAft(deriv_method=deriv_method), promotes=['*'])
+                           ComputeCGratioAft(), promotes=['*'])
         self.add_subsystem('cg_ratio_lc1',
-                           ComputeCGLoadCase1(deriv_method=deriv_method), promotes=['*'])
+                           ComputeCGLoadCase1(), promotes=['*'])
         self.add_subsystem('cg_ratio_lc2',
-                           ComputeCGLoadCase2(deriv_method=deriv_method), promotes=['*'])
+                           ComputeCGLoadCase2(), promotes=['*'])
         self.add_subsystem('cg_ratio_lc3',
-                           ComputeCGLoadCase3(deriv_method=deriv_method), promotes=['*'])
+                           ComputeCGLoadCase3(), promotes=['*'])
         self.add_subsystem('cg_ratio_lc4',
-                           ComputeCGLoadCase4(deriv_method=deriv_method), promotes=['*'])
+                           ComputeCGLoadCase4(), promotes=['*'])
         self.add_subsystem('cg_ratio_max',
-                           ComputeMaxCGratio(deriv_method=deriv_method), promotes=['*'])
+                           ComputeMaxCGratio(), promotes=['*'])

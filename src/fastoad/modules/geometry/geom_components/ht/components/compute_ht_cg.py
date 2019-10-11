@@ -24,11 +24,7 @@ class ComputeHTcg(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Horizontal tail center of gravity estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:ht_root_chord', val=np.nan, units='m')
         self.add_input('geometry:ht_tip_chord', val=np.nan, units='m')
@@ -41,7 +37,7 @@ class ComputeHTcg(ExplicitComponent):
 
         self.add_output('cg_airframe:A31', units='m')
 
-        self.declare_partials('cg_airframe:A31', '*', method=deriv_method)
+        self.declare_partials('cg_airframe:A31', '*', method='fd')
 
     def compute(self, inputs, outputs):
         root_chord = inputs['geometry:ht_root_chord']

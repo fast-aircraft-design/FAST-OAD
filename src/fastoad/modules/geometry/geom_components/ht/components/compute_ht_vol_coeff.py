@@ -24,11 +24,7 @@ class ComputeHTVolCoeff(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Horizontal tail volume coefficient estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('cg_airframe:A51', val=np.nan, units='m')
         self.add_input('cg_airframe:A52', val=np.nan, units='m')
@@ -42,8 +38,8 @@ class ComputeHTVolCoeff(ExplicitComponent):
 
         self.declare_partials('delta_lg',
                               ['cg_airframe:A51', 'cg_airframe:A52'],
-                              method=deriv_method)
-        self.declare_partials('geometry:ht_vol_coeff', '*', method=deriv_method)
+                              method='fd')
+        self.declare_partials('geometry:ht_vol_coeff', '*', method='fd')
 
     def compute(self, inputs, outputs):
         cg_a51 = inputs['cg_airframe:A51']

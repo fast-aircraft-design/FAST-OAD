@@ -19,15 +19,12 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeHTSweep(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Horizontal tail sweeps estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:ht_root_chord', val=np.nan, units='m')
         self.add_input('geometry:ht_tip_chord', val=np.nan, units='m')
@@ -37,8 +34,8 @@ class ComputeHTSweep(ExplicitComponent):
         self.add_output('geometry:ht_sweep_0', units='deg')
         self.add_output('geometry:ht_sweep_100', units='deg')
 
-        self.declare_partials('geometry:ht_sweep_0', '*', method=deriv_method)
-        self.declare_partials('geometry:ht_sweep_100', '*', method=deriv_method)
+        self.declare_partials('geometry:ht_sweep_0', '*', method='fd')
+        self.declare_partials('geometry:ht_sweep_100', '*', method='fd')
 
     def compute(self, inputs, outputs):
         b_h = inputs['geometry:ht_span']

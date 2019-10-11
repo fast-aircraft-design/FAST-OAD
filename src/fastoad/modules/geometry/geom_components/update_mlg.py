@@ -22,11 +22,7 @@ class UpdateMLG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Main landing gear center of gravity estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
         self.add_input('geometry:wing_position', val=np.nan, units='m')
@@ -35,7 +31,7 @@ class UpdateMLG(ExplicitComponent):
 
         self.add_output('cg_airframe:A51', units='m')
 
-        self.declare_partials('cg_airframe:A51', '*', method=deriv_method)
+        self.declare_partials('cg_airframe:A51', '*', method='fd')
 
     def compute(self, inputs, outputs):
         l0_wing = inputs['geometry:wing_l0']

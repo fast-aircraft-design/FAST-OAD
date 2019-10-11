@@ -24,11 +24,7 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Geometry of fuselage part A - Cabin (Commercial) estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('cabin:NPAX1', val=np.nan)
         self.add_input('geometry:fuselage_length', val=np.nan, units='m')
@@ -47,21 +43,21 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
 
         self.declare_partials('cg_pl:CG_PAX',
                               ['geometry:fuselage_LAV', 'geometry:fuselage_Lpax'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('cg_systems:C6',
                               ['geometry:fuselage_LAV', 'geometry:fuselage_Lpax'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('cg_furniture:D2',
                               ['geometry:fuselage_LAV', 'geometry:fuselage_Lpax'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:fuselage_Lcabin',
-                              ['geometry:fuselage_length'], method=deriv_method)
+                              ['geometry:fuselage_length'], method='fd')
         self.declare_partials('geometry:fuselage_wet_area',
                               ['geometry:fuselage_width_max', 'geometry:fuselage_height_max',
                                'geometry:fuselage_LAV', 'geometry:fuselage_LAR',
-                               'geometry:fuselage_length'], method=deriv_method)
+                               'geometry:fuselage_length'], method='fd')
         self.declare_partials('cabin:PNC',
-                              ['cabin:NPAX1'], method=deriv_method)
+                              ['cabin:NPAX1'], method='fd')
 
     def compute(self, inputs, outputs):
         npax_1 = inputs['cabin:NPAX1']
@@ -98,11 +94,7 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Geometry of fuselage part A - Cabin (Commercial) estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('cabin:WSeco', val=np.nan, units='inch')
         self.add_input('cabin:LSeco', val=np.nan, units='inch')
@@ -127,42 +119,42 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         self.add_output('geometry:fuselage_wet_area', units='m**2')
         self.add_output('cabin:PNC')
 
-        self.declare_partials('cabin:NPAX1', ['tlar:NPAX'], method=deriv_method)
+        self.declare_partials('cabin:NPAX1', ['tlar:NPAX'], method='fd')
         self.declare_partials('cabin:Nrows',
                               ['cabin:front_seat_number_eco', 'tlar:NPAX'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:fuselage_width_max',
                               ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                               'cabin:Waisle'], method=deriv_method)
+                               'cabin:Waisle'], method='fd')
         self.declare_partials('geometry:fuselage_height_max',
                               ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                               'cabin:Waisle'], method=deriv_method)
+                               'cabin:Waisle'], method='fd')
         self.declare_partials('geometry:fuselage_LAV',
                               ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                               'cabin:Waisle'], method=deriv_method)
+                               'cabin:Waisle'], method='fd')
         self.declare_partials('geometry:fuselage_LAR',
                               ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                               'cabin:Waisle'], method=deriv_method)
+                               'cabin:Waisle'], method='fd')
         self.declare_partials('geometry:fuselage_Lpax', [
-                              'cabin:LSeco', 'cabin:Wexit'], method=deriv_method)
+                              'cabin:LSeco', 'cabin:Wexit'], method='fd')
         self.declare_partials('geometry:fuselage_length',
                               ['cabin:front_seat_number_eco', 'cabin:Waisle',
-                               'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
+                               'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method='fd')
         self.declare_partials('geometry:fuselage_Lcabin',
                               ['cabin:front_seat_number_eco', 'cabin:Waisle',
-                               'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
+                               'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method='fd')
         self.declare_partials('cg_systems:C6',
                               ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                               'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
+                               'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method='fd')
         self.declare_partials('cg_furniture:D2',
                               ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                               'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
+                               'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method='fd')
         self.declare_partials('cg_pl:CG_PAX',
                               ['cabin:front_seat_number_eco', 'cabin:WSeco',
-                               'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method=deriv_method)
+                               'cabin:LSeco', 'cabin:Wexit', 'cabin:Waisle'], method='fd')
         self.declare_partials('geometry:fuselage_wet_area',
                               ['cabin:front_seat_number_eco', 'cabin:Waisle',
-                               'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method=deriv_method)
+                               'cabin:LSeco', 'cabin:WSeco', 'cabin:Wexit'], method='fd')
 
     def compute(self, inputs, outputs):
         front_seat_number_eco = inputs['cabin:front_seat_number_eco']

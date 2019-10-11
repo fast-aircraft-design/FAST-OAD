@@ -24,11 +24,7 @@ class ComputeSweepWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing sweeps estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_x3', val=np.nan, units='m')
         self.add_input('geometry:wing_x4', val=np.nan, units='m')
@@ -46,20 +42,20 @@ class ComputeSweepWing(ExplicitComponent):
         self.declare_partials('geometry:wing_sweep_0', ['geometry:wing_x3',
                                                         'geometry:wing_y2',
                                                         'geometry:wing_y3'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:wing_sweep_100_inner', ['geometry:wing_x3',
                                                                 'geometry:wing_l2',
                                                                 'geometry:wing_y2',
                                                                 'geometry:wing_y3',
                                                                 'geometry:wing_l3'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:wing_sweep_100_outer', ['geometry:wing_x3',
                                                                 'geometry:wing_x4',
                                                                 'geometry:wing_y3',
                                                                 'geometry:wing_y4',
                                                                 'geometry:wing_l3',
                                                                 'geometry:wing_l4'],
-                              method=deriv_method)
+                              method='fd')
 
     def compute(self, inputs, outputs):
         x3_wing = inputs['geometry:wing_x3']

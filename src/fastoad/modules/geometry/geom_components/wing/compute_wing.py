@@ -44,24 +44,20 @@ class ComputeWingGeometry(Group):
     # TODO: Document equations. Cite sources
     """ Wing geometry estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
-        self.add_subsystem('y_wing', ComputeYWing(deriv_method=deriv_method), promotes=['*'])
+        self.add_subsystem('y_wing', ComputeYWing(), promotes=['*'])
         self.add_subsystem('l14_wing',
-                           ComputeL1AndL4Wing(deriv_method=deriv_method), promotes=['*'])
+                           ComputeL1AndL4Wing(), promotes=['*'])
         self.add_subsystem('l2l3_wing',
-                           ComputeL2AndL3Wing(deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('x_wing', ComputeXWing(deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('mac_wing', ComputeMACWing(deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('b50_wing', ComputeB50(deriv_method=deriv_method), promotes=['*'])
+                           ComputeL2AndL3Wing(), promotes=['*'])
+        self.add_subsystem('x_wing', ComputeXWing(), promotes=['*'])
+        self.add_subsystem('mac_wing', ComputeMACWing(), promotes=['*'])
+        self.add_subsystem('b50_wing', ComputeB50(), promotes=['*'])
         self.add_subsystem('sweep_wing',
-                           ComputeSweepWing(deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('toc_wing', ComputeToCWing(deriv_method=deriv_method), promotes=['*'])
+                           ComputeSweepWing(), promotes=['*'])
+        self.add_subsystem('toc_wing', ComputeToCWing(), promotes=['*'])
         self.add_subsystem('wetarea_wing',
-                           ComputeWetAreaWing(deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('clapha_wing', ComputeCLalpha(deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('mfw', ComputeMFW(deriv_method=deriv_method), promotes=['*'])
+                           ComputeWetAreaWing(), promotes=['*'])
+        self.add_subsystem('clapha_wing', ComputeCLalpha(), promotes=['*'])
+        self.add_subsystem('mfw', ComputeMFW(), promotes=['*'])

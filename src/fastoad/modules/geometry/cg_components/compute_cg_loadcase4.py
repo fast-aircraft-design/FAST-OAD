@@ -21,11 +21,7 @@ class ComputeCGLoadCase4(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Center of gravity estimation for load case 4 """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
         self.add_input('geometry:wing_position', val=np.nan, units='m')
@@ -38,7 +34,7 @@ class ComputeCGLoadCase4(ExplicitComponent):
 
         self.add_output('cg_ratio_lc4')
 
-        self.declare_partials('*', '*', method=deriv_method)
+        self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
         l0_wing = inputs['geometry:wing_l0']

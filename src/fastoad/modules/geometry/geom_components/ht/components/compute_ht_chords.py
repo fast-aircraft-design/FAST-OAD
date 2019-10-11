@@ -19,15 +19,12 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeHTChord(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Horizontal tail chords and span estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:ht_aspect_ratio', val=np.nan)
         self.add_input('geometry:ht_area', val=np.nan, units='m**2')
@@ -39,9 +36,9 @@ class ComputeHTChord(ExplicitComponent):
 
         self.declare_partials('geometry:ht_span',
                               ['geometry:ht_area', 'geometry:ht_aspect_ratio'],
-                              method=deriv_method)
-        self.declare_partials('geometry:ht_root_chord', '*', method=deriv_method)
-        self.declare_partials('geometry:ht_tip_chord', '*', method=deriv_method)
+                              method='fd')
+        self.declare_partials('geometry:ht_root_chord', '*', method='fd')
+        self.declare_partials('geometry:ht_tip_chord', '*', method='fd')
 
     def compute(self, inputs, outputs):
         lambda_ht = inputs['geometry:ht_aspect_ratio']

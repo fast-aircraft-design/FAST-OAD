@@ -19,15 +19,12 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeB50(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing B50 estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_x4', val=np.nan, units='m')
         self.add_input('geometry:wing_y2', val=np.nan, units='m')
@@ -38,7 +35,7 @@ class ComputeB50(ExplicitComponent):
 
         self.add_output('geometry:wing_b_50', units='m')
 
-        self.declare_partials('geometry:wing_b_50', '*', method=deriv_method)
+        self.declare_partials('geometry:wing_b_50', '*', method='fd')
 
     def compute(self, inputs, outputs):
         x4_wing = inputs['geometry:wing_x4']

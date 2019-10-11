@@ -21,11 +21,7 @@ class ComputeWingCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing center of gravity estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_break', val=np.nan)
         self.add_input('geometry:wing_front_spar_ratio_root', val=np.nan)
@@ -48,7 +44,7 @@ class ComputeWingCG(ExplicitComponent):
 
         self.add_output('cg_airframe:A1', units='m')
 
-        self.declare_partials('cg_airframe:A1', '*', method=deriv_method)
+        self.declare_partials('cg_airframe:A1', '*', method='fd')
 
     def compute(self, inputs, outputs):
         wing_break = inputs['geometry:wing_break']

@@ -24,11 +24,7 @@ class ComputeXWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing Xs estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_l1', val=np.nan, units='m')
         self.add_input('geometry:wing_l3', val=np.nan, units='m')
@@ -43,10 +39,10 @@ class ComputeXWing(ExplicitComponent):
 
         self.declare_partials('geometry:wing_x3', ['geometry:wing_l1', 'geometry:wing_y2',
                                                    'geometry:wing_y3', 'geometry:wing_l3',
-                                                   'geometry:wing_sweep_25'], method=deriv_method)
+                                                   'geometry:wing_sweep_25'], method='fd')
         self.declare_partials('geometry:wing_x4', ['geometry:wing_l1', 'geometry:wing_y2',
                                                    'geometry:wing_y4', 'geometry:wing_l4',
-                                                   'geometry:wing_sweep_25'], method=deriv_method)
+                                                   'geometry:wing_sweep_25'], method='fd')
 
     def compute(self, inputs, outputs):
         y2_wing = inputs['geometry:wing_y2']

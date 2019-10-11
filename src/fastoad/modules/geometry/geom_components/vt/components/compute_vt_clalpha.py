@@ -24,11 +24,7 @@ class ComputeVTClalpha(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail lift coefficient estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('tlar:cruise_Mach', val=np.nan)
         self.add_input('geometry:vt_aspect_ratio', val=np.nan)
@@ -37,7 +33,7 @@ class ComputeVTClalpha(ExplicitComponent):
 
         self.add_output('aerodynamics:Cl_alpha_vt')
 
-        self.declare_partials('aerodynamics:Cl_alpha_vt', '*', method=deriv_method)
+        self.declare_partials('aerodynamics:Cl_alpha_vt', '*', method='fd')
 
     def compute(self, inputs, outputs):
         cruise_mach = inputs['tlar:cruise_Mach']

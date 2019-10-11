@@ -20,7 +20,6 @@ class Geometry(Group):
     """ Overall geometry model """
 
     def initialize(self):
-        self.options.declare('deriv_method', default='fd')
 
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.0)
@@ -35,31 +34,28 @@ class Geometry(Group):
         self.cabin_sizing = self.options[CABIN_SIZING_OPTION]
 
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         if self.cabin_sizing == 1.0:
             self.add_subsystem('compute_fuselage',
-                               ComputeFuselageGeometryCabinSizing(deriv_method=deriv_method),
+                               ComputeFuselageGeometryCabinSizing(),
                                promotes=['*'])
         else:
             self.add_subsystem('compute_fuselage',
-                               ComputeFuselageGeometryBasic(deriv_method=deriv_method),
+                               ComputeFuselageGeometryBasic(),
                                promotes=['*'])
 
         self.add_subsystem('compute_wing',
-                           ComputeWingGeometry(deriv_method=deriv_method), promotes=['*'])
+                           ComputeWingGeometry(), promotes=['*'])
         self.add_subsystem('compute_engine_nacelle',
                            ComputeNacelleAndPylonsGeometry(engine_location=self.engine_location,
-                                                           ac_family=self.ac_family,
-                                                           deriv_method=deriv_method),
+                                                           ac_family=self.ac_family),
                            promotes=['*'])
         self.add_subsystem('get_cg', GetCG(engine_location=self.engine_location,
                                            tail_type=self.tail_type,
                                            ac_family=self.ac_family,
-                                           ac_type=self.ac_type,
-                                           deriv_method=deriv_method),
+                                           ac_type=self.ac_type),
                            promotes=['*'])
         self.add_subsystem('compute_aero_center',
-                           ComputeAeroCenter(deriv_method=deriv_method), promotes=['*'])
+                           ComputeAeroCenter(), promotes=['*'])
         self.add_subsystem('compute_sm',
-                           ComputeStaticMargin(deriv_method=deriv_method), promotes=['*'])
+                           ComputeStaticMargin(), promotes=['*'])

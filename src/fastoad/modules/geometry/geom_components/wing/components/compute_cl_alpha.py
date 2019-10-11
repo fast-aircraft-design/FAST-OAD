@@ -19,15 +19,12 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeCLalpha(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing lift coefficient estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('tlar:cruise_Mach', val=np.nan)
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
@@ -42,7 +39,7 @@ class ComputeCLalpha(ExplicitComponent):
 
         self.add_output('aerodynamics:Cl_alpha')
 
-        self.declare_partials('aerodynamics:Cl_alpha', '*', method=deriv_method)
+        self.declare_partials('aerodynamics:Cl_alpha', '*', method='fd')
 
     def compute(self, inputs, outputs):
         cruise_mach = inputs['tlar:cruise_Mach']
@@ -56,13 +53,13 @@ class ComputeCLalpha(ExplicitComponent):
         l4_wing = inputs['geometry:wing_l4']
         sweep_25 = inputs['geometry:wing_sweep_25']
 
-        beta = math.sqrt(1 - cruise_mach**2)
+        beta = math.sqrt(1 - cruise_mach ** 2)
         d_f = math.sqrt(width_max * height_max)
-        fact_f = 1.07 * (1 + d_f / span)**2
+        fact_f = 1.07 * (1 + d_f / span) ** 2
         lambda_wing_eff = lambda_wing * (1 + 1.9 * l4_wing * el_ext / span)
         cl_alpha_wing = 2 * math.pi * lambda_wing_eff / \
-            (2 + math.sqrt(4 + lambda_wing_eff**2 * beta**2 / 0.95**2 * (
-                1 + (math.tan(sweep_25 / 180. * math.pi))**2 / beta**2))) * \
-            (wing_area - l2_wing * width_max) / wing_area * fact_f
+                        (2 + math.sqrt(4 + lambda_wing_eff ** 2 * beta ** 2 / 0.95 ** 2 * (
+                                1 + (math.tan(sweep_25 / 180. * math.pi)) ** 2 / beta ** 2))) * \
+                        (wing_area - l2_wing * width_max) / wing_area * fact_f
 
         outputs['aerodynamics:Cl_alpha'] = cl_alpha_wing

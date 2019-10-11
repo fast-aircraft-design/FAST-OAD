@@ -27,7 +27,6 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
     """ Nacelle and pylon geometry estimation """
 
     def initialize(self):
-        self.options.declare('deriv_method', default='fd')
 
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
         self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
@@ -36,7 +35,6 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         self.ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
 
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('propulsion_conventional:thrust_SL', val=np.nan)
         self.add_input('geometry:y_ratio_engine', val=np.nan)
@@ -63,20 +61,20 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         self.add_output('cg_propulsion:B1', units='m')
 
         self.declare_partials('geometry:nacelle_dia',
-                              'propulsion_conventional:thrust_SL', method=deriv_method)
+                              'propulsion_conventional:thrust_SL', method='fd')
         self.declare_partials('geometry:nacelle_length',
-                              'propulsion_conventional:thrust_SL', method=deriv_method)
+                              'propulsion_conventional:thrust_SL', method='fd')
         self.declare_partials('geometry:LG_height',
-                              'propulsion_conventional:thrust_SL', method=deriv_method)
+                              'propulsion_conventional:thrust_SL', method='fd')
         self.declare_partials('geometry:fan_length',
-                              'propulsion_conventional:thrust_SL', method=deriv_method)
+                              'propulsion_conventional:thrust_SL', method='fd')
         self.declare_partials('geometry:pylon_length',
-                              'propulsion_conventional:thrust_SL', method=deriv_method)
+                              'propulsion_conventional:thrust_SL', method='fd')
         self.declare_partials('geometry:y_nacell',
                               ['propulsion_conventional:thrust_SL',
                                'geometry:fuselage_width_max',
                                'geometry:y_ratio_engine',
-                               'geometry:wing_span'], method=deriv_method)
+                               'geometry:wing_span'], method='fd')
         self.declare_partials('cg_propulsion:B1',
                               ['geometry:wing_position',
                                'geometry:wing_l0',
@@ -90,11 +88,11 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
                                'propulsion_conventional:thrust_SL',
                                'geometry:fuselage_width_max',
                                 'geometry:y_ratio_engine',
-                                'geometry:wing_span'], method=deriv_method)
+                                'geometry:wing_span'], method='fd')
         self.declare_partials('geometry:nacelle_wet_area',
-                              'propulsion_conventional:thrust_SL', method=deriv_method)
+                              'propulsion_conventional:thrust_SL', method='fd')
         self.declare_partials('geometry:pylon_wet_area',
-                              'propulsion_conventional:thrust_SL', method=deriv_method)
+                              'propulsion_conventional:thrust_SL', method='fd')
 
     def compute(self, inputs, outputs):
         thrust_sl = inputs['propulsion_conventional:thrust_SL']

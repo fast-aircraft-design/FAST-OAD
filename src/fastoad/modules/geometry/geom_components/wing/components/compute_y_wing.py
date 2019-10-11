@@ -24,11 +24,7 @@ class ComputeYWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing Ys estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_aspect_ratio', val=np.nan)
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
@@ -42,16 +38,16 @@ class ComputeYWing(ExplicitComponent):
 
         self.declare_partials('geometry:wing_span', ['geometry:wing_area',
                                                      'geometry:wing_aspect_ratio'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:wing_y2', 'geometry:fuselage_width_max',
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:wing_y3', ['geometry:wing_area',
                                                    'geometry:wing_aspect_ratio',
                                                    'geometry:wing_break'],
-                              method=deriv_method)
+                              method='fd')
         self.declare_partials('geometry:wing_y4', ['geometry:wing_area',
                                                    'geometry:wing_aspect_ratio'],
-                              method=deriv_method)
+                              method='fd')
 
     def compute(self, inputs, outputs):
         lambda_wing = inputs['geometry:wing_aspect_ratio']

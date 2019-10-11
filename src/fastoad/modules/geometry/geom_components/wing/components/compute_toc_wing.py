@@ -27,11 +27,7 @@ class ComputeToCWing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing ToC estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('tlar:cruise_Mach', val=np.nan)
         self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
@@ -41,10 +37,10 @@ class ComputeToCWing(ExplicitComponent):
         self.add_output('geometry:wing_toc_kink')
         self.add_output('geometry:wing_toc_tip')
 
-        self.declare_partials('geometry:wing_toc_aero', '*', method=deriv_method)
-        self.declare_partials('geometry:wing_toc_root', '*', method=deriv_method)
-        self.declare_partials('geometry:wing_toc_kink', '*', method=deriv_method)
-        self.declare_partials('geometry:wing_toc_tip', '*', method=deriv_method)
+        self.declare_partials('geometry:wing_toc_aero', '*', method='fd')
+        self.declare_partials('geometry:wing_toc_root', '*', method='fd')
+        self.declare_partials('geometry:wing_toc_kink', '*', method='fd')
+        self.declare_partials('geometry:wing_toc_tip', '*', method='fd')
 
     def compute(self, inputs, outputs):
         cruise_mach = inputs['tlar:cruise_Mach']

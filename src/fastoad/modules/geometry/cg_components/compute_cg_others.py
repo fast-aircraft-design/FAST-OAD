@@ -22,11 +22,7 @@ class ComputeOthersCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Other components center of gravities estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:wing_x0', val=np.nan, units='m')
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
@@ -71,42 +67,42 @@ class ComputeOthersCG(ExplicitComponent):
         self.add_output('cg:cg_front_fret', units='m')
 
         self.declare_partials(
-            'cg_airframe:A2', 'geometry:fuselage_length', method=deriv_method)
+            'cg_airframe:A2', 'geometry:fuselage_length', method='fd')
         self.declare_partials(
-            'cg_airframe:A52', 'geometry:fuselage_LAV', method=deriv_method)
+            'cg_airframe:A52', 'geometry:fuselage_LAV', method='fd')
         self.declare_partials(
-            'cg_airframe:A6', 'cg_propulsion:B1', method=deriv_method)
+            'cg_airframe:A6', 'cg_propulsion:B1', method='fd')
         self.declare_partials('cg_propulsion:B2',
-                              'cg_propulsion:B1', method=deriv_method)
+                              'cg_propulsion:B1', method='fd')
         self.declare_partials('cg_propulsion:B3',
-                              'cg_propulsion:B1', method=deriv_method)
+                              'cg_propulsion:B1', method='fd')
         self.declare_partials(['cg_systems:C11', 'cg_systems:C12', 'cg_systems:C13',
                                'cg_systems:C21', 'cg_systems:C24', 'cg_systems:C4',
-                               'cg_systems:C51'], 'geometry:fuselage_length', method=deriv_method)
+                               'cg_systems:C51'], 'geometry:fuselage_length', method='fd')
         self.declare_partials(['cg_systems:C22', 'cg_systems:C25', 'cg_systems:C26',
-                               'cg_systems:C52'], 'cg_furniture:D2', method=deriv_method)
+                               'cg_systems:C52'], 'cg_furniture:D2', method='fd')
         self.declare_partials('cg_systems:C23', [
-            'geometry:wing_position', 'geometry:wing_l0'], method=deriv_method)
+            'geometry:wing_position', 'geometry:wing_l0'], method='fd')
         self.declare_partials('cg_systems:C27',
                               ['weight_propulsion:B1', 'cg_propulsion:B1',
-                               'cabin:NPAX1', 'cg_furniture:D2'], method=deriv_method)
+                               'cabin:NPAX1', 'cg_furniture:D2'], method='fd')
         self.declare_partials(
-            'cg_systems:C3', 'geometry:fuselage_LAV', method=deriv_method)
+            'cg_systems:C3', 'geometry:fuselage_LAV', method='fd')
         self.declare_partials('cg_furniture:D3',
                               ['geometry:fuselage_length', 'geometry:fuselage_LAR',
-                               'cabin:LSeco', 'cabin:front_seat_number_eco'], method=deriv_method)
+                               'cabin:LSeco', 'cabin:front_seat_number_eco'], method='fd')
         self.declare_partials(
-            ['cg_furniture:D4', 'cg_furniture:D5'], 'cg_furniture:D2', method=deriv_method)
+            ['cg_furniture:D4', 'cg_furniture:D5'], 'cg_furniture:D2', method='fd')
         self.declare_partials(
-            'cg:cg_pax', 'cg_furniture:D2', method=deriv_method)
+            'cg:cg_pax', 'cg_furniture:D2', method='fd')
         self.declare_partials('cg:cg_rear_fret',
                               ['geometry:fuselage_LAR', 'geometry:wing_l0', 'geometry:wing_x0',
                                'geometry:wing_l2', 'cabin:front_seat_number_eco', 'cabin:LSeco',
                                'geometry:wing_position', 'geometry:fuselage_length'],
-                                method=deriv_method)
+                              method='fd')
         self.declare_partials('cg:cg_front_fret',
                               ['geometry:fuselage_LAV', 'geometry:wing_l0',
-                               'geometry:wing_x0', 'geometry:wing_position'], method=deriv_method)
+                               'geometry:wing_x0', 'geometry:wing_position'], method='fd')
 
     def compute(self, inputs, outputs):
         x0_wing = inputs['geometry:wing_x0']

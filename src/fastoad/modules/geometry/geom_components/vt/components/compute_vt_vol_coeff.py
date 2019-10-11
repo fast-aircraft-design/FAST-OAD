@@ -22,11 +22,7 @@ class ComputeVTVolCoeff(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail volume coefficient estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:vt_area', val=np.nan, units='m**2')
         self.add_input('geometry:vt_lp', val=np.nan, units='m')
@@ -35,7 +31,7 @@ class ComputeVTVolCoeff(ExplicitComponent):
 
         self.add_output('geometry:vt_vol_coeff')
 
-        self.declare_partials('geometry:vt_vol_coeff', '*', method=deriv_method)
+        self.declare_partials('geometry:vt_vol_coeff', '*', method='fd')
 
     def compute(self, inputs, outputs):
         outputs['geometry:vt_vol_coeff'] = inputs['geometry:vt_area'] * \

@@ -31,7 +31,6 @@ class ComputeHorizontalTailGeometry(Group):
     """ Horizontal tail geometry estimation """
 
     def initialize(self):
-        self.options.declare('deriv_method', default='fd')
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
         self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
 
@@ -39,17 +38,14 @@ class ComputeHorizontalTailGeometry(Group):
         self.ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
 
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_subsystem('ht_vol_coeff',
-                           ComputeHTVolCoeff(deriv_method=deriv_method), promotes=['*'])
+                           ComputeHTVolCoeff(), promotes=['*'])
         self.add_subsystem('ht_area',
                            ComputeHTArea(tail_type=self.tail_type,
-                                         ac_family=self.ac_family,
-                                         deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('ht_chord', ComputeHTChord(deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('ht_mac', ComputeHTMAC(deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('ht_cg', ComputeHTcg(deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('ht_sweep', ComputeHTSweep(deriv_method=deriv_method), promotes=['*'])
-        self.add_subsystem('ht_cl_alpha',
-                           ComputeHTClalpha(deriv_method=deriv_method), promotes=['*'])
+                                         ac_family=self.ac_family), promotes=['*'])
+        self.add_subsystem('ht_chord', ComputeHTChord(), promotes=['*'])
+        self.add_subsystem('ht_mac', ComputeHTMAC(), promotes=['*'])
+        self.add_subsystem('ht_cg', ComputeHTcg(), promotes=['*'])
+        self.add_subsystem('ht_sweep', ComputeHTSweep(), promotes=['*'])
+        self.add_subsystem('ht_cl_alpha', ComputeHTClalpha(), promotes=['*'])

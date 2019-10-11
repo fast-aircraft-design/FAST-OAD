@@ -24,11 +24,7 @@ class ComputeVTcg(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail center of gravity estimation """
 
-    def initialize(self):
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('geometry:vt_length', val=np.nan, units='m')
         self.add_input('geometry:vt_root_chord', val=np.nan, units='m')
@@ -41,7 +37,7 @@ class ComputeVTcg(ExplicitComponent):
 
         self.add_output('cg_airframe:A32', units='m')
 
-        self.declare_partials('cg_airframe:A32', '*', method=deriv_method)
+        self.declare_partials('cg_airframe:A32', '*', method='fd')
 
     def compute(self, inputs, outputs):
         root_chord = inputs['geometry:vt_root_chord']

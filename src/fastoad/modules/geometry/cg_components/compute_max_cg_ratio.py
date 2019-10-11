@@ -21,12 +21,7 @@ class ComputeMaxCGratio(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Maximum center of gravity ratio estimation """
 
-    def initialize(self):
-
-        self.options.declare('deriv_method', default='fd')
-
     def setup(self):
-        deriv_method = self.options['deriv_method']
 
         self.add_input('cg_ratio_aft', val=np.nan)
 
@@ -35,7 +30,7 @@ class ComputeMaxCGratio(ExplicitComponent):
 
         self.add_output('cg_ratio')
 
-        self.declare_partials('*', '*', method=deriv_method)
+        self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
         outputs['cg_ratio'] = max(inputs['cg_ratio_aft'], inputs['cg_ratio_lc1'],
