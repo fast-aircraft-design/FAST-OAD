@@ -14,8 +14,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 from math import sqrt, pi, tan
+
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -61,4 +62,4 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
                             (wing_area - l2_wing * width_max) / wing_area * fact_F
 
         outputs['aerodynamics:Cl_alpha_low'] = cl_alpha_wing_low
-        outputs['aerodynamics:Cl_0_AoA'] = 0.02  # FIXME: hard-coded value
+        outputs['aerodynamics:Cl_0_AoA'] = 0.2  # FIXME: hard-coded value
