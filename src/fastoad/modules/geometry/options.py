@@ -15,22 +15,9 @@ Module for management of options and factorizing their definition.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.core.group import Group
-# TODO: make options enums and are redundant with mass breakdown
+# TODO: make options enums
 ENGINE_LOCATION_OPTION = 'engine_location'
 TAIL_TYPE_OPTION = 'tail_type'
 AIRCRAFT_TYPE_OPTION = 'ac_type'
 AIRCRAFT_FAMILY_OPTION = 'ac_family'
 CABIN_SIZING_OPTION = 'cabin_sizing'
-
-
-class OpenMdaoOptionDispatcherGroup(Group):
-    """ Helper class for transmitting option values to subsystems during self.configure() """
-
-    def configure(self):
-        """ Update options for all subsystems """
-        for key in self.options:
-            value = self.options[key]
-            for subsystem in self.system_iter():
-                if key in subsystem.options:
-                    subsystem.options[key] = value

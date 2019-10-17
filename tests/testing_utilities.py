@@ -43,26 +43,3 @@ def run_system(component: SystemSubclass, input_vars: IndepVarComp, setup_mode='
     problem.run_model()
 
     return problem
-
-
-def compare_text_files(file1: str, file2: str):
-    """
-    :param file1: first file.
-    :param file2: second file.
-    :return: True if text files are the same
-    """
-    are_same = True
-    file1 = open(file1, "r")
-    file2 = open(file2, "r")
-
-    l1 = file1.readlines()
-    l2 = file2.readlines()
-
-    file1.close()
-    file2.close()
-
-    for i, line in enumerate(l1):
-        if line != l2[i]:
-            are_same = False
-
-    return are_same

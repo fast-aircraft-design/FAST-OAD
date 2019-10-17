@@ -15,11 +15,11 @@ Test module for geometry general functions
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
+import filecmp
 import os
 
-from tests.testing_utilities import compare_text_files
-
 from fastoad.modules.geometry.functions import airfoil_reshape
+
 
 def test_reshape_airfoil():
     """ Tests the reshape of the airfoil """
@@ -32,6 +32,6 @@ def test_reshape_airfoil():
 
     airfoil_reshape(el_emp, f_path_ori, f_path_root)
 
-    are_same = compare_text_files(f_path_root_ref, f_path_root)
+    are_same = filecmp.cmp(f_path_root_ref, f_path_root)
 
     assert are_same
