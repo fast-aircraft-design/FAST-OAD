@@ -32,7 +32,6 @@
         <k1 units="ignored">2.
         </k1> <!-- value will be appended, but only first specified units will apply -->
         <k1>3.</k1> <!-- value will be appended, but only first specified units will apply -->
-
         <k2>10.</k2>
         <k2 units="ignored">20.
         </k2> <!-- value will be appended, but only first specified units will apply -->

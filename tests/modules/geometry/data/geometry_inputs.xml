@@ -1,0 +1,113 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2019  ONERA/ISAE
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<aircraft>
+    <tlar>
+        <NPAX>150.0</NPAX>
+    </tlar>
+    <geometry>
+        <wing_l0>4.457</wing_l0>
+        <wing_position>16.457</wing_position>
+    </geometry>
+    <weight>
+        <MFW>20569.81</MFW>
+    </weight>
+    <weight_airframe>
+        <A1>7746.72</A1>
+        <A2>8828.42</A2>
+        <A31>754.04</A31>
+        <A32>515.53</A32>
+        <A4>728.07</A4>
+        <A51>2143.75</A51>
+        <A52>378.82</A52>
+        <A6>1211.88</A6>
+        <A7>141.12</A7>
+    </weight_airframe>
+    <weight_propulsion>
+        <B1>7161.33</B1>
+        <B2>457.48</B2>
+        <B3>121.99</B3>
+    </weight_propulsion>
+    <weight_systems>
+        <C11>287.38</C11>
+        <C12>1321.54</C12>
+        <C13>760.93</C13>
+        <C21>2226.45</C21>
+        <C22>942.4</C22>
+        <C23>155.01</C23>
+        <C24>167.58</C24>
+        <C25>126.0</C25>
+        <C26>284.1</C26>
+        <C27>432.71</C27>
+        <C3>492.29</C3>
+        <C4>200.0</C4>
+        <C51>100.0</C51>
+        <C52>277.19</C52>
+        <C6>45.0</C6>
+    </weight_systems>
+    <weight_furniture>
+        <D1>41.769</D1>
+        <D2>1500</D2>
+        <D3>1312.5</D3>
+        <D4>225</D4>
+        <D5>75</D5>
+    </weight_furniture>
+    <cg_airframe>
+        <A1>16.67</A1>
+        <A2>16.88</A2>
+        <A31>34.58</A31>
+        <A32>35.11</A32>
+        <A4>19.24</A4>
+        <A51>18.11</A51>
+        <A52>5.18</A52>
+        <A6>13.5</A6>
+        <A7>0.0</A7>
+    </cg_airframe>
+    <cg_propulsion>
+        <B1>13.5</B1>
+        <B2>13.5</B2>
+        <B3>13.5</B3>
+    </cg_propulsion>
+    <cg_systems>
+        <C11>35.63</C11>
+        <C12>18.75</C12>
+        <C13>18.75</C13>
+        <C21>16.88</C21>
+        <C22>16.62</C22>
+        <C23>15.79</C23>
+        <C24>16.88</C24>
+        <C25>16.62</C25>
+        <C26>16.62</C26>
+        <C27>16.1</C27>
+        <C3>5.52</C3>
+        <C4>18.75</C4>
+        <C51>0.75</C51>
+        <C52>16.62</C52>
+        <C6>7.47</C6>
+    </cg_systems>
+    <cg_furniture>
+        <D1>0.0</D1>
+        <D2>16.62</D2>
+        <D3>29.4</D3>
+        <D4>16.62</D4>
+        <D5>16.62</D5>
+    </cg_furniture>
+    <cg>
+        <cg_pax>16.62</cg_pax>
+        <cg_rear_fret>20.87</cg_rear_fret>
+        <cg_front_fret>9.94</cg_front_fret>
+        <cg_tank>16.05</cg_tank>
+    </cg>
+</aircraft>
