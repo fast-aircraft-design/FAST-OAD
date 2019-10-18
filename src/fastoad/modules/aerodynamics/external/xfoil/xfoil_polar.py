@@ -30,7 +30,7 @@ _STDOUT_FILE_NAME = 'polar_calc.log'
 _STDERR_FILE_NAME = 'polar_calc.err'
 _TMP_PROFILE_FILE_NAME = 'in'  # as short as possible to avoid problems of path length
 _TMP_RESULT_FILE_NAME = 'out'  # as short as possible to avoid problems of path length
-
+_DEFAULT_XFOIL_EXE_PATH = pth.join(pth.dirname(__file__), 'xfoil6.99', 'xfoil.exe')
 _LOGGER = logging.getLogger(__name__)
 
 _XFOIL_PATH_LIMIT = 64
@@ -45,9 +45,9 @@ class XfoilPolar(ExternalCodeComp):
     """Column names in XFOIL polar result"""
 
     def initialize(self):
-        self.options.declare('xfoil_exe_path', types=str)
+        self.options.declare('xfoil_exe_path', default=_DEFAULT_XFOIL_EXE_PATH, types=str)
         self.options.declare('profile_path',
-                             default=os.path.join(os.path.dirname(__file__), 'BACJ.txt'), types=str)
+                             default=pth.join(pth.dirname(__file__), 'BACJ.txt'), types=str)
         self.options.declare('result_folder_path', default='', types=str)
         self.options.declare('result_polar_file_name', default='polar_result.txt', types=str)
 
@@ -56,13 +56,11 @@ class XfoilPolar(ExternalCodeComp):
 
         self.add_input('xfoil:reynolds', val=np.nan)
         self.add_input('xfoil:mach', val=np.nan)
-        self.add_input('geometry:wing_sweep_25', val=np.nan)
+        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
 
-        self.add_output('aerodynamics:Cl_max_2D')
-        self.add_output('aerodynamics:Cl_max_clean')
+        self.add_output('aerodynamics:Cl_max_2D', val=np.nan)
+        self.add_output('aerodynamics:Cl_max_clean', val=np.nan)
 
-        for name in self._xfoil_output_names:
-            self.add_output('xfoil:%s' % name)
 
     def compute(self, inputs, outputs):
 
@@ -132,8 +130,6 @@ class XfoilPolar(ExternalCodeComp):
         # Post-processing
         result_array = self._read_polar(tmp_result_file_path)
         if result_array is not None:
-            for name in self._xfoil_output_names:
-                outputs['xfoil:%s' % name] = result_array[name]
             cl_max_2d = self._get_max_cl(result_array['alpha'], result_array['CL'])
         else:
             cl_max_2d = 1.9

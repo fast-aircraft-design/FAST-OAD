@@ -1,3 +1,6 @@
+"""
+Tests for atmosphere.py
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -20,6 +23,7 @@ from fastoad.utils.physics.atmosphere import Atmosphere
 
 
 def test_atmosphere():
+    """ Tests properties of Atmosphere class """
     # Altitudes in meters Values at disa=0 from "Advanced Aircraft Design (
     # Egbert TORENBEEK, Oxford, UK: John Wiley & Sons Ltd, 2013) Appendix B,
     # p.397-398" Values at disa=10 from
@@ -125,3 +129,15 @@ def test_atmosphere():
                                                          rel=1e-3)
         # Additional check for get_altitude in feet
         assert expectations['alt'][idx] / foot == pytest.approx(atm.get_altitude(), rel=1e-3)
+
+
+def test_reynolds():
+    """ Tests computation of Reynolds number """
+    atm = Atmosphere([[0, 35000], [0, 35000]])
+    mach = [[0.2, 0.2], [0.8, 0.8]]
+
+    # source:  http://www.aerospaceweb.org/design/scripts/atmosphere/
+    expected_reynolds = [[4.6593e+6, 1.5738e+6], [1.8637e+7, 6.2952e+6]]
+
+    for result, expected_values in zip(atm.get_unitary_reynolds(mach), expected_reynolds):
+        assert result == pytest.approx(expected_values, 5e-3)

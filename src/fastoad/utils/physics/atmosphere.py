@@ -154,6 +154,13 @@ class Atmosphere:
                                           ) / self.density
         return self._return_value(self._kinematic_viscosity)
 
+    def get_unitary_reynolds(self, mach):
+        """
+        :param mach: Mach number
+        :return: Unitary Reynolds number in 1/m
+        """
+        return mach * self.speed_of_sound / self.kinematic_viscosity
+
     def _return_value(self, value):
         """
         :returns: a float when needed. Otherwise, returns the value itself.

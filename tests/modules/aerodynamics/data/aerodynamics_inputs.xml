@@ -1,0 +1,77 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2019  ONERA/ISAE
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<aircraft>
+  <geometry>
+    <useless>0.9</useless>
+    <wing_sweep_0 units="deg">27.554</wing_sweep_0>
+    <wing_sweep_100_outer units="deg">16.696</wing_sweep_100_outer>
+    <flap_chord_ratio>0.197</flap_chord_ratio>
+    <flap_span_ratio>0.8</flap_span_ratio>
+    <slat_chord_ratio>0.177</slat_chord_ratio>
+    <slat_span_ratio>0.9</slat_span_ratio>
+    <wing_span units="m">31.603</wing_span>
+    <fuselage_height_max units="m">4.06</fuselage_height_max>
+    <fuselage_width_max units="m">3.92</fuselage_width_max>
+    <wing_l2 units="m">6.26</wing_l2>
+    <wing_l4 units="m">1.882</wing_l4>
+    <wing_sweep_25 units="deg">25.0</wing_sweep_25>
+    <wing_area units="m**2">124.843</wing_area>
+      <wing_toc_aero>0.128</wing_toc_aero>
+      <wing_wet_area units="m**2">200.607</wing_wet_area>
+      <wing_l0 units="m">4.457</wing_l0>
+      <fuselage_length units="m">37.507</fuselage_length>
+      <fuselage_wet_area units="m**2">401.956</fuselage_wet_area>
+      <ht_length units="m">3.141</ht_length>
+      <ht_toc>0.1</ht_toc>
+      <ht_sweep_25 units="deg">28.0</ht_sweep_25>
+      <ht_wet_area units="m**2">70.341</ht_wet_area>
+      <vt_length units="m">4.161</vt_length>
+      <vt_toc>0.1</vt_toc>
+      <vt_sweep_25 units="deg">35.0</vt_sweep_25>
+      <vt_wet_area units="m**2">52.749</vt_wet_area>
+      <pylon_length units="m">5.733</pylon_length>
+      <nacelle_length units="m">5.211</nacelle_length>
+      <pylon_wet_area units="m**2">7.563</pylon_wet_area>
+      <nacelle_wet_area units="m**2">21.609</nacelle_wet_area>
+      <engine_number>2.0</engine_number>
+      <fan_length units="m">3.127</fan_length>
+      <S_total units="m**2">784.007</S_total>
+      <wing_aspect_ratio>9.48</wing_aspect_ratio>
+      <wing_toc_tip>0.11</wing_toc_tip>
+  </geometry>
+  <sizing_mission>
+    <flap_angle_to units="deg">10.0</flap_angle_to>
+    <slat_angle_to units="deg">18.0</slat_angle_to>
+    <flap_angle_landing units="deg">30.0</flap_angle_landing>
+    <slat_angle_landing units="deg">20.0</slat_angle_landing>
+      <cruise_altitude units="ft">35000.0</cruise_altitude>
+  </sizing_mission>
+  <tlar>
+    <cruise_Mach>0.78</cruise_Mach>
+    <v_approach units="kt">132.0</v_approach>
+  </tlar>
+    <kfactors_aero>
+        <K_Cd>1.0</K_Cd>
+        <Offset_Cd>0.0</Offset_Cd>
+        <K_winglet_Cd>1.0</K_winglet_Cd>
+        <Offset_winglet_Cd>0.0</Offset_winglet_Cd>
+        <K_Cl>1.0</K_Cl>
+        <Offset_Cl>0.0</Offset_Cl>
+        <K_winglet_Cl>1.0</K_winglet_Cl>
+        <Offset_winglet_Cl>0.0</Offset_winglet_Cl>
+        <K_HL_LDG>1.0</K_HL_LDG>
+    </kfactors_aero>
+</aircraft>
