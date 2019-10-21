@@ -22,20 +22,18 @@ from typing import Union, Sequence, Tuple, Optional
 import numpy as np
 
 from fastoad.constants import FlightPhase
+from fastoad.modules.propulsion import IEngine
 from fastoad.modules.propulsion.fuel_engine.rubber_engine.exceptions import \
     FastRubberEngineInconsistentInputParametersError
 from fastoad.utils.physics import Atmosphere
 from .constants import ALPHA, BETA, A_MS, B_MS, C_MS, E_MS, D_MS, A_FM, D_FM, E_FM, B_FM, C_FM, \
-    MAX_SFC_RATIO_COEFF
+    MAX_SFC_RATIO_COEFF, ATM_SEA_LEVEL, ATM_TROPOPAUSE
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
-ATM_SEA_LEVEL = Atmosphere(0)
-ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
 
-
-class RubberEngine:
+class RubberEngine(IEngine):
     """
     Parametric turbofan engine
 
@@ -46,24 +44,24 @@ class RubberEngine:
     :param bypass_ratio:
     :param overall_pressure_ratio:
     :param turbine_inlet_temperature: (unit=K) also noted T4
-    :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4 in K
-    :param delta_t4_cruise: (unit=K) difference between T4 during cruise and design T4
     :param mto_thrust: (unit=N) Maximum TakeOff thrust, i.e. maximum thrust
                        on ground at speed 0, also noted F0
     :param maximum_mach:
     :param design_altitude: (unit=m)
-
+    :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4 in K
+    :param delta_t4_cruise: (unit=K) difference between T4 during cruise and design T4
     """
 
     def __init__(self,
                  bypass_ratio: float,
                  overall_pressure_ratio: float,
                  turbine_inlet_temperature: float,
-                 delta_t4_climb: float,
-                 delta_t4_cruise: float,
                  mto_thrust: float,
                  maximum_mach: float,
-                 design_altitude: float):
+                 design_altitude: float,
+                 delta_t4_climb: float = -50,
+                 delta_t4_cruise: float = -100,
+                 ):
         # pylint: disable=too-many-arguments  # they define the engine
         """ constructor """
 
@@ -97,11 +95,8 @@ class RubberEngine:
                      Union[float, Sequence]]:
         # pylint: disable=too-many-arguments  # they define the trajectory
         """
-        Computes Specific Fuel Consumption according to provided conditions.
+        see :meth:`fastoad.modules.propulsion.engine.IEngine.compute_flight_points` for more info
 
-        see :meth:`compute_flight_points_from_dt4` for more info
-
-        The specificity of current method is that is use flight phases as inputs
 
         :param mach: Mach number
         :param altitude: (unit=m) altitude w.r.t. to sea level
@@ -126,27 +121,8 @@ class RubberEngine:
                      Union[float, Sequence]]:
         # pylint: disable=too-many-arguments  # they define the trajectory
         """
-        Computes Specific Fuel Consumption according to provided conditions.
-
-        Each input can be a float, a list or an array.
-        Inputs that are not floats must all have the same shape (numpy speaking).
-
-        About use_thrust_rate, thrust_rate and thrust
-        ---------------------------------------------
-
-            *use_thrust_rate* tells if a flight point should be computed using *thrust_rate*
-            or *thrust* as input.
-
-            - if *use_thrust_rate* is None, the considered input will be the provided one
-            between *thrust_rate* and *thrust* (if both are provided, *thrust_rate* will be used)
-
-            - if *use_thrust_rate* is True or False (i.e., not a sequence), the considered input
-            will be taken accordingly, and should of course not be None.
-
-            - if *use_thrust_rate* is a sequence or array, *thrust_rate* and *thrust* should be
-            provided and have the same shape as *use_thrust_rate*. The method will consider for
-            each element which input will be used according to *use_thrust_rate*
-
+        Same as :meth:`compute_flight_points` except that delta_t4 is used directly
+        instead of specifying flight phase.
 
         :param mach: Mach number
         :param altitude: (unit=m) altitude w.r.t. to sea level

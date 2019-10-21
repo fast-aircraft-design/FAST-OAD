@@ -15,6 +15,11 @@ Constants for rubber engine analytical models
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fastoad.utils.physics import Atmosphere
+
+# Atmosphere at limits of troposhere
+ATM_SEA_LEVEL = Atmosphere(0)
+ATM_TROPOPAUSE = Atmosphere(11000, altitude_in_feet=False)
 
 # Constants for computation of maximum thrust ---------------------------------
 # (see E. Roux model definition in roux:2005)

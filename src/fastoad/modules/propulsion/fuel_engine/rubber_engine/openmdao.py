@@ -15,48 +15,35 @@ OpenMDAO wrapping of RubberEngine
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import openmdao.api as om
 
+from fastoad.modules.propulsion import OMIEngine, IEngineSubclass
 from .rubber_engine import RubberEngine
 
 
-class OMRubberEngine(om.ExplicitComponent):
+class OMRubberEngine(OMIEngine):
     """
-    Base class for the parametric engine model as OpenMDAO component
+    Parametric engine model as OpenMDAO component
 
     See :class:`RubberEngine` for more information.
     """
 
-    def initialize(self):
-        self.options.declare('flight_point_count', 1, types=(int, tuple))
-
     def setup(self):
+        super().setup()
         self.add_input('bypass_ratio', np.nan)
         self.add_input('overall_pressure_ratio', np.nan)
         self.add_input('turbine_inlet_temperature', np.nan, units='K')
         self.add_input('mto_thrust', np.nan, units='N')
         self.add_input('maximum_mach', np.nan)
         self.add_input('design_altitude', np.nan, units='m')
-        self.add_input('delta_t4_climb', -50, units='K')
-        self.add_input('delta_t4_cruise', -100, units='K')
-
-        shape = self.options['flight_point_count']
-        self.add_input('mach', np.nan, shape=shape)
-        self.add_input('altitude', np.nan, shape=shape, units='m')
-        self.add_input('phase', np.nan, shape=shape)
-        self.add_input('use_thrust_rate', np.nan, shape=shape)
-        self.add_input('required_thrust_rate', np.nan, shape=shape)
-        self.add_input('required_thrust', np.nan, shape=shape, units='N')
-
-        self.add_output('SFC', np.nan, shape=shape, units='kg/s/N')
-        self.add_output('thrust_rate', np.nan, shape=shape, units='kg/s/N')
-        self.add_output('thrust', np.nan, shape=shape, units='kg/s/N')
-        self.declare_partials('SFC', '*', method='fd')
-        self.declare_partials('thrust_rate', '*', method='fd')
-        self.declare_partials('thrust', '*', method='fd')
+        self.add_input('delta_t4_climb', -50, desc='As it is a delta, unit is K or °C, but is not '
+                                                   'specified to avoid OpenMDAO making unwanted '
+                                                   'conversion')
+        self.add_input('delta_t4_cruise', -100, desc='As it is a delta, unit is K or °C, but is '
+                                                     'not specified to avoid OpenMDAO making '
+                                                     'unwanted conversion')
 
     @staticmethod
-    def get_engine(inputs):
+    def get_engine(inputs) -> IEngineSubclass:
         """
 
         :param inputs: input parameters that define the engine
@@ -68,58 +55,3 @@ class OMRubberEngine(om.ExplicitComponent):
                        'delta_t4_cruise']
         engine_params = {name: inputs[name] for name in param_names}
         return RubberEngine(**engine_params)
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        engine = self.get_engine(inputs)
-        sfc, thrust_rate, thrust = engine.compute_flight_points(inputs['mach'], inputs['altitude'],
-                                                                inputs['phase'],
-                                                                inputs['use_thrust_rate'],
-                                                                inputs['required_thrust_rate'],
-                                                                inputs['required_thrust'])
-        outputs['SFC'] = sfc
-        outputs['thrust_rate'] = thrust_rate
-        outputs['thrust'] = thrust
-
-#
-# class RegulatedRubberEngine(_OMRubberEngine):
-#     """
-#     OpenMDAO component for a parametric engine model that is driven by required thrust
-#
-#     See :class:`RubberEngine` for more information.
-#     """
-#
-#     def setup(self):
-#         super().setup()
-#         shape = self.options['flight_point_count']
-#         self.add_input('thrust', np.nan, shape=shape, units='N')
-#         self.add_output('thrust_rate', np.nan, shape=shape)
-#         self.declare_partials('thrust_rate', '*', method='fd')
-#
-#     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-#         engine = self.get_engine(inputs)
-#         sfc, thrust_rate = engine.compute_regulated(inputs['mach'], inputs['altitude'],
-#                                                     inputs['thrust'], inputs['phase'])
-#         outputs['SFC'] = sfc
-#         outputs['thrust_rate'] = thrust_rate
-#
-#
-# class ManualRubberEngine(_OMRubberEngine):
-#     """
-#     OpenMDAO component for a parametric engine model that is driven by thrust rate
-#
-#     See :class:`RubberEngine` for more information.
-#     """
-#
-#     def setup(self):
-#         super().setup()
-#         shape = self.options['flight_point_count']
-#         self.add_input('thrust_rate', np.nan, shape=shape)
-#         self.add_output('thrust', np.nan, shape=shape, units='N')
-#         self.declare_partials('thrust', '*', method='fd')
-#
-#     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-#         engine = self.get_engine(inputs)
-#         sfc, thrust = engine.compute_manual(inputs['mach'], inputs['altitude'],
-#                                             inputs['thrust_rate'], inputs['phase'])
-#         outputs['SFC'] = sfc
-#         outputs['thrust'] = thrust

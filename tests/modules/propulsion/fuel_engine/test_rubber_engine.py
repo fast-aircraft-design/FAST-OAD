@@ -24,8 +24,7 @@ from fastoad.utils.physics import Atmosphere
 
 
 def test_compute_flight_points():
-    engine = RubberEngine(5, 30, 1500, -50, -100, 1, 0.95,
-                          10000)  # f0=1 so that output is simply fc/f0
+    engine = RubberEngine(5, 30, 1500, 1, 0.95, 10000)  # f0=1 so that output is simply fc/f0
 
     # Test with scalars
     sfc, thrust_rate, thrust = engine.compute_flight_points(0, 0, FlightPhase.TAKEOFF,
@@ -85,29 +84,29 @@ def test_compute_flight_points():
 
 
 def test_installed_weight():
-    fj44 = RubberEngine(0, 0, 0, 0, 0, 8452, 0, 0)
+    fj44 = RubberEngine(0, 0, 0, 8452, 0, 0)
     np.testing.assert_allclose(fj44.installed_weight(), 225, rtol=1e-2)
-    br710 = RubberEngine(0, 0, 0, 0, 0, 66034, 0, 0)
+    br710 = RubberEngine(0, 0, 0, 66034, 0, 0)
     np.testing.assert_allclose(br710.installed_weight(), 1756, rtol=1e-2)
-    cfm56_3c1 = RubberEngine(0, 0, 0, 0, 0, 104533, 0, 0)
+    cfm56_3c1 = RubberEngine(0, 0, 0, 104533, 0, 0)
     np.testing.assert_allclose(cfm56_3c1.installed_weight(), 2542, rtol=1e-2)
-    trent900 = RubberEngine(0, 0, 0, 0, 0, 340289, 0, 0)
+    trent900 = RubberEngine(0, 0, 0, 340289, 0, 0)
     np.testing.assert_allclose(trent900.installed_weight(), 6519, rtol=1e-2)
 
 
 def test_length():
-    engine = RubberEngine(0, 0, 0, 0, 0, 75000, 0.95, 0)
+    engine = RubberEngine(0, 0, 0, 75000, 0.95, 0)
     np.testing.assert_allclose(engine.length(), 2.73, rtol=1e-2)
 
-    engine = RubberEngine(0, 0, 0, 0, 0, 250000, 0.92, 0)
+    engine = RubberEngine(0, 0, 0, 250000, 0.92, 0)
     np.testing.assert_allclose(engine.length(), 4.39, rtol=1e-2)
 
 
 def test_nacelle_diameter():
-    engine = RubberEngine(3, 0, 0, 0, 0, 75000, 0, 0)
+    engine = RubberEngine(3, 0, 0, 75000, 0, 0)
     np.testing.assert_allclose(engine.nacelle_diameter(), 1.61, rtol=1e-2)
 
-    engine = RubberEngine(5.5, 0, 0, 0, 0, 250000, 0, 0)
+    engine = RubberEngine(5.5, 0, 0, 250000, 0, 0)
     np.testing.assert_allclose(engine.nacelle_diameter(), 3.25, rtol=1e-2)
 
 
@@ -119,7 +118,7 @@ def test_max_thrust():
 
     .. bibliography:: ../refs.bib
     """
-    engine = RubberEngine(5, 30, 1500, 0, 0, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
+    engine = RubberEngine(5, 30, 1500, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
     machs = np.arange(0, 1.01, 0.1)
 
     # Check with cruise altitude
@@ -135,7 +134,7 @@ def test_max_thrust():
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-2)
 
     # Check Cruise above 11000 with compression rate != 30 and bypass ratio != 5
-    engine = RubberEngine(4, 35, 1500, 0, 0, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
+    engine = RubberEngine(4, 35, 1500, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
     atm = Atmosphere(13000, altitude_in_feet=False)
     max_thrust_ratio = engine.max_thrust(atm, machs, -50)
     ref_max_thrust_ratio = 0.969 * atm.density / 1.225 * (1 - 0.636 * machs + 0.521 * machs ** 2)
@@ -143,7 +142,7 @@ def test_max_thrust():
 
     # Check with compression rate != 30 and bypass ratio != 5 and an array for altitudes (as
     # many values as mach numbers)
-    engine = RubberEngine(6, 22, 1500, 0, 0, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
+    engine = RubberEngine(6, 22, 1500, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
     atm = Atmosphere(np.arange(3000, 13100, 1000), altitude_in_feet=False)
     max_thrust_ratio = engine.max_thrust(atm, machs, -50)
     ref_max_thrust_ratio = [0.698, 0.592, 0.501, 0.426, 0.364, 0.315,
@@ -160,7 +159,7 @@ def test_sfc_at_max_thrust():
     """
 
     # Check with arrays
-    cfm56_3c1 = RubberEngine(6, 25.7, 0, 0, 0, 0, 0, 0)
+    cfm56_3c1 = RubberEngine(6, 25.7, 0, 0, 0, 0)
     atm = Atmosphere([0, 10668, 13000], altitude_in_feet=False)
     sfc = cfm56_3c1.sfc_at_max_thrust(atm, [0, 0.8, 0.8])
     # Note: value for alt==10668 is different from PhD report
@@ -168,7 +167,7 @@ def test_sfc_at_max_thrust():
     np.testing.assert_allclose(sfc, [0.970e-5, 1.78e-5, 1.77e-5], rtol=1e-2)
 
     # Check with scalars
-    trent900 = RubberEngine(7.14, 41, 0, 0, 0, 0, 0, 0)
+    trent900 = RubberEngine(7.14, 41, 0, 0, 0, 0)
     atm = Atmosphere(0, altitude_in_feet=False)
     sfc = trent900.sfc_at_max_thrust(atm, 0)
     np.testing.assert_allclose(sfc, 0.735e-5, rtol=1e-2)
@@ -178,7 +177,7 @@ def test_sfc_at_max_thrust():
     np.testing.assert_allclose(sfc, 1.68e-5, rtol=1e-2)  # value is different from PhD report
 
     # Check with arrays
-    pw2037 = RubberEngine(6, 31.8, 0, 0, 0, 0, 0, 0)
+    pw2037 = RubberEngine(6, 31.8, 0, 0, 0, 0)
     atm = Atmosphere(0, altitude_in_feet=False)
     sfc = pw2037.sfc_at_max_thrust(atm, 0)
     np.testing.assert_allclose(sfc, 0.906e-5, rtol=1e-2)
@@ -191,7 +190,7 @@ def test_sfc_at_max_thrust():
 def test_sfc_ratio():
     """    Checks SFC ratio model    """
     design_alt = 10000
-    engine = RubberEngine(0, 0, 0, 0, 0, 0, 0, design_alt)
+    engine = RubberEngine(0, 0, 0, 0, 0, design_alt)
 
     # Test values taken from method report (plots p. 80, see roux:2002 in refs.bib)
     # + values where original model fails (around dh=-1562.5)
