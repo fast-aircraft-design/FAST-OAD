@@ -238,11 +238,12 @@ class RubberEngine(IEngine):
         altitude = atmosphere.get_altitude(False)
         mach = np.asarray(mach)
 
-        self._check_definition_domain('MAX THRUST computation',
+        self._check_definition_domain('SFC at MAX THRUST computation',
                                       {'altitude': (altitude, None, 20000),
-                                       'Mach number': (mach, 0.05, 0.1),
-                                       'overall pressure ratio': (self.bypass_ratio, 3.0, None),
-                                       'bypass ratio': (self.bypass_ratio, 20.0, 40.0)
+                                       'Mach number': (mach, 0.05, 1.0),
+                                       'overall pressure ratio': (
+                                           self.overall_pressure_ratio, 20.0, 40.0),
+                                       'bypass ratio': (self.bypass_ratio, 3.0, None)
                                        })
 
         # Following coefficients are constant for alt<=0 and alt >=11000m.
@@ -287,7 +288,7 @@ class RubberEngine(IEngine):
         thrust_rate = np.asarray(thrust_rate)
         mach = np.asarray(mach)
 
-        self._check_definition_domain('MAX THRUST computation',
+        self._check_definition_domain('SFC RATIO computation',
                                       {'altitude': (altitude, None, 20000),
                                        'Mach number': (mach, 0.75, 0.85),
                                        'thrust rate': (thrust_rate, 0.5, 1.0),
@@ -337,9 +338,10 @@ class RubberEngine(IEngine):
 
         self._check_definition_domain('MAX THRUST computation',
                                       {'altitude': (altitude, None, 20000),
-                                       'Mach number': (mach, 0.05, 0.1),
-                                       'overall pressure ratio': (self.bypass_ratio, 3.0, 6.0),
-                                       'bypass ratio': (self.bypass_ratio, 20.0, 40.0),
+                                       'Mach number': (mach, 0.05, 1.0),
+                                       'overall pressure ratio': (
+                                           self.overall_pressure_ratio, 20.0, 40.0),
+                                       'bypass ratio': (self.bypass_ratio, 3.0, 6.0),
                                        'T4': (self.t_4, 1400.0, 1600.0),
                                        'Delta_T4': (delta_t4, -100.0, 0.0),
                                        })
@@ -473,7 +475,7 @@ class RubberEngine(IEngine):
         :return: DeltaT4 according to phase
         """
 
-        if np.size(phase) == 1:  # phase is a scalar
+        if np.shape(phase) == ():  # phase is a scalar
             return self.dt4_values[phase]
 
         # Here phase is a sequence. Ensure now it is a numpy array
