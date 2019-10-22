@@ -1,0 +1,21 @@
+
+
+title = "Sellar"
+
+module_folders = [
+  "../../../sellar_example"
+]
+
+[Problem]  # As TOML it case sensitive, this section won't be recognized
+    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+    [Problem.cycle]
+        nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+        linear_solver = "om.ScipyKrylov()"
+        [Problem.cycle.disc1]
+            id = "sellar.disc1"
+        [Problem.cycle.disc2]
+            id = "sellar.disc2"
+    [Problem.functions]
+        id = "sellar.functions"
+
+
