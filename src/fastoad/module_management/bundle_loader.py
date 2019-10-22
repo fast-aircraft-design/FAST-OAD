@@ -137,6 +137,7 @@ class BundleLoader:
             factory = ComponentFactory(factory_name)(obj)
 
             # When using factory immediately, manually registering is needed
+            # FIXME: there can still be messages for duplicate registering
             if not ipopo.is_registered_factory(factory_name):
                 ipopo.register_factory(self.context, factory)
 
