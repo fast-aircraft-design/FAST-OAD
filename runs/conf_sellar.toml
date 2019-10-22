@@ -1,0 +1,40 @@
+
+
+title = "Sellar"
+
+module_folders = [
+  "./custom_modules"
+]
+
+input_file = "inputs.xml"
+output_file = "outputs.xml"
+
+[problem]
+  driver = "om.ScipyOptimizeDriver()"
+  [problem.group]
+    nonlinear_solver = "om.NonlinearBlockGS(atol=1e-10, rtol=1e-10, maxiter=10, err_on_maxiter=True, iprint=1)"
+    [problem.group.disc1]
+      id = "sellar.disc1"
+    [problem.group.disc2]
+      id = "sellar.disc2"
+  [problem.functions]
+    id = "sellar.functions"
+
+[[design_var]]
+  name = "category1/x"
+  lower = 0
+  upper = 10
+[[design_var]]
+  name = "category1/z"
+  lower = [-10,0]
+  upper = 10
+
+[[objective]]
+  name = "funcs/f"
+
+[[constraint]]
+  name = "funcs/g1"
+  upper = 0
+[[constraint]]
+  name = "funcs/g2"
+  upper = 0
