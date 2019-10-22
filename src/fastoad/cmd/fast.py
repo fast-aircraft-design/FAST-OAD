@@ -24,8 +24,10 @@ def main():
     parser.add_argument('conf_file', type=str, help='the file for configuring the problem')
     parser.add_argument('--gen_inputs', action='store_true',
                         help='generates a template file that contains needed inputs')
-    parser.add_argument('--run', action='store_true',
-                        help='runs the problem with provided input file')
+    parser.add_argument('--optim', action='store_true',
+                        help='runs the optimization of the problem with provided input file')
+    parser.add_argument('--eval', action='store_true',
+                        help='simply evaluates the problem with provided input file')
 
     args = parser.parse_args()
 
@@ -37,9 +39,13 @@ def main():
 
         if args.gen_inputs:
             problem.write_needed_inputs()
-        elif args.run:
+        elif args.optim:
             problem.read_inputs()
             problem.run_driver()
+            problem.write_outputs()
+        elif args.eval:
+            problem.read_inputs()
+            problem.run_model()
             problem.write_outputs()
 
 
