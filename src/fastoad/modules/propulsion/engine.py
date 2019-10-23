@@ -98,9 +98,9 @@ class OMIEngine(om.ExplicitComponent, ABC):
         self.add_input('required_thrust_rate', np.nan, shape=shape)
         self.add_input('required_thrust', np.nan, shape=shape, units='N')
 
-        self.add_output('SFC', np.nan, shape=shape, units='kg/s/N')
-        self.add_output('thrust_rate', np.nan, shape=shape, units='kg/s/N')
-        self.add_output('thrust', np.nan, shape=shape, units='kg/s/N')
+        self.add_output('SFC', shape=shape, units='kg/s/N')
+        self.add_output('thrust_rate', shape=shape, units='kg/s/N')
+        self.add_output('thrust', shape=shape, units='kg/s/N')
         self.declare_partials('SFC', '*', method='fd')
         self.declare_partials('thrust_rate', '*', method='fd')
         self.declare_partials('thrust', '*', method='fd')
