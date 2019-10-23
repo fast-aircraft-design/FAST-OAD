@@ -45,8 +45,7 @@ def test_compute_flight_points():
     machs = [0, 0.3, 0.3, 0.8, 0.8]
     altitudes = [0, 0, 0, 10000, 13000]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    # FIXME : Why legacy value 0.096737 does give the exact expected thrust rate
-    thrusts = [0.9553 * 0.8, 0.38851, 0.35677, 0.096737, 0.11273]
+    thrusts = [0.9553 * 0.8, 0.38851, 0.35677, 0.09680, 0.11273]
     phases = [FlightPhase.TAKEOFF, FlightPhase.TAKEOFF,
               FlightPhase.CLIMB, FlightPhase.IDLE,
               FlightPhase.CRUISE.value]  # mix FlightPhase with integers
