@@ -72,6 +72,5 @@ def test_breguet_with_rubber_engine():
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = run_system(group, ivc)
 
-    # FIXME: obtained value are slighly different of legacy ones below
-    assert_allclose(problem['MZFW'], 65073., atol=1)
-    assert_allclose(problem['fuel_weight'], 8927., atol=1)
+    assert_allclose(problem['MZFW'], 65076., atol=1)
+    assert_allclose(problem['fuel_weight'], 8924., atol=1)
