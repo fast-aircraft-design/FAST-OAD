@@ -16,6 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
+
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -33,12 +34,12 @@ class Cd0Fuselage(ExplicitComponent):
             self.add_input('reynolds_low_speed', val=np.nan)
             self.add_input('cl_low_speed', val=nans_array)
             self.add_input('Mach_low_speed', val=np.nan)
-            self.add_output('cd0_fuselage_low_speed', val=nans_array)
+            self.add_output('cd0_fuselage_low_speed', shape=POLAR_POINT_COUNT)
         else:
             self.add_input('reynolds_high_speed', val=np.nan)
             self.add_input('cl_high_speed', val=nans_array)
             self.add_input('tlar:cruise_Mach', val=np.nan)
-            self.add_output('cd0_fuselage_high_speed', val=nans_array)
+            self.add_output('cd0_fuselage_high_speed', shape=POLAR_POINT_COUNT)
 
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:fuselage_length', val=np.nan, units='m')

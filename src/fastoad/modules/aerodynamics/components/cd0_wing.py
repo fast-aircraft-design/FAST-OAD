@@ -33,12 +33,12 @@ class Cd0Wing(ExplicitComponent):
             self.add_input('reynolds_low_speed', val=np.nan)
             self.add_input('cl_low_speed', val=nans_array)
             self.add_input('Mach_low_speed', val=np.nan)
-            self.add_output('cd0_wing_low_speed', val=nans_array)
+            self.add_output('cd0_wing_low_speed', shape=POLAR_POINT_COUNT)
         else:
             self.add_input('reynolds_high_speed', val=np.nan)
             self.add_input('cl_high_speed', val=nans_array)
             self.add_input('tlar:cruise_Mach', val=np.nan)
-            self.add_output('cd0_wing_high_speed', val=nans_array)
+            self.add_output('cd0_wing_high_speed', shape=POLAR_POINT_COUNT)
 
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing_toc_aero', val=np.nan)

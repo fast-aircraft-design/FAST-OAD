@@ -31,10 +31,10 @@ class CdTrim(ExplicitComponent):
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
             self.add_input('cl_low_speed', val=nans_array)
-            self.add_output('cd_trim_low_speed', val=nans_array)
+            self.add_output('cd_trim_low_speed', shape=POLAR_POINT_COUNT)
         else:
             self.add_input('cl_high_speed', val=nans_array)
-            self.add_output('cd_trim_high_speed', val=nans_array)
+            self.add_output('cd_trim_high_speed', shape=POLAR_POINT_COUNT)
 
     def compute(self, inputs, outputs):
         if self.low_speed_aero:

@@ -14,10 +14,10 @@ Computation of lift increment due to high-lift devices
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import math
 import os
 import os.path as pth
 
-import math
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy import interpolate
@@ -37,7 +37,7 @@ class DeltaCLHighLift(ExplicitComponent):
     def setup(self):
         self.add_input('flap_angle', val=np.nan, units='rad')
         self.add_input('slat_angle', val=np.nan, units='rad')
-        self.add_output('delta_cl', val=np.nan)
+        self.add_output('delta_cl')
 
         self.add_input('geometry:wing_sweep_0', val=np.nan, units='rad')
         self.add_input('geometry:wing_sweep_100_outer', val=np.nan, units='rad')

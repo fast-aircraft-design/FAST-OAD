@@ -26,7 +26,7 @@ class DeltaCDHighLift(ExplicitComponent):
     def setup(self):
         self.add_input('flap_angle', val=np.nan, units='deg')
         self.add_input('slat_angle', val=np.nan, units='deg')
-        self.add_output('delta_cd', val=np.nan)
+        self.add_output('delta_cd')
 
         self.add_input('geometry:flap_span_ratio', val=np.nan)
         self.add_input('geometry:slat_span_ratio', val=np.nan)

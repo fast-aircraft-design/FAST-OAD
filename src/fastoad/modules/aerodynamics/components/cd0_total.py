@@ -37,7 +37,7 @@ class Cd0Total(ExplicitComponent):
             self.add_input('cd0_vt_low_speed', val=np.nan)
             self.add_input('cd0_nacelle_low_speed', val=np.nan)
             self.add_input('cd0_pylon_low_speed', val=np.nan)
-            self.add_output('cd0_total_low_speed', val=nans_array)
+            self.add_output('cd0_total_low_speed', shape=POLAR_POINT_COUNT)
         else:
             self.add_input('cd0_wing_high_speed', val=nans_array)
             self.add_input('cd0_fuselage_high_speed', val=nans_array)
@@ -45,7 +45,7 @@ class Cd0Total(ExplicitComponent):
             self.add_input('cd0_vt_high_speed', val=np.nan)
             self.add_input('cd0_nacelle_high_speed', val=np.nan)
             self.add_input('cd0_pylon_high_speed', val=np.nan)
-            self.add_output('cd0_total_high_speed', val=nans_array)
+            self.add_output('cd0_total_high_speed', shape=POLAR_POINT_COUNT)
 
     def compute(self, inputs, outputs):
         wet_area_total = inputs['geometry:S_total']

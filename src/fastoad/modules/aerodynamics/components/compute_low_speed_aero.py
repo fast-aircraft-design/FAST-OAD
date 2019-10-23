@@ -36,8 +36,8 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing_toc_tip', val=np.nan)
 
-        self.add_output('aerodynamics:Cl_alpha_low', val=np.nan, units='1/rad')
-        self.add_output('aerodynamics:Cl_0_AoA', val=np.nan)
+        self.add_output('aerodynamics:Cl_alpha_low', units='1/rad')
+        self.add_output('aerodynamics:Cl_0_AoA')
 
     def compute(self, inputs, outputs):
         width_max = inputs['geometry:fuselage_width_max']

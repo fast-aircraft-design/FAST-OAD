@@ -24,7 +24,7 @@ class ComputeMaxClLanding(ExplicitComponent):
         self.add_input('aerodynamics:Cl_max_clean', val=np.nan)
         self.add_input('delta_cl_landing', val=np.nan)
         self.add_input('kfactors_aero:K_HL_LDG', val=np.nan)
-        self.add_output('aerodynamics:Cl_max_landing', val=np.nan)
+        self.add_output('aerodynamics:Cl_max_landing')
 
     def compute(self, inputs, outputs):
         cl_max_clean = inputs['aerodynamics:Cl_max_clean']

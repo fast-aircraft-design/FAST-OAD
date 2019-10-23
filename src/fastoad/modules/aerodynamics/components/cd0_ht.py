@@ -16,6 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
+
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -40,7 +41,7 @@ class Cd0HorizontalTail(ExplicitComponent):
         else:
             self.add_input('reynolds_high_speed', val=np.nan)
             self.add_input('tlar:cruise_Mach', val=np.nan)
-            self.add_output('cd0_ht_high_speed', val=np.nan)
+            self.add_output('cd0_ht_high_speed')
 
     def compute(self, inputs, outputs):
         el_ht = inputs['geometry:ht_toc']
