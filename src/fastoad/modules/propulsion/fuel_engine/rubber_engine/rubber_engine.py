@@ -166,7 +166,7 @@ class RubberEngine(IEngine):
 
         # thrust_rate is obtained from entire thrust vector (could be optimized if needed,
         # as some thrust rates that are computed may have been provided as input)
-        out_thrust_rate = thrust / max_thrust
+        out_thrust_rate = out_thrust / max_thrust
 
         # Now SFC can be computed
         sfc_0 = self.sfc_at_max_thrust(atmosphere, mach)
