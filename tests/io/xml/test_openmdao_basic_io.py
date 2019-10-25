@@ -265,7 +265,8 @@ def test_basic_xml_update():
     reference_filename = pth.join(data_folder, 'xml_update_reference.xml')
     updated_filename = pth.join(result_folder, 'xml_update_updated.xml')
 
-    OpenMdaoXmlIO.create_updated_xml(original_filename, reference_filename, updated_filename)
+    original_xml = OpenMdaoXmlIO(original_filename)
+    original_xml.create_updated_xml(reference_filename, updated_filename)
 
     updated_xml = OpenMdaoXmlIO(updated_filename)
 
@@ -312,5 +313,3 @@ def test_basic_xml_update():
     assert outputs[8].name == 'constants/k5'
     assert outputs[8].value == approx([100, 200, 400, 500, 600])
     assert outputs[8].units is None
-
-
