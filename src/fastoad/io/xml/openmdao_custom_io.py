@@ -229,6 +229,26 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                     Variable(name, attributes['value'], attributes.get('units', None)))
         return outputs
 
+    def create_updated_xml(self, reference_xml: str, updated_xml: str):
+        """
+        Creates an xml file which is a copy of an original xml file (self) and that is then updated
+        with the default values of a reference xml file
+        :param reference_xml: name of file that will provide reference values
+        :param updated_xml: name of file (copy of original_xml) that will be
+        updated with reference values
+        """
+        original_ivc = self.read()
+
+        reference_xml = self.__class__(reference_xml)
+        reference_xml.set_translator(self._translator)
+        reference_ivc = reference_xml.read()
+
+        updated_ivc = self._update_ivc(original_ivc, reference_ivc)
+        updated_xml = self.__class__(updated_xml)
+        updated_xml.set_translator(self._translator)
+
+        updated_xml.write(updated_ivc)
+
     @staticmethod
     def _update_ivc(original_ivc: IndepVarComp, reference_ivc: IndepVarComp) -> IndepVarComp:
         """

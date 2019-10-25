@@ -198,3 +198,45 @@ def test_custom_xml_read_and_write_with_only_or_ignore():
     assert outputs[0].name == 'geometry:wing:span'
     assert outputs[0].value == approx([42])
     assert outputs[0].units == 'm'
+
+def test_custom_xml_update():
+    """
+    Tests the update of an XML file
+    """
+    data_folder = pth.join(pth.dirname(__file__), 'data')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'xml_update')
+
+    var_names = ['geometry:total_surface',
+                 'geometry:wing:span',
+                 'geometry:wing:aspect_ratio',
+                 'geometry:fuselage:length']
+
+    xpaths = ['total_area',
+              'wing/span',
+              'wing/aspect_ratio',
+              'fuselage_length']
+
+    filename_original = pth.join(data_folder, 'custom.xml')
+    xml_original = OpenMdaoCustomXmlIO(filename_original)
+
+    translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
+    xml_original.set_translator(translator)
+
+    filename_ref = pth.join(data_folder, 'custom_ref.xml')
+
+    filename_updated = pth.join(result_folder, 'custom_updated.xml')
+
+    xml_original.create_updated_xml(filename_ref, filename_updated)
+
+    xml_read = OpenMdaoCustomXmlIO(filename_updated)
+    xml_read.set_translator(translator)
+
+    ivc = xml_read.read(only=['geometry:fuselage:length'])
+    outputs: List[Variable] = []
+    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
+        outputs.append(Variable(name, value, attributes['units']))
+    assert len(outputs) == 1
+    assert outputs[0].name == 'geometry:fuselage:length'
+    # The value shall have been modified with respect to ref file
+    assert outputs[0].value == approx([80.0])
+    assert outputs[0].units == 'm'
