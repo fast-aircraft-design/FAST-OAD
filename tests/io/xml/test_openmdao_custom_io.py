@@ -226,13 +226,17 @@ def test_custom_xml_update():
     xml_original.read()
 
     filename_ref = pth.join(data_folder, 'custom_ref.xml')
+    xml_ref = OMCustomXmlIO(filename_ref)
+    xml_ref.set_translator(translator)
+    xml_ref.read()
 
     filename_updated = pth.join(result_folder, 'custom_updated.xml')
 
-    xml_original.create_updated_xml(filename_ref, filename_updated)
+    xml_original.update(xml_ref)
 
     xml_read = OMCustomXmlIO(filename_updated)
     xml_read.set_translator(translator)
+    xml_read.set_system(xml_original.get_system())
 
     ivc = xml_read.read(only=['geometry:fuselage:length'])
     outputs: List[Variable] = []
