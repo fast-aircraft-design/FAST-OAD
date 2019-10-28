@@ -112,12 +112,14 @@ def test_custom_xml_read_and_write_from_ivc():
 
     # test without setting translation table
     with pytest.raises(ValueError) as exc_info:
-        xml_write.write(ivc)
+        xml_write.set_system(ivc)
+        xml_write.write()
     assert exc_info is not None
 
     # test after setting translation table
     xml_write.set_translator(translator)
-    xml_write.write(ivc)
+    xml_write.set_system(ivc)
+    xml_write.write()
 
     # check written data
     assert pth.isfile(new_filename)
@@ -221,6 +223,7 @@ def test_custom_xml_update():
 
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
     xml_original.set_translator(translator)
+    xml_original.read()
 
     filename_ref = pth.join(data_folder, 'custom_ref.xml')
 

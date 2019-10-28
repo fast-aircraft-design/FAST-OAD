@@ -85,11 +85,21 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
         for name, value, units in outputs:
             if (only is None or name in only) and not (ignore is not None and name in ignore):
                 ivc.add_output(name, val=np.array(value), units=units)
-        return ivc
+        self.set_system(ivc)
+        return self.get_system()
 
-    def write(self, system: SystemSubclass, only: Sequence[str] = None,
+    def write(self, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
-        variables = self._get_outputs(system)
+
+        # TODO: check that system is initialized
+        variables = self._get_outputs(self.get_system())
+
+        used_variables = self._filter_variables(variables, only=only, ignore=ignore)
+
+        self._write(used_variables)
+
+    def _build_translator(self):
+        variables = self._get_outputs(self.get_system())
 
         names = []
         xpaths = []
@@ -103,9 +113,9 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
         translator.set(names, xpaths)
         self.set_translator(translator)
 
-        used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-
-        self._write(used_variables)
+    def set_system(self, system: SystemSubclass):
+        self.system = system
+        self._build_translator()
 
     def _read_xml(self) -> Sequence[Variable]:
         """

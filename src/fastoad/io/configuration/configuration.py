@@ -116,6 +116,7 @@ class ConfiguredProblem(om.Problem):
         if self._input_file:
             print(self._input_file)
             writer = OpenMdaoXmlIO(self._input_file)
+            writer.read()
             writer.write_inputs(self)
 
     def read_inputs(self):
@@ -137,7 +138,8 @@ class ConfiguredProblem(om.Problem):
         """
         if self._output_file:
             writer = OpenMdaoXmlIO(self._output_file)
-            writer.write(self.model)
+            writer.set_system(self.model)
+            writer.write()
 
     def _parse_problem_table(self, component: Union[om.Problem, om.Group], identifier, table: dict):
         """

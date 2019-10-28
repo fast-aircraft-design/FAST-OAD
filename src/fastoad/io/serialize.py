@@ -41,7 +41,7 @@ class AbstractOpenMDAOVariableIO(ABC):
         """
 
     @abstractmethod
-    def write(self, system: SystemSubclass, only: List[str] = None, ignore: List[str] = None):
+    def write(self, only: List[str] = None, ignore: List[str] = None):
         """
         Writes output variables from provided system.
 
@@ -50,5 +50,4 @@ class AbstractOpenMDAOVariableIO(ABC):
         :param only: List of OpenMDAO variable names that should be written. Other names will be
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
-        :param system: any OpenMDAO core component
         """

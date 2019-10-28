@@ -103,7 +103,8 @@ def test_basic_xml_read_and_write_from_ivc():
         shutil.rmtree(result_folder)
     filename = pth.join(result_folder, 'handmade.xml')
     xml_write = OpenMdaoXmlIO(filename)
-    xml_write.write(ivc)
+    xml_write.set_system(ivc)
+    xml_write.write()
 
     # check (read another IndepVarComp instance from  xml)
     xml_check = OpenMdaoXmlIO(filename)
@@ -119,7 +120,8 @@ def test_basic_xml_read_and_write_from_ivc():
     # write it (with existing destination folder)
     new_filename = pth.join(result_folder, 'basic.xml')
     xml_write = OpenMdaoXmlIO(new_filename)
-    xml_write.write(ivc)
+    xml_write.set_system(ivc)
+    xml_write.write()
 
     # check (read another IndepVarComp instance from new xml)
     xml_check = OpenMdaoXmlIO(new_filename)
@@ -148,7 +150,8 @@ def test_basic_xml_partial_read_and_write_from_ivc():
 
     badvar_filename = pth.join(result_folder, 'with_bad_var.xml')
     xml_write = OpenMdaoXmlIO(badvar_filename)
-    xml_write.write(ivc, ignore=['does_not_exist'])  # Check with non-existent var in ignore list
+    xml_write.set_system(ivc)
+    xml_write.write(ignore=['does_not_exist'])  # Check with non-existent var in ignore list
 
     reader = XPathReader(badvar_filename)
     assert reader.get_float('should_be_ignored/pointless') == 0.0
@@ -176,7 +179,8 @@ def test_basic_xml_partial_read_and_write_from_ivc():
     # Check partial writing with 'ignore'
     varok_filename = pth.join(result_folder, 'with_bad_var.xml')
     xml_write = OpenMdaoXmlIO(varok_filename)
-    xml_write.write(ivc, ignore=['should_be_ignored/pointless', 'should_also_be_ignored'])
+    xml_write.set_system(ivc)
+    xml_write.write(ignore=['should_be_ignored/pointless', 'should_also_be_ignored'])
 
     xml_read = OpenMdaoXmlIO(varok_filename)
     new_ivc = xml_read.read()
@@ -185,7 +189,8 @@ def test_basic_xml_partial_read_and_write_from_ivc():
     # Check partial writing with 'only'
     varok2_filename = pth.join(result_folder, 'with_bad_var.xml')
     xml_write = OpenMdaoXmlIO(varok2_filename)
-    xml_write.write(ivc, only=ok_vars)
+    xml_write.set_system(ivc)
+    xml_write.write(only=ok_vars)
 
     xml_read = OpenMdaoXmlIO(varok2_filename)
     new_ivc = xml_read.read()
@@ -225,7 +230,8 @@ def test_basic_xml_write_from_problem():
     xml_write = OpenMdaoXmlIO(filename)
     xml_write.use_promoted_names = False
     xml_write.path_separator = '.'
-    xml_write.write(problem.model)
+    xml_write.set_system(problem.model)
+    xml_write.write()
 
     # Check
     tree = etree.parse(filename)
@@ -242,7 +248,8 @@ def test_basic_xml_write_from_problem():
     xml_write = OpenMdaoXmlIO(filename)
     xml_write.use_promoted_names = True
     xml_write.path_separator = '.'
-    xml_write.write(problem.model)
+    xml_write.set_system(problem.model)
+    xml_write.write()
 
     # Check
     tree = etree.parse(filename)
@@ -266,6 +273,7 @@ def test_basic_xml_update():
     updated_filename = pth.join(result_folder, 'xml_update_updated.xml')
 
     original_xml = OpenMdaoXmlIO(original_filename)
+    original_xml.read()
     original_xml.create_updated_xml(reference_filename, updated_filename)
 
     updated_xml = OpenMdaoXmlIO(updated_filename)

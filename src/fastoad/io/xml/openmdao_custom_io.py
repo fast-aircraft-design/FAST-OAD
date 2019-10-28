@@ -67,6 +67,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         """If True, promoted names will be used instead of "real" ones."""
 
         self._translator = None
+        self.system: SystemSubclass = None
         self._xml_unit_attribute = UNIT_ATTRIBUTE  # TODO : this setting should be public
 
     def set_translator(self, translator: VarXpathTranslator):
@@ -78,19 +79,45 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         """
         self._translator = translator
 
-    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
-        outputs = self._read_values(only=only, ignore=ignore)
+    def set_system(self, system: SystemSubclass):
+        """
+        Sets the system
+
+        :param system: the instance of the system to be set
+        """
+        self.system = system
+
+    def get_system(self):
+        """
+        Returns the system
+
+        :return the system attribute.
+        """
+        return self.system
+
+    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> SystemSubclass:
+        """
+        Reads the variables from the provided data source file.
+
+        :param only: List of OpenMDAO variable names that should be read. Other names will be
+                     ignored. If None, all variables will be read.
+        :param ignore: List of OpenMDAO variable names that should be ignored when reading.
+        :return a SystemSubClass containing the variables found in the data source file.
+        """
+        variables = self._read_values(only=only, ignore=ignore)
 
         ivc = IndepVarComp()
-        for output in outputs:
-            ivc.add_output(output.name, output.value, units=output.units)
+        for variable in variables:
+            ivc.add_output(variable.name, variable.value, units=variable.units)
 
-        return ivc
+        self.set_system(ivc)
+        # TODO: if no ivc is returned and only, many tests have to be rewritten
+        return self.get_system()
 
     def _read_values(self, only: Sequence[str] = None,
                      ignore: Sequence[str] = None) -> List[Variable]:
         """
-        Reads output variables from provided system.
+        Reads variables from provided data source file.
 
         :param only: List of OpenMDAO variable names that should be read. Other names will be
                      ignored. If None, all variables will be read.
@@ -100,12 +127,13 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         """
 
         if self._translator is None:
+            # TODO: build FAST specific exception
             raise ValueError('Missing translator instance')
 
         reader = XPathReader(self._data_source)
         reader.unit_attribute_name = self._xml_unit_attribute
 
-        outputs = []
+        variables = []
 
         if only is not None:
             var_names = only
@@ -135,22 +163,25 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                 units = units.replace('²', '**2')
                 units = units.replace('°', 'deg')
 
-            outputs.append(Variable(var_name, values, units))
+            variables.append(Variable(var_name, values, units))
 
-        return outputs
+        return variables
 
-    def write(self, system: SystemSubclass, only: Sequence[str] = None,
+    def write(self, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
         """
         Writes OpenMDAO system variables to defined XML
 
-        :param system: instance of OpenMDAO System sub class
         :param only: List of OpenMDAO variable names that should be written. Other names will be
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
         :raise ValueError: if translation table is not set or does nto contain a required xpath
        """
-        variables = self._get_outputs(system)
+        if self.get_system() is None:
+            # TODO: build FAST specific exception
+            raise ValueError('read() must be called before write().')
+
+        variables = self._get_outputs(self.get_system())
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         self._write(used_variables)
 
@@ -163,11 +194,24 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
                                 be written.
         """
         ivc_inputs = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=optional_inputs)
-        self.write(ivc_inputs)
+        self._write_ivc(ivc_inputs)
+
+    def _write_ivc(self, ivc: IndepVarComp):
+        """
+        Writes the variables of an IndepVarComp to defined data source file.
+        :param ivc: the IndepVarComp instance
+       """
+        variables: List[Variable] = []
+        # IndepVarComps are accessible using private member
+        # pylint: disable=protected-access
+        for (name, value, attributes) in ivc._indep_external:
+            variables.append(Variable(name, value, attributes['units']))
+
+        self._write(variables)
 
     def _write(self, variables: Sequence[Variable]):
         """
-        Writes variables to defined XML
+        Writes variables to defined data source file.
         :param variables:
         :raise ValueError: if translation table is not set or does nto contain a required xpath
        """
@@ -237,7 +281,7 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         :param updated_xml: name of file (copy of original_xml) that will be
         updated with reference values
         """
-        original_ivc = self.read()
+        original_ivc = self.get_system()
 
         reference_xml = self.__class__(reference_xml)
         reference_xml.set_translator(self._translator)
@@ -246,8 +290,9 @@ class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
         updated_ivc = self._update_ivc(original_ivc, reference_ivc)
         updated_xml = self.__class__(updated_xml)
         updated_xml.set_translator(self._translator)
+        updated_xml.set_system(updated_ivc)
 
-        updated_xml.write(updated_ivc)
+        updated_xml.write()
 
     @staticmethod
     def _update_ivc(original_ivc: IndepVarComp, reference_ivc: IndepVarComp) -> IndepVarComp:
