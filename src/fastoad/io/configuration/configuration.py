@@ -24,7 +24,7 @@ import toml
 
 from fastoad.io.configuration.exceptions import FASTConfigurationBaseKeyBuildingError, \
     FASTConfigurationBadOpenMDAOInstructionError, FASTConfigurationNoProblemDefined
-from fastoad.io.xml import OpenMdaoXmlIO
+from fastoad.io.xml import OMXmlIO
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 
 # Logger for this module
@@ -115,7 +115,7 @@ class ConfiguredProblem(om.Problem):
         """
         if self._input_file:
             print(self._input_file)
-            writer = OpenMdaoXmlIO(self._input_file)
+            writer = OMXmlIO(self._input_file)
             writer.read()
             writer.write_inputs(self)
 
@@ -124,7 +124,7 @@ class ConfiguredProblem(om.Problem):
         Once problem is configured, reads inputs from the configured input file.
         """
         if self._input_file:
-            reader = OpenMdaoXmlIO(self._input_file)
+            reader = OMXmlIO(self._input_file)
             self.model.add_subsystem('inputs', reader.read(), promotes=['*'])
 
             # Now all variables should be available, design vars can be defined.
@@ -137,7 +137,7 @@ class ConfiguredProblem(om.Problem):
         Once problem is run, writes all outputs in the configured output file.
         """
         if self._output_file:
-            writer = OpenMdaoXmlIO(self._output_file)
+            writer = OMXmlIO(self._output_file)
             writer.set_system(self.model)
             writer.write()
 

@@ -14,6 +14,6 @@ Package for handling XML files
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .openmdao_basic_io import OpenMdaoXmlIO
-from .openmdao_custom_io import OpenMdaoCustomXmlIO
+from .openmdao_basic_io import OMXmlIO
+from .openmdao_custom_io import OMCustomXmlIO
 from .xpath_reader import XPathReader

@@ -14,8 +14,8 @@ import os.path as pth
 
 from openmdao.core.problem import Problem
 
-from fastoad.io.xml import OpenMdaoXmlIO
-from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
+from fastoad.io.xml import OMXmlIO
+from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
 from fastoad.modules.aerodynamics.aerodynamics_2d import Aerodynamics2d
 from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastoad.modules.aerodynamics.components.cd0 import CD0
@@ -53,8 +53,8 @@ def create_inputs():
                   Aerodynamics2d(),
                   ]
 
-    ceras_reader = OpenMdaoLegacy1XmlIO(CERAS_FILE_PATH)
-    aero_io = OpenMdaoXmlIO(AERO_INPUT_FILE_PATH)
+    ceras_reader = OMLegacy1XmlIO(CERAS_FILE_PATH)
+    aero_io = OMXmlIO(AERO_INPUT_FILE_PATH)
     aero_io.path_separator = ':'
 
     # Variables that are part of the process but not expected in XML file

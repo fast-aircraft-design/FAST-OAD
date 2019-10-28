@@ -19,7 +19,7 @@ import os.path as pth
 from openmdao.core.group import Group
 from pytest import approx
 
-from fastoad.io.xml import OpenMdaoXmlIO
+from fastoad.io.xml import OMXmlIO
 from fastoad.modules.aerodynamics.aerodynamics_2d import Aerodynamics2d
 from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastoad.modules.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
@@ -29,7 +29,7 @@ from tests.testing_utilities import run_system
 
 def get_indep_var_comp(var_names):
     """ Reads required input data and returns an IndepVarcomp() instance"""
-    reader = OpenMdaoXmlIO(
+    reader = OMXmlIO(
         pth.join(pth.dirname(__file__), "data", "aerodynamics_inputs.xml"))
     reader.path_separator = ':'
     ivc = reader.read(only=var_names)

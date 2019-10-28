@@ -25,10 +25,10 @@ from fastoad.io.serialize import SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.utils.strings import get_float_list_from_string
-from fastoad.io.xml.openmdao_custom_io import OpenMdaoCustomXmlIO, Variable
+from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO, Variable
 
 
-class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
+class OMXmlIO(OMCustomXmlIO):
     """
     Basic serializer for OpenMDAO variables
 
@@ -64,7 +64,7 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
     """
 
     def __init__(self, *args, **kwargs):
-        super(OpenMdaoXmlIO, self).__init__(*args, **kwargs)
+        super(OMXmlIO, self).__init__(*args, **kwargs)
 
         self.path_separator = '/'
         """

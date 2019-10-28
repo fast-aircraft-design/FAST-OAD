@@ -21,7 +21,7 @@ import pytest
 from openmdao.core.problem import Problem
 
 from fastoad.io.xml import XPathReader
-from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
+from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
 from fastoad.modules.geometry import GetCG, Geometry
 
 
@@ -34,12 +34,12 @@ def xpath_reader() -> XPathReader:
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
 @pytest.fixture(scope="module")
-def input_xml() -> OpenMdaoLegacy1XmlIO:
+def input_xml() -> OMLegacy1XmlIO:
     """
     :return: access to the sample xml data
     """
     # TODO: have more consistency in input data (no need for the whole CeRAS01_baseline.xml)
-    return OpenMdaoLegacy1XmlIO(
+    return OMLegacy1XmlIO(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
 def test_geometry_get_cg():
@@ -47,7 +47,7 @@ def test_geometry_get_cg():
 
     input_xml_file_name = pth.join(pth.dirname(__file__), "data", "get_cg_inputs.xml")
 
-    input_xml = OpenMdaoLegacy1XmlIO(input_xml_file_name)
+    input_xml = OMLegacy1XmlIO(input_xml_file_name)
 
     input_vars = input_xml.read()
 
@@ -73,7 +73,7 @@ def test_geometry_geometry_global():
 
     input_xml_file_name = pth.join(pth.dirname(__file__), "data", "global_geometry_inputs.xml")
 
-    input_xml = OpenMdaoLegacy1XmlIO(input_xml_file_name)
+    input_xml = OMLegacy1XmlIO(input_xml_file_name)
 
     input_vars = input_xml.read()
 

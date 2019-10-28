@@ -39,7 +39,7 @@ from .xpath_reader import XPathReader
 _LOGGER = logging.getLogger(__name__)
 
 
-class OpenMdaoCustomXmlIO(AbstractOpenMDAOVariableIO):
+class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
     """
     Customizable serializer for OpenMDAO variables
 

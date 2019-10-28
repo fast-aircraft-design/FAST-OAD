@@ -24,7 +24,7 @@ from openmdao.core.problem import Problem
 from openmdao.drivers.scipy_optimizer import ScipyOptimizeDriver
 from pytest import approx
 
-from fastoad.io.xml import OpenMdaoXmlIO
+from fastoad.io.xml import OMXmlIO
 from fastoad.io.xml import XPathReader
 from fastoad.openmdao.types import Variable
 from tests.sellar_example.sellar import Sellar
@@ -102,29 +102,29 @@ def test_basic_xml_read_and_write_from_ivc():
     if pth.exists(result_folder):
         shutil.rmtree(result_folder)
     filename = pth.join(result_folder, 'handmade.xml')
-    xml_write = OpenMdaoXmlIO(filename)
+    xml_write = OMXmlIO(filename)
     xml_write.set_system(ivc)
     xml_write.write()
 
     # check (read another IndepVarComp instance from  xml)
-    xml_check = OpenMdaoXmlIO(filename)
+    xml_check = OMXmlIO(filename)
     new_ivc = xml_check.read()
     _check_basic_ivc(new_ivc)
 
     # Check reading hand-made XML (with some format twists)
     filename = pth.join(data_folder, 'basic.xml')
-    xml_read = OpenMdaoXmlIO(filename)
+    xml_read = OMXmlIO(filename)
     ivc = xml_read.read()
     _check_basic_ivc(ivc)
 
     # write it (with existing destination folder)
     new_filename = pth.join(result_folder, 'basic.xml')
-    xml_write = OpenMdaoXmlIO(new_filename)
+    xml_write = OMXmlIO(new_filename)
     xml_write.set_system(ivc)
     xml_write.write()
 
     # check (read another IndepVarComp instance from new xml)
-    xml_check = OpenMdaoXmlIO(new_filename)
+    xml_check = OMXmlIO(new_filename)
     new_ivc = xml_check.read()
     _check_basic_ivc(new_ivc)
 
@@ -140,7 +140,7 @@ def test_basic_xml_partial_read_and_write_from_ivc():
 
     # Read full IndepVarComp
     filename = pth.join(data_folder, 'basic.xml')
-    xml_read = OpenMdaoXmlIO(filename)
+    xml_read = OMXmlIO(filename)
     ivc = xml_read.read(ignore=['does_not_exist'])
     _check_basic_ivc(ivc)
 
@@ -149,7 +149,7 @@ def test_basic_xml_partial_read_and_write_from_ivc():
     ivc.add_output('should_also_be_ignored', val=-10.0)
 
     badvar_filename = pth.join(result_folder, 'with_bad_var.xml')
-    xml_write = OpenMdaoXmlIO(badvar_filename)
+    xml_write = OMXmlIO(badvar_filename)
     xml_write.set_system(ivc)
     xml_write.write(ignore=['does_not_exist'])  # Check with non-existent var in ignore list
 
@@ -158,7 +158,7 @@ def test_basic_xml_partial_read_and_write_from_ivc():
     assert reader.get_float('should_also_be_ignored') == -10.0
 
     # Check partial reading with 'ignore'
-    xml_read = OpenMdaoXmlIO(badvar_filename)
+    xml_read = OMXmlIO(badvar_filename)
     new_ivc = xml_read.read(ignore=['should_be_ignored/pointless', 'should_also_be_ignored'])
     _check_basic_ivc(new_ivc)
 
@@ -178,21 +178,21 @@ def test_basic_xml_partial_read_and_write_from_ivc():
 
     # Check partial writing with 'ignore'
     varok_filename = pth.join(result_folder, 'with_bad_var.xml')
-    xml_write = OpenMdaoXmlIO(varok_filename)
+    xml_write = OMXmlIO(varok_filename)
     xml_write.set_system(ivc)
     xml_write.write(ignore=['should_be_ignored/pointless', 'should_also_be_ignored'])
 
-    xml_read = OpenMdaoXmlIO(varok_filename)
+    xml_read = OMXmlIO(varok_filename)
     new_ivc = xml_read.read()
     _check_basic_ivc(new_ivc)
 
     # Check partial writing with 'only'
     varok2_filename = pth.join(result_folder, 'with_bad_var.xml')
-    xml_write = OpenMdaoXmlIO(varok2_filename)
+    xml_write = OMXmlIO(varok2_filename)
     xml_write.set_system(ivc)
     xml_write.write(only=ok_vars)
 
-    xml_read = OpenMdaoXmlIO(varok2_filename)
+    xml_read = OMXmlIO(varok2_filename)
     new_ivc = xml_read.read()
     _check_basic_ivc(new_ivc)
 
@@ -227,7 +227,7 @@ def test_basic_xml_write_from_problem():
 
     # Write the XML file
     filename = pth.join(result_folder, 'sellar.xml')
-    xml_write = OpenMdaoXmlIO(filename)
+    xml_write = OMXmlIO(filename)
     xml_write.use_promoted_names = False
     xml_write.path_separator = '.'
     xml_write.set_system(problem.model)
@@ -245,7 +245,7 @@ def test_basic_xml_write_from_problem():
 
     # Write the XML file using promoted names
     filename = pth.join(result_folder, 'sellar.xml')
-    xml_write = OpenMdaoXmlIO(filename)
+    xml_write = OMXmlIO(filename)
     xml_write.use_promoted_names = True
     xml_write.path_separator = '.'
     xml_write.set_system(problem.model)
@@ -272,11 +272,11 @@ def test_basic_xml_update():
     reference_filename = pth.join(data_folder, 'xml_update_reference.xml')
     updated_filename = pth.join(result_folder, 'xml_update_updated.xml')
 
-    original_xml = OpenMdaoXmlIO(original_filename)
+    original_xml = OMXmlIO(original_filename)
     original_xml.read()
     original_xml.create_updated_xml(reference_filename, updated_filename)
 
-    updated_xml = OpenMdaoXmlIO(updated_filename)
+    updated_xml = OMXmlIO(updated_filename)
 
     ivc = updated_xml.read()
 
