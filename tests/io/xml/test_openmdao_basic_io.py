@@ -274,9 +274,15 @@ def test_basic_xml_update():
 
     original_xml = OMXmlIO(original_filename)
     original_xml.read()
-    original_xml.create_updated_xml(reference_filename, updated_filename)
+
+    reference_xml = OMXmlIO(reference_filename)
+    reference_xml.read()
 
     updated_xml = OMXmlIO(updated_filename)
+    updated_xml.set_system(original_xml.get_system())
+    updated_xml.write()
+
+    updated_xml.update(reference_xml)
 
     ivc = updated_xml.read()
 

@@ -273,7 +273,7 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
                     Variable(name, attributes['value'], attributes.get('units', None)))
         return outputs
 
-    def create_updated_xml(self, reference_xml: str, updated_xml: str):
+    def create_updated_xml_depreciated(self, reference_xml: str, updated_xml: str):
         """
         Creates an xml file which is a copy of an original xml file (self) and that is then updated
         with the default values of a reference xml file
@@ -293,6 +293,22 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
         updated_xml.set_system(updated_ivc)
 
         updated_xml.write()
+
+    def update(self, om_io_ref):
+        """
+        Updates the data source file (self)
+        with the default values of a reference data source file
+        :param om_io_ref: OMCustomXmlIO subclass instance containing the reference values
+        """
+
+        original_ivc = self.get_system()
+
+        reference_ivc = om_io_ref.get_system()
+
+        updated_ivc = self._update_ivc(original_ivc, reference_ivc)
+        self.set_system(updated_ivc)
+
+        self.write()
 
     @staticmethod
     def _update_ivc(original_ivc: IndepVarComp, reference_ivc: IndepVarComp) -> IndepVarComp:
