@@ -21,7 +21,7 @@ import pytest
 from openmdao.core.problem import Problem
 
 from fastoad.io.xml import XPathReader
-from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO
+from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
 from fastoad.modules.geometry.cg_components \
     import ComputeAeroCenter
 from fastoad.modules.geometry.cg_components \
@@ -59,12 +59,12 @@ def xpath_reader() -> XPathReader:
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
 @pytest.fixture(scope="module")
-def input_xml() -> OpenMdaoLegacy1XmlIO:
+def input_xml() -> OMLegacy1XmlIO:
     """
     :return: access to the sample xml data
     """
     # TODO: have more consistency in input data (no need for the whole CeRAS01_baseline.xml)
-    return OpenMdaoLegacy1XmlIO(
+    return OMLegacy1XmlIO(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
 def test_compute_aero_center(input_xml):

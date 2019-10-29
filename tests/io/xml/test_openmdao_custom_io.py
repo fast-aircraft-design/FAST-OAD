@@ -21,7 +21,7 @@ import pytest
 from pytest import approx
 from openmdao.core.indepvarcomp import IndepVarComp
 
-from fastoad.io.xml import OpenMdaoCustomXmlIO
+from fastoad.io.xml import OMCustomXmlIO
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.types import Variable
 
@@ -74,7 +74,7 @@ def test_custom_xml_read_and_write_from_ivc():
 
     # test read ---------------------------------------------------------------
     filename = pth.join(data_folder, 'custom.xml')
-    xml_read = OpenMdaoCustomXmlIO(filename)
+    xml_read = OMCustomXmlIO(filename)
 
     # test without setting translation table
     with pytest.raises(ValueError) as exc_info:
@@ -84,14 +84,14 @@ def test_custom_xml_read_and_write_from_ivc():
     # test with setting a non-exhaustive translation table (missing variable name in the translator)
     # we expect that the variable is not included in the ivc
     filename = pth.join(data_folder, 'custom_additional_var.xml')
-    xml_read = OpenMdaoCustomXmlIO(filename)
+    xml_read = OMCustomXmlIO(filename)
     xml_read.set_translator(VarXpathTranslator(variable_names=var_names,
                                                xpaths=xpaths))
     ivc = xml_read.read()
     _check_basic2_ivc(ivc)
 
     filename = pth.join(data_folder, 'custom.xml')
-    xml_read = OpenMdaoCustomXmlIO(filename)
+    xml_read = OMCustomXmlIO(filename)
 
     # test with setting a bad translation with an additional var not present in the xml
     # we expect that all goes on well
@@ -108,20 +108,22 @@ def test_custom_xml_read_and_write_from_ivc():
 
     # test write --------------------------------------------------------------
     new_filename = pth.join(result_folder, 'custom.xml')
-    xml_write = OpenMdaoCustomXmlIO(new_filename)
+    xml_write = OMCustomXmlIO(new_filename)
 
     # test without setting translation table
     with pytest.raises(ValueError) as exc_info:
-        xml_write.write(ivc)
+        xml_write.system = ivc
+        xml_write.write()
     assert exc_info is not None
 
     # test after setting translation table
     xml_write.set_translator(translator)
-    xml_write.write(ivc)
+    xml_write.system = ivc
+    xml_write.write()
 
     # check written data
     assert pth.isfile(new_filename)
-    xml_check = OpenMdaoCustomXmlIO(new_filename)
+    xml_check = OMCustomXmlIO(new_filename)
 
     xpaths = ['total_area',
               'wing/span',
@@ -144,7 +146,7 @@ def test_custom_xml_read_and_write_with_translation_table():
 
     # test read ---------------------------------------------------------------
     filename = pth.join(data_folder, 'custom.xml')
-    xml_read = OpenMdaoCustomXmlIO(filename)
+    xml_read = OMCustomXmlIO(filename)
 
     # test after setting translation table
     translator = VarXpathTranslator(source=pth.join(data_folder, 'custom_translation.txt'))
@@ -173,7 +175,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore():
 
     # test read ---------------------------------------------------------------
     filename = pth.join(data_folder, 'custom.xml')
-    xml_read = OpenMdaoCustomXmlIO(filename)
+    xml_read = OMCustomXmlIO(filename)
 
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
     xml_read.set_translator(translator)
@@ -197,4 +199,56 @@ def test_custom_xml_read_and_write_with_only_or_ignore():
     assert len(outputs) == 1
     assert outputs[0].name == 'geometry:wing:span'
     assert outputs[0].value == approx([42])
+    assert outputs[0].units == 'm'
+
+def test_custom_xml_update():
+    """
+    Tests the update of an XML file
+    """
+    data_folder = pth.join(pth.dirname(__file__), 'data')
+    result_folder = pth.join(pth.dirname(__file__), 'results', 'xml_update')
+
+    var_names = ['geometry:total_surface',
+                 'geometry:wing:span',
+                 'geometry:wing:aspect_ratio',
+                 'geometry:fuselage:length']
+
+    xpaths = ['total_area',
+              'wing/span',
+              'wing/aspect_ratio',
+              'fuselage_length']
+
+    filename_original = pth.join(data_folder, 'custom.xml')
+    xml_original = OMCustomXmlIO(filename_original)
+
+    filename_updated = pth.join(result_folder, 'custom_updated.xml')
+    xml_update_original = OMCustomXmlIO(filename_updated)
+
+    translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
+    xml_original.set_translator(translator)
+    xml_original.read()
+
+    # To not overwrite custom.xml
+    xml_update_original.set_translator(translator)
+    xml_update_original.system = xml_original.system
+    xml_update_original.write()
+
+    filename_ref = pth.join(data_folder, 'custom_ref.xml')
+    xml_ref = OMCustomXmlIO(filename_ref)
+    xml_ref.set_translator(translator)
+
+    xml_update_original.update(xml_ref)
+
+    xml_read = OMCustomXmlIO(filename_updated)
+    xml_read.set_translator(translator)
+    xml_read.system = xml_original.system
+
+    ivc = xml_read.read(only=['geometry:fuselage:length'])
+    outputs: List[Variable] = []
+    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
+        outputs.append(Variable(name, value, attributes['units']))
+    assert len(outputs) == 1
+    assert outputs[0].name == 'geometry:fuselage:length'
+    # The value shall have been modified with respect to ref file
+    assert outputs[0].value == approx([80.0])
     assert outputs[0].units == 'm'

@@ -1,0 +1,8 @@
+<aircraft>
+  <total_area units="m**2">800.0</total_area>
+  <wing>
+    <span units="m">42.0</span>
+    <aspect_ratio>9.8</aspect_ratio>
+  </wing>
+  <fuselage_length units="m">80.0</fuselage_length>
+</aircraft>

@@ -17,12 +17,12 @@ Test module for openmdao_legacy_io.py
 import os.path as pth
 import shutil
 
-from fastoad.io.xml import OpenMdaoXmlIO
-from fastoad.io.xml.openmdao_legacy_io import OpenMdaoLegacy1XmlIO, CONVERSION_FILE_1
+from fastoad.io.xml import OMXmlIO
+from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO, CONVERSION_FILE_1
 
 
 def test_legacy1():
-    """ Tests class OpenMdaoLegacy1XmlIO """
+    """ Tests class OMLegacy1XmlIO """
     data_folder = pth.join(pth.dirname(__file__), 'data')
     result_folder = pth.join(pth.dirname(__file__), 'results', 'legacy1_xml')
     if pth.exists(result_folder):
@@ -30,7 +30,7 @@ def test_legacy1():
 
     # test read ---------------------------------------------------------------
     filename = pth.join(data_folder, 'CeRAS01_baseline.xml')
-    xml_read = OpenMdaoLegacy1XmlIO(filename)
+    xml_read = OMLegacy1XmlIO(filename)
     ivc = xml_read.read()
     inputs = ivc._indep_external  # pylint: disable=protected-access
 
@@ -45,11 +45,12 @@ def test_legacy1():
 
     # test write ---------------------------------------------------------------
     new_filename = pth.join(result_folder, 'CeRAS01_baseline.xml')
-    xml_write = OpenMdaoLegacy1XmlIO(new_filename)
-    xml_write.write(ivc)
+    xml_write = OMLegacy1XmlIO(new_filename)
+    xml_write.system = ivc
+    xml_write.write()
 
     # check by reading without conversion table
     # -> this will give the actual number of entries in the file
-    xml_check = OpenMdaoXmlIO(new_filename)
+    xml_check = OMXmlIO(new_filename)
     check_ivc = xml_check.read()
     assert len(check_ivc._indep_external) == conversion_count  # pylint: disable=protected-access

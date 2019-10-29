@@ -25,10 +25,10 @@ from fastoad.io.serialize import SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.utils.strings import get_float_list_from_string
-from .openmdao_custom_io import OpenMdaoCustomXmlIO, Variable
+from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO, Variable
 
 
-class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
+class OMXmlIO(OMCustomXmlIO):
     """
     Basic serializer for OpenMDAO variables
 
@@ -64,13 +64,21 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
     """
 
     def __init__(self, *args, **kwargs):
-        super(OpenMdaoXmlIO, self).__init__(*args, **kwargs)
+        super(OMXmlIO, self).__init__(*args, **kwargs)
 
         self.path_separator = '/'
         """
         The separator that will be used in OpenMDAO variable names to match XML path.
         Warning: The dot "." can be used when writing, but not when reading.
         """
+    @property
+    def system(self):
+        return self._system
+
+    @system.setter
+    def system(self, system):
+        self._system = system
+        self._build_translator()
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
         # Check separator, as OpenMDAO won't accept the dot.
@@ -85,28 +93,39 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
         for name, value, units in outputs:
             if (only is None or name in only) and not (ignore is not None and name in ignore):
                 ivc.add_output(name, val=np.array(value), units=units)
-        return ivc
 
-    def write(self, system: SystemSubclass, only: Sequence[str] = None,
+        self.system = ivc
+
+        return self.system
+
+    def write(self, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
-        variables = self._get_outputs(system)
 
-        names = []
-        xpaths = []
-        for variable in variables:
-            path_components = variable.name.split(self.path_separator)
-            xpath = '/'.join(path_components)
-            names.append(variable.name)
-            xpaths.append(xpath)
+        if self.system is None:
+            # TODO: build FAST specific exception
+            raise ValueError('read() must be called before write().')
 
-        translator = VarXpathTranslator()
-        translator.set(names, xpaths)
-        self.set_translator(translator)
+        variables = self._get_outputs(self.system)
 
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
         self._write(used_variables)
 
+    def _build_translator(self):
+        if self.system is not None:
+            variables = self._get_outputs(self.system)
+
+            names = []
+            xpaths = []
+            for variable in variables:
+                path_components = variable.name.split(self.path_separator)
+                xpath = '/'.join(path_components)
+                names.append(variable.name)
+                xpaths.append(xpath)
+
+            translator = VarXpathTranslator()
+            translator.set(names, xpaths)
+            self.set_translator(translator)
 
     def _read_xml(self) -> Sequence[Variable]:
         """
@@ -156,24 +175,3 @@ class OpenMdaoXmlIO(OpenMdaoCustomXmlIO):
                          (name, value, ", units='%s'" % units if units else ''))
 
         return '\n'.join(lines)
-
-    @staticmethod
-    def create_updated_xml(original_xml: str, reference_xml: str, updated_xml: str):
-        """
-        Creates an xml file which is a copy of an original xml file and that is then updated
-        with the default values of a reference xml file
-        :param original_xml:name of file of the original xml
-        :param reference_xml: name of file that will provide reference values
-        :param updated_xml: name of file (copy of original_xml) that will be
-        updated with reference values
-        """
-        original_xml = OpenMdaoXmlIO(original_xml)
-        original_ivc = original_xml.read()
-
-        reference_xml = OpenMdaoXmlIO(reference_xml)
-        reference_ivc = reference_xml.read()
-
-        updated_ivc = OpenMdaoXmlIO._update_ivc(original_ivc, reference_ivc)
-        updated_xml = OpenMdaoXmlIO(updated_xml)
-
-        updated_xml.write(updated_ivc)

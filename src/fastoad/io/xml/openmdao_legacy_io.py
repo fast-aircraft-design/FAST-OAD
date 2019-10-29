@@ -16,13 +16,13 @@ Readers for legacy XML format
 
 import os.path as pth
 
-from fastoad.io.xml import OpenMdaoCustomXmlIO
+from fastoad.io.xml import OMCustomXmlIO
 from fastoad.io.xml.translator import VarXpathTranslator
 
 CONVERSION_FILE_1 = pth.join(pth.dirname(__file__), 'resources', 'legacy1.txt')
 
 
-class OpenMdaoLegacy1XmlIO(OpenMdaoCustomXmlIO):
+class OMLegacy1XmlIO(OMCustomXmlIO):
     """
     Reader for legacy XML format (version "1")
     """
