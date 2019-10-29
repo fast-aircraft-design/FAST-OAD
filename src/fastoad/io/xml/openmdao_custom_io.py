@@ -290,6 +290,8 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
 
         original_ivc = self.system
 
+        # To be sure .read() as been called
+        om_io_ref.read()
         reference_ivc = om_io_ref.system
 
         updated_ivc = self._update_ivc(original_ivc, reference_ivc)

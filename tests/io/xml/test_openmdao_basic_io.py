@@ -276,7 +276,6 @@ def test_basic_xml_update():
     original_xml.read()
 
     reference_xml = OMXmlIO(reference_filename)
-    reference_xml.read()
 
     updated_xml = OMXmlIO(updated_filename)
     updated_xml.system = original_xml.system

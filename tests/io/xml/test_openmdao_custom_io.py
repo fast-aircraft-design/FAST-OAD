@@ -236,7 +236,6 @@ def test_custom_xml_update():
     filename_ref = pth.join(data_folder, 'custom_ref.xml')
     xml_ref = OMCustomXmlIO(filename_ref)
     xml_ref.set_translator(translator)
-    xml_ref.read()
 
     xml_update_original.update(xml_ref)
 
