@@ -1,31 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2019  ONERA/ISAE
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<!--
+ This file contains readable DATA in FAST "native" format, meaning that XML
+ paths are automatically cpnverted into OpenMDAO variable names.
+ It also uses several mechanism for specifying multiple-value variables
+-->
 <aircraft>
-  <geometry>
-    <total_surface units="m**2">600.0</total_surface>
-    <wing>
-      <span units="m">69.3</span>
-      <aspect_ratio>8.0</aspect_ratio>
-    </wing>
-    <fuselage>
-      <length units="m">40.0</length>
-    </fuselage>
-  </geometry>
-  <constants>
-    <k1 units="kg">1.0</k1>
-    <k1 units="kg">2.0</k1>
-    <k1 units="kg">3.0</k1>
-    <k2>10.0</k2>
-    <k2>20.0</k2>
-    <k3 units="m/s">100.0</k3>
-    <k3 units="m/s">200.0</k3>
-    <k3 units="m/s">300.0</k3>
-    <k3 units="m/s">400.0</k3>
-    <k4>-1.0</k4>
-    <k4>-2.0</k4>
-    <k4>-3.0</k4>
-    <k5>100.0</k5>
-    <k5>200.0</k5>
-    <k5>400.0</k5>
-    <k5>500.0</k5>
-    <k5>600.0</k5>
-  </constants>
+    <geometry>
+        <total_surface units="m**2">780.3</total_surface>
+        <wing>
+            <span units="m">42</span>
+            <aspect_ratio>9.8</aspect_ratio>
+        </wing>
+        <fuselage>
+            <length units="m">40</length>
+        </fuselage>
+    </geometry>
+    <constants>
+        <k1 units="kg">1.</k1>
+        <k1 units="ignored">2.
+        </k1> <!-- value will be appended, but only first specified units will apply -->
+        <k1>3.</k1> <!-- value will be appended, but only first specified units will apply -->
+
+        <k2>10.</k2>
+        <k2 units="ignored">20.
+        </k2> <!-- value will be appended, but only first specified units will apply -->
+
+        <k3 units="m/s">100. 200. 300. 400.</k3> <!-- value list, space-separated -->
+
+        <k4>[-1., -2, -3.]</k4> <!-- value list, brackets + comma-separated -->
+
+        <k5>[ 100. 200. ]</k5> <!-- value list, brackets + space-separated -->
+        <k5>400., 500., 600.
+        </k5><!-- value list, comma-separated + continuation of previous line -->
+
+        <k6 units="whatever"></k6> <!-- no value, will be ignored -->
+        <k7 units="attoparsec">not a float</k7> <!-- no float, will be ignored -->
+    </constants>
 </aircraft>
