@@ -15,6 +15,7 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import warnings
 import os
 import os.path as pth
 from typing import Sequence, List
@@ -258,7 +259,7 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
                     Variable(name, attributes['value'], attributes.get('units', None)))
         return outputs
 
-    def create_updated_xml_depreciated(self, reference_xml: str, updated_xml: str):
+    def create_updated_xml_deprecated(self, reference_xml: str, updated_xml: str):
         """
         Creates an xml file which is a copy of an original xml file (self) and that is then updated
         with the default values of a reference xml file
@@ -266,6 +267,7 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
         :param updated_xml: name of file (copy of original_xml) that will be
         updated with reference values
         """
+        warnings.warn("self.update() should be used", DeprecationWarning)
         original_ivc = self.system
 
         reference_xml = self.__class__(reference_xml)
