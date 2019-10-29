@@ -82,7 +82,7 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> SystemSubclass:
         """
-        Reads the variables from the provided data source file.
+        Reads the variables from the provided data source file, stores it and returns it.
 
         :param only: List of OpenMDAO variable names that should be read. Other names will be
                      ignored. If None, all variables will be read.
