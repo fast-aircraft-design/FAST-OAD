@@ -138,7 +138,7 @@ class ConfiguredProblem(om.Problem):
         """
         if self._output_file:
             writer = OMXmlIO(self._output_file)
-            writer.set_system(self.model)
+            writer.system = self.model
             writer.write()
 
     def _parse_problem_table(self, component: Union[om.Problem, om.Group], identifier, table: dict):

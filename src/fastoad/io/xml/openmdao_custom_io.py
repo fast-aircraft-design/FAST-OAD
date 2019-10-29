@@ -66,8 +66,9 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
         self.use_promoted_names = True
         """If True, promoted names will be used instead of "real" ones."""
 
-        self._translator = None
         self.system: SystemSubclass = None
+
+        self._translator = None
         self._xml_unit_attribute = UNIT_ATTRIBUTE  # TODO : this setting should be public
 
     def set_translator(self, translator: VarXpathTranslator):
@@ -78,22 +79,6 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
         :param translator:
         """
         self._translator = translator
-
-    def set_system(self, system: SystemSubclass):
-        """
-        Sets the system
-
-        :param system: the instance of the system to be set
-        """
-        self.system = system
-
-    def get_system(self):
-        """
-        Returns the system
-
-        :return the system attribute.
-        """
-        return self.system
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> SystemSubclass:
         """
@@ -110,9 +95,9 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
         for variable in variables:
             ivc.add_output(variable.name, variable.value, units=variable.units)
 
-        self.set_system(ivc)
-        # TODO: if no ivc is returned and only, many tests have to be rewritten
-        return self.get_system()
+        self.system = ivc
+
+        return self.system
 
     def _read_values(self, only: Sequence[str] = None,
                      ignore: Sequence[str] = None) -> List[Variable]:
@@ -177,11 +162,11 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
         :raise ValueError: if translation table is not set or does nto contain a required xpath
        """
-        if self.get_system() is None:
+        if self.system is None:
             # TODO: build FAST specific exception
             raise ValueError('read() must be called before write().')
 
-        variables = self._get_outputs(self.get_system())
+        variables = self._get_outputs(self.system)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         self._write(used_variables)
 
@@ -281,7 +266,7 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
         :param updated_xml: name of file (copy of original_xml) that will be
         updated with reference values
         """
-        original_ivc = self.get_system()
+        original_ivc = self.system
 
         reference_xml = self.__class__(reference_xml)
         reference_xml.set_translator(self._translator)
@@ -290,7 +275,7 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
         updated_ivc = self._update_ivc(original_ivc, reference_ivc)
         updated_xml = self.__class__(updated_xml)
         updated_xml.set_translator(self._translator)
-        updated_xml.set_system(updated_ivc)
+        updated_xml.system = updated_ivc
 
         updated_xml.write()
 
@@ -301,12 +286,12 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
         :param om_io_ref: OMCustomXmlIO subclass instance containing the reference values
         """
 
-        original_ivc = self.get_system()
+        original_ivc = self.system
 
-        reference_ivc = om_io_ref.get_system()
+        reference_ivc = om_io_ref.system
 
         updated_ivc = self._update_ivc(original_ivc, reference_ivc)
-        self.set_system(updated_ivc)
+        self.system = updated_ivc
 
         self.write()
 

@@ -103,7 +103,7 @@ def test_basic_xml_read_and_write_from_ivc():
         shutil.rmtree(result_folder)
     filename = pth.join(result_folder, 'handmade.xml')
     xml_write = OMXmlIO(filename)
-    xml_write.set_system(ivc)
+    xml_write.system = ivc
     xml_write.write()
 
     # check (read another IndepVarComp instance from  xml)
@@ -120,7 +120,7 @@ def test_basic_xml_read_and_write_from_ivc():
     # write it (with existing destination folder)
     new_filename = pth.join(result_folder, 'basic.xml')
     xml_write = OMXmlIO(new_filename)
-    xml_write.set_system(ivc)
+    xml_write.system = ivc
     xml_write.write()
 
     # check (read another IndepVarComp instance from new xml)
@@ -150,7 +150,7 @@ def test_basic_xml_partial_read_and_write_from_ivc():
 
     badvar_filename = pth.join(result_folder, 'with_bad_var.xml')
     xml_write = OMXmlIO(badvar_filename)
-    xml_write.set_system(ivc)
+    xml_write.system = ivc
     xml_write.write(ignore=['does_not_exist'])  # Check with non-existent var in ignore list
 
     reader = XPathReader(badvar_filename)
@@ -179,7 +179,7 @@ def test_basic_xml_partial_read_and_write_from_ivc():
     # Check partial writing with 'ignore'
     varok_filename = pth.join(result_folder, 'with_bad_var.xml')
     xml_write = OMXmlIO(varok_filename)
-    xml_write.set_system(ivc)
+    xml_write.system = ivc
     xml_write.write(ignore=['should_be_ignored/pointless', 'should_also_be_ignored'])
 
     xml_read = OMXmlIO(varok_filename)
@@ -189,7 +189,7 @@ def test_basic_xml_partial_read_and_write_from_ivc():
     # Check partial writing with 'only'
     varok2_filename = pth.join(result_folder, 'with_bad_var.xml')
     xml_write = OMXmlIO(varok2_filename)
-    xml_write.set_system(ivc)
+    xml_write.system = ivc
     xml_write.write(only=ok_vars)
 
     xml_read = OMXmlIO(varok2_filename)
@@ -230,7 +230,7 @@ def test_basic_xml_write_from_problem():
     xml_write = OMXmlIO(filename)
     xml_write.use_promoted_names = False
     xml_write.path_separator = '.'
-    xml_write.set_system(problem.model)
+    xml_write.system = problem.model
     xml_write.write()
 
     # Check
@@ -248,7 +248,7 @@ def test_basic_xml_write_from_problem():
     xml_write = OMXmlIO(filename)
     xml_write.use_promoted_names = True
     xml_write.path_separator = '.'
-    xml_write.set_system(problem.model)
+    xml_write.system = problem.model
     xml_write.write()
 
     # Check
@@ -279,7 +279,7 @@ def test_basic_xml_update():
     reference_xml.read()
 
     updated_xml = OMXmlIO(updated_filename)
-    updated_xml.set_system(original_xml.get_system())
+    updated_xml.system = original_xml.system
     updated_xml.write()
 
     updated_xml.update(reference_xml)

@@ -46,7 +46,7 @@ def test_legacy1():
     # test write ---------------------------------------------------------------
     new_filename = pth.join(result_folder, 'CeRAS01_baseline.xml')
     xml_write = OMLegacy1XmlIO(new_filename)
-    xml_write.set_system(ivc)
+    xml_write.system = ivc
     xml_write.write()
 
     # check by reading without conversion table

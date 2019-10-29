@@ -112,13 +112,13 @@ def test_custom_xml_read_and_write_from_ivc():
 
     # test without setting translation table
     with pytest.raises(ValueError) as exc_info:
-        xml_write.set_system(ivc)
+        xml_write.system = ivc
         xml_write.write()
     assert exc_info is not None
 
     # test after setting translation table
     xml_write.set_translator(translator)
-    xml_write.set_system(ivc)
+    xml_write.system = ivc
     xml_write.write()
 
     # check written data
@@ -230,7 +230,7 @@ def test_custom_xml_update():
 
     # To not overwrite custom.xml
     xml_update_original.set_translator(translator)
-    xml_update_original.set_system(xml_original.get_system())
+    xml_update_original.system = xml_original.system
     xml_update_original.write()
 
     filename_ref = pth.join(data_folder, 'custom_ref.xml')
@@ -242,7 +242,7 @@ def test_custom_xml_update():
 
     xml_read = OMCustomXmlIO(filename_updated)
     xml_read.set_translator(translator)
-    xml_read.set_system(xml_original.get_system())
+    xml_read.system = xml_original.system
 
     ivc = xml_read.read(only=['geometry:fuselage:length'])
     outputs: List[Variable] = []

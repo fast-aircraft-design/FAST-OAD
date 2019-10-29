@@ -71,6 +71,14 @@ class OMXmlIO(OMCustomXmlIO):
         The separator that will be used in OpenMDAO variable names to match XML path.
         Warning: The dot "." can be used when writing, but not when reading.
         """
+    @property
+    def system(self):
+        return self._system
+
+    @system.setter
+    def system(self, system):
+        self._system = system
+        self._build_translator()
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
         # Check separator, as OpenMDAO won't accept the dot.
@@ -85,37 +93,39 @@ class OMXmlIO(OMCustomXmlIO):
         for name, value, units in outputs:
             if (only is None or name in only) and not (ignore is not None and name in ignore):
                 ivc.add_output(name, val=np.array(value), units=units)
-        self.set_system(ivc)
-        return self.get_system()
+
+        self.system = ivc
+
+        return self.system
 
     def write(self, only: Sequence[str] = None,
               ignore: Sequence[str] = None):
 
-        # TODO: check that system is initialized
-        variables = self._get_outputs(self.get_system())
+        if self.system is None:
+            # TODO: build FAST specific exception
+            raise ValueError('read() must be called before write().')
+
+        variables = self._get_outputs(self.system)
 
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
         self._write(used_variables)
 
     def _build_translator(self):
-        variables = self._get_outputs(self.get_system())
+        if self.system is not None:
+            variables = self._get_outputs(self.system)
 
-        names = []
-        xpaths = []
-        for variable in variables:
-            path_components = variable.name.split(self.path_separator)
-            xpath = '/'.join(path_components)
-            names.append(variable.name)
-            xpaths.append(xpath)
+            names = []
+            xpaths = []
+            for variable in variables:
+                path_components = variable.name.split(self.path_separator)
+                xpath = '/'.join(path_components)
+                names.append(variable.name)
+                xpaths.append(xpath)
 
-        translator = VarXpathTranslator()
-        translator.set(names, xpaths)
-        self.set_translator(translator)
-
-    def set_system(self, system: SystemSubclass):
-        self.system = system
-        self._build_translator()
+            translator = VarXpathTranslator()
+            translator.set(names, xpaths)
+            self.set_translator(translator)
 
     def _read_xml(self) -> Sequence[Variable]:
         """
