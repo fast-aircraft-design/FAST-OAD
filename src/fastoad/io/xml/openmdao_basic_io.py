@@ -111,21 +111,6 @@ class OMXmlIO(OMCustomXmlIO):
 
         self._write(used_variables)
 
-    def _build_translator(self):
-        if self.system is not None:
-            variables = self._get_outputs(self.system)
-
-            names = []
-            xpaths = []
-            for variable in variables:
-                path_components = variable.name.split(self.path_separator)
-                xpath = '/'.join(path_components)
-                names.append(variable.name)
-                xpaths.append(xpath)
-
-            translator = VarXpathTranslator()
-            translator.set(names, xpaths)
-            self.set_translator(translator)
 
     def _read_xml(self) -> Sequence[Variable]:
         """
@@ -149,6 +134,12 @@ class OMXmlIO(OMCustomXmlIO):
             if action == 'start':
                 current_path.append(elem.tag)
                 units = elem.attrib.get(UNIT_ATTRIBUTE, None)
+                # TODO: this is done in customio
+                # For compatibility with legacy files
+                if units is not None:
+                    units = units.replace('²', '**2')
+                    units = units.replace('°', 'deg')
+                    units = units.replace('kt', 'kn')
                 value = None
                 if elem.text:
                     value = get_float_list_from_string(elem.text)

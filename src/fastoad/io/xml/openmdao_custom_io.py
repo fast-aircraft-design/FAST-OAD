@@ -148,6 +148,7 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
             if units is not None:
                 units = units.replace('²', '**2')
                 units = units.replace('°', 'deg')
+                units = units.replace('kt', 'kn')
 
             variables.append(Variable(var_name, values, units))
 
@@ -180,7 +181,28 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
                                 be written.
         """
         ivc_inputs = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=optional_inputs)
+        # TODO: ivc to variable shall be in a method
+        variables: List[Variable] = []
+        # IndepVarComps are accessible using private member
+        # pylint: disable=protected-access
+        for (name, value, attributes) in ivc_inputs._indep_external:
+            variables.append(Variable(name, value, attributes['units']))
+        self._build_translator(variables=variables)
         self._write_ivc(ivc_inputs)
+
+    def write_outputs(self, problem: Problem):
+        """
+        Write outputs of a Problem to an xml file
+
+        :param problem: OpenMDAO Problem instance to read.
+        """
+        variables = self._get_outputs(problem)
+        self._build_translator(variables=variables)
+        # TODO: build a method for variable to ivc conversion
+        ivc = IndepVarComp()
+        for variable in variables:
+            ivc.add_output(variable.name, variable.value, units=variable.units)
+        self._write_ivc(ivc)
 
     def _write_ivc(self, ivc: IndepVarComp):
         """
@@ -258,6 +280,24 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
                 outputs.append(
                     Variable(name, attributes['value'], attributes.get('units', None)))
         return outputs
+
+    def _build_translator(self, variables=None):
+        if variables is None:
+            if self.system is not None:
+                variables = self._get_outputs(self.system)
+            else:
+                variables = []
+        names = []
+        xpaths = []
+        for variable in variables:
+            path_components = variable.name.split(self.path_separator)
+            xpath = '/'.join(path_components)
+            names.append(variable.name)
+            xpaths.append(xpath)
+
+        translator = VarXpathTranslator()
+        translator.set(names, xpaths)
+        self.set_translator(translator)
 
     def create_updated_xml_deprecated(self, reference_xml: str, updated_xml: str):
         """
