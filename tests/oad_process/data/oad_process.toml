@@ -2,12 +2,10 @@
 
 title = "OAD Process"
 
-module_folders = [
-  "../"
-]
+module_folders = []
 
 input_file = "../results/oad_process_inputs.xml"
-output_file = "../results/oad_process_inputs.xml"
+output_file = "../results/oad_process_outputs.xml"
 
 
 [problem]
@@ -16,10 +14,10 @@ output_file = "../results/oad_process_inputs.xml"
         nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
         linear_solver = "om.ScipyKrylov()"
         [problem.sizing_loop.geometry]
-            id = "geometry"
+            id = "fastoad.geometry.legacy"
         [problem.sizing_loop.aerodynamics]
-            id = "aerodynamics"
+            id = "fastoad.aerodynamics.legacy"
         [problem.sizing_loop.performance]
-            id = "performance"
+            id = "fastoad.performances.breguet"
         [problem.sizing_loop.propulsion]
-            id = "propulsion"
+            id = "fastoad.propulsion.rubber_engine"
