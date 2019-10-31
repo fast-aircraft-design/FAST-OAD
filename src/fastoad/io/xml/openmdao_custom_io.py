@@ -148,6 +148,7 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
             if units is not None:
                 units = units.replace('²', '**2')
                 units = units.replace('°', 'deg')
+                units = units.replace('kt', 'kn')
 
             variables.append(Variable(var_name, values, units))
 
