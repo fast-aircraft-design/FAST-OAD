@@ -38,10 +38,10 @@ class Loads(ExplicitComponent):
         self.add_input('aerodynamics:Cl_alpha', val=np.nan)
         self.add_input('loadcase1:U_gust', val=np.nan, units='m/s')
         self.add_input('loadcase1:altitude', val=np.nan, units='ft')
-        self.add_input('loadcase1:Vc_EAS', val=np.nan, units='kt')
+        self.add_input('loadcase1:Vc_EAS', val=np.nan, units='kn')
         self.add_input('loadcase2:U_gust', val=np.nan, units='m/s')
         self.add_input('loadcase2:altitude', val=np.nan, units='ft')
-        self.add_input('loadcase2:Vc_EAS', val=np.nan, units='kt')
+        self.add_input('loadcase2:Vc_EAS', val=np.nan, units='kn')
 
         self.add_output('n1m1', units='kg')
         self.add_output('n2m2', units='kg')

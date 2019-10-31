@@ -64,12 +64,12 @@
     <loadcase1>
         <U_gust units="m/s">15.25</U_gust>
         <altitude units="ft">20000.0</altitude>
-        <Vc_EAS units="kt">375.0</Vc_EAS>
+        <Vc_EAS units="kn">375.0</Vc_EAS>
     </loadcase1>
     <loadcase2>
         <U_gust units="m/s">15.25</U_gust>
         <altitude units="ft">20000.0</altitude>
-        <Vc_EAS units="kt">375.0</Vc_EAS>
+        <Vc_EAS units="kn">375.0</Vc_EAS>
     </loadcase2>
     <kfactors_a1>
         <K_A1>1.05</K_A1>
