@@ -24,7 +24,7 @@ import toml
 
 from fastoad.io.configuration.exceptions import FASTConfigurationBaseKeyBuildingError, \
     FASTConfigurationBadOpenMDAOInstructionError, FASTConfigurationNoProblemDefined
-from fastoad.io.xml import OMXmlIO
+from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO, OMLegacyCustomXmlIO
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 
 # Logger for this module
@@ -34,6 +34,7 @@ _LOGGER = logging.getLogger(__name__)
 KEY_FOLDERS = 'module_folders'
 KEY_INPUT_FILE = 'input_file'
 KEY_REF_INPUT_FILE = 'ref_input_file'
+KEY_TRANSLATOR_FILE = 'translator_file'
 KEY_OUTPUT_FILE = 'output_file'
 KEY_COMPONENT_ID = 'id'
 TABLE_PROBLEM = 'problem'
@@ -54,6 +55,7 @@ class ConfiguredProblem(om.Problem):
         self._conf_dict = {}
         self._input_file = None
         self._ref_input_file = None
+        self._translator_file = None
         self._output_file = None
 
     def configure(self, conf_file):
@@ -79,6 +81,10 @@ class ConfiguredProblem(om.Problem):
         ref_input_file = self._conf_dict.get(KEY_REF_INPUT_FILE)
         if ref_input_file:
             self._ref_input_file = pth.join(conf_dirname, ref_input_file)
+
+        translator_file = self._conf_dict.get(KEY_TRANSLATOR_FILE)
+        if translator_file:
+            self._translator_file = pth.join(conf_dirname, translator_file)
 
         output_file = self._conf_dict.get(KEY_OUTPUT_FILE)
         if output_file:
@@ -137,6 +143,26 @@ class ConfiguredProblem(om.Problem):
                 writer.read()
                 writer.write_inputs(self)
                 ref_file = OMXmlIO(self._ref_input_file)
+                writer.update(ref_file)
+
+    def write_needed_inputs_from_legacy(self):
+        """
+        Once problem is configured, creates the configured input file with all
+        needed inputs of the problem, with default values taken from the reference
+        inputs file with respect to the legacy 1 translator by default or the defined
+        conversion file.
+        """
+        if self._input_file:
+            if self._ref_input_file:
+                writer = OMXmlIO(self._input_file)
+                writer.read()
+                writer.write_inputs(self)
+                if self._translator_file:
+                    ref_file = OMLegacyCustomXmlIO(self._ref_input_file,
+                                                   conversion_file=self._translator_file)
+                else:
+                    # Choosing the legacy 1 conversion file
+                    ref_file = OMLegacy1XmlIO(self._ref_input_file)
                 writer.update(ref_file)
 
     def read_inputs(self):

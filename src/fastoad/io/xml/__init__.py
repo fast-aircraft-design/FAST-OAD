@@ -16,4 +16,5 @@ Package for handling XML files
 
 from .openmdao_basic_io import OMXmlIO
 from .openmdao_custom_io import OMCustomXmlIO
+from .openmdao_legacy_io import OMLegacy1XmlIO, OMLegacyCustomXmlIO
 from .xpath_reader import XPathReader

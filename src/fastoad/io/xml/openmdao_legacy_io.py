@@ -34,3 +34,17 @@ class OMLegacy1XmlIO(OMCustomXmlIO):
 
         self._xml_unit_attribute = 'unit'
         self.set_translator(translator)
+
+
+class OMLegacyCustomXmlIO(OMCustomXmlIO):
+    """
+    Reader for custom legacy XML format
+    """
+
+    def __init__(self, input_file, conversion_file=None):
+        super().__init__(input_file)
+        translator = VarXpathTranslator()
+        translator.read_translation_table(conversion_file)
+
+        self._xml_unit_attribute = 'unit'
+        self.set_translator(translator)
