@@ -1,0 +1,5 @@
+<aircraft>
+  <x>1.0</x>
+  <z units="m**2">5.0</z>
+  <z units="m**2">2.0</z>
+</aircraft>

@@ -59,3 +59,18 @@ def test_problem_definition():
     problem.run_driver()
 
     problem.write_outputs()
+
+
+def test_problem_definition_with_xml_ref():
+    problem = ConfiguredProblem()
+    problem.configure(pth.join(pth.dirname(__file__), 'data', 'sellar_with_ref_xml.toml'))
+    problem.setup()
+
+    problem.write_needed_inputs_from()
+    problem.read_inputs()
+
+    problem.run_driver()
+
+    problem.write_outputs()
+
+    assert problem['f'] == pytest.approx(3.183397, abs=1e-6)

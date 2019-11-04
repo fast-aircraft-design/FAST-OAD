@@ -33,6 +33,7 @@ _LOGGER = logging.getLogger(__name__)
 
 KEY_FOLDERS = 'module_folders'
 KEY_INPUT_FILE = 'input_file'
+KEY_REF_INPUT_FILE = 'ref_input_file'
 KEY_OUTPUT_FILE = 'output_file'
 KEY_COMPONENT_ID = 'id'
 TABLE_PROBLEM = 'problem'
@@ -52,6 +53,7 @@ class ConfiguredProblem(om.Problem):
 
         self._conf_dict = {}
         self._input_file = None
+        self._ref_input_file = None
         self._output_file = None
 
     def configure(self, conf_file):
@@ -73,6 +75,10 @@ class ConfiguredProblem(om.Problem):
         input_file = self._conf_dict.get(KEY_INPUT_FILE)
         if input_file:
             self._input_file = pth.join(conf_dirname, input_file)
+
+        ref_input_file = self._conf_dict.get(KEY_REF_INPUT_FILE)
+        if ref_input_file:
+            self._ref_input_file = pth.join(conf_dirname, ref_input_file)
 
         output_file = self._conf_dict.get(KEY_OUTPUT_FILE)
         if output_file:
@@ -118,6 +124,20 @@ class ConfiguredProblem(om.Problem):
             writer = OMXmlIO(self._input_file)
             writer.read()
             writer.write_inputs(self)
+
+    def write_needed_inputs_from(self):
+        """
+        Once problem is configured, creates the configured input file with all
+        needed inputs of the problem, with default values taken from the reference
+        inputs file.
+        """
+        if self._input_file:
+            if self._ref_input_file:
+                writer = OMXmlIO(self._input_file)
+                writer.read()
+                writer.write_inputs(self)
+                ref_file = OMXmlIO(self._ref_input_file)
+                writer.update(ref_file)
 
     def read_inputs(self):
         """
