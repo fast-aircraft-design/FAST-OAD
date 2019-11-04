@@ -56,16 +56,16 @@ def xpath_reader() -> XPathReader:
     :return: access to the sample xml data
     """
     return XPathReader(
-        pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
+        pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
 
 @pytest.fixture(scope="module")
 def input_xml() -> OMLegacy1XmlIO:
     """
     :return: access to the sample xml data
     """
-    # TODO: have more consistency in input data (no need for the whole CeRAS01_baseline.xml)
+    # TODO: have more consistency in input data (no need for the whole geometry_inputs_full.xml)
     return OMLegacy1XmlIO(
-        pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
+        pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
 
 def test_compute_fuselage_cabin_sizing(input_xml):
     """ Tests computation of the fuselage with cabin sizing """
