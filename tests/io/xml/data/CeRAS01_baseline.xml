@@ -305,6 +305,7 @@
             <fuselage id="162">
                 <S_mbf unit="m**2">401.956</S_mbf>
                 <fus_length unit="m">37.507</fus_length>
+                <Lcabin unit="m">30.381</Lcabin>
                 <Lpax unit="m">22.87</Lpax>
                 <height_max unit="m">4.06</height_max>
                 <width_max unit="m">3.92</width_max>

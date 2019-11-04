@@ -243,6 +243,7 @@ loadcase1:Vc_EAS, Aircraft/weight/sizing_cases/SizingCase1/Vc_EAS
 loadcase2:U_gust, Aircraft/weight/sizing_cases/SizingCase2/U_gust
 loadcase2:altitude, Aircraft/weight/sizing_cases/SizingCase2/altitude
 loadcase2:Vc_EAS, Aircraft/weight/sizing_cases/SizingCase2/Vc_EAS
+geometry:fuselage_Lcabin, Aircraft/geometry/fuselage/Lcabin
 geometry:fuselage_Lpax, Aircraft/geometry/fuselage/Lpax
 weight:Max_PL, Aircraft/weight/Max_PL
 tlar:AC_family, Aircraft/TLAR/AC_family
