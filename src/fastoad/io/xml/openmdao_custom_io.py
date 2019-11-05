@@ -168,7 +168,7 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
             # TODO: build FAST specific exception
             raise ValueError('read() must be called before write().')
 
-        variables = self._get_outputs(self.system)
+        variables = self._get_variables(self.system)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         self._write(used_variables)
 
@@ -239,15 +239,15 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
             os.makedirs(dirname)
         tree.write(self._data_source, pretty_print=True)
 
-    def _get_outputs(self, system: SystemSubclass) -> List[Variable]:
-        """ returns the list of outputs from provided system """
+    def _get_variables(self, system: SystemSubclass) -> List[Variable]:
+        """ returns the list of variables from provided system """
 
-        outputs: List[Variable] = []
+        variables: List[Variable] = []
         if isinstance(system, IndepVarComp):
             # Outputs are accessible using private member
             # pylint: disable=protected-access
             for (name, value, attributes) in system._indep_external:
-                outputs.append(Variable(name, value, attributes['units']))
+                variables.append(Variable(name, value, attributes['units']))
         else:
             # Using .list_outputs(), that requires the model to have run
             # TODO: this limitation may be removed by using OpenMDAO private attributes
@@ -256,9 +256,9 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
                                                           out_stream=None):
                 if self.use_promoted_names:
                     name = attributes['prom_name']
-                outputs.append(
+                variables.append(
                     Variable(name, attributes['value'], attributes.get('units', None)))
-        return outputs
+        return variables
 
     def create_updated_xml_deprecated(self, reference_xml: str, updated_xml: str):
         """

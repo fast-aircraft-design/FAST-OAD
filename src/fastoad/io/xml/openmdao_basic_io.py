@@ -21,7 +21,6 @@ from lxml import etree
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.core.indepvarcomp import IndepVarComp
 
-from fastoad.io.serialize import SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.utils.strings import get_float_list_from_string
@@ -105,7 +104,7 @@ class OMXmlIO(OMCustomXmlIO):
             # TODO: build FAST specific exception
             raise ValueError('read() must be called before write().')
 
-        variables = self._get_outputs(self.system)
+        variables = self._get_variables(self.system)
 
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
@@ -113,7 +112,7 @@ class OMXmlIO(OMCustomXmlIO):
 
     def _build_translator(self):
         if self.system is not None:
-            variables = self._get_outputs(self.system)
+            variables = self._get_variables(self.system)
 
             names = []
             xpaths = []
