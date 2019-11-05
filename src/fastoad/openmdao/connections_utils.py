@@ -152,3 +152,28 @@ def build_ivc_of_outputs(system: SystemSubclass) -> IndepVarComp:
                        desc=metadata['desc'])
 
     return ivc
+
+def build_ivc_of_variables(system: SystemSubclass) -> IndepVarComp:
+    """
+    This function returns an OpenMDAO IndepVarComp instance containing
+    all the variables (inputs + outputs) of a SystemSubclass.
+
+    :param system: OpenMDAO SystemSubclass instance to inspect
+    :return: IndepVarComp instance
+    """
+    ivc = IndepVarComp()
+
+    prom2abs_inputs: dict = system._var_allprocs_prom2abs_list['input']
+    prom2abs_outputs: dict = system._var_allprocs_prom2abs_list['output']
+
+    prom2abs = {**prom2abs_inputs, **prom2abs_outputs}
+    for _, (prom_name, abs_names) in enumerate(prom2abs.items()):
+        # Pick the first
+        abs_name = abs_names[0]
+        metadata = system._var_abs2meta[abs_name]
+        ivc.add_output(prom_name,
+                       val=metadata['value'],
+                       units=metadata['units'],
+                       desc=metadata['desc'])
+
+    return ivc
