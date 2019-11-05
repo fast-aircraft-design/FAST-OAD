@@ -25,7 +25,7 @@ from openmdao.core.problem import Problem
 
 from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
-    build_ivc_of_unconnected_inputs
+    build_ivc_of_unconnected_inputs, build_ivc_of_outputs
 from fastoad.openmdao.types import Variable
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
@@ -168,3 +168,45 @@ def test_build_ivc_of_unconnected_inputs():
     expected_optional_vars = []
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
+
+def test_build_ivc_of_outputs():
+    def _test_and_check(problem: Problem,
+                        expected_vars: List[Variable]):
+        problem.setup()
+
+        system = problem.model
+
+        ivc = build_ivc_of_outputs(system)
+        ivc_vars = [Variable(name, value, attributes['units'])
+                    for (name, value, attributes) in ivc._indep_external]
+        assert set([str(i) for i in ivc_vars]) == set(
+            [str(i) for i in expected_vars])
+
+    # Check with an ExplicitComponent
+    problem = Problem(Disc1())
+    expected_vars = [Variable(name='y1', value=np.array([1.]), units=None)]
+    _test_and_check(problem, expected_vars)
+
+    # Check with a Group
+    group = Group()
+    group.add_subsystem('disc1', Disc1(), promotes=['*'])
+    group.add_subsystem('disc2', Disc2(), promotes=['*'])
+    problem = Problem(group)
+
+    expected_vars = [Variable(name='y1', value=np.array([1.]), units=None),
+                     Variable(name='y2', value=np.array([1.]), units=None)]
+    _test_and_check(problem, expected_vars)
+
+    # Check with the whole Sellar problem.
+    group = Group()
+    group.add_subsystem('disc1', Disc1(), promotes=['*'])
+    group.add_subsystem('disc2', Disc2(), promotes=['*'])
+    group.add_subsystem('functions', Functions(), promotes=['*'])
+    problem = Problem(group)
+
+    expected_vars = [Variable(name='y1', value=np.array([1.]), units=None),
+                     Variable(name='y2', value=np.array([1.]), units=None),
+                     Variable(name='g1', value=np.array([1.]), units=None),
+                     Variable(name='g2', value=np.array([1.]), units=None),
+                     Variable(name='f', value=np.array([1.]), units=None)]
+    _test_and_check(problem, expected_vars)

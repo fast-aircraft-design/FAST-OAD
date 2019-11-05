@@ -22,7 +22,7 @@ from openmdao.api import IndepVarComp
 from openmdao.core.problem import Problem
 
 from fastoad.exceptions import NoSetupError
-
+from fastoad.io.serialize import SystemSubclass
 
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
 
@@ -126,5 +126,29 @@ def build_ivc_of_unconnected_inputs(problem: Problem,
     _add_outputs(mandatory_unconnected)
     if with_optional_inputs:
         _add_outputs(optional_unconnected)
+
+    return ivc
+
+
+def build_ivc_of_outputs(system: SystemSubclass) -> IndepVarComp:
+    """
+    This function returns an OpenMDAO IndepVarComp instance containing
+    all the outputs of a SystemSubclass.
+
+    :param system: OpenMDAO SystemSubclass instance to inspect
+    :return: IndepVarComp instance
+    """
+    ivc = IndepVarComp()
+
+    prom2abs: dict = system._var_allprocs_prom2abs_list['output']
+
+    for _, (prom_name, abs_names) in enumerate(prom2abs.items()):
+        # Pick the first
+        abs_name = abs_names[0]
+        metadata = system._var_abs2meta[abs_name]
+        ivc.add_output(prom_name,
+                       val=metadata['value'],
+                       units=metadata['units'],
+                       desc=metadata['desc'])
 
     return ivc
