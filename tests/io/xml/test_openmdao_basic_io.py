@@ -225,24 +225,6 @@ def test_basic_xml_write_from_problem():
     problem.setup()
     problem.run_driver()
 
-    # Write the XML file
-    filename = pth.join(result_folder, 'sellar.xml')
-    xml_write = OMXmlIO(filename)
-    xml_write.use_promoted_names = False
-    xml_write.path_separator = '.'
-    xml_write.system = problem.model
-    xml_write.write()
-
-    # Check
-    tree = etree.parse(filename)
-    assert len(tree.xpath('/aircraft/indeps/x')) == 1
-    assert len(tree.xpath('/aircraft/indeps/z')) == 2
-    assert len(tree.xpath('/aircraft/Disc1/y1')) == 1
-    assert len(tree.xpath('/aircraft/Disc2/y2')) == 1
-    assert len(tree.xpath('/aircraft/Functions/f')) == 1
-    assert len(tree.xpath('/aircraft/Functions/g1')) == 1
-    assert len(tree.xpath('/aircraft/Functions/g2')) == 1
-
     # Write the XML file using promoted names
     filename = pth.join(result_folder, 'sellar.xml')
     xml_write = OMXmlIO(filename)

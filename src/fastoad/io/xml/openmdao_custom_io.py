@@ -32,7 +32,8 @@ from fastoad.exceptions import XPathError
 from fastoad.io.serialize import AbstractOpenMDAOVariableIO, SystemSubclass
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.types import Variable
-from fastoad.openmdao.connections_utils import build_ivc_of_unconnected_inputs
+from fastoad.openmdao.connections_utils import build_ivc_of_unconnected_inputs, \
+    build_ivc_of_variables
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
 from .xpath_reader import XPathReader
 
@@ -249,15 +250,9 @@ class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
             for (name, value, attributes) in system._indep_external:
                 variables.append(Variable(name, value, attributes['units']))
         else:
-            # Using .list_outputs(), that requires the model to have run
-            # TODO: this limitation may be removed by using OpenMDAO private attributes
-            for (name, attributes) in system.list_outputs(prom_name=self.use_promoted_names,
-                                                          units=True,
-                                                          out_stream=None):
-                if self.use_promoted_names:
-                    name = attributes['prom_name']
-                variables.append(
-                    Variable(name, attributes['value'], attributes.get('units', None)))
+            ivc_variables = build_ivc_of_variables(system)
+            for (name, value, attributes) in ivc_variables._indep_external:
+                variables.append(Variable(name, value, attributes['units']))
         return variables
 
     def create_updated_xml_deprecated(self, reference_xml: str, updated_xml: str):
