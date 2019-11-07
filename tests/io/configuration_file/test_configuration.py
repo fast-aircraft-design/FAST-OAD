@@ -59,34 +59,3 @@ def test_problem_definition():
     problem.run_driver()
 
     problem.write_outputs()
-
-
-def test_problem_definition_with_xml_ref():
-    problem = ConfiguredProblem()
-    problem.configure(pth.join(pth.dirname(__file__), 'data', 'sellar_with_ref_xml.toml'))
-    problem.setup()
-
-    problem.write_needed_inputs_from()
-    problem.read_inputs()
-
-    problem.run_driver()
-
-    problem.write_outputs()
-
-    assert problem['f'] == pytest.approx(3.183397, abs=1e-6)
-
-
-def test_problem_definition_with_xml_ref_and_custom_translator():
-    problem = ConfiguredProblem()
-    problem.configure(pth.join(pth.dirname(__file__), 'data',
-                               'sellar_with_ref_xml_and_custom_translator.toml'))
-    problem.setup()
-
-    problem.write_needed_inputs_from_legacy()
-    problem.read_inputs()
-
-    problem.run_driver()
-
-    problem.write_outputs()
-
-    assert problem['f'] == pytest.approx(3.183397, abs=1e-6)

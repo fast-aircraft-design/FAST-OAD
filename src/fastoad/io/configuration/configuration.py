@@ -26,8 +26,9 @@ from fastoad.io.configuration.exceptions import FASTConfigurationBaseKeyBuilding
     FASTConfigurationBadOpenMDAOInstructionError, FASTConfigurationNoProblemDefined
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO, OMLegacyCustomXmlIO
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
-
 # Logger for this module
+from fastoad.openmdao.connections_utils import build_ivc_of_variables, \
+    build_ivc_of_unconnected_inputs
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -126,10 +127,9 @@ class ConfiguredProblem(om.Problem):
         definitions.
         """
         if self._input_file:
-            print(self._input_file)
+            ivc = build_ivc_of_unconnected_inputs(self)
             writer = OMXmlIO(self._input_file)
-            writer.read()
-            writer.write_inputs(self)
+            writer.write(ivc)
 
     def write_needed_inputs_from(self):
         """
@@ -184,8 +184,8 @@ class ConfiguredProblem(om.Problem):
         """
         if self._output_file:
             writer = OMXmlIO(self._output_file)
-            writer.system = self.model
-            writer.write()
+            ivc = build_ivc_of_variables(self.model)
+            writer.write(ivc)
 
     def _parse_problem_table(self, component: Union[om.Problem, om.Group], identifier, table: dict):
         """

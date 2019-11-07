@@ -42,10 +42,11 @@ class AbstractOMFileIO(ABC):
         """
 
     @abstractmethod
-    def write(self, only: List[str] = None, ignore: List[str] = None):
+    def write(self, ivc: om.IndepVarComp, only: List[str] = None, ignore: List[str] = None):
         """
         Writes output variables from provided IndepVarComp instance.
 
+        :param ivc: the IndepVarComp instance
         :param only: List of OpenMDAO variable names that should be written. Other names will be
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
