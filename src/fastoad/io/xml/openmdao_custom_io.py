@@ -15,9 +15,9 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import warnings
 import os
 import os.path as pth
+import warnings
 from typing import Sequence, List
 
 import numpy as np
@@ -25,8 +25,8 @@ from lxml import etree
 from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.core.indepvarcomp import IndepVarComp
-from openmdao.vectors.vector import Vector
 from openmdao.core.problem import Problem
+from openmdao.vectors.vector import Vector
 
 from fastoad.exceptions import XPathError
 from fastoad.io.serialize import AbstractOMFileIO
