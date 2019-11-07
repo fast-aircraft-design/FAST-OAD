@@ -29,11 +29,11 @@ from openmdao.vectors.vector import Vector
 from openmdao.core.problem import Problem
 
 from fastoad.exceptions import XPathError
-from fastoad.io.serialize import AbstractOpenMDAOVariableIO, SystemSubclass
+from fastoad.io.serialize import AbstractOMFileIO
 from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.openmdao.types import Variable
 from fastoad.openmdao.connections_utils import build_ivc_of_unconnected_inputs, \
     build_ivc_of_variables
+from fastoad.openmdao.types import Variable, SystemSubclass
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
 from .xpath_reader import XPathReader
 
@@ -41,7 +41,7 @@ from .xpath_reader import XPathReader
 _LOGGER = logging.getLogger(__name__)
 
 
-class OMCustomXmlIO(AbstractOpenMDAOVariableIO):
+class OMCustomXmlIO(AbstractOMFileIO):
     """
     Customizable serializer for OpenMDAO variables
 

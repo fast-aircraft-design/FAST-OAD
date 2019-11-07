@@ -22,9 +22,9 @@ from openmdao.api import IndepVarComp
 from openmdao.core.problem import Problem
 
 from fastoad.exceptions import NoSetupError
-from fastoad.io.serialize import SystemSubclass
-
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
+from fastoad.openmdao.types import SystemSubclass
+
 
 def get_unconnected_inputs(problem: Problem,
                            logger: Logger = None) -> Tuple[List[str], List[str]]:
@@ -152,6 +152,7 @@ def build_ivc_of_outputs(system: SystemSubclass) -> IndepVarComp:
                        desc=metadata['desc'])
 
     return ivc
+
 
 def build_ivc_of_variables(system: SystemSubclass) -> IndepVarComp:
     """

@@ -13,12 +13,11 @@ Defines interfaces for reading and writing OpenMDAO variable values
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from abc import abstractmethod, ABC
-from typing import TypeVar, IO, List
+from typing import IO, List
 
 from openmdao.core.indepvarcomp import IndepVarComp
-
-from fastoad.openmdao.types import SystemSubclass
 
 
 class AbstractOpenMDAOVariableIO(ABC):
