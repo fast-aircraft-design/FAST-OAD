@@ -198,7 +198,6 @@ def update_ivc(original_ivc: om.IndepVarComp, reference_ivc: om.IndepVarComp) ->
     # pylint: disable=protected-access
     for (name, value, attributes) in original_ivc._indep_external:
         if name in reference_variables:
-            # TODO: with a better Variable class, this could be a little clearer
             value = reference_variables[name][0]
             attributes = reference_variables[name][1]
         updated_ivc.add_output(name, value, **attributes)

@@ -22,6 +22,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from pytest import approx
 
 from fastoad.io.xml import OMCustomXmlIO
+from fastoad.io.xml.exceptions import FastMissingTranslatorError
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.types import Variable
 
@@ -78,7 +79,7 @@ def test_custom_xml_read_and_write_from_ivc():
     xml_read = OMCustomXmlIO(filename)
 
     # test without setting translation table
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(FastMissingTranslatorError) as exc_info:
         _ = xml_read.read()
     assert exc_info is not None
 

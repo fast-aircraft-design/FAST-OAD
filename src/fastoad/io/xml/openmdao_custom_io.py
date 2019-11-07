@@ -28,6 +28,7 @@ from openmdao.vectors.vector import Vector
 
 from fastoad.exceptions import XPathError
 from fastoad.io.serialize import AbstractOMFileIO
+from fastoad.io.xml.exceptions import FastMissingTranslatorError
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.types import Variable, SystemSubclass
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
@@ -99,8 +100,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         """
 
         if self._translator is None:
-            # TODO: build FAST specific exception
-            raise ValueError('Missing translator instance')
+            raise FastMissingTranslatorError('Missing translator instance')
 
         reader = XPathReader(self._data_source)
         reader.unit_attribute_name = self.xml_unit_attribute
@@ -116,9 +116,8 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 try:
                     var_names.append(self._translator.get_variable_name(xpath))
                 except XPathError as err:
-                    _LOGGER.warning('The xpath %s does not have any \
-                                    variable affected in the translator.' % err.xpath
-                                    )
+                    _LOGGER.warning('The xpath %s does not have any variable '
+                                    'affected in the translator.', err.xpath)
                     continue
 
         if ignore is not None:
