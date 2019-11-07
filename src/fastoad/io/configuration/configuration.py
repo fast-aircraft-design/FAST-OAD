@@ -24,11 +24,12 @@ import toml
 
 from fastoad.io.configuration.exceptions import FASTConfigurationBaseKeyBuildingError, \
     FASTConfigurationBadOpenMDAOInstructionError, FASTConfigurationNoProblemDefined
+from fastoad.io.serialize import OMFileIOSubclass
 from fastoad.io.xml import OMXmlIO
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 # Logger for this module
 from fastoad.openmdao.connections_utils import build_ivc_of_variables, \
-    build_ivc_of_unconnected_inputs
+    build_ivc_of_unconnected_inputs, update_ivc
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -112,7 +113,7 @@ class ConfiguredProblem(om.Problem):
 
         self.setup()
 
-    def write_needed_inputs(self):
+    def write_needed_inputs(self, input_data: OMFileIOSubclass = None):
         """
         Once problem is configured, creates the configured input file with all
         needed inputs of the problem, with default values taken from component
@@ -120,6 +121,9 @@ class ConfiguredProblem(om.Problem):
         """
         if self._input_file:
             ivc = build_ivc_of_unconnected_inputs(self)
+            if input_data:
+                ref_ivc = input_data.read()
+                ivc = update_ivc(ivc, ref_ivc)
             writer = OMXmlIO(self._input_file)
             writer.write(ivc)
 

@@ -15,15 +15,27 @@ Test module for configuration.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
+from shutil import rmtree
 
+import numpy as np
 import openmdao.api as om
 import pytest
 
 from fastoad.io.configuration import ConfiguredProblem, FASTConfigurationNoProblemDefined, \
     FASTConfigurationBadOpenMDAOInstructionError
+from fastoad.io.xml import OMXmlIO
+
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
 
 
-def test_problem_definition():
+@pytest.fixture
+def cleanup():
+    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+
+
+def test_problem_definition(cleanup):
+    """ Test problem definition from configuration files """
     # Missing problem
     problem = ConfiguredProblem()
     with pytest.raises(FASTConfigurationNoProblemDefined) as exc_info:
@@ -51,11 +63,29 @@ def test_problem_definition():
     assert problem.driver.options['optimizer'] == 'SLSQP'
     assert isinstance(problem.model.cycle.nonlinear_solver, om.NonlinearBlockGS)
 
-    # Just running these methods to check there is no crash. As simples assemblies of
+    # Just running these methods to check there is no crash. As simple assemblies of
     # other methods, their results should already be unit-tested.
     problem.write_needed_inputs()
     problem.read_inputs()
 
     problem.run_driver()
+
+    problem.run_model()
+    assert np.isnan(problem['f'])
+
+
+def test_problem_definition_with_xml_ref(cleanup):
+    """ Tests what happens when writing inputs using data from existing XML file"""
+    problem = ConfiguredProblem()
+    problem.configure(pth.join(DATA_FOLDER_PATH, 'valid_sellar.toml'))
+    problem.setup()
+
+    input_data = OMXmlIO(pth.join(DATA_FOLDER_PATH, 'ref_inputs.xml'))
+
+    problem.write_needed_inputs(input_data)
+    problem.read_inputs()
+
+    problem.run_model()
+    assert problem['f'] == pytest.approx(28.58830817, abs=1e-6)
 
     problem.write_outputs()
