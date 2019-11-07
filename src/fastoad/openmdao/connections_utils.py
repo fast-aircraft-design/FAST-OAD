@@ -178,3 +178,30 @@ def build_ivc_of_variables(system: SystemSubclass) -> IndepVarComp:
                        desc=metadata['desc'])
 
     return ivc
+
+
+def update_ivc(original_ivc: IndepVarComp, reference_ivc: IndepVarComp) -> IndepVarComp:
+    """
+    Updates the values of an IndepVarComp instance with respect to a reference IndepVarComp
+    instance
+
+    :param original_ivc: IndepVarComp instance to be updated
+    :param reference_ivc: IndepVarComp instance containing the default values for update
+    :return updated_ivc: resulting IndepVarComp instance of the update
+    """
+
+    reference_variables = {}
+    # pylint: disable=protected-access
+    for (name, value, attributes) in reference_ivc._indep_external:
+        reference_variables[name] = (value, attributes)
+
+    updated_ivc = IndepVarComp()
+    # pylint: disable=protected-access
+    for (name, value, attributes) in original_ivc._indep_external:
+        if name in reference_variables:
+            # TODO: with a better Variable class, this could be a little clearer
+            value = reference_variables[name][0]
+            attributes = reference_variables[name][1]
+        updated_ivc.add_output(name, value, **attributes)
+
+    return updated_ivc
