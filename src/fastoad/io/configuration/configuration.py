@@ -35,8 +35,6 @@ _LOGGER = logging.getLogger(__name__)
 
 KEY_FOLDERS = 'module_folders'
 KEY_INPUT_FILE = 'input_file'
-KEY_REF_INPUT_FILE = 'ref_input_file'
-KEY_TRANSLATOR_FILE = 'translator_file'
 KEY_OUTPUT_FILE = 'output_file'
 KEY_COMPONENT_ID = 'id'
 TABLE_PROBLEM = 'problem'
@@ -56,8 +54,6 @@ class ConfiguredProblem(om.Problem):
 
         self._conf_dict = {}
         self._input_file = None
-        self._ref_input_file = None
-        self._translator_file = None
         self._output_file = None
 
     def configure(self, conf_file):
