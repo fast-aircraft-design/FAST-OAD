@@ -18,15 +18,14 @@ from logging import Logger
 from typing import Tuple, List
 
 import numpy as np
-from openmdao.api import IndepVarComp
-from openmdao.core.problem import Problem
+import openmdao.api as om
 
 from fastoad.exceptions import NoSetupError
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
 from fastoad.openmdao.types import SystemSubclass
 
 
-def get_unconnected_inputs(problem: Problem,
+def get_unconnected_inputs(problem: om.Problem,
                            logger: Logger = None) -> Tuple[List[str], List[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
@@ -82,8 +81,8 @@ def get_unconnected_inputs(problem: Problem,
     return mandatory_unconnected, optional_unconnected
 
 
-def build_ivc_of_unconnected_inputs(problem: Problem,
-                                    with_optional_inputs: bool = False) -> IndepVarComp:
+def build_ivc_of_unconnected_inputs(problem: om.Problem,
+                                    with_optional_inputs: bool = False) -> om.IndepVarComp:
     """
     This function returns an OpenMDAO IndepVarComp instance containing
     all the unconnected inputs of a Problem.
@@ -97,7 +96,7 @@ def build_ivc_of_unconnected_inputs(problem: Problem,
                             Otherwise, it will contain only mandatory ones.
     :return: IndepVarComp instance
     """
-    ivc = IndepVarComp()
+    ivc = om.IndepVarComp()
 
     mandatory_unconnected, optional_unconnected = get_unconnected_inputs(problem)
     model = problem.model
@@ -130,7 +129,7 @@ def build_ivc_of_unconnected_inputs(problem: Problem,
     return ivc
 
 
-def build_ivc_of_outputs(system: SystemSubclass) -> IndepVarComp:
+def build_ivc_of_outputs(system: SystemSubclass) -> om.IndepVarComp:
     """
     This function returns an OpenMDAO IndepVarComp instance containing
     all the outputs of a SystemSubclass.
@@ -138,7 +137,7 @@ def build_ivc_of_outputs(system: SystemSubclass) -> IndepVarComp:
     :param system: OpenMDAO SystemSubclass instance to inspect
     :return: IndepVarComp instance
     """
-    ivc = IndepVarComp()
+    ivc = om.IndepVarComp()
 
     prom2abs: dict = system._var_allprocs_prom2abs_list['output']
 
@@ -154,7 +153,7 @@ def build_ivc_of_outputs(system: SystemSubclass) -> IndepVarComp:
     return ivc
 
 
-def build_ivc_of_variables(system: SystemSubclass) -> IndepVarComp:
+def build_ivc_of_variables(system: SystemSubclass) -> om.IndepVarComp:
     """
     This function returns an OpenMDAO IndepVarComp instance containing
     all the variables (inputs + outputs) of a SystemSubclass.
@@ -162,7 +161,7 @@ def build_ivc_of_variables(system: SystemSubclass) -> IndepVarComp:
     :param system: OpenMDAO SystemSubclass instance to inspect
     :return: IndepVarComp instance
     """
-    ivc = IndepVarComp()
+    ivc = om.IndepVarComp()
 
     prom2abs_inputs: dict = system._var_allprocs_prom2abs_list['input']
     prom2abs_outputs: dict = system._var_allprocs_prom2abs_list['output']
@@ -180,7 +179,7 @@ def build_ivc_of_variables(system: SystemSubclass) -> IndepVarComp:
     return ivc
 
 
-def update_ivc(original_ivc: IndepVarComp, reference_ivc: IndepVarComp) -> IndepVarComp:
+def update_ivc(original_ivc: om.IndepVarComp, reference_ivc: om.IndepVarComp) -> om.IndepVarComp:
     """
     Updates the values of an IndepVarComp instance with respect to a reference IndepVarComp
     instance
@@ -195,7 +194,7 @@ def update_ivc(original_ivc: IndepVarComp, reference_ivc: IndepVarComp) -> Indep
     for (name, value, attributes) in reference_ivc._indep_external:
         reference_variables[name] = (value, attributes)
 
-    updated_ivc = IndepVarComp()
+    updated_ivc = om.IndepVarComp()
     # pylint: disable=protected-access
     for (name, value, attributes) in original_ivc._indep_external:
         if name in reference_variables:

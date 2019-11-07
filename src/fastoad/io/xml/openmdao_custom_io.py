@@ -20,10 +20,10 @@ import os.path as pth
 from typing import Sequence, List
 
 import numpy as np
+import openmdao.api as om
 from lxml import etree
 from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
-from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.vectors.vector import Vector
 
 from fastoad.exceptions import XPathError
@@ -76,11 +76,11 @@ class OMCustomXmlIO(AbstractOMFileIO):
         """
         self._translator = translator
 
-    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
+    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> om.IndepVarComp:
 
         variables = self._read_values(only=only, ignore=ignore)
 
-        ivc = IndepVarComp()
+        ivc = om.IndepVarComp()
         for variable in variables:
             ivc.add_output(variable.name, variable.value, units=variable.units)
 
@@ -140,7 +140,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         return variables
 
-    def write(self, ivc: IndepVarComp, only: Sequence[str] = None, ignore: Sequence[str] = None):
+    def write(self, ivc: om.IndepVarComp, only: Sequence[str] = None, ignore: Sequence[str] = None):
 
         variables = self._get_variables(ivc)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)

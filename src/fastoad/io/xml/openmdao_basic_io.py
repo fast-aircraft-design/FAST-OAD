@@ -17,9 +17,9 @@ Defines how OpenMDAO variables are serialized to XML
 from typing import Sequence, Dict
 
 import numpy as np
+import openmdao.api as om
 from lxml import etree
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
-from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO, Variable
@@ -71,7 +71,7 @@ class OMXmlIO(OMCustomXmlIO):
         Warning: The dot "." can be used when writing, but not when reading.
         """
 
-    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
+    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> om.IndepVarComp:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == '.':
             raise ValueError('Cannot use dot "." in OpenMDAO variables.')
@@ -79,18 +79,18 @@ class OMXmlIO(OMCustomXmlIO):
         outputs = self._read_xml()
 
         # Create IndepVarComp instance
-        ivc = IndepVarComp()
+        ivc = om.IndepVarComp()
         for name, value, units in outputs:
             if (only is None or name in only) and not (ignore is not None and name in ignore):
                 ivc.add_output(name, val=np.array(value), units=units)
 
         return ivc
 
-    def write(self, ivc: IndepVarComp, only: Sequence[str] = None, ignore: Sequence[str] = None):
+    def write(self, ivc: om.IndepVarComp, only: Sequence[str] = None, ignore: Sequence[str] = None):
         self._build_translator(ivc)
         super().write(ivc, only, ignore)
 
-    def _build_translator(self, ivc: IndepVarComp):
+    def _build_translator(self, ivc: om.IndepVarComp):
         variables = self._get_variables(ivc)
 
         names = []
