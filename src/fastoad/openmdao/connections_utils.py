@@ -141,7 +141,7 @@ def build_ivc_of_outputs(system: SystemSubclass) -> om.IndepVarComp:
 
     prom2abs: dict = system._var_allprocs_prom2abs_list['output']
 
-    for _, (prom_name, abs_names) in enumerate(prom2abs.items()):
+    for prom_name, abs_names in prom2abs.items():
         # Pick the first
         abs_name = abs_names[0]
         metadata = system._var_abs2meta[abs_name]
@@ -167,7 +167,7 @@ def build_ivc_of_variables(system: SystemSubclass) -> om.IndepVarComp:
     prom2abs_outputs: dict = system._var_allprocs_prom2abs_list['output']
 
     prom2abs = {**prom2abs_inputs, **prom2abs_outputs}
-    for _, (prom_name, abs_names) in enumerate(prom2abs.items()):
+    for prom_name, abs_names in prom2abs.items():
         # Pick the first
         abs_name = abs_names[0]
         metadata = system._var_abs2meta[abs_name]
