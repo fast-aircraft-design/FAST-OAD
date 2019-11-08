@@ -34,4 +34,4 @@ class FunctionsBase(ExplicitComponent):
         self.add_output('g1', val=1.0, desc='')
 
         self.add_output('g2', val=1.0, desc='')
-        self.declare_partials('*', '*')
+        self.declare_partials('*', '*', method='fd')

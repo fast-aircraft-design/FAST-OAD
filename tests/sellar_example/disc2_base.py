@@ -25,4 +25,4 @@ class Disc2Base(ExplicitComponent):
         self.add_input('y1', val=1.0, desc='')
 
         self.add_output('y2', val=1.0, desc='')
-        self.declare_partials('*', '*')
+        self.declare_partials('*', '*', method='fd')
