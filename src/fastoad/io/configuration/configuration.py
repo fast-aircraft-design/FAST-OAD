@@ -28,7 +28,7 @@ from fastoad.io.serialize import OMFileIOSubclass
 from fastoad.io.xml import OMXmlIO
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 # Logger for this module
-from fastoad.openmdao.connections_utils import build_ivc_of_variables, \
+from fastoad.openmdao.connections_utils import \
     build_ivc_of_unconnected_inputs, update_ivc, \
     build_ivc_of_computed_variables
 
@@ -56,6 +56,7 @@ class ConfiguredProblem(om.Problem):
         self._conf_dict = {}
         self._input_file = None
         self._output_file = None
+        self._problem_definition = None
 
     def configure(self, conf_file):
         """
@@ -91,16 +92,24 @@ class ConfiguredProblem(om.Problem):
                 OpenMDAOSystemFactory.explore_folder(folder_path)
 
         # Read problem definition
-        problem_definition = self._conf_dict.get(TABLE_PROBLEM)
-        if not problem_definition:
+        self._problem_definition = self._conf_dict.get(TABLE_PROBLEM)
+        if not self._problem_definition:
             raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_PROBLEM)
 
-        try:
-            self._parse_problem_table(self, TABLE_PROBLEM, problem_definition)
-        except FASTConfigurationBaseKeyBuildingError as err:
-            log_err = err.__class__(err, TABLE_PROBLEM)
-            _LOGGER.error(log_err)
-            raise log_err
+    def setup_problem(self):
+        """
+        Sets up the problem.
+        1 - Adds the inputs and defines the design variables
+        2 - Adds the core model
+        3 - Adds the objectives
+        4 - Adds the constraints
+        5 - Runs a OpenMDAO Problem setup()
+        """
+        # Read the inputs and build the design variables
+        self.read_inputs()
+
+        # Read problem definition
+        self._add_core_model(self)
 
         # Objectives and constraints are based on problem outputs, so concerned variables
         # are expected to be defined by now (unlike design variables that will be
@@ -110,6 +119,20 @@ class ConfiguredProblem(om.Problem):
 
         self.setup()
 
+    def _add_core_model(self, problem: Union[om.Problem, om.Group]):
+        """
+        Adds the core model defined in the configuration file to
+        the problem provided.
+
+        :param problem: the OpenMDAO problem to add the core model
+        """
+        try:
+            self._parse_problem_table(problem, TABLE_PROBLEM, self._problem_definition)
+        except FASTConfigurationBaseKeyBuildingError as err:
+            log_err = err.__class__(err, TABLE_PROBLEM)
+            _LOGGER.error(log_err)
+            raise log_err
+
     def write_needed_inputs(self, input_data: OMFileIOSubclass = None):
         """
         Once problem is configured, creates the configured input file with all
@@ -117,7 +140,9 @@ class ConfiguredProblem(om.Problem):
         definitions.
         """
         if self._input_file:
-            ivc = build_ivc_of_unconnected_inputs(self)
+            problem = om.Problem()
+            self._add_core_model(problem)
+            ivc = build_ivc_of_unconnected_inputs(problem)
             if input_data:
                 ref_ivc = input_data.read()
                 ivc = update_ivc(ivc, ref_ivc)
@@ -134,8 +159,6 @@ class ConfiguredProblem(om.Problem):
 
             # Now all variables should be available, design vars can be defined.
             self._add_design_vars()
-
-            self.setup()
 
     def write_outputs(self):
         """
