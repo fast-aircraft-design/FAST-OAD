@@ -22,7 +22,6 @@ import openmdao.api as om
 
 from fastoad.exceptions import NoSetupError
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
-from fastoad.openmdao.types import SystemSubclass
 
 
 def get_unconnected_inputs(problem: om.Problem,
@@ -97,7 +96,8 @@ def build_ivc_of_unconnected_inputs(problem: om.Problem,
     :return: IndepVarComp instance
     """
     ivc = om.IndepVarComp()
-
+    if problem._setup_status == 0:
+        problem.setup()
     mandatory_unconnected, optional_unconnected = get_unconnected_inputs(problem)
     model = problem.model
 
@@ -129,15 +129,18 @@ def build_ivc_of_unconnected_inputs(problem: om.Problem,
     return ivc
 
 
-def build_ivc_of_outputs(system: SystemSubclass) -> om.IndepVarComp:
+def build_ivc_of_outputs(problem: om.Problem) -> om.IndepVarComp:
     """
     This function returns an OpenMDAO IndepVarComp instance containing
-    all the outputs of a SystemSubclass.
+    all the outputs of an OpenMDAO Problem.
 
-    :param system: OpenMDAO SystemSubclass instance to inspect
+    :param problem: OpenMDAO Problem instance to inspect
     :return: IndepVarComp instance
     """
     ivc = om.IndepVarComp()
+    if problem._setup_status == 0:
+        problem.setup()
+    system = problem.model
 
     prom2abs: dict = system._var_allprocs_prom2abs_list['output']
 
@@ -153,15 +156,18 @@ def build_ivc_of_outputs(system: SystemSubclass) -> om.IndepVarComp:
     return ivc
 
 
-def build_ivc_of_variables(system: SystemSubclass) -> om.IndepVarComp:
+def build_ivc_of_variables(problem: om.Problem) -> om.IndepVarComp:
     """
     This function returns an OpenMDAO IndepVarComp instance containing
-    all the variables (inputs + outputs) of a SystemSubclass.
+    all the variables (inputs + outputs) of a an OpenMDAO Problem.
 
-    :param system: OpenMDAO SystemSubclass instance to inspect
+    :param problem: OpenMDAO Problem instance to inspect
     :return: IndepVarComp instance
     """
     ivc = om.IndepVarComp()
+    if problem._setup_status == 0:
+        problem.setup()
+    system = problem.model
 
     prom2abs_inputs: dict = system._var_allprocs_prom2abs_list['input']
     prom2abs_outputs: dict = system._var_allprocs_prom2abs_list['output']
@@ -190,12 +196,10 @@ def update_ivc(original_ivc: om.IndepVarComp, reference_ivc: om.IndepVarComp) ->
     """
 
     reference_variables = {}
-    # pylint: disable=protected-access
     for (name, value, attributes) in reference_ivc._indep_external:
         reference_variables[name] = (value, attributes)
 
     updated_ivc = om.IndepVarComp()
-    # pylint: disable=protected-access
     for (name, value, attributes) in original_ivc._indep_external:
         if name in reference_variables:
             value = reference_variables[name][0]

@@ -174,11 +174,8 @@ def test_build_ivc_of_unconnected_inputs():
 def test_build_ivc_of_outputs():
     def _test_and_check(problem: Problem,
                         expected_vars: List[Variable]):
-        problem.setup()
 
-        system = problem.model
-
-        ivc = build_ivc_of_outputs(system)
+        ivc = build_ivc_of_outputs(problem)
         ivc_vars = [Variable(name, value, attributes['units'])
                     for (name, value, attributes) in ivc._indep_external]
         assert set([str(i) for i in ivc_vars]) == set(
@@ -217,11 +214,8 @@ def test_build_ivc_of_outputs():
 def test_build_ivc_of_variables():
     def _test_and_check(problem: Problem,
                         expected_vars: List[Variable]):
-        problem.setup()
 
-        system = problem.model
-
-        ivc = build_ivc_of_variables(system)
+        ivc = build_ivc_of_variables(problem)
         ivc_vars = [Variable(name, value, attributes['units'])
                     for (name, value, attributes) in ivc._indep_external]
         assert set([str(i) for i in ivc_vars]) == set(

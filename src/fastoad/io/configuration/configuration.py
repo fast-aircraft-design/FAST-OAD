@@ -142,7 +142,7 @@ class ConfiguredProblem(om.Problem):
         """
         if self._output_file:
             writer = OMXmlIO(self._output_file)
-            ivc = build_ivc_of_variables(self.model)
+            ivc = build_ivc_of_variables(self)
             writer.write(ivc)
 
     def _parse_problem_table(self, component: Union[om.Problem, om.Group], identifier, table: dict):
