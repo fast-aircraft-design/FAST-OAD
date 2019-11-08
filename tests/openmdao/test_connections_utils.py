@@ -27,7 +27,8 @@ from openmdao.core.problem import Problem
 from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
     build_ivc_of_unconnected_inputs, build_ivc_of_outputs, \
-    build_ivc_of_variables, update_ivc
+    build_ivc_of_variables, update_ivc, \
+    build_ivc_of_computed_variables
 from fastoad.openmdao.types import Variable
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
@@ -174,7 +175,6 @@ def test_build_ivc_of_unconnected_inputs():
 def test_build_ivc_of_outputs():
     def _test_and_check(problem: Problem,
                         expected_vars: List[Variable]):
-
         ivc = build_ivc_of_outputs(problem)
         ivc_vars = [Variable(name, value, attributes['units'])
                     for (name, value, attributes) in ivc._indep_external]
@@ -214,7 +214,6 @@ def test_build_ivc_of_outputs():
 def test_build_ivc_of_variables():
     def _test_and_check(problem: Problem,
                         expected_vars: List[Variable]):
-
         ivc = build_ivc_of_variables(problem)
         ivc_vars = [Variable(name, value, attributes['units'])
                     for (name, value, attributes) in ivc._indep_external]
@@ -255,6 +254,37 @@ def test_build_ivc_of_variables():
                      Variable(name='g1', value=np.array([1.]), units=None),
                      Variable(name='g2', value=np.array([1.]), units=None),
                      Variable(name='f', value=np.array([1.]), units=None)]
+    _test_and_check(problem, expected_vars)
+
+
+def test_build_ivc_of_computed_variables():
+    def _test_and_check(problem: Problem,
+                        expected_vars: List[Variable]):
+        ivc = build_ivc_of_computed_variables(problem)
+        ivc_vars = [Variable(name, value, attributes['units'])
+                    for (name, value, attributes) in ivc._indep_external]
+        assert set([str(i) for i in ivc_vars]) == set(
+            [str(i) for i in expected_vars])
+
+    # Check with the whole Sellar problem.
+    group = Group()
+    indeps = group.add_subsystem('indeps', IndepVarComp(), promotes=['*'])
+    indeps.add_output('x', 1.)
+    indeps.add_output('z', [5., 2.])
+    group.add_subsystem('disc1', Disc1(), promotes=['*'])
+    group.add_subsystem('disc2', Disc2(), promotes=['*'])
+    group.add_subsystem('functions', Functions(), promotes=['*'])
+    problem = Problem(group)
+    problem.setup()
+    problem.run_model()
+
+    expected_vars = [Variable(name='x', value=np.array([1.]), units=None),
+                     Variable(name='z', value=np.array([5., 2.]), units=None),
+                     Variable(name='y1', value=np.array([27.8]), units=None),
+                     Variable(name='y2', value=np.array([12.27257053]), units=None),
+                     Variable(name='g1', value=np.array([-24.64]), units=None),
+                     Variable(name='g2', value=np.array([-11.72742947]), units=None),
+                     Variable(name='f', value=np.array([30.80000468]), units=None)]
     _test_and_check(problem, expected_vars)
 
 

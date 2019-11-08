@@ -21,6 +21,8 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.exceptions import NoSetupError
+
+
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
 
 
@@ -183,6 +185,27 @@ def build_ivc_of_variables(problem: om.Problem) -> om.IndepVarComp:
                        desc=metadata['desc'])
 
     return ivc
+
+
+def build_ivc_of_computed_variables(problem: om.Problem) -> om.IndepVarComp:
+    """
+    This function returns an OpenMDAO IndepVarComp instance containing
+    all the variables (inputs + outputs) of a an OpenMDAO Problem with
+    the values obtained after a run.
+
+    :param problem: OpenMDAO Problem instance to inspect
+    :return: IndepVarComp instance
+    """
+    computed_ivc = om.IndepVarComp()
+    ivc = build_ivc_of_variables(problem)
+
+    for (name, value, attributes) in ivc._indep_external:
+        computed_ivc.add_output(name,
+                                val=problem[name],
+                                units=attributes['units'],
+                                desc=attributes['desc'])
+
+    return computed_ivc
 
 
 def update_ivc(original_ivc: om.IndepVarComp, reference_ivc: om.IndepVarComp) -> om.IndepVarComp:
