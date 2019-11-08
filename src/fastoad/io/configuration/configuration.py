@@ -29,7 +29,8 @@ from fastoad.io.xml import OMXmlIO
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 # Logger for this module
 from fastoad.openmdao.connections_utils import build_ivc_of_variables, \
-    build_ivc_of_unconnected_inputs, update_ivc
+    build_ivc_of_unconnected_inputs, update_ivc, \
+    build_ivc_of_computed_variables
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -142,7 +143,7 @@ class ConfiguredProblem(om.Problem):
         """
         if self._output_file:
             writer = OMXmlIO(self._output_file)
-            ivc = build_ivc_of_variables(self)
+            ivc = build_ivc_of_computed_variables(self)
             writer.write(ivc)
 
     def _parse_problem_table(self, component: Union[om.Problem, om.Group], identifier, table: dict):
