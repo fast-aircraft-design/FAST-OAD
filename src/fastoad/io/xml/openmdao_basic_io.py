@@ -31,8 +31,8 @@ class OMXmlIO(OMCustomXmlIO):
     """
     Basic serializer for OpenMDAO variables
 
-    Assuming self.path_separator is defined as ``:``, an OpenMDAO variable named like ``foo:bar``
-    with units ``m/s`` will be read and written as:
+    Assuming self.path_separator is defined as ``:`` (default), an OpenMDAO variable named like
+    ``foo:bar`` with units ``m/s`` will be read and written as:
 
     .. code:: xml
 
@@ -65,7 +65,7 @@ class OMXmlIO(OMCustomXmlIO):
     def __init__(self, *args, **kwargs):
         super(OMXmlIO, self).__init__(*args, **kwargs)
 
-        self.path_separator = '/'
+        self.path_separator = ':'
         """
         The separator that will be used in OpenMDAO variable names to match XML path.
         Warning: The dot "." can be used when writing, but not when reading.
