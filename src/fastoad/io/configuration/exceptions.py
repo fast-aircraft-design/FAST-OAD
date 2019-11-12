@@ -1,8 +1,6 @@
 """
 Exceptions for package configuration
 """
-
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,8 +14,10 @@ Exceptions for package configuration
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fastoad.exceptions import FastError
 
-class FASTConfigurationBaseKeyBuildingError(Exception):
+
+class FASTConfigurationBaseKeyBuildingError(FastError):
     """
     Class for being raised from bottom to top of TOML dict so that in the end, the message
     provides the full qualified name of the problematic key.
@@ -73,5 +73,5 @@ class FASTConfigurationBadOpenMDAOInstructionError(FASTConfigurationBaseKeyBuild
     """ Class for managing errors that result from trying to set an attribute by eval."""
 
 
-class FASTConfigurationNoProblemDefined(Exception):
+class FASTConfigurationNoProblemDefined(FastError):
     """Raised if no problem definition found in configuration file"""

@@ -25,10 +25,10 @@ def main():
     parser.add_argument('conf_file', type=str, help='the file for configuring the problem')
     parser.add_argument('--gen_inputs', action='store_true',
                         help='generates a template file that contains needed inputs')
-    parser.add_argument('--gen_inputs_from', action='store_true',
+    parser.add_argument('--gen_inputs_from',
                         help='generates a template file that contains needed inputs. Variable '
                              'values are taken from provided XML file')
-    parser.add_argument('--gen_inputs_from_legacy', action='store_true',
+    parser.add_argument('--gen_inputs_from_legacy',
                         help='generates a template file that contains needed inputs. Variable '
                              'values are taken from provided XML file (Legacy FAST format)')
     parser.add_argument('--optim', action='store_true',
@@ -42,6 +42,7 @@ def main():
         problem = ConfiguredProblem()
         problem.configure(args.conf_file)
 
+        # TODO : is it necessary ?
         problem.model.approx_totals()
 
         if args.gen_inputs:
