@@ -158,12 +158,16 @@ def build_ivc_of_outputs(problem: om.Problem) -> om.IndepVarComp:
     return ivc
 
 
-def build_ivc_of_variables(problem: om.Problem) -> om.IndepVarComp:
+def build_ivc_of_variables(problem: om.Problem, initial_values: bool = False) -> om.IndepVarComp:
     """
     This function returns an OpenMDAO IndepVarComp instance containing
     all the variables (inputs + outputs) of a an OpenMDAO Problem.
 
+    If variables are promoted, the promoted name will be used. Otherwise, the absolute name will be
+    used.
+
     :param problem: OpenMDAO Problem instance to inspect
+    :param initial_values: if True, returned instance will contain values before computation
     :return: IndepVarComp instance
     """
     ivc = om.IndepVarComp()
@@ -179,33 +183,23 @@ def build_ivc_of_variables(problem: om.Problem) -> om.IndepVarComp:
         # Pick the first
         abs_name = abs_names[0]
         metadata = system._var_abs2meta[abs_name]
+        if initial_values:
+            value = metadata['value']
+        else:
+            try:
+                # Maybe useless, but we force units to ensure it is consistent
+                value = problem.get_val(prom_name, units=metadata['units'])
+            except RuntimeError:
+                # In case problem is incompletely set, problem.get_val() will fail.
+                # In such case, falling back to the method for initial values
+                # should be enough.
+                value = metadata['value']
         ivc.add_output(prom_name,
-                       val=metadata['value'],
+                       val=value,
                        units=metadata['units'],
                        desc=metadata['desc'])
 
     return ivc
-
-
-def build_ivc_of_computed_variables(problem: om.Problem) -> om.IndepVarComp:
-    """
-    This function returns an OpenMDAO IndepVarComp instance containing
-    all the variables (inputs + outputs) of a an OpenMDAO Problem with
-    the values obtained after a run.
-
-    :param problem: OpenMDAO Problem instance to inspect
-    :return: IndepVarComp instance
-    """
-    computed_ivc = om.IndepVarComp()
-    ivc = build_ivc_of_variables(problem)
-
-    for (name, value, attributes) in ivc._indep_external:
-        computed_ivc.add_output(name,
-                                val=problem[name],
-                                units=attributes['units'],
-                                desc=attributes['desc'])
-
-    return computed_ivc
 
 
 def update_ivc(original_ivc: om.IndepVarComp, reference_ivc: om.IndepVarComp) -> om.IndepVarComp:

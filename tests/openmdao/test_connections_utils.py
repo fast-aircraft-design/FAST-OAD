@@ -23,12 +23,12 @@ from numpy.testing import assert_allclose
 from openmdao.core.group import Group
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
+from openmdao.solvers.nonlinear.nonlinear_block_gs import NonlinearBlockGS
 
 from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
     build_ivc_of_unconnected_inputs, build_ivc_of_outputs, \
-    build_ivc_of_variables, update_ivc, \
-    build_ivc_of_computed_variables
+    build_ivc_of_variables, update_ivc
 from fastoad.openmdao.types import Variable
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
@@ -213,8 +213,9 @@ def test_build_ivc_of_outputs():
 
 def test_build_ivc_of_variables():
     def _test_and_check(problem: Problem,
+                        initial_values: bool,
                         expected_vars: List[Variable]):
-        ivc = build_ivc_of_variables(problem)
+        ivc = build_ivc_of_variables(problem, initial_values)
         ivc_vars = [Variable(name, value, attributes['units'])
                     for (name, value, attributes) in ivc._indep_external]
         assert set([str(i) for i in ivc_vars]) == set(
@@ -226,7 +227,8 @@ def test_build_ivc_of_variables():
                      Variable(name='y1', value=np.array([1.]), units=None),
                      Variable(name='y2', value=np.array([1.]), units=None),
                      Variable(name='z', value=np.array([5., 2.]), units='m**2')]
-    _test_and_check(problem, expected_vars)
+    _test_and_check(problem, True, expected_vars)
+    _test_and_check(problem, False, expected_vars)
 
     # Check with a Group
     group = Group()
@@ -238,54 +240,126 @@ def test_build_ivc_of_variables():
                      Variable(name='y1', value=np.array([1.]), units=None),
                      Variable(name='y2', value=np.array([1.]), units=None),
                      Variable(name='z', value=np.array([5., 2.]), units='m**2')]
-    _test_and_check(problem, expected_vars)
+    _test_and_check(problem, True, expected_vars)
+    _test_and_check(problem, False, expected_vars)
 
-    # Check with the whole Sellar problem.
+    # Check with the whole Sellar problem, without computation.
     group = Group()
+    indeps = group.add_subsystem('indeps', IndepVarComp(), promotes=['*'])
+    indeps.add_output('x', 1., units='Pa')  # This setting of units will prevail in our output
+    indeps.add_output('z', [5., 2.], units='m**2')
     group.add_subsystem('disc1', Disc1(), promotes=['*'])
     group.add_subsystem('disc2', Disc2(), promotes=['*'])
     group.add_subsystem('functions', Functions(), promotes=['*'])
+    group.nonlinear_solver = NonlinearBlockGS()
     problem = Problem(group)
 
-    expected_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
+    expected_vars = [Variable(name='x', value=np.array([1.]), units='Pa'),
                      Variable(name='z', value=np.array([5., 2.]), units='m**2'),
                      Variable(name='y1', value=np.array([1.]), units=None),
                      Variable(name='y2', value=np.array([1.]), units=None),
                      Variable(name='g1', value=np.array([1.]), units=None),
                      Variable(name='g2', value=np.array([1.]), units=None),
                      Variable(name='f', value=np.array([1.]), units=None)]
-    _test_and_check(problem, expected_vars)
+    _test_and_check(problem, True, expected_vars)
+    _test_and_check(problem, False, expected_vars)
 
-
-def test_build_ivc_of_computed_variables():
-    def _test_and_check(problem: Problem,
-                        expected_vars: List[Variable]):
-        ivc = build_ivc_of_computed_variables(problem)
-        ivc_vars = [Variable(name, value, attributes['units'])
-                    for (name, value, attributes) in ivc._indep_external]
-        assert set([str(i) for i in ivc_vars]) == set(
-            [str(i) for i in expected_vars])
-
-    # Check with the whole Sellar problem.
-    group = Group()
-    indeps = group.add_subsystem('indeps', IndepVarComp(), promotes=['*'])
-    indeps.add_output('x', 1.)
-    indeps.add_output('z', [5., 2.])
-    group.add_subsystem('disc1', Disc1(), promotes=['*'])
-    group.add_subsystem('disc2', Disc2(), promotes=['*'])
-    group.add_subsystem('functions', Functions(), promotes=['*'])
-    problem = Problem(group)
+    # Check with the whole Sellar problem, with computation.
+    expected_computed_vars = [Variable(name='x', value=np.array([1.]), units='Pa'),
+                              Variable(name='z', value=np.array([5., 2.]), units='m**2'),
+                              Variable(name='y1', value=np.array([25.58830237]), units=None),
+                              Variable(name='y2', value=np.array([12.05848815]), units=None),
+                              Variable(name='g1', value=np.array([-22.42830237]), units=None),
+                              Variable(name='g2', value=np.array([-11.94151185]), units=None),
+                              Variable(name='f', value=np.array([28.58830817]), units=None)]
     problem.setup()
     problem.run_model()
+    _test_and_check(problem, True, expected_vars)
+    _test_and_check(problem, False, expected_computed_vars)
 
-    expected_vars = [Variable(name='x', value=np.array([1.]), units=None),
-                     Variable(name='z', value=np.array([5., 2.]), units=None),
-                     Variable(name='y1', value=np.array([27.8]), units=None),
-                     Variable(name='y2', value=np.array([12.27257053]), units=None),
-                     Variable(name='g1', value=np.array([-24.64]), units=None),
-                     Variable(name='g2', value=np.array([-11.72742947]), units=None),
-                     Variable(name='f', value=np.array([30.80000468]), units=None)]
-    _test_and_check(problem, expected_vars)
+    # Check with the whole Sellar problem without promotions, without computation.
+    group = Group()
+    indeps = group.add_subsystem('indeps', IndepVarComp())
+    indeps.add_output('x', 1., units='Pa')
+    indeps.add_output('z', [5., 2.], units='m**2')
+    group.add_subsystem('disc2', Disc2())
+    group.add_subsystem('disc1', Disc1())
+    group.add_subsystem('functions', Functions())
+    group.nonlinear_solver = NonlinearBlockGS()
+    group.connect('indeps.x', 'disc1.x')
+    group.connect('indeps.x', 'functions.x')
+    group.connect('indeps.z', 'disc1.z')
+    group.connect('indeps.z', 'disc2.z')
+    group.connect('indeps.z', 'functions.z')
+    group.connect('disc1.y1', 'disc2.y1')
+    group.connect('disc1.y1', 'functions.y1')
+    group.connect('disc2.y2', 'disc1.y2')
+    group.connect('disc2.y2', 'functions.y2')
+
+    problem = Problem(group)
+
+    expected_vars = [
+        Variable(name='indeps.x', value=np.array([1.]), units='Pa'),
+        Variable(name='indeps.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='disc1.x', value=np.array([np.nan]), units=None),
+        Variable(name='disc1.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='disc1.y1', value=np.array([1.]), units=None),
+        Variable(name='disc1.y2', value=np.array([1.]), units=None),
+        Variable(name='disc2.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='disc2.y1', value=np.array([1.]), units=None),
+        Variable(name='disc2.y2', value=np.array([1.]), units=None),
+        Variable(name='functions.x', value=np.array([2]), units=None),
+        Variable(name='functions.z', value=np.array([np.nan, np.nan]), units='m**2'),
+        Variable(name='functions.y1', value=np.array([1.]), units=None),
+        Variable(name='functions.y2', value=np.array([1.]), units=None),
+        Variable(name='functions.g1', value=np.array([1.]), units=None),
+        Variable(name='functions.g2', value=np.array([1.]), units=None),
+        Variable(name='functions.f', value=np.array([1.]), units=None)
+    ]
+    _test_and_check(problem, True, expected_vars)
+    expected_computed_vars = [  # Here links are done, even without computations
+        Variable(name='indeps.x', value=np.array([1.]), units='Pa'),
+        Variable(name='indeps.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='disc1.x', value=np.array([1.]), units=None),
+        Variable(name='disc1.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='disc1.y1', value=np.array([1.]), units=None),
+        Variable(name='disc1.y2', value=np.array([1.]), units=None),
+        Variable(name='disc2.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='disc2.y1', value=np.array([1.]), units=None),
+        Variable(name='disc2.y2', value=np.array([1.]), units=None),
+        Variable(name='functions.x', value=np.array([1.]), units=None),
+        Variable(name='functions.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='functions.y1', value=np.array([1.]), units=None),
+        Variable(name='functions.y2', value=np.array([1.]), units=None),
+        Variable(name='functions.g1', value=np.array([1.]), units=None),
+        Variable(name='functions.g2', value=np.array([1.]), units=None),
+        Variable(name='functions.f', value=np.array([1.]), units=None)
+    ]
+    _test_and_check(problem, False, expected_computed_vars)
+
+    # Check with the whole Sellar problem without promotions, with computation.
+    expected_computed_vars = [
+        Variable(name='indeps.x', value=np.array([1.]), units='Pa'),
+        Variable(name='indeps.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='disc1.x', value=np.array([1.]), units=None),
+        Variable(name='disc1.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='disc1.y1', value=np.array([25.58830237]), units=None),
+        Variable(name='disc1.y2', value=np.array([12.05848815]), units=None),
+        Variable(name='disc2.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='disc2.y1', value=np.array([25.58830237]), units=None),
+        Variable(name='disc2.y2', value=np.array([12.05848815]), units=None),
+        Variable(name='functions.x', value=np.array([1.]), units=None),
+        Variable(name='functions.z', value=np.array([5., 2.]), units='m**2'),
+        Variable(name='functions.y1', value=np.array([25.58830237]), units=None),
+        Variable(name='functions.y2', value=np.array([12.05848815]), units=None),
+        Variable(name='functions.g1', value=np.array([-22.42830237]), units=None),
+        Variable(name='functions.g2', value=np.array([-11.94151185]), units=None),
+        Variable(name='functions.f', value=np.array([28.58830817]), units=None)
+    ]
+    problem.setup()
+    problem.run_model()
+    _test_and_check(problem, True, expected_vars)
+    _test_and_check(problem, False, expected_computed_vars)
 
 
 def test_update_ivc():
