@@ -132,6 +132,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
             # For compatibility with legacy files
             if units is not None:
                 units = units.replace('²', '**2')
+                units = units.replace('³', '**3')
                 units = units.replace('°', 'deg')
                 units = units.replace('kt', 'kn')
 
