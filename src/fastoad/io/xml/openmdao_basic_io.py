@@ -14,18 +14,13 @@ Defines how OpenMDAO variables are serialized to XML
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Sequence, Dict
+from typing import Sequence
 
-import numpy as np
 import openmdao.api as om
-from lxml import etree
-from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 
-from fastoad.io.xml.constants import UNIT_ATTRIBUTE
 from fastoad.io.xml.exceptions import FastXPathEvalError
-from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO, Variable
+from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO
 from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.utils.strings import get_float_list_from_string
 
 
 class OMXmlIO(OMCustomXmlIO):
@@ -85,15 +80,7 @@ class OMXmlIO(OMCustomXmlIO):
         if self.path_separator == '.':
             raise ValueError('Cannot use dot "." in OpenMDAO variables.')
 
-        variables = self._read_variables()
-
-        # Create IndepVarComp instance
-        ivc = om.IndepVarComp()
-        for name, value, units in variables:
-            if (only is None or name in only) and not (ignore is not None and name in ignore):
-                ivc.add_output(name, val=np.array(value), units=units)
-
-        return ivc
+        return super().read(only, ignore)
 
     def write(self, ivc: om.IndepVarComp, only: Sequence[str] = None, ignore: Sequence[str] = None):
         try:
@@ -103,44 +90,6 @@ class OMXmlIO(OMCustomXmlIO):
             raise FastXPathEvalError(err.args[0] +
                                      ' : self.path_separator is "%s". It is correct?'
                                      % self.path_separator)
-
-    def _read_variables(self) -> Sequence[Variable]:
-        """
-        Reads self.data_source as a XML file
-
-        Variable value will be a list of one or more values.
-        Variable units will be a string, or None if no unit provided.
-
-        :return: list of Variables (name, value, units) from data source
-        """
-
-        context = etree.iterparse(self._data_source, events=("start", "end"))
-
-        # Intermediate storing as a dict for easy access according to name when appending new values
-        outputs: Dict[str, Variable] = {}
-
-        current_path = []
-
-        elem: _Element
-        for action, elem in context:
-            if action == 'start':
-                current_path.append(elem.tag)
-                units = elem.attrib.get(UNIT_ATTRIBUTE, None)
-                value = None
-                if elem.text:
-                    value = get_float_list_from_string(elem.text)
-                if value:
-                    name = self._translator.get_variable_name('/'.join(current_path[1:]))
-                    if name not in outputs:
-                        # Add Variable
-                        outputs[name] = Variable(name, value, units)
-                    else:
-                        # Variable already exists: append values (here the dict is useful)
-                        outputs[name].value.extend(value)
-            else:  # action == 'end':
-                current_path.pop(-1)
-
-        return list(outputs.values())
 
     def _create_openmdao_code(self) -> str:  # pragma: no cover
         """dev utility for generating code"""

@@ -92,9 +92,3 @@ def test_get_values_and_units(input_xml: XPathReader):
     assert input_xml.get_values_and_units('/root/foo') == ([4.e-2], 'kg.K/Hz')
     assert input_xml.get_values_and_units('/root/foo/bar') == ([42, 70, 'non-numeric value'],
                                                                'attoparsec')
-
-
-def test_get_all_elements_with_no_child_xpath(input_xml: XPathReader):
-    xpaths = input_xml.get_all_elements_with_no_child_xpath()
-    assert set(xpaths) == {'foo[1]', 'foo[2]/bar', 'foo[3]/bar',
-                           'foo[4]/bar', 'bar'}
