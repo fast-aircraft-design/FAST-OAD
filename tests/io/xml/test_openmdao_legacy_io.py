@@ -15,21 +15,29 @@ Test module for openmdao_legacy_io.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-import shutil
+from shutil import rmtree
+
+import pytest
 
 from fastoad.io.xml import OMXmlIO
 from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO, CONVERSION_FILE_1
 
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
+                               'results', pth.splitext(pth.basename(__file__))[0])
 
-def test_legacy1():
+
+@pytest.fixture
+def cleanup():
+    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+
+
+def test_legacy1(cleanup):
     """ Tests class OMLegacy1XmlIO """
-    data_folder = pth.join(pth.dirname(__file__), 'data')
-    result_folder = pth.join(pth.dirname(__file__), 'results', 'legacy1_xml')
-    if pth.exists(result_folder):
-        shutil.rmtree(result_folder)
+    result_folder = pth.join(RESULTS_FOLDER_PATH, 'legacy1_xml')
 
     # test read ---------------------------------------------------------------
-    filename = pth.join(data_folder, 'CeRAS01_baseline.xml')
+    filename = pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml')
     xml_read = OMLegacy1XmlIO(filename)
     ivc = xml_read.read()
     inputs = ivc._indep_external  # pylint: disable=protected-access

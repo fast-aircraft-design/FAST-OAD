@@ -13,6 +13,7 @@ Tests custom XML serializer for OpenMDAO variables
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os.path as pth
 import shutil
 from typing import List
@@ -25,6 +26,15 @@ from fastoad.io.xml import OMCustomXmlIO
 from fastoad.io.xml.exceptions import FastMissingTranslatorError
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.types import Variable
+
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
+                               'results', pth.splitext(pth.basename(__file__))[0])
+
+
+@pytest.fixture
+def cleanup():
+    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 def _check_basic2_ivc(ivc: IndepVarComp):
@@ -55,14 +65,11 @@ def _check_basic2_ivc(ivc: IndepVarComp):
     assert outputs[3].units == 'm'
 
 
-def test_custom_xml_read_and_write_from_ivc():
+def test_custom_xml_read_and_write_from_ivc(cleanup):
     """
     Tests the creation of an XML file from an IndepVarComp instance
     """
-    data_folder = pth.join(pth.dirname(__file__), 'data')
-    result_folder = pth.join(pth.dirname(__file__), 'results', 'custom_xml')
-    if pth.exists(result_folder):
-        shutil.rmtree(result_folder)
+    result_folder = pth.join(RESULTS_FOLDER_PATH, 'custom_xml')
 
     var_names = ['geometry:total_surface',
                  'geometry:wing:span',
@@ -75,24 +82,23 @@ def test_custom_xml_read_and_write_from_ivc():
               'fuselage_length']
 
     # test read ---------------------------------------------------------------
-    filename = pth.join(data_folder, 'custom.xml')
+    filename = pth.join(DATA_FOLDER_PATH, 'custom.xml')
     xml_read = OMCustomXmlIO(filename)
 
     # test without setting translation table
-    with pytest.raises(FastMissingTranslatorError) as exc_info:
-        _ = xml_read.read()
-    assert exc_info is not None
+    with pytest.raises(FastMissingTranslatorError):
+        xml_read.read()
 
     # test with setting a non-exhaustive translation table (missing variable name in the translator)
     # we expect that the variable is not included in the ivc
-    filename = pth.join(data_folder, 'custom_additional_var.xml')
+    filename = pth.join(DATA_FOLDER_PATH, 'custom_additional_var.xml')
     xml_read = OMCustomXmlIO(filename)
     xml_read.set_translator(VarXpathTranslator(variable_names=var_names,
                                                xpaths=xpaths))
     ivc = xml_read.read()
     _check_basic2_ivc(ivc)
 
-    filename = pth.join(data_folder, 'custom.xml')
+    filename = pth.join(DATA_FOLDER_PATH, 'custom.xml')
     xml_read = OMCustomXmlIO(filename)
 
     # test with setting a bad translation with an additional var not present in the xml
@@ -113,9 +119,8 @@ def test_custom_xml_read_and_write_from_ivc():
     xml_write = OMCustomXmlIO(new_filename)
 
     # test without setting translation table
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(FastMissingTranslatorError):
         xml_write.write(ivc)
-    assert exc_info is not None
 
     # test after setting translation table
     xml_write.set_translator(translator)
@@ -135,34 +140,33 @@ def test_custom_xml_read_and_write_from_ivc():
     _check_basic2_ivc(new_ivc)
 
 
-def test_custom_xml_read_and_write_with_translation_table():
+def test_custom_xml_read_and_write_with_translation_table(cleanup):
     """
     Tests the creation of an XML file with a translation table
     """
-    data_folder = pth.join(pth.dirname(__file__), 'data')
-    result_folder = pth.join(pth.dirname(__file__), 'results', 'custom_xml_with_translation_table')
-    if pth.exists(result_folder):
-        shutil.rmtree(result_folder)
+    result_folder = pth.join(RESULTS_FOLDER_PATH, 'custom_xml_with_translation_table')
 
     # test read ---------------------------------------------------------------
-    filename = pth.join(data_folder, 'custom.xml')
+    filename = pth.join(DATA_FOLDER_PATH, 'custom.xml')
     xml_read = OMCustomXmlIO(filename)
 
     # test after setting translation table
-    translator = VarXpathTranslator(source=pth.join(data_folder, 'custom_translation.txt'))
+    translator = VarXpathTranslator(source=pth.join(DATA_FOLDER_PATH, 'custom_translation.txt'))
     xml_read.set_translator(translator)
     ivc = xml_read.read()
     _check_basic2_ivc(ivc)
 
+    new_filename = pth.join(result_folder, 'custom.xml')
+    xml_write = OMCustomXmlIO(new_filename)
+    xml_write.set_translator(translator)
+    xml_write.write(ivc)
 
-def test_custom_xml_read_and_write_with_only_or_ignore():
+
+def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
     """
     Tests the creation of an XML file with only and ignore options
     """
-    data_folder = pth.join(pth.dirname(__file__), 'data')
-    result_folder = pth.join(pth.dirname(__file__), 'results', 'custom_xml_with_translation_table')
-    if pth.exists(result_folder):
-        shutil.rmtree(result_folder)
+    result_folder = pth.join(RESULTS_FOLDER_PATH, 'custom_xml_with_translation_table')
 
     var_names = ['geometry:total_surface',
                  'geometry:wing:span',
@@ -175,7 +179,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore():
               'fuselage_length']
 
     # test read ---------------------------------------------------------------
-    filename = pth.join(data_folder, 'custom.xml')
+    filename = pth.join(DATA_FOLDER_PATH, 'custom.xml')
     xml_read = OMCustomXmlIO(filename)
 
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)

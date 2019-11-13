@@ -148,10 +148,11 @@ class OMCustomXmlIO(AbstractOMFileIO):
         """
         Writes variables to defined data source file.
         :param variables:
-        :raise ValueError: if translation table is not set or does nto contain a required xpath
+        :raise FastMissingTranslatorError: if translation table is not set or does not contain a
+                                           required xpath
        """
         if self._translator is None:
-            raise ValueError('Missing translator instance')
+            raise FastMissingTranslatorError('Missing translator instance')
 
         root = etree.Element(ROOT_TAG)
 

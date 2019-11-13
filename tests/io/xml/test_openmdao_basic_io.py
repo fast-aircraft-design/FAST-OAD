@@ -29,7 +29,8 @@ from fastoad.io.xml.exceptions import FastXPathEvalError
 from fastoad.openmdao.types import Variable
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
+                               'results', pth.splitext(pth.basename(__file__))[0])
 
 
 @pytest.fixture
@@ -146,8 +147,6 @@ def test_basic_xml_partial_read_and_write_from_ivc(cleanup):
     Tests the creation of an XML file from an IndepVarComp instance with only and ignore options
     """
     result_folder = pth.join(RESULTS_FOLDER_PATH, 'basic_partial_xml')
-    if pth.exists(result_folder):
-        shutil.rmtree(result_folder)
 
     # Read full IndepVarComp
     filename = pth.join(DATA_FOLDER_PATH, 'basic.xml')
