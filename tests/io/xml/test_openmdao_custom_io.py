@@ -15,7 +15,7 @@ Tests custom XML serializer for OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-import shutil
+from shutil import rmtree
 from typing import List
 
 import pytest
@@ -32,9 +32,9 @@ RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
                                'results', pth.splitext(pth.basename(__file__))[0])
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def cleanup():
-    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 def _check_basic2_ivc(ivc: IndepVarComp):
@@ -118,7 +118,6 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
                                                xpaths=xpaths + ['bad:xpath']))
     ivc = xml_read.read()
     _check_basic2_ivc(ivc)
-
 
     # test write --------------------------------------------------------------
     new_filename = pth.join(result_folder, 'custom.xml')

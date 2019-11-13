@@ -15,13 +15,12 @@ Tests basic XML serializer for OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-import shutil
+from shutil import rmtree
 from typing import List
 
 import numpy as np
 import pytest
 from openmdao.core.indepvarcomp import IndepVarComp
-from pytest import approx
 
 from fastoad.io.xml import OMXmlIO
 from fastoad.io.xml import XPathReader
@@ -33,9 +32,9 @@ RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
                                'results', pth.splitext(pth.basename(__file__))[0])
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def cleanup():
-    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 def _check_basic_ivc(ivc: IndepVarComp):
@@ -50,39 +49,39 @@ def _check_basic_ivc(ivc: IndepVarComp):
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)
     assert outputs[0].name == 'geometry:total_surface'
-    assert outputs[0].value == approx([780.3])
+    assert outputs[0].value == pytest.approx([780.3])
     assert outputs[0].units == 'm**2'
 
     assert outputs[1].name == 'geometry:wing:span'
-    assert outputs[1].value == approx([42])
+    assert outputs[1].value == pytest.approx([42])
     assert outputs[1].units == 'm'
 
     assert outputs[2].name == 'geometry:wing:aspect_ratio'
-    assert outputs[2].value == approx([9.8])
+    assert outputs[2].value == pytest.approx([9.8])
     assert outputs[2].units is None
 
     assert outputs[3].name == 'geometry:fuselage:length'
-    assert outputs[3].value == approx([40.])
+    assert outputs[3].value == pytest.approx([40.])
     assert outputs[3].units == 'm'
 
     assert outputs[4].name == 'constants:k1'
-    assert outputs[4].value == approx([1., 2., 3.])
+    assert outputs[4].value == pytest.approx([1., 2., 3.])
     assert outputs[4].units == 'kg'
 
     assert outputs[5].name == 'constants:k2'
-    assert outputs[5].value == approx([10., 20.])
+    assert outputs[5].value == pytest.approx([10., 20.])
     assert outputs[5].units is None
 
     assert outputs[6].name == 'constants:k3'
-    assert outputs[6].value == approx([100., 200., 300., 400.])
+    assert outputs[6].value == pytest.approx([100., 200., 300., 400.])
     assert outputs[6].units == 'm/s'
 
     assert outputs[7].name == 'constants:k4'
-    assert outputs[7].value == approx([-1, -2, -3])
+    assert outputs[7].value == pytest.approx([-1, -2, -3])
     assert outputs[7].units is None
 
     assert outputs[8].name == 'constants:k5'
-    assert outputs[8].value == approx([100, 200, 400, 500, 600])
+    assert outputs[8].value == pytest.approx([100, 200, 400, 500, 600])
     assert outputs[8].units is None
 
 

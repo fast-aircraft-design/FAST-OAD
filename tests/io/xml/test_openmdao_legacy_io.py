@@ -27,7 +27,7 @@ RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
                                'results', pth.splitext(pth.basename(__file__))[0])
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
