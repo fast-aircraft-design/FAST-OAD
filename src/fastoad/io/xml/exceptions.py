@@ -20,3 +20,9 @@ class FastMissingTranslatorError(FastError):
     """
     Raised when the 'XPath<->OpenMDAO variable names' translator has not been set
     """
+
+
+class FastXPathEvalError(FastError):
+    """
+    Raised when some xpath could not be resolved
+    """

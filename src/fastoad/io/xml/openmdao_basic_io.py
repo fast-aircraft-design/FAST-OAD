@@ -22,6 +22,7 @@ from lxml import etree
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
+from fastoad.io.xml.exceptions import FastXPathEvalError
 from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO, Variable
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.utils.strings import get_float_list_from_string
@@ -88,7 +89,13 @@ class OMXmlIO(OMCustomXmlIO):
 
     def write(self, ivc: om.IndepVarComp, only: Sequence[str] = None, ignore: Sequence[str] = None):
         self._build_translator(ivc)
-        super().write(ivc, only, ignore)
+        try:
+            super().write(ivc, only, ignore)
+        except FastXPathEvalError as err:
+            # Trying to help...
+            raise FastXPathEvalError(err.args[0] +
+                                     ' : self.path_separator is "%s". It is correct?'
+                                     % self.path_separator)
 
     def _build_translator(self, ivc: om.IndepVarComp):
         variables = self._get_variables(ivc)

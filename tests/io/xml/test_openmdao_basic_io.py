@@ -25,6 +25,7 @@ from pytest import approx
 
 from fastoad.io.xml import OMXmlIO
 from fastoad.io.xml import XPathReader
+from fastoad.io.xml.exceptions import FastXPathEvalError
 from fastoad.openmdao.types import Variable
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
@@ -89,8 +90,6 @@ def test_basic_xml_read_and_write_from_ivc(cleanup):
     Tests the creation of an XML file from an IndepVarComp instance
     """
     result_folder = pth.join(RESULTS_FOLDER_PATH, 'basic_xml')
-    if pth.exists(result_folder):
-        shutil.rmtree(result_folder)
 
     # Check write hand-made component
     ivc = IndepVarComp()
@@ -103,9 +102,9 @@ def test_basic_xml_read_and_write_from_ivc(cleanup):
     ivc.add_output('constants/k3', val=np.array([100.0, 200.0, 300.0, 400.0]), units='m/s')
     ivc.add_output('constants/k4', val=[-1.0, -2.0, -3.0])
     ivc.add_output('constants/k5', val=[100.0, 200.0, 400.0, 500.0, 600.0])
+
     # Try writing with non-existing folder
-    if pth.exists(result_folder):
-        shutil.rmtree(result_folder)
+    assert not pth.exists(result_folder)
     filename = pth.join(result_folder, 'handmade.xml')
     xml_write = OMXmlIO(filename)
     xml_write.path_separator = '/'
@@ -135,6 +134,11 @@ def test_basic_xml_read_and_write_from_ivc(cleanup):
     xml_check.path_separator = ':'
     new_ivc = xml_check.read()
     _check_basic_ivc(new_ivc)
+
+    # try to write with bad separator
+    xml_write.path_separator = '/'
+    with pytest.raises(FastXPathEvalError):
+        xml_write.write(ivc)
 
 
 def test_basic_xml_partial_read_and_write_from_ivc(cleanup):

@@ -28,7 +28,7 @@ from openmdao.vectors.vector import Vector
 
 from fastoad.exceptions import XPathError
 from fastoad.io.serialize import AbstractOMFileIO
-from fastoad.io.xml.exceptions import FastMissingTranslatorError
+from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.types import Variable, SystemSubclass
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
@@ -124,9 +124,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
             var_names = [name for name in var_names if name not in ignore]
 
         for var_name in var_names:
-
             xpath = self._translator.get_xpath(var_name)
-
             values, units = reader.get_values_and_units(xpath)
 
             # For compatibility with legacy files
@@ -222,10 +220,8 @@ class OMCustomXmlIO(AbstractOMFileIO):
         for path_component in path_components:
             try:
                 children = element.xpath(path_component)
-            except XPathEvalError:
-                _LOGGER.error(
-                    'Could not evaluate provided XPath %s', input_xpath)
-                raise
+            except XPathEvalError as err:
+                raise FastXPathEvalError('Could not resolve XPath "%s"' % path_component)
             if not children:
                 # Build path
                 new_element = etree.Element(path_component)
