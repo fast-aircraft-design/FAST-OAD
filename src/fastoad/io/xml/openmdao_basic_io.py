@@ -17,15 +17,14 @@ Defines how OpenMDAO variables are serialized to XML
 from typing import Sequence, Dict
 
 import numpy as np
+import openmdao.api as om
 from lxml import etree
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
-from openmdao.core.indepvarcomp import IndepVarComp
 
-from fastoad.io.serialize import SystemSubclass
 from fastoad.io.xml.constants import UNIT_ATTRIBUTE
+from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO, Variable
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.utils.strings import get_float_list_from_string
-from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO, Variable
 
 
 class OMXmlIO(OMCustomXmlIO):
@@ -71,61 +70,40 @@ class OMXmlIO(OMCustomXmlIO):
         The separator that will be used in OpenMDAO variable names to match XML path.
         Warning: The dot "." can be used when writing, but not when reading.
         """
-    @property
-    def system(self):
-        return self._system
 
-    @system.setter
-    def system(self, system):
-        self._system = system
-        self._build_translator()
-
-    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> IndepVarComp:
+    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> om.IndepVarComp:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == '.':
-            # TODO: in this case, maybe try to dispatch the inputs to each component...
             raise ValueError('Cannot use dot "." in OpenMDAO variables.')
 
         outputs = self._read_xml()
 
         # Create IndepVarComp instance
-        ivc = IndepVarComp()
+        ivc = om.IndepVarComp()
         for name, value, units in outputs:
             if (only is None or name in only) and not (ignore is not None and name in ignore):
                 ivc.add_output(name, val=np.array(value), units=units)
 
-        self.system = ivc
+        return ivc
 
-        return self.system
+    def write(self, ivc: om.IndepVarComp, only: Sequence[str] = None, ignore: Sequence[str] = None):
+        self._build_translator(ivc)
+        super().write(ivc, only, ignore)
 
-    def write(self, only: Sequence[str] = None,
-              ignore: Sequence[str] = None):
+    def _build_translator(self, ivc: om.IndepVarComp):
+        variables = self._get_variables(ivc)
 
-        if self.system is None:
-            # TODO: build FAST specific exception
-            raise ValueError('read() must be called before write().')
+        names = []
+        xpaths = []
+        for variable in variables:
+            path_components = variable.name.split(self.path_separator)
+            xpath = '/'.join(path_components)
+            names.append(variable.name)
+            xpaths.append(xpath)
 
-        variables = self._get_outputs(self.system)
-
-        used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-
-        self._write(used_variables)
-
-    def _build_translator(self):
-        if self.system is not None:
-            variables = self._get_outputs(self.system)
-
-            names = []
-            xpaths = []
-            for variable in variables:
-                path_components = variable.name.split(self.path_separator)
-                xpath = '/'.join(path_components)
-                names.append(variable.name)
-                xpaths.append(xpath)
-
-            translator = VarXpathTranslator()
-            translator.set(names, xpaths)
-            self.set_translator(translator)
+        translator = VarXpathTranslator()
+        translator.set(names, xpaths)
+        self.set_translator(translator)
 
     def _read_xml(self) -> Sequence[Variable]:
         """

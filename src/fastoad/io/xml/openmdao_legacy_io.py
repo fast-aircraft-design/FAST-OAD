@@ -32,5 +32,5 @@ class OMLegacy1XmlIO(OMCustomXmlIO):
         translator = VarXpathTranslator()
         translator.read_translation_table(CONVERSION_FILE_1)
 
-        self._xml_unit_attribute = 'unit'
+        self.xml_unit_attribute = 'unit'
         self.set_translator(translator)

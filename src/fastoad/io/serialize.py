@@ -13,15 +13,16 @@ Defines interfaces for reading and writing OpenMDAO variable values
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from abc import abstractmethod, ABC
 from typing import TypeVar, IO, List
 
-from openmdao.core.indepvarcomp import IndepVarComp
+import openmdao.api as om
 
-from fastoad.openmdao.types import SystemSubclass
+OMFileIOSubclass = TypeVar('OMFileIOSubclass', bound='AbstractOMFileIO')
 
 
-class AbstractOpenMDAOVariableIO(ABC):
+class AbstractOMFileIO(ABC):
     """
     Interfaces for reading OpenMDAO variable values
     """
@@ -30,9 +31,9 @@ class AbstractOpenMDAOVariableIO(ABC):
         self._data_source = data_source
 
     @abstractmethod
-    def read(self, only: List[str] = None, ignore: List[str] = None) -> IndepVarComp:
+    def read(self, only: List[str] = None, ignore: List[str] = None) -> om.IndepVarComp:
         """
-        Reads output variables from provided system.
+        Reads variables from provided data source.
 
         :param only: List of OpenMDAO variable names that should be read. Other names will be
                      ignored. If None, all variables will be read.
@@ -41,12 +42,11 @@ class AbstractOpenMDAOVariableIO(ABC):
         """
 
     @abstractmethod
-    def write(self, only: List[str] = None, ignore: List[str] = None):
+    def write(self, ivc: om.IndepVarComp, only: List[str] = None, ignore: List[str] = None):
         """
-        Writes output variables from provided system.
+        Writes output variables from provided IndepVarComp instance.
 
-        Caution: in most cases, list_outputs() will be used, which requires the model to have run
-
+        :param ivc: the IndepVarComp instance
         :param only: List of OpenMDAO variable names that should be written. Other names will be
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing

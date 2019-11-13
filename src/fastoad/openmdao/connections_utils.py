@@ -18,15 +18,15 @@ from logging import Logger
 from typing import Tuple, List
 
 import numpy as np
-from openmdao.api import IndepVarComp
-from openmdao.core.problem import Problem
+import openmdao.api as om
 
 from fastoad.exceptions import NoSetupError
 
 
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
 
-def get_unconnected_inputs(problem: Problem,
+
+def get_unconnected_inputs(problem: om.Problem,
                            logger: Logger = None) -> Tuple[List[str], List[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
@@ -82,8 +82,8 @@ def get_unconnected_inputs(problem: Problem,
     return mandatory_unconnected, optional_unconnected
 
 
-def build_ivc_of_unconnected_inputs(problem: Problem,
-                                    with_optional_inputs: bool = False) -> IndepVarComp:
+def build_ivc_of_unconnected_inputs(problem: om.Problem,
+                                    with_optional_inputs: bool = False) -> om.IndepVarComp:
     """
     This function returns an OpenMDAO IndepVarComp instance containing
     all the unconnected inputs of a Problem.
@@ -97,8 +97,9 @@ def build_ivc_of_unconnected_inputs(problem: Problem,
                             Otherwise, it will contain only mandatory ones.
     :return: IndepVarComp instance
     """
-    ivc = IndepVarComp()
-
+    ivc = om.IndepVarComp()
+    if problem._setup_status == 0:
+        problem.setup()
     mandatory_unconnected, optional_unconnected = get_unconnected_inputs(problem)
     model = problem.model
 
@@ -128,3 +129,98 @@ def build_ivc_of_unconnected_inputs(problem: Problem,
         _add_outputs(optional_unconnected)
 
     return ivc
+
+
+def build_ivc_of_outputs(problem: om.Problem) -> om.IndepVarComp:
+    """
+    This function returns an OpenMDAO IndepVarComp instance containing
+    all the outputs of an OpenMDAO Problem.
+
+    :param problem: OpenMDAO Problem instance to inspect
+    :return: IndepVarComp instance
+    """
+    ivc = om.IndepVarComp()
+    if problem._setup_status == 0:
+        problem.setup()
+    system = problem.model
+
+    prom2abs: dict = system._var_allprocs_prom2abs_list['output']
+
+    for prom_name, abs_names in prom2abs.items():
+        # Pick the first
+        abs_name = abs_names[0]
+        metadata = system._var_abs2meta[abs_name]
+        ivc.add_output(prom_name,
+                       val=metadata['value'],
+                       units=metadata['units'],
+                       desc=metadata['desc'])
+
+    return ivc
+
+
+def build_ivc_of_variables(problem: om.Problem, initial_values: bool = False) -> om.IndepVarComp:
+    """
+    This function returns an OpenMDAO IndepVarComp instance containing
+    all the variables (inputs + outputs) of a an OpenMDAO Problem.
+
+    If variables are promoted, the promoted name will be used. Otherwise, the absolute name will be
+    used.
+
+    :param problem: OpenMDAO Problem instance to inspect
+    :param initial_values: if True, returned instance will contain values before computation
+    :return: IndepVarComp instance
+    """
+    ivc = om.IndepVarComp()
+    if problem._setup_status == 0:
+        problem.setup()
+    system = problem.model
+
+    prom2abs_inputs: dict = system._var_allprocs_prom2abs_list['input']
+    prom2abs_outputs: dict = system._var_allprocs_prom2abs_list['output']
+
+    prom2abs = {**prom2abs_inputs, **prom2abs_outputs}
+    for prom_name, abs_names in prom2abs.items():
+        # Pick the first
+        abs_name = abs_names[0]
+        metadata = system._var_abs2meta[abs_name]
+        if initial_values:
+            value = metadata['value']
+        else:
+            try:
+                # Maybe useless, but we force units to ensure it is consistent
+                value = problem.get_val(prom_name, units=metadata['units'])
+            except RuntimeError:
+                # In case problem is incompletely set, problem.get_val() will fail.
+                # In such case, falling back to the method for initial values
+                # should be enough.
+                value = metadata['value']
+        ivc.add_output(prom_name,
+                       val=value,
+                       units=metadata['units'],
+                       desc=metadata['desc'])
+
+    return ivc
+
+
+def update_ivc(original_ivc: om.IndepVarComp, reference_ivc: om.IndepVarComp) -> om.IndepVarComp:
+    """
+    Updates the values of an IndepVarComp instance with respect to a reference IndepVarComp
+    instance
+
+    :param original_ivc: IndepVarComp instance to be updated
+    :param reference_ivc: IndepVarComp instance containing the default values for update
+    :return updated_ivc: resulting IndepVarComp instance of the update
+    """
+
+    reference_variables = {}
+    for (name, value, attributes) in reference_ivc._indep_external:
+        reference_variables[name] = (value, attributes)
+
+    updated_ivc = om.IndepVarComp()
+    for (name, value, attributes) in original_ivc._indep_external:
+        if name in reference_variables:
+            value = reference_variables[name][0]
+            attributes = reference_variables[name][1]
+        updated_ivc.add_output(name, value, **attributes)
+
+    return updated_ivc

@@ -17,6 +17,7 @@ main
 import argparse
 
 from fastoad.io.configuration import ConfiguredProblem
+from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 
 
 def main():
@@ -24,6 +25,12 @@ def main():
     parser.add_argument('conf_file', type=str, help='the file for configuring the problem')
     parser.add_argument('--gen_inputs', action='store_true',
                         help='generates a template file that contains needed inputs')
+    parser.add_argument('--gen_inputs_from',
+                        help='generates a template file that contains needed inputs. Variable '
+                             'values are taken from provided XML file')
+    parser.add_argument('--gen_inputs_from_legacy',
+                        help='generates a template file that contains needed inputs. Variable '
+                             'values are taken from provided XML file (Legacy FAST format)')
     parser.add_argument('--optim', action='store_true',
                         help='runs the optimization of the problem with provided input file')
     parser.add_argument('--eval', action='store_true',
@@ -35,10 +42,15 @@ def main():
         problem = ConfiguredProblem()
         problem.configure(args.conf_file)
 
+        # TODO : is it necessary ?
         problem.model.approx_totals()
 
         if args.gen_inputs:
             problem.write_needed_inputs()
+        elif args.gen_inputs_from:
+            problem.write_needed_inputs(OMXmlIO(args.gen_inputs_from))
+        elif args.gen_inputs_from_legacy:
+            problem.write_needed_inputs(OMLegacy1XmlIO(args.gen_inputs_from_legacy))
         elif args.optim:
             problem.read_inputs()
             problem.run_driver()

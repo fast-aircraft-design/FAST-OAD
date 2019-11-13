@@ -24,11 +24,13 @@ import toml
 
 from fastoad.io.configuration.exceptions import FASTConfigurationBaseKeyBuildingError, \
     FASTConfigurationBadOpenMDAOInstructionError, FASTConfigurationNoProblemDefined
+from fastoad.io.serialize import OMFileIOSubclass
 from fastoad.io.xml import OMXmlIO
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from fastoad.openmdao.connections_utils import build_ivc_of_unconnected_inputs, update_ivc, \
+    build_ivc_of_variables
 
 # Logger for this module
-
 _LOGGER = logging.getLogger(__name__)
 
 KEY_FOLDERS = 'module_folders'
@@ -45,6 +47,21 @@ class ConfiguredProblem(om.Problem):
     """
     Vanilla OpenMDAO Problem except that its definition can be loaded from
     a TOML file.
+
+    A classical usage of this class will be::
+
+        problem = ConfiguredProblem()  # instantiation
+        problem.configure('my_problem.toml')  # reads problem definition
+        problem.write_needed_inputs()  # writes the input file (defined in problem definition) with
+                                       # needed variables so user can fill it with proper values
+        # or
+        problem.write_needed_inputs('previous.xml')  # writes the input file with needed variables
+                                                     # and values taken from provided file when
+                                                     # available
+        problem.read_inputs()    # reads the input file
+        problem.run_driver()     # runs the OpenMDAO problem
+        problem.write_outputs()  # writes the output file (defined in problem definition)
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -53,6 +70,7 @@ class ConfiguredProblem(om.Problem):
         self._conf_dict = {}
         self._input_file = None
         self._output_file = None
+        self._problem_definition = None
 
     def configure(self, conf_file):
         """
@@ -67,7 +85,7 @@ class ConfiguredProblem(om.Problem):
         self._conf_dict = toml.load(conf_file)
 
         # FIXME: Structure of configuration file will have to be checked more thoroughly, like
-        #        producing errors if missing data I/O files
+        #        producing errors if missing definition of data I/O files
 
         # I/O files
         input_file = self._conf_dict.get(KEY_INPUT_FILE)
@@ -88,49 +106,42 @@ class ConfiguredProblem(om.Problem):
                 OpenMDAOSystemFactory.explore_folder(folder_path)
 
         # Read problem definition
-        problem_definition = self._conf_dict.get(TABLE_PROBLEM)
-        if not problem_definition:
+        self._problem_definition = self._conf_dict.get(TABLE_PROBLEM)
+        if not self._problem_definition:
             raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_PROBLEM)
 
-        try:
-            self._parse_problem_table(self, TABLE_PROBLEM, problem_definition)
-        except FASTConfigurationBaseKeyBuildingError as err:
-            log_err = err.__class__(err, TABLE_PROBLEM)
-            _LOGGER.error(log_err)
-            raise log_err
+        self.build_problem()
 
-        # Objectives and constraints are based on problem outputs, so concerned variables
-        # are expected to be defined by now (unlike design variables that will be
-        # defined after reading inputs)
-        self._add_objectives()
-        self._add_constraints()
-
-        self.setup()
-
-    def write_needed_inputs(self):
+    def write_needed_inputs(self, input_data: OMFileIOSubclass = None):
         """
-        Once problem is configured, creates the configured input file with all
-        needed inputs of the problem, with default values taken from component
-        definitions.
+        Writes the input file of the problem with unconnected inputs of the configured problem.
+
+        Written value of each variable will be taken:
+        1. from input_data if it contains the variable
+        2. from defined default values in component definitions
+
+        WARNING: if inputs have already been read, they won't be needed any more and won't be
+        in written file. To clear read data, use first :meth:`build_problem`.
+
+        :param input_data: if provided, variable values will be read from it, if available.
         """
         if self._input_file:
-            print(self._input_file)
+            ivc = build_ivc_of_unconnected_inputs(self)
+            if input_data:
+                ref_ivc = input_data.read()
+                ivc = update_ivc(ivc, ref_ivc)
             writer = OMXmlIO(self._input_file)
-            writer.read()
-            writer.write_inputs(self)
+            writer.write(ivc)
 
     def read_inputs(self):
         """
         Once problem is configured, reads inputs from the configured input file.
+
+        Note: the OpenMDAO problem is fully rebuilt
         """
         if self._input_file:
             reader = OMXmlIO(self._input_file)
-            self.model.add_subsystem('inputs', reader.read(), promotes=['*'])
-
-            # Now all variables should be available, design vars can be defined.
-            self._add_design_vars()
-
-            self.setup()
+            self.build_problem(reader.read())
 
     def write_outputs(self):
         """
@@ -138,8 +149,43 @@ class ConfiguredProblem(om.Problem):
         """
         if self._output_file:
             writer = OMXmlIO(self._output_file)
-            writer.system = self.model
-            writer.write()
+            ivc = build_ivc_of_variables(self)
+            writer.write(ivc)
+
+    def build_problem(self, ivc: om.IndepVarComp = None):
+        """
+        Builds (or rebuilds) the problem as defined in the configuration file.
+
+        self.model is initialized as a new group and populated with provided IndepVarComp
+        instance (if any) and subsystems indicated in configuration file.
+
+        Objectives and constraints are defined as indicated in configuration file.
+        Same for design variables, if an IndepVarcomp instance as been provided.
+
+        Then self.setup() is called.
+
+        :param ivc: if provided, will be be added to the model subsystems (in first position)
+        """
+
+        self.model = om.Group()
+
+        if ivc:
+            self.model.add_subsystem('inputs', ivc, promotes=['*'])
+
+        try:
+            self._parse_problem_table(self, TABLE_PROBLEM, self._problem_definition)
+        except FASTConfigurationBaseKeyBuildingError as err:
+            log_err = err.__class__(err, TABLE_PROBLEM)
+            _LOGGER.error(log_err)
+            raise log_err
+
+        self._add_objectives()
+        self._add_constraints()
+
+        if ivc:
+            self._add_design_vars()
+
+        self.setup()
 
     def _parse_problem_table(self, component: Union[om.Problem, om.Group], identifier, table: dict):
         """
@@ -196,7 +242,7 @@ class ConfiguredProblem(om.Problem):
             self.model.add_objective(**objective_table)
 
     def _add_design_vars(self):
-        """  Adds design variables as instructed in configuration file """
+        """ Adds design variables as instructed in configuration file """
         design_var_tables = self._conf_dict.get(TABLES_DESIGN_VAR, [])
         for design_var_table in design_var_tables:
             self.model.add_design_var(**design_var_table)

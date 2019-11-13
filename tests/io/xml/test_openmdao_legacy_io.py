@@ -46,8 +46,7 @@ def test_legacy1():
     # test write ---------------------------------------------------------------
     new_filename = pth.join(result_folder, 'CeRAS01_baseline.xml')
     xml_write = OMLegacy1XmlIO(new_filename)
-    xml_write.system = ivc
-    xml_write.write()
+    xml_write.write(ivc)
 
     # check by reading without conversion table
     # -> this will give the actual number of entries in the file
