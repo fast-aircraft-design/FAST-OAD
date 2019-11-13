@@ -35,7 +35,7 @@ def run_system(component: SystemSubclass, input_vars: IndepVarComp, setup_mode='
 
     problem.setup(mode=setup_mode)
     missing, _ = get_unconnected_inputs(problem, _LOGGER)
-    assert not missing
+    assert not missing, 'These inputs are not provided: %s' % missing
 
     problem.run_model()
 

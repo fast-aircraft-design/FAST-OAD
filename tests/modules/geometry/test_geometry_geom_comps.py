@@ -20,35 +20,31 @@ import os.path as pth
 import pytest
 from openmdao.core.problem import Problem
 
-from tests.testing_utilities import run_system
-
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
+from fastoad.modules.geometry.geom_components import ComputeTotalArea, UpdateMLG
 from fastoad.modules.geometry.geom_components.fuselage \
     import ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizing
-from fastoad.modules.geometry.geom_components.ht.components \
-    import ComputeHTArea, ComputeHTcg, ComputeHTMAC, ComputeHTChord, \
-            ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
 from fastoad.modules.geometry.geom_components.ht \
     import ComputeHorizontalTailGeometry
-from fastoad.modules.geometry.geom_components.vt.components \
-    import ComputeVTArea, ComputeVTcg, ComputeVTMAC, ComputeVTChords, \
-            ComputeVTClalpha, ComputeCnBeta, ComputeVTSweep, \
-                ComputeVTVolCoeff, ComputeVTDistance
+from fastoad.modules.geometry.geom_components.ht.components \
+    import ComputeHTArea, ComputeHTcg, ComputeHTMAC, ComputeHTChord, \
+    ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
+from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
+    ComputeNacelleAndPylonsGeometry
 from fastoad.modules.geometry.geom_components.vt \
     import ComputeVerticalTailGeometry
-
+from fastoad.modules.geometry.geom_components.vt.components \
+    import ComputeVTArea, ComputeVTcg, ComputeVTMAC, ComputeVTChords, \
+    ComputeVTClalpha, ComputeCnBeta, ComputeVTSweep, \
+    ComputeVTVolCoeff, ComputeVTDistance
+from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
 from fastoad.modules.geometry.geom_components.wing.components \
     import ComputeB50, ComputeCLalpha, ComputeL1AndL4Wing, \
     ComputeL2AndL3Wing, ComputeMACWing, ComputeMFW, ComputeSweepWing, \
     ComputeToCWing, ComputeWetAreaWing, ComputeXWing, ComputeYWing
+from tests.testing_utilities import run_system
 
-from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
-
-from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
-    ComputeNacelleAndPylonsGeometry
-
-from fastoad.modules.geometry.geom_components import ComputeTotalArea, UpdateMLG
 
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
@@ -1015,7 +1011,7 @@ def test_geometry_nacelle_pylons(input_xml):
     """ Tests computation of the nacelle and pylons component """
 
     input_list = [
-        'propulsion_conventional:thrust_SL',
+        'propulsion:mto_thrust',
         'geometry:y_ratio_engine',
         'geometry:wing_span',
         'geometry:wing_l0',

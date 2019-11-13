@@ -219,7 +219,7 @@ def test_compute_paint_weight():
 def test_compute_engine_weight():
     """ Tests engine weight computation from sample XML data """
     input_list = [
-        'propulsion_conventional:thrust_SL',
+        'propulsion:mto_thrust',
         'geometry:engine_number',
         'kfactors_b1:K_B1',
         'kfactors_b1:offset_B1',

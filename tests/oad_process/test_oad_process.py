@@ -52,7 +52,7 @@ def test_oad_process(cleanup, install_components):
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
 
-    problem.run_driver()
+    problem.run_model()
 
     problem.write_outputs()
 

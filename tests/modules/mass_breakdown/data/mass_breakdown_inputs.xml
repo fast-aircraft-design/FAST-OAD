@@ -116,9 +116,9 @@
         <K_A7>1.0</K_A7>
         <offset_A7 units="kg">0.0</offset_A7>
     </kfactors_a7>
-    <propulsion_conventional>
-        <thrust_SL units="lbf">117880.0</thrust_SL>
-    </propulsion_conventional>
+    <propulsion>
+        <mto_thrust units="lbf">117880.0</mto_thrust>
+    </propulsion>
     <kfactors_b1>
         <K_B1>1.0</K_B1>
         <offset_B1 units="kg">0.0</offset_B1>
