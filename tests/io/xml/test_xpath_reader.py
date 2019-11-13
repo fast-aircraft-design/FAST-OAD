@@ -27,68 +27,74 @@ from fastoad.io.xml import XPathReader
 model: XPathReader = None
 
 
-@pytest.fixture(scope="module")
-def input_xml():
-    return XPathReader(pth.join(pth.dirname(__file__), "data", "foobar.xml"))
+@pytest.fixture(scope='module')
+def input_xml() -> XPathReader:
+    return XPathReader(pth.join(pth.dirname(__file__), 'data', 'foobar.xml'))
 
 
-def test_has_element(input_xml):
-    assert input_xml.has_element("/root")
-    assert input_xml.has_element("/root/foo")
-    assert input_xml.has_element("/root/foo/bar")
-    assert input_xml.has_element("/root/bar")
-    assert input_xml.has_element("/toto") is False
-    assert input_xml.has_element("/root/foot") is False
-    assert input_xml.has_element("/root/foo/bart") is False
+def test_has_element(input_xml: XPathReader):
+    assert input_xml.has_element('/root')
+    assert input_xml.has_element('/root/foo')
+    assert input_xml.has_element('/root/foo/bar')
+    assert input_xml.has_element('/root/bar')
+    assert input_xml.has_element('/toto') is False
+    assert input_xml.has_element('/root/foot') is False
+    assert input_xml.has_element('/root/foo/bart') is False
 
 
-def test_get_text(input_xml):
-    assert input_xml.get_text("/root") == ""
+def test_get_text(input_xml: XPathReader):
+    assert input_xml.get_text('/root') == ""
     got_key_error = False
     try:
-        _ = input_xml.get_text("/root/foot")
+        _ = input_xml.get_text('/root/foot')
     except KeyError:
         got_key_error = True
     assert got_key_error
 
-    assert input_xml.get_text("/root/bar") == "another non-numeric value"
-    assert input_xml.get_text("/root/foo") == "4.e-2"
-    assert input_xml.get_text("/root/foo/bar") == "42"
+    assert input_xml.get_text('/root/bar') == 'another non-numeric value'
+    assert input_xml.get_text('/root/foo') == '4.e-2'
+    assert input_xml.get_text('/root/foo/bar') == '42'
 
 
-def test_get_float(input_xml):
-    assert input_xml.get_float("/root") is None
+def test_get_float(input_xml: XPathReader):
+    assert input_xml.get_float('/root') is None
     got_key_error = False
     try:
-        _ = input_xml.get_float("/root/foot")
+        _ = input_xml.get_float('/root/foot')
     except KeyError:
         got_key_error = True
     assert got_key_error
 
-    assert input_xml.get_float("/root/bar") is None
-    assert input_xml.get_float("/root/foo") == 4.e-2
-    assert input_xml.get_float("/root/foo/bar") == 42.
+    assert input_xml.get_float('/root/bar') is None
+    assert input_xml.get_float('/root/foo') == 4.e-2
+    assert input_xml.get_float('/root/foo/bar') == 42.
 
 
-def test_get_unit(input_xml):
-    assert input_xml.get_units("/root") is None
+def test_get_unit(input_xml: XPathReader):
+    assert input_xml.get_units('/root') is None
     got_key_error = False
     try:
-        _ = input_xml.get_units("/root/foot")
+        _ = input_xml.get_units('/root/foot')
     except KeyError:
         got_key_error = True
     assert got_key_error
 
-    assert input_xml.get_units("/root/bar") is None
-    assert input_xml.get_units("/root/foo") == "kg.K/Hz"
-    assert input_xml.get_units("/root/foo/bar") == "attoparsec"
+    assert input_xml.get_units('/root/bar') is None
+    assert input_xml.get_units('/root/foo') == 'kg.K/Hz'
+    assert input_xml.get_units('/root/foo/bar') == 'attoparsec'
 
 
-def test_get_values_and_units(input_xml):
-    assert input_xml.get_values_and_units("/root/foot") == (None, None)
-    assert input_xml.get_values_and_units("/root") == ([], None)
+def test_get_values_and_units(input_xml: XPathReader):
+    assert input_xml.get_values_and_units('/root/foot') == (None, None)
+    assert input_xml.get_values_and_units('/root') == ([], None)
 
-    assert input_xml.get_values_and_units("/root/bar") == (["another non-numeric value"], None)
-    assert input_xml.get_values_and_units("/root/foo") == ([4.e-2], "kg.K/Hz")
-    assert input_xml.get_values_and_units("/root/foo/bar") == ([42, 70, "non-numeric value"],
-                                                               "attoparsec")
+    assert input_xml.get_values_and_units('/root/bar') == (['another non-numeric value'], None)
+    assert input_xml.get_values_and_units('/root/foo') == ([4.e-2], 'kg.K/Hz')
+    assert input_xml.get_values_and_units('/root/foo/bar') == ([42, 70, 'non-numeric value'],
+                                                               'attoparsec')
+
+
+def test_get_all_elements_with_no_child_xpath(input_xml: XPathReader):
+    xpaths = input_xml.get_all_elements_with_no_child_xpath()
+    assert set(xpaths) == {'foo[1]', 'foo[2]/bar', 'foo[3]/bar',
+                           'foo[4]/bar', 'bar'}

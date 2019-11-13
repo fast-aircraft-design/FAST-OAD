@@ -22,6 +22,7 @@
     <foo id="2">
         <bar>70</bar>
     </foo>
+    <foobar/>
     <foo id="3">
         <bar units="ignored">non-numeric value</bar>
     </foo>
