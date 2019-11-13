@@ -1,0 +1,25 @@
+
+
+title = "OAD Process"
+
+module_folders = [
+  "../"
+]
+
+input_file = "../results/oad_process_inputs.xml"
+output_file = "../results/oad_process_inputs.xml"
+
+
+[problem]
+    # driver = "om.ScipyOptimizeDriver(optimizer='COBYLA')"
+    [problem.sizing_loop]
+        nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+        linear_solver = "om.ScipyKrylov()"
+        [problem.sizing_loop.geometry]
+            id = "geometry"
+        [problem.sizing_loop.aerodynamics]
+            id = "aerodynamics"
+        [problem.sizing_loop.performance]
+            id = "performance"
+        [problem.sizing_loop.propulsion]
+            id = "propulsion"
