@@ -20,7 +20,6 @@ import os.path as pth
 from typing import Sequence, List, Dict
 
 import numpy as np
-import openmdao.api as om
 from lxml import etree
 from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
@@ -30,7 +29,7 @@ from fastoad.exceptions import XPathError
 from fastoad.io.serialize import AbstractOMFileIO
 from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
 from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.openmdao.types import Variable, SystemSubclass
+from fastoad.openmdao.types import Variable
 from fastoad.utils.strings import get_float_list_from_string
 from .constants import UNIT_ATTRIBUTE, ROOT_TAG
 
@@ -62,9 +61,6 @@ class OMCustomXmlIO(AbstractOMFileIO):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.use_promoted_names = True
-        """If True, promoted names will be used instead of "real" ones."""
-
         self._translator = None
         self.xml_unit_attribute = UNIT_ATTRIBUTE
 
@@ -76,18 +72,6 @@ class OMCustomXmlIO(AbstractOMFileIO):
         :param translator:
         """
         self._translator = translator
-
-    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> om.IndepVarComp:
-
-        variables = self._read_variables()
-
-        # Create IndepVarComp instance
-        ivc = om.IndepVarComp()
-        for name, value, units in variables:
-            if (only is None or name in only) and not (ignore is not None and name in ignore):
-                ivc.add_output(name, val=np.array(value), units=units)
-
-        return ivc
 
     def _read_variables(self) -> List[Variable]:
         """
@@ -136,12 +120,6 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         return list(outputs.values())
 
-    def write(self, ivc: om.IndepVarComp, only: Sequence[str] = None, ignore: Sequence[str] = None):
-
-        variables = self._get_variables(ivc)
-        used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-        self._write(used_variables)
-
     def _write(self, variables: Sequence[Variable]):
         """
         Writes variables to defined data source file.
@@ -187,19 +165,6 @@ class OMCustomXmlIO(AbstractOMFileIO):
         tree.write(self._data_source, pretty_print=True)
 
     @staticmethod
-    def _get_variables(system: SystemSubclass) -> List[Variable]:
-        """ returns the list of variables from provided system """
-
-        variables: List[Variable] = []
-
-        # Outputs are accessible using private member
-        # pylint: disable=protected-access
-        for (name, value, attributes) in system._indep_external:
-            variables.append(Variable(name, value, attributes['units']))
-
-        return variables
-
-    @staticmethod
     def _create_xpath(root: _Element, xpath: str) -> _Element:
         """
         Creates required XML Path from provided root element
@@ -234,27 +199,3 @@ class OMCustomXmlIO(AbstractOMFileIO):
         assert not children, "XPath %s has already been processed" % xpath
 
         return element
-
-    @staticmethod
-    def _filter_variables(variables: Sequence[Variable], only: Sequence[str] = None,
-                          ignore: Sequence[str] = None) -> Sequence[Variable]:
-        """
-        filters the variables such that the ones in arg only are kept and the ones in
-        arg ignore are removed.
-
-        :param variables:
-        :param only: List of OpenMDAO variable names that should be written. Other names will be
-                     ignored. If None, all variables will be written.
-        :param ignore: List of OpenMDAO variable names that should be ignored when writing
-        :return: filtered variables
-        """
-        if only is None:
-            used_variables = variables
-        else:
-            used_variables = [variable for variable in variables if variable.name in only]
-
-        if ignore is not None:
-            used_variables = [variable for variable in used_variables
-                              if variable.name not in ignore]
-
-        return used_variables
