@@ -44,7 +44,7 @@ def _check_basic2_ivc(ivc: IndepVarComp):
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
         outputs.append(Variable(name, value, attributes['units']))
 
-    assert len(outputs) == 4
+    assert len(outputs) == 5
 
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)
@@ -60,9 +60,13 @@ def _check_basic2_ivc(ivc: IndepVarComp):
     assert outputs[2].value == approx([9.8])
     assert outputs[2].units is None
 
-    assert outputs[3].name == 'geometry:fuselage:length'
-    assert outputs[3].value == approx([40.])
+    assert outputs[3].name == 'geometry:wing:chord'
+    assert outputs[3].value == approx([5., 3.5, 2.])
     assert outputs[3].units == 'm'
+
+    assert outputs[4].name == 'geometry:fuselage:length'
+    assert outputs[4].value == approx([40.])
+    assert outputs[4].units == 'm'
 
 
 def test_custom_xml_read_and_write_from_ivc(cleanup):
@@ -73,21 +77,29 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
 
     var_names = ['geometry:total_surface',
                  'geometry:wing:span',
+                 'geometry:wing:chord',
                  'geometry:wing:aspect_ratio',
                  'geometry:fuselage:length']
 
     xpaths = ['total_area',
               'wing/span',
+              'wing/chord',
               'wing/aspect_ratio',
               'fuselage_length']
 
     # test read ---------------------------------------------------------------
-    filename = pth.join(DATA_FOLDER_PATH, 'custom.xml')
-    xml_read = OMCustomXmlIO(filename)
 
     # test without setting translation table
+    filename = pth.join(DATA_FOLDER_PATH, 'custom.xml')
+    xml_read = OMCustomXmlIO(filename)
     with pytest.raises(FastMissingTranslatorError):
         xml_read.read()
+
+    # test after setting translation table
+    translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
+    xml_read.set_translator(translator)
+    ivc = xml_read.read()
+    _check_basic2_ivc(ivc)
 
     # test with setting a non-exhaustive translation table (missing variable name in the translator)
     # we expect that the variable is not included in the ivc
@@ -98,21 +110,15 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
     ivc = xml_read.read()
     _check_basic2_ivc(ivc)
 
-    filename = pth.join(DATA_FOLDER_PATH, 'custom.xml')
-    xml_read = OMCustomXmlIO(filename)
-
     # test with setting a bad translation with an additional var not present in the xml
     # we expect that all goes on well
+    filename = pth.join(DATA_FOLDER_PATH, 'custom.xml')
+    xml_read = OMCustomXmlIO(filename)
     xml_read.set_translator(VarXpathTranslator(variable_names=var_names + ['additional_var'],
                                                xpaths=xpaths + ['bad:xpath']))
     ivc = xml_read.read()
     _check_basic2_ivc(ivc)
 
-    # test after setting translation table
-    translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
-    xml_read.set_translator(translator)
-    ivc = xml_read.read()
-    _check_basic2_ivc(ivc)
 
     # test write --------------------------------------------------------------
     new_filename = pth.join(result_folder, 'custom.xml')
@@ -130,10 +136,6 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
     assert pth.isfile(new_filename)
     xml_check = OMCustomXmlIO(new_filename)
 
-    xpaths = ['total_area',
-              'wing/span',
-              'wing/aspect_ratio',
-              'fuselage_length']
     translator.set(var_names, xpaths)
     xml_check.set_translator(translator)
     new_ivc = xml_check.read()

@@ -64,10 +64,12 @@ def test_translator_with_read():
 
     var_list = ['geometry:total_surface',
                 'geometry:wing:span',
+                'geometry:wing:chord',
                 'geometry:wing:aspect_ratio',
                 'geometry:fuselage:length']
     xpath_list = ['total_area',
                   'wing/span',
+                  'wing/chord',
                   'wing/aspect_ratio',
                   'fuselage_length']
 

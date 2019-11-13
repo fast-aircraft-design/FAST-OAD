@@ -24,6 +24,9 @@
     <wing>
         <span units="m">42</span>
         <aspect_ratio>9.8</aspect_ratio>
+        <chord units="m">5.</chord> <!-- test with multiple values -->
+        <chord>3.5</chord>
+        <chord>2.</chord>
     </wing>
     <fuselage_length units="m">40</fuselage_length>
     <additional_var units="m">40</additional_var>
