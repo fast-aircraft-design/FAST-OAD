@@ -66,29 +66,36 @@ class OMXmlIO(OMCustomXmlIO):
     def __init__(self, *args, **kwargs):
         super(OMXmlIO, self).__init__(*args, **kwargs)
 
-        self.path_separator = ':'
+        self._translator: BasicVarXpathTranslator = BasicVarXpathTranslator(':')
+
+    @property
+    def path_separator(self):
         """
         The separator that will be used in OpenMDAO variable names to match XML path.
         Warning: The dot "." can be used when writing, but not when reading.
         """
+        return self._translator.path_separator
+
+    @path_separator.setter
+    def path_separator(self, separator):
+        self._translator.path_separator = separator
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> om.IndepVarComp:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == '.':
             raise ValueError('Cannot use dot "." in OpenMDAO variables.')
 
-        outputs = self._read_xml()
+        variables = self._read_variables()
 
         # Create IndepVarComp instance
         ivc = om.IndepVarComp()
-        for name, value, units in outputs:
+        for name, value, units in variables:
             if (only is None or name in only) and not (ignore is not None and name in ignore):
                 ivc.add_output(name, val=np.array(value), units=units)
 
         return ivc
 
     def write(self, ivc: om.IndepVarComp, only: Sequence[str] = None, ignore: Sequence[str] = None):
-        self._build_translator(ivc)
         try:
             super().write(ivc, only, ignore)
         except FastXPathEvalError as err:
@@ -97,22 +104,7 @@ class OMXmlIO(OMCustomXmlIO):
                                      ' : self.path_separator is "%s". It is correct?'
                                      % self.path_separator)
 
-    def _build_translator(self, ivc: om.IndepVarComp):
-        variables = self._get_variables(ivc)
-
-        names = []
-        xpaths = []
-        for variable in variables:
-            path_components = variable.name.split(self.path_separator)
-            xpath = '/'.join(path_components)
-            names.append(variable.name)
-            xpaths.append(xpath)
-
-        translator = VarXpathTranslator()
-        translator.set(names, xpaths)
-        self.set_translator(translator)
-
-    def _read_xml(self) -> Sequence[Variable]:
+    def _read_variables(self) -> Sequence[Variable]:
         """
         Reads self.data_source as a XML file
 
@@ -138,7 +130,7 @@ class OMXmlIO(OMCustomXmlIO):
                 if elem.text:
                     value = get_float_list_from_string(elem.text)
                 if value:
-                    name = self.path_separator.join(current_path[1:])
+                    name = self._translator.get_variable_name('/'.join(current_path[1:]))
                     if name not in outputs:
                         # Add Variable
                         outputs[name] = Variable(name, value, units)
@@ -152,7 +144,7 @@ class OMXmlIO(OMCustomXmlIO):
 
     def _create_openmdao_code(self) -> str:  # pragma: no cover
         """dev utility for generating code"""
-        outputs = self._read_xml()
+        outputs = self._read_variables()
 
         lines = ['ivc = IndepVarComp()']
         for name, value, units in outputs:
@@ -160,3 +152,24 @@ class OMXmlIO(OMCustomXmlIO):
                          (name, value, ", units='%s'" % units if units else ''))
 
         return '\n'.join(lines)
+
+
+class BasicVarXpathTranslator(VarXpathTranslator):
+    """
+    Dedicated VarXpathTranslator that builds variable names by simply converting
+    the '/' separator of XPaths into the desired separator.
+    """
+
+    def __init__(self, path_separator):
+        super().__init__()
+        self.path_separator = path_separator
+
+    def get_variable_name(self, xpath: str) -> str:
+        path_components = xpath.split('/')
+        name = self.path_separator.join(path_components)
+        return name
+
+    def get_xpath(self, var_name: str) -> str:
+        path_components = var_name.split(self.path_separator)
+        xpath = '/'.join(path_components)
+        return xpath
