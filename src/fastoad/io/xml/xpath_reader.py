@@ -13,6 +13,7 @@ XML reading based on XPath
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import warnings
 from typing import Optional, List, Tuple, Union
 
 from lxml import etree
@@ -56,6 +57,8 @@ class XPathReader:
         Constructor. Will parse the whole indicated file.
         :param filename: XML file
         """
+        warnings.warn('This class is not used anymore in FAST', DeprecationWarning)
+
         self.tree: _ElementTree = etree.parse(filename)
         self.unit_attribute_name = UNIT_ATTRIBUTE
         """The element tree provided by :meth:`lxml.etree.parse`"""
