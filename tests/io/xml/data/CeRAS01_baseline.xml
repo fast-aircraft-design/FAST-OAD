@@ -73,7 +73,7 @@
                 <cruise id="248">
                     <fuel_cruise unit="kg">13675.36</fuel_cruise>
                     <time_cruise unit="h">5.44</time_cruise>
-                    <cruise_altitude unit="inch">35000</cruise_altitude>
+                    <cruise_altitude unit="ft">35000</cruise_altitude>
                     <hr_cruise>0</hr_cruise>
                 </cruise>
                 <descent id="201">
@@ -166,7 +166,7 @@
                 <cruise id="234">
                     <fuel_cruise unit="kg">586.64</fuel_cruise>
                     <time_cruise unit="min">17.0</time_cruise>
-                    <cruise_altitude unit="inch">35000</cruise_altitude>
+                    <cruise_altitude unit="ft">35000</cruise_altitude>
                     <hr_cruise>0</hr_cruise>
                 </cruise>
                 <descent id="195">
@@ -229,28 +229,28 @@
             <PNC>4</PNC>
             <eco id="173">
                 <front_seat_number>6</front_seat_number>
-                <WS unit="inch">0.46</WS>
-                <LS unit="inch">0.86</LS>
+                <WS unit="m">0.46</WS>
+                <LS unit="m">0.86</LS>
             </eco>
             <bus id="167">
                 <front_seat_number>4</front_seat_number>
-                <WS unit="inch">0.53</WS>
-                <LS unit="inch">0.92</LS>
+                <WS unit="m">0.53</WS>
+                <LS unit="m">0.92</LS>
             </bus>
-            <Waisle unit="inch">0.48</Waisle>
-            <Wexit unit="inch">0.51</Wexit>
+            <Waisle unit="m">0.48</Waisle>
+            <Wexit unit="m">0.51</Wexit>
             <container_number_front>1</container_number_front>
             <container_number>5</container_number>
             <pallet_number>10</pallet_number>
         </cabin>
         <geometry id="153">
-            <S_total unit="m**2">784.007</S_total>
+            <S_total unit="m²">784.007</S_total>
             <wing id="185">
-                <wet_area_wing unit="m**2">200.607</wet_area_wing>
+                <wet_area_wing unit="m²">200.607</wet_area_wing>
                 <span unit="m">31.603</span>
                 <aspect_ratio>9.48</aspect_ratio>
                 #IN
-                <wing_area unit="m**2">124.843</wing_area>
+                <wing_area unit="m²">124.843</wing_area>
                 <wing_break>0.4</wing_break>
                 <eps1>0.38</eps1>
                 <fa_length unit="m">16.457</fa_length>
@@ -286,7 +286,7 @@
                     <middle>0.66</middle>
                     <tip>0.56</tip>
                 </rear>
-                <S_pf unit="m**2">100.303</S_pf>
+                <S_pf unit="m²">100.303</S_pf>
                 <b_50 unit="m">34.166</b_50>
                 <etaw unit="deg">3.50</etaw>
                 <twist1 unit="deg">0.0</twist1>
@@ -303,7 +303,7 @@
                 </slat>
             </high_lift>
             <fuselage id="162">
-                <S_mbf unit="m**2">401.956</S_mbf>
+                <S_mbf unit="m²">401.956</S_mbf>
                 <fus_length unit="m">37.507</fus_length>
                 <Lcabin unit="m">30.381</Lcabin>
                 <Lpax unit="m">22.87</Lpax>
@@ -315,7 +315,7 @@
             <ht id="166">
                 <lp unit="m">17.675</lp>
                 <aspect>4.288</aspect>
-                <wet_area unit="m**2">70.341</wet_area>
+                <wet_area unit="m²">70.341</wet_area>
                 <sweep_25 unit="deg">28.0</sweep_25>
                 <sweep_0 unit="deg">33.317</sweep_0>
                 <sweep_100 unit="deg">8.809</sweep_100>
@@ -327,12 +327,12 @@
                 <root_chord unit="m">4.406</root_chord>
                 <tip_chord unit="m">1.322</tip_chord>
                 <vol_co>1.117</vol_co>
-                <area unit="m**2">35.171</area>
+                <area unit="m²">35.171</area>
             </ht>
             <vt id="157">
                 <lp unit="m">16.55</lp>
                 <aspect>1.745</aspect>
-                <wet_area unit="m**2">52.749</wet_area>
+                <wet_area unit="m²">52.749</wet_area>
                 <sweep_25 unit="deg">35.0</sweep_25>
                 <sweep_0 unit="deg">40.515</sweep_0>
                 <sweep_100 unit="deg">13.347</sweep_100>
@@ -344,15 +344,15 @@
                 <root_chord unit="m">5.838</root_chord>
                 <tip_chord unit="m">1.751</tip_chord>
                 <vol_co>0.105</vol_co>
-                <area unit="m**2">25.118</area>
+                <area unit="m²">25.118</area>
             </vt>
             <propulsion id="161">
                 <engine_sizing>1.0</engine_sizing>
                 <engine_number>2.0</engine_number>
                 <pylon_length unit="m">5.733</pylon_length>
-                <wet_area_pylon unit="m**2">7.563</wet_area_pylon>
+                <wet_area_pylon unit="m²">7.563</wet_area_pylon>
                 <nac_length unit="m">5.211</nac_length>
-                <wet_area_nac unit="m**2">21.609</wet_area_nac>
+                <wet_area_nac unit="m²">21.609</wet_area_nac>
                 <fan_length unit="m">3.127</fan_length>
                 <nacelle_dia unit="m">2.172</nacelle_dia>
                 <y_ratio_engine>0.34</y_ratio_engine>
@@ -378,6 +378,45 @@
                     <k_co2>1</k_co2>
                 </k_factors>
             </conventional>
+            <hybrid_dep id="178">
+                <inverter id="221">
+                    <inverter_rater_power unit="W">0</inverter_rater_power>
+                    <inverter_eta>0</inverter_eta>
+                </inverter>
+                <idc id="243">
+                    <idc_power_density unit="KW.Kg-1">0</idc_power_density>
+                    <DC_transformer_rated_power unit="W">0</DC_transformer_rated_power>
+                    <DC_transformer_eta>0</DC_transformer_eta>
+                </idc>
+                <converter id="242">
+                    <converter_rater_power unit="W">0</converter_rater_power>
+                    <converter_eta>0</converter_eta>
+                </converter>
+                <generator id="247">
+                    <generator_eta>0</generator_eta>
+                    <generator_number>0</generator_number>
+                    <generator_power_mass unit="KW.Kg-1">0</generator_power_mass>
+                </generator>
+                <cable id="204">
+                    <cable_density unit="kg/m³">0</cable_density>
+                    <transport_voltage unit="V">10000</transport_voltage>
+                </cable>
+                <motor id="223">
+                    <motor_eta>0.99</motor_eta>
+                    <motor_power_mass unit="KW.Kg-1">17.5</motor_power_mass>
+                </motor>
+                <battery id="246">
+                    <battery_eta>0.9</battery_eta>
+                    <battery_energy_density unit="Wh.k-1">700</battery_energy_density>
+                    <battery_power_density unit="MW.kg-1">2000</battery_power_density>
+                    <battery_availability>0.95</battery_availability>
+                </battery>
+                <ducted_fan id="222">
+                    <fan_eta>0.85</fan_eta>
+                    <fan_opr>1.4</fan_opr>
+                    <fan_radius_ratio>0.3</fan_radius_ratio>
+                </ducted_fan>
+            </hybrid_dep>
         </propulsion>
         <aerodynamics id="145">
             <CL_alpha>6.2</CL_alpha>
@@ -477,16 +516,16 @@
                 <weight_E unit="kg">470</weight_E>
             </crew>
             <sizing_cases>
-                <SizingCase1 id="149">
+                <SizingCase id="149">
                     <U_gust unit="m/s">15.25</U_gust>
                     <altitude unit="m">20000</altitude>
                     <Vc_EAS unit="m/s">375</Vc_EAS>
-                </SizingCase1>
-                <SizingCase2 id="150">
+                </SizingCase>
+                <SizingCase id="150">
                     <U_gust unit="m/s">15.25</U_gust>
                     <altitude unit="m">20000</altitude>
                     <Vc_EAS unit="m/s">375</Vc_EAS>
-                </SizingCase2>
+                </SizingCase>
             </sizing_cases>
             <k_factors id="174">
                 <Wing_A1 id="196">
@@ -738,6 +777,7 @@
                 <CG_PAX unit="m">16.62</CG_PAX>
             </PayLoad>
         </balance>
+        <inertias id="144"/>
         <DOC id="156">
             <fees id="179">
                 <Pfuel>1</Pfuel>
