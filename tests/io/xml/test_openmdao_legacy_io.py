@@ -20,7 +20,7 @@ from shutil import rmtree
 import pytest
 
 from fastoad.io.xml import OMXmlIO
-from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO, CONVERSION_FILE_1
+from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
@@ -38,17 +38,17 @@ def test_legacy1(cleanup):
 
     # test read ---------------------------------------------------------------
     filename = pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml')
+
     xml_read = OMLegacy1XmlIO(filename)
     ivc = xml_read.read()
     inputs = ivc._indep_external  # pylint: disable=protected-access
 
-    # check that here are as many inputs as lines in conversion file
-    with open(CONVERSION_FILE_1) as conversion_file:
-        conversion_count = len(conversion_file.readlines())
+    entry_count = len(inputs)
+    # Entry count may vary according to changes in translation table, but
+    # we check that enough values are actually read.
+    assert entry_count > 400
 
-    assert len(inputs) == conversion_count
-
-    field_found = [False] * 2
+    field_found = [False] * 3
     for inp in inputs:
         assert inp[1] is not None  # check that a value has been read
 
@@ -61,7 +61,12 @@ def test_legacy1(cleanup):
             assert inp[1] == 150
             assert inp[2]['units'] is None
             field_found[1] = True
+        if inp[0] == 'geometry:wing_wet_area':
+            assert inp[1] == 200.607
+            assert inp[2]['units'] == 'm**2'
+            field_found[2] = True
 
+    assert all(field_found)
 
     # test write ---------------------------------------------------------------
     new_filename = pth.join(result_folder, 'CeRAS01_baseline.xml')
@@ -72,4 +77,4 @@ def test_legacy1(cleanup):
     # -> this will give the actual number of entries in the file
     xml_check = OMXmlIO(new_filename)
     check_ivc = xml_check.read()
-    assert len(check_ivc._indep_external) == conversion_count  # pylint: disable=protected-access
+    assert len(check_ivc._indep_external) == entry_count  # pylint: disable=protected-access

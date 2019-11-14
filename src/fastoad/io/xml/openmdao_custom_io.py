@@ -17,6 +17,7 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 import logging
 import os
 import os.path as pth
+import re
 from typing import Sequence, List, Dict
 
 import numpy as np
@@ -63,6 +64,17 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         self._translator = None
         self.xml_unit_attribute = DEFAULT_UNIT_ATTRIBUTE
+        self.unit_translation = {'²': '**2',
+                                 '³': '**3',
+                                 '°': 'deg',
+                                 '°C': 'degC',
+                                 'kt': 'kn',
+                                 '\bin\b': 'inch',
+                                 }
+        """
+        Used for converting read units in units recognized by OpenMDAO
+        Dict keys can use regular expressions.
+        """
 
     def set_translator(self, translator: VarXpathTranslator):
         """
@@ -90,6 +102,11 @@ class OMCustomXmlIO(AbstractOMFileIO):
             if action == 'start':
                 current_path.append(elem.tag)
                 units = elem.attrib.get(self.xml_unit_attribute, None)
+                if units:
+                    # Ensures compatibility with OpenMDAO units
+                    for legacy_chars, om_chars in self.unit_translation.items():
+                        units = re.sub(legacy_chars, om_chars, units)
+                        units = units.replace(legacy_chars, om_chars)
                 value = None
                 if elem.text:
                     value = get_float_list_from_string(elem.text)
