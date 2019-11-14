@@ -206,3 +206,26 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
     assert outputs[0].name == 'geometry:wing:span'
     assert outputs[0].value == approx([42])
     assert outputs[0].units == 'm'
+
+    # test with patterns in "only"
+    ivc = xml_read.read(only=['*:wing:*'])
+    outputs: List[Variable] = []
+    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
+        outputs.append(Variable(name, value, attributes['units']))
+    assert len(outputs) == 2
+    assert outputs[0].name == 'geometry:wing:span'
+    assert outputs[0].value == approx([42])
+    assert outputs[0].units == 'm'
+    assert outputs[1].name == 'geometry:wing:aspect_ratio'
+    assert outputs[1].value == approx([9.8])
+    assert outputs[1].units is None
+
+    # test with patterns in "ignore"
+    ivc = xml_read.read(ignore=['geometry:*u*', 'geometry:wing:aspect_ratio'])
+    outputs: List[Variable] = []
+    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
+        outputs.append(Variable(name, value, attributes['units']))
+    assert len(outputs) == 1
+    assert outputs[0].name == 'geometry:wing:span'
+    assert outputs[0].value == approx([42])
+    assert outputs[0].units == 'm'

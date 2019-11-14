@@ -15,12 +15,14 @@ Defines interfaces for reading and writing OpenMDAO variable values
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import abstractmethod, ABC
+from collections import OrderedDict
+from fnmatch import fnmatchcase
 from typing import TypeVar, IO, List, Sequence
 
 import numpy as np
 import openmdao.api as om
 
-from fastoad.openmdao.types import Variable, SystemSubclass
+from fastoad.openmdao.types import Variable
 
 OMFileIOSubclass = TypeVar('OMFileIOSubclass', bound='AbstractOMFileIO')
 
@@ -42,6 +44,9 @@ class AbstractOMFileIO(ABC):
         """
         Reads variables from provided data source.
 
+        Elements of `only` and `ignore` can be real variable names or Unix-shell-style patterns.
+        In any case, comparison is case-sensitive.
+
         :param only: List of OpenMDAO variable names that should be read. Other names will be
                      ignored. If None, all variables will be read.
         :param ignore: List of OpenMDAO variable names that should be ignored when reading.
@@ -59,6 +64,9 @@ class AbstractOMFileIO(ABC):
     def write(self, ivc: om.IndepVarComp, only: List[str] = None, ignore: List[str] = None):
         """
         Writes output variables from provided IndepVarComp instance.
+
+        Elements of `only` and `ignore` can be real variable names or Unix-shell-style patterns.
+        In any case, comparison is case-sensitive.
 
         :param ivc: the IndepVarComp instance
         :param only: List of OpenMDAO variable names that should be written. Other names will be
@@ -100,10 +108,13 @@ class AbstractOMFileIO(ABC):
 
     @staticmethod
     def _filter_variables(variables: Sequence[Variable], only: Sequence[str] = None,
-                          ignore: Sequence[str] = None) -> Sequence[Variable]:
+                          ignore: Sequence[str] = None) -> List[Variable]:
         """
         filters the variables such that the ones in arg only are kept and the ones in
         arg ignore are removed.
+
+        Elements of `only` and `ignore` can be variable names or Unix-shell-style patterns.
+        In any case, filter is case-sensitive.
 
         :param variables:
         :param only: List of OpenMDAO variable names that should be written. Other names will be
@@ -111,13 +122,27 @@ class AbstractOMFileIO(ABC):
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
         :return: filtered variables
         """
+
+        # Dev not: We use sets, but sets of Variable instances (namedtuples with a list as item) do
+        # not work. Do we work with variable names instead.
+
+        var_dict = OrderedDict((var.name, var) for var in variables)
+        var_names = var_dict.keys()
+
         if only is None:
-            used_variables = variables
+            used_var_names = set(var_names)
         else:
-            used_variables = [variable for variable in variables if variable.name in only]
+            used_var_names = set()
+            for pattern in only:
+                used_var_names.update(
+                    [variable.name for variable in variables if
+                     fnmatchcase(variable.name, pattern)])
 
         if ignore is not None:
-            used_variables = [variable for variable in used_variables
-                              if variable.name not in ignore]
+            for pattern in ignore:
+                used_var_names.difference_update(
+                    [variable.name for variable in variables if
+                     fnmatchcase(variable.name, pattern)])
 
-        return used_variables
+        # It could be simpler, but I want to keep the order
+        return [var for var_name, var in var_dict.items() if var_name in used_var_names]
