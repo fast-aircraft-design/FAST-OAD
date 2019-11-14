@@ -18,7 +18,7 @@ from typing import Sequence
 
 import openmdao.api as om
 
-from fastoad.io.xml.exceptions import FastXPathEvalError
+from fastoad.io.xml.exceptions import FastXPathEvalError, FastOMXmlIOBadPathSeparator
 from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO
 from fastoad.io.xml.translator import VarXpathTranslator
 
@@ -78,7 +78,7 @@ class OMXmlIO(OMCustomXmlIO):
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> om.IndepVarComp:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == '.':
-            raise ValueError('Cannot use dot "." in OpenMDAO variables.')
+            raise FastOMXmlIOBadPathSeparator('Cannot use dot "." in OpenMDAO variables.')
 
         return super().read(only, ignore)
 

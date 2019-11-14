@@ -38,3 +38,9 @@ class FastXpathTranslatorDuplicates(FastError):
     """
     Raised when list of variable names or list of XPaths have duplicate entries
     """
+
+
+class FastOMXmlIOBadPathSeparator(FastError):
+    """
+    Raised when the define path separator is incorrect
+    """
