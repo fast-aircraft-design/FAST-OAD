@@ -31,7 +31,7 @@ from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalE
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.types import Variable
 from fastoad.utils.strings import get_float_list_from_string
-from .constants import UNIT_ATTRIBUTE, ROOT_TAG
+from .constants import DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         super().__init__(*args, **kwargs)
 
         self._translator = None
-        self.xml_unit_attribute = UNIT_ATTRIBUTE
+        self.xml_unit_attribute = DEFAULT_UNIT_ATTRIBUTE
 
     def set_translator(self, translator: VarXpathTranslator):
         """
@@ -89,7 +89,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         for action, elem in context:
             if action == 'start':
                 current_path.append(elem.tag)
-                units = elem.attrib.get(UNIT_ATTRIBUTE, None)
+                units = elem.attrib.get(self.xml_unit_attribute, None)
                 value = None
                 if elem.text:
                     value = get_float_list_from_string(elem.text)
@@ -128,7 +128,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
             # Set value and units
             if variable.units:
-                element.attrib[UNIT_ATTRIBUTE] = variable.units
+                element.attrib[self.xml_unit_attribute] = variable.units
 
             # Filling value for already created element
             if not isinstance(variable.value, (np.ndarray, Vector, list)):
@@ -145,7 +145,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
                         parent.append(element)
                         element.text = str(value)
                         if variable.units:
-                            element.attrib[UNIT_ATTRIBUTE] = variable.units
+                            element.attrib[self.xml_unit_attribute] = variable.units
         # Write
         tree = etree.ElementTree(root)
         dirname = pth.dirname(self._data_source)

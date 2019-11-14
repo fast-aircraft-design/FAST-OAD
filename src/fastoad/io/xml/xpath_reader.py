@@ -20,7 +20,7 @@ from lxml import etree
 from lxml.etree import _ElementTree  # pylint: disable=protected-access  # Useful for type hinting
 
 from fastoad.utils.strings import get_float_list_from_string
-from .constants import UNIT_ATTRIBUTE
+from .constants import DEFAULT_UNIT_ATTRIBUTE
 
 
 class XPathReader:
@@ -60,7 +60,7 @@ class XPathReader:
         warnings.warn('This class is not used anymore in FAST', DeprecationWarning)
 
         self.tree: _ElementTree = etree.parse(filename)
-        self.unit_attribute_name = UNIT_ATTRIBUTE
+        self.unit_attribute_name = DEFAULT_UNIT_ATTRIBUTE
         """The element tree provided by :meth:`lxml.etree.parse`"""
 
     def has_element(self, xpath: str) -> bool:
@@ -108,7 +108,7 @@ class XPathReader:
         Returns None otherwise
         """
         element = self._get_element(xpath)
-        if UNIT_ATTRIBUTE in element.attrib:
+        if DEFAULT_UNIT_ATTRIBUTE in element.attrib:
             return element.attrib[self.unit_attribute_name]
 
         return None

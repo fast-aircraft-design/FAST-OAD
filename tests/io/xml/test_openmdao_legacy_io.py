@@ -48,8 +48,20 @@ def test_legacy1(cleanup):
 
     assert len(inputs) == conversion_count
 
+    field_found = [False] * 2
     for inp in inputs:
         assert inp[1] is not None  # check that a value has been read
+
+        # Check some random fields
+        if inp[0] == 'geometry:wing_position':
+            assert inp[1] == 16.457
+            assert inp[2]['units'] == 'm'
+            field_found[0] = True
+        if inp[0] == 'tlar:NPAX':
+            assert inp[1] == 150
+            assert inp[2]['units'] is None
+            field_found[1] = True
+
 
     # test write ---------------------------------------------------------------
     new_filename = pth.join(result_folder, 'CeRAS01_baseline.xml')
