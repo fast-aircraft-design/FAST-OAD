@@ -13,10 +13,10 @@ output_file = "../results/oad_process_outputs.xml"
     [problem.sizing_loop]
         nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
         linear_solver = "om.ScipyKrylov()"
-#        [problem.sizing_loop.geometry]
-#            id = "fastoad.geometry.legacy"
-#        [problem.sizing_loop.aerodynamics]
-#            id = "fastoad.aerodynamics.legacy"
+        [problem.sizing_loop.geometry]
+            id = "fastoad.geometry.legacy"
+        [problem.sizing_loop.aerodynamics]
+            id = "fastoad.aerodynamics.legacy"
         [problem.sizing_loop.performance]
             id = "fastoad.performances.breguet"
         [problem.sizing_loop.propulsion]

@@ -36,7 +36,7 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('propulsion:mto_thrust', val=np.nan)
+        self.add_input('propulsion:mto_thrust', val=np.nan, units='N')
         self.add_input('geometry:y_ratio_engine', val=np.nan)
         self.add_input('geometry:wing_span', val=np.nan, units='m')
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
@@ -109,10 +109,10 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         fus_length = inputs['geometry:fuselage_length']
         b_f = inputs['geometry:fuselage_width_max']
 
-        nac_dia = 0.00904 * sqrt(thrust_sl * 0.225) + 0.7
+        nac_dia = 0.00904 * sqrt(thrust_sl * 0.225) + 0.7  # FIXME: use output of engine module
         lg_height = 1.4 * nac_dia
         # The nominal thrust must be used in lbf
-        nac_length = 0.032 * sqrt(thrust_sl * 0.225)
+        nac_length = 0.032 * sqrt(thrust_sl * 0.225)  # FIXME: use output of engine module
 
         outputs['geometry:nacelle_length'] = nac_length
         outputs['geometry:nacelle_dia'] = nac_dia

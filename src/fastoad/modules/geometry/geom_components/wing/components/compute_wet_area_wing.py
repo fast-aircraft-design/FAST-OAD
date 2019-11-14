@@ -29,7 +29,7 @@ class ComputeWetAreaWing(ExplicitComponent):
         self.add_input('geometry:wing_area', val=np.nan, units='m**2')
         self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
 
-        self.add_output('geometry:wing_area_pf')
+        self.add_output('geometry:wing_area_pf', units='m**2')
         self.add_output('geometry:wing_wet_area', units='m**2')
 
         self.declare_partials('geometry:wing_area_pf', ['geometry:wing_area',
