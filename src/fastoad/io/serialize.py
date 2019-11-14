@@ -33,17 +33,9 @@ class AbstractOMFileIO(ABC):
     according to chosen file format.
 
     :param data_source: the I/O stream used for reading or writing data
-
     """
 
     def __init__(self, data_source: IO):
-        """
-
-        :param data_source:
-        """
-        self.use_promoted_names = True
-        """If True, promoted names will be used instead of "real" ones."""
-
         self._data_source = data_source
 
     def read(self, only: List[str] = None, ignore: List[str] = None) -> om.IndepVarComp:
@@ -94,14 +86,14 @@ class AbstractOMFileIO(ABC):
        """
 
     @staticmethod
-    def _get_variables(system: SystemSubclass) -> List[Variable]:
+    def _get_variables(ivc: om.IndepVarComp) -> List[Variable]:
         """ returns the list of variables from provided system """
 
         variables: List[Variable] = []
 
         # Outputs are accessible using private member
         # pylint: disable=protected-access
-        for (name, value, attributes) in system._indep_external:
+        for (name, value, attributes) in ivc._indep_external:
             variables.append(Variable(name, value, attributes['units']))
 
         return variables
