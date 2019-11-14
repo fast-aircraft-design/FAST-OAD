@@ -26,3 +26,15 @@ class FastXPathEvalError(FastError):
     """
     Raised when some xpath could not be resolved
     """
+
+
+class FastXpathTranslatorInconsistentLists(FastError):
+    """
+    Raised when list of variable names and list of XPaths have not the same length
+    """
+
+
+class FastXpathTranslatorDuplicates(FastError):
+    """
+    Raised when list of variable names or list of XPaths have duplicate entries
+    """
