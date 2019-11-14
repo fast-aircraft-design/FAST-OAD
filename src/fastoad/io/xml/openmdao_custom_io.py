@@ -73,13 +73,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         """
         self._translator = translator
 
-    def _read_variables(self) -> List[Variable]:
-        """
-        Reads variables from provided data source file.
-
-        :return: a list of Variable instances
-        :raise FastMissingTranslatorError: if translation table is not set
-        """
+    def read_variables(self) -> List[Variable]:
 
         if self._translator is None:
             raise FastMissingTranslatorError('Missing translator instance')
@@ -120,13 +114,8 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         return list(outputs.values())
 
-    def _write(self, variables: Sequence[Variable]):
-        """
-        Writes variables to defined data source file.
+    def write_variables(self, variables: Sequence[Variable]):
 
-        :param variables:
-        :raise FastMissingTranslatorError: if translation table is not set
-       """
         if self._translator is None:
             raise FastMissingTranslatorError('Missing translator instance')
 

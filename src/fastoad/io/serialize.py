@@ -29,7 +29,7 @@ class AbstractOMFileIO(ABC):
     """
     Base class for reading OpenMDAO variable values.
 
-    Methods :meth:`_read_variables` and :meth:`_write_variables` have to be implemented
+    Methods :meth:`read_variables` and :meth:`write_variables` have to be implemented
     according to chosen file format.
 
     :param data_source: the I/O stream used for reading or writing data
@@ -55,7 +55,7 @@ class AbstractOMFileIO(ABC):
         :param ignore: List of OpenMDAO variable names that should be ignored when reading.
         :return: an IndepVarComp() instance where outputs have been defined using provided source
         """
-        variables = self._read_variables()
+        variables = self.read_variables()
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
         ivc = om.IndepVarComp()
@@ -75,10 +75,10 @@ class AbstractOMFileIO(ABC):
         """
         variables = self._get_variables(ivc)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-        self._write(used_variables)
+        self.write_variables(used_variables)
 
     @abstractmethod
-    def _read_variables(self) -> List[Variable]:
+    def read_variables(self) -> List[Variable]:
         """
         Reads variables from provided data source file.
 
@@ -86,7 +86,7 @@ class AbstractOMFileIO(ABC):
         """
 
     @abstractmethod
-    def _write(self, variables: Sequence[Variable]):
+    def write_variables(self, variables: Sequence[Variable]):
         """
         Writes variables to defined data source file.
 
