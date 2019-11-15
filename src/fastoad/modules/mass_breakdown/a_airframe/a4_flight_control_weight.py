@@ -27,7 +27,7 @@ class FlightControlsWeight(ExplicitComponent):
         self.add_input('geometry:wing_b_50', val=np.nan, units='m')
         self.add_input('n1m1', val=np.nan, units='kg')
         self.add_input('n2m2', val=np.nan, units='kg')
-        self.add_input('kfactors_a4:K_fc', val=1.)
+        self.add_input('kfactors_a4:K_fc', val=np.nan)  # FIXME: this is a coeff of the model
         self.add_input('kfactors_a4:K_A4', val=1.)
         self.add_input('kfactors_a4:offset_A4', val=0., units='kg')
 
