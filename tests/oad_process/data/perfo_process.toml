@@ -1,0 +1,19 @@
+
+
+title = "OAD Process"
+
+module_folders = []
+
+input_file = "../results/oad_process_inputs.xml"
+output_file = "../results/oad_process_outputs.xml"
+
+
+[problem]
+    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+    nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+    [problem.performance_loop]
+        nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+        [problem.performance_loop.performance]
+            id = "fastoad.performances.breguet"
+        [problem.performance_loop.propulsion]
+            id = "fastoad.propulsion.rubber_engine"
