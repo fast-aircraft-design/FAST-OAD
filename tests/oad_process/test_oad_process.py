@@ -17,6 +17,7 @@ Test module for Overall Aircraft Design process
 import os.path as pth
 from shutil import rmtree
 
+import numpy as np
 import pytest
 
 import fastoad
@@ -39,6 +40,26 @@ def install_components():
     fastoad.initialize_framework.load()
 
 
+def test_propulsion_process(cleanup, install_components):
+    """
+    Builds a dummy process for finding altitude of min SFC
+    """
+
+    problem = ConfiguredProblem()
+    problem.configure(pth.join(DATA_FOLDER_PATH, 'propulsion_process.toml'))
+
+    problem.read_inputs()
+
+    problem.setup()
+    problem.run_driver()
+    problem.write_outputs()
+
+    assert not problem.driver.fail
+    np.testing.assert_allclose(problem.get_val('propulsion:altitude', units='ft'),
+                               36700,
+                               atol=50)
+
+
 def test_perfo_process(cleanup, install_components):
     """
     Test for the overall aircraft design process.
@@ -50,7 +71,7 @@ def test_perfo_process(cleanup, install_components):
     problem.read_inputs()
 
     problem.setup()
-    problem.model.approx_totals()
+    # problem.model.approx_totals()
     problem.set_solver_print(level=2)
     problem.run_driver()
     problem.write_outputs()
