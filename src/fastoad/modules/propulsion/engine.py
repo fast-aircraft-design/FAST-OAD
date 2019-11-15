@@ -105,6 +105,7 @@ class OMIEngine(om.ExplicitComponent, ABC):
         self.declare_partials('propulsion:SFC', '*', method='fd')
         self.declare_partials('propulsion:thrust_rate', '*', method='fd')
         self.declare_partials('propulsion:thrust', '*', method='fd')
+        self.declare_partials('*', 'propulsion:altitude', method='fd', step=30., step_calc='abs')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         engine = self.get_engine(inputs)
