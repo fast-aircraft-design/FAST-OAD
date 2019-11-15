@@ -22,7 +22,6 @@ import pytest
 
 import fastoad
 from fastoad.io.configuration import ConfiguredProblem
-from fastoad.io.xml import OMLegacy1XmlIO
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
@@ -62,7 +61,7 @@ def test_propulsion_process(cleanup, install_components):
 
 def test_perfo_process(cleanup, install_components):
     """
-    Test for the overall aircraft design process.
+    Builds a dummy process for finding altitude for max MZFW
     """
 
     problem = ConfiguredProblem()
@@ -71,34 +70,29 @@ def test_perfo_process(cleanup, install_components):
     problem.read_inputs()
 
     problem.setup()
-    # problem.model.approx_totals()
-    problem.set_solver_print(level=2)
     problem.run_driver()
     problem.write_outputs()
 
-    problem.list_problem_vars()
+    assert not problem.driver.fail
+    np.testing.assert_allclose(problem.get_val('sizing_mission:cruise_altitude', units='ft'),
+                               37500,
+                               atol=50)
 
-    # np.testing.assert_allclose(problem.get_val('sizing_mission:cruise_altitude', units='ft'),
-    #                            problem.get_val('propulsion:rubber_engine:design_altitude',
-    #                                            units='ft'),
-    #                            rtol=1e-4)
-
-
-def test_oad_process(cleanup, install_components):
-    """
-    Test for the overall aircraft design process.
-    """
-
-    problem = ConfiguredProblem()
-    problem.configure(pth.join(DATA_FOLDER_PATH, 'oad_process.toml'))
-
-    problem.setup()
-    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
-    problem.write_needed_inputs(ref_input_reader)
-    problem.read_inputs()
-
-    problem.run_model()
-
-    problem.write_outputs()
-
-    # TODO: check results
+# def test_oad_process(cleanup, install_components):
+#     """
+#     Test for the overall aircraft design process.
+#     """
+#
+#     problem = ConfiguredProblem()
+#     problem.configure(pth.join(DATA_FOLDER_PATH, 'oad_process.toml'))
+#
+#     problem.setup()
+#     ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
+#     problem.write_needed_inputs(ref_input_reader)
+#     problem.read_inputs()
+#
+#     problem.run_model()
+#
+#     problem.write_outputs()
+#
+#     # TODO: check results

@@ -15,10 +15,10 @@
 
 <aircraft>
     <sizing_mission>
-        <cruise_altitude units="ft">15000.0</cruise_altitude>
+        <cruise_altitude units="ft">35000.0</cruise_altitude>
     </sizing_mission>
     <tlar>
-        <cruise_Mach>0.78</cruise_Mach>
+        <cruise_Mach>0.80</cruise_Mach>
         <Range units="NM">2750.0</Range>
     </tlar>
     <aerodynamics>

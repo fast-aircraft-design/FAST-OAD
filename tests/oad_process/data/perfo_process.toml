@@ -9,18 +9,16 @@ output_file = "../results/perfo_process_outputs.xml"
 
 
 [problem]
-    driver = "om.ScipyOptimizeDriver(optimizer='COBYLA', tol=1e-8)"
+    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
     nonlinear_solver = "om.NonlinearBlockGS()"
-    [problem.performance_loop]
-        nonlinear_solver = "om.NonlinearBlockGS()"
-        [problem.performance_loop.performance]
-            id = "fastoad.performances.breguet"
-        [problem.performance_loop.propulsion]
-            id = "fastoad.propulsion.rubber_engine"
+    [problem.performance]
+        id = "fastoad.performances.breguet"
+    [problem.propulsion]
+        id = "fastoad.propulsion.rubber_engine"
 
 [[objective]]
-  name = "propulsion:SFC"
-  scaler = -10000
+  name = "mission:MZFW"
+  scaler = 1
 
 [[design_var]]
   name = "sizing_mission:cruise_altitude"
