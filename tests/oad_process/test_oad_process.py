@@ -47,16 +47,20 @@ def test_perfo_process(cleanup, install_components):
     problem = ConfiguredProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'perfo_process.toml'))
 
-    problem.setup()
-    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
-    problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
 
-    problem.run_model()
-
+    problem.setup()
+    problem.model.approx_totals()
+    problem.set_solver_print(level=2)
+    problem.run_driver()
     problem.write_outputs()
 
-    # TODO: check results
+    problem.list_problem_vars()
+
+    # np.testing.assert_allclose(problem.get_val('sizing_mission:cruise_altitude', units='ft'),
+    #                            problem.get_val('propulsion:rubber_engine:design_altitude',
+    #                                            units='ft'),
+    #                            rtol=1e-4)
 
 
 def test_oad_process(cleanup, install_components):

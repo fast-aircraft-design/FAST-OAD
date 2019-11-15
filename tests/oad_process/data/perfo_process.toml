@@ -4,16 +4,26 @@ title = "OAD Process"
 
 module_folders = []
 
-input_file = "../results/oad_process_inputs.xml"
-output_file = "../results/oad_process_outputs.xml"
+input_file = "perfo_process_inputs.xml"
+output_file = "../results/perfo_process_outputs.xml"
 
 
 [problem]
-    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
-    nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+    driver = "om.ScipyOptimizeDriver(optimizer='COBYLA', tol=1e-8)"
+    nonlinear_solver = "om.NonlinearBlockGS()"
     [problem.performance_loop]
-        nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+        nonlinear_solver = "om.NonlinearBlockGS()"
         [problem.performance_loop.performance]
             id = "fastoad.performances.breguet"
         [problem.performance_loop.propulsion]
             id = "fastoad.propulsion.rubber_engine"
+
+[[objective]]
+  name = "propulsion:SFC"
+  scaler = -10000
+
+[[design_var]]
+  name = "sizing_mission:cruise_altitude"
+  lower = 0
+  upper = 45000
+
