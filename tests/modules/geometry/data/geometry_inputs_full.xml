@@ -229,16 +229,16 @@
             <PNC>4</PNC>
             <eco id="173">
                 <front_seat_number>6</front_seat_number>
-                <WS unit="inch">0.46</WS>
-                <LS unit="inch">0.86</LS>
+                <WS unit="m">0.46</WS>
+                <LS unit="m">0.86</LS>
             </eco>
             <bus id="167">
                 <front_seat_number>4</front_seat_number>
-                <WS unit="inch">0.53</WS>
-                <LS unit="inch">0.92</LS>
+                <WS unit="m">0.53</WS>
+                <LS unit="m">0.92</LS>
             </bus>
-            <Waisle unit="inch">0.48</Waisle>
-            <Wexit unit="inch">0.51</Wexit>
+            <Waisle unit="m">0.48</Waisle>
+            <Wexit unit="m">0.51</Wexit>
             <container_number_front>1</container_number_front>
             <container_number>5</container_number>
             <pallet_number>10</pallet_number>

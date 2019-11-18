@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from math import sqrt
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -96,11 +96,11 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('cabin:WSeco', val=np.nan, units='inch')
-        self.add_input('cabin:LSeco', val=np.nan, units='inch')
+        self.add_input('cabin:WSeco', val=np.nan, units='m')
+        self.add_input('cabin:LSeco', val=np.nan, units='m')
         self.add_input('cabin:front_seat_number_eco', val=np.nan)
-        self.add_input('cabin:Waisle', val=np.nan, units='inch')
-        self.add_input('cabin:Wexit', val=np.nan, units='inch')
+        self.add_input('cabin:Waisle', val=np.nan, units='m')
+        self.add_input('cabin:Wexit', val=np.nan, units='m')
         self.add_input('tlar:NPAX', val=np.nan)
         self.add_input('geometry:engine_number', val=np.nan)
 
