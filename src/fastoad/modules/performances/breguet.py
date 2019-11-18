@@ -68,15 +68,23 @@ class Breguet(om.ExplicitComponent):
         atmosphere = Atmosphere(inputs['sizing_mission:cruise_altitude'], altitude_in_feet=False)
         cruise_speed = atmosphere.speed_of_sound * inputs['tlar:cruise_Mach']
 
-        initial_cruise_mass = inputs['weight:MTOW'] * CLIMB_RATIO
-        outputs['propulsion:required_thrust'] = initial_cruise_mass / inputs[
-            'aerodynamics:L_D_max'] * g / inputs['engine_count']
-        range_factor = cruise_speed * inputs['aerodynamics:L_D_max'] / g / inputs['propulsion:SFC']
-        cruise_distance = inputs['tlar:Range'] - CLIMB_DESCENT_DISTANCE * 1000
-        cruise_mass_ratio = 1. / np.exp(cruise_distance / range_factor)
-        flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
-        outputs['mission:MZFW'] = inputs['weight:MTOW'] * flight_mass_ratio / RESERVE_RATIO
-        outputs['mission:fuel_weight'] = inputs['weight:MTOW'] - outputs['mission:MZFW']
+        range = inputs['tlar:Range']
+        engine_count = inputs['engine_count']
+        ld_ratio = inputs['aerodynamics:L_D_max']
+        mtow = inputs['weight:MTOW']
+        initial_cruise_mass = mtow * CLIMB_RATIO
+        sfc = inputs['propulsion:SFC']
 
+        # Variables for propulsion
         outputs['propulsion:altitude'] = inputs['sizing_mission:cruise_altitude']
         outputs['propulsion:mach'] = inputs['tlar:cruise_Mach']
+        outputs['propulsion:required_thrust'] = initial_cruise_mass / ld_ratio * g / engine_count
+
+        range_factor = cruise_speed * ld_ratio / g / sfc
+        cruise_distance = range - CLIMB_DESCENT_DISTANCE * 1000
+        cruise_mass_ratio = 1. / np.exp(cruise_distance / range_factor)
+        flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
+
+        mzfw = mtow * flight_mass_ratio / RESERVE_RATIO
+        outputs['mission:fuel_weight'] = mtow - mzfw
+        outputs['mission:MZFW'] = mzfw
