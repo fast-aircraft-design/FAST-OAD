@@ -15,7 +15,10 @@ Component registration
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from fastoad.modules.performances.breguet import ImplicitBreguet
 from . import Breguet
 
 OpenMDAOSystemFactory.register_system(Breguet,
                                       'fastoad.performances.breguet')
+OpenMDAOSystemFactory.register_system(ImplicitBreguet,
+                                      'fastoad.performances.breguet.implicit')
