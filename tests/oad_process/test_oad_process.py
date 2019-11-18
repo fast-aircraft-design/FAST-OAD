@@ -22,6 +22,7 @@ import pytest
 
 import fastoad
 from fastoad.io.configuration import ConfiguredProblem
+from fastoad.io.xml import OMLegacy1XmlIO
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
@@ -78,21 +79,22 @@ def test_perfo_process(cleanup, install_components):
                                37500,
                                atol=50)
 
-# def test_oad_process(cleanup, install_components):
-#     """
-#     Test for the overall aircraft design process.
-#     """
-#
-#     problem = ConfiguredProblem()
-#     problem.configure(pth.join(DATA_FOLDER_PATH, 'oad_process.toml'))
-#
-#     problem.setup()
-#     ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
-#     problem.write_needed_inputs(ref_input_reader)
-#     problem.read_inputs()
-#
-#     problem.run_model()
-#
-#     problem.write_outputs()
-#
-#     # TODO: check results
+
+def test_oad_process(cleanup, install_components):
+    """
+    Test for the overall aircraft design process.
+    """
+
+    problem = ConfiguredProblem()
+    problem.configure(pth.join(DATA_FOLDER_PATH, 'oad_process.toml'))
+
+    problem.setup()
+    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
+    problem.write_needed_inputs(ref_input_reader)
+    problem.read_inputs()
+
+    problem.run_model()
+
+    problem.write_outputs()
+
+    # TODO: check results

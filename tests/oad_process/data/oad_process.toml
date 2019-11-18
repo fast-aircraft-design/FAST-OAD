@@ -9,15 +9,16 @@ output_file = "../results/oad_process_outputs.xml"
 
 
 [problem]
-    # driver = "om.ScipyOptimizeDriver(optimizer='COBYLA')"
-    [problem.sizing_loop]
+    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+    nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+    linear_solver = "om.ScipyKrylov()"
+    [problem.geometry]
+        id = "fastoad.geometry.legacy"
+    [problem.aerodynamics]
+        id = "fastoad.aerodynamics.highspeed.legacy"
+    [problem.performance_loop]
         nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
-        linear_solver = "om.ScipyKrylov()"
-        [problem.sizing_loop.geometry]
-            id = "fastoad.geometry.legacy"
-        [problem.sizing_loop.aerodynamics]
-            id = "fastoad.aerodynamics.legacy"
-        [problem.sizing_loop.performance]
+        [problem.performance_loop.performance]
             id = "fastoad.performances.breguet"
-        [problem.sizing_loop.propulsion]
+        [problem.performance_loop.sizing_loop.propulsion]
             id = "fastoad.propulsion.rubber_engine"

@@ -15,7 +15,10 @@ Component registration
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from . import Aerodynamics
 
 OpenMDAOSystemFactory.register_system(Aerodynamics,
                                       'fastoad.aerodynamics.legacy')
+OpenMDAOSystemFactory.register_system(AerodynamicsHighSpeed,
+                                      'fastoad.aerodynamics.highspeed.legacy')
