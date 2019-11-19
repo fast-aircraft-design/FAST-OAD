@@ -19,6 +19,8 @@ import os.path as pth
 import pytest
 
 from fastoad.exceptions import XPathError, VariableError
+from fastoad.io.xml.exceptions import FastXpathTranslatorInconsistentLists, \
+    FastXpathTranslatorDuplicates
 from fastoad.io.xml.translator import VarXpathTranslator
 
 
@@ -32,9 +34,26 @@ def test_translator_with_set():
 
     # test with lists of different lengths -> error
     var_list2 = ['var0'] + var_list
-    with pytest.raises(IndexError) as exc_info:
+    with pytest.raises(FastXpathTranslatorInconsistentLists):
         translator.set(var_list2, xpath_list)
-    assert exc_info is not None
+
+    # test with duplicate var names -> error
+    duplicate_vars = ['var1', 'var3', 'var3']
+    other_xpaths = ['xpath42', 'xpath404', 'xpath0']
+    var_list3 = var_list + duplicate_vars
+    xpath_list3 = xpath_list + other_xpaths
+    with pytest.raises(FastXpathTranslatorDuplicates) as exc_info:
+        translator.set(var_list3, xpath_list3)
+    assert exc_info.value.args[1] == set(duplicate_vars)
+
+    # test with duplicate XPaths -> error
+    other_vars = ['var42', 'var404']
+    duplicate_xpaths = ['xpath5', 'xpath2']
+    var_list4 = var_list + other_vars
+    xpath_list4 = xpath_list + duplicate_xpaths
+    with pytest.raises(FastXpathTranslatorDuplicates) as exc_info:
+        translator.set(var_list4, xpath_list4)
+    assert exc_info.value.args[1] == set(duplicate_xpaths)
 
     # Filling correct lists
     translator.set(var_list, xpath_list)
@@ -64,10 +83,12 @@ def test_translator_with_read():
 
     var_list = ['geometry:total_surface',
                 'geometry:wing:span',
+                'geometry:wing:chord',
                 'geometry:wing:aspect_ratio',
                 'geometry:fuselage:length']
     xpath_list = ['total_area',
                   'wing/span',
+                  'wing/chord',
                   'wing/aspect_ratio',
                   'fuselage_length']
 

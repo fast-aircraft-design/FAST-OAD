@@ -20,3 +20,27 @@ class FastMissingTranslatorError(FastError):
     """
     Raised when the 'XPath<->OpenMDAO variable names' translator has not been set
     """
+
+
+class FastXPathEvalError(FastError):
+    """
+    Raised when some xpath could not be resolved
+    """
+
+
+class FastXpathTranslatorInconsistentLists(FastError):
+    """
+    Raised when list of variable names and list of XPaths have not the same length
+    """
+
+
+class FastXpathTranslatorDuplicates(FastError):
+    """
+    Raised when list of variable names or list of XPaths have duplicate entries
+    """
+
+
+class FastOMXmlIOBadPathSeparator(FastError):
+    """
+    Raised when the define path separator is incorrect
+    """

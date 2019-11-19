@@ -13,13 +13,14 @@ XML reading based on XPath
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import warnings
 from typing import Optional, List, Tuple, Union
 
 from lxml import etree
 from lxml.etree import _ElementTree  # pylint: disable=protected-access  # Useful for type hinting
 
 from fastoad.utils.strings import get_float_list_from_string
-from .constants import UNIT_ATTRIBUTE
+from .constants import DEFAULT_UNIT_ATTRIBUTE
 
 
 class XPathReader:
@@ -56,8 +57,10 @@ class XPathReader:
         Constructor. Will parse the whole indicated file.
         :param filename: XML file
         """
+        warnings.warn('This class is not used anymore in FAST', DeprecationWarning)
+
         self.tree: _ElementTree = etree.parse(filename)
-        self.unit_attribute_name = UNIT_ATTRIBUTE
+        self.unit_attribute_name = DEFAULT_UNIT_ATTRIBUTE
         """The element tree provided by :meth:`lxml.etree.parse`"""
 
     def has_element(self, xpath: str) -> bool:
@@ -105,7 +108,7 @@ class XPathReader:
         Returns None otherwise
         """
         element = self._get_element(xpath)
-        if UNIT_ATTRIBUTE in element.attrib:
+        if DEFAULT_UNIT_ATTRIBUTE in element.attrib:
             return element.attrib[self.unit_attribute_name]
 
         return None
@@ -161,17 +164,3 @@ class XPathReader:
             return self.tree.xpath(xpath)[0]
 
         raise KeyError('XPath not found')
-
-    def get_all_elements_with_no_child_xpath(self):
-        """
-        Returns the xpath of elements that have no child.
-
-        :return: list of xpaths of element with no child
-        """
-        xpaths = []
-        for elem in self.tree.iter():
-            value = elem.text.strip()
-            if value != '':
-                xpaths.append(self.tree.getelementpath(elem))
-
-        return xpaths

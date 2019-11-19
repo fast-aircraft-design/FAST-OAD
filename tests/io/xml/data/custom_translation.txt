@@ -1,4 +1,5 @@
 geometry:total_surface, total_area
 geometry:wing:span, wing/span
+geometry:wing:chord, wing/chord
 geometry:wing:aspect_ratio, wing/aspect_ratio
 geometry:fuselage:length, fuselage_length
