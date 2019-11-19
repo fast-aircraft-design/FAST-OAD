@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from math import sqrt
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.modules.geometry.options import AIRCRAFT_FAMILY_OPTION, ENGINE_LOCATION_OPTION
@@ -36,7 +36,7 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('propulsion_conventional:thrust_SL', val=np.nan)
+        self.add_input('propulsion:mto_thrust', val=np.nan, units='N')
         self.add_input('geometry:y_ratio_engine', val=np.nan)
         self.add_input('geometry:wing_span', val=np.nan, units='m')
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
@@ -61,17 +61,17 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         self.add_output('cg_propulsion:B1', units='m')
 
         self.declare_partials('geometry:nacelle_dia',
-                              'propulsion_conventional:thrust_SL', method='fd')
+                              'propulsion:mto_thrust', method='fd')
         self.declare_partials('geometry:nacelle_length',
-                              'propulsion_conventional:thrust_SL', method='fd')
+                              'propulsion:mto_thrust', method='fd')
         self.declare_partials('geometry:LG_height',
-                              'propulsion_conventional:thrust_SL', method='fd')
+                              'propulsion:mto_thrust', method='fd')
         self.declare_partials('geometry:fan_length',
-                              'propulsion_conventional:thrust_SL', method='fd')
+                              'propulsion:mto_thrust', method='fd')
         self.declare_partials('geometry:pylon_length',
-                              'propulsion_conventional:thrust_SL', method='fd')
+                              'propulsion:mto_thrust', method='fd')
         self.declare_partials('geometry:y_nacell',
-                              ['propulsion_conventional:thrust_SL',
+                              ['propulsion:mto_thrust',
                                'geometry:fuselage_width_max',
                                'geometry:y_ratio_engine',
                                'geometry:wing_span'], method='fd')
@@ -85,17 +85,17 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
                                'geometry:wing_l2',
                                'geometry:wing_l3',
                                'geometry:fuselage_length',
-                               'propulsion_conventional:thrust_SL',
+                               'propulsion:mto_thrust',
                                'geometry:fuselage_width_max',
                                 'geometry:y_ratio_engine',
                                 'geometry:wing_span'], method='fd')
         self.declare_partials('geometry:nacelle_wet_area',
-                              'propulsion_conventional:thrust_SL', method='fd')
+                              'propulsion:mto_thrust', method='fd')
         self.declare_partials('geometry:pylon_wet_area',
-                              'propulsion_conventional:thrust_SL', method='fd')
+                              'propulsion:mto_thrust', method='fd')
 
     def compute(self, inputs, outputs):
-        thrust_sl = inputs['propulsion_conventional:thrust_SL']
+        thrust_sl = inputs['propulsion:mto_thrust']
         y_ratio_engine = inputs['geometry:y_ratio_engine']
         span = inputs['geometry:wing_span']
         l0_wing = inputs['geometry:wing_l0']
@@ -109,10 +109,10 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         fus_length = inputs['geometry:fuselage_length']
         b_f = inputs['geometry:fuselage_width_max']
 
-        nac_dia = 0.00904 * sqrt(thrust_sl * 0.225) + 0.7
+        nac_dia = 0.00904 * sqrt(thrust_sl * 0.225) + 0.7  # FIXME: use output of engine module
         lg_height = 1.4 * nac_dia
         # The nominal thrust must be used in lbf
-        nac_length = 0.032 * sqrt(thrust_sl * 0.225)
+        nac_length = 0.032 * sqrt(thrust_sl * 0.225)  # FIXME: use output of engine module
 
         outputs['geometry:nacelle_length'] = nac_length
         outputs['geometry:nacelle_dia'] = nac_dia

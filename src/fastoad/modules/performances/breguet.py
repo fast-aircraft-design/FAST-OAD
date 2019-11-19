@@ -18,6 +18,7 @@ import numpy as np
 import openmdao.api as om
 from scipy.constants import g
 
+from fastoad.constants import FlightPhase
 from fastoad.utils.physics import Atmosphere
 
 CLIMB_RATIO = 0.97  # = mass at end of climb / mass at start of climb
@@ -26,7 +27,81 @@ RESERVE_RATIO = 1.06
 CLIMB_DESCENT_DISTANCE = 500  # in km, distance of climb + descent
 
 
-class Breguet(om.ExplicitComponent):
+class Breguet(om.Group):
+    def initialize(self):
+        self.options.declare('flight_point_count', 1, types=(int, tuple))
+
+    def setup(self):
+        self.add_subsystem('propulsion',
+                           _BreguetPropulsion(
+                               flight_point_count=self.options['flight_point_count']),
+                           promotes=['*'])
+        self.add_subsystem('breguet',
+                           _ExplicitBreguet(flight_point_count=self.options['flight_point_count']),
+                           promotes=['*'])
+
+
+class ImplicitBreguet(om.Group):
+    def initialize(self):
+        self.options.declare('flight_point_count', 1, types=(int, tuple))
+
+    def setup(self):
+        self.add_subsystem('propulsion',
+                           _BreguetPropulsion(
+                               flight_point_count=self.options['flight_point_count']),
+                           promotes=['*'])
+        self.add_subsystem('breguet',
+                           _ImplicitBreguet(flight_point_count=self.options['flight_point_count']),
+                           promotes=['*'])
+
+        self.nonlinear_solver = om.NewtonSolver()
+        self.linear_solver = om.ScipyKrylov()
+
+
+class _BreguetPropulsion(om.ExplicitComponent):
+    """
+    Link with engine computation
+    """
+
+    def initialize(self):
+        self.options.declare('flight_point_count', 1, types=(int, tuple))
+
+    def setup(self):
+        shape = self.options['flight_point_count']
+        self.add_input('sizing_mission:cruise_altitude', np.nan, shape=shape, units='m')
+        self.add_input('tlar:cruise_Mach', np.nan, shape=shape)
+        self.add_input('weight:MTOW', np.nan, units='kg')
+        self.add_input('aerodynamics:L_D_max', np.nan, shape=shape)
+        self.add_input('engine_count', 2)
+
+        self.add_output('propulsion:phase', FlightPhase.CRUISE)
+        self.add_output('propulsion:use_thrust_rate', False)
+        self.add_output('propulsion:required_thrust_rate', 0.)
+        self.add_output('propulsion:required_thrust', units='N')
+        self.add_output('propulsion:altitude', units='m')
+        self.add_output('propulsion:mach')
+
+        self.declare_partials('propulsion:phase', '*', method='fd')
+        self.declare_partials('propulsion:use_thrust_rate', '*', method='fd')
+        self.declare_partials('propulsion:required_thrust_rate', '*', method='fd')
+        self.declare_partials('propulsion:required_thrust', '*', method='fd')
+        self.declare_partials('propulsion:altitude', 'sizing_mission:cruise_altitude', method='fd')
+        self.declare_partials('propulsion:mach', 'tlar:cruise_Mach', method='fd')
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        engine_count = inputs['engine_count']
+        ld_ratio = inputs['aerodynamics:L_D_max']
+        mtow = inputs['weight:MTOW']
+        initial_cruise_mass = mtow * CLIMB_RATIO
+
+        # Variables for propulsion
+        outputs['propulsion:altitude'] = inputs['sizing_mission:cruise_altitude']
+        outputs['propulsion:mach'] = inputs['tlar:cruise_Mach']
+
+        outputs['propulsion:required_thrust'] = initial_cruise_mass / ld_ratio * g / engine_count
+
+
+class _ExplicitBreguet(om.ExplicitComponent):
     """
     Estimation of fuel consumption through Breguet formula with a rough estimate
     of climb and descent phases
@@ -37,30 +112,85 @@ class Breguet(om.ExplicitComponent):
 
     def setup(self):
         shape = self.options['flight_point_count']
-        self.add_input('altitude', np.nan, shape=shape, units='m')
-        self.add_input('mach', np.nan, shape=shape)
-        self.add_input('lift_to_drag_ratio', np.nan, shape=shape)
-        self.add_input('SFC', np.nan, shape=shape, units='kg/N/s')
-        self.add_input('flight_distance', np.nan, shape=shape, units='m')
-        self.add_input('MTOW', np.nan, units='kg')
-        self.add_input('engine_count', 2)
+        self.add_input('sizing_mission:cruise_altitude', np.nan, shape=shape, units='m')
+        self.add_input('tlar:cruise_Mach', np.nan, shape=shape)
+        self.add_input('aerodynamics:L_D_max', np.nan, shape=shape)
+        self.add_input('propulsion:SFC', np.nan, shape=shape, units='kg/N/s')
+        self.add_input('tlar:Range', np.nan, shape=shape, units='m')
+        self.add_input('weight:MTOW', np.nan, units='kg')
 
-        self.add_output('MZFW', units='kg')
-        self.add_output('fuel_weight', units='kg')
-        self.add_output('use_thrust_rate', False)
-        self.add_output('required_thrust_rate', 0.)
-        self.add_output('required_thrust', units='N')
+        self.add_output('mission:MZFW', units='kg')
+        self.add_output('mission:fuel_weight', units='kg')
+
+        self.declare_partials('mission:MZFW', '*', method='fd')
+        self.declare_partials('mission:fuel_weight', '*', method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        atmosphere = Atmosphere(inputs['altitude'], altitude_in_feet=False)
-        cruise_speed = atmosphere.speed_of_sound * inputs['mach']
+        atmosphere = Atmosphere(inputs['sizing_mission:cruise_altitude'], altitude_in_feet=False)
+        cruise_speed = atmosphere.speed_of_sound * inputs['tlar:cruise_Mach']
 
-        initial_cruise_mass = inputs['MTOW'] * CLIMB_RATIO
-        outputs['required_thrust'] = initial_cruise_mass / inputs['lift_to_drag_ratio'] * g \
-                                     / inputs['engine_count']
-        range_factor = cruise_speed * inputs['lift_to_drag_ratio'] / g / inputs['SFC']
-        cruise_distance = inputs['flight_distance'] - CLIMB_DESCENT_DISTANCE * 1000
+        range = inputs['tlar:Range']
+        ld_ratio = inputs['aerodynamics:L_D_max']
+        mtow = inputs['weight:MTOW']
+        sfc = inputs['propulsion:SFC']
+
+        range_factor = cruise_speed * ld_ratio / g / sfc
+        cruise_distance = range - CLIMB_DESCENT_DISTANCE * 1000
         cruise_mass_ratio = 1. / np.exp(cruise_distance / range_factor)
         flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
-        outputs['MZFW'] = inputs['MTOW'] * flight_mass_ratio / RESERVE_RATIO
-        outputs['fuel_weight'] = inputs['MTOW'] - outputs['MZFW']
+
+        mzfw = mtow * flight_mass_ratio / RESERVE_RATIO
+        outputs['mission:fuel_weight'] = mtow - mzfw
+        outputs['mission:MZFW'] = mzfw
+
+
+class _ImplicitBreguet(om.ImplicitComponent):
+    """
+    Estimation of fuel consumption through Breguet formula with a rough estimate
+    of climb and descent phases
+    """
+
+    def initialize(self):
+        self.options.declare('flight_point_count', 1, types=(int, tuple))
+
+    def setup(self):
+        shape = self.options['flight_point_count']
+        self.add_input('sizing_mission:cruise_altitude', np.nan, shape=shape, units='m')
+        self.add_input('tlar:cruise_Mach', np.nan, shape=shape)
+        self.add_input('aerodynamics:L_D_max', np.nan, shape=shape)
+        self.add_input('propulsion:SFC', 1e-5, shape=shape, units='kg/N/s')
+        self.add_input('tlar:Range', np.nan, shape=shape, units='m')
+        self.add_input('engine_count', 2)
+        self.add_input('weight:OEW', np.nan, units='kg')
+        self.add_input('weight:Max_PL', np.nan, units='kg')
+
+        self.add_output('weight:MTOW', 100000, units='kg')
+
+        self.declare_partials('weight:MTOW', '*', method='fd')
+
+    def apply_nonlinear(self, inputs, outputs, residuals,
+                        discrete_inputs=None, discrete_outputs=None):
+        atmosphere = Atmosphere(inputs['sizing_mission:cruise_altitude'], altitude_in_feet=False)
+        cruise_speed = atmosphere.speed_of_sound * inputs['tlar:cruise_Mach']
+
+        oew = inputs['weight:OEW']
+        max_payload_weight = inputs['weight:Max_PL']
+        range = inputs['tlar:Range']
+        ld_ratio = inputs['aerodynamics:L_D_max']
+        mtow = outputs['weight:MTOW']
+        sfc = inputs['propulsion:SFC']
+
+        range_factor = cruise_speed * ld_ratio / g / sfc
+        cruise_distance = range - CLIMB_DESCENT_DISTANCE * 1000
+        cruise_mass_ratio = 1. / np.exp(cruise_distance / range_factor)
+        flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
+
+        mzfw = mtow * flight_mass_ratio / RESERVE_RATIO
+
+        mission_oew = mzfw - max_payload_weight
+        residuals['weight:MTOW'] = oew - mission_oew
+
+    def guess_nonlinear(self, inputs, outputs, residuals,
+                        discrete_inputs=None, discrete_outputs=None):
+        outputs['weight:MTOW'] = inputs['weight:OEW'] * 1.5
+        # outputs['mission:MZFW'] = inputs['weight:OEW'] * 1.2

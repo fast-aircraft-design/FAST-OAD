@@ -1,3 +1,6 @@
+"""
+Component registration
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -10,4 +13,9 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from .aerodynamics import Aerodynamics
+
+from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from . import OMRubberEngine
+
+OpenMDAOSystemFactory.register_system(OMRubberEngine,
+                                      'fastoad.propulsion.rubber_engine')

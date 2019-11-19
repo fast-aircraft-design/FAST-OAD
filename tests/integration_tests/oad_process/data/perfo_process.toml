@@ -1,0 +1,27 @@
+
+
+title = "OAD Process"
+
+module_folders = []
+
+input_file = "perfo_process_inputs.xml"
+output_file = "../results/perfo_process_outputs.xml"
+
+
+[problem]
+    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+    nonlinear_solver = "om.NonlinearBlockGS()"
+    [problem.performance]
+        id = "fastoad.performances.breguet"
+    [problem.propulsion]
+        id = "fastoad.propulsion.rubber_engine"
+
+[[objective]]
+  name = "mission:MZFW"
+  scaler = 1
+
+[[design_var]]
+  name = "sizing_mission:cruise_altitude"
+  lower = 0
+  upper = 45000
+

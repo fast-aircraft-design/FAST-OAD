@@ -36,7 +36,7 @@ class ComputeOthersCG(ExplicitComponent):
         self.add_input('weight_propulsion:B1', val=np.nan, units='kg')
         self.add_input('cabin:NPAX1', val=np.nan)
         self.add_input('cabin:front_seat_number_eco', val=np.nan)
-        self.add_input('cabin:LSeco', val=np.nan, units='inch')
+        self.add_input('cabin:LSeco', val=np.nan, units='m')
 
         # TODO: add description of these CGs
         self.add_output('cg_airframe:A2', units='m')

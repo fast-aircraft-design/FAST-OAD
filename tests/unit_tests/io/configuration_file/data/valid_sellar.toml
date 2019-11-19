@@ -1,0 +1,43 @@
+
+
+title = "Sellar"
+
+module_folders = [
+  "../../../../sellar_example",
+  "d:/path/does/not/exist" # will only trigger a warning
+]
+
+input_file = "../results/inputs.xml"
+output_file = "../results/outputs.xml"
+
+
+[problem]
+    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+    [problem.cycle]
+        nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+        linear_solver = "om.ScipyKrylov()"
+        [problem.cycle.disc1]
+            id = "sellar.disc1"
+        [problem.cycle.disc2]
+            id = "sellar.disc2"
+    [problem.functions]
+        id = "sellar.functions"
+
+[[design_var]]
+  name = "x"
+  lower = 0
+  upper = 10
+[[design_var]]
+  name = "z"
+  lower = 0
+  upper = 10
+
+[[objective]]
+  name = "f"
+
+[[constraint]]
+  name = "g1"
+  upper = 0
+[[constraint]]
+  name = "g2"
+  upper = 0

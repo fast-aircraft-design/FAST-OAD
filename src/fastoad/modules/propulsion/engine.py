@@ -91,30 +91,34 @@ class OMIEngine(om.ExplicitComponent, ABC):
 
     def setup(self):
         shape = self.options['flight_point_count']
-        self.add_input('mach', np.nan, shape=shape)
-        self.add_input('altitude', np.nan, shape=shape, units='m')
-        self.add_input('phase', np.nan, shape=shape)
-        self.add_input('use_thrust_rate', np.nan, shape=shape)
-        self.add_input('required_thrust_rate', np.nan, shape=shape)
-        self.add_input('required_thrust', np.nan, shape=shape, units='N')
+        self.add_input('propulsion:mach', np.nan, shape=shape)
+        self.add_input('propulsion:altitude', np.nan, shape=shape, units='m')
+        self.add_input('propulsion:phase', np.nan, shape=shape)
+        self.add_input('propulsion:use_thrust_rate', np.nan, shape=shape)
+        self.add_input('propulsion:required_thrust_rate', np.nan, shape=shape)
+        self.add_input('propulsion:required_thrust', np.nan, shape=shape, units='N')
 
-        self.add_output('SFC', shape=shape, units='kg/s/N')
-        self.add_output('thrust_rate', shape=shape, units='kg/s/N')
-        self.add_output('thrust', shape=shape, units='kg/s/N')
-        self.declare_partials('SFC', '*', method='fd')
-        self.declare_partials('thrust_rate', '*', method='fd')
-        self.declare_partials('thrust', '*', method='fd')
+        self.add_output('propulsion:SFC', shape=shape, units='kg/s/N')
+        self.add_output('propulsion:thrust_rate', shape=shape)
+        self.add_output('propulsion:thrust', shape=shape, units='N')
+
+        self.declare_partials('propulsion:SFC', '*', method='fd')
+        self.declare_partials('propulsion:thrust_rate', '*', method='fd')
+        self.declare_partials('propulsion:thrust', '*', method='fd')
+        self.declare_partials('*', 'propulsion:altitude', method='fd', step=30., step_calc='abs')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         engine = self.get_engine(inputs)
-        sfc, thrust_rate, thrust = engine.compute_flight_points(inputs['mach'], inputs['altitude'],
-                                                                inputs['phase'],
-                                                                inputs['use_thrust_rate'],
-                                                                inputs['required_thrust_rate'],
-                                                                inputs['required_thrust'])
-        outputs['SFC'] = sfc
-        outputs['thrust_rate'] = thrust_rate
-        outputs['thrust'] = thrust
+        sfc, thrust_rate, thrust = engine.compute_flight_points(
+            inputs['propulsion:mach'],
+            inputs['propulsion:altitude'],
+            inputs['propulsion:phase'],
+            inputs['propulsion:use_thrust_rate'],
+            inputs['propulsion:required_thrust_rate'],
+            inputs['propulsion:required_thrust'])
+        outputs['propulsion:SFC'] = sfc
+        outputs['propulsion:thrust_rate'] = thrust_rate
+        outputs['propulsion:thrust'] = thrust
 
     @staticmethod
     @abstractmethod

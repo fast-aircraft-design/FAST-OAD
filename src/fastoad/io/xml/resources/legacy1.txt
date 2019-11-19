@@ -107,7 +107,6 @@ kfactors_d4:K_D4, Aircraft/weight/k_factors/security_kit_D4/D4/k
 kfactors_d4:offset_D4, Aircraft/weight/k_factors/security_kit_D4/D4/offset
 kfactors_d5:K_D5, Aircraft/weight/k_factors/toilet_D5/D5/k
 kfactors_d5:offset_D5, Aircraft/weight/k_factors/toilet_D5/D5/offset
-propulsion_conventional:thrust_SL, Aircraft/propulsion/conventional/thrust_SL
 tlar:NPAX, Aircraft/TLAR/NPAX
 weight:OWE, Aircraft/weight/OWE
 weight:LW, Aircraft/weight/LW
@@ -418,16 +417,6 @@ geometry:nacelle_length, Aircraft/geometry/propulsion/nac_length
 geometry:fan_length, Aircraft/geometry/propulsion/fan_length
 geometry:y_nacell, Aircraft/geometry/propulsion/y_nacell
 geometry:LG_height, Aircraft/geometry/LG/LG_height
-propulsion_conventional:BPR, Aircraft/propulsion/conventional/BPR
-propulsion_conventional:OPR, Aircraft/propulsion/conventional/OPR
-propulsion_conventional:T4, Aircraft/propulsion/conventional/T4
-propulsion_conventional:DT4_CLIMB, Aircraft/propulsion/conventional/DT4_CLIMB
-propulsion_conventional:DT4_CRZ, Aircraft/propulsion/conventional/DT4_CRZ
-propulsion_conventional:mach_max, Aircraft/propulsion/conventional/mach_max
-propulsion_conventional:h_design, Aircraft/propulsion/conventional/h_design
-kfactors_propulsion_conventional:k_SFC, Aircraft/propulsion/conventional/k_factors/k_SFC
-kfactors_propulsion_conventional:k_corr, Aircraft/propulsion/conventional/k_factors/k_corr
-kfactors_propulsion_conventional:k_co2, Aircraft/propulsion/conventional/k_factors/k_co2
 aerodynamics:Cl_max_clean, Aircraft/aerodynamics/CZ_max_clean
 aerodynamics:Cl_max_landing, Aircraft/aerodynamics/CZ_max_landing
 aerodynamics:Cl_0_AoA, Aircraft/aerodynamics/Cz_0_AOA
@@ -476,3 +465,11 @@ doc:Ratio, Aircraft/DOC/fees/Ratio
 doc:POTpa, Aircraft/DOC/time/POTpa
 doc:DTpa, Aircraft/DOC/time/DTpa
 doc:BTS, Aircraft/DOC/time/BTS
+propulsion:rubber_engine:bypass_ratio, Aircraft/propulsion/conventional/BPR
+propulsion:rubber_engine:overall_pressure_ratio, Aircraft/propulsion/conventional/OPR
+propulsion:rubber_engine:turbine_inlet_temperature, Aircraft/propulsion/conventional/T4
+propulsion:rubber_engine:delta_t4_climb, Aircraft/propulsion/conventional/DT4_CLIMB
+propulsion:rubber_engine:delta_t4_cruise, Aircraft/propulsion/conventional/DT4_CRZ
+propulsion:rubber_engine:maximum_mach, Aircraft/propulsion/conventional/mach_max
+propulsion:rubber_engine:design_altitude, Aircraft/propulsion/conventional/h_design
+propulsion:mto_thrust, Aircraft/propulsion/conventional/thrust_SL

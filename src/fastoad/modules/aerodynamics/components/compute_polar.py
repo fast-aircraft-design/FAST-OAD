@@ -98,11 +98,8 @@ class ComputePolar(ExplicitComponent):
 
 
 def optimum_ClCd(ClCd):
-    optimum_ld = 0
-    for i, elem in enumerate(ClCd[1]):
-        if ClCd[1][i] / ClCd[0][i] > optimum_ld:
-            optimum_ld = ClCd[1][i] / ClCd[0][i]
-            optimum_index = i
+    lift_drag_ratio = ClCd[1, :] / ClCd[0, :]
+    optimum_index = np.argmax(lift_drag_ratio)
 
     optimum_Cz = ClCd[1][optimum_index]
     optimum_Cd = ClCd[0][optimum_index]

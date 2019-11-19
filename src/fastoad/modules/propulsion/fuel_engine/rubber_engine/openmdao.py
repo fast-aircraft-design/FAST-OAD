@@ -29,18 +29,18 @@ class OMRubberEngine(OMIEngine):
 
     def setup(self):
         super().setup()
-        self.add_input('bypass_ratio', np.nan)
-        self.add_input('overall_pressure_ratio', np.nan)
-        self.add_input('turbine_inlet_temperature', np.nan, units='K')
-        self.add_input('mto_thrust', np.nan, units='N')
-        self.add_input('maximum_mach', np.nan)
-        self.add_input('design_altitude', np.nan, units='m')
-        self.add_input('delta_t4_climb', -50, desc='As it is a delta, unit is K or °C, but is not '
-                                                   'specified to avoid OpenMDAO making unwanted '
-                                                   'conversion')
-        self.add_input('delta_t4_cruise', -100, desc='As it is a delta, unit is K or °C, but is '
-                                                     'not specified to avoid OpenMDAO making '
-                                                     'unwanted conversion')
+        self.add_input('propulsion:rubber_engine:bypass_ratio', np.nan)
+        self.add_input('propulsion:rubber_engine:overall_pressure_ratio', np.nan)
+        self.add_input('propulsion:rubber_engine:turbine_inlet_temperature', np.nan, units='K')
+        self.add_input('propulsion:mto_thrust', np.nan, units='N')
+        self.add_input('propulsion:rubber_engine:maximum_mach', np.nan)
+        self.add_input('propulsion:rubber_engine:design_altitude', np.nan, units='m')
+        self.add_input('propulsion:rubber_engine:delta_t4_climb', -50,
+                       desc='As it is a delta, unit is K or °C, but is not '
+                            'specified to avoid OpenMDAO making unwanted conversion')
+        self.add_input('propulsion:rubber_engine:delta_t4_cruise', -100,
+                       desc='As it is a delta, unit is K or °C, but is not '
+                            'specified to avoid OpenMDAO making unwanted conversion')
 
     @staticmethod
     def get_engine(inputs) -> IEngineSubclass:
@@ -50,8 +50,11 @@ class OMRubberEngine(OMIEngine):
         :return: an :class:`RubberEngine` instance
         """
         param_names = ['bypass_ratio', 'overall_pressure_ratio',
-                       'turbine_inlet_temperature',
-                       'mto_thrust', 'maximum_mach', 'design_altitude', 'delta_t4_climb',
-                       'delta_t4_cruise']
-        engine_params = {name: inputs[name] for name in param_names}
+                       'turbine_inlet_temperature', 'maximum_mach', 'design_altitude',
+                       'delta_t4_climb', 'delta_t4_cruise']
+        engine_params = {name: inputs['propulsion:rubber_engine:%s' % name] for name in param_names}
+
+        param_names = ['mto_thrust']
+        engine_params.update({name: inputs['propulsion:%s' % name] for name in param_names})
+
         return RubberEngine(**engine_params)

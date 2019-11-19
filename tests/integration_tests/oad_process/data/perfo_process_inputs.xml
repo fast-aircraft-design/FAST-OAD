@@ -1,0 +1,40 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2019  ONERA/ISAE
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<aircraft>
+    <sizing_mission>
+        <cruise_altitude units="ft">35000.0</cruise_altitude>
+    </sizing_mission>
+    <tlar>
+        <cruise_Mach>0.80</cruise_Mach>
+        <Range units="NM">2750.0</Range>
+    </tlar>
+    <aerodynamics>
+        <L_D_max>16.0</L_D_max>
+    </aerodynamics>
+    <weight>
+        <MTOW units="kg">75797.99</MTOW>
+    </weight>
+    <propulsion>
+        <rubber_engine>
+            <bypass_ratio>4.9</bypass_ratio>
+            <overall_pressure_ratio>32.6</overall_pressure_ratio>
+            <turbine_inlet_temperature units="K">1633.0</turbine_inlet_temperature>
+            <maximum_mach>0.85</maximum_mach>
+            <design_altitude units="m">10058.4</design_altitude>
+        </rubber_engine>
+        <mto_thrust units="N">117880.0</mto_thrust>
+    </propulsion>
+</aircraft>
