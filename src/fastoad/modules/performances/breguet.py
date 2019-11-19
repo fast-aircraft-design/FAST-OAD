@@ -28,6 +28,11 @@ CLIMB_DESCENT_DISTANCE = 500  # in km, distance of climb + descent
 
 
 class Breguet(om.Group):
+    """
+    Estimation of fuel consumption through Breguet formula with a rough estimate
+    of climb and descent phases
+    """
+
     def initialize(self):
         self.options.declare('flight_point_count', 1, types=(int, tuple))
 
@@ -42,6 +47,11 @@ class Breguet(om.Group):
 
 
 class ImplicitBreguet(om.Group):
+    """
+    Estimation of fuel consumption through Breguet formula with a rough estimate
+    of climb and descent phases
+    """
+
     def initialize(self):
         self.options.declare('flight_point_count', 1, types=(int, tuple))
 
@@ -55,7 +65,7 @@ class ImplicitBreguet(om.Group):
                            promotes=['*'])
 
         self.nonlinear_solver = om.NewtonSolver()
-        self.linear_solver = om.ScipyKrylov()
+        self.linear_solver = om.DirectSolver()
 
 
 class _BreguetPropulsion(om.ExplicitComponent):
@@ -126,16 +136,17 @@ class _ExplicitBreguet(om.ExplicitComponent):
         self.declare_partials('mission:fuel_weight', '*', method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        # pylint: disable=too-many-locals  # Cleaner than using directly inputs['...']
         atmosphere = Atmosphere(inputs['sizing_mission:cruise_altitude'], altitude_in_feet=False)
         cruise_speed = atmosphere.speed_of_sound * inputs['tlar:cruise_Mach']
 
-        range = inputs['tlar:Range']
+        flight_range = inputs['tlar:Range']
         ld_ratio = inputs['aerodynamics:L_D_max']
         mtow = inputs['weight:MTOW']
         sfc = inputs['propulsion:SFC']
 
         range_factor = cruise_speed * ld_ratio / g / sfc
-        cruise_distance = range - CLIMB_DESCENT_DISTANCE * 1000
+        cruise_distance = flight_range - CLIMB_DESCENT_DISTANCE * 1000
         cruise_mass_ratio = 1. / np.exp(cruise_distance / range_factor)
         flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
 
@@ -170,18 +181,20 @@ class _ImplicitBreguet(om.ImplicitComponent):
 
     def apply_nonlinear(self, inputs, outputs, residuals,
                         discrete_inputs=None, discrete_outputs=None):
+        # pylint: disable=too-many-arguments  # It's OpenMDAO's fault :)
+        # pylint: disable=too-many-locals  # Ok, it's my fault, but it's cleaner this way
         atmosphere = Atmosphere(inputs['sizing_mission:cruise_altitude'], altitude_in_feet=False)
         cruise_speed = atmosphere.speed_of_sound * inputs['tlar:cruise_Mach']
 
         oew = inputs['weight:OEW']
         max_payload_weight = inputs['weight:Max_PL']
-        range = inputs['tlar:Range']
+        flight_range = inputs['tlar:Range']
         ld_ratio = inputs['aerodynamics:L_D_max']
         mtow = outputs['weight:MTOW']
         sfc = inputs['propulsion:SFC']
 
         range_factor = cruise_speed * ld_ratio / g / sfc
-        cruise_distance = range - CLIMB_DESCENT_DISTANCE * 1000
+        cruise_distance = flight_range - CLIMB_DESCENT_DISTANCE * 1000
         cruise_mass_ratio = 1. / np.exp(cruise_distance / range_factor)
         flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
 
@@ -192,5 +205,5 @@ class _ImplicitBreguet(om.ImplicitComponent):
 
     def guess_nonlinear(self, inputs, outputs, residuals,
                         discrete_inputs=None, discrete_outputs=None):
+        # pylint: disable=too-many-arguments # It's OpenMDAO's fault :)
         outputs['weight:MTOW'] = inputs['weight:OEW'] * 1.5
-        # outputs['mission:MZFW'] = inputs['weight:OEW'] * 1.2

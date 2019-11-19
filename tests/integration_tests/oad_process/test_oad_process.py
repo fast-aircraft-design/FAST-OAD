@@ -58,6 +58,9 @@ def test_propulsion_process(cleanup, install_components):
     np.testing.assert_allclose(problem.get_val('propulsion:altitude', units='ft'),
                                36700,
                                atol=50)
+    np.testing.assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
+                               1.681e-05,
+                               atol=1e-3)
 
 
 def test_perfo_process(cleanup, install_components):
@@ -77,6 +80,9 @@ def test_perfo_process(cleanup, install_components):
     assert not problem.driver.fail
     np.testing.assert_allclose(problem.get_val('sizing_mission:cruise_altitude', units='ft'),
                                37500,
+                               atol=50)
+    np.testing.assert_allclose(problem.get_val('mission:MZFW', units='kg'),
+                               55350,
                                atol=50)
 
 

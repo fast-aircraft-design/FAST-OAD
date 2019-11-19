@@ -46,9 +46,9 @@ def test_problem_definition(cleanup):
     problem = ConfiguredProblem()
     with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
         problem.configure(pth.join(pth.dirname(__file__), 'data', 'invalid_attribute.toml'))
-        problem.read_inputs()
+    problem.read_inputs()
     assert exc_info is not None
-    assert exc_info.value.key == 'problem.cycle.other_group.nonlinear_solver'
+    assert exc_info.value.key == 'model.cycle.other_group.nonlinear_solver'
 
     # Reading of correct problem definition
     problem = ConfiguredProblem()
