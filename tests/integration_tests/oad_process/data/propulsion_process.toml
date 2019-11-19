@@ -8,9 +8,9 @@ input_file = "propulsion_process_inputs.xml"
 output_file = "../results/propulsion_process_outputs.xml"
 
 
-[problem]
-    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP', tol=1e-11)"
-    [problem.propulsion]
+driver = "om.ScipyOptimizeDriver(optimizer='SLSQP', tol=1e-11)"
+[model]
+    [model.propulsion]
          id = "fastoad.propulsion.rubber_engine"
 
 # We try to find altitude that gives minimum SFC

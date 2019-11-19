@@ -8,17 +8,17 @@ input_file = "../results/oad_process_inputs.xml"
 output_file = "../results/oad_process_outputs.xml"
 
 
-[problem]
-    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+[model]
     nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
     linear_solver = "om.ScipyKrylov()"
-    [problem.geometry]
+    [model.geometry]
         id = "fastoad.geometry.legacy"
-    [problem.aerodynamics]
+    [model.aerodynamics]
         id = "fastoad.aerodynamics.highspeed.legacy"
-    [problem.performance_loop]
+    [model.performance_loop]
         nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
-        [problem.performance_loop.performance]
+        [model.performance_loop.performance]
             id = "fastoad.performances.breguet"
-        [problem.performance_loop.sizing_loop.propulsion]
+        [model.performance_loop.sizing_loop.propulsion]
             id = "fastoad.propulsion.rubber_engine"

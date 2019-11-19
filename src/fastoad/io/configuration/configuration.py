@@ -17,7 +17,6 @@ Module for building OpenMDAO problem from configuration file
 
 import logging
 import os.path as pth
-from typing import Union
 
 import openmdao.api as om
 import toml
@@ -37,7 +36,8 @@ KEY_FOLDERS = 'module_folders'
 KEY_INPUT_FILE = 'input_file'
 KEY_OUTPUT_FILE = 'output_file'
 KEY_COMPONENT_ID = 'id'
-TABLE_PROBLEM = 'problem'
+TABLE_MODEL = 'model'
+KEY_DRIVER = 'driver'
 TABLES_DESIGN_VAR = 'design_var'
 TABLES_OBJECTIVE = 'objective'
 TABLES_CONSTRAINT = 'constraint'
@@ -70,7 +70,7 @@ class ConfiguredProblem(om.Problem):
         self._conf_dict = {}
         self._input_file = None
         self._output_file = None
-        self._problem_definition = None
+        self._model_definition = None
 
     def configure(self, conf_file):
         """
@@ -106,11 +106,17 @@ class ConfiguredProblem(om.Problem):
                 OpenMDAOSystemFactory.explore_folder(folder_path)
 
         # Read problem definition
-        self._problem_definition = self._conf_dict.get(TABLE_PROBLEM)
-        if not self._problem_definition:
-            raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_PROBLEM)
+        self._model_definition = self._conf_dict.get(TABLE_MODEL)
+        if not self._model_definition:
+            raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_MODEL)
 
-        self.build_problem()
+        # Define driver
+        driver = self._conf_dict.get(KEY_DRIVER, '')
+        if driver:
+            # FIXME: remove this eval()
+            self.driver = eval(driver)
+
+        self.build_model()
 
     def write_needed_inputs(self, input_data: OMFileIOSubclass = None):
         """
@@ -141,7 +147,7 @@ class ConfiguredProblem(om.Problem):
         """
         if self._input_file:
             reader = OMXmlIO(self._input_file)
-            self.build_problem(reader.read())
+            self.build_model(reader.read())
 
     def write_outputs(self):
         """
@@ -152,7 +158,7 @@ class ConfiguredProblem(om.Problem):
             ivc = build_ivc_of_variables(self)
             writer.write(ivc)
 
-    def build_problem(self, ivc: om.IndepVarComp = None):
+    def build_model(self, ivc: om.IndepVarComp = None):
         """
         Builds (or rebuilds) the problem as defined in the configuration file.
 
@@ -173,9 +179,9 @@ class ConfiguredProblem(om.Problem):
             self.model.add_subsystem('inputs', ivc, promotes=['*'])
 
         try:
-            self._parse_problem_table(self, TABLE_PROBLEM, self._problem_definition)
+            self._parse_problem_table(self.model, TABLE_MODEL, self._model_definition)
         except FASTConfigurationBaseKeyBuildingError as err:
-            log_err = err.__class__(err, TABLE_PROBLEM)
+            log_err = err.__class__(err, TABLE_MODEL)
             _LOGGER.error(log_err)
             raise log_err
 
@@ -187,22 +193,16 @@ class ConfiguredProblem(om.Problem):
 
         self.setup()
 
-    def _parse_problem_table(self, component: Union[om.Problem, om.Group], identifier, table: dict):
+    def _parse_problem_table(self, group: om.Group, identifier, table: dict):
         """
         Feeds provided *component*, associated to provided *identifier*, using definition
         in provided TOML *table*.
 
-        :param component:
+        :param group:
         :param identifier:
         :param table:
         """
         assert isinstance(table, dict), "table should be a dictionary"
-
-        if identifier == TABLE_PROBLEM:  # component is a Problem
-            group = component.model
-        else:  # component is a Group
-            assert isinstance(component, om.Group)
-            group = component
 
         # Assessing sub-components
         if KEY_COMPONENT_ID in table:  # table defines a non-Group component
@@ -222,11 +222,11 @@ class ConfiguredProblem(om.Problem):
                     # value is an attribute of current component and will be literally interpreted
                     try:
                         # FIXME: remove this eval()
-                        setattr(component, key, eval(value))  # pylint:disable=eval-used
+                        setattr(group, key, eval(value))  # pylint:disable=eval-used
                     except Exception as err:
                         raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
-        return component
+        return group
 
     def _add_constraints(self):
         """  Adds constraints as instructed in configuration file """

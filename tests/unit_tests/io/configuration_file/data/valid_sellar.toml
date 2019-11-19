@@ -10,17 +10,16 @@ module_folders = [
 input_file = "../results/inputs.xml"
 output_file = "../results/outputs.xml"
 
-
-[problem]
-    driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
-    [problem.cycle]
+driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+[model]
+    [model.cycle]
         nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
         linear_solver = "om.ScipyKrylov()"
-        [problem.cycle.disc1]
+        [model.cycle.disc1]
             id = "sellar.disc1"
-        [problem.cycle.disc2]
+        [model.cycle.disc2]
             id = "sellar.disc2"
-    [problem.functions]
+    [model.functions]
         id = "sellar.functions"
 
 [[design_var]]
