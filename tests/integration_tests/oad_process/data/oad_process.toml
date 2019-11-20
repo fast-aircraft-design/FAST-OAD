@@ -19,6 +19,6 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
     [model.performance_loop]
         nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
         [model.performance_loop.performance]
-            id = "fastoad.performances.breguet"
+            id = "fastoad.performances.breguet.implicit"
         [model.performance_loop.sizing_loop.propulsion]
             id = "fastoad.propulsion.rubber_engine"
