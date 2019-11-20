@@ -10,6 +10,8 @@ output_file = "../results/perfo_process_outputs.xml"
 
 driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 [model]
+    nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+    linear_solver = "om.DirectSolver()"
     [model.performance]
         id = "fastoad.performances.breguet"
     [model.propulsion]
@@ -17,6 +19,7 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 
 [[objective]]
   name = "mission:MZFW"
+  scaler = -1
 
 [[design_var]]
   name = "sizing_mission:mission:operational:cruise:altitude"

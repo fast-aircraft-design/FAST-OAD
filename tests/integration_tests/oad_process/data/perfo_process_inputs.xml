@@ -18,7 +18,7 @@
     <mission>
       <operational>
         <cruise>
-          <altitude units="ft">35000.0</altitude>
+          <altitude units="ft">30000.0</altitude>
         </cruise>
       </operational>
     </mission>

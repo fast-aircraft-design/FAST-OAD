@@ -74,16 +74,25 @@ def test_perfo_process(cleanup, install_components):
     problem.read_inputs()
 
     problem.setup()
+    problem.run_model()
+    np.testing.assert_allclose(problem.get_val('mission:MZFW', units='kg'),
+                               55080,
+                               atol=5)
+    np.testing.assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
+                               1.698e-05,
+                               atol=1e-3)
+
+    problem.setup()
     problem.run_driver()
     problem.write_outputs()
 
     assert not problem.driver.fail
-    np.testing.assert_allclose(problem.get_val('sizing_mission:mission:operational:cruise:altitude', units='ft'),
-                               37500,
-                               atol=50)
     np.testing.assert_allclose(problem.get_val('mission:MZFW', units='kg'),
-                               55350,
-                               atol=50)
+                               55630,
+                               atol=10)
+    np.testing.assert_allclose(problem.get_val('sizing_mission:mission:operational:cruise:altitude', units='ft'),
+                               36700,
+                               atol=100)
 
 
 def test_oad_process(cleanup, install_components):
