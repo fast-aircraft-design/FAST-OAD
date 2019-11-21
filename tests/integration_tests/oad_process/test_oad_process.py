@@ -17,8 +17,8 @@ Test module for Overall Aircraft Design process
 import os.path as pth
 from shutil import rmtree
 
-import numpy as np
 import pytest
+from numpy.testing import assert_allclose
 
 import fastoad
 from fastoad.io.configuration import ConfiguredProblem
@@ -55,12 +55,12 @@ def test_propulsion_process(cleanup, install_components):
     problem.write_outputs()
 
     assert not problem.driver.fail
-    np.testing.assert_allclose(problem.get_val('propulsion:altitude', units='ft'),
-                               36700,
-                               atol=50)
-    np.testing.assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
-                               1.681e-05,
-                               atol=1e-3)
+    assert_allclose(problem.get_val('propulsion:altitude', units='ft'),
+                    36700,
+                    atol=50)
+    assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
+                    1.681e-05,
+                    atol=1e-3)
 
 
 def test_perfo_process(cleanup, install_components):
@@ -75,24 +75,24 @@ def test_perfo_process(cleanup, install_components):
 
     problem.setup()
     problem.run_model()
-    np.testing.assert_allclose(problem.get_val('mission:MZFW', units='kg'),
-                               55080,
-                               atol=5)
-    np.testing.assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
-                               1.698e-05,
-                               atol=1e-3)
+    assert_allclose(problem.get_val('mission:MZFW', units='kg'),
+                    55080,
+                    atol=5)
+    assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
+                    1.698e-05,
+                    atol=1e-3)
 
     problem.setup()
     problem.run_driver()
     problem.write_outputs()
 
     assert not problem.driver.fail
-    np.testing.assert_allclose(problem.get_val('mission:MZFW', units='kg'),
-                               55630,
-                               atol=10)
-    np.testing.assert_allclose(problem.get_val('sizing_mission:mission:operational:cruise:altitude', units='ft'),
-                               36700,
-                               atol=100)
+    assert_allclose(problem.get_val('mission:MZFW', units='kg'),
+                    55630,
+                    atol=10)
+    assert_allclose(problem.get_val('sizing_mission:mission:operational:cruise:altitude', units='ft'),
+                    36700,
+                    atol=100)
 
 
 def test_oad_process(cleanup, install_components):
@@ -112,4 +112,14 @@ def test_oad_process(cleanup, install_components):
 
     problem.write_outputs()
 
-    # TODO: check results
+    assert_allclose(problem['weight:MTOW'],
+                    79660,
+                    atol=10)
+    assert_allclose(problem['weight:OEW'],
+                    problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
+                    + problem['weight:systems:mass'] + problem['weight:furniture:mass']
+                    + problem['weight:crew:mass'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MZFW'],
+                    problem['weight:OEW'] + problem['weight:aircraft:max_payload'],
+                    atol=1)
