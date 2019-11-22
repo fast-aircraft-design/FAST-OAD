@@ -54,6 +54,7 @@ class BreguetFromOWE(om.Group):
         self.add_subsystem('fuel_weights', _FuelWeightFromMTOW(), promotes=['*'])
 
         self.nonlinear_solver = om.NewtonSolver()
+        self.nonlinear_solver.options['iprint'] = 0
         self.linear_solver = om.DirectSolver()
 
 

@@ -82,7 +82,7 @@ class GetCG(Group):
 
         # Solvers setup
         self.nonlinear_solver = NonlinearBlockGS()
-        self.nonlinear_solver.options['iprint'] = 1
+        self.nonlinear_solver.options['iprint'] = 0
         self.nonlinear_solver.options['maxiter'] = 100
         self.linear_solver = LinearBlockGS()
         self.linear_solver.options['iprint'] = 0
