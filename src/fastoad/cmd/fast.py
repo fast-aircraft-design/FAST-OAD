@@ -42,9 +42,6 @@ def main():
         problem = ConfiguredProblem()
         problem.configure(args.conf_file)
 
-        # TODO : is it necessary ?
-        problem.model.approx_totals()
-
         if args.gen_inputs:
             problem.write_needed_inputs()
         elif args.gen_inputs_from:
