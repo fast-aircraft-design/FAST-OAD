@@ -13,20 +13,21 @@ Test module for Overall Aircraft Design process
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import os
 import os.path as pth
 from shutil import rmtree
 
+import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
+from openmdao.devtools.problem_viewer.problem_viewer import view_model
 
 import fastoad
 from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMLegacy1XmlIO
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
-                               'results', pth.splitext(pth.basename(__file__))[0])
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
 
 
 @pytest.fixture(scope='module')
@@ -107,14 +108,17 @@ def test_oad_process(cleanup, install_components):
     ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
-
+    problem.final_setup()
+    if not pth.exists(RESULTS_FOLDER_PATH):
+        os.mkdir(RESULTS_FOLDER_PATH)
+    om.view_connections(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'connections.html'),
+                        show_browser=False)
+    view_model(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'n2.html'), show_browser=False)
     problem.run_model()
 
     problem.write_outputs()
 
-    assert_allclose(problem['weight:MTOW'],
-                    79660,
-                    atol=10)
+    # Check that weight-performances loop correctly converged
     assert_allclose(problem['weight:OEW'],
                     problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
                     + problem['weight:systems:mass'] + problem['weight:furniture:mass']
