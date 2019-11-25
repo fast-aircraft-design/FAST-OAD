@@ -60,7 +60,10 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO):
 
     scatter = go.Scatter(x=x, y=y,
                          mode='lines+markers')
+
+    layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+
     data = [scatter]
-    fig = go.FigureWidget(data=data)
+    fig = go.FigureWidget(data=data, layout=layout)
     fig.layout.title = 'Wing Geometry'
     return fig
