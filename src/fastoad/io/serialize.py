@@ -53,6 +53,7 @@ class AbstractOMFileIO(ABC):
         :return: an IndepVarComp() instance where outputs have been defined using provided source
         """
         variables = self.read_variables()
+        variables = list(variables.values())
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
         ivc = om.IndepVarComp()

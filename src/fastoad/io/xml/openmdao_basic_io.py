@@ -93,10 +93,11 @@ class OMXmlIO(OMCustomXmlIO):
 
     def _create_openmdao_code(self) -> str:  # pragma: no cover
         """dev utility for generating code"""
-        outputs = self.read_variables()
+        variables = self.read_variables()
+        variables = list(variables.values())
 
         lines = ['ivc = IndepVarComp()']
-        for name, value, units in outputs:
+        for name, value, units in variables:
             lines.append("ivc.add_output('%s', val=%s%s)" %
                          (name, value, ", units='%s'" % units if units else ''))
 
