@@ -16,7 +16,7 @@
   <tlar>
     <NPAX>150.0</NPAX>
     <cruise_Mach>0.78</cruise_Mach>
-    <Range units="NM">2750.0</Range>
+    <Range units="NM">1000.0</Range>
   </tlar>
   <geometry>
     <engine_number>2.0</engine_number>
@@ -44,7 +44,7 @@
     <wing_x0 units="m">2.524082276536648</wing_x0>
     <wing_position units="m">16.457</wing_position>
     <fuselage_length units="m">37.507364</fuselage_length>
-    <ht_vol_coeff>1.2382838260394524</ht_vol_coeff>
+    <ht_vol_coeff>1.0468316398875492</ht_vol_coeff>
     <ht_area units="m**2">35.171</ht_area>
     <ht_aspect_ratio>4.288</ht_aspect_ratio>
     <ht_taper_ratio>0.3</ht_taper_ratio>
@@ -108,13 +108,13 @@
   </geometry>
   <propulsion>
     <mto_thrust units="N">117880.0</mto_thrust>
-    <SFC units="kg/s/N">1.6832590890220353e-05</SFC>
+    <SFC units="kg/s/N">1.6888305737777985e-05</SFC>
     <mach>0.78</mach>
     <altitude units="m">10667.999999999998</altitude>
     <phase>3.0</phase>
     <use_thrust_rate>0.0</use_thrust_rate>
     <required_thrust_rate>0.0</required_thrust_rate>
-    <required_thrust units="N">23388.085233855767</required_thrust>
+    <required_thrust units="N">19749.05489271167</required_thrust>
     <rubber_engine>
       <bypass_ratio>4.9</bypass_ratio>
       <overall_pressure_ratio>32.6</overall_pressure_ratio>
@@ -124,11 +124,11 @@
       <delta_t4_climb>-50.0</delta_t4_climb>
       <delta_t4_cruise>-100.0</delta_t4_cruise>
     </rubber_engine>
-    <thrust_rate>0.8310724411798897</thrust_rate>
-    <thrust units="N">23388.085233855767</thrust>
+    <thrust_rate>0.7017631027324461</thrust_rate>
+    <thrust units="N">19749.05489271167</thrust>
   </propulsion>
   <cg_airframe>
-    <A51 units="m">18.83219985835538</A51>
+    <A51 units="m">18.866334909462214</A51>
     <A52 units="m">5.176347</A52>
     <A1 units="m">16.55827251152071</A1>
     <A2 units="m">16.8783138</A2>
@@ -139,11 +139,11 @@
     <A7 units="m">0.0</A7>
   </cg_airframe>
   <weight>
-    <MTOW units="kg">79662.18766541891</MTOW>
-    <MZFW units="kg">58353.9572916046</MZFW>
+    <MTOW units="kg">67267.28166490022</MTOW>
+    <MZFW units="kg">56825.53975081694</MZFW>
     <MFW units="kg">19322.49973877964</MFW>
-    <MLW units="kg">61855.194729100884</MLW>
-    <OEW units="kg">33353.9572916046</OEW>
+    <MLW units="kg">60235.07213586596</MLW>
+    <OEW units="kg">31825.53975081694</OEW>
     <Max_PL units="kg">25000.0</Max_PL>
   </weight>
   <cg>
@@ -152,10 +152,10 @@
     <cg_rear_fret units="m">20.741897874632595</cg_rear_fret>
     <cg_front_fret units="m">9.89459683112944</cg_front_fret>
     <cg_tank units="m">15.910966384970505</cg_tank>
-    <CG units="m">17.948835641927847</CG>
+    <CG units="m">17.980239888946134</CG>
   </cg>
   <k_ar_effective>1.55</k_ar_effective>
-  <cg_ratio>0.556720950961286</cg_ratio>
+  <cg_ratio>0.5642301916214097</cg_ratio>
   <dcn_beta>0.24875058254607985</dcn_beta>
   <aerodynamics>
     <Cl_alpha_vt>5.084943183415051</Cl_alpha_vt>
@@ -224,8 +224,8 @@
     <altitude units="m">20000.0</altitude>
     <Vc_EAS units="m/s">375.0</Vc_EAS>
   </loadcase2>
-  <n1m1 units="kg">229768.70683569313</n1m1>
-  <n2m2 units="kg">266851.07708329585</n2m2>
+  <n1m1 units="kg">223750.56276884172</n1m1>
+  <n2m2 units="kg">230716.21017002757</n2m2>
   <kfactors_a1>
     <K_A1>1.0</K_A1>
     <offset_A1 units="kg">0.0</offset_A1>
@@ -290,16 +290,16 @@
     <offset_B3 units="kg">0.0</offset_B3>
   </kfactors_b3>
   <weight_airframe>
-    <A4 units="kg">786.8162297045371</A4>
-    <A1 units="kg">7279.538787518014</A1>
-    <A2 units="kg">7564.650127523961</A2>
+    <A4 units="kg">680.271785303819</A4>
+    <A1 units="kg">6552.8202845973265</A1>
+    <A2 units="kg">7522.195771004594</A2>
     <A31 units="kg">698.197282355</A31>
     <A32 units="kg">515.5177126479999</A32>
-    <A51 units="kg">2654.2502413082493</A51>
-    <A52 units="kg">464.7021745314663</A52>
+    <A51 units="kg">2232.405422683438</A51>
+    <A52 units="kg">403.42067465861095</A52>
     <A6 units="kg">635.5097012399065</A6>
     <A7 units="kg">141.40817889681637</A7>
-    <A units="kg">20740.590435725953</A>
+    <A units="kg">19381.74681338751</A>
   </weight_airframe>
   <kfactors_c1>
     <K_C11>1.0</K_C11>
@@ -364,8 +364,8 @@
   </kfactors_d5>
   <weight_systems>
     <C11 units="kg">287.3784652052712</C11>
-    <C12 units="kg">1361.0779345840187</C12>
-    <C13 units="kg">783.7040270440718</C13>
+    <C12 units="kg">1253.4891793264</C12>
+    <C13 units="kg">721.7188638524722</C13>
     <C21 units="kg">1127.1390472911087</C21>
     <C22 units="kg">942.4010810318936</C22>
     <C23 units="kg">159.3208924735476</C23>
@@ -378,7 +378,7 @@
     <C51 units="kg">100.0</C51>
     <C52 units="kg">281.0199111640526</C52>
     <C6 units="kg">45.0</C6>
-    <C units="kg">6742.361574073577</C>
+    <C units="kg">6572.787655624359</C>
   </weight_systems>
   <weight_furniture>
     <D1 units="kg">0.0</D1>
@@ -420,14 +420,14 @@
     <C52 units="m">16.616796</C52>
     <C6 units="m">7.468795999999999</C6>
   </cg_systems>
-  <x_cg_plane_up>580844.0341312807</x_cg_plane_up>
-  <x_cg_plane_down>32742.549112707784</x_cg_plane_down>
-  <cg_ratio_aft>0.556720950961286</cg_ratio_aft>
-  <cg_ratio_lc1>0.4847235948829647</cg_ratio_lc1>
-  <cg_ratio_lc2>0.33945781551785936</cg_ratio_lc2>
-  <cg_ratio_lc3>0.5033491570832016</cg_ratio_lc3>
-  <cg_ratio_lc4>0.49530832937678426</cg_ratio_lc4>
-  <delta_lg>13.65585285835538</delta_lg>
+  <x_cg_plane_up>554710.5734379473</x_cg_plane_up>
+  <x_cg_plane_down>31214.131571920123</x_cg_plane_down>
+  <cg_ratio_aft>0.5642301916214097</cg_ratio_aft>
+  <cg_ratio_lc1>0.48760111485170343</cg_ratio_lc1>
+  <cg_ratio_lc2>0.3380631973105008</cg_ratio_lc2>
+  <cg_ratio_lc3>0.5066559386849706</cg_ratio_lc3>
+  <cg_ratio_lc4>0.4980793577580058</cg_ratio_lc4>
+  <delta_lg>13.689987909462214</delta_lg>
   <x_ac_ratio>0.43320256597597595</x_ac_ratio>
   <sizing_mission>
     <cruise_altitude units="ft">35000.0</cruise_altitude>
@@ -1352,7 +1352,7 @@
   <cg_pl>
     <CG_PAX units="m">16.616796</CG_PAX>
   </cg_pl>
-  <delta_cm_takeoff>-0.047644452843675245</delta_cm_takeoff>
-  <delta_cn>0.20526133639399174</delta_cn>
-  <static_margin>-0.17351838498531014</static_margin>
+  <delta_cm_takeoff>0.14380773330822794</delta_cm_takeoff>
+  <delta_cn>0.20432741767030904</delta_cn>
+  <static_margin>-0.18102762564543384</static_margin>
 </aircraft>
