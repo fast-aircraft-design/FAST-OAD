@@ -109,11 +109,13 @@ def test_high_lift_aero():
                   ]
 
     def get_cl_cd(slat_angle, flap_angle, mach, landing_flag):
-        phase = 'landing' if landing_flag else 'to'
-
         ivc = get_indep_var_comp(input_list)
-        ivc.add_output('sizing_mission:slat_angle_%s' % phase, slat_angle, units='deg')
-        ivc.add_output('sizing_mission:flap_angle_%s' % phase, flap_angle, units='deg')
+        if landing_flag:
+            ivc.add_output('sizing_mission:slat_angle_landing', slat_angle, units='deg')
+            ivc.add_output('sizing_mission:flap_angle_landing', flap_angle, units='deg')
+        else:
+            ivc.add_output('sizing_mission:slat_angle_to', slat_angle, units='deg')
+            ivc.add_output('sizing_mission:flap_angle_to', flap_angle, units='deg')
         ivc.add_output('xfoil:mach', mach)
         component = ComputeDeltaHighLift()
         component.options['landing_flag'] = landing_flag
