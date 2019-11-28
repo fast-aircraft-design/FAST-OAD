@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from openmdao.api import Group
 
-from fastoad.modules.geometry.cg_components.compute_cg_ratio_aft import ComputeCGratioAft
+from fastoad.modules.geometry.cg_components.compute_cg_ratio_aft import ComputeCGRatioAft
 from fastoad.modules.geometry.cg_components.compute_cg_loadcase1 import ComputeCGLoadCase1
 from fastoad.modules.geometry.cg_components.compute_cg_loadcase2 import ComputeCGLoadCase2
 from fastoad.modules.geometry.cg_components.compute_cg_loadcase3 import ComputeCGLoadCase3
@@ -31,7 +31,7 @@ class ComputeGlobalCG(Group):
     def setup(self):
 
         self.add_subsystem('cg_ratio_aft',
-                           ComputeCGratioAft(), promotes=['*'])
+                           ComputeCGRatioAft(), promotes=['*'])
         self.add_subsystem('cg_ratio_lc1',
                            ComputeCGLoadCase1(), promotes=['*'])
         self.add_subsystem('cg_ratio_lc2',

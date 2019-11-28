@@ -20,7 +20,7 @@ from .compute_cg_loadcase2 import ComputeCGLoadCase2
 from .compute_cg_loadcase3 import ComputeCGLoadCase3
 from .compute_cg_loadcase4 import ComputeCGLoadCase4
 from .compute_cg_others import ComputeOthersCG
-from .compute_cg_ratio_aft import ComputeCGratioAft
+from .compute_cg_ratio_aft import ComputeCGRatioAft
 from .compute_cg_tanks import ComputeTanksCG
 from .compute_cg_wing import ComputeWingCG
 from .compute_global_cg import ComputeGlobalCG

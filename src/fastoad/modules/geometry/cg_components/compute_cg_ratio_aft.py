@@ -1,7 +1,6 @@
 """
     Estimation of center of gravity ratio with aft
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,109 +13,123 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
-class ComputeCGratioAft(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Center of gravity ratio with aft estimation """
 
-    def initialize(self):
-
-        # TODO: make this more generic
-        airframe_names = ['A1', 'A2', 'A31', 'A32', 'A4', 'A51', 'A52', 'A6', 'A7']
-        propulsion_names = ['B1', 'B2', 'B3']
-        systems_names = ['C11', 'C12', 'C13', 'C21', 'C22', 'C23', 'C24', 'C25',
-                            'C26', 'C27', 'C3', 'C4', 'C51', 'C52', 'C6']
-        furniture_names = ['D1', 'D2', 'D3', 'D4', 'D5']
-
-        self.options.declare('airframe_names', default=airframe_names)
-        self.options.declare('propulsion_names', default=propulsion_names)
-        self.options.declare('systems_names', default=systems_names)
-        self.options.declare('furniture_names', default=furniture_names)
-
-        self.airframe_names = self.options['airframe_names']
-        self.propulsion_names = self.options['propulsion_names']
-        self.systems_names = self.options['systems_names']
-        self.furniture_names = self.options['furniture_names']
+class ComputeCGRatioAft(om.Group):
 
     def setup(self):
-
-        for name in range(len(self.airframe_names)):
-            self.add_input('cg_airframe:'+self.airframe_names[name], val=np.nan, units='m')
-            self.add_input('weight_airframe:'+self.airframe_names[name], val=np.nan, units='kg')
-            self.declare_partials('x_cg_plane_up', ['weight_airframe:'+self.airframe_names[name],
-                                   'cg_airframe:'+self.airframe_names[name]], method='fd')
-            self.declare_partials('x_cg_plane_down', 'weight_airframe:'+self.airframe_names[name],
-                                  method='fd')
-        for name in range(len(self.propulsion_names)):
-            self.add_input('cg_propulsion:'+self.propulsion_names[name], val=np.nan, units='m')
-            self.add_input('weight_propulsion:'+self.propulsion_names[name], val=np.nan, units='kg')
-            self.declare_partials('x_cg_plane_up',
-                                  ['weight_propulsion:'+self.propulsion_names[name],
-                                   'cg_propulsion:'+self.propulsion_names[name]],
-                                   method='fd')
-            self.declare_partials('x_cg_plane_down',
-                                  'weight_propulsion:'+self.propulsion_names[name],
-                                  method='fd')
-        for name in range(len(self.systems_names)):
-            self.add_input('cg_systems:'+self.systems_names[name], val=np.nan, units='m')
-            self.add_input('weight_systems:'+self.systems_names[name], val=np.nan, units='kg')
-            self.declare_partials('x_cg_plane_up', ['weight_systems:'+self.systems_names[name],
-                                   'cg_systems:'+self.systems_names[name]], method='fd')
-            self.declare_partials('x_cg_plane_down', 'weight_systems:'+self.systems_names[name],
-                                  method='fd')
-        for name in range(len(self.furniture_names)):
-            self.add_input('cg_furniture:'+self.furniture_names[name], val=np.nan, units='m')
-            self.add_input('weight_furniture:'+self.furniture_names[name], val=np.nan, units='kg')
-            self.declare_partials('x_cg_plane_up', ['weight_furniture:'+self.furniture_names[name],
-                                   'cg_furniture:'+self.furniture_names[name]], method='fd')
-            self.declare_partials('x_cg_plane_down', 'weight_furniture:'+self.furniture_names[name],
-                                  method='fd')
+        self.add_subsystem('cg_all', ComputeCG(), promotes=['*'])
+        self.add_subsystem('cg_ratio', CGRatio(), promotes=['*'])
 
 
+class ComputeCG(om.ExplicitComponent):
+
+    def initialize(self):
+        self.options.declare('cg_names', default=['cg_airframe:A1',
+                                                  'cg_airframe:A2',
+                                                  'cg_airframe:A31',
+                                                  'cg_airframe:A32',
+                                                  'cg_airframe:A4',
+                                                  'cg_airframe:A51',
+                                                  'cg_airframe:A52',
+                                                  'cg_airframe:A6',
+                                                  'cg_airframe:A7',
+                                                  'cg_propulsion:B1',
+                                                  'cg_propulsion:B2',
+                                                  'cg_propulsion:B3',
+                                                  'cg_systems:C11',
+                                                  'cg_systems:C12',
+                                                  'cg_systems:C13',
+                                                  'cg_systems:C21',
+                                                  'cg_systems:C22',
+                                                  'cg_systems:C23',
+                                                  'cg_systems:C24',
+                                                  'cg_systems:C25',
+                                                  'cg_systems:C26',
+                                                  'cg_systems:C27',
+                                                  'cg_systems:C3',
+                                                  'cg_systems:C4',
+                                                  'cg_systems:C51',
+                                                  'cg_systems:C52',
+                                                  'cg_systems:C6',
+                                                  'cg_furniture:D1',
+                                                  'cg_furniture:D2',
+                                                  'cg_furniture:D3',
+                                                  'cg_furniture:D4',
+                                                  'cg_furniture:D5'
+                                                  ])
+
+        self.options.declare('mass_names', ['weight_airframe:A1',
+                                            'weight_airframe:A2',
+                                            'weight_airframe:A31',
+                                            'weight_airframe:A32',
+                                            'weight_airframe:A4',
+                                            'weight_airframe:A51',
+                                            'weight_airframe:A52',
+                                            'weight_airframe:A6',
+                                            'weight_airframe:A7',
+                                            'weight_propulsion:B1',
+                                            'weight_propulsion:B2',
+                                            'weight_propulsion:B3',
+                                            'weight_systems:C11',
+                                            'weight_systems:C12',
+                                            'weight_systems:C13',
+                                            'weight_systems:C21',
+                                            'weight_systems:C22',
+                                            'weight_systems:C23',
+                                            'weight_systems:C24',
+                                            'weight_systems:C25',
+                                            'weight_systems:C26',
+                                            'weight_systems:C27',
+                                            'weight_systems:C3',
+                                            'weight_systems:C4',
+                                            'weight_systems:C51',
+                                            'weight_systems:C52',
+                                            'weight_systems:C6',
+                                            'weight_furniture:D1',
+                                            'weight_furniture:D2',
+                                            'weight_furniture:D3',
+                                            'weight_furniture:D4',
+                                            'weight_furniture:D5',
+                                            ])
+
+    def setup(self):
+        for cg_name in self.options['cg_names']:
+            self.add_input(cg_name, val=np.nan, units='m')
+        for mass_name in self.options['mass_names']:
+            self.add_input(mass_name, val=np.nan, units='kg')
+
+        self.add_output('x_cg_plane_up', units='m')
+        self.add_output('x_cg_plane_down', units='m')
+        self.add_output('x_cg_plane_aft', units='m')
+
+        self.declare_partials('x_cg_plane_up', '*', method='fd')
+        self.declare_partials('x_cg_plane_down', '*', method='fd')
+        self.declare_partials('x_cg_plane_aft', '*', method='fd')
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        cgs = [inputs[cg_name][0] for cg_name in self.options['cg_names']]
+        masses = [inputs[mass_name][0] for mass_name in self.options['mass_names']]
+
+        outputs['x_cg_plane_up'] = np.dot(cgs, masses)
+        outputs['x_cg_plane_down'] = np.sum(masses)
+        outputs['x_cg_plane_aft'] = outputs['x_cg_plane_up'] / outputs['x_cg_plane_down']
+
+
+class CGRatio(om.ExplicitComponent):
+    def setup(self):
+        self.add_input('x_cg_plane_aft', val=np.nan, units='m')
         self.add_input('geometry:wing_l0', val=np.nan, units='m')
         self.add_input('geometry:wing_position', val=np.nan, units='m')
 
-        self.add_output('x_cg_plane_up')
-        self.add_output('x_cg_plane_down')
         self.add_output('cg_ratio_aft')
 
-        self.declare_partials('cg_ratio_aft', '*', method='fd')
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        x_cg_all = inputs['x_cg_plane_aft']
+        wing_position = inputs['geometry:wing_position']
+        mac = inputs['geometry:wing_l0']
 
-
-    def compute(self, inputs, outputs):
-        l0_wing = inputs['geometry:wing_l0']
-        fa_length = inputs['geometry:wing_position']
-
-        weight_all = []
-        cg_all = []
-
-        for name in range(len(self.airframe_names)):
-            weight_all.append(inputs['weight_airframe:'+self.airframe_names[name]])
-            cg_all.append(inputs['cg_airframe:'+self.airframe_names[name]])
-
-        for name in range(len(self.propulsion_names)):
-            weight_all.append(inputs['weight_propulsion:'+self.propulsion_names[name]])
-            cg_all.append(inputs['cg_propulsion:'+self.propulsion_names[name]])
-
-        for name in range(len(self.systems_names)):
-            weight_all.append(inputs['weight_systems:'+self.systems_names[name]])
-            cg_all.append(inputs['cg_systems:'+self.systems_names[name]])
-
-        for name in range(len(self.furniture_names)):
-            weight_all.append(inputs['weight_furniture:'+self.furniture_names[name]])
-            cg_all.append(inputs['cg_furniture:'+self.furniture_names[name]])
-
-        x_cg_plane_up = 0
-        x_cg_plane_down = 0
-        for i, weight in enumerate(weight_all):
-            x_cg_plane_up += weight * cg_all[i]
-            x_cg_plane_down += weight
-        # afterward,no fuel, no payload
-        x_cg_plane_aft = x_cg_plane_up / x_cg_plane_down
-        cg_ratio_aft = (x_cg_plane_aft - fa_length + 0.25 * l0_wing) / l0_wing
-
-        outputs['x_cg_plane_up'] = x_cg_plane_up
-        outputs['x_cg_plane_down'] = x_cg_plane_down
-        outputs['cg_ratio_aft'] = cg_ratio_aft
+        outputs['cg_ratio_aft'] = (x_cg_all - wing_position + 0.25 * mac) / mac

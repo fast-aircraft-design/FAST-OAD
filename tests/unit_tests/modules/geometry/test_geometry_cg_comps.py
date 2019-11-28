@@ -33,7 +33,7 @@ from fastoad.modules.geometry.cg_components \
 from fastoad.modules.geometry.cg_components \
     import ComputeCGLoadCase4
 from fastoad.modules.geometry.cg_components \
-    import ComputeCGratioAft
+    import ComputeCGRatioAft
 from fastoad.modules.geometry.cg_components \
     import ComputeControlSurfacesCG
 from fastoad.modules.geometry.cg_components \
@@ -408,7 +408,7 @@ def test_compute_cg_ratio_aft(input_xml):
     problem = Problem()
     model = problem.model
     model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeCGratioAft(), promotes=['*'])
+    model.add_subsystem('geometry', ComputeCGRatioAft(), promotes=['*'])
 
     problem.setup(mode='fwd')
     problem.run_model()
