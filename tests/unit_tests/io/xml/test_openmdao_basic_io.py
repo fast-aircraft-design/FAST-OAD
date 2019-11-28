@@ -44,7 +44,7 @@ def _check_basic_ivc(ivc: IndepVarComp):
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
         outputs.append(Variable(name, value, attributes['units']))
 
-    assert len(outputs) == 9
+    assert len(outputs) == 10
 
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)
@@ -64,27 +64,29 @@ def _check_basic_ivc(ivc: IndepVarComp):
     assert outputs[3].value == pytest.approx([40.])
     assert outputs[3].units == 'm'
 
-    assert outputs[4].name == 'constants:k1'
-    assert outputs[4].value == pytest.approx([1., 2., 3.])
-    assert outputs[4].units == 'kg'
+    assert outputs[4].name == 'constants'
+    assert outputs[4].value == pytest.approx([-42.])
+    assert outputs[4].units is None
 
-    assert outputs[5].name == 'constants:k2'
-    assert outputs[5].value == pytest.approx([10., 20.])
-    assert outputs[5].units is None
+    assert outputs[5].name == 'constants:k1'
+    assert outputs[5].value == pytest.approx([1., 2., 3.])
+    assert outputs[5].units == 'kg'
 
-    assert outputs[6].name == 'constants:k3'
-    assert outputs[6].value == pytest.approx([100., 200., 300., 400.])
-    assert outputs[6].units == 'm/s'
+    assert outputs[6].name == 'constants:k2'
+    assert outputs[6].value == pytest.approx([10., 20.])
+    assert outputs[6].units is None
 
-    assert outputs[7].name == 'constants:k4'
-    assert outputs[7].value == pytest.approx([-1, -2, -3])
-    assert outputs[7].units is None
+    assert outputs[7].name == 'constants:k3'
+    assert outputs[7].value == pytest.approx([100., 200., 300., 400.])
+    assert outputs[7].units == 'm/s'
 
-    assert outputs[8].name == 'constants:k5'
-    assert outputs[8].value == pytest.approx([100, 200, 400, 500, 600])
+    assert outputs[8].name == 'constants:k4'
+    assert outputs[8].value == pytest.approx([-1, -2, -3])
     assert outputs[8].units is None
 
-
+    assert outputs[9].name == 'constants:k5'
+    assert outputs[9].value == pytest.approx([100, 200, 400, 500, 600])
+    assert outputs[9].units is None
 def test_basic_xml_read_and_write_from_ivc(cleanup):
     """
     Tests the creation of an XML file from an IndepVarComp instance
@@ -97,6 +99,7 @@ def test_basic_xml_read_and_write_from_ivc(cleanup):
     ivc.add_output('geometry/wing/span', val=42.0, units='m')
     ivc.add_output('geometry/wing/aspect_ratio', val=[9.8])
     ivc.add_output('geometry/fuselage/length', val=40.0, units='m')
+    ivc.add_output('constants', val=[-42.])
     ivc.add_output('constants/k1', val=[1.0, 2.0, 3.0], units='kg')
     ivc.add_output('constants/k2', val=[10.0, 20.0])
     ivc.add_output('constants/k3', val=np.array([100.0, 200.0, 300.0, 400.0]), units='m/s')
@@ -178,6 +181,7 @@ def test_basic_xml_partial_read_and_write_from_ivc(cleanup):
                'geometry:wing:span',
                'geometry:wing:aspect_ratio',
                'geometry:fuselage:length',
+               'constants',
                'constants:k1',
                'constants:k2',
                'constants:k3',

@@ -30,7 +30,7 @@
             <length units="m">40</length>
         </fuselage>
     </geometry>
-    <constants>
+    <constants>-42. <!-- value with children tags-->
         <k1 units="kg">1.</k1>
         <k1 units="ignored">2.
         </k1> <!-- value will be appended, but only first specified units will apply -->
