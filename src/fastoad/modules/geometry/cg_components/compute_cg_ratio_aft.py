@@ -112,8 +112,7 @@ class ComputeCGratioAft(ExplicitComponent):
         x_cg_plane_down = 0
         for i, weight in enumerate(weight_all):
             x_cg_plane_up += weight * cg_all[i]
-            if cg_all[i] != 0:
-                x_cg_plane_down += weight
+            x_cg_plane_down += weight
         # afterward,no fuel, no payload
         x_cg_plane_aft = x_cg_plane_up / x_cg_plane_down
         cg_ratio_aft = (x_cg_plane_aft - fa_length + 0.25 * l0_wing) / l0_wing

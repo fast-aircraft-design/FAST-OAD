@@ -416,9 +416,9 @@ def test_compute_cg_ratio_aft(input_xml):
     x_cg_plane_up = problem['x_cg_plane_up']
     assert x_cg_plane_up == pytest.approx(699570.03, abs=1e-2)
     x_cg_plane_down = problem['x_cg_plane_down']
-    assert x_cg_plane_down == pytest.approx(40979.11, abs=1e-2)
+    assert x_cg_plane_down == pytest.approx(41162.00, abs=1e-2)
     cg_ratio_aft = problem['cg_ratio_aft']
-    assert cg_ratio_aft == pytest.approx(0.387846, abs=1e-6)
+    assert cg_ratio_aft == pytest.approx(0.370828, abs=1e-6)
 
 
 def test_compute_cg_tanks(input_xml):
@@ -587,7 +587,7 @@ def test_compute_global_cg(input_xml):
     problem.run_model()
 
     cg_ratio = problem['cg_ratio']
-    assert cg_ratio == pytest.approx(0.388971, abs=1e-6)
+    assert cg_ratio == pytest.approx(0.377420, abs=1e-6)
 
 
 def test_compute_max_cg_ratio(input_xml):
