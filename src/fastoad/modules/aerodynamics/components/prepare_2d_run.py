@@ -24,14 +24,14 @@ from fastoad.utils.physics import Atmosphere
 class Prepare2dRun(ExplicitComponent):
 
     def setup(self):
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('tlar:v_approach', val=np.nan, units='kn')
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('TLAR:approach_speed', val=np.nan, units='kn')
         self.add_output('xfoil:reynolds')
         self.add_output('xfoil:mach')
 
     def compute(self, inputs, outputs):
-        l0_wing = inputs['geometry:wing_l0']
-        speed = inputs['tlar:v_approach']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        speed = inputs['TLAR:approach_speed']
         speed *= 0.5144
 
         atm = Atmosphere(0., 15.)

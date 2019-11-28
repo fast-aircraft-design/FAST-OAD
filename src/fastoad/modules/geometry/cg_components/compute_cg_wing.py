@@ -23,48 +23,48 @@ class ComputeWingCG(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_break', val=np.nan)
-        self.add_input('geometry:wing_front_spar_ratio_root', val=np.nan)
-        self.add_input('geometry:wing_front_spar_ratio_kink', val=np.nan)
-        self.add_input('geometry:wing_front_spar_ratio_tip', val=np.nan)
-        self.add_input('geometry:wing_rear_spar_ratio_root', val=np.nan)
-        self.add_input('geometry:wing_rear_spar_ratio_kink', val=np.nan)
-        self.add_input('geometry:wing_rear_spar_ratio_tip', val=np.nan)
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
-        self.add_input('geometry:wing_x0', val=np.nan, units='m')
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:wing_l3', val=np.nan, units='m')
-        self.add_input('geometry:wing_l4', val=np.nan, units='m')
-        self.add_input('geometry:wing_y2', val=np.nan, units='m')
-        self.add_input('geometry:wing_x3', val=np.nan, units='m')
-        self.add_input('geometry:wing_y3', val=np.nan, units='m')
-        self.add_input('geometry:wing_x4', val=np.nan, units='m')
-        self.add_input('geometry:wing_y4', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
+        self.add_input('geometry:wing:break', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:front:root', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:front:kink', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:front:tip', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:rear:root', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:rear:kink', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:rear:tip', val=np.nan)
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
 
-        self.add_output('cg_airframe:A1', units='m')
+        self.add_output('weight:airframe:wing:CG:x', units='m')
 
-        self.declare_partials('cg_airframe:A1', '*', method='fd')
+        self.declare_partials('weight:airframe:wing:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        wing_break = inputs['geometry:wing_break']
-        front_spar_ratio_root = inputs['geometry:wing_front_spar_ratio_root']
-        front_spar_ratio_middle = inputs['geometry:wing_front_spar_ratio_kink']
-        front_spar_ratio_tip = inputs['geometry:wing_front_spar_ratio_tip']
-        rear_spar_ratio_root = inputs['geometry:wing_rear_spar_ratio_root']
-        rear_spar_ratio_middle = inputs['geometry:wing_rear_spar_ratio_kink']
-        rear_spar_ratio_tip = inputs['geometry:wing_rear_spar_ratio_tip']
-        span = inputs['geometry:wing_span']
-        x0_wing = inputs['geometry:wing_x0']
-        l2_wing = inputs['geometry:wing_l2']
-        l3_wing = inputs['geometry:wing_l3']
-        l4_wing = inputs['geometry:wing_l4']
-        y2_wing = inputs['geometry:wing_y2']
-        x3_wing = inputs['geometry:wing_x3']
-        y3_wing = inputs['geometry:wing_y3']
-        y4_wing = inputs['geometry:wing_y4']
-        x4_wing = inputs['geometry:wing_x4']
-        fa_length = inputs['geometry:wing_position']
+        wing_break = inputs['geometry:wing:break']
+        front_spar_ratio_root = inputs['geometry:wing:spar_ratio:front:root']
+        front_spar_ratio_middle = inputs['geometry:wing:spar_ratio:front:kink']
+        front_spar_ratio_tip = inputs['geometry:wing:spar_ratio:front:tip']
+        rear_spar_ratio_root = inputs['geometry:wing:spar_ratio:rear:root']
+        rear_spar_ratio_middle = inputs['geometry:wing:spar_ratio:rear:kink']
+        rear_spar_ratio_tip = inputs['geometry:wing:spar_ratio:rear:tip']
+        span = inputs['geometry:wing:span']
+        x0_wing = inputs['geometry:wing:root:leading_edge:x']
+        l2_wing = inputs['geometry:wing:root:chord']
+        l3_wing = inputs['geometry:wing:kink:chord']
+        l4_wing = inputs['geometry:wing:tip:chord']
+        y2_wing = inputs['geometry:wing:root:y']
+        x3_wing = inputs['geometry:wing:kink:leading_edge:x']
+        y3_wing = inputs['geometry:wing:kink:y']
+        y4_wing = inputs['geometry:wing:tip:y']
+        x4_wing = inputs['geometry:wing:tip:leading_edge:x']
+        fa_length = inputs['geometry:wing:location']
 
         # TODO: make this constant an option
         if wing_break >= 0.35:
@@ -100,4 +100,4 @@ class ComputeWingCG(ExplicitComponent):
                 front_spar_cg + (l_cg - front_spar_cg - rear_spar_cg) * 0.7
         x_cg_absolute = fa_length - 0.25 * x0_wing + (x_cg - x0_wing)
 
-        outputs['cg_airframe:A1'] = x_cg_absolute
+        outputs['weight:airframe:wing:CG:x'] = x_cg_absolute

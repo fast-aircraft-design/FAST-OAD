@@ -30,18 +30,18 @@ class Loads(ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
-        self.add_input('weight:MZFW', val=np.nan, units='kg')
-        self.add_input('weight:MFW', val=np.nan, units='kg')
-        self.add_input('weight:MTOW', val=np.nan, units='kg')
-        self.add_input('aerodynamics:Cl_alpha', val=np.nan)
-        self.add_input('loadcase1:U_gust', val=np.nan, units='m/s')
-        self.add_input('loadcase1:altitude', val=np.nan, units='ft')
-        self.add_input('loadcase1:Vc_EAS', val=np.nan, units='kn')
-        self.add_input('loadcase2:U_gust', val=np.nan, units='m/s')
-        self.add_input('loadcase2:altitude', val=np.nan, units='ft')
-        self.add_input('loadcase2:Vc_EAS', val=np.nan, units='kn')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
+        self.add_input('weight:aircraft:MZFW', val=np.nan, units='kg')
+        self.add_input('weight:aircraft:MFW', val=np.nan, units='kg')
+        self.add_input('weight:aircraft:MTOW', val=np.nan, units='kg')
+        self.add_input('aerodynamics:aircraft:cruise:CL_alpha', val=np.nan)
+        self.add_input('load_case:lc1:U_gust', val=np.nan, units='m/s')
+        self.add_input('load_case:lc1:altitude', val=np.nan, units='ft')
+        self.add_input('load_case:lc1:Vc_EAS', val=np.nan, units='kn')
+        self.add_input('load_case:lc2:U_gust', val=np.nan, units='m/s')
+        self.add_input('load_case:lc2:altitude', val=np.nan, units='ft')
+        self.add_input('load_case:lc2:Vc_EAS', val=np.nan, units='kn')
 
         self.add_output('n1m1', units='kg')
         self.add_output('n2m2', units='kg')
@@ -51,18 +51,18 @@ class Loads(ExplicitComponent):
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
         sea_level_density = 1.225
-        wing_area = inputs['geometry:wing_area']
-        span = inputs['geometry:wing_span']
-        mzfw = inputs['weight:MZFW']
-        mfw = inputs['weight:MFW']
-        mtow = inputs['weight:MTOW']
-        cl_alpha = inputs['aerodynamics:Cl_alpha']
-        u_gust1 = inputs['loadcase1:U_gust']
-        alt_1 = inputs['loadcase1:altitude']
-        vc_eas1 = inputs['loadcase1:Vc_EAS']
-        u_gust2 = inputs['loadcase2:U_gust']
-        alt_2 = inputs['loadcase2:altitude']
-        vc_eas2 = inputs['loadcase2:Vc_EAS']
+        wing_area = inputs['geometry:wing:area']
+        span = inputs['geometry:wing:span']
+        mzfw = inputs['weight:aircraft:MZFW']
+        mfw = inputs['weight:aircraft:MFW']
+        mtow = inputs['weight:aircraft:MTOW']
+        cl_alpha = inputs['aerodynamics:aircraft:cruise:CL_alpha']
+        u_gust1 = inputs['load_case:lc1:U_gust']
+        alt_1 = inputs['load_case:lc1:altitude']
+        vc_eas1 = inputs['load_case:lc1:Vc_EAS']
+        u_gust2 = inputs['load_case:lc2:U_gust']
+        alt_2 = inputs['load_case:lc2:altitude']
+        vc_eas2 = inputs['load_case:lc2:Vc_EAS']
 
         # calculation of mean geometric chord
         chord_geom = wing_area / span

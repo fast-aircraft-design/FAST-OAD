@@ -28,19 +28,19 @@ class NavigationSystemsWeight(ExplicitComponent):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
-        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
-        self.add_input('geometry:wing_b_50', val=np.nan, units='m')
-        self.add_input('kfactors_c3:K_C3', val=1.)
-        self.add_input('kfactors_c3:offset_C3', val=0., units='kg')
+        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:b_50', val=np.nan, units='m')
+        self.add_input('weight:systems:navigation:mass:k', val=1.)
+        self.add_input('weight:systems:navigation:mass:offset', val=0., units='kg')
 
-        self.add_output('weight_systems:C3', units='kg')
+        self.add_output('weight:systems:navigation:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        fuselage_length = inputs['geometry:fuselage_length']
-        b_50 = inputs['geometry:wing_b_50']
-        k_c3 = inputs['kfactors_c3:K_C3']
-        offset_c3 = inputs['kfactors_c3:offset_C3']
+        fuselage_length = inputs['geometry:fuselage:length']
+        b_50 = inputs['geometry:wing:b_50']
+        k_c3 = inputs['weight:systems:navigation:mass:k']
+        offset_c3 = inputs['weight:systems:navigation:mass:offset']
 
         aircraft_type = self.options[AIRCRAFT_TYPE_OPTION]
         if aircraft_type == 1.0:
@@ -55,4 +55,4 @@ class NavigationSystemsWeight(ExplicitComponent):
             raise ValueError("Unexpected aircraft type")
 
         temp_c3 = base_weight + 0.033 * fuselage_length * b_50
-        outputs['weight_systems:C3'] = k_c3 * temp_c3 + offset_c3
+        outputs['weight:systems:navigation:mass'] = k_c3 * temp_c3 + offset_c3

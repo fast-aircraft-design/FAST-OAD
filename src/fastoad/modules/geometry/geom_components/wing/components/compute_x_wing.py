@@ -26,32 +26,32 @@ class ComputeXWing(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_l1', val=np.nan, units='m')
-        self.add_input('geometry:wing_l3', val=np.nan, units='m')
-        self.add_input('geometry:wing_l4', val=np.nan, units='m')
-        self.add_input('geometry:wing_y2', val=np.nan, units='m')
-        self.add_input('geometry:wing_y3', val=np.nan, units='m')
-        self.add_input('geometry:wing_y4', val=np.nan, units='m')
-        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:wing:l1', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
 
-        self.add_output('geometry:wing_x3', units='m')
-        self.add_output('geometry:wing_x4', units='m')
+        self.add_output('geometry:wing:kink:leading_edge:x', units='m')
+        self.add_output('geometry:wing:tip:leading_edge:x', units='m')
 
-        self.declare_partials('geometry:wing_x3', ['geometry:wing_l1', 'geometry:wing_y2',
-                                                   'geometry:wing_y3', 'geometry:wing_l3',
-                                                   'geometry:wing_sweep_25'], method='fd')
-        self.declare_partials('geometry:wing_x4', ['geometry:wing_l1', 'geometry:wing_y2',
-                                                   'geometry:wing_y4', 'geometry:wing_l4',
-                                                   'geometry:wing_sweep_25'], method='fd')
+        self.declare_partials('geometry:wing:kink:leading_edge:x', ['geometry:wing:l1', 'geometry:wing:root:y',
+                                                   'geometry:wing:kink:y', 'geometry:wing:kink:chord',
+                                                   'geometry:wing:sweep_25'], method='fd')
+        self.declare_partials('geometry:wing:tip:leading_edge:x', ['geometry:wing:l1', 'geometry:wing:root:y',
+                                                   'geometry:wing:tip:y', 'geometry:wing:tip:chord',
+                                                   'geometry:wing:sweep_25'], method='fd')
 
     def compute(self, inputs, outputs):
-        y2_wing = inputs['geometry:wing_y2']
-        y3_wing = inputs['geometry:wing_y3']
-        y4_wing = inputs['geometry:wing_y4']
-        l1_wing = inputs['geometry:wing_l1']
-        l3_wing = inputs['geometry:wing_l3']
-        l4_wing = inputs['geometry:wing_l4']
-        sweep_25 = inputs['geometry:wing_sweep_25']
+        y2_wing = inputs['geometry:wing:root:y']
+        y3_wing = inputs['geometry:wing:kink:y']
+        y4_wing = inputs['geometry:wing:tip:y']
+        l1_wing = inputs['geometry:wing:l1']
+        l3_wing = inputs['geometry:wing:kink:chord']
+        l4_wing = inputs['geometry:wing:tip:chord']
+        sweep_25 = inputs['geometry:wing:sweep_25']
 
         x3_wing = 1. / 4. * l1_wing + \
                   (y3_wing - y2_wing) * \
@@ -60,5 +60,5 @@ class ComputeXWing(ExplicitComponent):
                   (y4_wing - y2_wing) * \
                   math.tan(sweep_25 / 180. * math.pi) - 1. / 4. * l4_wing
 
-        outputs['geometry:wing_x3'] = x3_wing
-        outputs['geometry:wing_x4'] = x4_wing
+        outputs['geometry:wing:kink:leading_edge:x'] = x3_wing
+        outputs['geometry:wing:tip:leading_edge:x'] = x4_wing

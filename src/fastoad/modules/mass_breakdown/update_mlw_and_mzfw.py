@@ -26,16 +26,16 @@ class UpdateMLWandMZFW(ExplicitComponent):
 
     def setup(self):
         self.add_input('weight:OEW', val=np.nan, units='kg')
-        self.add_input('weight:Max_PL', val=np.nan, units='kg')
+        self.add_input('weight:aircraft:max_payload', val=np.nan, units='kg')
 
-        self.add_output('weight:MZFW', units='kg')
-        self.add_output('weight:MLW', units='kg')
+        self.add_output('weight:aircraft:MZFW', units='kg')
+        self.add_output('weight:aircraft:MLW', units='kg')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         oew = inputs['weight:OEW'][0]
-        max_pl = inputs['weight:Max_PL'][0]
+        max_pl = inputs['weight:aircraft:max_payload'][0]
         mzfw = oew + max_pl
         mlw = 1.06 * mzfw
 
-        outputs['weight:MZFW'] = mzfw
-        outputs['weight:MLW'] = mlw
+        outputs['weight:aircraft:MZFW'] = mzfw
+        outputs['weight:aircraft:MLW'] = mlw

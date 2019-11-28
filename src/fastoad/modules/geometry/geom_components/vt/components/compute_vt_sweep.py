@@ -27,22 +27,22 @@ class ComputeVTSweep(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:vt_span', val=np.nan, units='m')
-        self.add_input('geometry:vt_root_chord', val=np.nan, units='m')
-        self.add_input('geometry:vt_tip_chord', val=np.nan, units='m')
-        self.add_input('geometry:vt_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:vertical_tail:span', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:root_chord', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
 
-        self.add_output('geometry:vt_sweep_0', units='deg')
-        self.add_output('geometry:vt_sweep_100', units='deg')
+        self.add_output('geometry:vertical_tail:sweep_0', units='deg')
+        self.add_output('geometry:vertical_tail:sweep_100', units='deg')
 
-        self.declare_partials('geometry:vt_sweep_0', '*', method='fd')
-        self.declare_partials('geometry:vt_sweep_100', '*', method='fd')
+        self.declare_partials('geometry:vertical_tail:sweep_0', '*', method='fd')
+        self.declare_partials('geometry:vertical_tail:sweep_100', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        root_chord = inputs['geometry:vt_root_chord']
-        tip_chord = inputs['geometry:vt_tip_chord']
-        sweep_25_vt = inputs['geometry:vt_sweep_25']
-        b_v = inputs['geometry:vt_span']
+        root_chord = inputs['geometry:vertical_tail:root_chord']
+        tip_chord = inputs['geometry:vertical_tail:tip_chord']
+        sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
+        b_v = inputs['geometry:vertical_tail:span']
 
         sweep_0_vt = (math.pi / 2 -
                       math.atan(b_v / (0.25 * root_chord - 0.25 *
@@ -53,5 +53,5 @@ class ComputeVTSweep(ExplicitComponent):
                                                         180. * math.pi) - 0.75 *
                                          root_chord + 0.75 * tip_chord))) / math.pi * 180.
 
-        outputs['geometry:vt_sweep_0'] = sweep_0_vt
-        outputs['geometry:vt_sweep_100'] = sweep_100_vt
+        outputs['geometry:vertical_tail:sweep_0'] = sweep_0_vt
+        outputs['geometry:vertical_tail:sweep_100'] = sweep_100_vt

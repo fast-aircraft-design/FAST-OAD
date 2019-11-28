@@ -31,28 +31,28 @@ class ComputeTanksCG(ExplicitComponent):
         self.ratio = self.options['ratio']
 
     def setup(self):
-        self.add_input('geometry:wing_front_spar_ratio_root', val=np.nan)
-        self.add_input('geometry:wing_front_spar_ratio_kink', val=np.nan)
-        self.add_input('geometry:wing_front_spar_ratio_tip', val=np.nan)
-        self.add_input('geometry:wing_rear_spar_ratio_root', val=np.nan)
-        self.add_input('geometry:wing_rear_spar_ratio_kink', val=np.nan)
-        self.add_input('geometry:wing_rear_spar_ratio_tip', val=np.nan)
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('geometry:wing_x0', val=np.nan, units='m')
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:wing_l3', val=np.nan, units='m')
-        self.add_input('geometry:wing_l4', val=np.nan, units='m')
-        self.add_input('geometry:wing_y2', val=np.nan, units='m')
-        self.add_input('geometry:wing_x3', val=np.nan, units='m')
-        self.add_input('geometry:wing_y3', val=np.nan, units='m')
-        self.add_input('geometry:wing_x4', val=np.nan, units='m')
-        self.add_input('geometry:wing_y4', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
+        self.add_input('geometry:wing:spar_ratio:front:root', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:front:kink', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:front:tip', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:rear:root', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:rear:kink', val=np.nan)
+        self.add_input('geometry:wing:spar_ratio:rear:tip', val=np.nan)
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
 
-        self.add_output('cg:cg_tank', units='m')
+        self.add_output('weight:fuel_tank:CG:x', units='m')
 
-        self.declare_partials('cg:cg_tank', '*', method='fd')
+        self.declare_partials('weight:fuel_tank:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
 
@@ -63,24 +63,24 @@ class ComputeTanksCG(ExplicitComponent):
         y_down = []
         xy_up = []
         xy_down = []
-        front_spar_ratio_root = inputs['geometry:wing_front_spar_ratio_root']
-        front_spar_ratio_kink = inputs['geometry:wing_front_spar_ratio_kink']
-        front_spar_ratio_tip = inputs['geometry:wing_front_spar_ratio_tip']
-        rear_spar_ratio_root = inputs['geometry:wing_rear_spar_ratio_root']
-        rear_spar_ratio_kink = inputs['geometry:wing_rear_spar_ratio_kink']
-        rear_spar_ratio_tip = inputs['geometry:wing_rear_spar_ratio_tip']
-        l0_wing = inputs['geometry:wing_l0']
-        x0_wing = inputs['geometry:wing_x0']
-        l2_wing = inputs['geometry:wing_l2']
-        l3_wing = inputs['geometry:wing_l3']
-        l4_wing = inputs['geometry:wing_l4']
-        y2_wing = inputs['geometry:wing_y2']
-        x3_wing = inputs['geometry:wing_x3']
-        y3_wing = inputs['geometry:wing_y3']
-        y4_wing = inputs['geometry:wing_y4']
-        x4_wing = inputs['geometry:wing_x4']
-        fa_length = inputs['geometry:wing_position']
-        width_max = inputs['geometry:fuselage_width_max']
+        front_spar_ratio_root = inputs['geometry:wing:spar_ratio:front:root']
+        front_spar_ratio_kink = inputs['geometry:wing:spar_ratio:front:kink']
+        front_spar_ratio_tip = inputs['geometry:wing:spar_ratio:front:tip']
+        rear_spar_ratio_root = inputs['geometry:wing:spar_ratio:rear:root']
+        rear_spar_ratio_kink = inputs['geometry:wing:spar_ratio:rear:kink']
+        rear_spar_ratio_tip = inputs['geometry:wing:spar_ratio:rear:tip']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        x0_wing = inputs['geometry:wing:root:leading_edge:x']
+        l2_wing = inputs['geometry:wing:root:chord']
+        l3_wing = inputs['geometry:wing:kink:chord']
+        l4_wing = inputs['geometry:wing:tip:chord']
+        y2_wing = inputs['geometry:wing:root:y']
+        x3_wing = inputs['geometry:wing:kink:leading_edge:x']
+        y3_wing = inputs['geometry:wing:kink:y']
+        y4_wing = inputs['geometry:wing:tip:y']
+        x4_wing = inputs['geometry:wing:tip:leading_edge:x']
+        fa_length = inputs['geometry:wing:location']
+        width_max = inputs['geometry:fuselage:maximum_width']
 
         f_airfoil = os.path.join(
             os.path.dirname(__file__), os.pardir, 'resources', 'airfoil_f_15_15.dat')
@@ -250,4 +250,4 @@ class ComputeTanksCG(ExplicitComponent):
         # *0.8*x_cg_side_inner+vol_central*0.8*x_cg_central)/
         # (vol_side_out*0.8+vol_side_inner*0.8+vol_central*0.8)
 
-        outputs['cg:cg_tank'] = x_cg_tank
+        outputs['weight:fuel_tank:CG:x'] = x_cg_tank

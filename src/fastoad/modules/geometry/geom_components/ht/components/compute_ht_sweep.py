@@ -26,22 +26,22 @@ class ComputeHTSweep(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:ht_root_chord', val=np.nan, units='m')
-        self.add_input('geometry:ht_tip_chord', val=np.nan, units='m')
-        self.add_input('geometry:ht_span', val=np.nan, units='m')
-        self.add_input('geometry:ht_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:horizontal_tail:root_chord', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:span', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
 
-        self.add_output('geometry:ht_sweep_0', units='deg')
-        self.add_output('geometry:ht_sweep_100', units='deg')
+        self.add_output('geometry:horizontal_tail:sweep_0', units='deg')
+        self.add_output('geometry:horizontal_tail:sweep_100', units='deg')
 
-        self.declare_partials('geometry:ht_sweep_0', '*', method='fd')
-        self.declare_partials('geometry:ht_sweep_100', '*', method='fd')
+        self.declare_partials('geometry:horizontal_tail:sweep_0', '*', method='fd')
+        self.declare_partials('geometry:horizontal_tail:sweep_100', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        b_h = inputs['geometry:ht_span']
-        root_chord = inputs['geometry:ht_root_chord']
-        tip_chord = inputs['geometry:ht_tip_chord']
-        sweep_25_ht = inputs['geometry:ht_sweep_25']
+        b_h = inputs['geometry:horizontal_tail:span']
+        root_chord = inputs['geometry:horizontal_tail:root_chord']
+        tip_chord = inputs['geometry:horizontal_tail:tip_chord']
+        sweep_25_ht = inputs['geometry:horizontal_tail:sweep_25']
 
         half_span = b_h / 2.
         # TODO: The unit conversion can be handled by OpenMDAO
@@ -53,5 +53,5 @@ class ComputeHTSweep(ExplicitComponent):
         sweep_100_ht = (math.pi / 2 - math.atan(half_span / (half_span * math.tan(
             sweep_25_ht / 180. * math.pi) - 0.75 * root_chord + 0.75 * tip_chord))) / math.pi * 180.
 
-        outputs['geometry:ht_sweep_0'] = sweep_0_ht
-        outputs['geometry:ht_sweep_100'] = sweep_100_ht
+        outputs['geometry:horizontal_tail:sweep_0'] = sweep_0_ht
+        outputs['geometry:horizontal_tail:sweep_100'] = sweep_100_ht

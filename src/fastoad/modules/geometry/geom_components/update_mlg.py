@@ -24,18 +24,18 @@ class UpdateMLG(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
         self.add_input('cg_ratio', val=np.nan)
         self.add_input('delta_lg', val=np.nan)
 
-        self.add_output('cg_airframe:A51', units='m')
+        self.add_output('weight:airframe:landing_gear:main:CG:x', units='m')
 
-        self.declare_partials('cg_airframe:A51', '*', method='fd')
+        self.declare_partials('weight:airframe:landing_gear:main:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        l0_wing = inputs['geometry:wing_l0']
-        fa_length = inputs['geometry:wing_position']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        fa_length = inputs['geometry:wing:location']
         cg_ratio = inputs['cg_ratio']
         delta_lg = inputs['delta_lg']
 
@@ -43,4 +43,4 @@ class UpdateMLG(ExplicitComponent):
 
         cg_airframe_a51 = x_cg + 0.08 * delta_lg
 
-        outputs['cg_airframe:A51'] = cg_airframe_a51
+        outputs['weight:airframe:landing_gear:main:CG:x'] = cg_airframe_a51

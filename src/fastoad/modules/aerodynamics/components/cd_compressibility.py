@@ -36,7 +36,7 @@ class CdCompressibility(ExplicitComponent):
             self.add_input('cl_low_speed', val=nans_array)
             self.add_output('cd_comp_low_speed', shape=POLAR_POINT_COUNT)
         else:
-            self.add_input('tlar:cruise_Mach', val=np.nan)
+            self.add_input('TLAR:cruise_mach', val=np.nan)
             self.add_input('cl_high_speed', val=nans_array)
             self.add_output('cd_comp_high_speed', shape=POLAR_POINT_COUNT)
 
@@ -46,7 +46,7 @@ class CdCompressibility(ExplicitComponent):
             m = inputs['Mach_low_speed']
         else:
             cl = inputs['cl_high_speed']
-            m = inputs['tlar:cruise_Mach']
+            m = inputs['TLAR:cruise_mach']
 
         cd_comp = []
 

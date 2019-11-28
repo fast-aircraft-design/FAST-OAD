@@ -78,7 +78,7 @@ def test_perfo_process(cleanup, install_components):
     problem.write_outputs()
 
     assert not problem.driver.fail
-    np.testing.assert_allclose(problem.get_val('sizing_mission:cruise_altitude', units='ft'),
+    np.testing.assert_allclose(problem.get_val('sizing_mission:mission:operational:cruise:altitude', units='ft'),
                                37500,
                                atol=50)
     np.testing.assert_allclose(problem.get_val('mission:MZFW', units='kg'),

@@ -78,10 +78,10 @@ class _BreguetPropulsion(om.ExplicitComponent):
 
     def setup(self):
         shape = self.options['flight_point_count']
-        self.add_input('sizing_mission:cruise_altitude', np.nan, shape=shape, units='m')
-        self.add_input('tlar:cruise_Mach', np.nan, shape=shape)
-        self.add_input('weight:MTOW', np.nan, units='kg')
-        self.add_input('aerodynamics:L_D_max', np.nan, shape=shape)
+        self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, shape=shape, units='m')
+        self.add_input('TLAR:cruise_mach', np.nan, shape=shape)
+        self.add_input('weight:aircraft:MTOW', np.nan, units='kg')
+        self.add_input('aerodynamics:aircraft:cruise:L_D_max', np.nan, shape=shape)
         self.add_input('engine_count', 2)
 
         self.add_output('propulsion:phase', FlightPhase.CRUISE)
@@ -95,18 +95,18 @@ class _BreguetPropulsion(om.ExplicitComponent):
         self.declare_partials('propulsion:use_thrust_rate', '*', method='fd')
         self.declare_partials('propulsion:required_thrust_rate', '*', method='fd')
         self.declare_partials('propulsion:required_thrust', '*', method='fd')
-        self.declare_partials('propulsion:altitude', 'sizing_mission:cruise_altitude', method='fd')
-        self.declare_partials('propulsion:mach', 'tlar:cruise_Mach', method='fd')
+        self.declare_partials('propulsion:altitude', 'sizing_mission:mission:operational:cruise:altitude', method='fd')
+        self.declare_partials('propulsion:mach', 'TLAR:cruise_mach', method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         engine_count = inputs['engine_count']
-        ld_ratio = inputs['aerodynamics:L_D_max']
-        mtow = inputs['weight:MTOW']
+        ld_ratio = inputs['aerodynamics:aircraft:cruise:L_D_max']
+        mtow = inputs['weight:aircraft:MTOW']
         initial_cruise_mass = mtow * CLIMB_RATIO
 
         # Variables for propulsion
-        outputs['propulsion:altitude'] = inputs['sizing_mission:cruise_altitude']
-        outputs['propulsion:mach'] = inputs['tlar:cruise_Mach']
+        outputs['propulsion:altitude'] = inputs['sizing_mission:mission:operational:cruise:altitude']
+        outputs['propulsion:mach'] = inputs['TLAR:cruise_mach']
 
         outputs['propulsion:required_thrust'] = initial_cruise_mass / ld_ratio * g / engine_count
 
@@ -122,12 +122,12 @@ class _ExplicitBreguet(om.ExplicitComponent):
 
     def setup(self):
         shape = self.options['flight_point_count']
-        self.add_input('sizing_mission:cruise_altitude', np.nan, shape=shape, units='m')
-        self.add_input('tlar:cruise_Mach', np.nan, shape=shape)
-        self.add_input('aerodynamics:L_D_max', np.nan, shape=shape)
+        self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, shape=shape, units='m')
+        self.add_input('TLAR:cruise_mach', np.nan, shape=shape)
+        self.add_input('aerodynamics:aircraft:cruise:L_D_max', np.nan, shape=shape)
         self.add_input('propulsion:SFC', np.nan, shape=shape, units='kg/N/s')
-        self.add_input('tlar:Range', np.nan, shape=shape, units='m')
-        self.add_input('weight:MTOW', np.nan, units='kg')
+        self.add_input('TLAR:range', np.nan, shape=shape, units='m')
+        self.add_input('weight:aircraft:MTOW', np.nan, units='kg')
 
         self.add_output('mission:MZFW', units='kg')
         self.add_output('mission:fuel_weight', units='kg')
@@ -137,12 +137,12 @@ class _ExplicitBreguet(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # pylint: disable=too-many-locals  # Cleaner than using directly inputs['...']
-        atmosphere = Atmosphere(inputs['sizing_mission:cruise_altitude'], altitude_in_feet=False)
-        cruise_speed = atmosphere.speed_of_sound * inputs['tlar:cruise_Mach']
+        atmosphere = Atmosphere(inputs['sizing_mission:mission:operational:cruise:altitude'], altitude_in_feet=False)
+        cruise_speed = atmosphere.speed_of_sound * inputs['TLAR:cruise_mach']
 
-        flight_range = inputs['tlar:Range']
-        ld_ratio = inputs['aerodynamics:L_D_max']
-        mtow = inputs['weight:MTOW']
+        flight_range = inputs['TLAR:range']
+        ld_ratio = inputs['aerodynamics:aircraft:cruise:L_D_max']
+        mtow = inputs['weight:aircraft:MTOW']
         sfc = inputs['propulsion:SFC']
 
         range_factor = cruise_speed * ld_ratio / g / sfc
@@ -166,31 +166,31 @@ class _ImplicitBreguet(om.ImplicitComponent):
 
     def setup(self):
         shape = self.options['flight_point_count']
-        self.add_input('sizing_mission:cruise_altitude', np.nan, shape=shape, units='m')
-        self.add_input('tlar:cruise_Mach', np.nan, shape=shape)
-        self.add_input('aerodynamics:L_D_max', np.nan, shape=shape)
+        self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, shape=shape, units='m')
+        self.add_input('TLAR:cruise_mach', np.nan, shape=shape)
+        self.add_input('aerodynamics:aircraft:cruise:L_D_max', np.nan, shape=shape)
         self.add_input('propulsion:SFC', 1e-5, shape=shape, units='kg/N/s')
-        self.add_input('tlar:Range', np.nan, shape=shape, units='m')
+        self.add_input('TLAR:range', np.nan, shape=shape, units='m')
         self.add_input('engine_count', 2)
         self.add_input('weight:OEW', np.nan, units='kg')
-        self.add_input('weight:Max_PL', np.nan, units='kg')
+        self.add_input('weight:aircraft:max_payload', np.nan, units='kg')
 
-        self.add_output('weight:MTOW', 100000, units='kg')
+        self.add_output('weight:aircraft:MTOW', 100000, units='kg')
 
-        self.declare_partials('weight:MTOW', '*', method='fd')
+        self.declare_partials('weight:aircraft:MTOW', '*', method='fd')
 
     def apply_nonlinear(self, inputs, outputs, residuals,
                         discrete_inputs=None, discrete_outputs=None):
         # pylint: disable=too-many-arguments  # It's OpenMDAO's fault :)
         # pylint: disable=too-many-locals  # Ok, it's my fault, but it's cleaner this way
-        atmosphere = Atmosphere(inputs['sizing_mission:cruise_altitude'], altitude_in_feet=False)
-        cruise_speed = atmosphere.speed_of_sound * inputs['tlar:cruise_Mach']
+        atmosphere = Atmosphere(inputs['sizing_mission:mission:operational:cruise:altitude'], altitude_in_feet=False)
+        cruise_speed = atmosphere.speed_of_sound * inputs['TLAR:cruise_mach']
 
         oew = inputs['weight:OEW']
-        max_payload_weight = inputs['weight:Max_PL']
-        flight_range = inputs['tlar:Range']
-        ld_ratio = inputs['aerodynamics:L_D_max']
-        mtow = outputs['weight:MTOW']
+        max_payload_weight = inputs['weight:aircraft:max_payload']
+        flight_range = inputs['TLAR:range']
+        ld_ratio = inputs['aerodynamics:aircraft:cruise:L_D_max']
+        mtow = outputs['weight:aircraft:MTOW']
         sfc = inputs['propulsion:SFC']
 
         range_factor = cruise_speed * ld_ratio / g / sfc
@@ -201,9 +201,9 @@ class _ImplicitBreguet(om.ImplicitComponent):
         mzfw = mtow * flight_mass_ratio / RESERVE_RATIO
 
         mission_oew = mzfw - max_payload_weight
-        residuals['weight:MTOW'] = oew - mission_oew
+        residuals['weight:aircraft:MTOW'] = oew - mission_oew
 
     def guess_nonlinear(self, inputs, outputs, residuals,
                         discrete_inputs=None, discrete_outputs=None):
         # pylint: disable=too-many-arguments # It's OpenMDAO's fault :)
-        outputs['weight:MTOW'] = inputs['weight:OEW'] * 1.5
+        outputs['weight:aircraft:MTOW'] = inputs['weight:OEW'] * 1.5

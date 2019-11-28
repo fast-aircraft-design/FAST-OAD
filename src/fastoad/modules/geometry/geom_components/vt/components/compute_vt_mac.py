@@ -27,27 +27,27 @@ class ComputeVTMAC(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:vt_root_chord', val=np.nan, units='m')
-        self.add_input('geometry:vt_tip_chord', val=np.nan, units='m')
-        self.add_input('geometry:vt_sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:vt_span', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:root_chord', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:vertical_tail:span', val=np.nan, units='m')
 
-        self.add_output('geometry:vt_length', units='m')
+        self.add_output('geometry:vertical_tail:length', units='m')
         self.add_output('geometry:vt_x0', units='m')
         self.add_output('geometry:vt_z0', units='m')
 
-        self.declare_partials('geometry:vt_length',
-                              ['geometry:vt_root_chord', 'geometry:vt_tip_chord'])
+        self.declare_partials('geometry:vertical_tail:length',
+                              ['geometry:vertical_tail:root_chord', 'geometry:vertical_tail:tip_chord'])
         self.declare_partials('geometry:vt_x0', '*', method='fd')
         self.declare_partials('geometry:vt_z0',
-                              ['geometry:vt_root_chord', 'geometry:vt_tip_chord',
-                               'geometry:vt_span'], method='fd')
+                              ['geometry:vertical_tail:root_chord', 'geometry:vertical_tail:tip_chord',
+                               'geometry:vertical_tail:span'], method='fd')
 
     def compute(self, inputs, outputs):
-        root_chord = inputs['geometry:vt_root_chord']
-        tip_chord = inputs['geometry:vt_tip_chord']
-        sweep_25_vt = inputs['geometry:vt_sweep_25']
-        b_v = inputs['geometry:vt_span']
+        root_chord = inputs['geometry:vertical_tail:root_chord']
+        tip_chord = inputs['geometry:vertical_tail:tip_chord']
+        sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
+        b_v = inputs['geometry:vertical_tail:span']
 
         tmp = (root_chord * 0.25 + b_v * math.tan(sweep_25_vt / 180. * math.pi) - tip_chord * 0.25)
 
@@ -58,6 +58,6 @@ class ComputeVTMAC(ExplicitComponent):
         z0_vt = (2 * b_v * (0.5 * root_chord + tip_chord)) / \
                 (3 * (root_chord + tip_chord))
 
-        outputs['geometry:vt_length'] = mac_vt
+        outputs['geometry:vertical_tail:length'] = mac_vt
         outputs['geometry:vt_x0'] = x0_vt
         outputs['geometry:vt_z0'] = z0_vt

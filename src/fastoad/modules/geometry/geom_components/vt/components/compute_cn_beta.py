@@ -27,28 +27,28 @@ class ComputeCnBeta(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_LAV', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_LAR', val=np.nan, units='m')
-        self.add_input('tlar:cruise_Mach', val=np.nan)
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:front_length', val=np.nan, units='m')
+        self.add_input('TLAR:cruise_mach', val=np.nan)
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
 
         self.add_output('dcn_beta')
 
         self.declare_partials('dcn_beta', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        fus_length = inputs['geometry:fuselage_length']
-        lav = inputs['geometry:fuselage_LAV']
-        lar = inputs['geometry:fuselage_LAR']
-        width_max = inputs['geometry:fuselage_width_max']
-        height_max = inputs['geometry:fuselage_height_max']
-        wing_area = inputs['geometry:wing_area']
-        span = inputs['geometry:wing_span']
-        cruise_mach = inputs['tlar:cruise_Mach']
+        fus_length = inputs['geometry:fuselage:length']
+        lav = inputs['geometry:fuselage:rear_length']
+        lar = inputs['geometry:fuselage:front_length']
+        width_max = inputs['geometry:fuselage:maximum_width']
+        height_max = inputs['geometry:fuselage:maximum_height']
+        wing_area = inputs['geometry:wing:area']
+        span = inputs['geometry:wing:span']
+        cruise_mach = inputs['TLAR:cruise_mach']
 
         l_f = math.sqrt(width_max * height_max)
         l_cyc = fus_length - lav - lar

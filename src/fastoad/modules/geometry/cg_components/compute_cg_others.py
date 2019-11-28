@@ -24,101 +24,101 @@ class ComputeOthersCG(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_x0', val=np.nan, units='m')
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_LAV', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_LAR', val=np.nan, units='m')
-        self.add_input('cg_propulsion:B1', val=np.nan, units='m')
-        self.add_input('cg_furniture:D2', val=np.nan, units='m')
-        self.add_input('weight_propulsion:B1', val=np.nan, units='kg')
-        self.add_input('cabin:NPAX1', val=np.nan)
-        self.add_input('cabin:front_seat_number_eco', val=np.nan)
-        self.add_input('cabin:LSeco', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:front_length', val=np.nan, units='m')
+        self.add_input('weight:propulsion:engine:CG:x', val=np.nan, units='m')
+        self.add_input('weight:furniture:passenger_seats:CG:x', val=np.nan, units='m')
+        self.add_input('weight:propulsion:engine:mass', val=np.nan, units='kg')
+        self.add_input('geometry:cabin:NPAX1', val=np.nan)
+        self.add_input('geometry:cabin:seats:economical:count_by_row', val=np.nan)
+        self.add_input('geometry:cabin:seats:economical:length', val=np.nan, units='m')
 
         # TODO: add description of these CGs
-        self.add_output('cg_airframe:A2', units='m')
-        self.add_output('cg_airframe:A52', units='m')
-        self.add_output('cg_airframe:A6', units='m')
-        self.add_output('cg_airframe:A7', units='m')
-        self.add_output('cg_propulsion:B2', units='m')
-        self.add_output('cg_propulsion:B3', units='m')
-        self.add_output('cg_systems:C11', units='m')
-        self.add_output('cg_systems:C12', units='m')
-        self.add_output('cg_systems:C13', units='m')
-        self.add_output('cg_systems:C21', units='m')
-        self.add_output('cg_systems:C22', units='m')
-        self.add_output('cg_systems:C23', units='m')
-        self.add_output('cg_systems:C24', units='m')
-        self.add_output('cg_systems:C25', units='m')
-        self.add_output('cg_systems:C26', units='m')
-        self.add_output('cg_systems:C27', units='m')
-        self.add_output('cg_systems:C3', units='m')
-        self.add_output('cg_systems:C4', units='m')
-        self.add_output('cg_systems:C51', units='m')
-        self.add_output('cg_systems:C52', units='m')
-        self.add_output('cg_furniture:D1', units='m')
-        self.add_output('cg_furniture:D3', units='m')
-        self.add_output('cg_furniture:D4', units='m')
-        self.add_output('cg_furniture:D5', units='m')
-        self.add_output('cg:cg_pax', units='m')
-        self.add_output('cg:cg_rear_fret', units='m')
-        self.add_output('cg:cg_front_fret', units='m')
+        self.add_output('weight:airframe:fuselage:CG:x', units='m')
+        self.add_output('weight:airframe:landing_gear:front:CG:x', units='m')
+        self.add_output('weight:airframe:pylon:CG:x', units='m')
+        self.add_output('weight:airframe:paint:CG:x', units='m')
+        self.add_output('weight:propulsion:fuel_lines:CG:x', units='m')
+        self.add_output('weight:propulsion:unconsumables:CG:x', units='m')
+        self.add_output('weight:systems:power:auxiliary_power_unit:CG:x', units='m')
+        self.add_output('weight:systems:power:electric_systems:CG:x', units='m')
+        self.add_output('weight:systems:power:hydraulic_systems:CG:x', units='m')
+        self.add_output('weight:systems:life_support:insulation:CG:x', units='m')
+        self.add_output('weight:systems:life_support:air_conditioning:CG:x', units='m')
+        self.add_output('weight:systems:life_support:de-icing:CG:x', units='m')
+        self.add_output('weight:systems:life_support:cabin_lighting:CG:x', units='m')
+        self.add_output('weight:systems:life_support:seats_crew_accomodation:CG:x', units='m')
+        self.add_output('weight:systems:life_support:oxygen:CG:x', units='m')
+        self.add_output('weight:systems:life_support:safety_equipment:CG:x', units='m')
+        self.add_output('weight:systems:navigation:CG:x', units='m')
+        self.add_output('weight:systems:transmission:CG:x', units='m')
+        self.add_output('weight:systems:operational:radar:CG:x', units='m')
+        self.add_output('weight:systems:operational:cargo_hold:CG:x', units='m')
+        self.add_output('weight:furniture:cargo_configuration:CG:x', units='m')
+        self.add_output('weight:furniture:food_water:CG:x', units='m')
+        self.add_output('weight:furniture:security_kit:CG:x', units='m')
+        self.add_output('weight:furniture:toilets:CG:x', units='m')
+        self.add_output('weight:payload:PAX:CG:x', units='m')
+        self.add_output('weight:payload:rear_fret:CG:x', units='m')
+        self.add_output('weight:payload:front_fret:CG:x', units='m')
 
         self.declare_partials(
-            'cg_airframe:A2', 'geometry:fuselage_length', method='fd')
+            'weight:airframe:fuselage:CG:x', 'geometry:fuselage:length', method='fd')
         self.declare_partials(
-            'cg_airframe:A52', 'geometry:fuselage_LAV', method='fd')
+            'weight:airframe:landing_gear:front:CG:x', 'geometry:fuselage:rear_length', method='fd')
         self.declare_partials(
-            'cg_airframe:A6', 'cg_propulsion:B1', method='fd')
-        self.declare_partials('cg_propulsion:B2',
-                              'cg_propulsion:B1', method='fd')
-        self.declare_partials('cg_propulsion:B3',
-                              'cg_propulsion:B1', method='fd')
-        self.declare_partials(['cg_systems:C11', 'cg_systems:C12', 'cg_systems:C13',
-                               'cg_systems:C21', 'cg_systems:C24', 'cg_systems:C4',
-                               'cg_systems:C51'], 'geometry:fuselage_length', method='fd')
-        self.declare_partials(['cg_systems:C22', 'cg_systems:C25', 'cg_systems:C26',
-                               'cg_systems:C52'], 'cg_furniture:D2', method='fd')
-        self.declare_partials('cg_systems:C23', [
-            'geometry:wing_position', 'geometry:wing_l0'], method='fd')
-        self.declare_partials('cg_systems:C27',
-                              ['weight_propulsion:B1', 'cg_propulsion:B1',
-                               'cabin:NPAX1', 'cg_furniture:D2'], method='fd')
+            'weight:airframe:pylon:CG:x', 'weight:propulsion:engine:CG:x', method='fd')
+        self.declare_partials('weight:propulsion:fuel_lines:CG:x',
+                              'weight:propulsion:engine:CG:x', method='fd')
+        self.declare_partials('weight:propulsion:unconsumables:CG:x',
+                              'weight:propulsion:engine:CG:x', method='fd')
+        self.declare_partials(['weight:systems:power:auxiliary_power_unit:CG:x', 'weight:systems:power:electric_systems:CG:x', 'weight:systems:power:hydraulic_systems:CG:x',
+                               'weight:systems:life_support:insulation:CG:x', 'weight:systems:life_support:cabin_lighting:CG:x', 'weight:systems:transmission:CG:x',
+                               'weight:systems:operational:radar:CG:x'], 'geometry:fuselage:length', method='fd')
+        self.declare_partials(['weight:systems:life_support:air_conditioning:CG:x', 'weight:systems:life_support:seats_crew_accomodation:CG:x', 'weight:systems:life_support:oxygen:CG:x',
+                               'weight:systems:operational:cargo_hold:CG:x'], 'weight:furniture:passenger_seats:CG:x', method='fd')
+        self.declare_partials('weight:systems:life_support:de-icing:CG:x', [
+            'geometry:wing:location', 'geometry:wing:MAC:length'], method='fd')
+        self.declare_partials('weight:systems:life_support:safety_equipment:CG:x',
+                              ['weight:propulsion:engine:mass', 'weight:propulsion:engine:CG:x',
+                               'geometry:cabin:NPAX1', 'weight:furniture:passenger_seats:CG:x'], method='fd')
         self.declare_partials(
-            'cg_systems:C3', 'geometry:fuselage_LAV', method='fd')
-        self.declare_partials('cg_furniture:D3',
-                              ['geometry:fuselage_length', 'geometry:fuselage_LAR',
-                               'cabin:LSeco', 'cabin:front_seat_number_eco'], method='fd')
+            'weight:systems:navigation:CG:x', 'geometry:fuselage:rear_length', method='fd')
+        self.declare_partials('weight:furniture:food_water:CG:x',
+                              ['geometry:fuselage:length', 'geometry:fuselage:front_length',
+                               'geometry:cabin:seats:economical:length', 'geometry:cabin:seats:economical:count_by_row'], method='fd')
         self.declare_partials(
-            ['cg_furniture:D4', 'cg_furniture:D5'], 'cg_furniture:D2', method='fd')
+            ['weight:furniture:security_kit:CG:x', 'weight:furniture:toilets:CG:x'], 'weight:furniture:passenger_seats:CG:x', method='fd')
         self.declare_partials(
-            'cg:cg_pax', 'cg_furniture:D2', method='fd')
-        self.declare_partials('cg:cg_rear_fret',
-                              ['geometry:fuselage_LAR', 'geometry:wing_l0', 'geometry:wing_x0',
-                               'geometry:wing_l2', 'cabin:front_seat_number_eco', 'cabin:LSeco',
-                               'geometry:wing_position', 'geometry:fuselage_length'],
+            'weight:payload:PAX:CG:x', 'weight:furniture:passenger_seats:CG:x', method='fd')
+        self.declare_partials('weight:payload:rear_fret:CG:x',
+                              ['geometry:fuselage:front_length', 'geometry:wing:MAC:length', 'geometry:wing:root:leading_edge:x',
+                               'geometry:wing:root:chord', 'geometry:cabin:seats:economical:count_by_row', 'geometry:cabin:seats:economical:length',
+                               'geometry:wing:location', 'geometry:fuselage:length'],
                               method='fd')
-        self.declare_partials('cg:cg_front_fret',
-                              ['geometry:fuselage_LAV', 'geometry:wing_l0',
-                               'geometry:wing_x0', 'geometry:wing_position'], method='fd')
+        self.declare_partials('weight:payload:front_fret:CG:x',
+                              ['geometry:fuselage:rear_length', 'geometry:wing:MAC:length',
+                               'geometry:wing:root:leading_edge:x', 'geometry:wing:location'], method='fd')
 
     def compute(self, inputs, outputs):
-        x0_wing = inputs['geometry:wing_x0']
-        l0_wing = inputs['geometry:wing_l0']
-        l2_wing = inputs['geometry:wing_l2']
-        fus_length = inputs['geometry:fuselage_length']
-        fa_length = inputs['geometry:wing_position']
-        lav = inputs['geometry:fuselage_LAV']
-        lar = inputs['geometry:fuselage_LAR']
-        x_cg_b1 = inputs['cg_propulsion:B1']
-        x_cg_d2 = inputs['cg_furniture:D2']
-        weight_engines = inputs['weight_propulsion:B1']
-        npax1 = inputs['cabin:NPAX1']
-        front_seat_number_eco = inputs['cabin:front_seat_number_eco']
-        ls_eco = inputs['cabin:LSeco']
+        x0_wing = inputs['geometry:wing:root:leading_edge:x']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        l2_wing = inputs['geometry:wing:root:chord']
+        fus_length = inputs['geometry:fuselage:length']
+        fa_length = inputs['geometry:wing:location']
+        lav = inputs['geometry:fuselage:rear_length']
+        lar = inputs['geometry:fuselage:front_length']
+        x_cg_b1 = inputs['weight:propulsion:engine:CG:x']
+        x_cg_d2 = inputs['weight:furniture:passenger_seats:CG:x']
+        weight_engines = inputs['weight:propulsion:engine:mass']
+        npax1 = inputs['geometry:cabin:NPAX1']
+        front_seat_number_eco = inputs['geometry:cabin:seats:economical:count_by_row']
+        ls_eco = inputs['geometry:cabin:seats:economical:length']
 
         x_cg_a2 = 0.45 * fus_length
 
@@ -166,33 +166,33 @@ class ComputeOthersCG(ExplicitComponent):
 
         x_cg_pl = x_cg_d2
 
-        outputs['cg_airframe:A2'] = x_cg_a2
-        outputs['cg_airframe:A52'] = x_cg_a52
-        outputs['cg_airframe:A6'] = x_cg_a6
-        outputs['cg_airframe:A7'] = 0.
+        outputs['weight:airframe:fuselage:CG:x'] = x_cg_a2
+        outputs['weight:airframe:landing_gear:front:CG:x'] = x_cg_a52
+        outputs['weight:airframe:pylon:CG:x'] = x_cg_a6
+        outputs['weight:airframe:paint:CG:x'] = 0.
 
-        outputs['cg_propulsion:B2'] = x_cg_b2
-        outputs['cg_propulsion:B3'] = x_cg_b3
+        outputs['weight:propulsion:fuel_lines:CG:x'] = x_cg_b2
+        outputs['weight:propulsion:unconsumables:CG:x'] = x_cg_b3
 
-        outputs['cg_systems:C11'] = x_cg_c11
-        outputs['cg_systems:C12'] = x_cg_c12
-        outputs['cg_systems:C13'] = x_cg_c13
-        outputs['cg_systems:C21'] = x_cg_c21
-        outputs['cg_systems:C22'] = x_cg_c22
-        outputs['cg_systems:C23'] = x_cg_c23
-        outputs['cg_systems:C24'] = x_cg_c24
-        outputs['cg_systems:C25'] = x_cg_c25
-        outputs['cg_systems:C26'] = x_cg_c26
-        outputs['cg_systems:C27'] = x_cg_c27
-        outputs['cg_systems:C3'] = x_cg_c3
-        outputs['cg_systems:C4'] = x_cg_c4
-        outputs['cg_systems:C51'] = x_cg_c51
-        outputs['cg_systems:C52'] = x_cg_c52
+        outputs['weight:systems:power:auxiliary_power_unit:CG:x'] = x_cg_c11
+        outputs['weight:systems:power:electric_systems:CG:x'] = x_cg_c12
+        outputs['weight:systems:power:hydraulic_systems:CG:x'] = x_cg_c13
+        outputs['weight:systems:life_support:insulation:CG:x'] = x_cg_c21
+        outputs['weight:systems:life_support:air_conditioning:CG:x'] = x_cg_c22
+        outputs['weight:systems:life_support:de-icing:CG:x'] = x_cg_c23
+        outputs['weight:systems:life_support:cabin_lighting:CG:x'] = x_cg_c24
+        outputs['weight:systems:life_support:seats_crew_accomodation:CG:x'] = x_cg_c25
+        outputs['weight:systems:life_support:oxygen:CG:x'] = x_cg_c26
+        outputs['weight:systems:life_support:safety_equipment:CG:x'] = x_cg_c27
+        outputs['weight:systems:navigation:CG:x'] = x_cg_c3
+        outputs['weight:systems:transmission:CG:x'] = x_cg_c4
+        outputs['weight:systems:operational:radar:CG:x'] = x_cg_c51
+        outputs['weight:systems:operational:cargo_hold:CG:x'] = x_cg_c52
 
-        outputs['cg_furniture:D1'] = 0.
-        outputs['cg_furniture:D3'] = x_cg_d3
-        outputs['cg_furniture:D4'] = x_cg_d5
-        outputs['cg_furniture:D5'] = x_cg_d5
-        outputs['cg:cg_pax'] = x_cg_pl
-        outputs['cg:cg_rear_fret'] = x_cg_rear_fret
-        outputs['cg:cg_front_fret'] = x_cg_front_fret
+        outputs['weight:furniture:cargo_configuration:CG:x'] = 0.
+        outputs['weight:furniture:food_water:CG:x'] = x_cg_d3
+        outputs['weight:furniture:security_kit:CG:x'] = x_cg_d5
+        outputs['weight:furniture:toilets:CG:x'] = x_cg_d5
+        outputs['weight:payload:PAX:CG:x'] = x_cg_pl
+        outputs['weight:payload:rear_fret:CG:x'] = x_cg_rear_fret
+        outputs['weight:payload:front_fret:CG:x'] = x_cg_front_fret

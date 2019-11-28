@@ -16,62 +16,120 @@
 <aircraft>
   <geometry>
     <useless>0.9</useless>
-    <wing_sweep_0 units="deg">27.554</wing_sweep_0>
-    <wing_sweep_100_outer units="deg">16.696</wing_sweep_100_outer>
-    <flap_chord_ratio>0.197</flap_chord_ratio>
-    <flap_span_ratio>0.8</flap_span_ratio>
-    <slat_chord_ratio>0.177</slat_chord_ratio>
-    <slat_span_ratio>0.9</slat_span_ratio>
-    <wing_span units="m">31.603</wing_span>
-    <fuselage_height_max units="m">4.06</fuselage_height_max>
-    <fuselage_width_max units="m">3.92</fuselage_width_max>
-    <wing_l2 units="m">6.26</wing_l2>
-    <wing_l4 units="m">1.882</wing_l4>
-    <wing_sweep_25 units="deg">25.0</wing_sweep_25>
-    <wing_area units="m**2">124.843</wing_area>
-      <wing_toc_aero>0.128</wing_toc_aero>
-      <wing_wet_area units="m**2">200.607</wing_wet_area>
-      <wing_l0 units="m">4.457</wing_l0>
-      <fuselage_length units="m">37.507</fuselage_length>
-      <fuselage_wet_area units="m**2">401.956</fuselage_wet_area>
-      <ht_length units="m">3.141</ht_length>
-      <ht_toc>0.1</ht_toc>
-      <ht_sweep_25 units="deg">28.0</ht_sweep_25>
-      <ht_wet_area units="m**2">70.341</ht_wet_area>
-      <vt_length units="m">4.161</vt_length>
-      <vt_toc>0.1</vt_toc>
-      <vt_sweep_25 units="deg">35.0</vt_sweep_25>
-      <vt_wet_area units="m**2">52.749</vt_wet_area>
-      <pylon_length units="m">5.733</pylon_length>
-      <nacelle_length units="m">5.211</nacelle_length>
-      <pylon_wet_area units="m**2">7.563</pylon_wet_area>
-      <nacelle_wet_area units="m**2">21.609</nacelle_wet_area>
-      <engine_number>2.0</engine_number>
-      <fan_length units="m">3.127</fan_length>
-      <S_total units="m**2">784.007</S_total>
-      <wing_aspect_ratio>9.48</wing_aspect_ratio>
-      <wing_toc_tip>0.11</wing_toc_tip>
+    <wing>
+      <sweep_0 units="deg">27.554</sweep_0>
+      <sweep_100_outer units="deg">16.696</sweep_100_outer>
+      <span units="m">31.603</span>
+      <root>
+        <chord units="m">6.26</chord>
+      </root>
+      <tip>
+        <chord units="m">1.882</chord>
+        <thickness_ratio>0.11</thickness_ratio>
+      </tip>
+      <sweep_25 units="deg">25.0</sweep_25>
+      <area units="m**2">124.843</area>
+      <thickness_ratio>0.128</thickness_ratio>
+      <wet_area units="m**2">200.607</wet_area>
+      <MAC>
+        <length units="m">4.457</length>
+      </MAC>
+      <aspect_ratio>9.48</aspect_ratio>
+    </wing>
+    <flap>
+      <chord_ratio>0.197</chord_ratio>
+      <span_ratio>0.8</span_ratio>
+    </flap>
+    <slat>
+      <chord_ratio>0.177</chord_ratio>
+      <span_ratio>0.9</span_ratio>
+    </slat>
+    <fuselage>
+      <maximum_height units="m">4.06</maximum_height>
+      <maximum_width units="m">3.92</maximum_width>
+      <length units="m">37.507</length>
+      <wet_area units="m**2">401.956</wet_area>
+    </fuselage>
+    <horizontal_tail>
+      <length units="m">3.141</length>
+      <thickness_ratio>0.1</thickness_ratio>
+      <sweep_25 units="deg">28.0</sweep_25>
+      <wet_area units="m**2">70.341</wet_area>
+    </horizontal_tail>
+    <vertical_tail>
+      <length units="m">4.161</length>
+      <thickness_ratio>0.1</thickness_ratio>
+      <sweep_25 units="deg">35.0</sweep_25>
+      <wet_area units="m**2">52.749</wet_area>
+    </vertical_tail>
+    <propulsion>
+      <pylon>
+        <length units="m">5.733</length>
+        <wet_area units="m**2">7.563</wet_area>
+      </pylon>
+      <nacelle>
+        <length units="m">5.211</length>
+        <wet_area units="m**2">21.609</wet_area>
+      </nacelle>
+      <engine>
+        <count>2.0</count>
+      </engine>
+      <fan>
+        <length units="m">3.127</length>
+      </fan>
+    </propulsion>
+    <aircraft>
+      <area units="m**2">784.007</area>
+    </aircraft>
   </geometry>
   <sizing_mission>
-    <flap_angle_to units="deg">10.0</flap_angle_to>
-    <slat_angle_to units="deg">18.0</slat_angle_to>
-    <flap_angle_landing units="deg">30.0</flap_angle_landing>
-    <slat_angle_landing units="deg">20.0</slat_angle_landing>
-      <cruise_altitude units="ft">35000.0</cruise_altitude>
+    <mission>
+      <operational>
+        <takeoff>
+          <flap_angle units="deg">10.0</flap_angle>
+          <slat_angle units="deg">18.0</slat_angle>
+        </takeoff>
+        <landing>
+          <flap_angle units="deg">30.0</flap_angle>
+          <slat_angle units="deg">20.0</slat_angle>
+        </landing>
+        <cruise>
+          <altitude units="ft">35000.0</altitude>
+        </cruise>
+      </operational>
+    </mission>
   </sizing_mission>
-  <tlar>
-    <cruise_Mach>0.78</cruise_Mach>
-    <v_approach units="kn">132.0</v_approach>
-  </tlar>
-    <kfactors_aero>
-        <K_Cd>1.0</K_Cd>
-        <Offset_Cd>0.0</Offset_Cd>
-        <K_winglet_Cd>1.0</K_winglet_Cd>
-        <Offset_winglet_Cd>0.0</Offset_winglet_Cd>
-        <K_Cl>1.0</K_Cl>
-        <Offset_Cl>0.0</Offset_Cl>
-        <K_winglet_Cl>1.0</K_winglet_Cl>
-        <Offset_winglet_Cl>0.0</Offset_winglet_Cl>
-        <K_HL_LDG>1.0</K_HL_LDG>
-    </kfactors_aero>
+  <TLAR>
+    <cruise_mach>0.78</cruise_mach>
+    <approach_speed units="kn">132.0</approach_speed>
+  </TLAR>
+  <aerodynamics>
+    <aircraft>
+      <cruise>
+        <CD>
+          <k>1.0</k>
+          <offset>0.0</offset>
+          <winglet_effect>
+            <k>1.0</k>
+            <offset>0.0</offset>
+          </winglet_effect>
+        </CD>
+        <CL>
+          <k>1.0</k>
+          <offset>0.0</offset>
+          <winglet_effect>
+            <k>1.0</k>
+            <offset>0.0</offset>
+          </winglet_effect>
+        </CL>
+      </cruise>
+      <landing>
+        <CL>
+          <landing_gear_effect>
+            <k>1.0</k>
+          </landing_gear_effect>
+        </CL>
+      </landing>
+    </aircraft>
+  </aerodynamics>
 </aircraft>

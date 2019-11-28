@@ -33,30 +33,30 @@ class ComputeHTArea(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
-        self.add_input('geometry:ht_vol_coeff', val=np.nan)
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:ht_area', val=np.nan, units='m**2')
+        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:volume_coefficient', val=np.nan)
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:horizontal_tail:area', val=np.nan, units='m**2')
 
-        self.add_output('geometry:ht_lp', units='m')
-        self.add_output('geometry:ht_wet_area', units='m**2')
+        self.add_output('geometry:horizontal_tail:distance_from_wing', units='m')
+        self.add_output('geometry:horizontal_tail:wet_area', units='m**2')
         self.add_output('delta_cm_takeoff')
 
-        self.declare_partials('geometry:ht_lp',
-                              ['geometry:fuselage_length', 'geometry:wing_position'],
+        self.declare_partials('geometry:horizontal_tail:distance_from_wing',
+                              ['geometry:fuselage:length', 'geometry:wing:location'],
                               method='fd')
-        self.declare_partials('geometry:ht_wet_area', 'geometry:ht_area', method='fd')
+        self.declare_partials('geometry:horizontal_tail:wet_area', 'geometry:horizontal_tail:area', method='fd')
         self.declare_partials('delta_cm_takeoff', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        fus_length = inputs['geometry:fuselage_length']
-        fa_length = inputs['geometry:wing_position']
-        wing_area = inputs['geometry:wing_area']
-        l0_wing = inputs['geometry:wing_l0']
-        s_h = inputs['geometry:ht_area']
-        ht_vol_coeff = inputs['geometry:ht_vol_coeff']
+        fus_length = inputs['geometry:fuselage:length']
+        fa_length = inputs['geometry:wing:location']
+        wing_area = inputs['geometry:wing:area']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        s_h = inputs['geometry:horizontal_tail:area']
+        ht_vol_coeff = inputs['geometry:horizontal_tail:volume_coefficient']
 
         if self.tail_type == 1.0:
             if self.ac_family == 1.0:
@@ -76,6 +76,6 @@ class ComputeHTArea(ExplicitComponent):
 
         delta_cm_takeoff = s_h * lp_ht / wing_area / l0_wing - ht_vol_coeff
 
-        outputs['geometry:ht_lp'] = lp_ht
-        outputs['geometry:ht_wet_area'] = wet_area_ht
+        outputs['geometry:horizontal_tail:distance_from_wing'] = lp_ht
+        outputs['geometry:horizontal_tail:wet_area'] = wet_area_ht
         outputs['delta_cm_takeoff'] = delta_cm_takeoff

@@ -39,12 +39,12 @@ class DeltaCLHighLift(ExplicitComponent):
         self.add_input('slat_angle', val=np.nan, units='rad')
         self.add_output('delta_cl')
 
-        self.add_input('geometry:wing_sweep_0', val=np.nan, units='rad')
-        self.add_input('geometry:wing_sweep_100_outer', val=np.nan, units='rad')
-        self.add_input('geometry:flap_chord_ratio', val=np.nan)
-        self.add_input('geometry:flap_span_ratio', val=np.nan)
-        self.add_input('geometry:slat_chord_ratio', val=np.nan)
-        self.add_input('geometry:slat_span_ratio', val=np.nan)
+        self.add_input('geometry:wing:sweep_0', val=np.nan, units='rad')
+        self.add_input('geometry:wing:sweep_100_outer', val=np.nan, units='rad')
+        self.add_input('geometry:flap:chord_ratio', val=np.nan)
+        self.add_input('geometry:flap:span_ratio', val=np.nan)
+        self.add_input('geometry:slat:chord_ratio', val=np.nan)
+        self.add_input('geometry:slat:span_ratio', val=np.nan)
         self.add_input('mach', val=np.nan)
 
     def compute(self, inputs, outputs):
@@ -79,12 +79,12 @@ class DeltaCLHighLift(ExplicitComponent):
         slat_angle = inputs['slat_angle']
         Mach = inputs['mach']
 
-        le_angle = inputs['geometry:wing_sweep_0']
-        tl_angle = inputs['geometry:wing_sweep_100_outer']
-        flap_chord_ratio = inputs['geometry:flap_chord_ratio']
-        flap_span_ratio = inputs['geometry:flap_span_ratio']
-        slat_chord_ratio = inputs['geometry:slat_chord_ratio']
-        slat_span_ratio = inputs['geometry:slat_span_ratio']
+        le_angle = inputs['geometry:wing:sweep_0']
+        tl_angle = inputs['geometry:wing:sweep_100_outer']
+        flap_chord_ratio = inputs['geometry:flap:chord_ratio']
+        flap_span_ratio = inputs['geometry:flap:span_ratio']
+        slat_chord_ratio = inputs['geometry:slat:chord_ratio']
+        slat_span_ratio = inputs['geometry:slat:span_ratio']
 
         ratio_c_flap = (1. + flap_chord_ratio * math.cos(flap_angle))
 

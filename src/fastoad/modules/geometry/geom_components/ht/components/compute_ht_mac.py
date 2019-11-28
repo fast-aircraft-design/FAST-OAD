@@ -27,31 +27,31 @@ class ComputeHTMAC(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:ht_root_chord', val=np.nan, units='m')
-        self.add_input('geometry:ht_tip_chord', val=np.nan, units='m')
-        self.add_input('geometry:ht_sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:ht_span', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:root_chord', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:horizontal_tail:span', val=np.nan, units='m')
 
-        self.add_output('geometry:ht_length', units='m')
+        self.add_output('geometry:horizontal_tail:length', units='m')
         self.add_output('geometry:ht_x0', units='m')
         self.add_output('geometry:ht_y0', units='m')
 
-        self.declare_partials('geometry:ht_length',
-                              ['geometry:ht_root_chord', 'geometry:ht_tip_chord'],
+        self.declare_partials('geometry:horizontal_tail:length',
+                              ['geometry:horizontal_tail:root_chord', 'geometry:horizontal_tail:tip_chord'],
                               method='fd')
         self.declare_partials('geometry:ht_x0',
-                              ['geometry:ht_root_chord', 'geometry:ht_tip_chord',
-                               'geometry:ht_sweep_25', 'geometry:ht_span'],
+                              ['geometry:horizontal_tail:root_chord', 'geometry:horizontal_tail:tip_chord',
+                               'geometry:horizontal_tail:sweep_25', 'geometry:horizontal_tail:span'],
                               method='fd')
         self.declare_partials('geometry:ht_y0',
-                              ['geometry:ht_root_chord', 'geometry:ht_tip_chord',
-                               'geometry:ht_span'], method='fd')
+                              ['geometry:horizontal_tail:root_chord', 'geometry:horizontal_tail:tip_chord',
+                               'geometry:horizontal_tail:span'], method='fd')
 
     def compute(self, inputs, outputs):
-        root_chord = inputs['geometry:ht_root_chord']
-        tip_chord = inputs['geometry:ht_tip_chord']
-        sweep_25_ht = inputs['geometry:ht_sweep_25']
-        b_h = inputs['geometry:ht_span']
+        root_chord = inputs['geometry:horizontal_tail:root_chord']
+        tip_chord = inputs['geometry:horizontal_tail:tip_chord']
+        sweep_25_ht = inputs['geometry:horizontal_tail:sweep_25']
+        b_h = inputs['geometry:horizontal_tail:span']
 
         tmp = (root_chord * 0.25 + b_h / 2 *
                math.tan(sweep_25_ht / 180. * math.pi) - tip_chord * 0.25)
@@ -63,6 +63,6 @@ class ComputeHTMAC(ExplicitComponent):
         y0_ht = (b_h * (.5 * root_chord + tip_chord)) / \
             (3 * (root_chord + tip_chord))
 
-        outputs['geometry:ht_length'] = mac_ht
+        outputs['geometry:horizontal_tail:length'] = mac_ht
         outputs['geometry:ht_x0'] = x0_ht
         outputs['geometry:ht_y0'] = y0_ht

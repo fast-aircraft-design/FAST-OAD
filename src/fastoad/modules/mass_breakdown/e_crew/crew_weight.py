@@ -23,14 +23,14 @@ class CrewWeight(ExplicitComponent):
     """ crew weight estimation (E) """
 
     def setup(self):
-        self.add_input('cabin:PNT', val=np.nan)
-        self.add_input('cabin:PNC', val=np.nan)
+        self.add_input('geometry:cabin:crew_count:technical', val=np.nan)
+        self.add_input('geometry:cabin:crew_count:commercial', val=np.nan)
 
-        self.add_output('weight_crew:E', units='kg')
+        self.add_output('weight:crew:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        cockpit_crew = inputs['cabin:PNT']
-        cabin_crew = inputs['cabin:PNC']
+        cockpit_crew = inputs['geometry:cabin:crew_count:technical']
+        cabin_crew = inputs['geometry:cabin:crew_count:commercial']
 
-        outputs['weight_crew:E'] = 85 * cockpit_crew + 75 * cabin_crew
+        outputs['weight:crew:mass'] = 85 * cockpit_crew + 75 * cabin_crew

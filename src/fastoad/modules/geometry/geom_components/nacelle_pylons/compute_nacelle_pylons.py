@@ -36,87 +36,87 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('propulsion:mto_thrust', val=np.nan, units='N')
-        self.add_input('geometry:y_ratio_engine', val=np.nan)
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('geometry:wing_x0', val=np.nan, units='m')
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:wing_y2', val=np.nan, units='m')
-        self.add_input('geometry:wing_l3', val=np.nan, units='m')
-        self.add_input('geometry:wing_y3', val=np.nan, units='m')
-        self.add_input('geometry:wing_x3', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
+        self.add_input('propulsion:MTO_thrust', val=np.nan, units='N')
+        self.add_input('geometry:propulsion:engine:y_ratio', val=np.nan)
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
 
-        self.add_output('geometry:pylon_length', units='m')
-        self.add_output('geometry:fan_length', units='m')
-        self.add_output('geometry:nacelle_length', units='m')
-        self.add_output('geometry:nacelle_dia', units='m')
-        self.add_output('geometry:LG_height', units='m')
-        self.add_output('geometry:y_nacell', units='m')
-        self.add_output('geometry:pylon_wet_area', units='m**2')
-        self.add_output('geometry:nacelle_wet_area', units='m**2')
-        self.add_output('cg_propulsion:B1', units='m')
+        self.add_output('geometry:propulsion:pylon:length', units='m')
+        self.add_output('geometry:propulsion:fan:length', units='m')
+        self.add_output('geometry:propulsion:nacelle:length', units='m')
+        self.add_output('geometry:propulsion:nacelle:diameter', units='m')
+        self.add_output('geometry:landing_gear:height', units='m')
+        self.add_output('geometry:propulsion:nacelle:y', units='m')
+        self.add_output('geometry:propulsion:pylon:wet_area', units='m**2')
+        self.add_output('geometry:propulsion:nacelle:wet_area', units='m**2')
+        self.add_output('weight:propulsion:engine:CG:x', units='m')
 
-        self.declare_partials('geometry:nacelle_dia',
-                              'propulsion:mto_thrust', method='fd')
-        self.declare_partials('geometry:nacelle_length',
-                              'propulsion:mto_thrust', method='fd')
-        self.declare_partials('geometry:LG_height',
-                              'propulsion:mto_thrust', method='fd')
-        self.declare_partials('geometry:fan_length',
-                              'propulsion:mto_thrust', method='fd')
-        self.declare_partials('geometry:pylon_length',
-                              'propulsion:mto_thrust', method='fd')
-        self.declare_partials('geometry:y_nacell',
-                              ['propulsion:mto_thrust',
-                               'geometry:fuselage_width_max',
-                               'geometry:y_ratio_engine',
-                               'geometry:wing_span'], method='fd')
-        self.declare_partials('cg_propulsion:B1',
-                              ['geometry:wing_position',
-                               'geometry:wing_l0',
-                               'geometry:wing_x0',
-                               'geometry:wing_x3',
-                               'geometry:wing_y2',
-                               'geometry:wing_y3',
-                               'geometry:wing_l2',
-                               'geometry:wing_l3',
-                               'geometry:fuselage_length',
-                               'propulsion:mto_thrust',
-                               'geometry:fuselage_width_max',
-                                'geometry:y_ratio_engine',
-                                'geometry:wing_span'], method='fd')
-        self.declare_partials('geometry:nacelle_wet_area',
-                              'propulsion:mto_thrust', method='fd')
-        self.declare_partials('geometry:pylon_wet_area',
-                              'propulsion:mto_thrust', method='fd')
+        self.declare_partials('geometry:propulsion:nacelle:diameter',
+                              'propulsion:MTO_thrust', method='fd')
+        self.declare_partials('geometry:propulsion:nacelle:length',
+                              'propulsion:MTO_thrust', method='fd')
+        self.declare_partials('geometry:landing_gear:height',
+                              'propulsion:MTO_thrust', method='fd')
+        self.declare_partials('geometry:propulsion:fan:length',
+                              'propulsion:MTO_thrust', method='fd')
+        self.declare_partials('geometry:propulsion:pylon:length',
+                              'propulsion:MTO_thrust', method='fd')
+        self.declare_partials('geometry:propulsion:nacelle:y',
+                              ['propulsion:MTO_thrust',
+                               'geometry:fuselage:maximum_width',
+                               'geometry:propulsion:engine:y_ratio',
+                               'geometry:wing:span'], method='fd')
+        self.declare_partials('weight:propulsion:engine:CG:x',
+                              ['geometry:wing:location',
+                               'geometry:wing:MAC:length',
+                               'geometry:wing:root:leading_edge:x',
+                               'geometry:wing:kink:leading_edge:x',
+                               'geometry:wing:root:y',
+                               'geometry:wing:kink:y',
+                               'geometry:wing:root:chord',
+                               'geometry:wing:kink:chord',
+                               'geometry:fuselage:length',
+                               'propulsion:MTO_thrust',
+                               'geometry:fuselage:maximum_width',
+                                'geometry:propulsion:engine:y_ratio',
+                                'geometry:wing:span'], method='fd')
+        self.declare_partials('geometry:propulsion:nacelle:wet_area',
+                              'propulsion:MTO_thrust', method='fd')
+        self.declare_partials('geometry:propulsion:pylon:wet_area',
+                              'propulsion:MTO_thrust', method='fd')
 
     def compute(self, inputs, outputs):
-        thrust_sl = inputs['propulsion:mto_thrust']
-        y_ratio_engine = inputs['geometry:y_ratio_engine']
-        span = inputs['geometry:wing_span']
-        l0_wing = inputs['geometry:wing_l0']
-        x0_wing = inputs['geometry:wing_x0']
-        l2_wing = inputs['geometry:wing_l2']
-        y2_wing = inputs['geometry:wing_y2']
-        l3_wing = inputs['geometry:wing_l3']
-        x3_wing = inputs['geometry:wing_x3']
-        y3_wing = inputs['geometry:wing_y3']
-        fa_length = inputs['geometry:wing_position']
-        fus_length = inputs['geometry:fuselage_length']
-        b_f = inputs['geometry:fuselage_width_max']
+        thrust_sl = inputs['propulsion:MTO_thrust']
+        y_ratio_engine = inputs['geometry:propulsion:engine:y_ratio']
+        span = inputs['geometry:wing:span']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        x0_wing = inputs['geometry:wing:root:leading_edge:x']
+        l2_wing = inputs['geometry:wing:root:chord']
+        y2_wing = inputs['geometry:wing:root:y']
+        l3_wing = inputs['geometry:wing:kink:chord']
+        x3_wing = inputs['geometry:wing:kink:leading_edge:x']
+        y3_wing = inputs['geometry:wing:kink:y']
+        fa_length = inputs['geometry:wing:location']
+        fus_length = inputs['geometry:fuselage:length']
+        b_f = inputs['geometry:fuselage:maximum_width']
 
         nac_dia = 0.00904 * sqrt(thrust_sl * 0.225) + 0.7  # FIXME: use output of engine module
         lg_height = 1.4 * nac_dia
         # The nominal thrust must be used in lbf
         nac_length = 0.032 * sqrt(thrust_sl * 0.225)  # FIXME: use output of engine module
 
-        outputs['geometry:nacelle_length'] = nac_length
-        outputs['geometry:nacelle_dia'] = nac_dia
-        outputs['geometry:LG_height'] = lg_height
+        outputs['geometry:propulsion:nacelle:length'] = nac_length
+        outputs['geometry:propulsion:nacelle:diameter'] = nac_dia
+        outputs['geometry:landing_gear:height'] = lg_height
 
         fan_length = 0.60 * nac_length
         pylon_length = 1.1 * nac_length
@@ -139,14 +139,14 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
             elif self.ac_family == 2.0:
                 x_nacell_cg_absolute = 0.8*fus_length-1.5
 
-        outputs['geometry:pylon_length'] = pylon_length
-        outputs['geometry:fan_length'] = fan_length
-        outputs['geometry:y_nacell'] = y_nacell
-        outputs['cg_propulsion:B1'] = x_nacell_cg_absolute
+        outputs['geometry:propulsion:pylon:length'] = pylon_length
+        outputs['geometry:propulsion:fan:length'] = fan_length
+        outputs['geometry:propulsion:nacelle:y'] = y_nacell
+        outputs['weight:propulsion:engine:CG:x'] = x_nacell_cg_absolute
 
         # Wet surfaces
         wet_area_nac = 0.0004 * thrust_sl * 0.225 + 11      # By engine
         wet_area_pylon = 0.35 * wet_area_nac
 
-        outputs['geometry:nacelle_wet_area'] = wet_area_nac
-        outputs['geometry:pylon_wet_area'] = wet_area_pylon
+        outputs['geometry:propulsion:nacelle:wet_area'] = wet_area_nac
+        outputs['geometry:propulsion:pylon:wet_area'] = wet_area_pylon

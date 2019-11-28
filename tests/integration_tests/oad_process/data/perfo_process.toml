@@ -19,7 +19,7 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
   name = "mission:MZFW"
 
 [[design_var]]
-  name = "sizing_mission:cruise_altitude"
+  name = "sizing_mission:mission:operational:cruise:altitude"
   lower = 0
   upper = 45000
 

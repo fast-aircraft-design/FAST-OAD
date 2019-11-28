@@ -26,34 +26,34 @@ class ComputeYWing(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_aspect_ratio', val=np.nan)
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_break', val=np.nan)
+        self.add_input('geometry:wing:aspect_ratio', val=np.nan)
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:break', val=np.nan)
 
-        self.add_output('geometry:wing_span', units='m')
-        self.add_output('geometry:wing_y2', units='m')
-        self.add_output('geometry:wing_y3', units='m')
-        self.add_output('geometry:wing_y4', units='m')
+        self.add_output('geometry:wing:span', units='m')
+        self.add_output('geometry:wing:root:y', units='m')
+        self.add_output('geometry:wing:kink:y', units='m')
+        self.add_output('geometry:wing:tip:y', units='m')
 
-        self.declare_partials('geometry:wing_span', ['geometry:wing_area',
-                                                     'geometry:wing_aspect_ratio'],
+        self.declare_partials('geometry:wing:span', ['geometry:wing:area',
+                                                     'geometry:wing:aspect_ratio'],
                               method='fd')
-        self.declare_partials('geometry:wing_y2', 'geometry:fuselage_width_max',
+        self.declare_partials('geometry:wing:root:y', 'geometry:fuselage:maximum_width',
                               method='fd')
-        self.declare_partials('geometry:wing_y3', ['geometry:wing_area',
-                                                   'geometry:wing_aspect_ratio',
-                                                   'geometry:wing_break'],
+        self.declare_partials('geometry:wing:kink:y', ['geometry:wing:area',
+                                                   'geometry:wing:aspect_ratio',
+                                                   'geometry:wing:break'],
                               method='fd')
-        self.declare_partials('geometry:wing_y4', ['geometry:wing_area',
-                                                   'geometry:wing_aspect_ratio'],
+        self.declare_partials('geometry:wing:tip:y', ['geometry:wing:area',
+                                                   'geometry:wing:aspect_ratio'],
                               method='fd')
 
     def compute(self, inputs, outputs):
-        lambda_wing = inputs['geometry:wing_aspect_ratio']
-        wing_area = inputs['geometry:wing_area']
-        wing_break = inputs['geometry:wing_break']
-        width_max = inputs['geometry:fuselage_width_max']
+        lambda_wing = inputs['geometry:wing:aspect_ratio']
+        wing_area = inputs['geometry:wing:area']
+        wing_break = inputs['geometry:wing:break']
+        width_max = inputs['geometry:fuselage:maximum_width']
 
         span = math.sqrt(lambda_wing * wing_area)
 
@@ -62,7 +62,7 @@ class ComputeYWing(ExplicitComponent):
         y2_wing = width_max / 2.
         y3_wing = y4_wing * wing_break
 
-        outputs['geometry:wing_span'] = span
-        outputs['geometry:wing_y2'] = y2_wing
-        outputs['geometry:wing_y3'] = y3_wing
-        outputs['geometry:wing_y4'] = y4_wing
+        outputs['geometry:wing:span'] = span
+        outputs['geometry:wing:root:y'] = y2_wing
+        outputs['geometry:wing:kink:y'] = y3_wing
+        outputs['geometry:wing:tip:y'] = y4_wing

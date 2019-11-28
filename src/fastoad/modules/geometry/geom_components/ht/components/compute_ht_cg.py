@@ -26,27 +26,27 @@ class ComputeHTcg(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:ht_root_chord', val=np.nan, units='m')
-        self.add_input('geometry:ht_tip_chord', val=np.nan, units='m')
-        self.add_input('geometry:ht_lp', val=np.nan, units='m')
-        self.add_input('geometry:ht_span', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
-        self.add_input('geometry:ht_sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:ht_length', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:root_chord', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:distance_from_wing', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:span', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:horizontal_tail:length', val=np.nan, units='m')
         self.add_input('geometry:ht_x0', val=np.nan, units='m')
 
-        self.add_output('cg_airframe:A31', units='m')
+        self.add_output('weight:airframe:tail_plane:horizontal:CG:x', units='m')
 
-        self.declare_partials('cg_airframe:A31', '*', method='fd')
+        self.declare_partials('weight:airframe:tail_plane:horizontal:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        root_chord = inputs['geometry:ht_root_chord']
-        tip_chord = inputs['geometry:ht_tip_chord']
-        b_h = inputs['geometry:ht_span']
-        sweep_25_ht = inputs['geometry:ht_sweep_25']
-        fa_length = inputs['geometry:wing_position']
-        lp_ht = inputs['geometry:ht_lp']
-        mac_ht = inputs['geometry:ht_length']
+        root_chord = inputs['geometry:horizontal_tail:root_chord']
+        tip_chord = inputs['geometry:horizontal_tail:tip_chord']
+        b_h = inputs['geometry:horizontal_tail:span']
+        sweep_25_ht = inputs['geometry:horizontal_tail:sweep_25']
+        fa_length = inputs['geometry:wing:location']
+        lp_ht = inputs['geometry:horizontal_tail:distance_from_wing']
+        mac_ht = inputs['geometry:horizontal_tail:length']
         x0_ht = inputs['geometry:ht_x0']
 
         tmp = (root_chord * 0.25 + b_h / 2 *
@@ -57,4 +57,4 @@ class ComputeHTcg(ExplicitComponent):
         x_cg_ht_absolute = lp_ht + fa_length - \
             0.25 * mac_ht + (x_cg_ht - x0_ht)
 
-        outputs['cg_airframe:A31'] = x_cg_ht_absolute
+        outputs['weight:airframe:tail_plane:horizontal:CG:x'] = x_cg_ht_absolute

@@ -26,49 +26,49 @@ class ComputeSweepWing(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_x3', val=np.nan, units='m')
-        self.add_input('geometry:wing_x4', val=np.nan, units='m')
-        self.add_input('geometry:wing_y2', val=np.nan, units='m')
-        self.add_input('geometry:wing_y3', val=np.nan, units='m')
-        self.add_input('geometry:wing_y4', val=np.nan, units='m')
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:wing_l3', val=np.nan, units='m')
-        self.add_input('geometry:wing_l4', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
 
-        self.add_output('geometry:wing_sweep_0', units='deg')
-        self.add_output('geometry:wing_sweep_100_inner', units='deg')
-        self.add_output('geometry:wing_sweep_100_outer', units='deg')
+        self.add_output('geometry:wing:sweep_0', units='deg')
+        self.add_output('geometry:wing:sweep_100_inner', units='deg')
+        self.add_output('geometry:wing:sweep_100_outer', units='deg')
 
-        self.declare_partials('geometry:wing_sweep_0', ['geometry:wing_x3',
-                                                        'geometry:wing_y2',
-                                                        'geometry:wing_y3'],
+        self.declare_partials('geometry:wing:sweep_0', ['geometry:wing:kink:leading_edge:x',
+                                                        'geometry:wing:root:y',
+                                                        'geometry:wing:kink:y'],
                               method='fd')
-        self.declare_partials('geometry:wing_sweep_100_inner', ['geometry:wing_x3',
-                                                                'geometry:wing_l2',
-                                                                'geometry:wing_y2',
-                                                                'geometry:wing_y3',
-                                                                'geometry:wing_l3'],
+        self.declare_partials('geometry:wing:sweep_100_inner', ['geometry:wing:kink:leading_edge:x',
+                                                                'geometry:wing:root:chord',
+                                                                'geometry:wing:root:y',
+                                                                'geometry:wing:kink:y',
+                                                                'geometry:wing:kink:chord'],
                               method='fd')
-        self.declare_partials('geometry:wing_sweep_100_outer', ['geometry:wing_x3',
-                                                                'geometry:wing_x4',
-                                                                'geometry:wing_y3',
-                                                                'geometry:wing_y4',
-                                                                'geometry:wing_l3',
-                                                                'geometry:wing_l4'],
+        self.declare_partials('geometry:wing:sweep_100_outer', ['geometry:wing:kink:leading_edge:x',
+                                                                'geometry:wing:tip:leading_edge:x',
+                                                                'geometry:wing:kink:y',
+                                                                'geometry:wing:tip:y',
+                                                                'geometry:wing:kink:chord',
+                                                                'geometry:wing:tip:chord'],
                               method='fd')
 
     def compute(self, inputs, outputs):
-        x3_wing = inputs['geometry:wing_x3']
-        x4_wing = inputs['geometry:wing_x4']
-        y2_wing = inputs['geometry:wing_y2']
-        y3_wing = inputs['geometry:wing_y3']
-        y4_wing = inputs['geometry:wing_y4']
-        l2_wing = inputs['geometry:wing_l2']
-        l3_wing = inputs['geometry:wing_l3']
-        l4_wing = inputs['geometry:wing_l4']
+        x3_wing = inputs['geometry:wing:kink:leading_edge:x']
+        x4_wing = inputs['geometry:wing:tip:leading_edge:x']
+        y2_wing = inputs['geometry:wing:root:y']
+        y3_wing = inputs['geometry:wing:kink:y']
+        y4_wing = inputs['geometry:wing:tip:y']
+        l2_wing = inputs['geometry:wing:root:chord']
+        l3_wing = inputs['geometry:wing:kink:chord']
+        l4_wing = inputs['geometry:wing:tip:chord']
 
-        outputs['geometry:wing_sweep_0'] = math.atan(x3_wing / (y3_wing - y2_wing)) / math.pi * 180.
-        outputs['geometry:wing_sweep_100_inner'] = math.atan(
+        outputs['geometry:wing:sweep_0'] = math.atan(x3_wing / (y3_wing - y2_wing)) / math.pi * 180.
+        outputs['geometry:wing:sweep_100_inner'] = math.atan(
             (x3_wing + l3_wing - l2_wing) / (y3_wing - y2_wing)) / math.pi * 180
-        outputs['geometry:wing_sweep_100_outer'] = math.atan(
+        outputs['geometry:wing:sweep_100_outer'] = math.atan(
             (x4_wing + l4_wing - x3_wing - l3_wing) / (y4_wing - y3_wing)) / math.pi * 180.

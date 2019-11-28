@@ -26,28 +26,28 @@ class ComputeHTVolCoeff(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('cg_airframe:A51', val=np.nan, units='m')
-        self.add_input('cg_airframe:A52', val=np.nan, units='m')
-        self.add_input('weight:MTOW', val=np.nan, units='kg')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('cg:required_cg_range', val=np.nan)
+        self.add_input('weight:airframe:landing_gear:main:CG:x', val=np.nan, units='m')
+        self.add_input('weight:airframe:landing_gear:front:CG:x', val=np.nan, units='m')
+        self.add_input('weight:aircraft:MTOW', val=np.nan, units='kg')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('requirements:CG_range', val=np.nan)
 
         self.add_output('delta_lg')
-        self.add_output('geometry:ht_vol_coeff')
+        self.add_output('geometry:horizontal_tail:volume_coefficient')
 
         self.declare_partials('delta_lg',
-                              ['cg_airframe:A51', 'cg_airframe:A52'],
+                              ['weight:airframe:landing_gear:main:CG:x', 'weight:airframe:landing_gear:front:CG:x'],
                               method='fd')
-        self.declare_partials('geometry:ht_vol_coeff', '*', method='fd')
+        self.declare_partials('geometry:horizontal_tail:volume_coefficient', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        cg_a51 = inputs['cg_airframe:A51']
-        cg_a52 = inputs['cg_airframe:A52']
-        mtow = inputs['weight:MTOW']
-        wing_area = inputs['geometry:wing_area']
-        l0_wing = inputs['geometry:wing_l0']
-        required_cg_range = inputs['cg:required_cg_range']
+        cg_a51 = inputs['weight:airframe:landing_gear:main:CG:x']
+        cg_a52 = inputs['weight:airframe:landing_gear:front:CG:x']
+        mtow = inputs['weight:aircraft:MTOW']
+        wing_area = inputs['geometry:wing:area']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        required_cg_range = inputs['requirements:CG_range']
 
         delta_lg = cg_a51 - cg_a52
         atm = Atmosphere(0.)
@@ -61,4 +61,4 @@ class ComputeHTVolCoeff(ExplicitComponent):
             9.81 / (0.5 * rho * vspeed**2 * wing_area * l0_wing)
         ht_vol_coeff = cm_wheel + delta_cm
         outputs['delta_lg'] = delta_lg
-        outputs['geometry:ht_vol_coeff'] = ht_vol_coeff
+        outputs['geometry:horizontal_tail:volume_coefficient'] = ht_vol_coeff

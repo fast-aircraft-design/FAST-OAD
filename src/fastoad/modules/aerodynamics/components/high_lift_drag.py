@@ -28,15 +28,15 @@ class DeltaCDHighLift(ExplicitComponent):
         self.add_input('slat_angle', val=np.nan, units='deg')
         self.add_output('delta_cd')
 
-        self.add_input('geometry:flap_span_ratio', val=np.nan)
-        self.add_input('geometry:slat_span_ratio', val=np.nan)
+        self.add_input('geometry:flap:span_ratio', val=np.nan)
+        self.add_input('geometry:slat:span_ratio', val=np.nan)
 
     def compute(self, inputs, outputs):
         slat_angle = inputs['slat_angle']
         flap_angle = inputs['flap_angle']
 
-        slat_span_ratio = inputs['geometry:slat_span_ratio']
-        flap_span_ratio = inputs['geometry:flap_span_ratio']
+        slat_span_ratio = inputs['geometry:slat:span_ratio']
+        flap_span_ratio = inputs['geometry:flap:span_ratio']
 
         cd0_slat = (-0.00266 + 0.06065 * slat_angle - 0.03023 * slat_angle ** 2 +
                     0.01055 * slat_angle ** 3 - 0.00176 * slat_angle ** 4 +

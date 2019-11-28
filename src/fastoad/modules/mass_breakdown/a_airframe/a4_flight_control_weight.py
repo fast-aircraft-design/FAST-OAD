@@ -23,26 +23,26 @@ class FlightControlsWeight(ExplicitComponent):
     """ Flight controls weight estimation (A4) """
 
     def setup(self):
-        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
-        self.add_input('geometry:wing_b_50', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:b_50', val=np.nan, units='m')
         self.add_input('n1m1', val=np.nan, units='kg')
         self.add_input('n2m2', val=np.nan, units='kg')
-        self.add_input('kfactors_a4:K_fc', val=np.nan)  # FIXME: this is a coeff of the model
-        self.add_input('kfactors_a4:K_A4', val=1.)
-        self.add_input('kfactors_a4:offset_A4', val=0., units='kg')
+        self.add_input('weight:airframe:flight_controls:mass:k_fc', val=np.nan)  # FIXME: this is a coeff of the model
+        self.add_input('weight:airframe:flight_controls:mass:k', val=1.)
+        self.add_input('weight:airframe:flight_controls:mass:offset', val=0., units='kg')
 
-        self.add_output('weight_airframe:A4', units='kg')
+        self.add_output('weight:airframe:flight_controls:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        fus_length = inputs['geometry:fuselage_length']
-        b_50 = inputs['geometry:wing_b_50']
-        k_fc = inputs['kfactors_a4:K_fc']
-        k_a4 = inputs['kfactors_a4:K_A4']
-        offset_a4 = inputs['kfactors_a4:offset_A4']
+        fus_length = inputs['geometry:fuselage:length']
+        b_50 = inputs['geometry:wing:b_50']
+        k_fc = inputs['weight:airframe:flight_controls:mass:k_fc']
+        k_a4 = inputs['weight:airframe:flight_controls:mass:k']
+        offset_a4 = inputs['weight:airframe:flight_controls:mass:offset']
 
         max_nm = max(inputs['n1m1'], inputs['n2m2'])
 
         temp_a4 = k_fc * max_nm * (fus_length ** 0.66 + b_50 ** 0.66)
 
-        outputs['weight_airframe:A4'] = k_a4 * temp_a4 + offset_a4
+        outputs['weight:airframe:flight_controls:mass'] = k_a4 * temp_a4 + offset_a4

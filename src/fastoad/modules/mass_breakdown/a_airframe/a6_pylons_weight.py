@@ -28,21 +28,21 @@ class PylonsWeight(ExplicitComponent):
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
 
     def setup(self):
-        self.add_input('geometry:pylon_wet_area', val=np.nan, units='m**2')
-        self.add_input('weight_propulsion:B1', val=np.nan, units='kg')
-        self.add_input('geometry:engine_number', val=np.nan)
-        self.add_input('kfactors_a6:K_A6', val=1.)
-        self.add_input('kfactors_a6:offset_A6', val=0., units='kg')
+        self.add_input('geometry:propulsion:pylon:wet_area', val=np.nan, units='m**2')
+        self.add_input('weight:propulsion:engine:mass', val=np.nan, units='kg')
+        self.add_input('geometry:propulsion:engine:count', val=np.nan)
+        self.add_input('weight:airframe:pylon:mass:k', val=1.)
+        self.add_input('weight:airframe:pylon:mass:offset', val=0., units='kg')
 
-        self.add_output('weight_airframe:A6', units='kg')
+        self.add_output('weight:airframe:pylon:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        wet_area_pylon = inputs['geometry:pylon_wet_area']
-        weight_engine = inputs['weight_propulsion:B1']
-        n_engines = inputs['geometry:engine_number']
-        k_a6 = inputs['kfactors_a6:K_A6']
-        offset_a6 = inputs['kfactors_a6:offset_A6']
+        wet_area_pylon = inputs['geometry:propulsion:pylon:wet_area']
+        weight_engine = inputs['weight:propulsion:engine:mass']
+        n_engines = inputs['geometry:propulsion:engine:count']
+        k_a6 = inputs['weight:airframe:pylon:mass:k']
+        offset_a6 = inputs['weight:airframe:pylon:mass:offset']
 
         if self.options[ENGINE_LOCATION_OPTION] == 1.0:
             temp_a6 = 1.2 * wet_area_pylon ** 0.5 * n_engines * (
@@ -50,4 +50,4 @@ class PylonsWeight(ExplicitComponent):
         else:
             temp_a6 = 0.08 * weight_engine
 
-        outputs['weight_airframe:A6'] = k_a6 * temp_a6 + offset_a6
+        outputs['weight:airframe:pylon:mass'] = k_a6 * temp_a6 + offset_a6

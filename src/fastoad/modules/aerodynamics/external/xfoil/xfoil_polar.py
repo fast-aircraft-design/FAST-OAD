@@ -56,10 +56,10 @@ class XfoilPolar(ExternalCodeComp):
 
         self.add_input('xfoil:reynolds', val=np.nan)
         self.add_input('xfoil:mach', val=np.nan)
-        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
 
         self.add_output('aerodynamics:Cl_max_2D')
-        self.add_output('aerodynamics:Cl_max_clean')
+        self.add_output('aerodynamics:aircraft:landing:CL_max_clean')
 
 
     def compute(self, inputs, outputs):
@@ -72,7 +72,7 @@ class XfoilPolar(ExternalCodeComp):
         # Get inputs
         reynolds = inputs['xfoil:reynolds']
         mach = inputs['xfoil:mach']
-        sweep_25 = inputs['geometry:wing_sweep_25']
+        sweep_25 = inputs['geometry:wing:sweep_25']
 
         # Pre-processing (populating temp directory)
         # Dev Note: XFOIL fails if length of provided file path exceeds 64 characters.
@@ -135,7 +135,7 @@ class XfoilPolar(ExternalCodeComp):
             cl_max_2d = 1.9
 
         outputs['aerodynamics:Cl_max_2D'] = cl_max_2d
-        outputs['aerodynamics:Cl_max_clean'] = cl_max_2d * 0.9 * np.cos(np.radians(sweep_25))
+        outputs['aerodynamics:aircraft:landing:CL_max_clean'] = cl_max_2d * 0.9 * np.cos(np.radians(sweep_25))
 
         # Getting output files if needed
         if self.options['result_folder_path'] != '':
