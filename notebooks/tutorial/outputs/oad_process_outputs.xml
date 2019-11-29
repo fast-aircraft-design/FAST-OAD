@@ -16,35 +16,35 @@
   <tlar>
     <NPAX>150.0</NPAX>
     <cruise_Mach>0.78</cruise_Mach>
-    <Range units="NM">1000.0</Range>
+    <Range units="NM">2750.0</Range>
   </tlar>
   <geometry>
     <engine_number>2.0</engine_number>
     <wing_aspect_ratio>9.48</wing_aspect_ratio>
     <fuselage_width_max units="m">3.91988</fuselage_width_max>
-    <wing_area units="m**2">124.843</wing_area>
+    <wing_area units="m**2">100.0</wing_area>
     <wing_break>0.4</wing_break>
     <wing_y2 units="m">1.95994</wing_y2>
-    <wing_y3 units="m">6.880440799832524</wing_y3>
-    <wing_span units="m">34.402203999162616</wing_span>
+    <wing_y3 units="m">6.157921727336261</wing_y3>
+    <wing_span units="m">30.789608636681304</wing_span>
     <wing_taper_ratio>0.38</wing_taper_ratio>
     <wing_sweep_25 units="deg">25.0</wing_sweep_25>
-    <wing_l1 units="m">4.425676576028854</wing_l1>
-    <wing_l4 units="m">1.6817570988909645</wing_l4>
-    <wing_y4 units="m">17.201101999581308</wing_y4>
-    <wing_l3 units="m">3.539821679774623</wing_l3>
-    <wing_x3 units="m">2.515930928983259</wing_x3>
-    <wing_x4 units="m">7.793050428870187</wing_x4>
-    <wing_l2 units="m">6.055752608757882</wing_l2>
+    <wing_l1 units="m">3.9523950136049533</wing_l1>
+    <wing_l4 units="m">1.5019101051698822</wing_l4>
+    <wing_y4 units="m">15.394804318340652</wing_y4>
+    <wing_l3 units="m">3.1866938777415834</wing_l3>
+    <wing_x3 units="m">2.1489763122174903</wing_x3>
+    <wing_x4 units="m">6.877401345024349</wing_x4>
+    <wing_l2 units="m">5.335670189959074</wing_l2>
     <fuselage_height_max units="m">4.05988</fuselage_height_max>
     <wing_toc_tip>0.11042263157642153</wing_toc_tip>
     <wing_toc_root>0.15921402692414266</wing_toc_root>
     <y_ratio_engine>0.34</y_ratio_engine>
-    <wing_l0 units="m">4.182080244817886</wing_l0>
-    <wing_x0 units="m">2.524082276536648</wing_x0>
+    <wing_l0 units="m">3.7317584669511428</wing_l0>
+    <wing_x0 units="m">2.184040418312065</wing_x0>
     <wing_position units="m">16.457</wing_position>
     <fuselage_length units="m">37.507364</fuselage_length>
-    <ht_vol_coeff>1.0468316398875492</ht_vol_coeff>
+    <ht_vol_coeff>1.64698550518913</ht_vol_coeff>
     <ht_area units="m**2">35.171</ht_area>
     <ht_aspect_ratio>4.288</ht_aspect_ratio>
     <ht_taper_ratio>0.3</ht_taper_ratio>
@@ -67,18 +67,18 @@
     <vt_span units="m">6.620491673584373</vt_span>
     <vt_length units="m">4.160654414713111</vt_length>
     <vt_x0 units="m">2.3208918160792815</vt_x0>
-    <wing_wet_area units="m**2">202.21035292796432</wing_wet_area>
+    <wing_wet_area units="m**2">158.16962627156644</wing_wet_area>
     <fuselage_wet_area units="m**2">401.95600094323777</fuselage_wet_area>
     <ht_wet_area units="m**2">70.342</ht_wet_area>
     <vt_wet_area units="m**2">52.7478</vt_wet_area>
     <nacelle_wet_area units="m**2">21.6092</nacelle_wet_area>
     <pylon_wet_area units="m**2">7.56322</pylon_wet_area>
     <wing_toc_kink>0.12069450428120491</wing_toc_kink>
-    <wing_area_pf units="m**2">101.10517646398216</wing_area_pf>
-    <wing_b_50 units="m">37.33064126915048</wing_b_50>
-    <S_total units="m**2">785.600993871202</S_total>
+    <wing_area_pf units="m**2">79.08481313578322</wing_area_pf>
+    <wing_b_50 units="m">33.40346848521705</wing_b_50>
+    <S_total units="m**2">741.5602672148042</S_total>
     <fuselage_Lcabin units="m">30.380964840000004</fuselage_Lcabin>
-    <wing_sweep_0 units="deg">27.081388536039952</wing_sweep_0>
+    <wing_sweep_0 units="deg">27.10822534470581</wing_sweep_0>
     <nacelle_dia units="m">2.1722438645822235</nacelle_dia>
     <wing_front_spar_ratio_root>0.11</wing_front_spar_ratio_root>
     <wing_front_spar_ratio_kink>0.15</wing_front_spar_ratio_kink>
@@ -86,7 +86,7 @@
     <wing_rear_spar_ratio_root>0.57</wing_rear_spar_ratio_root>
     <wing_rear_spar_ratio_kink>0.66</wing_rear_spar_ratio_kink>
     <wing_rear_spar_ratio_tip>0.56</wing_rear_spar_ratio_tip>
-    <wing_y0 units="m">6.710049823468431</wing_y0>
+    <wing_y0 units="m">6.021456192127395</wing_y0>
     <wing_toc_aero>0.12839840880979247</wing_toc_aero>
     <ht_toc>0.1</ht_toc>
     <vt_toc>0.1</vt_toc>
@@ -95,26 +95,26 @@
     <fan_length units="m">3.1268896238914476</fan_length>
     <fuselage_Lpax units="m">22.87</fuselage_Lpax>
     <wing_sweep_100_inner units="deg">0.0</wing_sweep_100_inner>
-    <wing_sweep_100_outer units="deg">18.329132529885403</wing_sweep_100_outer>
+    <wing_sweep_100_outer units="deg">18.237546483222246</wing_sweep_100_outer>
     <LG_height units="m">3.0411414104151127</LG_height>
-    <y_nacell units="m">5.8483746798576455</y_nacell>
+    <y_nacell units="m">5.234233468235822</y_nacell>
     <ht_y0 units="m">2.519098368283011</ht_y0>
     <ht_sweep_0 units="deg">33.316257745815484</ht_sweep_0>
     <ht_sweep_100 units="deg">8.810020901788574</ht_sweep_100>
-    <vt_vol_coeff>0.09678742902069733</vt_vol_coeff>
+    <vt_vol_coeff>0.1350097857958891</vt_vol_coeff>
     <vt_z0 units="m">2.7160991481371783</vt_z0>
     <vt_sweep_0 units="deg">40.513707025642205</vt_sweep_0>
     <vt_sweep_100 units="deg">13.351899194949427</vt_sweep_100>
   </geometry>
   <propulsion>
     <mto_thrust units="N">117880.0</mto_thrust>
-    <SFC units="kg/s/N">1.6888305737777985e-05</SFC>
+    <SFC units="kg/s/N">1.6942561994355503e-05</SFC>
     <mach>0.78</mach>
     <altitude units="m">10667.999999999998</altitude>
     <phase>3.0</phase>
     <use_thrust_rate>0.0</use_thrust_rate>
     <required_thrust_rate>0.0</required_thrust_rate>
-    <required_thrust units="N">19749.05489271167</required_thrust>
+    <required_thrust units="N">25646.21652994317</required_thrust>
     <rubber_engine>
       <bypass_ratio>4.9</bypass_ratio>
       <overall_pressure_ratio>32.6</overall_pressure_ratio>
@@ -124,79 +124,79 @@
       <delta_t4_climb>-50.0</delta_t4_climb>
       <delta_t4_cruise>-100.0</delta_t4_cruise>
     </rubber_engine>
-    <thrust_rate>0.7017631027324461</thrust_rate>
-    <thrust units="N">19749.05489271167</thrust>
+    <thrust_rate>0.9113128999425191</thrust_rate>
+    <thrust units="N">25646.21652994317</thrust>
   </propulsion>
   <cg_airframe>
-    <A51 units="m">18.866334909462214</A51>
+    <A51 units="m">18.880945416022637</A51>
     <A52 units="m">5.176347</A52>
-    <A1 units="m">16.55827251152071</A1>
+    <A1 units="m">16.545132422727164</A1>
     <A2 units="m">16.8783138</A2>
     <A31 units="m">34.58270809234467</A31>
     <A32 units="m">34.26453899396134</A32>
-    <A4 units="m">18.943150271016762</A4>
-    <A6 units="m">13.629943418468132</A6>
+    <A4 units="m">18.675690154909223</A4>
+    <A6 units="m">13.790880413538693</A6>
     <A7 units="m">0.0</A7>
   </cg_airframe>
   <weight>
-    <MTOW units="kg">67267.28166490022</MTOW>
-    <MZFW units="kg">56825.53975081694</MZFW>
-    <MFW units="kg">19322.49973877964</MFW>
-    <MLW units="kg">60235.07213586596</MLW>
-    <OEW units="kg">31825.53975081694</OEW>
+    <MTOW units="kg">80215.75666827153</MTOW>
+    <MZFW units="kg">57627.965366782795</MZFW>
+    <MFW units="kg">14296.62420933491</MFW>
+    <MLW units="kg">61085.64328878977</MLW>
+    <OEW units="kg">32627.9653667828</OEW>
     <Max_PL units="kg">25000.0</Max_PL>
   </weight>
   <cg>
     <required_cg_range>0.3</required_cg_range>
     <cg_pax units="m">16.616796</cg_pax>
-    <cg_rear_fret units="m">20.741897874632595</cg_rear_fret>
-    <cg_front_fret units="m">9.89459683112944</cg_front_fret>
-    <cg_tank units="m">15.910966384970505</cg_tank>
-    <CG units="m">17.980239888946134</CG>
+    <cg_rear_fret units="m">20.680176058458706</cg_rear_fret>
+    <cg_front_fret units="m">10.120907982475075</cg_front_fret>
+    <cg_tank units="m">15.978995786595462</cg_tank>
+    <CG units="m">17.971165466088383</CG>
   </cg>
   <k_ar_effective>1.55</k_ar_effective>
-  <cg_ratio>0.5642301916214097</cg_ratio>
-  <dcn_beta>0.24875058254607985</dcn_beta>
+  <cg_ratio>0.6057511973237273</cg_ratio>
+  <dcn_beta>0.2915208917142741</dcn_beta>
   <aerodynamics>
     <Cl_alpha_vt>5.084943183415051</Cl_alpha_vt>
-    <Cl_alpha>6.418358160213239</Cl_alpha>
+    <Cl_alpha>6.421422824795074</Cl_alpha>
     <Cl_alpha_ht>3.469901921575146</Cl_alpha_ht>
-    <L_D_max>16.200185036192412</L_D_max>
-    <ClCd>[2.04061096e-02 2.04079081e-02 2.04167706e-02 2.04327965e-02
- 2.04560846e-02 2.04867342e-02 2.05248444e-02 2.05705143e-02
- 2.06238430e-02 2.06849296e-02 2.07538731e-02 2.08307728e-02
- 2.09157278e-02 2.10088371e-02 2.11101998e-02 2.12199150e-02
- 2.13380820e-02 2.14647997e-02 2.16001673e-02 2.17442839e-02
- 2.18972486e-02 2.20591606e-02 2.22301188e-02 2.24102225e-02
- 2.25995707e-02 2.27982626e-02 2.30063973e-02 2.32240738e-02
- 2.34513913e-02 2.36884489e-02 2.39353457e-02 2.41921808e-02
- 2.44590534e-02 2.47360624e-02 2.50233072e-02 2.53208866e-02
- 2.56294948e-02 2.59498332e-02 2.62820240e-02 2.66262053e-02
- 2.69825317e-02 2.73511759e-02 2.77323302e-02 2.81262085e-02
- 2.85330488e-02 2.89531166e-02 2.93867089e-02 2.98341585e-02
- 3.02958403e-02 3.07721776e-02 3.12636512e-02 3.17708087e-02
- 3.22942775e-02 3.28347787e-02 3.33931459e-02 3.39703460e-02
- 3.45675064e-02 3.51859466e-02 3.58272178e-02 3.64931512e-02
- 3.71859173e-02 3.79080986e-02 3.86627798e-02 3.94536596e-02
- 4.02851892e-02 4.11627443e-02 4.20928414e-02 4.30834067e-02
- 4.41441149e-02 4.52868162e-02 4.65260743e-02 4.78798492e-02
- 4.93703641e-02 5.10252102e-02 5.28787591e-02 5.49739734e-02
- 5.73647352e-02 6.01188507e-02 6.33219369e-02 6.70824683e-02
- 7.15383487e-02 7.68654955e-02 8.32890910e-02 9.10983747e-02
- 1.00666156e-01 1.12474634e-01 1.27149683e-01 1.45506518e-01
- 1.68610729e-01 1.97860130e-01 2.35094877e-01 2.82746128e-01
- 3.44037425e-01 4.23258395e-01 5.26138053e-01 6.60355666e-01
- 8.36242320e-01 1.06774768e+00 1.37377691e+00 1.78004579e+00
- 2.32166416e+00 3.04674615e+00 4.02147323e+00 5.33721992e+00
- 7.12061842e+00 9.54782491e+00 1.28648147e+01 1.74163577e+01
- 2.36875365e+01 3.23634533e+01 4.44154053e+01 6.12257175e+01
- 8.47692378e+01 1.17878181e+02 1.64630026e+02 2.30917738e+02
- 3.25291118e+02 4.60202818e+02 6.53860519e+02 9.32990441e+02
- 1.33697605e+03 1.92407953e+03 2.78082935e+03 4.03623863e+03
- 5.88342139e+03 8.61258064e+03 1.26615415e+04 1.86934557e+04
- 2.77167424e+04 4.12709296e+04 6.17157081e+04 9.26822413e+04
- 1.39780519e+05 2.11712282e+05 3.22028806e+05 4.91917921e+05
- 7.54639981e+05 1.16261578e+06 1.79879575e+06 2.79496725e+06
+    <L_D_max>14.876432429847798</L_D_max>
+    <ClCd>[2.37359017e-02 2.37320449e-02 2.37353601e-02 2.37459461e-02
+ 2.37639016e-02 2.37893251e-02 2.38223155e-02 2.38629713e-02
+ 2.39113913e-02 2.39676741e-02 2.40319184e-02 2.41042230e-02
+ 2.41846864e-02 2.42734075e-02 2.43704847e-02 2.44760169e-02
+ 2.45901027e-02 2.47128408e-02 2.48443299e-02 2.49846686e-02
+ 2.51339556e-02 2.52922897e-02 2.54597695e-02 2.56364937e-02
+ 2.58225609e-02 2.60180699e-02 2.62231193e-02 2.64378078e-02
+ 2.66622341e-02 2.68964968e-02 2.71406948e-02 2.73949265e-02
+ 2.76592908e-02 2.79338863e-02 2.82188116e-02 2.85141655e-02
+ 2.88206415e-02 2.91389407e-02 2.94691848e-02 2.98115115e-02
+ 3.01660749e-02 3.05330475e-02 3.09126209e-02 3.13050087e-02
+ 3.17104484e-02 3.21292053e-02 3.25615756e-02 3.30078920e-02
+ 3.34685288e-02 3.39439090e-02 3.44345127e-02 3.49408874e-02
+ 3.54636598e-02 3.60035509e-02 3.65613935e-02 3.71381544e-02
+ 3.77349603e-02 3.83531304e-02 3.89942155e-02 3.96600464e-02
+ 4.03527930e-02 4.10750374e-02 4.18298641e-02 4.26209712e-02
+ 4.34528094e-02 4.43307543e-02 4.52613215e-02 4.62524370e-02
+ 4.73137753e-02 4.84571857e-02 4.96972319e-02 5.10518732e-02
+ 5.25433325e-02 5.41992006e-02 5.60538485e-02 5.81502385e-02
+ 6.05422524e-02 6.32976957e-02 6.65021850e-02 7.02641947e-02
+ 7.47216278e-02 8.00504015e-02 8.64756975e-02 9.42867550e-02
+ 1.03856383e-01 1.15666780e-01 1.30343820e-01 1.48702717e-01
+ 1.71809062e-01 2.01060668e-01 2.38297689e-01 2.85951285e-01
+ 3.47244995e-01 4.26468448e-01 5.29350657e-01 6.63570891e-01
+ 8.39460231e-01 1.07096835e+00 1.37700040e+00 1.78327216e+00
+ 2.32489349e+00 3.04997850e+00 4.02470866e+00 5.34045851e+00
+ 7.12386021e+00 9.55106998e+00 1.28680631e+01 1.74196095e+01
+ 2.36907918e+01 3.23667121e+01 4.44186677e+01 6.12289836e+01
+ 8.47725075e+01 1.17881455e+02 1.64633304e+02 2.30921019e+02
+ 3.25294403e+02 4.60206108e+02 6.53863812e+02 9.32993739e+02
+ 1.33697935e+03 1.92408283e+03 2.78083267e+03 4.03624195e+03
+ 5.88342471e+03 8.61258396e+03 1.26615448e+04 1.86934591e+04
+ 2.77167457e+04 4.12709329e+04 6.17157114e+04 9.26822447e+04
+ 1.39780522e+05 2.11712285e+05 3.22028810e+05 4.91917924e+05
+ 7.54639985e+05 1.16261579e+06 1.79879576e+06 2.79496726e+06
  4.36134883e+06 6.83461652e+06 1.07561465e+07 1.69999831e+07
  2.69829544e+07 4.30110194e+07 6.88524181e+07 1.10689872e+08
  1.78708743e+08 2.89756335e+08]</ClCd>
@@ -211,8 +211,8 @@
  1.12 1.13 1.14 1.15 1.16 1.17 1.18 1.19 1.2  1.21 1.22 1.23 1.24 1.25
  1.26 1.27 1.28 1.29 1.3  1.31 1.32 1.33 1.34 1.35 1.36 1.37 1.38 1.39
  1.4  1.41 1.42 1.43 1.44 1.45 1.46 1.47 1.48 1.49]</ClCd>
-    <Cl_opt>0.56</Cl_opt>
-    <Cd_opt>0.0345675064049527</Cd_opt>
+    <Cl_opt>0.59</Cl_opt>
+    <Cd_opt>0.039660046370810983</Cd_opt>
   </aerodynamics>
   <loadcase1>
     <U_gust units="m/s">15.25</U_gust>
@@ -224,8 +224,8 @@
     <altitude units="m">20000.0</altitude>
     <Vc_EAS units="m/s">375.0</Vc_EAS>
   </loadcase2>
-  <n1m1 units="kg">223750.56276884172</n1m1>
-  <n2m2 units="kg">230716.21017002757</n2m2>
+  <n1m1 units="kg">226910.11363170727</n1m1>
+  <n2m2 units="kg">277219.65562521433</n2m2>
   <kfactors_a1>
     <K_A1>1.0</K_A1>
     <offset_A1 units="kg">0.0</offset_A1>
@@ -269,9 +269,9 @@
   </kfactors_b1>
   <weight_propulsion>
     <B1 units="kg">1823.7629086475238</B1>
-    <B2 units="kg">347.1136240718143</B2>
-    <B3 units="kg">117.62874908572874</B3>
-    <B units="kg">2288.505281805067</B>
+    <B2 units="kg">296.71144854267163</B2>
+    <B3 units="kg">100.03818473267219</B3>
+    <B units="kg">2220.5125419228675</B>
   </weight_propulsion>
   <kfactors_a6>
     <K_A6>1.0</K_A6>
@@ -290,16 +290,16 @@
     <offset_B3 units="kg">0.0</offset_B3>
   </kfactors_b3>
   <weight_airframe>
-    <A4 units="kg">680.271785303819</A4>
-    <A1 units="kg">6552.8202845973265</A1>
-    <A2 units="kg">7522.195771004594</A2>
+    <A4 units="kg">788.5239869774699</A4>
+    <A1 units="kg">6619.101823236165</A1>
+    <A2 units="kg">7544.484486143869</A2>
     <A31 units="kg">698.197282355</A31>
     <A32 units="kg">515.5177126479999</A32>
-    <A51 units="kg">2232.405422683438</A51>
-    <A52 units="kg">403.42067465861095</A52>
+    <A51 units="kg">2673.2379766764016</A51>
+    <A52 units="kg">467.42412602530055</A52>
     <A6 units="kg">635.5097012399065</A6>
-    <A7 units="kg">141.40817889681637</A7>
-    <A units="kg">19381.74681338751</A>
+    <A7 units="kg">133.48084809866475</A7>
+    <A units="kg">20075.477943400776</A>
   </weight_airframe>
   <kfactors_c1>
     <K_C11>1.0</K_C11>
@@ -364,21 +364,21 @@
   </kfactors_d5>
   <weight_systems>
     <C11 units="kg">287.3784652052712</C11>
-    <C12 units="kg">1253.4891793264</C12>
-    <C13 units="kg">721.7188638524722</C13>
+    <C12 units="kg">1365.004404160758</C12>
+    <C13 units="kg">785.9671681706272</C13>
     <C21 units="kg">1127.1390472911087</C21>
     <C22 units="kg">942.4010810318936</C22>
-    <C23 units="kg">159.3208924735476</C23>
+    <C23 units="kg">151.6254769461445</C23>
     <C24 units="kg">169.67684582876902</C24>
     <C25 units="kg">126.0</C25>
     <C26 units="kg">284.1</C26>
     <C27 units="kg">379.3376290864752</C27>
-    <C3 units="kg">496.20574036436983</C3>
+    <C3 units="kg">491.34490969413963</C3>
     <C4 units="kg">200.0</C4>
     <C51 units="kg">100.0</C51>
-    <C52 units="kg">281.0199111640526</C52>
+    <C52 units="kg">294.49985404396625</C52>
     <C6 units="kg">45.0</C6>
-    <C units="kg">6572.787655624359</C>
+    <C units="kg">6749.474881459154</C>
   </weight_systems>
   <weight_furniture>
     <D1 units="kg">0.0</D1>
@@ -392,9 +392,9 @@
     <E units="kg">470.0</E>
   </weight_crew>
   <cg_propulsion>
-    <B1 units="m">13.629943418468132</B1>
-    <B2 units="m">13.629943418468132</B2>
-    <B3 units="m">13.629943418468132</B3>
+    <B1 units="m">13.790880413538693</B1>
+    <B2 units="m">13.790880413538693</B2>
+    <B3 units="m">13.790880413538693</B3>
   </cg_propulsion>
   <cg_furniture>
     <D2 units="m">16.616796</D2>
@@ -409,26 +409,26 @@
     <C13 units="m">18.753682</C13>
     <C21 units="m">16.8783138</C21>
     <C22 units="m">16.616796</C22>
-    <C23 units="m">15.829687963277317</C23>
+    <C23 units="m">15.897236229957329</C23>
     <C24 units="m">16.8783138</C24>
     <C25 units="m">16.616796</C25>
     <C26 units="m">16.616796</C26>
-    <C27 units="m">16.47319540427439</C27>
+    <C27 units="m">16.480932862932146</C27>
     <C3 units="m">5.5214368</C3>
     <C4 units="m">18.753682</C4>
     <C51 units="m">0.7501472800000001</C51>
     <C52 units="m">16.616796</C52>
     <C6 units="m">7.468795999999999</C6>
   </cg_systems>
-  <x_cg_plane_up>554710.5734379473</x_cg_plane_up>
-  <x_cg_plane_down>31214.131571920123</x_cg_plane_down>
-  <cg_ratio_aft>0.5642301916214097</cg_ratio_aft>
-  <cg_ratio_lc1>0.48760111485170343</cg_ratio_lc1>
-  <cg_ratio_lc2>0.3380631973105008</cg_ratio_lc2>
-  <cg_ratio_lc3>0.5066559386849706</cg_ratio_lc3>
-  <cg_ratio_lc4>0.4980793577580058</cg_ratio_lc4>
-  <delta_lg>13.689987909462214</delta_lg>
-  <x_ac_ratio>0.43320256597597595</x_ac_ratio>
+  <x_cg_plane_up>569541.9281888411</x_cg_plane_up>
+  <x_cg_plane_down>32024.484518684134</x_cg_plane_down>
+  <cg_ratio_aft>0.6057511973237273</cg_ratio_aft>
+  <cg_ratio_lc1>0.5204735061374924</cg_ratio_lc1>
+  <cg_ratio_lc2>0.37824098412283325</cg_ratio_lc2>
+  <cg_ratio_lc3>0.5406646260969254</cg_ratio_lc3>
+  <cg_ratio_lc4>0.531741477352787</cg_ratio_lc4>
+  <delta_lg>13.704598416022638</delta_lg>
+  <x_ac_ratio>0.491238838723576</x_ac_ratio>
   <sizing_mission>
     <cruise_altitude units="ft">35000.0</cruise_altitude>
   </sizing_mission>
@@ -593,460 +593,460 @@
   <cl_high_speed>1.47</cl_high_speed>
   <cl_high_speed>1.48</cl_high_speed>
   <cl_high_speed>1.49</cl_high_speed>
-  <cd0_wing_high_speed>0.005703031458875704</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005715695483779297</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005726864845335796</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005736629005112051</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.00574507742467491</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005752299565591225</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005758384889427842</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.0057634228577516135</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005767502932129384</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005770714574128005</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005773147245314326</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005774890407255196</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005776033521517464</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005776666049667978</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005776877453273588</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005776757193901143</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005776394733117492</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005775879532489483</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005775301053583969</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005774748757967794</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.00577431210720781</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005774080562870865</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005774143586523809</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005774590639733491</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005775511184066759</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005776994681090463</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005779130592371451</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005782008379476573</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.00578571750397268</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005790347427426617</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005795987611405236</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005802727517475385</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005810656607203914</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005819864342157671</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005830440183903505</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005842473594008266</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.0058560540340388025</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005871270965561964</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005888213850144599</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005906972149353556</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005927635324755686</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005950292837917838</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.005975034150406859</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.0060019487237896</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.0060311260196329085</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006062655499503636</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006096626624968627</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.0061331288575947355</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006172251658948808</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006214084490597694</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.0062587168141082445</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006306238091047305</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006356737782981727</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006410305351478358</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006467030258104051</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.00652700196442565</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006590309932010006</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006657043622423969</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.0067272924972343875</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.00680114601800811</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.006878693646311987</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.0069600248437128665</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.007045229071777598</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.007134395792073029</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.0072276144661660114</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.007324974555623391</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.007426565522012021</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.007532476826898748</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.007642797931850421</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.007757618298433889</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.007877027388216</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.008001114662763605</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.008129969583643551</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.008263681612422693</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.008402340210667875</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.008546034839945944</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.008694854961823753</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.00884889003786815</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.009008229529645985</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.009172962898724105</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.009343179606669362</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.009518969115048601</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.009700420885428678</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.009887624379376434</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.01008066905845872</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.010279644384242387</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.010484639818294287</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.010695744822181259</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.010913048857470166</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.011136641385727848</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.011366611868521156</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.011603049767416936</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.011846044543982047</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.012095685659783325</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.012352062576387633</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.012615264755361802</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.012885381658272696</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.013162502746687158</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.013446717482172044</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.013738115326294197</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.014036785740620466</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.01434281818671769</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.014656302126152744</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.014977327020492457</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.015305982331303682</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.01564235752015327</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.015986542048608065</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.016338625378234935</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.016698696970600703</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.01706684628727222</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.01744316278981636</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.017827735939799957</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.018220655198789855</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.018622010028352915</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.019031889890055966</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.019450384245465874</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.019877582556149482</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.020313574283673645</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.020758448889605204</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.021212295835511024</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.02167520458295794</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.02214726459351279</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.02262856532874245</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.023119196250213754</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.023619246819493553</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.024128806498148695</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.024647964747746016</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.025176811029852402</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.025715434806034665</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.026263925537859677</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.02682237268689426</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.027390865714705302</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.027969494082859633</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.02855834725292409</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.029157514686465536</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.02976708584505082</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.03038715019024679</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.031017797183620282</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.031659116286738155</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.032311196961167264</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.032974128668474455</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.03364800087022657</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.03433290302799045</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.035028924603332984</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.035736155057820976</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.03645468385302131</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.037184600450500795</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.03792599431182632</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.038678954898564724</cd0_wing_high_speed>
-  <cd0_wing_high_speed>0.03944357167228285</cd0_wing_high_speed>
-  <cd0_fuselage_high_speed>0.007454865888196418</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0074346622052975046</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007414636853490987</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007394789832776865</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007375121143155141</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007355630784625812</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00733631875718888</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007317185060844345</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007298229695592205</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007279452661432463</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007260853958365117</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007242433586390167</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0072241915455076135</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007206127835717457</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0071882424570196965</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007170535409414333</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007153006692901365</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007135656307480793</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007118484253152619</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007101490529916841</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007084675137773459</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007068038076722474</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007051579346763885</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007035298947897692</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.007019196880123897</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0070032731434424966</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006987527737853494</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006971960663356887</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0069565719199526765</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006941361507640863</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006926329426421446</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006911475676294425</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0068968002572598</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006882303169317572</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006867984412467741</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0068538439867103056</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006839881892045267</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006826098128472625</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006812492695992379</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00679906559460453</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006785816824309077</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0067727463851060205</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006759854276995361</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006747140499977097</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00673460505405123</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006722247939217759</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006710069155476684</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0066980687028280065</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006686246581271725</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00667460279080784</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006663137331436352</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00665185020315726</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006640741405970564</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006629810939876265</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006619058804874362</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006608485000964856</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006598089528147746</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006587872386423032</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006577833575790716</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006567973096250795</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006558290947803271</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006548787130448144</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006539461644185412</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006530314489015077</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00652134566493714</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006512555171951598</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006503943010058452</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006495509179257703</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006487253679549351</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006479176510933394</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006471277673409835</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006463557166978671</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006456014991639905</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0064486511473935346</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0064414656342395606</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006434458452177983</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006427629601208802</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006420979081332018</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00641450689254763</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006408213034855638</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006402097508256043</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006396160312748844</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006390401448334041</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006384820915011635</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006379418712781626</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006374194841644013</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0063691493015987964</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006364282092645977</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006359593214785552</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006355082668017526</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0063507504523418945</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006346596567758661</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006342621014267823</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006338823791869381</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006335204900563336</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006331764340349687</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006328502111228435</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00632541821319958</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00632251264626312</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006319785410419058</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006317236505667391</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006314865932008121</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0063126736894412476</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006310659777966771</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006308824197584689</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006307166948295005</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006305688030097718</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006304387442992826</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006303265186980331</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006302321262060233</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006301555668232531</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006300968405497226</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006300559473854317</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006300328873303804</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0063002766038456875</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006300402665479968</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006300707058206645</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006301189782025718</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006301850836937187</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006302690222941053</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006303707940037316</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006304903988225975</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00630627836750703</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006307831077880481</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00630956211934633</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006311471491904574</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006313559195555216</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006315825230298253</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006318269596133687</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006320892293061518</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0063236933210817445</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006326672680194368</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006329830370399388</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006333166391696804</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006336680744086617</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006340373427568826</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006344244442143431</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006348293787810433</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006352521464569831</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006356927472421626</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006361511811365818</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006366274481402406</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006371215482531389</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0063763348147527705</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006381632478066547</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.0063871084724727205</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00639276279797129</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006398595454562257</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.00640460644224562</cd0_fuselage_high_speed>
-  <cd0_fuselage_high_speed>0.006410795761021379</cd0_fuselage_high_speed>
-  <cd0_ht_high_speed>0.0018152959063359984</cd0_ht_high_speed>
-  <cd0_vt_high_speed>0.0012523246707599766</cd0_vt_high_speed>
-  <cd0_nacelle_high_speed>0.001599836878684549</cd0_nacelle_high_speed>
-  <cd0_pylon_high_speed>0.0003423448391157435</cd0_pylon_high_speed>
-  <cd0_total_high_speed>0.02012700759593228</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02011865481838019</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02010884374782397</cd0_total_high_speed>
-  <cd0_total_high_speed>0.020097673493874132</cd0_total_high_speed>
-  <cd0_total_high_speed>0.020085243166141194</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02007165187423568</cd0_total_high_speed>
-  <cd0_total_high_speed>0.020056998727768106</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02004138283634899</cd0_total_high_speed>
-  <cd0_total_high_speed>0.020024903309588844</cd0_total_high_speed>
-  <cd0_total_high_speed>0.020007659257098187</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019989749788487544</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019971274013367426</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019952331041348345</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019933019982040834</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019913439945055397</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01989369004000256</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019873869376492832</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019854077064136735</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019834412212544793</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019814973931327515</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019795861330095425</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01977717351845903</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01975900960602886</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019741468702415423</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01972464991722924</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019708652360080833</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01969357514058071</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019679517368339398</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01966657815296741</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019654856604075264</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01964445183127348</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01963546294417257</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019627989052383058</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01962212926551546</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019617982693180287</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019615648444988063</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019615225630549304</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01961681335947453</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019620510741374254</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019626416885858994</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019634630902539276</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019645251901025604</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019658378990928507</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0196741112818585</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01969254788342609</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019713787905241812</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01973793045691617</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019765074648059686</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01979531958828288</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019828764387196263</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019865508154410363</cd0_total_high_speed>
-  <cd0_total_high_speed>0.01990564999953569</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019949289032182762</cd0_total_high_speed>
-  <cd0_total_high_speed>0.019996524361962097</cd0_total_high_speed>
-  <cd0_total_high_speed>0.020047455098484216</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02010218035135963</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02016079923019886</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02022341084461243</cd0_total_high_speed>
-  <cd0_total_high_speed>0.020290114304210845</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02036100871860463</cd0_total_high_speed>
-  <cd0_total_high_speed>0.020436193197404307</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02051576685022038</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02059982878666338</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02068847811634382</cd0_total_high_speed>
-  <cd0_total_high_speed>0.020781813948872213</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02087993539385908</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02098294156091494</cd0_total_high_speed>
-  <cd0_total_high_speed>0.021090931559650316</cd0_total_high_speed>
-  <cd0_total_high_speed>0.021204004499675713</cd0_total_high_speed>
-  <cd0_total_high_speed>0.021322259490601653</cd0_total_high_speed>
-  <cd0_total_high_speed>0.021445795642038655</cd0_total_high_speed>
-  <cd0_total_high_speed>0.021574712063597238</cd0_total_high_speed>
-  <cd0_total_high_speed>0.021709107864887917</cd0_total_high_speed>
-  <cd0_total_high_speed>0.021849082155521216</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02199473404510765</cd0_total_high_speed>
-  <cd0_total_high_speed>0.022146162643257722</cd0_total_high_speed>
-  <cd0_total_high_speed>0.022303467059581968</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0224667464036909</cd0_total_high_speed>
-  <cd0_total_high_speed>0.022636099785195034</cd0_total_high_speed>
-  <cd0_total_high_speed>0.022811626313704883</cd0_total_high_speed>
-  <cd0_total_high_speed>0.022993425098830976</cd0_total_high_speed>
-  <cd0_total_high_speed>0.023181595250183817</cd0_total_high_speed>
-  <cd0_total_high_speed>0.023376235877373943</cd0_total_high_speed>
-  <cd0_total_high_speed>0.023577446090011854</cd0_total_high_speed>
-  <cd0_total_high_speed>0.023785324997708066</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02399997171007311</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0242214853367175</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02444996498725174</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02468550977128637</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02492821879843189</cd0_total_high_speed>
-  <cd0_total_high_speed>0.025178191178298823</cd0_total_high_speed>
-  <cd0_total_high_speed>0.025435526020497683</cd0_total_high_speed>
-  <cd0_total_high_speed>0.025700322434639003</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02597267953033328</cd0_total_high_speed>
-  <cd0_total_high_speed>0.026252696417191045</cd0_total_high_speed>
-  <cd0_total_high_speed>0.026540472204822804</cd0_total_high_speed>
-  <cd0_total_high_speed>0.026836106002839085</cd0_total_high_speed>
-  <cd0_total_high_speed>0.027139696920850404</cd0_total_high_speed>
-  <cd0_total_high_speed>0.027451344068467276</cd0_total_high_speed>
-  <cd0_total_high_speed>0.027771146555300226</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02809920349095976</cd0_total_high_speed>
-  <cd0_total_high_speed>0.028435613985056382</cd0_total_high_speed>
-  <cd0_total_high_speed>0.028780477147200657</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02913389208700306</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02949595791407412</cd0_total_high_speed>
-  <cd0_total_high_speed>0.02986677373802436</cd0_total_high_speed>
-  <cd0_total_high_speed>0.030246438668464288</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03063505181500445</cd0_total_high_speed>
-  <cd0_total_high_speed>0.031032712287255317</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03143951919482743</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03185557164733133</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0322809687543775</cd0_total_high_speed>
-  <cd0_total_high_speed>0.032715809625576464</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03316019337053876</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03361421909887487</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03407798592019534</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03455159294411068</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03503513928023141</cd0_total_high_speed>
-  <cd0_total_high_speed>0.035528724038168036</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0360324463275311</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0365464052579311</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03707069993897854</cd0_total_high_speed>
-  <cd0_total_high_speed>0.037605429480283975</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0381506929914579</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03870658958211084</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0392732183618533</cd0_total_high_speed>
-  <cd0_total_high_speed>0.03985067844029579</cd0_total_high_speed>
-  <cd0_total_high_speed>0.04043906892704887</cd0_total_high_speed>
-  <cd0_total_high_speed>0.041038488931723016</cd0_total_high_speed>
-  <cd0_total_high_speed>0.04164903756392877</cd0_total_high_speed>
-  <cd0_total_high_speed>0.04227081393327661</cd0_total_high_speed>
-  <cd0_total_high_speed>0.04290391714937713</cd0_total_high_speed>
-  <cd0_total_high_speed>0.043548446321840774</cd0_total_high_speed>
-  <cd0_total_high_speed>0.04420450056027809</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0448721789742996</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0455515806735158</cd0_total_high_speed>
-  <cd0_total_high_speed>0.046242804767537234</cd0_total_high_speed>
-  <cd0_total_high_speed>0.0469459503659744</cd0_total_high_speed>
-  <cd0_total_high_speed>0.047661116578437815</cd0_total_high_speed>
-  <cd0_total_high_speed>0.048388402514538006</cd0_total_high_speed>
-  <cd0_total_high_speed>0.04912790728388549</cd0_total_high_speed>
-  <cd0_total_high_speed>0.049879729996090784</cd0_total_high_speed>
-  <cd0_total_high_speed>0.05064396976076438</cd0_total_high_speed>
-  <cd0_total_high_speed>0.051420725687516856</cd0_total_high_speed>
-  <cd0_total_high_speed>0.05221009688595868</cd0_total_high_speed>
-  <cd0_total_high_speed>0.053012182465700386</cd0_total_high_speed>
-  <cd0_total_high_speed>0.05382708153635247</cd0_total_high_speed>
-  <cd0_total_high_speed>0.054654893207525486</cd0_total_high_speed>
-  <cd0_total_high_speed>0.055495716588829944</cd0_total_high_speed>
-  <cd0_total_high_speed>0.056349650789876346</cd0_total_high_speed>
+  <cd0_wing_high_speed>0.005666280478550282</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00567886289504378</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005689960279969996</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005699661518395314</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005708055495386118</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005715231096008794</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0057212772053297275</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005726282708415302</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0057303364903319035</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005733527436145916</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0057359444309237236</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005737676359731715</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005738812107636272</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005739440559703779</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005739650601000623</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005739531116593188</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005739170991547859</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005738659110931021</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0057380843598090585</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005737535623248355</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0057371017863153</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005736871734076274</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005736934351597664</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005737378523945854</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00573829313618723</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0057397670733881755</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005741889220615077</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005744748462934317</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005748433685412283</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00575303377311536</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0057586376111099305</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00576533408446238</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005773212078239096</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005782360477506461</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005792868167330861</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005804824032778679</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005818316958916302</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005833435830810116</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0058502695335265024</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005868906952131848</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0058894369716925386</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005911948477274958</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005936530353945491</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005963271486770522</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.005992260760816438</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006023587061149623</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00605733927283646</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006093606280943338</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006132476970536638</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006174040226682745</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006218384934448049</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006265599978898929</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006315774245101771</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006368996618122962</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006425355983028887</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0064849412248859295</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0065478412287604745</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006614144879718908</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006683941062827612</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006757318663152976</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.006834366565761382</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0069151736557192135</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00699982881809286</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.007088420937948702</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.007181038900353129</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0072777715903725206</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0073787078930732655</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.007483936693521745</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0075935468767843505</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00770762732792746</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.007826266932017462</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.007949554574120738</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00807757913930368</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.008210429512632667</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.008348194579174087</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00849096322399432</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.008638824332159756</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.008791866788736778</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.008950179478791773</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.009113851287391122</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.009282971099601214</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.009457627800488429</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00963791027511916</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.00982390740855978</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.010015708085876682</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.010213401192136254</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.010417075612404873</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.010626820231748926</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.010842723935234801</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.011064875607928883</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.011293364134897557</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.011528278401207199</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.01176970729192421</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.012017739692114962</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.012272464486845847</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.012533970561183237</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.012802346800193534</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.013077682088943115</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.013360065312498367</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.013649585355925673</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.013946331104291417</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.014250391442661981</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.01456185525610376</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.014880811429683134</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.015207348848466487</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0155415563975202</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.015883522961910663</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.01623333742670427</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.01659108867696739</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0169568655977664</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.017330757074167712</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.017712851991237698</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.018103239234042737</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.01850200768764923</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.018909246237123537</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.019325043767532066</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.019749489163941186</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.020182671311417287</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.020624679095026764</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.021075601399835997</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.021535527110911376</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.022004545113319254</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.022482744292126055</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.022970213532398146</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.02346704171920192</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.023973317737603753</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.02448913047267002</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.025014568809467133</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.025549721633061465</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.026094677828519403</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.026649526280907304</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.027214355875291606</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.027789255496738656</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.028374314030314842</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.028969620361086565</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.029575263374120187</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03019133195448212</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.030817914987238727</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.0314551013574564</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.032102979950201525</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03276163965054048</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03343116934353965</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03411165791426543</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03480319424778421</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03550586722916237</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03621976574346628</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03694497867576234</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03768159491111693</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03842970333459644</cd0_wing_high_speed>
+  <cd0_wing_high_speed>0.03918939283126725</cd0_wing_high_speed>
+  <cd0_fuselage_high_speed>0.009306878220801056</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.009281655336959564</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.009256655087003754</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.009231877470933623</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.009207322488749172</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.009182990140450403</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.009158880426037314</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.009134993345509906</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.009111328898868178</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00908788708611213</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.009064667907241763</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.009041671362257076</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00901889745115807</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008996346173944745</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.0089740175306171</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008951911521175136</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008930028145618852</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008908367403948248</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008886929296163325</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008865713822264082</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00884472098225052</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008823950776122639</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008803403203880438</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008783078265523917</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008762975961053077</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008743096290467918</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008723439253768438</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00870400485095464</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00868479308202652</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008665803946984085</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008647037445827326</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008628493578556249</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008610172345170853</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008592073745671138</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008574197780057103</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008556544448328748</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008539113750486074</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00852190568652908</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008504920256457767</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008488157460272134</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00847161729797218</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00845529976955791</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008439204875029319</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008423332614386408</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008407682987629178</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008392255994757628</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008377051635771758</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00836206991067157</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008347310819457061</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008332774362128233</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008318460538685086</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008304369349127618</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008290500793455832</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008276854871669726</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.0082634315837693</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008250230929754555</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008237252909625492</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008224497523382108</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008211964771024404</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00819965465255238</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008187567167966038</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008175702317265377</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008164060100450395</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008152640517521095</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008141443568477473</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008130469253319533</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008119717572047274</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008109188524660695</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008098882111159797</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008088798331544578</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00807893718581504</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008069298673971183</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008059882796013006</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00805068955194051</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008041718941753696</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00803297096545256</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008024445623037106</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008016142914507331</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008008062839863238</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.008000205399104825</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007992570592232092</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00798515841924504</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007977968880143668</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007971001974927977</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007964257703597967</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007957736066153636</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007951437062594987</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007945360692922017</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007939506957134728</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00793387585523312</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007928467387217192</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007923281553086945</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007918318352842377</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007913577786483493</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007909059854010286</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007904764555422761</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007900691890720917</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007896841859904752</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007893214462974267</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007889809699929464</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007886627570770341</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007883668075496899</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007880931214109137</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007878416986607056</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007876125392990655</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007874056433259934</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007872210107414894</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007870586415455535</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007869185357381856</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007868006933193858</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007867051142891539</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007866317986474903</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007865807463943945</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00786551957529867</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007865454320539072</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007865611699665157</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007865991712676922</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007866594359574368</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007867419640357493</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.0078684675550263</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007869738103580787</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007871231286020955</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007872947102346803</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00787488555255833</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00787704663665554</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00787943035463843</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007882036706506999</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00788486569226125</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00788791731190118</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007891191565426791</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007894688452838083</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007898407974135055</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007902350129317708</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00790651491838604</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007910902341340056</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00791551239817975</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007920345088905125</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00792540041351618</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007930678372012915</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007936178964395331</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007941902190663428</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007947848050817205</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007954016544856665</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007960407672781802</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00796702143459262</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00797385783028912</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007980916859871299</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.007988198523339159</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.0079957028206927</cd0_fuselage_high_speed>
+  <cd0_fuselage_high_speed>0.00800342975193192</cd0_fuselage_high_speed>
+  <cd0_ht_high_speed>0.0022662698683470505</cd0_ht_high_speed>
+  <cd0_vt_high_speed>0.0015634396887168778</cd0_vt_high_speed>
+  <cd0_nacelle_high_speed>0.0018979123544561518</cd0_nacelle_high_speed>
+  <cd0_pylon_high_speed>0.00042739356749726764</cd0_pylon_high_speed>
+  <cd0_total_high_speed>0.023456799667293166</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023442766040545314</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02342733088192501</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023410592872897946</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02339265069492984</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023373603029486396</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023353548558033316</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023332585962036304</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023310813922961075</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02328833112227333</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023265236241438763</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02324162796192309</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023217604965192026</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023193265932711267</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023168709545946513</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023144034486363475</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02311933943542786</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02309472307460537</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023070284085361718</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023046121149162605</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023022332947473727</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022999018161760813</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022976275473489547</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022954203564125638</cd0_total_high_speed>
+  <cd0_total_high_speed>0.0229329011151348</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022912466807982736</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02289299932413515</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022874597345057743</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022857359552216232</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022841384627076317</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022826771251103696</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02281361810576408</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02280202387252318</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022792087232846706</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022783906868200338</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02277758146004981</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022773209689860817</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02277089023909906</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02277072178923025</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02277280302172009</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02277723261803429</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022784109259638547</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022793531627998572</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022805598404580074</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02282040827084876</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022838059908270324</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022858651998310477</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022882283222434935</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02290905226210939</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022939057798799553</cd0_total_high_speed>
+  <cd0_total_high_speed>0.022972398513971124</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023009173089089823</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023049480205621344</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02309341854503139</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023141086788785674</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023192583618349902</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02324800771518977</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023307457760770995</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02337103243655928</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02343883042402033</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023510950404619847</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023587491059823534</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02366855107109711</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023754229119906267</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023844623887716715</cd0_total_high_speed>
+  <cd0_total_high_speed>0.023939834055994164</cd0_total_high_speed>
+  <cd0_total_high_speed>0.024039958306204316</cd0_total_high_speed>
+  <cd0_total_high_speed>0.024145095319812876</cd0_total_high_speed>
+  <cd0_total_high_speed>0.024255343778285553</cd0_total_high_speed>
+  <cd0_total_high_speed>0.024370802363088046</cd0_total_high_speed>
+  <cd0_total_high_speed>0.024491569755686067</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02461774463754532</cd0_total_high_speed>
+  <cd0_total_high_speed>0.024749425690131506</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02488671159491034</cd0_total_high_speed>
+  <cd0_total_high_speed>0.025029701033347517</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02517849268690875</cd0_total_high_speed>
+  <cd0_total_high_speed>0.025333185237059744</cd0_total_high_speed>
+  <cd0_total_high_speed>0.0254938773652662</cd0_total_high_speed>
+  <cd0_total_high_speed>0.025660667752993832</cd0_total_high_speed>
+  <cd0_total_high_speed>0.025833655081708335</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02601293803287542</cd0_total_high_speed>
+  <cd0_total_high_speed>0.026198615287960796</cd0_total_high_speed>
+  <cd0_total_high_speed>0.026390785528430164</cd0_total_high_speed>
+  <cd0_total_high_speed>0.026589547435749226</cd0_total_high_speed>
+  <cd0_total_high_speed>0.026794999691383697</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02700724097679928</cd0_total_high_speed>
+  <cd0_total_high_speed>0.027226369973461676</cd0_total_high_speed>
+  <cd0_total_high_speed>0.027452485362836593</cd0_total_high_speed>
+  <cd0_total_high_speed>0.027685685826389736</cd0_total_high_speed>
+  <cd0_total_high_speed>0.027926070045586813</cd0_total_high_speed>
+  <cd0_total_high_speed>0.028173736701893534</cd0_total_high_speed>
+  <cd0_total_high_speed>0.028428784476775586</cd0_total_high_speed>
+  <cd0_total_high_speed>0.028691312051698697</cd0_total_high_speed>
+  <cd0_total_high_speed>0.028961418108128568</cd0_total_high_speed>
+  <cd0_total_high_speed>0.029239201327530894</cd0_total_high_speed>
+  <cd0_total_high_speed>0.029524760391371373</cd0_total_high_speed>
+  <cd0_total_high_speed>0.02981819398111574</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03011960077822968</cd0_total_high_speed>
+  <cd0_total_high_speed>0.0304290794641789</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03074672872042912</cd0_total_high_speed>
+  <cd0_total_high_speed>0.031072647228446024</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03140693366969533</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03174968672564274</cd0_total_high_speed>
+  <cd0_total_high_speed>0.032101005077753965</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03246098740749471</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03282973239633067</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03320733872572756</cd0_total_high_speed>
+  <cd0_total_high_speed>0.0335939050771511</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03398953013206696</cd0_total_high_speed>
+  <cd0_total_high_speed>0.034394312571940866</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03480835107823853</cd0_total_high_speed>
+  <cd0_total_high_speed>0.035231744332425645</cd0_total_high_speed>
+  <cd0_total_high_speed>0.035664591015967924</cd0_total_high_speed>
+  <cd0_total_high_speed>0.036106989810331086</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03655903939698079</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03702083845738279</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03749248567300277</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03797407972530644</cd0_total_high_speed>
+  <cd0_total_high_speed>0.0384657192957595</cd0_total_high_speed>
+  <cd0_total_high_speed>0.038967503065827684</cd0_total_high_speed>
+  <cd0_total_high_speed>0.03947952971697667</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04000189793067214</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04053470638837986</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04107805377156549</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04163203876169476</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04219676004023336</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04277231628864698</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04335880618840137</cd0_total_high_speed>
+  <cd0_total_high_speed>0.043956328420962205</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04456498166779521</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04518486461036605</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04581607593014048</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04645871430858419</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04711287842716287</cd0_total_high_speed>
+  <cd0_total_high_speed>0.047778666967342245</cd0_total_high_speed>
+  <cd0_total_high_speed>0.048456178610588</cd0_total_high_speed>
+  <cd0_total_high_speed>0.04914551203836587</cd0_total_high_speed>
+  <cd0_total_high_speed>0.049846765932141525</cd0_total_high_speed>
+  <cd0_total_high_speed>0.05056003897338069</cd0_total_high_speed>
+  <cd0_total_high_speed>0.05128542984354907</cd0_total_high_speed>
+  <cd0_total_high_speed>0.05202303722411236</cd0_total_high_speed>
+  <cd0_total_high_speed>0.052772959796536276</cd0_total_high_speed>
+  <cd0_total_high_speed>0.05353529624228653</cd0_total_high_speed>
+  <cd0_total_high_speed>0.05431014524282882</cd0_total_high_speed>
+  <cd0_total_high_speed>0.055097605479628865</cd0_total_high_speed>
+  <cd0_total_high_speed>0.05589777563415234</cd0_total_high_speed>
+  <cd0_total_high_speed>0.056710754387864964</cd0_total_high_speed>
+  <cd0_total_high_speed>0.05753664042223246</cd0_total_high_speed>
+  <cd0_total_high_speed>0.058375532418720524</cd0_total_high_speed>
+  <cd0_total_high_speed>0.059227529058794845</cd0_total_high_speed>
   <cd_trim_high_speed>0.0</cd_trim_high_speed>
   <cd_trim_high_speed>5.89e-06</cd_trim_high_speed>
   <cd_trim_high_speed>1.178e-05</cd_trim_high_speed>
@@ -1347,12 +1347,12 @@
   <cd_comp_high_speed>110689871.84496316</cd_comp_high_speed>
   <cd_comp_high_speed>178708742.4766299</cd_comp_high_speed>
   <cd_comp_high_speed>289756334.40805644</cd_comp_high_speed>
-  <oswald_coeff_high_speed>0.042612131683129544</oswald_coeff_high_speed>
+  <oswald_coeff_high_speed>0.04286801634029212</oswald_coeff_high_speed>
   <engine_count>2</engine_count>
   <cg_pl>
     <CG_PAX units="m">16.616796</CG_PAX>
   </cg_pl>
-  <delta_cm_takeoff>0.14380773330822794</delta_cm_takeoff>
-  <delta_cn>0.20432741767030904</delta_cn>
-  <static_margin>-0.18102762564543384</static_margin>
+  <delta_cm_takeoff>0.018816080892402498</delta_cm_takeoff>
+  <delta_cn>0.33992470032222566</delta_cn>
+  <static_margin>-0.16451235860015134</static_margin>
 </aircraft>

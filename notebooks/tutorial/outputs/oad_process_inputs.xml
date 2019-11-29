@@ -18,7 +18,7 @@
   <geometry>
     <engine_number>2.0</engine_number>
     <wing_aspect_ratio>9.48</wing_aspect_ratio>
-    <wing_area units="m**2">124.843</wing_area>
+    <wing_area units="m**2">100.0</wing_area>
     <wing_break>0.4</wing_break>
     <wing_taper_ratio>0.38</wing_taper_ratio>
     <wing_sweep_25 units="deg">25.0</wing_sweep_25>

@@ -70,6 +70,37 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO):
     return fig
 
 
+def wing_geometry_symetric_plot(aircraft_xml: OMXmlIO):
+    system = aircraft_xml.read_variables()
+
+    wing_x4 = system['geometry:wing_x4'].value[0]
+    wing_y2 = system['geometry:wing_y2'].value[0]
+    wing_y3 = system['geometry:wing_y3'].value[0]
+    wing_y4 = system['geometry:wing_y4'].value[0]
+    wing_l2 = system['geometry:wing_l2'].value[0]
+    wing_l4 = system['geometry:wing_l4'].value[0]
+
+    x = [0, wing_y2, wing_y4,
+         wing_y4, wing_y3,
+         wing_y2, 0, 0]
+
+    x = [-x_i for x_i in x] + x
+    y = [0, 0, wing_x4, wing_x4 + wing_l4,
+         wing_l2, wing_l2, wing_l2, 0]
+
+    y = y + y
+
+    scatter = go.Scatter(x=x, y=y,
+                         mode='lines+markers')
+
+    layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+
+    data = [scatter]
+    fig = go.FigureWidget(data=data, layout=layout)
+    fig.layout.title = 'Wing Geometry'
+    return fig
+
+
 def mass_breakdown(aircraft_xml: OMXmlIO):
     system = aircraft_xml.read_variables()
 
