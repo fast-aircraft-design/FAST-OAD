@@ -14,182 +14,324 @@
   -->
 
 <aircraft>
-    <tlar>
-        <NPAX>150.0</NPAX>
-    </tlar>
-    <geometry>
-        <wing_area units="m**2">124.843</wing_area>
-        <wing_span units="m">31.603</wing_span>
-        <wing_b_50 units="m">34.166</wing_b_50>
-        <wing_l2 units="m">6.26</wing_l2>
-        <fuselage_length units="m">37.507</fuselage_length>
-        <fuselage_width_max units="m">3.92</fuselage_width_max>
-        <fuselage_height_max units="m">4.06</fuselage_height_max>
-        <engine_number>2.0</engine_number>
-        <wing_toc_root>0.159</wing_toc_root>
-        <wing_toc_kink>0.121</wing_toc_kink>
-        <wing_toc_tip>0.11</wing_toc_tip>
-        <wing_sweep_25 units="deg">25.0</wing_sweep_25>
-        <wing_area_pf units="m**2">100.303</wing_area_pf>
-        <fuselage_wet_area units="m**2">401.956</fuselage_wet_area>
-        <ht_area units="m**2">35.171</ht_area>
-        <vt_area units="m**2">25.118</vt_area>
-        <pylon_wet_area units="m**2">7.563</pylon_wet_area>
-        <S_total units="m**2">784.007</S_total>
-        <fuselage_Lcabin units="m">30.0056</fuselage_Lcabin>
-        <wing_sweep_0 units="deg">27.554</wing_sweep_0>
-        <nacelle_dia units="m">2.172</nacelle_dia>
-        <fuselage_LAV units="m">6.902</fuselage_LAV>
-        <fuselage_LAR units="m">14.616</fuselage_LAR>
-    </geometry>
-    <weight>
-        <MTOW units="kg">75797.99</MTOW>
-        <MFW units="kg">20569.81</MFW>
-        <MLW units="kg">64870.14</MLW>
-        <MZFW units="kg">61198.25</MZFW>
-        <Max_PL units="kg">25000</Max_PL>
-    </weight>
-    <cabin>
-        <NPAX1>157</NPAX1>
-        <PNT>2.0</PNT>
-        <PNC>4.0</PNC>
-        <front_seat_number_eco>6.0</front_seat_number_eco>
-        <container_number_front>1.0</container_number_front>
-        <container_number>5.0</container_number>
-        <pallet_number>10.0</pallet_number>
-    </cabin>
-    <aerodynamics>
-        <Cl_alpha>6.2</Cl_alpha>
-    </aerodynamics>
-    <loadcase1>
-        <U_gust units="m/s">15.25</U_gust>
-        <altitude units="ft">20000.0</altitude>
-        <Vc_EAS units="kn">375.0</Vc_EAS>
-    </loadcase1>
-    <loadcase2>
-        <U_gust units="m/s">15.25</U_gust>
-        <altitude units="ft">20000.0</altitude>
-        <Vc_EAS units="kn">375.0</Vc_EAS>
-    </loadcase2>
-    <kfactors_a1>
-        <K_A1>1.05</K_A1>
-        <offset_A1 units="kg">0.0</offset_A1>
-        <K_A11>1.0</K_A11>
-        <offset_A11 units="kg">0.0</offset_A11>
-        <K_A12>1.0</K_A12>
-        <offset_A12 units="kg">0.0</offset_A12>
-        <K_A13>1.0</K_A13>
-        <offset_A13 units="kg">0.0</offset_A13>
-        <K_A14>1.0</K_A14>
-        <offset_A14 units="kg">0.0</offset_A14>
-        <K_A15>1.0</K_A15>
-        <offset_A15 units="kg">0.0</offset_A15>
-        <K_voil>1.05</K_voil>
-        <K_mvo>1.39</K_mvo>
-    </kfactors_a1>
-    <kfactors_a2>
-        <K_A2>1.1</K_A2>
-        <offset_A2 units="kg">0.0</offset_A2>
-        <K_tr>1.05</K_tr>
-        <K_fus>1.0</K_fus>
-    </kfactors_a2>
-    <kfactors_a3>
-        <K_A31>1.08</K_A31>
-        <offset_A31 units="kg">0.0</offset_A31>
-        <K_A32>1.0</K_A32>
-        <offset_A32 units="kg">0.0</offset_A32>
-    </kfactors_a3>
-    <kfactors_a4>
-        <K_A4>1.0</K_A4>
-        <offset_A4 units="kg">0.0</offset_A4>
-        <K_fc>0.000135</K_fc>
-    </kfactors_a4>
-    <kfactors_a5>
-        <K_A5>0.85</K_A5>
-        <offset_A5 units="kg">0.0</offset_A5>
-    </kfactors_a5>
-    <kfactors_a6>
-        <K_A6>0.85</K_A6>
-        <offset_A6 units="kg">0.0</offset_A6>
-    </kfactors_a6>
-    <kfactors_a7>
-        <K_A7>1.0</K_A7>
-        <offset_A7 units="kg">0.0</offset_A7>
-    </kfactors_a7>
+  <TLAR>
+    <NPAX>150.0</NPAX>
+  </TLAR>
+  <geometry>
+    <wing>
+      <area units="m**2">124.843</area>
+      <span units="m">31.603</span>
+      <b_50 units="m">34.166</b_50>
+      <root>
+        <chord units="m">6.26</chord>
+        <thickness_ratio>0.159</thickness_ratio>
+      </root>
+      <kink>
+        <thickness_ratio>0.121</thickness_ratio>
+      </kink>
+      <tip>
+        <thickness_ratio>0.11</thickness_ratio>
+      </tip>
+      <sweep_25 units="deg">25.0</sweep_25>
+      <cantilever_area units="m**2">100.303</cantilever_area>
+      <sweep_0 units="deg">27.554</sweep_0>
+    </wing>
+    <fuselage>
+      <length units="m">37.507</length>
+      <maximum_width units="m">3.92</maximum_width>
+      <maximum_height units="m">4.06</maximum_height>
+      <wet_area units="m**2">401.956</wet_area>
+      <cabin_length units="m">30.0056</cabin_length>
+      <rear_length units="m">6.902</rear_length>
+      <front_length units="m">14.616</front_length>
+    </fuselage>
     <propulsion>
-        <mto_thrust units="lbf">117880.0</mto_thrust>
+      <engine>
+        <count>2.0</count>
+      </engine>
+      <pylon>
+        <wet_area units="m**2">7.563</wet_area>
+      </pylon>
+      <nacelle>
+        <diameter units="m">2.172</diameter>
+      </nacelle>
     </propulsion>
-    <kfactors_b1>
-        <K_B1>1.0</K_B1>
-        <offset_B1 units="kg">0.0</offset_B1>
-    </kfactors_b1>
-    <kfactors_b2>
-        <K_B2>1.0</K_B2>
-        <offset_B2 units="kg">0.0</offset_B2>
-    </kfactors_b2>
-    <kfactors_b3>
-        <K_B3>1.0</K_B3>
-        <offset_B3 units="kg">0.0</offset_B3>
-    </kfactors_b3>
-    <kfactors_c1>
-        <K_C11>1.0</K_C11>
-        <offset_C11 units="kg">0.0</offset_C11>
-        <K_C12>1.0</K_C12>
-        <offset_C12 units="kg">0.0</offset_C12>
-        <K_C13>1.0</K_C13>
-        <offset_C13 units="kg">0.0</offset_C13>
-        <K_elec>1.0</K_elec>
-    </kfactors_c1>
-    <kfactors_c2>
-        <K_C21>2.0</K_C21>
-        <offset_C21 units="kg">0.0</offset_C21>
-        <K_C22>1.0</K_C22>
-        <offset_C22 units="kg">0.0</offset_C22>
-        <K_C23>1.0</K_C23>
-        <offset_C23 units="kg">0.0</offset_C23>
-        <K_C24>1.0</K_C24>
-        <offset_C24 units="kg">0.0</offset_C24>
-        <K_C25>1.0</K_C25>
-        <offset_C25 units="kg">0.0</offset_C25>
-        <K_C26>1.0</K_C26>
-        <offset_C26 units="kg">0.0</offset_C26>
-        <K_C27>1.0</K_C27>
-        <offset_C27 units="kg">0.0</offset_C27>
-    </kfactors_c2>
-    <kfactors_c3>
-        <K_C3>1.0</K_C3>
-        <offset_C3 units="kg">0.0</offset_C3>
-    </kfactors_c3>
-    <kfactors_c4>
-        <K_C4>1.0</K_C4>
-        <offset_C4 units="kg">0.0</offset_C4>
-    </kfactors_c4>
-    <kfactors_c5>
-        <K_C5>1.0</K_C5>
-        <offset_C5 units="kg">0.0</offset_C5>
-    </kfactors_c5>
-    <kfactors_c6>
-        <K_C6>1.0</K_C6>
-        <offset_C6 units="kg">0.0</offset_C6>
-    </kfactors_c6>
-    <kfactors_d1>
-        <K_D1>1.0</K_D1>
-        <offset_D1 units="kg">0.0</offset_D1>
-    </kfactors_d1>
-    <kfactors_d2>
-        <K_D2>1.0</K_D2>
-        <offset_D2 units="kg">0.0</offset_D2>
-    </kfactors_d2>
-    <kfactors_d3>
-        <K_D3>1.0</K_D3>
-        <offset_D3 units="kg">0.0</offset_D3>
-    </kfactors_d3>
-    <kfactors_d4>
-        <K_D4>1.0</K_D4>
-        <offset_D4 units="kg">0.0</offset_D4>
-    </kfactors_d4>
-    <kfactors_d5>
-        <K_D5>1.0</K_D5>
-        <offset_D5 units="kg">0.0</offset_D5>
-    </kfactors_d5>
+    <horizontal_tail>
+      <area units="m**2">35.171</area>
+    </horizontal_tail>
+    <vertical_tail>
+      <area units="m**2">25.118</area>
+    </vertical_tail>
+    <aircraft>
+      <area units="m**2">784.007</area>
+    </aircraft>
+    <cabin>
+      <NPAX1>157.0</NPAX1>
+      <crew_count>
+        <technical>2.0</technical>
+        <commercial>4.0</commercial>
+      </crew_count>
+      <seats>
+        <economical>
+          <count_by_row>6.0</count_by_row>
+        </economical>
+      </seats>
+      <containers>
+        <count_by_row>1.0</count_by_row>
+        <count>5.0</count>
+      </containers>
+      <pallet_count>10.0</pallet_count>
+    </cabin>
+  </geometry>
+  <weight>
+    <aircraft>
+      <MTOW units="kg">75797.99</MTOW>
+      <MFW units="kg">20569.81</MFW>
+      <MLW units="kg">64870.14</MLW>
+      <MZFW units="kg">61198.25</MZFW>
+      <max_payload units="kg">25000.0</max_payload>
+    </aircraft>
+    <airframe>
+      <wing>
+        <mass>
+          <k>1.05</k>
+          <offset units="kg">0.0</offset>
+          <k_voil>1.05</k_voil>
+          <k_mvo>1.39</k_mvo>
+        </mass>
+        <bending_sizing>
+          <mass>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </mass>
+        </bending_sizing>
+        <shear_sizing>
+          <mass>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </mass>
+        </shear_sizing>
+        <ribs>
+          <mass>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </mass>
+        </ribs>
+        <reinforcements>
+          <mass>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </mass>
+        </reinforcements>
+        <secondary_parts>
+          <mass>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </mass>
+        </secondary_parts>
+      </wing>
+      <fuselage>
+        <mass>
+          <k>1.1</k>
+          <offset units="kg">0.0</offset>
+          <k_tr>1.05</k_tr>
+          <k_fus>1.0</k_fus>
+        </mass>
+      </fuselage>
+      <tail_plane>
+        <horizontal>
+          <mass>
+            <k>1.08</k>
+            <offset units="kg">0.0</offset>
+          </mass>
+        </horizontal>
+        <vertical>
+          <mass>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </mass>
+        </vertical>
+      </tail_plane>
+      <flight_controls>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+          <k_fc>0.000135</k_fc>
+        </mass>
+      </flight_controls>
+      <landing_gear>
+        <mass>
+          <k>0.85</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </landing_gear>
+      <pylon>
+        <mass>
+          <k>0.85</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </pylon>
+      <paint>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </paint>
+    </airframe>
+    <propulsion>
+      <engine>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </engine>
+      <fuel_lines>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </fuel_lines>
+      <unconsumables>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </unconsumables>
+    </propulsion>
+    <systems>
+      <power>
+        <auxiliary_power_unit>
+          <mass>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </mass>
+        </auxiliary_power_unit>
+        <electric_systems>
+          <mass>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </mass>
+        </electric_systems>
+        <hydraulic_systems>
+          <mass>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </mass>
+        </hydraulic_systems>
+        <mass>
+          <k_elec>1.0</k_elec>
+        </mass>
+      </power>
+      <life_support>
+        <mass>
+          <insulation>
+            <k>2.0</k>
+            <offset units="kg">0.0</offset>
+          </insulation>
+          <air_conditioning>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </air_conditioning>
+          <de-icing>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </de-icing>
+          <cabin_lighting>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </cabin_lighting>
+          <seats_crew_accomodation>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </seats_crew_accomodation>
+          <oxygen>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </oxygen>
+          <safety_equipment>
+            <k>1.0</k>
+            <offset units="kg">0.0</offset>
+          </safety_equipment>
+        </mass>
+      </life_support>
+      <navigation>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </navigation>
+      <transmission>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </transmission>
+      <operational>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </operational>
+      <flight_kit>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </flight_kit>
+    </systems>
+    <furniture>
+      <cargo_configuration>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </cargo_configuration>
+      <passenger_seats>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </passenger_seats>
+      <food_water>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </food_water>
+      <security_kit>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </security_kit>
+      <toilets>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </toilets>
+    </furniture>
+  </weight>
+  <aerodynamics>
+    <aircraft>
+      <cruise>
+        <CL_alpha>6.2</CL_alpha>
+      </cruise>
+    </aircraft>
+  </aerodynamics>
+  <load_case>
+    <lc1>
+      <U_gust units="m/s">15.25</U_gust>
+      <altitude units="ft">20000.0</altitude>
+      <Vc_EAS units="kn">375.0</Vc_EAS>
+    </lc1>
+    <lc2>
+      <U_gust units="m/s">15.25</U_gust>
+      <altitude units="ft">20000.0</altitude>
+      <Vc_EAS units="kn">375.0</Vc_EAS>
+    </lc2>
+  </load_case>
+  <propulsion>
+    <MTO_thrust units="lbf">117880.0</MTO_thrust>
+  </propulsion>
 </aircraft>

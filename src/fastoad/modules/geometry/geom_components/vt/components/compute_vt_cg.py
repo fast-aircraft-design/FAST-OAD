@@ -26,28 +26,28 @@ class ComputeVTcg(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:vt_length', val=np.nan, units='m')
-        self.add_input('geometry:vt_root_chord', val=np.nan, units='m')
-        self.add_input('geometry:vt_tip_chord', val=np.nan, units='m')
-        self.add_input('geometry:vt_lp', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:length', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:root_chord', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:tip_chord', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:distance_from_wing', val=np.nan, units='m')
         self.add_input('geometry:vt_x0', val=np.nan, units='m')
-        self.add_input('geometry:vt_sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:vt_span', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:vertical_tail:span', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
 
-        self.add_output('cg_airframe:A32', units='m')
+        self.add_output('weight:airframe:tail_plane:vertical:CG:x', units='m')
 
-        self.declare_partials('cg_airframe:A32', '*', method='fd')
+        self.declare_partials('weight:airframe:tail_plane:vertical:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        root_chord = inputs['geometry:vt_root_chord']
-        tip_chord = inputs['geometry:vt_tip_chord']
-        lp_vt = inputs['geometry:vt_lp']
-        mac_vt = inputs['geometry:vt_length']
-        fa_length = inputs['geometry:wing_position']
+        root_chord = inputs['geometry:vertical_tail:root_chord']
+        tip_chord = inputs['geometry:vertical_tail:tip_chord']
+        lp_vt = inputs['geometry:vertical_tail:distance_from_wing']
+        mac_vt = inputs['geometry:vertical_tail:length']
+        fa_length = inputs['geometry:wing:location']
         x0_vt = inputs['geometry:vt_x0']
-        sweep_25_vt = inputs['geometry:vt_sweep_25']
-        b_v = inputs['geometry:vt_span']
+        sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
+        b_v = inputs['geometry:vertical_tail:span']
 
         tmp = root_chord * 0.25 + b_v * math.tan(sweep_25_vt / 180. * math.pi) - tip_chord * 0.25
         l_cg_vt = (1 - 0.55) * (root_chord - tip_chord) + tip_chord
@@ -55,4 +55,4 @@ class ComputeVTcg(ExplicitComponent):
         x_cg_vt_absolute = lp_vt + fa_length - \
                            0.25 * mac_vt + (x_cg_vt - x0_vt)
 
-        outputs['cg_airframe:A32'] = x_cg_vt_absolute
+        outputs['weight:airframe:tail_plane:vertical:CG:x'] = x_cg_vt_absolute

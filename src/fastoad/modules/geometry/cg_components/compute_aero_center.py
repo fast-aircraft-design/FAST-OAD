@@ -24,34 +24,34 @@ class ComputeAeroCenter(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_x0', val=np.nan, units='m')
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('geometry:wing_l1', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:ht_area', val=np.nan, units='m**2')
-        self.add_input('geometry:ht_lp', val=np.nan, units='m')
-        self.add_input('aerodynamics:Cl_alpha', val=np.nan)
-        self.add_input('aerodynamics:Cl_alpha_ht', val=np.nan)
+        self.add_input('geometry:wing:root:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:l1', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:horizontal_tail:area', val=np.nan, units='m**2')
+        self.add_input('geometry:horizontal_tail:distance_from_wing', val=np.nan, units='m')
+        self.add_input('aerodynamics:aircraft:cruise:CL_alpha', val=np.nan)
+        self.add_input('aerodynamics:horizontal_tail:cruise:CL_alpha', val=np.nan)
 
         self.add_output('x_ac_ratio')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        x0_wing = inputs['geometry:wing_x0']
-        l0_wing = inputs['geometry:wing_l0']
-        l1_wing = inputs['geometry:wing_l1']
-        width_max = inputs['geometry:fuselage_width_max']
-        fa_length = inputs['geometry:wing_position']
-        fus_length = inputs['geometry:fuselage_length']
-        wing_area = inputs['geometry:wing_area']
-        s_h = inputs['geometry:ht_area']
-        lp_ht = inputs['geometry:ht_lp']
-        cl_alpha_wing = inputs['aerodynamics:Cl_alpha']
-        cl_alpha_ht = inputs['aerodynamics:Cl_alpha_ht']
+        x0_wing = inputs['geometry:wing:root:leading_edge:x']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        l1_wing = inputs['geometry:wing:l1']
+        width_max = inputs['geometry:fuselage:maximum_width']
+        fa_length = inputs['geometry:wing:location']
+        fus_length = inputs['geometry:fuselage:length']
+        wing_area = inputs['geometry:wing:area']
+        s_h = inputs['geometry:horizontal_tail:area']
+        lp_ht = inputs['geometry:horizontal_tail:distance_from_wing']
+        cl_alpha_wing = inputs['aerodynamics:aircraft:cruise:CL_alpha']
+        cl_alpha_ht = inputs['aerodynamics:horizontal_tail:cruise:CL_alpha']
         # TODO: make variable name is computation sequence more english
         x0_25 = fa_length - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing
         ratio_x025 = x0_25 / fus_length

@@ -21,14 +21,14 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeMaxClLanding(ExplicitComponent):
     def setup(self):
-        self.add_input('aerodynamics:Cl_max_clean', val=np.nan)
+        self.add_input('aerodynamics:aircraft:landing:CL_max_clean', val=np.nan)
         self.add_input('delta_cl_landing', val=np.nan)
-        self.add_input('kfactors_aero:K_HL_LDG', val=np.nan)
-        self.add_output('aerodynamics:Cl_max_landing')
+        self.add_input('aerodynamics:aircraft:landing:CL:landing_gear_effect:k', val=np.nan)
+        self.add_output('aerodynamics:aircraft:landing:CL_max')
 
     def compute(self, inputs, outputs):
-        cl_max_clean = inputs['aerodynamics:Cl_max_clean']
+        cl_max_clean = inputs['aerodynamics:aircraft:landing:CL_max_clean']
         cl_max_landing = cl_max_clean + inputs['delta_cl_landing']
-        cl_max_landing = cl_max_landing * inputs['kfactors_aero:K_HL_LDG']
+        cl_max_landing = cl_max_landing * inputs['aerodynamics:aircraft:landing:CL:landing_gear_effect:k']
 
-        outputs['aerodynamics:Cl_max_landing'] = cl_max_landing
+        outputs['aerodynamics:aircraft:landing:CL_max'] = cl_max_landing

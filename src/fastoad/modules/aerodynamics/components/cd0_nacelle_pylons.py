@@ -39,31 +39,31 @@ class Cd0NacelleAndPylons(ExplicitComponent):
         else:
             self.add_input('reynolds_high_speed', val=np.nan)
             self.add_input('cl_high_speed', val=nans_array)
-            self.add_input('tlar:cruise_Mach', val=np.nan)
+            self.add_input('TLAR:cruise_mach', val=np.nan)
             self.add_output('cd0_nacelle_high_speed')
             self.add_output('cd0_pylon_high_speed')
 
-        self.add_input('geometry:pylon_length', val=np.nan, units='m')
-        self.add_input('geometry:nacelle_length', val=np.nan, units='m')
-        self.add_input('geometry:pylon_wet_area', val=np.nan, units='m**2')
-        self.add_input('geometry:nacelle_wet_area', val=np.nan, units='m**2')
-        self.add_input('geometry:engine_number', val=np.nan)
-        self.add_input('geometry:fan_length', val=np.nan, units='m')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:propulsion:pylon:length', val=np.nan, units='m')
+        self.add_input('geometry:propulsion:nacelle:length', val=np.nan, units='m')
+        self.add_input('geometry:propulsion:pylon:wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:propulsion:nacelle:wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:propulsion:engine:count', val=np.nan)
+        self.add_input('geometry:propulsion:fan:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
 
     def compute(self, inputs, outputs):
-        pylon_length = inputs['geometry:pylon_length']
-        nac_length = inputs['geometry:nacelle_length']
-        wet_area_pylon = inputs['geometry:pylon_wet_area']
-        wet_area_nac = inputs['geometry:nacelle_wet_area']
-        n_engines = inputs['geometry:engine_number']
-        fan_length = inputs['geometry:fan_length']
-        wing_area = inputs['geometry:wing_area']
+        pylon_length = inputs['geometry:propulsion:pylon:length']
+        nac_length = inputs['geometry:propulsion:nacelle:length']
+        wet_area_pylon = inputs['geometry:propulsion:pylon:wet_area']
+        wet_area_nac = inputs['geometry:propulsion:nacelle:wet_area']
+        n_engines = inputs['geometry:propulsion:engine:count']
+        fan_length = inputs['geometry:propulsion:fan:length']
+        wing_area = inputs['geometry:wing:area']
         if self.low_speed_aero:
             mach = inputs['Mach_low_speed']
             re_hs = inputs['reynolds_low_speed']
         else:
-            mach = inputs['tlar:cruise_Mach']
+            mach = inputs['TLAR:cruise_mach']
             re_hs = inputs['reynolds_high_speed']
 
         cf_pylon_hs = 0.455 / (

@@ -40,7 +40,7 @@ def test_OMRubberEngine():
     ivc.add_output('propulsion:rubber_engine:bypass_ratio', 5)
     ivc.add_output('propulsion:rubber_engine:overall_pressure_ratio', 30)
     ivc.add_output('propulsion:rubber_engine:turbine_inlet_temperature', 1500, units='K')
-    ivc.add_output('propulsion:mto_thrust', 1, units='N')
+    ivc.add_output('propulsion:MTO_thrust', 1, units='N')
     ivc.add_output('propulsion:rubber_engine:maximum_mach', 0.95)
     ivc.add_output('propulsion:rubber_engine:design_altitude', 10000, units='m')
 

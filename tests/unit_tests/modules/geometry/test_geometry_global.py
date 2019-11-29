@@ -52,7 +52,7 @@ def test_geometry_get_cg():
 
     input_vars = input_xml.read()
 
-    input_vars.add_output('geometry:fuselage_Lcabin', val=0.81*37.507, units='m')
+    input_vars.add_output('geometry:fuselage:cabin_length', val=0.81*37.507, units='m')
 
     problem = Problem()
     model = problem.model
@@ -64,8 +64,8 @@ def test_geometry_get_cg():
 
     # problem.run_model()
     cg_ratio = problem['cg_ratio']
-    assert cg_ratio == pytest.approx(0.387185, abs=1e-6)
-    cg_airframe_a51 = problem['cg_airframe:A51']
+    assert cg_ratio == pytest.approx(0.377994, abs=1e-6)
+    cg_airframe_a51 = problem['weight:airframe:landing_gear:main:CG:x']
     assert cg_airframe_a51 == pytest.approx(18.11, abs=1e-1)
 
 
@@ -88,6 +88,6 @@ def test_geometry_geometry_global():
     problem.run_model()
     static_margin = problem['static_margin']
     # TODO: see if this static margin is correct
-    assert static_margin == pytest.approx(-0.008870, abs=1e-6)
-    cg_global = problem['cg:CG']
+    assert static_margin == pytest.approx(0.000789, abs=1e-6)
+    cg_global = problem['weight:aircraft:CG:x']
     assert cg_global == pytest.approx(17.3, abs=1e-1)

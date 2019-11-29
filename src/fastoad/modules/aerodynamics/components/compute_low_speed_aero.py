@@ -26,29 +26,29 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
     TODO: complete source
     """
     def setup(self):
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
-        self.add_input('geometry:wing_aspect_ratio', val=np.nan)
-        self.add_input('geometry:wing_l4', val=np.nan, units='m')
-        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_toc_tip', val=np.nan)
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
+        self.add_input('geometry:wing:aspect_ratio', val=np.nan)
+        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:tip:thickness_ratio', val=np.nan)
 
-        self.add_output('aerodynamics:Cl_alpha_low', units='1/rad')
-        self.add_output('aerodynamics:Cl_0_AoA')
+        self.add_output('aerodynamics:aircraft:takeoff:CL_alpha', units='1/rad')
+        self.add_output('aerodynamics:aircraft:cruise:CL0')
 
     def compute(self, inputs, outputs):
-        width_max = inputs['geometry:fuselage_width_max']
-        height_max = inputs['geometry:fuselage_height_max']
-        span = inputs['geometry:wing_span']
-        lambda_wing = inputs['geometry:wing_aspect_ratio']
-        l2_wing = inputs['geometry:wing_l2']
-        l4_wing = inputs['geometry:wing_l4']
-        el_ext = inputs['geometry:wing_toc_tip']
-        sweep_25 = inputs['geometry:wing_sweep_25']
-        wing_area = inputs['geometry:wing_area']
+        width_max = inputs['geometry:fuselage:maximum_width']
+        height_max = inputs['geometry:fuselage:maximum_height']
+        span = inputs['geometry:wing:span']
+        lambda_wing = inputs['geometry:wing:aspect_ratio']
+        l2_wing = inputs['geometry:wing:root:chord']
+        l4_wing = inputs['geometry:wing:tip:chord']
+        el_ext = inputs['geometry:wing:tip:thickness_ratio']
+        sweep_25 = inputs['geometry:wing:sweep_25']
+        wing_area = inputs['geometry:wing:area']
 
         mach = 0.2
 
@@ -61,5 +61,5 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
                                     1 + (tan(sweep_25 / 180. * pi)) ** 2 / beta ** 2))) * \
                             (wing_area - l2_wing * width_max) / wing_area * fact_F
 
-        outputs['aerodynamics:Cl_alpha_low'] = cl_alpha_wing_low
-        outputs['aerodynamics:Cl_0_AoA'] = 0.2  # FIXME: hard-coded value
+        outputs['aerodynamics:aircraft:takeoff:CL_alpha'] = cl_alpha_wing_low
+        outputs['aerodynamics:aircraft:cruise:CL0'] = 0.2  # FIXME: hard-coded value

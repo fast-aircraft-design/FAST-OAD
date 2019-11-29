@@ -25,23 +25,23 @@ class ComputeStaticMargin(ExplicitComponent):
 
         self.add_input('cg_ratio', val=np.nan)
         self.add_input('x_ac_ratio', val=np.nan)
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
 
         self.add_output('static_margin')
-        self.add_output('cg:CG', units='m')
+        self.add_output('weight:aircraft:CG:x', units='m')
 
         self.declare_partials('static_margin', ['cg_ratio', 'x_ac_ratio'], method='fd')
-        self.declare_partials('cg:CG',
-                              ['geometry:wing_position', 'cg_ratio', 'geometry:wing_l0'],
+        self.declare_partials('weight:aircraft:CG:x',
+                              ['geometry:wing:location', 'cg_ratio', 'geometry:wing:MAC:length'],
                               method='fd')
 
     def compute(self, inputs, outputs):
         cg_ratio = inputs['cg_ratio']
         cg_ratio += 0.05
         ac_ratio = inputs['x_ac_ratio']
-        l0_wing = inputs['geometry:wing_l0']
-        fa_length = inputs['geometry:wing_position']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        fa_length = inputs['geometry:wing:location']
 
-        outputs['cg:CG'] = fa_length - 0.25 * l0_wing + cg_ratio * l0_wing
+        outputs['weight:aircraft:CG:x'] = fa_length - 0.25 * l0_wing + cg_ratio * l0_wing
         outputs['static_margin'] = ac_ratio - cg_ratio

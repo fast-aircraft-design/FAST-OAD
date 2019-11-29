@@ -38,28 +38,28 @@ class Cd0Fuselage(ExplicitComponent):
         else:
             self.add_input('reynolds_high_speed', val=np.nan)
             self.add_input('cl_high_speed', val=nans_array)
-            self.add_input('tlar:cruise_Mach', val=np.nan)
+            self.add_input('TLAR:cruise_mach', val=np.nan)
             self.add_output('cd0_fuselage_high_speed', shape=POLAR_POINT_COUNT)
 
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:wet_area', val=np.nan, units='m**2')
 
     def compute(self, inputs, outputs):
-        height_max = inputs['geometry:fuselage_height_max']
-        width_max = inputs['geometry:fuselage_width_max']
-        wet_area_fus = inputs['geometry:fuselage_wet_area']
-        wing_area = inputs['geometry:wing_area']
-        fus_length = inputs['geometry:fuselage_length']
+        height_max = inputs['geometry:fuselage:maximum_height']
+        width_max = inputs['geometry:fuselage:maximum_width']
+        wet_area_fus = inputs['geometry:fuselage:wet_area']
+        wing_area = inputs['geometry:wing:area']
+        fus_length = inputs['geometry:fuselage:length']
         if self.low_speed_aero:
             cl = inputs['cl_low_speed']
             mach = inputs['Mach_low_speed']
             re_hs = inputs['reynolds_low_speed']
         else:
             cl = inputs['cl_high_speed']
-            mach = inputs['tlar:cruise_Mach']
+            mach = inputs['TLAR:cruise_mach']
             re_hs = inputs['reynolds_high_speed']
 
         cf_fus_hs = 0.455 / (

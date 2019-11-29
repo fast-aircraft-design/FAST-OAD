@@ -24,17 +24,17 @@ class ComputeVTVolCoeff(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:vt_area', val=np.nan, units='m**2')
-        self.add_input('geometry:vt_lp', val=np.nan, units='m')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:area', val=np.nan, units='m**2')
+        self.add_input('geometry:vertical_tail:distance_from_wing', val=np.nan, units='m')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
 
-        self.add_output('geometry:vt_vol_coeff')
+        self.add_output('geometry:vertical_tail:volume_coefficient')
 
-        self.declare_partials('geometry:vt_vol_coeff', '*', method='fd')
+        self.declare_partials('geometry:vertical_tail:volume_coefficient', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        outputs['geometry:vt_vol_coeff'] = inputs['geometry:vt_area'] * \
-                                           inputs['geometry:vt_lp'] / \
-                                           (inputs['geometry:wing_area'] * \
-                                            inputs['geometry:wing_span'])
+        outputs['geometry:vertical_tail:volume_coefficient'] = inputs['geometry:vertical_tail:area'] * \
+                                           inputs['geometry:vertical_tail:distance_from_wing'] / \
+                                           (inputs['geometry:wing:area'] * \
+                                            inputs['geometry:wing:span'])

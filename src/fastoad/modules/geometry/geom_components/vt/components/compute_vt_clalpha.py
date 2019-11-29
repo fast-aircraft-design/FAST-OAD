@@ -27,20 +27,20 @@ class ComputeVTClalpha(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('tlar:cruise_Mach', val=np.nan)
-        self.add_input('geometry:vt_aspect_ratio', val=np.nan)
-        self.add_input('geometry:vt_sweep_25', val=np.nan, units='deg')
+        self.add_input('TLAR:cruise_mach', val=np.nan)
+        self.add_input('geometry:vertical_tail:aspect_ratio', val=np.nan)
+        self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
         self.add_input('k_ar_effective', val=np.nan)
 
-        self.add_output('aerodynamics:Cl_alpha_vt')
+        self.add_output('aerodynamics:vertical_tail:cruise:CL_alpha')
 
-        self.declare_partials('aerodynamics:Cl_alpha_vt', '*', method='fd')
+        self.declare_partials('aerodynamics:vertical_tail:cruise:CL_alpha', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        cruise_mach = inputs['tlar:cruise_Mach']
+        cruise_mach = inputs['TLAR:cruise_mach']
         k_ar_effective = inputs['k_ar_effective']
-        sweep_25_vt = inputs['geometry:vt_sweep_25']
-        lambda_vt = inputs['geometry:vt_aspect_ratio']
+        sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
+        lambda_vt = inputs['geometry:vertical_tail:aspect_ratio']
 
         beta = math.sqrt(1 - cruise_mach ** 2)
         lambda_vt *= k_ar_effective
@@ -49,4 +49,4 @@ class ComputeVTClalpha(ExplicitComponent):
                        2 * (1 + (math.tan(sweep_25_vt / 180. * math.pi)) ** 2 \
                        / beta ** 2)))
 
-        outputs['aerodynamics:Cl_alpha_vt'] = cl_alpha_vt
+        outputs['aerodynamics:vertical_tail:cruise:CL_alpha'] = cl_alpha_vt

@@ -28,17 +28,17 @@ class ToiletsWeight(ExplicitComponent):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
-        self.add_input('tlar:NPAX', val=np.nan)
-        self.add_input('kfactors_d5:K_D5', val=1.)
-        self.add_input('kfactors_d5:offset_D5', val=0., units='kg')
+        self.add_input('TLAR:NPAX', val=np.nan)
+        self.add_input('weight:furniture:toilets:mass:k', val=1.)
+        self.add_input('weight:furniture:toilets:mass:offset', val=0., units='kg')
 
-        self.add_output('weight_furniture:D5', units='kg')
+        self.add_output('weight:furniture:toilets:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        npax = inputs['tlar:NPAX']
-        k_d5 = inputs['kfactors_d5:K_D5']
-        offset_d5 = inputs['kfactors_d5:offset_D5']
+        npax = inputs['TLAR:NPAX']
+        k_d5 = inputs['weight:furniture:toilets:mass:k']
+        offset_d5 = inputs['weight:furniture:toilets:mass:offset']
 
         aircraft_type = self.options[AIRCRAFT_TYPE_OPTION]
         if aircraft_type == 1.0:
@@ -55,4 +55,4 @@ class ToiletsWeight(ExplicitComponent):
             raise ValueError("Unexpected aircraft type")
 
         temp_d5 = k_toilet * npax
-        outputs['weight_furniture:D5'] = k_d5 * temp_d5 + offset_d5
+        outputs['weight:furniture:toilets:mass'] = k_d5 * temp_d5 + offset_d5

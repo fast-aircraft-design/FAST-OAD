@@ -37,28 +37,28 @@ class Cd0Wing(ExplicitComponent):
         else:
             self.add_input('reynolds_high_speed', val=np.nan)
             self.add_input('cl_high_speed', val=nans_array)
-            self.add_input('tlar:cruise_Mach', val=np.nan)
+            self.add_input('TLAR:cruise_mach', val=np.nan)
             self.add_output('cd0_wing_high_speed', shape=POLAR_POINT_COUNT)
 
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_toc_aero', val=np.nan)
-        self.add_input('geometry:wing_wet_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:thickness_ratio', val=np.nan)
+        self.add_input('geometry:wing:wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
 
     def compute(self, inputs, outputs):
-        wing_area = inputs['geometry:wing_area']
-        wet_area_wing = inputs['geometry:wing_wet_area']
-        el_aero = inputs['geometry:wing_toc_aero']
-        sweep_25 = inputs['geometry:wing_sweep_25']
-        l0_wing = inputs['geometry:wing_l0']
+        wing_area = inputs['geometry:wing:area']
+        wet_area_wing = inputs['geometry:wing:wet_area']
+        el_aero = inputs['geometry:wing:thickness_ratio']
+        sweep_25 = inputs['geometry:wing:sweep_25']
+        l0_wing = inputs['geometry:wing:MAC:length']
         if self.low_speed_aero:
             cl = inputs['cl_low_speed']
             mach = inputs['Mach_low_speed']
             re_hs = inputs['reynolds_low_speed']
         else:
             cl = inputs['cl_high_speed']
-            mach = inputs['tlar:cruise_Mach']
+            mach = inputs['TLAR:cruise_mach']
             re_hs = inputs['reynolds_high_speed']
 
         ki_arrow_cd0 = 0.04

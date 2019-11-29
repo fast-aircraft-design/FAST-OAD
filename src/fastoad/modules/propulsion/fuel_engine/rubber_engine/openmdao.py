@@ -32,7 +32,7 @@ class OMRubberEngine(OMIEngine):
         self.add_input('propulsion:rubber_engine:bypass_ratio', np.nan)
         self.add_input('propulsion:rubber_engine:overall_pressure_ratio', np.nan)
         self.add_input('propulsion:rubber_engine:turbine_inlet_temperature', np.nan, units='K')
-        self.add_input('propulsion:mto_thrust', np.nan, units='N')
+        self.add_input('propulsion:MTO_thrust', np.nan, units='N')
         self.add_input('propulsion:rubber_engine:maximum_mach', np.nan)
         self.add_input('propulsion:rubber_engine:design_altitude', np.nan, units='m')
         self.add_input('propulsion:rubber_engine:delta_t4_climb', -50,
@@ -49,12 +49,16 @@ class OMRubberEngine(OMIEngine):
         :param inputs: input parameters that define the engine
         :return: an :class:`RubberEngine` instance
         """
-        param_names = ['bypass_ratio', 'overall_pressure_ratio',
-                       'turbine_inlet_temperature', 'maximum_mach', 'design_altitude',
-                       'delta_t4_climb', 'delta_t4_cruise']
-        engine_params = {name: inputs['propulsion:rubber_engine:%s' % name] for name in param_names}
-
-        param_names = ['mto_thrust']
-        engine_params.update({name: inputs['propulsion:%s' % name] for name in param_names})
+        engine_params = {
+            'bypass_ratio': inputs['propulsion:rubber_engine:bypass_ratio'],
+            'overall_pressure_ratio': inputs['propulsion:rubber_engine:overall_pressure_ratio'],
+            'turbine_inlet_temperature': inputs[
+                'propulsion:rubber_engine:turbine_inlet_temperature'],
+            'maximum_mach': inputs['propulsion:rubber_engine:maximum_mach'],
+            'design_altitude': inputs['propulsion:rubber_engine:design_altitude'],
+            'delta_t4_climb': inputs['propulsion:rubber_engine:delta_t4_climb'],
+            'delta_t4_cruise': inputs['propulsion:rubber_engine:delta_t4_cruise'],
+            'mto_thrust': inputs['propulsion:MTO_thrust']
+        }
 
         return RubberEngine(**engine_params)

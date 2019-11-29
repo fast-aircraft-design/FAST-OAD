@@ -49,8 +49,8 @@ def get_indep_var_comp(var_names):
 
 def test_high_lift_drag():
     """ Tests DeltaCDHighLift """
-    input_list = ['geometry:flap_span_ratio',
-                  'geometry:slat_span_ratio'
+    input_list = ['geometry:flap:span_ratio',
+                  'geometry:slat:span_ratio'
                   ]
 
     def get_cd(slat_angle, flap_angle):
@@ -69,12 +69,12 @@ def test_high_lift_drag():
 
 def test_high_lift_lift():
     """ Tests DeltaCLHighLift """
-    input_list = ['geometry:wing_sweep_0',
-                  'geometry:wing_sweep_100_outer',
-                  'geometry:flap_chord_ratio',
-                  'geometry:flap_span_ratio',
-                  'geometry:slat_chord_ratio',
-                  'geometry:slat_span_ratio'
+    input_list = ['geometry:wing:sweep_0',
+                  'geometry:wing:sweep_100_outer',
+                  'geometry:flap:chord_ratio',
+                  'geometry:flap:span_ratio',
+                  'geometry:slat:chord_ratio',
+                  'geometry:slat:span_ratio'
                   ]
 
     def get_cl(slat_angle, flap_angle, mach):
@@ -100,20 +100,22 @@ def test_high_lift_lift():
 
 def test_high_lift_aero():
     """ Tests ComputeDeltaHighLift """
-    input_list = ['geometry:wing_sweep_0',
-                  'geometry:wing_sweep_100_outer',
-                  'geometry:flap_chord_ratio',
-                  'geometry:flap_span_ratio',
-                  'geometry:slat_chord_ratio',
-                  'geometry:slat_span_ratio'
+    input_list = ['geometry:wing:sweep_0',
+                  'geometry:wing:sweep_100_outer',
+                  'geometry:flap:chord_ratio',
+                  'geometry:flap:span_ratio',
+                  'geometry:slat:chord_ratio',
+                  'geometry:slat:span_ratio'
                   ]
 
     def get_cl_cd(slat_angle, flap_angle, mach, landing_flag):
-        phase = 'landing' if landing_flag else 'to'
-
         ivc = get_indep_var_comp(input_list)
-        ivc.add_output('sizing_mission:slat_angle_%s' % phase, slat_angle, units='deg')
-        ivc.add_output('sizing_mission:flap_angle_%s' % phase, flap_angle, units='deg')
+        if landing_flag:
+            ivc.add_output('sizing_mission:mission:operational:landing:slat_angle', slat_angle, units='deg')
+            ivc.add_output('sizing_mission:mission:operational:landing:flap_angle', flap_angle, units='deg')
+        else:
+            ivc.add_output('sizing_mission:mission:operational:takeoff:slat_angle', slat_angle, units='deg')
+            ivc.add_output('sizing_mission:mission:operational:takeoff:flap_angle', flap_angle, units='deg')
         ivc.add_output('xfoil:mach', mach)
         component = ComputeDeltaHighLift()
         component.options['landing_flag'] = landing_flag
@@ -137,18 +139,18 @@ def test_high_lift_aero():
 
 def test_oswald():
     """ Tests OswaldCoefficient """
-    input_list = ['geometry:wing_area',
-                  'geometry:wing_span',
-                  'geometry:fuselage_height_max',
-                  'geometry:fuselage_width_max',
-                  'geometry:wing_l2',
-                  'geometry:wing_l4',
-                  'geometry:wing_sweep_25',
+    input_list = ['geometry:wing:area',
+                  'geometry:wing:span',
+                  'geometry:fuselage:maximum_height',
+                  'geometry:fuselage:maximum_width',
+                  'geometry:wing:root:chord',
+                  'geometry:wing:tip:chord',
+                  'geometry:wing:sweep_25',
                   ]
 
     def get_coeff(mach):
         ivc = get_indep_var_comp(input_list)
-        ivc.add_output('tlar:cruise_Mach', mach)
+        ivc.add_output('TLAR:cruise_mach', mach)
         problem = run_system(OswaldCoefficient(), ivc)
         return problem['oswald_coeff_high_speed']
 
@@ -158,38 +160,38 @@ def test_oswald():
 
 def test_cd0():
     """ Tests CD0 (test of the group for comparison to legacy) """
-    input_list = ['geometry:fuselage_height_max',
-                  'geometry:fuselage_length',
-                  'geometry:fuselage_wet_area',
-                  'geometry:fuselage_width_max',
-                  'geometry:ht_length',
-                  'geometry:ht_sweep_25',
-                  'geometry:ht_toc',
-                  'geometry:ht_wet_area',
-                  'geometry:wing_area',
-                  'geometry:engine_number',
-                  'geometry:fan_length',
-                  'geometry:nacelle_length',
-                  'geometry:nacelle_wet_area',
-                  'geometry:pylon_length',
-                  'geometry:pylon_wet_area',
-                  'geometry:S_total',
-                  'geometry:vt_length',
-                  'geometry:vt_sweep_25',
-                  'geometry:vt_toc',
-                  'geometry:vt_wet_area',
-                  'geometry:wing_area',
-                  'geometry:wing_l0',
-                  'geometry:wing_sweep_25',
-                  'geometry:wing_toc_aero',
-                  'geometry:wing_wet_area'
+    input_list = ['geometry:fuselage:maximum_height',
+                  'geometry:fuselage:length',
+                  'geometry:fuselage:wet_area',
+                  'geometry:fuselage:maximum_width',
+                  'geometry:horizontal_tail:length',
+                  'geometry:horizontal_tail:sweep_25',
+                  'geometry:horizontal_tail:thickness_ratio',
+                  'geometry:horizontal_tail:wet_area',
+                  'geometry:wing:area',
+                  'geometry:propulsion:engine:count',
+                  'geometry:propulsion:fan:length',
+                  'geometry:propulsion:nacelle:length',
+                  'geometry:propulsion:nacelle:wet_area',
+                  'geometry:propulsion:pylon:length',
+                  'geometry:propulsion:pylon:wet_area',
+                  'geometry:aircraft:area',
+                  'geometry:vertical_tail:length',
+                  'geometry:vertical_tail:sweep_25',
+                  'geometry:vertical_tail:thickness_ratio',
+                  'geometry:vertical_tail:wet_area',
+                  'geometry:wing:area',
+                  'geometry:wing:MAC:length',
+                  'geometry:wing:sweep_25',
+                  'geometry:wing:thickness_ratio',
+                  'geometry:wing:wet_area'
                   ]
 
     def get_cd0(alt, mach, cl):
         reynolds = Atmosphere(alt).get_unitary_reynolds(mach)
 
         ivc = get_indep_var_comp(input_list)
-        ivc.add_output('tlar:cruise_Mach', mach)
+        ivc.add_output('TLAR:cruise_mach', mach)
         ivc.add_output('reynolds_high_speed', reynolds)
         ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
         problem = run_system(CD0(), ivc)
@@ -205,7 +207,7 @@ def test_cd_compressibility():
     def get_cd_compressibility(mach, cl):
         ivc = IndepVarComp()
         ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
-        ivc.add_output('tlar:cruise_Mach', mach)
+        ivc.add_output('TLAR:cruise_mach', mach)
         problem = run_system(CdCompressibility(), ivc)
         return problem['cd_comp_high_speed'][0]
 
@@ -236,41 +238,41 @@ def test_polar():
 
     # Need to plug Cd modules, Reynolds and Oswald
 
-    input_list = ['kfactors_aero:K_Cd',
-                  'kfactors_aero:Offset_Cd',
-                  'kfactors_aero:K_winglet_Cd',
-                  'kfactors_aero:Offset_winglet_Cd',
-                  'geometry:fuselage_height_max',
-                  'geometry:fuselage_length',
-                  'geometry:fuselage_wet_area',
-                  'geometry:fuselage_width_max',
-                  'geometry:wing_area',
-                  'geometry:ht_length',
-                  'geometry:ht_sweep_25',
-                  'geometry:ht_toc',
-                  'geometry:ht_wet_area',
-                  'geometry:wing_area',
-                  'geometry:engine_number',
-                  'geometry:fan_length',
-                  'geometry:nacelle_length',
-                  'geometry:nacelle_wet_area',
-                  'geometry:pylon_length',
-                  'geometry:pylon_wet_area',
-                  'geometry:wing_area',
-                  'geometry:S_total',
-                  'geometry:vt_length',
-                  'geometry:vt_sweep_25',
-                  'geometry:vt_toc',
-                  'geometry:vt_wet_area',
-                  'geometry:wing_l0',
-                  'geometry:wing_sweep_25',
-                  'geometry:wing_toc_aero',
-                  'geometry:wing_wet_area',
-                  'geometry:wing_span',
-                  'geometry:wing_l2',
-                  'geometry:wing_l4',
-                  'tlar:cruise_Mach',
-                  'sizing_mission:cruise_altitude'
+    input_list = ['aerodynamics:aircraft:cruise:CD:k',
+                  'aerodynamics:aircraft:cruise:CD:offset',
+                  'aerodynamics:aircraft:cruise:CD:winglet_effect:k',
+                  'aerodynamics:aircraft:cruise:CD:winglet_effect:offset',
+                  'geometry:fuselage:maximum_height',
+                  'geometry:fuselage:length',
+                  'geometry:fuselage:wet_area',
+                  'geometry:fuselage:maximum_width',
+                  'geometry:wing:area',
+                  'geometry:horizontal_tail:length',
+                  'geometry:horizontal_tail:sweep_25',
+                  'geometry:horizontal_tail:thickness_ratio',
+                  'geometry:horizontal_tail:wet_area',
+                  'geometry:wing:area',
+                  'geometry:propulsion:engine:count',
+                  'geometry:propulsion:fan:length',
+                  'geometry:propulsion:nacelle:length',
+                  'geometry:propulsion:nacelle:wet_area',
+                  'geometry:propulsion:pylon:length',
+                  'geometry:propulsion:pylon:wet_area',
+                  'geometry:wing:area',
+                  'geometry:aircraft:area',
+                  'geometry:vertical_tail:length',
+                  'geometry:vertical_tail:sweep_25',
+                  'geometry:vertical_tail:thickness_ratio',
+                  'geometry:vertical_tail:wet_area',
+                  'geometry:wing:MAC:length',
+                  'geometry:wing:sweep_25',
+                  'geometry:wing:thickness_ratio',
+                  'geometry:wing:wet_area',
+                  'geometry:wing:span',
+                  'geometry:wing:root:chord',
+                  'geometry:wing:tip:chord',
+                  'TLAR:cruise_mach',
+                  'sizing_mission:mission:operational:cruise:altitude'
                   ]
     group = Group()
     group.add_subsystem('reynolds', ComputeReynolds(), promotes=['*'])
@@ -300,18 +302,18 @@ def test_polar():
 def test_low_speed_aero():
     """ Tests group ComputeAerodynamicsLowSpeed """
     input_list = [
-        'geometry:fuselage_width_max',
-        'geometry:fuselage_height_max',
-        'geometry:wing_span',
-        'geometry:wing_aspect_ratio',
-        'geometry:wing_l4',
-        'geometry:wing_sweep_25',
-        'geometry:wing_l2',
-        'geometry:wing_area',
-        'geometry:wing_toc_tip',
+        'geometry:fuselage:maximum_width',
+        'geometry:fuselage:maximum_height',
+        'geometry:wing:span',
+        'geometry:wing:aspect_ratio',
+        'geometry:wing:tip:chord',
+        'geometry:wing:sweep_25',
+        'geometry:wing:root:chord',
+        'geometry:wing:area',
+        'geometry:wing:tip:thickness_ratio',
     ]
     ivc = get_indep_var_comp(input_list)
 
     problem = run_system(ComputeAerodynamicsLowSpeed(), ivc)
 
-    assert problem['aerodynamics:Cl_alpha_low'] == approx(5.0, abs=1e-1)
+    assert problem['aerodynamics:aircraft:takeoff:CL_alpha'] == approx(5.0, abs=1e-1)

@@ -27,29 +27,29 @@ class ComputeHTChord(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:ht_aspect_ratio', val=np.nan)
-        self.add_input('geometry:ht_area', val=np.nan, units='m**2')
-        self.add_input('geometry:ht_taper_ratio', val=np.nan)
+        self.add_input('geometry:horizontal_tail:aspect_ratio', val=np.nan)
+        self.add_input('geometry:horizontal_tail:area', val=np.nan, units='m**2')
+        self.add_input('geometry:horizontal_tail:taper_ratio', val=np.nan)
 
-        self.add_output('geometry:ht_span', units='m')
-        self.add_output('geometry:ht_root_chord', units='m')
-        self.add_output('geometry:ht_tip_chord', units='m')
+        self.add_output('geometry:horizontal_tail:span', units='m')
+        self.add_output('geometry:horizontal_tail:root_chord', units='m')
+        self.add_output('geometry:horizontal_tail:tip_chord', units='m')
 
-        self.declare_partials('geometry:ht_span',
-                              ['geometry:ht_area', 'geometry:ht_aspect_ratio'],
+        self.declare_partials('geometry:horizontal_tail:span',
+                              ['geometry:horizontal_tail:area', 'geometry:horizontal_tail:aspect_ratio'],
                               method='fd')
-        self.declare_partials('geometry:ht_root_chord', '*', method='fd')
-        self.declare_partials('geometry:ht_tip_chord', '*', method='fd')
+        self.declare_partials('geometry:horizontal_tail:root_chord', '*', method='fd')
+        self.declare_partials('geometry:horizontal_tail:tip_chord', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        lambda_ht = inputs['geometry:ht_aspect_ratio']
-        s_h = inputs['geometry:ht_area']
-        taper_ht = inputs['geometry:ht_taper_ratio']
+        lambda_ht = inputs['geometry:horizontal_tail:aspect_ratio']
+        s_h = inputs['geometry:horizontal_tail:area']
+        taper_ht = inputs['geometry:horizontal_tail:taper_ratio']
 
         b_h = math.sqrt(lambda_ht * s_h)
         root_chord = s_h * 2 / (1 + taper_ht) / b_h
         tip_chord = root_chord * taper_ht
 
-        outputs['geometry:ht_span'] = b_h
-        outputs['geometry:ht_root_chord'] = root_chord
-        outputs['geometry:ht_tip_chord'] = tip_chord
+        outputs['geometry:horizontal_tail:span'] = b_h
+        outputs['geometry:horizontal_tail:root_chord'] = root_chord
+        outputs['geometry:horizontal_tail:tip_chord'] = tip_chord

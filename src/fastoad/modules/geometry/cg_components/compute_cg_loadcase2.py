@@ -23,14 +23,14 @@ class ComputeCGLoadCase2(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
-        self.add_input('cg:cg_pax', val=np.nan, units='m')
-        self.add_input('cg:cg_rear_fret', val=np.nan, units='m')
-        self.add_input('cg:cg_front_fret', val=np.nan, units='m')
-        self.add_input('tlar:NPAX', val=np.nan)
-        self.add_input('weight:MFW', val=np.nan, units='kg')
-        self.add_input('cg:cg_tank', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('weight:payload:PAX:CG:x', val=np.nan, units='m')
+        self.add_input('weight:payload:rear_fret:CG:x', val=np.nan, units='m')
+        self.add_input('weight:payload:front_fret:CG:x', val=np.nan, units='m')
+        self.add_input('TLAR:NPAX', val=np.nan)
+        self.add_input('weight:aircraft:MFW', val=np.nan, units='kg')
+        self.add_input('weight:fuel_tank:CG:x', val=np.nan, units='m')
         self.add_input('x_cg_plane_up', val=np.nan)
         self.add_input('x_cg_plane_down', val=np.nan)
 
@@ -39,16 +39,16 @@ class ComputeCGLoadCase2(ExplicitComponent):
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        l0_wing = inputs['geometry:wing_l0']
-        fa_length = inputs['geometry:wing_position']
-        cg_pax = inputs['cg:cg_pax']
-        cg_rear_fret = inputs['cg:cg_rear_fret']
-        cg_front_fret = inputs['cg:cg_front_fret']
-        npax = inputs['tlar:NPAX']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        fa_length = inputs['geometry:wing:location']
+        cg_pax = inputs['weight:payload:PAX:CG:x']
+        cg_rear_fret = inputs['weight:payload:rear_fret:CG:x']
+        cg_front_fret = inputs['weight:payload:front_fret:CG:x']
+        npax = inputs['TLAR:NPAX']
         x_cg_plane_up = inputs['x_cg_plane_up']
         x_cg_plane_down = inputs['x_cg_plane_down']
-        mfw = inputs['weight:MFW']
-        cg_tank = inputs['cg:cg_tank']
+        mfw = inputs['weight:aircraft:MFW']
+        cg_tank = inputs['weight:fuel_tank:CG:x']
 
         weight_pax = npax * 90.
         weight_rear_fret = npax * 20

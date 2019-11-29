@@ -28,29 +28,29 @@ class CargoConfigurationWeight(ExplicitComponent):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
-        self.add_input('cabin:NPAX1', val=np.nan)
-        self.add_input('cabin:container_number', val=np.nan)
-        self.add_input('cabin:pallet_number', val=np.nan)
-        self.add_input('cabin:front_seat_number_eco', val=np.nan)
-        self.add_input('kfactors_d1:K_D1', val=1.)
-        self.add_input('kfactors_d1:offset_D1', val=0., units='kg')
+        self.add_input('geometry:cabin:NPAX1', val=np.nan)
+        self.add_input('geometry:cabin:containers:count', val=np.nan)
+        self.add_input('geometry:cabin:pallet_count', val=np.nan)
+        self.add_input('geometry:cabin:seats:economical:count_by_row', val=np.nan)
+        self.add_input('weight:furniture:cargo_configuration:mass:k', val=1.)
+        self.add_input('weight:furniture:cargo_configuration:mass:offset', val=0., units='kg')
 
-        self.add_output('weight_furniture:D1', units='kg')
+        self.add_output('weight:furniture:cargo_configuration:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        npax1 = inputs['cabin:NPAX1']
-        side_by_side_eco_seat_count = inputs['cabin:front_seat_number_eco']
-        container_count = inputs['cabin:container_number']
-        pallet_number = inputs['cabin:pallet_number']
-        k_d1 = inputs['kfactors_d1:K_D1']
-        offset_d1 = inputs['kfactors_d1:offset_D1']
+        npax1 = inputs['geometry:cabin:NPAX1']
+        side_by_side_eco_seat_count = inputs['geometry:cabin:seats:economical:count_by_row']
+        container_count = inputs['geometry:cabin:containers:count']
+        pallet_number = inputs['geometry:cabin:pallet_count']
+        k_d1 = inputs['weight:furniture:cargo_configuration:mass:k']
+        offset_d1 = inputs['weight:furniture:cargo_configuration:mass:offset']
 
         if self.options[AIRCRAFT_TYPE_OPTION] == 6.0:
             if side_by_side_eco_seat_count <= 6.0:
                 temp_d1 = 0.351 * (npax1 - 38)
             else:
                 temp_d1 = 85 * container_count + 110 * pallet_number
-            outputs['weight_furniture:D1'] = k_d1 * temp_d1 + offset_d1
+            outputs['weight:furniture:cargo_configuration:mass'] = k_d1 * temp_d1 + offset_d1
         else:
-            outputs['weight_furniture:D1'] = 0.
+            outputs['weight:furniture:cargo_configuration:mass'] = 0.

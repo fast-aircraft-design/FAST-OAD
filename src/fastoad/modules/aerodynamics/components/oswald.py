@@ -30,34 +30,34 @@ class OswaldCoefficient(ExplicitComponent):
         self.options.declare('low_speed_aero', default=False, types=bool)
 
     def setup(self):
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:wing_l4', val=np.nan, units='m')
-        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
 
         if self.options['low_speed_aero']:
             self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('oswald_coeff_low_speed')
         else:
-            self.add_input('tlar:cruise_Mach', val=np.nan)
+            self.add_input('TLAR:cruise_mach', val=np.nan)
             self.add_output('oswald_coeff_high_speed')
 
 
     def compute(self, inputs, outputs):
-        wing_area = inputs['geometry:wing_area']
-        span = inputs['geometry:wing_span'] / math.cos(5. / 180 * math.pi)
-        height_fus = inputs['geometry:fuselage_height_max']
-        width_fus = inputs['geometry:fuselage_width_max']
-        l2_wing = inputs['geometry:wing_l2']
-        l4_wing = inputs['geometry:wing_l4']
-        sweep_25 = inputs['geometry:wing_sweep_25']
+        wing_area = inputs['geometry:wing:area']
+        span = inputs['geometry:wing:span'] / math.cos(5. / 180 * math.pi)
+        height_fus = inputs['geometry:fuselage:maximum_height']
+        width_fus = inputs['geometry:fuselage:maximum_width']
+        l2_wing = inputs['geometry:wing:root:chord']
+        l4_wing = inputs['geometry:wing:tip:chord']
+        sweep_25 = inputs['geometry:wing:sweep_25']
         if self.options['low_speed_aero']:
             mach = inputs['Mach_low_speed']
         else:
-            mach = inputs['tlar:cruise_Mach']
+            mach = inputs['TLAR:cruise_mach']
 
         aspect_ratio = span ** 2 / wing_area
         df = math.sqrt(width_fus * height_fus)

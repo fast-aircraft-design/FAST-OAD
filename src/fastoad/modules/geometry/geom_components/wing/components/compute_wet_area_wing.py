@@ -24,31 +24,31 @@ class ComputeWetAreaWing(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:wing_y2', val=np.nan, units='m')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
 
-        self.add_output('geometry:wing_area_pf', units='m**2')
-        self.add_output('geometry:wing_wet_area', units='m**2')
+        self.add_output('geometry:wing:cantilever_area', units='m**2')
+        self.add_output('geometry:wing:wet_area', units='m**2')
 
-        self.declare_partials('geometry:wing_area_pf', ['geometry:wing_area',
-                                                        'geometry:wing_y2',
-                                                        'geometry:wing_l2'],
+        self.declare_partials('geometry:wing:cantilever_area', ['geometry:wing:area',
+                                                        'geometry:wing:root:y',
+                                                        'geometry:wing:root:chord'],
                               method='fd')
-        self.declare_partials('geometry:wing_wet_area', ['geometry:wing_area',
-                                                         'geometry:wing_l2',
-                                                         'geometry:fuselage_width_max'],
+        self.declare_partials('geometry:wing:wet_area', ['geometry:wing:area',
+                                                         'geometry:wing:root:chord',
+                                                         'geometry:fuselage:maximum_width'],
                               method='fd')
 
     def compute(self, inputs, outputs):
-        wing_area = inputs['geometry:wing_area']
-        l2_wing = inputs['geometry:wing_l2']
-        y2_wing = inputs['geometry:wing_y2']
-        width_max = inputs['geometry:fuselage_width_max']
+        wing_area = inputs['geometry:wing:area']
+        l2_wing = inputs['geometry:wing:root:chord']
+        y2_wing = inputs['geometry:wing:root:y']
+        width_max = inputs['geometry:fuselage:maximum_width']
 
         s_pf = wing_area - 2 * l2_wing * y2_wing
         wet_area_wing = 2 * (wing_area - width_max * l2_wing)
 
-        outputs['geometry:wing_area_pf'] = s_pf
-        outputs['geometry:wing_wet_area'] = wet_area_wing
+        outputs['geometry:wing:cantilever_area'] = s_pf
+        outputs['geometry:wing:wet_area'] = wet_area_wing

@@ -28,20 +28,20 @@ class SecurityKitWeight(ExplicitComponent):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
-        self.add_input('tlar:NPAX', val=np.nan)
-        self.add_input('kfactors_d4:K_D4', val=1.)
-        self.add_input('kfactors_d4:offset_D4', val=0., units='kg')
+        self.add_input('TLAR:NPAX', val=np.nan)
+        self.add_input('weight:furniture:security_kit:mass:k', val=1.)
+        self.add_input('weight:furniture:security_kit:mass:offset', val=0., units='kg')
 
-        self.add_output('weight_furniture:D4', units='kg')
+        self.add_output('weight:furniture:security_kit:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        npax = inputs['tlar:NPAX']
-        k_d4 = inputs['kfactors_d4:K_D4']
-        offset_d4 = inputs['kfactors_d4:offset_D4']
+        npax = inputs['TLAR:NPAX']
+        k_d4 = inputs['weight:furniture:security_kit:mass:k']
+        offset_d4 = inputs['weight:furniture:security_kit:mass:offset']
 
         if self.options[AIRCRAFT_TYPE_OPTION] == 6.0:
-            outputs['weight_furniture:D4'] = 0.
+            outputs['weight:furniture:security_kit:mass'] = 0.
         else:
             temp_d4 = 1.5 * npax
-            outputs['weight_furniture:D4'] = k_d4 * temp_d4 + offset_d4
+            outputs['weight:furniture:security_kit:mass'] = k_d4 * temp_d4 + offset_d4

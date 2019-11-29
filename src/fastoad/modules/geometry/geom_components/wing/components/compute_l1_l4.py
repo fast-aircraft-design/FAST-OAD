@@ -26,28 +26,28 @@ class ComputeL1AndL4Wing(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_y2', val=np.nan, units='m')
-        self.add_input('geometry:wing_y3', val=np.nan, units='m')
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        self.add_input('geometry:wing_taper_ratio', val=np.nan)
-        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:root:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('geometry:wing:taper_ratio', val=np.nan)
+        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
 
-        self.add_output('geometry:wing_l1', units='m')
-        self.add_output('geometry:wing_l4', units='m')
+        self.add_output('geometry:wing:l1', units='m')
+        self.add_output('geometry:wing:tip:chord', units='m')
 
-        self.declare_partials('geometry:wing_l1', '*', method='fd')
-        self.declare_partials('geometry:wing_l4', '*', method='fd')
+        self.declare_partials('geometry:wing:l1', '*', method='fd')
+        self.declare_partials('geometry:wing:tip:chord', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        wing_area = inputs['geometry:wing_area']
-        span = inputs['geometry:wing_span']
-        y2_wing = inputs['geometry:wing_y2']
-        y3_wing = inputs['geometry:wing_y3']
-        sweep_25 = inputs['geometry:wing_sweep_25']
-        width_max = inputs['geometry:fuselage_width_max']
-        taper_ratio = inputs['geometry:wing_taper_ratio']
+        wing_area = inputs['geometry:wing:area']
+        span = inputs['geometry:wing:span']
+        y2_wing = inputs['geometry:wing:root:y']
+        y3_wing = inputs['geometry:wing:kink:y']
+        sweep_25 = inputs['geometry:wing:sweep_25']
+        width_max = inputs['geometry:fuselage:maximum_width']
+        taper_ratio = inputs['geometry:wing:taper_ratio']
 
         l1_wing = (wing_area - (y3_wing - y2_wing) * (y3_wing + y2_wing) *
                    math.tan(sweep_25 / 180. * math.pi)) / \
@@ -57,5 +57,5 @@ class ComputeL1AndL4Wing(ExplicitComponent):
 
         l4_wing = l1_wing * taper_ratio
 
-        outputs['geometry:wing_l1'] = l1_wing
-        outputs['geometry:wing_l4'] = l4_wing
+        outputs['geometry:wing:l1'] = l1_wing
+        outputs['geometry:wing:tip:chord'] = l4_wing

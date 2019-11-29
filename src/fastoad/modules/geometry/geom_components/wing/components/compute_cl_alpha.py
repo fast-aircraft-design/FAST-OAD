@@ -27,32 +27,32 @@ class ComputeCLalpha(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('tlar:cruise_Mach', val=np.nan)
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:wing_l4', val=np.nan, units='m')
-        self.add_input('geometry:wing_toc_tip', val=np.nan)
-        self.add_input('geometry:wing_sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:wing_aspect_ratio', val=np.nan)
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
+        self.add_input('TLAR:cruise_mach', val=np.nan)
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:thickness_ratio', val=np.nan)
+        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:wing:aspect_ratio', val=np.nan)
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
 
-        self.add_output('aerodynamics:Cl_alpha')
+        self.add_output('aerodynamics:aircraft:cruise:CL_alpha')
 
-        self.declare_partials('aerodynamics:Cl_alpha', '*', method='fd')
+        self.declare_partials('aerodynamics:aircraft:cruise:CL_alpha', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        cruise_mach = inputs['tlar:cruise_Mach']
-        width_max = inputs['geometry:fuselage_width_max']
-        height_max = inputs['geometry:fuselage_height_max']
-        span = inputs['geometry:wing_span']
-        lambda_wing = inputs['geometry:wing_aspect_ratio']
-        el_ext = inputs['geometry:wing_toc_tip']
-        wing_area = inputs['geometry:wing_area']
-        l2_wing = inputs['geometry:wing_l2']
-        l4_wing = inputs['geometry:wing_l4']
-        sweep_25 = inputs['geometry:wing_sweep_25']
+        cruise_mach = inputs['TLAR:cruise_mach']
+        width_max = inputs['geometry:fuselage:maximum_width']
+        height_max = inputs['geometry:fuselage:maximum_height']
+        span = inputs['geometry:wing:span']
+        lambda_wing = inputs['geometry:wing:aspect_ratio']
+        el_ext = inputs['geometry:wing:tip:thickness_ratio']
+        wing_area = inputs['geometry:wing:area']
+        l2_wing = inputs['geometry:wing:root:chord']
+        l4_wing = inputs['geometry:wing:tip:chord']
+        sweep_25 = inputs['geometry:wing:sweep_25']
 
         beta = math.sqrt(1 - cruise_mach ** 2)
         d_f = math.sqrt(width_max * height_max)
@@ -63,4 +63,4 @@ class ComputeCLalpha(ExplicitComponent):
                                 1 + (math.tan(sweep_25 / 180. * math.pi)) ** 2 / beta ** 2))) * \
                         (wing_area - l2_wing * width_max) / wing_area * fact_f
 
-        outputs['aerodynamics:Cl_alpha'] = cl_alpha_wing
+        outputs['aerodynamics:aircraft:cruise:CL_alpha'] = cl_alpha_wing

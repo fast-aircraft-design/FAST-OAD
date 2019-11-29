@@ -28,31 +28,31 @@ class Cd0VerticalTail(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('geometry:vt_length', val=np.nan, units='m')
-        self.add_input('geometry:vt_toc', val=np.nan)
-        self.add_input('geometry:vt_sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:vt_wet_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing_area', val=np.nan, units='m**2')
+        self.add_input('geometry:vertical_tail:length', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:thickness_ratio', val=np.nan)
+        self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:vertical_tail:wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
         if self.low_speed_aero:
             self.add_input('reynolds_low_speed', val=np.nan)
             self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('cd0_vt_low_speed')
         else:
             self.add_input('reynolds_high_speed', val=np.nan)
-            self.add_input('tlar:cruise_Mach', val=np.nan)
+            self.add_input('TLAR:cruise_mach', val=np.nan)
             self.add_output('cd0_vt_high_speed')
 
     def compute(self, inputs, outputs):
-        el_vt = inputs['geometry:vt_toc']
-        vt_length = inputs['geometry:vt_length']
-        sweep_25_vt = inputs['geometry:vt_sweep_25']
-        wet_area_vt = inputs['geometry:vt_wet_area']
-        wing_area = inputs['geometry:wing_area']
+        el_vt = inputs['geometry:vertical_tail:thickness_ratio']
+        vt_length = inputs['geometry:vertical_tail:length']
+        sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
+        wet_area_vt = inputs['geometry:vertical_tail:wet_area']
+        wing_area = inputs['geometry:wing:area']
         if self.low_speed_aero:
             mach = inputs['Mach_low_speed']
             re_hs = inputs['reynolds_low_speed']
         else:
-            mach = inputs['tlar:cruise_Mach']
+            mach = inputs['TLAR:cruise_mach']
             re_hs = inputs['reynolds_high_speed']
 
         ki_arrow_cd0 = 0.04

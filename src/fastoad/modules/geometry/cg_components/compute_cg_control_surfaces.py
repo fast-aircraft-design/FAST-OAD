@@ -24,30 +24,30 @@ class ComputeControlSurfacesCG(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_l0', val=np.nan, units='m')
-        self.add_input('geometry:wing_x0', val=np.nan, units='m')
-        self.add_input('geometry:wing_y0', val=np.nan, units='m')
-        self.add_input('geometry:wing_l2', val=np.nan, units='m')
-        self.add_input('geometry:wing_l3', val=np.nan, units='m')
-        self.add_input('geometry:wing_y2', val=np.nan, units='m')
-        self.add_input('geometry:wing_x3', val=np.nan, units='m')
-        self.add_input('geometry:wing_y3', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
 
-        self.add_output('cg_airframe:A4', units='m')
+        self.add_output('weight:airframe:flight_controls:CG:x', units='m')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        l0_wing = inputs['geometry:wing_l0']
-        x0_wing = inputs['geometry:wing_x0']
-        y0_wing = inputs['geometry:wing_y0']
-        l2_wing = inputs['geometry:wing_l2']
-        l3_wing = inputs['geometry:wing_l3']
-        y2_wing = inputs['geometry:wing_y2']
-        x3_wing = inputs['geometry:wing_x3']
-        y3_wing = inputs['geometry:wing_y3']
-        fa_length = inputs['geometry:wing_position']
+        l0_wing = inputs['geometry:wing:MAC:length']
+        x0_wing = inputs['geometry:wing:root:leading_edge:x']
+        y0_wing = inputs['geometry:wing:MAC:y']
+        l2_wing = inputs['geometry:wing:root:chord']
+        l3_wing = inputs['geometry:wing:kink:chord']
+        y2_wing = inputs['geometry:wing:root:y']
+        x3_wing = inputs['geometry:wing:kink:leading_edge:x']
+        y3_wing = inputs['geometry:wing:kink:y']
+        fa_length = inputs['geometry:wing:location']
 
         # TODO: build generic functions to estimate the chord, leading edge,
         # trailing edge with respect to span wise position
@@ -58,4 +58,4 @@ class ComputeControlSurfacesCG(ExplicitComponent):
         x_cg_control_absolute = fa_length - \
             0.25 * l0_wing - x0_wing + x_cg_control
 
-        outputs['cg_airframe:A4'] = x_cg_control_absolute
+        outputs['weight:airframe:flight_controls:CG:x'] = x_cg_control_absolute

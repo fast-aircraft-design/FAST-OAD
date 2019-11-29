@@ -26,27 +26,27 @@ class ComputeB50(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing_x4', val=np.nan, units='m')
-        self.add_input('geometry:wing_y2', val=np.nan, units='m')
-        self.add_input('geometry:wing_y4', val=np.nan, units='m')
-        self.add_input('geometry:wing_l1', val=np.nan, units='m')
-        self.add_input('geometry:wing_l4', val=np.nan, units='m')
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:leading_edge:x', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:y', val=np.nan, units='m')
+        self.add_input('geometry:wing:l1', val=np.nan, units='m')
+        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
 
-        self.add_output('geometry:wing_b_50', units='m')
+        self.add_output('geometry:wing:b_50', units='m')
 
-        self.declare_partials('geometry:wing_b_50', '*', method='fd')
+        self.declare_partials('geometry:wing:b_50', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        x4_wing = inputs['geometry:wing_x4']
-        y2_wing = inputs['geometry:wing_y2']
-        y4_wing = inputs['geometry:wing_y4']
-        l1_wing = inputs['geometry:wing_l1']
-        l4_wing = inputs['geometry:wing_l4']
-        span = inputs['geometry:wing_span']
+        x4_wing = inputs['geometry:wing:tip:leading_edge:x']
+        y2_wing = inputs['geometry:wing:root:y']
+        y4_wing = inputs['geometry:wing:tip:y']
+        l1_wing = inputs['geometry:wing:l1']
+        l4_wing = inputs['geometry:wing:tip:chord']
+        span = inputs['geometry:wing:span']
 
         sweep_50 = math.atan(
             (x4_wing + l4_wing * 0.5 - 0.5 * l1_wing) / (y4_wing - y2_wing))
         b_50 = span / math.cos(sweep_50)
 
-        outputs['geometry:wing_b_50'] = b_50
+        outputs['geometry:wing:b_50'] = b_50

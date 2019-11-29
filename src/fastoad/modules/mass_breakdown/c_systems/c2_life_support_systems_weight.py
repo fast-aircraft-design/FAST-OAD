@@ -27,74 +27,74 @@ class LifeSupportSystemsWeight(ExplicitComponent):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
-        self.add_input('geometry:fuselage_width_max', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_height_max', val=np.nan, units='m')
-        self.add_input('geometry:fuselage_Lcabin', val=np.nan, units='m')
-        self.add_input('geometry:wing_sweep_0', val=np.nan, units='deg')  # TODO : as radians ?
-        self.add_input('geometry:nacelle_dia', val=np.nan, units='m')
-        self.add_input('geometry:engine_number', val=np.nan)
-        self.add_input('cabin:NPAX1', val=np.nan)
-        self.add_input('cabin:PNT', val=np.nan)
-        self.add_input('cabin:PNC', val=np.nan)
-        self.add_input('geometry:wing_span', val=np.nan, units='m')
-        self.add_input('weight_propulsion:B1', val=np.nan, units='kg')
-        self.add_input('kfactors_c2:K_C21', val=1.)
-        self.add_input('kfactors_c2:offset_C21', val=0., units='kg')
-        self.add_input('kfactors_c2:K_C22', val=1.)
-        self.add_input('kfactors_c2:offset_C22', val=0., units='kg')
-        self.add_input('kfactors_c2:K_C23', val=1.)
-        self.add_input('kfactors_c2:offset_C23', val=0., units='kg')
-        self.add_input('kfactors_c2:K_C24', val=1.)
-        self.add_input('kfactors_c2:offset_C24', val=0., units='kg')
-        self.add_input('kfactors_c2:K_C25', val=1.)
-        self.add_input('kfactors_c2:offset_C25', val=0., units='kg')
-        self.add_input('kfactors_c2:K_C26', val=1.)
-        self.add_input('kfactors_c2:offset_C26', val=0., units='kg')
-        self.add_input('kfactors_c2:K_C27', val=1.)
-        self.add_input('kfactors_c2:offset_C27', val=0., units='kg')
+        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:cabin_length', val=np.nan, units='m')
+        self.add_input('geometry:wing:sweep_0', val=np.nan, units='deg')  # TODO : as radians ?
+        self.add_input('geometry:propulsion:nacelle:diameter', val=np.nan, units='m')
+        self.add_input('geometry:propulsion:engine:count', val=np.nan)
+        self.add_input('geometry:cabin:NPAX1', val=np.nan)
+        self.add_input('geometry:cabin:crew_count:technical', val=np.nan)
+        self.add_input('geometry:cabin:crew_count:commercial', val=np.nan)
+        self.add_input('geometry:wing:span', val=np.nan, units='m')
+        self.add_input('weight:propulsion:engine:mass', val=np.nan, units='kg')
+        self.add_input('weight:systems:life_support:mass:insulation:k', val=1.)
+        self.add_input('weight:systems:life_support:mass:insulation:offset', val=0., units='kg')
+        self.add_input('weight:systems:life_support:mass:air_conditioning:k', val=1.)
+        self.add_input('weight:systems:life_support:mass:air_conditioning:offset', val=0., units='kg')
+        self.add_input('weight:systems:life_support:mass:de-icing:k', val=1.)
+        self.add_input('weight:systems:life_support:mass:de-icing:offset', val=0., units='kg')
+        self.add_input('weight:systems:life_support:mass:cabin_lighting:k', val=1.)
+        self.add_input('weight:systems:life_support:mass:cabin_lighting:offset', val=0., units='kg')
+        self.add_input('weight:systems:life_support:mass:seats_crew_accomodation:k', val=1.)
+        self.add_input('weight:systems:life_support:mass:seats_crew_accomodation:offset', val=0., units='kg')
+        self.add_input('weight:systems:life_support:mass:oxygen:k', val=1.)
+        self.add_input('weight:systems:life_support:mass:oxygen:offset', val=0., units='kg')
+        self.add_input('weight:systems:life_support:mass:safety_equipment:k', val=1.)
+        self.add_input('weight:systems:life_support:mass:safety_equipment:offset', val=0., units='kg')
 
-        self.add_output('weight_systems:C21', units='kg')
-        self.add_output('weight_systems:C22', units='kg')
-        self.add_output('weight_systems:C23', units='kg')
-        self.add_output('weight_systems:C24', units='kg')
-        self.add_output('weight_systems:C25', units='kg')
-        self.add_output('weight_systems:C26', units='kg')
-        self.add_output('weight_systems:C27', units='kg')
+        self.add_output('weight:systems:life_support:insulation:mass', units='kg')
+        self.add_output('weight:systems:life_support:air_conditioning:mass', units='kg')
+        self.add_output('weight:systems:life_support:de-icing:mass', units='kg')
+        self.add_output('weight:systems:life_support:cabin_lighting:mass', units='kg')
+        self.add_output('weight:systems:life_support:seats_crew_accomodation:mass', units='kg')
+        self.add_output('weight:systems:life_support:oxygen:mass', units='kg')
+        self.add_output('weight:systems:life_support:safety_equipment:mass', units='kg')
 
     # pylint: disable=too-many-locals
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        width_max = inputs['geometry:fuselage_width_max']
-        height_max = inputs['geometry:fuselage_height_max']
-        cabin_length = inputs['geometry:fuselage_Lcabin']
-        sweep_leading_edge = inputs['geometry:wing_sweep_0']
-        n_engines = inputs['geometry:engine_number']
-        span = inputs['geometry:wing_span']
-        nacelle_diameter = inputs['geometry:nacelle_dia']
-        npax1 = inputs['cabin:NPAX1']
-        weight_engines = inputs['weight_propulsion:B1']
-        cabin_crew = inputs['cabin:PNC']
-        cockpit_crew = inputs['cabin:PNT']
-        k_c21 = inputs['kfactors_c2:K_C21']
-        offset_c21 = inputs['kfactors_c2:offset_C21']
-        k_c22 = inputs['kfactors_c2:K_C22']
-        offset_c22 = inputs['kfactors_c2:offset_C22']
-        k_c23 = inputs['kfactors_c2:K_C23']
-        offset_c23 = inputs['kfactors_c2:offset_C23']
-        k_c24 = inputs['kfactors_c2:K_C24']
-        offset_c24 = inputs['kfactors_c2:offset_C24']
-        k_c25 = inputs['kfactors_c2:K_C25']
-        offset_c25 = inputs['kfactors_c2:offset_C25']
-        k_c26 = inputs['kfactors_c2:K_C26']
-        offset_c26 = inputs['kfactors_c2:offset_C26']
-        k_c27 = inputs['kfactors_c2:K_C27']
-        offset_c27 = inputs['kfactors_c2:offset_C27']
+        width_max = inputs['geometry:fuselage:maximum_width']
+        height_max = inputs['geometry:fuselage:maximum_height']
+        cabin_length = inputs['geometry:fuselage:cabin_length']
+        sweep_leading_edge = inputs['geometry:wing:sweep_0']
+        n_engines = inputs['geometry:propulsion:engine:count']
+        span = inputs['geometry:wing:span']
+        nacelle_diameter = inputs['geometry:propulsion:nacelle:diameter']
+        npax1 = inputs['geometry:cabin:NPAX1']
+        weight_engines = inputs['weight:propulsion:engine:mass']
+        cabin_crew = inputs['geometry:cabin:crew_count:commercial']
+        cockpit_crew = inputs['geometry:cabin:crew_count:technical']
+        k_c21 = inputs['weight:systems:life_support:mass:insulation:k']
+        offset_c21 = inputs['weight:systems:life_support:mass:insulation:offset']
+        k_c22 = inputs['weight:systems:life_support:mass:air_conditioning:k']
+        offset_c22 = inputs['weight:systems:life_support:mass:air_conditioning:offset']
+        k_c23 = inputs['weight:systems:life_support:mass:de-icing:k']
+        offset_c23 = inputs['weight:systems:life_support:mass:de-icing:offset']
+        k_c24 = inputs['weight:systems:life_support:mass:cabin_lighting:k']
+        offset_c24 = inputs['weight:systems:life_support:mass:cabin_lighting:offset']
+        k_c25 = inputs['weight:systems:life_support:mass:seats_crew_accomodation:k']
+        offset_c25 = inputs['weight:systems:life_support:mass:seats_crew_accomodation:offset']
+        k_c26 = inputs['weight:systems:life_support:mass:oxygen:k']
+        offset_c26 = inputs['weight:systems:life_support:mass:oxygen:offset']
+        k_c27 = inputs['weight:systems:life_support:mass:safety_equipment:k']
+        offset_c27 = inputs['weight:systems:life_support:mass:safety_equipment:offset']
 
         fuselage_diameter = np.sqrt(width_max * height_max)
 
         # Mass of insulating system
         temp_c21 = 9.3 * fuselage_diameter * cabin_length
-        outputs['weight_systems:C21'] = k_c21 * temp_c21 + offset_c21
+        outputs['weight:systems:life_support:insulation:mass'] = k_c21 * temp_c21 + offset_c21
 
         # Mass of air conditioning and pressurization system
         if self.options[AIRCRAFT_TYPE_OPTION] <= 3.0:
@@ -103,25 +103,25 @@ class LifeSupportSystemsWeight(ExplicitComponent):
         else:
             temp_c22 = 450 + 51 * npax1 ** 0.46 + 7.2 * (n_engines ** 0.7) * (
                     npax1 ** 0.64) + npax1 + 0.0029 * npax1 ** 1.64
-        outputs['weight_systems:C22'] = k_c22 * temp_c22 + offset_c22
+        outputs['weight:systems:life_support:air_conditioning:mass'] = k_c22 * temp_c22 + offset_c22
 
         # Mass of de-icing system
         temp_c23 = 53 + 9.5 * nacelle_diameter * n_engines + 1.9 * (
                 span - width_max) / np.cos(np.radians(sweep_leading_edge))
-        outputs['weight_systems:C23'] = k_c23 * temp_c23 + offset_c23
+        outputs['weight:systems:life_support:de-icing:mass'] = k_c23 * temp_c23 + offset_c23
 
         # Mass of internal lighting system
         temp_c24 = 1.4 * cabin_length * fuselage_diameter
-        outputs['weight_systems:C24'] = k_c24 * temp_c24 + offset_c24
+        outputs['weight:systems:life_support:cabin_lighting:mass'] = k_c24 * temp_c24 + offset_c24
 
         # Mass of seats and installation system
         temp_c25 = 27 * cockpit_crew + 18 * cabin_crew
-        outputs['weight_systems:C25'] = k_c25 * temp_c25 + offset_c25
+        outputs['weight:systems:life_support:seats_crew_accomodation:mass'] = k_c25 * temp_c25 + offset_c25
 
         # Mass of fixed oxygen
         temp_c26 = 80 + 1.3 * npax1
-        outputs['weight_systems:C26'] = k_c26 * temp_c26 + offset_c26
+        outputs['weight:systems:life_support:oxygen:mass'] = k_c26 * temp_c26 + offset_c26
 
         # Mass of permanent security kits
         temp_c27 = 0.01 * weight_engines + 2.30 * npax1
-        outputs['weight_systems:C27'] = k_c27 * temp_c27 + offset_c27
+        outputs['weight:systems:life_support:safety_equipment:mass'] = k_c27 * temp_c27 + offset_c27

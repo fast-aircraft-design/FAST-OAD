@@ -33,19 +33,19 @@ class ComputeVTDistance(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:fuselage_length', val=np.nan, units='m')
-        self.add_input('geometry:wing_position', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('geometry:wing:location', val=np.nan, units='m')
 
-        self.add_output('geometry:vt_lp', units='m')
+        self.add_output('geometry:vertical_tail:distance_from_wing', units='m')
         self.add_output('k_ar_effective')
 
-        self.declare_partials('geometry:vt_lp',
-                              ['geometry:fuselage_length', 'geometry:wing_position'],
+        self.declare_partials('geometry:vertical_tail:distance_from_wing',
+                              ['geometry:fuselage:length', 'geometry:wing:location'],
                               method='fd')
 
     def compute(self, inputs, outputs):
-        fus_length = inputs['geometry:fuselage_length']
-        fa_length = inputs['geometry:wing_position']
+        fus_length = inputs['geometry:fuselage:length']
+        fa_length = inputs['geometry:wing:location']
 
         if self.tail_type == 1.0:
             if self.ac_family == 1.0:
@@ -58,5 +58,5 @@ class ComputeVTDistance(ExplicitComponent):
             lp_vt = 0.88 * fus_length - fa_length
             k_ar_effective = 1.55
 
-        outputs['geometry:vt_lp'] = lp_vt
+        outputs['geometry:vertical_tail:distance_from_wing'] = lp_vt
         outputs['k_ar_effective'] = k_ar_effective
