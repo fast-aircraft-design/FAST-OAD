@@ -13,20 +13,21 @@ Test module for Overall Aircraft Design process
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import os
 import os.path as pth
 from shutil import rmtree
 
-import numpy as np
+import openmdao.api as om
 import pytest
+from numpy.testing import assert_allclose
+from openmdao.devtools.problem_viewer.problem_viewer import view_model
 
 import fastoad
 from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMLegacy1XmlIO
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
-                               'results', pth.splitext(pth.basename(__file__))[0])
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
 
 
 @pytest.fixture(scope='module')
@@ -55,12 +56,12 @@ def test_propulsion_process(cleanup, install_components):
     problem.write_outputs()
 
     assert not problem.driver.fail
-    np.testing.assert_allclose(problem.get_val('propulsion:altitude', units='ft'),
-                               36700,
-                               atol=50)
-    np.testing.assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
-                               1.681e-05,
-                               atol=1e-3)
+    assert_allclose(problem.get_val('propulsion:altitude', units='ft'),
+                    36700,
+                    atol=50)
+    assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
+                    1.681e-05,
+                    atol=1e-3)
 
 
 def test_perfo_process(cleanup, install_components):
@@ -74,16 +75,25 @@ def test_perfo_process(cleanup, install_components):
     problem.read_inputs()
 
     problem.setup()
+    problem.run_model()
+    assert_allclose(problem.get_val('mission:MZFW', units='kg'),
+                    55080,
+                    atol=5)
+    assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
+                    1.698e-05,
+                    atol=1e-3)
+
+    problem.setup()
     problem.run_driver()
     problem.write_outputs()
 
     assert not problem.driver.fail
-    np.testing.assert_allclose(problem.get_val('sizing_mission:mission:operational:cruise:altitude', units='ft'),
-                               37500,
-                               atol=50)
-    np.testing.assert_allclose(problem.get_val('mission:MZFW', units='kg'),
-                               55350,
-                               atol=50)
+    assert_allclose(problem.get_val('mission:MZFW', units='kg'),
+                    55630,
+                    atol=10)
+    assert_allclose(problem.get_val('sizing_mission:mission:operational:cruise:altitude', units='ft'),
+                    36700,
+                    atol=100)
 
 
 def test_oad_process(cleanup, install_components):
@@ -98,9 +108,22 @@ def test_oad_process(cleanup, install_components):
     ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
-
+    problem.final_setup()
+    if not pth.exists(RESULTS_FOLDER_PATH):
+        os.mkdir(RESULTS_FOLDER_PATH)
+    om.view_connections(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'connections.html'),
+                        show_browser=False)
+    view_model(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'n2.html'), show_browser=False)
     problem.run_model()
 
     problem.write_outputs()
 
-    # TODO: check results
+    # Check that weight-performances loop correctly converged
+    assert_allclose(problem['weight:OEW'],
+                    problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
+                    + problem['weight:systems:mass'] + problem['weight:furniture:mass']
+                    + problem['weight:crew:mass'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MZFW'],
+                    problem['weight:OEW'] + problem['weight:aircraft:max_payload'],
+                    atol=1)

@@ -175,7 +175,7 @@ class _ImplicitBreguet(om.ImplicitComponent):
         self.add_input('weight:OEW', np.nan, units='kg')
         self.add_input('weight:aircraft:max_payload', np.nan, units='kg')
 
-        self.add_output('weight:aircraft:MTOW', 100000, units='kg')
+        self.add_output('weight:aircraft:MTOW', units='kg', ref=100000)
 
         self.declare_partials('weight:aircraft:MTOW', '*', method='fd')
 
@@ -193,9 +193,13 @@ class _ImplicitBreguet(om.ImplicitComponent):
         mtow = outputs['weight:aircraft:MTOW']
         sfc = inputs['propulsion:SFC']
 
-        range_factor = cruise_speed * ld_ratio / g / sfc
         cruise_distance = flight_range - CLIMB_DESCENT_DISTANCE * 1000
-        cruise_mass_ratio = 1. / np.exp(cruise_distance / range_factor)
+        range_factor = cruise_speed * ld_ratio / g / sfc
+        # During first iterations, SFC will be incorrect and range_factor may be too low,
+        # resulting in null or too small cruise_mass_ratio.
+        # Forcing cruise_mass_ratio to a minimum of 0.3 avoids problems and should not
+        # harm (no airplane loses 70% of its weight from fuel consumption)
+        cruise_mass_ratio = np.maximum(0.3, 1. / np.exp(cruise_distance / range_factor))
         flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
 
         mzfw = mtow * flight_mass_ratio / RESERVE_RATIO

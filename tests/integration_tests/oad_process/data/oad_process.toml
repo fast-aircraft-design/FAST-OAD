@@ -10,7 +10,7 @@ output_file = "../results/oad_process_outputs.xml"
 
 driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 [model]
-    nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+    nonlinear_solver = "om.NonlinearBlockGS(iprint=1, maxiter=100)"
     linear_solver = "om.ScipyKrylov()"
     [model.geometry]
         id = "fastoad.geometry.legacy"
@@ -19,6 +19,6 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
     [model.performance_loop]
         nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
         [model.performance_loop.performance]
-            id = "fastoad.performances.breguet"
+            id = "fastoad.performances.breguet.implicit"
         [model.performance_loop.sizing_loop.propulsion]
             id = "fastoad.propulsion.rubber_engine"
