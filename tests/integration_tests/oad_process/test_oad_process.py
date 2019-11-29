@@ -66,7 +66,7 @@ def test_propulsion_process(cleanup, install_components):
 
 def test_perfo_process(cleanup, install_components):
     """
-    Builds a dummy process for finding altitude for max MZFW
+    Builds a dummy process for finding altitude for max ZFW
     """
 
     problem = ConfiguredProblem()
@@ -76,7 +76,7 @@ def test_perfo_process(cleanup, install_components):
 
     problem.setup()
     problem.run_model()
-    assert_allclose(problem.get_val('mission:MZFW', units='kg'),
+    assert_allclose(problem.get_val('sizing_mission:mission:operational:ZFW', units='kg'),
                     55080,
                     atol=5)
     assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
@@ -88,7 +88,7 @@ def test_perfo_process(cleanup, install_components):
     problem.write_outputs()
 
     assert not problem.driver.fail
-    assert_allclose(problem.get_val('mission:MZFW', units='kg'),
+    assert_allclose(problem.get_val('sizing_mission:mission:operational:ZFW', units='kg'),
                     55630,
                     atol=10)
     assert_allclose(problem.get_val('sizing_mission:mission:operational:cruise:altitude', units='ft'),

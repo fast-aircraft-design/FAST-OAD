@@ -31,8 +31,8 @@ def test_breguet():
 
     problem = run_system(Breguet(), ivc)
 
-    assert_allclose(problem['mission:MZFW'], 65617., rtol=1e-3)
-    assert_allclose(problem['mission:fuel_weight'], 8382., rtol=1e-3)
+    assert_allclose(problem['sizing_mission:mission:operational:ZFW'], 65617., rtol=1e-3)
+    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'], 8382., rtol=1e-3)
 
     # test 2
     ivc = om.IndepVarComp()
@@ -45,8 +45,8 @@ def test_breguet():
 
     problem = run_system(Breguet(), ivc)
 
-    assert_allclose(problem['mission:MZFW'], 62473., rtol=1e-3)
-    assert_allclose(problem['mission:fuel_weight'], 11526., rtol=1e-3)
+    assert_allclose(problem['sizing_mission:mission:operational:ZFW'], 62473., rtol=1e-3)
+    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'], 11526., rtol=1e-3)
 
 
 def test_breguet_with_rubber_engine():
@@ -70,8 +70,8 @@ def test_breguet_with_rubber_engine():
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = run_system(group, ivc)
 
-    assert_allclose(problem['mission:MZFW'], 65076., atol=1)
-    assert_allclose(problem['mission:fuel_weight'], 8924., atol=1)
+    assert_allclose(problem['sizing_mission:mission:operational:ZFW'], 65076., atol=1)
+    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'], 8924., atol=1)
 
 
 def test_implicit_breguet():
@@ -81,7 +81,7 @@ def test_implicit_breguet():
     ivc.add_output('TLAR:range', 500, units='NM')
     ivc.add_output('aerodynamics:aircraft:cruise:L_D_max', 16.)
     ivc.add_output('propulsion:SFC', 1e-5, units='kg/N/s')
-    ivc.add_output('weight:OEW', 50000, units='kg')
+    ivc.add_output('weight:aircraft:OWE', 50000, units='kg')
     ivc.add_output('weight:aircraft:payload', 15617, units='kg')
 
     problem = run_system(ImplicitBreguet(), ivc)
@@ -96,7 +96,7 @@ def test_implicit_breguet_with_rubber_engine():
     ivc.add_output('TLAR:range', 500, units='NM')
     ivc.add_output('aerodynamics:aircraft:cruise:L_D_max', 16.)
     ivc.add_output('weight:aircraft:payload', 15076, units='kg')
-    ivc.add_output('weight:OEW', 50000, units='kg')
+    ivc.add_output('weight:aircraft:OWE', 50000, units='kg')
 
     ivc.add_output('propulsion:rubber_engine:bypass_ratio', 5)
     ivc.add_output('propulsion:rubber_engine:maximum_mach', 0.95)

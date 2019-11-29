@@ -82,7 +82,7 @@ class _BreguetPropulsion(om.ExplicitComponent):
         self.add_input('TLAR:cruise_mach', np.nan, shape=shape)
         self.add_input('weight:aircraft:MTOW', np.nan, units='kg')
         self.add_input('aerodynamics:aircraft:cruise:L_D_max', np.nan, shape=shape)
-        self.add_input('engine_count', 2)
+        self.add_input('geometry:propulsion:engine:count', 2)
 
         self.add_output('propulsion:phase', FlightPhase.CRUISE)
         self.add_output('propulsion:use_thrust_rate', False)
@@ -99,7 +99,7 @@ class _BreguetPropulsion(om.ExplicitComponent):
         self.declare_partials('propulsion:mach', 'TLAR:cruise_mach', method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        engine_count = inputs['engine_count']
+        engine_count = inputs['geometry:propulsion:engine:count']
         ld_ratio = inputs['aerodynamics:aircraft:cruise:L_D_max']
         mtow = inputs['weight:aircraft:MTOW']
         initial_cruise_mass = mtow * CLIMB_RATIO
@@ -129,11 +129,11 @@ class _ExplicitBreguet(om.ExplicitComponent):
         self.add_input('TLAR:range', np.nan, shape=shape, units='m')
         self.add_input('weight:aircraft:MTOW', np.nan, units='kg')
 
-        self.add_output('mission:MZFW', units='kg')
-        self.add_output('mission:fuel_weight', units='kg')
+        self.add_output('sizing_mission:mission:operational:ZFW', units='kg')
+        self.add_output('sizing_mission:mission:operational:flight:fuel', units='kg')
 
-        self.declare_partials('mission:MZFW', '*', method='fd')
-        self.declare_partials('mission:fuel_weight', '*', method='fd')
+        self.declare_partials('sizing_mission:mission:operational:ZFW', '*', method='fd')
+        self.declare_partials('sizing_mission:mission:operational:flight:fuel', '*', method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # pylint: disable=too-many-locals  # Cleaner than using directly inputs['...']
@@ -151,8 +151,8 @@ class _ExplicitBreguet(om.ExplicitComponent):
         flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
 
         mzfw = mtow * flight_mass_ratio / RESERVE_RATIO
-        outputs['mission:fuel_weight'] = mtow - mzfw
-        outputs['mission:MZFW'] = mzfw
+        outputs['sizing_mission:mission:operational:flight:fuel'] = mtow - mzfw
+        outputs['sizing_mission:mission:operational:ZFW'] = mzfw
 
 
 class _ImplicitBreguet(om.ImplicitComponent):
@@ -171,8 +171,8 @@ class _ImplicitBreguet(om.ImplicitComponent):
         self.add_input('aerodynamics:aircraft:cruise:L_D_max', np.nan, shape=shape)
         self.add_input('propulsion:SFC', 1e-5, shape=shape, units='kg/N/s')
         self.add_input('TLAR:range', np.nan, shape=shape, units='m')
-        self.add_input('engine_count', 2)
-        self.add_input('weight:OEW', np.nan, units='kg')
+        self.add_input('geometry:propulsion:engine:count', 2)
+        self.add_input('weight:aircraft:OWE', np.nan, units='kg')
         self.add_input('weight:aircraft:payload', np.nan, units='kg')
 
         self.add_output('weight:aircraft:MTOW', units='kg', ref=100000)
@@ -186,7 +186,7 @@ class _ImplicitBreguet(om.ImplicitComponent):
         atmosphere = Atmosphere(inputs['sizing_mission:mission:operational:cruise:altitude'], altitude_in_feet=False)
         cruise_speed = atmosphere.speed_of_sound * inputs['TLAR:cruise_mach']
 
-        oew = inputs['weight:OEW']
+        oew = inputs['weight:aircraft:OWE']
         payload_weight = inputs['weight:aircraft:payload']
         flight_range = inputs['TLAR:range']
         ld_ratio = inputs['aerodynamics:aircraft:cruise:L_D_max']
@@ -210,4 +210,4 @@ class _ImplicitBreguet(om.ImplicitComponent):
     def guess_nonlinear(self, inputs, outputs, residuals,
                         discrete_inputs=None, discrete_outputs=None):
         # pylint: disable=too-many-arguments # It's OpenMDAO's fault :)
-        outputs['weight:aircraft:MTOW'] = inputs['weight:OEW'] * 1.5
+        outputs['weight:aircraft:MTOW'] = inputs['weight:aircraft:OWE'] * 1.5
