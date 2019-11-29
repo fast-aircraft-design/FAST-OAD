@@ -87,6 +87,8 @@ def test_implicit_breguet():
     problem = run_system(ImplicitBreguet(), ivc)
 
     assert_allclose(problem['weight:aircraft:MTOW'], 74000., rtol=1e-3)
+    assert_allclose(problem['sizing_mission:mission:operational:ZFW'], 65617., rtol=1e-3)
+    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'], 8382., rtol=1e-3)
 
 
 def test_implicit_breguet_with_rubber_engine():
@@ -113,3 +115,5 @@ def test_implicit_breguet_with_rubber_engine():
     problem = run_system(group, ivc)
 
     assert_allclose(problem['weight:aircraft:MTOW'], 74000., atol=10)
+    assert_allclose(problem['sizing_mission:mission:operational:ZFW'], 65076., atol=1)
+    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'], 8924., atol=1)

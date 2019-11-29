@@ -78,7 +78,8 @@ class _BreguetPropulsion(om.ExplicitComponent):
 
     def setup(self):
         shape = self.options['flight_point_count']
-        self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, shape=shape, units='m')
+        self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, shape=shape,
+                       units='m')
         self.add_input('TLAR:cruise_mach', np.nan, shape=shape)
         self.add_input('weight:aircraft:MTOW', np.nan, units='kg')
         self.add_input('aerodynamics:aircraft:cruise:L_D_max', np.nan, shape=shape)
@@ -95,7 +96,8 @@ class _BreguetPropulsion(om.ExplicitComponent):
         self.declare_partials('propulsion:use_thrust_rate', '*', method='fd')
         self.declare_partials('propulsion:required_thrust_rate', '*', method='fd')
         self.declare_partials('propulsion:required_thrust', '*', method='fd')
-        self.declare_partials('propulsion:altitude', 'sizing_mission:mission:operational:cruise:altitude', method='fd')
+        self.declare_partials('propulsion:altitude',
+                              'sizing_mission:mission:operational:cruise:altitude', method='fd')
         self.declare_partials('propulsion:mach', 'TLAR:cruise_mach', method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -105,7 +107,8 @@ class _BreguetPropulsion(om.ExplicitComponent):
         initial_cruise_mass = mtow * CLIMB_RATIO
 
         # Variables for propulsion
-        outputs['propulsion:altitude'] = inputs['sizing_mission:mission:operational:cruise:altitude']
+        outputs['propulsion:altitude'] = inputs[
+            'sizing_mission:mission:operational:cruise:altitude']
         outputs['propulsion:mach'] = inputs['TLAR:cruise_mach']
 
         outputs['propulsion:required_thrust'] = initial_cruise_mass / ld_ratio * g / engine_count
@@ -122,7 +125,8 @@ class _ExplicitBreguet(om.ExplicitComponent):
 
     def setup(self):
         shape = self.options['flight_point_count']
-        self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, shape=shape, units='m')
+        self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, shape=shape,
+                       units='m')
         self.add_input('TLAR:cruise_mach', np.nan, shape=shape)
         self.add_input('aerodynamics:aircraft:cruise:L_D_max', np.nan, shape=shape)
         self.add_input('propulsion:SFC', np.nan, shape=shape, units='kg/N/s')
@@ -137,7 +141,8 @@ class _ExplicitBreguet(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # pylint: disable=too-many-locals  # Cleaner than using directly inputs['...']
-        atmosphere = Atmosphere(inputs['sizing_mission:mission:operational:cruise:altitude'], altitude_in_feet=False)
+        atmosphere = Atmosphere(inputs['sizing_mission:mission:operational:cruise:altitude'],
+                                altitude_in_feet=False)
         cruise_speed = atmosphere.speed_of_sound * inputs['TLAR:cruise_mach']
 
         flight_range = inputs['TLAR:range']
@@ -150,9 +155,9 @@ class _ExplicitBreguet(om.ExplicitComponent):
         cruise_mass_ratio = 1. / np.exp(cruise_distance / range_factor)
         flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
 
-        mzfw = mtow * flight_mass_ratio / RESERVE_RATIO
-        outputs['sizing_mission:mission:operational:flight:fuel'] = mtow - mzfw
-        outputs['sizing_mission:mission:operational:ZFW'] = mzfw
+        zfw = mtow * flight_mass_ratio / RESERVE_RATIO
+        outputs['sizing_mission:mission:operational:flight:fuel'] = mtow - zfw
+        outputs['sizing_mission:mission:operational:ZFW'] = zfw
 
 
 class _ImplicitBreguet(om.ImplicitComponent):
@@ -166,7 +171,8 @@ class _ImplicitBreguet(om.ImplicitComponent):
 
     def setup(self):
         shape = self.options['flight_point_count']
-        self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, shape=shape, units='m')
+        self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, shape=shape,
+                       units='m')
         self.add_input('TLAR:cruise_mach', np.nan, shape=shape)
         self.add_input('aerodynamics:aircraft:cruise:L_D_max', np.nan, shape=shape)
         self.add_input('propulsion:SFC', 1e-5, shape=shape, units='kg/N/s')
@@ -176,14 +182,19 @@ class _ImplicitBreguet(om.ImplicitComponent):
         self.add_input('weight:aircraft:payload', np.nan, units='kg')
 
         self.add_output('weight:aircraft:MTOW', units='kg', ref=100000)
+        self.add_output('sizing_mission:mission:operational:ZFW', units='kg')
+        self.add_output('sizing_mission:mission:operational:flight:fuel', units='kg')
 
         self.declare_partials('weight:aircraft:MTOW', '*', method='fd')
+        self.declare_partials('sizing_mission:mission:operational:ZFW', '*', method='fd')
+        self.declare_partials('sizing_mission:mission:operational:flight:fuel', '*', method='fd')
 
     def apply_nonlinear(self, inputs, outputs, residuals,
                         discrete_inputs=None, discrete_outputs=None):
         # pylint: disable=too-many-arguments  # It's OpenMDAO's fault :)
         # pylint: disable=too-many-locals  # Ok, it's my fault, but it's cleaner this way
-        atmosphere = Atmosphere(inputs['sizing_mission:mission:operational:cruise:altitude'], altitude_in_feet=False)
+        atmosphere = Atmosphere(inputs['sizing_mission:mission:operational:cruise:altitude'],
+                                altitude_in_feet=False)
         cruise_speed = atmosphere.speed_of_sound * inputs['TLAR:cruise_mach']
 
         oew = inputs['weight:aircraft:OWE']
@@ -203,9 +214,13 @@ class _ImplicitBreguet(om.ImplicitComponent):
         flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
 
         zfw = mtow * flight_mass_ratio / RESERVE_RATIO
-
+        mission_fuel = mtow - zfw
         mission_oew = zfw - payload_weight
         residuals['weight:aircraft:MTOW'] = oew - mission_oew
+        residuals['sizing_mission:mission:operational:ZFW'] = \
+            outputs['sizing_mission:mission:operational:ZFW'] - zfw
+        residuals['sizing_mission:mission:operational:flight:fuel'] = \
+            outputs['sizing_mission:mission:operational:flight:fuel'] - mission_fuel
 
     def guess_nonlinear(self, inputs, outputs, residuals,
                         discrete_inputs=None, discrete_outputs=None):

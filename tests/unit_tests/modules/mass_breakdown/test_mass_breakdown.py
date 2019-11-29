@@ -37,7 +37,7 @@ from fastoad.modules.mass_breakdown.d_furniture import \
     PassengerSeatsWeight, FoodWaterWeight, \
     ToiletsWeight, SecurityKitWeight
 from fastoad.modules.mass_breakdown.e_crew import CrewWeight
-from fastoad.modules.mass_breakdown.mass_breakdown import MassBreakdown, OperatingEmptyWeight
+from fastoad.modules.mass_breakdown.mass_breakdown import MassBreakdown, OperatingWeightEmpty
 from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
 from tests.testing_utilities import run_system
 
@@ -580,9 +580,9 @@ def test_evaluate_oew():
     reader.path_separator = ':'
     input_vars = reader.read()
 
-    mass_computation = run_system(OperatingEmptyWeight(), input_vars, setup_mode='fwd')
+    mass_computation = run_system(OperatingWeightEmpty(), input_vars, setup_mode='fwd')
 
-    oew = mass_computation['weight:OEW']
+    oew = mass_computation['weight:aircraft:OWE']
     assert oew == pytest.approx(41591, abs=1)
 
 
@@ -596,5 +596,5 @@ def test_loop_compute_oew():
 
     mass_computation = run_system(MassBreakdown(), input_vars)
 
-    oew = mass_computation['weight:OEW']
+    oew = mass_computation['weight:aircraft:OWE']
     assert oew == pytest.approx(42060, abs=1)

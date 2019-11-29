@@ -44,7 +44,7 @@ class MassBreakdown(OpenMdaoOptionDispatcherGroup):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
-        self.add_subsystem('oew', OperatingEmptyWeight(), promotes=['*'])
+        self.add_subsystem('owe', OperatingWeightEmpty(), promotes=['*'])
         self.add_subsystem('update_mzfw_and_mlw', UpdateMLWandMZFW(), promotes=['*'])
 
     def configure(self):
@@ -58,7 +58,7 @@ class MassBreakdown(OpenMdaoOptionDispatcherGroup):
         self.linear_solver.options['iprint'] = 0
 
 
-class OperatingEmptyWeight(OpenMdaoOptionDispatcherGroup):
+class OperatingWeightEmpty(OpenMdaoOptionDispatcherGroup):
     """ Operating Empty Weight (OEW) estimation
 
     This group aggregates weight from all components of the aircraft.
@@ -166,7 +166,7 @@ class OperatingEmptyWeight(OpenMdaoOptionDispatcherGroup):
                            )
 
         self.add_subsystem('OWE_sum',
-                           om.AddSubtractComp('weight:OEW',
+                           om.AddSubtractComp('weight:aircraft:OWE',
                                               ['weight:airframe:mass',
                                                'weight:propulsion:mass',
                                                'weight:systems:mass',
