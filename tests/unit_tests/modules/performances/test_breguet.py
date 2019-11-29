@@ -82,7 +82,7 @@ def test_implicit_breguet():
     ivc.add_output('aerodynamics:aircraft:cruise:L_D_max', 16.)
     ivc.add_output('propulsion:SFC', 1e-5, units='kg/N/s')
     ivc.add_output('weight:OEW', 50000, units='kg')
-    ivc.add_output('weight:aircraft:max_payload', 15617, units='kg')
+    ivc.add_output('weight:aircraft:payload', 15617, units='kg')
 
     problem = run_system(ImplicitBreguet(), ivc)
 
@@ -95,7 +95,7 @@ def test_implicit_breguet_with_rubber_engine():
     ivc.add_output('TLAR:cruise_mach', 0.78)
     ivc.add_output('TLAR:range', 500, units='NM')
     ivc.add_output('aerodynamics:aircraft:cruise:L_D_max', 16.)
-    ivc.add_output('weight:aircraft:max_payload', 15076, units='kg')
+    ivc.add_output('weight:aircraft:payload', 15076, units='kg')
     ivc.add_output('weight:OEW', 50000, units='kg')
 
     ivc.add_output('propulsion:rubber_engine:bypass_ratio', 5)

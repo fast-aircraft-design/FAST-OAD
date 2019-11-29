@@ -173,7 +173,7 @@ class _ImplicitBreguet(om.ImplicitComponent):
         self.add_input('TLAR:range', np.nan, shape=shape, units='m')
         self.add_input('engine_count', 2)
         self.add_input('weight:OEW', np.nan, units='kg')
-        self.add_input('weight:aircraft:max_payload', np.nan, units='kg')
+        self.add_input('weight:aircraft:payload', np.nan, units='kg')
 
         self.add_output('weight:aircraft:MTOW', units='kg', ref=100000)
 
@@ -187,7 +187,7 @@ class _ImplicitBreguet(om.ImplicitComponent):
         cruise_speed = atmosphere.speed_of_sound * inputs['TLAR:cruise_mach']
 
         oew = inputs['weight:OEW']
-        max_payload_weight = inputs['weight:aircraft:max_payload']
+        payload_weight = inputs['weight:aircraft:payload']
         flight_range = inputs['TLAR:range']
         ld_ratio = inputs['aerodynamics:aircraft:cruise:L_D_max']
         mtow = outputs['weight:aircraft:MTOW']
@@ -202,9 +202,9 @@ class _ImplicitBreguet(om.ImplicitComponent):
         cruise_mass_ratio = np.maximum(0.3, 1. / np.exp(cruise_distance / range_factor))
         flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
 
-        mzfw = mtow * flight_mass_ratio / RESERVE_RATIO
+        zfw = mtow * flight_mass_ratio / RESERVE_RATIO
 
-        mission_oew = mzfw - max_payload_weight
+        mission_oew = zfw - payload_weight
         residuals['weight:aircraft:MTOW'] = oew - mission_oew
 
     def guess_nonlinear(self, inputs, outputs, residuals,
