@@ -72,8 +72,8 @@ class _BreguetPropulsion(om.ExplicitComponent):
         self.add_output('propulsion:phase', FlightPhase.CRUISE)
         self.add_output('propulsion:use_thrust_rate', False)
         self.add_output('propulsion:required_thrust_rate', 0.)
-        self.add_output('propulsion:required_thrust', units='N')
-        self.add_output('propulsion:altitude', units='m')
+        self.add_output('propulsion:required_thrust', units='N', ref=1e5)
+        self.add_output('propulsion:altitude', units='m', ref=1e4)
         self.add_output('propulsion:mach')
 
         self.declare_partials('propulsion:phase', '*', method='fd')
@@ -113,13 +113,13 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
         self.add_input('sizing_mission:mission:operational:cruise:mass_ratio', np.nan)
         self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, units='m')
 
-        self.add_output('sizing_mission:mission:operational:ZFW', units='kg')
-        self.add_output('sizing_mission:mission:operational:mission:fuel', units='kg')
-        self.add_output('sizing_mission:mission:operational:flight:fuel', units='kg')
-        self.add_output('sizing_mission:mission:operational:climb:fuel', units='kg')
-        self.add_output('sizing_mission:mission:operational:cruise:fuel', units='kg')
-        self.add_output('sizing_mission:mission:operational:descent:fuel', units='kg')
-        self.add_output('sizing_mission:mission:operational:fuel_reserve', units='kg')
+        self.add_output('sizing_mission:mission:operational:ZFW', units='kg', ref=1e4)
+        self.add_output('sizing_mission:mission:operational:mission:fuel', units='kg', ref=1e4)
+        self.add_output('sizing_mission:mission:operational:flight:fuel', units='kg', ref=1e4)
+        self.add_output('sizing_mission:mission:operational:climb:fuel', units='kg', ref=1e4)
+        self.add_output('sizing_mission:mission:operational:cruise:fuel', units='kg', ref=1e4)
+        self.add_output('sizing_mission:mission:operational:descent:fuel', units='kg', ref=1e4)
+        self.add_output('sizing_mission:mission:operational:fuel_reserve', units='kg', ref=1e4)
 
         self.declare_partials('sizing_mission:mission:operational:ZFW', '*', method='fd')
         self.declare_partials('sizing_mission:mission:operational:mission:fuel', '*', method='fd')
@@ -161,7 +161,7 @@ class _MTOWFromOWE(om.ImplicitComponent):
         self.add_input('weight:aircraft:OWE', np.nan, units='kg')
         self.add_input('weight:aircraft:payload', np.nan, units='kg')
 
-        self.add_output('weight:aircraft:MTOW', units='kg', ref=100000)
+        self.add_output('weight:aircraft:MTOW', units='kg', ref=1e5)
 
         self.declare_partials('weight:aircraft:MTOW', '*', method='fd')
 
@@ -190,9 +190,9 @@ class _Distances(om.ExplicitComponent):
     def setup(self):
         self.add_input('TLAR:range', np.nan, units='m')
 
-        self.add_output('sizing_mission:mission:operational:climb:distance', units='m')
-        self.add_output('sizing_mission:mission:operational:cruise:distance', units='m')
-        self.add_output('sizing_mission:mission:operational:descent:distance', units='m')
+        self.add_output('sizing_mission:mission:operational:climb:distance', units='m', ref=1e3)
+        self.add_output('sizing_mission:mission:operational:cruise:distance', units='m', ref=1e3)
+        self.add_output('sizing_mission:mission:operational:descent:distance', units='m', ref=1e3)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         flight_range = inputs['TLAR:range']
@@ -212,7 +212,7 @@ class _CruiseMassRatio(om.ExplicitComponent):
 
     def setup(self):
         self.add_input('aerodynamics:aircraft:cruise:L_D_max', np.nan)
-        self.add_input('propulsion:SFC', 1e-5, units='kg/N/s')
+        self.add_input('propulsion:SFC', np.nan, units='kg/N/s')
         self.add_input('TLAR:cruise_mach', np.nan)
         self.add_input('sizing_mission:mission:operational:cruise:altitude', np.nan, units='m')
         self.add_input('sizing_mission:mission:operational:cruise:distance', np.nan, units='m')

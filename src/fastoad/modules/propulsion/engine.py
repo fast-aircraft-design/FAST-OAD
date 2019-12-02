@@ -98,14 +98,13 @@ class OMIEngine(om.ExplicitComponent, ABC):
         self.add_input('propulsion:required_thrust_rate', np.nan, shape=shape)
         self.add_input('propulsion:required_thrust', np.nan, shape=shape, units='N')
 
-        self.add_output('propulsion:SFC', shape=shape, units='kg/s/N')
+        self.add_output('propulsion:SFC', shape=shape, units='kg/s/N', ref=1e-4)
         self.add_output('propulsion:thrust_rate', shape=shape)
-        self.add_output('propulsion:thrust', shape=shape, units='N')
+        self.add_output('propulsion:thrust', shape=shape, units='N', ref=1e5)
 
         self.declare_partials('propulsion:SFC', '*', method='fd')
         self.declare_partials('propulsion:thrust_rate', '*', method='fd')
         self.declare_partials('propulsion:thrust', '*', method='fd')
-        self.declare_partials('*', 'propulsion:altitude', method='fd', step=30., step_calc='abs')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         engine = self.get_engine(inputs)
