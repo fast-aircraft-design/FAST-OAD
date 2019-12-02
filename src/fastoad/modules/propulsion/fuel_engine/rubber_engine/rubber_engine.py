@@ -430,6 +430,7 @@ class RubberEngine(IEngine):
 
         :return: installed weight (in kg)
         """
+        # FIXME : separate raw engine weight and installation factor
         installation_factor = 1.2
 
         if self.f_0 < 80000:
