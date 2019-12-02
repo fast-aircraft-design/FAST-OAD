@@ -130,5 +130,5 @@ def test_oad_process(cleanup, install_components):
                     atol=1)
     assert_allclose(problem['weight:aircraft:MTOW'],
                     problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['sizing_mission:mission:operational:flight:fuel'],
+                    + problem['sizing_mission:mission:operational:mission:fuel'],
                     atol=1)

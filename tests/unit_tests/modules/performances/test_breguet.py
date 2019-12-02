@@ -14,12 +14,12 @@
 import openmdao.api as om
 from numpy.testing import assert_allclose
 
-from fastoad.modules.performances.breguet import Breguet, ImplicitBreguet
+from fastoad.modules.performances.breguet import BreguetFromMTOW, BreguetFromOWE
 from fastoad.modules.propulsion.fuel_engine.rubber_engine import OMRubberEngine
 from tests.testing_utilities import run_system
 
 
-def test_breguet():
+def test_breguet_from_mtow():
     # test 1
     ivc = om.IndepVarComp()
     ivc.add_output('sizing_mission:mission:operational:cruise:altitude', 35000, units='ft')
@@ -29,10 +29,10 @@ def test_breguet():
     ivc.add_output('propulsion:SFC', 1e-5, units='kg/N/s')
     ivc.add_output('weight:aircraft:MTOW', 74000, units='kg')
 
-    problem = run_system(Breguet(), ivc)
+    problem = run_system(BreguetFromMTOW(), ivc)
 
     assert_allclose(problem['sizing_mission:mission:operational:ZFW'], 65617., rtol=1e-3)
-    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'], 8382., rtol=1e-3)
+    assert_allclose(problem['sizing_mission:mission:operational:mission:fuel'], 8382., rtol=1e-3)
 
     # test 2
     ivc = om.IndepVarComp()
@@ -43,13 +43,24 @@ def test_breguet():
     ivc.add_output('propulsion:SFC', 1e-5, units='kg/N/s')
     ivc.add_output('weight:aircraft:MTOW', 74000, units='kg')
 
-    problem = run_system(Breguet(), ivc)
+    problem = run_system(BreguetFromMTOW(), ivc)
 
     assert_allclose(problem['sizing_mission:mission:operational:ZFW'], 62473., rtol=1e-3)
-    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'], 11526., rtol=1e-3)
+    assert_allclose(problem['sizing_mission:mission:operational:mission:fuel'], 11526., rtol=1e-3)
+
+    # Check consistency of other outputs
+    assert_allclose(problem['sizing_mission:mission:operational:mission:fuel'],
+                    problem['sizing_mission:mission:operational:flight:fuel']
+                    + problem['sizing_mission:mission:operational:fuel_reserve']
+                    , rtol=1e-3)
+    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'],
+                    problem['sizing_mission:mission:operational:climb:fuel']
+                    + problem['sizing_mission:mission:operational:cruise:fuel']
+                    + problem['sizing_mission:mission:operational:descent:fuel']
+                    , rtol=1e-3)
 
 
-def test_breguet_with_rubber_engine():
+def test_breguet_from_mtow_with_rubber_engine():
     ivc = om.IndepVarComp()
     ivc.add_output('sizing_mission:mission:operational:cruise:altitude', 35000, units='ft')
     ivc.add_output('TLAR:cruise_mach', 0.78)
@@ -65,16 +76,16 @@ def test_breguet_with_rubber_engine():
     ivc.add_output('propulsion:rubber_engine:turbine_inlet_temperature', 1500, units='K')
 
     group = om.Group()
-    group.add_subsystem('breguet', Breguet(), promotes=['*'])
+    group.add_subsystem('breguet', BreguetFromMTOW(), promotes=['*'])
     group.add_subsystem('engine', OMRubberEngine(), promotes=['*'])
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = run_system(group, ivc)
 
     assert_allclose(problem['sizing_mission:mission:operational:ZFW'], 65076., atol=1)
-    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'], 8924., atol=1)
+    assert_allclose(problem['sizing_mission:mission:operational:mission:fuel'], 8924., atol=1)
 
 
-def test_implicit_breguet():
+def test_breguet_from_owe():
     ivc = om.IndepVarComp()
     ivc.add_output('sizing_mission:mission:operational:cruise:altitude', 35000, units='ft')
     ivc.add_output('TLAR:cruise_mach', 0.78)
@@ -84,14 +95,14 @@ def test_implicit_breguet():
     ivc.add_output('weight:aircraft:OWE', 50000, units='kg')
     ivc.add_output('weight:aircraft:payload', 15617, units='kg')
 
-    problem = run_system(ImplicitBreguet(), ivc)
+    problem = run_system(BreguetFromOWE(), ivc)
 
     assert_allclose(problem['weight:aircraft:MTOW'], 74000., rtol=1e-3)
     assert_allclose(problem['sizing_mission:mission:operational:ZFW'], 65617., rtol=1e-3)
-    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'], 8382., rtol=1e-3)
+    assert_allclose(problem['sizing_mission:mission:operational:mission:fuel'], 8382., rtol=1e-3)
 
 
-def test_implicit_breguet_with_rubber_engine():
+def test_breguet_from_owe_with_rubber_engine():
     ivc = om.IndepVarComp()
     ivc.add_output('sizing_mission:mission:operational:cruise:altitude', 35000, units='ft')
     ivc.add_output('TLAR:cruise_mach', 0.78)
@@ -110,10 +121,10 @@ def test_implicit_breguet_with_rubber_engine():
     group = om.Group()
 
     group.add_subsystem('engine', OMRubberEngine(), promotes=['*'])
-    group.add_subsystem('breguet', ImplicitBreguet(), promotes=['*'])
+    group.add_subsystem('breguet', BreguetFromOWE(), promotes=['*'])
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = run_system(group, ivc)
 
     assert_allclose(problem['weight:aircraft:MTOW'], 74000., atol=10)
     assert_allclose(problem['sizing_mission:mission:operational:ZFW'], 65076., atol=1)
-    assert_allclose(problem['sizing_mission:mission:operational:flight:fuel'], 8924., atol=1)
+    assert_allclose(problem['sizing_mission:mission:operational:mission:fuel'], 8924., atol=1)
