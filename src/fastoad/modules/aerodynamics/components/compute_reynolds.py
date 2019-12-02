@@ -35,7 +35,7 @@ class ComputeReynolds(ExplicitComponent):
             self.add_output('reynolds_low_speed')
         else:
             self.add_input('TLAR:cruise_mach', val=np.nan)
-            self.add_input('sizing_mission:mission:operational:cruise:altitude', val=np.nan, units='m')
+            self.add_input('mission:sizing:cruise:altitude', val=np.nan, units='m')
             self.add_output('reynolds_high_speed')
 
     def compute(self, inputs, outputs):
@@ -44,7 +44,7 @@ class ComputeReynolds(ExplicitComponent):
             altitude = 0.
         else:
             mach = inputs['TLAR:cruise_mach']
-            altitude = inputs['sizing_mission:mission:operational:cruise:altitude']
+            altitude = inputs['mission:sizing:cruise:altitude']
 
         reynolds = Atmosphere(altitude, altitude_in_feet=False).get_unitary_reynolds(mach)
 

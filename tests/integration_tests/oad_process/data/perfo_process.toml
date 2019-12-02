@@ -18,11 +18,11 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
         id = "fastoad.propulsion.rubber_engine"
 
 [[objective]]
-  name = "sizing_mission:mission:operational:ZFW"
+  name = "mission:sizing:ZFW"
   scaler = -1
 
 [[design_var]]
-  name = "sizing_mission:mission:operational:cruise:altitude"
+  name = "mission:sizing:cruise:altitude"
   lower = 0
   upper = 45000
 

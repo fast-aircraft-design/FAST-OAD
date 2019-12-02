@@ -81,9 +81,9 @@ def test_aerodynamics_high_speed():
         'aerodynamics:aircraft:cruise:CL:offset',
         'aerodynamics:aircraft:cruise:CD:winglet_effect:offset',
         'aerodynamics:aircraft:cruise:CL:winglet_effect:offset',
-        'sizing_mission:mission:operational:cruise:altitude',
-        'sizing_mission:mission:operational:landing:flap_angle',
-        'sizing_mission:mission:operational:landing:slat_angle',
+        'mission:sizing:cruise:altitude',
+        'mission:sizing:landing:flap_angle',
+        'mission:sizing:landing:slat_angle',
         'TLAR:cruise_mach',
         'TLAR:approach_speed',
     ]
@@ -155,8 +155,8 @@ def test_aerodynamics_low_speed():
         'aerodynamics:aircraft:cruise:CL:offset',
         'aerodynamics:aircraft:cruise:CD:winglet_effect:offset',
         'aerodynamics:aircraft:cruise:CL:winglet_effect:offset',
-        'sizing_mission:mission:operational:landing:flap_angle',
-        'sizing_mission:mission:operational:landing:slat_angle',
+        'mission:sizing:landing:flap_angle',
+        'mission:sizing:landing:slat_angle',
         'TLAR:approach_speed',
     ]
 
