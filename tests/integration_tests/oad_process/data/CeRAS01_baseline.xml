@@ -417,9 +417,8 @@
         </aerodynamics>
         <weight id="151">
             <MTOW unit="kg">75797.99</MTOW>
-            <PL unit="kg">13608.0</PL>
-            <Max_PL unit="kg">25000</Max_PL>
-            # Old value (19608.0) changed for mass breakdown testing
+            <PL unit="kg">13500.0</PL>
+            <Max_PL unit="kg">19500</Max_PL>
             <OWE unit="kg">41590.25</OWE>
             <LW unit="kg">59328.62</LW>
             <MLW unit="kg">64870.14</MLW>
