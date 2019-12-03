@@ -67,6 +67,13 @@
   </TLAR>
   <propulsion>
     <MTO_thrust units="N">117880.0</MTO_thrust>
+    <rubber_engine>
+      <bypass_ratio>4.9</bypass_ratio>
+      <overall_pressure_ratio>32.6</overall_pressure_ratio>
+      <turbine_inlet_temperature units="K">1633.0</turbine_inlet_temperature>
+      <maximum_mach>0.85</maximum_mach>
+      <design_altitude units="m">10058.4</design_altitude>
+    </rubber_engine>
   </propulsion>
   <requirements>
     <CG_range>0.3</CG_range>
@@ -93,17 +100,16 @@
     </airframe>
     <aircraft>
       <max_payload units="kg">25000.0</max_payload>
+      <payload units="kg">13608.0</payload>
     </aircraft>
   </weight>
-  <sizing_mission>
-    <mission>
-      <operational>
-        <cruise>
-          <altitude units="ft">35000.0</altitude>
-        </cruise>
-      </operational>
-    </mission>
-  </sizing_mission>
+  <mission>
+    <sizing>
+      <cruise>
+        <altitude units="ft">35000.0</altitude>
+      </cruise>
+    </sizing>
+  </mission>
   <aerodynamics>
     <aircraft>
       <cruise>

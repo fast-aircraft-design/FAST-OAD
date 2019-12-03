@@ -108,7 +108,7 @@
       <PAX_length units="m">22.87</PAX_length>
     </fuselage>
     <horizontal_tail>
-      <volume_coefficient>1.5599114743808125e-05</volume_coefficient>
+      <volume_coefficient>1.0878658087516981</volume_coefficient>
       <area units="m**2">35.171</area>
       <aspect_ratio>4.288</aspect_ratio>
       <taper_ratio>0.3</taper_ratio>
@@ -157,39 +157,39 @@
   </TLAR>
   <propulsion>
     <MTO_thrust units="N">117880.0</MTO_thrust>
-    <SFC units="kg/s/N">nan</SFC>
+    <SFC units="kg/s/N">1.6833244856278895e-05</SFC>
     <mach>0.78</mach>
-    <altitude units="m">10667.999999999998</altitude>
+    <altitude units="m">10668.0</altitude>
     <phase>3.0</phase>
     <use_thrust_rate>0.0</use_thrust_rate>
     <required_thrust_rate>0.0</required_thrust_rate>
-    <required_thrust units="N">55298.71310567149</required_thrust>
+    <required_thrust units="N">21132.854873543387</required_thrust>
     <rubber_engine>
-      <bypass_ratio>nan</bypass_ratio>
-      <overall_pressure_ratio>nan</overall_pressure_ratio>
-      <turbine_inlet_temperature units="K">nan</turbine_inlet_temperature>
-      <maximum_mach>nan</maximum_mach>
-      <design_altitude units="m">nan</design_altitude>
+      <bypass_ratio>4.9</bypass_ratio>
+      <overall_pressure_ratio>32.6</overall_pressure_ratio>
+      <turbine_inlet_temperature units="K">1633.0</turbine_inlet_temperature>
+      <maximum_mach>0.85</maximum_mach>
+      <design_altitude units="m">10058.4</design_altitude>
       <delta_t4_climb>-50.0</delta_t4_climb>
       <delta_t4_cruise>-100.0</delta_t4_cruise>
     </rubber_engine>
-    <thrust_rate>nan</thrust_rate>
-    <thrust units="N">55298.71310567149</thrust>
+    <thrust_rate>0.7509350642964371</thrust_rate>
+    <thrust units="N">21132.854873543387</thrust>
   </propulsion>
   <weight>
     <airframe>
       <landing_gear>
         <main>
           <CG>
-            <x units="m">18.93587499252573</x>
+            <x units="m">18.018949857383607</x>
           </CG>
-          <mass units="kg">18.2500223</mass>
+          <mass units="kg">2392.0688252894734</mass>
         </main>
         <front>
           <CG>
             <x units="m">5.176347</x>
           </CG>
-          <mass units="kg">9.182002970000001</mass>
+          <mass units="kg">426.8070924767146</mass>
         </front>
         <mass>
           <k>1.0</k>
@@ -197,7 +197,7 @@
         </mass>
       </landing_gear>
       <wing>
-        <mass units="kg">4383.749090212119<k>1.0</k><offset units="kg">0.0</offset><k_voil>1.0</k_voil><k_mvo>1.0</k_mvo></mass>
+        <mass units="kg">7028.323913202324<k>1.0</k><offset units="kg">0.0</offset><k_voil>1.0</k_voil><k_mvo>1.0</k_mvo></mass>
         <bending_sizing>
           <mass>
             <k>1.0</k>
@@ -233,7 +233,7 @@
         </CG>
       </wing>
       <fuselage>
-        <mass units="kg">7351.328391272789<k>1.0</k><offset units="kg">0.0</offset><k_tr>1.0</k_tr><k_fus>1.0</k_fus></mass>
+        <mass units="kg">7724.774871482033<k>1.0</k><offset units="kg">0.0</offset><k_tr>1.0</k_tr><k_fus>1.0</k_fus></mass>
         <CG>
           <x units="m">16.8783138</x>
         </CG>
@@ -253,13 +253,13 @@
         </vertical>
       </tail_plane>
       <flight_controls>
-        <mass units="kg">588.316056157987<k_fc>0.000135</k_fc><k>1.0</k><offset units="kg">0.0</offset></mass>
+        <mass units="kg">748.0756978793064<k_fc>0.000135</k_fc><k>1.0</k><offset units="kg">0.0</offset></mass>
         <CG>
           <x units="m">18.943150271016762</x>
         </CG>
       </flight_controls>
       <pylon>
-        <mass units="kg">635.5097012399065<k>1.0</k><offset units="kg">0.0</offset></mass>
+        <mass units="kg">1425.7456415357594<k>1.0</k><offset units="kg">0.0</offset></mass>
         <CG>
           <x units="m">13.629943418468132</x>
         </CG>
@@ -270,27 +270,29 @@
           <x units="m">0.0</x>
         </CG>
       </paint>
-      <mass units="kg">14341.458438052616</mass>
+      <mass units="kg">21100.91921576543</mass>
     </airframe>
     <aircraft>
-      <MTOW units="kg">188353.01893559418</MTOW>
-      <MZFW units="kg">50674.069754766366</MZFW>
+      <MTOW units="kg">71980.64458793559</MTOW>
+      <MZFW units="kg">64118.67703875252</MZFW>
       <MFW units="kg">19322.49973877964</MFW>
-      <MLW units="kg">53714.51394005235</MLW>
+      <MLW units="kg">67965.79766107767</MLW>
+      <OWE units="kg">39118.67703875252</OWE>
       <max_payload units="kg">25000.0</max_payload>
+      <payload units="kg">13608.0</payload>
       <CG>
-        <x units="m">18.044216765364567</x>
+        <x units="m">17.200645641033816</x>
       </CG>
     </aircraft>
     <propulsion>
       <engine>
-        <mass units="kg">1823.7629086475238<k>1.0</k><offset units="kg">0.0</offset></mass>
+        <mass units="kg">7161.3348000000005<k>1.0</k><offset units="kg">0.0</offset></mass>
         <CG>
           <x units="m">13.629943418468132</x>
         </CG>
       </engine>
       <fuel_lines>
-        <mass units="kg">347.1136240718143<k>1.0</k><offset units="kg">0.0</offset></mass>
+        <mass units="kg">453.8650618988638<k>1.0</k><offset units="kg">0.0</offset></mass>
         <CG>
           <x units="m">13.629943418468132</x>
         </CG>
@@ -301,7 +303,7 @@
           <x units="m">13.629943418468132</x>
         </CG>
       </unconsumables>
-      <mass units="kg">2288.505281805067</mass>
+      <mass units="kg">7732.828610984593</mass>
     </propulsion>
     <systems>
       <power>
@@ -312,13 +314,13 @@
           </CG>
         </auxiliary_power_unit>
         <electric_systems>
-          <mass units="kg">548.6562782641288<k>1.0</k><offset units="kg">0.0</offset></mass>
+          <mass units="kg">1301.882883064688<k>1.0</k><offset units="kg">0.0</offset></mass>
           <CG>
             <x units="m">18.753682</x>
           </CG>
         </electric_systems>
         <hydraulic_systems>
-          <mass units="kg">315.3701441990661<k>1.0</k><offset units="kg">0.0</offset></mass>
+          <mass units="kg">749.5909975787935<k>1.0</k><offset units="kg">0.0</offset></mass>
           <CG>
             <x units="m">18.753682</x>
           </CG>
@@ -395,9 +397,9 @@
           </CG>
         </oxygen>
         <safety_equipment>
-          <mass units="kg">379.3376290864752</mass>
+          <mass units="kg">432.713348</mass>
           <CG>
-            <x units="m">16.47319540427439</x>
+            <x units="m">16.122476806162837</x>
           </CG>
         </safety_equipment>
       </life_support>
@@ -437,7 +439,7 @@
           <x units="m">7.468795999999999</x>
         </CG>
       </flight_kit>
-      <mass units="kg">5461.606034908682</mass>
+      <mass units="kg">6702.429212002493</mass>
     </systems>
     <furniture>
       <cargo_configuration>
@@ -475,7 +477,6 @@
     <crew>
       <mass units="kg">470.0</mass>
     </crew>
-    <OEW units="kg">25674.069754766366</OEW>
     <payload>
       <PAX>
         <CG>
@@ -503,12 +504,12 @@
     <CG_range>0.3</CG_range>
   </requirements>
   <k_ar_effective>1.55</k_ar_effective>
-  <cg_ratio>0.5795280512207583</cg_ratio>
+  <cg_ratio>0.3778171621539979</cg_ratio>
   <dcn_beta>0.24875058254607985</dcn_beta>
   <aerodynamics>
     <vertical_tail>
       <cruise>
-        <CL_alpha>5.08487682318278</CL_alpha>
+        <CL_alpha>5.084943183415051</CL_alpha>
       </cruise>
     </vertical_tail>
     <aircraft>
@@ -602,27 +603,44 @@
       <Vc_EAS units="m/s">375.0</Vc_EAS>
     </lc2>
   </load_case>
-  <n1m1 units="kg">199529.14965939257</n1m1>
-  <n2m2 units="kg">104516.95636920564</n2m2>
-  <x_cg_plane_aft units="m">17.83511275312367</x_cg_plane_aft>
-  <x_cg_plane_up units="m">449517.42591385223</x_cg_plane_up>
-  <x_cg_plane_down units="m">25204.06975476637</x_cg_plane_down>
-  <cg_ratio_aft>0.5795280512207583</cg_ratio_aft>
-  <cg_ratio_lc1>0.48558587422909477</cg_ratio_lc1>
-  <cg_ratio_lc2>0.3228553030867453</cg_ratio_lc2>
-  <cg_ratio_lc3>0.5076395082951454</cg_ratio_lc3>
-  <cg_ratio_lc4>0.4978108748122572</cg_ratio_lc4>
-  <delta_lg>13.75952799252573</delta_lg>
+  <n1m1 units="kg">252467.29084008807</n1m1>
+  <n2m2 units="kg">253712.10987080634</n2m2>
+  <x_cg_plane_aft units="m">16.96121407269304</x_cg_plane_aft>
+  <x_cg_plane_up units="m">655528.4848806575</x_cg_plane_up>
+  <x_cg_plane_down units="m">38648.67703875252</x_cg_plane_down>
+  <cg_ratio_aft>0.37056537492742325</cg_ratio_aft>
+  <cg_ratio_lc1>0.351071387454657</cg_ratio_lc1>
+  <cg_ratio_lc2>0.2631522382509906</cg_ratio_lc2>
+  <cg_ratio_lc3>0.37511773602057297</cg_ratio_lc3>
+  <cg_ratio_lc4>0.3778171621539979</cg_ratio_lc4>
+  <delta_lg>12.842602857383607</delta_lg>
   <x_ac_ratio>0.43320256597597595</x_ac_ratio>
-  <sizing_mission>
-    <mission>
-      <operational>
-        <cruise>
-          <altitude units="ft">35000.0</altitude>
-        </cruise>
-      </operational>
-    </mission>
-  </sizing_mission>
+  <mission>
+    <sizing>
+      <cruise>
+        <altitude units="ft">35000.0</altitude>
+        <distance units="m">4593000.0</distance>
+        <mass_ratio>0.8168131591491944</mass_ratio>
+        <fuel units="kg">12790.329677958505</fuel>
+      </cruise>
+      <climb>
+        <distance units="m">250000.0</distance>
+        <fuel units="kg">2159.4193376181424</fuel>
+      </climb>
+      <descent>
+        <distance units="m">250000.0</distance>
+        <fuel units="kg">1140.6179114584581</fuel>
+      </descent>
+      <ZFW units="kg">52726.67703829552</ZFW>
+      <mission>
+        <fuel units="kg">19253.967549204313</fuel>
+      </mission>
+      <flight>
+        <fuel units="kg">16090.366926906583</fuel>
+      </flight>
+      <fuel_reserve units="kg">3163.60062226917</fuel_reserve>
+    </sizing>
+  </mission>
   <reynolds_high_speed>6124999.662214693</reynolds_high_speed>
   <cl_high_speed>0.0</cl_high_speed>
   <cl_high_speed>0.01</cl_high_speed>
@@ -1529,14 +1547,13 @@
   <cd_comp_high_speed>178708742.4766299</cd_comp_high_speed>
   <cd_comp_high_speed>289756334.40805644</cd_comp_high_speed>
   <oswald_coeff_high_speed>0.042612131683129544</oswald_coeff_high_speed>
-  <engine_count>2</engine_count>
   <cabin>
     <Nrows>26.0</Nrows>
   </cabin>
   <cg_pl>
     <CG_PAX units="m">16.616796</CG_PAX>
   </cg_pl>
-  <delta_cm_takeoff>1.1906237740810333</delta_cm_takeoff>
-  <delta_cn>0.20241894616025174</delta_cn>
-  <static_margin>-0.19632548524478244</static_margin>
+  <delta_cm_takeoff>0.10277356444407904</delta_cm_takeoff>
+  <delta_cn>0.22751146868661332</delta_cn>
+  <static_margin>0.005385403821978052</static_margin>
 </aircraft>
