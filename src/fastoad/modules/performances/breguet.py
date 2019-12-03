@@ -21,9 +21,9 @@ from scipy.constants import g
 from fastoad.constants import FlightPhase
 from fastoad.utils.physics import Atmosphere
 
-CLIMB_RATIO = 0.97  # = mass at end of climb / mass at start of climb
-DESCENT_RATIO = 0.98  # = mass at end of descent / mass at start of descent
-RESERVE_RATIO = 1.06
+CLIMB_MASS_RATIO = 0.97  # = mass at end of climb / mass at start of climb
+DESCENT_MASS_RATIO = 0.98  # = mass at end of descent / mass at start of descent
+RESERVE_MASS_RATIO = 0.06  # = (weight of fuel reserve)/ZFW
 CLIMB_DESCENT_DISTANCE = 500  # in km, distance of climb + descent
 
 
@@ -87,10 +87,11 @@ class _BreguetPropulsion(om.ExplicitComponent):
         engine_count = inputs['geometry:propulsion:engine:count']
         ld_ratio = inputs['aerodynamics:aircraft:cruise:L_D_max']
         mtow = inputs['weight:aircraft:MTOW']
-        initial_cruise_mass = mtow * CLIMB_RATIO
+        initial_cruise_mass = mtow * CLIMB_MASS_RATIO
 
         # Variables for propulsion
-        outputs['propulsion:altitude'] = inputs['mission:sizing:cruise:altitude']
+        outputs['propulsion:altitude'] = inputs[
+            'mission:sizing:cruise:altitude']
         outputs['propulsion:mach'] = inputs['TLAR:cruise_mach']
 
         outputs['propulsion:required_thrust'] = initial_cruise_mass / ld_ratio * g / engine_count
@@ -131,19 +132,19 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
         mtow = inputs['weight:aircraft:MTOW']
         cruise_mass_ratio = inputs['mission:sizing:cruise:mass_ratio']
 
-        flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
-        zfw = mtow * flight_mass_ratio / RESERVE_RATIO
+        flight_mass_ratio = cruise_mass_ratio * CLIMB_MASS_RATIO * DESCENT_MASS_RATIO
+        zfw = mtow * flight_mass_ratio / (1. + RESERVE_MASS_RATIO)
         mission_fuel = mtow - zfw
 
         outputs['mission:sizing:ZFW'] = zfw
 
         outputs['mission:sizing:mission:fuel'] = mission_fuel
         outputs['mission:sizing:flight:fuel'] = mtow * (1. - flight_mass_ratio)
-        outputs['mission:sizing:climb:fuel'] = mtow * (1. - CLIMB_RATIO)
-        outputs['mission:sizing:cruise:fuel'] = mtow * CLIMB_RATIO * (1. - cruise_mass_ratio)
+        outputs['mission:sizing:climb:fuel'] = mtow * (1. - CLIMB_MASS_RATIO)
+        outputs['mission:sizing:cruise:fuel'] = mtow * CLIMB_MASS_RATIO * (1. - cruise_mass_ratio)
         outputs['mission:sizing:descent:fuel'] = \
-            mtow * CLIMB_RATIO * cruise_mass_ratio * (1. - DESCENT_RATIO)
-        outputs['mission:sizing:fuel_reserve'] = zfw * (RESERVE_RATIO - 1.)
+            mtow * CLIMB_MASS_RATIO * cruise_mass_ratio * (1. - DESCENT_MASS_RATIO)
+        outputs['mission:sizing:fuel_reserve'] = zfw * RESERVE_MASS_RATIO
 
 
 class _MTOWFromOWE(om.ImplicitComponent):
@@ -169,8 +170,8 @@ class _MTOWFromOWE(om.ImplicitComponent):
 
         mtow = outputs['weight:aircraft:MTOW']
 
-        flight_mass_ratio = cruise_mass_ratio * CLIMB_RATIO * DESCENT_RATIO
-        zfw = mtow * flight_mass_ratio / RESERVE_RATIO
+        flight_mass_ratio = cruise_mass_ratio * CLIMB_MASS_RATIO * DESCENT_MASS_RATIO
+        zfw = mtow * flight_mass_ratio / (1. + RESERVE_MASS_RATIO)
         mission_owe = zfw - payload_weight
 
         residuals['weight:aircraft:MTOW'] = owe - mission_owe
@@ -217,7 +218,8 @@ class _CruiseMassRatio(om.ExplicitComponent):
                               method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        atmosphere = Atmosphere(inputs['mission:sizing:cruise:altitude'], altitude_in_feet=False)
+        atmosphere = Atmosphere(inputs['mission:sizing:cruise:altitude'],
+                                altitude_in_feet=False)
         cruise_speed = atmosphere.speed_of_sound * inputs['TLAR:cruise_mach']
 
         cruise_distance = inputs['mission:sizing:cruise:distance']
