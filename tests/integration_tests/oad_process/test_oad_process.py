@@ -20,7 +20,6 @@ from shutil import rmtree
 import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
-from openmdao.devtools.problem_viewer.problem_viewer import view_model
 
 import fastoad
 from fastoad.io.configuration import ConfiguredProblem
@@ -114,7 +113,7 @@ def test_oad_process(cleanup, install_components):
         os.mkdir(RESULTS_FOLDER_PATH)
     om.view_connections(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'connections.html'),
                         show_browser=False)
-    view_model(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'n2.html'), show_browser=False)
+    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'n2.html'), show_browser=False)
     problem.run_model()
 
     problem.write_outputs()
