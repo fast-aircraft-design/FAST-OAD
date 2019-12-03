@@ -7,8 +7,6 @@ module_folders = []
 input_file = "../results/oad_process_inputs.xml"
 output_file = "../results/oad_process_outputs.xml"
 
-
-driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 [model]
     nonlinear_solver = "om.NonlinearBlockGS(iprint=1, maxiter=100)"
     linear_solver = "om.ScipyKrylov()"
@@ -16,9 +14,7 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
         id = "fastoad.geometry.legacy"
     [model.aerodynamics]
         id = "fastoad.aerodynamics.highspeed.legacy"
-    [model.performance_loop]
-        nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
-        [model.performance_loop.performance]
-            id = "fastoad.performances.breguet.implicit"
-        [model.performance_loop.sizing_loop.propulsion]
-            id = "fastoad.propulsion.rubber_engine"
+    [model.performance]
+        id = "fastoad.performances.breguet.from_owe"
+    [model.propulsion]
+        id = "fastoad.propulsion.rubber_engine"

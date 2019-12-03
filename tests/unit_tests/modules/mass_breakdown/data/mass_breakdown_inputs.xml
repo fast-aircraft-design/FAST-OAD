@@ -332,6 +332,6 @@
     </lc2>
   </load_case>
   <propulsion>
-    <MTO_thrust units="lbf">117880.0</MTO_thrust>
+    <MTO_thrust units="N">117880.0</MTO_thrust>
   </propulsion>
 </aircraft>

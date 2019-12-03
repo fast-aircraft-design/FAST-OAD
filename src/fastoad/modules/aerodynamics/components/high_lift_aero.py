@@ -39,14 +39,14 @@ class ComputeDeltaHighLift(Group):
         link_inputs = AddSubtractComp()
         link_inputs.add_equation('mach', 'xfoil:mach')
         if self.options['landing_flag']:
-            link_inputs.add_equation('slat_angle', 'sizing_mission:mission:operational:landing:slat_angle', val=np.nan,
+            link_inputs.add_equation('slat_angle', 'mission:sizing:landing:slat_angle', val=np.nan,
                                      units='deg')
-            link_inputs.add_equation('flap_angle', 'sizing_mission:mission:operational:landing:flap_angle', val=np.nan,
+            link_inputs.add_equation('flap_angle', 'mission:sizing:landing:flap_angle', val=np.nan,
                                      units='deg')
         else:
-            link_inputs.add_equation('slat_angle', 'sizing_mission:mission:operational:takeoff:slat_angle', val=np.nan,
+            link_inputs.add_equation('slat_angle', 'mission:sizing:takeoff:slat_angle', val=np.nan,
                                      units='deg')
-            link_inputs.add_equation('flap_angle', 'sizing_mission:mission:operational:takeoff:flap_angle', val=np.nan,
+            link_inputs.add_equation('flap_angle', 'mission:sizing:takeoff:flap_angle', val=np.nan,
                                      units='deg')
 
         self.add_subsystem('link_inputs', link_inputs, promotes=['*'])

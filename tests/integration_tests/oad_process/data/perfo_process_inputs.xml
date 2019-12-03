@@ -14,15 +14,13 @@
   -->
 
 <aircraft>
-  <sizing_mission>
-    <mission>
-      <operational>
-        <cruise>
-          <altitude units="ft">30000.0</altitude>
-        </cruise>
-      </operational>
-    </mission>
-  </sizing_mission>
+  <mission>
+    <sizing>
+      <cruise>
+        <altitude units="ft">30000.0</altitude>
+      </cruise>
+    </sizing>
+  </mission>
   <TLAR>
     <cruise_mach>0.8</cruise_mach>
     <range units="NM">2750.0</range>

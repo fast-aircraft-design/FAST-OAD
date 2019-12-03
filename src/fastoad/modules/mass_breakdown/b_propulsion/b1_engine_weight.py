@@ -23,8 +23,7 @@ class EngineWeight(ExplicitComponent):
     """ Engine weight estimation (B1) """
 
     def setup(self):
-        self.add_input('propulsion:MTO_thrust', val=np.nan
-                       , units='lbf')
+        self.add_input('propulsion:MTO_thrust', val=np.nan, units='N')
         self.add_input('geometry:propulsion:engine:count', val=np.nan)
         self.add_input('weight:propulsion:engine:mass:k', val=1.)
         self.add_input('weight:propulsion:engine:mass:offset', val=0., units='kg')

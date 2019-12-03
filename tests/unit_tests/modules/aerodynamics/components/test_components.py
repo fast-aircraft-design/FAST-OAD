@@ -111,11 +111,11 @@ def test_high_lift_aero():
     def get_cl_cd(slat_angle, flap_angle, mach, landing_flag):
         ivc = get_indep_var_comp(input_list)
         if landing_flag:
-            ivc.add_output('sizing_mission:mission:operational:landing:slat_angle', slat_angle, units='deg')
-            ivc.add_output('sizing_mission:mission:operational:landing:flap_angle', flap_angle, units='deg')
+            ivc.add_output('mission:sizing:landing:slat_angle', slat_angle, units='deg')
+            ivc.add_output('mission:sizing:landing:flap_angle', flap_angle, units='deg')
         else:
-            ivc.add_output('sizing_mission:mission:operational:takeoff:slat_angle', slat_angle, units='deg')
-            ivc.add_output('sizing_mission:mission:operational:takeoff:flap_angle', flap_angle, units='deg')
+            ivc.add_output('mission:sizing:takeoff:slat_angle', slat_angle, units='deg')
+            ivc.add_output('mission:sizing:takeoff:flap_angle', flap_angle, units='deg')
         ivc.add_output('xfoil:mach', mach)
         component = ComputeDeltaHighLift()
         component.options['landing_flag'] = landing_flag
@@ -272,7 +272,7 @@ def test_polar():
                   'geometry:wing:root:chord',
                   'geometry:wing:tip:chord',
                   'TLAR:cruise_mach',
-                  'sizing_mission:mission:operational:cruise:altitude'
+                  'mission:sizing:cruise:altitude'
                   ]
     group = Group()
     group.add_subsystem('reynolds', ComputeReynolds(), promotes=['*'])

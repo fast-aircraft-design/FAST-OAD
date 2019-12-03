@@ -82,23 +82,21 @@
       <area units="m**2">784.007</area>
     </aircraft>
   </geometry>
-  <sizing_mission>
-    <mission>
-      <operational>
-        <takeoff>
-          <flap_angle units="deg">10.0</flap_angle>
-          <slat_angle units="deg">18.0</slat_angle>
-        </takeoff>
-        <landing>
-          <flap_angle units="deg">30.0</flap_angle>
-          <slat_angle units="deg">20.0</slat_angle>
-        </landing>
-        <cruise>
-          <altitude units="ft">35000.0</altitude>
-        </cruise>
-      </operational>
-    </mission>
-  </sizing_mission>
+  <mission>
+    <sizing>
+      <takeoff>
+        <flap_angle units="deg">10.0</flap_angle>
+        <slat_angle units="deg">18.0</slat_angle>
+      </takeoff>
+      <landing>
+        <flap_angle units="deg">30.0</flap_angle>
+        <slat_angle units="deg">20.0</slat_angle>
+      </landing>
+      <cruise>
+        <altitude units="ft">35000.0</altitude>
+      </cruise>
+    </sizing>
+  </mission>
   <TLAR>
     <cruise_mach>0.78</cruise_mach>
     <approach_speed units="kn">132.0</approach_speed>

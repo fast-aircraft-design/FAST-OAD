@@ -66,7 +66,7 @@ def test_propulsion_process(cleanup, install_components):
 
 def test_perfo_process(cleanup, install_components):
     """
-    Builds a dummy process for finding altitude for max MZFW
+    Builds a dummy process for finding altitude for max ZFW
     """
 
     problem = ConfiguredProblem()
@@ -76,7 +76,7 @@ def test_perfo_process(cleanup, install_components):
 
     problem.setup()
     problem.run_model()
-    assert_allclose(problem.get_val('mission:MZFW', units='kg'),
+    assert_allclose(problem.get_val('mission:sizing:ZFW', units='kg'),
                     55080,
                     atol=5)
     assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
@@ -88,12 +88,13 @@ def test_perfo_process(cleanup, install_components):
     problem.write_outputs()
 
     assert not problem.driver.fail
-    assert_allclose(problem.get_val('mission:MZFW', units='kg'),
+    assert_allclose(problem.get_val('mission:sizing:ZFW', units='kg'),
                     55630,
                     atol=10)
-    assert_allclose(problem.get_val('sizing_mission:mission:operational:cruise:altitude', units='ft'),
-                    36700,
-                    atol=100)
+    assert_allclose(
+        problem.get_val('mission:sizing:cruise:altitude', units='ft'),
+        36700,
+        atol=100)
 
 
 def test_oad_process(cleanup, install_components):
@@ -119,11 +120,15 @@ def test_oad_process(cleanup, install_components):
     problem.write_outputs()
 
     # Check that weight-performances loop correctly converged
-    assert_allclose(problem['weight:OEW'],
+    assert_allclose(problem['weight:aircraft:OWE'],
                     problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
                     + problem['weight:systems:mass'] + problem['weight:furniture:mass']
                     + problem['weight:crew:mass'],
                     atol=1)
     assert_allclose(problem['weight:aircraft:MZFW'],
-                    problem['weight:OEW'] + problem['weight:aircraft:max_payload'],
+                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:max_payload'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MTOW'],
+                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
+                    + problem['mission:sizing:mission:fuel'],
                     atol=1)
