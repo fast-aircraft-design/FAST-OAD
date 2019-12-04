@@ -12,7 +12,4 @@ pylint = "*"
 sphinxcontrib-bibtex = "*"
 
 [packages]
-fast-oad = {editable = true,path = "."}
-
-[requires]
-python_version = "3.7"
+fastoad = {editable = true,path = "."}
