@@ -5,11 +5,12 @@ on: [push]
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 4
       matrix:
         python-version: [3.6, 3.7]
+        os: [windows-latest]
 
     steps:
       - uses: actions/checkout@v1
@@ -26,7 +27,7 @@ jobs:
         uses: actions/cache@v1
         if: startsWith(runner.os, 'Linux')
         with:
-          path: ~/.cache/pipenv
+          path: ~/.local/share/virtualenvs/
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pipenv-
@@ -34,7 +35,7 @@ jobs:
         uses: actions/cache@v1
         if: startsWith(runner.os, 'macOS')
         with:
-          path: ~/Library/Caches/pipenv
+          path: ~/.local/share/virtualenvs/
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pipenv-
@@ -42,14 +43,14 @@ jobs:
         uses: actions/cache@v1
         if: startsWith(runner.os, 'Windows')
         with:
-          path: ~\AppData\Local\pipenv\pipenv\Cache
+          path: ~\.virtualenvs\
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pipenv-
 
       - name: Install dependencies
         run: |
-          pipenv sync
+          pipenv sync --dev
 
       - name: Lint with flake8
         run: |
@@ -61,5 +62,4 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pipenv install pytest pytest-coverage
           pipenv run pytest tests
