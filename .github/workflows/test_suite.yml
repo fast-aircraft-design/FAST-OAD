@@ -3,7 +3,11 @@ name: Test Suite
 on: [push]
 
 jobs:
+
   build:
+
+    env:
+      PIPENV_VENV_IN_PROJECT: 1
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -19,46 +23,46 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install pipenv
-        run: |
-          pip install pipenv
-
-      - name: Pipenv cache for Linux
+      - name: Pipenv venv cache for Linux
         uses: actions/cache@v1
         if: startsWith(runner.os, 'Linux')
         with:
-          path: ~/.local/share/virtualenvs/
+          path: ./.venv
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pipenv-
-      - name: Pipenv cache for macOS
+      - name: Pipenv venv cache for macOS
         uses: actions/cache@v1
         if: startsWith(runner.os, 'macOS')
         with:
-          path: ~/.local/share/virtualenvs/
+          path: ./.venv
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pipenv-
-      - name: Pipenv cache for Windows
+      - name: Pipenv venv cache for Windows
         uses: actions/cache@v1
         if: startsWith(runner.os, 'Windows')
         with:
-          path: ~\.virtualenvs\
+          path: .\.venv
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pipenv-
+
+      - name: Install pipenv
+        run: |
+          pip install pipenv
 
       - name: Install dependencies
         run: |
           pipenv sync --dev
 
-      - name: Lint with flake8
-        run: |
-          pipenv install flake8
-          # stop the build if there are Python syntax errors or undefined names
-          pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+#      - name: Lint with flake8
+#        run: |
+#          # stop the build if there are Python syntax errors or undefined names
+#          pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+#          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#          pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Test with pytest
         run: |

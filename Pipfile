@@ -5,10 +5,11 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
-sphinx = "*"
-sphinx-rtd-theme = "*"
 pytest-cov = "*"
 pylint = "*"
+flake8 = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
 sphinxcontrib-bibtex = "*"
 
 [packages]
