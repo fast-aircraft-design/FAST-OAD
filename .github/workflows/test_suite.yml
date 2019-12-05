@@ -31,8 +31,8 @@ jobs:
         id: cache-venv
         with:
           path: .venv
-          key: ${{ runner.os }}-pipenv_venv-${{ hashFiles('**/Pipfile.lock') }}
-          restore-keys: ${{ runner.os }}-pipenv_venv-
+          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv_venv-${{ hashFiles('**/Pipfile.lock') }}
+          restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-pipenv_venv-
 
       - name: Create environment and install dependencies
         if: steps.cache-venv.outputs.cache-hit != 'true'
