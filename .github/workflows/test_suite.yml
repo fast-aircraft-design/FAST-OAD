@@ -13,7 +13,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.7]
         os: [windows-latest]
 
     steps:
@@ -23,47 +23,59 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Pipenv venv cache for Linux
+      - name: Pip cache Linux
         uses: actions/cache@v1
         if: startsWith(runner.os, 'Linux')
         with:
-          path: ./.venv
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pipenv-
-      - name: Pipenv venv cache for macOS
+            ${{ runner.os }}-pip-
+      - name: Pip cache macOS
         uses: actions/cache@v1
         if: startsWith(runner.os, 'macOS')
         with:
-          path: ./.venv
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pipenv-
-      - name: Pipenv venv cache for Windows
+            ${{ runner.os }}-pip-
+      - name: Pip cache Windows
         uses: actions/cache@v1
         if: startsWith(runner.os, 'Windows')
         with:
-          path: .\.venv
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pipenv-
+            ${{ runner.os }}-pip-
 
       - name: Install pipenv
-        run: |
-          pip install pipenv
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: pip install pipenv
 
-      - name: Install dependencies
+      - name: Pipenv venv cache
+        uses: actions/cache@v1
+        id: cache-venv
+        with:
+          path: .venv
+          key: ${{ runner.os }}-pipenv_venv-${{ hashFiles('**/Pipfile.lock') }}
+          restore-keys: ${{ runner.os }}-pipenv_venv-
+
+      - name: Create environment and install dependencies
+        if: steps.cache-venv.outputs.cache-hit != 'true'
         run: |
           pipenv sync --dev
 
+      - name: Use existing environment
+        if: steps.cache-venv.outputs.cache-hit == 'true'
+        run: |
+          .\.venv\Scripts\activate.bat
 
-#      - name: Lint with flake8
-#        run: |
-#          # stop the build if there are Python syntax errors or undefined names
-#          pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-#          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-#          pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      #      - name: Lint with flake8
+      #        run: |
+      #          # stop the build if there are Python syntax errors or undefined names
+      #          pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      #          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+      #          pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Test with pytest
-        run: |
-          pipenv run pytest tests
+        run: pipenv run pytest tests
