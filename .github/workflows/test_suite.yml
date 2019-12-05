@@ -23,35 +23,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Pip cache Linux
-        uses: actions/cache@v1
-        if: startsWith(runner.os, 'Linux')
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Pip cache macOS
-        uses: actions/cache@v1
-        if: startsWith(runner.os, 'macOS')
-        with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Pip cache Windows
-        uses: actions/cache@v1
-        if: startsWith(runner.os, 'Windows')
-        with:
-          path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install pipenv
-        if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: pip install pipenv
-
       - name: Pipenv venv cache
         uses: actions/cache@v1
         id: cache-venv
@@ -60,22 +31,29 @@ jobs:
           key: ${{ runner.os }}-pipenv_venv-${{ hashFiles('**/Pipfile.lock') }}
           restore-keys: ${{ runner.os }}-pipenv_venv-
 
+#      - name: Use existing environment
+#        if: steps.cache-venv.outputs.cache-hit == 'true'
+#        # TODO: need to be adapted for other OS
+#        run: |
+#          .\.venv\Scripts\activate.bat
+
+      - name: Install pipenv
+        run: pip install pipenv
+
       - name: Create environment and install dependencies
         if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: |
-          pipenv sync --dev
+        run: pipenv sync --dev
 
-      - name: Use existing environment
-        if: steps.cache-venv.outputs.cache-hit == 'true'
-        run: |
-          .\.venv\Scripts\activate.bat
+#      - name: Lint with flake8
+#        run: |
+#          # stop the build if there are Python syntax errors or undefined names
+#          pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+#          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#          pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      #      - name: Lint with flake8
-      #        run: |
-      #          # stop the build if there are Python syntax errors or undefined names
-      #          pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-      #          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-      #          pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Unit tests
+        run: pipenv run pytest tests/unit_tests
 
-      - name: Test with pytest
-        run: pipenv run pytest tests
+      - name: Integration tests
+        # TODO: if integration tests become too long, trigger them only for pull requests
+        run: pipenv run pytest tests/integration_tests
