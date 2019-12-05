@@ -18,7 +18,7 @@ The base layer for registering and retrieving OpenMDAO systems
 import logging
 from typing import List
 
-from fastoad.module_management.bundle_loader import FastDuplicateFactoryError
+from fastoad.module_management.exceptions import FastDuplicateFactoryError
 from fastoad.openmdao.types import SystemSubclass
 from . import BundleLoader
 from .constants import SERVICE_OPENMDAO_SYSTEM

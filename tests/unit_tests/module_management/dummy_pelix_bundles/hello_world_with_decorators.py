@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Basic "Hello World" services
+Basic "Hello World" services using iPOPO decorators
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -24,7 +23,6 @@ from pelix.ipopo.decorators import ComponentFactory, Provides, Instantiate, \
     Property
 
 # Define the component factory, with a given name
-from fastoad.module_management import BundleLoader
 
 
 # First, let's register 2 factories the iPOPO way
@@ -48,32 +46,3 @@ class Greetings1:
 class Greetings2:
     def hello(self, name='World'):
         return 'Hi, {0}!'.format(name)
-
-
-# Register factories without instantiating with our wrapping of iPOPO
-class OtherGreetings:
-    def hello(self, name='World'):
-        return 'Hello again, {0}!'.format(name)
-
-
-loader = BundleLoader()
-loader.register_factory(OtherGreetings,
-                        factory_name='another-hello-world-factory',
-                        service_names=['hello.world', 'hello.world.no.instance'],
-                        properties={'Prop1': 3,
-                                    'Prop 2': 'Says.Hello',
-                                    'Instantiated': False}
-                        )
-
-
-class OtherGreetings2:
-    def hello(self, name='Universe'):
-        return 'Hello again, {0}!'.format(name)
-
-
-# This one provides a different service and tests registering without properties
-loader = BundleLoader()
-loader.register_factory(OtherGreetings2,
-                        factory_name='hello-universe-factory',
-                        service_names=['hello.universe']
-                        )

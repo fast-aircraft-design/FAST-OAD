@@ -33,8 +33,12 @@ _LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
+# pylint: disable=redefined-outer-name  # pytest fixture
+# pylint: disable=unused-argument  # pytest fixture
+
 @pytest.fixture()
 def framework_load_unload():
+    """ Loads and unloads Pelix framework for each test """
     # Starts Pelix framework and load components
     OpenMDAOSystemFactory.explore_folder(pth.join(root_folder_path, 'tests', 'sellar_example'))
     yield
@@ -59,7 +63,7 @@ def test_get_system(framework_load_unload):
 
     # Get component 1 #########################################################
     disc1_component = OpenMDAOSystemFactory.get_system('sellar.disc1')
-    assert disc1_component._Discipline == 'generic'
+    assert disc1_component._Discipline == 'generic'  # pylint: disable=protected-access
     assert disc1_component is not None
     disc1_component.setup()
     outputs = {}
@@ -88,7 +92,7 @@ def test_get_systems_from_properties(framework_load_unload):
     systems = OpenMDAOSystemFactory.get_systems_from_properties({'Number': 1})
     assert len(systems) == 1
     disc1_component = systems[0]
-    assert disc1_component._Discipline == 'generic'
+    assert disc1_component._Discipline == 'generic'  # pylint: disable=protected-access
     assert disc1_component is not None
     disc1_component.setup()
     outputs = {}
@@ -178,7 +182,3 @@ def test_sellar(framework_load_unload):
 
     fastoad_problem.run_driver()
     assert classical_problem['f'] == fastoad_problem['f']  # both problems have run
-
-
-if __name__ == "__main__":
-    test_sellar()

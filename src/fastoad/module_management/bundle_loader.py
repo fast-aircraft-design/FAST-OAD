@@ -24,6 +24,8 @@ from pelix.internals.registry import ServiceReference
 from pelix.ipopo.constants import SERVICE_IPOPO, use_ipopo
 from pelix.ipopo.decorators import ComponentFactory, Provides, Property
 
+from .exceptions import FastDuplicateFactoryError
+
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
 
@@ -64,12 +66,19 @@ class BundleLoader:
         """
         return self.framework.get_bundle_context()
 
-    def install_packages(self, folder_path: str) \
+    def install_packages(self, folder_path: str, start_bundles: bool = False) \
             -> Tuple[Set[Bundle], Set[Union[str, bytes, int, None]]]:
         """
-        Installs and starts bundles found in *folder_path*.
+        Installs bundles found in *folder_path*.
+
+        Bundles that contain factories that are programmatically registered
+        will try to register them again if they are "started", which will
+        result in error log messages from iPOPO.
+        On the other side, bundles that define factories using iPOPO decorators
+        will need to be started for these factories to be registered.
 
         :param folder_path: The path of folder to scan
+        :param start_bundles: if True, installed bundles will be automatically started
         :return: A 2-tuple, with the list of installed bundles
                  (:class:`~pelix.framework.Bundle`) and the list of the names
                  of the modules which import failed.
@@ -82,7 +91,11 @@ class BundleLoader:
         for bundle in bundles:
             _LOGGER.info('Installed bundle %s (ID %s )'
                          , bundle.get_symbolic_name(), bundle.get_bundle_id())
-            bundle.start()
+            # Starting the bundle will try to register its factories
+            # even if they have already been registered programmatically
+            # resulting in annoying ERROR log messages.
+            if start_bundles:
+                bundle.start()
         for _f in failed:
             _LOGGER.warning('Failed to import module %s', _f)
 
@@ -136,10 +149,7 @@ class BundleLoader:
 
             factory = ComponentFactory(factory_name)(obj)
 
-            # When using factory immediately, manually registering is needed
-            # FIXME: there can still be messages for duplicate registering
-            if not ipopo.is_registered_factory(factory_name):
-                ipopo.register_factory(self.context, factory)
+            ipopo.register_factory(self.context, factory)
 
             return factory
 
@@ -268,13 +278,3 @@ class BundleLoader:
         :return: the field version of `name`
         """
         return re.compile(r'[\W_]+').sub('_', name).strip('_')
-
-
-class FastDuplicateFactoryError(Exception):
-    """
-    Raised when trying to register a factory with an already used name
-    """
-
-    def __init__(self, factory_name):
-        super().__init__('Name "%s" is already used.' % factory_name)
-        self.factory_name = factory_name

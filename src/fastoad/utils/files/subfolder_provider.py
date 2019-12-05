@@ -18,14 +18,12 @@ import os
 import os.path as pth
 from typing import List, Union
 
-from pelix.ipopo.decorators import SingletonFactory, Provides, Instantiate
-
+from fastoad.module_management import BundleLoader
 from fastoad.module_management.constants import SERVICE_RESULT_FOLDER_PROVIDER
 
 
-@SingletonFactory('org.fast.subfolderprovider.factory')
-@Provides(SERVICE_RESULT_FOLDER_PROVIDER)
-@Instantiate('org.fast.subfolderprovider')
+# Note: the "SubfolderProvider" service is registered right after the class
+# declaration
 class SubfolderProvider:
     """
     Service for providing subfolders after having set once a unique root folder.
@@ -63,3 +61,6 @@ class SubfolderProvider:
             os.makedirs(result_folder, exist_ok=True)
 
         return result_folder
+
+
+BundleLoader().context.register_service(SERVICE_RESULT_FOLDER_PROVIDER, SubfolderProvider(), {})
