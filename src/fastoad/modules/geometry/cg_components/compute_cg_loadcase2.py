@@ -31,8 +31,8 @@ class ComputeCGLoadCase2(ExplicitComponent):
         self.add_input('TLAR:NPAX', val=np.nan)
         self.add_input('weight:aircraft:MFW', val=np.nan, units='kg')
         self.add_input('weight:fuel_tank:CG:x', val=np.nan, units='m')
-        self.add_input('x_cg_plane_up', val=np.nan)
-        self.add_input('x_cg_plane_down', val=np.nan)
+        self.add_input('x_cg_plane_up', val=np.nan, units='m')
+        self.add_input('x_cg_plane_down', val=np.nan, units='m')
 
         self.add_output('cg_ratio_lc2')
 

@@ -29,8 +29,8 @@ class ComputeCGLoadCase3(ExplicitComponent):
         self.add_input('weight:payload:rear_fret:CG:x', val=np.nan, units='m')
         self.add_input('weight:payload:front_fret:CG:x', val=np.nan, units='m')
         self.add_input('TLAR:NPAX', val=np.nan)
-        self.add_input('x_cg_plane_up', val=np.nan)
-        self.add_input('x_cg_plane_down', val=np.nan)
+        self.add_input('x_cg_plane_up', val=np.nan, units='m')
+        self.add_input('x_cg_plane_down', val=np.nan, units='m')
 
         self.add_output('cg_ratio_lc3')
 
