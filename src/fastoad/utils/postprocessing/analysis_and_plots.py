@@ -46,12 +46,12 @@ def wing_geometry_plot_matplotlib(aircraft_xml: OMXmlIO):
 def wing_geometry_plot(aircraft_xml: OMXmlIO):
     system = aircraft_xml.read_variables()
 
-    wing_x4 = system['geometry:wing_x4'].value[0]
-    wing_y2 = system['geometry:wing_y2'].value[0]
-    wing_y3 = system['geometry:wing_y3'].value[0]
-    wing_y4 = system['geometry:wing_y4'].value[0]
-    wing_l2 = system['geometry:wing_l2'].value[0]
-    wing_l4 = system['geometry:wing_l4'].value[0]
+    wing_x4 = system['geometry:wing:tip:leading_edge:x'].value[0]
+    wing_y2 = system['geometry:wing:root:y'].value[0]
+    wing_y3 = system['geometry:wing:kink:y'].value[0]
+    wing_y4 = system['geometry:wing:tip:y'].value[0]
+    wing_l2 = system['geometry:wing:root:chord'].value[0]
+    wing_l4 = system['geometry:wing:tip:chord'].value[0]
 
     x = [0, wing_y2, wing_y4,
          wing_y4, wing_y3,
@@ -73,12 +73,12 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO):
 def wing_geometry_symetric_plot(aircraft_xml: OMXmlIO):
     system = aircraft_xml.read_variables()
 
-    wing_x4 = system['geometry:wing_x4'].value[0]
-    wing_y2 = system['geometry:wing_y2'].value[0]
-    wing_y3 = system['geometry:wing_y3'].value[0]
-    wing_y4 = system['geometry:wing_y4'].value[0]
-    wing_l2 = system['geometry:wing_l2'].value[0]
-    wing_l4 = system['geometry:wing_l4'].value[0]
+    wing_x4 = system['geometry:wing:tip:leading_edge:x'].value[0]
+    wing_y2 = system['geometry:wing:root:y'].value[0]
+    wing_y3 = system['geometry:wing:kink:y'].value[0]
+    wing_y4 = system['geometry:wing:tip:y'].value[0]
+    wing_l2 = system['geometry:wing:root:chord'].value[0]
+    wing_l4 = system['geometry:wing:tip:chord'].value[0]
 
     x = [0, wing_y2, wing_y4,
          wing_y4, wing_y3,
