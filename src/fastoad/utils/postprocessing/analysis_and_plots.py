@@ -149,7 +149,7 @@ def mass_breakdown(aircraft_xml: OMXmlIO):
     MTOW = system['weight:aircraft:MTOW'].value[0]
     MZFW = system['weight:aircraft:MZFW'].value[0]
     MFW = system['weight:aircraft:MFW'].value[0]
-    OEW = system['weight:OEW'].value[0]
+    OEW = system['weight:aircraft:OWE'].value[0]
     max_payload = system['weight:aircraft:max_payload'].value[0]
 
     # TODO: Deal with when mass loop is not solved

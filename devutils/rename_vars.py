@@ -31,6 +31,7 @@ from tests import root_folder_path
 
 SRC_PATH = pth.join(root_folder_path, 'src')
 TEST_PATH = pth.join(root_folder_path, 'tests')
+NOTEBOOK_PATH = pth.join(root_folder_path, 'notebooks')
 VAR_NAME_FILE = pth.join(pth.dirname(__file__), 'rename_vars.txt')
 
 
@@ -126,11 +127,14 @@ if __name__ == '__main__':
         convert_xml(pth.join(root_folder_path, xml_file_path), old_new_translator)
 
     # replace var names
-    for root_path in [SRC_PATH, TEST_PATH]:
+    for root_path in [SRC_PATH, TEST_PATH, NOTEBOOK_PATH]:
         for dir_path, dir_names, file_names in os.walk(root_path):
             for filename in file_names:
                 ext = pth.splitext(filename)[1]
-                if ext not in ['.pyc', '.exe']:  # avoid processing useless files
+                if ext not in ['.pyc', '.exe', '.png']:  # avoid processing useless files
                     xml_file_path = pth.join(dir_path, filename)
                     print('processing %s' % xml_file_path)
-                    replace_var_names(xml_file_path, old_new_names)
+                    try:
+                        replace_var_names(xml_file_path, old_new_names)
+                    except UnicodeDecodeError:
+                        pass
