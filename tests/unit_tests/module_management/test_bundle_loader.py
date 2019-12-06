@@ -22,7 +22,7 @@ import pytest
 from pelix.framework import FrameworkFactory
 
 from fastoad.module_management import BundleLoader
-from fastoad.module_management.bundle_loader import FastDuplicateFactoryError
+from fastoad.module_management.exceptions import FastDuplicateFactoryError
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -101,7 +101,8 @@ def test_install_packages(delete_framework):
     loader = BundleLoader()
 
     loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
-    assert loader.framework.get_bundle_by_name("dummy_pelix_bundles.hello_world") is not None
+    assert loader.framework.get_bundle_by_name(
+        "dummy_pelix_bundles.hello_world_with_decorators") is not None
 
 
 def test_register_factory(delete_framework):
@@ -132,7 +133,7 @@ def test_get_services(delete_framework):
     """
     loader = BundleLoader()
     loader.install_packages(
-        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"), True)
 
     # Missing service
     services = loader.get_services("does.not.exists")
@@ -179,7 +180,7 @@ def test_instantiate_component(delete_framework):
     """
     loader = BundleLoader()
     loader.install_packages(
-        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"), True)
 
     # 2 services should already be instantiated
     services = loader.get_services("hello.world")
@@ -201,7 +202,7 @@ def test_get_factory_names(delete_framework):
     """
     loader = BundleLoader()
     loader.install_packages(
-        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"), True)
 
     # Missing service
     factory_names = loader.get_factory_names("does.not.exists")
