@@ -22,8 +22,9 @@ from openmdao.api import Problem, ScipyOptimizeDriver  # , pyOptSparseDriver
 
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.constants import SERVICE_OPENMDAO_SYSTEM
-from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory, \
-    FastNoOpenMDAOSystemFoundError, FastUnknownOpenMDAOSystemIdentifierError
+from fastoad.module_management.exceptions import FastNoOMSystemFoundError, \
+    FastUnknownOMSystemIdentifierError
+from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 from tests import root_folder_path
 from tests.sellar_example.sellar import Sellar, ISellarFactory
 
@@ -79,7 +80,7 @@ def test_get_system(framework_load_unload):
     assert outputs['y2'] == 22.
 
     # Get unknown component
-    with pytest.raises(FastUnknownOpenMDAOSystemIdentifierError):
+    with pytest.raises(FastUnknownOMSystemIdentifierError):
         OpenMDAOSystemFactory.get_system('unknown.identifier')
 
 
@@ -114,11 +115,11 @@ def test_get_systems_from_properties(framework_load_unload):
     assert len(systems) == 2
 
     # Error raised when property does not exists ##############################
-    with pytest.raises(FastNoOpenMDAOSystemFoundError):
+    with pytest.raises(FastNoOMSystemFoundError):
         OpenMDAOSystemFactory.get_systems_from_properties({'MissingProperty': -5})
 
     # Error raised when no matching component #################################
-    with pytest.raises(FastNoOpenMDAOSystemFoundError):
+    with pytest.raises(FastNoOMSystemFoundError):
         OpenMDAOSystemFactory.get_systems_from_properties({'Number': -5})
 
 
