@@ -149,23 +149,25 @@ def mass_breakdown(aircraft_xml: OMXmlIO):
     MTOW = system['weight:aircraft:MTOW'].value[0]
     MZFW = system['weight:aircraft:MZFW'].value[0]
     MFW = system['weight:aircraft:MFW'].value[0]
-    OEW = system['weight:aircraft:OWE'].value[0]
-    max_payload = system['weight:aircraft:max_payload'].value[0]
+    OWE = system['weight:aircraft:OWE'].value[0]
+    payload = system['weight:aircraft:payload'].value[0]
+    fuel_mission = system['mission:sizing:mission:fuel'].value[0]
 
-    # TODO: Deal with when mass loop is not solved
-    MTOW = MZFW + MFW
+    # TODO: Deal with this in a more generic manner ?
+    if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):
+        MTOW = OWE + payload + fuel_mission
 
     fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]], )
 
     fig.add_trace(go.Sunburst(
-        labels=["MTOW", "MFW", "MZFW", "max_payload", "OEW"],
-        parents=["", "MTOW", "MTOW", "MZFW", "MZFW"],
-        values=[MTOW, MFW, MZFW, max_payload, OEW],
+        labels=["MTOW", "payload", "fuel_mission", "OWE"],
+        parents=["", "MTOW", "MTOW", "MTOW"],
+        values=[MTOW, payload, fuel_mission, OWE],
         branchvalues='total',
     ), 1, 1)
 
     fig.add_trace(go.Sunburst(
-        labels=["OEW", "airframe", "propulsion", "systems", "furniture", "crew",
+        labels=["OWE", "airframe", "propulsion", "systems", "furniture", "crew",
                 "wing", "fuselage", "h_tail", "v_tail", "control_surface",
                 "landing_gear_1", "landing_gear_2", "engine_pylon", "paint",
                 "B1", "B2", "B3",
@@ -173,7 +175,7 @@ def mass_breakdown(aircraft_xml: OMXmlIO):
                 "C3", "C4", "C51", "C52", "C6",
                 "D1", "D2", "D3", "D4", "D5",
                 ],
-        parents=["", "OEW", "OEW", "OEW", "OEW", "OEW",
+        parents=["", "OWE", "OWE", "OWE", "OWE", "OWE",
                  "airframe", "airframe", "airframe", "airframe", "airframe", "airframe",
                  "airframe", "airframe", "airframe",
                  "propulsion", "propulsion", "propulsion",
@@ -182,7 +184,7 @@ def mass_breakdown(aircraft_xml: OMXmlIO):
                  "systems", "systems", "systems",
                  "furniture", "furniture", "furniture", "furniture", "furniture",
                  ],
-        values=[OEW, airframe, propulsion, systems, furniture, crew,
+        values=[OWE, airframe, propulsion, systems, furniture, crew,
                 wing, fuselage, h_tail, v_tail, control_surface,
                 landing_gear_1, landing_gear_2, engine_pylon, paint,
                 B1, B2, B3,
