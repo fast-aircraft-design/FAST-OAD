@@ -132,7 +132,7 @@ class ConfiguredProblem(om.Problem):
         :param input_data: if provided, variable values will be read from it, if available.
         """
         if self.input_file_path:
-            ivc = build_ivc_of_unconnected_inputs(self)
+            ivc = build_ivc_of_unconnected_inputs(self, with_optional_inputs=True)
             if input_data:
                 ref_ivc = input_data.read()
                 ivc = update_ivc(ivc, ref_ivc)
