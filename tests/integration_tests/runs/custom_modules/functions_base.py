@@ -21,14 +21,14 @@ class FunctionsBase(ExplicitComponent):
     """ An OpenMDAO base component to encapsulate Functions discipline """
 
     def setup(self):
-        self.add_input('category1/x', val=2, desc='')
-        self.add_input('category1/z', val=[5.0, 2.0], desc='')
-        self.add_input('y_vars/y1', val=1.0, desc='')
-        self.add_input('y_vars/y2', val=1.0, desc='')
+        self.add_input('category1:x', val=2, desc='')
+        self.add_input('category1:z', val=[5.0, 2.0], desc='')
+        self.add_input('y_vars:y1', val=1.0, desc='')
+        self.add_input('y_vars:y2', val=1.0, desc='')
 
-        self.add_output('funcs/f', val=1.0, desc='')
+        self.add_output('funcs:f', val=1.0, desc='')
 
-        self.add_output('funcs/g1', val=1.0, desc='')
+        self.add_output('funcs:g1', val=1.0, desc='')
 
-        self.add_output('funcs/g2', val=1.0, desc='')
+        self.add_output('funcs:g2', val=1.0, desc='')
         self.declare_partials('*', '*', method='fd')
