@@ -66,8 +66,7 @@ class BundleLoader:
         """
         return self.framework.get_bundle_context()
 
-    def install_packages(self, folder_path: str, start_bundles: bool = False) \
-            -> Tuple[Set[Bundle], Set[str]]:
+    def install_packages(self, folder_path: str) -> Tuple[Set[Bundle], Set[str]]:
         """
         Installs bundles found in *folder_path*.
 
@@ -91,11 +90,7 @@ class BundleLoader:
         for bundle in bundles:
             _LOGGER.info('Installed bundle %s (ID %s )'
                          , bundle.get_symbolic_name(), bundle.get_bundle_id())
-            # Starting the bundle will try to register its factories
-            # even if they have already been registered programmatically
-            # resulting in annoying ERROR log messages.
-            if start_bundles:
-                bundle.start()
+            bundle.start()
         for _f in failed:
             _LOGGER.warning('Failed to import module %s', _f)
 
@@ -131,6 +126,11 @@ class BundleLoader:
         """
         Registers provided class as iPOPO component factory.
 
+        *WARNING:*
+        **A factory cannot be accessed by its identifier in the Python module
+        where it is registered** (but one normally does not need to do that,
+        since in this case, the Python class is directly accessible)
+
         :param component_class: the class of the components that will be provided by the factory
         :param factory_name: the name of the factory
         :param service_names: the service(s) that will be provided by the components
@@ -148,8 +148,6 @@ class BundleLoader:
                     obj = Property(field='_' + self._fieldify(key), name=key, value=value)(obj)
 
             factory = ComponentFactory(factory_name)(obj)
-
-            ipopo.register_factory(self.context, factory)
 
             return factory
 

@@ -109,22 +109,20 @@ def test_register_factory(delete_framework):
     """
     Tests that register_factory raises correctly an error when finding
     duplicate names
-    (Real test are done when trying to get components registered in register_components.py)
+    (Real tests are done when trying to get components registered in
+    hello_world_without_decorators.py)
     """
+
+    loader = BundleLoader()
+    loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
 
     class Greetings1:
         def hello(self, name="World"):
             return "Hello, {0}!".format(name)
 
-    class Greetings2:
-        def hello(self, name="World"):
-            return "Hi, {0}!".format(name)
-
-    loader = BundleLoader()
-    loader.register_factory(Greetings1, 'hello-world-factory', 'hello.world')
     with pytest.raises(FastDuplicateFactoryError) as exc_info:
-        loader.register_factory(Greetings2, 'hello-world-factory', 'hello.world.again')
-    assert exc_info.value.factory_name == 'hello-world-factory'
+        loader.register_factory(Greetings1, 'hello-universe-factory', 'hello.world')
+    assert exc_info.value.factory_name == 'hello-universe-factory'
 
 
 def test_get_services(delete_framework):
@@ -132,8 +130,7 @@ def test_get_services(delete_framework):
     Tests the method for retrieving services according to properties
     """
     loader = BundleLoader()
-    loader.install_packages(
-        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"), True)
+    loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
 
     # Missing service
     services = loader.get_services("does.not.exists")
@@ -179,8 +176,7 @@ def test_instantiate_component(delete_framework):
     Tests the method for instantiating a component from factory name
     """
     loader = BundleLoader()
-    loader.install_packages(
-        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"), True)
+    loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
 
     # 2 services should already be instantiated
     services = loader.get_services("hello.world")
@@ -202,7 +198,7 @@ def test_get_factory_names(delete_framework):
     """
     loader = BundleLoader()
     loader.install_packages(
-        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"), True)
+        pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
 
     # Missing service
     factory_names = loader.get_factory_names("does.not.exists")
