@@ -198,6 +198,18 @@ class BundleLoader:
                     names.append(name)
         return names
 
+    def get_factory_path(self, factory_name: str) -> str:
+        """
+
+        :param factory_name:
+        :return: path of the file where the factory is defined
+        """
+
+        with use_ipopo(self.context) as ipopo:
+            details = ipopo.get_factory_details(factory_name)
+            bundle: Bundle = details['bundle']
+            return bundle.get_location()
+
     def instantiate_component(self, factory_name: str,
                               properties: dict = None
                               ) -> Any:
