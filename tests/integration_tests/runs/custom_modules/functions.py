@@ -27,11 +27,11 @@ class Functions(FunctionsBase):
     def compute(self, inputs, outputs):
         """ Functions computation """
 
-        z2 = inputs['category1/z'][1]
-        x1 = inputs['category1/x']
-        y1 = inputs['y_vars/y1']
-        y2 = inputs['y_vars/y2']
+        z2 = inputs['category1:z'][1]
+        x1 = inputs['category1:x']
+        y1 = inputs['y_vars:y1']
+        y2 = inputs['y_vars:y2']
 
-        outputs['funcs/f'] = x1 ** 2 + z2 + y1 + exp(-y2)
-        outputs['funcs/g1'] = 3.16 - y1
-        outputs['funcs/g2'] = y2 - 24.0
+        outputs['funcs:f'] = x1 ** 2 + z2 + y1 + exp(-y2)
+        outputs['funcs:g1'] = 3.16 - y1
+        outputs['funcs:g2'] = y2 - 24.0

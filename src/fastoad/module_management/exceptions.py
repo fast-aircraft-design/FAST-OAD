@@ -25,3 +25,33 @@ class FastDuplicateFactoryError(FastError):
     def __init__(self, factory_name):
         super().__init__('Name "%s" is already used.' % factory_name)
         self.factory_name = factory_name
+
+
+class FastDuplicateOMSystemIdentifierException(FastDuplicateFactoryError):
+    """
+    Raised when trying to register an OpenMDAO System with an already used identifier
+    """
+
+    def __str__(self):
+        return 'Tried to register an OpenMDAO system with an already used identifier : %s' \
+               % self.factory_name
+
+
+class FastNoOMSystemFoundError(FastError):
+    """
+    Raised when no registered OpenMDAO system could be found from asked properties
+    """
+
+    def __init__(self, properties):
+        super().__init__('No OpenMDAO system found with these properties: %s' % properties)
+        self.properties = properties
+
+
+class FastUnknownOMSystemIdentifierError(FastError):
+    """
+    Raised when no OpenMDAO system is registered with asked identifier
+    """
+
+    def __init__(self, identifier):
+        super().__init__('No OpenMDAO system found with this identifier: %s' % identifier)
+        self.identifier = identifier

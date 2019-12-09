@@ -28,9 +28,9 @@ class Disc2(Disc2Base):
         y2 = y1**(.5) + z1 + z2
         """
 
-        z1 = inputs['category1/z'][0]
-        z2 = inputs['category1/z'][1]
-        y1 = inputs['y_vars/y1']
+        z1 = inputs['category1:z'][0]
+        z2 = inputs['category1:z'][1]
+        y1 = inputs['y_vars:y1']
 
         # Note: this may cause some issues. However, y1 is constrained to be
         # above 3.16, so lets just let it converge, and the optimizer will
@@ -38,4 +38,4 @@ class Disc2(Disc2Base):
         if y1.real < 0.0:
             y1 *= -1
 
-        outputs['y_vars/y2'] = y1 ** .5 + z1 + z2
+        outputs['y_vars:y2'] = y1 ** .5 + z1 + z2

@@ -68,8 +68,8 @@ class ConfiguredProblem(om.Problem):
         super().__init__(*args, **kwargs)
 
         self._conf_dict = {}
-        self._input_file = None
-        self._output_file = None
+        self.input_file_path = None
+        self.output_file_path = None
         self._model_definition = None
 
     def configure(self, conf_file):
@@ -90,11 +90,11 @@ class ConfiguredProblem(om.Problem):
         # I/O files
         input_file = self._conf_dict.get(KEY_INPUT_FILE)
         if input_file:
-            self._input_file = pth.join(conf_dirname, input_file)
+            self.input_file_path = pth.join(conf_dirname, input_file)
 
         output_file = self._conf_dict.get(KEY_OUTPUT_FILE)
         if output_file:
-            self._output_file = pth.join(conf_dirname, output_file)
+            self.output_file_path = pth.join(conf_dirname, output_file)
 
         # Looking for modules to register
         module_folder_paths = self._conf_dict.get(KEY_FOLDERS, [])
@@ -131,12 +131,12 @@ class ConfiguredProblem(om.Problem):
 
         :param input_data: if provided, variable values will be read from it, if available.
         """
-        if self._input_file:
-            ivc = build_ivc_of_unconnected_inputs(self)
+        if self.input_file_path:
+            ivc = build_ivc_of_unconnected_inputs(self, with_optional_inputs=True)
             if input_data:
                 ref_ivc = input_data.read()
                 ivc = update_ivc(ivc, ref_ivc)
-            writer = OMXmlIO(self._input_file)
+            writer = OMXmlIO(self.input_file_path)
             writer.write(ivc)
 
     def read_inputs(self):
@@ -145,16 +145,16 @@ class ConfiguredProblem(om.Problem):
 
         Note: the OpenMDAO problem is fully rebuilt
         """
-        if self._input_file:
-            reader = OMXmlIO(self._input_file)
+        if self.input_file_path:
+            reader = OMXmlIO(self.input_file_path)
             self.build_model(reader.read())
 
     def write_outputs(self):
         """
         Once problem is run, writes all outputs in the configured output file.
         """
-        if self._output_file:
-            writer = OMXmlIO(self._output_file)
+        if self.output_file_path:
+            writer = OMXmlIO(self.output_file_path)
             ivc = build_ivc_of_variables(self)
             writer.write(ivc)
 
