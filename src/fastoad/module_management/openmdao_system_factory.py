@@ -39,7 +39,7 @@ class OpenMDAOSystemFactory:
     def explore_folder(cls, folder_path: str):
         """
         Explores provided folder for Systems to register (i.e. modules that use
-        OpenMDAOSystemFactory.register_component() )
+        :meth:`~OpenMDAOSystemFactory.register_system` )
 
         :param folder_path:
         """
@@ -51,10 +51,15 @@ class OpenMDAOSystemFactory:
         Registers the System (or subclass) so it can later be retrieved and
         instantiated.
 
+        *WARNING:*
+        **A System cannot be accessed by** :meth:`~OpenMDAOSystemFactory.get_system`
+        **in the Python module where it is registered** (but one normally does not need
+        to do that, since in this case, the Python class is directly accessible)
+
         :param system_class:
         :param identifier:
         :param properties: properties that will be associated to the service
-        :raise FastDuplicateOpenMDAOSystemNameException:
+        :raise FastDuplicateOMSystemIdentifierException:
         """
         try:
             cls._loader.register_factory(system_class, identifier, SERVICE_OPENMDAO_SYSTEM,

@@ -20,6 +20,7 @@ from distutils.util import strtobool
 
 from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMLegacy1XmlIO, OMXmlIO
+from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 
 
@@ -73,10 +74,12 @@ def list_systems(args):
         problem = ConfiguredProblem()
         problem.configure(args.conf_file)
 
-    print('-- AVAILABLE SYSTEM IDENTIFIERS ----------------------------------')
+    print('-- AVAILABLE SYSTEM IDENTIFIERS -------------------------------------------------------')
+    print('%-60s %s' % ('IDENTIFIER', 'PATH'))
     for identifier in OpenMDAOSystemFactory.get_system_ids():
-        print(identifier)
-    print('------------------------------------------------------------------')
+        path = BundleLoader().get_factory_path(identifier)
+        print('%-60s %s' % (identifier, path))
+    print('---------------------------------------------------------------------------------------')
 
 
 def run_model(args):
