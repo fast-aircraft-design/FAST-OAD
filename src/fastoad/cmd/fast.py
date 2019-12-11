@@ -24,136 +24,155 @@ from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 
 
-def _query_yes_no(question):
-    """
-    Ask a yes/no question via input() and return its answer as boolean.
+class Main:
 
-    Keeps asking while answer is not similar to "yes" or "no"
-    The returned value is True for "yes" or False for "no".
-    """
-    answer = None
-    while answer is None:
-        raw_answer = input(question + '\n')
-        try:
-            answer = strtobool(raw_answer)
-        except ValueError:
-            pass
+    def __init__(self):
+        self.parser = ArgumentParser(description='FAST-OAD main program')
+        self.problem = None
 
-    return answer == 1
+    @staticmethod
+    def _query_yes_no(question):
+        """
+        Ask a yes/no question via input() and return its answer as boolean.
 
+        Keeps asking while answer is not similar to "yes" or "no"
+        The returned value is True for "yes" or False for "no".
+        """
+        answer = None
+        while answer is None:
+            raw_answer = input(question + '\n')
+            try:
+                answer = strtobool(raw_answer)
+            except ValueError:
+                pass
 
-def gen_inputs(args):
-    """
-    Generates input file according to command line arguments
-    """
-    problem = ConfiguredProblem()
-    problem.configure(args.conf_file)
+        return answer == 1
 
-    if pth.exists(problem.input_file_path) and not _query_yes_no(
-            'Input file "%s" already exists. Do you want to overwrite it?'
-            % problem.input_file_path):
-        print('No file written.')
-        return
+    def set_problem(self, args):
+        """
+        Initialize the OpenMDAO problem id conf_file has been provided
+        """
+        if args.conf_file:
+            self.problem = ConfiguredProblem()
+            self.problem.configure(args.conf_file)
 
-    if args.source:
-        if args.legacy:
-            source = OMLegacy1XmlIO(args.source)
+    def generate_inputs(self, args):
+        """
+        Generates input file according to command line arguments
+        """
+        if not self.problem:
+            self.parser.error('This command requires conf_file to be provided.')
+
+        if pth.exists(self.problem.input_file_path) and not self._query_yes_no(
+                'Input file "%s" already exists. Do you want to overwrite it?'
+                % self.problem.input_file_path):
+            print('No file written.')
+            return
+
+        if args.source:
+            if args.legacy:
+                source = OMLegacy1XmlIO(args.source)
+            else:
+                source = OMXmlIO(args.source)
         else:
-            source = OMXmlIO(args.source)
-    else:
-        source = None
+            source = None
 
-    problem.write_needed_inputs(source)
+        self.problem.write_needed_inputs(source)
 
+    def list_systems(self, args):
+        """
+        Prints list of system identifiers
+        """
 
-def list_systems(args):
-    """
-    Prints list of system identifiers
-    """
-    if args.conf_file:
-        problem = ConfiguredProblem()
-        problem.configure(args.conf_file)
+        # If a problem has been configured, BundleLoader already knows additional registered systems
+        print(
+            '-- AVAILABLE SYSTEM IDENTIFIERS -------------------------------------------------------')
+        print('%-60s %s' % ('IDENTIFIER', 'PATH'))
+        for identifier in OpenMDAOSystemFactory.get_system_ids():
+            path = BundleLoader().get_factory_path(identifier)
+            print('%-60s %s' % (identifier, path))
+        print(
+            '---------------------------------------------------------------------------------------')
 
-    print('-- AVAILABLE SYSTEM IDENTIFIERS -------------------------------------------------------')
-    print('%-60s %s' % ('IDENTIFIER', 'PATH'))
-    for identifier in OpenMDAOSystemFactory.get_system_ids():
-        path = BundleLoader().get_factory_path(identifier)
-        print('%-60s %s' % (identifier, path))
-    print('---------------------------------------------------------------------------------------')
+    def evaluate(self, args):
+        """
+        Runs model according to provided problem file
+        """
+        if not self.problem:
+            self.parser.error('This command requires conf_file to be provided.')
 
+        if pth.exists(self.problem.output_file_path) and self._query_yes_no(
+                'Output file "%s" already exists. Do you want to overwrite it?'
+                % self.problem.output_file_path):
+            print('Computation interrupted.')
+            return
 
-def run_model(args):
-    """
-    Runs model according to provided problem file
-    """
-    problem = ConfiguredProblem()
-    problem.configure(args.conf_file)
+        self.problem.read_inputs()
+        self.problem.run_model()
+        self.problem.write_outputs()
 
-    if pth.exists(problem.output_file_path) and _query_yes_no(
-            'Output file "%s" already exists. Do you want to overwrite it?'
-            % problem.output_file_path):
-        print('Computation interrupted.')
-        return
+    def optimize(self, args):
+        """
+        Runs driver according to provided problem file
+        """
+        if not self.problem:
+            self.parser.error('This command requires conf_file to be provided.')
 
-    problem.read_inputs()
-    problem.run_model()
-    problem.write_outputs()
+        if pth.exists(self.problem.output_file_path) and self._query_yes_no(
+                'Output file "%s" already exists. Do you want to overwrite it?'
+                % self.problem.output_file_path):
+            print('Computation interrupted.')
+            return
 
+        self.problem.read_inputs()
+        self.problem.run_driver()
+        self.problem.write_outputs()
 
-def run_driver(args):
-    """
-    Runs driver according to provided problem file
-    """
-    problem = ConfiguredProblem()
-    problem.configure(args.conf_file)
+    def run(self):
+        """ Main function """
+        self.parser.add_argument('conf_file', type=str, nargs='?',
+                                 help='the configuration file for setting the problem')
+        self.parser.set_defaults(func=self.set_problem)
 
-    if pth.exists(problem.output_file_path) and _query_yes_no(
-            'Output file "%s" already exists. Do you want to overwrite it?'
-            % problem.output_file_path):
-        print('Computation interrupted.')
-        return
+        subparsers = self.parser.add_subparsers(title='sub-commands')
 
-    problem.read_inputs()
-    problem.run_driver()
-    problem.write_outputs()
+        # sub-command for generating input file
+        parser_gen_inputs = subparsers.add_parser(
+            'gen_inputs',
+            help=
+            'generates the input file (specified in the configuration file) with needed variables')
+        parser_gen_inputs.add_argument(
+            'source', nargs='?',
+            help='if provided, generated input file will be fed with values from provided XML file')
+        parser_gen_inputs.add_argument(
+            '--legacy',
+            help='to be used if the source XML file is in legacy format')
+        parser_gen_inputs.set_defaults(func=self.generate_inputs)
+
+        # sub-command for listing registered systems
+        parser_list_systems = subparsers.add_parser(
+            'list_systems',
+            help='provides the identifiers of available systems')
+        parser_list_systems.set_defaults(func=self.list_systems)
+
+        # sub-command for running the model
+        parser_run_model = subparsers.add_parser(
+            'eval',
+            help='runs the analysis')
+        parser_run_model.set_defaults(func=self.evaluate)
+
+        # sub-command for running the driver
+        parser_run_driver = subparsers.add_parser(
+            'optim',
+            help='runs the optimization')
+        parser_run_driver.set_defaults(func=self.optimize)
+
+        args = self.parser.parse_args()
+        args.func(args)
 
 
 def main():
-    """ Main function """
-    parser = ArgumentParser(description='FAST-OAD main program')
-    parser.add_argument('conf_file', type=str, nargs='?',
-                        help='the configuration file for setting the problem')
-
-    subparsers = parser.add_subparsers(title='sub-commands')
-
-    parser_gen_inputs = subparsers.add_parser(
-        'gen_inputs',
-        help='generates the input file (specified in the configuration file) with needed variables')
-    parser_gen_inputs.add_argument(
-        'source', nargs='?',
-        help='if provided, generated input file will be fed with values from provided XML file')
-    parser_gen_inputs.add_argument(
-        '--legacy',
-        help='to be used if the source XML file is in legacy format')
-    parser_gen_inputs.set_defaults(func=gen_inputs)
-
-    parser_run_model = subparsers.add_parser(
-        'run_model',
-        help='runs the analysis')
-    parser_run_model.set_defaults(func=run_model)
-
-    parser_run_driver = subparsers.add_parser(
-        'run_driver',
-        help='runs the optimization')
-    parser_run_driver.set_defaults(func=run_driver)
-
-    parser_list_systems = subparsers.add_parser(
-        'list_systems',
-        help='provides the identifiers of available systems')
-    parser_list_systems.set_defaults(func=list_systems)
-
-    args = parser.parse_args()
-    args.func(args)
+    Main().run()
 
 
 if __name__ == '__main__':
