@@ -22,6 +22,7 @@ from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMLegacy1XmlIO, OMXmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from fastoad.openmdao.connections_utils import build_ivc_of_outputs
 
 
 def query_yes_no(question):
@@ -76,7 +77,16 @@ class Main:
         """
         Prints list of system outputs
         """
-        print('Not implemente yet')
+        ivc = build_ivc_of_outputs(self.problem)
+        print(
+            '-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------'
+        )
+        print('%-60s| %s' % ('VARIABLE', 'DESCRIPTION'))
+        for (name, value, attributes) in ivc._indep_external:
+            print('%-60s| %s' % (name, attributes['desc']))
+        print(
+            '--------------------------------------------------------------------------------------'
+        )
 
     @staticmethod
     def _list_systems(args):
@@ -88,10 +98,10 @@ class Main:
         print(
             '-- AVAILABLE SYSTEM IDENTIFIERS ------------------------------------------------------'
         )
-        print('%-60s %s' % ('IDENTIFIER', 'PATH'))
+        print('%-60s| %s' % ('IDENTIFIER', 'PATH'))
         for identifier in OpenMDAOSystemFactory.get_system_ids():
             path = BundleLoader().get_factory_path(identifier)
-            print('%-60s %s' % (identifier, path))
+            print('%-60s| %s' % (identifier, path))
         print(
             '--------------------------------------------------------------------------------------'
         )
