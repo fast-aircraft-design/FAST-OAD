@@ -32,7 +32,7 @@ class ComputeControlSurfacesCG(ExplicitComponent):
         self.add_input('geometry:wing:root:y', val=np.nan, units='m')
         self.add_input('geometry:wing:kink:leading_edge:x', val=np.nan, units='m')
         self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
 
         self.add_output('weight:airframe:flight_controls:CG:x', units='m')
 
@@ -47,7 +47,7 @@ class ComputeControlSurfacesCG(ExplicitComponent):
         y2_wing = inputs['geometry:wing:root:y']
         x3_wing = inputs['geometry:wing:kink:leading_edge:x']
         y3_wing = inputs['geometry:wing:kink:y']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
 
         # TODO: build generic functions to estimate the chord, leading edge,
         # trailing edge with respect to span wise position

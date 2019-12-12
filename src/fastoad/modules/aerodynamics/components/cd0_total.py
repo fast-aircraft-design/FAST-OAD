@@ -27,7 +27,7 @@ class Cd0Total(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('geometry:aircraft:area', val=np.nan, units='m**2')
+        self.add_input('geometry:aircraft:wetted_area', val=np.nan, units='m**2')
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
@@ -48,7 +48,7 @@ class Cd0Total(ExplicitComponent):
             self.add_output('cd0_total_high_speed', shape=POLAR_POINT_COUNT)
 
     def compute(self, inputs, outputs):
-        wet_area_total = inputs['geometry:aircraft:area']
+        wet_area_total = inputs['geometry:aircraft:wetted_area']
         if self.low_speed_aero:
             cd0_wing = inputs['cd0_wing_low_speed']
             cd0_fus = inputs['cd0_fuselage_low_speed']

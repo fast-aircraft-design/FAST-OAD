@@ -22,26 +22,26 @@ class FuselageWeight(ExplicitComponent):
     """ Fuselage weight estimation (A2) """
 
     def setup(self):
-        self.add_input('geometry:fuselage:wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:fuselage:wetted_area', val=np.nan, units='m**2')
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
         self.add_input('n1m1', val=np.nan, units='kg')
         self.add_input('weight:airframe:fuselage:mass:k', val=1.)
         self.add_input('weight:airframe:fuselage:mass:offset', val=0., units='kg')
-        self.add_input('weight:airframe:fuselage:mass:k_tr', val=1.05)
+        self.add_input('weight:airframe:fuselage:mass:k_lg', val=1.05)
         self.add_input('weight:airframe:fuselage:mass:k_fus', val=1.)
 
         self.add_output('weight:airframe:fuselage:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        fuselage_wet_area = inputs['geometry:fuselage:wet_area']
+        fuselage_wet_area = inputs['geometry:fuselage:wetted_area']
         width_max = inputs['geometry:fuselage:maximum_width']
         height_max = inputs['geometry:fuselage:maximum_height']
         n1m1 = inputs['n1m1']
         k_a2 = inputs['weight:airframe:fuselage:mass:k']
         offset_a2 = inputs['weight:airframe:fuselage:mass:offset']
-        k_lg = inputs['weight:airframe:fuselage:mass:k_tr']
+        k_lg = inputs['weight:airframe:fuselage:mass:k_lg']
         k_fus = inputs['weight:airframe:fuselage:mass:k_fus']
 
         temp_a2 = fuselage_wet_area * (10 + 1.2 * np.sqrt(width_max * height_max)

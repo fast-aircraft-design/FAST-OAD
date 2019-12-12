@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -26,7 +26,7 @@ class ComputeXWing(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing:l1', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:virtual_chord', val=np.nan, units='m')
         self.add_input('geometry:wing:kink:chord', val=np.nan, units='m')
         self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
         self.add_input('geometry:wing:root:y', val=np.nan, units='m')
@@ -37,18 +37,20 @@ class ComputeXWing(ExplicitComponent):
         self.add_output('geometry:wing:kink:leading_edge:x', units='m')
         self.add_output('geometry:wing:tip:leading_edge:x', units='m')
 
-        self.declare_partials('geometry:wing:kink:leading_edge:x', ['geometry:wing:l1', 'geometry:wing:root:y',
-                                                   'geometry:wing:kink:y', 'geometry:wing:kink:chord',
-                                                   'geometry:wing:sweep_25'], method='fd')
-        self.declare_partials('geometry:wing:tip:leading_edge:x', ['geometry:wing:l1', 'geometry:wing:root:y',
-                                                   'geometry:wing:tip:y', 'geometry:wing:tip:chord',
-                                                   'geometry:wing:sweep_25'], method='fd')
+        self.declare_partials('geometry:wing:kink:leading_edge:x',
+                              ['geometry:wing:root:virtual_chord', 'geometry:wing:root:y',
+                               'geometry:wing:kink:y', 'geometry:wing:kink:chord',
+                               'geometry:wing:sweep_25'], method='fd')
+        self.declare_partials('geometry:wing:tip:leading_edge:x',
+                              ['geometry:wing:root:virtual_chord', 'geometry:wing:root:y',
+                               'geometry:wing:tip:y', 'geometry:wing:tip:chord',
+                               'geometry:wing:sweep_25'], method='fd')
 
     def compute(self, inputs, outputs):
         y2_wing = inputs['geometry:wing:root:y']
         y3_wing = inputs['geometry:wing:kink:y']
         y4_wing = inputs['geometry:wing:tip:y']
-        l1_wing = inputs['geometry:wing:l1']
+        l1_wing = inputs['geometry:wing:root:virtual_chord']
         l3_wing = inputs['geometry:wing:kink:chord']
         l4_wing = inputs['geometry:wing:tip:chord']
         sweep_25 = inputs['geometry:wing:sweep_25']

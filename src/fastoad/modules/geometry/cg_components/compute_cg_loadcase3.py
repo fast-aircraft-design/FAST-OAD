@@ -24,7 +24,7 @@ class ComputeCGLoadCase3(ExplicitComponent):
     def setup(self):
 
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
         self.add_input('weight:payload:PAX:CG:x', val=np.nan, units='m')
         self.add_input('weight:payload:rear_fret:CG:x', val=np.nan, units='m')
         self.add_input('weight:payload:front_fret:CG:x', val=np.nan, units='m')
@@ -38,7 +38,7 @@ class ComputeCGLoadCase3(ExplicitComponent):
 
     def compute(self, inputs, outputs):
         l0_wing = inputs['geometry:wing:MAC:length']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
         cg_pax = inputs['weight:payload:PAX:CG:x']
         cg_rear_fret = inputs['weight:payload:rear_fret:CG:x']
         cg_front_fret = inputs['weight:payload:front_fret:CG:x']

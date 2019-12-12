@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -29,7 +29,7 @@ class ComputeB50(ExplicitComponent):
         self.add_input('geometry:wing:tip:leading_edge:x', val=np.nan, units='m')
         self.add_input('geometry:wing:root:y', val=np.nan, units='m')
         self.add_input('geometry:wing:tip:y', val=np.nan, units='m')
-        self.add_input('geometry:wing:l1', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:virtual_chord', val=np.nan, units='m')
         self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
         self.add_input('geometry:wing:span', val=np.nan, units='m')
 
@@ -41,7 +41,7 @@ class ComputeB50(ExplicitComponent):
         x4_wing = inputs['geometry:wing:tip:leading_edge:x']
         y2_wing = inputs['geometry:wing:root:y']
         y4_wing = inputs['geometry:wing:tip:y']
-        l1_wing = inputs['geometry:wing:l1']
+        l1_wing = inputs['geometry:wing:root:virtual_chord']
         l4_wing = inputs['geometry:wing:tip:chord']
         span = inputs['geometry:wing:span']
 

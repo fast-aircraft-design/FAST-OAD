@@ -21,8 +21,8 @@
     <wing>
       <MAC>
         <length>4.457</length>
+        <x>16.457</x>
       </MAC>
-      <location>16.457</location>
     </wing>
   </geometry>
   <weight>
@@ -42,20 +42,18 @@
           <x>16.88</x>
         </CG>
       </fuselage>
-      <tail_plane>
-        <horizontal>
-          <mass>754.04</mass>
-          <CG>
-            <x>34.58</x>
-          </CG>
-        </horizontal>
-        <vertical>
-          <mass>515.53</mass>
-          <CG>
-            <x>35.11</x>
-          </CG>
-        </vertical>
-      </tail_plane>
+      <horizontal_tail>
+        <mass>754.04</mass>
+        <CG>
+          <x>34.58</x>
+        </CG>
+      </horizontal_tail>
+      <vertical_tail>
+        <mass>515.53</mass>
+        <CG>
+          <x>35.11</x>
+        </CG>
+      </vertical_tail>
       <flight_controls>
         <mass>728.07</mass>
         <CG>
@@ -155,12 +153,12 @@
             <x>16.88</x>
           </CG>
         </cabin_lighting>
-        <seats_crew_accomodation>
+        <seats_crew_accommodation>
           <mass>126.0</mass>
           <CG>
             <x>16.62</x>
           </CG>
-        </seats_crew_accomodation>
+        </seats_crew_accommodation>
         <oxygen>
           <mass>284.1</mass>
           <CG>

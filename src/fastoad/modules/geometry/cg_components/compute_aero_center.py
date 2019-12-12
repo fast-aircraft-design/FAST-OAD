@@ -26,10 +26,10 @@ class ComputeAeroCenter(ExplicitComponent):
 
         self.add_input('geometry:wing:root:leading_edge:x', val=np.nan, units='m')
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:l1', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:virtual_chord', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
         self.add_input('geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
         self.add_input('geometry:wing:area', val=np.nan, units='m**2')
         self.add_input('geometry:horizontal_tail:area', val=np.nan, units='m**2')
         self.add_input('geometry:horizontal_tail:distance_from_wing', val=np.nan, units='m')
@@ -43,9 +43,9 @@ class ComputeAeroCenter(ExplicitComponent):
     def compute(self, inputs, outputs):
         x0_wing = inputs['geometry:wing:root:leading_edge:x']
         l0_wing = inputs['geometry:wing:MAC:length']
-        l1_wing = inputs['geometry:wing:l1']
+        l1_wing = inputs['geometry:wing:root:virtual_chord']
         width_max = inputs['geometry:fuselage:maximum_width']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
         fus_length = inputs['geometry:fuselage:length']
         wing_area = inputs['geometry:wing:area']
         s_h = inputs['geometry:horizontal_tail:area']

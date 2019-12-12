@@ -37,8 +37,8 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         self.add_output('cg_pl:CG_PAX', units='m')
         self.add_output('weight:systems:flight_kit:CG:x', units='m')
         self.add_output('weight:furniture:passenger_seats:CG:x', units='m')
-        self.add_output('geometry:fuselage:cabin_length', units='m')
-        self.add_output('geometry:fuselage:wet_area', units='m**2')
+        self.add_output('geometry:cabin:length', units='m')
+        self.add_output('geometry:fuselage:wetted_area', units='m**2')
         self.add_output('geometry:cabin:crew_count:commercial')
 
         self.declare_partials('cg_pl:CG_PAX',
@@ -50,9 +50,9 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         self.declare_partials('weight:furniture:passenger_seats:CG:x',
                               ['geometry:fuselage:front_length', 'geometry:fuselage:PAX_length'],
                               method='fd')
-        self.declare_partials('geometry:fuselage:cabin_length',
+        self.declare_partials('geometry:cabin:length',
                               ['geometry:fuselage:length'], method='fd')
-        self.declare_partials('geometry:fuselage:wet_area',
+        self.declare_partials('geometry:fuselage:wetted_area',
                               ['geometry:fuselage:maximum_width',
                                'geometry:fuselage:maximum_height',
                                'geometry:fuselage:front_length', 'geometry:fuselage:rear_length',
@@ -86,9 +86,9 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         outputs['cg_pl:CG_PAX'] = x_cg_passenger
         outputs['weight:systems:flight_kit:CG:x'] = x_cg_c6
         outputs['weight:furniture:passenger_seats:CG:x'] = x_cg_d2
-        outputs['geometry:fuselage:cabin_length'] = cabin_length
+        outputs['geometry:cabin:length'] = cabin_length
         outputs['geometry:cabin:crew_count:commercial'] = pnc
-        outputs['geometry:fuselage:wet_area'] = wet_area_fus
+        outputs['geometry:fuselage:wetted_area'] = wet_area_fus
 
 
 class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
@@ -116,8 +116,8 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         self.add_output('geometry:fuselage:front_length', units='m')
         self.add_output('geometry:fuselage:rear_length', units='m')
         self.add_output('geometry:fuselage:PAX_length', units='m')
-        self.add_output('geometry:fuselage:cabin_length', units='m')
-        self.add_output('geometry:fuselage:wet_area', units='m**2')
+        self.add_output('geometry:cabin:length', units='m')
+        self.add_output('geometry:fuselage:wetted_area', units='m**2')
         self.add_output('geometry:cabin:crew_count:commercial')
 
         self.declare_partials('geometry:cabin:NPAX1', ['TLAR:NPAX'], method='fd')
@@ -125,7 +125,8 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
                               ['geometry:cabin:seats:economical:count_by_row', 'TLAR:NPAX'],
                               method='fd')
         self.declare_partials('geometry:fuselage:maximum_width',
-                              ['geometry:cabin:seats:economical:count_by_row', 'geometry:cabin:seats:economical:width',
+                              ['geometry:cabin:seats:economical:count_by_row',
+                               'geometry:cabin:seats:economical:width',
                                'geometry:cabin:aisle_width'], method='fd')
         self.declare_partials('geometry:fuselage:maximum_height',
                               ['geometry:cabin:seats:economical:count_by_row',
@@ -142,23 +143,38 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         self.declare_partials('geometry:fuselage:PAX_length', [
             'geometry:cabin:seats:economical:length', 'geometry:cabin:exit_width'], method='fd')
         self.declare_partials('geometry:fuselage:length',
-                              ['geometry:cabin:seats:economical:count_by_row', 'geometry:cabin:aisle_width',
-                               'geometry:cabin:seats:economical:length', 'geometry:cabin:seats:economical:width', 'geometry:cabin:exit_width'], method='fd')
-        self.declare_partials('geometry:fuselage:cabin_length',
-                              ['geometry:cabin:seats:economical:count_by_row', 'geometry:cabin:aisle_width',
-                               'geometry:cabin:seats:economical:length', 'geometry:cabin:seats:economical:width', 'geometry:cabin:exit_width'], method='fd')
+                              ['geometry:cabin:seats:economical:count_by_row',
+                               'geometry:cabin:aisle_width',
+                               'geometry:cabin:seats:economical:length',
+                               'geometry:cabin:seats:economical:width',
+                               'geometry:cabin:exit_width'], method='fd')
+        self.declare_partials('geometry:cabin:length',
+                              ['geometry:cabin:seats:economical:count_by_row',
+                               'geometry:cabin:aisle_width',
+                               'geometry:cabin:seats:economical:length',
+                               'geometry:cabin:seats:economical:width',
+                               'geometry:cabin:exit_width'], method='fd')
         self.declare_partials('weight:systems:flight_kit:CG:x',
-                              ['geometry:cabin:seats:economical:count_by_row', 'geometry:cabin:seats:economical:width',
-                               'geometry:cabin:seats:economical:length', 'geometry:cabin:exit_width', 'geometry:cabin:aisle_width'], method='fd')
+                              ['geometry:cabin:seats:economical:count_by_row',
+                               'geometry:cabin:seats:economical:width',
+                               'geometry:cabin:seats:economical:length',
+                               'geometry:cabin:exit_width', 'geometry:cabin:aisle_width'],
+                              method='fd')
         self.declare_partials('weight:furniture:passenger_seats:CG:x',
                               ['geometry:cabin:seats:economical:count_by_row', 'geometry:cabin:seats:economical:width',
                                'geometry:cabin:seats:economical:length', 'geometry:cabin:exit_width', 'geometry:cabin:aisle_width'], method='fd')
         self.declare_partials('cg_pl:CG_PAX',
-                              ['geometry:cabin:seats:economical:count_by_row', 'geometry:cabin:seats:economical:width',
-                               'geometry:cabin:seats:economical:length', 'geometry:cabin:exit_width', 'geometry:cabin:aisle_width'], method='fd')
-        self.declare_partials('geometry:fuselage:wet_area',
-                              ['geometry:cabin:seats:economical:count_by_row', 'geometry:cabin:aisle_width',
-                               'geometry:cabin:seats:economical:length', 'geometry:cabin:seats:economical:width', 'geometry:cabin:exit_width'], method='fd')
+                              ['geometry:cabin:seats:economical:count_by_row',
+                               'geometry:cabin:seats:economical:width',
+                               'geometry:cabin:seats:economical:length',
+                               'geometry:cabin:exit_width', 'geometry:cabin:aisle_width'],
+                              method='fd')
+        self.declare_partials('geometry:fuselage:wetted_area',
+                              ['geometry:cabin:seats:economical:count_by_row',
+                               'geometry:cabin:aisle_width',
+                               'geometry:cabin:seats:economical:length',
+                               'geometry:cabin:seats:economical:width',
+                               'geometry:cabin:exit_width'], method='fd')
 
     def compute(self, inputs, outputs):
         front_seat_number_eco = inputs['geometry:cabin:seats:economical:count_by_row']
@@ -217,6 +233,6 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         outputs['geometry:fuselage:front_length'] = lav
         outputs['geometry:fuselage:rear_length'] = lar
         outputs['geometry:fuselage:PAX_length'] = lpax
-        outputs['geometry:fuselage:cabin_length'] = cabin_length
+        outputs['geometry:cabin:length'] = cabin_length
         outputs['geometry:cabin:crew_count:commercial'] = pnc
-        outputs['geometry:fuselage:wet_area'] = wet_area_fus
+        outputs['geometry:fuselage:wetted_area'] = wet_area_fus

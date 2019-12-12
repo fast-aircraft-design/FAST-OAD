@@ -45,12 +45,12 @@ class Cd0Fuselage(ExplicitComponent):
         self.add_input('geometry:fuselage:length', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:fuselage:wetted_area', val=np.nan, units='m**2')
 
     def compute(self, inputs, outputs):
         height_max = inputs['geometry:fuselage:maximum_height']
         width_max = inputs['geometry:fuselage:maximum_width']
-        wet_area_fus = inputs['geometry:fuselage:wet_area']
+        wet_area_fus = inputs['geometry:fuselage:wetted_area']
         wing_area = inputs['geometry:wing:area']
         fus_length = inputs['geometry:fuselage:length']
         if self.low_speed_aero:

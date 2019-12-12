@@ -78,7 +78,7 @@ def replace_var_names(file_path, var_names_match):
         for line in file:
             new_line = line
             for old_name, new_name in var_names_match:
-                new_line = re.sub('(?<!:)\\b%s\\b(?!:)' % old_name, new_name, new_line)
+                new_line = re.sub(r'(?<!:)\b%s\b(?!:)' % old_name, new_name, new_line)
             print(new_line, end='')
 
 
@@ -132,9 +132,9 @@ if __name__ == '__main__':
             for filename in file_names:
                 ext = pth.splitext(filename)[1]
                 if ext not in ['.pyc', '.exe', '.png']:  # avoid processing useless files
-                    xml_file_path = pth.join(dir_path, filename)
-                    print('processing %s' % xml_file_path)
+                    file_path = pth.join(dir_path, filename)
+                    print('processing %s' % file_path)
                     try:
-                        replace_var_names(xml_file_path, old_new_names)
+                        replace_var_names(file_path, old_new_names)
                     except UnicodeDecodeError:
-                        pass
+                        print('SKIPPED %s' % file_path)

@@ -14,13 +14,14 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
+
 import math
+import os
 
 import numpy as np
+from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy import interpolate
 
-from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeTanksCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
@@ -47,7 +48,7 @@ class ComputeTanksCG(ExplicitComponent):
         self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
         self.add_input('geometry:wing:tip:leading_edge:x', val=np.nan, units='m')
         self.add_input('geometry:wing:tip:y', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
 
         self.add_output('weight:fuel_tank:CG:x', units='m')
@@ -79,7 +80,7 @@ class ComputeTanksCG(ExplicitComponent):
         y3_wing = inputs['geometry:wing:kink:y']
         y4_wing = inputs['geometry:wing:tip:y']
         x4_wing = inputs['geometry:wing:tip:leading_edge:x']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
         width_max = inputs['geometry:fuselage:maximum_width']
 
         f_airfoil = os.path.join(

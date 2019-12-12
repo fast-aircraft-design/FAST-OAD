@@ -19,6 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.modules.geometry.options import AIRCRAFT_FAMILY_OPTION, TAIL_TYPE_OPTION
 
+
 class ComputeHTArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Horizontal tail area estimation """
@@ -34,25 +35,26 @@ class ComputeHTArea(ExplicitComponent):
     def setup(self):
 
         self.add_input('geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
         self.add_input('geometry:horizontal_tail:volume_coefficient', val=np.nan)
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
         self.add_input('geometry:wing:area', val=np.nan, units='m**2')
         self.add_input('geometry:horizontal_tail:area', val=np.nan, units='m**2')
 
         self.add_output('geometry:horizontal_tail:distance_from_wing', units='m')
-        self.add_output('geometry:horizontal_tail:wet_area', units='m**2')
+        self.add_output('geometry:horizontal_tail:wetted_area', units='m**2')
         self.add_output('delta_cm_takeoff')
 
         self.declare_partials('geometry:horizontal_tail:distance_from_wing',
-                              ['geometry:fuselage:length', 'geometry:wing:location'],
+                              ['geometry:fuselage:length', 'geometry:wing:MAC:x'],
                               method='fd')
-        self.declare_partials('geometry:horizontal_tail:wet_area', 'geometry:horizontal_tail:area', method='fd')
+        self.declare_partials('geometry:horizontal_tail:wetted_area',
+                              'geometry:horizontal_tail:area', method='fd')
         self.declare_partials('delta_cm_takeoff', '*', method='fd')
 
     def compute(self, inputs, outputs):
         fus_length = inputs['geometry:fuselage:length']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
         wing_area = inputs['geometry:wing:area']
         l0_wing = inputs['geometry:wing:MAC:length']
         s_h = inputs['geometry:horizontal_tail:area']
@@ -77,5 +79,5 @@ class ComputeHTArea(ExplicitComponent):
         delta_cm_takeoff = s_h * lp_ht / wing_area / l0_wing - ht_vol_coeff
 
         outputs['geometry:horizontal_tail:distance_from_wing'] = lp_ht
-        outputs['geometry:horizontal_tail:wet_area'] = wet_area_ht
+        outputs['geometry:horizontal_tail:wetted_area'] = wet_area_ht
         outputs['delta_cm_takeoff'] = delta_cm_takeoff

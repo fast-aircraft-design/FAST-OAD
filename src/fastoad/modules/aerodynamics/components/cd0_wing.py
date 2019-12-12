@@ -42,13 +42,13 @@ class Cd0Wing(ExplicitComponent):
 
         self.add_input('geometry:wing:area', val=np.nan, units='m**2')
         self.add_input('geometry:wing:thickness_ratio', val=np.nan)
-        self.add_input('geometry:wing:wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:wetted_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
         self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
 
     def compute(self, inputs, outputs):
         wing_area = inputs['geometry:wing:area']
-        wet_area_wing = inputs['geometry:wing:wet_area']
+        wet_area_wing = inputs['geometry:wing:wetted_area']
         el_aero = inputs['geometry:wing:thickness_ratio']
         sweep_25 = inputs['geometry:wing:sweep_25']
         l0_wing = inputs['geometry:wing:MAC:length']

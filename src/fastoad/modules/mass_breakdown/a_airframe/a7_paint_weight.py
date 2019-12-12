@@ -23,7 +23,7 @@ class PaintWeight(ExplicitComponent):
     """ Paint weight estimation (A7) """
 
     def setup(self):
-        self.add_input('geometry:aircraft:area', val=np.nan, units='m**2')
+        self.add_input('geometry:aircraft:wetted_area', val=np.nan, units='m**2')
         self.add_input('weight:airframe:paint:mass:k', val=1.)
         self.add_input('weight:airframe:paint:mass:offset', val=0., units='kg')
 
@@ -31,7 +31,7 @@ class PaintWeight(ExplicitComponent):
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        total_wet_surface = inputs['geometry:aircraft:area']
+        total_wet_surface = inputs['geometry:aircraft:wetted_area']
         k_a7 = inputs['weight:airframe:paint:mass:k']
         offset_a7 = inputs['weight:airframe:paint:mass:offset']
 

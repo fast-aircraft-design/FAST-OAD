@@ -28,7 +28,7 @@ class ComputeOthersCG(ExplicitComponent):
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
         self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
         self.add_input('geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
         self.add_input('geometry:fuselage:front_length', val=np.nan, units='m')
         self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
         self.add_input('weight:propulsion:engine:CG:x', val=np.nan, units='m')
@@ -52,7 +52,7 @@ class ComputeOthersCG(ExplicitComponent):
         self.add_output('weight:systems:life_support:air_conditioning:CG:x', units='m')
         self.add_output('weight:systems:life_support:de-icing:CG:x', units='m')
         self.add_output('weight:systems:life_support:cabin_lighting:CG:x', units='m')
-        self.add_output('weight:systems:life_support:seats_crew_accomodation:CG:x', units='m')
+        self.add_output('weight:systems:life_support:seats_crew_accommodation:CG:x', units='m')
         self.add_output('weight:systems:life_support:oxygen:CG:x', units='m')
         self.add_output('weight:systems:life_support:safety_equipment:CG:x', units='m')
         self.add_output('weight:systems:navigation:CG:x', units='m')
@@ -78,13 +78,21 @@ class ComputeOthersCG(ExplicitComponent):
                               'weight:propulsion:engine:CG:x', method='fd')
         self.declare_partials('weight:propulsion:unconsumables:CG:x',
                               'weight:propulsion:engine:CG:x', method='fd')
-        self.declare_partials(['weight:systems:power:auxiliary_power_unit:CG:x', 'weight:systems:power:electric_systems:CG:x', 'weight:systems:power:hydraulic_systems:CG:x',
-                               'weight:systems:life_support:insulation:CG:x', 'weight:systems:life_support:cabin_lighting:CG:x', 'weight:systems:transmission:CG:x',
-                               'weight:systems:operational:radar:CG:x'], 'geometry:fuselage:length', method='fd')
-        self.declare_partials(['weight:systems:life_support:air_conditioning:CG:x', 'weight:systems:life_support:seats_crew_accomodation:CG:x', 'weight:systems:life_support:oxygen:CG:x',
-                               'weight:systems:operational:cargo_hold:CG:x'], 'weight:furniture:passenger_seats:CG:x', method='fd')
+        self.declare_partials(['weight:systems:power:auxiliary_power_unit:CG:x',
+                               'weight:systems:power:electric_systems:CG:x',
+                               'weight:systems:power:hydraulic_systems:CG:x',
+                               'weight:systems:life_support:insulation:CG:x',
+                               'weight:systems:life_support:cabin_lighting:CG:x',
+                               'weight:systems:transmission:CG:x',
+                               'weight:systems:operational:radar:CG:x'], 'geometry:fuselage:length',
+                              method='fd')
+        self.declare_partials(['weight:systems:life_support:air_conditioning:CG:x',
+                               'weight:systems:life_support:seats_crew_accommodation:CG:x',
+                               'weight:systems:life_support:oxygen:CG:x',
+                               'weight:systems:operational:cargo_hold:CG:x'],
+                              'weight:furniture:passenger_seats:CG:x', method='fd')
         self.declare_partials('weight:systems:life_support:de-icing:CG:x', [
-            'geometry:wing:location', 'geometry:wing:MAC:length'], method='fd')
+            'geometry:wing:MAC:x', 'geometry:wing:MAC:length'], method='fd')
         self.declare_partials('weight:systems:life_support:safety_equipment:CG:x',
                               ['weight:propulsion:engine:mass', 'weight:propulsion:engine:CG:x',
                                'geometry:cabin:NPAX1', 'weight:furniture:passenger_seats:CG:x'], method='fd')
@@ -104,18 +112,19 @@ class ComputeOthersCG(ExplicitComponent):
                                'geometry:wing:root:chord',
                                'geometry:cabin:seats:economical:count_by_row',
                                'geometry:cabin:seats:economical:length',
-                               'geometry:wing:location', 'geometry:fuselage:length'],
+                               'geometry:wing:MAC:x', 'geometry:fuselage:length'],
                               method='fd')
         self.declare_partials('weight:payload:front_fret:CG:x',
                               ['geometry:fuselage:front_length', 'geometry:wing:MAC:length',
-                               'geometry:wing:root:leading_edge:x', 'geometry:wing:location'], method='fd')
+                               'geometry:wing:root:leading_edge:x', 'geometry:wing:MAC:x'],
+                              method='fd')
 
     def compute(self, inputs, outputs):
         x0_wing = inputs['geometry:wing:root:leading_edge:x']
         l0_wing = inputs['geometry:wing:MAC:length']
         l2_wing = inputs['geometry:wing:root:chord']
         fus_length = inputs['geometry:fuselage:length']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
         lav = inputs['geometry:fuselage:front_length']
         lar = inputs['geometry:fuselage:rear_length']
         x_cg_b1 = inputs['weight:propulsion:engine:CG:x']
@@ -186,7 +195,7 @@ class ComputeOthersCG(ExplicitComponent):
         outputs['weight:systems:life_support:air_conditioning:CG:x'] = x_cg_c22
         outputs['weight:systems:life_support:de-icing:CG:x'] = x_cg_c23
         outputs['weight:systems:life_support:cabin_lighting:CG:x'] = x_cg_c24
-        outputs['weight:systems:life_support:seats_crew_accomodation:CG:x'] = x_cg_c25
+        outputs['weight:systems:life_support:seats_crew_accommodation:CG:x'] = x_cg_c25
         outputs['weight:systems:life_support:oxygen:CG:x'] = x_cg_c26
         outputs['weight:systems:life_support:safety_equipment:CG:x'] = x_cg_c27
         outputs['weight:systems:navigation:CG:x'] = x_cg_c3

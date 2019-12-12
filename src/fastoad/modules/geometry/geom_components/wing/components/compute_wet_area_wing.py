@@ -29,16 +29,16 @@ class ComputeWetAreaWing(ExplicitComponent):
         self.add_input('geometry:wing:area', val=np.nan, units='m**2')
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
 
-        self.add_output('geometry:wing:cantilever_area', units='m**2')
-        self.add_output('geometry:wing:wet_area', units='m**2')
+        self.add_output('geometry:wing:outer_area', units='m**2')
+        self.add_output('geometry:wing:wetted_area', units='m**2')
 
-        self.declare_partials('geometry:wing:cantilever_area', ['geometry:wing:area',
-                                                        'geometry:wing:root:y',
-                                                        'geometry:wing:root:chord'],
+        self.declare_partials('geometry:wing:outer_area', ['geometry:wing:area',
+                                                           'geometry:wing:root:y',
+                                                           'geometry:wing:root:chord'],
                               method='fd')
-        self.declare_partials('geometry:wing:wet_area', ['geometry:wing:area',
-                                                         'geometry:wing:root:chord',
-                                                         'geometry:fuselage:maximum_width'],
+        self.declare_partials('geometry:wing:wetted_area', ['geometry:wing:area',
+                                                            'geometry:wing:root:chord',
+                                                            'geometry:fuselage:maximum_width'],
                               method='fd')
 
     def compute(self, inputs, outputs):
@@ -50,5 +50,5 @@ class ComputeWetAreaWing(ExplicitComponent):
         s_pf = wing_area - 2 * l2_wing * y2_wing
         wet_area_wing = 2 * (wing_area - width_max * l2_wing)
 
-        outputs['geometry:wing:cantilever_area'] = s_pf
-        outputs['geometry:wing:wet_area'] = wet_area_wing
+        outputs['geometry:wing:outer_area'] = s_pf
+        outputs['geometry:wing:wetted_area'] = wet_area_wing

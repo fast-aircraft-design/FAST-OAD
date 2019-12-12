@@ -30,8 +30,8 @@ class ComputeCG(om.ExplicitComponent):
     def initialize(self):
         self.options.declare('cg_names', default=['weight:airframe:wing:CG:x',
                                                   'weight:airframe:fuselage:CG:x',
-                                                  'weight:airframe:tail_plane:horizontal:CG:x',
-                                                  'weight:airframe:tail_plane:vertical:CG:x',
+                                                  'weight:airframe:horizontal_tail:CG:x',
+                                                  'weight:airframe:vertical_tail:CG:x',
                                                   'weight:airframe:flight_controls:CG:x',
                                                   'weight:airframe:landing_gear:main:CG:x',
                                                   'weight:airframe:landing_gear:front:CG:x',
@@ -47,7 +47,7 @@ class ComputeCG(om.ExplicitComponent):
                                                   'weight:systems:life_support:air_conditioning:CG:x',
                                                   'weight:systems:life_support:de-icing:CG:x',
                                                   'weight:systems:life_support:cabin_lighting:CG:x',
-                                                  'weight:systems:life_support:seats_crew_accomodation:CG:x',
+                                                  'weight:systems:life_support:seats_crew_accommodation:CG:x',
                                                   'weight:systems:life_support:oxygen:CG:x',
                                                   'weight:systems:life_support:safety_equipment:CG:x',
                                                   'weight:systems:navigation:CG:x',
@@ -64,8 +64,8 @@ class ComputeCG(om.ExplicitComponent):
 
         self.options.declare('mass_names', ['weight:airframe:wing:mass',
                                             'weight:airframe:fuselage:mass',
-                                            'weight:airframe:tail_plane:horizontal:mass',
-                                            'weight:airframe:tail_plane:vertical:mass',
+                                            'weight:airframe:horizontal_tail:mass',
+                                            'weight:airframe:vertical_tail:mass',
                                             'weight:airframe:flight_controls:mass',
                                             'weight:airframe:landing_gear:main:mass',
                                             'weight:airframe:landing_gear:front:mass',
@@ -81,7 +81,7 @@ class ComputeCG(om.ExplicitComponent):
                                             'weight:systems:life_support:air_conditioning:mass',
                                             'weight:systems:life_support:de-icing:mass',
                                             'weight:systems:life_support:cabin_lighting:mass',
-                                            'weight:systems:life_support:seats_crew_accomodation:mass',
+                                            'weight:systems:life_support:seats_crew_accommodation:mass',
                                             'weight:systems:life_support:oxygen:mass',
                                             'weight:systems:life_support:safety_equipment:mass',
                                             'weight:systems:navigation:mass',
@@ -123,13 +123,13 @@ class CGRatio(om.ExplicitComponent):
     def setup(self):
         self.add_input('x_cg_plane_aft', val=np.nan, units='m')
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
 
         self.add_output('cg_ratio_aft')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         x_cg_all = inputs['x_cg_plane_aft']
-        wing_position = inputs['geometry:wing:location']
+        wing_position = inputs['geometry:wing:MAC:x']
         mac = inputs['geometry:wing:MAC:length']
 
         outputs['cg_ratio_aft'] = (x_cg_all - wing_position + 0.25 * mac) / mac
