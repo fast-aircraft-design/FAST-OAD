@@ -28,7 +28,7 @@ class FuselageWeight(ExplicitComponent):
         self.add_input('n1m1', val=np.nan, units='kg')
         self.add_input('weight:airframe:fuselage:mass:k', val=1.)
         self.add_input('weight:airframe:fuselage:mass:offset', val=0., units='kg')
-        self.add_input('weight:airframe:fuselage:mass:k_tr', val=1.)
+        self.add_input('weight:airframe:fuselage:mass:k_tr', val=1.05)
         self.add_input('weight:airframe:fuselage:mass:k_fus', val=1.)
 
         self.add_output('weight:airframe:fuselage:mass', units='kg')

@@ -48,7 +48,7 @@ class WingWeight(ExplicitComponent):
         self.add_input('weight:airframe:wing:secondary_parts:mass:k', val=1.)
         self.add_input('weight:airframe:wing:secondary_parts:mass:offset', val=0., units='kg')
         self.add_input('weight:airframe:wing:mass:k_voil', val=1.)
-        self.add_input('weight:airframe:wing:mass:k_mvo', val=1.)
+        self.add_input('weight:airframe:wing:mass:k_mvo', val=1.39)
 
         self.add_output('weight:airframe:wing:mass', units='kg')
 
