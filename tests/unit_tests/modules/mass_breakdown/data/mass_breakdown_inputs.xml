@@ -42,8 +42,8 @@
       <maximum_height units="m">4.06</maximum_height>
       <wet_area units="m**2">401.956</wet_area>
       <cabin_length units="m">30.0056</cabin_length>
-      <rear_length units="m">6.902</rear_length>
-      <front_length units="m">14.616</front_length>
+      <front_length units="m">6.902</front_length>
+      <rear_length units="m">14.616</rear_length>
     </fuselage>
     <propulsion>
       <engine>

@@ -29,8 +29,8 @@ class ComputeOthersCG(ExplicitComponent):
         self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
         self.add_input('geometry:fuselage:length', val=np.nan, units='m')
         self.add_input('geometry:wing:location', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
         self.add_input('geometry:fuselage:front_length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
         self.add_input('weight:propulsion:engine:CG:x', val=np.nan, units='m')
         self.add_input('weight:furniture:passenger_seats:CG:x', val=np.nan, units='m')
         self.add_input('weight:propulsion:engine:mass', val=np.nan, units='kg')
@@ -70,7 +70,8 @@ class ComputeOthersCG(ExplicitComponent):
         self.declare_partials(
             'weight:airframe:fuselage:CG:x', 'geometry:fuselage:length', method='fd')
         self.declare_partials(
-            'weight:airframe:landing_gear:front:CG:x', 'geometry:fuselage:rear_length', method='fd')
+            'weight:airframe:landing_gear:front:CG:x', 'geometry:fuselage:front_length',
+            method='fd')
         self.declare_partials(
             'weight:airframe:pylon:CG:x', 'weight:propulsion:engine:CG:x', method='fd')
         self.declare_partials('weight:propulsion:fuel_lines:CG:x',
@@ -88,21 +89,25 @@ class ComputeOthersCG(ExplicitComponent):
                               ['weight:propulsion:engine:mass', 'weight:propulsion:engine:CG:x',
                                'geometry:cabin:NPAX1', 'weight:furniture:passenger_seats:CG:x'], method='fd')
         self.declare_partials(
-            'weight:systems:navigation:CG:x', 'geometry:fuselage:rear_length', method='fd')
+            'weight:systems:navigation:CG:x', 'geometry:fuselage:front_length', method='fd')
         self.declare_partials('weight:furniture:food_water:CG:x',
-                              ['geometry:fuselage:length', 'geometry:fuselage:front_length',
-                               'geometry:cabin:seats:economical:length', 'geometry:cabin:seats:economical:count_by_row'], method='fd')
+                              ['geometry:fuselage:length', 'geometry:fuselage:rear_length',
+                               'geometry:cabin:seats:economical:length',
+                               'geometry:cabin:seats:economical:count_by_row'], method='fd')
         self.declare_partials(
             ['weight:furniture:security_kit:CG:x', 'weight:furniture:toilets:CG:x'], 'weight:furniture:passenger_seats:CG:x', method='fd')
         self.declare_partials(
             'weight:payload:PAX:CG:x', 'weight:furniture:passenger_seats:CG:x', method='fd')
         self.declare_partials('weight:payload:rear_fret:CG:x',
-                              ['geometry:fuselage:front_length', 'geometry:wing:MAC:length', 'geometry:wing:root:leading_edge:x',
-                               'geometry:wing:root:chord', 'geometry:cabin:seats:economical:count_by_row', 'geometry:cabin:seats:economical:length',
+                              ['geometry:fuselage:rear_length', 'geometry:wing:MAC:length',
+                               'geometry:wing:root:leading_edge:x',
+                               'geometry:wing:root:chord',
+                               'geometry:cabin:seats:economical:count_by_row',
+                               'geometry:cabin:seats:economical:length',
                                'geometry:wing:location', 'geometry:fuselage:length'],
                               method='fd')
         self.declare_partials('weight:payload:front_fret:CG:x',
-                              ['geometry:fuselage:rear_length', 'geometry:wing:MAC:length',
+                              ['geometry:fuselage:front_length', 'geometry:wing:MAC:length',
                                'geometry:wing:root:leading_edge:x', 'geometry:wing:location'], method='fd')
 
     def compute(self, inputs, outputs):
@@ -111,8 +116,8 @@ class ComputeOthersCG(ExplicitComponent):
         l2_wing = inputs['geometry:wing:root:chord']
         fus_length = inputs['geometry:fuselage:length']
         fa_length = inputs['geometry:wing:location']
-        lav = inputs['geometry:fuselage:rear_length']
-        lar = inputs['geometry:fuselage:front_length']
+        lav = inputs['geometry:fuselage:front_length']
+        lar = inputs['geometry:fuselage:rear_length']
         x_cg_b1 = inputs['weight:propulsion:engine:CG:x']
         x_cg_d2 = inputs['weight:furniture:passenger_seats:CG:x']
         weight_engines = inputs['weight:propulsion:engine:mass']

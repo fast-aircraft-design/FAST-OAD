@@ -102,9 +102,9 @@ def test_compute_fuselage_cabin_sizing(input_xml):
     assert fuselage_width_max == pytest.approx(3.92, abs=1e-2)
     fuselage_height_max = problem['geometry:fuselage:maximum_height']
     assert fuselage_height_max == pytest.approx(4.06, abs=1e-2)
-    fuselage_lav = problem['geometry:fuselage:rear_length']
+    fuselage_lav = problem['geometry:fuselage:front_length']
     assert fuselage_lav == pytest.approx(6.902, abs=1e-3)
-    fuselage_lar = problem['geometry:fuselage:front_length']
+    fuselage_lar = problem['geometry:fuselage:rear_length']
     assert fuselage_lar == pytest.approx(14.616, abs=1e-3)
     fuselage_lpax = problem['geometry:fuselage:PAX_length']
     assert fuselage_lpax == pytest.approx(22.87, abs=1e-2)
@@ -123,8 +123,8 @@ def test_compute_fuselage_basic(input_xml):
         'geometry:fuselage:length',
         'geometry:fuselage:maximum_width',
         'geometry:fuselage:maximum_height',
-        'geometry:fuselage:rear_length',
         'geometry:fuselage:front_length',
+        'geometry:fuselage:rear_length',
         'geometry:fuselage:PAX_length'
     ]
 
@@ -411,8 +411,8 @@ def test_compute_vt_cn(input_xml):
         'geometry:fuselage:length',
         'geometry:fuselage:maximum_width',
         'geometry:fuselage:maximum_height',
-        'geometry:fuselage:rear_length',
         'geometry:fuselage:front_length',
+        'geometry:fuselage:rear_length',
         'TLAR:cruise_mach',
         'geometry:wing:area',
         'geometry:wing:span'
@@ -620,8 +620,8 @@ def test_geometry_global_vt(input_xml):
         'geometry:vertical_tail:taper_ratio',
         'geometry:vertical_tail:aspect_ratio',
         'geometry:vertical_tail:sweep_25',
-        'geometry:fuselage:front_length',
         'geometry:fuselage:rear_length',
+        'geometry:fuselage:front_length',
         'geometry:fuselage:maximum_height',
         'geometry:fuselage:maximum_width',
         'geometry:wing:span',

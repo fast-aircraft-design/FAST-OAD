@@ -7,8 +7,8 @@ geometry:cabin:crew_count:commercial, Aircraft/cabin/PNC
 geometry:cabin:crew_count:technical, Aircraft/cabin/PNT
 geometry:propulsion:engine:count, Aircraft/geometry/propulsion/engine_number
 geometry:fuselage:maximum_height, Aircraft/geometry/fuselage/height_max
-geometry:fuselage:front_length, Aircraft/geometry/fuselage/LAR
-geometry:fuselage:rear_length, Aircraft/geometry/fuselage/LAV
+geometry:fuselage:rear_length, Aircraft/geometry/fuselage/LAR
+geometry:fuselage:front_length, Aircraft/geometry/fuselage/LAV
 geometry:fuselage:length, Aircraft/geometry/fuselage/fus_length
 geometry:fuselage:wet_area, Aircraft/geometry/fuselage/S_mbf
 geometry:fuselage:maximum_width, Aircraft/geometry/fuselage/width_max

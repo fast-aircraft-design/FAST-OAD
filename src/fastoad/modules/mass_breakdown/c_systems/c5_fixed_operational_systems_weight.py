@@ -23,8 +23,8 @@ class FixedOperationalSystemsWeight(ExplicitComponent):
     """ Fixed operational systems weight estimation (C5) """
 
     def setup(self):
-        self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
         self.add_input('geometry:fuselage:front_length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
         self.add_input('geometry:fuselage:length', val=np.nan, units='m')
         self.add_input('geometry:cabin:seats:economical:count_by_row', val=np.nan)
         self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
@@ -38,8 +38,8 @@ class FixedOperationalSystemsWeight(ExplicitComponent):
     # pylint: disable=too-many-locals
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        front_section_length = inputs['geometry:fuselage:rear_length']
-        aft_section_length = inputs['geometry:fuselage:front_length']
+        front_section_length = inputs['geometry:fuselage:front_length']
+        aft_section_length = inputs['geometry:fuselage:rear_length']
         fuselage_length = inputs['geometry:fuselage:length']
         front_seat_number_eco = inputs['geometry:cabin:seats:economical:count_by_row']
         l2_wing = inputs['geometry:wing:root:chord']

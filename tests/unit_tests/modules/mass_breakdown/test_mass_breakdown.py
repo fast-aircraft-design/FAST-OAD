@@ -415,8 +415,8 @@ def test_compute_fixed_operational_systems_weight():
     Tests fixed operational systems weight computation from sample XML data
     """
     input_list = [
-        'geometry:fuselage:rear_length',
         'geometry:fuselage:front_length',
+        'geometry:fuselage:rear_length',
         'geometry:fuselage:length',
         'geometry:cabin:seats:economical:count_by_row',
         'geometry:wing:root:chord',
