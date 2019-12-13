@@ -14,7 +14,6 @@ Defines interfaces for reading and writing OpenMDAO variable values
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 from abc import abstractmethod, ABC
 from collections import OrderedDict
 from fnmatch import fnmatchcase
@@ -26,10 +25,6 @@ import openmdao.api as om
 from fastoad.openmdao.variables import Variable
 
 OMFileIOSubclass = TypeVar('OMFileIOSubclass', bound='AbstractOMFileIO')
-
-RESOURCE_PATH = pth.join(pth.dirname(__file__), 'resources')
-DESCRIPTION_FILE_PATH = pth.join(RESOURCE_PATH, 'variable_descriptions.txt')
-
 
 class AbstractOMFileIO(ABC):
     """
@@ -43,9 +38,6 @@ class AbstractOMFileIO(ABC):
 
     def __init__(self, data_source: IO):
         self._data_source = data_source
-
-        vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
-        self.variable_descriptions = {name: description for name, description in vars_descs}
 
     def read(self, only: List[str] = None, ignore: List[str] = None) -> om.IndepVarComp:
         """
@@ -108,11 +100,7 @@ class AbstractOMFileIO(ABC):
         # Outputs are accessible using private member
         # pylint: disable=protected-access
         for (name, value, attributes) in ivc._indep_external:
-            if not attributes.get('desc'):
-                # No description in OpenMDAO, can we get it from our file?
-                attributes['desc'] = self.variable_descriptions.get(name)
-
-            variables.append(Variable(name, value, **attributes))
+            variables.append(Variable(name=name, value=value, **attributes))
 
         return variables
 

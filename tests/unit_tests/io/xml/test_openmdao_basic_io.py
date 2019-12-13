@@ -43,7 +43,7 @@ def _check_basic_ivc(ivc: IndepVarComp):
 
     outputs: List[Variable] = []
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(Variable(name, value, **attributes))
+        outputs.append(Variable(name=name, value=value, **attributes))
 
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)

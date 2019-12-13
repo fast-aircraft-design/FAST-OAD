@@ -14,33 +14,89 @@ Module for managing OpenMDAO variables
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os.path as pth
 from typing import Dict
+
+import numpy as np
+
+RESOURCE_PATH = pth.join(pth.dirname(__file__), 'resources')
+DESCRIPTION_FILE_PATH = pth.join(RESOURCE_PATH, 'variable_descriptions.txt')
 
 
 class Variable:
     """
-    A class for storing data of OpenMDAO variables
+    A class for storing data of OpenMDAO variables.
+
+    Instantiation is expected to be done through keyword arguments only.
+
+    kwargs is expected to have keys 'name', 'value', 'units' and 'desc', that are
+    accessible respectively through properties :meth:`name`, :meth:`value`,
+    :meth:`units` and :meth:`description`.
+
+    Special behaviour: :meth:`description` will return the content of kwargs['desc']
+    unless these 2 conditions are met:
+     - kwargs['desc'] is None or 'desc' key is missing
+     - a description exists in FAST-OAD internal data for the variable name
+    Then, the internal description will be returned by :meth:`description`
+
+    :param kwargs: the attributes of the variable, as keyword arguments
     """
 
-    def __init__(self, name: str, value, **attributes: Dict):
-        self.name: str = name
-        """ Name of the variable """
+    # Will store content of DESCRIPTION_FILE_PATH once and for all
+    _variable_descriptions = {}
 
-        self.value = value
-        """ Value of the variable"""
+    def __init__(self, **kwargs: Dict):
+        self.attributes: Dict = {}
+        """
+        Dictionary for all attributes of the variable
+        """
 
-        self.attributes: Dict = attributes
-        """ Other attributes of the variable """
+        if not self._variable_descriptions:
+            # Class attribute, but it's safer to initialize it at first instantiation
+            vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
+            self._variable_descriptions = {name: description for name, description in vars_descs}
+
+        self.attributes.update(kwargs)
+
+        # If no description, add one from DESCRIPTION_FILE_PATH, if available
+        if not self.description and self.name in self._variable_descriptions:
+            self.description = self._variable_descriptions[self.name]
+
+    @property
+    def name(self):
+        """ name of the variable"""
+        return self.attributes.get('name')
+
+    @name.setter
+    def name(self, value):
+        self.attributes['name'] = value
+
+    @property
+    def value(self):
+        """ value of the variable"""
+        return self.attributes.get('value')
+
+    @value.setter
+    def value(self, value):
+        self.attributes['value'] = value
 
     @property
     def units(self):
         """ units associated to value (or None if not found) """
         return self.attributes.get('units')
 
+    @units.setter
+    def units(self, value):
+        self.attributes['units'] = value
+
     @property
-    def desc(self):
+    def description(self):
         """ description of the variable (or None if not found) """
         return self.attributes.get('desc')
+
+    @description.setter
+    def description(self, value):
+        self.attributes['desc'] = value
 
     def __eq__(self, other):
         return (self.name == other.name and

@@ -123,7 +123,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
                     if name not in variables:
                         # Add Variable
-                        variables[name] = Variable(name, value, units=units)
+                        variables[name] = Variable(name=name, value=value, units=units)
                     else:
                         # Variable already exists: append values (here the dict is useful)
                         variables[name].value.extend(value)
@@ -157,8 +157,8 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 element.text = str(np.squeeze(variable.value).item())
             else:
                 element.text = json.dumps(np.asarray(variable.value).tolist())
-            if variable.desc:
-                element.append(etree.Comment(variable.desc))
+            if variable.description:
+                element.append(etree.Comment(variable.description))
         # Write
         tree = etree.ElementTree(root)
         dirname = pth.dirname(self._data_source)
