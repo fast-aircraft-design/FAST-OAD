@@ -13,7 +13,7 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import json
 import logging
 import os
 import os.path as pth
@@ -110,7 +110,8 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 value = None
                 if elem.text:
                     value = get_float_list_from_string(elem.text)
-                if value:
+
+                if value is not None:
                     try:
                         # FIXME: maybe a bit silly to rebuild the XPath here...
                         xpath = '/'.join(current_path[1:])
@@ -148,21 +149,14 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 element.attrib[self.xml_unit_attribute] = variable.units
 
             # Filling value for already created element
+            element.text = str(variable.value)
             if not isinstance(variable.value, (np.ndarray, Vector, list)):
                 # Here, it should be a float
                 element.text = str(variable.value)
+            elif len(np.squeeze(variable.value).shape) == 0:
+                element.text = str(np.squeeze(variable.value).item())
             else:
-                element.text = str(variable.value[0])
-
-                # But if more than one value, create additional elements
-                parent = element.getparent()
-                if len(variable.value) > 1:
-                    for value in variable.value[1:]:
-                        element = etree.Element(element.tag)
-                        parent.append(element)
-                        element.text = str(value)
-                        if variable.units:
-                            element.attrib[self.xml_unit_attribute] = variable.units
+                element.text = json.dumps(np.asarray(variable.value).tolist())
         # Write
         tree = etree.ElementTree(root)
         dirname = pth.dirname(self._data_source)
