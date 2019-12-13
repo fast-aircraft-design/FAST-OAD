@@ -129,7 +129,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
             else:  # action == 'end':
                 current_path.pop(-1)
 
-        return variables
+        return list(variables.values())
 
     def write_variables(self, variables: Sequence[Variable]):
 
