@@ -1,0 +1,22 @@
+
+
+title = "OAD Process"
+
+module_folders = []
+
+input_file = "../outputs/oad_process_inputs.xml"
+output_file = "../outputs/oad_process_outputs.xml"
+
+
+driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+[model]
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100, iprint=0)"
+    linear_solver = "om.ScipyKrylov()"
+    [model.geometry]
+        id = "fastoad.geometry.legacy"
+    [model.aerodynamics]
+        id = "fastoad.aerodynamics.highspeed.legacy"
+    [model.performance]
+        id = "fastoad.performances.breguet.from_owe"
+    [model.propulsion]
+        id = "fastoad.propulsion.rubber_engine"

@@ -93,7 +93,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         context = etree.iterparse(self._data_source, events=("start", "end"))
 
         # Intermediate storing as a dict for easy access according to name when appending new values
-        outputs: Dict[str, Variable] = {}
+        variables: Dict[str, Variable] = {}
 
         current_path = []
 
@@ -120,16 +120,16 @@ class OMCustomXmlIO(AbstractOMFileIO):
                                         'affected in the translator.', err.xpath)
                         continue
 
-                    if name not in outputs:
+                    if name not in variables:
                         # Add Variable
-                        outputs[name] = Variable(name, value, units)
+                        variables[name] = Variable(name, value, units)
                     else:
                         # Variable already exists: append values (here the dict is useful)
-                        outputs[name].value.extend(value)
+                        variables[name].value.extend(value)
             else:  # action == 'end':
                 current_path.pop(-1)
 
-        return list(outputs.values())
+        return variables
 
     def write_variables(self, variables: Sequence[Variable]):
 
