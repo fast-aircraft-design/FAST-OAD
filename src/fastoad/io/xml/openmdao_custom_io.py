@@ -122,7 +122,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
                     if name not in variables:
                         # Add Variable
-                        variables[name] = Variable(name, value, units)
+                        variables[name] = Variable(name, value, units=units)
                     else:
                         # Variable already exists: append values (here the dict is useful)
                         variables[name].value.extend(value)

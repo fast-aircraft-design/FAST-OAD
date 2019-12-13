@@ -102,7 +102,7 @@ class AbstractOMFileIO(ABC):
         # Outputs are accessible using private member
         # pylint: disable=protected-access
         for (name, value, attributes) in ivc._indep_external:
-            variables.append(Variable(name, value, attributes['units']))
+            variables.append(Variable(name, value, **attributes))
 
         return variables
 

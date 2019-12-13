@@ -13,6 +13,7 @@ Module for managing OpenMDAO variables
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from typing import Dict
 
 
@@ -21,14 +22,14 @@ class Variable:
     A class for storing data of OpenMDAO variables
     """
 
-    def __init__(self, name, value, units):
+    def __init__(self, name: str, value, **attributes: Dict):
         self.name: str = name
         """ Name of the variable """
 
         self.value = value
         """ Value of the variable"""
 
-        self.attributes: Dict = {'units': units}
+        self.attributes: Dict = attributes
         """ Other attributes of the variable """
 
     @property
