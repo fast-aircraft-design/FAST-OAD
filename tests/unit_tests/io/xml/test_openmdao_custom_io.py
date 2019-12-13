@@ -25,7 +25,7 @@ from pytest import approx
 from fastoad.io.xml import OMCustomXmlIO
 from fastoad.io.xml.exceptions import FastMissingTranslatorError
 from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.openmdao.types import Variable
+from fastoad.openmdao.variables import Variable
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),

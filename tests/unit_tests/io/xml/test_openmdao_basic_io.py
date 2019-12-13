@@ -25,7 +25,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from fastoad.io.xml import OMXmlIO
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.exceptions import FastXPathEvalError
-from fastoad.openmdao.types import Variable
+from fastoad.openmdao.variables import Variable
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),

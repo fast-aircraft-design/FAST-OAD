@@ -29,7 +29,7 @@ from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
     build_ivc_of_unconnected_inputs, build_ivc_of_outputs, \
     build_ivc_of_variables, update_ivc
-from fastoad.openmdao.types import Variable
+from fastoad.openmdao.variables import Variable
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
 from tests.sellar_example.functions import Functions

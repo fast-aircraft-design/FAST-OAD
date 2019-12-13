@@ -30,9 +30,9 @@ from fastoad.exceptions import XPathError
 from fastoad.io.serialize import AbstractOMFileIO
 from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
 from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.openmdao.types import Variable
 from fastoad.utils.strings import get_float_list_from_string
 from .constants import DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
+from ...openmdao.variables import Variable
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)

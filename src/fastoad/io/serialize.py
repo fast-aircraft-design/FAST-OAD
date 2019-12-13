@@ -22,7 +22,7 @@ from typing import TypeVar, IO, List, Sequence
 import numpy as np
 import openmdao.api as om
 
-from fastoad.openmdao.types import Variable
+from fastoad.openmdao.variables import Variable
 
 OMFileIOSubclass = TypeVar('OMFileIOSubclass', bound='AbstractOMFileIO')
 
@@ -56,8 +56,8 @@ class AbstractOMFileIO(ABC):
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
         ivc = om.IndepVarComp()
-        for name, value, units in used_variables:
-            ivc.add_output(name, val=np.array(value), units=units)
+        for var in used_variables:
+            ivc.add_output(var.name, val=np.array(var.value), units=var.units)
 
         return ivc
 

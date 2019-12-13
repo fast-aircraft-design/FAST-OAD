@@ -14,13 +14,11 @@ Types to interact with OpenMDAO
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from collections import namedtuple
 from typing import TypeVar
 
 from openmdao.core.system import System
 
-Variable = namedtuple('Variable', ['name', 'value', 'units'])
-""" Simple structure for standard OpenMDAO variable """
-
 SystemSubclass = TypeVar('SystemSubclass', bound=System)
 """ OpenMDAO System subclass """
+
+
