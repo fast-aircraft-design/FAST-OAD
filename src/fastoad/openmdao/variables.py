@@ -34,8 +34,13 @@ class Variable:
 
     @property
     def units(self):
-        """ units associated to value """
-        return self.attributes['units']
+        """ units associated to value (or None if not found) """
+        return self.attributes.get('units')
+
+    @property
+    def desc(self):
+        """ description of the variable (or None if not found) """
+        return self.attributes.get('desc')
 
     def __eq__(self, other):
         return (self.name == other.name and
