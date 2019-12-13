@@ -157,6 +157,8 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 element.text = str(np.squeeze(variable.value).item())
             else:
                 element.text = json.dumps(np.asarray(variable.value).tolist())
+            if variable.desc:
+                element.append(etree.Comment(variable.desc))
         # Write
         tree = etree.ElementTree(root)
         dirname = pth.dirname(self._data_source)
