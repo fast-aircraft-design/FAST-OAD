@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -30,8 +30,8 @@ class ComputeCnBeta(ExplicitComponent):
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
         self.add_input('geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
         self.add_input('geometry:fuselage:front_length', val=np.nan, units='m')
+        self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
         self.add_input('TLAR:cruise_mach', val=np.nan)
         self.add_input('geometry:wing:area', val=np.nan, units='m**2')
         self.add_input('geometry:wing:span', val=np.nan, units='m')
@@ -42,8 +42,8 @@ class ComputeCnBeta(ExplicitComponent):
 
     def compute(self, inputs, outputs):
         fus_length = inputs['geometry:fuselage:length']
-        lav = inputs['geometry:fuselage:rear_length']
-        lar = inputs['geometry:fuselage:front_length']
+        lav = inputs['geometry:fuselage:front_length']
+        lar = inputs['geometry:fuselage:rear_length']
         width_max = inputs['geometry:fuselage:maximum_width']
         height_max = inputs['geometry:fuselage:maximum_height']
         wing_area = inputs['geometry:wing:area']
@@ -53,7 +53,7 @@ class ComputeCnBeta(ExplicitComponent):
         l_f = math.sqrt(width_max * height_max)
         l_cyc = fus_length - lav - lar
         # estimation of fuselage volume
-        volume_fus = math.pi * l_f**2 / 4 * (0.7 * lav + 0.5 * lar + l_cyc)
+        volume_fus = math.pi * l_f ** 2 / 4 * (0.7 * lav + 0.5 * lar + l_cyc)
         # equation from raymer book eqn. 16.47
         cn_beta_fus = -1.3 * volume_fus / \
             wing_area / span * (l_f / width_max)

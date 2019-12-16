@@ -30,7 +30,7 @@ class WingWeight(ExplicitComponent):
         self.add_input('geometry:wing:span', val=np.nan, units='m')
         self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
         self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')  # TODO : as radians ?
-        self.add_input('geometry:wing:cantilever_area', val=np.nan, units='m**2')
+        self.add_input('geometry:wing:outer_area', val=np.nan, units='m**2')
         self.add_input('weight:aircraft:MTOW', val=np.nan, units='kg')
         self.add_input('weight:aircraft:MLW', val=np.nan, units='kg')
         self.add_input('n1m1', val=np.nan, units='kg')
@@ -48,7 +48,7 @@ class WingWeight(ExplicitComponent):
         self.add_input('weight:airframe:wing:secondary_parts:mass:k', val=1.)
         self.add_input('weight:airframe:wing:secondary_parts:mass:offset', val=0., units='kg')
         self.add_input('weight:airframe:wing:mass:k_voil', val=1.)
-        self.add_input('weight:airframe:wing:mass:k_mvo', val=1.)
+        self.add_input('weight:airframe:wing:mass:k_mvo', val=1.39)
 
         self.add_output('weight:airframe:wing:mass', units='kg')
 
@@ -62,7 +62,7 @@ class WingWeight(ExplicitComponent):
         span = inputs['geometry:wing:span']
         l2_wing = inputs['geometry:wing:root:chord']
         sweep_25 = inputs['geometry:wing:sweep_25']
-        cantilevered_area = inputs['geometry:wing:cantilever_area']
+        cantilevered_area = inputs['geometry:wing:outer_area']
         mtow = inputs['weight:aircraft:MTOW']
         mlw = inputs['weight:aircraft:MLW']
         max_nm = max(inputs['n1m1'], inputs['n2m2'])

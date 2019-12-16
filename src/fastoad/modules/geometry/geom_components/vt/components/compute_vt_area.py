@@ -24,7 +24,7 @@ class ComputeVTArea(ExplicitComponent):
 
     def setup(self):
 
-        #        self.add_input('geometry:wing:location', val=np.nan)
+        #        self.add_input('geometry:wing:MAC:x', val=np.nan)
         self.add_input('cg_ratio', val=np.nan)
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
         self.add_input('dcn_beta', val=np.nan)
@@ -34,10 +34,10 @@ class ComputeVTArea(ExplicitComponent):
         self.add_input('geometry:vertical_tail:area', val=np.nan, units='m**2')
         self.add_input('aerodynamics:vertical_tail:cruise:CL_alpha', val=np.nan)
 
-        self.add_output('geometry:vertical_tail:wet_area', units='m**2')
+        self.add_output('geometry:vertical_tail:wetted_area', units='m**2')
         self.add_output('delta_cn')
 
-        self.declare_partials('geometry:vertical_tail:wet_area', 'geometry:vertical_tail:area')
+        self.declare_partials('geometry:vertical_tail:wetted_area', 'geometry:vertical_tail:area')
 
         self.declare_partials('delta_cn', '*', method='fd')
 
@@ -55,5 +55,5 @@ class ComputeVTArea(ExplicitComponent):
         delta_cn = s_v * dxca_xcg / wing_area / span * cl_alpha_vt - dcn_beta
         wet_area_vt = 2.1 * s_v
 
-        outputs['geometry:vertical_tail:wet_area'] = wet_area_vt
+        outputs['geometry:vertical_tail:wetted_area'] = wet_area_vt
         outputs['delta_cn'] = delta_cn

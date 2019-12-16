@@ -21,10 +21,12 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.exceptions import NoSetupError
-
-
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
+from fastoad.openmdao.variables import Variable
 
+
+# TODO: separate the construction of Variable list from the creation of IndepVarComp
+# TODO: factorize more code
 
 def get_unconnected_inputs(problem: om.Problem,
                            logger: Logger = None) -> Tuple[List[str], List[str]]:
@@ -119,10 +121,12 @@ def build_ivc_of_unconnected_inputs(problem: om.Problem,
             if prom_name not in processed_prom_names:
                 processed_prom_names.append(prom_name)
                 metadata = model._var_abs2meta[abs_name]
+                variable = Variable(name=prom_name,
+                                    **metadata)  # useful because it adds a description if needed
                 ivc.add_output(prom_name,
-                               val=metadata['value'],
-                               units=metadata['units'],
-                               desc=metadata['desc'])
+                               val=variable.value,
+                               units=variable.units,
+                               desc=variable.description)
 
     _add_outputs(mandatory_unconnected)
     if with_optional_inputs:
@@ -150,10 +154,12 @@ def build_ivc_of_outputs(problem: om.Problem) -> om.IndepVarComp:
         # Pick the first
         abs_name = abs_names[0]
         metadata = system._var_abs2meta[abs_name]
+        variable = Variable(name=prom_name,
+                            **metadata)  # useful because it adds a description if needed
         ivc.add_output(prom_name,
-                       val=metadata['value'],
-                       units=metadata['units'],
-                       desc=metadata['desc'])
+                       val=variable.value,
+                       units=variable.units,
+                       desc=variable.description)
 
     return ivc
 
@@ -183,21 +189,21 @@ def build_ivc_of_variables(problem: om.Problem, initial_values: bool = False) ->
         # Pick the first
         abs_name = abs_names[0]
         metadata = system._var_abs2meta[abs_name]
-        if initial_values:
-            value = metadata['value']
-        else:
+        variable = Variable(name=prom_name,
+                            **metadata)  # useful because it adds a description if needed
+        if not initial_values:
             try:
                 # Maybe useless, but we force units to ensure it is consistent
-                value = problem.get_val(prom_name, units=metadata['units'])
+                variable.value = problem.get_val(prom_name, units=metadata['units'])
             except RuntimeError:
                 # In case problem is incompletely set, problem.get_val() will fail.
                 # In such case, falling back to the method for initial values
                 # should be enough.
-                value = metadata['value']
+                pass
         ivc.add_output(prom_name,
-                       val=value,
-                       units=metadata['units'],
-                       desc=metadata['desc'])
+                       val=variable.value,
+                       units=variable.units,
+                       desc=variable.description)
 
     return ivc
 

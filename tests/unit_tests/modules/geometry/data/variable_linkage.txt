@@ -1,9 +1,9 @@
 geometry:wing:root:leading_edge:x, Aircraft/geometry/wing/x0_wing
 geometry:wing:MAC:length, Aircraft/geometry/wing/l0_wing
-geometry:wing:l1, Aircraft/geometry/wing/l1_wing
+geometry:wing:root:virtual_chord, Aircraft/geometry/wing/l1_wing
 geometry:fuselage:maximum_width, Aircraft/geometry/fuselage/width_max
 geometry:fuselage:length, Aircraft/geometry/fuselage/fus_length
-geometry:wing:location, Aircraft/geometry/wing/fa_length
+geometry:wing:MAC:x, Aircraft/geometry/wing/fa_length
 geometry:wing:area, Aircraft/geometry/wing/wing_area
 geometry:horizontal_tail:area, Aircraft/geometry/ht/area
 geometry:horizontal_tail:distance_from_wing, Aircraft/geometry/ht/lp
@@ -32,8 +32,8 @@ geometry:cabin:seats:economical:count_by_row, Aircraft/cabin/eco/front_seat_numb
 geometry:cabin:seats:economical:length, Aircraft/cabin/eco/LS
 weight:airframe:wing:CG:x, Aircraft/balance/airframe/CG_A1
 weight:airframe:fuselage:CG:x, Aircraft/balance/airframe/CG_A2
-weight:airframe:tail_plane:horizontal:CG:x, Aircraft/balance/airframe/CG_A31
-weight:airframe:tail_plane:vertical:CG:x, Aircraft/balance/airframe/CG_A32
+weight:airframe:horizontal_tail:CG:x, Aircraft/balance/airframe/CG_A31
+weight:airframe:vertical_tail:CG:x, Aircraft/balance/airframe/CG_A32
 weight:airframe:flight_controls:CG:x, Aircraft/balance/airframe/CG_A4
 weight:airframe:landing_gear:main:CG:x, Aircraft/balance/airframe/CG_A51
 weight:airframe:landing_gear:front:CG:x, Aircraft/balance/airframe/CG_A52
@@ -41,8 +41,8 @@ weight:airframe:pylon:CG:x, Aircraft/balance/airframe/CG_A6
 weight:airframe:paint:CG:x, Aircraft/balance/airframe/CG_A7
 weight:airframe:wing:mass, Aircraft/balance/airframe/weight_A1
 weight:airframe:fuselage:mass, Aircraft/balance/airframe/weight_A2
-weight:airframe:tail_plane:horizontal:mass, Aircraft/balance/airframe/weight_A31
-weight:airframe:tail_plane:vertical:mass, Aircraft/balance/airframe/weight_A32
+weight:airframe:horizontal_tail:mass, Aircraft/balance/airframe/weight_A31
+weight:airframe:vertical_tail:mass, Aircraft/balance/airframe/weight_A32
 weight:airframe:flight_controls:mass, Aircraft/balance/airframe/weight_A4
 weight:airframe:landing_gear:main:mass, Aircraft/balance/airframe/weight_A51
 weight:airframe:landing_gear:front:mass, Aircraft/balance/airframe/weight_A52
@@ -58,7 +58,7 @@ weight:systems:life_support:insulation:CG:x, Aircraft/balance/systems/CG_C21
 weight:systems:life_support:air_conditioning:CG:x, Aircraft/balance/systems/CG_C22
 weight:systems:life_support:de-icing:CG:x, Aircraft/balance/systems/CG_C23
 weight:systems:life_support:cabin_lighting:CG:x, Aircraft/balance/systems/CG_C24
-weight:systems:life_support:seats_crew_accomodation:CG:x, Aircraft/balance/systems/CG_C25
+weight:systems:life_support:seats_crew_accommodation:CG:x, Aircraft/balance/systems/CG_C25
 weight:systems:life_support:oxygen:CG:x, Aircraft/balance/systems/CG_C26
 weight:systems:life_support:safety_equipment:CG:x, Aircraft/balance/systems/CG_C27
 weight:systems:navigation:CG:x, Aircraft/balance/systems/CG_C3
@@ -73,7 +73,7 @@ weight:systems:life_support:insulation:mass, Aircraft/balance/systems/weight_C21
 weight:systems:life_support:air_conditioning:mass, Aircraft/balance/systems/weight_C22
 weight:systems:life_support:de-icing:mass, Aircraft/balance/systems/weight_C23
 weight:systems:life_support:cabin_lighting:mass, Aircraft/balance/systems/weight_C24
-weight:systems:life_support:seats_crew_accomodation:mass, Aircraft/balance/systems/weight_C25
+weight:systems:life_support:seats_crew_accommodation:mass, Aircraft/balance/systems/weight_C25
 weight:systems:life_support:oxygen:mass, Aircraft/balance/systems/weight_C26
 weight:systems:life_support:safety_equipment:mass, Aircraft/balance/systems/weight_C27
 weight:systems:navigation:mass, Aircraft/balance/systems/weight_C3

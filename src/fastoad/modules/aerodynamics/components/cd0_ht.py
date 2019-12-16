@@ -29,10 +29,10 @@ class Cd0HorizontalTail(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('geometry:horizontal_tail:length', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:MAC:length', val=np.nan, units='m')
         self.add_input('geometry:horizontal_tail:thickness_ratio', val=np.nan)
         self.add_input('geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:horizontal_tail:wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:horizontal_tail:wetted_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing:area', val=np.nan, units='m**2')
         if self.low_speed_aero:
             self.add_input('reynolds_low_speed', val=np.nan)
@@ -45,9 +45,9 @@ class Cd0HorizontalTail(ExplicitComponent):
 
     def compute(self, inputs, outputs):
         el_ht = inputs['geometry:horizontal_tail:thickness_ratio']
-        ht_length = inputs['geometry:horizontal_tail:length']
+        ht_length = inputs['geometry:horizontal_tail:MAC:length']
         sweep_25_ht = inputs['geometry:horizontal_tail:sweep_25']
-        wet_area_ht = inputs['geometry:horizontal_tail:wet_area']
+        wet_area_ht = inputs['geometry:horizontal_tail:wetted_area']
         wing_area = inputs['geometry:wing:area']
         if self.low_speed_aero:
             mach = inputs['Mach_low_speed']

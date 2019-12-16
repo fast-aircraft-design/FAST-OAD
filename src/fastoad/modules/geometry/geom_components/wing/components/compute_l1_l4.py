@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -34,10 +34,10 @@ class ComputeL1AndL4Wing(ExplicitComponent):
         self.add_input('geometry:wing:taper_ratio', val=np.nan)
         self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
 
-        self.add_output('geometry:wing:l1', units='m')
+        self.add_output('geometry:wing:root:virtual_chord', units='m')
         self.add_output('geometry:wing:tip:chord', units='m')
 
-        self.declare_partials('geometry:wing:l1', '*', method='fd')
+        self.declare_partials('geometry:wing:root:virtual_chord', '*', method='fd')
         self.declare_partials('geometry:wing:tip:chord', '*', method='fd')
 
     def compute(self, inputs, outputs):
@@ -57,5 +57,5 @@ class ComputeL1AndL4Wing(ExplicitComponent):
 
         l4_wing = l1_wing * taper_ratio
 
-        outputs['geometry:wing:l1'] = l1_wing
+        outputs['geometry:wing:root:virtual_chord'] = l1_wing
         outputs['geometry:wing:tip:chord'] = l4_wing

@@ -33,39 +33,19 @@
         <thickness_ratio>0.11</thickness_ratio>
       </tip>
       <sweep_25 units="deg">25.0</sweep_25>
-      <cantilever_area units="m**2">100.303</cantilever_area>
+      <outer_area units="m**2">100.303</outer_area>
       <sweep_0 units="deg">27.554</sweep_0>
     </wing>
     <fuselage>
       <length units="m">37.507</length>
       <maximum_width units="m">3.92</maximum_width>
       <maximum_height units="m">4.06</maximum_height>
-      <wet_area units="m**2">401.956</wet_area>
-      <cabin_length units="m">30.0056</cabin_length>
-      <rear_length units="m">6.902</rear_length>
-      <front_length units="m">14.616</front_length>
+      <wetted_area units="m**2">401.956</wetted_area>
+      <front_length units="m">6.902</front_length>
+      <rear_length units="m">14.616</rear_length>
     </fuselage>
-    <propulsion>
-      <engine>
-        <count>2.0</count>
-      </engine>
-      <pylon>
-        <wet_area units="m**2">7.563</wet_area>
-      </pylon>
-      <nacelle>
-        <diameter units="m">2.172</diameter>
-      </nacelle>
-    </propulsion>
-    <horizontal_tail>
-      <area units="m**2">35.171</area>
-    </horizontal_tail>
-    <vertical_tail>
-      <area units="m**2">25.118</area>
-    </vertical_tail>
-    <aircraft>
-      <area units="m**2">784.007</area>
-    </aircraft>
     <cabin>
+      <length units="m">30.0056</length>
       <NPAX1>157.0</NPAX1>
       <crew_count>
         <technical>2.0</technical>
@@ -82,6 +62,26 @@
       </containers>
       <pallet_count>10.0</pallet_count>
     </cabin>
+    <propulsion>
+      <engine>
+        <count>2.0</count>
+      </engine>
+      <pylon>
+        <wetted_area units="m**2">7.563</wetted_area>
+      </pylon>
+      <nacelle>
+        <diameter units="m">2.172</diameter>
+      </nacelle>
+    </propulsion>
+    <horizontal_tail>
+      <area units="m**2">35.171</area>
+    </horizontal_tail>
+    <vertical_tail>
+      <area units="m**2">25.118</area>
+    </vertical_tail>
+    <aircraft>
+      <wetted_area units="m**2">784.007</wetted_area>
+    </aircraft>
   </geometry>
   <weight>
     <aircraft>
@@ -134,24 +134,22 @@
         <mass>
           <k>1.1</k>
           <offset units="kg">0.0</offset>
-          <k_tr>1.05</k_tr>
+          <k_lg>1.05</k_lg>
           <k_fus>1.0</k_fus>
         </mass>
       </fuselage>
-      <tail_plane>
-        <horizontal>
-          <mass>
-            <k>1.08</k>
-            <offset units="kg">0.0</offset>
-          </mass>
-        </horizontal>
-        <vertical>
-          <mass>
-            <k>1.0</k>
-            <offset units="kg">0.0</offset>
-          </mass>
-        </vertical>
-      </tail_plane>
+      <horizontal_tail>
+        <mass>
+          <k>1.08</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </horizontal_tail>
+      <vertical_tail>
+        <mass>
+          <k>1.0</k>
+          <offset units="kg">0.0</offset>
+        </mass>
+      </vertical_tail>
       <flight_controls>
         <mass>
           <k>1.0</k>
@@ -223,36 +221,48 @@
         </mass>
       </power>
       <life_support>
-        <mass>
-          <insulation>
+        <insulation>
+          <mass>
             <k>2.0</k>
             <offset units="kg">0.0</offset>
-          </insulation>
-          <air_conditioning>
+          </mass>
+        </insulation>
+        <air_conditioning>
+          <mass>
             <k>1.0</k>
             <offset units="kg">0.0</offset>
-          </air_conditioning>
-          <de-icing>
+          </mass>
+        </air_conditioning>
+        <de-icing>
+          <mass>
             <k>1.0</k>
             <offset units="kg">0.0</offset>
-          </de-icing>
-          <cabin_lighting>
+          </mass>
+        </de-icing>
+        <cabin_lighting>
+          <mass>
             <k>1.0</k>
             <offset units="kg">0.0</offset>
-          </cabin_lighting>
-          <seats_crew_accomodation>
+          </mass>
+        </cabin_lighting>
+        <seats_crew_accommodation>
+          <mass>
             <k>1.0</k>
             <offset units="kg">0.0</offset>
-          </seats_crew_accomodation>
-          <oxygen>
+          </mass>
+        </seats_crew_accommodation>
+        <oxygen>
+          <mass>
             <k>1.0</k>
             <offset units="kg">0.0</offset>
-          </oxygen>
-          <safety_equipment>
+          </mass>
+        </oxygen>
+        <safety_equipment>
+          <mass>
             <k>1.0</k>
             <offset units="kg">0.0</offset>
-          </safety_equipment>
-        </mass>
+          </mass>
+        </safety_equipment>
       </life_support>
       <navigation>
         <mass>

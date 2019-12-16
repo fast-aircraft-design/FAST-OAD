@@ -22,10 +22,9 @@ from typing import TypeVar, IO, List, Sequence
 import numpy as np
 import openmdao.api as om
 
-from fastoad.openmdao.types import Variable
+from fastoad.openmdao.variables import Variable
 
 OMFileIOSubclass = TypeVar('OMFileIOSubclass', bound='AbstractOMFileIO')
-
 
 class AbstractOMFileIO(ABC):
     """
@@ -53,12 +52,11 @@ class AbstractOMFileIO(ABC):
         :return: an IndepVarComp() instance where outputs have been defined using provided source
         """
         variables = self.read_variables()
-        variables = list(variables.values())
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
         ivc = om.IndepVarComp()
-        for name, value, units in used_variables:
-            ivc.add_output(name, val=np.array(value), units=units)
+        for var in used_variables:
+            ivc.add_output(var.name, val=np.array(var.value), units=var.units)
 
         return ivc
 
@@ -94,8 +92,7 @@ class AbstractOMFileIO(ABC):
         :param variables:
        """
 
-    @staticmethod
-    def _get_variables(ivc: om.IndepVarComp) -> List[Variable]:
+    def _get_variables(self, ivc: om.IndepVarComp) -> List[Variable]:
         """ returns the list of variables from provided system """
 
         variables: List[Variable] = []
@@ -103,7 +100,7 @@ class AbstractOMFileIO(ABC):
         # Outputs are accessible using private member
         # pylint: disable=protected-access
         for (name, value, attributes) in ivc._indep_external:
-            variables.append(Variable(name, value, attributes['units']))
+            variables.append(Variable(name=name, value=value, **attributes))
 
         return variables
 

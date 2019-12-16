@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -29,7 +29,7 @@ class ComputeYWing(ExplicitComponent):
         self.add_input('geometry:wing:aspect_ratio', val=np.nan)
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
         self.add_input('geometry:wing:area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing:break', val=np.nan)
+        self.add_input('geometry:wing:kink:span_ratio', val=np.nan)
 
         self.add_output('geometry:wing:span', units='m')
         self.add_output('geometry:wing:root:y', units='m')
@@ -42,8 +42,8 @@ class ComputeYWing(ExplicitComponent):
         self.declare_partials('geometry:wing:root:y', 'geometry:fuselage:maximum_width',
                               method='fd')
         self.declare_partials('geometry:wing:kink:y', ['geometry:wing:area',
-                                                   'geometry:wing:aspect_ratio',
-                                                   'geometry:wing:break'],
+                                                       'geometry:wing:aspect_ratio',
+                                                       'geometry:wing:kink:span_ratio'],
                               method='fd')
         self.declare_partials('geometry:wing:tip:y', ['geometry:wing:area',
                                                    'geometry:wing:aspect_ratio'],
@@ -52,7 +52,7 @@ class ComputeYWing(ExplicitComponent):
     def compute(self, inputs, outputs):
         lambda_wing = inputs['geometry:wing:aspect_ratio']
         wing_area = inputs['geometry:wing:area']
-        wing_break = inputs['geometry:wing:break']
+        wing_break = inputs['geometry:wing:kink:span_ratio']
         width_max = inputs['geometry:fuselage:maximum_width']
 
         span = math.sqrt(lambda_wing * wing_area)

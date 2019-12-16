@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -32,16 +32,19 @@ class ComputeHTMAC(ExplicitComponent):
         self.add_input('geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
         self.add_input('geometry:horizontal_tail:span', val=np.nan, units='m')
 
-        self.add_output('geometry:horizontal_tail:length', units='m')
+        self.add_output('geometry:horizontal_tail:MAC:length', units='m')
         self.add_output('geometry:ht_x0', units='m')
         self.add_output('geometry:ht_y0', units='m')
 
-        self.declare_partials('geometry:horizontal_tail:length',
-                              ['geometry:horizontal_tail:root_chord', 'geometry:horizontal_tail:tip_chord'],
+        self.declare_partials('geometry:horizontal_tail:MAC:length',
+                              ['geometry:horizontal_tail:root_chord',
+                               'geometry:horizontal_tail:tip_chord'],
                               method='fd')
         self.declare_partials('geometry:ht_x0',
-                              ['geometry:horizontal_tail:root_chord', 'geometry:horizontal_tail:tip_chord',
-                               'geometry:horizontal_tail:sweep_25', 'geometry:horizontal_tail:span'],
+                              ['geometry:horizontal_tail:root_chord',
+                               'geometry:horizontal_tail:tip_chord',
+                               'geometry:horizontal_tail:sweep_25',
+                               'geometry:horizontal_tail:span'],
                               method='fd')
         self.declare_partials('geometry:ht_y0',
                               ['geometry:horizontal_tail:root_chord', 'geometry:horizontal_tail:tip_chord',
@@ -63,6 +66,6 @@ class ComputeHTMAC(ExplicitComponent):
         y0_ht = (b_h * (.5 * root_chord + tip_chord)) / \
             (3 * (root_chord + tip_chord))
 
-        outputs['geometry:horizontal_tail:length'] = mac_ht
+        outputs['geometry:horizontal_tail:MAC:length'] = mac_ht
         outputs['geometry:ht_x0'] = x0_ht
         outputs['geometry:ht_y0'] = y0_ht

@@ -53,7 +53,7 @@ def test_legacy1(cleanup):
         assert inp[1] is not None  # check that a value has been read
 
         # Check some random fields
-        if inp[0] == 'geometry:wing:location':
+        if inp[0] == 'geometry:wing:MAC:x':
             assert inp[1] == 16.457
             assert inp[2]['units'] == 'm'
             field_found[0] = True
@@ -61,7 +61,7 @@ def test_legacy1(cleanup):
             assert inp[1] == 150
             assert inp[2]['units'] is None
             field_found[1] = True
-        if inp[0] == 'geometry:wing:wet_area':
+        if inp[0] == 'geometry:wing:wetted_area':
             assert inp[1] == 200.607
             assert inp[2]['units'] == 'm**2'
             field_found[2] = True

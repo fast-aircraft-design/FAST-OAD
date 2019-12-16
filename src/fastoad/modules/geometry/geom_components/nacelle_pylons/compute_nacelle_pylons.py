@@ -46,7 +46,7 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         self.add_input('geometry:wing:kink:chord', val=np.nan, units='m')
         self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
         self.add_input('geometry:wing:kink:leading_edge:x', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
         self.add_input('geometry:fuselage:length', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
 
@@ -56,8 +56,8 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         self.add_output('geometry:propulsion:nacelle:diameter', units='m')
         self.add_output('geometry:landing_gear:height', units='m')
         self.add_output('geometry:propulsion:nacelle:y', units='m')
-        self.add_output('geometry:propulsion:pylon:wet_area', units='m**2')
-        self.add_output('geometry:propulsion:nacelle:wet_area', units='m**2')
+        self.add_output('geometry:propulsion:pylon:wetted_area', units='m**2')
+        self.add_output('geometry:propulsion:nacelle:wetted_area', units='m**2')
         self.add_output('weight:propulsion:engine:CG:x', units='m')
 
         self.declare_partials('geometry:propulsion:nacelle:diameter',
@@ -76,7 +76,7 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
                                'geometry:propulsion:engine:y_ratio',
                                'geometry:wing:span'], method='fd')
         self.declare_partials('weight:propulsion:engine:CG:x',
-                              ['geometry:wing:location',
+                              ['geometry:wing:MAC:x',
                                'geometry:wing:MAC:length',
                                'geometry:wing:root:leading_edge:x',
                                'geometry:wing:kink:leading_edge:x',
@@ -87,11 +87,11 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
                                'geometry:fuselage:length',
                                'propulsion:MTO_thrust',
                                'geometry:fuselage:maximum_width',
-                                'geometry:propulsion:engine:y_ratio',
-                                'geometry:wing:span'], method='fd')
-        self.declare_partials('geometry:propulsion:nacelle:wet_area',
+                               'geometry:propulsion:engine:y_ratio',
+                               'geometry:wing:span'], method='fd')
+        self.declare_partials('geometry:propulsion:nacelle:wetted_area',
                               'propulsion:MTO_thrust', method='fd')
-        self.declare_partials('geometry:propulsion:pylon:wet_area',
+        self.declare_partials('geometry:propulsion:pylon:wetted_area',
                               'propulsion:MTO_thrust', method='fd')
 
     def compute(self, inputs, outputs):
@@ -105,7 +105,7 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         l3_wing = inputs['geometry:wing:kink:chord']
         x3_wing = inputs['geometry:wing:kink:leading_edge:x']
         y3_wing = inputs['geometry:wing:kink:y']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
         fus_length = inputs['geometry:fuselage:length']
         b_f = inputs['geometry:fuselage:maximum_width']
 
@@ -145,8 +145,8 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         outputs['weight:propulsion:engine:CG:x'] = x_nacell_cg_absolute
 
         # Wet surfaces
-        wet_area_nac = 0.0004 * thrust_sl * 0.225 + 11      # By engine
+        wet_area_nac = 0.0004 * thrust_sl * 0.225 + 11  # By engine
         wet_area_pylon = 0.35 * wet_area_nac
 
-        outputs['geometry:propulsion:nacelle:wet_area'] = wet_area_nac
-        outputs['geometry:propulsion:pylon:wet_area'] = wet_area_pylon
+        outputs['geometry:propulsion:nacelle:wetted_area'] = wet_area_nac
+        outputs['geometry:propulsion:pylon:wetted_area'] = wet_area_pylon

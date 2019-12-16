@@ -16,6 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
+
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -31,7 +32,7 @@ class Cd0VerticalTail(ExplicitComponent):
         self.add_input('geometry:vertical_tail:length', val=np.nan, units='m')
         self.add_input('geometry:vertical_tail:thickness_ratio', val=np.nan)
         self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:vertical_tail:wet_area', val=np.nan, units='m**2')
+        self.add_input('geometry:vertical_tail:wetted_area', val=np.nan, units='m**2')
         self.add_input('geometry:wing:area', val=np.nan, units='m**2')
         if self.low_speed_aero:
             self.add_input('reynolds_low_speed', val=np.nan)
@@ -46,7 +47,7 @@ class Cd0VerticalTail(ExplicitComponent):
         el_vt = inputs['geometry:vertical_tail:thickness_ratio']
         vt_length = inputs['geometry:vertical_tail:length']
         sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
-        wet_area_vt = inputs['geometry:vertical_tail:wet_area']
+        wet_area_vt = inputs['geometry:vertical_tail:wetted_area']
         wing_area = inputs['geometry:wing:area']
         if self.low_speed_aero:
             mach = inputs['Mach_low_speed']

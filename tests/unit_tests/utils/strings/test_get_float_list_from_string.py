@@ -10,12 +10,13 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from fastoad.utils.strings import get_float_list_from_string
 
 
 def test_get_float_list_from_string():
     assert [1., 2., 3.] == get_float_list_from_string('[ 1, 2., 3]')
-    assert [1., 2., 3., 4.] == get_float_list_from_string('[ 1 2.  3 4]')
+    assert [[1., 2.], [3., 4.]] == get_float_list_from_string('[[ 1, 2.],[  3, 4]]')
     assert [1., 2., 3.] == get_float_list_from_string(' 1, 2., 3')
     assert [1., 2.] == get_float_list_from_string(' 1 2 ')
     assert [1.] == get_float_list_from_string(' 1 dummy 2 ')

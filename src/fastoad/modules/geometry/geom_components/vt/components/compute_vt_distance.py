@@ -34,18 +34,18 @@ class ComputeVTDistance(ExplicitComponent):
     def setup(self):
 
         self.add_input('geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
 
         self.add_output('geometry:vertical_tail:distance_from_wing', units='m')
         self.add_output('k_ar_effective')
 
         self.declare_partials('geometry:vertical_tail:distance_from_wing',
-                              ['geometry:fuselage:length', 'geometry:wing:location'],
+                              ['geometry:fuselage:length', 'geometry:wing:MAC:x'],
                               method='fd')
 
     def compute(self, inputs, outputs):
         fus_length = inputs['geometry:fuselage:length']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
 
         if self.tail_type == 1.0:
             if self.ac_family == 1.0:

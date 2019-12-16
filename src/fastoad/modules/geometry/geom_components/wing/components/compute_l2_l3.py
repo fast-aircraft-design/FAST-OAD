@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -28,7 +28,7 @@ class ComputeL2AndL3Wing(ExplicitComponent):
 
         self.add_input('geometry:wing:span', val=np.nan, units='m')
         self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:wing:l1', val=np.nan, units='m')
+        self.add_input('geometry:wing:root:virtual_chord', val=np.nan, units='m')
         self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
         self.add_input('geometry:wing:root:y', val=np.nan, units='m')
         self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
@@ -39,23 +39,23 @@ class ComputeL2AndL3Wing(ExplicitComponent):
         self.add_output('geometry:wing:root:chord', units='m')
         self.add_output('geometry:wing:kink:chord', units='m')
 
-        self.declare_partials('geometry:wing:root:chord', ['geometry:wing:l1',
-                                                   'geometry:wing:root:y',
-                                                   'geometry:wing:kink:y',
-                                                   'geometry:wing:taper_ratio',
-                                                   'geometry:wing:span',
-                                                   'geometry:fuselage:maximum_width',
-                                                   'geometry:wing:sweep_25'],
+        self.declare_partials('geometry:wing:root:chord', ['geometry:wing:root:virtual_chord',
+                                                           'geometry:wing:root:y',
+                                                           'geometry:wing:kink:y',
+                                                           'geometry:wing:taper_ratio',
+                                                           'geometry:wing:span',
+                                                           'geometry:fuselage:maximum_width',
+                                                           'geometry:wing:sweep_25'],
                               method='fd')
-        self.declare_partials('geometry:wing:kink:chord', ['geometry:wing:l1',
-                                                   'geometry:wing:tip:chord',
-                                                   'geometry:wing:root:y',
-                                                   'geometry:wing:kink:y',
-                                                   'geometry:wing:tip:y'],
+        self.declare_partials('geometry:wing:kink:chord', ['geometry:wing:root:virtual_chord',
+                                                           'geometry:wing:tip:chord',
+                                                           'geometry:wing:root:y',
+                                                           'geometry:wing:kink:y',
+                                                           'geometry:wing:tip:y'],
                               method='fd')
 
     def compute(self, inputs, outputs):
-        l1_wing = inputs['geometry:wing:l1']
+        l1_wing = inputs['geometry:wing:root:virtual_chord']
         l4_wing = inputs['geometry:wing:tip:chord']
         y2_wing = inputs['geometry:wing:root:y']
         y3_wing = inputs['geometry:wing:kink:y']

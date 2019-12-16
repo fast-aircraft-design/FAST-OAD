@@ -13,7 +13,7 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import json
 import logging
 import os
 import os.path as pth
@@ -30,9 +30,9 @@ from fastoad.exceptions import XPathError
 from fastoad.io.serialize import AbstractOMFileIO
 from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
 from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.openmdao.types import Variable
 from fastoad.utils.strings import get_float_list_from_string
 from .constants import DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
+from ...openmdao.variables import Variable
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -110,7 +110,8 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 value = None
                 if elem.text:
                     value = get_float_list_from_string(elem.text)
-                if value:
+
+                if value is not None:
                     try:
                         # FIXME: maybe a bit silly to rebuild the XPath here...
                         xpath = '/'.join(current_path[1:])
@@ -122,14 +123,14 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
                     if name not in variables:
                         # Add Variable
-                        variables[name] = Variable(name, value, units)
+                        variables[name] = Variable(name=name, value=value, units=units)
                     else:
                         # Variable already exists: append values (here the dict is useful)
                         variables[name].value.extend(value)
             else:  # action == 'end':
                 current_path.pop(-1)
 
-        return variables
+        return list(variables.values())
 
     def write_variables(self, variables: Sequence[Variable]):
 
@@ -148,21 +149,16 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 element.attrib[self.xml_unit_attribute] = variable.units
 
             # Filling value for already created element
+            element.text = str(variable.value)
             if not isinstance(variable.value, (np.ndarray, Vector, list)):
                 # Here, it should be a float
                 element.text = str(variable.value)
+            elif len(np.squeeze(variable.value).shape) == 0:
+                element.text = str(np.squeeze(variable.value).item())
             else:
-                element.text = str(variable.value[0])
-
-                # But if more than one value, create additional elements
-                parent = element.getparent()
-                if len(variable.value) > 1:
-                    for value in variable.value[1:]:
-                        element = etree.Element(element.tag)
-                        parent.append(element)
-                        element.text = str(value)
-                        if variable.units:
-                            element.attrib[self.xml_unit_attribute] = variable.units
+                element.text = json.dumps(np.asarray(variable.value).tolist())
+            if variable.description:
+                element.append(etree.Comment(variable.description))
         # Write
         tree = etree.ElementTree(root)
         dirname = pth.dirname(self._data_source)

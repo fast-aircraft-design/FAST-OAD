@@ -23,7 +23,7 @@ class ComputeWingCG(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:wing:break', val=np.nan)
+        self.add_input('geometry:wing:kink:span_ratio', val=np.nan)
         self.add_input('geometry:wing:spar_ratio:front:root', val=np.nan)
         self.add_input('geometry:wing:spar_ratio:front:kink', val=np.nan)
         self.add_input('geometry:wing:spar_ratio:front:tip', val=np.nan)
@@ -40,14 +40,14 @@ class ComputeWingCG(ExplicitComponent):
         self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
         self.add_input('geometry:wing:tip:leading_edge:x', val=np.nan, units='m')
         self.add_input('geometry:wing:tip:y', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
 
         self.add_output('weight:airframe:wing:CG:x', units='m')
 
         self.declare_partials('weight:airframe:wing:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        wing_break = inputs['geometry:wing:break']
+        wing_break = inputs['geometry:wing:kink:span_ratio']
         front_spar_ratio_root = inputs['geometry:wing:spar_ratio:front:root']
         front_spar_ratio_middle = inputs['geometry:wing:spar_ratio:front:kink']
         front_spar_ratio_tip = inputs['geometry:wing:spar_ratio:front:tip']
@@ -64,7 +64,7 @@ class ComputeWingCG(ExplicitComponent):
         y3_wing = inputs['geometry:wing:kink:y']
         y4_wing = inputs['geometry:wing:tip:y']
         x4_wing = inputs['geometry:wing:tip:leading_edge:x']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
 
         # TODO: make this constant an option
         if wing_break >= 0.35:

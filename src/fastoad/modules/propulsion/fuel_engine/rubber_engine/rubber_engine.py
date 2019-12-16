@@ -48,7 +48,7 @@ class RubberEngine(IEngine):
                        on ground at speed 0, also noted F0
     :param maximum_mach:
     :param design_altitude: (unit=m)
-    :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4 in K
+    :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4
     :param delta_t4_cruise: (unit=K) difference between T4 during cruise and design T4
     """
 

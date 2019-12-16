@@ -20,12 +20,13 @@ from typing import List
 
 import numpy as np
 import pytest
+from numpy.testing import assert_allclose
 from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.io.xml import OMXmlIO
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.exceptions import FastXPathEvalError
-from fastoad.openmdao.types import Variable
+from fastoad.openmdao.variables import Variable
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
@@ -42,51 +43,57 @@ def _check_basic_ivc(ivc: IndepVarComp):
 
     outputs: List[Variable] = []
     for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(Variable(name, value, attributes['units']))
-
-    assert len(outputs) == 10
+        outputs.append(Variable(name=name, value=value, **attributes))
 
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)
     assert outputs[0].name == 'geometry:total_surface'
-    assert outputs[0].value == pytest.approx([780.3])
+    assert_allclose(780.3, outputs[0].value)
     assert outputs[0].units == 'm**2'
 
     assert outputs[1].name == 'geometry:wing:span'
-    assert outputs[1].value == pytest.approx([42])
+    assert_allclose(42, outputs[1].value)
     assert outputs[1].units == 'm'
 
     assert outputs[2].name == 'geometry:wing:aspect_ratio'
-    assert outputs[2].value == pytest.approx([9.8])
+    assert_allclose(9.8, outputs[2].value)
     assert outputs[2].units is None
 
     assert outputs[3].name == 'geometry:fuselage:length'
-    assert outputs[3].value == pytest.approx([40.])
+    assert_allclose(40., outputs[3].value)
     assert outputs[3].units == 'm'
 
     assert outputs[4].name == 'constants'
-    assert outputs[4].value == pytest.approx([-42.])
+    assert_allclose(-42., outputs[4].value)
     assert outputs[4].units is None
 
     assert outputs[5].name == 'constants:k1'
-    assert outputs[5].value == pytest.approx([1., 2., 3.])
+    assert_allclose([1., 2., 3.], outputs[5].value)
     assert outputs[5].units == 'kg'
 
     assert outputs[6].name == 'constants:k2'
-    assert outputs[6].value == pytest.approx([10., 20.])
+    assert_allclose([10., 20.], outputs[6].value)
     assert outputs[6].units is None
 
     assert outputs[7].name == 'constants:k3'
-    assert outputs[7].value == pytest.approx([100., 200., 300., 400.])
+    assert_allclose([100., 200., 300., 400.], outputs[7].value)
     assert outputs[7].units == 'm/s'
 
     assert outputs[8].name == 'constants:k4'
-    assert outputs[8].value == pytest.approx([-1, -2, -3])
+    assert_allclose([-1, -2, -3], outputs[8].value)
     assert outputs[8].units is None
 
     assert outputs[9].name == 'constants:k5'
-    assert outputs[9].value == pytest.approx([100, 200, 400, 500, 600])
+    assert_allclose([100, 200, 400, 500, 600], outputs[9].value)
     assert outputs[9].units is None
+
+    assert outputs[10].name == 'constants:k8'
+    assert_allclose([[1e2, 3.4e5], [5.4e3, 2.1]], outputs[10].value)
+    assert outputs[10].units is None
+
+    assert len(outputs) == 11
+
+
 def test_basic_xml_read_and_write_from_ivc(cleanup):
     """
     Tests the creation of an XML file from an IndepVarComp instance
@@ -96,15 +103,16 @@ def test_basic_xml_read_and_write_from_ivc(cleanup):
     # Check write hand-made component
     ivc = IndepVarComp()
     ivc.add_output('geometry/total_surface', val=[780.3], units='m**2')
-    ivc.add_output('geometry/wing/span', val=42.0, units='m')
+    ivc.add_output('geometry/wing/span', val=42.0, units='m', desc='span of the wing')
     ivc.add_output('geometry/wing/aspect_ratio', val=[9.8])
     ivc.add_output('geometry/fuselage/length', val=40.0, units='m')
-    ivc.add_output('constants', val=[-42.])
+    ivc.add_output('constants', val=[-42.], desc='the answer')
     ivc.add_output('constants/k1', val=[1.0, 2.0, 3.0], units='kg')
-    ivc.add_output('constants/k2', val=[10.0, 20.0])
+    ivc.add_output('constants/k2', val=[10.0, 20.0], desc='Geronimo!')
     ivc.add_output('constants/k3', val=np.array([100.0, 200.0, 300.0, 400.0]), units='m/s')
     ivc.add_output('constants/k4', val=[-1.0, -2.0, -3.0])
     ivc.add_output('constants/k5', val=[100.0, 200.0, 400.0, 500.0, 600.0])
+    ivc.add_output('constants/k8', val=[[1e2, 3.4e5], [5.4e3, 2.1]])
 
     # Try writing with non-existing folder
     assert not pth.exists(result_folder)
@@ -186,7 +194,8 @@ def test_basic_xml_partial_read_and_write_from_ivc(cleanup):
                'constants:k2',
                'constants:k3',
                'constants:k4',
-               'constants:k5'
+               'constants:k5',
+               'constants:k8'
                ]
     new_ivc2 = xml_read.read(only=ok_vars)
     _check_basic_ivc(new_ivc2)

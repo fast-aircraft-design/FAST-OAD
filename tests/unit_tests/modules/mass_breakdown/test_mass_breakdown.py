@@ -84,7 +84,7 @@ def test_compute_wing_weight():
                   'geometry:wing:tip:thickness_ratio',
                   'geometry:wing:root:chord',
                   'geometry:wing:sweep_25',
-                  'geometry:wing:cantilever_area',
+                  'geometry:wing:outer_area',
                   'weight:aircraft:MTOW',
                   'weight:aircraft:MLW',
                   'weight:airframe:wing:mass:k',
@@ -115,12 +115,12 @@ def test_compute_wing_weight():
 def test_compute_fuselage_weight():
     """ Tests fuselage weight computation from sample XML data """
     input_list = [
-        'geometry:fuselage:wet_area',
+        'geometry:fuselage:wetted_area',
         'geometry:fuselage:maximum_width',
         'geometry:fuselage:maximum_height',
         'weight:airframe:fuselage:mass:k',
         'weight:airframe:fuselage:mass:offset',
-        'weight:airframe:fuselage:mass:k_tr',
+        'weight:airframe:fuselage:mass:k_lg',
         'weight:airframe:fuselage:mass:k_fus',
     ]
 
@@ -138,16 +138,16 @@ def test_compute_empennage_weight():
     input_list = [
         'geometry:horizontal_tail:area',
         'geometry:vertical_tail:area',
-        'weight:airframe:tail_plane:horizontal:mass:k',
-        'weight:airframe:tail_plane:horizontal:mass:offset',
-        'weight:airframe:tail_plane:vertical:mass:k',
-        'weight:airframe:tail_plane:vertical:mass:offset',
+        'weight:airframe:horizontal_tail:mass:k',
+        'weight:airframe:horizontal_tail:mass:offset',
+        'weight:airframe:vertical_tail:mass:k',
+        'weight:airframe:vertical_tail:mass:offset',
     ]
 
     ivc = get_indep_var_comp(input_list)
     problem = run_system(EmpennageWeight(), ivc)
-    val1 = problem['weight:airframe:tail_plane:horizontal:mass']
-    val2 = problem['weight:airframe:tail_plane:vertical:mass']
+    val1 = problem['weight:airframe:horizontal_tail:mass']
+    val2 = problem['weight:airframe:vertical_tail:mass']
     assert val1 == pytest.approx(754, abs=1)
     assert val2 == pytest.approx(515, abs=1)
 
@@ -189,7 +189,7 @@ def test_compute_landing_gear_weight():
 def test_compute_pylons_weight():
     """ Tests pylons weight computation from sample XML data """
     input_list = [
-        'geometry:propulsion:pylon:wet_area',
+        'geometry:propulsion:pylon:wetted_area',
         'geometry:propulsion:engine:count',
         'weight:airframe:pylon:mass:k',
         'weight:airframe:pylon:mass:offset',
@@ -205,7 +205,7 @@ def test_compute_pylons_weight():
 def test_compute_paint_weight():
     """ Tests paint weight computation from sample XML data """
     input_list = [
-        'geometry:aircraft:area',
+        'geometry:aircraft:wetted_area',
         'weight:airframe:paint:mass:k',
         'weight:airframe:paint:mass:offset',
     ]
@@ -292,27 +292,27 @@ def test_compute_life_support_systems_weight():
     input_list = [
         'geometry:fuselage:maximum_width',
         'geometry:fuselage:maximum_height',
-        'geometry:fuselage:cabin_length',
+        'geometry:cabin:length',
         'geometry:wing:sweep_0',
         'geometry:propulsion:nacelle:diameter',
         'geometry:propulsion:engine:count',
         'geometry:cabin:crew_count:technical',
         'geometry:cabin:crew_count:commercial',
         'geometry:wing:span',
-        'weight:systems:life_support:mass:insulation:k',
-        'weight:systems:life_support:mass:insulation:offset',
-        'weight:systems:life_support:mass:air_conditioning:k',
-        'weight:systems:life_support:mass:air_conditioning:offset',
-        'weight:systems:life_support:mass:de-icing:k',
-        'weight:systems:life_support:mass:de-icing:offset',
-        'weight:systems:life_support:mass:cabin_lighting:k',
-        'weight:systems:life_support:mass:cabin_lighting:offset',
-        'weight:systems:life_support:mass:seats_crew_accomodation:k',
-        'weight:systems:life_support:mass:seats_crew_accomodation:offset',
-        'weight:systems:life_support:mass:oxygen:k',
-        'weight:systems:life_support:mass:oxygen:offset',
-        'weight:systems:life_support:mass:safety_equipment:k',
-        'weight:systems:life_support:mass:safety_equipment:offset',
+        'weight:systems:life_support:insulation:mass:k',
+        'weight:systems:life_support:insulation:mass:offset',
+        'weight:systems:life_support:air_conditioning:mass:k',
+        'weight:systems:life_support:air_conditioning:mass:offset',
+        'weight:systems:life_support:de-icing:mass:k',
+        'weight:systems:life_support:de-icing:mass:offset',
+        'weight:systems:life_support:cabin_lighting:mass:k',
+        'weight:systems:life_support:cabin_lighting:mass:offset',
+        'weight:systems:life_support:seats_crew_accommodation:mass:k',
+        'weight:systems:life_support:seats_crew_accommodation:mass:offset',
+        'weight:systems:life_support:oxygen:mass:k',
+        'weight:systems:life_support:oxygen:mass:offset',
+        'weight:systems:life_support:safety_equipment:mass:k',
+        'weight:systems:life_support:safety_equipment:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
     ivc.add_output('geometry:cabin:NPAX1', 150)
@@ -323,7 +323,7 @@ def test_compute_life_support_systems_weight():
     val2 = problem['weight:systems:life_support:air_conditioning:mass']
     val3 = problem['weight:systems:life_support:de-icing:mass']
     val4 = problem['weight:systems:life_support:cabin_lighting:mass']
-    val5 = problem['weight:systems:life_support:seats_crew_accomodation:mass']
+    val5 = problem['weight:systems:life_support:seats_crew_accommodation:mass']
     val6 = problem['weight:systems:life_support:oxygen:mass']
     val7 = problem['weight:systems:life_support:safety_equipment:mass']
     assert val1 == pytest.approx(2226, abs=1)
@@ -415,8 +415,8 @@ def test_compute_fixed_operational_systems_weight():
     Tests fixed operational systems weight computation from sample XML data
     """
     input_list = [
-        'geometry:fuselage:rear_length',
         'geometry:fuselage:front_length',
+        'geometry:fuselage:rear_length',
         'geometry:fuselage:length',
         'geometry:cabin:seats:economical:count_by_row',
         'geometry:wing:root:chord',

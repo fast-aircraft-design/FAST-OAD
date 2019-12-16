@@ -50,10 +50,10 @@ def test_breguet_from_mtow():
 
     # Check consistency of other outputs
     assert_allclose(problem['mission:sizing:mission:fuel'],
-                    problem['mission:sizing:flight:fuel']
+                    problem['mission:sizing:fuel']
                     + problem['mission:sizing:fuel_reserve']
                     , rtol=1e-3)
-    assert_allclose(problem['mission:sizing:flight:fuel'],
+    assert_allclose(problem['mission:sizing:fuel'],
                     problem['mission:sizing:climb:fuel']
                     + problem['mission:sizing:cruise:fuel']
                     + problem['mission:sizing:descent:fuel']

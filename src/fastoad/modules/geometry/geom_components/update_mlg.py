@@ -25,7 +25,7 @@ class UpdateMLG(ExplicitComponent):
     def setup(self):
 
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
         self.add_input('cg_ratio', val=np.nan)
         self.add_input('delta_lg', val=np.nan)
 
@@ -35,7 +35,7 @@ class UpdateMLG(ExplicitComponent):
 
     def compute(self, inputs, outputs):
         l0_wing = inputs['geometry:wing:MAC:length']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
         cg_ratio = inputs['cg_ratio']
         delta_lg = inputs['delta_lg']
 

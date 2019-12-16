@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -30,23 +30,23 @@ class ComputeHTcg(ExplicitComponent):
         self.add_input('geometry:horizontal_tail:tip_chord', val=np.nan, units='m')
         self.add_input('geometry:horizontal_tail:distance_from_wing', val=np.nan, units='m')
         self.add_input('geometry:horizontal_tail:span', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
         self.add_input('geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:horizontal_tail:length', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:MAC:length', val=np.nan, units='m')
         self.add_input('geometry:ht_x0', val=np.nan, units='m')
 
-        self.add_output('weight:airframe:tail_plane:horizontal:CG:x', units='m')
+        self.add_output('weight:airframe:horizontal_tail:CG:x', units='m')
 
-        self.declare_partials('weight:airframe:tail_plane:horizontal:CG:x', '*', method='fd')
+        self.declare_partials('weight:airframe:horizontal_tail:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
         root_chord = inputs['geometry:horizontal_tail:root_chord']
         tip_chord = inputs['geometry:horizontal_tail:tip_chord']
         b_h = inputs['geometry:horizontal_tail:span']
         sweep_25_ht = inputs['geometry:horizontal_tail:sweep_25']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
         lp_ht = inputs['geometry:horizontal_tail:distance_from_wing']
-        mac_ht = inputs['geometry:horizontal_tail:length']
+        mac_ht = inputs['geometry:horizontal_tail:MAC:length']
         x0_ht = inputs['geometry:ht_x0']
 
         tmp = (root_chord * 0.25 + b_h / 2 *
@@ -57,4 +57,4 @@ class ComputeHTcg(ExplicitComponent):
         x_cg_ht_absolute = lp_ht + fa_length - \
             0.25 * mac_ht + (x_cg_ht - x0_ht)
 
-        outputs['weight:airframe:tail_plane:horizontal:CG:x'] = x_cg_ht_absolute
+        outputs['weight:airframe:horizontal_tail:CG:x'] = x_cg_ht_absolute

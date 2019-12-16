@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -33,18 +33,18 @@ class ComputeVTcg(ExplicitComponent):
         self.add_input('geometry:vt_x0', val=np.nan, units='m')
         self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
         self.add_input('geometry:vertical_tail:span', val=np.nan, units='m')
-        self.add_input('geometry:wing:location', val=np.nan, units='m')
+        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
 
-        self.add_output('weight:airframe:tail_plane:vertical:CG:x', units='m')
+        self.add_output('weight:airframe:vertical_tail:CG:x', units='m')
 
-        self.declare_partials('weight:airframe:tail_plane:vertical:CG:x', '*', method='fd')
+        self.declare_partials('weight:airframe:vertical_tail:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
         root_chord = inputs['geometry:vertical_tail:root_chord']
         tip_chord = inputs['geometry:vertical_tail:tip_chord']
         lp_vt = inputs['geometry:vertical_tail:distance_from_wing']
         mac_vt = inputs['geometry:vertical_tail:length']
-        fa_length = inputs['geometry:wing:location']
+        fa_length = inputs['geometry:wing:MAC:x']
         x0_vt = inputs['geometry:vt_x0']
         sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
         b_v = inputs['geometry:vertical_tail:span']
@@ -55,4 +55,4 @@ class ComputeVTcg(ExplicitComponent):
         x_cg_vt_absolute = lp_vt + fa_length - \
                            0.25 * mac_vt + (x_cg_vt - x0_vt)
 
-        outputs['weight:airframe:tail_plane:vertical:CG:x'] = x_cg_vt_absolute
+        outputs['weight:airframe:vertical_tail:CG:x'] = x_cg_vt_absolute

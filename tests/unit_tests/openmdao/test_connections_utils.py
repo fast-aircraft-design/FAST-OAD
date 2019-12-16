@@ -29,7 +29,7 @@ from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
     build_ivc_of_unconnected_inputs, build_ivc_of_outputs, \
     build_ivc_of_variables, update_ivc
-from fastoad.openmdao.types import Variable
+from fastoad.openmdao.variables import Variable
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
 from tests.sellar_example.functions import Functions
@@ -130,13 +130,13 @@ def test_build_ivc_of_unconnected_inputs():
                         expected_optional_vars: List[Variable]):
         problem.setup()
         ivc = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=False)
-        ivc_vars = [Variable(name, value, attributes['units'])
+        ivc_vars = [Variable(name=name, value=value, **attributes)
                     for (name, value, attributes) in ivc._indep_external]
         assert set([str(i) for i in ivc_vars]) == set(
             [str(i) for i in expected_mandatory_vars])
 
         ivc = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=True)
-        ivc_vars = [Variable(name, value, attributes['units'])
+        ivc_vars = [Variable(name=name, value=value, **attributes)
                     for (name, value, attributes) in ivc._indep_external]
         assert set([str(i) for i in ivc_vars]) == set(
             [str(i) for i in expected_mandatory_vars + expected_optional_vars])
@@ -176,7 +176,7 @@ def test_build_ivc_of_outputs():
     def _test_and_check(problem: Problem,
                         expected_vars: List[Variable]):
         ivc = build_ivc_of_outputs(problem)
-        ivc_vars = [Variable(name, value, attributes['units'])
+        ivc_vars = [Variable(name=name, value=value, **attributes)
                     for (name, value, attributes) in ivc._indep_external]
         assert set([str(i) for i in ivc_vars]) == set(
             [str(i) for i in expected_vars])
@@ -216,7 +216,7 @@ def test_build_ivc_of_variables():
                         initial_values: bool,
                         expected_vars: List[Variable]):
         ivc = build_ivc_of_variables(problem, initial_values)
-        ivc_vars = [Variable(name, value, attributes['units'])
+        ivc_vars = [Variable(name=name, value=value, **attributes)
                     for (name, value, attributes) in ivc._indep_external]
         assert set([str(i) for i in ivc_vars]) == set(
             [str(i) for i in expected_vars])

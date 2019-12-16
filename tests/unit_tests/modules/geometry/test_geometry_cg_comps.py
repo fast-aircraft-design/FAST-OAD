@@ -73,10 +73,10 @@ def test_compute_aero_center(input_xml):
     input_list = [
         'geometry:wing:root:leading_edge:x',
         'geometry:wing:MAC:length',
-        'geometry:wing:l1',
+        'geometry:wing:root:virtual_chord',
         'geometry:fuselage:maximum_width',
         'geometry:fuselage:length',
-        'geometry:wing:location',
+        'geometry:wing:MAC:x',
         'geometry:wing:area',
         'geometry:horizontal_tail:area',
         'geometry:horizontal_tail:distance_from_wing',
@@ -110,7 +110,7 @@ def test_compute_cg_control_surfaces(input_xml):
         'geometry:wing:root:y',
         'geometry:wing:kink:leading_edge:x',
         'geometry:wing:kink:y',
-        'geometry:wing:location'
+        'geometry:wing:MAC:x'
     ]
 
     input_vars = input_xml.read(only=input_list)
@@ -132,7 +132,7 @@ def test_compute_cg_loadcase1(input_xml):
 
     input_list = [
         'geometry:wing:MAC:length',
-        'geometry:wing:location',
+        'geometry:wing:MAC:x',
         'weight:payload:PAX:CG:x',
         'weight:payload:rear_fret:CG:x',
         'weight:payload:front_fret:CG:x',
@@ -161,7 +161,7 @@ def test_compute_cg_loadcase2(input_xml):
 
     input_list = [
         'geometry:wing:MAC:length',
-        'geometry:wing:location',
+        'geometry:wing:MAC:x',
         'weight:payload:PAX:CG:x',
         'weight:payload:rear_fret:CG:x',
         'weight:payload:front_fret:CG:x',
@@ -192,7 +192,7 @@ def test_compute_cg_loadcase3(input_xml):
 
     input_list = [
         'geometry:wing:MAC:length',
-        'geometry:wing:location',
+        'geometry:wing:MAC:x',
         'weight:payload:PAX:CG:x',
         'weight:payload:rear_fret:CG:x',
         'weight:payload:front_fret:CG:x',
@@ -221,7 +221,7 @@ def test_compute_cg_loadcase4(input_xml):
 
     input_list = [
         'geometry:wing:MAC:length',
-        'geometry:wing:location',
+        'geometry:wing:MAC:x',
         'weight:payload:PAX:CG:x',
         'weight:payload:rear_fret:CG:x',
         'weight:payload:front_fret:CG:x',
@@ -252,9 +252,9 @@ def test_compute_cg_others(input_xml):
         'geometry:wing:MAC:length',
         'geometry:wing:root:chord',
         'geometry:fuselage:length',
-        'geometry:wing:location',
-        'geometry:fuselage:rear_length',
+        'geometry:wing:MAC:x',
         'geometry:fuselage:front_length',
+        'geometry:fuselage:rear_length',
         'weight:propulsion:engine:CG:x',
         'weight:furniture:passenger_seats:CG:x',
         'weight:propulsion:engine:mass',
@@ -301,7 +301,7 @@ def test_compute_cg_others(input_xml):
     assert x_cg_c23 == pytest.approx(15.79, abs=1e-2)
     x_cg_c24 = problem['weight:systems:life_support:cabin_lighting:CG:x']
     assert x_cg_c24 == pytest.approx(16.88, abs=1e-2)
-    x_cg_c25 = problem['weight:systems:life_support:seats_crew_accomodation:CG:x']
+    x_cg_c25 = problem['weight:systems:life_support:seats_crew_accommodation:CG:x']
     assert x_cg_c25 == pytest.approx(16.62, abs=1e-2)
     x_cg_c26 = problem['weight:systems:life_support:oxygen:CG:x']
     assert x_cg_c26 == pytest.approx(16.62, abs=1e-2)
@@ -337,8 +337,8 @@ def test_compute_cg_ratio_aft(input_xml):
     input_list = [
         'weight:airframe:wing:CG:x',
         'weight:airframe:fuselage:CG:x',
-        'weight:airframe:tail_plane:horizontal:CG:x',
-        'weight:airframe:tail_plane:vertical:CG:x',
+        'weight:airframe:horizontal_tail:CG:x',
+        'weight:airframe:vertical_tail:CG:x',
         'weight:airframe:flight_controls:CG:x',
         'weight:airframe:landing_gear:main:CG:x',
         'weight:airframe:landing_gear:front:CG:x',
@@ -346,8 +346,8 @@ def test_compute_cg_ratio_aft(input_xml):
         'weight:airframe:paint:CG:x',
         'weight:airframe:wing:mass',
         'weight:airframe:fuselage:mass',
-        'weight:airframe:tail_plane:horizontal:mass',
-        'weight:airframe:tail_plane:vertical:mass',
+        'weight:airframe:horizontal_tail:mass',
+        'weight:airframe:vertical_tail:mass',
         'weight:airframe:flight_controls:mass',
         'weight:airframe:landing_gear:main:mass',
         'weight:airframe:landing_gear:front:mass',
@@ -366,7 +366,7 @@ def test_compute_cg_ratio_aft(input_xml):
         'weight:systems:life_support:air_conditioning:CG:x',
         'weight:systems:life_support:de-icing:CG:x',
         'weight:systems:life_support:cabin_lighting:CG:x',
-        'weight:systems:life_support:seats_crew_accomodation:CG:x',
+        'weight:systems:life_support:seats_crew_accommodation:CG:x',
         'weight:systems:life_support:oxygen:CG:x',
         'weight:systems:life_support:safety_equipment:CG:x',
         'weight:systems:navigation:CG:x',
@@ -381,7 +381,7 @@ def test_compute_cg_ratio_aft(input_xml):
         'weight:systems:life_support:air_conditioning:mass',
         'weight:systems:life_support:de-icing:mass',
         'weight:systems:life_support:cabin_lighting:mass',
-        'weight:systems:life_support:seats_crew_accomodation:mass',
+        'weight:systems:life_support:seats_crew_accommodation:mass',
         'weight:systems:life_support:oxygen:mass',
         'weight:systems:life_support:safety_equipment:mass',
         'weight:systems:navigation:mass',
@@ -400,7 +400,7 @@ def test_compute_cg_ratio_aft(input_xml):
         'weight:furniture:security_kit:mass',
         'weight:furniture:toilets:mass',
         'geometry:wing:MAC:length',
-        'geometry:wing:location'
+        'geometry:wing:MAC:x'
     ]
 
     input_vars = input_xml.read(only=input_list)
@@ -441,7 +441,7 @@ def test_compute_cg_tanks(input_xml):
         'geometry:wing:kink:y',
         'geometry:wing:tip:y',
         'geometry:wing:tip:leading_edge:x',
-        'geometry:wing:location',
+        'geometry:wing:MAC:x',
         'geometry:fuselage:maximum_width'
     ]
 
@@ -463,7 +463,7 @@ def test_compute_cg_wing(input_xml):
     """ Tests computation of wing center of gravity """
 
     input_list = [
-        'geometry:wing:break',
+        'geometry:wing:kink:span_ratio',
         'geometry:wing:spar_ratio:front:root',
         'geometry:wing:spar_ratio:front:kink',
         'geometry:wing:spar_ratio:front:tip',
@@ -481,7 +481,7 @@ def test_compute_cg_wing(input_xml):
         'geometry:wing:kink:y',
         'geometry:wing:tip:y',
         'geometry:wing:tip:leading_edge:x',
-        'geometry:wing:location'
+        'geometry:wing:MAC:x'
     ]
 
     input_vars = input_xml.read(only=input_list)
@@ -503,7 +503,7 @@ def test_compute_global_cg(input_xml):
 
     input_list = [
         'geometry:wing:MAC:length',
-        'geometry:wing:location',
+        'geometry:wing:MAC:x',
         'weight:payload:PAX:CG:x',
         'weight:payload:rear_fret:CG:x',
         'weight:payload:front_fret:CG:x',
@@ -512,8 +512,8 @@ def test_compute_global_cg(input_xml):
         'weight:fuel_tank:CG:x',
         'weight:airframe:wing:CG:x',
         'weight:airframe:fuselage:CG:x',
-        'weight:airframe:tail_plane:horizontal:CG:x',
-        'weight:airframe:tail_plane:vertical:CG:x',
+        'weight:airframe:horizontal_tail:CG:x',
+        'weight:airframe:vertical_tail:CG:x',
         'weight:airframe:flight_controls:CG:x',
         'weight:airframe:landing_gear:main:CG:x',
         'weight:airframe:landing_gear:front:CG:x',
@@ -521,8 +521,8 @@ def test_compute_global_cg(input_xml):
         'weight:airframe:paint:CG:x',
         'weight:airframe:wing:mass',
         'weight:airframe:fuselage:mass',
-        'weight:airframe:tail_plane:horizontal:mass',
-        'weight:airframe:tail_plane:vertical:mass',
+        'weight:airframe:horizontal_tail:mass',
+        'weight:airframe:vertical_tail:mass',
         'weight:airframe:flight_controls:mass',
         'weight:airframe:landing_gear:main:mass',
         'weight:airframe:landing_gear:front:mass',
@@ -541,7 +541,7 @@ def test_compute_global_cg(input_xml):
         'weight:systems:life_support:air_conditioning:CG:x',
         'weight:systems:life_support:de-icing:CG:x',
         'weight:systems:life_support:cabin_lighting:CG:x',
-        'weight:systems:life_support:seats_crew_accomodation:CG:x',
+        'weight:systems:life_support:seats_crew_accommodation:CG:x',
         'weight:systems:life_support:oxygen:CG:x',
         'weight:systems:life_support:safety_equipment:CG:x',
         'weight:systems:navigation:CG:x',
@@ -556,7 +556,7 @@ def test_compute_global_cg(input_xml):
         'weight:systems:life_support:air_conditioning:mass',
         'weight:systems:life_support:de-icing:mass',
         'weight:systems:life_support:cabin_lighting:mass',
-        'weight:systems:life_support:seats_crew_accomodation:mass',
+        'weight:systems:life_support:seats_crew_accommodation:mass',
         'weight:systems:life_support:oxygen:mass',
         'weight:systems:life_support:safety_equipment:mass',
         'weight:systems:navigation:mass',
@@ -620,7 +620,7 @@ def test_compute_static_margin(input_xml):
 
     input_list = [
         'geometry:wing:MAC:length',
-        'geometry:wing:location'
+        'geometry:wing:MAC:x'
     ]
 
     input_vars = input_xml.read(only=input_list)

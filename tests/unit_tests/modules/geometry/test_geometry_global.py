@@ -52,7 +52,7 @@ def test_geometry_get_cg():
 
     input_vars = input_xml.read()
 
-    input_vars.add_output('geometry:fuselage:cabin_length', val=0.81*37.507, units='m')
+    input_vars.add_output('geometry:cabin:length', val=0.81 * 37.507, units='m')
 
     problem = Problem()
     model = problem.model
