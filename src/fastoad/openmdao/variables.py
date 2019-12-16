@@ -54,7 +54,8 @@ class Variable:
         if not self._variable_descriptions:
             # Class attribute, but it's safer to initialize it at first instantiation
             vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
-            self._variable_descriptions = {name: description for name, description in vars_descs}
+            self.__class__._variable_descriptions = {name: description for name, description in
+                                                     vars_descs}
 
         self.attributes.update(kwargs)
 
