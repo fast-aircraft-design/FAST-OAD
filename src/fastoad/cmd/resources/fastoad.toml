@@ -4,8 +4,8 @@ title = "Sample OAD Process"
 
 module_folders = []
 
-input_file = "./results/oad_process_inputs.xml"
-output_file = "./results/oad_process_outputs.xml"
+input_file = "./data/inputs.xml"
+output_file = "./results/outputs.xml"
 
 [model]
     nonlinear_solver = "om.NonlinearBlockGS(iprint=1, maxiter=100)"

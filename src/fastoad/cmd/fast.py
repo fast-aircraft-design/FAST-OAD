@@ -15,6 +15,7 @@ main
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
+import shutil
 import textwrap
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from distutils.util import strtobool
@@ -25,6 +26,11 @@ from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 from fastoad.openmdao.connections_utils import build_ivc_of_outputs
 
+RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
+
+
+# TODO: it has become a bit messy down here... Refactoring needed, maybe
+#       with a better organization of code by sub-commands
 
 def query_yes_no(question):
     """
@@ -54,13 +60,29 @@ class Main:
         self.problem = None
 
     # ACTIONS -----------------------------------------------------------------
+    def _generate_conf_file(self, args):
+        """
+        Generates a sample TOML file
+        """
+        sample_file_path = pth.join(RESOURCE_FOLDER_PATH, 'fastoad.toml')
+        if not args.force and pth.exists(args.conf_file) and not query_yes_no(
+                'Configuration file "%s" already exists. Do you want to overwrite it?'
+                % args.conf_file):
+            print('No file written.')
+            return
+
+        shutil.copyfile(sample_file_path, args.conf_file)
+        print('Sample configuration written in %s' % args.conf_file)
+
     def _generate_inputs(self, args):
         """
         Generates input file according to command line arguments
         """
-        if pth.exists(self.problem.input_file_path) and not query_yes_no(
+
+        inputs_path = pth.normpath(self.problem.input_file_path)
+        if not args.force and pth.exists(inputs_path) and not query_yes_no(
                 'Input file "%s" already exists. Do you want to overwrite it?'
-                % self.problem.input_file_path):
+                % inputs_path):
             print('No file written.')
             return
 
@@ -73,6 +95,7 @@ class Main:
             source = None
 
         self.problem.write_needed_inputs(source)
+        print('Problem inputs written in %s' % inputs_path)
 
     def _list_outputs(self, args):
         """
@@ -111,29 +134,33 @@ class Main:
         """
         Runs model according to provided problem file
         """
-        if pth.exists(self.problem.output_file_path) and not query_yes_no(
+        outputs_path = pth.normpath(self.problem.output_file_path)
+        if not args.force and pth.exists(outputs_path) and not query_yes_no(
                 'Output file "%s" already exists. Do you want to overwrite it?'
-                % self.problem.output_file_path):
+                % outputs_path):
             print('Computation interrupted.')
             return
 
         self.problem.read_inputs()
         self.problem.run_model()
         self.problem.write_outputs()
+        print('Computation finished. Problem outputs written in %s' % outputs_path)
 
     def _optimize(self, args):
         """
         Runs driver according to provided problem file
         """
-        if pth.exists(self.problem.output_file_path) and not query_yes_no(
+        outputs_path = pth.normpath(self.problem.output_file_path)
+        if not args.force and pth.exists(outputs_path) and not query_yes_no(
                 'Output file "%s" already exists. Do you want to overwrite it?'
-                % self.problem.output_file_path):
+                % outputs_path):
             print('Computation interrupted.')
             return
 
         self.problem.read_inputs()
         self.problem.run_driver()
         self.problem.write_outputs()
+        print('Computation finished. Problem outputs written in %s' % outputs_path)
 
     # PARSER CONFIGURATION ----------------------------------------------------
     def _add_conf_file_argument(self, parser: ArgumentParser, required=True):
@@ -146,6 +173,11 @@ class Main:
         parser.add_argument('conf_file', **kwargs)
         parser.set_defaults(set_problem=self._set_problem)
 
+    @staticmethod
+    def _add_overwrite_argument(parser: ArgumentParser):
+        parser.add_argument('-f', '--force', action='store_true',
+                            help='do not ask before overwriting files')
+
     def _set_problem(self, args):
         """
         Initialize the OpenMDAO problem id conf_file has been provided
@@ -157,11 +189,20 @@ class Main:
     # ENTRY POINT -------------------------------------------------------------
     def run(self):
         """ Main function """
-        # self.parser.add_argument('conf_file', type=str, nargs='?',
-        #                          help='the configuration file for setting the problem')
-        # self.parser.set_defaults(func=self._set_problem)
 
         subparsers = self.parser.add_subparsers(title='sub-commands')
+
+        # sub-command for generating sample configuration file -----------
+        parser_gen_conf = subparsers.add_parser(
+            'gen_conf',
+            formatter_class=RawDescriptionHelpFormatter,
+            description=
+            'generates the configuration file with sample data')
+        parser_gen_conf.add_argument('conf_file', type=str, help='the name of configuration file '
+                                                                 'to be written')
+        self._add_overwrite_argument(parser_gen_conf)
+        parser_gen_conf.set_defaults(func=self._generate_conf_file)
+        parser_gen_conf.set_defaults(set_problem=lambda x: None)
 
         # sub-command for generating input file -----------
         parser_gen_inputs = subparsers.add_parser(
@@ -170,6 +211,7 @@ class Main:
             description=
             'generates the input file (specified in the configuration file) with needed variables')
         self._add_conf_file_argument(parser_gen_inputs)
+        self._add_overwrite_argument(parser_gen_inputs)
         parser_gen_inputs.add_argument(
             'source', nargs='?',
             help='if provided, generated input file will be fed with values from provided XML file')
@@ -210,6 +252,7 @@ class Main:
             'eval',
             description='Runs the analysis')
         self._add_conf_file_argument(parser_run_model)
+        self._add_overwrite_argument(parser_run_model)
         parser_run_model.set_defaults(func=self._evaluate)
 
         # sub-command for running the driver --------------
@@ -217,6 +260,7 @@ class Main:
             'optim',
             description='Runs the optimization')
         self._add_conf_file_argument(parser_run_driver)
+        self._add_overwrite_argument(parser_run_driver)
         parser_run_driver.set_defaults(func=self._optimize)
 
         args = self.parser.parse_args()
