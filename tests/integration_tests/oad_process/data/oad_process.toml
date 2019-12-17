@@ -12,6 +12,8 @@ output_file = "../results/oad_process_outputs.xml"
     linear_solver = "om.ScipyKrylov()"
     [model.geometry]
         id = "fastoad.geometry.legacy"
+    [model.weights]
+        id = "fastoad.weights.legacy"
     [model.aerodynamics]
         id = "fastoad.aerodynamics.highspeed.legacy"
     [model.performance]

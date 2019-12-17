@@ -17,12 +17,13 @@ Test module for geometry global groups
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
 import os.path as pth
 
+import openmdao.api as om
 import pytest
-from openmdao.core.problem import Problem
 
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
 from fastoad.modules.geometry import GetCG, Geometry
+from fastoad.modules.mass_breakdown import MassBreakdown
 from tests.testing_utilities import run_system
 
 
@@ -54,13 +55,12 @@ def test_geometry_get_cg():
 
     input_vars.add_output('geometry:cabin:length', val=0.81 * 37.507, units='m')
 
-    problem = Problem()
-    model = problem.model
-
-    # model.add_subsystem('inputs', input_vars, promotes=['*'])
-    # model.add_subsystem('geometry', GetCG(), promotes=['*'])
-
-    problem = run_system(GetCG(), input_vars)
+    group = om.Group()
+    # TODO: Inputs should contain mass breakdown data so only GetCG() is run
+    group.add_subsystem('mass_breakdown', MassBreakdown(), promotes=['*'])
+    group.add_subsystem('CG', GetCG(), promotes=['*'])
+    group.nonlinear_solver = om.NonlinearBlockGS()
+    problem = run_system(group, input_vars)
 
     # problem.run_model()
     cg_ratio = problem['cg_ratio']
@@ -78,14 +78,13 @@ def test_geometry_geometry_global():
 
     input_vars = input_xml.read()
 
-    problem = Problem()
-    model = problem.model
+    group = om.Group()
+    # TODO: Inputs should contain mass breakdown data so only Geometry() is run
+    group.add_subsystem('mass_breakdown', MassBreakdown(), promotes=['*'])
+    group.add_subsystem('geometry', Geometry(), promotes=['*'])
+    group.nonlinear_solver = om.NonlinearBlockGS()
+    problem = run_system(group, input_vars)
 
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', Geometry(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
     static_margin = problem['static_margin']
     # TODO: see if this static margin is correct
     assert static_margin == pytest.approx(0.000789, abs=1e-6)

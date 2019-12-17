@@ -1,29 +1,39 @@
 """
     FAST - Copyright (c) 2016 ONERA ISAE
 """
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2019  ONERA/ISAE
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from openmdao.api import Group, NonlinearBlockGS, LinearBlockGS
 
-from fastoad.modules.geometry.geom_components.ht \
-    import ComputeHorizontalTailGeometry
-from fastoad.modules.geometry.geom_components.vt.compute_vertical_tail \
-    import ComputeVerticalTailGeometry
-from fastoad.modules.geometry.geom_components.update_mlg \
-    import UpdateMLG
-from fastoad.modules.geometry.geom_components.compute_total_area \
-    import ComputeTotalArea
-from fastoad.modules.geometry.cg_components.compute_global_cg \
-    import ComputeGlobalCG
 from fastoad.modules.geometry.cg_components.compute_cg_control_surfaces \
     import ComputeControlSurfacesCG
-from fastoad.modules.geometry.cg_components.compute_cg_wing \
-    import ComputeWingCG
-from fastoad.modules.geometry.cg_components.compute_cg_tanks \
-    import ComputeTanksCG
 from fastoad.modules.geometry.cg_components.compute_cg_others \
     import ComputeOthersCG
-from fastoad.modules.mass_breakdown.mass_breakdown \
-    import MassBreakdown
-
+from fastoad.modules.geometry.cg_components.compute_cg_tanks \
+    import ComputeTanksCG
+from fastoad.modules.geometry.cg_components.compute_cg_wing \
+    import ComputeWingCG
+from fastoad.modules.geometry.cg_components.compute_global_cg \
+    import ComputeGlobalCG
+from fastoad.modules.geometry.geom_components.compute_total_area \
+    import ComputeTotalArea
+from fastoad.modules.geometry.geom_components.ht \
+    import ComputeHorizontalTailGeometry
+from fastoad.modules.geometry.geom_components.update_mlg \
+    import UpdateMLG
+from fastoad.modules.geometry.geom_components.vt.compute_vertical_tail \
+    import ComputeVerticalTailGeometry
 from fastoad.modules.geometry.options import AIRCRAFT_FAMILY_OPTION, \
     TAIL_TYPE_OPTION, ENGINE_LOCATION_OPTION, AIRCRAFT_TYPE_OPTION
 
@@ -32,7 +42,6 @@ class GetCG(Group):
     """ Model that computes the global center of gravity """
 
     def initialize(self):
-
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.0)
         self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
@@ -55,12 +64,6 @@ class GetCG(Group):
                            promotes=['*'])
         self.add_subsystem('compute_total_area',
                            ComputeTotalArea(),
-                           promotes=['*'])
-        # TODO: Add deriv option to mass breakdown
-        self.add_subsystem('compute_mass_breakdown',
-                           MassBreakdown(engine_location=self.engine_location,
-                                         tail_type=self.tail_type,
-                                         ac_type=self.ac_type),
                            promotes=['*'])
         self.add_subsystem('compute_cg_wing',
                            ComputeWingCG(),
