@@ -15,7 +15,8 @@ main
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-from argparse import ArgumentParser
+import textwrap
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from distutils.util import strtobool
 
 from fastoad.io.configuration import ConfiguredProblem
@@ -165,6 +166,7 @@ class Main:
         # sub-command for generating input file -----------
         parser_gen_inputs = subparsers.add_parser(
             'gen_inputs',
+            formatter_class=RawDescriptionHelpFormatter,
             description=
             'generates the input file (specified in the configuration file) with needed variables')
         self._add_conf_file_argument(parser_gen_inputs)
@@ -175,6 +177,19 @@ class Main:
             '--legacy',
             help='to be used if the source XML file is in legacy format')
         parser_gen_inputs.set_defaults(func=self._generate_inputs)
+        parser_gen_inputs.epilog = textwrap.dedent('''\
+            Examples:
+            ---------
+            # For the problem defined in conf_file.toml, generates the input file with default 
+            # values (when default values are defined):
+                %(prog)s gen_inputs conf_file.toml
+            
+            # Same as above, except that values are taken from some_file.xml when possible:
+                %(prog)s gen_inputs conf_file.toml some_file.xml
+
+            # Same as above, some_file.xml is in the legacy FAST schema
+                %(prog)s gen_inputs conf_file.toml some_file.xml --legacy
+            ''')
 
         # sub-command for listing registered systems ------
         parser_list_systems = subparsers.add_parser(

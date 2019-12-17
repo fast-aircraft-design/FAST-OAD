@@ -1,0 +1,22 @@
+
+
+title = "Sample OAD Process"
+
+module_folders = []
+
+input_file = "./results/oad_process_inputs.xml"
+output_file = "./results/oad_process_outputs.xml"
+
+[model]
+    nonlinear_solver = "om.NonlinearBlockGS(iprint=1, maxiter=100)"
+    linear_solver = "om.DirectSolver()"
+    [model.geometry]
+        id = "fastoad.geometry.legacy"
+    [model.weights]
+        id = "fastoad.weights.legacy"
+    [model.aerodynamics]
+        id = "fastoad.aerodynamics.highspeed.legacy"
+    [model.performance]
+        id = "fastoad.performances.breguet.from_owe"
+    [model.propulsion]
+        id = "fastoad.propulsion.rubber_engine"
