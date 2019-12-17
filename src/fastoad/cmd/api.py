@@ -14,8 +14,149 @@ API
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
+import os.path as pth
+import shutil
+import sys
+from distutils.util import strtobool
+
 from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
+from fastoad.module_management import BundleLoader
+from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from fastoad.openmdao.connections_utils import build_ivc_of_outputs
+
+RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
+
+
+def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
+    """
+    Generates a sample configuration file.
+
+    :param configuration_file_path: the path of file to be written
+    :param overwrite: if True, the file will be written, even if it already exists
+    """
+    sample_file_path = pth.join(RESOURCE_FOLDER_PATH, 'fastoad.toml')
+    if not _can_write(configuration_file_path, overwrite):
+        return
+
+    shutil.copyfile(sample_file_path, configuration_file_path)
+    print('Sample configuration written in %s' % configuration_file_path)
+
+
+def generate_inputs(configuration_file_path: str,
+                    overwrite: bool = False,
+                    source_path: str = None,
+                    source_path_schema='native'
+                    ):
+    """
+    Generates input file for the specified :class:`ConfiguredProblem`
+
+    :param configuration_file_path: where the path of input file to write is set
+    :param overwrite: if True, file will be written even if one already exists
+    :param source_path: path of file data will be taken from
+    :param source_path_schema: set to 'legacy' if the source file come from legacy FAST
+    """
+    problem = ConfiguredProblem()
+    problem.configure(configuration_file_path)
+
+    inputs_path = pth.normpath(problem.input_file_path)
+    if not _can_write(inputs_path, overwrite):
+        return
+
+    if source_path:
+        if source_path_schema == 'legacy':
+            source = OMLegacy1XmlIO(source_path)
+        else:
+            source = OMXmlIO(source_path)
+    else:
+        source = None
+
+    problem.write_needed_inputs(source)
+    print('Problem inputs written in %s' % inputs_path)
+
+
+def list_outputs(configuration_file_path: str):
+    """
+    Prints list of system outputs
+    """
+    problem = ConfiguredProblem()
+    problem.configure(configuration_file_path)
+
+    ivc = build_ivc_of_outputs(problem)
+    print(
+        '-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------'
+    )
+    print('%-60s| %s' % ('VARIABLE', 'DESCRIPTION'))
+    for (name, value, attributes) in ivc._indep_external:
+        print('%-60s| %s' % (name, attributes['desc']))
+    print(
+        '--------------------------------------------------------------------------------------'
+    )
+
+
+def list_systems(configuration_file_path: str = None):
+    """
+    Prints list of system identifiers
+    """
+
+    if configuration_file_path:
+        problem = ConfiguredProblem()
+        problem.configure(configuration_file_path)
+
+    # As the problem has been configured, BundleLoader now knows
+    # additional registered systems
+    print(
+        '-- AVAILABLE SYSTEM IDENTIFIERS ------------------------------------------------------'
+    )
+    print('%-60s| %s' % ('IDENTIFIER', 'PATH'))
+    for identifier in OpenMDAOSystemFactory.get_system_ids():
+        path = BundleLoader().get_factory_path(identifier)
+        print('%-60s| %s' % (identifier, path))
+    print(
+        '--------------------------------------------------------------------------------------'
+    )
+
+
+def run_problem(configuration_file_path: str, overwrite: bool = False, mode='evaluate'):
+    """
+    Runs model according to provided problem file
+    """
+
+    problem = ConfiguredProblem()
+    problem.configure(configuration_file_path)
+
+    outputs_path = pth.normpath(problem.output_file_path)
+    if not _can_write(outputs_path, overwrite):
+        return
+
+    if not overwrite and pth.exists(outputs_path) and not _query_yes_no(
+            'Output file "%s" already exists. Do you want to overwrite it?'
+            % outputs_path):
+        print('Computation interrupted.')
+        return
+
+    problem.read_inputs()
+    if mode == 'evaluate':
+        problem.run_model()
+    else:
+        problem.run_driver()
+    problem.write_outputs()
+    print('Computation finished. Problem outputs written in %s' % outputs_path)
+
+
+def evaluate_problem(configuration_file_path: str, overwrite: bool = False):
+    """
+    Runs model according to provided problem file
+    """
+    run_problem(configuration_file_path, overwrite, 'evaluate')
+
+
+def optimize_problem(configuration_file_path: str, overwrite: bool = False):
+    """
+    Runs driver according to provided problem file
+    """
+    run_problem(configuration_file_path, overwrite, 'optimize')
 
 
 # TODO: Must this class fusioned with ConfiguredProblem?
@@ -43,3 +184,52 @@ class FastProblem(ConfiguredProblem):
         self.read_inputs()
         self.run_driver()
         self.write_outputs()
+
+
+def _query_yes_no(question):
+    """
+    Ask a yes/no question via input() and return its answer as boolean.
+
+    Keeps asking while answer is not similar to "yes" or "no"
+    The returned value is True for "yes" or False for "no".
+    """
+    answer = None
+    while answer is None:
+        raw_answer = input(question + '\n')
+        try:
+            answer = strtobool(raw_answer)
+        except ValueError:
+            pass
+
+    return answer == 1
+
+
+def _is_interactive():
+    """
+    :return: True if Python in interactive mode
+    """
+    return hasattr(sys, 'ps1')
+
+
+def _can_write(file_path: str, overwrite: bool) -> bool:
+    """
+    Checks if file exists and if it can be overwritten.
+    If file exists and overwrite is set to False:
+     - in Python interactive mode, simply prints an informative message and returns without writing the file
+     - in console mode, asks for confirmation
+
+    :param file_path:
+    :param overwrite:
+    :return: True if file can be written
+    """
+
+    if not overwrite and pth.exists(file_path):
+        if _is_interactive():
+            print('File exists. To write it anyway, please call again with overwrite set to True')
+            return False
+        elif not _query_yes_no(
+                'File "%s" already exists. Do you want to overwrite it?'
+                % file_path):
+            print('No file written.')
+            return False
+    return True
