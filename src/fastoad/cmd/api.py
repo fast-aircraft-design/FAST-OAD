@@ -195,7 +195,7 @@ def _run_problem(configuration_file_path: str,
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
     :param mode: 'run_model' or 'run_driver'
-    :return: the OpenMDAO problem, or False if it has not been run
+    :return: the OpenMDAO problem after run
     """
 
     problem = ConfiguredProblem()
@@ -219,52 +219,23 @@ def _run_problem(configuration_file_path: str,
     return problem
 
 
-def evaluate_problem(configuration_file_path: str, overwrite: bool = False):
+def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> ConfiguredProblem:
     """
     Runs model according to provided problem file
 
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
-    :return: the OpenMDAO problem
+    :return: the OpenMDAO problem after run
     """
     return _run_problem(configuration_file_path, overwrite, 'run_model')
 
 
-def optimize_problem(configuration_file_path: str, overwrite: bool = False):
+def optimize_problem(configuration_file_path: str, overwrite: bool = False) -> ConfiguredProblem:
     """
     Runs driver according to provided problem file
 
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
-    :return: the OpenMDAO problem
+    :return: the OpenMDAO problem after run
     """
     return _run_problem(configuration_file_path, overwrite, 'run_driver')
-
-
-# TODO: Must this class fusioned with ConfiguredProblem?
-class FastProblem(ConfiguredProblem):
-
-    def __init__(self, conf_file, *args, **kwargs):
-        import warnings
-        warnings.warn('Use functions from api.py instead', DeprecationWarning)
-        super().__init__(*args, **kwargs)
-        self.configure(conf_file)
-
-    def gen_inputs(self):
-        self.write_needed_inputs()
-
-    def gen_inputs_from(self, input_file=None):
-        self.write_needed_inputs(OMXmlIO(input_file))
-
-    def gen_inputs_from_legacy(self, input_file=None):
-        self.write_needed_inputs(OMLegacy1XmlIO(input_file))
-
-    def run_eval(self):
-        self.read_inputs()
-        self.run_model()
-        self.write_outputs()
-
-    def run_optim(self):
-        self.read_inputs()
-        self.run_driver()
-        self.write_outputs()
