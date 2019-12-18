@@ -56,6 +56,3 @@ venv*/
 
 # External tools
 /XFOIL
-
-# notebooks files
-.ipynb_checkpoints/*
