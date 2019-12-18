@@ -162,6 +162,15 @@ def test_api(cleanup, install_components):
     # TODO: add checks
     api.list_outputs(configuration_file_path, pth.join(api_result_folder_path, 'list_outputs.txt'))
 
+    # Write N2 ------------------------------------------------------------
+    # TODO: add checks
+    n2_file_path = pth.join(api_result_folder_path, 'n2.html')
+    api.write_n2(configuration_file_path, n2_file_path)
+    # Running again without forcing overwrite of outputs will make it fail
+    with pytest.raises(FastFileExistsError):
+        api.write_n2(configuration_file_path, n2_file_path, False)
+    api.write_n2(configuration_file_path, n2_file_path, True)
+
     # Run model ---------------------------------------------------------------
     api.evaluate_problem(configuration_file_path, False)
     # Running again without forcing overwrite of outputs will make it fail

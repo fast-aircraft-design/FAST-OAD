@@ -21,6 +21,8 @@ import shutil
 import sys
 from typing import IO, Union
 
+import openmdao.api as om
+
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
@@ -60,7 +62,7 @@ def generate_inputs(configuration_file_path: str,
                     source_path_schema='native'
                     ):
     """
-    Generates input file for the specified :class:`ConfiguredProblem`
+    Generates input file for the :class:`ConfiguredProblem` specified in configuration_file_path.
 
     :param configuration_file_path: where the path of input file to write is set
     :param overwrite: if True, file will be written even if one already exists
@@ -92,7 +94,11 @@ def generate_inputs(configuration_file_path: str,
 
 def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout):
     """
-    Prints list of system outputs
+    Writes list of system outputs for the :class:`ConfiguredProblem` specified in
+    configuration_file_path.
+
+    :param configuration_file_path:
+    :param out: the output stream or a path for the output file
     """
     problem = ConfiguredProblem()
     problem.configure(configuration_file_path)
@@ -120,7 +126,12 @@ def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout)
 
 def list_systems(configuration_file_path: str = None, out: Union[IO, str] = sys.stdout):
     """
-    Prints list of system identifiers
+    Writes list of available systems.
+    If configuration_file_path is given and if it defines paths where there are registered systems,
+    they will be listed too.
+
+    :param configuration_file_path:
+    :param out: the output stream or a path for the output file
     """
 
     if configuration_file_path:
@@ -145,6 +156,28 @@ def list_systems(configuration_file_path: str = None, out: Union[IO, str] = sys.
     out_file.write(
         '--------------------------------------------------------------------------------------\n'
     )
+
+
+def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
+    """
+    Write the N2 diagram of the problem in file n2.html
+
+    :param configuration_file_path:
+    :param n2_file_path:
+    :param overwrite:
+    """
+
+    if not n2_file_path:
+        n2_file_path = pth.join(pth.dirname(configuration_file_path), 'n2.html')
+    if not overwrite and pth.exists(n2_file_path):
+        raise FastFileExistsError('N2-diagram file %s not written because it already exists. '
+                                  'Use overwrite=True to bypass.'
+                                  % n2_file_path)
+
+    problem = ConfiguredProblem()
+    problem.configure(configuration_file_path)
+
+    om.n2(problem, outfile=n2_file_path, show_browser=False)
 
 
 def _run_problem(configuration_file_path: str,
