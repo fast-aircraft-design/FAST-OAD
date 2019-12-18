@@ -17,8 +17,10 @@ main
 import os.path as pth
 import textwrap
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from distutils.util import strtobool
 
 from fastoad.cmd import api
+from fastoad.cmd.exceptions import FastFileExistsError
 
 RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
 
@@ -42,17 +44,31 @@ class Main:
         """
         Generates a sample TOML file
         """
-        api.generate_configuration_file(args.conf_file, args.force)
+        try:
+            api.generate_configuration_file(args.conf_file, args.force)
+        except FastFileExistsError:
+            if _query_yes_no(
+                    'Configuration file "%s" already exists. Do you want to overwrite it?'
+                    % args.conf_file):
+                api.generate_configuration_file(args.conf_file, True)
+            else:
+                print('No file written.')
 
     @staticmethod
     def _generate_inputs(args):
         """
         Generates input file according to command line arguments
         """
-        if args.legacy:
-            api.generate_inputs(args.conf_file, args.force, args.source, 'legacy')
-        else:
-            api.generate_inputs(args.conf_file, args.force, args.source)
+        schema = 'legacy' if args.legacy else 'native'
+        try:
+            api.generate_inputs(args.conf_file, args.force, args.source, schema)
+        except FastFileExistsError:
+            if _query_yes_no(
+                    'Input file "%s" already exists. Do you want to overwrite it?'
+                    % args.conf_file):
+                api.generate_inputs(args.conf_file, True, args.source, schema)
+            else:
+                print('No file written.')
 
     @staticmethod
     def _list_outputs(args):
@@ -73,17 +89,34 @@ class Main:
         """
         Runs model according to provided problem file
         """
-        api.evaluate_problem(args.conf_file, args.force)
+        try:
+            api.evaluate_problem(args.conf_file, args.force)
+        except FastFileExistsError:
+            if _query_yes_no(
+                    'Output file "%s" already exists. Do you want to overwrite it?'
+                    % args.conf_file):
+                api.evaluate_problem(args.conf_file, True)
+            else:
+                print('Computation not run.')
 
     @staticmethod
     def _optimize(args):
         """
         Runs driver according to provided problem file
         """
-        api.optimize_problem(args.conf_file, args.force)
+        try:
+            api.optimize_problem(args.conf_file, args.force)
+        except FastFileExistsError:
+            if _query_yes_no(
+                    'Output file "%s" already exists. Do you want to overwrite it?'
+                    % args.conf_file):
+                api.optimize_problem(args.conf_file, True)
+            else:
+                print('Computation not run.')
 
     # PARSER CONFIGURATION ----------------------------------------------------
-    def _add_conf_file_argument(self, parser: ArgumentParser, required=True):
+    @staticmethod
+    def _add_conf_file_argument(parser: ArgumentParser, required=True):
         kwargs = {
             'type': str,
             'help': 'the configuration file for setting the problem'
@@ -175,6 +208,24 @@ class Main:
 
         args = self.parser.parse_args()
         args.func(args)
+
+
+def _query_yes_no(question):
+    """
+    Ask a yes/no question via input() and return its answer as boolean.
+
+    Keeps asking while answer is not similar to "yes" or "no"
+    The returned value is True for "yes" or False for "no".
+    """
+    answer = None
+    while answer is None:
+        raw_answer = input(question + '\n')
+        try:
+            answer = strtobool(raw_answer)
+        except ValueError:
+            pass
+
+    return answer == 1
 
 
 def main():

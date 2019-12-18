@@ -14,18 +14,22 @@ API
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 import os.path as pth
 import shutil
 import sys
-from distutils.util import strtobool
-from typing import IO
+from typing import IO, Union
 
+from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 from fastoad.openmdao.connections_utils import build_ivc_of_outputs
+
+# Logger for this module
+_LOGGER = logging.getLogger(__name__)
 
 RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
 
@@ -38,8 +42,10 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     :param overwrite: if True, the file will be written, even if it already exists
     """
     sample_file_path = pth.join(RESOURCE_FOLDER_PATH, 'fastoad.toml')
-    if not _can_write(configuration_file_path, overwrite):
-        return
+    if not overwrite and pth.exists(configuration_file_path):
+        raise FastFileExistsError('Configuration file %s not written because it already exists. '
+                                  'Use overwrite=True to bypass.'
+                                  % configuration_file_path)
 
     dirname = pth.dirname(configuration_file_path)
     if not pth.exists(dirname):
@@ -65,8 +71,10 @@ def generate_inputs(configuration_file_path: str,
     problem.configure(configuration_file_path)
 
     inputs_path = pth.normpath(problem.input_file_path)
-    if not _can_write(inputs_path, overwrite):
-        return
+    if not overwrite and pth.exists(inputs_path):
+        raise FastFileExistsError('Input file %s not written because it already exists. '
+                                  'Use overwrite=True to bypass.'
+                                  % inputs_path)
 
     if source_path:
         if source_path_schema == 'legacy':
@@ -78,9 +86,11 @@ def generate_inputs(configuration_file_path: str,
 
     problem.write_needed_inputs(source)
     print('Problem inputs written in %s' % inputs_path)
+    _LOGGER.info('Problem inputs written in %s', inputs_path)
+    return True
 
 
-def list_outputs(configuration_file_path: str, out: IO = sys.stdout):
+def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout):
     """
     Prints list of system outputs
     """
@@ -90,6 +100,7 @@ def list_outputs(configuration_file_path: str, out: IO = sys.stdout):
     ivc = build_ivc_of_outputs(problem)
 
     if isinstance(out, str):
+        # TODO: manage file overwriting
         out_file = open(out, 'w')
     else:
         out_file = out
@@ -107,7 +118,7 @@ def list_outputs(configuration_file_path: str, out: IO = sys.stdout):
         out_file.close()
 
 
-def list_systems(configuration_file_path: str = None, out: IO = sys.stdout):
+def list_systems(configuration_file_path: str = None, out: Union[IO, str] = sys.stdout):
     """
     Prints list of system identifiers
     """
@@ -120,6 +131,7 @@ def list_systems(configuration_file_path: str = None, out: IO = sys.stdout):
     # additional registered systems
 
     if isinstance(out, str):
+        # TODO: manage file overwriting
         out_file = open(out, 'w')
     else:
         out_file = out
@@ -135,28 +147,26 @@ def list_systems(configuration_file_path: str = None, out: IO = sys.stdout):
     )
 
 
-def _run_problem(configuration_file_path: str, overwrite: bool = False, mode='run_model'):
+def _run_problem(configuration_file_path: str,
+                 overwrite: bool = False,
+                 mode='run_model') -> ConfiguredProblem:
     """
     Runs problem according to provided file
 
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
     :param mode: 'run_model' or 'run_driver'
-    :return: the OpenMDAO problem
+    :return: the OpenMDAO problem, or False if it has not been run
     """
 
     problem = ConfiguredProblem()
     problem.configure(configuration_file_path)
 
     outputs_path = pth.normpath(problem.output_file_path)
-    if not _can_write(outputs_path, overwrite):
-        return
-
-    if not overwrite and pth.exists(outputs_path) and not _query_yes_no(
-            'Output file "%s" already exists. Do you want to overwrite it?'
-            % outputs_path):
-        print('Computation interrupted.')
-        return
+    if not overwrite and pth.exists(outputs_path):
+        raise FastFileExistsError('Problem not run because output file %s already exists. '
+                                  'Use overwrite=True to bypass.'
+                                  % outputs_path)
 
     problem.read_inputs()
     problem.setup()
@@ -219,52 +229,3 @@ class FastProblem(ConfiguredProblem):
         self.read_inputs()
         self.run_driver()
         self.write_outputs()
-
-
-def _query_yes_no(question):
-    """
-    Ask a yes/no question via input() and return its answer as boolean.
-
-    Keeps asking while answer is not similar to "yes" or "no"
-    The returned value is True for "yes" or False for "no".
-    """
-    answer = None
-    while answer is None:
-        raw_answer = input(question + '\n')
-        try:
-            answer = strtobool(raw_answer)
-        except ValueError:
-            pass
-
-    return answer == 1
-
-
-def _is_interactive():
-    """
-    :return: True if Python in interactive mode
-    """
-    return hasattr(sys, 'ps1')
-
-
-def _can_write(file_path: str, overwrite: bool) -> bool:
-    """
-    Checks if file exists and if it can be overwritten.
-    If file exists and overwrite is set to False:
-     - in Python interactive mode, simply prints an informative message and returns without writing the file
-     - in console mode, asks for confirmation
-
-    :param file_path:
-    :param overwrite:
-    :return: True if file can be written
-    """
-
-    if not overwrite and pth.exists(file_path):
-        if _is_interactive():
-            print('File exists. To write it anyway, please call again with overwrite set to True')
-            return False
-        elif not _query_yes_no(
-                'File "%s" already exists. Do you want to overwrite it?'
-                % file_path):
-            print('No file written.')
-            return False
-    return True
