@@ -43,14 +43,14 @@ TABLES_OBJECTIVE = 'objective'
 TABLES_CONSTRAINT = 'constraint'
 
 
-class ConfiguredProblem(om.Problem):
+class FASTOADProblem(om.Problem):
     """
     Vanilla OpenMDAO Problem except that its definition can be loaded from
     a TOML file.
 
     A classical usage of this class will be::
 
-        problem = ConfiguredProblem()  # instantiation
+        problem = FASTOADProblem()  # instantiation
         problem.configure('my_problem.toml')  # reads problem definition
         problem.write_needed_inputs()  # writes the input file (defined in problem definition) with
                                        # needed variables so user can fill it with proper values

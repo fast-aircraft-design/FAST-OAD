@@ -24,7 +24,7 @@ from numpy.testing import assert_allclose
 import fastoad
 from fastoad import api
 from fastoad.cmd.exceptions import FastFileExistsError
-from fastoad.io.configuration import ConfiguredProblem
+from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMLegacy1XmlIO
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
@@ -47,7 +47,7 @@ def test_propulsion_process(cleanup, install_components):
     Builds a dummy process for finding altitude of min SFC
     """
 
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'propulsion_process.toml'))
 
     problem.read_inputs()
@@ -70,7 +70,7 @@ def test_perfo_process(cleanup, install_components):
     Builds a dummy process for finding altitude for max ZFW
     """
 
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'perfo_process.toml'))
 
     problem.read_inputs()
@@ -103,7 +103,7 @@ def test_oad_process(cleanup, install_components):
     Test for the overall aircraft design process.
     """
 
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'oad_process.toml'))
 
     problem.setup()

@@ -24,7 +24,7 @@ from typing import IO, Union
 import openmdao.api as om
 
 from fastoad.cmd.exceptions import FastFileExistsError
-from fastoad.io.configuration import ConfiguredProblem
+from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
@@ -62,14 +62,14 @@ def generate_inputs(configuration_file_path: str,
                     source_path_schema='native'
                     ):
     """
-    Generates input file for the :class:`ConfiguredProblem` specified in configuration_file_path.
+    Generates input file for the :class:`FASTOADProblem` specified in configuration_file_path.
 
     :param configuration_file_path: where the path of input file to write is set
     :param overwrite: if True, file will be written even if one already exists
     :param source_path: path of file data will be taken from
     :param source_path_schema: set to 'legacy' if the source file come from legacy FAST
     """
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
     inputs_path = pth.normpath(problem.input_file_path)
@@ -92,13 +92,13 @@ def generate_inputs(configuration_file_path: str,
 
 def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout):
     """
-    Writes list of system outputs for the :class:`ConfiguredProblem` specified in
+    Writes list of system outputs for the :class:`FASTOADProblem` specified in
     configuration_file_path.
 
     :param configuration_file_path:
     :param out: the output stream or a path for the output file
     """
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
     ivc = build_ivc_of_outputs(problem)
@@ -134,7 +134,7 @@ def list_systems(configuration_file_path: str = None, out: Union[IO, str] = sys.
     """
 
     if configuration_file_path:
-        problem = ConfiguredProblem()
+        problem = FASTOADProblem()
         problem.configure(configuration_file_path)
 
     # As the problem has been configured, BundleLoader now knows
@@ -179,7 +179,7 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
                                   'Use overwrite=True to bypass.'
                                   % n2_file_path)
 
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
     om.n2(problem, outfile=n2_file_path, show_browser=False)
@@ -188,7 +188,7 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
 
 def _run_problem(configuration_file_path: str,
                  overwrite: bool = False,
-                 mode='run_model') -> ConfiguredProblem:
+                 mode='run_model') -> FASTOADProblem:
     """
     Runs problem according to provided file
 
@@ -198,7 +198,7 @@ def _run_problem(configuration_file_path: str,
     :return: the OpenMDAO problem after run
     """
 
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
     outputs_path = pth.normpath(problem.output_file_path)
@@ -219,7 +219,7 @@ def _run_problem(configuration_file_path: str,
     return problem
 
 
-def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> ConfiguredProblem:
+def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> FASTOADProblem:
     """
     Runs model according to provided problem file
 
@@ -230,7 +230,7 @@ def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> C
     return _run_problem(configuration_file_path, overwrite, 'run_model')
 
 
-def optimize_problem(configuration_file_path: str, overwrite: bool = False) -> ConfiguredProblem:
+def optimize_problem(configuration_file_path: str, overwrite: bool = False) -> FASTOADProblem:
     """
     Runs driver according to provided problem file
 

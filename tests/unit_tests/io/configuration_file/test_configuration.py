@@ -21,7 +21,7 @@ import numpy as np
 import openmdao.api as om
 import pytest
 
-from fastoad.io.configuration import ConfiguredProblem, FASTConfigurationNoProblemDefined, \
+from fastoad.io.configuration import FASTOADProblem, FASTConfigurationNoProblemDefined, \
     FASTConfigurationBadOpenMDAOInstructionError
 from fastoad.io.xml import OMXmlIO
 
@@ -37,13 +37,13 @@ def cleanup():
 def test_problem_definition(cleanup):
     """ Test problem definition from configuration files """
     # Missing problem
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     with pytest.raises(FASTConfigurationNoProblemDefined) as exc_info:
         problem.configure(pth.join(pth.dirname(__file__), 'data', 'missing_problem.toml'))
     assert exc_info is not None
 
     # Incorrect attribute
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
         problem.configure(pth.join(pth.dirname(__file__), 'data', 'invalid_attribute.toml'))
     problem.read_inputs()
@@ -51,7 +51,7 @@ def test_problem_definition(cleanup):
     assert exc_info.value.key == 'model.cycle.other_group.nonlinear_solver'
 
     # Reading of correct problem definition
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(pth.join(pth.dirname(__file__), 'data', 'valid_sellar.toml'))
 
     # Just running these methods to check there is no crash. As simple assemblies of
@@ -75,7 +75,7 @@ def test_problem_definition(cleanup):
 
 def test_problem_definition_with_xml_ref(cleanup):
     """ Tests what happens when writing inputs using data from existing XML file"""
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'valid_sellar.toml'))
 
     input_data = OMXmlIO(pth.join(DATA_FOLDER_PATH, 'ref_inputs.xml'))
@@ -95,7 +95,7 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     Tests what happens when writing inputs using data from existing XML file
     and running an optimization problem
     """
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'valid_sellar.toml'))
 
     input_data = OMXmlIO(pth.join(DATA_FOLDER_PATH, 'ref_inputs.xml'))
