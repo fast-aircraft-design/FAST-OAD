@@ -1,12 +1,13 @@
-
-
 title = "Sample OAD Process"
 
+# List of folder paths where user added custom registered OpenMDAO components
 module_folders = []
 
-input_file = "./data/inputs.xml"
-output_file = "./results/outputs.xml"
+# Input and output files
+input_file = "./problem_inputs.xml"
+output_file = "./problem_outputs.xml"
 
+# Definition of OpenMDAO model
 [model]
     nonlinear_solver = "om.NonlinearBlockGS(iprint=1, maxiter=100)"
     linear_solver = "om.DirectSolver()"
