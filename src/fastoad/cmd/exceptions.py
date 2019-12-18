@@ -1,5 +1,5 @@
 """
-FAST : A framework for rapid Overall Aircraft Design
+Exception for cmd package
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2019  ONERA/ISAE
@@ -14,19 +14,8 @@ FAST : A framework for rapid Overall Aircraft Design
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from pkg_resources import get_distribution, DistributionNotFound
+from fastoad.exceptions import FastError
 
-from . import initialize_framework
-from .cmd import api
 
-try:
-    # Change here if project is renamed and does not equal the package name
-    DIST_NAME = 'FAST-OAD'
-    __version__ = get_distribution(DIST_NAME).version
-except DistributionNotFound:
-    __version__ = 'unknown'
-finally:
-    del get_distribution, DistributionNotFound
-
-# Loading bundles
-initialize_framework.load()
+class FastFileExistsError(FastError):
+    """Raised when asked for writing a file that already exists"""

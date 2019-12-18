@@ -1,0 +1,33 @@
+title = "Sample OAD Process"
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders = []
+
+# Input and output files
+input_file = "./problem_inputs.xml"
+output_file = "./problem_outputs.xml"
+
+# Definition of OpenMDAO model
+[model]
+    # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
+    nonlinear_solver = "om.NonlinearBlockGS(iprint=1, maxiter=100)"
+    linear_solver = "om.DirectSolver()"
+
+    # Though "model" is a mandatory name for the top level of the model, sublevels can be freely named by user
+    [model.geometry]
+        # An OpenMDAO component is identified by its "id"
+        id = "fastoad.geometry.legacy"
+    [model.weights]
+        id = "fastoad.weights.legacy"
+    [model.aerodynamics]
+        id = "fastoad.aerodynamics.highspeed.legacy"
+
+    # subgroups are defined by added a hierarchy level
+    [model.perfo_loop]
+        # Solvers for the subgroup are defined the same way as the main group
+        nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+        linear_solver = "om.DirectSolver()"
+        [model.perfo_loop.performance]
+            id = "fastoad.performances.breguet.from_owe"
+        [model.propulsion]
+            id = "fastoad.propulsion.rubber_engine"

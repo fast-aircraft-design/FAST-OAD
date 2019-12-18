@@ -22,6 +22,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 import fastoad
+from fastoad import api
+from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMLegacy1XmlIO
 
@@ -131,3 +133,54 @@ def test_oad_process(cleanup, install_components):
                     problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
                     + problem['mission:sizing:mission:fuel'],
                     atol=1)
+
+
+def test_api(cleanup, install_components):
+    api_result_folder_path = pth.join(RESULTS_FOLDER_PATH, 'api')
+    configuration_file_path = pth.join(api_result_folder_path, 'oad_process.toml')
+
+    # Generation of configuration file ----------------------------------------
+    api.generate_configuration_file(configuration_file_path, False)
+    # Generating again without forcing overwrite will make it fail
+    with pytest.raises(FastFileExistsError):
+        api.generate_configuration_file(configuration_file_path, False)
+    api.generate_configuration_file(configuration_file_path, True)
+
+    # Generation of inputs ----------------------------------------------------
+    source_xml = pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml')
+    api.generate_inputs(configuration_file_path, False, source_xml, 'legacy')
+    # Generating again without forcing overwrite will make it fail
+    with pytest.raises(FastFileExistsError):
+        api.generate_inputs(configuration_file_path, False, source_xml, 'legacy')
+    api.generate_inputs(configuration_file_path, True, source_xml, 'legacy')
+
+    # List systems ------------------------------------------------------------
+    # TODO: add checks
+    api.list_systems(configuration_file_path, pth.join(api_result_folder_path, 'list_systems.txt'))
+
+    # List outputs ------------------------------------------------------------
+    # TODO: add checks
+    api.list_outputs(configuration_file_path, pth.join(api_result_folder_path, 'list_outputs.txt'))
+
+    # Run model ---------------------------------------------------------------
+    api.evaluate_problem(configuration_file_path, False)
+    # Running again without forcing overwrite of outputs will make it fail
+    with pytest.raises(FastFileExistsError):
+        api.evaluate_problem(configuration_file_path, False)
+    problem = api.evaluate_problem(configuration_file_path, True)
+
+    # Check that weight-performances loop correctly converged
+    assert_allclose(problem['weight:aircraft:OWE'],
+                    problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
+                    + problem['weight:systems:mass'] + problem['weight:furniture:mass']
+                    + problem['weight:crew:mass'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MZFW'],
+                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:max_payload'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MTOW'],
+                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
+                    + problem['mission:sizing:mission:fuel'],
+                    atol=1)
+
+    # TODO: check optimization
