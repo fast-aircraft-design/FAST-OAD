@@ -53,7 +53,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     if not pth.exists(dirname):
         os.makedirs(dirname)
     shutil.copyfile(sample_file_path, configuration_file_path)
-    print('Sample configuration written in %s' % configuration_file_path)
+    _LOGGER.info('Sample configuration written in %s', configuration_file_path)
 
 
 def generate_inputs(configuration_file_path: str,
@@ -87,9 +87,7 @@ def generate_inputs(configuration_file_path: str,
         source = None
 
     problem.write_needed_inputs(source)
-    print('Problem inputs written in %s' % inputs_path)
     _LOGGER.info('Problem inputs written in %s', inputs_path)
-    return True
 
 
 def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout):
@@ -122,6 +120,7 @@ def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout)
 
     if isinstance(out, str):
         out_file.close()
+        _LOGGER.info('Output list written in %s', out_file)
 
 
 def list_systems(configuration_file_path: str = None, out: Union[IO, str] = sys.stdout):
@@ -157,6 +156,10 @@ def list_systems(configuration_file_path: str = None, out: Union[IO, str] = sys.
         '--------------------------------------------------------------------------------------\n'
     )
 
+    if isinstance(out, str):
+        out_file.close()
+        _LOGGER.info('System list written in %s', out_file)
+
 
 def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
     """
@@ -169,6 +172,8 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
 
     if not n2_file_path:
         n2_file_path = pth.join(pth.dirname(configuration_file_path), 'n2.html')
+    n2_file_path = pth.normpath(n2_file_path)
+
     if not overwrite and pth.exists(n2_file_path):
         raise FastFileExistsError('N2-diagram file %s not written because it already exists. '
                                   'Use overwrite=True to bypass.'
@@ -178,6 +183,7 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     problem.configure(configuration_file_path)
 
     om.n2(problem, outfile=n2_file_path, show_browser=False)
+    _LOGGER.info('N2 diagram written in %s', n2_file_path)
 
 
 def _run_problem(configuration_file_path: str,
@@ -208,7 +214,7 @@ def _run_problem(configuration_file_path: str,
     else:
         problem.run_driver()
     problem.write_outputs()
-    print('Computation finished. Problem outputs written in %s' % outputs_path)
+    _LOGGER.info('Computation finished. Problem outputs written in %s', outputs_path)
 
     return problem
 
@@ -221,7 +227,7 @@ def evaluate_problem(configuration_file_path: str, overwrite: bool = False):
     :param overwrite: if True, output file will be overwritten
     :return: the OpenMDAO problem
     """
-    return _run_problem(configuration_file_path, overwrite, 'evaluate')
+    return _run_problem(configuration_file_path, overwrite, 'run_model')
 
 
 def optimize_problem(configuration_file_path: str, overwrite: bool = False):
@@ -232,7 +238,7 @@ def optimize_problem(configuration_file_path: str, overwrite: bool = False):
     :param overwrite: if True, output file will be overwritten
     :return: the OpenMDAO problem
     """
-    return _run_problem(configuration_file_path, overwrite, 'optimize')
+    return _run_problem(configuration_file_path, overwrite, 'run_driver')
 
 
 # TODO: Must this class fusioned with ConfiguredProblem?
