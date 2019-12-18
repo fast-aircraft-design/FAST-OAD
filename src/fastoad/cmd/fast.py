@@ -15,39 +15,16 @@ main
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-import shutil
 import textwrap
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-from distutils.util import strtobool
 
-from fastoad.io.configuration import ConfiguredProblem
-from fastoad.io.xml import OMLegacy1XmlIO, OMXmlIO
-from fastoad.module_management import BundleLoader
-from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
-from fastoad.openmdao.connections_utils import build_ivc_of_outputs
+from fastoad.cmd import api
 
 RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
 
 
 # TODO: it has become a bit messy down here... Refactoring needed, maybe
 #       with a better organization of code by sub-commands
-
-def query_yes_no(question):
-    """
-    Ask a yes/no question via input() and return its answer as boolean.
-
-    Keeps asking while answer is not similar to "yes" or "no"
-    The returned value is True for "yes" or False for "no".
-    """
-    answer = None
-    while answer is None:
-        raw_answer = input(question + '\n')
-        try:
-            answer = strtobool(raw_answer)
-        except ValueError:
-            pass
-
-    return answer == 1
 
 
 class Main:
@@ -60,107 +37,50 @@ class Main:
         self.problem = None
 
     # ACTIONS -----------------------------------------------------------------
-    def _generate_conf_file(self, args):
+    @staticmethod
+    def _generate_conf_file(args):
         """
         Generates a sample TOML file
         """
-        sample_file_path = pth.join(RESOURCE_FOLDER_PATH, 'fastoad.toml')
-        if not args.force and pth.exists(args.conf_file) and not query_yes_no(
-                'Configuration file "%s" already exists. Do you want to overwrite it?'
-                % args.conf_file):
-            print('No file written.')
-            return
+        api.generate_configuration_file(args.conf_file, args.force)
 
-        shutil.copyfile(sample_file_path, args.conf_file)
-        print('Sample configuration written in %s' % args.conf_file)
-
-    def _generate_inputs(self, args):
+    @staticmethod
+    def _generate_inputs(args):
         """
         Generates input file according to command line arguments
         """
-
-        inputs_path = pth.normpath(self.problem.input_file_path)
-        if not args.force and pth.exists(inputs_path) and not query_yes_no(
-                'Input file "%s" already exists. Do you want to overwrite it?'
-                % inputs_path):
-            print('No file written.')
-            return
-
-        if args.source:
-            if args.legacy:
-                source = OMLegacy1XmlIO(args.source)
-            else:
-                source = OMXmlIO(args.source)
+        if args.legacy:
+            api.generate_inputs(args.conf_file, args.force, args.source, 'legacy')
         else:
-            source = None
+            api.generate_inputs(args.conf_file, args.force, args.source)
 
-        self.problem.write_needed_inputs(source)
-        print('Problem inputs written in %s' % inputs_path)
-
-    def _list_outputs(self, args):
+    @staticmethod
+    def _list_outputs(args):
         """
         Prints list of system outputs
         """
-        ivc = build_ivc_of_outputs(self.problem)
-        print(
-            '-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------'
-        )
-        print('%-60s| %s' % ('VARIABLE', 'DESCRIPTION'))
-        for (name, value, attributes) in ivc._indep_external:
-            print('%-60s| %s' % (name, attributes['desc']))
-        print(
-            '--------------------------------------------------------------------------------------'
-        )
+        api.list_outputs(args.conf_file)
 
     @staticmethod
     def _list_systems(args):
         """
         Prints list of system identifiers
         """
-        # As the problem has been configured, BundleLoader already knows
-        # additional registered systems
-        print(
-            '-- AVAILABLE SYSTEM IDENTIFIERS ------------------------------------------------------'
-        )
-        print('%-60s| %s' % ('IDENTIFIER', 'PATH'))
-        for identifier in OpenMDAOSystemFactory.get_system_ids():
-            path = BundleLoader().get_factory_path(identifier)
-            print('%-60s| %s' % (identifier, path))
-        print(
-            '--------------------------------------------------------------------------------------'
-        )
+        api.list_systems(args.conf_file)
 
-    def _evaluate(self, args):
+    @staticmethod
+    def _evaluate(args):
         """
         Runs model according to provided problem file
         """
-        outputs_path = pth.normpath(self.problem.output_file_path)
-        if not args.force and pth.exists(outputs_path) and not query_yes_no(
-                'Output file "%s" already exists. Do you want to overwrite it?'
-                % outputs_path):
-            print('Computation interrupted.')
-            return
+        api.evaluate_problem(args.conf_file, args.force)
 
-        self.problem.read_inputs()
-        self.problem.run_model()
-        self.problem.write_outputs()
-        print('Computation finished. Problem outputs written in %s' % outputs_path)
-
-    def _optimize(self, args):
+    @staticmethod
+    def _optimize(args):
         """
         Runs driver according to provided problem file
         """
-        outputs_path = pth.normpath(self.problem.output_file_path)
-        if not args.force and pth.exists(outputs_path) and not query_yes_no(
-                'Output file "%s" already exists. Do you want to overwrite it?'
-                % outputs_path):
-            print('Computation interrupted.')
-            return
-
-        self.problem.read_inputs()
-        self.problem.run_driver()
-        self.problem.write_outputs()
-        print('Computation finished. Problem outputs written in %s' % outputs_path)
+        api.optimize_problem(args.conf_file, args.force)
 
     # PARSER CONFIGURATION ----------------------------------------------------
     def _add_conf_file_argument(self, parser: ArgumentParser, required=True):
@@ -171,20 +91,11 @@ class Main:
         if not required:
             kwargs['nargs'] = '?'
         parser.add_argument('conf_file', **kwargs)
-        parser.set_defaults(set_problem=self._set_problem)
 
     @staticmethod
     def _add_overwrite_argument(parser: ArgumentParser):
         parser.add_argument('-f', '--force', action='store_true',
                             help='do not ask before overwriting files')
-
-    def _set_problem(self, args):
-        """
-        Initialize the OpenMDAO problem id conf_file has been provided
-        """
-        if args.conf_file:
-            self.problem = ConfiguredProblem()
-            self.problem.configure(args.conf_file)
 
     # ENTRY POINT -------------------------------------------------------------
     def run(self):
@@ -202,7 +113,6 @@ class Main:
                                                                  'to be written')
         self._add_overwrite_argument(parser_gen_conf)
         parser_gen_conf.set_defaults(func=self._generate_conf_file)
-        parser_gen_conf.set_defaults(set_problem=lambda x: None)
 
         # sub-command for generating input file -----------
         parser_gen_inputs = subparsers.add_parser(
@@ -264,7 +174,6 @@ class Main:
         parser_run_driver.set_defaults(func=self._optimize)
 
         args = self.parser.parse_args()
-        args.set_problem(args)
         args.func(args)
 
 

@@ -14,11 +14,12 @@ API
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
+import os
 import os.path as pth
 import shutil
 import sys
 from distutils.util import strtobool
+from typing import IO
 
 from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
@@ -40,6 +41,9 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     if not _can_write(configuration_file_path, overwrite):
         return
 
+    dirname = pth.dirname(configuration_file_path)
+    if not pth.exists(dirname):
+        os.makedirs(dirname)
     shutil.copyfile(sample_file_path, configuration_file_path)
     print('Sample configuration written in %s' % configuration_file_path)
 
@@ -76,7 +80,7 @@ def generate_inputs(configuration_file_path: str,
     print('Problem inputs written in %s' % inputs_path)
 
 
-def list_outputs(configuration_file_path: str):
+def list_outputs(configuration_file_path: str, out: IO = sys.stdout):
     """
     Prints list of system outputs
     """
@@ -84,18 +88,26 @@ def list_outputs(configuration_file_path: str):
     problem.configure(configuration_file_path)
 
     ivc = build_ivc_of_outputs(problem)
-    print(
-        '-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------'
-    )
-    print('%-60s| %s' % ('VARIABLE', 'DESCRIPTION'))
-    for (name, value, attributes) in ivc._indep_external:
-        print('%-60s| %s' % (name, attributes['desc']))
-    print(
-        '--------------------------------------------------------------------------------------'
+
+    if isinstance(out, str):
+        out_file = open(out, 'w')
+    else:
+        out_file = out
+    out_file.writelines([
+        '-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------\n',
+        '%-60s| %s\n' % ('VARIABLE', 'DESCRIPTION')
+    ])
+    out_file.writelines(['%-60s| %s\n' % (name, attributes['desc']) for (name, _, attributes) in
+                         ivc._indep_external])
+    out_file.write(
+        '--------------------------------------------------------------------------------------\n'
     )
 
+    if isinstance(out, str):
+        out_file.close()
 
-def list_systems(configuration_file_path: str = None):
+
+def list_systems(configuration_file_path: str = None, out: IO = sys.stdout):
     """
     Prints list of system identifiers
     """
@@ -106,21 +118,31 @@ def list_systems(configuration_file_path: str = None):
 
     # As the problem has been configured, BundleLoader now knows
     # additional registered systems
-    print(
-        '-- AVAILABLE SYSTEM IDENTIFIERS ------------------------------------------------------'
-    )
-    print('%-60s| %s' % ('IDENTIFIER', 'PATH'))
+
+    if isinstance(out, str):
+        out_file = open(out, 'w')
+    else:
+        out_file = out
+    out_file.writelines([
+        '-- AVAILABLE SYSTEM IDENTIFIERS ------------------------------------------------------\n',
+        '%-60s| %s\n' % ('IDENTIFIER', 'PATH')
+    ])
     for identifier in OpenMDAOSystemFactory.get_system_ids():
         path = BundleLoader().get_factory_path(identifier)
-        print('%-60s| %s' % (identifier, path))
-    print(
-        '--------------------------------------------------------------------------------------'
+        out_file.write('%-60s| %s\n' % (identifier, path))
+    out_file.write(
+        '--------------------------------------------------------------------------------------\n'
     )
 
 
-def run_problem(configuration_file_path: str, overwrite: bool = False, mode='evaluate'):
+def _run_problem(configuration_file_path: str, overwrite: bool = False, mode='run_model'):
     """
-    Runs model according to provided problem file
+    Runs problem according to provided file
+
+    :param configuration_file_path: problem definition
+    :param overwrite: if True, output file will be overwritten
+    :param mode: 'run_model' or 'run_driver'
+    :return: the OpenMDAO problem
     """
 
     problem = ConfiguredProblem()
@@ -137,32 +159,45 @@ def run_problem(configuration_file_path: str, overwrite: bool = False, mode='eva
         return
 
     problem.read_inputs()
-    if mode == 'evaluate':
+    problem.setup()
+    if mode == 'run_model':
         problem.run_model()
     else:
         problem.run_driver()
     problem.write_outputs()
     print('Computation finished. Problem outputs written in %s' % outputs_path)
 
+    return problem
+
 
 def evaluate_problem(configuration_file_path: str, overwrite: bool = False):
     """
     Runs model according to provided problem file
+
+    :param configuration_file_path: problem definition
+    :param overwrite: if True, output file will be overwritten
+    :return: the OpenMDAO problem
     """
-    run_problem(configuration_file_path, overwrite, 'evaluate')
+    return _run_problem(configuration_file_path, overwrite, 'evaluate')
 
 
 def optimize_problem(configuration_file_path: str, overwrite: bool = False):
     """
     Runs driver according to provided problem file
+
+    :param configuration_file_path: problem definition
+    :param overwrite: if True, output file will be overwritten
+    :return: the OpenMDAO problem
     """
-    run_problem(configuration_file_path, overwrite, 'optimize')
+    return _run_problem(configuration_file_path, overwrite, 'optimize')
 
 
 # TODO: Must this class fusioned with ConfiguredProblem?
 class FastProblem(ConfiguredProblem):
 
     def __init__(self, conf_file, *args, **kwargs):
+        import warnings
+        warnings.warn('Use functions from api.py instead', DeprecationWarning)
         super().__init__(*args, **kwargs)
         self.configure(conf_file)
 

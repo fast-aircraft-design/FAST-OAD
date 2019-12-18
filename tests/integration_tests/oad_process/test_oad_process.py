@@ -22,6 +22,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 import fastoad
+from fastoad.cmd import api
 from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMLegacy1XmlIO
 
@@ -117,6 +118,30 @@ def test_oad_process(cleanup, install_components):
     problem.run_model()
 
     problem.write_outputs()
+
+    # Check that weight-performances loop correctly converged
+    assert_allclose(problem['weight:aircraft:OWE'],
+                    problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
+                    + problem['weight:systems:mass'] + problem['weight:furniture:mass']
+                    + problem['weight:crew:mass'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MZFW'],
+                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:max_payload'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MTOW'],
+                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
+                    + problem['mission:sizing:mission:fuel'],
+                    atol=1)
+
+
+def test_api():
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, 'api', 'oad_process.toml')
+    api.generate_configuration_file(configuration_file_path, True)
+
+    api.generate_inputs(configuration_file_path, True,
+                        pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'), 'legacy')
+
+    problem = api.evaluate_problem(configuration_file_path, True)
 
     # Check that weight-performances loop correctly converged
     assert_allclose(problem['weight:aircraft:OWE'],
