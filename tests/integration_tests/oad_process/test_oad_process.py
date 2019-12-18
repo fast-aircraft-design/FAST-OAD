@@ -22,7 +22,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 import fastoad
-from fastoad.cmd import api
+from fastoad import api
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import ConfiguredProblem
 from fastoad.io.xml import OMLegacy1XmlIO

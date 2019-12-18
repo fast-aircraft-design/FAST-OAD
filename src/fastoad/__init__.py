@@ -17,6 +17,7 @@ FAST : A framework for rapid Overall Aircraft Design
 from pkg_resources import get_distribution, DistributionNotFound
 
 from . import initialize_framework
+from .cmd import api
 
 try:
     # Change here if project is renamed and does not equal the package name
