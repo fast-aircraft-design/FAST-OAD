@@ -13,10 +13,10 @@ main
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import logging
 import os.path as pth
 import textwrap
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from argparse import ArgumentParser, RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter
 from distutils.util import strtobool
 
 from fastoad.cmd import api
@@ -35,10 +35,14 @@ class Main:
     """
 
     def __init__(self):
-        self.parser = ArgumentParser(description='FAST-OAD main program', )
+        class CustomFormatter(RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter):
+            pass
+
+        self.parser = ArgumentParser(description='FAST-OAD main program',
+                                     formatter_class=CustomFormatter)
         self.problem = None
 
-    # ACTIONS -----------------------------------------------------------------
+    # ACTIONS ======================================================================================
     @staticmethod
     def _generate_conf_file(args):
         """
@@ -71,6 +75,13 @@ class Main:
                 print('No file written.')
 
     @staticmethod
+    def _list_systems(args):
+        """
+        Prints list of system identifiers
+        """
+        api.list_systems(args.conf_file)
+
+    @staticmethod
     def _list_outputs(args):
         """
         Prints list of system outputs
@@ -78,11 +89,18 @@ class Main:
         api.list_outputs(args.conf_file)
 
     @staticmethod
-    def _list_systems(args):
+    def _write_n2(args):
         """
-        Prints list of system identifiers
+        Prints list of system outputs
         """
-        api.list_systems(args.conf_file)
+        try:
+            api.write_n2(args.conf_file, args.n2_file, args.force)
+        except FastFileExistsError:
+            if _query_yes_no(
+                    'N2 file "%s" already exists. Do you want to overwrite it?' % args.n2_file):
+                api.write_n2(args.conf_file, args.n2_file, True)
+            else:
+                print('No file written.')
 
     @staticmethod
     def _evaluate(args):
@@ -114,7 +132,7 @@ class Main:
             else:
                 print('Computation not run.')
 
-    # PARSER CONFIGURATION ----------------------------------------------------
+    # PARSER CONFIGURATION =========================================================================
     @staticmethod
     def _add_conf_file_argument(parser: ArgumentParser, required=True):
         kwargs = {
@@ -130,16 +148,17 @@ class Main:
         parser.add_argument('-f', '--force', action='store_true',
                             help='do not ask before overwriting files')
 
-    # ENTRY POINT -------------------------------------------------------------
+    # ENTRY POINT ==================================================================================
     def run(self):
         """ Main function """
 
         subparsers = self.parser.add_subparsers(title='sub-commands')
 
-        # sub-command for generating sample configuration file -----------
+        # sub-command for generating sample configuration file -------------------------------------
+
         parser_gen_conf = subparsers.add_parser(
             'gen_conf',
-            formatter_class=RawDescriptionHelpFormatter,
+            formatter_class=ArgumentDefaultsHelpFormatter,
             description=
             'generates the configuration file with sample data')
         parser_gen_conf.add_argument('conf_file', type=str, help='the name of configuration file '
@@ -147,10 +166,13 @@ class Main:
         self._add_overwrite_argument(parser_gen_conf)
         parser_gen_conf.set_defaults(func=self._generate_conf_file)
 
-        # sub-command for generating input file -----------
+        # sub-command for generating input file ----------------------------------------------------
+        class CustomFormatter(RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter):
+            pass
+
         parser_gen_inputs = subparsers.add_parser(
             'gen_inputs',
-            formatter_class=RawDescriptionHelpFormatter,
+            formatter_class=CustomFormatter,
             description=
             'generates the input file (specified in the configuration file) with needed variables')
         self._add_conf_file_argument(parser_gen_inputs)
@@ -159,7 +181,7 @@ class Main:
             'source', nargs='?',
             help='if provided, generated input file will be fed with values from provided XML file')
         parser_gen_inputs.add_argument(
-            '--legacy',
+            '--legacy', action='store_true',
             help='to be used if the source XML file is in legacy format')
         parser_gen_inputs.set_defaults(func=self._generate_inputs)
         parser_gen_inputs.epilog = textwrap.dedent('''\
@@ -176,31 +198,47 @@ class Main:
                 %(prog)s gen_inputs conf_file.toml some_file.xml --legacy
             ''')
 
-        # sub-command for listing registered systems ------
+        # sub-command for listing registered systems -----------------------------------------------
         parser_list_systems = subparsers.add_parser(
             'list_systems',
+            formatter_class=ArgumentDefaultsHelpFormatter,
             description='Provides the identifiers of available systems')
         self._add_conf_file_argument(parser_list_systems, required=False)
         parser_list_systems.set_defaults(func=self._list_systems)
 
-        # sub-command for listing possible outputs --------
+        # sub-command for listing possible outputs -------------------------------------------------
         parser_list_outputs = subparsers.add_parser(
             'list_outputs',
+            formatter_class=ArgumentDefaultsHelpFormatter,
             description='Provides the outputs of the problem')
         self._add_conf_file_argument(parser_list_outputs)
         parser_list_outputs.set_defaults(func=self._list_outputs)
 
-        # sub-command for running the model ---------------
+        # sub-command for writing N2 diagram -------------------------------------------------------
+        parser_n2 = subparsers.add_parser(
+            'n2',
+            formatter_class=ArgumentDefaultsHelpFormatter,
+            description='Writes an HTML file that shows the N2 diagram of the problem')
+        self._add_conf_file_argument(parser_n2)
+        self._add_overwrite_argument(parser_n2)
+        parser_n2.add_argument(
+            'n2_file', nargs='?', default='n2.html',
+            help='path of file to be written')
+        parser_n2.set_defaults(func=self._write_n2)
+
+        # sub-command for running the model --------------------------------------------------------
         parser_run_model = subparsers.add_parser(
             'eval',
+            formatter_class=ArgumentDefaultsHelpFormatter,
             description='Runs the analysis')
         self._add_conf_file_argument(parser_run_model)
         self._add_overwrite_argument(parser_run_model)
         parser_run_model.set_defaults(func=self._evaluate)
 
-        # sub-command for running the driver --------------
+        # sub-command for running the driver -------------------------------------------------------
         parser_run_driver = subparsers.add_parser(
             'optim',
+            formatter_class=ArgumentDefaultsHelpFormatter,
             description='Runs the optimization')
         self._add_conf_file_argument(parser_run_driver)
         self._add_overwrite_argument(parser_run_driver)
@@ -229,6 +267,8 @@ def _query_yes_no(question):
 
 
 def main():
+    log_format = '%(levelname)-8s: %(message)s'
+    logging.basicConfig(level=logging.INFO, format=log_format)
     Main().run()
 
 

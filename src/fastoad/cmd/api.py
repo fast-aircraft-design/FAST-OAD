@@ -21,8 +21,10 @@ import shutil
 import sys
 from typing import IO, Union
 
+import openmdao.api as om
+
 from fastoad.cmd.exceptions import FastFileExistsError
-from fastoad.io.configuration import ConfiguredProblem
+from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
@@ -51,7 +53,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     if not pth.exists(dirname):
         os.makedirs(dirname)
     shutil.copyfile(sample_file_path, configuration_file_path)
-    print('Sample configuration written in %s' % configuration_file_path)
+    _LOGGER.info('Sample configuration written in %s', configuration_file_path)
 
 
 def generate_inputs(configuration_file_path: str,
@@ -60,14 +62,14 @@ def generate_inputs(configuration_file_path: str,
                     source_path_schema='native'
                     ):
     """
-    Generates input file for the specified :class:`ConfiguredProblem`
+    Generates input file for the :class:`FASTOADProblem` specified in configuration_file_path.
 
     :param configuration_file_path: where the path of input file to write is set
     :param overwrite: if True, file will be written even if one already exists
     :param source_path: path of file data will be taken from
     :param source_path_schema: set to 'legacy' if the source file come from legacy FAST
     """
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
     inputs_path = pth.normpath(problem.input_file_path)
@@ -85,16 +87,18 @@ def generate_inputs(configuration_file_path: str,
         source = None
 
     problem.write_needed_inputs(source)
-    print('Problem inputs written in %s' % inputs_path)
     _LOGGER.info('Problem inputs written in %s', inputs_path)
-    return True
 
 
 def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout):
     """
-    Prints list of system outputs
+    Writes list of system outputs for the :class:`FASTOADProblem` specified in
+    configuration_file_path.
+
+    :param configuration_file_path:
+    :param out: the output stream or a path for the output file
     """
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
     ivc = build_ivc_of_outputs(problem)
@@ -116,15 +120,21 @@ def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout)
 
     if isinstance(out, str):
         out_file.close()
+        _LOGGER.info('Output list written in %s', out_file)
 
 
 def list_systems(configuration_file_path: str = None, out: Union[IO, str] = sys.stdout):
     """
-    Prints list of system identifiers
+    Writes list of available systems.
+    If configuration_file_path is given and if it defines paths where there are registered systems,
+    they will be listed too.
+
+    :param configuration_file_path:
+    :param out: the output stream or a path for the output file
     """
 
     if configuration_file_path:
-        problem = ConfiguredProblem()
+        problem = FASTOADProblem()
         problem.configure(configuration_file_path)
 
     # As the problem has been configured, BundleLoader now knows
@@ -146,20 +156,49 @@ def list_systems(configuration_file_path: str = None, out: Union[IO, str] = sys.
         '--------------------------------------------------------------------------------------\n'
     )
 
+    if isinstance(out, str):
+        out_file.close()
+        _LOGGER.info('System list written in %s', out_file)
+
+
+def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
+    """
+    Write the N2 diagram of the problem in file n2.html
+
+    :param configuration_file_path:
+    :param n2_file_path:
+    :param overwrite:
+    """
+
+    if not n2_file_path:
+        n2_file_path = pth.join(pth.dirname(configuration_file_path), 'n2.html')
+    n2_file_path = pth.normpath(n2_file_path)
+
+    if not overwrite and pth.exists(n2_file_path):
+        raise FastFileExistsError('N2-diagram file %s not written because it already exists. '
+                                  'Use overwrite=True to bypass.'
+                                  % n2_file_path)
+
+    problem = FASTOADProblem()
+    problem.configure(configuration_file_path)
+
+    om.n2(problem, outfile=n2_file_path, show_browser=False)
+    _LOGGER.info('N2 diagram written in %s', n2_file_path)
+
 
 def _run_problem(configuration_file_path: str,
                  overwrite: bool = False,
-                 mode='run_model') -> ConfiguredProblem:
+                 mode='run_model') -> FASTOADProblem:
     """
     Runs problem according to provided file
 
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
     :param mode: 'run_model' or 'run_driver'
-    :return: the OpenMDAO problem, or False if it has not been run
+    :return: the OpenMDAO problem after run
     """
 
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
     outputs_path = pth.normpath(problem.output_file_path)
@@ -175,57 +214,28 @@ def _run_problem(configuration_file_path: str,
     else:
         problem.run_driver()
     problem.write_outputs()
-    print('Computation finished. Problem outputs written in %s' % outputs_path)
+    _LOGGER.info('Computation finished. Problem outputs written in %s', outputs_path)
 
     return problem
 
 
-def evaluate_problem(configuration_file_path: str, overwrite: bool = False):
+def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> FASTOADProblem:
     """
     Runs model according to provided problem file
 
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
-    :return: the OpenMDAO problem
+    :return: the OpenMDAO problem after run
     """
-    return _run_problem(configuration_file_path, overwrite, 'evaluate')
+    return _run_problem(configuration_file_path, overwrite, 'run_model')
 
 
-def optimize_problem(configuration_file_path: str, overwrite: bool = False):
+def optimize_problem(configuration_file_path: str, overwrite: bool = False) -> FASTOADProblem:
     """
     Runs driver according to provided problem file
 
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
-    :return: the OpenMDAO problem
+    :return: the OpenMDAO problem after run
     """
-    return _run_problem(configuration_file_path, overwrite, 'optimize')
-
-
-# TODO: Must this class fusioned with ConfiguredProblem?
-class FastProblem(ConfiguredProblem):
-
-    def __init__(self, conf_file, *args, **kwargs):
-        import warnings
-        warnings.warn('Use functions from api.py instead', DeprecationWarning)
-        super().__init__(*args, **kwargs)
-        self.configure(conf_file)
-
-    def gen_inputs(self):
-        self.write_needed_inputs()
-
-    def gen_inputs_from(self, input_file=None):
-        self.write_needed_inputs(OMXmlIO(input_file))
-
-    def gen_inputs_from_legacy(self, input_file=None):
-        self.write_needed_inputs(OMLegacy1XmlIO(input_file))
-
-    def run_eval(self):
-        self.read_inputs()
-        self.run_model()
-        self.write_outputs()
-
-    def run_optim(self):
-        self.read_inputs()
-        self.run_driver()
-        self.write_outputs()
+    return _run_problem(configuration_file_path, overwrite, 'run_driver')

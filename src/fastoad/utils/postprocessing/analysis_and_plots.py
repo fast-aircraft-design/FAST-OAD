@@ -21,7 +21,14 @@ from fastoad.io.xml import OMXmlIO
 
 
 def wing_geometry_plot_matplotlib(aircraft_xml: OMXmlIO):
-    system = aircraft_xml.read_variables()
+    variables = aircraft_xml.read_variables()
+    # TODO: as it has been done before, read_variables could directly return a dictionary but:
+    #   - its docstring and return type should be updated accordingly
+    #   - the present module should be properly unit-tested to make easily visible if a change in
+    #     read_variables() break something
+    #   - a better structure should be found than a dict where keys are also a property of
+    #     the item values (same information twice, not DRY)
+    system = {var.name: var for var in variables}
 
     wing_x4 = system['geometry:wing:tip:leading_edge:x'].value[0]
     wing_y2 = system['geometry:wing:root:y'].value[0]
@@ -44,7 +51,8 @@ def wing_geometry_plot_matplotlib(aircraft_xml: OMXmlIO):
 
 
 def wing_geometry_plot(aircraft_xml: OMXmlIO):
-    system = aircraft_xml.read_variables()
+    variables = aircraft_xml.read_variables()
+    system = {var.name: var for var in variables}
 
     wing_x4 = system['geometry:wing:tip:leading_edge:x'].value[0]
     wing_y2 = system['geometry:wing:root:y'].value[0]
@@ -71,7 +79,8 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO):
 
 
 def wing_geometry_symetric_plot(aircraft_xml: OMXmlIO):
-    system = aircraft_xml.read_variables()
+    variables = aircraft_xml.read_variables()
+    system = {var.name: var for var in variables}
 
     wing_x4 = system['geometry:wing:tip:leading_edge:x'].value[0]
     wing_y2 = system['geometry:wing:root:y'].value[0]
@@ -102,7 +111,8 @@ def wing_geometry_symetric_plot(aircraft_xml: OMXmlIO):
 
 
 def mass_breakdown(aircraft_xml: OMXmlIO):
-    system = aircraft_xml.read_variables()
+    variables = aircraft_xml.read_variables()
+    system = {var.name: var for var in variables}
 
     systems = system['weight:systems:mass'].value[0]
     C11 = system['weight:systems:power:auxiliary_power_unit:mass'].value[0]
@@ -159,6 +169,7 @@ def mass_breakdown(aircraft_xml: OMXmlIO):
 
     fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]], )
 
+    # FIXME: the first sunburst looks broken, but I don't know why
     fig.add_trace(go.Sunburst(
         labels=["MTOW", "payload", "fuel_mission", "OWE"],
         parents=["", "MTOW", "MTOW", "MTOW"],

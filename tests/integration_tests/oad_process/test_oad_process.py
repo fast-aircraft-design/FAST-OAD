@@ -24,7 +24,7 @@ from numpy.testing import assert_allclose
 import fastoad
 from fastoad import api
 from fastoad.cmd.exceptions import FastFileExistsError
-from fastoad.io.configuration import ConfiguredProblem
+from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMLegacy1XmlIO
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
@@ -47,7 +47,7 @@ def test_propulsion_process(cleanup, install_components):
     Builds a dummy process for finding altitude of min SFC
     """
 
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'propulsion_process.toml'))
 
     problem.read_inputs()
@@ -70,7 +70,7 @@ def test_perfo_process(cleanup, install_components):
     Builds a dummy process for finding altitude for max ZFW
     """
 
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'perfo_process.toml'))
 
     problem.read_inputs()
@@ -103,7 +103,7 @@ def test_oad_process(cleanup, install_components):
     Test for the overall aircraft design process.
     """
 
-    problem = ConfiguredProblem()
+    problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'oad_process.toml'))
 
     problem.setup()
@@ -161,6 +161,15 @@ def test_api(cleanup, install_components):
     # List outputs ------------------------------------------------------------
     # TODO: add checks
     api.list_outputs(configuration_file_path, pth.join(api_result_folder_path, 'list_outputs.txt'))
+
+    # Write N2 ------------------------------------------------------------
+    # TODO: add checks
+    n2_file_path = pth.join(api_result_folder_path, 'n2.html')
+    api.write_n2(configuration_file_path, n2_file_path)
+    # Running again without forcing overwrite of outputs will make it fail
+    with pytest.raises(FastFileExistsError):
+        api.write_n2(configuration_file_path, n2_file_path, False)
+    api.write_n2(configuration_file_path, n2_file_path, True)
 
     # Run model ---------------------------------------------------------------
     api.evaluate_problem(configuration_file_path, False)
