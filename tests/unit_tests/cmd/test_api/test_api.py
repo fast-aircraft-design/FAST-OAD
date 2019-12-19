@@ -47,11 +47,12 @@ def test_generate_configuration_file(cleanup):
 
 
 def test_generate_inputs(cleanup):
-    api.generate_inputs(CONFIGURATION_FILE_PATH, False)
+    api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False)
     # Generating again without forcing overwrite will make it fail
     with pytest.raises(FastFileExistsError):
-        api.generate_inputs(CONFIGURATION_FILE_PATH, False)
-    api.generate_inputs(CONFIGURATION_FILE_PATH, True)
+        api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False)
+    api.generate_inputs(CONFIGURATION_FILE_PATH, pth.join(DATA_FOLDER_PATH, 'inputs.xml'),
+                        overwrite=True)
     assert pth.exists(pth.join(RESULTS_FOLDER_PATH, 'inputs.xml'))
 
 
@@ -94,7 +95,8 @@ def test_write_n2(cleanup):
 
 
 def test_evaluate_problem(cleanup):
-    api.generate_inputs(CONFIGURATION_FILE_PATH, True, pth.join(DATA_FOLDER_PATH, 'inputs.xml'))
+    api.generate_inputs(CONFIGURATION_FILE_PATH, pth.join(DATA_FOLDER_PATH, 'inputs.xml'),
+                        overwrite=True)
     api.evaluate_problem(CONFIGURATION_FILE_PATH, False)
     # Running again without forcing overwrite of outputs will make it fail
     with pytest.raises(FastFileExistsError):
@@ -108,7 +110,8 @@ def test_evaluate_problem(cleanup):
 
 
 def test_optimize_problem(cleanup):
-    api.generate_inputs(CONFIGURATION_FILE_PATH, True, pth.join(DATA_FOLDER_PATH, 'inputs.xml'))
+    api.generate_inputs(CONFIGURATION_FILE_PATH, pth.join(DATA_FOLDER_PATH, 'inputs.xml'),
+                        overwrite=True)
     api.optimize_problem(CONFIGURATION_FILE_PATH, False)
     # Running again without forcing overwrite of outputs will make it fail
     with pytest.raises(FastFileExistsError):

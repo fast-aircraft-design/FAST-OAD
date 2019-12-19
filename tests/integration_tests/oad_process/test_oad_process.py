@@ -143,7 +143,7 @@ def test_api(cleanup, install_components):
 
     # Generation of inputs ----------------------------------------------------
     source_xml = pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml')
-    api.generate_inputs(configuration_file_path, True, source_xml, 'legacy')
+    api.generate_inputs(configuration_file_path, source_xml, 'legacy', True)
 
     # Run model ---------------------------------------------------------------
     problem = api.evaluate_problem(configuration_file_path, True)

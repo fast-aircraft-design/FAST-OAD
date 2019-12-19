@@ -57,17 +57,17 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
 
 def generate_inputs(configuration_file_path: str,
-                    overwrite: bool = False,
                     source_path: str = None,
-                    source_path_schema='native'
+                    source_path_schema='native',
+                    overwrite: bool = False
                     ):
     """
     Generates input file for the :class:`FASTOADProblem` specified in configuration_file_path.
 
     :param configuration_file_path: where the path of input file to write is set
-    :param overwrite: if True, file will be written even if one already exists
     :param source_path: path of file data will be taken from
     :param source_path_schema: set to 'legacy' if the source file come from legacy FAST
+    :param overwrite: if True, file will be written even if one already exists
     """
     problem = FASTOADProblem()
     problem.configure(configuration_file_path)
