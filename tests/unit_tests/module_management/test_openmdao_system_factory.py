@@ -144,7 +144,6 @@ def test_sellar(framework_load_unload):
         # pb.driver.options['maxiter'] = 100
         problem.driver.options['disp'] = True
 
-        problem.model.approx_totals()
         problem.model.add_design_var('x', lower=0, upper=10)
         problem.model.add_design_var('z', lower=0, upper=10)
 

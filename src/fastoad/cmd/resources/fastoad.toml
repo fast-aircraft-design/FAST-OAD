@@ -7,6 +7,9 @@ module_folders = []
 input_file = "./problem_inputs.xml"
 output_file = "./problem_outputs.xml"
 
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver = "om.ScipyOptimizeDriver(optimizer='SLSQP', tol=1e-8)"
+
 # Definition of OpenMDAO model
 [model]
     # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
