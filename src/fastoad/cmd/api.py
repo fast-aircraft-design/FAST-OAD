@@ -34,6 +34,7 @@ from fastoad.openmdao.connections_utils import build_ivc_of_outputs
 _LOGGER = logging.getLogger(__name__)
 
 RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
+SAMPLE_FILE_PATH = pth.join(RESOURCE_FOLDER_PATH, 'fastoad.toml')
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
@@ -43,7 +44,6 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     :param configuration_file_path: the path of file to be written
     :param overwrite: if True, the file will be written, even if it already exists
     """
-    sample_file_path = pth.join(RESOURCE_FOLDER_PATH, 'fastoad.toml')
     if not overwrite and pth.exists(configuration_file_path):
         raise FastFileExistsError('Configuration file %s not written because it already exists. '
                                   'Use overwrite=True to bypass.'
@@ -52,7 +52,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     dirname = pth.dirname(configuration_file_path)
     if not pth.exists(dirname):
         os.makedirs(dirname)
-    shutil.copyfile(sample_file_path, configuration_file_path)
+    shutil.copyfile(SAMPLE_FILE_PATH, configuration_file_path)
     _LOGGER.info('Sample configuration written in %s', configuration_file_path)
 
 
