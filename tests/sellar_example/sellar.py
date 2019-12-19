@@ -20,7 +20,7 @@ import abc
 from typing import Type
 
 from openmdao.api import Group, IndepVarComp
-from openmdao.api import NonlinearBlockGS, ScipyKrylov
+from openmdao.api import NonlinearBlockGS
 
 from .disc1 import Disc1
 from .disc2 import Disc2
@@ -88,12 +88,6 @@ class Sellar(Group):
         self.nonlinear_solver.options['maxiter'] = 10
         self.nonlinear_solver.options['err_on_maxiter'] = True
         self.nonlinear_solver.options['iprint'] = 1
-        self.linear_solver = ScipyKrylov()
-        self.linear_solver.options['atol'] = 1.0e-10
-        self.linear_solver.options['rtol'] = 1.0e-10
-        self.linear_solver.options['maxiter'] = 10
-        self.linear_solver.options['err_on_maxiter'] = True
-        self.linear_solver.options['iprint'] = 1
 
     def setup(self):
         indeps = self.add_subsystem('indeps', IndepVarComp(), promotes=['*'])
