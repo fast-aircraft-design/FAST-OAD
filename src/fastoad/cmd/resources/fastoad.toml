@@ -32,7 +32,7 @@ driver = "om.ScipyOptimizeDriver()"
         linear_solver = "om.DirectSolver()"
         [model.perfo_loop.performance]
             id = "fastoad.performances.breguet.from_owe"
-        [model.propulsion]
+        [model.perfo_loop.propulsion]
             id = "fastoad.propulsion.rubber_engine"
 
 [[design_var]]
