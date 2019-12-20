@@ -371,7 +371,7 @@
                 <DT4_CRZ>0</DT4_CRZ>
                 <mach_max>0.85</mach_max>
                 <h_design unit="m">10058.4</h_design>
-                <thrust_SL unit="N">70000</thrust_SL>
+                <thrust_SL unit="N">80000</thrust_SL>
                 <k_factors id="240">
                     <k_SFC>1</k_SFC>
                     <k_corr>1.03</k_corr>

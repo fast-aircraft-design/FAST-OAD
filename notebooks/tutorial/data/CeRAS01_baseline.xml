@@ -202,7 +202,7 @@
         <vt_z0 units="m">2.71</vt_z0>
     </geometry>
     <propulsion>
-        <MTO_thrust units="N">117880.0<!--Maximum thrust of one engine at sea level--></MTO_thrust>
+        <MTO_thrust units="N">70000.0<!--Maximum thrust of one engine at sea level--></MTO_thrust>
         <SFC units="kg/s/N">1.68e-05</SFC>
         <mach>0.78</mach>
         <altitude units="m">10668.0</altitude>

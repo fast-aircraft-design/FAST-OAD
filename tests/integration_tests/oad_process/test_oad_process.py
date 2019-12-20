@@ -25,6 +25,7 @@ import fastoad
 from fastoad import api
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMLegacy1XmlIO
+from tests import root_folder_path
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
@@ -142,8 +143,9 @@ def test_api(cleanup, install_components):
     api.generate_configuration_file(configuration_file_path, True)
 
     # Generation of inputs ----------------------------------------------------
-    source_xml = pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml')
-    api.generate_inputs(configuration_file_path, source_xml, 'legacy', True)
+    # We get the same inputs as in tutorial notebook
+    source_xml = pth.join(root_folder_path, 'notebooks', 'tutorial', 'data', 'CeRAS01_baseline.xml')
+    api.generate_inputs(configuration_file_path, source_xml, True)
 
     # Run model ---------------------------------------------------------------
     problem = api.evaluate_problem(configuration_file_path, True)
@@ -162,6 +164,7 @@ def test_api(cleanup, install_components):
                     + problem['mission:sizing:mission:fuel'],
                     atol=1)
     base_thrust = problem['propulsion:MTO_thrust']
+    base_thrust_rate = problem['propulsion:thrust_rate']
     base_MTOW = problem['weight:aircraft:MTOW']
 
     # Run model ---------------------------------------------------------------
@@ -183,8 +186,10 @@ def test_api(cleanup, install_components):
 
     print('before optimization')
     print(base_thrust)
+    print(base_thrust_rate)
     print(base_MTOW)
 
     print('after optimization')
     print(problem['propulsion:MTO_thrust'])
+    print(problem['propulsion:thrust_rate'])
     print(problem['weight:aircraft:MTOW'])
