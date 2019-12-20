@@ -161,5 +161,30 @@ def test_api(cleanup, install_components):
                     problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
                     + problem['mission:sizing:mission:fuel'],
                     atol=1)
+    base_thrust = problem['propulsion:MTO_thrust']
+    base_MTOW = problem['weight:aircraft:MTOW']
 
-    # TODO: check optimization
+    # Run model ---------------------------------------------------------------
+    problem = api.optimize_problem(configuration_file_path, True)
+
+    # Check that weight-performances loop correctly converged
+    assert_allclose(problem['weight:aircraft:OWE'],
+                    problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
+                    + problem['weight:systems:mass'] + problem['weight:furniture:mass']
+                    + problem['weight:crew:mass'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MZFW'],
+                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:max_payload'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MTOW'],
+                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
+                    + problem['mission:sizing:mission:fuel'],
+                    atol=1)
+
+    print('before optimization')
+    print(base_thrust)
+    print(base_MTOW)
+
+    print('after optimization')
+    print(problem['propulsion:MTO_thrust'])
+    print(problem['weight:aircraft:MTOW'])
