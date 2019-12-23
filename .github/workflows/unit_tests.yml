@@ -1,4 +1,4 @@
-name: Test Suite
+name: Unit tests
 
 on: [push]
 
@@ -13,7 +13,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.6, 3.7, 3.8]
         os: [windows-latest]
 
     steps:
@@ -48,6 +48,3 @@ jobs:
       - name: Unit tests
         run: pipenv run pytest tests/unit_tests
 
-      - name: Integration tests
-        # TODO: if integration tests become too long, trigger them only for pull requests
-        run: pipenv run pytest tests/integration_tests
