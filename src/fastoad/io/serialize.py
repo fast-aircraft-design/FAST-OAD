@@ -54,8 +54,8 @@ class AbstractOMFileIO(ABC):
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
         ivc = om.IndepVarComp()
-        for var_name, var in used_variables.items():
-            ivc.add_output(var_name, val=np.array(var.value), units=var.units)
+        for var in used_variables:
+            ivc.add_output(var.name, val=np.array(var.value), units=var.units)
 
         return ivc
 
@@ -122,10 +122,11 @@ class AbstractOMFileIO(ABC):
         :return: filtered variables
         """
 
-        # Dev not: We use sets, but sets of Variable instances (namedtuples with a list as item) do
+        # Dev not: We use sets, but sets of Variable instances do
         # not work. Do we work with variable names instead.
+        # FIXME: Variable instances are now hashable, so set of Variable instances should now work
 
-        var_names = variables.keys()
+        var_names = variables.names()
 
         if only is None:
             used_var_names = set(var_names)
@@ -133,18 +134,18 @@ class AbstractOMFileIO(ABC):
             used_var_names = set()
             for pattern in only:
                 used_var_names.update(
-                    [variable_name for variable_name in variables if
-                     fnmatchcase(variable_name, pattern)])
+                    [variable.name for variable in variables if
+                     fnmatchcase(variable.name, pattern)])
 
         if ignore is not None:
             for pattern in ignore:
                 used_var_names.difference_update(
-                    [variable_name for variable_name in variables if
-                     fnmatchcase(variable_name, pattern)])
+                    [variable.name for variable in variables if
+                     fnmatchcase(variable.name, pattern)])
 
         # It could be simpler, but I want to keep the order
-        vars = Variables()
-        for var_name, var in variables.items():
-            if var_name in used_var_names:
-                vars[var_name] = var.metadata
-        return vars
+        used_variables = Variables()
+        for var in variables:
+            if var.name in used_var_names:
+                used_variables.append(var)
+        return used_variables

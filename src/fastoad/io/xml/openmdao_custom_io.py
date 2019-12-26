@@ -120,7 +120,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
                                         'affected in the translator.', err.xpath)
                         continue
 
-                    if name not in variables:
+                    if name not in variables.names():
                         # Add Variable
                         variables[name] = {'value': value, 'units': units}
                     else:
@@ -138,7 +138,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         root = etree.Element(ROOT_TAG)
 
-        for variable in variables.values():
+        for variable in variables:
 
             xpath = self._translator.get_xpath(variable.name)
             element = self._create_xpath(root, xpath)

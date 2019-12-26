@@ -16,7 +16,7 @@ Module for managing OpenMDAO variables
 
 import os.path as pth
 from collections import OrderedDict
-from typing import Dict, MutableMapping, Iterator, Hashable
+from typing import Dict, MutableMapping, Iterator, Hashable, AbstractSet
 
 import numpy as np
 
@@ -93,7 +93,9 @@ class Variable(Hashable):
         self.metadata['desc'] = value
 
     def __eq__(self, other):
-        return (self.name == other.name and
+        return (
+            # isinstance(other, Variable) and
+                self.name == other.name and
                 self.value == other.value and
                 self.metadata == other.attributes)
 
@@ -105,6 +107,32 @@ class Variable(Hashable):
 
 
 class Variables(MutableMapping):
+    """
+    Class for storing OpenMDAO variables
+
+    Acts as an ordered dictionary where keys are variable names and values are Variable instances,
+    except the "in" keyword (iterator and containment) works with variables (the values of the dict) instead of
+    their names (the keys of the dict).
+
+    There are 2 ways for adding a variable::
+
+        # Assuming these Python variables are ready
+        var_1 = Variable('var/1', value=0.)
+        metadata_2 = {'value': 1., 'units': 'm'}
+
+        # ... a Variables instance can be populated like this
+        vars = Variables()
+        vars.append(var_1)              # Adds directly a Variable instance
+        vars['var/2'] = metadata_2      # Adds the variable with given name and given metadata
+
+    After that, following equalities are True::
+
+        print( var_1 in vars )
+        print( 'var/1' in vars.names() )
+        print( 'var/2' in vars.names() )
+
+
+    """
     # Will store content of DESCRIPTION_FILE_PATH once and for all
     _variable_descriptions = {}
 
@@ -116,6 +144,14 @@ class Variables(MutableMapping):
             # Class attribute, but it's safer to initialize it at first instantiation
             vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
             self.__class__._variable_descriptions = {name: description for name, description in vars_descs}
+
+    def append(self, variable: Variable):
+        """
+        Adds the provided Variable instance. The variable name will be its associated key.
+
+        :param variable:
+        """
+        self[variable.name] = variable.metadata
 
     def __setitem__(self, name: str, metadata: dict):
 
@@ -135,6 +171,18 @@ class Variables(MutableMapping):
     def __len__(self) -> int:
         return len(self._variables)
 
-    def __iter__(self) -> Iterator[str]:
-        for name in self._variables:
-            yield name
+    def __iter__(self) -> Iterator[Variable]:
+        for var in self._variables.values():
+            yield var
+
+    def __contains__(self, var: Variable):
+        return var in self._variables.values()
+
+    def keys(self) -> AbstractSet[str]:
+        return self._variables.keys()
+
+    def names(self) -> AbstractSet[str]:
+        """
+        Same as :meth:`keys`, but with a more appropriate name
+        """
+        return self._variables.keys()
