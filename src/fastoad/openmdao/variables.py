@@ -16,7 +16,7 @@ Module for managing OpenMDAO variables
 
 import os.path as pth
 from collections import OrderedDict
-from typing import Dict
+from typing import Dict, MutableMapping, Iterator, Hashable
 
 import numpy as np
 
@@ -24,30 +24,7 @@ RESOURCE_PATH = pth.join(pth.dirname(__file__), 'resources')
 DESCRIPTION_FILE_PATH = pth.join(RESOURCE_PATH, 'variable_descriptions.txt')
 
 
-class Variables(OrderedDict):
-    # Will store content of DESCRIPTION_FILE_PATH once and for all
-    _variable_descriptions = {}
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.attributes: Dict = {}
-        """
-        Dictionary for all attributes of the variable
-        """
-
-        if not self._variable_descriptions:
-            # Class attribute, but it's safer to initialize it at first instantiation
-            vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
-            self.__class__._variable_descriptions = {name: description for name, description in vars_descs}
-
-    def __setitem__(self, key: str, attributes: dict):
-        # If no description, add one from DESCRIPTION_FILE_PATH, if available
-        if not attributes.get('desc') and key in self._variable_descriptions:
-            attributes['desc'] = self._variable_descriptions[key]
-        super().__setitem__(key, attributes)
-
-
-class Variable:
+class Variable(Hashable):
     """
     A class for storing data of OpenMDAO variables.
 
@@ -69,11 +46,12 @@ class Variable:
     # Will store content of DESCRIPTION_FILE_PATH once and for all
     _variable_descriptions = {}
 
-    def __init__(self, **kwargs: Dict):
-        self.attributes: Dict = {}
-        """
-        Dictionary for all attributes of the variable
-        """
+    def __init__(self, name, **kwargs: Dict):
+        self.name = name
+        """ Name of the variable """
+
+        self.metadata: Dict = {}
+        """ Dictionary for metadata of the variable """
 
         if not self._variable_descriptions:
             # Class attribute, but it's safer to initialize it at first instantiation
@@ -81,52 +59,82 @@ class Variable:
             self.__class__._variable_descriptions = {name: description for name, description in
                                                      vars_descs}
 
-        self.attributes.update(kwargs)
+        self.metadata.update(kwargs)
 
         # If no description, add one from DESCRIPTION_FILE_PATH, if available
         if not self.description and self.name in self._variable_descriptions:
             self.description = self._variable_descriptions[self.name]
 
     @property
-    def name(self):
-        """ name of the variable"""
-        return self.attributes.get('name')
-
-    @name.setter
-    def name(self, value):
-        self.attributes['name'] = value
-
-    @property
     def value(self):
         """ value of the variable"""
-        return self.attributes.get('value')
+        return self.metadata.get('value')
 
     @value.setter
     def value(self, value):
-        self.attributes['value'] = value
+        self.metadata['value'] = value
 
     @property
     def units(self):
         """ units associated to value (or None if not found) """
-        return self.attributes.get('units')
+        return self.metadata.get('units')
 
     @units.setter
     def units(self, value):
-        self.attributes['units'] = value
+        self.metadata['units'] = value
 
     @property
     def description(self):
         """ description of the variable (or None if not found) """
-        return self.attributes.get('desc')
+        return self.metadata.get('desc')
 
     @description.setter
     def description(self, value):
-        self.attributes['desc'] = value
+        self.metadata['desc'] = value
 
     def __eq__(self, other):
         return (self.name == other.name and
                 self.value == other.value and
-                self.attributes == other.attributes)
+                self.metadata == other.attributes)
 
     def __repr__(self):
         return 'Variable(name=%s, value=%s, units=%s)' % (self.name, self.value, self.units)
+
+    def __hash__(self) -> int:
+        return hash('var=' + self.name)  # Name is normally unique
+
+
+class Variables(MutableMapping):
+    # Will store content of DESCRIPTION_FILE_PATH once and for all
+    _variable_descriptions = {}
+
+    def __init__(self):
+        super().__init__()
+        self._variables: OrderedDict[str, Variable] = OrderedDict()
+
+        if not self._variable_descriptions:
+            # Class attribute, but it's safer to initialize it at first instantiation
+            vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
+            self.__class__._variable_descriptions = {name: description for name, description in vars_descs}
+
+    def __setitem__(self, name: str, metadata: dict):
+
+        # If no description, add one from DESCRIPTION_FILE_PATH, if available
+        if not metadata.get('desc') and name in self._variable_descriptions:
+            metadata['desc'] = self._variable_descriptions[name]
+
+        var = Variable(name, **metadata)
+        self._variables[name] = var
+
+    def __delitem__(self, name: str) -> None:
+        del self._variables[name]
+
+    def __getitem__(self, name: str) -> Variable:
+        return self._variables[name]
+
+    def __len__(self) -> int:
+        return len(self._variables)
+
+    def __iter__(self) -> Iterator[str]:
+        for name in self._variables:
+            yield name

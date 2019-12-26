@@ -54,8 +54,8 @@ class AbstractOMFileIO(ABC):
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
         ivc = om.IndepVarComp()
-        for var_name, metadata in used_variables.items():
-            ivc.add_output(var_name, val=np.array(metadata['value']), units=metadata['units'])
+        for var_name, var in used_variables.items():
+            ivc.add_output(var_name, val=np.array(var.value), units=var.units)
 
         return ivc
 
@@ -143,5 +143,8 @@ class AbstractOMFileIO(ABC):
                      fnmatchcase(variable_name, pattern)])
 
         # It could be simpler, but I want to keep the order
-        return Variables(
-            {var_name: attributes for var_name, attributes in variables.items() if var_name in used_var_names})
+        vars = Variables()
+        for var_name, var in variables.items():
+            if var_name in used_var_names:
+                vars[var_name] = var.metadata
+        return vars

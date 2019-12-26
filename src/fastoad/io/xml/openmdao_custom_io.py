@@ -125,7 +125,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
                         variables[name] = {'value': value, 'units': units}
                     else:
                         # Variable already exists: append values (here the dict is useful)
-                        variables[name]['value'].extend(value)
+                        variables[name].value.extend(value)
             else:  # action == 'end':
                 current_path.pop(-1)
 
@@ -138,27 +138,27 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         root = etree.Element(ROOT_TAG)
 
-        for var_name, metadata in variables.items():
+        for variable in variables.values():
 
-            xpath = self._translator.get_xpath(var_name)
+            xpath = self._translator.get_xpath(variable.name)
             element = self._create_xpath(root, xpath)
 
             # Set value and units
-            if 'units' in metadata and metadata['units']:
-                element.attrib[self.xml_unit_attribute] = metadata['units']
+            if variable.units:
+                element.attrib[self.xml_unit_attribute] = variable.units
 
             # Filling value for already created element
-            element.text = str(metadata['value'])
-            if not isinstance(metadata['value'], (np.ndarray, Vector, list)):
+            element.text = str(variable.value)
+            if not isinstance(variable.value, (np.ndarray, Vector, list)):
                 # Here, it should be a float
-                element.text = str(metadata['value'])
-            elif len(np.squeeze(metadata['value']).shape) == 0:
-                element.text = str(np.squeeze(metadata['value']).item())
+                element.text = str(variable.value)
+            elif len(np.squeeze(variable.value).shape) == 0:
+                element.text = str(np.squeeze(variable.value).item())
             else:
-                element.text = json.dumps(np.asarray(metadata['value']).tolist())
-            if 'desc' in metadata and metadata['desc']:
-                element.append(etree.Comment(metadata['desc']))
-        # Write
+                element.text = json.dumps(np.asarray(variable.value).tolist())
+            if variable.description:
+                element.append(etree.Comment(variable.description))
+       # Write
         tree = etree.ElementTree(root)
         dirname = pth.abspath(pth.dirname(self._data_source))
         if not pth.exists(dirname):
