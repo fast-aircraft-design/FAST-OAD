@@ -15,12 +15,36 @@ Module for managing OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
+from collections import OrderedDict
 from typing import Dict
 
 import numpy as np
 
 RESOURCE_PATH = pth.join(pth.dirname(__file__), 'resources')
 DESCRIPTION_FILE_PATH = pth.join(RESOURCE_PATH, 'variable_descriptions.txt')
+
+
+class Variables(OrderedDict):
+    # Will store content of DESCRIPTION_FILE_PATH once and for all
+    _variable_descriptions = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.attributes: Dict = {}
+        """
+        Dictionary for all attributes of the variable
+        """
+
+        if not self._variable_descriptions:
+            # Class attribute, but it's safer to initialize it at first instantiation
+            vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
+            self.__class__._variable_descriptions = {name: description for name, description in vars_descs}
+
+    def __setitem__(self, key: str, attributes: dict):
+        # If no description, add one from DESCRIPTION_FILE_PATH, if available
+        if not attributes.get('desc') and key in self._variable_descriptions:
+            attributes['desc'] = self._variable_descriptions[key]
+        super().__setitem__(key, attributes)
 
 
 class Variable:

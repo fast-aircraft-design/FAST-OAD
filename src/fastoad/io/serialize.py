@@ -15,16 +15,15 @@ Defines interfaces for reading and writing OpenMDAO variable values
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import abstractmethod, ABC
-from collections import OrderedDict
 from fnmatch import fnmatchcase
 from typing import TypeVar, IO, List, Sequence
 
 import numpy as np
 import openmdao.api as om
-
-from fastoad.openmdao.variables import Variable
+from fastoad.openmdao.variables import Variables
 
 OMFileIOSubclass = TypeVar('OMFileIOSubclass', bound='AbstractOMFileIO')
+
 
 class AbstractOMFileIO(ABC):
     """
@@ -55,8 +54,8 @@ class AbstractOMFileIO(ABC):
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
 
         ivc = om.IndepVarComp()
-        for var in used_variables:
-            ivc.add_output(var.name, val=np.array(var.value), units=var.units)
+        for var_name, metadata in used_variables.items():
+            ivc.add_output(var_name, val=np.array(metadata['value']), units=metadata['units'])
 
         return ivc
 
@@ -77,7 +76,7 @@ class AbstractOMFileIO(ABC):
         self.write_variables(used_variables)
 
     @abstractmethod
-    def read_variables(self) -> List[Variable]:
+    def read_variables(self) -> Variables:
         """
         Reads variables from provided data source file.
 
@@ -85,28 +84,30 @@ class AbstractOMFileIO(ABC):
         """
 
     @abstractmethod
-    def write_variables(self, variables: Sequence[Variable]):
+    def write_variables(self, variables: Variables):
         """
         Writes variables to defined data source file.
 
         :param variables:
        """
 
-    def _get_variables(self, ivc: om.IndepVarComp) -> List[Variable]:
+    def _get_variables(self, ivc: om.IndepVarComp) -> Variables:
         """ returns the list of variables from provided system """
 
-        variables: List[Variable] = []
+        variables = Variables()
 
         # Outputs are accessible using private member
         # pylint: disable=protected-access
         for (name, value, attributes) in ivc._indep_external:
-            variables.append(Variable(name=name, value=value, **attributes))
+            metadata = {'value': value}
+            metadata.update(attributes)
+            variables[name] = metadata
 
         return variables
 
     @staticmethod
-    def _filter_variables(variables: Sequence[Variable], only: Sequence[str] = None,
-                          ignore: Sequence[str] = None) -> List[Variable]:
+    def _filter_variables(variables: Variables, only: Sequence[str] = None,
+                          ignore: Sequence[str] = None) -> Variables:
         """
         filters the variables such that the ones in arg only are kept and the ones in
         arg ignore are removed.
@@ -124,8 +125,7 @@ class AbstractOMFileIO(ABC):
         # Dev not: We use sets, but sets of Variable instances (namedtuples with a list as item) do
         # not work. Do we work with variable names instead.
 
-        var_dict = OrderedDict((var.name, var) for var in variables)
-        var_names = var_dict.keys()
+        var_names = variables.keys()
 
         if only is None:
             used_var_names = set(var_names)
@@ -133,14 +133,15 @@ class AbstractOMFileIO(ABC):
             used_var_names = set()
             for pattern in only:
                 used_var_names.update(
-                    [variable.name for variable in variables if
-                     fnmatchcase(variable.name, pattern)])
+                    [variable_name for variable_name in variables if
+                     fnmatchcase(variable_name, pattern)])
 
         if ignore is not None:
             for pattern in ignore:
                 used_var_names.difference_update(
-                    [variable.name for variable in variables if
-                     fnmatchcase(variable.name, pattern)])
+                    [variable_name for variable_name in variables if
+                     fnmatchcase(variable_name, pattern)])
 
         # It could be simpler, but I want to keep the order
-        return [var for var_name, var in var_dict.items() if var_name in used_var_names]
+        return Variables(
+            {var_name: attributes for var_name, attributes in variables.items() if var_name in used_var_names})

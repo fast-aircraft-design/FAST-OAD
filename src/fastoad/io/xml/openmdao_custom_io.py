@@ -18,21 +18,20 @@ import logging
 import os
 import os.path as pth
 import re
-from typing import Sequence, List, Dict
 
 import numpy as np
+from fastoad.exceptions import XPathError
+from fastoad.io.serialize import AbstractOMFileIO
+from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
+from fastoad.io.xml.translator import VarXpathTranslator
+from fastoad.openmdao.variables import Variables
+from fastoad.utils.strings import get_float_list_from_string
 from lxml import etree
 from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.vectors.vector import Vector
 
-from fastoad.exceptions import XPathError
-from fastoad.io.serialize import AbstractOMFileIO
-from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
-from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.utils.strings import get_float_list_from_string
 from .constants import DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
-from ...openmdao.variables import Variable
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -85,7 +84,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         """
         self._translator = translator
 
-    def read_variables(self) -> List[Variable]:
+    def read_variables(self) -> Variables:
 
         if self._translator is None:
             raise FastMissingTranslatorError('Missing translator instance')
@@ -93,7 +92,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         context = etree.iterparse(self._data_source, events=("start", "end"))
 
         # Intermediate storing as a dict for easy access according to name when appending new values
-        variables: Dict[str, Variable] = {}
+        variables = Variables()
 
         current_path = []
 
@@ -123,42 +122,42 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
                     if name not in variables:
                         # Add Variable
-                        variables[name] = Variable(name=name, value=value, units=units)
+                        variables[name] = {'value': value, 'units': units}
                     else:
                         # Variable already exists: append values (here the dict is useful)
-                        variables[name].value.extend(value)
+                        variables[name]['value'].extend(value)
             else:  # action == 'end':
                 current_path.pop(-1)
 
-        return list(variables.values())
+        return variables
 
-    def write_variables(self, variables: Sequence[Variable]):
+    def write_variables(self, variables: Variables):
 
         if self._translator is None:
             raise FastMissingTranslatorError('Missing translator instance')
 
         root = etree.Element(ROOT_TAG)
 
-        for variable in variables:
+        for var_name, metadata in variables.items():
 
-            xpath = self._translator.get_xpath(variable.name)
+            xpath = self._translator.get_xpath(var_name)
             element = self._create_xpath(root, xpath)
 
             # Set value and units
-            if variable.units:
-                element.attrib[self.xml_unit_attribute] = variable.units
+            if 'units' in metadata and metadata['units']:
+                element.attrib[self.xml_unit_attribute] = metadata['units']
 
             # Filling value for already created element
-            element.text = str(variable.value)
-            if not isinstance(variable.value, (np.ndarray, Vector, list)):
+            element.text = str(metadata['value'])
+            if not isinstance(metadata['value'], (np.ndarray, Vector, list)):
                 # Here, it should be a float
-                element.text = str(variable.value)
-            elif len(np.squeeze(variable.value).shape) == 0:
-                element.text = str(np.squeeze(variable.value).item())
+                element.text = str(metadata['value'])
+            elif len(np.squeeze(metadata['value']).shape) == 0:
+                element.text = str(np.squeeze(metadata['value']).item())
             else:
-                element.text = json.dumps(np.asarray(variable.value).tolist())
-            if variable.description:
-                element.append(etree.Comment(variable.description))
+                element.text = json.dumps(np.asarray(metadata['value']).tolist())
+            if 'desc' in metadata and metadata['desc']:
+                element.append(etree.Comment(metadata['desc']))
         # Write
         tree = etree.ElementTree(root)
         dirname = pth.abspath(pth.dirname(self._data_source))
