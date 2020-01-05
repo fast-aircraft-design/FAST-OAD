@@ -73,6 +73,42 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     return fig
 
 
+def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
+    """
+    Returns a figure plot of the aircraft drag polar.
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
+
+    :param aircraft_xml: xml file reader instance
+    :param name: name to give to the trace added to the figure
+    :return: wing plot figure
+    """
+    # FIXME: the multidimensional array ClCd is overwritten by read_variables()
+    variables = aircraft_xml.read_variables()
+    system = {var.name: var for var in variables}
+    cd = system['aerodynamics:ClCd'].value
+    cl = system['cl_high_speed'].value
+
+    if fig is None:
+        fig = go.Figure()
+
+    scatter = go.Scatter(x=cd, y=cl,
+                         mode='lines+markers',
+                         name=name)
+
+    fig.add_trace(scatter)
+
+    fig = go.FigureWidget(fig)
+
+    fig.update_layout(title_text='Drag Polar',
+                      title_x=0.5,
+                      xaxis_title="Cd",
+                      yaxis_title="Cl",
+    )
+
+    return fig
+
+
 def mass_breakdown(aircraft_xml: OMXmlIO):
     variables = aircraft_xml.read_variables()
     system = {var.name: var for var in variables}
