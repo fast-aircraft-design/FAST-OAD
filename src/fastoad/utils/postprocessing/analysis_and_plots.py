@@ -20,65 +20,22 @@ from plotly.subplots import make_subplots
 from fastoad.io.xml import OMXmlIO
 
 
-def wing_geometry_plot_matplotlib(aircraft_xml: OMXmlIO):
-    variables = aircraft_xml.read_variables()
-    # TODO: as it has been done before, read_variables could directly return a dictionary but:
-    #   - its docstring and return type should be updated accordingly
-    #   - the present module should be properly unit-tested to make easily visible if a change in
-    #     read_variables() break something
-    #   - a better structure should be found than a dict where keys are also a property of
-    #     the item values (same information twice, not DRY)
-    system = {var.name: var for var in variables}
+# TODO: as it has been done before, read_variables could directly return a dictionary but:
+#   - its docstring and return type should be updated accordingly
+#   - the present module should be properly unit-tested to make easily visible if a change in
+#     read_variables() break something
+#   - a better structure should be found than a dict where keys are also a property of
+#     the item values (same information twice, not DRY)
+def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
+    """
+    Returns a figure plot of the top view of the wing.
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
 
-    wing_x4 = system['geometry:wing:tip:leading_edge:x'].value[0]
-    wing_y2 = system['geometry:wing:root:y'].value[0]
-    wing_y3 = system['geometry:wing:kink:y'].value[0]
-    wing_y4 = system['geometry:wing:tip:y'].value[0]
-    wing_l2 = system['geometry:wing:root:chord'].value[0]
-    wing_l4 = system['geometry:wing:tip:chord'].value[0]
-
-    x = [0, wing_y2, wing_y4,
-         wing_y4, wing_y3,
-         wing_y2, 0, 0]
-    y = [0, 0, wing_x4, wing_x4 + wing_l4,
-         wing_l2, wing_l2, wing_l2, 0]
-
-    plt.figure(1, figsize=(8, 5))
-    plt.plot(x, y)
-    plt.title('Wing geometry')
-    plt.axis([0, 18, 0, 11])
-    plt.show()
-
-
-def wing_geometry_plot(aircraft_xml: OMXmlIO):
-    variables = aircraft_xml.read_variables()
-    system = {var.name: var for var in variables}
-
-    wing_x4 = system['geometry:wing:tip:leading_edge:x'].value[0]
-    wing_y2 = system['geometry:wing:root:y'].value[0]
-    wing_y3 = system['geometry:wing:kink:y'].value[0]
-    wing_y4 = system['geometry:wing:tip:y'].value[0]
-    wing_l2 = system['geometry:wing:root:chord'].value[0]
-    wing_l4 = system['geometry:wing:tip:chord'].value[0]
-
-    x = [0, wing_y2, wing_y4,
-         wing_y4, wing_y3,
-         wing_y2, 0, 0]
-    y = [0, 0, wing_x4, wing_x4 + wing_l4,
-         wing_l2, wing_l2, wing_l2, 0]
-
-    scatter = go.Scatter(x=x, y=y,
-                         mode='lines+markers')
-
-    layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
-
-    data = [scatter]
-    fig = go.FigureWidget(data=data, layout=layout)
-    fig.layout.title = 'Wing Geometry'
-    return fig
-
-
-def wing_geometry_symetric_plot(aircraft_xml: OMXmlIO):
+    :param aircraft_xml: xml file reader instance
+    :param name: name to give to the trace added to the figure
+    :return: wing plot figure
+    """
     variables = aircraft_xml.read_variables()
     system = {var.name: var for var in variables}
 
@@ -98,15 +55,21 @@ def wing_geometry_symetric_plot(aircraft_xml: OMXmlIO):
          wing_l2, wing_l2, wing_l2, 0]
 
     y = y + y
+    if fig is None:
+        fig = go.Figure()
 
     scatter = go.Scatter(x=x, y=y,
-                         mode='lines+markers')
+                         mode='lines+markers',
+                         name=name)
 
-    layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+    fig.add_trace(scatter)
 
-    data = [scatter]
-    fig = go.FigureWidget(data=data, layout=layout)
-    fig.layout.title = 'Wing Geometry'
+    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+
+    fig = go.FigureWidget(fig)
+
+    fig.update_layout(title_text='Wing Geometry', title_x=0.5)
+
     return fig
 
 
