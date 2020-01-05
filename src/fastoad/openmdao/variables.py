@@ -110,9 +110,7 @@ class Variables(MutableMapping):
     """
     Class for storing OpenMDAO variables
 
-    Acts as an ordered dictionary where keys are variable names and values are Variable instances,
-    except the "in" keyword (iterator and containment) works with variables (the values of the dict) instead of
-    their names (the keys of the dict).
+    Like a list of Variables, but items are accessed through variable names instead of indices.
 
     There are 2 ways for adding a variable::
 
@@ -179,6 +177,7 @@ class Variables(MutableMapping):
         return var in self._variables.values()
 
     def keys(self) -> AbstractSet[str]:
+        # need for implementation, since the iterator returns values of the dict
         return self._variables.keys()
 
     def names(self) -> AbstractSet[str]:
