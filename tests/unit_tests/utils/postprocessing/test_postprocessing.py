@@ -13,3 +13,37 @@ Tests for postprocessing functions
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import os.path as pth
+
+import pytest
+
+from fastoad.io.xml import OMXmlIO
+from fastoad.utils.postprocessing.analysis_and_plots import \
+    wing_geometry_plot
+
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
+
+def test_wing_geometry_plot():
+
+    filename = pth.join(DATA_FOLDER_PATH, 'problem_outputs.xml')
+
+    xml = OMXmlIO(filename)
+
+    # First plot
+    try:
+        fig = wing_geometry_plot(xml)
+    except ValueError:
+        pytest.fail("Failed plotting the wing geometry...")
+
+    # First plot with name
+    try:
+        fig = wing_geometry_plot(xml, name='First plot')
+    except ValueError:
+        pytest.fail("Failed plotting the wing geometry...")
+
+    # Adding a plot to the previous fig
+    try:
+        fig = wing_geometry_plot(xml, name='Second plot', fig=fig)
+    except ValueError:
+        pytest.fail("Failed plotting the wing geometry...")
