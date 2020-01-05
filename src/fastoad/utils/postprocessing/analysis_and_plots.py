@@ -68,7 +68,11 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
 
     fig = go.FigureWidget(fig)
 
-    fig.update_layout(title_text='Wing Geometry', title_x=0.5)
+    fig.update_layout(title_text='Wing Geometry',
+                      title_x=0.5,
+                      xaxis_title="x",
+                      yaxis_title="y",
+    )
 
     return fig
 
