@@ -20,7 +20,7 @@ import pytest
 
 from fastoad.io.xml import OMXmlIO
 from fastoad.utils.postprocessing.analysis_and_plots import \
-    wing_geometry_plot
+    wing_geometry_plot, drag_polar_plot
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 
@@ -47,3 +47,17 @@ def test_wing_geometry_plot():
         fig = wing_geometry_plot(xml, name='Second plot', fig=fig)
     except ValueError:
         pytest.fail("Failed plotting the wing geometry...")
+
+
+def test_drag_polar_plot():
+
+    filename = pth.join(DATA_FOLDER_PATH, 'problem_outputs.xml')
+
+    xml = OMXmlIO(filename)
+
+    # First plot
+    try:
+        fig = drag_polar_plot(xml)
+    except ValueError:
+        pytest.fail("Failed plotting the drag polar...")
+
