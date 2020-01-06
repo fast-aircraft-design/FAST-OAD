@@ -2,7 +2,7 @@
 FAST : A framework for rapid Overall Aircraft Design
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,6 +18,7 @@ from pkg_resources import get_distribution, DistributionNotFound
 
 from . import initialize_framework
 from .cmd import api
+from .module_management.openmdao_system_factory import OpenMDAOSystemFactory
 
 try:
     # Change here if project is renamed and does not equal the package name

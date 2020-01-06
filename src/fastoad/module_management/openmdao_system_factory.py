@@ -3,7 +3,7 @@ The base layer for registering and retrieving OpenMDAO systems
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -28,6 +28,8 @@ from .exceptions import FastDuplicateFactoryError, \
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
 
+
+# TODO: This bunch of class methods should probably be simple functions
 
 class OpenMDAOSystemFactory:
     """
