@@ -34,12 +34,18 @@ def test_wing_geometry_plot():
     xml = OMXmlIO(filename)
 
     # First plot
+    # This is a rudimentary test as plot are difficult to verify
+    # The test will fail if an error is raised by the following line
     fig = wing_geometry_plot(xml)
 
     # First plot with name
+    # This is a rudimentary test as plot are difficult to verify
+    # The test will fail if an error is raised by the following line
     fig = wing_geometry_plot(xml, name='First plot')
 
     # Adding a plot to the previous fig
+    # This is a rudimentary test as plot are difficult to verify
+    # The test will fail if an error is raised by the following line
     fig = wing_geometry_plot(xml, name='Second plot', fig=fig)
 
 
@@ -53,6 +59,8 @@ def test_drag_polar_plot():
     xml = OMXmlIO(filename)
 
     # First plot
+    # This is a rudimentary test as plot are difficult to verify
+    # The test will fail if an error is raised by the following line
     fig = drag_polar_plot(xml)
 
 
@@ -66,5 +74,7 @@ def test_mass_breakdown_plot():
     xml = OMXmlIO(filename)
 
     # First plot
+    # This is a rudimentary test as plot are difficult to verify
+    # The test will fail if an error is raised by the following line
     fig = mass_breakdown_plot(xml)
 
