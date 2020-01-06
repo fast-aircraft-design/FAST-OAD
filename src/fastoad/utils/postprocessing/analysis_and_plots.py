@@ -34,6 +34,7 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
 
     :param aircraft_xml: xml file reader instance
     :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
     :return: wing plot figure
     """
     variables = aircraft_xml.read_variables()
@@ -85,6 +86,7 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
 
     :param aircraft_xml: xml file reader instance
     :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
     :return: wing plot figure
     """
     # FIXME: the multidimensional array ClCd is overwritten by read_variables()
