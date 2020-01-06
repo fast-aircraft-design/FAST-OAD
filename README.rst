@@ -1,7 +1,8 @@
 FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design
 ###############################################################
 
-FAST-OAD is a framework for performing rapid Overall Aircraft Design. The computational core of FAST-OAD is based on the  [OpenMDAO framework](https://openmdao.org/).
+FAST-OAD is a framework for performing rapid Overall Aircraft Design. The computational core of FAST-OAD is based on the
+`OpenMDAO framework <https://openmdao.org/>`_.
 
 .. contents::
 
@@ -24,8 +25,8 @@ FAST-OAD uses a configuration file for defining your OAD problem. You can
 interact with this problem using command line or Python directly.
 
 You may also use some lower-level features of FAST-OAD to interact with
-OpenMDAO systems. This part is addressed in the full developer documentation
-(link to dev doc)
+OpenMDAO systems. This part is addressed in the
+`full developer documentation <https://fast-aircraft-design.github.io/FAST-OAD-doc/>`_.
 
 
 The FAST-OAD configuration file
