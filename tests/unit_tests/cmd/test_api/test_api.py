@@ -68,7 +68,7 @@ def test_list_systems(cleanup):
     assert pth.exists(out_file)
 
 
-def test_list_outputs(cleanup):
+def test_list_variables(cleanup):
     # Run with stdout output (no test)
     api.list_variables(CONFIGURATION_FILE_PATH)
 
