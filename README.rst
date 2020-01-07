@@ -8,7 +8,9 @@ FAST-OAD is a framework for performing rapid Overall Aircraft Design. The comput
 
 Install
 ############
-**Prerequisite**:FAST-OAD needs Python 3.6 or 3.7.
+**Prerequisite**:FAST-OAD needs at least Python 3.6.
+
+It is recommended (but not required) to install FAST-OAD in a virtual environment (`conda <https://docs.conda.io/en/latest/>`_, `venv <https://docs.python.org/3.7/library/venv.html>`_...)
 
 Since FAST-OAD is not officially released, you can install the latest version with this command:
 
@@ -16,7 +18,7 @@ Since FAST-OAD is not officially released, you can install the latest version wi
 
     $ pip install git+https://github.com/fast-aircraft-design/FAST-OAD.git@latest
 
-At the prompt, enter your Github credentials.
+At the prompt, enter your GitHub credentials.
 
 
 Usage
@@ -199,28 +201,44 @@ Using FAST-OAD through Command line
 ===================================
 UNDER CONSTRUCTION
 
-The FAST-OAD command is :code:`fastoad`.
+The FAST-OAD command is :code:`fastoad`. Inline help is available with:
 
     $ fastoad -h
 
+`fastoad` works through sub-commands. Each sub-command provides its own
+inline help using
+
+    $ fastoad <sub-command> -h
+
+
+How to generate a configuration file
+-------------------------------------
+
 FAST-OAD can provide a ready-to use configuration file with:
 
-    $ fastoad gen_conf_file
+    $ fastoad gen_conf_file my_conf.toml
 
+This generates the file `my_conf.toml`
 
 How to get list of registered systems
 -------------------------------------
 
+If you want to change the list of components in the model in the configuration file,
+you need the list of available systems.
+
+List of FAST-OAD systems can be obtained with:
 
     $ fastoad list_systems
 
+If you added custom systems in your configuration file `my_conf.toml`
+(see `How to add custom OpenMDAO modules to FAST-OAD`_),
+they can be listed along FAST-OAD systems with:
+
+    $ fastoad list_systems my_conf.toml
 
 How to get list of variables
 ----------------------------
 
-<<<<<<< HEAD
-    $ fastoad list_outputs
-=======
 If your problem is defined in `my_conf.toml`, you can get a list of the outputs of
 your problem with:
 
@@ -290,15 +308,27 @@ To have your OpenMDAO system available in FAST-OAD, requirements are:
 
   Once this is done, your custom system should appear in the list provided by the
   command:
->>>>>>> 90fa148... Minor corrections on README
 
+    $ fastoad list_systems my_custom_conf.toml
+
+  (assuming your configuration file is named `my_custom_conf.toml` )
+
+Then your component can be used like any other using the id you have given.
+
+.. code-block:: TOML
+
+    # Definition of OpenMDAO model
+    [model]
+        [ ... ]
+
+        [model.my_custom_model]
+            id = "my.custom.name"
+
+        [ ... ]
 
 Using FAST-OAD through Python
 ===================================
 See Jupyter notebooks
-
-How to add custom OpenMDAO modules to FAST-OAD
-==============================================
 
 
 Note
