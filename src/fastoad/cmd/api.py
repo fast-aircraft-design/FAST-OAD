@@ -28,7 +28,8 @@ from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
-from fastoad.openmdao.connections_utils import build_ivc_of_variables
+from fastoad.openmdao.connections_utils import build_ivc_of_variables, \
+    build_ivc_of_unconnected_inputs
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -43,6 +44,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
     :param configuration_file_path: the path of file to be written
     :param overwrite: if True, the file will be written, even if it already exists
+    :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
     """
     if not overwrite and pth.exists(configuration_file_path):
         raise FastFileExistsError('Configuration file %s not written because it already exists. '
@@ -68,6 +70,7 @@ def generate_inputs(configuration_file_path: str,
     :param source_path: path of file data will be taken from
     :param source_path_schema: set to 'legacy' if the source file come from legacy FAST
     :param overwrite: if True, file will be written even if one already exists
+    :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
     """
     problem = FASTOADProblem()
     problem.configure(configuration_file_path)
@@ -90,30 +93,52 @@ def generate_inputs(configuration_file_path: str,
     _LOGGER.info('Problem inputs written in %s', inputs_path)
 
 
-def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout):
+def list_variables(configuration_file_path: str,
+                   out: Union[IO, str] = sys.stdout,
+                   overwrite: bool = False):
     """
     Writes list of system outputs for the :class:`FASTOADProblem` specified in
     configuration_file_path.
 
     :param configuration_file_path:
     :param out: the output stream or a path for the output file
+    :param overwrite: if True and out is a file path, the file will be written even if one already
+                      exists
+    :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
     """
     problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
-    ivc = build_ivc_of_variables(problem, use_inputs=False)
+    ivc_inputs = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=True)
+    ivc_outputs = build_ivc_of_variables(problem, use_inputs=False)
 
     if isinstance(out, str):
-        # TODO: manage file overwriting
+        if not overwrite and pth.exists(out):
+            raise FastFileExistsError('File %s not written because it already exists. '
+                                      'Use overwrite=True to bypass.'
+                                      % out)
         out_file = open(out, 'w')
     else:
         out_file = out
+
+    # Inputs
+    out_file.writelines([
+        '-- INPUTS OF THE PROBLEM -------------------------------------------------------------\n',
+        '%-60s| %s\n' % ('VARIABLE', 'DESCRIPTION')
+    ])
+    out_file.writelines(['%-60s| %s\n' % (name, attributes['desc']) for (name, _, attributes) in
+                         ivc_inputs._indep_external])
+    out_file.write(
+        '--------------------------------------------------------------------------------------\n'
+    )
+
+    # Outputs
     out_file.writelines([
         '-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------\n',
         '%-60s| %s\n' % ('VARIABLE', 'DESCRIPTION')
     ])
     out_file.writelines(['%-60s| %s\n' % (name, attributes['desc']) for (name, _, attributes) in
-                         ivc._indep_external])
+                         ivc_outputs._indep_external])
     out_file.write(
         '--------------------------------------------------------------------------------------\n'
     )
@@ -123,7 +148,9 @@ def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout)
         _LOGGER.info('Output list written in %s', out_file)
 
 
-def list_systems(configuration_file_path: str = None, out: Union[IO, str] = sys.stdout):
+def list_systems(configuration_file_path: str = None,
+                 out: Union[IO, str] = sys.stdout,
+                 overwrite: bool = False):
     """
     Writes list of available systems.
     If configuration_file_path is given and if it defines paths where there are registered systems,
@@ -131,17 +158,21 @@ def list_systems(configuration_file_path: str = None, out: Union[IO, str] = sys.
 
     :param configuration_file_path:
     :param out: the output stream or a path for the output file
+    :param overwrite: if True and out is a file path, the file will be written even if one already
+                      exists
+    :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
     """
 
     if configuration_file_path:
         problem = FASTOADProblem()
         problem.configure(configuration_file_path)
-
-    # As the problem has been configured, BundleLoader now knows
-    # additional registered systems
+    # As the problem has been configured, BundleLoader now knows additional registered systems
 
     if isinstance(out, str):
-        # TODO: manage file overwriting
+        if not overwrite and pth.exists(out):
+            raise FastFileExistsError('File %s not written because it already exists. '
+                                      'Use overwrite=True to bypass.'
+                                      % out)
         out_file = open(out, 'w')
     else:
         out_file = out

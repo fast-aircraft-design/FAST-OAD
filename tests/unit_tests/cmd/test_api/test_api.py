@@ -2,7 +2,7 @@
 Tests for basic API
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -70,12 +70,12 @@ def test_list_systems(cleanup):
 
 def test_list_outputs(cleanup):
     # Run with stdout output (no test)
-    api.list_outputs(CONFIGURATION_FILE_PATH)
+    api.list_variables(CONFIGURATION_FILE_PATH)
 
     # Run with file output (test file existence)
     out_file = pth.join(RESULTS_FOLDER_PATH, 'list_outputs.txt')
     assert not pth.exists(out_file)
-    api.list_outputs(CONFIGURATION_FILE_PATH, out_file)
+    api.list_variables(CONFIGURATION_FILE_PATH, out_file)
     assert pth.exists(out_file)
 
 

@@ -2,7 +2,7 @@
 main
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -35,11 +35,11 @@ class Main:
     """
 
     def __init__(self):
-        class CustomFormatter(RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter):
+        class _CustomFormatter(RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter):
             pass
 
         self.parser = ArgumentParser(description='FAST-OAD main program',
-                                     formatter_class=CustomFormatter)
+                                     formatter_class=_CustomFormatter)
         self.problem = None
 
     # ACTIONS ======================================================================================
@@ -82,11 +82,11 @@ class Main:
         api.list_systems(args.conf_file)
 
     @staticmethod
-    def _list_outputs(args):
+    def _list_variables(args):
         """
         Prints list of system outputs
         """
-        api.list_outputs(args.conf_file)
+        api.list_variables(args.conf_file)
 
     @staticmethod
     def _write_n2(args):
@@ -167,12 +167,12 @@ class Main:
         parser_gen_conf.set_defaults(func=self._generate_conf_file)
 
         # sub-command for generating input file ----------------------------------------------------
-        class CustomFormatter(RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter):
+        class _CustomFormatter(RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter):
             pass
 
         parser_gen_inputs = subparsers.add_parser(
             'gen_inputs',
-            formatter_class=CustomFormatter,
+            formatter_class=_CustomFormatter,
             description=
             'generates the input file (specified in the configuration file) with needed variables')
         self._add_conf_file_argument(parser_gen_inputs)
@@ -207,12 +207,12 @@ class Main:
         parser_list_systems.set_defaults(func=self._list_systems)
 
         # sub-command for listing possible outputs -------------------------------------------------
-        parser_list_outputs = subparsers.add_parser(
-            'list_outputs',
+        parser_list_variables = subparsers.add_parser(
+            'list_variables',
             formatter_class=ArgumentDefaultsHelpFormatter,
-            description='Provides the outputs of the problem')
-        self._add_conf_file_argument(parser_list_outputs)
-        parser_list_outputs.set_defaults(func=self._list_outputs)
+            description='Lists the variables of the problem')
+        self._add_conf_file_argument(parser_list_variables)
+        parser_list_variables.set_defaults(func=self._list_variables)
 
         # sub-command for writing N2 diagram -------------------------------------------------------
         parser_n2 = subparsers.add_parser(
