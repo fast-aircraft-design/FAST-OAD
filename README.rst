@@ -108,7 +108,7 @@ Specifies the input and output files of the problem. They are defined in the con
     # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
     driver = "om.ScipyOptimizeDriver()"
 
-Here we enter in the domain of OpenMDAO. This setting is needed for optimization problems. It is defined as in Python when assuming the OpenMDAO convention "import openmdao.api as om".
+This belongs the domain of the OpenMDAO framework and its utilization. This setting is needed for optimization problems. It is defined as in Python when assuming the OpenMDAO convention "import openmdao.api as om".
 
 For more details, please see the OpenMDAO documentation on `drivers <http://openmdao.org/twodocs/versions/latest/tags/Optimizer.html?highlight=optimizer>`_.
 
@@ -218,7 +218,79 @@ How to get list of registered systems
 How to get list of variables
 ----------------------------
 
+<<<<<<< HEAD
     $ fastoad list_outputs
+=======
+If your problem is defined in `my_conf.toml`, you can get a list of the outputs of
+your problem with:
+
+    $ fastoad list_outputs my_conf.toml
+
+How to generate an input file
+-----------------------------
+
+The name of the input file is defined in your configuration file `my_conf.toml`.
+This input file can be generated with:
+
+    $ fastoad gen_inputs my_conf.toml
+
+The generated file will be an XML file that contains needed inputs for your problem.
+Values will be the default values from system definitions, which means several ones
+will be "nan". Actual value must be filled before the process is run.
+
+If you already have a file that contains these values, you can use it to populate
+your new input files with:
+
+    $ fastoad gen_inputs my_conf.toml my_ref_values.xml
+
+How to run the problem
+----------------------
+
+Once your problem is defined in `my_conf.toml`, you can simply run it with:
+
+    $ fastoad eval my_conf.toml   # equivalent to OpenMDAO's run_model()
+
+
+You can also run the defined optimization with:
+
+    $ fastoad optim my_conf.toml   # equivalent to OpenMDAO's run_driver()
+
+
+How to add custom OpenMDAO modules to FAST-OAD
+==============================================
+With FAST-OAD, you can register any OpenMDAO system of your own so it can be
+used though the configuration file.
+
+To have your OpenMDAO system available in FAST-OAD, requirements are:
+
+- You have to pay attention to the naming of your input and output variables.
+  As FAST-OAD uses the `promotion system of OpenMDAO <http://openmdao.org/twodocs/versions/latest/basic_guide/promote_vs_connect.html?highlight=promote>`_,
+  which means that variables you want to link to the rest of the process must have
+  the name that is given in the global process. The names of variables are available
+  using the command line (see `How to get list of variables`_).
+- Your system must be registered. Assuming your OpenMDAO class is named `MyOMClass`
+  in `myclass.py`, you can create in the same folder the file `register.py` with following lines:
+
+  .. code-block:: python
+
+    from myclass import MyOMClass
+    from fastoad import OpenMDAOSystemFactory
+
+    OpenMDAOSystemFactory.register_system(MyOMClass, 'my.custom.name')
+
+- The folder that contains these Python files must be listed in `module_folders`
+  in the configuration file
+
+  .. code-block:: TOML
+
+    title = "OAD Process with custom component"
+
+    # List of folder paths where user added custom registered OpenMDAO components
+    module_folders = ["/path/to/my/custom/module/folder"]
+
+  Once this is done, your custom system should appear in the list provided by the
+  command:
+>>>>>>> 90fa148... Minor corrections on README
 
 
 Using FAST-OAD through Python
