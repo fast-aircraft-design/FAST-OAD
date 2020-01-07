@@ -2,7 +2,7 @@
 Test module for Overall Aircraft Design process
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -144,7 +144,8 @@ def test_api(cleanup, install_components):
 
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(root_folder_path, 'notebooks', 'tutorial', 'data', 'CeRAS01_baseline.xml')
+    source_xml = pth.join(root_folder_path, 'src', 'fastoad',
+                          'notebooks', 'tutorial', 'data', 'CeRAS01_baseline.xml')
     api.generate_inputs(configuration_file_path, source_xml, True)
 
     # Run model ---------------------------------------------------------------
