@@ -51,7 +51,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
                                   'Use overwrite=True to bypass.'
                                   % configuration_file_path)
 
-    dirname = pth.dirname(configuration_file_path)
+    dirname = pth.abspath(pth.dirname(configuration_file_path))
     if not pth.exists(dirname):
         os.makedirs(dirname)
     shutil.copyfile(SAMPLE_FILE_PATH, configuration_file_path)
