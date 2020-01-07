@@ -8,7 +8,9 @@ FAST-OAD is a framework for performing rapid Overall Aircraft Design. The comput
 
 Install
 ############
-**Prerequisite**:FAST-OAD needs Python 3.6 or 3.7.
+**Prerequisite**:FAST-OAD needs at least Python 3.6.
+
+It is recommended (but not required) to install FAST-OAD in a virtual environment (`conda <https://docs.conda.io/en/latest/>`_, `venv <https://docs.python.org/3.7/library/venv.html>`_...)
 
 Since FAST-OAD is not officially released, you can install the latest version with this command:
 
