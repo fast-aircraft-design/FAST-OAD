@@ -239,10 +239,10 @@ they can be listed along FAST-OAD systems with:
 How to get list of variables
 ----------------------------
 
-If your problem is defined in `my_conf.toml`, you can get a list of the outputs of
+Once your problem is defined in `my_conf.toml`, you can get a list of the variables of
 your problem with:
 
-    $ fastoad list_outputs my_conf.toml
+    $ fastoad list_variables my_conf.toml
 
 How to generate an input file
 -----------------------------
