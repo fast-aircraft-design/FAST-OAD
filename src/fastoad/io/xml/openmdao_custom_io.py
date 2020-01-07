@@ -2,7 +2,7 @@
 Defines how OpenMDAO variables are serialized to XML using a conversion table
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -161,7 +161,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 element.append(etree.Comment(variable.description))
         # Write
         tree = etree.ElementTree(root)
-        dirname = pth.dirname(self._data_source)
+        dirname = pth.abspath(pth.dirname(self._data_source))
         if not pth.exists(dirname):
             os.makedirs(dirname)
         tree.write(self._data_source, pretty_print=True)

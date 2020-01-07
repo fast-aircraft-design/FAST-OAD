@@ -2,7 +2,7 @@
 Utility functions for OpenMDAO classes/instances
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -135,45 +135,21 @@ def build_ivc_of_unconnected_inputs(problem: om.Problem,
     return ivc
 
 
-def build_ivc_of_outputs(problem: om.Problem) -> om.IndepVarComp:
+def build_ivc_of_variables(problem: om.Problem,
+                           initial_values: bool = False,
+                           use_inputs: bool = True,
+                           use_outputs: bool = True) -> om.IndepVarComp:
     """
     This function returns an OpenMDAO IndepVarComp instance containing
-    all the outputs of an OpenMDAO Problem.
-
-    :param problem: OpenMDAO Problem instance to inspect
-    :return: IndepVarComp instance
-    """
-    ivc = om.IndepVarComp()
-    if problem._setup_status == 0:
-        problem.setup()
-    system = problem.model
-
-    prom2abs: dict = system._var_allprocs_prom2abs_list['output']
-
-    for prom_name, abs_names in prom2abs.items():
-        # Pick the first
-        abs_name = abs_names[0]
-        metadata = system._var_abs2meta[abs_name]
-        variable = Variable(name=prom_name,
-                            **metadata)  # useful because it adds a description if needed
-        ivc.add_output(prom_name,
-                       val=variable.value,
-                       units=variable.units,
-                       desc=variable.description)
-
-    return ivc
-
-
-def build_ivc_of_variables(problem: om.Problem, initial_values: bool = False) -> om.IndepVarComp:
-    """
-    This function returns an OpenMDAO IndepVarComp instance containing
-    all the variables (inputs + outputs) of a an OpenMDAO Problem.
+    variables (inputs and/or outputs) of a an OpenMDAO Problem.
 
     If variables are promoted, the promoted name will be used. Otherwise, the absolute name will be
     used.
 
     :param problem: OpenMDAO Problem instance to inspect
     :param initial_values: if True, returned instance will contain values before computation
+    :param use_inputs: if True, returned instance will contain inputs of the problem
+    :param use_outputs: if True, returned instance will contain outputs of the problem
     :return: IndepVarComp instance
     """
     ivc = om.IndepVarComp()
@@ -181,10 +157,12 @@ def build_ivc_of_variables(problem: om.Problem, initial_values: bool = False) ->
         problem.setup()
     system = problem.model
 
-    prom2abs_inputs: dict = system._var_allprocs_prom2abs_list['input']
-    prom2abs_outputs: dict = system._var_allprocs_prom2abs_list['output']
+    prom2abs = {}
+    if use_inputs:
+        prom2abs.update(system._var_allprocs_prom2abs_list['input'])
+    if use_outputs:
+        prom2abs.update(system._var_allprocs_prom2abs_list['output'])
 
-    prom2abs = {**prom2abs_inputs, **prom2abs_outputs}
     for prom_name, abs_names in prom2abs.items():
         # Pick the first
         abs_name = abs_names[0]
