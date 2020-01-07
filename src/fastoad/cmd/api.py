@@ -2,7 +2,7 @@
 API
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +28,7 @@ from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
-from fastoad.openmdao.connections_utils import build_ivc_of_outputs
+from fastoad.openmdao.connections_utils import build_ivc_of_variables
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -101,7 +101,7 @@ def list_outputs(configuration_file_path: str, out: Union[IO, str] = sys.stdout)
     problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
-    ivc = build_ivc_of_outputs(problem)
+    ivc = build_ivc_of_variables(problem, use_inputs=False)
 
     if isinstance(out, str):
         # TODO: manage file overwriting

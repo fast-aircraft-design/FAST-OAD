@@ -2,7 +2,7 @@
 Test module for OpenMDAO checks
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -27,8 +27,7 @@ from openmdao.solvers.nonlinear.nonlinear_block_gs import NonlinearBlockGS
 
 from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
-    build_ivc_of_unconnected_inputs, build_ivc_of_outputs, \
-    build_ivc_of_variables, update_ivc
+    build_ivc_of_unconnected_inputs, build_ivc_of_variables, update_ivc
 from fastoad.openmdao.variables import Variable
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
@@ -172,50 +171,14 @@ def test_build_ivc_of_unconnected_inputs():
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
 
-def test_build_ivc_of_outputs():
-    def _test_and_check(problem: Problem,
-                        expected_vars: List[Variable]):
-        ivc = build_ivc_of_outputs(problem)
-        ivc_vars = [Variable(name=name, value=value, **attributes)
-                    for (name, value, attributes) in ivc._indep_external]
-        assert set([str(i) for i in ivc_vars]) == set(
-            [str(i) for i in expected_vars])
-
-    # Check with an ExplicitComponent
-    problem = Problem(Disc1())
-    expected_vars = [Variable(name='y1', value=np.array([1.]), units=None)]
-    _test_and_check(problem, expected_vars)
-
-    # Check with a Group
-    group = Group()
-    group.add_subsystem('disc1', Disc1(), promotes=['*'])
-    group.add_subsystem('disc2', Disc2(), promotes=['*'])
-    problem = Problem(group)
-
-    expected_vars = [Variable(name='y1', value=np.array([1.]), units=None),
-                     Variable(name='y2', value=np.array([1.]), units=None)]
-    _test_and_check(problem, expected_vars)
-
-    # Check with the whole Sellar problem.
-    group = Group()
-    group.add_subsystem('disc1', Disc1(), promotes=['*'])
-    group.add_subsystem('disc2', Disc2(), promotes=['*'])
-    group.add_subsystem('functions', Functions(), promotes=['*'])
-    problem = Problem(group)
-
-    expected_vars = [Variable(name='y1', value=np.array([1.]), units=None),
-                     Variable(name='y2', value=np.array([1.]), units=None),
-                     Variable(name='g1', value=np.array([1.]), units=None),
-                     Variable(name='g2', value=np.array([1.]), units=None),
-                     Variable(name='f', value=np.array([1.]), units=None)]
-    _test_and_check(problem, expected_vars)
-
-
 def test_build_ivc_of_variables():
     def _test_and_check(problem: Problem,
                         initial_values: bool,
+                        use_inputs: bool,
+                        use_outputs: bool,
                         expected_vars: List[Variable]):
-        ivc = build_ivc_of_variables(problem, initial_values)
+        ivc = build_ivc_of_variables(problem, initial_values,
+                                     use_inputs=use_inputs, use_outputs=use_outputs)
         ivc_vars = [Variable(name=name, value=value, **attributes)
                     for (name, value, attributes) in ivc._indep_external]
         assert set([str(i) for i in ivc_vars]) == set(
@@ -223,12 +186,13 @@ def test_build_ivc_of_variables():
 
     # Check with an ExplicitComponent
     problem = Problem(Disc1())
-    expected_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
-                     Variable(name='y1', value=np.array([1.]), units=None),
-                     Variable(name='y2', value=np.array([1.]), units=None),
-                     Variable(name='z', value=np.array([5., 2.]), units='m**2')]
-    _test_and_check(problem, True, expected_vars)
-    _test_and_check(problem, False, expected_vars)
+    expected_input_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
+                           Variable(name='y2', value=np.array([1.]), units=None),
+                           Variable(name='z', value=np.array([5., 2.]), units='m**2')]
+    expected_output_vars = [Variable(name='y1', value=np.array([1.]), units=None)]
+    _test_and_check(problem, False, True, False, expected_input_vars)
+    _test_and_check(problem, False, False, True, expected_output_vars)
+    _test_and_check(problem, False, True, True, expected_input_vars + expected_output_vars)
 
     # Check with a Group
     group = Group()
@@ -236,12 +200,16 @@ def test_build_ivc_of_variables():
     group.add_subsystem('disc2', Disc2(), promotes=['*'])
     problem = Problem(group)
 
-    expected_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
-                     Variable(name='y1', value=np.array([1.]), units=None),
-                     Variable(name='y2', value=np.array([1.]), units=None),
-                     Variable(name='z', value=np.array([5., 2.]), units='m**2')]
-    _test_and_check(problem, True, expected_vars)
-    _test_and_check(problem, False, expected_vars)
+    # All variables are inputs somewhere
+    expected_input_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
+                           Variable(name='y1', value=np.array([1.]), units=None),
+                           Variable(name='y2', value=np.array([1.]), units=None),
+                           Variable(name='z', value=np.array([5., 2.]), units='m**2')]
+    expected_output_vars = [Variable(name='y1', value=np.array([1.]), units=None),
+                            Variable(name='y2', value=np.array([1.]), units=None)]
+    _test_and_check(problem, False, True, False, expected_input_vars)
+    _test_and_check(problem, False, False, True, expected_output_vars)
+    _test_and_check(problem, False, True, True, expected_input_vars)
 
     # Check with the whole Sellar problem, without computation.
     group = Group()
@@ -254,28 +222,35 @@ def test_build_ivc_of_variables():
     group.nonlinear_solver = NonlinearBlockGS()
     problem = Problem(group)
 
-    expected_vars = [Variable(name='x', value=np.array([1.]), units='Pa'),
-                     Variable(name='z', value=np.array([5., 2.]), units='m**2'),
-                     Variable(name='y1', value=np.array([1.]), units=None),
-                     Variable(name='y2', value=np.array([1.]), units=None),
-                     Variable(name='g1', value=np.array([1.]), units=None),
-                     Variable(name='g2', value=np.array([1.]), units=None),
-                     Variable(name='f', value=np.array([1.]), units=None)]
-    _test_and_check(problem, True, expected_vars)
-    _test_and_check(problem, False, expected_vars)
+    expected_input_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
+                           Variable(name='z', value=np.array([5., 2.]), units='m**2'),
+                           Variable(name='y1', value=np.array([1.]), units=None),
+                           Variable(name='y2', value=np.array([1.]), units=None)]
+    expected_output_vars = [Variable(name='x', value=np.array([1.]), units='Pa'),
+                            Variable(name='z', value=np.array([5., 2.]), units='m**2'),
+                            Variable(name='y1', value=np.array([1.]), units=None),
+                            Variable(name='y2', value=np.array([1.]), units=None),
+                            Variable(name='g1', value=np.array([1.]), units=None),
+                            Variable(name='g2', value=np.array([1.]), units=None),
+                            Variable(name='f', value=np.array([1.]), units=None)]
+    _test_and_check(problem, True, True, False, expected_input_vars)
+    _test_and_check(problem, True, False, True, expected_output_vars)
 
     # Check with the whole Sellar problem, with computation.
-    expected_computed_vars = [Variable(name='x', value=np.array([1.]), units='Pa'),
-                              Variable(name='z', value=np.array([5., 2.]), units='m**2'),
-                              Variable(name='y1', value=np.array([25.58830237]), units=None),
-                              Variable(name='y2', value=np.array([12.05848815]), units=None),
-                              Variable(name='g1', value=np.array([-22.42830237]), units=None),
-                              Variable(name='g2', value=np.array([-11.94151185]), units=None),
-                              Variable(name='f', value=np.array([28.58830817]), units=None)]
+    expected_computed_output_vars = [Variable(name='x', value=np.array([1.]), units='Pa'),
+                                     Variable(name='z', value=np.array([5., 2.]), units='m**2'),
+                                     Variable(name='y1', value=np.array([25.58830237]), units=None),
+                                     Variable(name='y2', value=np.array([12.05848815]), units=None),
+                                     Variable(name='g1', value=np.array([-22.42830237]),
+                                              units=None),
+                                     Variable(name='g2', value=np.array([-11.94151185]),
+                                              units=None),
+                                     Variable(name='f', value=np.array([28.58830817]), units=None)]
     problem.setup()
     problem.run_model()
-    _test_and_check(problem, True, expected_vars)
-    _test_and_check(problem, False, expected_computed_vars)
+    _test_and_check(problem, True, True, False, expected_input_vars)
+    _test_and_check(problem, True, False, True, expected_output_vars)
+    _test_and_check(problem, False, False, True, expected_computed_output_vars)
 
     # Check with the whole Sellar problem without promotions, without computation.
     group = Group()
@@ -316,7 +291,7 @@ def test_build_ivc_of_variables():
         Variable(name='functions.g2', value=np.array([1.]), units=None),
         Variable(name='functions.f', value=np.array([1.]), units=None)
     ]
-    _test_and_check(problem, True, expected_vars)
+    _test_and_check(problem, True, True, True, expected_vars)
     expected_computed_vars = [  # Here links are done, even without computations
         Variable(name='indeps.x', value=np.array([1.]), units='Pa'),
         Variable(name='indeps.z', value=np.array([5., 2.]), units='m**2'),
@@ -335,7 +310,7 @@ def test_build_ivc_of_variables():
         Variable(name='functions.g2', value=np.array([1.]), units=None),
         Variable(name='functions.f', value=np.array([1.]), units=None)
     ]
-    _test_and_check(problem, False, expected_computed_vars)
+    _test_and_check(problem, False, True, True, expected_computed_vars)
 
     # Check with the whole Sellar problem without promotions, with computation.
     expected_computed_vars = [
@@ -358,8 +333,8 @@ def test_build_ivc_of_variables():
     ]
     problem.setup()
     problem.run_model()
-    _test_and_check(problem, True, expected_vars)
-    _test_and_check(problem, False, expected_computed_vars)
+    _test_and_check(problem, True, True, True, expected_vars)
+    _test_and_check(problem, False, True, True, expected_computed_vars)
 
 
 def test_update_ivc():
