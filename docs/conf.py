@@ -45,7 +45,7 @@ try:
     import sphinx
     from pkg_resources import parse_version
 
-    cmd_line_template = "sphinx-apidoc -f -o {outputdir} {moduledir}"
+    cmd_line_template = "sphinx-apidoc -e -f -o {outputdir} {moduledir}"
     cmd_line = cmd_line_template.format(outputdir=output_dir, moduledir=module_dir)
 
     args = cmd_line.split(" ")
@@ -82,7 +82,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'FAST-OAD'
-copyright = u'2019, ONERA/ISAE'
+copyright = u'2020, ONERA/ISAE'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
