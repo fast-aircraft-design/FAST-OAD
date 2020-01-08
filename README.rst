@@ -328,8 +328,14 @@ Then your component can be used like any other using the id you have given.
 
 Using FAST-OAD through Python
 ===================================
-See Jupyter notebooks
+The command line interface can generate Jupyter notebooks that show how to
+use the high-level interface of FAST-OAD.
 
+To do so, type the command:
+
+    $ fastoad notebooks
+
+Then run the Jupyter server as indicated in the obtained message.
 
 Note
 ####
