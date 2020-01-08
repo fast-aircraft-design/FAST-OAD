@@ -15,6 +15,10 @@ Install
 
 It is recommended (but not required) to install FAST-OAD in a virtual environment (`conda <https://docs.conda.io/en/latest/>`_, `venv <https://docs.python.org/3.7/library/venv.html>`_...)
 
+Once Python is installed, FAST-OAD can be installed using pip.
+
+    **Note**: If your network uses a proxy, you may have to do `some settings <https://pip.pypa.io/en/stable/user_guide/#using-a-proxy-server>`_ for pip to work correctly
+
 Until FAST-OAD is publicly released, the installation process must rely on GitHub
 instead of PyPI. Therefore, you have 2 ways to install it:
 
@@ -33,6 +37,8 @@ Please download this tarball: `<https://github.com/fast-aircraft-design/FAST-OAD
 Then do:
 
     $ pip install <location/of/FAST-OAD-latest.zip>
+
+_Note: _
 
 Usage
 ############
