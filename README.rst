@@ -1,8 +1,11 @@
+###############################################################
 FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design
 ###############################################################
 
 FAST-OAD is a framework for performing rapid Overall Aircraft Design. The computational core of FAST-OAD is based on the
 `OpenMDAO framework <https://openmdao.org/>`_.
+
+.. sectnum::
 
 .. contents::
 
@@ -328,8 +331,14 @@ Then your component can be used like any other using the id you have given.
 
 Using FAST-OAD through Python
 ===================================
-See Jupyter notebooks
+The command line interface can generate Jupyter notebooks that show how to
+use the high-level interface of FAST-OAD.
 
+To do so, type the command:
+
+    $ fastoad notebooks
+
+Then run the Jupyter server as indicated in the obtained message.
 
 Note
 ####

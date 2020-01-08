@@ -13,8 +13,11 @@ main
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import logging
+import os
 import os.path as pth
+import shutil
 import textwrap
 from argparse import ArgumentParser, RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter
 from distutils.util import strtobool
@@ -23,6 +26,7 @@ from fastoad.cmd import api
 from fastoad.cmd.exceptions import FastFileExistsError
 
 RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
+NOTEBOOK_FOLDER_NAME = 'FAST_OAD_notebooks'
 
 
 # TODO: it has become a bit messy down here... Refactoring needed, maybe
@@ -131,6 +135,31 @@ class Main:
                 api.optimize_problem(args.conf_file, True)
             else:
                 print('Computation not run.')
+
+    @staticmethod
+    def _notebooks(args):
+        # Create and copy folder
+        notebook_path = pth.join(pth.dirname(__file__), pth.pardir, 'notebooks', 'tutorial')
+        target_path = pth.abspath(pth.join(args.path, NOTEBOOK_FOLDER_NAME))
+        if pth.exists(target_path):
+            shutil.rmtree(target_path)
+        os.makedirs(target_path)
+
+        for item in os.listdir(notebook_path):
+            source = pth.join(notebook_path, item)
+            dest = pth.join(target_path, item)
+            if pth.isdir(source):
+                if pth.exists(dest):
+                    shutil.rmtree(dest)
+                shutil.copytree(source, dest)
+            else:
+                shutil.copy2(source, dest)
+
+        # Give info for running Jupyter
+        print('')
+        print('Notebooks have been created in %s' % target_path)
+        print('You may now run Jupyter with:')
+        print('   jupyter notebook %s' % target_path)
 
     # PARSER CONFIGURATION =========================================================================
     @staticmethod
@@ -244,6 +273,21 @@ class Main:
         self._add_overwrite_argument(parser_run_driver)
         parser_run_driver.set_defaults(func=self._optimize)
 
+        # sub-command for running Jupyter notebooks ------------------------------------------------
+        parser_notebooks = subparsers.add_parser(
+            'notebooks',
+            formatter_class=ArgumentDefaultsHelpFormatter,
+            description='Creates a %s/ folder with pre-configured Jupyter notebooks. '
+                        'Please note that an existing FAST_OAD_notebooks/ will be erased'
+                        % NOTEBOOK_FOLDER_NAME)
+
+        parser_notebooks.add_argument(
+            'path', default='.', nargs='?',
+            help='The path where the %s/ folder will be added' % NOTEBOOK_FOLDER_NAME)
+
+        parser_notebooks.set_defaults(func=self._notebooks)
+
+        # Parse ------------------------------------------------------------------------------------
         args = self.parser.parse_args()
         args.func(args)
 
