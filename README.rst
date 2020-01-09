@@ -235,7 +235,7 @@ How to generate a configuration file
 
 FAST-OAD can provide a ready-to use configuration file with:
 
-    $ fastoad gen_conf_file my_conf.toml
+    $ fastoad gen_conf my_conf.toml
 
 This generates the file `my_conf.toml`
 
