@@ -277,6 +277,8 @@ If you already have a file that contains these values, you can use it to populat
 your new input files with:
 
     fastoad gen_inputs my_conf.toml my_ref_values.xml
+    
+If you are using the configuration file provided by the gen_conf sub-command (see `How to generate a configuration file`_), you may dowload our `CeRAS01_baseline.xml <https://github.com/fast-aircraft-design/FAST-OAD/blob/v0.1a/src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml>`_ and use it as source for generating your input file.
 
 How to run the problem
 ----------------------
