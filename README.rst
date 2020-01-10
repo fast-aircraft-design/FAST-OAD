@@ -26,7 +26,9 @@ With Git installed
 ==================
 You can install the latest version with this command:
 
-    pip install git+https://github.com/fast-aircraft-design/FAST-OAD.git@latest
+.. code:: bash
+
+    $ pip install git+https://github.com/fast-aircraft-design/FAST-OAD.git@latest
 
 At the prompt, enter your GitHub credentials.
 
@@ -36,7 +38,9 @@ Please download this tarball: `<https://github.com/fast-aircraft-design/FAST-OAD
 
 Unzip it in the location of your choice, then do:
 
-    pip install -e <location/of/FAST-OAD-latest/>
+.. code:: bash
+
+   $ pip install -e <location/of/FAST-OAD-latest/>
 
 
 Usage
@@ -220,12 +224,16 @@ Using FAST-OAD through Command line
 
 The FAST-OAD command is :code:`fastoad`. Inline help is available with:
 
-    fastoad -h
+.. code:: bash
+
+    $ fastoad -h
 
 `fastoad` works through sub-commands. Each sub-command provides its own
 inline help using
 
-    fastoad <sub-command> -h
+.. code:: bash
+
+    $ fastoad <sub-command> -h
 
 
 How to generate a configuration file
@@ -233,7 +241,9 @@ How to generate a configuration file
 
 FAST-OAD can provide a ready-to use configuration file with:
 
-    fastoad gen_conf my_conf.toml
+.. code:: bash
+
+    $ fastoad gen_conf my_conf.toml
 
 This generates the file `my_conf.toml`
 
@@ -245,13 +255,17 @@ you need the list of available systems.
 
 List of FAST-OAD systems can be obtained with:
 
-    fastoad list_systems
+.. code:: bash
+
+    $ fastoad list_systems
 
 If you added custom systems in your configuration file `my_conf.toml`
 (see `How to add custom OpenMDAO modules to FAST-OAD`_),
 they can be listed along FAST-OAD systems with:
 
-    fastoad list_systems my_conf.toml
+.. code:: bash
+
+    $ fastoad list_systems my_conf.toml
 
 How to get list of variables
 ----------------------------
@@ -259,7 +273,9 @@ How to get list of variables
 Once your problem is defined in `my_conf.toml`, you can get a list of the variables of
 your problem with:
 
-    fastoad list_variables my_conf.toml
+.. code:: bash
+
+    $ fastoad list_variables my_conf.toml
 
 How to generate an input file
 -----------------------------
@@ -267,7 +283,9 @@ How to generate an input file
 The name of the input file is defined in your configuration file `my_conf.toml`.
 This input file can be generated with:
 
-    fastoad gen_inputs my_conf.toml
+.. code:: bash
+
+    $ fastoad gen_inputs my_conf.toml
 
 The generated file will be an XML file that contains needed inputs for your problem.
 Values will be the default values from system definitions, which means several ones
@@ -276,7 +294,9 @@ will be "nan". Actual value must be filled before the process is run.
 If you already have a file that contains these values, you can use it to populate
 your new input files with:
 
-    fastoad gen_inputs my_conf.toml my_ref_values.xml
+.. code:: bash
+
+    $ fastoad gen_inputs my_conf.toml my_ref_values.xml
     
 If you are using the configuration file provided by the gen_conf sub-command (see `How to generate a configuration file`_), you may dowload our `CeRAS01_baseline.xml <https://github.com/fast-aircraft-design/FAST-OAD/blob/v0.1a/src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml>`_ and use it as source for generating your input file.
 
@@ -285,12 +305,20 @@ How to run the problem
 
 Once your problem is defined in `my_conf.toml`, you can simply run it with:
 
-    fastoad eval my_conf.toml   # equivalent to OpenMDAO's run_model()
+.. code:: bash
+
+    $ fastoad eval my_conf.toml
+
+*Note: this is equivalent to OpenMDAO's run_model()*
 
 
 You can also run the defined optimization with:
 
-    fastoad optim my_conf.toml   # equivalent to OpenMDAO's run_driver()
+.. code:: bash
+
+    $ fastoad optim my_conf.toml
+
+*Note: this is equivalent to OpenMDAO's run_driver()*
 
 
 How to add custom OpenMDAO modules to FAST-OAD
@@ -328,7 +356,9 @@ To have your OpenMDAO system available in FAST-OAD, requirements are:
   Once this is done, your custom system should appear in the list provided by the
   command:
 
-    $ fastoad list_systems my_custom_conf.toml
+  .. code:: bash
+
+      $ fastoad list_systems my_custom_conf.toml
 
   (assuming your configuration file is named `my_custom_conf.toml` )
 
@@ -352,7 +382,9 @@ use the high-level interface of FAST-OAD.
 
 To do so, type the command:
 
-    fastoad notebooks
+.. code:: bash
+
+    $ fastoad notebooks
 
 Then run the Jupyter server as indicated in the obtained message.
 
