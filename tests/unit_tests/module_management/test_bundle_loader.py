@@ -2,7 +2,7 @@
 Test module for bundle_loader.py
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -100,6 +100,22 @@ def test_install_packages(delete_framework):
     """
     loader = BundleLoader()
 
+    loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+    assert loader.framework.get_bundle_by_name(
+        "dummy_pelix_bundles.hello_world_with_decorators") is not None
+
+
+def test_install_packages_on_faulty_install(delete_framework):
+    """
+    Related to Issue #81
+    """
+    loader = BundleLoader()
+
+    # Create the buggy numpy install
+    import sys
+    sys.modules['numpy.random.mtrand'].__path__ = None
+
+    # Install packages
     loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
     assert loader.framework.get_bundle_by_name(
         "dummy_pelix_bundles.hello_world_with_decorators") is not None
