@@ -1,6 +1,3 @@
-"""
-FAST : A framework for rapid Overall Aircraft Design
-"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -22,8 +19,8 @@ from .module_management.openmdao_system_factory import OpenMDAOSystemFactory
 
 try:
     # Change here if project is renamed and does not equal the package name
-    DIST_NAME = 'FAST-OAD'
-    __version__ = get_distribution(DIST_NAME).version
+    dist_name = 'FAST-OAD'
+    __version__ = get_distribution(dist_name).version
 except DistributionNotFound:
     __version__ = 'unknown'
 finally:

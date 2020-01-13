@@ -1,13 +1,12 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
     Setup file for fastoad.
     Use setup.cfg to configure your project.
 
-    This file was generated with PyScaffold 3.1.
+    This file was generated with PyScaffold 3.2.3.
     PyScaffold helps you to put up the scaffold of your new Python project.
     Learn more under: https://pyscaffold.org/
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -23,7 +22,7 @@
 
 import sys
 
-from pkg_resources import require, VersionConflict
+from pkg_resources import VersionConflict, require
 from setuptools import setup
 
 try:
@@ -32,5 +31,6 @@ except VersionConflict:
     print("Error: version of setuptools is too old (<38.3)!")
     sys.exit(1)
 
+
 if __name__ == "__main__":
-    setup(use_pyscaffold={'fallback_version': '0.0.0'})
+    setup(use_pyscaffold=True)
