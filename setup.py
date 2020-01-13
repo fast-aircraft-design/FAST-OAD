@@ -33,5 +33,4 @@ except VersionConflict:
     sys.exit(1)
 
 if __name__ == "__main__":
-    setup()  # FIXME: done for alpha release to work trhough tarballs. Need further investigations
-    # setup(use_pyscaffold=True)
+    setup(use_pyscaffold=True)
