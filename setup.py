@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     Setup file for fastoad.
     Use setup.cfg to configure your project.
@@ -31,6 +30,6 @@ except VersionConflict:
     print("Error: version of setuptools is too old (<38.3)!")
     sys.exit(1)
 
-
 if __name__ == "__main__":
-    setup(use_pyscaffold=True)
+    # Using fallback_version helps not crashing when installing from tarball
+    setup(use_pyscaffold={'fallback_version': '0.0.0'})
