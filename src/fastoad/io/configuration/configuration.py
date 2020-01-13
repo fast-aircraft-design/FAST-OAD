@@ -3,7 +3,7 @@ Module for building OpenMDAO problem from configuration file
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -205,12 +205,14 @@ class FASTOADProblem(om.Problem):
         assert isinstance(table, dict), "table should be a dictionary"
 
         # Assessing sub-components
-        if KEY_COMPONENT_ID in table:  # table defines a non-Group component
-            sub_component = OpenMDAOSystemFactory.get_system(table[KEY_COMPONENT_ID])
-            group.add_subsystem(identifier, sub_component, promotes=['*'])
-        else:
-            for key, value in table.items():
-                if isinstance(value, dict):  # value defines a sub-component
+        for key, value in table.items():
+            if isinstance(value, dict):  # value defines a sub-component
+                if KEY_COMPONENT_ID in value:
+                    # It is a non-group component, that should be registered with its ID
+                    sub_component = OpenMDAOSystemFactory.get_system(value[KEY_COMPONENT_ID])
+                    group.add_subsystem(key, sub_component, promotes=['*'])
+                else:
+                    # It is a Group
                     sub_component = group.add_subsystem(key, om.Group(), promotes=['*'])
                     try:
                         self._parse_problem_table(sub_component, key, value)
@@ -218,13 +220,13 @@ class FASTOADProblem(om.Problem):
                         # There has been an error while parsing an attribute.
                         # Error is relayed with key added for context
                         raise FASTConfigurationBadOpenMDAOInstructionError(err, key)
-                else:
-                    # value is an attribute of current component and will be literally interpreted
-                    try:
-                        # FIXME: remove this eval()
-                        setattr(group, key, eval(value))  # pylint:disable=eval-used
-                    except Exception as err:
-                        raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
+            else:
+                # value is an attribute of current component and will be literally interpreted
+                try:
+                    # FIXME: remove this eval()
+                    setattr(group, key, eval(value))  # pylint:disable=eval-used
+                except Exception as err:
+                    raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
         return group
 
