@@ -222,6 +222,9 @@ Also, see `How to get list of variables`_.
 Using FAST-OAD through Command line
 ===================================
 
+FAST-OAD can be used through shell command line or Python. This section deals with the shell command line, but
+if you prefer using Python, you can skip this part and go to `Using FAST-OAD through Python`_.
+
 The FAST-OAD command is :code:`fastoad`. Inline help is available with:
 
 .. code:: bash
@@ -320,6 +323,19 @@ You can also run the defined optimization with:
 
 *Note: this is equivalent to OpenMDAO's run_driver()*
 
+Using FAST-OAD through Python
+===================================
+The command line interface can generate Jupyter notebooks that show how to
+use the high-level interface of FAST-OAD.
+
+To do so, type this command **in your terminal**:
+
+.. code:: bash
+
+    $ fastoad notebooks
+
+Then run the Jupyter server as indicated in the obtained message.
+
 
 How to add custom OpenMDAO modules to FAST-OAD
 ==============================================
@@ -375,18 +391,6 @@ Then your component can be used like any other using the id you have given.
 
         [ ... ]
 
-Using FAST-OAD through Python
-===================================
-The command line interface can generate Jupyter notebooks that show how to
-use the high-level interface of FAST-OAD.
-
-To do so, type the command:
-
-.. code:: bash
-
-    $ fastoad notebooks
-
-Then run the Jupyter server as indicated in the obtained message.
 
 Note
 ####
