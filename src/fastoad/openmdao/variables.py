@@ -21,6 +21,7 @@ from collections import OrderedDict
 from typing import Dict, MutableMapping, Iterator, Hashable, AbstractSet, Union
 
 import numpy as np
+import openmdao.api as om
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -51,6 +52,9 @@ class Variable(Hashable):
     # Will store content of DESCRIPTION_FILE_PATH once and for all
     _variable_descriptions = {}
 
+    # Default metadata
+    _base_metadata = {}
+
     def __init__(self, name, **kwargs: Dict):
         super().__init__()
 
@@ -60,11 +64,22 @@ class Variable(Hashable):
         self.metadata: Dict = {}
         """ Dictionary for metadata of the variable """
 
+        # Initialize class attributes once at first instantiation -------------
         if not self._variable_descriptions:
             # Class attribute, but it's safer to initialize it at first instantiation
             vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
             self.__class__._variable_descriptions.update(vars_descs)
 
+        if not self._base_metadata:
+            # Get variable base metadata from an IndepVarComp
+            ivc = om.IndepVarComp()
+            ivc.add_output(name='a')
+            # get attributes (3rd element of the tuple) of first element
+            self._base_metadata = ivc._indep_external[0][2]
+            self._base_metadata['value'] = 1.0
+        # Done with class attributes ------------------------------------------
+
+        self.metadata = self._base_metadata.copy()
         self.metadata.update(kwargs)
 
         # If no description, add one from DESCRIPTION_FILE_PATH, if available

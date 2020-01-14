@@ -35,7 +35,7 @@ def test_variables_set_get_item():
     # tests on Variable
     assert a_var.value == 0.
     assert a_var.units is None
-    assert a_var.description is None
+    assert a_var.description == ''
 
     # tests on VariableList
     #   __getitem___
