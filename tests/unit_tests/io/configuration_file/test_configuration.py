@@ -2,7 +2,7 @@
 Test module for configuration.py
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -50,6 +50,11 @@ def test_problem_definition(cleanup):
     assert exc_info is not None
     assert exc_info.value.key == 'model.cycle.other_group.nonlinear_solver'
 
+    # Reading of a minimal problem (model = explicitcomponent)
+    problem = FASTOADProblem()
+    problem.configure(pth.join(pth.dirname(__file__), 'data', 'disc1.toml'))
+    assert isinstance(problem.model.system, om.ExplicitComponent)
+
     # Reading of correct problem definition
     problem = FASTOADProblem()
     problem.configure(pth.join(pth.dirname(__file__), 'data', 'valid_sellar.toml'))
@@ -59,10 +64,10 @@ def test_problem_definition(cleanup):
     problem.write_needed_inputs()
     problem.read_inputs()
 
-    assert problem.model.cycle is not None
-    assert problem.model.cycle.disc1 is not None
-    assert problem.model.cycle.disc2 is not None
-    assert problem.model.functions is not None
+    assert isinstance(problem.model.cycle, om.Group)
+    assert isinstance(problem.model.cycle.disc1, om.ExplicitComponent)
+    assert isinstance(problem.model.cycle.disc2, om.ExplicitComponent)
+    assert isinstance(problem.model.functions, om.ExplicitComponent)
 
     assert isinstance(problem.driver, om.ScipyOptimizeDriver)
     assert problem.driver.options['optimizer'] == 'SLSQP'
