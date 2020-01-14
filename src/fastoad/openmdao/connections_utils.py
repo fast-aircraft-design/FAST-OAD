@@ -22,11 +22,44 @@ import openmdao.api as om
 
 from fastoad.exceptions import NoSetupError
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
-from fastoad.openmdao.variables import Variable
+from fastoad.openmdao.variables import Variable, VariableList
 
 
 # TODO: separate the construction of Variable list from the creation of IndepVarComp
 # TODO: factorize more code
+
+def get_ivc_from_variables(variables: VariableList) -> om.IndepVarComp:
+    """
+    Creates an IndepVarComp instance from a VariableList instance
+
+    :param variables: a VariableList instance
+    :return: an IndepVarComp instance
+    """
+    ivc = om.IndepVarComp()
+    for variable in variables:
+        attributes = variable.metadata.copy()
+        value = attributes.pop('value')
+        ivc.add_output(variable.name, value, **attributes)
+
+    return ivc
+
+
+def get_variables_from_ivc(ivc: om.IndepVarComp) -> VariableList:
+    """
+    Creates a VariableList instance from an IndepVarComp instance
+
+    :param ivc: an IndepVarComp instance
+    :return: a VariableList instance
+    """
+    variables = VariableList()
+
+    for (name, value, attributes) in ivc._indep + ivc._indep_external:
+        metadata = {'value': value}
+        metadata.update(attributes)
+        variables[name] = metadata
+
+    return variables
+
 
 def get_unconnected_inputs(problem: om.Problem,
                            logger: Logger = None) -> Tuple[List[str], List[str]]:

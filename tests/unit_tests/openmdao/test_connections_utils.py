@@ -27,8 +27,9 @@ from openmdao.solvers.nonlinear.nonlinear_block_gs import NonlinearBlockGS
 
 from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
-    build_ivc_of_unconnected_inputs, build_ivc_of_variables, update_ivc
-from fastoad.openmdao.variables import Variable
+    build_ivc_of_unconnected_inputs, build_ivc_of_variables, update_ivc, get_ivc_from_variables, \
+    get_variables_from_ivc
+from fastoad.openmdao.variables import Variable, VariableList
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
 from tests.sellar_example.functions import Functions
@@ -36,6 +37,20 @@ from tests.sellar_example.sellar import Sellar
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
+
+
+def test_ivc_from_to_variables():
+    vars = VariableList()
+    vars['a'] = {'value': 5}
+    vars['b'] = {'value': 2.5, 'units': 'm'}
+    vars['c'] = {'value': -3.2, 'units': 'kg/s', 'desc': 'some test'}
+
+    ivc = get_ivc_from_variables(vars)
+    new_vars = get_variables_from_ivc(ivc)
+
+    assert vars.names() == new_vars.names()
+    for var, new_var in zip(vars, new_vars):
+        assert var == new_var
 
 
 def test_get_unconnected_inputs():
