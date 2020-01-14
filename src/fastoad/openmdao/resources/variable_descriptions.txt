@@ -1,3 +1,4 @@
+test:test_variable	for testing (do not remove)
 aerodynamics:aircraft:cruise:CD:k	correction ratio to apply to computed drag coefficient in cruise conditions
 aerodynamics:aircraft:cruise:CD:offset	correction offset to apply to computed drag coefficient in cruise conditions
 aerodynamics:aircraft:cruise:CD:winglet_effect:k	correction ratio to apply to computed induced drag coefficient in cruise conditions

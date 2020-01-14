@@ -63,9 +63,7 @@ class Variable(Hashable):
         if not self._variable_descriptions:
             # Class attribute, but it's safer to initialize it at first instantiation
             vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
-            # pylint:disable=unnecessary-comprehension #  needed because we convert an array in a dict
-            self.__class__._variable_descriptions = {name: description for name, description in
-                                                     vars_descs}
+            self.__class__._variable_descriptions.update(vars_descs)
 
         self.metadata.update(kwargs)
 

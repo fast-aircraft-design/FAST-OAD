@@ -20,6 +20,11 @@ from fastoad.openmdao.variables import VariableList, Variable
 
 def test_variables_set_get_item():
     """ Tests features of Variable and VariableList class"""
+
+    # Test description overloading
+    x = Variable('test:test_variable', value=500)
+    assert x.description == 'for testing (do not remove)'
+
     # Initialization
     variables = VariableList()
     a_var = Variable('a', value=0.)
