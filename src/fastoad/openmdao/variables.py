@@ -14,12 +14,16 @@ Module for managing OpenMDAO variables
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os.path as pth
 import typing
 from collections import OrderedDict
-from typing import Dict, MutableMapping, Iterator, Hashable, AbstractSet
+from typing import Dict, MutableMapping, Iterator, Hashable, AbstractSet, Union
 
 import numpy as np
+
+# Logger for this module
+_LOGGER = logging.getLogger(__name__)
 
 RESOURCE_PATH = pth.join(pth.dirname(__file__), 'resources')
 DESCRIPTION_FILE_PATH = pth.join(RESOURCE_PATH, 'variable_descriptions.txt')
@@ -126,6 +130,8 @@ class Variables(MutableMapping):
         vars = Variables()
         vars.append(var_1)              # Adds directly a Variable instance
         vars['var/2'] = metadata_2      # Adds the variable with given name and given metadata
+        vars['var/1bis'] = var_1        # Adds the metadata of the Variable instance, associated to
+                                        # provided name.
 
     After that, following equalities are True::
 
@@ -146,8 +152,19 @@ class Variables(MutableMapping):
         """
         self._variables[variable.name] = variable
 
-    def __setitem__(self, name: str, metadata: dict):
-        var = Variable(name, **metadata)
+    def __setitem__(self, name: str, item: Union[Variable, dict]):
+        if isinstance(item, Variable):
+            if item.name != name:
+                _LOGGER.warning(
+                    'Variable List: Storing Variable "%s" using name "%s". '
+                    'Initial name of variable will be lost.',
+                    item.name, name)
+                var = Variable(name, **item.metadata)
+            else:
+                var = item
+        else:
+            var = Variable(name, **item)
+
         self.append(var)
 
     def __delitem__(self, name: str) -> None:

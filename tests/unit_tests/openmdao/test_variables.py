@@ -24,27 +24,41 @@ def test_variables_set_get_item():
     variables = Variables()
     a_var = Variable('a', value=0.)
     b_var = Variable('b', value=1.)
-    variables['a'] = {'value': 0.}
-    variables.append(b_var)
+    variables['a'] = {'value': 0.}  # Tests Variables.__setitem__ with dict input
+    variables.append(b_var)  # Tests Variables.append()
 
-    # tests
+    # tests on Variable
     assert a_var.value == 0.
     assert a_var.units is None
     assert a_var.description is None
 
+    # tests on Variables
+    #   __getitem___
     assert variables['a'] == a_var
     a_var.units = "m"
     assert variables['a'] != a_var
 
     assert variables['b'] is b_var
 
+    #   __contains__
     assert 'a' in variables.names()
     assert 'b' in variables.names()
     assert 'c' not in variables.names()
     assert b_var in variables
 
+    #   __len__ and __delitem__
     assert len(variables) == 2
     del variables['a']
     assert len(variables) == 1
     assert 'a' not in variables.names()
     assert 'b' in variables.names()
+
+    #   additional tests for __setitem__  with Variable input
+    variables['a'] = a_var  # adds variable with its actual name
+    assert a_var in variables
+    del variables['a']
+
+    variables['c'] = a_var  # adds variable with a different name
+    assert a_var not in variables  # a different instance has been stored, with 'c' as name
+    assert 'c' in variables.names()
+    assert variables['c'].metadata == a_var.metadata
