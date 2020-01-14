@@ -114,11 +114,12 @@ class Variable(Hashable):
         return hash('var=' + self.name)  # Name is normally unique
 
 
-class Variables(MutableMapping):
+class VariableList(MutableMapping):
     """
     Class for storing OpenMDAO variables
 
-    Like a list of Variables, but items are accessed through variable names instead of indices.
+    Like a list of Variable instances, but items are accessed through variable names instead of
+    indices.
 
     There are 2 ways for adding a variable::
 
@@ -126,8 +127,8 @@ class Variables(MutableMapping):
         var_1 = Variable('var/1', value=0.)
         metadata_2 = {'value': 1., 'units': 'm'}
 
-        # ... a Variables instance can be populated like this
-        vars = Variables()
+        # ... a VariableList instance can be populated like this
+        vars = VariableList()
         vars.append(var_1)              # Adds directly a Variable instance
         vars['var/2'] = metadata_2      # Adds the variable with given name and given metadata
         vars['var/1bis'] = var_1        # Adds the metadata of the Variable instance, associated to

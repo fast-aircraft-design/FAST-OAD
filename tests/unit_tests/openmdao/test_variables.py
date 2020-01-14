@@ -1,5 +1,5 @@
 """
-Module for testing Variables.py
+Module for testing VariableList.py
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -15,24 +15,24 @@ Module for testing Variables.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.openmdao.variables import Variables, Variable
+from fastoad.openmdao.variables import VariableList, Variable
 
 
 def test_variables_set_get_item():
-    """ Tests features of Variable and Variables class"""
+    """ Tests features of Variable and VariableList class"""
     # Initialization
-    variables = Variables()
+    variables = VariableList()
     a_var = Variable('a', value=0.)
     b_var = Variable('b', value=1.)
-    variables['a'] = {'value': 0.}  # Tests Variables.__setitem__ with dict input
-    variables.append(b_var)  # Tests Variables.append()
+    variables['a'] = {'value': 0.}  # Tests VariableList.__setitem__ with dict input
+    variables.append(b_var)  # Tests VariableList.append()
 
     # tests on Variable
     assert a_var.value == 0.
     assert a_var.units is None
     assert a_var.description is None
 
-    # tests on Variables
+    # tests on VariableList
     #   __getitem___
     assert variables['a'] == a_var
     a_var.units = "m"

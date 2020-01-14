@@ -2,7 +2,7 @@
 Defines interfaces for reading and writing OpenMDAO variable values
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,7 +20,8 @@ from typing import TypeVar, IO, List, Sequence
 
 import numpy as np
 import openmdao.api as om
-from fastoad.openmdao.variables import Variables
+
+from fastoad.openmdao.variables import VariableList
 
 OMFileIOSubclass = TypeVar('OMFileIOSubclass', bound='AbstractOMFileIO')
 
@@ -76,7 +77,7 @@ class AbstractOMFileIO(ABC):
         self.write_variables(used_variables)
 
     @abstractmethod
-    def read_variables(self) -> Variables:
+    def read_variables(self) -> VariableList:
         """
         Reads variables from provided data source file.
 
@@ -84,17 +85,17 @@ class AbstractOMFileIO(ABC):
         """
 
     @abstractmethod
-    def write_variables(self, variables: Variables):
+    def write_variables(self, variables: VariableList):
         """
         Writes variables to defined data source file.
 
         :param variables:
        """
 
-    def _get_variables(self, ivc: om.IndepVarComp) -> Variables:
+    def _get_variables(self, ivc: om.IndepVarComp) -> VariableList:
         """ returns the list of variables from provided system """
 
-        variables = Variables()
+        variables = VariableList()
 
         # Outputs are accessible using private member
         # pylint: disable=protected-access
@@ -106,8 +107,8 @@ class AbstractOMFileIO(ABC):
         return variables
 
     @staticmethod
-    def _filter_variables(variables: Variables, only: Sequence[str] = None,
-                          ignore: Sequence[str] = None) -> Variables:
+    def _filter_variables(variables: VariableList, only: Sequence[str] = None,
+                          ignore: Sequence[str] = None) -> VariableList:
         """
         filters the variables such that the ones in arg only are kept and the ones in
         arg ignore are removed.
@@ -144,7 +145,7 @@ class AbstractOMFileIO(ABC):
                      fnmatchcase(variable.name, pattern)])
 
         # It could be simpler, but I want to keep the order
-        used_variables = Variables()
+        used_variables = VariableList()
         for var in variables:
             if var.name in used_var_names:
                 used_variables.append(var)

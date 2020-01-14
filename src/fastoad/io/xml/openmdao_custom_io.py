@@ -20,17 +20,17 @@ import os.path as pth
 import re
 
 import numpy as np
-from fastoad.exceptions import XPathError
-from fastoad.io.serialize import AbstractOMFileIO
-from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
-from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.openmdao.variables import Variables
-from fastoad.utils.strings import get_float_list_from_string
 from lxml import etree
 from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.vectors.vector import Vector
 
+from fastoad.exceptions import XPathError
+from fastoad.io.serialize import AbstractOMFileIO
+from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
+from fastoad.io.xml.translator import VarXpathTranslator
+from fastoad.openmdao.variables import VariableList
+from fastoad.utils.strings import get_float_list_from_string
 from .constants import DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
 
 # Logger for this module
@@ -84,7 +84,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         """
         self._translator = translator
 
-    def read_variables(self) -> Variables:
+    def read_variables(self) -> VariableList:
 
         if self._translator is None:
             raise FastMissingTranslatorError('Missing translator instance')
@@ -92,7 +92,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         context = etree.iterparse(self._data_source, events=("start", "end"))
 
         # Intermediate storing as a dict for easy access according to name when appending new values
-        variables = Variables()
+        variables = VariableList()
 
         current_path = []
 
@@ -131,7 +131,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         return variables
 
-    def write_variables(self, variables: Variables):
+    def write_variables(self, variables: VariableList):
 
         if self._translator is None:
             raise FastMissingTranslatorError('Missing translator instance')
