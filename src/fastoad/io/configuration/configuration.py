@@ -179,7 +179,15 @@ class FASTOADProblem(om.Problem):
             self.model.add_subsystem('inputs', ivc, promotes=['*'])
 
         try:
-            self._parse_problem_table(self.model, TABLE_MODEL, self._model_definition)
+            if KEY_COMPONENT_ID in self._model_definition:
+                # The defined model is only one system
+                system_id = self._model_definition[KEY_COMPONENT_ID]
+                sub_component = OpenMDAOSystemFactory.get_system(system_id)
+                self.model.add_subsystem('system', sub_component, promotes=['*'])
+            else:
+                # The defined model is a group
+                self._parse_problem_table(self.model, self._model_definition)
+
         except FASTConfigurationBaseKeyBuildingError as err:
             log_err = err.__class__(err, TABLE_MODEL)
             _LOGGER.error(log_err)
@@ -193,18 +201,15 @@ class FASTOADProblem(om.Problem):
 
         self.setup()
 
-    def _parse_problem_table(self, group: om.Group, identifier, table: dict):
+    def _parse_problem_table(self, group: om.Group, table: dict):
         """
-        Feeds provided *component*, associated to provided *identifier*, using definition
-        in provided TOML *table*.
+        Feeds provided *group*, using definition in provided TOML *table*.
 
         :param group:
-        :param identifier:
         :param table:
         """
         assert isinstance(table, dict), "table should be a dictionary"
 
-        # Assessing sub-components
         for key, value in table.items():
             if isinstance(value, dict):  # value defines a sub-component
                 if KEY_COMPONENT_ID in value:
@@ -215,7 +220,7 @@ class FASTOADProblem(om.Problem):
                     # It is a Group
                     sub_component = group.add_subsystem(key, om.Group(), promotes=['*'])
                     try:
-                        self._parse_problem_table(sub_component, key, value)
+                        self._parse_problem_table(sub_component, value)
                     except FASTConfigurationBadOpenMDAOInstructionError as err:
                         # There has been an error while parsing an attribute.
                         # Error is relayed with key added for context
@@ -227,8 +232,6 @@ class FASTOADProblem(om.Problem):
                     setattr(group, key, eval(value))  # pylint:disable=eval-used
                 except Exception as err:
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
-
-        return group
 
     def _add_constraints(self):
         """  Adds constraints as instructed in configuration file """

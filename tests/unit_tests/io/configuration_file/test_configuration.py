@@ -50,6 +50,11 @@ def test_problem_definition(cleanup):
     assert exc_info is not None
     assert exc_info.value.key == 'model.cycle.other_group.nonlinear_solver'
 
+    # Reading of a minimal problem (model = explicitcomponent)
+    problem = FASTOADProblem()
+    problem.configure(pth.join(pth.dirname(__file__), 'data', 'disc1.toml'))
+    assert isinstance(problem.model.system, om.ExplicitComponent)
+
     # Reading of correct problem definition
     problem = FASTOADProblem()
     problem.configure(pth.join(pth.dirname(__file__), 'data', 'valid_sellar.toml'))
