@@ -2,7 +2,7 @@
 Module for managing OpenMDAO variables
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,6 +15,7 @@ Module for managing OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
+import typing
 from collections import OrderedDict
 from typing import Dict, MutableMapping, Iterator, Hashable, AbstractSet
 
@@ -47,6 +48,8 @@ class Variable(Hashable):
     _variable_descriptions = {}
 
     def __init__(self, name, **kwargs: Dict):
+        super().__init__()
+
         self.name = name
         """ Name of the variable """
 
@@ -56,6 +59,7 @@ class Variable(Hashable):
         if not self._variable_descriptions:
             # Class attribute, but it's safer to initialize it at first instantiation
             vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
+            # pylint:disable=unnecessary-comprehension #  needed because we convert an array in a dict
             self.__class__._variable_descriptions = {name: description for name, description in
                                                      vars_descs}
 
@@ -94,10 +98,10 @@ class Variable(Hashable):
 
     def __eq__(self, other):
         return (
-            # isinstance(other, Variable) and
+                isinstance(other, Variable) and
                 self.name == other.name and
                 self.value == other.value and
-                self.metadata == other.attributes)
+                self.metadata == other.metadata)
 
     def __repr__(self):
         return 'Variable(name=%s, value=%s, units=%s)' % (self.name, self.value, self.units)
@@ -128,20 +132,11 @@ class Variables(MutableMapping):
         print( var_1 in vars )
         print( 'var/1' in vars.names() )
         print( 'var/2' in vars.names() )
-
-
     """
-    # Will store content of DESCRIPTION_FILE_PATH once and for all
-    _variable_descriptions = {}
 
     def __init__(self):
         super().__init__()
-        self._variables: OrderedDict[str, Variable] = OrderedDict()
-
-        if not self._variable_descriptions:
-            # Class attribute, but it's safer to initialize it at first instantiation
-            vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
-            self.__class__._variable_descriptions = {name: description for name, description in vars_descs}
+        self._variables: typing.OrderedDict[str, Variable] = OrderedDict()
 
     def append(self, variable: Variable):
         """
@@ -149,16 +144,11 @@ class Variables(MutableMapping):
 
         :param variable:
         """
-        self[variable.name] = variable.metadata
+        self._variables[variable.name] = variable
 
     def __setitem__(self, name: str, metadata: dict):
-
-        # If no description, add one from DESCRIPTION_FILE_PATH, if available
-        if not metadata.get('desc') and name in self._variable_descriptions:
-            metadata['desc'] = self._variable_descriptions[name]
-
         var = Variable(name, **metadata)
-        self._variables[name] = var
+        self.append(var)
 
     def __delitem__(self, name: str) -> None:
         del self._variables[name]
@@ -177,11 +167,11 @@ class Variables(MutableMapping):
         return var in self._variables.values()
 
     def keys(self) -> AbstractSet[str]:
-        # need for implementation, since the iterator returns values of the dict
+        # need implementation, since the iterator returns values of the dict
         return self._variables.keys()
 
     def names(self) -> AbstractSet[str]:
         """
         Same as :meth:`keys`, but with a more appropriate name
         """
-        return self._variables.keys()
+        return self.keys()
