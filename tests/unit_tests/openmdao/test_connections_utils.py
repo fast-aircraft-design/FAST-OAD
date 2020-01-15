@@ -27,8 +27,8 @@ from openmdao.solvers.nonlinear.nonlinear_block_gs import NonlinearBlockGS
 
 from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_input_names, \
-    build_ivc_of_unconnected_inputs, build_ivc_of_variables, update_ivc, get_ivc_from_variables, \
-    get_variables_from_ivc
+    update_ivc, get_ivc_from_variables, \
+    get_variables_from_ivc, get_unconnected_input_variables, build_ivc_of_variables
 from fastoad.openmdao.variables import Variable, VariableList
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
@@ -138,22 +138,16 @@ def _test_problem(problem, expected_missing_mandatory_variables,
     assert sorted(optional) == sorted(expected_missing_optional_variables)
 
 
-def test_build_ivc_of_unconnected_inputs():
+def test_get_unconnected_input_variables():
     def _test_and_check(problem: Problem,
                         expected_mandatory_vars: List[Variable],
                         expected_optional_vars: List[Variable]):
         problem.setup()
-        ivc = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=False)
-        ivc_vars = [Variable(name=name, value=value, **attributes)
-                    for (name, value, attributes) in ivc._indep_external]
-        assert set([str(i) for i in ivc_vars]) == set(
-            [str(i) for i in expected_mandatory_vars])
+        vars = get_unconnected_input_variables(problem, with_optional_inputs=False)
+        assert vars == expected_mandatory_vars
 
-        ivc = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=True)
-        ivc_vars = [Variable(name=name, value=value, **attributes)
-                    for (name, value, attributes) in ivc._indep_external]
-        assert set([str(i) for i in ivc_vars]) == set(
-            [str(i) for i in expected_mandatory_vars + expected_optional_vars])
+        vars = get_unconnected_input_variables(problem, with_optional_inputs=True)
+        assert vars == expected_mandatory_vars + expected_optional_vars
 
     # Check with an ExplicitComponent
     problem = Problem(Disc1())
@@ -194,8 +188,7 @@ def test_build_ivc_of_variables():
                         expected_vars: List[Variable]):
         ivc = build_ivc_of_variables(problem, initial_values,
                                      use_inputs=use_inputs, use_outputs=use_outputs)
-        ivc_vars = [Variable(name=name, value=value, **attributes)
-                    for (name, value, attributes) in ivc._indep_external]
+        ivc_vars = get_variables_from_ivc(ivc)
         assert set([str(i) for i in ivc_vars]) == set(
             [str(i) for i in expected_vars])
 
@@ -256,11 +249,11 @@ def test_build_ivc_of_variables():
                                      Variable(name='z', value=np.array([5., 2.]), units='m**2'),
                                      Variable(name='y1', value=np.array([25.58830237]), units=None),
                                      Variable(name='y2', value=np.array([12.05848815]), units=None),
+                                     Variable(name='f', value=np.array([28.58830817]), units=None),
                                      Variable(name='g1', value=np.array([-22.42830237]),
                                               units=None),
                                      Variable(name='g2', value=np.array([-11.94151185]),
-                                              units=None),
-                                     Variable(name='f', value=np.array([28.58830817]), units=None)]
+                                              units=None)]
     problem.setup()
     problem.run_model()
     _test_and_check(problem, True, True, False, expected_input_vars)
