@@ -148,6 +148,10 @@ class Variable(Hashable):
         my_value = np.asarray(my_metadata.pop('value'))
         other_value = np.asarray(other_metadata.pop('value'))
 
+        # Let's also ignore tags
+        del my_metadata['tags']
+        del other_metadata['tags']
+
         return (
                 isinstance(other, Variable) and
                 self.name == other.name and
@@ -242,6 +246,12 @@ class VariableList(MutableMapping):
 
     def __repr__(self):
         return '\n'.join(map(str, self))
+
+    def __add__(self, other):
+        new_var_list = VariableList()
+        new_var_list._variables.update(other._variables)
+        new_var_list._variables.update(self._variables)
+        return new_var_list
 
     def keys(self) -> AbstractSet[str]:
         # Need to be overloaded because the iterator returns values of the dict
