@@ -26,7 +26,7 @@ from openmdao.core.problem import Problem
 from openmdao.solvers.nonlinear.nonlinear_block_gs import NonlinearBlockGS
 
 from fastoad.exceptions import NoSetupError
-from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
+from fastoad.openmdao.connections_utils import get_unconnected_input_names, \
     build_ivc_of_unconnected_inputs, build_ivc_of_variables, update_ivc, get_ivc_from_variables, \
     get_variables_from_ivc
 from fastoad.openmdao.variables import Variable, VariableList
@@ -121,19 +121,19 @@ def _test_problem(problem, expected_missing_mandatory_variables,
     """ Tests get_unconnected_inputs for provided problem """
     # Check without setup  -> error
     with pytest.raises(NoSetupError) as exc_info:
-        _, _ = get_unconnected_inputs(problem, logger=_LOGGER)
+        _, _ = get_unconnected_input_names(problem, logger=_LOGGER)
     assert exc_info is not None
 
     # Check after setup
     problem.setup()
 
     # with logger provided
-    mandatory, optional = get_unconnected_inputs(problem, logger=_LOGGER)
+    mandatory, optional = get_unconnected_input_names(problem, logger=_LOGGER)
     assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)
     assert sorted(optional) == sorted(expected_missing_optional_variables)
 
     # without providing logger
-    mandatory, optional = get_unconnected_inputs(problem)
+    mandatory, optional = get_unconnected_input_names(problem)
     assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)
     assert sorted(optional) == sorted(expected_missing_optional_variables)
 

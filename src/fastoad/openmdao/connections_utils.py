@@ -13,7 +13,7 @@ Utility functions for OpenMDAO classes/instances
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import warnings
 from logging import Logger
 from typing import Tuple, List
 
@@ -61,8 +61,55 @@ def get_variables_from_ivc(ivc: om.IndepVarComp) -> VariableList:
     return variables
 
 
-def get_unconnected_inputs(problem: om.Problem,
-                           logger: Logger = None) -> Tuple[List[str], List[str]]:
+def get_unconnected_input_variables(problem: om.Problem,
+                                    with_optional_inputs: bool = False) -> VariableList:
+    """
+    This function returns an VariableList instance containing
+    all the unconnected inputs of a Problem.
+
+    If *optional_inputs* is False, only inputs that have numpy.nan as default value (hence
+    considered as mandatory) will be in returned instance. Otherwise, all unconnected inputs will
+    be in returned instance.
+
+    :param problem: OpenMDAO Problem instance to inspect
+    :param with_optional_inputs: If True, returned instance will contain all unconnected inputs.
+                            Otherwise, it will contain only mandatory ones.
+    :return: VariableList instance
+    """
+    variables = VariableList()
+
+    if problem._setup_status == 0:
+        problem.setup()
+    mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
+    model = problem.model
+
+    # processed_prom_names will store promoted names that have been already processed, so that
+    # it won't be stored twice.
+    # By processing mandatory variable first, a promoted variable that would be mandatory somewhere
+    # and optional elsewhere will be retained as mandatory (and associated value will be NaN),
+    # which is fine.
+    # For promoted names that link to several optional variables and no mandatory ones, associated
+    # value will be the first encountered one, and this is as good a choice as any other.
+    processed_prom_names = []
+
+    def _add_outputs(unconnected_names):
+        """ Fills ivc with data associated to each provided var"""
+        for abs_name in unconnected_names:
+            prom_name = model._var_abs2prom['input'][abs_name]
+            if prom_name not in processed_prom_names:
+                processed_prom_names.append(prom_name)
+                metadata = model._var_abs2meta[abs_name]
+                variables[prom_name] = metadata
+
+    _add_outputs(mandatory_unconnected)
+    if with_optional_inputs:
+        _add_outputs(optional_unconnected)
+
+    return variables
+
+
+def get_unconnected_input_names(problem: om.Problem,
+                                logger: Logger = None) -> Tuple[List[str], List[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
     Assumes problem.setup() has been run.
@@ -132,40 +179,12 @@ def build_ivc_of_unconnected_inputs(problem: om.Problem,
                             Otherwise, it will contain only mandatory ones.
     :return: IndepVarComp instance
     """
-    ivc = om.IndepVarComp()
-    if problem._setup_status == 0:
-        problem.setup()
-    mandatory_unconnected, optional_unconnected = get_unconnected_inputs(problem)
-    model = problem.model
 
-    # processed_prom_names will store promoted names that have been already processed, so that
-    # it won't be stored twice.
-    # By processing mandatory variable first, a promoted variable that would be mandatory somewhere
-    # and optional elsewhere will be retained as mandatory (and associated value will be NaN),
-    # which is fine.
-    # For promoted names that link to several optional variables and no mandatory ones, associated
-    # value will be the first encountered one, and this is as good a choice as any other.
-    processed_prom_names = []
+    warnings.warn('Use get_unconnected_input_variables() and get_ivc_from_variables() instead',
+                  DeprecationWarning)
 
-    def _add_outputs(unconnected_names):
-        """ Fills ivc with data associated to each provided var"""
-        for abs_name in unconnected_names:
-            prom_name = model._var_abs2prom['input'][abs_name]
-            if prom_name not in processed_prom_names:
-                processed_prom_names.append(prom_name)
-                metadata = model._var_abs2meta[abs_name]
-                variable = Variable(name=prom_name,
-                                    **metadata)  # useful because it adds a description if needed
-                ivc.add_output(prom_name,
-                               val=variable.value,
-                               units=variable.units,
-                               desc=variable.description)
-
-    _add_outputs(mandatory_unconnected)
-    if with_optional_inputs:
-        _add_outputs(optional_unconnected)
-
-    return ivc
+    variables = get_unconnected_input_variables(problem, with_optional_inputs)
+    return get_ivc_from_variables(variables)
 
 
 def build_ivc_of_variables(problem: om.Problem,
