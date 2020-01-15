@@ -24,6 +24,7 @@ import numpy as np
 import openmdao.api as om
 
 # Logger for this module
+
 _LOGGER = logging.getLogger(__name__)
 
 RESOURCE_PATH = pth.join(pth.dirname(__file__), 'resources')
@@ -36,9 +37,17 @@ class Variable(Hashable):
 
     Instantiation is expected to be done through keyword arguments only.
 
-    kwargs is expected to have keys 'name', 'value', 'units' and 'desc', that are
-    accessible respectively through properties :meth:`name`, :meth:`value`,
-    :meth:`units` and :meth:`description`.
+    Beside the mandatory parameter 'name, kwargs is expected to have keys
+    'value', 'units' and 'desc', that are accessible respectively through
+    properties :meth:`name`, :meth:`value`, :meth:`units` and :meth:`description`.
+
+    Other keys are possible. They match the definition of OpenMDAO's method
+    :meth:`Component.add_output` described
+    `here <http://openmdao.org/twodocs/versions/latest/_srcdocs/packages/core/
+    component.html#openmdao.core.component.Component.add_output>`_.
+
+    These keys can be listed with class method :meth:`get_authorized_keys`.
+    **Any other key in kwargs will be silently ignored.**
 
     Special behaviour: :meth:`description` will return the content of kwargs['desc']
     unless these 2 conditions are met:
@@ -80,11 +89,20 @@ class Variable(Hashable):
         # Done with class attributes ------------------------------------------
 
         self.metadata = self._base_metadata.copy()
-        self.metadata.update(kwargs)
+        # use kwargs only for keys already existent in self.metadata
+        self.metadata.update((key, kwargs[key]) for key in kwargs.keys() & self.metadata.keys())
 
         # If no description, add one from DESCRIPTION_FILE_PATH, if available
         if not self.description and self.name in self._variable_descriptions:
             self.description = self._variable_descriptions[self.name]
+
+    @classmethod
+    def get_authorized_keys(cls):
+        """
+
+        :return: the authorized keys when creating a Variable instance
+        """
+        return cls._base_metadata.keys()
 
     @property
     def value(self):
