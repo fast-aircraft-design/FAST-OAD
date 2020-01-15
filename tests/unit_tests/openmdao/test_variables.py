@@ -15,6 +15,8 @@ Module for testing VariableList.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
+
 from fastoad.openmdao.variables import VariableList, Variable
 
 
@@ -29,15 +31,28 @@ def test_variables_set_get_item():
     variables = VariableList()
     a_var = Variable('a', value=0.)
     b_var = Variable('b', value=1.)
+    n_var = Variable('n', value=np.array(np.nan))
     variables['a'] = {'value': 0.}  # Tests VariableList.__setitem__ with dict input
     variables.append(b_var)  # Tests VariableList.append()
+
+    # Initialization from list
+    variables2 = VariableList([a_var, b_var])
+    assert variables == variables2
 
     # tests on Variable
     assert a_var.value == 0.
     assert a_var.units is None
     assert a_var.description == ''
 
+    assert n_var == Variable('n', value=np.array(np.nan))  # tests __eq__ with nan value
+
     # tests on VariableList
+    #   __eq__
+    assert variables == VariableList([Variable('a', value=0.), Variable('b', value=1.)])
+    assert variables == VariableList([Variable('b', value=1.), Variable('a', value=0.)])
+    assert variables != VariableList([Variable('a', value=0., ref=42.), Variable('b', value=1.)])
+    assert variables != VariableList([Variable('a', value=0.), Variable('b', value=1.), n_var])
+
     #   __getitem___
     assert variables['a'] == a_var
     a_var.units = "m"

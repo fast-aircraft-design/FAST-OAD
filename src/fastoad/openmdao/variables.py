@@ -18,7 +18,7 @@ import logging
 import os.path as pth
 import typing
 from collections import OrderedDict
-from typing import Dict, MutableMapping, Iterator, Hashable, AbstractSet, Union
+from typing import Dict, MutableMapping, Iterator, Hashable, AbstractSet, Union, Iterable
 
 import numpy as np
 import openmdao.api as om
@@ -91,6 +91,7 @@ class Variable(Hashable):
         self.metadata = self._base_metadata.copy()
         # use kwargs only for keys already existent in self.metadata
         self.metadata.update((key, kwargs[key]) for key in kwargs.keys() & self.metadata.keys())
+        self._set_default_shape()
 
         # If no description, add one from DESCRIPTION_FILE_PATH, if available
         if not self.description and self.name in self._variable_descriptions:
@@ -112,6 +113,7 @@ class Variable(Hashable):
     @value.setter
     def value(self, value):
         self.metadata['value'] = value
+        self._set_default_shape()
 
     @property
     def units(self):
@@ -131,15 +133,29 @@ class Variable(Hashable):
     def description(self, value):
         self.metadata['desc'] = value
 
+    def _set_default_shape(self):
+        """ Automatically sets shape if not set"""
+        if self.metadata['shape'] is None:
+            shape = np.shape(self.value)
+            if not shape:
+                shape = (1,)
+            self.metadata['shape'] = shape
+
     def __eq__(self, other):
+        # same arrays with nan are declared non equals, so we need a workaround
+        my_metadata = dict(self.metadata)
+        other_metadata = dict(other.metadata)
+        my_value = np.asarray(my_metadata.pop('value'))
+        other_value = np.asarray(other_metadata.pop('value'))
+
         return (
                 isinstance(other, Variable) and
                 self.name == other.name and
-                self.value == other.value and
-                self.metadata == other.metadata)
+                ((my_value == other_value) | (np.isnan(my_value) & np.isnan(other_value))).all() and
+                my_metadata == other_metadata)
 
     def __repr__(self):
-        return 'Variable(name=%s, value=%s, units=%s)' % (self.name, self.value, self.units)
+        return 'Variable(name=%s, metadata=%s)' % (self.name, self.metadata)
 
     def __hash__(self) -> int:
         return hash('var=' + self.name)  # Name is normally unique
@@ -172,9 +188,13 @@ class VariableList(MutableMapping):
         print( 'var/2' in vars.names() )
     """
 
-    def __init__(self):
+    def __init__(self, iterable: Iterable[Variable] = None):
         super().__init__()
         self._variables: typing.OrderedDict[str, Variable] = OrderedDict()
+
+        if iterable:
+            for var in iterable:
+                self.append(var)
 
     def append(self, variable: Variable):
         """
@@ -215,8 +235,16 @@ class VariableList(MutableMapping):
     def __contains__(self, var: Variable):
         return var in self._variables.values()
 
+    def __eq__(self, other):
+        # Need to be overloaded because the iterator returns values of the dict
+        # BTW, we make that variable order does not matter
+        return set(self) == set(other)
+
+    def __repr__(self):
+        return '\n'.join(map(str, self))
+
     def keys(self) -> AbstractSet[str]:
-        # need implementation, since the iterator returns values of the dict
+        # Need to be overloaded because the iterator returns values of the dict
         return self._variables.keys()
 
     def names(self) -> AbstractSet[str]:
