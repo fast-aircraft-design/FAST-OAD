@@ -186,6 +186,10 @@ class VariableList(list):
         print( var_1 in vars )
         print( 'var/1' in vars.names() )
         print( 'var/2' in vars.names() )
+
+    Note:
+        Adding a Variable instance that has a name that is already in the VariableList instance
+        will replace the previous Variable instance instead of adding a new one.
     """
 
     def names(self) -> List[str]:
@@ -193,6 +197,12 @@ class VariableList(list):
         :return: names of variables
         """
         return [var.name for var in self]
+
+    def append(self, var: Variable) -> None:
+        if var.name in self.names():
+            self[self.names().index(var.name)] = var
+        else:
+            super().append(var)
 
     def __getitem__(self, key) -> Variable:
         if isinstance(key, str):

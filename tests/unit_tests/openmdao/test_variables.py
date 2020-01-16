@@ -52,3 +52,10 @@ def test_variables():
 
     #   __contains__
     assert list(variables.names()) == ['a', 'b']
+
+    # Tests adding variable with existing name
+    assert len(variables) == 2
+    assert variables['a'].value == 0.
+    variables.append(Variable('a', value=42.))
+    assert len(variables) == 2
+    assert variables['a'].value == 42.
