@@ -199,10 +199,32 @@ class VariableList(list):
         return [var.name for var in self]
 
     def append(self, var: Variable) -> None:
+        """
+        Append var to the end of the list, unless its name is already used. In that case, var
+        will replace the previous Variable instance with the same name.
+        """
         if var.name in self.names():
             self[self.names().index(var.name)] = var
         else:
             super().append(var)
+
+    def update(self, other_var_list: 'VariableList', add_variables: bool = False):
+        """
+        uses variables in other_var_list to update the current VariableList instance.
+
+        For each Variable instance in other_var_list:
+            - if a Variable instance with same name exists, it is replaced by the one
+              in other_var_list
+            - if not, Variable instance from other_var_list will be added only if
+              add_variables==True
+
+        :param other_var_list: source for new Variable data
+        :param add_variables: if True, variables can be added instead of just updated
+        """
+
+        for var in other_var_list:
+            if add_variables or var.name in self.names():
+                self.append(var)
 
     def __getitem__(self, key) -> Variable:
         if isinstance(key, str):

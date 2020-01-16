@@ -16,6 +16,7 @@ Module for testing VariableList.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import pytest
 
 from fastoad.openmdao.variables import VariableList, Variable
 
@@ -34,6 +35,8 @@ def test_variables():
     n_var = Variable('n', value=np.array(np.nan))
     variables['a'] = {'value': 0.}  # Tests VariableList.__setitem__ with dict input
     variables.append(b_var)  # Tests VariableList.append()
+    with pytest.raises(TypeError):
+        variables['z'] = 5.  # error when value is not a dict
 
     # Initialization from list
     variables2 = VariableList([a_var, b_var])
@@ -50,12 +53,31 @@ def test_variables():
     assert variables['a'] == a_var
     assert variables['b'] is b_var
 
-    #   __contains__
+    #   .names()
     assert list(variables.names()) == ['a', 'b']
 
     # Tests adding variable with existing name
     assert len(variables) == 2
     assert variables['a'].value == 0.
-    variables.append(Variable('a', value=42.))
+    variables.append(Variable('a', value=5.))
     assert len(variables) == 2
+    assert variables['a'].value == 5.
+    variables['a'] = {'value': 42.}
     assert variables['a'].value == 42.
+
+    # .update()
+    assert len(variables) == 2
+    assert list(variables.names()) == ['a', 'b']
+    variables.update([n_var])  # does nothing
+    assert len(variables) == 2
+    assert list(variables.names()) == ['a', 'b']
+
+    variables.update([n_var], add_variables=True)
+    assert len(variables) == 3
+    assert list(variables.names()) == ['a', 'b', 'n']
+    assert variables['a'].value == 42.
+
+    variables.update([Variable('a', value=-10.), Variable('not_added', value=0.)])
+    assert len(variables) == 3
+    assert list(variables.names()) == ['a', 'b', 'n']
+    assert variables['a'].value == -10.

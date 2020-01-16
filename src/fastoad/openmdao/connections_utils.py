@@ -269,15 +269,26 @@ def update_ivc(original_ivc: om.IndepVarComp, reference_ivc: om.IndepVarComp) ->
     :return updated_ivc: resulting IndepVarComp instance of the update
     """
 
-    reference_variables = {}
-    for (name, value, attributes) in reference_ivc._indep_external:
-        reference_variables[name] = (value, attributes)
+    warnings.warn(
+        'Use VariableList.update(), possibly with '
+        'get_ivc_from_variables() and/or get_variables_from_ivc ',
+        DeprecationWarning)
 
-    updated_ivc = om.IndepVarComp()
-    for (name, value, attributes) in original_ivc._indep_external:
-        if name in reference_variables:
-            value = reference_variables[name][0]
-            attributes = reference_variables[name][1]
-        updated_ivc.add_output(name, value, **attributes)
+    variables = get_variables_from_ivc(original_ivc)
+    ref_variables = get_variables_from_ivc(reference_ivc)
 
-    return updated_ivc
+    variables.update(ref_variables)
+    return get_ivc_from_variables(variables)
+
+    # reference_variables = {}
+    # for (name, value, attributes) in reference_ivc._indep_external:
+    #     reference_variables[name] = (value, attributes)
+    #
+    # updated_ivc = om.IndepVarComp()
+    # for (name, value, attributes) in original_ivc._indep_external:
+    #     if name in reference_variables:
+    #         value = reference_variables[name][0]
+    #         attributes = reference_variables[name][1]
+    #     updated_ivc.add_output(name, value, **attributes)
+    #
+    # return updated_ivc
