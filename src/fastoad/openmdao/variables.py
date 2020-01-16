@@ -84,6 +84,7 @@ class Variable(Hashable):
             # get attributes (3rd element of the tuple) of first element
             self._base_metadata = ivc._indep_external[0][2]
             self._base_metadata['value'] = 1.0
+            self._base_metadata['tags'] = set()
         # Done with class attributes ------------------------------------------
 
         self.metadata = self._base_metadata.copy()
