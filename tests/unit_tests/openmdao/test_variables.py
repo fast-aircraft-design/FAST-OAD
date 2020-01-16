@@ -20,7 +20,7 @@ import numpy as np
 from fastoad.openmdao.variables import VariableList, Variable
 
 
-def test_variables_set_get_item():
+def test_variables():
     """ Tests features of Variable and VariableList class"""
 
     # Test description overloading
@@ -46,39 +46,9 @@ def test_variables_set_get_item():
 
     assert n_var == Variable('n', value=np.array(np.nan))  # tests __eq__ with nan value
 
-    # tests on VariableList
-    #   __eq__
-    assert variables == VariableList([Variable('a', value=0.), Variable('b', value=1.)])
-    assert variables == VariableList([Variable('b', value=1.), Variable('a', value=0.)])
-    assert variables != VariableList([Variable('a', value=0., ref=42.), Variable('b', value=1.)])
-    assert variables != VariableList([Variable('a', value=0.), Variable('b', value=1.), n_var])
-
     #   __getitem___
     assert variables['a'] == a_var
-    a_var.units = "m"
-    assert variables['a'] != a_var
-
     assert variables['b'] is b_var
 
     #   __contains__
-    assert 'a' in variables.names()
-    assert 'b' in variables.names()
-    assert 'c' not in variables.names()
-    assert b_var in variables
-
-    #   __len__ and __delitem__
-    assert len(variables) == 2
-    del variables['a']
-    assert len(variables) == 1
-    assert 'a' not in variables.names()
-    assert 'b' in variables.names()
-
-    #   additional tests for __setitem__  with Variable input
-    variables['a'] = a_var  # adds variable with its actual name
-    assert a_var in variables
-    del variables['a']
-
-    variables['c'] = a_var  # adds variable with a different name
-    assert a_var not in variables  # a different instance has been stored, with 'c' as name
-    assert 'c' in variables.names()
-    assert variables['c'].metadata == a_var.metadata
+    assert list(variables.names()) == ['a', 'b']

@@ -16,9 +16,7 @@ Module for managing OpenMDAO variables
 
 import logging
 import os.path as pth
-import typing
-from collections import OrderedDict
-from typing import Dict, MutableMapping, Iterator, Hashable, AbstractSet, Union, Iterable
+from typing import Dict, Hashable, List
 
 import numpy as np
 import openmdao.api as om
@@ -165,12 +163,11 @@ class Variable(Hashable):
         return hash('var=' + self.name)  # Name is normally unique
 
 
-class VariableList(MutableMapping):
+class VariableList(list):
     """
     Class for storing OpenMDAO variables
 
-    Like a list of Variable instances, but items are accessed through variable names instead of
-    indices.
+    A list of Variable instances, but items can also be accessed through variable names.
 
     There are 2 ways for adding a variable::
 
@@ -182,8 +179,6 @@ class VariableList(MutableMapping):
         vars = VariableList()
         vars.append(var_1)              # Adds directly a Variable instance
         vars['var/2'] = metadata_2      # Adds the variable with given name and given metadata
-        vars['var/1bis'] = var_1        # Adds the metadata of the Variable instance, associated to
-                                        # provided name.
 
     After that, following equalities are True::
 
@@ -192,73 +187,27 @@ class VariableList(MutableMapping):
         print( 'var/2' in vars.names() )
     """
 
-    def __init__(self, iterable: Iterable[Variable] = None):
-        super().__init__()
-        self._variables: typing.OrderedDict[str, Variable] = OrderedDict()
-
-        if iterable:
-            for var in iterable:
-                self.append(var)
-
-    def append(self, variable: Variable):
+    def names(self) -> List[str]:
         """
-        Adds the provided Variable instance. The variable name will be its associated key.
-
-        :param variable:
+        :return: names of variables
         """
-        self._variables[variable.name] = variable
+        return [var.name for var in self]
 
-    def __setitem__(self, name: str, item: Union[Variable, dict]):
-        if isinstance(item, Variable):
-            if item.name != name:
-                _LOGGER.warning(
-                    'Variable List: Storing Variable "%s" using name "%s". '
-                    'Initial name of variable will be lost.',
-                    item.name, name)
-                var = Variable(name, **item.metadata)
-            else:
-                var = item
+    def __getitem__(self, key) -> Variable:
+        if isinstance(key, str):
+            return self[self.names().index(key)]
         else:
-            var = Variable(name, **item)
+            return super().__getitem__(key)
 
-        self.append(var)
-
-    def __delitem__(self, name: str) -> None:
-        del self._variables[name]
-
-    def __getitem__(self, name: str) -> Variable:
-        return self._variables[name]
-
-    def __len__(self) -> int:
-        return len(self._variables)
-
-    def __iter__(self) -> Iterator[Variable]:
-        for var in self._variables.values():
-            yield var
-
-    def __contains__(self, var: Variable):
-        return var in self._variables.values()
-
-    def __eq__(self, other):
-        # Need to be overloaded because the iterator returns values of the dict
-        # BTW, we make that variable order does not matter
-        return set(self) == set(other)
-
-    def __repr__(self):
-        return '\n'.join(map(str, self))
-
-    def __add__(self, other):
-        new_var_list = VariableList()
-        new_var_list._variables.update(other._variables)
-        new_var_list._variables.update(self._variables)
-        return new_var_list
-
-    def keys(self) -> AbstractSet[str]:
-        # Need to be overloaded because the iterator returns values of the dict
-        return self._variables.keys()
-
-    def names(self) -> AbstractSet[str]:
-        """
-        Same as :meth:`keys`, but with a more appropriate name
-        """
-        return self.keys()
+    def __setitem__(self, key, value):
+        if isinstance(key, str):
+            if isinstance(value, dict):
+                if key in self.names():
+                    self[key].metadata = value
+                else:
+                    self.append(Variable(key, **value))
+            else:
+                raise TypeError('VariableList can be set with a "string index" only if value is a '
+                                'dict of metadata')
+        else:
+            super().__setitem__(key, value)
