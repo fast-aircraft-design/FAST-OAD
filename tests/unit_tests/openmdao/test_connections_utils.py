@@ -28,7 +28,7 @@ from openmdao.solvers.nonlinear.nonlinear_block_gs import NonlinearBlockGS
 from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_input_names, \
     update_ivc, get_ivc_from_variables, \
-    get_variables_from_ivc, get_unconnected_input_variables, build_ivc_of_variables
+    get_variables_from_ivc, get_unconnected_input_variables, get_variables_from_problem
 from fastoad.openmdao.variables import Variable, VariableList
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
@@ -180,17 +180,25 @@ def test_get_unconnected_input_variables():
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
 
-def test_build_ivc_of_variables():
+def test_get_variables_from_problem():
     def _test_and_check(problem: Problem,
                         initial_values: bool,
                         use_inputs: bool,
                         use_outputs: bool,
                         expected_vars: List[Variable]):
-        ivc = build_ivc_of_variables(problem, initial_values,
-                                     use_inputs=use_inputs, use_outputs=use_outputs)
-        ivc_vars = get_variables_from_ivc(ivc)
-        assert set([str(i) for i in ivc_vars]) == set(
-            [str(i) for i in expected_vars])
+        vars = get_variables_from_problem(problem, initial_values,
+                                          use_inputs=use_inputs, use_outputs=use_outputs)
+
+        # A comparison of sets will not work due to values not being stricly equal
+        # (not enough decimals in expected values), so we do not use this:
+        # assert set(vars) == set(expected_vars)
+
+        # So we do comparison as strings, after having removed tags from metadata, that
+        # depend on variable source
+        for var in vars + expected_vars:
+            var.metadata['tags'] = set()
+
+        assert set([str(i) for i in vars]) == set([str(i) for i in expected_vars])
 
     # Check with an ExplicitComponent
     problem = Problem(Disc1())

@@ -61,6 +61,53 @@ def get_variables_from_ivc(ivc: om.IndepVarComp) -> VariableList:
     return variables
 
 
+def get_variables_from_problem(problem: om.Problem,
+                               initial_values: bool = False,
+                               use_inputs: bool = True,
+                               use_outputs: bool = True) -> VariableList:
+    """
+    This function returns an VariableList instance containing
+    variables (inputs and/or outputs) of a an OpenMDAO Problem.
+
+    If variables are promoted, the promoted name will be used. Otherwise, the absolute name will be
+    used.
+
+    :param problem: OpenMDAO Problem instance to inspect
+    :param initial_values: if True, returned instance will contain values before computation
+    :param use_inputs: if True, returned instance will contain inputs of the problem
+    :param use_outputs: if True, returned instance will contain outputs of the problem
+    :return: VariableList instance
+    """
+    variables = VariableList()
+    if problem._setup_status == 0:
+        problem.setup()
+    system = problem.model
+
+    prom2abs = {}
+    if use_inputs:
+        prom2abs.update(system._var_allprocs_prom2abs_list['input'])
+    if use_outputs:
+        prom2abs.update(system._var_allprocs_prom2abs_list['output'])
+
+    for prom_name, abs_names in prom2abs.items():
+        # Pick the first
+        abs_name = abs_names[0]
+        metadata = system._var_abs2meta[abs_name]
+        variable = Variable(name=prom_name, **metadata)
+        if not initial_values:
+            try:
+                # Maybe useless, but we force units to ensure it is consistent
+                variable.value = problem.get_val(prom_name, units=variable.units)
+            except RuntimeError:
+                # In case problem is incompletely set, problem.get_val() will fail.
+                # In such case, falling back to the method for initial values
+                # should be enough.
+                pass
+        variables.append(variable)
+
+    return variables
+
+
 def get_unconnected_input_variables(problem: om.Problem,
                                     with_optional_inputs: bool = False) -> VariableList:
     """
@@ -204,38 +251,12 @@ def build_ivc_of_variables(problem: om.Problem,
     :param use_outputs: if True, returned instance will contain outputs of the problem
     :return: IndepVarComp instance
     """
-    ivc = om.IndepVarComp()
-    if problem._setup_status == 0:
-        problem.setup()
-    system = problem.model
 
-    prom2abs = {}
-    if use_inputs:
-        prom2abs.update(system._var_allprocs_prom2abs_list['input'])
-    if use_outputs:
-        prom2abs.update(system._var_allprocs_prom2abs_list['output'])
+    warnings.warn('Use get_variables_from_problem() and get_ivc_from_variables() instead',
+                  DeprecationWarning)
 
-    for prom_name, abs_names in prom2abs.items():
-        # Pick the first
-        abs_name = abs_names[0]
-        metadata = system._var_abs2meta[abs_name]
-        variable = Variable(name=prom_name,
-                            **metadata)  # useful because it adds a description if needed
-        if not initial_values:
-            try:
-                # Maybe useless, but we force units to ensure it is consistent
-                variable.value = problem.get_val(prom_name, units=metadata['units'])
-            except RuntimeError:
-                # In case problem is incompletely set, problem.get_val() will fail.
-                # In such case, falling back to the method for initial values
-                # should be enough.
-                pass
-        ivc.add_output(prom_name,
-                       val=variable.value,
-                       units=variable.units,
-                       desc=variable.description)
-
-    return ivc
+    variables = get_variables_from_problem(problem, initial_values, use_inputs, use_outputs)
+    return get_ivc_from_variables(variables)
 
 
 def update_ivc(original_ivc: om.IndepVarComp, reference_ivc: om.IndepVarComp) -> om.IndepVarComp:
