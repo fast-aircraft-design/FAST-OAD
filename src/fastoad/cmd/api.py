@@ -28,10 +28,10 @@ from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
-from fastoad.openmdao.connections_utils import build_ivc_of_variables, \
-    build_ivc_of_unconnected_inputs
-
 # Logger for this module
+from fastoad.openmdao.connections_utils import get_unconnected_input_variables, \
+    get_variables_from_problem
+
 _LOGGER = logging.getLogger(__name__)
 
 RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
@@ -109,8 +109,8 @@ def list_variables(configuration_file_path: str,
     problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
-    ivc_inputs = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=True)
-    ivc_outputs = build_ivc_of_variables(problem, use_inputs=False)
+    input_variables = get_unconnected_input_variables(problem, with_optional_inputs=True)
+    output_variables = get_variables_from_problem(problem, use_inputs=False)
 
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
@@ -126,8 +126,7 @@ def list_variables(configuration_file_path: str,
         '-- INPUTS OF THE PROBLEM -------------------------------------------------------------\n',
         '%-60s| %s\n' % ('VARIABLE', 'DESCRIPTION')
     ])
-    out_file.writelines(['%-60s| %s\n' % (name, attributes['desc']) for (name, _, attributes) in
-                         ivc_inputs._indep_external])
+    out_file.writelines(['%-60s| %s\n' % (var.name, var.description) for var in input_variables])
     out_file.write(
         '--------------------------------------------------------------------------------------\n'
     )
@@ -137,8 +136,7 @@ def list_variables(configuration_file_path: str,
         '-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------\n',
         '%-60s| %s\n' % ('VARIABLE', 'DESCRIPTION')
     ])
-    out_file.writelines(['%-60s| %s\n' % (name, attributes['desc']) for (name, _, attributes) in
-                         ivc_outputs._indep_external])
+    out_file.writelines(['%-60s| %s\n' % (var.name, var.description) for var in output_variables])
     out_file.write(
         '--------------------------------------------------------------------------------------\n'
     )

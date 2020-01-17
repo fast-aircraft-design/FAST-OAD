@@ -26,10 +26,10 @@ from fastoad.io.configuration.exceptions import FASTConfigurationBaseKeyBuilding
 from fastoad.io.serialize import OMFileIOSubclass
 from fastoad.io.xml import OMXmlIO
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
-from fastoad.openmdao.connections_utils import build_ivc_of_unconnected_inputs, update_ivc, \
-    build_ivc_of_variables
-
 # Logger for this module
+from fastoad.openmdao.connections_utils import get_unconnected_input_variables, \
+    get_variables_from_ivc, get_ivc_from_variables, get_variables_from_problem
+
 _LOGGER = logging.getLogger(__name__)
 
 KEY_FOLDERS = 'module_folders'
@@ -132,12 +132,13 @@ class FASTOADProblem(om.Problem):
         :param input_data: if provided, variable values will be read from it, if available.
         """
         if self.input_file_path:
-            ivc = build_ivc_of_unconnected_inputs(self, with_optional_inputs=True)
+            variables = get_unconnected_input_variables(self, with_optional_inputs=True)
             if input_data:
                 ref_ivc = input_data.read()
-                ivc = update_ivc(ivc, ref_ivc)
+                ref_vars = get_variables_from_ivc(ref_ivc)
+                variables.update(ref_vars)
             writer = OMXmlIO(self.input_file_path)
-            writer.write(ivc)
+            writer.write(get_ivc_from_variables(variables))
 
     def read_inputs(self):
         """
@@ -155,8 +156,8 @@ class FASTOADProblem(om.Problem):
         """
         if self.output_file_path:
             writer = OMXmlIO(self.output_file_path)
-            ivc = build_ivc_of_variables(self)
-            writer.write(ivc)
+            variables = get_variables_from_problem(self)
+            writer.write(get_ivc_from_variables(variables))
 
     def build_model(self, ivc: om.IndepVarComp = None):
         """
