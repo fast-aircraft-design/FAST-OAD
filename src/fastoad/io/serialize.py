@@ -18,9 +18,9 @@ from abc import abstractmethod, ABC
 from fnmatch import fnmatchcase
 from typing import TypeVar, IO, List, Sequence
 
-import numpy as np
 import openmdao.api as om
 
+from fastoad.openmdao.connections_utils import get_ivc_from_variables, get_variables_from_ivc
 from fastoad.openmdao.variables import VariableList
 
 OMFileIOSubclass = TypeVar('OMFileIOSubclass', bound='AbstractOMFileIO')
@@ -53,12 +53,7 @@ class AbstractOMFileIO(ABC):
         """
         variables = self.read_variables()
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-
-        ivc = om.IndepVarComp()
-        for var in used_variables:
-            ivc.add_output(var.name, val=np.array(var.value), units=var.units)
-
-        return ivc
+        return get_ivc_from_variables(used_variables)
 
     def write(self, ivc: om.IndepVarComp, only: List[str] = None, ignore: List[str] = None):
         """
@@ -72,7 +67,7 @@ class AbstractOMFileIO(ABC):
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
         """
-        variables = self._get_variables(ivc)
+        variables = get_variables_from_ivc(ivc)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         self.write_variables(used_variables)
 
@@ -91,20 +86,6 @@ class AbstractOMFileIO(ABC):
 
         :param variables:
        """
-
-    def _get_variables(self, ivc: om.IndepVarComp) -> VariableList:
-        """ returns the list of variables from provided system """
-
-        variables = VariableList()
-
-        # Outputs are accessible using private member
-        # pylint: disable=protected-access
-        for (name, value, attributes) in ivc._indep_external:
-            metadata = {'value': value}
-            metadata.update(attributes)
-            variables[name] = metadata
-
-        return variables
 
     @staticmethod
     def _filter_variables(variables: VariableList, only: Sequence[str] = None,

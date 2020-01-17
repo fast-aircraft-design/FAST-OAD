@@ -2,7 +2,7 @@
 Test module for openmdao_legacy_io.py
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,9 +18,11 @@ import os.path as pth
 from shutil import rmtree
 
 import pytest
+from numpy.testing import assert_allclose
 
 from fastoad.io.xml import OMXmlIO
 from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
+from fastoad.openmdao.connections_utils import get_variables_from_ivc
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
@@ -41,6 +43,7 @@ def test_legacy1(cleanup):
 
     xml_read = OMLegacy1XmlIO(filename)
     ivc = xml_read.read()
+    var_list = get_variables_from_ivc(ivc)
     inputs = ivc._indep_external  # pylint: disable=protected-access
 
     entry_count = len(inputs)
@@ -48,25 +51,13 @@ def test_legacy1(cleanup):
     # we check that enough values are actually read.
     assert entry_count > 400
 
-    field_found = [False] * 3
-    for inp in inputs:
-        assert inp[1] is not None  # check that a value has been read
-
-        # Check some random fields
-        if inp[0] == 'geometry:wing:MAC:x':
-            assert inp[1] == 16.457
-            assert inp[2]['units'] == 'm'
-            field_found[0] = True
-        if inp[0] == 'TLAR:NPAX':
-            assert inp[1] == 150
-            assert inp[2]['units'] is None
-            field_found[1] = True
-        if inp[0] == 'geometry:wing:wetted_area':
-            assert inp[1] == 200.607
-            assert inp[2]['units'] == 'm**2'
-            field_found[2] = True
-
-    assert all(field_found)
+    # Check some random fields
+    assert_allclose(var_list['geometry:wing:MAC:x'].value, 16.457)
+    assert var_list['geometry:wing:MAC:x'].units == 'm'
+    assert_allclose(var_list['TLAR:NPAX'].value, 150)
+    assert var_list['TLAR:NPAX'].units is None
+    assert_allclose(var_list['geometry:wing:wetted_area'].value, 200.607)
+    assert var_list['geometry:wing:wetted_area'].units == 'm**2'
 
     # test write ---------------------------------------------------------------
     new_filename = pth.join(result_folder, 'CeRAS01_baseline.xml')
