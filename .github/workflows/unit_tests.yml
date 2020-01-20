@@ -31,8 +31,7 @@ jobs:
         id: cache-venv
         with:
           path: .venv
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv_venv-${{ hashFiles('**/Pipfile.lock') }}
-          restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-pipenv_venv-
+          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
 
       - name: Create environment and install dependencies
         if: steps.cache-venv.outputs.cache-hit != 'true'
@@ -46,5 +45,5 @@ jobs:
           pipenv run flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Unit tests
-        run: pipenv run pytest tests/unit_tests
+        run: pipenv run pytest --no-cov tests/unit_tests
 

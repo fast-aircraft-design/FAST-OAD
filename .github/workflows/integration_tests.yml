@@ -31,12 +31,11 @@ jobs:
         id: cache-venv
         with:
           path: .venv
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv_venv-${{ hashFiles('**/Pipfile.lock') }}
-          restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-pipenv_venv-
+          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
 
       - name: Create environment and install dependencies
         if: steps.cache-venv.outputs.cache-hit != 'true'
         run: pipenv sync --dev
 
       - name: Integration tests
-        run: pipenv run pytest tests/integration_tests
+        run: pipenv run pytest --no-cov tests/integration_tests
