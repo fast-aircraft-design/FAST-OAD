@@ -184,12 +184,12 @@ class Main:
         subparsers = self.parser.add_subparsers(title='sub-commands')
 
         # sub-command for generating sample configuration file -------------------------------------
-
         parser_gen_conf = subparsers.add_parser(
             'gen_conf',
             formatter_class=ArgumentDefaultsHelpFormatter,
-            description=
-            'generates the configuration file with sample data')
+            help='generates a sample configuration file',
+            description='generates the configuration file with sample data')
+        parser_gen_conf.help = parser_gen_conf.description
         parser_gen_conf.add_argument('conf_file', type=str, help='the name of configuration file '
                                                                  'to be written')
         self._add_overwrite_argument(parser_gen_conf)
@@ -202,8 +202,9 @@ class Main:
         parser_gen_inputs = subparsers.add_parser(
             'gen_inputs',
             formatter_class=_CustomFormatter,
-            description=
-            'generates the input file (specified in the configuration file) with needed variables')
+            help='generates the input file',
+            description='generates the input file (specified in the configuration file)'
+                        ' with needed variables')
         self._add_conf_file_argument(parser_gen_inputs)
         self._add_overwrite_argument(parser_gen_inputs)
         parser_gen_inputs.add_argument(
@@ -231,6 +232,7 @@ class Main:
         parser_list_systems = subparsers.add_parser(
             'list_systems',
             formatter_class=ArgumentDefaultsHelpFormatter,
+            help='Provides the identifiers of available systems',
             description='Provides the identifiers of available systems')
         self._add_conf_file_argument(parser_list_systems, required=False)
         parser_list_systems.set_defaults(func=self._list_systems)
@@ -239,6 +241,7 @@ class Main:
         parser_list_variables = subparsers.add_parser(
             'list_variables',
             formatter_class=ArgumentDefaultsHelpFormatter,
+            help='Lists the variables of the problem',
             description='Lists the variables of the problem')
         self._add_conf_file_argument(parser_list_variables)
         parser_list_variables.set_defaults(func=self._list_variables)
@@ -247,6 +250,7 @@ class Main:
         parser_n2 = subparsers.add_parser(
             'n2',
             formatter_class=ArgumentDefaultsHelpFormatter,
+            help='Writes the N2 diagram of the problem',
             description='Writes an HTML file that shows the N2 diagram of the problem')
         self._add_conf_file_argument(parser_n2)
         self._add_overwrite_argument(parser_n2)
@@ -259,6 +263,7 @@ class Main:
         parser_run_model = subparsers.add_parser(
             'eval',
             formatter_class=ArgumentDefaultsHelpFormatter,
+            help='Runs the analysis',
             description='Runs the analysis')
         self._add_conf_file_argument(parser_run_model)
         self._add_overwrite_argument(parser_run_model)
@@ -268,6 +273,7 @@ class Main:
         parser_run_driver = subparsers.add_parser(
             'optim',
             formatter_class=ArgumentDefaultsHelpFormatter,
+            help='Runs the optimization',
             description='Runs the optimization')
         self._add_conf_file_argument(parser_run_driver)
         self._add_overwrite_argument(parser_run_driver)
@@ -277,6 +283,7 @@ class Main:
         parser_notebooks = subparsers.add_parser(
             'notebooks',
             formatter_class=ArgumentDefaultsHelpFormatter,
+            help='Create ready-to-use notebooks',
             description='Creates a %s/ folder with pre-configured Jupyter notebooks. '
                         'Please note that an existing FAST_OAD_notebooks/ will be erased'
                         % NOTEBOOK_FOLDER_NAME)
@@ -289,7 +296,10 @@ class Main:
 
         # Parse ------------------------------------------------------------------------------------
         args = self.parser.parse_args()
-        args.func(args)
+        try:
+            args.func(args)
+        except AttributeError:
+            self.parser.print_help()
 
 
 def _query_yes_no(question):
