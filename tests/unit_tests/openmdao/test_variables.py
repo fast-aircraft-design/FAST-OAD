@@ -37,6 +37,14 @@ def test_variables():
     variables.append(b_var)  # Tests VariableList.append()
     with pytest.raises(TypeError):
         variables['z'] = 5.  # error when value is not a dict
+    with pytest.raises(TypeError):
+        variables[1] = 5.  # error when value is not a Variable
+    with pytest.raises(TypeError):
+        variables.append(5.)  # error when value is not a Variable
+
+    variables.append(n_var)
+    variables[2] = n_var  # same as line above
+    del variables['n']
 
     # Initialization from list
     variables2 = VariableList([a_var, b_var])

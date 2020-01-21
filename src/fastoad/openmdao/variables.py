@@ -203,6 +203,9 @@ class VariableList(list):
         Append var to the end of the list, unless its name is already used. In that case, var
         will replace the previous Variable instance with the same name.
         """
+        if not isinstance(var, Variable):
+            raise TypeError('VariableList items should be Variable instances')
+
         if var.name in self.names():
             self[self.names().index(var.name)] = var
         else:
@@ -242,5 +245,13 @@ class VariableList(list):
             else:
                 raise TypeError('VariableList can be set with a "string index" only if value is a '
                                 'dict of metadata')
+        elif not isinstance(value, Variable):
+            raise TypeError('VariableList items should be Variable instances')
         else:
             super().__setitem__(key, value)
+
+    def __delitem__(self, key):
+        if isinstance(key, str):
+            del self[self.names().index(key)]
+        else:
+            super().__delitem__(key)
