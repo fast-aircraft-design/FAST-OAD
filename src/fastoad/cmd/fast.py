@@ -70,10 +70,10 @@ class Main:
         schema = 'legacy' if args.legacy else 'native'
         try:
             api.generate_inputs(args.conf_file, args.source, schema, args.force)
-        except FastFileExistsError:
+        except FastFileExistsError as exc:
             if _query_yes_no(
                     'Input file "%s" already exists. Do you want to overwrite it?'
-                    % args.conf_file):
+                    % exc.args[1]):
                 api.generate_inputs(args.conf_file, args.source, schema, True)
             else:
                 print('No file written.')
