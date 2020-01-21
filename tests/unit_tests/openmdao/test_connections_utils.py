@@ -26,9 +26,10 @@ from openmdao.core.problem import Problem
 from openmdao.solvers.nonlinear.nonlinear_block_gs import NonlinearBlockGS
 
 from fastoad.exceptions import NoSetupError
-from fastoad.openmdao.connections_utils import get_unconnected_inputs, \
-    build_ivc_of_unconnected_inputs, build_ivc_of_variables, update_ivc
-from fastoad.openmdao.variables import Variable
+from fastoad.openmdao.connections_utils import get_unconnected_input_names, \
+    update_ivc, get_ivc_from_variables, \
+    get_variables_from_ivc, get_unconnected_input_variables, get_variables_from_problem
+from fastoad.openmdao.variables import Variable, VariableList
 from tests.sellar_example.disc1 import Disc1
 from tests.sellar_example.disc2 import Disc2
 from tests.sellar_example.functions import Functions
@@ -36,6 +37,20 @@ from tests.sellar_example.sellar import Sellar
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
+
+
+def test_ivc_from_to_variables():
+    vars = VariableList()
+    vars['a'] = {'value': 5}
+    vars['b'] = {'value': 2.5, 'units': 'm'}
+    vars['c'] = {'value': -3.2, 'units': 'kg/s', 'desc': 'some test'}
+
+    ivc = get_ivc_from_variables(vars)
+    new_vars = get_variables_from_ivc(ivc)
+
+    assert vars.names() == new_vars.names()
+    for var, new_var in zip(vars, new_vars):
+        assert var == new_var
 
 
 def test_get_unconnected_inputs():
@@ -106,39 +121,33 @@ def _test_problem(problem, expected_missing_mandatory_variables,
     """ Tests get_unconnected_inputs for provided problem """
     # Check without setup  -> error
     with pytest.raises(NoSetupError) as exc_info:
-        _, _ = get_unconnected_inputs(problem, logger=_LOGGER)
+        _, _ = get_unconnected_input_names(problem, logger=_LOGGER)
     assert exc_info is not None
 
     # Check after setup
     problem.setup()
 
     # with logger provided
-    mandatory, optional = get_unconnected_inputs(problem, logger=_LOGGER)
+    mandatory, optional = get_unconnected_input_names(problem, logger=_LOGGER)
     assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)
     assert sorted(optional) == sorted(expected_missing_optional_variables)
 
     # without providing logger
-    mandatory, optional = get_unconnected_inputs(problem)
+    mandatory, optional = get_unconnected_input_names(problem)
     assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)
     assert sorted(optional) == sorted(expected_missing_optional_variables)
 
 
-def test_build_ivc_of_unconnected_inputs():
+def test_get_unconnected_input_variables():
     def _test_and_check(problem: Problem,
                         expected_mandatory_vars: List[Variable],
                         expected_optional_vars: List[Variable]):
         problem.setup()
-        ivc = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=False)
-        ivc_vars = [Variable(name=name, value=value, **attributes)
-                    for (name, value, attributes) in ivc._indep_external]
-        assert set([str(i) for i in ivc_vars]) == set(
-            [str(i) for i in expected_mandatory_vars])
+        vars = get_unconnected_input_variables(problem, with_optional_inputs=False)
+        assert vars == expected_mandatory_vars
 
-        ivc = build_ivc_of_unconnected_inputs(problem, with_optional_inputs=True)
-        ivc_vars = [Variable(name=name, value=value, **attributes)
-                    for (name, value, attributes) in ivc._indep_external]
-        assert set([str(i) for i in ivc_vars]) == set(
-            [str(i) for i in expected_mandatory_vars + expected_optional_vars])
+        vars = get_unconnected_input_variables(problem, with_optional_inputs=True)
+        assert vars == expected_mandatory_vars + expected_optional_vars
 
     # Check with an ExplicitComponent
     problem = Problem(Disc1())
@@ -171,18 +180,25 @@ def test_build_ivc_of_unconnected_inputs():
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
 
-def test_build_ivc_of_variables():
+def test_get_variables_from_problem():
     def _test_and_check(problem: Problem,
                         initial_values: bool,
                         use_inputs: bool,
                         use_outputs: bool,
                         expected_vars: List[Variable]):
-        ivc = build_ivc_of_variables(problem, initial_values,
-                                     use_inputs=use_inputs, use_outputs=use_outputs)
-        ivc_vars = [Variable(name=name, value=value, **attributes)
-                    for (name, value, attributes) in ivc._indep_external]
-        assert set([str(i) for i in ivc_vars]) == set(
-            [str(i) for i in expected_vars])
+        vars = get_variables_from_problem(problem, initial_values,
+                                          use_inputs=use_inputs, use_outputs=use_outputs)
+
+        # A comparison of sets will not work due to values not being stricly equal
+        # (not enough decimals in expected values), so we do not use this:
+        # assert set(vars) == set(expected_vars)
+
+        # So we do comparison as strings, after having removed tags from metadata, that
+        # depend on variable source
+        for var in vars + expected_vars:
+            var.metadata['tags'] = set()
+
+        assert set([str(i) for i in vars]) == set([str(i) for i in expected_vars])
 
     # Check with an ExplicitComponent
     problem = Problem(Disc1())
@@ -241,11 +257,11 @@ def test_build_ivc_of_variables():
                                      Variable(name='z', value=np.array([5., 2.]), units='m**2'),
                                      Variable(name='y1', value=np.array([25.58830237]), units=None),
                                      Variable(name='y2', value=np.array([12.05848815]), units=None),
+                                     Variable(name='f', value=np.array([28.58830817]), units=None),
                                      Variable(name='g1', value=np.array([-22.42830237]),
                                               units=None),
                                      Variable(name='g2', value=np.array([-11.94151185]),
-                                              units=None),
-                                     Variable(name='f', value=np.array([28.58830817]), units=None)]
+                                              units=None)]
     problem.setup()
     problem.run_model()
     _test_and_check(problem, True, True, False, expected_input_vars)

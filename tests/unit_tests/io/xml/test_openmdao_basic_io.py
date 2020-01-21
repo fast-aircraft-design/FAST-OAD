@@ -2,7 +2,7 @@
 Tests basic XML serializer for OpenMDAO variables
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,6 @@ Tests basic XML serializer for OpenMDAO variables
 
 import os.path as pth
 from shutil import rmtree
-from typing import List
 
 import numpy as np
 import pytest
@@ -26,7 +25,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from fastoad.io.xml import OMXmlIO
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.exceptions import FastXPathEvalError
-from fastoad.openmdao.variables import Variable
+from fastoad.openmdao.connections_utils import get_variables_from_ivc
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
@@ -41,55 +40,42 @@ def cleanup():
 def _check_basic_ivc(ivc: IndepVarComp):
     """ Checks that provided IndepVarComp instance matches content of data/basic.xml file """
 
-    outputs: List[Variable] = []
-    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(Variable(name=name, value=value, **attributes))
+    outputs = get_variables_from_ivc(ivc)
 
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)
-    assert outputs[0].name == 'geometry:total_surface'
-    assert_allclose(780.3, outputs[0].value)
-    assert outputs[0].units == 'm**2'
+    assert_allclose(780.3, outputs['geometry:total_surface'].value)
+    assert outputs['geometry:total_surface'].units == 'm**2'
 
-    assert outputs[1].name == 'geometry:wing:span'
-    assert_allclose(42, outputs[1].value)
-    assert outputs[1].units == 'm'
+    assert_allclose(42, outputs['geometry:wing:span'].value)
+    assert outputs['geometry:wing:span'].units == 'm'
 
-    assert outputs[2].name == 'geometry:wing:aspect_ratio'
-    assert_allclose(9.8, outputs[2].value)
-    assert outputs[2].units is None
+    assert_allclose(9.8, outputs['geometry:wing:aspect_ratio'].value)
+    assert outputs['geometry:wing:aspect_ratio'].units is None
 
-    assert outputs[3].name == 'geometry:fuselage:length'
-    assert_allclose(40., outputs[3].value)
-    assert outputs[3].units == 'm'
+    assert_allclose(40., outputs['geometry:fuselage:length'].value)
+    assert outputs['geometry:fuselage:length'].units == 'm'
 
-    assert outputs[4].name == 'constants'
-    assert_allclose(-42., outputs[4].value)
-    assert outputs[4].units is None
+    assert_allclose(-42., outputs['constants'].value)
+    assert outputs['constants'].units is None
 
-    assert outputs[5].name == 'constants:k1'
-    assert_allclose([1., 2., 3.], outputs[5].value)
-    assert outputs[5].units == 'kg'
+    assert_allclose([1., 2., 3.], outputs['constants:k1'].value)
+    assert outputs['constants:k1'].units == 'kg'
 
-    assert outputs[6].name == 'constants:k2'
-    assert_allclose([10., 20.], outputs[6].value)
-    assert outputs[6].units is None
+    assert_allclose([10., 20.], outputs['constants:k2'].value)
+    assert outputs['constants:k2'].units is None
 
-    assert outputs[7].name == 'constants:k3'
-    assert_allclose([100., 200., 300., 400.], outputs[7].value)
-    assert outputs[7].units == 'm/s'
+    assert_allclose([100., 200., 300., 400.], outputs['constants:k3'].value)
+    assert outputs['constants:k3'].units == 'm/s'
 
-    assert outputs[8].name == 'constants:k4'
-    assert_allclose([-1, -2, -3], outputs[8].value)
-    assert outputs[8].units is None
+    assert_allclose([-1, -2, -3], outputs['constants:k4'].value)
+    assert outputs['constants:k4'].units is None
 
-    assert outputs[9].name == 'constants:k5'
-    assert_allclose([100, 200, 400, 500, 600], outputs[9].value)
-    assert outputs[9].units is None
+    assert_allclose([100, 200, 400, 500, 600], outputs['constants:k5'].value)
+    assert outputs['constants:k5'].units is None
 
-    assert outputs[10].name == 'constants:k8'
-    assert_allclose([[1e2, 3.4e5], [5.4e3, 2.1]], outputs[10].value)
-    assert outputs[10].units is None
+    assert_allclose([[1e2, 3.4e5], [5.4e3, 2.1]], outputs['constants:k8'].value)
+    assert outputs['constants:k8'].units is None
 
     assert len(outputs) == 11
 

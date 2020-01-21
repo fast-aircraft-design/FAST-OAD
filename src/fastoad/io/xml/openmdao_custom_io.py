@@ -18,7 +18,6 @@ import logging
 import os
 import os.path as pth
 import re
-from typing import Sequence, List, Dict
 
 import numpy as np
 from lxml import etree
@@ -30,9 +29,9 @@ from fastoad.exceptions import XPathError
 from fastoad.io.serialize import AbstractOMFileIO
 from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
 from fastoad.io.xml.translator import VarXpathTranslator
+from fastoad.openmdao.variables import VariableList
 from fastoad.utils.strings import get_float_list_from_string
 from .constants import DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
-from ...openmdao.variables import Variable
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -85,7 +84,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         """
         self._translator = translator
 
-    def read_variables(self) -> List[Variable]:
+    def read_variables(self) -> VariableList:
 
         if self._translator is None:
             raise FastMissingTranslatorError('Missing translator instance')
@@ -93,7 +92,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         context = etree.iterparse(self._data_source, events=("start", "end"))
 
         # Intermediate storing as a dict for easy access according to name when appending new values
-        variables: Dict[str, Variable] = {}
+        variables = VariableList()
 
         current_path = []
 
@@ -121,18 +120,18 @@ class OMCustomXmlIO(AbstractOMFileIO):
                                         'affected in the translator.', err.xpath)
                         continue
 
-                    if name not in variables:
+                    if name not in variables.names():
                         # Add Variable
-                        variables[name] = Variable(name=name, value=value, units=units)
+                        variables[name] = {'value': value, 'units': units}
                     else:
                         # Variable already exists: append values (here the dict is useful)
                         variables[name].value.extend(value)
             else:  # action == 'end':
                 current_path.pop(-1)
 
-        return list(variables.values())
+        return variables
 
-    def write_variables(self, variables: Sequence[Variable]):
+    def write_variables(self, variables: VariableList):
 
         if self._translator is None:
             raise FastMissingTranslatorError('Missing translator instance')
@@ -159,7 +158,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 element.text = json.dumps(np.asarray(variable.value).tolist())
             if variable.description:
                 element.append(etree.Comment(variable.description))
-        # Write
+       # Write
         tree = etree.ElementTree(root)
         dirname = pth.abspath(pth.dirname(self._data_source))
         if not pth.exists(dirname):

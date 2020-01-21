@@ -2,7 +2,7 @@
 Defines interfaces for reading and writing OpenMDAO variable values
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,16 +15,16 @@ Defines interfaces for reading and writing OpenMDAO variable values
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import abstractmethod, ABC
-from collections import OrderedDict
 from fnmatch import fnmatchcase
 from typing import TypeVar, IO, List, Sequence
 
-import numpy as np
 import openmdao.api as om
 
-from fastoad.openmdao.variables import Variable
+from fastoad.openmdao.connections_utils import get_ivc_from_variables, get_variables_from_ivc
+from fastoad.openmdao.variables import VariableList
 
 OMFileIOSubclass = TypeVar('OMFileIOSubclass', bound='AbstractOMFileIO')
+
 
 class AbstractOMFileIO(ABC):
     """
@@ -53,12 +53,7 @@ class AbstractOMFileIO(ABC):
         """
         variables = self.read_variables()
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-
-        ivc = om.IndepVarComp()
-        for var in used_variables:
-            ivc.add_output(var.name, val=np.array(var.value), units=var.units)
-
-        return ivc
+        return get_ivc_from_variables(used_variables)
 
     def write(self, ivc: om.IndepVarComp, only: List[str] = None, ignore: List[str] = None):
         """
@@ -72,12 +67,12 @@ class AbstractOMFileIO(ABC):
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
         """
-        variables = self._get_variables(ivc)
+        variables = get_variables_from_ivc(ivc)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         self.write_variables(used_variables)
 
     @abstractmethod
-    def read_variables(self) -> List[Variable]:
+    def read_variables(self) -> VariableList:
         """
         Reads variables from provided data source file.
 
@@ -85,28 +80,16 @@ class AbstractOMFileIO(ABC):
         """
 
     @abstractmethod
-    def write_variables(self, variables: Sequence[Variable]):
+    def write_variables(self, variables: VariableList):
         """
         Writes variables to defined data source file.
 
         :param variables:
        """
 
-    def _get_variables(self, ivc: om.IndepVarComp) -> List[Variable]:
-        """ returns the list of variables from provided system """
-
-        variables: List[Variable] = []
-
-        # Outputs are accessible using private member
-        # pylint: disable=protected-access
-        for (name, value, attributes) in ivc._indep_external:
-            variables.append(Variable(name=name, value=value, **attributes))
-
-        return variables
-
     @staticmethod
-    def _filter_variables(variables: Sequence[Variable], only: Sequence[str] = None,
-                          ignore: Sequence[str] = None) -> List[Variable]:
+    def _filter_variables(variables: VariableList, only: Sequence[str] = None,
+                          ignore: Sequence[str] = None) -> VariableList:
         """
         filters the variables such that the ones in arg only are kept and the ones in
         arg ignore are removed.
@@ -121,11 +104,11 @@ class AbstractOMFileIO(ABC):
         :return: filtered variables
         """
 
-        # Dev not: We use sets, but sets of Variable instances (namedtuples with a list as item) do
+        # Dev not: We use sets, but sets of Variable instances do
         # not work. Do we work with variable names instead.
+        # FIXME: Variable instances are now hashable, so set of Variable instances should now work
 
-        var_dict = OrderedDict((var.name, var) for var in variables)
-        var_names = var_dict.keys()
+        var_names = variables.names()
 
         if only is None:
             used_var_names = set(var_names)
@@ -143,4 +126,8 @@ class AbstractOMFileIO(ABC):
                      fnmatchcase(variable.name, pattern)])
 
         # It could be simpler, but I want to keep the order
-        return [var for var_name, var in var_dict.items() if var_name in used_var_names]
+        used_variables = VariableList()
+        for var in variables:
+            if var.name in used_var_names:
+                used_variables.append(var)
+        return used_variables

@@ -1,5 +1,5 @@
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -27,7 +27,7 @@ from fastoad.modules.aerodynamics.components.compute_polar import ComputePolar
 from fastoad.modules.aerodynamics.components.compute_reynolds import ComputeReynolds
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
 from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
-from fastoad.openmdao.connections_utils import get_unconnected_inputs
+from fastoad.openmdao.connections_utils import get_unconnected_input_names
 from tests import root_folder_path
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
@@ -68,7 +68,7 @@ def create_inputs():
         problem.model.add_subsystem('inputs', ivc_aero, promotes=['*'])
         problem.model.add_subsystem('component', component, promotes=['*'])
         problem.setup(mode='fwd')
-        mandatory, optional = get_unconnected_inputs(problem)
+        mandatory, optional = get_unconnected_input_names(problem)
         unconnected_vars = mandatory + optional
         var_names = [var.split('.')[-1] for var in unconnected_vars]
         ivc_ceras = ceras_reader.read(only=var_names, ignore=ignore_list)

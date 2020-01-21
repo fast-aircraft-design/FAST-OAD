@@ -31,19 +31,11 @@ jobs:
         id: cache-venv
         with:
           path: .venv
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv_venv-${{ hashFiles('**/Pipfile.lock') }}
-          restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-pipenv_venv-
+          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
 
       - name: Create environment and install dependencies
         if: steps.cache-venv.outputs.cache-hit != 'true'
         run: pipenv sync --dev
 
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .venv
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude .venv
-
       - name: Integration tests
-        run: pipenv run pytest tests/integration_tests
+        run: pipenv run pytest --no-cov tests/integration_tests

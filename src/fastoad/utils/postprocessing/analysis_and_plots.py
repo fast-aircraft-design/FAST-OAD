@@ -2,7 +2,7 @@
 Defines the analysis and plotting functions for postprocessing
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,6 @@ Defines the analysis and plotting functions for postprocessing
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -26,6 +25,8 @@ from fastoad.io.xml import OMXmlIO
 #     read_variables() break something
 #   - a better structure should be found than a dict where keys are also a property of
 #     the item values (same information twice, not DRY)
+
+
 def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -38,14 +39,13 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     :return: wing plot figure
     """
     variables = aircraft_xml.read_variables()
-    system = {var.name: var for var in variables}
 
-    wing_x4 = system['geometry:wing:tip:leading_edge:x'].value[0]
-    wing_y2 = system['geometry:wing:root:y'].value[0]
-    wing_y3 = system['geometry:wing:kink:y'].value[0]
-    wing_y4 = system['geometry:wing:tip:y'].value[0]
-    wing_l2 = system['geometry:wing:root:chord'].value[0]
-    wing_l4 = system['geometry:wing:tip:chord'].value[0]
+    wing_x4 = variables['geometry:wing:tip:leading_edge:x'].value[0]
+    wing_y2 = variables['geometry:wing:root:y'].value[0]
+    wing_y3 = variables['geometry:wing:kink:y'].value[0]
+    wing_y4 = variables['geometry:wing:tip:y'].value[0]
+    wing_l2 = variables['geometry:wing:root:chord'].value[0]
+    wing_l4 = variables['geometry:wing:tip:chord'].value[0]
 
     x = [0, wing_y2, wing_y4,
          wing_y4, wing_y3,
@@ -91,9 +91,8 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
     """
     # FIXME: the multidimensional array ClCd is overwritten by read_variables()
     variables = aircraft_xml.read_variables()
-    system = {var.name: var for var in variables}
-    cd = system['aerodynamics:ClCd'].value
-    cl = system['cl_high_speed'].value
+    cd = variables['aerodynamics:ClCd'].value
+    cl = variables['cl_high_speed'].value
 
     if fig is None:
         fig = go.Figure()
@@ -126,56 +125,55 @@ def mass_breakdown_plot(aircraft_xml: OMXmlIO):
     :return: wing plot figure
     """
     variables = aircraft_xml.read_variables()
-    system = {var.name: var for var in variables}
 
-    systems = system['weight:systems:mass'].value[0]
-    C11 = system['weight:systems:power:auxiliary_power_unit:mass'].value[0]
-    C12 = system['weight:systems:power:electric_systems:mass'].value[0]
-    C13 = system['weight:systems:power:hydraulic_systems:mass'].value[0]
-    C21 = system['weight:systems:life_support:insulation:mass'].value[0]
-    C22 = system['weight:systems:life_support:air_conditioning:mass'].value[0]
-    C23 = system['weight:systems:life_support:de-icing:mass'].value[0]
-    C24 = system['weight:systems:life_support:cabin_lighting:mass'].value[0]
-    C25 = system['weight:systems:life_support:seats_crew_accommodation:mass'].value[0]
-    C26 = system['weight:systems:life_support:oxygen:mass'].value[0]
-    C27 = system['weight:systems:life_support:safety_equipment:mass'].value[0]
-    C3 = system['weight:systems:navigation:mass'].value[0]
-    C4 = system['weight:systems:transmission:mass'].value[0]
-    C51 = system['weight:systems:operational:radar:mass'].value[0]
-    C52 = system['weight:systems:operational:cargo_hold:mass'].value[0]
-    C6 = system['weight:systems:flight_kit:mass'].value[0]
+    systems = variables['weight:systems:mass'].value[0]
+    C11 = variables['weight:systems:power:auxiliary_power_unit:mass'].value[0]
+    C12 = variables['weight:systems:power:electric_systems:mass'].value[0]
+    C13 = variables['weight:systems:power:hydraulic_systems:mass'].value[0]
+    C21 = variables['weight:systems:life_support:insulation:mass'].value[0]
+    C22 = variables['weight:systems:life_support:air_conditioning:mass'].value[0]
+    C23 = variables['weight:systems:life_support:de-icing:mass'].value[0]
+    C24 = variables['weight:systems:life_support:cabin_lighting:mass'].value[0]
+    C25 = variables['weight:systems:life_support:seats_crew_accommodation:mass'].value[0]
+    C26 = variables['weight:systems:life_support:oxygen:mass'].value[0]
+    C27 = variables['weight:systems:life_support:safety_equipment:mass'].value[0]
+    C3 = variables['weight:systems:navigation:mass'].value[0]
+    C4 = variables['weight:systems:transmission:mass'].value[0]
+    C51 = variables['weight:systems:operational:radar:mass'].value[0]
+    C52 = variables['weight:systems:operational:cargo_hold:mass'].value[0]
+    C6 = variables['weight:systems:flight_kit:mass'].value[0]
 
-    furniture = system['weight:furniture:mass'].value[0]
-    D1 = system['weight:furniture:cargo_configuration:mass'].value[0]
-    D2 = system['weight:furniture:passenger_seats:mass'].value[0]
-    D3 = system['weight:furniture:food_water:mass'].value[0]
-    D4 = system['weight:furniture:security_kit:mass'].value[0]
-    D5 = system['weight:furniture:toilets:mass'].value[0]
+    furniture = variables['weight:furniture:mass'].value[0]
+    D1 = variables['weight:furniture:cargo_configuration:mass'].value[0]
+    D2 = variables['weight:furniture:passenger_seats:mass'].value[0]
+    D3 = variables['weight:furniture:food_water:mass'].value[0]
+    D4 = variables['weight:furniture:security_kit:mass'].value[0]
+    D5 = variables['weight:furniture:toilets:mass'].value[0]
 
-    crew = system['weight:crew:mass'].value[0]
+    crew = variables['weight:crew:mass'].value[0]
 
-    airframe = system['weight:airframe:mass'].value[0]
-    wing = system['weight:airframe:wing:mass'].value[0]
-    fuselage = system['weight:airframe:fuselage:mass'].value[0]
-    h_tail = system['weight:airframe:horizontal_tail:mass'].value[0]
-    v_tail = system['weight:airframe:vertical_tail:mass'].value[0]
-    control_surface = system['weight:airframe:flight_controls:mass'].value[0]
-    landing_gear_1 = system['weight:airframe:landing_gear:main:mass'].value[0]
-    landing_gear_2 = system['weight:airframe:landing_gear:front:mass'].value[0]
-    engine_pylon = system['weight:airframe:pylon:mass'].value[0]
-    paint = system['weight:airframe:paint:mass'].value[0]
+    airframe = variables['weight:airframe:mass'].value[0]
+    wing = variables['weight:airframe:wing:mass'].value[0]
+    fuselage = variables['weight:airframe:fuselage:mass'].value[0]
+    h_tail = variables['weight:airframe:horizontal_tail:mass'].value[0]
+    v_tail = variables['weight:airframe:vertical_tail:mass'].value[0]
+    control_surface = variables['weight:airframe:flight_controls:mass'].value[0]
+    landing_gear_1 = variables['weight:airframe:landing_gear:main:mass'].value[0]
+    landing_gear_2 = variables['weight:airframe:landing_gear:front:mass'].value[0]
+    engine_pylon = variables['weight:airframe:pylon:mass'].value[0]
+    paint = variables['weight:airframe:paint:mass'].value[0]
 
-    propulsion = system['weight:propulsion:mass'].value[0]
-    B1 = system['weight:propulsion:engine:mass'].value[0]
-    B2 = system['weight:propulsion:fuel_lines:mass'].value[0]
-    B3 = system['weight:propulsion:unconsumables:mass'].value[0]
+    propulsion = variables['weight:propulsion:mass'].value[0]
+    B1 = variables['weight:propulsion:engine:mass'].value[0]
+    B2 = variables['weight:propulsion:fuel_lines:mass'].value[0]
+    B3 = variables['weight:propulsion:unconsumables:mass'].value[0]
 
-    MTOW = system['weight:aircraft:MTOW'].value[0]
-    MZFW = system['weight:aircraft:MZFW'].value[0]
-    MFW = system['weight:aircraft:MFW'].value[0]
-    OWE = system['weight:aircraft:OWE'].value[0]
-    payload = system['weight:aircraft:payload'].value[0]
-    fuel_mission = system['mission:sizing:mission:fuel'].value[0]
+    MTOW = variables['weight:aircraft:MTOW'].value[0]
+    MZFW = variables['weight:aircraft:MZFW'].value[0]
+    MFW = variables['weight:aircraft:MFW'].value[0]
+    OWE = variables['weight:aircraft:OWE'].value[0]
+    payload = variables['weight:aircraft:payload'].value[0]
+    fuel_mission = variables['mission:sizing:mission:fuel'].value[0]
 
     # TODO: Deal with this in a more generic manner ?
     if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):
@@ -243,7 +241,6 @@ def mass_breakdown_plot(aircraft_xml: OMXmlIO):
 
 def mass_breakdown_generic(aircraft_xml: OMXmlIO, root='MTOW', max_depth=10):
     variables = aircraft_xml.read_variables()
-    system = {var.name: var for var in variables}
 
     parents = {'mission:sizing:mission:fuel': 'weight:aircraft:MTOW',
                'weight:aircraft:payload': 'weight:aircraft:MTOW',
@@ -251,54 +248,54 @@ def mass_breakdown_generic(aircraft_xml: OMXmlIO, root='MTOW', max_depth=10):
                'weight:systems:power:auxiliary_power_unit:mass': 'weight:aircraft:OWE',
                }
 
-    systems = system['weight:systems:mass'].value[0]
-    C11 = system['weight:systems:power:auxiliary_power_unit:mass'].value[0]
-    C12 = system['weight:systems:power:electric_systems:mass'].value[0]
-    C13 = system['weight:systems:power:hydraulic_systems:mass'].value[0]
-    C21 = system['weight:systems:life_support:insulation:mass'].value[0]
-    C22 = system['weight:systems:life_support:air_conditioning:mass'].value[0]
-    C23 = system['weight:systems:life_support:de-icing:mass'].value[0]
-    C24 = system['weight:systems:life_support:cabin_lighting:mass'].value[0]
-    C25 = system['weight:systems:life_support:seats_crew_accommodation:mass'].value[0]
-    C26 = system['weight:systems:life_support:oxygen:mass'].value[0]
-    C27 = system['weight:systems:life_support:safety_equipment:mass'].value[0]
-    C3 = system['weight:systems:navigation:mass'].value[0]
-    C4 = system['weight:systems:transmission:mass'].value[0]
-    C51 = system['weight:systems:operational:radar:mass'].value[0]
-    C52 = system['weight:systems:operational:cargo_hold:mass'].value[0]
-    C6 = system['weight:systems:flight_kit:mass'].value[0]
+    systems = variables['weight:systems:mass'].value[0]
+    C11 = variables['weight:systems:power:auxiliary_power_unit:mass'].value[0]
+    C12 = variables['weight:systems:power:electric_systems:mass'].value[0]
+    C13 = variables['weight:systems:power:hydraulic_systems:mass'].value[0]
+    C21 = variables['weight:systems:life_support:insulation:mass'].value[0]
+    C22 = variables['weight:systems:life_support:air_conditioning:mass'].value[0]
+    C23 = variables['weight:systems:life_support:de-icing:mass'].value[0]
+    C24 = variables['weight:systems:life_support:cabin_lighting:mass'].value[0]
+    C25 = variables['weight:systems:life_support:seats_crew_accommodation:mass'].value[0]
+    C26 = variables['weight:systems:life_support:oxygen:mass'].value[0]
+    C27 = variables['weight:systems:life_support:safety_equipment:mass'].value[0]
+    C3 = variables['weight:systems:navigation:mass'].value[0]
+    C4 = variables['weight:systems:transmission:mass'].value[0]
+    C51 = variables['weight:systems:operational:radar:mass'].value[0]
+    C52 = variables['weight:systems:operational:cargo_hold:mass'].value[0]
+    C6 = variables['weight:systems:flight_kit:mass'].value[0]
 
-    furniture = system['weight:furniture:mass'].value[0]
-    D1 = system['weight:furniture:cargo_configuration:mass'].value[0]
-    D2 = system['weight:furniture:passenger_seats:mass'].value[0]
-    D3 = system['weight:furniture:food_water:mass'].value[0]
-    D4 = system['weight:furniture:security_kit:mass'].value[0]
-    D5 = system['weight:furniture:toilets:mass'].value[0]
+    furniture = variables['weight:furniture:mass'].value[0]
+    D1 = variables['weight:furniture:cargo_configuration:mass'].value[0]
+    D2 = variables['weight:furniture:passenger_seats:mass'].value[0]
+    D3 = variables['weight:furniture:food_water:mass'].value[0]
+    D4 = variables['weight:furniture:security_kit:mass'].value[0]
+    D5 = variables['weight:furniture:toilets:mass'].value[0]
 
-    crew = system['weight:crew:mass'].value[0]
+    crew = variables['weight:crew:mass'].value[0]
 
-    airframe = system['weight:airframe:mass'].value[0]
-    wing = system['weight:airframe:wing:mass'].value[0]
-    fuselage = system['weight:airframe:fuselage:mass'].value[0]
-    h_tail = system['weight:airframe:horizontal_tail:mass'].value[0]
-    v_tail = system['weight:airframe:vertical_tail:mass'].value[0]
-    control_surface = system['weight:airframe:flight_controls:mass'].value[0]
-    landing_gear_1 = system['weight:airframe:landing_gear:main:mass'].value[0]
-    landing_gear_2 = system['weight:airframe:landing_gear:front:mass'].value[0]
-    engine_pylon = system['weight:airframe:pylon:mass'].value[0]
-    paint = system['weight:airframe:paint:mass'].value[0]
+    airframe = variables['weight:airframe:mass'].value[0]
+    wing = variables['weight:airframe:wing:mass'].value[0]
+    fuselage = variables['weight:airframe:fuselage:mass'].value[0]
+    h_tail = variables['weight:airframe:horizontal_tail:mass'].value[0]
+    v_tail = variables['weight:airframe:vertical_tail:mass'].value[0]
+    control_surface = variables['weight:airframe:flight_controls:mass'].value[0]
+    landing_gear_1 = variables['weight:airframe:landing_gear:main:mass'].value[0]
+    landing_gear_2 = variables['weight:airframe:landing_gear:front:mass'].value[0]
+    engine_pylon = variables['weight:airframe:pylon:mass'].value[0]
+    paint = variables['weight:airframe:paint:mass'].value[0]
 
-    propulsion = system['weight:propulsion:mass'].value[0]
-    B1 = system['weight:propulsion:engine:mass'].value[0]
-    B2 = system['weight:propulsion:fuel_lines:mass'].value[0]
-    B3 = system['weight:propulsion:unconsumables:mass'].value[0]
+    propulsion = variables['weight:propulsion:mass'].value[0]
+    B1 = variables['weight:propulsion:engine:mass'].value[0]
+    B2 = variables['weight:propulsion:fuel_lines:mass'].value[0]
+    B3 = variables['weight:propulsion:unconsumables:mass'].value[0]
 
-    MTOW = system['weight:aircraft:MTOW'].value[0]
-    # MZFW = system['weight:aircraft:MZFW'].value[0]
-    # MFW = system['weight:aircraft:MFW'].value[0]
-    OWE = system['weight:aircraft:OWE'].value[0]
-    payload = system['weight:aircraft:payload'].value[0]
-    fuel_mission = system['mission:sizing:mission:fuel'].value[0]
+    MTOW = variables['weight:aircraft:MTOW'].value[0]
+    # MZFW = variables['weight:aircraft:MZFW'].value[0]
+    # MFW = variables['weight:aircraft:MFW'].value[0]
+    OWE = variables['weight:aircraft:OWE'].value[0]
+    payload = variables['weight:aircraft:payload'].value[0]
+    fuel_mission = variables['mission:sizing:mission:fuel'].value[0]
 
     # TODO: Deal with this in a more generic manner ?
     if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):
@@ -308,7 +305,8 @@ def mass_breakdown_generic(aircraft_xml: OMXmlIO, root='MTOW', max_depth=10):
 
     # FIXME: the first sunburst looks broken, but I don't know why
     fig.add_trace(go.Sunburst(
-        labels=["MTOW", "payload " + '<br>' + " 50%", "fuel_mission " + '<br>' + "50%", "OWE" + '<br>' + " 50%"],
+        labels=["MTOW", "payload " + '<br>' + " 50%", "fuel_mission " + '<br>' + "50%",
+                "OWE" + '<br>' + " 50%"],
         parents=["", "MTOW", "MTOW", "MTOW"],
         values=[MTOW, payload, fuel_mission, OWE],
         branchvalues='total',
