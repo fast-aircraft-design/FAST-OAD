@@ -2,7 +2,7 @@
 Tests custom XML serializer for OpenMDAO variables
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,6 @@ Tests custom XML serializer for OpenMDAO variables
 
 import os.path as pth
 from shutil import rmtree
-from typing import List
 
 import pytest
 from openmdao.core.indepvarcomp import IndepVarComp
@@ -25,7 +24,7 @@ from pytest import approx
 from fastoad.io.xml import OMCustomXmlIO
 from fastoad.io.xml.exceptions import FastMissingTranslatorError
 from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.openmdao.variables import Variable
+from fastoad.openmdao.connections_utils import get_variables_from_ivc
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
@@ -40,33 +39,26 @@ def cleanup():
 def _check_basic2_ivc(ivc: IndepVarComp):
     """ Checks that provided IndepVarComp instance matches content of data/custom.xml file """
 
-    outputs: List[Variable] = []
-    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(Variable(name=name, value=value, **attributes))
+    outputs = get_variables_from_ivc(ivc)
 
     assert len(outputs) == 5
 
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)
-    assert outputs[0].name == 'geometry:total_surface'
-    assert outputs[0].value == approx([780.3])
-    assert outputs[0].units == 'm**2'
+    assert outputs['geometry:total_surface'].value == approx([780.3])
+    assert outputs['geometry:total_surface'].units == 'm**2'
 
-    assert outputs[1].name == 'geometry:wing:span'
-    assert outputs[1].value == approx([42])
-    assert outputs[1].units == 'm'
+    assert outputs['geometry:wing:span'].value == approx([42])
+    assert outputs['geometry:wing:span'].units == 'm'
 
-    assert outputs[2].name == 'geometry:wing:aspect_ratio'
-    assert outputs[2].value == approx([9.8])
-    assert outputs[2].units is None
+    assert outputs['geometry:wing:aspect_ratio'].value == approx([9.8])
+    assert outputs['geometry:wing:aspect_ratio'].units is None
 
-    assert outputs[3].name == 'geometry:wing:chord'
-    assert outputs[3].value == approx([5., 3.5, 2.])
-    assert outputs[3].units == 'm'
+    assert outputs['geometry:wing:chord'].value == approx([5., 3.5, 2.])
+    assert outputs['geometry:wing:chord'].units == 'm'
 
-    assert outputs[4].name == 'geometry:fuselage:length'
-    assert outputs[4].value == approx([40.])
-    assert outputs[4].units == 'm'
+    assert outputs['geometry:fuselage:length'].value == approx([40.])
+    assert outputs['geometry:fuselage:length'].units == 'm'
 
 
 def test_custom_xml_read_and_write_from_ivc(cleanup):
@@ -188,9 +180,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
 
     # test with "only"
     ivc = xml_read.read(only=['geometry:wing:span'])
-    outputs: List[Variable] = []
-    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(Variable(name=name, value=value, **attributes))
+    outputs = get_variables_from_ivc(ivc)
     assert len(outputs) == 1
     assert outputs[0].name == 'geometry:wing:span'
     assert outputs[0].value == approx([42])
@@ -199,9 +189,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
     # test with "ignore"
     ivc = xml_read.read(
         ignore=['geometry:total_surface', 'geometry:wing:aspect_ratio', 'geometry:fuselage:length'])
-    outputs: List[Variable] = []
-    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(Variable(name=name, value=value, **attributes))
+    outputs = get_variables_from_ivc(ivc)
     assert len(outputs) == 1
     assert outputs[0].name == 'geometry:wing:span'
     assert outputs[0].value == approx([42])
@@ -209,9 +197,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
 
     # test with patterns in "only"
     ivc = xml_read.read(only=['*:wing:*'])
-    outputs: List[Variable] = []
-    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(Variable(name=name, value=value, **attributes))
+    outputs = get_variables_from_ivc(ivc)
     assert len(outputs) == 2
     assert outputs[0].name == 'geometry:wing:span'
     assert outputs[0].value == approx([42])
@@ -222,9 +208,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
 
     # test with patterns in "ignore"
     ivc = xml_read.read(ignore=['geometry:*u*', 'geometry:wing:aspect_ratio'])
-    outputs: List[Variable] = []
-    for (name, value, attributes) in ivc._indep_external:  # pylint: disable=protected-access
-        outputs.append(Variable(name=name, value=value, **attributes))
+    outputs = get_variables_from_ivc(ivc)
     assert len(outputs) == 1
     assert outputs[0].name == 'geometry:wing:span'
     assert outputs[0].value == approx([42])
