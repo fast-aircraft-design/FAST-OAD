@@ -85,32 +85,7 @@ class BundleLoader:
 
         _LOGGER.info('Loading bundles from %s', folder_path)
 
-        try:
-            bundles, failed = self.context.install_package(folder_path, True)
-        except TypeError as err:
-            #  This happens when some modules in sys.modules have None as __path__ attribute instead
-            #  of not having this __path__ attribute. Actually, this should never happen, but
-            #  some users encountered it in somehow buggy numpy installs.
-            import sys
-            problem_module_names = []
-            for name, module in sys.modules.items():
-                if hasattr(module, '__path__') and module.__path__ is None:
-                    problem_module_names.append(name)
-                    del module.__path__
-
-            if problem_module_names:
-                # Tell user about problematic packages
-                problem_package_names = set([name.split('.')[0] for name in problem_module_names])
-                plural = 's' if len(problem_package_names) > 1 else ''
-                _LOGGER.warning(
-                    f'Some module(s) in package{plural} {problem_package_names} have None as '
-                    '__path__ attribute, which should not happen. Please consider '
-                    f'reinstalling/upgrading the concerned package{plural}.')
-
-                # Then try again
-                bundles, failed = self.context.install_package(folder_path, True)
-            else:
-                raise err  # raise the original exception
+        bundles, failed = self.context.install_package(folder_path, True)
 
         for bundle in bundles:
             _LOGGER.info('Installed bundle %s (ID %s )'
