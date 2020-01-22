@@ -109,6 +109,10 @@ def test_install_packages_on_faulty_install(delete_framework):
     """
     Related to Issue #81
     """
+    # TODO: this test was done for testing the workaround about iPOPO crashing
+    #       when a module has None as __path__ attribute. As iPOPO is fixed, the
+    #       workaround has been removed, and this test now just tests iPOPO, so
+    #       it may be removed later.
     loader = BundleLoader()
 
     # Create the buggy numpy install
