@@ -79,7 +79,7 @@ def generate_inputs(configuration_file_path: str,
     if not overwrite and pth.exists(inputs_path):
         raise FastFileExistsError('Input file %s not written because it already exists. '
                                   'Use overwrite=True to bypass.'
-                                  % inputs_path)
+                                  % inputs_path, inputs_path)
 
     if source_path:
         if source_path_schema == 'legacy':
