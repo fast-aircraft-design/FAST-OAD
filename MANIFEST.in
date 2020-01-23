@@ -1,0 +1,3 @@
+include src/fastoad/notebooks/tutorial/*
+include src/fastoad/notebooks/tutorial/img/*
+include src/fastoad/notebooks/tutorial/data/*
