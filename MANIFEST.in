@@ -1,6 +1,6 @@
-include src/*.toml
-include src/*.txt
-include src/*.dat
-include src/*.png
-include src/*.svg
-include src/*.ipynb
+recursive-include src/fastoad *.toml
+recursive-include src/fastoad *.txt
+recursive-include src/fastoad *.dat
+recursive-include src/fastoad *.png
+recursive-include src/fastoad *.svg
+recursive-include src/fastoad *.ipynb
