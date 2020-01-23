@@ -1,0 +1,7 @@
+recursive-include src/fastoad *.toml
+recursive-include src/fastoad *.xml
+recursive-include src/fastoad *.txt
+recursive-include src/fastoad *.dat
+recursive-include src/fastoad *.png
+recursive-include src/fastoad *.svg
+recursive-include src/fastoad *.ipynb
