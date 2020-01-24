@@ -27,7 +27,7 @@ class FASTOADDataFrame():
 
     def __init__(self):
 
-        self.col_names = ['Module', 'Name', 'Value', 'Unit', 'Description']
+        self.col_names = ['Module', 'Type', 'Name', 'Value', 'Unit', 'Description']
 
         self.df = pd.DataFrame()
 
@@ -40,26 +40,75 @@ class FASTOADDataFrame():
 
     def read_problem(self, problem: FASTOADProblem):
         problem_variables = {}
-        problem_variables.update(problem.model._var_allprocs_prom2abs_list['input'])
-        problem_variables.update(problem.model._var_allprocs_prom2abs_list['output'])
+        inputs = problem.model._var_allprocs_prom2abs_list['input']
+        outputs = problem.model._var_allprocs_prom2abs_list['output']
+        problem_variables.update(inputs)
+        problem_variables.update(outputs)
 
         system = problem.model
 
         module_names = [name for (name, module) in self._modules.items()]
 
+        # Adding modules infos
         for prom_name, abs_names  in problem_variables.items():
             # We assume a variable can not be in two different module
             # Pick the first
             abs_name = abs_names[0]
             for module_name in module_names:
                 if module_name in prom_name:
+                    if prom_name in inputs:
+                        var_type = 'Input'
+                    else:
+                        var_type = 'Output'
                     self.df = self.df.append([{'Module': self._modules[module_name],
+                                               'Type': var_type,
                                                'Name': prom_name,
                                                'Value': problem[prom_name],
                                                'Unit': system._var_abs2meta[abs_name]['units'],
                                                'Description': system._var_abs2meta[abs_name]['desc']
                                                }
                                               ])[self.col_names]
+        # Adding optimization infos
+        opt_col_names = ['Module', 'Type', 'Name', 'Value', 'Lower', 'Upper', 'Unit', 'Description']
+        driver = problem.driver
+        for (abs_name, infos) in driver._designvars.items():
+            prom_name = infos['name']
+            self.df = self.df.append([{'Module': 'Optimization',
+                                       'Type': 'Design Variable',
+                                       'Name': prom_name,
+                                       'Value': problem[prom_name],
+                                       'Lower': infos['lower'],
+                                       'Upper': infos['upper'],
+                                       'Unit': system._var_abs2meta[abs_name]['units'],
+                                       'Description': system._var_abs2meta[abs_name]['desc']
+                                       }
+                                      ])[opt_col_names]
+
+        for (abs_name, infos) in driver._cons.items():
+            prom_name = infos['name']
+            self.df = self.df.append([{'Module': 'Optimization',
+                                       'Type': 'Constraint',
+                                       'Name': prom_name,
+                                       'Value': problem[prom_name],
+                                       'Lower': infos['lower'],
+                                       'Upper': infos['upper'],
+                                       'Unit': system._var_abs2meta[abs_name]['units'],
+                                       'Description': system._var_abs2meta[abs_name]['desc']
+                                       }
+                                      ])[opt_col_names]
+
+        for (abs_name, infos) in driver._objs.items():
+            prom_name = infos['name']
+            self.df = self.df.append([{'Module': 'Optimization',
+                                       'Type': 'Objective',
+                                       'Name': prom_name,
+                                       'Value': problem[prom_name],
+                                       'Lower': '-',
+                                       'Upper': '-',
+                                       'Unit': system._var_abs2meta[abs_name]['units'],
+                                       'Description': system._var_abs2meta[abs_name]['desc']
+                                       }
+                                      ])[opt_col_names]
 
     def read_xml(self, aircraft_xml: OMXmlIO):
         pass
