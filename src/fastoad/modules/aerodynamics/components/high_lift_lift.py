@@ -2,7 +2,7 @@
 Computation of lift increment due to high-lift devices
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -46,6 +46,8 @@ class DeltaCLHighLift(ExplicitComponent):
         self.add_input('geometry:slat:chord_ratio', val=np.nan)
         self.add_input('geometry:slat:span_ratio', val=np.nan)
         self.add_input('mach', val=np.nan)
+
+        self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
         """  Calculates the cl produced by flap and slat.

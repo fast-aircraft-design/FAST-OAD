@@ -2,7 +2,7 @@
 This module launches XFOIL computations
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -61,6 +61,7 @@ class XfoilPolar(ExternalCodeComp):
         self.add_output('aerodynamics:Cl_max_2D')
         self.add_output('aerodynamics:aircraft:landing:CL_max_clean')
 
+        self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
 
@@ -135,7 +136,8 @@ class XfoilPolar(ExternalCodeComp):
             cl_max_2d = 1.9
 
         outputs['aerodynamics:Cl_max_2D'] = cl_max_2d
-        outputs['aerodynamics:aircraft:landing:CL_max_clean'] = cl_max_2d * 0.9 * np.cos(np.radians(sweep_25))
+        outputs['aerodynamics:aircraft:landing:CL_max_clean'] = cl_max_2d * 0.9 * np.cos(
+            np.radians(sweep_25))
 
         # Getting output files if needed
         if self.options['result_folder_path'] != '':

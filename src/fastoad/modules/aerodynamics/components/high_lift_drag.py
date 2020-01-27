@@ -2,7 +2,7 @@
 Computation of drag increment due to high-lift devices
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,6 +23,7 @@ class DeltaCDHighLift(ExplicitComponent):
     """
     Component for getting drag increment for given slta/flap configuration
     """
+
     def setup(self):
         self.add_input('flap_angle', val=np.nan, units='deg')
         self.add_input('slat_angle', val=np.nan, units='deg')
@@ -30,6 +31,8 @@ class DeltaCDHighLift(ExplicitComponent):
 
         self.add_input('geometry:flap:span_ratio', val=np.nan)
         self.add_input('geometry:slat:span_ratio', val=np.nan)
+
+        self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
         slat_angle = inputs['slat_angle']

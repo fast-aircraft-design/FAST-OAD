@@ -3,7 +3,7 @@ Computation of Oswald coefficient
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -45,6 +45,7 @@ class OswaldCoefficient(ExplicitComponent):
             self.add_input('TLAR:cruise_mach', val=np.nan)
             self.add_output('oswald_coeff_high_speed')
 
+        self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
         wing_area = inputs['geometry:wing:area']

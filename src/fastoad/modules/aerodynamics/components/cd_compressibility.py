@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -39,6 +39,8 @@ class CdCompressibility(ExplicitComponent):
             self.add_input('TLAR:cruise_mach', val=np.nan)
             self.add_input('cl_high_speed', val=nans_array)
             self.add_output('cd_comp_high_speed', shape=POLAR_POINT_COUNT)
+
+        self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
         if self.low_speed_aero:
