@@ -15,15 +15,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class ComputeMaxClLanding(ExplicitComponent):
     def setup(self):
-        self.add_input('aerodynamics:aircraft:landing:CL_max_clean', val=np.nan)
-        self.add_input('delta_cl_landing', val=np.nan)
-        self.add_input('aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k', val=np.nan)
+        self.add_input('aerodynamics:aircraft:landing:CL_max_clean', val=1.)
+        self.add_input('delta_cl_landing', val=1.)
+        self.add_input('aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k', val=1.)
         self.add_output('aerodynamics:aircraft:landing:CL_max')
 
         self.declare_partials('*', '*', method='fd')
