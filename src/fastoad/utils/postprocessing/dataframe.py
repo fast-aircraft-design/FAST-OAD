@@ -15,6 +15,7 @@ Defines the data frame for postprocessing
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import numpy as np
 import pandas as pd
+import ipysheet as sh
 import ipywidgets as widgets
 from IPython.display import display
 
@@ -70,6 +71,11 @@ class FASTOADDataFrame():
             # We assume a variable can not be in two different module
             # Pick the first
             abs_name = abs_names[0]
+            value = problem[prom_name]
+            if len(value) == 1:
+                value = np.asscalar(value)
+            else:
+                value = np.ndarray.tolist(value)
             for module_name in module_names:
                 if module_name in prom_name:
                     if prom_name in input_names:
@@ -79,7 +85,7 @@ class FASTOADDataFrame():
                     self.df_variables = self.df_variables.append([{'Module': self._modules[module_name],
                                                                    'Type': var_type,
                                                                    'Name': prom_name,
-                                                                   'Value': problem[prom_name],
+                                                                   'Value': value,
                                                                    'Unit': system._var_abs2meta[abs_name]['units'],
                                                                    'Description': system._var_abs2meta[abs_name]['desc']
                                                                    }
@@ -88,10 +94,16 @@ class FASTOADDataFrame():
         driver = problem.driver
         for (abs_name, infos) in driver._designvars.items():
             prom_name = infos['name']
+            value = problem[prom_name]
+            if len(value) == 1:
+                value = np.asscalar(value)
+            else:
+                value = np.ndarray.tolist(value)
+
             self.df_optimization = self.df_optimization.append([{'Module': 'Optimization',
                                                                  'Type': 'Design Variable',
                                                                  'Name': prom_name,
-                                                                 'Value': problem[prom_name],
+                                                                 'Value': value,
                                                                  'Lower': infos['lower'],
                                                                  'Upper': infos['upper'],
                                                                  'Unit': system._var_abs2meta[abs_name]['units'],
@@ -101,10 +113,16 @@ class FASTOADDataFrame():
 
         for (abs_name, infos) in driver._cons.items():
             prom_name = infos['name']
+            value = problem[prom_name]
+            if len(value) == 1:
+                value = np.asscalar(value)
+            else:
+                value = np.ndarray.tolist(value)
+
             self.df_optimization = self.df_optimization.append([{'Module': 'Optimization',
                                                                  'Type': 'Constraint',
                                                                  'Name': prom_name,
-                                                                 'Value': problem[prom_name],
+                                                                 'Value': value,
                                                                  'Lower': infos['lower'],
                                                                  'Upper': infos['upper'],
                                                                  'Unit': system._var_abs2meta[abs_name]['units'],
@@ -114,16 +132,25 @@ class FASTOADDataFrame():
 
         for (abs_name, infos) in driver._objs.items():
             prom_name = infos['name']
+            value = problem[prom_name]
+            if len(value) == 1:
+                value = np.asscalar(value)
+            else:
+                value = np.ndarray.tolist(value)
+
             self.df_optimization = self.df_optimization.append([{'Module': 'Optimization',
                                                                  'Type': 'Objective',
                                                                  'Name': prom_name,
-                                                                 'Value': problem[prom_name],
+                                                                 'Value': value,
                                                                  'Lower': '-',
                                                                  'Upper': '-',
                                                                  'Unit': system._var_abs2meta[abs_name]['units'],
                                                                  'Description': system._var_abs2meta[abs_name]['desc']
                                                                  }
                                                                 ])[self.col_names_optimization]
+
+        self.df_variables = self.df_variables.reset_index(drop=True)
+        self.df_optimization = self.df_optimization.reset_index(drop=True)
 
     def read_xml(self, aircraft_xml: OMXmlIO):
         pass
@@ -144,3 +171,44 @@ class FASTOADDataFrame():
 
         widgets.interact(f, Type=items)
         return f
+
+    def data_sheet(self, include_inputs=True, include_outputs=True):
+        items_var = self.df_variables['Module'].unique().tolist()
+        items_opt = self.df_optimization['Module'].unique().tolist()
+        items = sorted(items_var + items_opt)
+        if not include_outputs:
+            df_optimization = self.df_optimization[
+                self.df_optimization['Type'] == 'Input']
+            df_variables = self.df_variables[
+                self.df_variables['Type'] == 'Input']
+        elif not include_inputs:
+            df_optimization = self.df_optimization[
+                self.df_optimization['Type'] == 'Output']
+            df_variables = self.df_variables[
+                self.df_variables['Type'] == 'Output']
+        else:
+            df_optimization = self.df_optimization
+            df_variables = self.df_variables
+
+        def f(Type):
+            if Type == 'Optimization':
+                df = display(self.build_sheet(df_optimization[
+                                                  df_optimization['Module'] == Type]))
+            else:
+                df = display(self.build_sheet(df_variables[
+                                                  df_variables['Module'] == Type]))
+            return df
+
+        widgets.interact(f, Type=items)
+        return f
+
+    def build_sheet(self, df):
+
+        sheet = sh.from_dataframe(df)
+        column = df.columns.get_loc('Value')
+
+        for cell in sheet.cells:
+            if cell.column_start != column and cell.column_end != column:
+                cell.read_only = True
+
+        return sheet
