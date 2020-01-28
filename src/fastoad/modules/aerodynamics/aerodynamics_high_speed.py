@@ -34,7 +34,6 @@ from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
 class AerodynamicsHighSpeed(Group):
 
     def setup(self):
-        #        self.add_subsystem('compute_oswald_coeff', OswaldCoefficient(), promotes=['*'])
         self.add_subsystem('compute_oswald_coeff', OswaldCoefficient(), promotes=['*'])
         self.add_subsystem('comp_re', ComputeReynolds(), promotes=['*'])
         self.add_subsystem('initialize_cl', InitializeClPolar(), promotes=['*'])

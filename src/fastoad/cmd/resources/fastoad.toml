@@ -23,7 +23,7 @@ driver = "om.ScipyOptimizeDriver()"
     [model.weights]
         id = "fastoad.weights.legacy"
     [model.aerodynamics]
-        id = "fastoad.aerodynamics.highspeed.legacy"
+        id = "fastoad.aerodynamics.legacy"
     [model.performance]
         id = "fastoad.performances.breguet.from_owe"
     [model.propulsion]

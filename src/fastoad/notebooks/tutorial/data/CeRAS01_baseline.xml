@@ -191,6 +191,14 @@
             <sweep_0 units="deg">40.51<!--sweep angle at leading edge of vertical tail--></sweep_0>
             <sweep_100 units="deg">13.35<!--sweep angle at trailing edge of vertical tail--></sweep_100>
         </vertical_tail>
+        <flap>
+            <chord_ratio>0.2<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+            <span_ratio>0.8<!--ratio (width of flaps)/(total span)--></span_ratio>
+        </flap>
+        <slat>
+            <chord_ratio>0.18<!--mean value of slat chord)/(section chord)--></chord_ratio>
+            <span_ratio>0.9<!--ratio (width of slats)/(total span)--></span_ratio>
+        </slat>
         <vt_x0 units="m">2.32</vt_x0>
         <aircraft>
             <wetted_area units="m**2">785.60<!--total wetted area--></wetted_area>
@@ -634,6 +642,13 @@
                 </CD>
                 <L_D_max>16.20<!--max lift/drag ratio in cruise conditions--></L_D_max>
             </cruise>
+            <landing>
+                <CL_max>
+                    <landing_gear_effect>
+                        <k>1.0<!--correction ratio to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear--></k>
+                    </landing_gear_effect>
+                </CL_max>
+            </landing>
         </aircraft>
         <horizontal_tail>
             <cruise>
