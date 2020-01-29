@@ -52,7 +52,7 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         self.add_input('geometry:flap:span_ratio', val=np.nan)
         self.add_input('geometry:slat:chord_ratio', val=np.nan)
         self.add_input('geometry:slat:span_ratio', val=np.nan)
-        self.add_input('xfoil:mach', val=np.nan)
+        self.add_input('aerodynamics:aircraft:landing:mach', val=np.nan)
 
         self.declare_partials('*', '*', method='fd')
 
@@ -65,7 +65,7 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
             flap_angle = inputs['mission:sizing:takeoff:flap_angle']
             slat_angle = inputs['mission:sizing:takeoff:slat_angle']
 
-        mach = inputs['xfoil:mach']
+        mach = inputs['aerodynamics:aircraft:landing:mach']
         le_sweep_angle = inputs['geometry:wing:sweep_0']
         te_sweep_angle = inputs['geometry:wing:sweep_100_outer']
         flap_chord_ratio = inputs['geometry:flap:chord_ratio']
