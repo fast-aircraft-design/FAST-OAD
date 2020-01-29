@@ -18,10 +18,13 @@ from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFact
 from . import Aerodynamics
 from .aerodynamics_high_speed import AerodynamicsHighSpeed
 from .aerodynamics_landing import AerodynamicsLanding
+from .aerodynamics_low_speed import AerodynamicsLowSpeed
 
 OpenMDAOSystemFactory.register_system(Aerodynamics,
                                       'fastoad.aerodynamics.legacy')
-OpenMDAOSystemFactory.register_system(AerodynamicsHighSpeed,
-                                      'fastoad.aerodynamics.highspeed.legacy')
 OpenMDAOSystemFactory.register_system(AerodynamicsLanding,
                                       'fastoad.aerodynamics.landing.legacy')
+OpenMDAOSystemFactory.register_system(AerodynamicsHighSpeed,
+                                      'fastoad.aerodynamics.highspeed.legacy')
+OpenMDAOSystemFactory.register_system(AerodynamicsLowSpeed,
+                                      'fastoad.aerodynamics.lowspeed.legacy')
