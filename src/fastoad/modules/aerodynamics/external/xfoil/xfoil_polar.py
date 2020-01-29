@@ -58,8 +58,8 @@ class XfoilPolar(ExternalCodeComp):
         self.add_input('xfoil:mach', val=np.nan)
         self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
 
-        self.add_output('aerodynamics:Cl_max_2D')
-        self.add_output('aerodynamics:aircraft:landing:CL_max_clean')
+        self.add_output('xfoil:Cl_max_2D')
+        self.add_output('xfoil:CL_max_clean')
 
         self.declare_partials('*', '*', method='fd')
 
@@ -135,8 +135,8 @@ class XfoilPolar(ExternalCodeComp):
         else:
             cl_max_2d = 1.9
 
-        outputs['aerodynamics:Cl_max_2D'] = cl_max_2d
-        outputs['aerodynamics:aircraft:landing:CL_max_clean'] = cl_max_2d * 0.9 * np.cos(
+        outputs['xfoil:Cl_max_2D'] = cl_max_2d
+        outputs['xfoil:CL_max_clean'] = cl_max_2d * 0.9 * np.cos(
             np.radians(sweep_25))
 
         # Getting output files if needed

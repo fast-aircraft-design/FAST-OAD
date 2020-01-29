@@ -63,7 +63,7 @@ def test_high_lift_aero():
         else:
             ivc.add_output('mission:sizing:takeoff:slat_angle', slat_angle, units='deg')
             ivc.add_output('mission:sizing:takeoff:flap_angle', flap_angle, units='deg')
-        ivc.add_output('xfoil:mach', mach)
+        ivc.add_output('aerodynamics:aircraft:landing:mach', mach)
         component = ComputeDeltaHighLift()
         component.options['landing_flag'] = landing_flag
         problem = run_system(component, ivc)

@@ -17,23 +17,17 @@
 
 from openmdao.api import Group
 
-from fastoad.modules.aerodynamics.aerodynamics_2d import Aerodynamics2d
 from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
-from fastoad.modules.aerodynamics.components.compute_max_cl_landing import ComputeMaxClLanding
-from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
+from fastoad.modules.aerodynamics.aerodynamics_landing import AerodynamicsLanding
 
 
 class Aerodynamics(Group):
 
     def setup(self):
-        # Compute the airfoil aerodynamics (max Cl)
-        self.add_subsystem('aero_2d', Aerodynamics2d(), promotes=['*'])
 
         # FIXME: reactivate low speed aero
         # Compute the low speed aero (Cl alpha at takeoff and Cl0)
         # self.add_subsystem('aero_low', AerodynamicsLowSpeed(), promotes=['*'])
 
-        self.add_subsystem('delta_cl_landing', ComputeDeltaHighLift(landing_flag=True),
-                           promotes=['*'])
-        self.add_subsystem('compute_max_cl_landing', ComputeMaxClLanding(), promotes=['*'])
+        self.add_subsystem('aero_landing', AerodynamicsLanding(), promotes=['*'])
         self.add_subsystem('aero_high', AerodynamicsHighSpeed(), promotes=['*'])

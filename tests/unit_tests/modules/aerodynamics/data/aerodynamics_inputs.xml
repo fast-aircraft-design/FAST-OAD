@@ -1,6 +1,6 @@
 <!--
   ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2019  ONERA/ISAE
+  ~ Copyright (C) 2020  ONERA/ISAE
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -14,122 +14,123 @@
   -->
 
 <aircraft>
-  <geometry>
-    <useless>0.9</useless>
-    <wing>
-      <sweep_0 units="deg">27.554</sweep_0>
-      <sweep_100_outer units="deg">16.696</sweep_100_outer>
-      <span units="m">31.603</span>
-      <root>
-        <chord units="m">6.26</chord>
-      </root>
-      <tip>
-        <chord units="m">1.882</chord>
-        <thickness_ratio>0.11</thickness_ratio>
-      </tip>
-      <sweep_25 units="deg">25.0</sweep_25>
-      <area units="m**2">124.843</area>
-      <thickness_ratio>0.128</thickness_ratio>
-      <wetted_area units="m**2">200.607</wetted_area>
-      <MAC>
-        <length units="m">4.457</length>
-      </MAC>
-      <aspect_ratio>9.48</aspect_ratio>
-    </wing>
-    <flap>
-      <chord_ratio>0.197</chord_ratio>
-      <span_ratio>0.8</span_ratio>
-    </flap>
-    <slat>
-      <chord_ratio>0.177</chord_ratio>
-      <span_ratio>0.9</span_ratio>
-    </slat>
-    <fuselage>
-      <maximum_height units="m">4.06</maximum_height>
-      <maximum_width units="m">3.92</maximum_width>
-      <length units="m">37.507</length>
-        <wetted_area units="m**2">401.956</wetted_area>
-    </fuselage>
-      <horizontal_tail>
-          <MAC>
-              <length units="m">3.141</length>
-          </MAC>
-          <thickness_ratio>0.1</thickness_ratio>
-          <sweep_25 units="deg">28.0</sweep_25>
-          <wetted_area units="m**2">70.341</wetted_area>
-      </horizontal_tail>
-    <vertical_tail>
-      <length units="m">4.161</length>
-      <thickness_ratio>0.1</thickness_ratio>
-      <sweep_25 units="deg">35.0</sweep_25>
-        <wetted_area units="m**2">52.749</wetted_area>
-    </vertical_tail>
-    <propulsion>
-      <pylon>
-        <length units="m">5.733</length>
-          <wetted_area units="m**2">7.563</wetted_area>
-      </pylon>
-      <nacelle>
-        <length units="m">5.211</length>
-          <wetted_area units="m**2">21.609</wetted_area>
-      </nacelle>
-      <engine>
-        <count>2.0</count>
-      </engine>
-      <fan>
-        <length units="m">3.127</length>
-      </fan>
-    </propulsion>
-    <aircraft>
-        <wetted_area units="m**2">784.007</wetted_area>
-    </aircraft>
-  </geometry>
-  <mission>
-    <sizing>
-      <takeoff>
-        <flap_angle units="deg">10.0</flap_angle>
-        <slat_angle units="deg">18.0</slat_angle>
-      </takeoff>
-      <landing>
-        <flap_angle units="deg">30.0</flap_angle>
-        <slat_angle units="deg">20.0</slat_angle>
-      </landing>
-      <cruise>
-        <altitude units="ft">35000.0</altitude>
-      </cruise>
-    </sizing>
-  </mission>
-  <TLAR>
-    <cruise_mach>0.78</cruise_mach>
-    <approach_speed units="kn">132.0</approach_speed>
-  </TLAR>
-  <aerodynamics>
-    <aircraft>
-      <cruise>
-        <CD>
-          <k>1.0</k>
-          <offset>0.0</offset>
-          <winglet_effect>
-            <k>1.0</k>
-            <offset>0.0</offset>
-          </winglet_effect>
-        </CD>
-        <CL>
-          <k>1.0</k>
-          <offset>0.0</offset>
-          <winglet_effect>
-            <k>1.0</k>
-            <offset>0.0</offset>
-          </winglet_effect>
-        </CL>
-      </cruise>
-      <landing>
-          <CL_max>
-              <landing_gear_effect>
-                  <k>1.0</k>
-              </landing_gear_effect>
-          </CL_max>
-      </landing>
-    </aircraft>
-  </aerodynamics>
+    <geometry>
+        <useless>0.9</useless>
+        <wing>
+            <sweep_0 units="deg">27.554</sweep_0>
+            <sweep_100_outer units="deg">16.696</sweep_100_outer>
+            <span units="m">31.603</span>
+            <root>
+                <chord units="m">6.26</chord>
+            </root>
+            <tip>
+                <chord units="m">1.882</chord>
+                <thickness_ratio>0.11</thickness_ratio>
+            </tip>
+            <sweep_25 units="deg">25.0</sweep_25>
+            <area units="m**2">124.843</area>
+            <thickness_ratio>0.128</thickness_ratio>
+            <wetted_area units="m**2">200.607</wetted_area>
+            <MAC>
+                <length units="m">4.457</length>
+            </MAC>
+            <aspect_ratio>9.48</aspect_ratio>
+        </wing>
+        <flap>
+            <chord_ratio>0.197</chord_ratio>
+            <span_ratio>0.8</span_ratio>
+        </flap>
+        <slat>
+            <chord_ratio>0.177</chord_ratio>
+            <span_ratio>0.9</span_ratio>
+        </slat>
+        <fuselage>
+            <maximum_height units="m">4.06</maximum_height>
+            <maximum_width units="m">3.92</maximum_width>
+            <length units="m">37.507</length>
+            <wetted_area units="m**2">401.956</wetted_area>
+        </fuselage>
+        <horizontal_tail>
+            <MAC>
+                <length units="m">3.141</length>
+            </MAC>
+            <thickness_ratio>0.1</thickness_ratio>
+            <sweep_25 units="deg">28.0</sweep_25>
+            <wetted_area units="m**2">70.341</wetted_area>
+        </horizontal_tail>
+        <vertical_tail>
+            <length units="m">4.161</length>
+            <thickness_ratio>0.1</thickness_ratio>
+            <sweep_25 units="deg">35.0</sweep_25>
+            <wetted_area units="m**2">52.749</wetted_area>
+        </vertical_tail>
+        <propulsion>
+            <pylon>
+                <length units="m">5.733</length>
+                <wetted_area units="m**2">7.563</wetted_area>
+            </pylon>
+            <nacelle>
+                <length units="m">5.211</length>
+                <wetted_area units="m**2">21.609</wetted_area>
+            </nacelle>
+            <engine>
+                <count>2.0</count>
+            </engine>
+            <fan>
+                <length units="m">3.127</length>
+            </fan>
+        </propulsion>
+        <aircraft>
+            <wetted_area units="m**2">784.007</wetted_area>
+        </aircraft>
+    </geometry>
+    <mission>
+        <sizing>
+            <takeoff>
+                <flap_angle units="deg">10.0</flap_angle>
+                <slat_angle units="deg">18.0</slat_angle>
+            </takeoff>
+            <landing>
+                <flap_angle units="deg">30.0</flap_angle>
+                <slat_angle units="deg">20.0</slat_angle>
+            </landing>
+            <cruise>
+                <altitude units="ft">35000.0</altitude>
+            </cruise>
+        </sizing>
+    </mission>
+    <TLAR>
+        <cruise_mach>0.78</cruise_mach>
+        <approach_speed units="kn">132.0</approach_speed>
+    </TLAR>
+    <aerodynamics>
+        <aircraft>
+            <cruise>
+                <CD>
+                    <k>1.0</k>
+                    <offset>0.0</offset>
+                    <winglet_effect>
+                        <k>1.0</k>
+                        <offset>0.0</offset>
+                    </winglet_effect>
+                </CD>
+                <CL>
+                    <k>1.0</k>
+                    <offset>0.0</offset>
+                    <winglet_effect>
+                        <k>1.0</k>
+                        <offset>0.0</offset>
+                    </winglet_effect>
+                </CL>
+            </cruise>
+            <landing>
+                <CL_max_clean>1.55</CL_max_clean>
+                <CL_max>
+                    <landing_gear_effect>
+                        <k>1.0</k>
+                    </landing_gear_effect>
+                </CL_max>
+            </landing>
+        </aircraft>
+    </aerodynamics>
 </aircraft>

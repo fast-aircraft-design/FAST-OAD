@@ -2,7 +2,7 @@
 Test module for XFOIL component
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -42,13 +42,13 @@ def test_compute():
 
     xfoil_comp = XfoilPolar(profile_path=INPUT_PROFILE)
     problem = run_system(xfoil_comp, ivc)
-    assert problem['aerodynamics:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
-    assert problem['aerodynamics:aircraft:landing:CL_max_clean'] == pytest.approx(1.5831, 1e-4)
+    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
+    assert problem['xfoil:CL_max_clean'] == pytest.approx(1.5831, 1e-4)
     assert not pth.exists(XFOIL_RESULTS)
 
     xfoil_comp = XfoilPolar(profile_path=INPUT_PROFILE, result_folder_path=XFOIL_RESULTS)
     problem = run_system(xfoil_comp, ivc)
-    assert problem['aerodynamics:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
-    assert problem['aerodynamics:aircraft:landing:CL_max_clean'] == pytest.approx(1.5831, 1e-4)
+    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
+    assert problem['xfoil:CL_max_clean'] == pytest.approx(1.5831, 1e-4)
     assert pth.exists(XFOIL_RESULTS)
     assert pth.exists(pth.join(XFOIL_RESULTS, 'polar_result.txt'))
