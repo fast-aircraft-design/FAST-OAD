@@ -25,6 +25,8 @@ from .exceptions import FastDuplicateFactoryError, \
     FastNoOMSystemFoundError, FastUnknownOMSystemIdentifierError, \
     FastDuplicateOMSystemIdentifierException
 
+OPTION_PROPERTY = 'OPTIONS'
+
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
 
@@ -64,6 +66,9 @@ class OpenMDAOSystemFactory:
         :raise FastDuplicateOMSystemIdentifierException:
         """
         try:
+            if not properties:
+                properties = {}
+            properties[OPTION_PROPERTY] = {}
             cls._loader.register_factory(system_class, identifier, SERVICE_OPENMDAO_SYSTEM,
                                          properties)
         except FastDuplicateFactoryError as err:
@@ -81,15 +86,17 @@ class OpenMDAOSystemFactory:
         return cls._loader.get_factory_names(SERVICE_OPENMDAO_SYSTEM, properties=properties)
 
     @classmethod
-    def get_system(cls, identifier: str) -> SystemSubclass:
+    def get_system(cls, identifier: str, options: dict = None) -> SystemSubclass:
         """
 
         :param identifier: identifier of the registered class
+        :param options: option values at system instantiation
         :return: an OpenMDAO system instantiated from the registered class
         """
 
         try:
-            system = cls._loader.instantiate_component(identifier)
+            system = cls._loader.instantiate_component(identifier,
+                                                       properties={OPTION_PROPERTY: options})
         except TypeError:
             raise FastUnknownOMSystemIdentifierError(identifier)
 
