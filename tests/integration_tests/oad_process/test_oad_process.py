@@ -168,6 +168,7 @@ def test_api(cleanup, install_components):
     base_thrust_rate = problem['propulsion:thrust_rate']
     base_MTOW = problem['weight:aircraft:MTOW']
     wing_area = problem['geometry:wing:area']
+    ht_area = problem['geometry:horizontal_tail:area']
 
     # Run model ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
@@ -191,9 +192,11 @@ def test_api(cleanup, install_components):
     print(base_thrust_rate)
     print(base_MTOW)
     print(wing_area)
+    print(ht_area)
 
     print('after optimization')
     print(problem['propulsion:MTO_thrust'])
     print(problem['propulsion:thrust_rate'])
     print(problem['weight:aircraft:MTOW'])
     print(problem['geometry:wing:area'])
+    print(problem['geometry:horizontal_tail:area'])
