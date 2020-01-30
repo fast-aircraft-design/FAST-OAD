@@ -21,7 +21,6 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP', tol=1e-8)"
       id = "sellar.disc2"
   [model.functions]
     id = "sellar.functions"
-  approx_totals = 1
 
 [[design_var]]
   name = "x"

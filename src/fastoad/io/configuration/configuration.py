@@ -26,10 +26,10 @@ from fastoad.io.configuration.exceptions import FASTConfigurationBaseKeyBuilding
 from fastoad.io.serialize import OMFileIOSubclass
 from fastoad.io.xml import OMXmlIO
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
-# Logger for this module
 from fastoad.openmdao.connections_utils import get_unconnected_input_variables, \
     get_variables_from_ivc, get_ivc_from_variables, get_variables_from_problem
 
+# Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
 KEY_FOLDERS = 'module_folders'
@@ -215,7 +215,9 @@ class FASTOADProblem(om.Problem):
             if isinstance(value, dict):  # value defines a sub-component
                 if KEY_COMPONENT_ID in value:
                     # It is a non-group component, that should be registered with its ID
-                    sub_component = OpenMDAOSystemFactory.get_system(value[KEY_COMPONENT_ID])
+                    options = value.copy()
+                    identifier = options.pop(KEY_COMPONENT_ID)
+                    sub_component = OpenMDAOSystemFactory.get_system(identifier, options=options)
                     group.add_subsystem(key, sub_component, promotes=['*'])
                 else:
                     # It is a Group
