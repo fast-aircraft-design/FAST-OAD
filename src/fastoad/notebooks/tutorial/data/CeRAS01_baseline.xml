@@ -40,8 +40,8 @@
                 <fuel units="kg">1228.18<!--mass of consumed fuel during descent phase in sizing mission--></fuel>
             </descent>
             <landing>
-                <slat_angle units="deg">30.0</slat_angle>
-                <flap_angle units="deg">20.0</flap_angle>
+                <slat_angle units="deg">20.0</slat_angle>
+                <flap_angle units="deg">30.0</flap_angle>
             </landing>
             <ZFW units="kg">56774.54</ZFW>
             <mission>
