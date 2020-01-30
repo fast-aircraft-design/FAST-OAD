@@ -2,7 +2,7 @@
 Test module for geometry functions of cg components
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -161,7 +161,6 @@ def test_compute_ht_area(input_xml):
         'geometry:horizontal_tail:volume_coefficient',
         'geometry:wing:MAC:length',
         'geometry:wing:area',
-        'geometry:horizontal_tail:area'
     ]
 
     input_vars = input_xml.read(only=input_list)
@@ -178,8 +177,8 @@ def test_compute_ht_area(input_xml):
     assert ht_lp == pytest.approx(17.675, abs=1e-3)
     wet_area = problem['geometry:horizontal_tail:wetted_area']
     assert wet_area == pytest.approx(70.34, abs=1e-2)
-    delta_cm_takeoff = problem['delta_cm_takeoff']
-    assert delta_cm_takeoff == pytest.approx(0.000177, abs=1e-6)
+    ht_area = problem['geometry:horizontal_tail:area']
+    assert ht_area == pytest.approx(35.165, abs=1e-3)
 
 
 def test_compute_ht_cg(input_xml):
@@ -355,7 +354,6 @@ def test_geometry_global_ht(input_xml):
         'requirements:CG_range',
         'geometry:fuselage:length',
         'geometry:wing:MAC:x',
-        'geometry:horizontal_tail:area',
         'geometry:horizontal_tail:taper_ratio',
         'geometry:horizontal_tail:aspect_ratio',
         'geometry:horizontal_tail:sweep_25',
@@ -380,8 +378,8 @@ def test_geometry_global_ht(input_xml):
     assert ht_lp == pytest.approx(17.675, abs=1e-3)
     wet_area = problem['geometry:horizontal_tail:wetted_area']
     assert wet_area == pytest.approx(70.34, abs=1e-2)
-    delta_cm_takeoff = problem['delta_cm_takeoff']
-    assert delta_cm_takeoff == pytest.approx(0.000138, abs=1e-6)
+    ht_area = problem['geometry:horizontal_tail:area']
+    assert ht_area == pytest.approx(35.167, abs=1e-3)
     span = problem['geometry:horizontal_tail:span']
     assert span == pytest.approx(12.28, abs=1e-2)
     root_chord = problem['geometry:horizontal_tail:root_chord']
