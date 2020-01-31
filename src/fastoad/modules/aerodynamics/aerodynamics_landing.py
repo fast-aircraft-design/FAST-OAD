@@ -47,7 +47,7 @@ class ComputeMachReynolds(om.ExplicitComponent):
 
     def setup(self):
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('TLAR:approach_speed', val=np.nan, units='kn')
+        self.add_input('TLAR:approach_speed', val=np.nan, units='m/s')
         self.add_output('aerodynamics:aircraft:landing:mach')
         self.add_output('aerodynamics:aircraft:landing:reynolds')
 
@@ -56,7 +56,6 @@ class ComputeMachReynolds(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         l0_wing = inputs['geometry:wing:MAC:length']
         speed = inputs['TLAR:approach_speed']
-        speed *= 0.5144
 
         atm = Atmosphere(0., 15.)
         mach = speed / atm.speed_of_sound
