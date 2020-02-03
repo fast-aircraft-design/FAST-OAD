@@ -250,7 +250,7 @@ mission:sizing:descent:hr	**unused**
 mission:sizing:descent:thrust_rate	thrust rate (between 0.0 and 1.0) during descent phase  in sizing mission
 mission:sizing:flight:duration	total flight time in sizing mission
 mission:sizing:flight:fuel	mass of consumed fuel during flight in sizing mission
-mission:sizing:fuel	mass of total fuel consumed during flight in sizing mission
+mission:sizing:trip:fuel	mass of total fuel consumed during flight in sizing mission
 mission:sizing:fuel_reserve	mass of fuel reserve
 mission:sizing:holding:altitude	altitude during holding phase in sizing mission
 mission:sizing:holding:CAS	Calibrated Air Speed during holding phase in sizing mission

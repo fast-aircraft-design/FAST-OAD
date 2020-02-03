@@ -20,7 +20,7 @@ mission:operational:taxi_out:thrust_setting	mission:operational:taxi_out:thrust_
 mission:operational:taxi_out	mission:operational:taxi_out:fuel
 mission:sizing:climb:thrust_setting	mission:sizing:climb:thrust_rate
 mission:sizing:descent:thrust_setting	mission:sizing:descent:thrust_rate
-mission:sizing:flight:fuel	mission:sizing:fuel
+mission:sizing:flight:fuel	mission:sizing:trip:fuel
 mission:sizing:flight:fuel_block	mission:sizing:block_fuel
 mission:sizing:flight:fuel_reserve	mission:sizing:fuel_reserve
 mission:sizing:flight:fuel_trip	mission:sizing:flight:fuel

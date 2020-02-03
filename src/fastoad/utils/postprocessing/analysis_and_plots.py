@@ -173,7 +173,7 @@ def mass_breakdown_plot(aircraft_xml: OMXmlIO):
     MFW = variables['weight:aircraft:MFW'].value[0]
     OWE = variables['weight:aircraft:OWE'].value[0]
     payload = variables['weight:aircraft:payload'].value[0]
-    fuel_mission = variables['mission:sizing:mission:fuel'].value[0]
+    fuel_mission = variables['mission:sizing:fuel'].value[0]
 
     # TODO: Deal with this in a more generic manner ?
     if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):
@@ -242,7 +242,7 @@ def mass_breakdown_plot(aircraft_xml: OMXmlIO):
 def mass_breakdown_generic(aircraft_xml: OMXmlIO, root='MTOW', max_depth=10):
     variables = aircraft_xml.read_variables()
 
-    parents = {'mission:sizing:mission:fuel': 'weight:aircraft:MTOW',
+    parents = {'mission:sizing:fuel': 'weight:aircraft:MTOW',
                'weight:aircraft:payload': 'weight:aircraft:MTOW',
                'weight:aircraft:OWE': 'weight:aircraft:MTOW',
                'weight:systems:power:auxiliary_power_unit:mass': 'weight:aircraft:OWE',
@@ -295,7 +295,7 @@ def mass_breakdown_generic(aircraft_xml: OMXmlIO, root='MTOW', max_depth=10):
     # MFW = variables['weight:aircraft:MFW'].value[0]
     OWE = variables['weight:aircraft:OWE'].value[0]
     payload = variables['weight:aircraft:payload'].value[0]
-    fuel_mission = variables['mission:sizing:mission:fuel'].value[0]
+    fuel_mission = variables['mission:sizing:fuel'].value[0]
 
     # TODO: Deal with this in a more generic manner ?
     if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):

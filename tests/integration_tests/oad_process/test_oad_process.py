@@ -131,7 +131,7 @@ def test_oad_process(cleanup, install_components):
                     atol=1)
     assert_allclose(problem['weight:aircraft:MTOW'],
                     problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:mission:fuel'],
+                    + problem['mission:sizing:fuel'],
                     atol=1)
 
 
@@ -162,7 +162,7 @@ def test_api(cleanup, install_components):
                     atol=1)
     assert_allclose(problem['weight:aircraft:MTOW'],
                     problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:mission:fuel'],
+                    + problem['mission:sizing:fuel'],
                     atol=1)
     base_thrust = problem['propulsion:MTO_thrust']
     base_thrust_rate = problem['propulsion:thrust_rate']
@@ -185,7 +185,7 @@ def test_api(cleanup, install_components):
                     atol=1)
     assert_allclose(problem['weight:aircraft:MTOW'],
                     problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:mission:fuel'],
+                    + problem['mission:sizing:fuel'],
                     atol=1)
 
     print('before optimization')
@@ -233,7 +233,7 @@ def test_non_regression(cleanup, install_components):
                     atol=1)
     assert_allclose(problem['weight:aircraft:MTOW'],
                     problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:mission:fuel'],
+                    + problem['mission:sizing:fuel'],
                     atol=1)
 
     ref_var_list = OMLegacy1XmlIO(
