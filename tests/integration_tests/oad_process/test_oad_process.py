@@ -254,11 +254,13 @@ def test_non_regression(cleanup, install_components):
         )
 
     df = pd.DataFrame(row_list)
-    df['delta [%]'] = (df['value'] - df['ref_value']) * 100 / df['ref_value']
-    df['delta [%]'][(df['ref_value'] == 0) & (df['value'] == 0)] = 0.
-    df['abs_delta [%]'] = np.abs(df['delta [%]'])
+    df['rel_delta'] = (df['value'] - df['ref_value']) / df['ref_value']
+    df['rel_delta'][(df['ref_value'] == 0) & (abs(df['value']) <= 1e-10)] = 0.
+    df['abs_rel_delta'] = np.abs(df['rel_delta'])
 
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', 1000)
-    print(df.sort_values(by=['abs_delta [%]']))
+    print(df.sort_values(by=['abs_rel_delta']))
+
+    assert np.all(df['abs_rel_delta'] < 0.005)
