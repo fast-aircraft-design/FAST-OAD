@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -33,21 +33,22 @@ class ComputeHTMAC(ExplicitComponent):
         self.add_input('geometry:horizontal_tail:span', val=np.nan, units='m')
 
         self.add_output('geometry:horizontal_tail:MAC:length', units='m')
-        self.add_output('geometry:ht_x0', units='m')
-        self.add_output('geometry:ht_y0', units='m')
+        self.add_output('geometry:horizontal_tail:MAC:x', units='m')
+        self.add_output('geometry:horizontal_tail:MAC:y', units='m')
 
         self.declare_partials('geometry:horizontal_tail:MAC:length',
                               ['geometry:horizontal_tail:root_chord',
                                'geometry:horizontal_tail:tip_chord'],
                               method='fd')
-        self.declare_partials('geometry:ht_x0',
+        self.declare_partials('geometry:horizontal_tail:MAC:x',
                               ['geometry:horizontal_tail:root_chord',
                                'geometry:horizontal_tail:tip_chord',
                                'geometry:horizontal_tail:sweep_25',
                                'geometry:horizontal_tail:span'],
                               method='fd')
-        self.declare_partials('geometry:ht_y0',
-                              ['geometry:horizontal_tail:root_chord', 'geometry:horizontal_tail:tip_chord',
+        self.declare_partials('geometry:horizontal_tail:MAC:y',
+                              ['geometry:horizontal_tail:root_chord',
+                               'geometry:horizontal_tail:tip_chord',
                                'geometry:horizontal_tail:span'], method='fd')
 
     def compute(self, inputs, outputs):
@@ -59,13 +60,13 @@ class ComputeHTMAC(ExplicitComponent):
         tmp = (root_chord * 0.25 + b_h / 2 *
                math.tan(sweep_25_ht / 180. * math.pi) - tip_chord * 0.25)
 
-        mac_ht = (root_chord**2 + root_chord * tip_chord + tip_chord**2) / \
-            (tip_chord + root_chord) * 2 / 3
+        mac_ht = (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2) / \
+                 (tip_chord + root_chord) * 2 / 3
         x0_ht = (tmp * (root_chord + 2 * tip_chord)) / \
-            (3 * (root_chord + tip_chord))
+                (3 * (root_chord + tip_chord))
         y0_ht = (b_h * (.5 * root_chord + tip_chord)) / \
-            (3 * (root_chord + tip_chord))
+                (3 * (root_chord + tip_chord))
 
         outputs['geometry:horizontal_tail:MAC:length'] = mac_ht
-        outputs['geometry:ht_x0'] = x0_ht
-        outputs['geometry:ht_y0'] = y0_ht
+        outputs['geometry:horizontal_tail:MAC:x'] = x0_ht
+        outputs['geometry:horizontal_tail:MAC:y'] = y0_ht

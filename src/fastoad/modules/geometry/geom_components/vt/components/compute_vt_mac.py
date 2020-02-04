@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -32,15 +32,17 @@ class ComputeVTMAC(ExplicitComponent):
         self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
         self.add_input('geometry:vertical_tail:span', val=np.nan, units='m')
 
-        self.add_output('geometry:vertical_tail:length', units='m')
-        self.add_output('geometry:vt_x0', units='m')
-        self.add_output('geometry:vt_z0', units='m')
+        self.add_output('geometry:vertical_tail:MAC:length', units='m')
+        self.add_output('geometry:vertical_tail:MAC:x', units='m')
+        self.add_output('geometry:vertical_tail:MAC:z', units='m')
 
-        self.declare_partials('geometry:vertical_tail:length',
-                              ['geometry:vertical_tail:root_chord', 'geometry:vertical_tail:tip_chord'])
-        self.declare_partials('geometry:vt_x0', '*', method='fd')
-        self.declare_partials('geometry:vt_z0',
-                              ['geometry:vertical_tail:root_chord', 'geometry:vertical_tail:tip_chord',
+        self.declare_partials('geometry:vertical_tail:MAC:length',
+                              ['geometry:vertical_tail:root_chord',
+                               'geometry:vertical_tail:tip_chord'])
+        self.declare_partials('geometry:vertical_tail:MAC:x', '*', method='fd')
+        self.declare_partials('geometry:vertical_tail:MAC:z',
+                              ['geometry:vertical_tail:root_chord',
+                               'geometry:vertical_tail:tip_chord',
                                'geometry:vertical_tail:span'], method='fd')
 
     def compute(self, inputs, outputs):
@@ -58,6 +60,6 @@ class ComputeVTMAC(ExplicitComponent):
         z0_vt = (2 * b_v * (0.5 * root_chord + tip_chord)) / \
                 (3 * (root_chord + tip_chord))
 
-        outputs['geometry:vertical_tail:length'] = mac_vt
-        outputs['geometry:vt_x0'] = x0_vt
-        outputs['geometry:vt_z0'] = z0_vt
+        outputs['geometry:vertical_tail:MAC:length'] = mac_vt
+        outputs['geometry:vertical_tail:MAC:x'] = x0_vt
+        outputs['geometry:vertical_tail:MAC:z'] = z0_vt

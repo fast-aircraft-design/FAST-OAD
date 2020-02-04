@@ -511,9 +511,9 @@
       </crew>
       <sizing_cases>
         <SizingCase>
-            <U_gust>[15.25, 15.25]</U_gust>
-            <altitude>[20000.0, 20000.0]</altitude>
-            <Vc_EAS>[375.0, 375.0]</Vc_EAS>
+          <U_gust>[15.25, 15.25]</U_gust>
+          <altitude>[20000.0, 20000.0]</altitude>
+          <Vc_EAS>[375.0, 375.0]</Vc_EAS>
         </SizingCase>
       </sizing_cases>
       <k_factors>

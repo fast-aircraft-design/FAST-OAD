@@ -38,7 +38,7 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
         self.add_input('geometry:wing:tip:thickness_ratio', val=np.nan)
 
         self.add_output('aerodynamics:aircraft:takeoff:CL_alpha', units='1/rad')
-        self.add_output('aerodynamics:aircraft:cruise:CL0')
+        self.add_output('aerodynamics:aircraft:takeoff:CL0_clean')
 
         self.declare_partials('*', '*', method='fd')
 
@@ -65,4 +65,4 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
                             (wing_area - l2_wing * width_max) / wing_area * fact_F
 
         outputs['aerodynamics:aircraft:takeoff:CL_alpha'] = cl_alpha_wing_low
-        outputs['aerodynamics:aircraft:cruise:CL0'] = 0.2  # FIXME: hard-coded value
+        outputs['aerodynamics:aircraft:takeoff:CL0_clean'] = 0.2  # FIXME: hard-coded value

@@ -8,7 +8,7 @@ aerodynamics:aircraft:cruise:CL:offset	offset to apply to defined cl range (whic
 aerodynamics:aircraft:cruise:CL:winglet_effect:k	ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
 aerodynamics:aircraft:cruise:CL:winglet_effect:offset	offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
 aerodynamics:aircraft:cruise:CL_alpha	derivative of lift coefficient with respect to angle of attack in cruise conditions
-aerodynamics:aircraft:cruise:CL0	value of lift coefficient at angle of attack 0 in cruise conditions
+aerodynamics:aircraft:takeoff:CL0_clean	value of lift coefficient at angle of attack 0 in clean configuration at takeoff
 aerodynamics:aircraft:cruise:L_D_max	max lift/drag ratio in cruise conditions
 aerodynamics:aircraft:landing:CL_max	maximum lift coefficient in landing conditions
 aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k	correction ratio to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
@@ -75,7 +75,8 @@ geometry:horizontal_tail:area	horizontal tail area
 geometry:horizontal_tail:aspect_ratio	aspect ratio of horizontal tail
 geometry:horizontal_tail:distance_from_wing	distance along X between 25% MAC of wing and 25% MAC of horizontal tail
 geometry:horizontal_tail:MAC:length	mean aerodynamic chord length of horizontal tail
-geometry:horizontal_tail:MAC_location	**unused**
+geometry:horizontal_tail:MAC:x	X-position of leading edge of mean aerodynamic chord of horizontal tail
+geometry:horizontal_tail:MAC:y	Y-position of mean aerodynamic chord of horizontal tail
 geometry:horizontal_tail:root_chord	chord length at root of horizontal tail
 geometry:horizontal_tail:span	horizontal tail span
 geometry:horizontal_tail:sweep_0	sweep angle at leading edge of horizontal tail
@@ -102,8 +103,9 @@ geometry:slat:span_ratio	ratio (width of slats)/(total span)
 geometry:vertical_tail:area	vertical tail area
 geometry:vertical_tail:aspect_ratio	aspect ratio of vertical tail
 geometry:vertical_tail:distance_from_wing	distance along X between 25% MAC of wing and 25% MAC of vertical tail
-geometry:vertical_tail:length	mean aerodynamic chord length of vertical tail
-geometry:vertical_tail:MAC_location	**unused**
+geometry:vertical_tail:MAC:length	mean aerodynamic chord length of vertical tail
+geometry:vertical_tail:MAC:x	X-position of leading edge of mean aerodynamic chord of vertical tail
+geometry:vertical_tail:MAC:z	Z-position of mean aerodynamic chord of vertical tail
 geometry:vertical_tail:root_chord	chord length at root of vertical tail
 geometry:vertical_tail:span	vertical tail span
 geometry:vertical_tail:sweep_0	sweep angle at leading edge of vertical tail
@@ -124,7 +126,7 @@ geometry:wing:kink:span_ratio	ratio (Y-position of kink)/(semi-span)
 geometry:wing:kink:thickness_ratio	thickness ratio at wing kink
 geometry:wing:kink:y	Y-position of wing kink
 geometry:wing:MAC:length	length of mean aerodynamic chord of wing
-geometry:wing:MAC:x	X-position of mean aerodynamic chord of wing
+geometry:wing:MAC:x	X-position of leading edge of mean aerodynamic chord of wing
 geometry:wing:MAC:y	Y-position of mean aerodynamic chord of wing
 geometry:wing:outer_area	wing area outside of fuselage
 geometry:wing:root:chord	chord length at wing root

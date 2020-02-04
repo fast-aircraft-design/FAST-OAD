@@ -29,7 +29,7 @@ class Cd0VerticalTail(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('geometry:vertical_tail:length', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:MAC:length', val=np.nan, units='m')
         self.add_input('geometry:vertical_tail:thickness_ratio', val=np.nan)
         self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
         self.add_input('geometry:vertical_tail:wetted_area', val=np.nan, units='m**2')
@@ -47,7 +47,7 @@ class Cd0VerticalTail(ExplicitComponent):
 
     def compute(self, inputs, outputs):
         el_vt = inputs['geometry:vertical_tail:thickness_ratio']
-        vt_length = inputs['geometry:vertical_tail:length']
+        vt_length = inputs['geometry:vertical_tail:MAC:length']
         sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
         wet_area_vt = inputs['geometry:vertical_tail:wetted_area']
         wing_area = inputs['geometry:wing:area']
