@@ -25,7 +25,7 @@ from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.vectors.vector import Vector
 
-from fastoad.exceptions import XPathError
+from fastoad.exceptions import XPathError, VariableError
 from fastoad.io.serialize import AbstractOMFileIO
 from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
 from fastoad.io.xml.translator import VarXpathTranslator
@@ -140,7 +140,11 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         for variable in variables:
 
-            xpath = self._translator.get_xpath(variable.name)
+            try:
+                xpath = self._translator.get_xpath(variable.name)
+            except VariableError as exc:
+                _LOGGER.warning('No translation found: %s', exc)
+                continue
             element = self._create_xpath(root, xpath)
 
             # Set value and units
