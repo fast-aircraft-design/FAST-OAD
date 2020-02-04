@@ -1,5 +1,5 @@
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -32,7 +32,7 @@ def test_breguet_from_mtow():
     problem = run_system(BreguetFromMTOW(), ivc)
 
     assert_allclose(problem['mission:sizing:ZFW'], 65617., rtol=1e-3)
-    assert_allclose(problem['mission:sizing:mission:fuel'], 8382., rtol=1e-3)
+    assert_allclose(problem['mission:sizing:fuel'], 8382., rtol=1e-3)
 
     # test 2
     ivc = om.IndepVarComp()
@@ -46,14 +46,14 @@ def test_breguet_from_mtow():
     problem = run_system(BreguetFromMTOW(), ivc)
 
     assert_allclose(problem['mission:sizing:ZFW'], 62473., rtol=1e-3)
-    assert_allclose(problem['mission:sizing:mission:fuel'], 11526., rtol=1e-3)
+    assert_allclose(problem['mission:sizing:fuel'], 11526., rtol=1e-3)
 
     # Check consistency of other outputs
-    assert_allclose(problem['mission:sizing:mission:fuel'],
-                    problem['mission:sizing:fuel']
+    assert_allclose(problem['mission:sizing:fuel'],
+                    problem['mission:sizing:trip:fuel']
                     + problem['mission:sizing:fuel_reserve']
                     , rtol=1e-3)
-    assert_allclose(problem['mission:sizing:fuel'],
+    assert_allclose(problem['mission:sizing:trip:fuel'],
                     problem['mission:sizing:climb:fuel']
                     + problem['mission:sizing:cruise:fuel']
                     + problem['mission:sizing:descent:fuel']
@@ -82,7 +82,7 @@ def test_breguet_from_mtow_with_rubber_engine():
     problem = run_system(group, ivc)
 
     assert_allclose(problem['mission:sizing:ZFW'], 65076., atol=1)
-    assert_allclose(problem['mission:sizing:mission:fuel'], 8924., atol=1)
+    assert_allclose(problem['mission:sizing:fuel'], 8924., atol=1)
 
 
 def test_breguet_from_owe():
@@ -99,7 +99,7 @@ def test_breguet_from_owe():
 
     assert_allclose(problem['weight:aircraft:MTOW'], 74000., rtol=1e-3)
     assert_allclose(problem['mission:sizing:ZFW'], 65617., rtol=1e-3)
-    assert_allclose(problem['mission:sizing:mission:fuel'], 8382., rtol=1e-3)
+    assert_allclose(problem['mission:sizing:fuel'], 8382., rtol=1e-3)
 
 
 def test_breguet_from_owe_with_rubber_engine():
@@ -127,4 +127,4 @@ def test_breguet_from_owe_with_rubber_engine():
 
     assert_allclose(problem['weight:aircraft:MTOW'], 74000., atol=10)
     assert_allclose(problem['mission:sizing:ZFW'], 65076., atol=1)
-    assert_allclose(problem['mission:sizing:mission:fuel'], 8924., atol=1)
+    assert_allclose(problem['mission:sizing:fuel'], 8924., atol=1)

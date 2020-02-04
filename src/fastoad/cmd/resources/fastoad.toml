@@ -24,8 +24,8 @@ driver = "om.ScipyOptimizeDriver()"
         id = "fastoad.weights.legacy"
     [model.aerodynamics.highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
-    [model.aerodynamics.lowspeed]
-        id = "fastoad.aerodynamics.lowspeed.legacy"
+#    [model.aerodynamics.lowspeed]
+#        id = "fastoad.aerodynamics.lowspeed.legacy"
     [model.aerodynamics.landing]
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false

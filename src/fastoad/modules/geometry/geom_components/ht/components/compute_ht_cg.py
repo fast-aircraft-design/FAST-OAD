@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -33,7 +33,7 @@ class ComputeHTcg(ExplicitComponent):
         self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
         self.add_input('geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
         self.add_input('geometry:horizontal_tail:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:ht_x0', val=np.nan, units='m')
+        self.add_input('geometry:horizontal_tail:MAC:x', val=np.nan, units='m')
 
         self.add_output('weight:airframe:horizontal_tail:CG:x', units='m')
 
@@ -47,7 +47,7 @@ class ComputeHTcg(ExplicitComponent):
         fa_length = inputs['geometry:wing:MAC:x']
         lp_ht = inputs['geometry:horizontal_tail:distance_from_wing']
         mac_ht = inputs['geometry:horizontal_tail:MAC:length']
-        x0_ht = inputs['geometry:ht_x0']
+        x0_ht = inputs['geometry:horizontal_tail:MAC:x']
 
         tmp = (root_chord * 0.25 + b_h / 2 *
                  math.tan(sweep_25_ht / 180. * math.pi) - tip_chord * 0.25)

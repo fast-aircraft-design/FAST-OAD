@@ -131,13 +131,13 @@ def test_oad_process(cleanup, install_components):
                     atol=1)
     assert_allclose(problem['weight:aircraft:MTOW'],
                     problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:mission:fuel'],
+                    + problem['mission:sizing:fuel'],
                     atol=1)
 
 
 def test_api(cleanup, install_components):
-    api_result_folder_path = pth.join(RESULTS_FOLDER_PATH, 'api')
-    configuration_file_path = pth.join(api_result_folder_path, 'oad_process.toml')
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, 'api')
+    configuration_file_path = pth.join(results_folder_path, 'oad_process.toml')
 
     # Generation of configuration file ----------------------------------------
     api.generate_configuration_file(configuration_file_path, True)
@@ -146,7 +146,7 @@ def test_api(cleanup, install_components):
     # We get the same inputs as in tutorial notebook
     source_xml = pth.join(root_folder_path, 'src', 'fastoad',
                           'notebooks', 'tutorial', 'data', 'CeRAS01_baseline.xml')
-    api.generate_inputs(configuration_file_path, source_xml, True)
+    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run model ---------------------------------------------------------------
     problem = api.evaluate_problem(configuration_file_path, True)
@@ -162,7 +162,7 @@ def test_api(cleanup, install_components):
                     atol=1)
     assert_allclose(problem['weight:aircraft:MTOW'],
                     problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:mission:fuel'],
+                    + problem['mission:sizing:fuel'],
                     atol=1)
     base_thrust = problem['propulsion:MTO_thrust']
     base_thrust_rate = problem['propulsion:thrust_rate']
@@ -171,7 +171,7 @@ def test_api(cleanup, install_components):
     ht_area = problem['geometry:horizontal_tail:area']
     vt_area = problem['geometry:vertical_tail:area']
 
-    # Run model ---------------------------------------------------------------
+    # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
 
     # Check that weight-performances loop correctly converged
@@ -185,7 +185,7 @@ def test_api(cleanup, install_components):
                     atol=1)
     assert_allclose(problem['weight:aircraft:MTOW'],
                     problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:mission:fuel'],
+                    + problem['mission:sizing:fuel'],
                     atol=1)
 
     print('before optimization')
@@ -202,3 +202,65 @@ def test_api(cleanup, install_components):
     print(problem['weight:aircraft:MTOW'])
     print(problem['geometry:wing:area'])
     print(problem['geometry:vertical_tail:area'])
+
+
+def test_non_regression(cleanup, install_components):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, 'non_regression')
+    configuration_file_path = pth.join(results_folder_path, 'oad_process.toml')
+
+    # Generation of configuration file ----------------------------------------
+    api.generate_configuration_file(configuration_file_path, True)
+
+    # Generation of inputs ----------------------------------------------------
+    # We get the same inputs as in tutorial notebook
+    source_xml = pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy.xml')
+    api.generate_inputs(configuration_file_path, source_xml, source_path_schema='legacy',
+                        overwrite=True)
+
+    # Run model ---------------------------------------------------------------
+    problem = api.evaluate_problem(configuration_file_path, True)
+    om.view_connections(problem, outfile=pth.join(results_folder_path, 'connections.html'),
+                        show_browser=False)
+
+    # Check that weight-performances loop correctly converged
+    assert_allclose(problem['weight:aircraft:OWE'],
+                    problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
+                    + problem['weight:systems:mass'] + problem['weight:furniture:mass']
+                    + problem['weight:crew:mass'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MZFW'],
+                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:max_payload'],
+                    atol=1)
+    assert_allclose(problem['weight:aircraft:MTOW'],
+                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
+                    + problem['mission:sizing:fuel'],
+                    atol=1)
+
+    ref_var_list = OMLegacy1XmlIO(
+        pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy_result.xml')).read_variables()
+
+    import pandas as pd
+    import numpy as np
+
+    row_list = []
+    for ref_var in ref_var_list:
+        try:
+            value = problem.get_val(ref_var.name, units=ref_var.units)[0]
+        except KeyError:
+            continue
+        row_list.append(
+            {'name': ref_var.name, 'units': ref_var.units,
+             'ref_value': ref_var.value[0], 'value': value}
+        )
+
+    df = pd.DataFrame(row_list)
+    df['rel_delta'] = (df['value'] - df['ref_value']) / df['ref_value']
+    df['rel_delta'][(df['ref_value'] == 0) & (abs(df['value']) <= 1e-10)] = 0.
+    df['abs_rel_delta'] = np.abs(df['rel_delta'])
+
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', 1000)
+    print(df.sort_values(by=['abs_rel_delta']))
+
+    assert np.all(df['abs_rel_delta'] < 0.005)

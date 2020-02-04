@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -26,11 +26,11 @@ class ComputeVTcg(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:vertical_tail:length', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:MAC:length', val=np.nan, units='m')
         self.add_input('geometry:vertical_tail:root_chord', val=np.nan, units='m')
         self.add_input('geometry:vertical_tail:tip_chord', val=np.nan, units='m')
         self.add_input('geometry:vertical_tail:distance_from_wing', val=np.nan, units='m')
-        self.add_input('geometry:vt_x0', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:MAC:x', val=np.nan, units='m')
         self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
         self.add_input('geometry:vertical_tail:span', val=np.nan, units='m')
         self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
@@ -43,9 +43,9 @@ class ComputeVTcg(ExplicitComponent):
         root_chord = inputs['geometry:vertical_tail:root_chord']
         tip_chord = inputs['geometry:vertical_tail:tip_chord']
         lp_vt = inputs['geometry:vertical_tail:distance_from_wing']
-        mac_vt = inputs['geometry:vertical_tail:length']
+        mac_vt = inputs['geometry:vertical_tail:MAC:length']
         fa_length = inputs['geometry:wing:MAC:x']
-        x0_vt = inputs['geometry:vt_x0']
+        x0_vt = inputs['geometry:vertical_tail:MAC:x']
         sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
         b_v = inputs['geometry:vertical_tail:span']
 
