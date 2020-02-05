@@ -176,6 +176,7 @@ class FASTOADDataFrame():
         items_var = self.df_variables['Module'].unique().tolist()
         items_opt = self.df_optimization['Module'].unique().tolist()
         items = sorted(items_var + items_opt)
+        sub_items = self.df_optimization['Type'].unique().tolist()
         if not include_outputs:
             df_optimization = self.df_optimization[
                 self.df_optimization['Type'] == 'Input']
@@ -190,17 +191,17 @@ class FASTOADDataFrame():
             df_optimization = self.df_optimization
             df_variables = self.df_variables
 
-        def f(Type):
-            if Type == 'Optimization':
+        def f(type, sub_type):
+            if type == 'Optimization':
                 df = display(self.build_sheet(df_optimization[
-                                                  df_optimization['Module'] == Type]))
+                                                  df_optimization['Module'] == type]))
             else:
                 df = display(self.build_sheet(df_variables[
-                                                  df_variables['Module'] == Type]))
+                                                  df_variables['Module'] == type]))
             return df
 
-        widgets.interact(f, Type=items)
-        return f
+        w = widgets.interactive(f, type=items, sub_type=sub_items)
+        return w
 
     def build_sheet(self, df):
 
