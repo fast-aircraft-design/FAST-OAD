@@ -2,7 +2,7 @@
 Component registration
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,10 +15,16 @@ Component registration
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
-from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from . import Aerodynamics
+from .aerodynamics_high_speed import AerodynamicsHighSpeed
+from .aerodynamics_landing import AerodynamicsLanding
+from .aerodynamics_low_speed import AerodynamicsLowSpeed
 
 OpenMDAOSystemFactory.register_system(Aerodynamics,
                                       'fastoad.aerodynamics.legacy')
+OpenMDAOSystemFactory.register_system(AerodynamicsLanding,
+                                      'fastoad.aerodynamics.landing.legacy')
 OpenMDAOSystemFactory.register_system(AerodynamicsHighSpeed,
                                       'fastoad.aerodynamics.highspeed.legacy')
+OpenMDAOSystemFactory.register_system(AerodynamicsLowSpeed,
+                                      'fastoad.aerodynamics.lowspeed.legacy')

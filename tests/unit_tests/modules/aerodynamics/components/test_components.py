@@ -3,7 +3,7 @@ test module for modules in aerodynamics/components
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -31,8 +31,6 @@ from fastoad.modules.aerodynamics.components.compute_low_speed_aero import \
 from fastoad.modules.aerodynamics.components.compute_polar import ComputePolar
 from fastoad.modules.aerodynamics.components.compute_reynolds import ComputeReynolds
 from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
-from fastoad.modules.aerodynamics.components.high_lift_drag import DeltaCDHighLift
-from fastoad.modules.aerodynamics.components.high_lift_lift import DeltaCLHighLift
 from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
 from fastoad.utils.physics import Atmosphere
 from tests.testing_utilities import run_system
@@ -45,57 +43,6 @@ def get_indep_var_comp(var_names):
     reader.path_separator = ':'
     ivc = reader.read(only=var_names)
     return ivc
-
-
-def test_high_lift_drag():
-    """ Tests DeltaCDHighLift """
-    input_list = ['geometry:flap:span_ratio',
-                  'geometry:slat:span_ratio'
-                  ]
-
-    def get_cd(slat_angle, flap_angle):
-        ivc = get_indep_var_comp(input_list)
-        ivc.add_output('slat_angle', slat_angle, units='deg')
-        ivc.add_output('flap_angle', flap_angle, units='deg')
-        problem = run_system(DeltaCDHighLift(), ivc)
-        return problem['delta_cd']
-
-    assert get_cd(18, 0) == approx(0.01033, abs=1e-5)
-    assert get_cd(18, 10) == approx(0.01430, abs=1e-5)
-    assert get_cd(22, 15) == approx(0.01866, abs=1e-5)
-    assert get_cd(22, 20) == approx(0.02220, abs=1e-5)
-    assert get_cd(27, 35) == approx(0.04644, abs=1e-5)
-
-
-def test_high_lift_lift():
-    """ Tests DeltaCLHighLift """
-    input_list = ['geometry:wing:sweep_0',
-                  'geometry:wing:sweep_100_outer',
-                  'geometry:flap:chord_ratio',
-                  'geometry:flap:span_ratio',
-                  'geometry:slat:chord_ratio',
-                  'geometry:slat:span_ratio'
-                  ]
-
-    def get_cl(slat_angle, flap_angle, mach):
-        ivc = get_indep_var_comp(input_list)
-        ivc.add_output('slat_angle', slat_angle, units='deg')
-        ivc.add_output('flap_angle', flap_angle, units='deg')
-        ivc.add_output('mach', mach)
-        problem = run_system(DeltaCLHighLift(), ivc)
-        return problem['delta_cl']
-
-    assert get_cl(18, 0, 0.2) == approx(0.062, abs=1e-3)
-    assert get_cl(18, 10, 0.2) == approx(0.516, abs=1e-3)
-    assert get_cl(22, 15, 0.2) == approx(0.741, abs=1e-3)
-    assert get_cl(22, 20, 0.2) == approx(0.935, abs=1e-3)
-    assert get_cl(27, 35, 0.2) == approx(1.344, abs=1e-3)
-
-    assert get_cl(18, 0, 0.4) == approx(0.062, abs=1e-3)
-    assert get_cl(18, 10, 0.4) == approx(0.547, abs=1e-3)
-    assert get_cl(22, 15, 0.4) == approx(0.787, abs=1e-3)
-    assert get_cl(22, 20, 0.4) == approx(0.994, abs=1e-3)
-    assert get_cl(27, 35, 0.4) == approx(1.431, abs=1e-3)
 
 
 def test_high_lift_aero():
@@ -116,7 +63,7 @@ def test_high_lift_aero():
         else:
             ivc.add_output('mission:sizing:takeoff:slat_angle', slat_angle, units='deg')
             ivc.add_output('mission:sizing:takeoff:flap_angle', flap_angle, units='deg')
-        ivc.add_output('xfoil:mach', mach)
+        ivc.add_output('aerodynamics:aircraft:landing:mach', mach)
         component = ComputeDeltaHighLift()
         component.options['landing_flag'] = landing_flag
         problem = run_system(component, ivc)
@@ -176,7 +123,7 @@ def test_cd0():
                   'geometry:propulsion:pylon:length',
                   'geometry:propulsion:pylon:wetted_area',
                   'geometry:aircraft:wetted_area',
-                  'geometry:vertical_tail:length',
+                  'geometry:vertical_tail:MAC:length',
                   'geometry:vertical_tail:sweep_25',
                   'geometry:vertical_tail:thickness_ratio',
                   'geometry:vertical_tail:wetted_area',
@@ -260,7 +207,7 @@ def test_polar():
                   'geometry:propulsion:pylon:wetted_area',
                   'geometry:wing:area',
                   'geometry:aircraft:wetted_area',
-                  'geometry:vertical_tail:length',
+                  'geometry:vertical_tail:MAC:length',
                   'geometry:vertical_tail:sweep_25',
                   'geometry:vertical_tail:thickness_ratio',
                   'geometry:vertical_tail:wetted_area',

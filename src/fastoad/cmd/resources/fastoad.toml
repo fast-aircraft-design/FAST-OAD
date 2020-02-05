@@ -22,12 +22,19 @@ driver = "om.ScipyOptimizeDriver()"
         id = "fastoad.geometry.legacy"
     [model.weights]
         id = "fastoad.weights.legacy"
-    [model.aerodynamics]
+    [model.aerodynamics.highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
+#    [model.aerodynamics.lowspeed]
+#        id = "fastoad.aerodynamics.lowspeed.legacy"
+    [model.aerodynamics.landing]
+        id = "fastoad.aerodynamics.landing.legacy"
+        use_xfoil = false
     [model.performance]
         id = "fastoad.performances.breguet.from_owe"
     [model.propulsion]
         id = "fastoad.propulsion.rubber_engine"
+    [model.loop]
+        id = "fastoad.loop.wing_area"
 
 [[design_var]]
     name = "propulsion:MTO_thrust"

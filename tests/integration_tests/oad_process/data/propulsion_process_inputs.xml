@@ -1,6 +1,6 @@
 <!--
   ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2019  ONERA/ISAE
+  ~ Copyright (C) 2020  ONERA/ISAE
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -22,12 +22,12 @@
     <required_thrust_rate>0.0</required_thrust_rate>
     <required_thrust units="N">22532.019</required_thrust>
     <rubber_engine>
-      <bypass_ratio>4.9</bypass_ratio>
-      <overall_pressure_ratio>32.6</overall_pressure_ratio>
-      <turbine_inlet_temperature units="K">1633.0</turbine_inlet_temperature>
-      <maximum_mach>0.85</maximum_mach>
-      <design_altitude units="m">10058.4</design_altitude>
+        <bypass_ratio>4.9<!--bypass ratio for rubber engine model--></bypass_ratio>
+        <overall_pressure_ratio>32.6<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
+        <turbine_inlet_temperature units="K">1633.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
+        <maximum_mach>0.85<!--maximum Mach number for rubber engine model--></maximum_mach>
+        <design_altitude units="m">10058.4<!--design altitude for rubber engine model--></design_altitude>
     </rubber_engine>
-    <MTO_thrust units="N">117880.0</MTO_thrust>
+      <MTO_thrust units="N">117880.0<!--Maximum thrust of one engine at sea level--></MTO_thrust>
   </propulsion>
 </aircraft>

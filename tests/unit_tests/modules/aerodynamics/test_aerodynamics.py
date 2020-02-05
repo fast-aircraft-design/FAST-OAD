@@ -2,7 +2,7 @@
 Test module for aerodynamics groups
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +16,12 @@ Test module for aerodynamics groups
 
 import os.path as pth
 
-from openmdao.core.group import Group
 from pytest import approx
 
 from fastoad.io.xml import OMXmlIO
-from fastoad.modules.aerodynamics.aerodynamics_2d import Aerodynamics2d
 from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
+from fastoad.modules.aerodynamics.aerodynamics_landing import AerodynamicsLanding
 from fastoad.modules.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
-from fastoad.modules.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
 from tests.testing_utilities import run_system
 
 
@@ -34,6 +32,36 @@ def get_indep_var_comp(var_names):
     reader.path_separator = ':'
     ivc = reader.read(only=var_names)
     return ivc
+
+
+def test_aerodynamics_landing():
+    """ Tests AerodynamicsHighSpeed """
+    input_list = [
+        'TLAR:approach_speed',
+        'mission:sizing:landing:flap_angle',
+        'mission:sizing:landing:slat_angle',
+        'geometry:wing:MAC:length',
+        'geometry:wing:sweep_25',
+        'geometry:wing:sweep_0',
+        'geometry:wing:sweep_100_outer',
+        'geometry:flap:chord_ratio',
+        'geometry:flap:span_ratio',
+        'geometry:slat:chord_ratio',
+        'geometry:slat:span_ratio',
+        'xfoil:mach',
+        'aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k'
+    ]
+
+    ivc = get_indep_var_comp(input_list)
+    problem = run_system(AerodynamicsLanding(), ivc)
+    assert problem['aerodynamics:aircraft:landing:CL_max_clean'] == approx(1.56014, abs=1e-5)
+    assert problem['aerodynamics:aircraft:landing:CL_max'] == approx(2.78833, abs=1e-5)
+
+    input_list.append('aerodynamics:aircraft:landing:CL_max_clean')
+    ivc = get_indep_var_comp(input_list)
+    problem = run_system(AerodynamicsLanding(use_xfoil=False), ivc)
+    assert problem['aerodynamics:aircraft:landing:CL_max_clean'] == approx(1.55, abs=1e-5)
+    assert problem['aerodynamics:aircraft:landing:CL_max'] == approx(2.77819, abs=1e-5)
 
 
 def test_aerodynamics_high_speed():
@@ -58,7 +86,7 @@ def test_aerodynamics_high_speed():
         'geometry:aircraft:wetted_area',
         'geometry:slat:chord_ratio',
         'geometry:slat:span_ratio',
-        'geometry:vertical_tail:length',
+        'geometry:vertical_tail:MAC:length',
         'geometry:vertical_tail:sweep_25',
         'geometry:vertical_tail:thickness_ratio',
         'geometry:vertical_tail:wetted_area',
@@ -89,13 +117,7 @@ def test_aerodynamics_high_speed():
     ]
 
     ivc = get_indep_var_comp(input_list)
-    system = Group()
-    system.add_subsystem('aero_2d', Aerodynamics2d(), promotes=['*'])
-    system.add_subsystem('delta_cl_landing', ComputeDeltaHighLift(landing_flag=True),
-                         promotes=['*'])
-    system.add_subsystem('aero_high_speed', AerodynamicsHighSpeed(), promotes=['*'])
-
-    problem = run_system(system, ivc)
+    problem = run_system(AerodynamicsHighSpeed(), ivc)
 
     cd = problem['aerodynamics:ClCd'][0, :]
     cl = problem['aerodynamics:ClCd'][1, :]
@@ -131,7 +153,7 @@ def test_aerodynamics_low_speed():
         'geometry:aircraft:wetted_area',
         'geometry:slat:chord_ratio',
         'geometry:slat:span_ratio',
-        'geometry:vertical_tail:length',
+        'geometry:vertical_tail:MAC:length',
         'geometry:vertical_tail:sweep_25',
         'geometry:vertical_tail:thickness_ratio',
         'geometry:vertical_tail:wetted_area',
@@ -161,13 +183,7 @@ def test_aerodynamics_low_speed():
     ]
 
     ivc = get_indep_var_comp(input_list)
-    system = Group()
-    system.add_subsystem('aero_2d', Aerodynamics2d(), promotes=['*'])
-    system.add_subsystem('delta_cl_landing', ComputeDeltaHighLift(landing_flag=True),
-                         promotes=['*'])
-    system.add_subsystem('aero_high_speed', AerodynamicsLowSpeed(), promotes=['*'])
-
-    problem = run_system(system, ivc)
+    problem = run_system(AerodynamicsLowSpeed(), ivc)
 
     cd = problem['aerodynamics:ClCd_low_speed'][0, :]
     cl = problem['aerodynamics:ClCd_low_speed'][1, :]

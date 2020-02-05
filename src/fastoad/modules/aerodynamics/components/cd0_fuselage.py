@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -46,6 +46,8 @@ class Cd0Fuselage(ExplicitComponent):
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
         self.add_input('geometry:fuselage:wetted_area', val=np.nan, units='m**2')
+
+        self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
         height_max = inputs['geometry:fuselage:maximum_height']

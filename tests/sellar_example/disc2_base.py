@@ -3,7 +3,7 @@
     Sellar discipline 2
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,6 +19,9 @@ from openmdao.api import ExplicitComponent
 
 class Disc2Base(ExplicitComponent):
     """ An OpenMDAO base component to encapsulate Disc2 discipline """
+
+    def initialize(self):
+        self.options.declare('answer', 42)
 
     def setup(self):
         self.add_input('z', val=[5, 2], desc='', units='m**2')  # for testing non-None units

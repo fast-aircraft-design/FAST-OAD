@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -29,7 +29,7 @@ class Cd0VerticalTail(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('geometry:vertical_tail:length', val=np.nan, units='m')
+        self.add_input('geometry:vertical_tail:MAC:length', val=np.nan, units='m')
         self.add_input('geometry:vertical_tail:thickness_ratio', val=np.nan)
         self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
         self.add_input('geometry:vertical_tail:wetted_area', val=np.nan, units='m**2')
@@ -43,9 +43,11 @@ class Cd0VerticalTail(ExplicitComponent):
             self.add_input('TLAR:cruise_mach', val=np.nan)
             self.add_output('cd0_vt_high_speed')
 
+        self.declare_partials('*', '*', method='fd')
+
     def compute(self, inputs, outputs):
         el_vt = inputs['geometry:vertical_tail:thickness_ratio']
-        vt_length = inputs['geometry:vertical_tail:length']
+        vt_length = inputs['geometry:vertical_tail:MAC:length']
         sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
         wet_area_vt = inputs['geometry:vertical_tail:wetted_area']
         wing_area = inputs['geometry:wing:area']

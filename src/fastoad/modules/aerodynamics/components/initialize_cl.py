@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -39,6 +39,8 @@ class InitializeClPolar(ExplicitComponent):
             self.add_output('cl_low_speed', shape=POLAR_POINT_COUNT)
         else:
             self.add_output('cl_high_speed', shape=POLAR_POINT_COUNT)
+
+        self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
         k_cl = inputs['aerodynamics:aircraft:cruise:CL:k']

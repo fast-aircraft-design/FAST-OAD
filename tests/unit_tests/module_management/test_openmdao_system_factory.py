@@ -2,7 +2,7 @@
 Test module for openmdao_system_factory.py
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,7 +23,7 @@ from openmdao.api import Problem, ScipyOptimizeDriver  # , pyOptSparseDriver
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.constants import SERVICE_OPENMDAO_SYSTEM
 from fastoad.module_management.exceptions import FastNoOMSystemFoundError, \
-    FastUnknownOMSystemIdentifierError
+    FastUnknownOMSystemIdentifierError, FastBadSystemOptionError
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
 from tests import root_folder_path
 from tests.sellar_example.sellar import Sellar, ISellarFactory
@@ -72,9 +72,15 @@ def test_get_system(framework_load_unload):
     assert outputs['y1'] == 118.
 
     # Get component 2 #########################################################
-    disc2_component = OpenMDAOSystemFactory.get_system('sellar.disc2')
-    assert disc2_component is not None
+    with pytest.raises(FastBadSystemOptionError):
+        disc2_component = OpenMDAOSystemFactory.get_system('sellar.disc2',
+                                                           options={'not_declared': -1})
+
+    disc2_component = OpenMDAOSystemFactory.get_system('sellar.disc2', options={'answer': -1})
+    assert disc2_component.options[
+               'answer'] == 42  # still the intial value as setup() has not been run
     disc2_component.setup()
+    assert disc2_component.options['answer'] == -1
     outputs = {}
     disc2_component.compute({'z': [10., 10.], 'y1': 4.}, outputs)
     assert outputs['y2'] == 22.

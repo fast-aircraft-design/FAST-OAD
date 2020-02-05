@@ -1,6 +1,6 @@
 <!--
   ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2019  ONERA/ISAE
+  ~ Copyright (C) 2020  ONERA/ISAE
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -15,248 +15,248 @@
 
 <aircraft>
   <TLAR>
-    <NPAX>150.0</NPAX>
+    <NPAX>150.0<!--top-level requirement: number of passengers--></NPAX>
   </TLAR>
   <geometry>
     <wing>
       <MAC>
-        <length>4.457</length>
-        <x>16.457</x>
+        <length>4.457<!--length of mean aerodynamic chord of wing--></length>
+        <x>16.457<!--X-position of leading edge of mean aerodynamic chord of wing--></x>
       </MAC>
     </wing>
   </geometry>
   <weight>
     <aircraft>
-      <MFW>20569.81</MFW>
+      <MFW>20569.81<!--maximum fuel weight--></MFW>
     </aircraft>
     <airframe>
       <wing>
-        <mass>7746.72</mass>
+        <mass>7746.72<!--wing (A1): total mass--></mass>
         <CG>
-          <x>16.67</x>
+          <x>16.67<!--wing (A1): X-position of center of gravity--></x>
         </CG>
       </wing>
       <fuselage>
-        <mass>8828.42</mass>
+        <mass>8828.42<!--fuselage (A2): total mass--></mass>
         <CG>
-          <x>16.88</x>
+          <x>16.88<!--fuselage (A2): X-position of center of gravity--></x>
         </CG>
       </fuselage>
       <horizontal_tail>
-        <mass>754.04</mass>
+        <mass>754.04<!--horizontal tail (A31): mass--></mass>
         <CG>
-          <x>34.58</x>
+          <x>34.58<!--horizontal tail (A31): X-position of center of gravity--></x>
         </CG>
       </horizontal_tail>
       <vertical_tail>
-        <mass>515.53</mass>
+        <mass>515.53<!--vertical tail (A32): mass--></mass>
         <CG>
-          <x>35.11</x>
+          <x>35.11<!--vertical tail (A32): X-position of center of gravity--></x>
         </CG>
       </vertical_tail>
       <flight_controls>
-        <mass>728.07</mass>
+        <mass>728.07<!--flight controls (A4): total mass--></mass>
         <CG>
-          <x>19.24</x>
+          <x>19.24<!--flight controls (A4): X-position of center of gravity--></x>
         </CG>
       </flight_controls>
       <landing_gear>
         <main>
-          <mass>2143.75</mass>
+          <mass>2143.75<!--main landing gear (A51): mass--></mass>
           <CG>
-            <x>18.11</x>
+            <x>18.11<!--main landing gear (A51): X-position of center of gravity--></x>
           </CG>
         </main>
         <front>
-          <mass>378.82</mass>
+          <mass>378.82<!--front landing gear (A52): mass--></mass>
           <CG>
-            <x>5.18</x>
+            <x>5.18<!--front landing gear (A52): X-position of center of gravity--></x>
           </CG>
         </front>
       </landing_gear>
       <pylon>
-        <mass>1211.88</mass>
+        <mass>1211.88<!--pylon (A6): total mass--></mass>
         <CG>
-          <x>13.5</x>
+          <x>13.5<!--pylon (A6): X-position of center of gravity--></x>
         </CG>
       </pylon>
       <paint>
-        <mass>141.12</mass>
+        <mass>141.12<!--paint (A7): total mass--></mass>
         <CG>
-          <x>0.0</x>
+          <x>0.0<!--paint (A7): X-position of center of gravity--></x>
         </CG>
       </paint>
     </airframe>
     <propulsion>
       <engine>
-        <mass>7161.33</mass>
+        <mass>7161.33<!--engine (B1): mass--></mass>
         <CG>
-          <x>13.5</x>
+          <x>13.5<!--engine (B1): X-position of center of gravity--></x>
         </CG>
       </engine>
       <fuel_lines>
-        <mass>457.48</mass>
+        <mass>457.48<!--fuel lines (B2): mass--></mass>
         <CG>
-          <x>13.5</x>
+          <x>13.5<!--fuel lines (B2): X-position of center of gravity--></x>
         </CG>
       </fuel_lines>
       <unconsumables>
-        <mass>121.99</mass>
+        <mass>121.99<!--unconsumables (B3): mass--></mass>
         <CG>
-          <x>13.5</x>
+          <x>13.5<!--unconsumables (B3): X-position of center of gravity--></x>
         </CG>
       </unconsumables>
     </propulsion>
     <systems>
       <power>
         <auxiliary_power_unit>
-          <mass>287.38</mass>
+          <mass>287.38<!--power (C1): mass--></mass>
           <CG>
-            <x>35.63</x>
+            <x>35.63<!--power (C1): X-position of center of gravity--></x>
           </CG>
         </auxiliary_power_unit>
         <electric_systems>
-          <mass>1321.54</mass>
+          <mass>1321.54<!--power (C1): mass--></mass>
           <CG>
-            <x>18.75</x>
+            <x>18.75<!--power (C1): X-position of center of gravity--></x>
           </CG>
         </electric_systems>
         <hydraulic_systems>
-          <mass>760.93</mass>
+          <mass>760.93<!--power (C1): mass--></mass>
           <CG>
-            <x>18.75</x>
+            <x>18.75<!--power (C1): X-position of center of gravity--></x>
           </CG>
         </hydraulic_systems>
       </power>
       <life_support>
         <insulation>
-          <mass>2226.45</mass>
+          <mass>2226.45<!--insulation (C21): mass--></mass>
           <CG>
-            <x>16.88</x>
+            <x>16.88<!--insulation (C21): X-position of center of gravity--></x>
           </CG>
         </insulation>
         <air_conditioning>
-          <mass>942.4</mass>
+          <mass>942.4<!--air conditioning (C2): mass--></mass>
           <CG>
-            <x>16.62</x>
+            <x>16.62<!--air conditioning (C2): X-position of center of gravity--></x>
           </CG>
         </air_conditioning>
         <de-icing>
-          <mass>155.01</mass>
+          <mass>155.01<!--de-icing (C2): mass--></mass>
           <CG>
-            <x>15.79</x>
+            <x>15.79<!--de-icing (C2): X-position of center of gravity--></x>
           </CG>
         </de-icing>
         <cabin_lighting>
-          <mass>167.58</mass>
+          <mass>167.58<!--cabin lighting (C2): mass--></mass>
           <CG>
-            <x>16.88</x>
+            <x>16.88<!--cabin lighting (C2): X-position of center of gravity--></x>
           </CG>
         </cabin_lighting>
         <seats_crew_accommodation>
-          <mass>126.0</mass>
+          <mass>126.0<!--seats crew accommodation (C21): mass--></mass>
           <CG>
-            <x>16.62</x>
+            <x>16.62<!--seats crew accommodation (C21): X-position of center of gravity--></x>
           </CG>
         </seats_crew_accommodation>
         <oxygen>
-          <mass>284.1</mass>
+          <mass>284.1<!--oxygen (C21): mass--></mass>
           <CG>
-            <x>16.62</x>
+            <x>16.62<!--oxygen (C21): X-position of center of gravity--></x>
           </CG>
         </oxygen>
         <safety_equipment>
-          <mass>432.71</mass>
+          <mass>432.71<!--safety equipment (C21): mass--></mass>
           <CG>
-            <x>16.1</x>
+            <x>16.1<!--safety equipment (C21): X-position of center of gravity--></x>
           </CG>
         </safety_equipment>
       </life_support>
       <navigation>
-        <mass>492.29</mass>
+        <mass>492.29<!--navigation (C3): mass--></mass>
         <CG>
-          <x>5.52</x>
+          <x>5.52<!--navigation (C3): X-position of center of gravity--></x>
         </CG>
       </navigation>
       <transmission>
-        <mass>200.0</mass>
+        <mass>200.0<!--transmission (C4): mass--></mass>
         <CG>
-          <x>18.75</x>
+          <x>18.75<!--transmission (C4): X-position of center of gravity--></x>
         </CG>
       </transmission>
       <operational>
         <radar>
-          <mass>100.0</mass>
+          <mass>100.0<!--radar (C51): mass--></mass>
           <CG>
-            <x>0.75</x>
+            <x>0.75<!--radar (C51): X-position of center of gravity--></x>
           </CG>
         </radar>
         <cargo_hold>
-          <mass>277.19</mass>
+          <mass>277.19<!--cargo hold (C52): mass--></mass>
           <CG>
-            <x>16.62</x>
+            <x>16.62<!--cargo hold (C52): X-position of center of gravity--></x>
           </CG>
         </cargo_hold>
       </operational>
       <flight_kit>
-        <mass>45.0</mass>
+        <mass>45.0<!--flight kit (C6): mass--></mass>
         <CG>
-          <x>7.47</x>
+          <x>7.47<!--flight kit (C6): X-position of center of gravity--></x>
         </CG>
       </flight_kit>
     </systems>
     <furniture>
       <cargo_configuration>
-        <mass>41.769</mass>
+        <mass>41.769<!--cargo configuration (D1): mass--></mass>
         <CG>
-          <x>0.0</x>
+          <x>0.0<!--cargo configuration (D1): X-position of center of gravity--></x>
         </CG>
       </cargo_configuration>
       <passenger_seats>
-        <mass>1500.0</mass>
+        <mass>1500.0<!--passenger seats (D2): mass--></mass>
         <CG>
-          <x>16.62</x>
+          <x>16.62<!--passenger seats (D2): X-position of center of gravity--></x>
         </CG>
       </passenger_seats>
       <food_water>
-        <mass>1312.5</mass>
+        <mass>1312.5<!--food water (D3): mass--></mass>
         <CG>
-          <x>29.4</x>
+          <x>29.4<!--food water (D3): X-position of center of gravity--></x>
         </CG>
       </food_water>
       <security_kit>
-        <mass>225.0</mass>
+        <mass>225.0<!--security kit (D4): mass--></mass>
         <CG>
-          <x>16.62</x>
+          <x>16.62<!--security kit (D4): X-position of center of gravity--></x>
         </CG>
       </security_kit>
       <toilets>
-        <mass>75.0</mass>
+        <mass>75.0<!--toilets (D5): mass--></mass>
         <CG>
-          <x>16.62</x>
+          <x>16.62<!--toilets (D5): X-position of center of gravity--></x>
         </CG>
       </toilets>
     </furniture>
     <payload>
       <PAX>
         <CG>
-          <x>16.62</x>
+          <x>16.62<!--passengers: X-position of center of gravity--></x>
         </CG>
       </PAX>
       <rear_fret>
         <CG>
-          <x>20.87</x>
+          <x>20.87<!--rear fret: X-position of center of gravity--></x>
         </CG>
       </rear_fret>
       <front_fret>
         <CG>
-          <x>9.94</x>
+          <x>9.94<!--front fret: X-position of center of gravity--></x>
         </CG>
       </front_fret>
     </payload>
     <fuel_tank>
       <CG>
-        <x>16.05</x>
+        <x>16.05<!--fuel tank: X-position of center of gravity--></x>
       </CG>
     </fuel_tank>
   </weight>

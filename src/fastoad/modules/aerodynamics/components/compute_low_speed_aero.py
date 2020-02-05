@@ -2,7 +2,7 @@
     FAST - Copyright (c) 2016 ONERA ISAE
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,6 +25,7 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
     Czalpha from Raymer Eq 12.6
     TODO: complete source
     """
+
     def setup(self):
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
@@ -37,7 +38,9 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
         self.add_input('geometry:wing:tip:thickness_ratio', val=np.nan)
 
         self.add_output('aerodynamics:aircraft:takeoff:CL_alpha', units='1/rad')
-        self.add_output('aerodynamics:aircraft:cruise:CL0')
+        self.add_output('aerodynamics:aircraft:takeoff:CL0_clean')
+
+        self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
         width_max = inputs['geometry:fuselage:maximum_width']
@@ -62,4 +65,4 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
                             (wing_area - l2_wing * width_max) / wing_area * fact_F
 
         outputs['aerodynamics:aircraft:takeoff:CL_alpha'] = cl_alpha_wing_low
-        outputs['aerodynamics:aircraft:cruise:CL0'] = 0.2  # FIXME: hard-coded value
+        outputs['aerodynamics:aircraft:takeoff:CL0_clean'] = 0.2  # FIXME: hard-coded value

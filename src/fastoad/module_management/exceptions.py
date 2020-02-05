@@ -2,7 +2,7 @@
 Exceptions for module_management package
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -55,3 +55,15 @@ class FastUnknownOMSystemIdentifierError(FastError):
     def __init__(self, identifier):
         super().__init__('No OpenMDAO system found with this identifier: %s' % identifier)
         self.identifier = identifier
+
+
+class FastBadSystemOptionError(FastError):
+    """
+    Raised when some option name is not conform to OpenMDAO system definition
+    """
+
+    def __init__(self, identifier, option_names):
+        super().__init__('OpenMDAO system %s does not accept following option(s): %s'
+                         % (identifier, option_names))
+        self.identifier = identifier
+        self.option_names = option_names

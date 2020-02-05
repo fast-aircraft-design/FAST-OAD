@@ -114,16 +114,16 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
         self.add_input('mission:sizing:cruise:altitude', np.nan, units='m')
 
         self.add_output('mission:sizing:ZFW', units='kg', ref=1e4)
-        self.add_output('mission:sizing:mission:fuel', units='kg', ref=1e4)
         self.add_output('mission:sizing:fuel', units='kg', ref=1e4)
+        self.add_output('mission:sizing:trip:fuel', units='kg', ref=1e4)
         self.add_output('mission:sizing:climb:fuel', units='kg', ref=1e4)
         self.add_output('mission:sizing:cruise:fuel', units='kg', ref=1e4)
         self.add_output('mission:sizing:descent:fuel', units='kg', ref=1e4)
         self.add_output('mission:sizing:fuel_reserve', units='kg', ref=1e4)
 
         self.declare_partials('mission:sizing:ZFW', '*', method='fd')
-        self.declare_partials('mission:sizing:mission:fuel', '*', method='fd')
         self.declare_partials('mission:sizing:fuel', '*', method='fd')
+        self.declare_partials('mission:sizing:trip:fuel', '*', method='fd')
         self.declare_partials('mission:sizing:climb:fuel', '*', method='fd')
         self.declare_partials('mission:sizing:cruise:fuel', '*', method='fd')
         self.declare_partials('mission:sizing:descent:fuel', '*', method='fd')
@@ -139,8 +139,8 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
 
         outputs['mission:sizing:ZFW'] = zfw
 
-        outputs['mission:sizing:mission:fuel'] = mission_fuel
-        outputs['mission:sizing:fuel'] = mtow * (1. - flight_mass_ratio)
+        outputs['mission:sizing:fuel'] = mission_fuel
+        outputs['mission:sizing:trip:fuel'] = mtow * (1. - flight_mass_ratio)
         outputs['mission:sizing:climb:fuel'] = mtow * (1. - CLIMB_MASS_RATIO)
         outputs['mission:sizing:cruise:fuel'] = mtow * CLIMB_MASS_RATIO * (1. - cruise_mass_ratio)
         outputs['mission:sizing:descent:fuel'] = \
