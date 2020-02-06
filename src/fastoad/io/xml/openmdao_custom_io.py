@@ -89,45 +89,40 @@ class OMCustomXmlIO(AbstractOMFileIO):
         if self._translator is None:
             raise FastMissingTranslatorError('Missing translator instance')
 
-        context = etree.iterparse(self._data_source, events=("start", "end"))
-
-        # Intermediate storing as a dict for easy access according to name when appending new values
         variables = VariableList()
 
-        current_path = []
+        parser = etree.XMLParser(remove_blank_text=True, remove_comments=True)
+        tree = etree.parse(self._data_source, parser)
+        root = tree.getroot()
+        for elem in root.iter():
+            units = elem.attrib.get(self.xml_unit_attribute, None)
+            if units:
+                # Ensures compatibility with OpenMDAO units
+                for legacy_chars, om_chars in self.unit_translation.items():
+                    units = re.sub(legacy_chars, om_chars, units)
+                    units = units.replace(legacy_chars, om_chars)
+            value = None
+            if elem.text:
+                value = get_float_list_from_string(elem.text)
 
-        elem: _Element
-        for action, elem in context:
-            if action == 'start':
-                current_path.append(elem.tag)
-                units = elem.attrib.get(self.xml_unit_attribute, None)
-                if units:
-                    # Ensures compatibility with OpenMDAO units
-                    for legacy_chars, om_chars in self.unit_translation.items():
-                        units = re.sub(legacy_chars, om_chars, units)
-                        units = units.replace(legacy_chars, om_chars)
-                value = None
-                if elem.text:
-                    value = get_float_list_from_string(elem.text)
+            if value is not None:
+                try:
+                    path_tags = [ancestor.tag for ancestor in elem.iterancestors()]
+                    path_tags.reverse()
+                    path_tags.append(elem.tag)
+                    xpath = '/'.join(path_tags[1:])  # Do not use root tag
+                    name = self._translator.get_variable_name(xpath)
+                except XPathError as err:
+                    _LOGGER.warning('The xpath %s does not have any variable '
+                                    'affected in the translator.', err.xpath)
+                    continue
 
-                if value is not None:
-                    try:
-                        # FIXME: maybe a bit silly to rebuild the XPath here...
-                        xpath = '/'.join(current_path[1:])
-                        name = self._translator.get_variable_name(xpath)
-                    except XPathError as err:
-                        _LOGGER.warning('The xpath %s does not have any variable '
-                                        'affected in the translator.', err.xpath)
-                        continue
-
-                    if name not in variables.names():
-                        # Add Variable
-                        variables[name] = {'value': value, 'units': units}
-                    else:
-                        # Variable already exists: append values (here the dict is useful)
-                        variables[name].value.extend(value)
-            else:  # action == 'end':
-                current_path.pop(-1)
+                if name not in variables.names():
+                    # Add Variable
+                    variables[name] = {'value': value, 'units': units}
+                else:
+                    # Variable already exists: append values
+                    variables[name].value.extend(value)
 
         return variables
 
@@ -162,7 +157,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 element.text = json.dumps(np.asarray(variable.value).tolist())
             if variable.description:
                 element.append(etree.Comment(variable.description))
-       # Write
+        # Write
         tree = etree.ElementTree(root)
         dirname = pth.abspath(pth.dirname(self._data_source))
         if not pth.exists(dirname):
