@@ -4,7 +4,7 @@ Module for custom Exception classes
 
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -38,31 +38,3 @@ class XMLReadError(FastError):
 
     This exception indicates that an error occurred when reading an xml file.
     """
-
-
-class XPathError(XMLReadError):
-    """
-    XML path Error.
-
-    This exception indicates that the xpath given for the variable does not correspond
-    to the xml file.
-    """
-
-    def __init__(self, xpath):
-        super(XPathError, self).__init__(
-            'Unknown xpath %s' % xpath)
-        self.xpath = xpath
-
-
-class VariableError(XMLReadError):
-    """
-    XML path Error.
-
-    This exception indicates that the variable given does not have an xpath in the
-    translator file.
-    """
-
-    def __init__(self, variable):
-        super(VariableError, self).__init__(
-            'Unknown variable %s' % variable)
-        self.variable = variable

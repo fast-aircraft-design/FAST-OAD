@@ -25,9 +25,10 @@ from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.vectors.vector import Vector
 
-from fastoad.exceptions import XPathError, VariableError
 from fastoad.io.serialize import AbstractOMFileIO
-from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError
+from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError, \
+    FastXpathTranslatorXPathError, FastXpathTranslatorVariableError, \
+    FastOMXmlIODuplicateVariableError
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.variables import VariableList
 from fastoad.utils.strings import get_float_list_from_string
@@ -112,7 +113,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
                     path_tags.append(elem.tag)
                     xpath = '/'.join(path_tags[1:])  # Do not use root tag
                     name = self._translator.get_variable_name(xpath)
-                except XPathError as err:
+                except FastXpathTranslatorXPathError as err:
                     _LOGGER.warning('The xpath %s does not have any variable '
                                     'affected in the translator.', err.xpath)
                     continue
@@ -121,7 +122,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
                     # Add Variable
                     variables[name] = {'value': value, 'units': units}
                 else:
-                    raise VariableError(
+                    raise FastOMXmlIODuplicateVariableError(
                         'Variable %s is defined in more than one place in file %s' % (
                             name, self._data_source))
 
@@ -138,7 +139,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
             try:
                 xpath = self._translator.get_xpath(variable.name)
-            except VariableError as exc:
+            except FastXpathTranslatorVariableError as exc:
                 _LOGGER.warning('No translation found: %s', exc)
                 continue
             element = self._create_xpath(root, xpath)

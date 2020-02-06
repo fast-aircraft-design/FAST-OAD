@@ -1,7 +1,7 @@
 """ Exceptions for io.xml module """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -40,7 +40,33 @@ class FastXpathTranslatorDuplicates(FastError):
     """
 
 
-class FastOMXmlIOBadPathSeparator(FastError):
+class FastXpathTranslatorVariableError(FastError):
     """
-    Raised when the define path separator is incorrect
+    Raised when a variable does not match any xpath in the translator file.
+    """
+
+    def __init__(self, variable):
+        super().__init__('Unknown variable %s' % variable)
+        self.variable = variable
+
+
+class FastXpathTranslatorXPathError(FastError):
+    """
+    Raised when a xpath does not match any variable in the translator file.
+    """
+
+    def __init__(self, xpath):
+        super().__init__('Unknown xpath %s' % xpath)
+        self.xpath = xpath
+
+
+class FastOMXmlIOBadPathSeparatorError(FastError):
+    """
+    Raised when the defined path separator is incorrect
+    """
+
+
+class FastOMXmlIODuplicateVariableError(FastError):
+    """
+    Raised a variable is defined more than once in a XML file
     """
