@@ -121,8 +121,9 @@ class OMCustomXmlIO(AbstractOMFileIO):
                     # Add Variable
                     variables[name] = {'value': value, 'units': units}
                 else:
-                    # Variable already exists: append values
-                    variables[name].value.extend(value)
+                    raise VariableError(
+                        'Variable %s is defined in more than one place in file %s' % (
+                            name, self._data_source))
 
         return variables
 
