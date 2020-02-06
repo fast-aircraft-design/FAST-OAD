@@ -12,6 +12,7 @@ flake8 = "*"
 sphinx = "*"
 sphinx-rtd-theme = "*"
 sphinxcontrib-bibtex = "*"
+wheel = "*"
 
 [packages]
 fastoad = {editable = true,path = "."}
