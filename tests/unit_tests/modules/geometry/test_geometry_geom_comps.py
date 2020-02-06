@@ -94,8 +94,6 @@ def test_compute_fuselage_cabin_sizing(input_xml):
     assert cg_systems_c6 == pytest.approx(7.47, abs=1e-2)
     cg_furniture_d2 = problem['weight:furniture:passenger_seats:CG:x']
     assert cg_furniture_d2 == pytest.approx(16.62, abs=1e-2)
-    cg_pl_cg_pax = problem['cg_pl:CG_PAX']
-    assert cg_pl_cg_pax == pytest.approx(16.62, abs=1e-2)
     fuselage_length = problem['geometry:fuselage:length']
     assert fuselage_length == pytest.approx(37.507, abs=1e-3)
     fuselage_width_max = problem['geometry:fuselage:maximum_width']

@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -109,7 +109,6 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         self.add_output('cabin:Nrows')
         self.add_output('weight:systems:flight_kit:CG:x', units='m')
         self.add_output('weight:furniture:passenger_seats:CG:x', units='m')
-        self.add_output('cg_pl:CG_PAX', units='m')
         self.add_output('geometry:fuselage:length', units='m')
         self.add_output('geometry:fuselage:maximum_width', units='m')
         self.add_output('geometry:fuselage:maximum_height', units='m')
@@ -163,12 +162,6 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         self.declare_partials('weight:furniture:passenger_seats:CG:x',
                               ['geometry:cabin:seats:economical:count_by_row', 'geometry:cabin:seats:economical:width',
                                'geometry:cabin:seats:economical:length', 'geometry:cabin:exit_width', 'geometry:cabin:aisle_width'], method='fd')
-        self.declare_partials('cg_pl:CG_PAX',
-                              ['geometry:cabin:seats:economical:count_by_row',
-                               'geometry:cabin:seats:economical:width',
-                               'geometry:cabin:seats:economical:length',
-                               'geometry:cabin:exit_width', 'geometry:cabin:aisle_width'],
-                              method='fd')
         self.declare_partials('geometry:fuselage:wetted_area',
                               ['geometry:cabin:seats:economical:count_by_row',
                                'geometry:cabin:aisle_width',
@@ -226,7 +219,6 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         outputs['geometry:cabin:NPAX1'] = npax_1
         outputs['weight:systems:flight_kit:CG:x'] = x_cg_c6
         outputs['weight:furniture:passenger_seats:CG:x'] = x_cg_d2
-        outputs['cg_pl:CG_PAX'] = x_cg_d2
         outputs['geometry:fuselage:length'] = fus_length
         outputs['geometry:fuselage:maximum_width'] = b_f
         outputs['geometry:fuselage:maximum_height'] = h_f
