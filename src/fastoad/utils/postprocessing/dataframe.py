@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 import ipysheet as sh
 import ipywidgets as widgets
-from IPython.display import display
+from IPython.display import display, clear_output
 
 pd.set_option('display.max_rows', None)
 
@@ -41,12 +41,14 @@ class FASTOADDataFrame():
 
         self.df_optimization = pd.DataFrame()
 
-        self._modules = {'TLAR': 'TLAR',
-                         'aerodynamics': 'Aerodynamics',
-                         'geometry': 'Geometry',
-                         'weight': 'Mass Breakdown',
-                         'propulsion': 'Propulsion'
-                         }
+        self.module_naming = {'TLAR': 'TLAR',
+                              'aerodynamics': 'Aerodynamics',
+                              'geometry': 'Geometry',
+                              'weight': 'Mass Breakdown',
+                              'propulsion': 'Propulsion'
+                              }
+
+        self.all_tag = '--ALL--'
 
     def read_problem(self, problem: FASTOADProblem):
         problem_variables = {}
@@ -64,7 +66,7 @@ class FASTOADDataFrame():
 
         system = problem.model
 
-        module_names = [name for (name, module) in self._modules.items()]
+        module_names = [name for (name, module) in self.module_naming.items()]
 
         # Adding modules infos
         for prom_name, abs_names in problem_variables.items():
@@ -82,7 +84,7 @@ class FASTOADDataFrame():
                         var_type = 'Input'
                     else:
                         var_type = 'Output'
-                    self.df_variables = self.df_variables.append([{'Module': self._modules[module_name],
+                    self.df_variables = self.df_variables.append([{'Module': self.module_naming[module_name],
                                                                    'Type': var_type,
                                                                    'Name': prom_name,
                                                                    'Value': value,
@@ -172,39 +174,48 @@ class FASTOADDataFrame():
         widgets.interact(f, Type=items)
         return f
 
-    def data_sheet(self, include_inputs=True, include_outputs=True):
-        items_var = self.df_variables['Module'].unique().tolist()
-        items_opt = self.df_optimization['Module'].unique().tolist()
-        items = sorted(items_var + items_opt)
-        sub_items = self.df_optimization['Type'].unique().tolist()
-        if not include_outputs:
-            df_optimization = self.df_optimization[
-                self.df_optimization['Type'] == 'Input']
-            df_variables = self.df_variables[
-                self.df_variables['Type'] == 'Input']
-        elif not include_inputs:
-            df_optimization = self.df_optimization[
-                self.df_optimization['Type'] == 'Output']
-            df_variables = self.df_variables[
-                self.df_variables['Type'] == 'Output']
-        else:
-            df_optimization = self.df_optimization
-            df_variables = self.df_variables
+    def data_sheet(self, max_depth=6):
 
-        def f(type, sub_type):
-            if type == 'Optimization':
-                df = display(self.build_sheet(df_optimization[
-                                                  df_optimization['Module'] == type]))
+        df_variables = self.df_variables
+
+        items = []
+
+        for i in range(max_depth):
+            if i == 0:
+                modules_item = sorted(self._find_submodules(df_variables))
+                if modules_item:
+                    w = widgets.Dropdown(options=modules_item)
+                    items.append(w)
             else:
-                df = display(self.build_sheet(df_variables[
-                                                  df_variables['Module'] == type]))
-            return df
+                if i <= len(items):
+                    modules_item = sorted(self._find_submodules(df_variables, items[i-1].value))
+                    if modules_item:
+                        modules_item.insert(0, self.all_tag)
+                        w = widgets.Dropdown(options=modules_item)
+                        items.append(w)
 
-        w = widgets.interactive(f, type=items, sub_type=sub_items)
-        return w
+        for i in range(len(items)-1):
+            item = items[i]
+            next_item = items[i+1]
 
-    def build_sheet(self, df):
+            def update_options(*args):
+                options = sorted(self._find_submodules(df_variables, item.value))
+                options.insert(0, self.all_tag)
+                next_item.options = options
+            item.observe(update_options, 'value')
 
+        h_box = widgets.HBox(items)
+
+        def render(*args):
+            clear_output(wait=True)
+            sheet = self._build_sheet(self._filter_variables(self.df_variables, items))
+            return display(h_box, sheet)
+
+        items[-1].observe(render, 'value')
+        return render()
+
+
+    def _build_sheet(self, df):
         sheet = sh.from_dataframe(df)
         column = df.columns.get_loc('Value')
 
@@ -213,3 +224,48 @@ class FASTOADDataFrame():
                 cell.read_only = True
 
         return sheet
+
+    def _find_submodules(self, df, module=None):
+        var_names = df['Name'].unique().tolist()
+
+        submodules = set()
+
+        for var_name in var_names:
+            full_submodules = var_name.split(':')
+            if module is not None:
+                if module in full_submodules:
+                    module_idx = full_submodules.index(module)
+                    if module_idx < len(full_submodules)-1:
+                        submodules.add(full_submodules[module_idx + 1])
+            else:
+                submodules.add(full_submodules[0])
+
+        submodules = list(submodules)
+        return submodules
+
+    def _filter_variables(self, df, items, type=None):
+        path = ''
+        modules = items
+        for i in range(len(modules)):
+            module = modules[i]
+            value = module.value
+            if value != self.all_tag:
+                if i < len(modules) - 1:
+                    path += value + ':'
+                else:
+                    path += value
+
+        var_names = df['Name'].unique().tolist()
+
+        filtered_df = pd.DataFrame()
+
+        for var_name in var_names:
+            if path in var_name:
+                if type is None:
+                    element = df[df['Name'] == var_name]
+                    filtered_df = filtered_df.append(element)
+                else:
+                    element = df[(df['Name'] == var_name & df['Type'] == type)]
+                    filtered_df = filtered_df.append(element)
+
+        return filtered_df
