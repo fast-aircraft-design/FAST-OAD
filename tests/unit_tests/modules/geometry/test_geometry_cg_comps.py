@@ -413,8 +413,6 @@ def test_compute_cg_ratio_aft(input_xml):
     problem.setup(mode='fwd')
     problem.run_model()
 
-    x_cg_plane_up = problem['x_cg_plane_up']
-    assert x_cg_plane_up == pytest.approx(699570.03, abs=1e-2)
     x_cg_plane_down = problem['x_cg_plane_down']
     assert x_cg_plane_down == pytest.approx(41162.00, abs=1e-2)
     cg_ratio_aft = problem['cg_ratio_aft']

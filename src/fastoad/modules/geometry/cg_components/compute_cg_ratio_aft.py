@@ -2,7 +2,7 @@
     Estimation of center of gravity ratio with aft
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -102,11 +102,9 @@ class ComputeCG(om.ExplicitComponent):
         for mass_name in self.options['mass_names']:
             self.add_input(mass_name, val=np.nan, units='kg')
 
-        self.add_output('x_cg_plane_up', units='m')
         self.add_output('x_cg_plane_down', units='m')
         self.add_output('x_cg_plane_aft', units='m')
 
-        self.declare_partials('x_cg_plane_up', '*', method='fd')
         self.declare_partials('x_cg_plane_down', '*', method='fd')
         self.declare_partials('x_cg_plane_aft', '*', method='fd')
 
@@ -114,9 +112,9 @@ class ComputeCG(om.ExplicitComponent):
         cgs = [inputs[cg_name][0] for cg_name in self.options['cg_names']]
         masses = [inputs[mass_name][0] for mass_name in self.options['mass_names']]
 
-        outputs['x_cg_plane_up'] = np.dot(cgs, masses)
+        weight_moment = np.dot(cgs, masses)
         outputs['x_cg_plane_down'] = np.sum(masses)
-        outputs['x_cg_plane_aft'] = outputs['x_cg_plane_up'] / outputs['x_cg_plane_down']
+        outputs['x_cg_plane_aft'] = weight_moment / outputs['x_cg_plane_down']
 
 
 class CGRatio(om.ExplicitComponent):
