@@ -2,7 +2,7 @@
 Test module for geometry functions of cg components
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -141,7 +141,7 @@ def test_compute_cg_loadcase1(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('x_cg_plane_up', 699570.01)
+    input_vars.add_output('x_cg_plane_aft', 699570.01 / 40979.11)
     input_vars.add_output('x_cg_plane_down', 40979.11)
 
     problem = Problem()
@@ -172,7 +172,7 @@ def test_compute_cg_loadcase2(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('x_cg_plane_up', 699570.01)
+    input_vars.add_output('x_cg_plane_aft', 699570.01 / 40979.11)
     input_vars.add_output('x_cg_plane_down', 40979.11)
 
     problem = Problem()
@@ -201,7 +201,7 @@ def test_compute_cg_loadcase3(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('x_cg_plane_up', 699570.01)
+    input_vars.add_output('x_cg_plane_aft', 699570.01 / 40979.11)
     input_vars.add_output('x_cg_plane_down', 40979.11)
 
     problem = Problem()
@@ -230,7 +230,7 @@ def test_compute_cg_loadcase4(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('x_cg_plane_up', 699570.01)
+    input_vars.add_output('x_cg_plane_aft', 699570.01 / 40979.11)
     input_vars.add_output('x_cg_plane_down', 40979.11)
 
     problem = Problem()

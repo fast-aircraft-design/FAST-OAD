@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -31,7 +31,7 @@ class ComputeCGLoadCase2(ExplicitComponent):
         self.add_input('TLAR:NPAX', val=np.nan)
         self.add_input('weight:aircraft:MFW', val=np.nan, units='kg')
         self.add_input('weight:fuel_tank:CG:x', val=np.nan, units='m')
-        self.add_input('x_cg_plane_up', val=np.nan, units='m')
+        self.add_input('x_cg_plane_aft', val=np.nan, units='m')
         self.add_input('x_cg_plane_down', val=np.nan, units='m')
 
         self.add_output('cg_ratio_lc2')
@@ -45,8 +45,9 @@ class ComputeCGLoadCase2(ExplicitComponent):
         cg_rear_fret = inputs['weight:payload:rear_fret:CG:x']
         cg_front_fret = inputs['weight:payload:front_fret:CG:x']
         npax = inputs['TLAR:NPAX']
-        x_cg_plane_up = inputs['x_cg_plane_up']
+        x_cg_plane_aft = inputs['x_cg_plane_aft']
         x_cg_plane_down = inputs['x_cg_plane_down']
+        x_cg_plane_up = x_cg_plane_aft * x_cg_plane_down
         mfw = inputs['weight:aircraft:MFW']
         cg_tank = inputs['weight:fuel_tank:CG:x']
 
