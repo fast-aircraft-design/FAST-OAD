@@ -199,7 +199,8 @@ class FASTOADDataFrame():
                     items[0].observe(update_items, 'value')
                 else:
                     if i <= len(items):
-                        modules_item = sorted(self._find_submodules(df_variables, items[i-1].value))
+                        modules = [item.value for item in items[0:i]]
+                        modules_item = sorted(self._find_submodules(df_variables, modules))
                         if modules_item:
                             # Check if the item exists already
                             if i == len(items):
@@ -251,16 +252,16 @@ class FASTOADDataFrame():
 
         return sheet
 
-    def _find_submodules(self, df, module=None):
+    def _find_submodules(self, df, modules=None):
         var_names = df['Name'].unique().tolist()
 
         submodules = set()
 
         for var_name in var_names:
             full_submodules = var_name.split(':')
-            if module is not None:
-                if module in full_submodules:
-                    module_idx = full_submodules.index(module)
+            if modules is not None:
+                if all(module in full_submodules for module in modules):
+                    module_idx = full_submodules.index(modules[-1])
                     if module_idx < len(full_submodules)-1:
                         submodules.add(full_submodules[module_idx + 1])
             else:
