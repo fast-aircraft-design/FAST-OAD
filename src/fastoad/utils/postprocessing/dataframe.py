@@ -18,7 +18,6 @@ import pandas as pd
 import ipysheet as sh
 import ipywidgets as widgets
 from IPython.display import display, clear_output
-
 pd.set_option('display.max_rows', None)
 
 from fastoad.io.configuration import FASTOADProblem
@@ -26,6 +25,16 @@ from fastoad.io.xml import OMXmlIO
 from fastoad.openmdao.connections_utils import get_unconnected_input_names, \
     get_variables_of_ivc_components
 
+class _TopWidget:
+
+    def __init__(self, items):
+        self.items = items
+        self.widget = widgets.HBox(items)
+
+    def __call__(self, *args, **kwargs):
+
+        display(self.widget)
+        return self.widget
 
 class FASTOADDataFrame():
 
@@ -179,39 +188,56 @@ class FASTOADDataFrame():
         df_variables = self.df_variables
 
         items = []
+        modules_item = sorted(self._find_submodules(df_variables))
+        if modules_item:
+            w = widgets.Dropdown(options=modules_item)
+            items.append(w)
 
-        for i in range(max_depth):
-            if i == 0:
-                modules_item = sorted(self._find_submodules(df_variables))
-                if modules_item:
-                    w = widgets.Dropdown(options=modules_item)
-                    items.append(w)
-            else:
-                if i <= len(items):
-                    modules_item = sorted(self._find_submodules(df_variables, items[i-1].value))
-                    if modules_item:
-                        modules_item.insert(0, self.all_tag)
-                        w = widgets.Dropdown(options=modules_item)
-                        items.append(w)
+        def update_items(*args):
+            for i in range(max_depth):
+                if i == 0:
+                    items[0].observe(update_items, 'value')
+                else:
+                    if i <= len(items):
+                        modules_item = sorted(self._find_submodules(df_variables, items[i-1].value))
+                        if modules_item:
+                            # Check if the item exists already
+                            if i == len(items):
+                                if len(modules_item) > 1:
+                                    modules_item.insert(0, self.all_tag)
+                                w = widgets.Dropdown(options=modules_item)
+                                w.observe(update_items, 'value')
+                                items.append(w)
+                            else:
+                                if (self.all_tag not in modules_item) and (len(modules_item) > 1):
+                                    modules_item.insert(0, self.all_tag)
+                                items[i].options = modules_item
+                        else:
+                            if i < len(items):
+                                items.pop(i)
+            return items
 
-        for i in range(len(items)-1):
-            item = items[i]
-            next_item = items[i+1]
-
-            def update_options(*args):
-                options = sorted(self._find_submodules(df_variables, item.value))
-                options.insert(0, self.all_tag)
-                next_item.options = options
-            item.observe(update_options, 'value')
-
-        h_box = widgets.HBox(items)
+        def print_sheet(**kwargs):
+            modules = [module for module in kwargs.values()]
+            sheet = self._build_sheet(self._filter_variables(self.df_variables, modules))
+            return display(sheet)
 
         def render(*args):
             clear_output(wait=True)
-            sheet = self._build_sheet(self._filter_variables(self.df_variables, items))
-            return display(h_box, sheet)
+            items = update_items()
+            for item in items:
+                item.observe(render, 'value')
+            ui = widgets.HBox(items)
+            kwargs = {}
 
-        items[-1].observe(render, 'value')
+            i = 0
+            for item in items:
+                kwargs[str(i)] = item
+                i += 1
+
+            out = widgets.interactive_output(print_sheet, kwargs)
+            display(ui, out)
+
         return render()
 
 
@@ -243,17 +269,15 @@ class FASTOADDataFrame():
         submodules = list(submodules)
         return submodules
 
-    def _filter_variables(self, df, items, type=None):
+    def _filter_variables(self, df, modules, type=None):
         path = ''
-        modules = items
         for i in range(len(modules)):
             module = modules[i]
-            value = module.value
-            if value != self.all_tag:
+            if module != self.all_tag:
                 if i < len(modules) - 1:
-                    path += value + ':'
+                    path += module + ':'
                 else:
-                    path += value
+                    path += module
 
         var_names = df['Name'].unique().tolist()
 
