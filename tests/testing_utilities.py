@@ -16,8 +16,7 @@ Convenience functions for helping tests
 
 import logging
 
-from openmdao.core.indepvarcomp import IndepVarComp
-from openmdao.core.problem import Problem
+import openmdao.api as om
 
 from fastoad.openmdao.connections_utils import get_unconnected_input_names
 # Logger for this module
@@ -26,12 +25,18 @@ from fastoad.openmdao.types import SystemSubclass
 _LOGGER = logging.getLogger(__name__)
 
 
-def run_system(component: SystemSubclass, input_vars: IndepVarComp, setup_mode='auto'):
+def run_system(component: SystemSubclass,
+               input_vars: om.IndepVarComp,
+               setup_mode='auto',
+               add_solvers=False):
     """ Runs and returns an OpenMDAO problem with provided component and data"""
-    problem = Problem()
+    problem = om.Problem()
     model = problem.model
     model.add_subsystem('inputs', input_vars, promotes=['*'])
     model.add_subsystem('component', component, promotes=['*'])
+    if add_solvers:
+        model.nonlinear_solver = om.NewtonSolver()
+        model.linear_solver = om.DirectSolver()
 
     problem.setup(mode=setup_mode)
     missing, _ = get_unconnected_input_names(problem, _LOGGER)
