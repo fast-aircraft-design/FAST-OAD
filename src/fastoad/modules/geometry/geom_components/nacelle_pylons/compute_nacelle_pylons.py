@@ -1,9 +1,8 @@
 """
     Estimation of nacelle and pylon geometry
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,25 +13,22 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from math import sqrt
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
-from fastoad.modules.geometry.options import AIRCRAFT_FAMILY_OPTION, ENGINE_LOCATION_OPTION
+from fastoad.modules.options import ENGINE_LOCATION_OPTION, AIRCRAFT_FAMILY_OPTION
 
 
-class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
+class ComputeNacelleAndPylonsGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Nacelle and pylon geometry estimation """
 
     def initialize(self):
-
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
         self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
-
-        self.engine_loc = self.options[ENGINE_LOCATION_OPTION]
-        self.ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
 
     def setup(self):
 
@@ -95,6 +91,9 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
                               'propulsion:MTO_thrust', method='fd')
 
     def compute(self, inputs, outputs):
+        engine_loc = self.options[ENGINE_LOCATION_OPTION]
+        ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
+
         thrust_sl = inputs['propulsion:MTO_thrust']
         y_ratio_engine = inputs['geometry:propulsion:engine:y_ratio']
         span = inputs['geometry:wing:span']
@@ -121,23 +120,23 @@ class ComputeNacelleAndPylonsGeometry(ExplicitComponent):
         fan_length = 0.60 * nac_length
         pylon_length = 1.1 * nac_length
 
-        if self.engine_loc == 1:
+        if engine_loc == 1:
             y_nacell = y_ratio_engine * span / 2
-        elif self.engine_loc == 2:
-            y_nacell = b_f/2. + 0.5*nac_dia
+        elif engine_loc == 2:
+            y_nacell = b_f / 2. + 0.5 * nac_dia
 
         l_wing_nac = l3_wing + (l2_wing - l3_wing) * (y3_wing - y_nacell) / (y3_wing - y2_wing)
         delta_x_nacell = 0.05 * l_wing_nac
 
-        if self.engine_loc == 1:
+        if engine_loc == 1:
             x_nacell_cg = x3_wing * (y_nacell - y2_wing) / (y3_wing - y2_wing) - \
-                delta_x_nacell - 0.2 * nac_length
+                          delta_x_nacell - 0.2 * nac_length
             x_nacell_cg_absolute = fa_length - 0.25 * l0_wing - (x0_wing - x_nacell_cg)
-        elif self.engine_loc == 2:
-            if self.ac_family == 1.0:
-                x_nacell_cg_absolute = 0.8*fus_length
-            elif self.ac_family == 2.0:
-                x_nacell_cg_absolute = 0.8*fus_length-1.5
+        elif engine_loc == 2:
+            if ac_family == 1.0:
+                x_nacell_cg_absolute = 0.8 * fus_length
+            elif ac_family == 2.0:
+                x_nacell_cg_absolute = 0.8 * fus_length - 1.5
 
         outputs['geometry:propulsion:pylon:length'] = pylon_length
         outputs['geometry:propulsion:fan:length'] = fan_length

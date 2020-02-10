@@ -19,9 +19,10 @@ import math
 import numpy as np
 import openmdao.api as om
 
-# TODO: This belongs more to aerodynamics than geometry
-from fastoad.modules.geometry.options import TAIL_TYPE_OPTION
+from fastoad.modules.options import TAIL_TYPE_OPTION
 
+
+# TODO: This belongs more to aerodynamics than geometry
 
 class ComputeVTClalpha(om.ExplicitComponent):
     # TODO: Document equations. Cite sources

@@ -18,7 +18,7 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.modules.geometry.options import AIRCRAFT_FAMILY_OPTION, TAIL_TYPE_OPTION
+from fastoad.modules.options import AIRCRAFT_FAMILY_OPTION, TAIL_TYPE_OPTION
 
 
 class ComputeVTDistance(om.ExplicitComponent):
@@ -28,9 +28,6 @@ class ComputeVTDistance(om.ExplicitComponent):
     def initialize(self):
         self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.)
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
-
-        self.ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
-        self.tail_type = self.options[TAIL_TYPE_OPTION]
 
     def setup(self):
 
@@ -44,13 +41,16 @@ class ComputeVTDistance(om.ExplicitComponent):
                               method='fd')
 
     def compute(self, inputs, outputs):
+        tail_type = self.options[TAIL_TYPE_OPTION]
+        ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
+
         fus_length = inputs['geometry:fuselage:length']
         fa_length = inputs['geometry:wing:MAC:x']
 
-        if self.tail_type == 1.0:
-            if self.ac_family == 1.0:
+        if tail_type == 1.0:
+            if ac_family == 1.0:
                 lp_vt = 0.93 * fus_length - fa_length
-            elif self.ac_family == 2.0:
+            elif ac_family == 2.0:
                 lp_vt = 6.6
         else:
             lp_vt = 0.88 * fus_length - fa_length

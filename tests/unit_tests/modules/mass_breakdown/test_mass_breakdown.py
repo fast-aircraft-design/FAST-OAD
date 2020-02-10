@@ -2,7 +2,7 @@
 Test module for mass breakdown functions
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -38,7 +38,7 @@ from fastoad.modules.mass_breakdown.d_furniture import \
     ToiletsWeight, SecurityKitWeight
 from fastoad.modules.mass_breakdown.e_crew import CrewWeight
 from fastoad.modules.mass_breakdown.mass_breakdown import MassBreakdown, OperatingWeightEmpty
-from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+from fastoad.modules.options import AIRCRAFT_TYPE_OPTION
 from tests.testing_utilities import run_system
 
 
