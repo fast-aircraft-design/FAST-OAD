@@ -14,11 +14,9 @@ Test module for geometry functions of cg components
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# pylint: disable=redefined-outer-name  # needed for pytest fixtures
 import os.path as pth
 
 import pytest
-from openmdao.core.problem import Problem
 
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
@@ -42,6 +40,8 @@ from fastoad.modules.geometry.geom_components.wing.components import ComputeB50,
     ComputeToCWing, ComputeWetAreaWing, ComputeXWing, ComputeYWing
 from tests.testing_utilities import run_system
 
+
+# pylint: disable=redefined-outer-name  # needed for pytest fixtures
 
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
@@ -77,13 +77,7 @@ def test_compute_fuselage_cabin_sizing(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeFuselageGeometryCabinSizing(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeFuselageGeometryCabinSizing(), input_vars)
 
     npax1 = problem['geometry:cabin:NPAX1']
     assert npax1 == pytest.approx(157, abs=1)
@@ -128,13 +122,7 @@ def test_compute_fuselage_basic(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeFuselageGeometryBasic(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeFuselageGeometryBasic(), input_vars)
 
     cg_systems_c6 = problem['weight:systems:flight_kit:CG:x']
     assert cg_systems_c6 == pytest.approx(9.19, abs=1e-2)
@@ -163,13 +151,7 @@ def test_compute_ht_area(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeHTArea(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeHTArea(), input_vars)
 
     ht_lp = problem['geometry:horizontal_tail:distance_from_wing']
     assert ht_lp == pytest.approx(17.675, abs=1e-3)
@@ -193,16 +175,9 @@ def test_compute_ht_cg(input_xml):
     ]
 
     input_vars = input_xml.read(only=input_list)
-
     input_vars.add_output('geometry:horizontal_tail:MAC:x', 1.656, units='m')
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeHTcg(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeHTcg(), input_vars)
 
     cg_a31 = problem['weight:airframe:horizontal_tail:CG:x']
     assert cg_a31 == pytest.approx(34.58, abs=1e-2)
@@ -220,13 +195,7 @@ def test_compute_ht_mac(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeHTMAC(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeHTMAC(), input_vars)
 
     length = problem['geometry:horizontal_tail:MAC:length']
     assert length == pytest.approx(3.141, abs=1e-3)
@@ -247,13 +216,7 @@ def test_compute_ht_chord(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeHTChord(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeHTChord(), input_vars)
 
     span = problem['geometry:horizontal_tail:span']
     assert span == pytest.approx(12.28, abs=1e-2)
@@ -274,13 +237,7 @@ def test_compute_ht_cl(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeHTClalpha(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeHTClalpha(), input_vars)
 
     cl_alpha = problem['aerodynamics:horizontal_tail:cruise:CL_alpha']
     assert cl_alpha == pytest.approx(3.47, abs=1e-2)
@@ -298,13 +255,7 @@ def test_compute_ht_sweep(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeHTSweep(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeHTSweep(), input_vars)
 
     sweep_0 = problem['geometry:horizontal_tail:sweep_0']
     assert sweep_0 == pytest.approx(33.317, abs=1e-3)
@@ -326,13 +277,7 @@ def test_compute_ht_vol_co(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeHTVolCoeff(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeHTVolCoeff(), input_vars)
 
     delta_lg = problem['delta_lg']
     assert delta_lg == pytest.approx(12.93, abs=1e-2)
@@ -360,13 +305,7 @@ def test_geometry_global_ht(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeHorizontalTailGeometry(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeHorizontalTailGeometry(), input_vars)
 
     delta_lg = problem['delta_lg']
     assert delta_lg == pytest.approx(12.93, abs=1e-2)
@@ -1100,9 +1039,7 @@ def test_geometry_update_mlg(input_xml):
     input_vars.add_output('cg_ratio', 0.364924)
     input_vars.add_output('delta_lg', 12.93)
 
-    component = UpdateMLG()
-
-    problem = run_system(component, input_vars)
+    problem = run_system(UpdateMLG(), input_vars)
 
     cg_a51 = problem['weight:airframe:landing_gear:main:CG:x']
     assert cg_a51 == pytest.approx(18.00, abs=1e-2)

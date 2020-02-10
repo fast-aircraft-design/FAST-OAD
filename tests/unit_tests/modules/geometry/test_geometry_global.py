@@ -35,6 +35,7 @@ def xpath_reader() -> XPathReader:
     return XPathReader(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
+
 @pytest.fixture(scope="module")
 def input_xml() -> OMLegacy1XmlIO:
     """
@@ -43,6 +44,7 @@ def input_xml() -> OMLegacy1XmlIO:
     # TODO: have more consistency in input data (no need for the whole CeRAS01_baseline.xml)
     return OMLegacy1XmlIO(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
+
 
 def test_geometry_get_cg():
     """ Tests computation of the cg estimation """
