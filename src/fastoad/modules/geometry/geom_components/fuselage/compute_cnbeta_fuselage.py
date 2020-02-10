@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,24 +21,22 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 # TODO: This belongs more to aerodynamics than geometry
-class ComputeCnBeta(ExplicitComponent):
+class ComputeCnBetaFuselage(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Yawing moment due to sideslip estimation """
 
     def setup(self):
-
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
         self.add_input('geometry:fuselage:length', val=np.nan, units='m')
         self.add_input('geometry:fuselage:front_length', val=np.nan, units='m')
         self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
-        self.add_input('TLAR:cruise_mach', val=np.nan)
         self.add_input('geometry:wing:area', val=np.nan, units='m**2')
         self.add_input('geometry:wing:span', val=np.nan, units='m')
 
-        self.add_output('dcn_beta')
+        self.add_output('aerodynamics:fuselage:cruise:CnBeta')
 
-        self.declare_partials('dcn_beta', '*', method='fd')
+        self.declare_partials('aerodynamics:fuselage:cruise:CnBeta', '*', method='fd')
 
     def compute(self, inputs, outputs):
         fus_length = inputs['geometry:fuselage:length']
@@ -48,15 +46,12 @@ class ComputeCnBeta(ExplicitComponent):
         height_max = inputs['geometry:fuselage:maximum_height']
         wing_area = inputs['geometry:wing:area']
         span = inputs['geometry:wing:span']
-        cruise_mach = inputs['TLAR:cruise_mach']
 
         l_f = math.sqrt(width_max * height_max)
         l_cyc = fus_length - lav - lar
         # estimation of fuselage volume
         volume_fus = math.pi * l_f ** 2 / 4 * (0.7 * lav + 0.5 * lar + l_cyc)
         # equation from raymer book eqn. 16.47
-        cn_beta_fus = -1.3 * volume_fus / \
-            wing_area / span * (l_f / width_max)
-        cn_beta_goal = 0.0569 - 0.01694 * cruise_mach + 0.15904 * cruise_mach**2
+        cn_beta_fus = -1.3 * volume_fus / wing_area / span * (l_f / width_max)
 
-        outputs['dcn_beta'] = cn_beta_goal - cn_beta_fus
+        outputs['aerodynamics:fuselage:cruise:CnBeta'] = cn_beta_fus
