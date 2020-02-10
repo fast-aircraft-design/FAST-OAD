@@ -41,7 +41,6 @@ class ComputeVerticalTailGeometry(Group):
     """ Vertical tail geometry estimation """
 
     def initialize(self):
-
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
         self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
 
@@ -52,9 +51,11 @@ class ComputeVerticalTailGeometry(Group):
         self.add_subsystem('fuselage_cnbeta', ComputeCnBetaFuselage(), promotes=['*'])
         self.add_subsystem('vt_aspect_ratio',
                            ComputeVTDistance(tail_type=self.tail_type,
-                                             ac_family=self.ac_family), promotes=['*'])
+                                             ac_family=self.ac_family),
+                           promotes=['*'])
         self.add_subsystem('vt_clalpha',
-                           ComputeVTClalpha(), promotes=['*'])
+                           ComputeVTClalpha(tail_type=self.tail_type),
+                           promotes=['*'])
         self.add_subsystem('vt_area',
                            ComputeVTArea(), promotes=['*'])
         self.add_subsystem('vt_vol_coeff',

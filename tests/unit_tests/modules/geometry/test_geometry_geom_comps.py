@@ -502,8 +502,6 @@ def test_compute_vt_distance(input_xml):
 
     lp_vt = problem['geometry:vertical_tail:distance_from_wing']
     assert lp_vt == pytest.approx(16.55, abs=1e-2)
-    k_ar_effective = problem['k_ar_effective']
-    assert k_ar_effective == pytest.approx(1.55, abs=1e-2)
 
 
 def test_compute_vt_cl(input_xml):
@@ -602,8 +600,6 @@ def test_geometry_global_vt(input_xml):
     assert sweep_100 == pytest.approx(13.35, abs=1e-2)
     lp_vt = problem['geometry:vertical_tail:distance_from_wing']
     assert lp_vt == pytest.approx(16.55, abs=1e-2)
-    k_ar_effective = problem['k_ar_effective']
-    assert k_ar_effective == pytest.approx(1.55, abs=1e-2)
     cl_alpha = problem['aerodynamics:vertical_tail:cruise:CL_alpha']
     assert cl_alpha == pytest.approx(2.55, abs=1e-2)
     vol_coeff = problem['geometry:vertical_tail:volume_coefficient']

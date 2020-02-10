@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,13 +14,14 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 from fastoad.modules.geometry.options import AIRCRAFT_FAMILY_OPTION, TAIL_TYPE_OPTION
 
 
-class ComputeVTDistance(ExplicitComponent):
+class ComputeVTDistance(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail distance estimation """
 
@@ -37,7 +38,6 @@ class ComputeVTDistance(ExplicitComponent):
         self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
 
         self.add_output('geometry:vertical_tail:distance_from_wing', units='m')
-        self.add_output('k_ar_effective')
 
         self.declare_partials('geometry:vertical_tail:distance_from_wing',
                               ['geometry:fuselage:length', 'geometry:wing:MAC:x'],
@@ -50,13 +50,9 @@ class ComputeVTDistance(ExplicitComponent):
         if self.tail_type == 1.0:
             if self.ac_family == 1.0:
                 lp_vt = 0.93 * fus_length - fa_length
-                k_ar_effective = 2.9
             elif self.ac_family == 2.0:
                 lp_vt = 6.6
-                k_ar_effective = 2.9
         else:
             lp_vt = 0.88 * fus_length - fa_length
-            k_ar_effective = 1.55
 
         outputs['geometry:vertical_tail:distance_from_wing'] = lp_vt
-        outputs['k_ar_effective'] = k_ar_effective
