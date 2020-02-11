@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
   ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2019  ONERA/ISAE
+  ~ Copyright (C) 2020  ONERA/ISAE
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -24,9 +24,7 @@
     <wing>
         <span units="m">42</span>
         <aspect_ratio>9.8</aspect_ratio>
-        <chord units="m">5.</chord> <!-- test with multiple values -->
-        <chord>3.5</chord>
-        <chord>2.</chord>
+        <chord units="m">5. 3.5 2.</chord> <!-- test with multiple values -->
     </wing>
     <ignored/> <!-- test with an empty element tag -->
     <fuselage_length units="m">40</fuselage_length>

@@ -2,7 +2,7 @@
 Defines how OpenMDAO variables are serialized to XML
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,7 +18,7 @@ from typing import Sequence
 
 import openmdao.api as om
 
-from fastoad.io.xml.exceptions import FastXPathEvalError, FastOMXmlIOBadPathSeparator
+from fastoad.io.xml.exceptions import FastXPathEvalError, FastOMXmlIOBadPathSeparatorError
 from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO
 from fastoad.io.xml.translator import VarXpathTranslator
 
@@ -78,7 +78,7 @@ class OMXmlIO(OMCustomXmlIO):
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> om.IndepVarComp:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == '.':
-            raise FastOMXmlIOBadPathSeparator('Cannot use dot "." in OpenMDAO variables.')
+            raise FastOMXmlIOBadPathSeparatorError('Cannot use dot "." in OpenMDAO variables.')
 
         return super().read(only, ignore)
 

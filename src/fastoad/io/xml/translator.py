@@ -3,7 +3,7 @@ Conversion from OpenMDAO variables to XPath
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,9 +18,8 @@ from typing import Sequence, Union, IO, Set
 
 import numpy as np
 
-from fastoad.exceptions import XPathError, VariableError
 from fastoad.io.xml.exceptions import FastXpathTranslatorInconsistentLists, \
-    FastXpathTranslatorDuplicates
+    FastXpathTranslatorDuplicates, FastXpathTranslatorVariableError, FastXpathTranslatorXPathError
 
 
 class VarXpathTranslator:
@@ -105,19 +104,19 @@ class VarXpathTranslator:
         if var_name in self._variable_names:
             i = self._variable_names.index(var_name)
             return self._xpaths[i]
-        raise VariableError(var_name)
+        raise FastXpathTranslatorVariableError(var_name)
 
     def get_variable_name(self, xpath: str) -> str:
         """
 
         :param xpath: XML Path
         :return: OpenMDAO variable name that matches xpath
-        :raise XPathError: if xpath is unknown
+        :raise FastXpathTranslatorXPathError: if xpath is unknown
        """
         if xpath in self._xpaths:
             i = self._xpaths.index(xpath)
             return self._variable_names[i]
-        raise XPathError(xpath)
+        raise FastXpathTranslatorXPathError(xpath)
 
     @staticmethod
     def _get_duplicates(seq: Sequence) -> Set:

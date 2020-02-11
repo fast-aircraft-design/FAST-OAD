@@ -2,7 +2,7 @@
 Test module for translator.py
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,9 +18,8 @@ import os.path as pth
 
 import pytest
 
-from fastoad.exceptions import XPathError, VariableError
 from fastoad.io.xml.exceptions import FastXpathTranslatorInconsistentLists, \
-    FastXpathTranslatorDuplicates
+    FastXpathTranslatorDuplicates, FastXpathTranslatorXPathError, FastXpathTranslatorVariableError
 from fastoad.io.xml.translator import VarXpathTranslator
 
 
@@ -65,11 +64,11 @@ def test_translator_with_set():
         assert translator.get_xpath('var%i' % i) == 'xpath%i' % i
         assert translator.get_variable_name('xpath%i' % i) == 'var%i' % i
 
-    with pytest.raises(VariableError) as exc_info:
+    with pytest.raises(FastXpathTranslatorVariableError) as exc_info:
         _ = translator.get_xpath('unknown_var')
     assert exc_info is not None
 
-    with pytest.raises(XPathError) as exc_info:
+    with pytest.raises(FastXpathTranslatorXPathError) as exc_info:
         _ = translator.get_variable_name('unknown_path')
     assert exc_info is not None
 

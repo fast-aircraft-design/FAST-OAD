@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
   ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2019  ONERA/ISAE
+  ~ Copyright (C) 2020  ONERA/ISAE
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -31,23 +31,11 @@
         </fuselage>
     </geometry>
     <constants>-42. <!-- value with children tags-->
-        <k1 units="kg">1.</k1>
-        <k1 units="ignored">2.
-        </k1> <!-- value will be appended, but only first specified units will apply -->
-        <k1>3.</k1> <!-- value will be appended, but only first specified units will apply -->
-
-        <k2>10.</k2>
-        <k2 units="ignored">20.
-        </k2> <!-- value will be appended, but only first specified units will apply -->
-
+        <k1 units="kg">1. 2. 3.</k1>
+        <k2>[10., 20.]</k2>
         <k3 units="m/s">100. 200. 300. 400.</k3> <!-- value list, space-separated -->
-
         <k4>[-1., -2., -3.]</k4> <!-- value list, brackets + comma-separated -->
-
-        <k5>[ 100., 200. ]</k5> <!-- value list, brackets + space-separated -->
-        <k5>400., 500., 600.
-        </k5><!-- value list, comma-separated + continuation of previous line -->
-
+        <k5>100., 200., 400., 500., 600.</k5><!-- value list, comma-separated -->
         <k6 units="whatever"></k6> <!-- no value, will be ignored -->
         <k7 units="attoparsec">not a float</k7> <!-- no float, will be ignored -->
         <k8>[[1e2, 3.4e5],
