@@ -234,8 +234,8 @@ def test_polar():
 
     problem = run_system(group, ivc)
 
-    cd = problem['aerodynamics:ClCd'][0, :]
-    cl = problem['aerodynamics:ClCd'][1, :]
+    cd = problem['aerodynamics:aircraft:cruise:CD']
+    cl = problem['cl_high_speed']
 
     assert cd[cl == 0.] == approx(0.02030, abs=1e-5)
     assert cd[cl == 0.2] == approx(0.02209, abs=1e-5)

@@ -39,25 +39,16 @@ class ComputePolar(ExplicitComponent):
             self.add_input('cd_trim_low_speed', val=nans_array)
             self.add_input('cd_comp_low_speed', val=nans_array)
             self.add_input('oswald_coeff_low_speed', val=np.nan)
-            cl = []
-            cd = []
-            for i in range(POLAR_POINT_COUNT):
-                cl.append(i / 100)
-                cd.append(0.033)
-            self.add_output('aerodynamics:ClCd_low_speed', val=[cd, cl],
-                            shape=(2, POLAR_POINT_COUNT))
+
+            self.add_output('aerodynamics:Cd_low_speed', shape=POLAR_POINT_COUNT)
         else:
             self.add_input('cl_high_speed', val=nans_array)
             self.add_input('cd0_total_high_speed', val=nans_array)
             self.add_input('cd_trim_high_speed', val=nans_array)
             self.add_input('cd_comp_high_speed', val=nans_array)
             self.add_input('oswald_coeff_high_speed', val=np.nan)
-            cl = []
-            cd = []
-            for i in range(POLAR_POINT_COUNT):
-                cl.append(i / 100)
-                cd.append(0.033)
-            self.add_output('aerodynamics:ClCd', val=[cd, cl], shape=(2, POLAR_POINT_COUNT))
+
+            self.add_output('aerodynamics:aircraft:cruise:CD', shape=POLAR_POINT_COUNT)
             self.add_output('aerodynamics:aircraft:cruise:L_D_max')
             self.add_output('aerodynamics:Cl_opt')
             self.add_output('aerodynamics:Cd_opt')
@@ -82,24 +73,23 @@ class ComputePolar(ExplicitComponent):
             cd_c = inputs['cd_comp_high_speed']
             coef_k = inputs['oswald_coeff_high_speed']
 
-        cd = []
-        for i, cl_val in enumerate(cl):
-            cd.append((cd0[i] + cd_c[i] + cd_trim[i] +
-                       coef_k * (
-                           cl_val) ** 2 * k_winglet_cd + offset_winglet_cd) * k_cd + offset_cd)
+        cd = (cd0 + cd_c + cd_trim
+              + coef_k * cl ** 2 * k_winglet_cd
+              + offset_winglet_cd
+              ) * k_cd + offset_cd
 
         if self.low_speed_aero:
-            outputs['aerodynamics:ClCd_low_speed'] = [cd, cl]
+            outputs['aerodynamics:Cd_low_speed'] = cd
         else:
-            outputs['aerodynamics:ClCd'] = [cd, cl]
+            outputs['aerodynamics:aircraft:cruise:CD'] = cd
 
-            Cl_opt, Cd_opt = optimum_ClCd(outputs['aerodynamics:ClCd'])[0:2]
+            Cl_opt, Cd_opt = get_optimum_ClCd(np.array([cd, cl]))[0:2]
             outputs['aerodynamics:aircraft:cruise:L_D_max'] = Cl_opt / Cd_opt
             outputs['aerodynamics:Cl_opt'] = Cl_opt
             outputs['aerodynamics:Cd_opt'] = Cd_opt
 
 
-def optimum_ClCd(ClCd):
+def get_optimum_ClCd(ClCd):
     lift_drag_ratio = ClCd[1, :] / ClCd[0, :]
     optimum_index = np.argmax(lift_drag_ratio)
 
