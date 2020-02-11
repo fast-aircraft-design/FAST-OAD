@@ -42,16 +42,16 @@ class ComputePolar(ExplicitComponent):
 
             self.add_output('aerodynamics:Cd_low_speed', shape=POLAR_POINT_COUNT)
         else:
-            self.add_input('cl_high_speed', val=nans_array)
-            self.add_input('cd0_total_high_speed', val=nans_array)
-            self.add_input('cd_trim_high_speed', val=nans_array)
-            self.add_input('cd_comp_high_speed', val=nans_array)
-            self.add_input('oswald_coeff_high_speed', val=np.nan)
+            self.add_input('aerodynamics:aircraft:cruise:CL', val=nans_array)
+            self.add_input('aerodynamics:aircraft:cruise:CD0', val=nans_array)
+            self.add_input('aerodynamics:aircraft:cruise:CD:trim', val=nans_array)
+            self.add_input('aerodynamics:aircraft:cruise:CD:compressibility', val=nans_array)
+            self.add_input('aerodynamics:aircraft:cruise:induced_drag_coefficient', val=np.nan)
 
             self.add_output('aerodynamics:aircraft:cruise:CD', shape=POLAR_POINT_COUNT)
             self.add_output('aerodynamics:aircraft:cruise:L_D_max')
-            self.add_output('aerodynamics:Cl_opt')
-            self.add_output('aerodynamics:Cd_opt')
+            self.add_output('aerodynamics:aircraft:cruise:optimal_CL')
+            self.add_output('aerodynamics:aircraft:cruise:optimal_CD')
 
         self.declare_partials('*', '*', method='fd')
 
@@ -67,11 +67,11 @@ class ComputePolar(ExplicitComponent):
             cd_c = inputs['cd_comp_low_speed']
             coef_k = inputs['oswald_coeff_low_speed']
         else:
-            cl = inputs['cl_high_speed']
-            cd0 = inputs['cd0_total_high_speed']
-            cd_trim = inputs['cd_trim_high_speed']
-            cd_c = inputs['cd_comp_high_speed']
-            coef_k = inputs['oswald_coeff_high_speed']
+            cl = inputs['aerodynamics:aircraft:cruise:CL']
+            cd0 = inputs['aerodynamics:aircraft:cruise:CD0']
+            cd_trim = inputs['aerodynamics:aircraft:cruise:CD:trim']
+            cd_c = inputs['aerodynamics:aircraft:cruise:CD:compressibility']
+            coef_k = inputs['aerodynamics:aircraft:cruise:induced_drag_coefficient']
 
         cd = (cd0 + cd_c + cd_trim
               + coef_k * cl ** 2 * k_winglet_cd
@@ -85,8 +85,8 @@ class ComputePolar(ExplicitComponent):
 
             Cl_opt, Cd_opt = get_optimum_ClCd(np.array([cd, cl]))[0:2]
             outputs['aerodynamics:aircraft:cruise:L_D_max'] = Cl_opt / Cd_opt
-            outputs['aerodynamics:Cl_opt'] = Cl_opt
-            outputs['aerodynamics:Cd_opt'] = Cd_opt
+            outputs['aerodynamics:aircraft:cruise:optimal_CL'] = Cl_opt
+            outputs['aerodynamics:aircraft:cruise:optimal_CD'] = Cd_opt
 
 
 def get_optimum_ClCd(ClCd):

@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -22,16 +22,19 @@ class ComputeMaxCGratio(ExplicitComponent):
     """ Maximum center of gravity ratio estimation """
 
     def setup(self):
+        self.add_input('weight:aircraft:empty:CG:ratio', val=np.nan)
+        self.add_input('weight:aircraft:load_case_1:CG:ratio', val=np.nan)
+        self.add_input('weight:aircraft:load_case_2:CG:ratio', val=np.nan)
+        self.add_input('weight:aircraft:load_case_3:CG:ratio', val=np.nan)
+        self.add_input('weight:aircraft:load_case_4:CG:ratio', val=np.nan)
 
-        self.add_input('cg_ratio_aft', val=np.nan)
-
-        for i in range(4):
-            self.add_input('cg_ratio_lc'+str(i+1), val=np.nan)
-
-        self.add_output('cg_ratio')
+        self.add_output('weight:aircraft:CG:ratio')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        outputs['cg_ratio'] = max(inputs['cg_ratio_aft'], inputs['cg_ratio_lc1'],
-               inputs['cg_ratio_lc2'], inputs['cg_ratio_lc3'], inputs['cg_ratio_lc4'])
+        outputs['weight:aircraft:CG:ratio'] = max(inputs['weight:aircraft:empty:CG:ratio'],
+                                                  inputs['weight:aircraft:load_case_1:CG:ratio'],
+                                                  inputs['weight:aircraft:load_case_2:CG:ratio'],
+                                                  inputs['weight:aircraft:load_case_3:CG:ratio'],
+                                                  inputs['weight:aircraft:load_case_4:CG:ratio'])

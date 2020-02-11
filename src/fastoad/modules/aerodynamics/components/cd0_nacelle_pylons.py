@@ -37,11 +37,11 @@ class Cd0NacelleAndPylons(ExplicitComponent):
             self.add_output('cd0_nacelle_low_speed')
             self.add_output('cd0_pylon_low_speed')
         else:
-            self.add_input('reynolds_high_speed', val=np.nan)
-            self.add_input('cl_high_speed', val=nans_array)
+            self.add_input('aerodynamics:wing:cruise:reynolds', val=np.nan)
+            self.add_input('aerodynamics:aircraft:cruise:CL', val=nans_array)
             self.add_input('TLAR:cruise_mach', val=np.nan)
-            self.add_output('cd0_nacelle_high_speed')
-            self.add_output('cd0_pylon_high_speed')
+            self.add_output('aerodynamics:nacelles:cruise:CD0')
+            self.add_output('aerodynamics:pylons:cruise:CD0')
 
         self.add_input('geometry:propulsion:pylon:length', val=np.nan, units='m')
         self.add_input('geometry:propulsion:nacelle:length', val=np.nan, units='m')
@@ -66,7 +66,7 @@ class Cd0NacelleAndPylons(ExplicitComponent):
             re_hs = inputs['reynolds_low_speed']
         else:
             mach = inputs['TLAR:cruise_mach']
-            re_hs = inputs['reynolds_high_speed']
+            re_hs = inputs['aerodynamics:wing:cruise:reynolds']
 
         cf_pylon_hs = 0.455 / (
                 (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(re_hs * pylon_length)) ** 2.58)
@@ -88,5 +88,5 @@ class Cd0NacelleAndPylons(ExplicitComponent):
             outputs['cd0_pylon_low_speed'] = cd0_pylon_hs
             outputs['cd0_nacelle_low_speed'] = cd0_nac_hs
         else:
-            outputs['cd0_pylon_high_speed'] = cd0_pylon_hs
-            outputs['cd0_nacelle_high_speed'] = cd0_nac_hs
+            outputs['aerodynamics:pylons:cruise:CD0'] = cd0_pylon_hs
+            outputs['aerodynamics:nacelles:cruise:CD0'] = cd0_nac_hs

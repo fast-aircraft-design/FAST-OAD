@@ -69,8 +69,8 @@ def test_compute_loads():
     ivc = get_indep_var_comp(input_list)
     problem = run_system(Loads(), ivc)
 
-    n1m1 = problem['n1m1']
-    n2m2 = problem['n2m2']
+    n1m1 = problem['mission:sizing:cs25:sizing_load_1']
+    n2m2 = problem['mission:sizing:cs25:sizing_load_2']
     assert n1m1 == pytest.approx(240968, abs=10)
     assert n2m2 == pytest.approx(254130, abs=10)
 
@@ -103,8 +103,8 @@ def test_compute_wing_weight():
                   'weight:airframe:wing:mass:k_mvo']
 
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('n1m1', 241000, units='kg')
-    ivc.add_output('n2m2', 250000, units='kg')
+    ivc.add_output('mission:sizing:cs25:sizing_load_1', 241000, units='kg')
+    ivc.add_output('mission:sizing:cs25:sizing_load_2', 250000, units='kg')
 
     problem = run_system(WingWeight(), ivc)
 
@@ -125,7 +125,7 @@ def test_compute_fuselage_weight():
     ]
 
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('n1m1', 241000, units='kg')
+    ivc.add_output('mission:sizing:cs25:sizing_load_1', 241000, units='kg')
 
     problem = run_system(FuselageWeight(), ivc)
 
@@ -162,8 +162,8 @@ def test_compute_flight_controls_weight():
         'weight:airframe:flight_controls:mass:k_fc',
     ]
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('n1m1', 241000, units='kg')
-    ivc.add_output('n2m2', 250000, units='kg')
+    ivc.add_output('mission:sizing:cs25:sizing_load_1', 241000, units='kg')
+    ivc.add_output('mission:sizing:cs25:sizing_load_2', 250000, units='kg')
     problem = run_system(FlightControlsWeight(), ivc)
 
     val = problem['weight:airframe:flight_controls:mass']

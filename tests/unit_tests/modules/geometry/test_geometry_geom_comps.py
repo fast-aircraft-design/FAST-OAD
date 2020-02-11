@@ -18,7 +18,6 @@ import os.path as pth
 
 import pytest
 
-from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
 from fastoad.modules.geometry.geom_components import ComputeTotalArea, UpdateMLG
 from fastoad.modules.geometry.geom_components.fuselage import ComputeFuselageGeometryBasic, \
@@ -42,14 +41,6 @@ from tests.testing_utilities import run_system
 
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
-
-@pytest.fixture(scope="module")
-def xpath_reader() -> XPathReader:
-    """
-    :return: access to the sample xml data
-    """
-    return XPathReader(
-        pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
 
 
 @pytest.fixture(scope="module")
@@ -81,7 +72,7 @@ def test_compute_fuselage_cabin_sizing(input_xml):
 
     npax1 = problem['geometry:cabin:NPAX1']
     assert npax1 == pytest.approx(157, abs=1)
-    n_rows = problem['cabin:Nrows']
+    n_rows = problem['geometry:cabin:seat_rows:count']
     assert n_rows == pytest.approx(26, abs=1)
     cg_systems_c6 = problem['weight:systems:flight_kit:CG:x']
     assert cg_systems_c6 == pytest.approx(7.47, abs=1e-2)
@@ -279,7 +270,7 @@ def test_compute_ht_vol_co(input_xml):
 
     problem = run_system(ComputeHTVolCoeff(), input_vars)
 
-    delta_lg = problem['delta_lg']
+    delta_lg = problem['geometry:landing_gear:front:distance_to_main']
     assert delta_lg == pytest.approx(12.93, abs=1e-2)
     vol_coeff = problem['geometry:horizontal_tail:volume_coefficient']
     assert vol_coeff == pytest.approx(1.117, abs=1e-3)
@@ -307,7 +298,7 @@ def test_geometry_global_ht(input_xml):
 
     problem = run_system(ComputeHorizontalTailGeometry(), input_vars)
 
-    delta_lg = problem['delta_lg']
+    delta_lg = problem['geometry:landing_gear:front:distance_to_main']
     assert delta_lg == pytest.approx(12.93, abs=1e-2)
     vol_coeff = problem['geometry:horizontal_tail:volume_coefficient']
     assert vol_coeff == pytest.approx(1.117, abs=1e-3)
@@ -377,7 +368,7 @@ def test_compute_vt_area(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('cg_ratio', 0.364924)
+    input_vars.add_output('weight:aircraft:CG:ratio', 0.364924)
     input_vars.add_output('aerodynamics:fuselage:cruise:CnBeta', -0.117901)
 
     component = ComputeVTArea()
@@ -566,7 +557,7 @@ def test_geometry_global_vt(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('cg_ratio', 0.364924)
+    input_vars.add_output('weight:aircraft:CG:ratio', 0.364924)
 
     component = ComputeVerticalTailGeometry()
 
@@ -1032,8 +1023,8 @@ def test_geometry_update_mlg(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('cg_ratio', 0.364924)
-    input_vars.add_output('delta_lg', 12.93)
+    input_vars.add_output('weight:aircraft:CG:ratio', 0.364924)
+    input_vars.add_output('geometry:landing_gear:front:distance_to_main', 12.93)
 
     problem = run_system(UpdateMLG(), input_vars)
 

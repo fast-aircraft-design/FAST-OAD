@@ -35,10 +35,10 @@ class Cd0Wing(ExplicitComponent):
             self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('cd0_wing_low_speed', shape=POLAR_POINT_COUNT)
         else:
-            self.add_input('reynolds_high_speed', val=np.nan)
-            self.add_input('cl_high_speed', val=nans_array)
+            self.add_input('aerodynamics:wing:cruise:reynolds', val=np.nan)
+            self.add_input('aerodynamics:aircraft:cruise:CL', val=nans_array)
             self.add_input('TLAR:cruise_mach', val=np.nan)
-            self.add_output('cd0_wing_high_speed', shape=POLAR_POINT_COUNT)
+            self.add_output('aerodynamics:wing:cruise:CD0', shape=POLAR_POINT_COUNT)
 
         self.add_input('geometry:wing:area', val=np.nan, units='m**2')
         self.add_input('geometry:wing:thickness_ratio', val=np.nan)
@@ -59,9 +59,9 @@ class Cd0Wing(ExplicitComponent):
             mach = inputs['Mach_low_speed']
             re_hs = inputs['reynolds_low_speed']
         else:
-            cl = inputs['cl_high_speed']
+            cl = inputs['aerodynamics:aircraft:cruise:CL']
             mach = inputs['TLAR:cruise_mach']
-            re_hs = inputs['reynolds_high_speed']
+            re_hs = inputs['aerodynamics:wing:cruise:reynolds']
 
         ki_arrow_cd0 = 0.04
         # Friction coefficients
@@ -82,4 +82,4 @@ class Cd0Wing(ExplicitComponent):
         if self.low_speed_aero:
             outputs['cd0_wing_low_speed'] = cd0_wing
         else:
-            outputs['cd0_wing_high_speed'] = cd0_wing
+            outputs['aerodynamics:wing:cruise:CD0'] = cd0_wing

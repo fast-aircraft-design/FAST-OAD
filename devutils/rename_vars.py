@@ -75,12 +75,20 @@ def replace_var_names(file_path, var_names_match):
     :param file_path:
     :param var_names_match:
     """
+    (_, ext) = pth.splitext(file_path)
     with fileinput.FileInput(file_path, inplace=True) as file:
         for line in file:
-            new_line = line
+            modified_line = line
             for old_name, new_name in var_names_match:
-                new_line = re.sub(r'(?<!:)\b%s\b(?!:)' % old_name, new_name, new_line)
-            print(new_line, end='')
+                if ext == '.py':
+                    # Python file: replacement is done only between (double) quotes
+                    regex = r'''(?<=['"])\b%s\b(?=['"])''' % old_name
+                else:
+                    # other files: just ensuring it is not part of a larger varibale name
+                    # by avoiding having ':' before or after.
+                    regex = r'(?<!:)\b%s\b(?!:)' % old_name
+                modified_line = re.sub(regex, new_name, modified_line)
+            print(modified_line, end='')
 
 
 class SemiBasicVarXpathTranslator(VarXpathTranslator):
@@ -118,10 +126,8 @@ if __name__ == '__main__':
         'tests/integration_tests/oad_process/data/propulsion_process_inputs.xml',
         'tests/unit_tests/modules/aerodynamics/data/aerodynamics_inputs.xml',
         'tests/unit_tests/modules/geometry/data/geometry_inputs.xml',
-        'tests/unit_tests/modules/geometry/data/geometry_inputs_full.xml',
-        'tests/unit_tests/modules/geometry/data/get_cg_inputs.xml',
-        'tests/unit_tests/modules/geometry/data/global_geometry_inputs.xml',
-        'tests/unit_tests/modules/mass_breakdown/data/mass_breakdown_inputs.xml'
+        'tests/unit_tests/modules/mass_breakdown/data/mass_breakdown_inputs.xml',
+        'tests/unit_tests/utils/postprocessing/data/problem_outputs.xml',
     ]
     for xml_file_path in file_list:
         print('processing %s' % xml_file_path)
@@ -131,8 +137,8 @@ if __name__ == '__main__':
     for root_path in [SRC_PATH, TEST_PATH, NOTEBOOK_PATH]:
         for dir_path, dir_names, file_names in os.walk(root_path):
             for filename in file_names:
-                ext = pth.splitext(filename)[1]
-                if ext not in ['.pyc', '.exe', '.png']:  # avoid processing useless files
+                _, ext = pth.splitext(filename)
+                if ext not in ['.xml', '.pyc', '.exe', '.png']:  # avoid processing useless files
                     file_path = pth.join(dir_path, filename)
                     print('processing %s' % file_path)
                     try:

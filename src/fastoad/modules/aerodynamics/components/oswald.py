@@ -43,7 +43,7 @@ class OswaldCoefficient(ExplicitComponent):
             self.add_output('oswald_coeff_low_speed')
         else:
             self.add_input('TLAR:cruise_mach', val=np.nan)
-            self.add_output('oswald_coeff_high_speed')
+            self.add_output('aerodynamics:aircraft:cruise:induced_drag_coefficient')
 
         self.declare_partials('*', '*', method='fd')
 
@@ -82,4 +82,4 @@ class OswaldCoefficient(ExplicitComponent):
         if self.options['low_speed_aero']:
             outputs['oswald_coeff_low_speed'] = coef_k
         else:
-            outputs['oswald_coeff_high_speed'] = coef_k
+            outputs['aerodynamics:aircraft:cruise:induced_drag_coefficient'] = coef_k

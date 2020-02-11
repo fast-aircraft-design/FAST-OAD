@@ -120,15 +120,15 @@ def test_aerodynamics_high_speed():
     problem = run_system(AerodynamicsHighSpeed(), ivc)
 
     cd = problem['aerodynamics:aircraft:cruise:CD']
-    cl = problem['cl_high_speed']
+    cl = problem['aerodynamics:aircraft:cruise:CL']
 
     assert cd[cl == 0.] == approx(0.02030, abs=1e-5)
     assert cd[cl == 0.2] == approx(0.02209, abs=1e-5)
     assert cd[cl == 0.42] == approx(0.02897, abs=1e-5)
     assert cd[cl == 0.85] == approx(0.11781, abs=1e-5)
 
-    assert problem['aerodynamics:Cl_opt'] == approx(0.54, abs=1e-3)
-    assert problem['aerodynamics:Cd_opt'] == approx(0.03550, abs=1e-5)
+    assert problem['aerodynamics:aircraft:cruise:optimal_CL'] == approx(0.54, abs=1e-3)
+    assert problem['aerodynamics:aircraft:cruise:optimal_CD'] == approx(0.03550, abs=1e-5)
 
 
 def test_aerodynamics_low_speed():

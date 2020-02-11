@@ -60,9 +60,12 @@ def create_inputs():
     aero_io.path_separator = ':'
 
     # Variables that are part of the process but not expected in XML file
-    ignore_list = ['xfoil:mach', 'reynolds_high_speed', 'cl_high_speed', 'cd0_total_high_speed',
-                   'cd_trim_high_speed', 'cd_comp_high_speed', 'oswald_coeff',
-                   'aerodynamics:aircraft:landing:CL_max_clean', 'delta_cl_landing']
+    ignore_list = ['xfoil:mach', 'aerodynamics:wing:cruise:reynolds',
+                   'aerodynamics:aircraft:cruise:CL', 'aerodynamics:aircraft:cruise:CD0',
+                   'aerodynamics:aircraft:cruise:CD:trim',
+                   'aerodynamics:aircraft:cruise:CD:compressibility', 'oswald_coeff',
+                   'aerodynamics:aircraft:landing:CL_max_clean',
+                   'aerodynamics:high_lift_devices:landing:CL']
 
     for component in components:
         ivc_aero = aero_io.read()

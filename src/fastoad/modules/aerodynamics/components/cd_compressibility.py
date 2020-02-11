@@ -37,8 +37,9 @@ class CdCompressibility(ExplicitComponent):
             self.add_output('cd_comp_low_speed', shape=POLAR_POINT_COUNT)
         else:
             self.add_input('TLAR:cruise_mach', val=np.nan)
-            self.add_input('cl_high_speed', val=nans_array)
-            self.add_output('cd_comp_high_speed', shape=POLAR_POINT_COUNT)
+            self.add_input('aerodynamics:aircraft:cruise:CL', val=nans_array)
+            self.add_output('aerodynamics:aircraft:cruise:CD:compressibility',
+                            shape=POLAR_POINT_COUNT)
 
         self.declare_partials('*', '*', method='fd')
 
@@ -47,7 +48,7 @@ class CdCompressibility(ExplicitComponent):
             cl = inputs['cl_low_speed']
             m = inputs['Mach_low_speed']
         else:
-            cl = inputs['cl_high_speed']
+            cl = inputs['aerodynamics:aircraft:cruise:CL']
             m = inputs['TLAR:cruise_mach']
 
         cd_comp = []
@@ -61,4 +62,4 @@ class CdCompressibility(ExplicitComponent):
         if self.low_speed_aero:
             outputs['cd_comp_low_speed'] = cd_comp
         else:
-            outputs['cd_comp_high_speed'] = cd_comp
+            outputs['aerodynamics:aircraft:cruise:CD:compressibility'] = cd_comp

@@ -91,8 +91,8 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
     """
     # FIXME: the multidimensional array ClCd is overwritten by read_variables()
     variables = aircraft_xml.read_variables()
-    cd = variables['aerodynamics:ClCd'].value
-    cl = variables['cl_high_speed'].value
+    cd = variables['aerodynamics:aircraft:cruise:CD'].value
+    cl = variables['aerodynamics:aircraft:cruise:CL'].value
 
     if fig is None:
         fig = go.Figure()
