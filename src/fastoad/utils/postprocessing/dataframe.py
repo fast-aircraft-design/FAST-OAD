@@ -175,11 +175,15 @@ class FASTOADDataFrame():
 
         def f(Type):
             if Type == 'Optimization':
-                df = display(self.df_optimization[
-                                 self.df_optimization['Module'] == Type])
+                filtered_var = self.df_optimization[
+                                 self.df_optimization['Module'] == Type]
+                filtered_var = filtered_var.drop(columns='Module')
+                df = display(filtered_var)
             else:
-                df = display(self.df_variables[
-                                 self.df_variables['Module'] == Type])
+                filtered_var = self.df_variables[
+                                 self.df_variables['Module'] == Type]
+                filtered_var = filtered_var.drop(columns='Module')
+                df = display(filtered_var)
             return df
 
         widgets.interact(f, Type=items)
@@ -230,8 +234,9 @@ class FASTOADDataFrame():
             # Build list of items
             kwargs = [module for module in kwargs.values()]
             modules = kwargs
-
-            sheet = self._build_sheet(self._filter_variables(self.df_variables, modules, var_type=var_type))
+            filtered_var = self._filter_variables(self.df_variables, modules, var_type=var_type)
+            filtered_var = filtered_var.drop(columns='Module')
+            sheet = self._build_sheet(filtered_var)
             return display(sheet)
 
         def render(*args):
