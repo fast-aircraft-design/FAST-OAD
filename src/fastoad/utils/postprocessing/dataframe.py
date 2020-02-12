@@ -18,12 +18,14 @@ import pandas as pd
 import ipysheet as sh
 import ipywidgets as widgets
 from IPython.display import display, clear_output
+
 pd.set_option('display.max_rows', None)
 
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO
 from fastoad.openmdao.connections_utils import get_unconnected_input_names, \
     get_variables_of_ivc_components
+
 
 class _TopWidget:
 
@@ -32,9 +34,9 @@ class _TopWidget:
         self.widget = widgets.HBox(items)
 
     def __call__(self, *args, **kwargs):
-
         display(self.widget)
         return self.widget
+
 
 class FASTOADDataFrame():
 
@@ -193,6 +195,9 @@ class FASTOADDataFrame():
             w = widgets.Dropdown(options=modules_item)
             items.append(w)
 
+        w_type = widgets.Dropdown(options=[self.all_tag, 'Input', 'Output'],
+                                  layout=widgets.Layout(width='auto'))
+
         def update_items(*args):
             for i in range(max_depth):
                 if i == 0:
@@ -219,8 +224,14 @@ class FASTOADDataFrame():
             return items
 
         def print_sheet(**kwargs):
-            modules = [module for module in kwargs.values()]
-            sheet = self._build_sheet(self._filter_variables(self.df_variables, modules))
+            # Get variable type and remove
+            var_type = kwargs['Type']
+            del kwargs['Type']
+            # Build list of items
+            kwargs = [module for module in kwargs.values()]
+            modules = kwargs
+
+            sheet = self._build_sheet(self._filter_variables(self.df_variables, modules, var_type=var_type))
             return display(sheet)
 
         def render(*args):
@@ -228,19 +239,26 @@ class FASTOADDataFrame():
             items = update_items()
             for item in items:
                 item.observe(render, 'value')
-            ui = widgets.HBox(items)
+            w_type.observe(render, 'value')
+            type_box = widgets.VBox([widgets.Label(value='Type'),
+                                     w_type],
+                                    layout=widgets.Layout(width='auto'))
+            items_box = widgets.HBox(items)
+            items_box = widgets.VBox([widgets.Label(value='Variable name'),
+                                      items_box])
+            ui = widgets.HBox([type_box, items_box])
+
             kwargs = {}
 
             i = 0
             for item in items:
                 kwargs[str(i)] = item
                 i += 1
-
+            kwargs['Type'] = w_type
             out = widgets.interactive_output(print_sheet, kwargs)
             display(ui, out)
 
         return render()
-
 
     def _build_sheet(self, df):
         sheet = sh.from_dataframe(df)
@@ -262,7 +280,7 @@ class FASTOADDataFrame():
             if modules is not None:
                 if all(module in full_submodules for module in modules):
                     module_idx = full_submodules.index(modules[-1])
-                    if module_idx < len(full_submodules)-1:
+                    if module_idx < len(full_submodules) - 1:
                         submodules.add(full_submodules[module_idx + 1])
             else:
                 submodules.add(full_submodules[0])
@@ -270,7 +288,9 @@ class FASTOADDataFrame():
         submodules = list(submodules)
         return submodules
 
-    def _filter_variables(self, df, modules, type=None):
+    def _filter_variables(self, df, modules, var_type=None):
+        if var_type is None:
+            var_type = self.all_tag
         path = ''
         for i in range(len(modules)):
             module = modules[i]
@@ -286,11 +306,11 @@ class FASTOADDataFrame():
 
         for var_name in var_names:
             if path in var_name:
-                if type is None:
+                if var_type == self.all_tag:
                     element = df[df['Name'] == var_name]
                     filtered_df = filtered_df.append(element)
                 else:
-                    element = df[(df['Name'] == var_name & df['Type'] == type)]
+                    element = df[(df['Name'] == var_name) & (df['Type'] == var_type)]
                     filtered_df = filtered_df.append(element)
 
         return filtered_df
