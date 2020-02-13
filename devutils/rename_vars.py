@@ -84,7 +84,7 @@ def replace_var_names(file_path, var_names_match):
                     # Python file: replacement is done only between (double) quotes
                     regex = r'''(?<=['"])\b%s\b(?=['"])''' % old_name
                 else:
-                    # other files: just ensuring it is not part of a larger varibale name
+                    # other files: just ensuring it is not part of a larger variable name
                     # by avoiding having ':' before or after.
                     regex = r'(?<!:)\b%s\b(?!:)' % old_name
                 modified_line = re.sub(regex, new_name, modified_line)
