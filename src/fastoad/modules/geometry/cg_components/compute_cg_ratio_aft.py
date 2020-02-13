@@ -2,7 +2,7 @@
     Estimation of center of gravity ratio with aft
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -102,34 +102,33 @@ class ComputeCG(om.ExplicitComponent):
         for mass_name in self.options['mass_names']:
             self.add_input(mass_name, val=np.nan, units='kg')
 
-        self.add_output('x_cg_plane_up', units='m')
-        self.add_output('x_cg_plane_down', units='m')
-        self.add_output('x_cg_plane_aft', units='m')
+        self.add_output('weight:aircraft_empty:mass', units='m')
+        self.add_output('weight:aircraft_empty:CG:x', units='m')
 
-        self.declare_partials('x_cg_plane_up', '*', method='fd')
-        self.declare_partials('x_cg_plane_down', '*', method='fd')
-        self.declare_partials('x_cg_plane_aft', '*', method='fd')
+        self.declare_partials('weight:aircraft_empty:mass', '*', method='fd')
+        self.declare_partials('weight:aircraft_empty:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cgs = [inputs[cg_name][0] for cg_name in self.options['cg_names']]
         masses = [inputs[mass_name][0] for mass_name in self.options['mass_names']]
 
-        outputs['x_cg_plane_up'] = np.dot(cgs, masses)
-        outputs['x_cg_plane_down'] = np.sum(masses)
-        outputs['x_cg_plane_aft'] = outputs['x_cg_plane_up'] / outputs['x_cg_plane_down']
+        weight_moment = np.dot(cgs, masses)
+        outputs['weight:aircraft_empty:mass'] = np.sum(masses)
+        outputs['weight:aircraft_empty:CG:x'] = weight_moment / outputs[
+            'weight:aircraft_empty:mass']
 
 
 class CGRatio(om.ExplicitComponent):
     def setup(self):
-        self.add_input('x_cg_plane_aft', val=np.nan, units='m')
+        self.add_input('weight:aircraft_empty:CG:x', val=np.nan, units='m')
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
         self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
 
-        self.add_output('cg_ratio_aft')
+        self.add_output('weight:aircraft:empty:CG:ratio')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        x_cg_all = inputs['x_cg_plane_aft']
+        x_cg_all = inputs['weight:aircraft_empty:CG:x']
         wing_position = inputs['geometry:wing:MAC:x']
         mac = inputs['geometry:wing:MAC:length']
 
-        outputs['cg_ratio_aft'] = (x_cg_all - wing_position + 0.25 * mac) / mac
+        outputs['weight:aircraft:empty:CG:ratio'] = (x_cg_all - wing_position + 0.25 * mac) / mac

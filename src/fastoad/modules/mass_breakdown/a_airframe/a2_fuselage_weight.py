@@ -2,7 +2,7 @@
 Estimation of fuselage weight
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,7 +25,7 @@ class FuselageWeight(ExplicitComponent):
         self.add_input('geometry:fuselage:wetted_area', val=np.nan, units='m**2')
         self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
         self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
-        self.add_input('n1m1', val=np.nan, units='kg')
+        self.add_input('mission:sizing:cs25:sizing_load_1', val=np.nan, units='kg')
         self.add_input('weight:airframe:fuselage:mass:k', val=1.)
         self.add_input('weight:airframe:fuselage:mass:offset', val=0., units='kg')
         self.add_input('weight:airframe:fuselage:mass:k_lg', val=1.05)
@@ -38,7 +38,7 @@ class FuselageWeight(ExplicitComponent):
         fuselage_wet_area = inputs['geometry:fuselage:wetted_area']
         width_max = inputs['geometry:fuselage:maximum_width']
         height_max = inputs['geometry:fuselage:maximum_height']
-        n1m1 = inputs['n1m1']
+        n1m1 = inputs['mission:sizing:cs25:sizing_load_1']
         k_a2 = inputs['weight:airframe:fuselage:mass:k']
         offset_a2 = inputs['weight:airframe:fuselage:mass:offset']
         k_lg = inputs['weight:airframe:fuselage:mass:k_lg']

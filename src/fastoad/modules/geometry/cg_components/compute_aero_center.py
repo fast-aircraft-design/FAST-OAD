@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -36,7 +36,7 @@ class ComputeAeroCenter(ExplicitComponent):
         self.add_input('aerodynamics:aircraft:cruise:CL_alpha', val=np.nan)
         self.add_input('aerodynamics:horizontal_tail:cruise:CL_alpha', val=np.nan)
 
-        self.add_output('x_ac_ratio')
+        self.add_output('aerodynamics:cruise:neutral_point:x')
 
         self.declare_partials('*', '*', method='fd')
 
@@ -67,4 +67,4 @@ class ComputeAeroCenter(ExplicitComponent):
                       cl_alpha_ht * (1 - 0.4) * 0.9 * s_h / wing_area)
         x_aero_center = x_ca_plane - fa_length / l0_wing + 0.25
 
-        outputs['x_ac_ratio'] = x_aero_center
+        outputs['aerodynamics:cruise:neutral_point:x'] = x_aero_center

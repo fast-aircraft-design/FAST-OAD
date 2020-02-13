@@ -33,8 +33,8 @@ class CdTrim(ExplicitComponent):
             self.add_input('cl_low_speed', val=nans_array)
             self.add_output('cd_trim_low_speed', shape=POLAR_POINT_COUNT)
         else:
-            self.add_input('cl_high_speed', val=nans_array)
-            self.add_output('cd_trim_high_speed', shape=POLAR_POINT_COUNT)
+            self.add_input('aerodynamics:aircraft:cruise:CL', val=nans_array)
+            self.add_output('aerodynamics:aircraft:cruise:CD:trim', shape=POLAR_POINT_COUNT)
 
         self.declare_partials('*', '*', method='fd')
 
@@ -42,7 +42,7 @@ class CdTrim(ExplicitComponent):
         if self.low_speed_aero:
             cl = inputs['cl_low_speed']
         else:
-            cl = inputs['cl_high_speed']
+            cl = inputs['aerodynamics:aircraft:cruise:CL']
 
         cd_trim = []
 
@@ -52,4 +52,4 @@ class CdTrim(ExplicitComponent):
         if self.low_speed_aero:
             outputs['cd_trim_low_speed'] = cd_trim
         else:
-            outputs['cd_trim_high_speed'] = cd_trim
+            outputs['aerodynamics:aircraft:cruise:CD:trim'] = cd_trim

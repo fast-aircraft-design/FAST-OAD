@@ -1,9 +1,8 @@
 """
     Estimation of vertical tail chords and span
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,7 +13,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import math
+
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -25,7 +24,6 @@ class ComputeVTChords(ExplicitComponent):
     """ Vertical tail chords and span estimation """
 
     def setup(self):
-
         self.add_input('geometry:vertical_tail:aspect_ratio', val=np.nan)
         self.add_input('geometry:vertical_tail:area', val=np.nan, units='m**2')
         self.add_input('geometry:vertical_tail:taper_ratio', val=np.nan)
@@ -35,7 +33,8 @@ class ComputeVTChords(ExplicitComponent):
         self.add_output('geometry:vertical_tail:tip_chord', units='m')
 
         self.declare_partials('geometry:vertical_tail:span',
-                              ['geometry:vertical_tail:aspect_ratio', 'geometry:vertical_tail:area'],
+                              ['geometry:vertical_tail:aspect_ratio',
+                               'geometry:vertical_tail:area'],
                               method='fd')
         self.declare_partials('geometry:vertical_tail:root_chord', '*', method='fd')
         self.declare_partials('geometry:vertical_tail:tip_chord', '*', method='fd')
@@ -45,7 +44,7 @@ class ComputeVTChords(ExplicitComponent):
         s_v = inputs['geometry:vertical_tail:area']
         taper_v = inputs['geometry:vertical_tail:taper_ratio']
 
-        b_v = math.sqrt(lambda_vt * s_v)
+        b_v = np.sqrt(max(lambda_vt * s_v, 0.1))  #
         root_chord = s_v * 2 / (1 + taper_v) / b_v
         tip_chord = root_chord * taper_v
 

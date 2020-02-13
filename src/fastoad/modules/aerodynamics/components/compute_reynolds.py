@@ -36,7 +36,7 @@ class ComputeReynolds(ExplicitComponent):
         else:
             self.add_input('TLAR:cruise_mach', val=np.nan)
             self.add_input('mission:sizing:cruise:altitude', val=np.nan, units='m')
-            self.add_output('reynolds_high_speed')
+            self.add_output('aerodynamics:wing:cruise:reynolds')
 
         self.declare_partials('*', '*', method='fd')
 
@@ -53,4 +53,4 @@ class ComputeReynolds(ExplicitComponent):
         if self.low_speed_aero:
             outputs['reynolds_low_speed'] = reynolds
         else:
-            outputs['reynolds_high_speed'] = reynolds
+            outputs['aerodynamics:wing:cruise:reynolds'] = reynolds

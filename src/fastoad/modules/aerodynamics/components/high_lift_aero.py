@@ -39,7 +39,7 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         if self.options['landing_flag']:
             self.add_input('mission:sizing:landing:flap_angle', val=np.nan, units='deg')
             self.add_input('mission:sizing:landing:slat_angle', val=np.nan, units='deg')
-            self.add_output('delta_cl_landing')
+            self.add_output('aerodynamics:high_lift_devices:landing:CL')
         else:
             self.add_input('mission:sizing:takeoff:flap_angle', val=np.nan, units='deg')
             self.add_input('mission:sizing:takeoff:slat_angle', val=np.nan, units='deg')
@@ -74,10 +74,15 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         slat_span_ratio = inputs['geometry:slat:span_ratio']
 
         if self.options['landing_flag']:
-            outputs['delta_cl_landing'] = self._get_delta_cl(slat_angle, flap_angle,
-                                                             slat_span_ratio, flap_span_ratio,
-                                                             slat_chord_ratio, flap_chord_ratio,
-                                                             mach, le_sweep_angle, te_sweep_angle)
+            outputs['aerodynamics:high_lift_devices:landing:CL'] = self._get_delta_cl(slat_angle,
+                                                                                      flap_angle,
+                                                                                      slat_span_ratio,
+                                                                                      flap_span_ratio,
+                                                                                      slat_chord_ratio,
+                                                                                      flap_chord_ratio,
+                                                                                      mach,
+                                                                                      le_sweep_angle,
+                                                                                      te_sweep_angle)
         else:
             outputs['delta_cl_takeoff'] = self._get_delta_cl(slat_angle, flap_angle,
                                                              slat_span_ratio, flap_span_ratio,

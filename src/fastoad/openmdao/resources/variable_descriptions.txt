@@ -1,50 +1,44 @@
 test:test_variable	for testing (do not remove)
+aerodynamics:aircraft:cruise:CD	drag coefficient in cruise conditions w.r.t. aerodynamics:aircraft:cruise:CL
+aerodynamics:aircraft:cruise:CD:compressibility	increment of drag coefficient due to compressibility effects (shock waves) w.r.t. aerodynamics:aircraft:cruise:CL
 aerodynamics:aircraft:cruise:CD:k	correction ratio to apply to computed drag coefficient in cruise conditions
 aerodynamics:aircraft:cruise:CD:offset	correction offset to apply to computed drag coefficient in cruise conditions
+aerodynamics:aircraft:cruise:CD:trim	increment of drag coefficient due to aircraft trim w.r.t. aerodynamics:aircraft:cruise:CL
 aerodynamics:aircraft:cruise:CD:winglet_effect:k	correction ratio to apply to computed induced drag coefficient in cruise conditions
 aerodynamics:aircraft:cruise:CD:winglet_effect:offset	correction ratio to apply to computed drag coefficient in cruise conditions
+aerodynamics:aircraft:cruise:CD0	profile drag coefficient for whole aircraft w.r.t. aerodynamics:aircraft:cruise:CL
+aerodynamics:aircraft:cruise:CL	scale of lift coefficient values for drag computations in cruise conditions
 aerodynamics:aircraft:cruise:CL:k	ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
 aerodynamics:aircraft:cruise:CL:offset	offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
 aerodynamics:aircraft:cruise:CL:winglet_effect:k	ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
 aerodynamics:aircraft:cruise:CL:winglet_effect:offset	offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
 aerodynamics:aircraft:cruise:CL_alpha	derivative of lift coefficient with respect to angle of attack in cruise conditions
-aerodynamics:aircraft:takeoff:CL0_clean	value of lift coefficient at angle of attack 0 in clean configuration at takeoff
+aerodynamics:aircraft:cruise:induced_drag_coefficient	multiply squared lift coefficient by this coefficient to get induced drag coefficient
 aerodynamics:aircraft:cruise:L_D_max	max lift/drag ratio in cruise conditions
+aerodynamics:aircraft:cruise:optimal_CD	drag coefficient at maximum lift/drag ratio in cruise conditions
+aerodynamics:aircraft:cruise:optimal_CL	lift coefficient at maximum lift/drag ratio in cruise conditions
+aerodynamics:aircraft:landing:additional_CL_capacity	at landing, is equal to (maximum lift coefficient)-(maximum required lift coefficient)
 aerodynamics:aircraft:landing:CL_max	maximum lift coefficient in landing conditions
 aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k	correction ratio to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
 aerodynamics:aircraft:landing:CL_max:landing_gear_effect:offset	correction offset to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
 aerodynamics:aircraft:landing:CL_max_clean	maximum lift coefficient in landing conditions without high-lift devices
+aerodynamics:aircraft:landing:mach	considered Mach number for landing phase
+aerodynamics:aircraft:landing:reynolds	considered Reynolds number for landing phase
 aerodynamics:aircraft:takeoff:CL_alpha	derivative of lift coefficient with respect to angle of attack in takeoff conditions
-aerodynamics:aircraft:takeoff:CL_max:k	**unused**
-aerodynamics:aircraft:takeoff:CL_max:offset	**unused**
+aerodynamics:aircraft:takeoff:CL0_clean	value of lift coefficient at angle of attack 0 in clean configuration at takeoff
+aerodynamics:cruise:neutral_point:x	X-position of neutral point  - X-position of aircaft nose
+aerodynamics:fuselage:cruise:CD0	profile drag coefficient for fuselage w.r.t. aerodynamics:aircraft:cruise:CL
+aerodynamics:fuselage:cruise:CnBeta	derivative of yawing moment against sideslip angle for fuselage in cruise conditions
+aerodynamics:high_lift_devices:landing:CL	increment of CL due to high-lift devices for landing phase
+aerodynamics:horizontal_tail:cruise:CD0	profile drag coefficient for horizontal tail
 aerodynamics:horizontal_tail:cruise:CL_alpha	derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions
+aerodynamics:nacelles:cruise:CD0	profile drag coefficient for nacelles
+aerodynamics:pylons:cruise:CD0	profile drag coefficient for pylons
+aerodynamics:vertical_tail:cruise:CD0	profile drag coefficient for vertical tail
 aerodynamics:vertical_tail:cruise:CL_alpha	derivative of lift coefficient of horizontal tail with respect to local "angle of attack" in cruise conditions
-configuration:configuration	**unused**
-configuration:cruise_option	**unused**
-configuration:engine:location	**unused**
-configuration:engine:type	**unused**
-configuration:landing_gear_type	**unused**
-configuration:T_tail	**unused**
-DOC:fees:B_DOC	**unused**
-DOC:fees:CC	**unused**
-DOC:fees:DP	**unused**
-DOC:fees:fins	**unused**
-DOC:fees:fRV	**unused**
-DOC:fees:IR	**unused**
-DOC:fees:Kdoc	**unused**
-DOC:fees:Kground	**unused**
-DOC:fees:Kldg	**unused**
-DOC:fees:Knav	**unused**
-DOC:fees:LR	**unused**
-DOC:fees:PENG	**unused**
-DOC:fees:Pfuel	**unused**
-DOC:fees:POWE	**unused**
-DOC:fees:Ratio	**unused**
-DOC:fees:SFA	**unused**
-DOC:fees:SFC	**unused**
-DOC:time:BTS	**unused**
-DOC:time:Dtpa	**unused**
-DOC:time:POTpa	**unused**
+aerodynamics:vertical_tail:cruise:CnBeta	derivative of yawing moment against sideslip angle for vertical tail in cruise conditions
+aerodynamics:wing:cruise:CD0	profile drag coefficient for wing w.r.t. aerodynamics:aircraft:cruise:CL
+aerodynamics:wing:cruise:reynolds	Reynolds number based on wing mean aerodynamic chord in cruise conditions
 geometry:aircraft:wetted_area	total wetted area
 geometry:cabin:aisle_width	width of aisles
 geometry:cabin:containers:count	total number of cargo containers
@@ -55,13 +49,13 @@ geometry:cabin:exit_width	width of exits
 geometry:cabin:length	cabin length
 geometry:cabin:NPAX1	number of passengers if there are only economical class seats
 geometry:cabin:pallet_count	number of pallet in cargo hold
+geometry:cabin:seat_rows:count	number of seat rows in the cabin
 geometry:cabin:seats:business:count_by_row	number of business class seats along width
 geometry:cabin:seats:business:length	length of business class seats
 geometry:cabin:seats:business:width	width of business class seats
 geometry:cabin:seats:economical:count_by_row	number of economical class seats along width
 geometry:cabin:seats:economical:length	length of economical class seats
 geometry:cabin:seats:economical:width	width of economical class seats
-geometry:cabin:sizing	**unused**
 geometry:flap:chord_ratio	mean value of (flap chord)/(section chord)
 geometry:flap:span_ratio	ratio (width of flaps)/(total span)
 geometry:fuselage:front_length	length of front non-cylindrical part of the fuselage
@@ -75,7 +69,7 @@ geometry:horizontal_tail:area	horizontal tail area
 geometry:horizontal_tail:aspect_ratio	aspect ratio of horizontal tail
 geometry:horizontal_tail:distance_from_wing	distance along X between 25% MAC of wing and 25% MAC of horizontal tail
 geometry:horizontal_tail:MAC:length	mean aerodynamic chord length of horizontal tail
-geometry:horizontal_tail:MAC:x	X-position of leading edge of mean aerodynamic chord of horizontal tail
+geometry:horizontal_tail:MAC:x	X-position of leading edge of mean aerodynamic chord of horizontal tail (drives position of wing w.r.t. fuselage)
 geometry:horizontal_tail:MAC:y	Y-position of mean aerodynamic chord of horizontal tail
 geometry:horizontal_tail:root_chord	chord length at root of horizontal tail
 geometry:horizontal_tail:span	horizontal tail span
@@ -87,9 +81,9 @@ geometry:horizontal_tail:thickness_ratio	thickness ratio of horizontal tail
 geometry:horizontal_tail:tip_chord	chord length at tip of horizontal tail
 geometry:horizontal_tail:volume_coefficient	volume coefficient of horizontal tail
 geometry:horizontal_tail:wetted_area	wetted area of horizontal tail
+geometry:landing_gear:front:distance_to_main	distance between front and main landing gears
 geometry:landing_gear:height	height of landing gear
 geometry:propulsion:engine:count	number of engines
-geometry:propulsion:engine:sizing	**unused**
 geometry:propulsion:engine:y_ratio	engine position with respect to total span
 geometry:propulsion:fan:length	engine length
 geometry:propulsion:nacelle:diameter	nacelle diameter
@@ -119,7 +113,6 @@ geometry:vertical_tail:wetted_area	wetted area of vertical tail
 geometry:wing:area	wing reference area
 geometry:wing:aspect_ratio	wing aspect ratio
 geometry:wing:b_50	actual length between root and tip along 50% of chord
-geometry:wing:etaw	**unused**
 geometry:wing:kink:chord	chord length at wing kink
 geometry:wing:kink:leading_edge:x	X-position of leading edge at wing kink
 geometry:wing:kink:span_ratio	ratio (Y-position of kink)/(semi-span)
@@ -151,25 +144,21 @@ geometry:wing:tip:chord	chord length at wing tip
 geometry:wing:tip:leading_edge:x	X-position of leading edge at wing tip
 geometry:wing:tip:thickness_ratio	thickness ratio at wing tip
 geometry:wing:tip:y	Y-position of wing tip
-geometry:wing:twist1	**unused**
-geometry:wing:twist2	**unused**
 geometry:wing:wetted_area	wetted area of wing
-load_case:lc1:altitude	altitude for sizing case
-load_case:lc1:U_gust	gust vertical speed for sizing case
-load_case:lc1:Vc_EAS	equivalent air speed for sizing case
-load_case:lc2:altitude	altitude for sizing case
-load_case:lc2:U_gust	gust vertical speed for sizing case
-load_case:lc2:Vc_EAS	equivalent air speed for sizing case
+handling_qualities:static_margin	(X-position of neutral point  - X-position of center of gravity ) / (mean aerodynamic chord)
+load_case:lc1:altitude	altitude for sizing load case 1 (gust with minimum aircraft mass)
+load_case:lc1:U_gust	gust vertical speed for sizing load case 1 (gust with minimum aircraft mass)
+load_case:lc1:Vc_EAS	equivalent air speed for sizing load case 1 (gust with minimum aircraft mass)
+load_case:lc2:altitude	altitude for sizing load case 2 (gust with maximum aircraft mass)
+load_case:lc2:U_gust	gust vertical speed for sizing load case 2 (gust with maximum aircraft mass)
+load_case:lc2:Vc_EAS	equivalent air speed for sizing load case 2 (gust with maximum aircraft mass)
 mission:operational:alternate_climb:duration	duration of alternate climb phase in operational mission
 mission:operational:alternate_climb:fuel	mass of consumed fuel during alternate climb phase in operational mission
-mission:operational:alternate_climb:hr	**unused**
 mission:operational:alternate_cruise:distance	travelled distance during alternate cruise phase in operational mission
 mission:operational:alternate_cruise:duration	duration of alternate alternate cruise phase in operational mission
 mission:operational:alternate_cruise:fuel	mass of consumed fuel during alternate alternate cruise phase in operational mission
-mission:operational:alternate_cruise:hr	**unused**
 mission:operational:alternate_descent:duration	duration of alternate descent phase in operational mission
 mission:operational:alternate_descent:fuel	mass of consumed fuel during alternate descent phase in operational mission
-mission:operational:alternate_descent:hr	**unused**
 mission:operational:climb:duration	duration of climb phase in operational mission
 mission:operational:climb:fuel	mass of consumed fuel during climb phase in operational mission
 mission:operational:climb:max_climb_rate	maximum climb rate in operational mission
@@ -177,39 +166,31 @@ mission:operational:climb:thrust_rate	thrust rate (between 0.0 and 1.0) during c
 mission:operational:cruise:altitude	altitude during cruise phase in operational mission
 mission:operational:cruise:duration	duration of cruise phase in operational mission
 mission:operational:cruise:fuel	mass of consumed fuel during cruise phase in operational mission
-mission:operational:cruise:hr	**unused**
 mission:operational:cruise:mach	Mach number during cruise phase in operational mission
 mission:operational:descent:duration	duration of descent phase in operational mission
 mission:operational:descent:fuel	mass of consumed fuel during descent phase in operational mission
-mission:operational:descent:hr	**unused**
 mission:operational:descent:thrust_rate	thrust rate (between 0.0 and 1.0) during descent phase  in operational mission
 mission:operational:flight:duration	total flight time in operational mission
 mission:operational:flight:fuel	mass of total fuel consumed during flight in operational mission
-mission:operational:flight:fuel_margin	**unused**
 mission:operational:flight:range	total travelled distance during flight in operational mission
 mission:operational:holding:altitude	altitude during holding phase in operational mission
 mission:operational:holding:CAS	Calibrated Air Speed during holding phase in operational mission
 mission:operational:holding:duration	duration of holding phase in operational mission
 mission:operational:holding:fuel	mass of consumed fuel during holding phase in operational mission
-mission:operational:holding:hr	**unused**
 mission:operational:initial_climb:fuel	mass of consumed fuel during initial climb phase in operational mission
-mission:operational:initial_climb:hr	**unused**
 mission:operational:landing:duration	duration of landing phase in operational mission
 mission:operational:landing:flap_angle	flap angle during landing phase in operational mission
 mission:operational:landing:friction_coefficient_brake	ground friction coefficient with full brakes in operational mission
 mission:operational:landing:fuel	mass of consumed fuel during landing phase in operational mission
-mission:operational:landing:hr	**unused**
 mission:operational:landing:length	runway length required for landing in operational mission
 mission:operational:landing:slat_angle	slat angle during landing phase in operational mission
 mission:operational:landing:thrust_rate	thrust rate (between 0.0 and 1.0) during landing phase in operational mission
 mission:operational:takeoff:altitude	altitude at takeoff in operational mission
 mission:operational:takeoff:delta_ISA	ISA temperature increment during takeoff phase in operational mission
-mission:operational:takeoff:derate_ratio	**unused**
 mission:operational:takeoff:duration	duration of takeoff phase in operational mission
 mission:operational:takeoff:flap_angle	flap angle during takeoff phase in operational mission
 mission:operational:takeoff:friction_coefficient_no_brake	ground friction coefficient with no brake in operational mission
 mission:operational:takeoff:fuel	mass of consumed fuel during takeoff phase in operational mission
-mission:operational:takeoff:hr	**unused**
 mission:operational:takeoff:slat_angle	slat angle during takeoff phase in operational mission
 mission:operational:takeoff:TOFL	TakeOff Field Length in operational mission
 mission:operational:takeoff:V2	safety speed before reaching 35 feet height in operational mission
@@ -218,65 +199,59 @@ mission:operational:takeoff:VMCA	air minimum control speed in operational missio
 mission:operational:takeoff:VR	rotation speed in operational mission
 mission:operational:taxi_in:duration	duration of taxi-in phase in operational mission
 mission:operational:taxi_in:fuel	mass of consumed fuel during taxi-in phase in operational mission
-mission:operational:taxi_in:hr	**unused**
 mission:operational:taxi_in:speed	speed during taxi-in phase in operational mission
 mission:operational:taxi_in:thrust_rate	thrust rate (between 0.0 and 1.0) during taxi-in phase in operational mission
 mission:operational:taxi_out:duration	duration of taxi-out phase in operational mission
 mission:operational:taxi_out:fuel	mass of consumed fuel during taxi-out phase in operational mission
-mission:operational:taxi_out:hr	**unused**
 mission:operational:taxi_out:speed	speed during taxi-out phase in operational mission
 mission:operational:taxi_out:thrust_rate	thrust rate (between 0.0 and 1.0) during taxi-out phase in operational mission
 mission:sizing:alternate_climb:duration	duration of alternate climb phase in sizing mission
 mission:sizing:alternate_climb:fuel	mass of consumed fuel during alternate climb phase in sizing mission
-mission:sizing:alternate_climb:hr	**unused**
 mission:sizing:alternate_cruise:distance	travelled distance during alternate cruise phase in sizing mission
 mission:sizing:alternate_cruise:duration	duration of alternate alternate cruise phase in sizing mission
 mission:sizing:alternate_cruise:fuel	mass of consumed fuel during alternate alternate cruise phase in sizing mission
-mission:sizing:alternate_cruise:hr	**unused**
 mission:sizing:alternate_descent:duration	duration of alternate descent phase in sizing mission
 mission:sizing:alternate_descent:fuel	mass of consumed fuel during alternate descent phase in sizing mission
-mission:sizing:alternate_descent:hr	**unused**
 mission:sizing:block_fuel	total fuel mass at start
 mission:sizing:block_time	total duration of mission
+mission:sizing:climb:distance	covered ground distance during climb phase
 mission:sizing:climb:duration	duration of climb phase in sizing mission
 mission:sizing:climb:fuel	mass of consumed fuel during climb phase in sizing mission
 mission:sizing:climb:max_climb_rate	maximum climb rate in sizing mission
 mission:sizing:climb:thrust_rate	thrust rate (between 0.0 and 1.0) during climb phase  in sizing mission
 mission:sizing:cruise:altitude	altitude during cruise phase in sizing mission
+mission:sizing:cruise:distance	covered ground distance during cruise phase
 mission:sizing:cruise:duration	duration of cruise phase in sizing mission
 mission:sizing:cruise:fuel	mass of consumed fuel during cruise phase in sizing mission
-mission:sizing:cruise:hr	**unused**
+mission:sizing:cruise:mass_ratio	ratio (aircraft mass at end of cruise)/(aircraft mass at start of cruise)
+mission:sizing:cs25:sizing_load_1	sizing load during gust with minimum aircraft mass
+mission:sizing:cs25:sizing_load_2	sizing load during gust with maximum aircraft mass
+mission:sizing:descent:distance	covered ground distance during descent phase
 mission:sizing:descent:duration	duration of descent phase in sizing mission
 mission:sizing:descent:fuel	mass of consumed fuel during descent phase in sizing mission
-mission:sizing:descent:hr	**unused**
 mission:sizing:descent:thrust_rate	thrust rate (between 0.0 and 1.0) during descent phase  in sizing mission
 mission:sizing:flight:duration	total flight time in sizing mission
 mission:sizing:flight:fuel	mass of consumed fuel during flight in sizing mission
-mission:sizing:trip:fuel	mass of total fuel consumed during flight in sizing mission
+mission:sizing:fuel	consumed fuel mass during whole mission
 mission:sizing:fuel_reserve	mass of fuel reserve
 mission:sizing:holding:altitude	altitude during holding phase in sizing mission
 mission:sizing:holding:CAS	Calibrated Air Speed during holding phase in sizing mission
 mission:sizing:holding:duration	duration of holding phase in sizing mission
 mission:sizing:holding:fuel	mass of consumed fuel during holding phase in sizing mission
-mission:sizing:holding:hr	**unused**
 mission:sizing:initial_climb:fuel	mass of consumed fuel during initial climb phase in sizing mission
-mission:sizing:initial_climb:hr	**unused**
 mission:sizing:landing:duration	duration of landing phase in sizing mission
 mission:sizing:landing:flap_angle	flap angle during landing phase in sizing mission
 mission:sizing:landing:friction_coefficient_brake	ground friction coefficient with full brakes in sizing mission
 mission:sizing:landing:fuel	mass of consumed fuel during landing phase in sizing mission
-mission:sizing:landing:hr	**unused**
 mission:sizing:landing:length	runway length required for landing in sizing mission
 mission:sizing:landing:slat_angle	slat angle during landing phase in sizing mission
 mission:sizing:landing:thrust_rate	thrust rate (between 0.0 and 1.0) during landing phase in sizing mission
 mission:sizing:takeoff:altitude	altitude at takeoff in sizing mission
 mission:sizing:takeoff:delta_ISA	ISA temperature increment during takeoff phase in sizing mission
-mission:sizing:takeoff:derate_ratio	**unused**
 mission:sizing:takeoff:duration	duration of takeoff phase in sizing mission
 mission:sizing:takeoff:flap_angle	flap angle during takeoff phase in sizing mission
 mission:sizing:takeoff:friction_coefficient_no_brake	ground friction coefficient with no brake in sizing mission
 mission:sizing:takeoff:fuel	mass of consumed fuel during takeoff phase in sizing mission
-mission:sizing:takeoff:hr	**unused**
 mission:sizing:takeoff:slat_angle	slat angle during takeoff phase in sizing mission
 mission:sizing:takeoff:TOFL	TakeOff Field Length in sizing mission
 mission:sizing:takeoff:V2	safety speed before reaching 35 feet height in sizing mission
@@ -285,39 +260,56 @@ mission:sizing:takeoff:VMCA	air minimum control speed in sizing mission
 mission:sizing:takeoff:VR	rotation speed in sizing mission
 mission:sizing:taxi_in:duration	duration of taxi-in phase in sizing mission
 mission:sizing:taxi_in:fuel	mass of consumed fuel during taxi-in phase in sizing mission
-mission:sizing:taxi_in:hr	**unused**
 mission:sizing:taxi_in:speed	speed during taxi-in phase in sizing mission
 mission:sizing:taxi_in:thrust_rate	thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission
 mission:sizing:taxi_out:duration	duration of taxi-out phase in sizing mission
 mission:sizing:taxi_out:fuel	mass of consumed fuel during taxi-out phase in sizing mission
-mission:sizing:taxi_out:hr	**unused**
 mission:sizing:taxi_out:speed	speed during taxi-out phase in sizing mission
 mission:sizing:taxi_out:thrust_rate	thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission
-propulsion:MTO_thrust	Maximum thrust of one engine at sea level
+mission:sizing:trip:fuel	mass of total fuel consumed during flight in sizing mission
+mission:sizing:ZFW	aircraft mass with payload, without fuel, in sizing mission
+propulsion:altitude	altitude for propulsion calculation (can be a vector)
+propulsion:mach	Mach number for propulsion calculation (can be a vector)
+propulsion:MTO_thrust	maximum thrust of one engine at sea level
+propulsion:phase	flight phase for propulsion calculation (can be a vector): TafeOff=1 / Climb=2 / Cruise=3 / Idle=4
+propulsion:required_thrust	thrust setpoint (can be a vector). Used if "propulsion:use_thrust_rate" is 0
+propulsion:required_thrust_rate	thrust setpoint (can be a vector). Used if "propulsion:use_thrust_rate" is 1
 propulsion:rubber_engine:bypass_ratio	bypass ratio for rubber engine model
-propulsion:rubber_engine:delta_t4_climb	difference between T4 during climb and design T4 for rubber engine model
-propulsion:rubber_engine:delta_t4_cruise	difference between T4 during cruise and design T4 for rubber engine model
+propulsion:rubber_engine:delta_t4_climb	As it is a delta, unit is K or °C, but is not specified to avoid OpenMDAO making unwanted conversion
+propulsion:rubber_engine:delta_t4_cruise	As it is a delta, unit is K or °C, but is not specified to avoid OpenMDAO making unwanted conversion
 propulsion:rubber_engine:design_altitude	design altitude for rubber engine model
 propulsion:rubber_engine:maximum_mach	maximum Mach number for rubber engine model
 propulsion:rubber_engine:overall_pressure_ratio	Overall pressure ratio for rubber engine model
 propulsion:rubber_engine:turbine_inlet_temperature	design turbine inlet temperature (T4) for rubber engine model
+propulsion:SFC	Specific Fuel Consumption (can be a vector)
+propulsion:thrust	actual thrust value (can be a vector)
+propulsion:thrust_rate	actual thrust rate (can be a vector)
+propulsion:use_thrust_rate	(can be a vector) If 1, calculation will use propulsion:required_thrust_rate. If 0, calculation will use propulsion:required_thrust
 requirements:CG_range	between 0.0 and 1.0
-TLAR:AC_family	**unused**
-TLAR:AC_type	**unused**
 TLAR:approach_speed	top-level requirement: approach speed
 TLAR:cruise_mach	top-level requirement: cruise Mach number
 TLAR:max_TOFL	top-level requirement: maximum takeoff field length
 TLAR:NPAX	top-level requirement: number of passengers
-TLAR:range	top-level requirement: maximum range
+TLAR:range	top-level requirement: design range
+weight:aircraft:additional_fuel_capacity	fuel mass capacity of wing that exceeds sizing mission requirement
+weight:aircraft:CG:ratio	used X-position of center of gravity as ratio of mean aerodynamic chord (=maximum estimate)
 weight:aircraft:CG:x	X-position of aircraft center of gravity
+weight:aircraft:empty:CG:ratio	X-position of center of gravity as ratio of mean aerodynamic chord for empty aircraft
+weight:aircraft:load_case_1:CG:ratio	X-position of center of gravity as ratio of mean aerodynamic chord for load case 1
+weight:aircraft:load_case_2:CG:ratio	X-position of center of gravity as ratio of mean aerodynamic chord for load case 2
+weight:aircraft:load_case_3:CG:ratio	X-position of center of gravity as ratio of mean aerodynamic chord for load case 3
+weight:aircraft:load_case_4:CG:ratio	X-position of center of gravity as ratio of mean aerodynamic chord for load case 4
 weight:aircraft:LW	landing weight
 weight:aircraft:max_payload	max payload weight
 weight:aircraft:MFW	maximum fuel weight
 weight:aircraft:MLW	maximum landing weight
 weight:aircraft:MTOW	maximum takeoff weight
 weight:aircraft:MZFW	maximum zero fuel weight
-weight:aircraft:OWE	operational weight empty
+weight:aircraft:OWE	operating weight - empty
 weight:aircraft:payload	payload weight
+weight:aircraft_empty:CG:x	X-position center of gravity of empty aircraft
+weight:aircraft_empty:mass	mass of empty aircraft (=OWE - mass of crew)
+weight:airframe:CG:x	airframe (A): X-position of center of gravity
 weight:airframe:flight_controls:CG:x	flight controls (A4): X-position of center of gravity
 weight:airframe:flight_controls:mass	flight controls (A4): total mass
 weight:airframe:flight_controls:mass:k	flight controls (A4): correction ratio to be applied on computed mass
@@ -339,7 +331,7 @@ weight:airframe:landing_gear:main:CG:x	main landing gear (A51): X-position of ce
 weight:airframe:landing_gear:main:mass	main landing gear (A51): mass
 weight:airframe:landing_gear:mass:k	landing gears (A5): correction ratio to be applied on computed mass
 weight:airframe:landing_gear:mass:offset	landing gears (A5): correction offset to be applied on computed mass
-weight:airframe:mass	airframe (A): total mass
+weight:airframe:mass	airframe (A): mass
 weight:airframe:paint:CG:x	paint (A7): X-position of center of gravity
 weight:airframe:paint:mass	paint (A7): total mass
 weight:airframe:paint:mass:k	paint (A7): correction ratio to be applied on computed mass
@@ -368,18 +360,19 @@ weight:airframe:wing:secondary_parts:mass:k	wing secondary parts (A15): correcti
 weight:airframe:wing:secondary_parts:mass:offset	wing secondary parts (A15): correction offset to be applied on computed mass
 weight:airframe:wing:shear_sizing:mass:k	wing shear sizing (A12): correction ratio to be applied on computed mass
 weight:airframe:wing:shear_sizing:mass:offset	wing shear sizing (A12): correction offset to be applied on computed mass
-weight:crew:CG:x	**unused**
+weight:crew:CG:x	crew (E): X-position of center of gravity
 weight:crew:mass	crew (E): mass
 weight:fuel_tank:CG:x	fuel tank: X-position of center of gravity
 weight:furniture:cargo_configuration:CG:x	cargo configuration (D1): X-position of center of gravity
 weight:furniture:cargo_configuration:mass	cargo configuration (D1): mass
 weight:furniture:cargo_configuration:mass:k	cargo configuration (D1): correction ratio to be applied on computed mass
 weight:furniture:cargo_configuration:mass:offset	cargo configuration (D1): correction offset to be applied on computed mass
+weight:furniture:CG:x	aircraft furniture (D): X-position of center of gravity
 weight:furniture:food_water:CG:x	food water (D3): X-position of center of gravity
 weight:furniture:food_water:mass	food water (D3): mass
 weight:furniture:food_water:mass:k	food water (D3): correction ratio to be applied on computed mass
 weight:furniture:food_water:mass:offset	food water (D3): correction offset to be applied on computed mass
-weight:furniture:mass	furniture (D): total mass
+weight:furniture:mass	aircraft furniture (D): mass
 weight:furniture:passenger_seats:CG:x	passenger seats (D2): X-position of center of gravity
 weight:furniture:passenger_seats:mass	passenger seats (D2): mass
 weight:furniture:passenger_seats:mass:k	passenger seats (D2): correction ratio to be applied on computed mass
@@ -395,10 +388,7 @@ weight:furniture:toilets:mass:offset	toilets (D5): correction offset to be appli
 weight:payload:front_fret:CG:x	front fret: X-position of center of gravity
 weight:payload:PAX:CG:x	passengers: X-position of center of gravity
 weight:payload:rear_fret:CG:x	rear fret: X-position of center of gravity
-weight:propulsion:batteries:CG:x	**unused**
-weight:propulsion:batteries:mass	**unused**
-weight:propulsion:cables:CG:x	**unused**
-weight:propulsion:cables:mass	**unused**
+weight:propulsion:CG:x	propulsion system (B): X-position of center of gravity
 weight:propulsion:engine:CG:x	engine (B1): X-position of center of gravity
 weight:propulsion:engine:mass	engine (B1): mass
 weight:propulsion:engine:mass:k	engine (B1): correction ratio to be applied on computed mass
@@ -407,15 +397,12 @@ weight:propulsion:fuel_lines:CG:x	fuel lines (B2): X-position of center of gravi
 weight:propulsion:fuel_lines:mass	fuel lines (B2): mass
 weight:propulsion:fuel_lines:mass:k	fuel lines (B2): correction ratio to be applied on computed mass
 weight:propulsion:fuel_lines:mass:offset	fuel lines (B2): correction offset to be applied on computed mass
-weight:propulsion:generator:CG:x	**unused**
-weight:propulsion:generator:mass	**unused**
-weight:propulsion:IDC:CG:x	**unused**
-weight:propulsion:IDC:mass	**unused**
-weight:propulsion:mass	propulsion (B): total mass
+weight:propulsion:mass	propulsion system (B): mass
 weight:propulsion:unconsumables:CG:x	unconsumables (B3): X-position of center of gravity
 weight:propulsion:unconsumables:mass	unconsumables (B3): mass
 weight:propulsion:unconsumables:mass:k	unconsumables (B3): correction ratio to be applied on computed mass
 weight:propulsion:unconsumables:mass:offset	unconsumables (B3): correction offset to be applied on computed mass
+weight:systems:CG:x	aircraft systems (C): X-position of center of gravity
 weight:systems:flight_kit:CG:x	flight kit (C6): X-position of center of gravity
 weight:systems:flight_kit:mass	flight kit (C6): mass
 weight:systems:flight_kit:mass:k	flight kit (C6): correction ratio to be applied on computed mass
@@ -448,7 +435,7 @@ weight:systems:life_support:seats_crew_accommodation:CG:x	seats crew accommodati
 weight:systems:life_support:seats_crew_accommodation:mass	seats crew accommodation (C21): mass
 weight:systems:life_support:seats_crew_accommodation:mass:k	seats crew accommodation (C21): correction ratio to be applied on computed mass
 weight:systems:life_support:seats_crew_accommodation:mass:offset	seats crew accommodation (C21): correction offset to be applied on computed mass
-weight:systems:mass	systems (C): total mass
+weight:systems:mass	aircraft systems (C): mass
 weight:systems:navigation:CG:x	navigation (C3): X-position of center of gravity
 weight:systems:navigation:mass	navigation (C3): mass
 weight:systems:navigation:mass:k	navigation (C3): correction ratio to be applied on computed mass

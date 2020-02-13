@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -26,8 +26,8 @@ class UpdateMLG(ExplicitComponent):
 
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
         self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
-        self.add_input('cg_ratio', val=np.nan)
-        self.add_input('delta_lg', val=np.nan)
+        self.add_input('weight:aircraft:CG:ratio', val=np.nan)
+        self.add_input('geometry:landing_gear:front:distance_to_main', val=np.nan)
 
         self.add_output('weight:airframe:landing_gear:main:CG:x', units='m')
 
@@ -36,8 +36,8 @@ class UpdateMLG(ExplicitComponent):
     def compute(self, inputs, outputs):
         l0_wing = inputs['geometry:wing:MAC:length']
         fa_length = inputs['geometry:wing:MAC:x']
-        cg_ratio = inputs['cg_ratio']
-        delta_lg = inputs['delta_lg']
+        cg_ratio = inputs['weight:aircraft:CG:ratio']
+        delta_lg = inputs['geometry:landing_gear:front:distance_to_main']
 
         x_cg = fa_length - 0.25 * l0_wing + cg_ratio * l0_wing
 

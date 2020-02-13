@@ -35,6 +35,7 @@ def xpath_reader() -> XPathReader:
     return XPathReader(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
+
 @pytest.fixture(scope="module")
 def input_xml() -> OMLegacy1XmlIO:
     """
@@ -43,6 +44,7 @@ def input_xml() -> OMLegacy1XmlIO:
     # TODO: have more consistency in input data (no need for the whole CeRAS01_baseline.xml)
     return OMLegacy1XmlIO(
         pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
+
 
 def test_geometry_get_cg():
     """ Tests computation of the cg estimation """
@@ -63,7 +65,7 @@ def test_geometry_get_cg():
     problem = run_system(group, input_vars)
 
     # problem.run_model()
-    cg_ratio = problem['cg_ratio']
+    cg_ratio = problem['weight:aircraft:CG:ratio']
     assert cg_ratio == pytest.approx(0.378, abs=1e-3)
     cg_airframe_a51 = problem['weight:airframe:landing_gear:main:CG:x']
     assert cg_airframe_a51 == pytest.approx(18.06, abs=1e-2)
@@ -85,7 +87,7 @@ def test_geometry_geometry_global():
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = run_system(group, input_vars)
 
-    static_margin = problem['static_margin']
+    static_margin = problem['handling_qualities:static_margin']
     # TODO: see if this static margin is correct
     assert static_margin == pytest.approx(-0.0102, abs=1e-5)
     cg_global = problem['weight:aircraft:CG:x']

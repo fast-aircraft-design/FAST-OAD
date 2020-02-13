@@ -68,7 +68,7 @@ def test_high_lift_aero():
         component.options['landing_flag'] = landing_flag
         problem = run_system(component, ivc)
         if landing_flag:
-            return problem['delta_cl_landing']
+            return problem['aerodynamics:high_lift_devices:landing:CL']
 
         return problem['delta_cl_takeoff'], problem['delta_cd_takeoff']
 
@@ -99,7 +99,7 @@ def test_oswald():
         ivc = get_indep_var_comp(input_list)
         ivc.add_output('TLAR:cruise_mach', mach)
         problem = run_system(OswaldCoefficient(), ivc)
-        return problem['oswald_coeff_high_speed']
+        return problem['aerodynamics:aircraft:cruise:induced_drag_coefficient']
 
     assert get_coeff(0.2) == approx(0.0465, abs=1e-4)
     assert get_coeff(0.8) == approx(0.0530, abs=1e-4)
@@ -139,10 +139,11 @@ def test_cd0():
 
         ivc = get_indep_var_comp(input_list)
         ivc.add_output('TLAR:cruise_mach', mach)
-        ivc.add_output('reynolds_high_speed', reynolds)
-        ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
+        ivc.add_output('aerodynamics:wing:cruise:reynolds', reynolds)
+        ivc.add_output('aerodynamics:aircraft:cruise:CL',
+                       150 * [cl])  # needed because size of input array is fixed
         problem = run_system(CD0(), ivc)
-        return problem['cd0_total_high_speed'][0]
+        return problem['aerodynamics:aircraft:cruise:CD0'][0]
 
     assert get_cd0(35000, 0.78, 0.5) == approx(0.01975, abs=1e-5)
     assert get_cd0(0, 0.2, 0.9) == approx(0.02727, abs=1e-5)
@@ -153,10 +154,11 @@ def test_cd_compressibility():
 
     def get_cd_compressibility(mach, cl):
         ivc = IndepVarComp()
-        ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
+        ivc.add_output('aerodynamics:aircraft:cruise:CL',
+                       150 * [cl])  # needed because size of input array is fixed
         ivc.add_output('TLAR:cruise_mach', mach)
         problem = run_system(CdCompressibility(), ivc)
-        return problem['cd_comp_high_speed'][0]
+        return problem['aerodynamics:aircraft:cruise:CD:compressibility'][0]
 
     assert get_cd_compressibility(0.78, 0.2) == approx(0.00028, abs=1e-5)
     assert get_cd_compressibility(0.78, 0.35) == approx(0.00028, abs=1e-5)
@@ -172,9 +174,10 @@ def test_cd_trim():
 
     def get_cd_trim(cl):
         ivc = IndepVarComp()
-        ivc.add_output('cl_high_speed', 150 * [cl])  # needed because size of input array is fixed
+        ivc.add_output('aerodynamics:aircraft:cruise:CL',
+                       150 * [cl])  # needed because size of input array is fixed
         problem = run_system(CdTrim(), ivc)
-        return problem['cd_trim_high_speed'][0]
+        return problem['aerodynamics:aircraft:cruise:CD:trim'][0]
 
     assert get_cd_trim(0.5) == approx(0.0002945, abs=1e-6)
     assert get_cd_trim(0.9) == approx(0.0005301, abs=1e-6)
@@ -230,20 +233,20 @@ def test_polar():
     group.add_subsystem('polar', ComputePolar(), promotes=['*'])
 
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('cl_high_speed', np.arange(0., 1.5, 0.01))
+    ivc.add_output('aerodynamics:aircraft:cruise:CL', np.arange(0., 1.5, 0.01))
 
     problem = run_system(group, ivc)
 
-    cd = problem['aerodynamics:ClCd'][0, :]
-    cl = problem['aerodynamics:ClCd'][1, :]
+    cd = problem['aerodynamics:aircraft:cruise:CD']
+    cl = problem['aerodynamics:aircraft:cruise:CL']
 
     assert cd[cl == 0.] == approx(0.02030, abs=1e-5)
     assert cd[cl == 0.2] == approx(0.02209, abs=1e-5)
     assert cd[cl == 0.42] == approx(0.02897, abs=1e-5)
     assert cd[cl == 0.85] == approx(0.11781, abs=1e-5)
 
-    assert problem['aerodynamics:Cl_opt'] == approx(0.54, abs=1e-3)
-    assert problem['aerodynamics:Cd_opt'] == approx(0.03550, abs=1e-5)
+    assert problem['aerodynamics:aircraft:cruise:optimal_CL'] == approx(0.54, abs=1e-3)
+    assert problem['aerodynamics:aircraft:cruise:optimal_CD'] == approx(0.03550, abs=1e-5)
 
 
 def test_low_speed_aero():

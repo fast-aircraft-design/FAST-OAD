@@ -39,9 +39,9 @@ class Cd0VerticalTail(ExplicitComponent):
             self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('cd0_vt_low_speed')
         else:
-            self.add_input('reynolds_high_speed', val=np.nan)
+            self.add_input('aerodynamics:wing:cruise:reynolds', val=np.nan)
             self.add_input('TLAR:cruise_mach', val=np.nan)
-            self.add_output('cd0_vt_high_speed')
+            self.add_output('aerodynamics:vertical_tail:cruise:CD0')
 
         self.declare_partials('*', '*', method='fd')
 
@@ -56,7 +56,7 @@ class Cd0VerticalTail(ExplicitComponent):
             re_hs = inputs['reynolds_low_speed']
         else:
             mach = inputs['TLAR:cruise_mach']
-            re_hs = inputs['reynolds_high_speed']
+            re_hs = inputs['aerodynamics:wing:cruise:reynolds']
 
         ki_arrow_cd0 = 0.04
 
@@ -70,4 +70,4 @@ class Cd0VerticalTail(ExplicitComponent):
         if self.low_speed_aero:
             outputs['cd0_vt_low_speed'] = cd0_vt_hs
         else:
-            outputs['cd0_vt_high_speed'] = cd0_vt_hs
+            outputs['aerodynamics:vertical_tail:cruise:CD0'] = cd0_vt_hs

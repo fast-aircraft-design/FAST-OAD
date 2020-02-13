@@ -3,7 +3,7 @@ Estimation of wing weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -33,8 +33,8 @@ class WingWeight(ExplicitComponent):
         self.add_input('geometry:wing:outer_area', val=np.nan, units='m**2')
         self.add_input('weight:aircraft:MTOW', val=np.nan, units='kg')
         self.add_input('weight:aircraft:MLW', val=np.nan, units='kg')
-        self.add_input('n1m1', val=np.nan, units='kg')
-        self.add_input('n2m2', val=np.nan, units='kg')
+        self.add_input('mission:sizing:cs25:sizing_load_1', val=np.nan, units='kg')
+        self.add_input('mission:sizing:cs25:sizing_load_2', val=np.nan, units='kg')
         self.add_input('weight:airframe:wing:mass:k', val=1.)
         self.add_input('weight:airframe:wing:mass:offset', val=0., units='kg')
         self.add_input('weight:airframe:wing:bending_sizing:mass:k', val=1.)
@@ -65,7 +65,8 @@ class WingWeight(ExplicitComponent):
         cantilevered_area = inputs['geometry:wing:outer_area']
         mtow = inputs['weight:aircraft:MTOW']
         mlw = inputs['weight:aircraft:MLW']
-        max_nm = max(inputs['n1m1'], inputs['n2m2'])
+        max_nm = max(inputs['mission:sizing:cs25:sizing_load_1'],
+                     inputs['mission:sizing:cs25:sizing_load_2'])
 
         # K factors
         k_a1 = inputs['weight:airframe:wing:mass:k']

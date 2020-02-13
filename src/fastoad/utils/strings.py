@@ -3,7 +3,7 @@ Module for string-related operations
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -29,6 +29,8 @@ def get_float_list_from_string(text: str):
 
     If provided text is not numeric, None is returned.
 
+    New line characters are simply ignored.
+
     As an example, following patterns will result as list [1., 2., 3.]
 
     .. code-block::
@@ -46,6 +48,7 @@ def get_float_list_from_string(text: str):
     # If it begins by '[', an array is expected, potentially multidimensional
     if text_value.startswith('['):
         # The string is first transformed in a way that can be parsed by genfromtxt
+        text_value = re.sub(r'\r?\n|\r', '', text_value)  # first remove all new lines
         text_value = re.sub(r'\]\s*,\s*\[', '\n', text_value)
         text_value = text_value.strip('[]')
         text_io = io.StringIO(text_value)

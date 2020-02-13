@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -33,11 +33,12 @@ class ComputeHTVolCoeff(ExplicitComponent):
         self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
         self.add_input('requirements:CG_range', val=np.nan)
 
-        self.add_output('delta_lg')
+        self.add_output('geometry:landing_gear:front:distance_to_main')
         self.add_output('geometry:horizontal_tail:volume_coefficient')
 
-        self.declare_partials('delta_lg',
-                              ['weight:airframe:landing_gear:main:CG:x', 'weight:airframe:landing_gear:front:CG:x'],
+        self.declare_partials('geometry:landing_gear:front:distance_to_main',
+                              ['weight:airframe:landing_gear:main:CG:x',
+                               'weight:airframe:landing_gear:front:CG:x'],
                               method='fd')
         self.declare_partials('geometry:horizontal_tail:volume_coefficient', '*', method='fd')
 
@@ -60,5 +61,5 @@ class ComputeHTVolCoeff(ExplicitComponent):
         delta_cm = mtow * l0_wing * required_cg_range * \
             9.81 / (0.5 * rho * vspeed**2 * wing_area * l0_wing)
         ht_vol_coeff = cm_wheel + delta_cm
-        outputs['delta_lg'] = delta_lg
+        outputs['geometry:landing_gear:front:distance_to_main'] = delta_lg
         outputs['geometry:horizontal_tail:volume_coefficient'] = ht_vol_coeff

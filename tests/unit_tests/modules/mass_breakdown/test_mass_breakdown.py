@@ -2,7 +2,7 @@
 Test module for mass breakdown functions
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -38,7 +38,7 @@ from fastoad.modules.mass_breakdown.d_furniture import \
     ToiletsWeight, SecurityKitWeight
 from fastoad.modules.mass_breakdown.e_crew import CrewWeight
 from fastoad.modules.mass_breakdown.mass_breakdown import MassBreakdown, OperatingWeightEmpty
-from fastoad.modules.mass_breakdown.options import AIRCRAFT_TYPE_OPTION
+from fastoad.modules.options import AIRCRAFT_TYPE_OPTION
 from tests.testing_utilities import run_system
 
 
@@ -69,8 +69,8 @@ def test_compute_loads():
     ivc = get_indep_var_comp(input_list)
     problem = run_system(Loads(), ivc)
 
-    n1m1 = problem['n1m1']
-    n2m2 = problem['n2m2']
+    n1m1 = problem['mission:sizing:cs25:sizing_load_1']
+    n2m2 = problem['mission:sizing:cs25:sizing_load_2']
     assert n1m1 == pytest.approx(240968, abs=10)
     assert n2m2 == pytest.approx(254130, abs=10)
 
@@ -103,8 +103,8 @@ def test_compute_wing_weight():
                   'weight:airframe:wing:mass:k_mvo']
 
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('n1m1', 241000, units='kg')
-    ivc.add_output('n2m2', 250000, units='kg')
+    ivc.add_output('mission:sizing:cs25:sizing_load_1', 241000, units='kg')
+    ivc.add_output('mission:sizing:cs25:sizing_load_2', 250000, units='kg')
 
     problem = run_system(WingWeight(), ivc)
 
@@ -125,7 +125,7 @@ def test_compute_fuselage_weight():
     ]
 
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('n1m1', 241000, units='kg')
+    ivc.add_output('mission:sizing:cs25:sizing_load_1', 241000, units='kg')
 
     problem = run_system(FuselageWeight(), ivc)
 
@@ -162,8 +162,8 @@ def test_compute_flight_controls_weight():
         'weight:airframe:flight_controls:mass:k_fc',
     ]
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('n1m1', 241000, units='kg')
-    ivc.add_output('n2m2', 250000, units='kg')
+    ivc.add_output('mission:sizing:cs25:sizing_load_1', 241000, units='kg')
+    ivc.add_output('mission:sizing:cs25:sizing_load_2', 250000, units='kg')
     problem = run_system(FlightControlsWeight(), ivc)
 
     val = problem['weight:airframe:flight_controls:mass']

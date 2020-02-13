@@ -3,7 +3,7 @@ Load case computation
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -43,8 +43,8 @@ class Loads(ExplicitComponent):
         self.add_input('load_case:lc2:altitude', val=np.nan, units='ft')
         self.add_input('load_case:lc2:Vc_EAS', val=np.nan, units='kn')
 
-        self.add_output('n1m1', units='kg')
-        self.add_output('n2m2', units='kg')
+        self.add_output('mission:sizing:cs25:sizing_load_1', units='kg')
+        self.add_output('mission:sizing:cs25:sizing_load_2', units='kg')
 
     # pylint: disable=too-many-locals
     # pylint: disable=invalid-name
@@ -81,8 +81,8 @@ class Loads(ExplicitComponent):
         mcv = min(0.8 * mfw, mtow - mzfw)
         n2m2 = n2 * (mtow - 0.55 * mcv)
 
-        outputs['n1m1'] = n1m1
-        outputs['n2m2'] = n2m2
+        outputs['mission:sizing:cs25:sizing_load_1'] = n1m1
+        outputs['mission:sizing:cs25:sizing_load_2'] = n2m2
 
     @staticmethod
     def __n_gust(mass, wing_area, rho, sea_level_density, chord_geom, vc_eas, cl_alpha, u_gust):

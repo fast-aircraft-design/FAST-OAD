@@ -38,7 +38,7 @@ class InitializeClPolar(ExplicitComponent):
         if self.low_speed_aero:
             self.add_output('cl_low_speed', shape=POLAR_POINT_COUNT)
         else:
-            self.add_output('cl_high_speed', shape=POLAR_POINT_COUNT)
+            self.add_output('aerodynamics:aircraft:cruise:CL', shape=POLAR_POINT_COUNT)
 
         self.declare_partials('*', '*', method='fd')
 
@@ -54,4 +54,4 @@ class InitializeClPolar(ExplicitComponent):
         if self.low_speed_aero:
             outputs['cl_low_speed'] = cl
         else:
-            outputs['cl_high_speed'] = cl
+            outputs['aerodynamics:aircraft:cruise:CL'] = cl

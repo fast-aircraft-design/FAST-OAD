@@ -2,7 +2,7 @@
 Test module for geometry functions of cg components
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,11 +14,9 @@ Test module for geometry functions of cg components
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# pylint: disable=redefined-outer-name  # needed for pytest fixtures
 import os.path as pth
 
 import pytest
-from openmdao.core.problem import Problem
 
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
@@ -48,6 +46,8 @@ from fastoad.modules.geometry.cg_components \
     import ComputeTanksCG
 from fastoad.modules.geometry.cg_components \
     import ComputeWingCG
+# pylint: disable=redefined-outer-name  # needed for pytest fixtures
+from tests.testing_utilities import run_system
 
 
 @pytest.fixture(scope="module")
@@ -58,6 +58,7 @@ def xpath_reader() -> XPathReader:
     return XPathReader(
         pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
 
+
 @pytest.fixture(scope="module")
 def input_xml() -> OMLegacy1XmlIO:
     """
@@ -66,6 +67,7 @@ def input_xml() -> OMLegacy1XmlIO:
     # TODO: have more consistency in input data (no need for the whole geometry_inputs_full.xml)
     return OMLegacy1XmlIO(
         pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
+
 
 def test_compute_aero_center(input_xml):
     """ Tests computation of aerodynamic center """
@@ -86,15 +88,9 @@ def test_compute_aero_center(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeAeroCenter(), promotes=['*'])
+    problem = run_system(ComputeAeroCenter(), input_vars)
 
-    problem.setup(mode='fwd')
-    problem.run_model()
-
-    x_ac_ratio = problem['x_ac_ratio']
+    x_ac_ratio = problem['aerodynamics:cruise:neutral_point:x']
     assert x_ac_ratio == pytest.approx(0.422638, abs=1e-6)
 
 
@@ -115,13 +111,7 @@ def test_compute_cg_control_surfaces(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeControlSurfacesCG(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeControlSurfacesCG(), input_vars)
 
     x_cg_a4 = problem['weight:airframe:flight_controls:CG:x']
     assert x_cg_a4 == pytest.approx(19.24, abs=1e-2)
@@ -141,18 +131,12 @@ def test_compute_cg_loadcase1(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('x_cg_plane_up', 699570.01)
-    input_vars.add_output('x_cg_plane_down', 40979.11)
+    input_vars.add_output('weight:aircraft_empty:CG:x', 699570.01 / 40979.11)
+    input_vars.add_output('weight:aircraft_empty:mass', 40979.11)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeCGLoadCase1(), promotes=['*'])
+    problem = run_system(ComputeCGLoadCase1(), input_vars)
 
-    problem.setup(mode='fwd')
-    problem.run_model()
-
-    cg_ratio_lc1 = problem['cg_ratio_lc1']
+    cg_ratio_lc1 = problem['weight:aircraft:load_case_1:CG:ratio']
     assert cg_ratio_lc1 == pytest.approx(0.364924, abs=1e-6)
 
 
@@ -172,18 +156,12 @@ def test_compute_cg_loadcase2(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('x_cg_plane_up', 699570.01)
-    input_vars.add_output('x_cg_plane_down', 40979.11)
+    input_vars.add_output('weight:aircraft_empty:CG:x', 699570.01 / 40979.11)
+    input_vars.add_output('weight:aircraft_empty:mass', 40979.11)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeCGLoadCase2(), promotes=['*'])
+    problem = run_system(ComputeCGLoadCase2(), input_vars)
 
-    problem.setup(mode='fwd')
-    problem.run_model()
-
-    cg_ratio_lc2 = problem['cg_ratio_lc2']
+    cg_ratio_lc2 = problem['weight:aircraft:load_case_2:CG:ratio']
     assert cg_ratio_lc2 == pytest.approx(0.285139, abs=1e-6)
 
 
@@ -201,18 +179,12 @@ def test_compute_cg_loadcase3(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('x_cg_plane_up', 699570.01)
-    input_vars.add_output('x_cg_plane_down', 40979.11)
+    input_vars.add_output('weight:aircraft_empty:CG:x', 699570.01 / 40979.11)
+    input_vars.add_output('weight:aircraft_empty:mass', 40979.11)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeCGLoadCase3(), promotes=['*'])
+    problem = run_system(ComputeCGLoadCase3(), input_vars)
 
-    problem.setup(mode='fwd')
-    problem.run_model()
-
-    cg_ratio_lc3 = problem['cg_ratio_lc3']
+    cg_ratio_lc3 = problem['weight:aircraft:load_case_3:CG:ratio']
     assert cg_ratio_lc3 == pytest.approx(0.386260, abs=1e-6)
 
 
@@ -230,19 +202,14 @@ def test_compute_cg_loadcase4(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('x_cg_plane_up', 699570.01)
-    input_vars.add_output('x_cg_plane_down', 40979.11)
+    input_vars.add_output('weight:aircraft_empty:CG:x', 699570.01 / 40979.11)
+    input_vars.add_output('weight:aircraft_empty:mass', 40979.11)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeCGLoadCase4(), promotes=['*'])
+    problem = run_system(ComputeCGLoadCase4(), input_vars)
 
-    problem.setup(mode='fwd')
-    problem.run_model()
-
-    cg_ratio_lc4 = problem['cg_ratio_lc4']
+    cg_ratio_lc4 = problem['weight:aircraft:load_case_4:CG:ratio']
     assert cg_ratio_lc4 == pytest.approx(0.388971, abs=1e-6)
+
 
 def test_compute_cg_others(input_xml):
     """ Tests computation of other components center of gravity """
@@ -265,13 +232,7 @@ def test_compute_cg_others(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeOthersCG(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeOthersCG(), input_vars)
 
     x_cg_a2 = problem['weight:airframe:fuselage:CG:x']
     assert x_cg_a2 == pytest.approx(16.88, abs=1e-2)
@@ -330,6 +291,7 @@ def test_compute_cg_others(input_xml):
     assert x_cg_rear_fret == pytest.approx(20.87, abs=1e-2)
     x_cg_front_fret = problem['weight:payload:front_fret:CG:x']
     assert x_cg_front_fret == pytest.approx(9.94, abs=1e-2)
+
 
 def test_compute_cg_ratio_aft(input_xml):
     """ Tests computation of center of gravity with aft estimation """
@@ -405,19 +367,11 @@ def test_compute_cg_ratio_aft(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeCGRatioAft(), promotes=['*'])
+    problem = run_system(ComputeCGRatioAft(), input_vars)
 
-    problem.setup(mode='fwd')
-    problem.run_model()
-
-    x_cg_plane_up = problem['x_cg_plane_up']
-    assert x_cg_plane_up == pytest.approx(699570.03, abs=1e-2)
-    x_cg_plane_down = problem['x_cg_plane_down']
+    x_cg_plane_down = problem['weight:aircraft_empty:mass']
     assert x_cg_plane_down == pytest.approx(41162.00, abs=1e-2)
-    cg_ratio_aft = problem['cg_ratio_aft']
+    cg_ratio_aft = problem['weight:aircraft:empty:CG:ratio']
     assert cg_ratio_aft == pytest.approx(0.370828, abs=1e-6)
 
 
@@ -447,13 +401,7 @@ def test_compute_cg_tanks(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeTanksCG(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeTanksCG(), input_vars)
 
     x_cg_tank = problem['weight:fuel_tank:CG:x']
     assert x_cg_tank == pytest.approx(16.05, abs=1e-2)
@@ -486,13 +434,7 @@ def test_compute_cg_wing(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeWingCG(), promotes=['*'])
-
-    problem.setup(mode='fwd')
-    problem.run_model()
+    problem = run_system(ComputeWingCG(), input_vars)
 
     x_cg_wing = problem['weight:airframe:wing:CG:x']
     assert x_cg_wing == pytest.approx(16.67, abs=1e-2)
@@ -578,15 +520,9 @@ def test_compute_global_cg(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeGlobalCG(), promotes=['*'])
+    problem = run_system(ComputeGlobalCG(), input_vars)
 
-    problem.setup(mode='fwd')
-    problem.run_model()
-
-    cg_ratio = problem['cg_ratio']
+    cg_ratio = problem['weight:aircraft:CG:ratio']
     assert cg_ratio == pytest.approx(0.377420, abs=1e-6)
 
 
@@ -597,21 +533,15 @@ def test_compute_max_cg_ratio(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('cg_ratio_aft', 0.387846)
-    input_vars.add_output('cg_ratio_lc1', 0.364924)
-    input_vars.add_output('cg_ratio_lc2', 0.285139)
-    input_vars.add_output('cg_ratio_lc3', 0.386260)
-    input_vars.add_output('cg_ratio_lc4', 0.388971)
+    input_vars.add_output('weight:aircraft:empty:CG:ratio', 0.387846)
+    input_vars.add_output('weight:aircraft:load_case_1:CG:ratio', 0.364924)
+    input_vars.add_output('weight:aircraft:load_case_2:CG:ratio', 0.285139)
+    input_vars.add_output('weight:aircraft:load_case_3:CG:ratio', 0.386260)
+    input_vars.add_output('weight:aircraft:load_case_4:CG:ratio', 0.388971)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeMaxCGratio(), promotes=['*'])
+    problem = run_system(ComputeMaxCGratio(), input_vars)
 
-    problem.setup(mode='fwd')
-    problem.run_model()
-
-    cg_ratio = problem['cg_ratio']
+    cg_ratio = problem['weight:aircraft:CG:ratio']
     assert cg_ratio == pytest.approx(0.388971, abs=1e-6)
 
 
@@ -625,18 +555,12 @@ def test_compute_static_margin(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('cg_ratio', 0.388971)
-    input_vars.add_output('x_ac_ratio', 0.537521)
+    input_vars.add_output('weight:aircraft:CG:ratio', 0.388971)
+    input_vars.add_output('aerodynamics:cruise:neutral_point:x', 0.537521)
 
-    problem = Problem()
-    model = problem.model
-    model.add_subsystem('inputs', input_vars, promotes=['*'])
-    model.add_subsystem('geometry', ComputeStaticMargin(), promotes=['*'])
+    problem = run_system(ComputeStaticMargin(), input_vars)
 
-    problem.setup(mode='fwd')
-    problem.run_model()
-
-    static_margin = problem['static_margin']
+    static_margin = problem['handling_qualities:static_margin']
     assert static_margin == pytest.approx(0.098550, abs=1e-6)
     cg_global = problem['weight:aircraft:CG:x']
     assert cg_global == pytest.approx(17.3, abs=1e-1)
