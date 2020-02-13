@@ -17,25 +17,25 @@ API
 import logging
 import os
 import os.path as pth
-import shutil
 import sys
 from typing import IO, Union
 
 import openmdao.api as om
+from importlib_resources import read_binary
 
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
-# Logger for this module
 from fastoad.openmdao.connections_utils import get_unconnected_input_variables, \
     get_variables_from_problem
+from . import resources
 
+# Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
-RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
-SAMPLE_FILE_PATH = pth.join(RESOURCE_FOLDER_PATH, 'fastoad.toml')
+SAMPLE_FILENAME = 'fastoad.toml'
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
@@ -54,7 +54,9 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     dirname = pth.abspath(pth.dirname(configuration_file_path))
     if not pth.exists(dirname):
         os.makedirs(dirname)
-    shutil.copyfile(SAMPLE_FILE_PATH, configuration_file_path)
+
+    with open(configuration_file_path, 'wb') as conf_file:
+        conf_file.write(read_binary(resources, SAMPLE_FILENAME))
     _LOGGER.info('Sample configuration written in %s', configuration_file_path)
 
 

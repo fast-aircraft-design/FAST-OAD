@@ -13,6 +13,7 @@ Tests for basic API
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import os.path as pth
 import shutil
@@ -22,7 +23,7 @@ from shutil import rmtree
 import pytest
 
 from fastoad.cmd import api
-from fastoad.cmd.api import SAMPLE_FILE_PATH
+from fastoad.cmd.api import SAMPLE_FILENAME
 from fastoad.cmd.exceptions import FastFileExistsError
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
@@ -43,7 +44,9 @@ def test_generate_configuration_file(cleanup):
     with pytest.raises(FastFileExistsError):
         api.generate_configuration_file(configuration_file_path, False)
     api.generate_configuration_file(configuration_file_path, True)
-    assert cmp(configuration_file_path, SAMPLE_FILE_PATH)
+
+    original_file = pth.join(pth.dirname(api.__file__), 'resources', SAMPLE_FILENAME)
+    assert cmp(configuration_file_path, original_file)
 
 
 def test_generate_inputs(cleanup):
