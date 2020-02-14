@@ -75,8 +75,6 @@ class Profile:
         Provided points are expected to be in order around the profile (clockwise
         or anti-clockwise).
 
-        Provided profile is expected to be at twist angle = 0°.
-
         :param x: in meters
         :param z: in meters
         :param keep_relative_thickness:
@@ -101,7 +99,6 @@ class Profile:
         """ Point set of mean line of the profile.
 
         DataFrame keys are 'x' and 'z', given in meters.
-        Returned data are affected by twist angle.
         """
         mean_line = self._rel_mean_line_and_thickness[[X, Z]] * self.chord_length
         return mean_line
@@ -111,7 +108,6 @@ class Profile:
 
         DataFrame keys are 'x' and 'thickness' and are relative to chord_length.
         'x' is form 0. to 1.
-        Warning: in returned DataFrame, data are not affected by twist angle.
         """
         return self._rel_mean_line_and_thickness[[X, THICKNESS]] * [1., self.max_relative_thickness]
 
@@ -119,7 +115,6 @@ class Profile:
         """ Point set of upper side of the profile.
 
         DataFrame keys are 'x' and 'z', given in meters.
-        Returned data are affected by twist angle.
         """
         return self._get_side_points(operator.add)
 
@@ -127,9 +122,18 @@ class Profile:
         """ Point set of lower side of the profile.
 
         DataFrame keys are 'x' and 'z', given in meters.
-        Returned data are affected by twist angle.
         """
         return self._get_side_points(operator.sub)
+
+    def get_sides(self) -> pd.DataFrame:
+        """ Point set of the whole profile
+
+        Points are given from trailing edge to trailing edge, starting by upper side.
+        """
+        return pd.concat([
+            self.get_upper_side().sort_values(by=X, ascending=False),
+            self.get_lower_side()[1:]
+        ])
 
     def _get_side_points(self, operator_) -> pd.DataFrame:
         """

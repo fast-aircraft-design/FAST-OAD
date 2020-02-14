@@ -16,7 +16,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import pandas as pd
 
 from .profile import Profile
 
@@ -42,8 +41,6 @@ def airfoil_reshape(toc_mean: float, f_path_ori: str, f_path_new: str):
 
     file = open(f_path_new, "w")
     file.write("Wing\n")
-    points = pd.concat([profile.get_upper_side().sort_index(ascending=False),
-                        profile.get_lower_side()[1:]])
-    for x, z in points.values:
+    for x, z in profile.get_sides().values:
         file.write('%s\t%s\n' % (x, z))
     file.close()
