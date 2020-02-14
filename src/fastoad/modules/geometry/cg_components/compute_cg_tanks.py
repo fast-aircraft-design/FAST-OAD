@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +16,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
-import os
 
 import numpy as np
+from importlib_resources import open_text
 from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy import interpolate
+
+from .. import resources
 
 
 class ComputeTanksCG(ExplicitComponent):
@@ -83,9 +85,7 @@ class ComputeTanksCG(ExplicitComponent):
         fa_length = inputs['geometry:wing:MAC:x']
         width_max = inputs['geometry:fuselage:maximum_width']
 
-        f_airfoil = os.path.join(
-            os.path.dirname(__file__), os.pardir, 'resources', 'airfoil_f_15_15.dat')
-        airfoil_file = open(f_airfoil, 'r')
+        airfoil_file = open_text(resources, 'airfoil_f_15_15.dat')
         node_number = int(airfoil_file.readline())
         for _ in range(1, node_number):
             line = airfoil_file.readline()
@@ -112,9 +112,7 @@ class ComputeTanksCG(ExplicitComponent):
         y_down = []
         xy_up = []
         xy_down = []
-        f_airfoil = os.path.join(
-            os.path.dirname(__file__), os.pardir, 'resources', 'airfoil_f_15_12.dat')
-        airfoil_file = open(f_airfoil, 'r')
+        airfoil_file = open_text(resources, 'airfoil_f_15_12.dat')
         node_number = int(airfoil_file.readline())
         for _ in range(1, node_number):
             line = airfoil_file.readline()
@@ -142,9 +140,7 @@ class ComputeTanksCG(ExplicitComponent):
         y_down = []
         xy_up = []
         xy_down = []
-        f_airfoil = os.path.join(
-            os.path.dirname(__file__), os.pardir, 'resources', 'airfoil_f_15_11.dat')
-        airfoil_file = open(f_airfoil, 'r')
+        airfoil_file = open_text(resources, 'airfoil_f_15_11.dat')
         node_number = int(airfoil_file.readline())
         for _ in range(1, node_number):
             line = airfoil_file.readline()
