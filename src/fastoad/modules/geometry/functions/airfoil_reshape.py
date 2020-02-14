@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,6 +16,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from math import fabs
+
+import numpy as np
 
 
 # TODO: decompose reading and writing into distinct functions
@@ -30,30 +32,16 @@ def airfoil_reshape(toc_mean: float, f_path_ori: str, f_path_new: str):
 
     :raise FileNotFoundError: if one of the files is not found
     """
-    try:
-        file = open(f_path_ori, "r")
-    except:
-        raise FileNotFoundError('The file ' + str(f_path_ori) +
-                          ' for the airfoil reshape has not been found')
 
-    l_1 = file.readlines()
-    file.close()
-    b_i = []
-    # TODO: use numpy instead of for
-    for i, elem in enumerate(l_1):
-        if i >= 1:
-            a_i = elem
-            b_i.append(list(map(float, a_i.split("\t"))))
-        else:
-            pass
+    x_z = np.genfromtxt(f_path_ori, skip_header=1, delimiter='\t', names='x, z')
+
     toc = []
-    for i, elem in enumerate(b_i):
-        for j in range(i + 1, len(b_i) - 1):
-            if (b_i[j][0] <= elem[0] and b_i[j + 1][0] >= elem[0]
-            ) or (b_i[j][0] >= elem[0] and b_i[j + 1][0] <= elem[0]):
-                t_down = b_i[j][
-                    1] + (elem[0] - b_i[j][0]) / (b_i[j + 1][0] - b_i[j][0]) * \
-                         (b_i[j + 1][1] - b_i[j][1])
+    for i, elem in enumerate(x_z):
+        for j in range(i + 1, len(x_z) - 1):
+            if (x_z[j][0] <= elem[0] <= x_z[j + 1][0]) or (
+                    x_z[j][0] >= elem[0] >= x_z[j + 1][0]):
+                t_down = x_z[j][1] + (elem[0] - x_z[j][0]) / (x_z[j + 1][0] - x_z[j][0]) * (
+                        x_z[j + 1][1] - x_z[j][1])
                 t_up = elem[1]
                 toc.append(fabs(t_down) + fabs(t_up))
     toc = max(toc)
@@ -62,16 +50,11 @@ def airfoil_reshape(toc_mean: float, f_path_ori: str, f_path_new: str):
     try:
         file = open(f_path_new, "w")
     except:
-        raise FileNotFoundError('The file ' + str(f_path_ori) +
-                          ' for the airfoil reshape has not been found')
+        raise FileNotFoundError('The file ' + str(f_path_new) +
+                                ' for the airfoil reshape has not been found')
 
     file.write("Wing\n")
-    for i, elem in enumerate(l_1):
-        if i >= 1:
-            a_i = elem
-            b_i = a_i.split("\t")
-            file.write(
-                str(float(b_i[0])) + ' \t' + str((float(b_i[1])) * factor) + "\n")
-        else:
-            pass
+    for x, z in x_z:
+        file.write(
+            str(x) + ' \t' + str(z * factor) + "\n")
     file.close()
