@@ -14,11 +14,14 @@ Computation of lift and drag increment due to high-lift devices
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
-
 import numpy as np
 import openmdao.api as om
+from importlib_resources import open_text
 from scipy import interpolate
+
+from . import resources
+
+LIFT_EFFECTIVENESS_FILENAME = 'interpolation of lift effectiveness.txt'
 
 
 class ComputeDeltaHighLift(om.ExplicitComponent):
@@ -28,9 +31,6 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
 
     def initialize(self):
         self.options.declare('landing_flag', default=False, types=bool)
-        self.options.declare('resources_dir',
-                             default=pth.join(pth.dirname(__file__), 'resources'),
-                             types=str)
 
     def setup(self):
 
@@ -171,13 +171,10 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         return total_cd0
 
     def _compute_alpha_flap(self, flap_angle, ratio_cf_flap):
-        f_vsp = pth.join(self.options['resources_dir'],
-                         'interpolation of lift effectiveness.txt')
         temp_array = []
-        fichier = open(f_vsp, "r")
-        for line in fichier:
-            temp_array.append([float(x) for x in line.split(',')])
-        fichier.close()
+        with open_text(resources, LIFT_EFFECTIVENESS_FILENAME) as fichier:
+            for line in fichier:
+                temp_array.append([float(x) for x in line.split(',')])
         x1 = []
         y1 = []
         x2 = []
