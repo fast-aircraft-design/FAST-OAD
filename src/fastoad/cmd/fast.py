@@ -22,10 +22,11 @@ import textwrap
 from argparse import ArgumentParser, RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter
 from distutils.util import strtobool
 
+from importlib_resources import contents, is_resource, read_binary
+
 from fastoad.cmd import api
 from fastoad.cmd.exceptions import FastFileExistsError
 
-RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
 NOTEBOOK_FOLDER_NAME = 'FAST_OAD_notebooks'
 
 
@@ -138,28 +139,46 @@ class Main:
 
     @staticmethod
     def _notebooks(args):
+        """
+        Copies the notebook folder in user-selected destination
+        """
+
+        def _copy_resource_package(package_name: str, destination_path: str):
+            """
+            Copies the full named package in destination folder, except for
+            names in exclusion_list
+            """
+            exclusion_list = ['__pycache__']
+
+            for resource_name in contents(package_name):
+                if resource_name in exclusion_list:
+                    continue
+                if is_resource(package_name, resource_name):
+                    print('resource: %s', resource_name)
+                    destination_file_path = pth.join(destination_path, resource_name)
+                    with open(destination_file_path, 'wb') as conf_file:
+                        conf_file.write(read_binary(package_name, resource_name))
+                else:
+                    print('package : %s', resource_name)
+                    new_package_name = '.'.join([package_name, resource_name])
+                    new_destination_path = pth.join(destination_path, resource_name)
+                    os.makedirs(new_destination_path)
+                    _copy_resource_package(new_package_name, new_destination_path)
+
         # Create and copy folder
-        notebook_path = pth.join(pth.dirname(__file__), pth.pardir, 'notebooks', 'tutorial')
         target_path = pth.abspath(pth.join(args.path, NOTEBOOK_FOLDER_NAME))
         if pth.exists(target_path):
             shutil.rmtree(target_path)
         os.makedirs(target_path)
-
-        for item in os.listdir(notebook_path):
-            source = pth.join(notebook_path, item)
-            dest = pth.join(target_path, item)
-            if pth.isdir(source):
-                if pth.exists(dest):
-                    shutil.rmtree(dest)
-                shutil.copytree(source, dest)
-            else:
-                shutil.copy2(source, dest)
+        _copy_resource_package('fastoad.notebooks.tutorial', target_path)
 
         # Give info for running Jupyter
         print('')
         print('Notebooks have been created in %s' % target_path)
         print('You may now run Jupyter with:')
         print('   jupyter notebook %s' % target_path)
+
+    # UTILITIES ====================================================================================
 
     # PARSER CONFIGURATION =========================================================================
     @staticmethod
