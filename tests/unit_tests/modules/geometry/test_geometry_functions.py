@@ -15,12 +15,13 @@ Test module for geometry general functions
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
-import filecmp
 import os
 import os.path as pth
 from shutil import rmtree
 
+import numpy as np
 import pytest
+from numpy.testing import assert_allclose
 
 from fastoad.modules.geometry.functions import airfoil_reshape
 
@@ -37,7 +38,8 @@ def cleanup():
 def test_reshape_airfoil():
     """ Tests the reshape of the airfoil """
 
-    os.makedirs(RESULTS_FOLDER_PATH)
+    if not pth.exists(RESULTS_FOLDER_PATH):
+        os.makedirs(RESULTS_FOLDER_PATH)
 
     f_path_ori = os.path.join(DATA_FOLDER_PATH, 'BACJ.txt')
     f_path_root_ref = os.path.join(DATA_FOLDER_PATH, 'root_ref.txt')
@@ -46,6 +48,7 @@ def test_reshape_airfoil():
 
     airfoil_reshape(el_emp, f_path_ori, f_path_root)
 
-    are_same = filecmp.cmp(f_path_root_ref, f_path_root)
+    ref_x_z = np.genfromtxt(f_path_root_ref, skip_header=1, delimiter='\t')
+    x_z = np.genfromtxt(f_path_root, skip_header=1, delimiter='\t')
 
-    assert are_same
+    assert_allclose(x_z, ref_x_z, rtol=1e-10)

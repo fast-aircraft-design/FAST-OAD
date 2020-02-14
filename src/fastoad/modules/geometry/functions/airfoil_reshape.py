@@ -15,12 +15,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from math import fabs
-
 import numpy as np
+import pandas as pd
+
+from .profile import Profile
 
 
-# TODO: decompose reading and writing into distinct functions
 def airfoil_reshape(toc_mean: float, f_path_ori: str, f_path_new: str):
     """
     Generates a new airfoil file based on the mean ToC (Thickness of Chord)
@@ -35,26 +35,15 @@ def airfoil_reshape(toc_mean: float, f_path_ori: str, f_path_new: str):
 
     x_z = np.genfromtxt(f_path_ori, skip_header=1, delimiter='\t', names='x, z')
 
-    toc = []
-    for i, elem in enumerate(x_z):
-        for j in range(i + 1, len(x_z) - 1):
-            if (x_z[j][0] <= elem[0] <= x_z[j + 1][0]) or (
-                    x_z[j][0] >= elem[0] >= x_z[j + 1][0]):
-                t_down = x_z[j][1] + (elem[0] - x_z[j][0]) / (x_z[j + 1][0] - x_z[j][0]) * (
-                        x_z[j + 1][1] - x_z[j][1])
-                t_up = elem[1]
-                toc.append(fabs(t_down) + fabs(t_up))
-    toc = max(toc)
-    factor = toc_mean / toc
+    profile = Profile()
+    profile.set_points(x_z['x'], x_z['z'])
 
-    try:
-        file = open(f_path_new, "w")
-    except:
-        raise FileNotFoundError('The file ' + str(f_path_new) +
-                                ' for the airfoil reshape has not been found')
+    profile.max_relative_thickness = toc_mean
 
+    file = open(f_path_new, "w")
     file.write("Wing\n")
-    for x, z in x_z:
-        file.write(
-            str(x) + ' \t' + str(z * factor) + "\n")
+    points = pd.concat([profile.get_upper_side().sort_index(ascending=False),
+                        profile.get_lower_side()[1:]])
+    for x, z in points.values:
+        file.write('%s\t%s\n' % (x, z))
     file.close()

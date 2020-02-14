@@ -38,9 +38,7 @@ class Profile:
 
     # pylint: disable=invalid-name  # X and Z are valid names in this context
 
-    def __init__(self, chord_length: float = 0.,
-                 x: float = 0.,
-                 y: float = 0.):
+    def __init__(self, chord_length: float = 0.):
 
         self._rel_mean_line_and_thickness = pd.DataFrame(columns=[X, Z, THICKNESS])
         """
@@ -53,8 +51,20 @@ class Profile:
         self.chord_length: float = chord_length
         """ in meters """
 
-        self.max_relative_thickness: float = 0.
+        self._max_relative_thickness: float = 0.
         """ max thickness / chord length"""
+
+    @property
+    def max_relative_thickness(self) -> float:
+        return self._max_relative_thickness
+
+    @max_relative_thickness.setter
+    def max_relative_thickness(self, value: float):
+        # mean line is modified accordingly
+        if self._max_relative_thickness != 0.:
+            coeff = value / self._max_relative_thickness
+            self._rel_mean_line_and_thickness[Z] *= coeff
+        self._max_relative_thickness = value
 
     def set_points(self, x: Sequence, z: Sequence,
                    keep_chord_length: bool = True,
