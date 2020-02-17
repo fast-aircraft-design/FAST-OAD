@@ -1,0 +1,53 @@
+title = "Sample OAD Process"
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders = []
+
+# Input and output files
+input_file = "./problem_inputs.xml"
+output_file = "./problem_outputs.xml"
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver = "om.ScipyOptimizeDriver()"
+
+# Definition of OpenMDAO model
+[model]
+    # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
+    nonlinear_solver = "om.NonlinearBlockGS(iprint=1, maxiter=100)"
+    linear_solver = "om.DirectSolver()"
+
+    # AlThough "model" is a mandatory name for the top level of the model, its sub-components can be freely named by user
+    [model.geometry]
+        # An OpenMDAO component is identified by its "id"
+        id = "fastoad.geometry.legacy"
+    [model.weights]
+        id = "fastoad.weights.legacy"
+    [model.aerodynamics.highspeed]
+        id = "fastoad.aerodynamics.highspeed.legacy"
+#    [model.aerodynamics.lowspeed]
+#        id = "fastoad.aerodynamics.lowspeed.legacy"
+    [model.aerodynamics.landing]
+        id = "fastoad.aerodynamics.landing.legacy"
+        use_xfoil = false
+    [model.performance]
+        id = "fastoad.performances.breguet.from_owe"
+    [model.propulsion]
+        id = "fastoad.propulsion.rubber_engine"
+    [model.loop]
+        id = "fastoad.loop.wing_area"
+
+[[design_var]]
+    name = "propulsion:MTO_thrust"
+    lower = 0
+    ref = 1.5e5
+    ref0 = 50000
+
+[[objective]]
+    name = "weight:aircraft:MTOW"
+    ref = 90000
+    ref0 = 60000
+
+[[constraint]]
+    name = "propulsion:thrust_rate"
+    lower = 0
+    upper = 1
