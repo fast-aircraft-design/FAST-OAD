@@ -26,7 +26,6 @@ from fastoad.modules.aerodynamics.external.xfoil import XfoilPolar
 from tests.testing_utilities import run_system
 
 XFOIL_RESULTS = pth.join(pth.dirname(__file__), 'results')
-INPUT_PROFILE = pth.join(pth.dirname(__file__), 'data', 'BACJ-new.txt')
 
 
 def test_compute():
@@ -39,14 +38,15 @@ def test_compute():
     ivc.add_output('xfoil:reynolds', 18000000)
     ivc.add_output('xfoil:mach', 0.20)
     ivc.add_output('geometry:wing:sweep_25', 25.)
+    ivc.add_output('geometry:wing:thickness_ratio', 0.1284)
 
-    xfoil_comp = XfoilPolar(profile_path=INPUT_PROFILE)
+    xfoil_comp = XfoilPolar()
     problem = run_system(xfoil_comp, ivc)
     assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
     assert problem['xfoil:CL_max_clean'] == pytest.approx(1.5831, 1e-4)
     assert not pth.exists(XFOIL_RESULTS)
 
-    xfoil_comp = XfoilPolar(profile_path=INPUT_PROFILE, result_folder_path=XFOIL_RESULTS)
+    xfoil_comp = XfoilPolar(result_folder_path=XFOIL_RESULTS)
     problem = run_system(xfoil_comp, ivc)
     assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
     assert problem['xfoil:CL_max_clean'] == pytest.approx(1.5831, 1e-4)

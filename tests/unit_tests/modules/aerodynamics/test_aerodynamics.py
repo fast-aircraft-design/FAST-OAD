@@ -41,6 +41,7 @@ def test_aerodynamics_landing():
         'mission:sizing:landing:flap_angle',
         'mission:sizing:landing:slat_angle',
         'geometry:wing:MAC:length',
+        'geometry:wing:thickness_ratio',
         'geometry:wing:sweep_25',
         'geometry:wing:sweep_0',
         'geometry:wing:sweep_100_outer',
@@ -54,8 +55,8 @@ def test_aerodynamics_landing():
 
     ivc = get_indep_var_comp(input_list)
     problem = run_system(AerodynamicsLanding(), ivc)
-    assert problem['aerodynamics:aircraft:landing:CL_max_clean'] == approx(1.56014, abs=1e-5)
-    assert problem['aerodynamics:aircraft:landing:CL_max'] == approx(2.78833, abs=1e-5)
+    assert problem['aerodynamics:aircraft:landing:CL_max_clean'] == approx(1.59359, abs=1e-5)
+    assert problem['aerodynamics:aircraft:landing:CL_max'] == approx(2.82178, abs=1e-5)
 
     input_list.append('aerodynamics:aircraft:landing:CL_max_clean')
     ivc = get_indep_var_comp(input_list)
