@@ -15,18 +15,19 @@ Module for managing OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os.path as pth
 from typing import Dict, Hashable, List
 
 import numpy as np
 import openmdao.api as om
+from importlib_resources import open_text
+
+from . import resources
 
 # Logger for this module
 
 _LOGGER = logging.getLogger(__name__)
 
-RESOURCE_PATH = pth.join(pth.dirname(__file__), 'resources')
-DESCRIPTION_FILE_PATH = pth.join(RESOURCE_PATH, 'variable_descriptions.txt')
+DESCRIPTION_FILENAME = 'variable_descriptions.txt'
 
 
 class Variable(Hashable):
@@ -74,7 +75,8 @@ class Variable(Hashable):
         # Initialize class attributes once at first instantiation -------------
         if not self._variable_descriptions:
             # Class attribute, but it's safer to initialize it at first instantiation
-            vars_descs = np.genfromtxt(DESCRIPTION_FILE_PATH, delimiter='\t', dtype=str)
+            with open_text(resources, DESCRIPTION_FILENAME) as desc_io:
+                vars_descs = np.genfromtxt(desc_io, delimiter='\t', dtype=str)
             self.__class__._variable_descriptions.update(vars_descs)
 
         if not self._base_metadata:
