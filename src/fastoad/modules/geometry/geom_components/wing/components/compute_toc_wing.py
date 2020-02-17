@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,13 +14,10 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
 import math
+
 import numpy as np
-
 from openmdao.core.explicitcomponent import ExplicitComponent
-
-from fastoad.modules.geometry.functions import airfoil_reshape
 
 
 # TODO: computes relative thickness and generates profiles --> decompose
@@ -52,17 +49,6 @@ class ComputeToCWing(ExplicitComponent):
         el_emp = 1.24 * el_aero
         el_break = 0.94 * el_aero
         el_ext = 0.86 * el_aero
-
-        #Airfoil reshape according toc in different sections
-        f_path_resources = os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir,
-                                        os.pardir, os.pardir, 'resources')
-        f_path_ori = os.path.join(f_path_resources, 'BACJ.txt')
-        f_path_root = os.path.join(f_path_resources, 'root.txt')
-        f_path_kink = os.path.join(f_path_resources, 'kink.txt')
-        f_path_tip = os.path.join(f_path_resources, 'tip.txt')
-        airfoil_reshape(el_emp, f_path_ori, f_path_root)
-        airfoil_reshape(el_break, f_path_ori, f_path_kink)
-        airfoil_reshape(el_ext, f_path_ori, f_path_tip)
 
         outputs['geometry:wing:thickness_ratio'] = el_aero
         outputs['geometry:wing:root:thickness_ratio'] = el_emp

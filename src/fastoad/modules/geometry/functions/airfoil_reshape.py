@@ -1,7 +1,6 @@
 """
     Airfoil reshape function
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,32 +14,36 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
+import os.path as pth
+
 import numpy as np
+import pandas as pd
 
 from .profile import Profile
 
 
-def airfoil_reshape(toc_mean: float, f_path_ori: str, f_path_new: str):
+def get_profile(file_name: str = 'BACJ.txt',
+                relative_thickness=None,
+                chord_length=None) -> pd.DataFrame:
     """
-    Generates a new airfoil file based on the mean ToC (Thickness of Chord)
-    and the original airfoil.
+    Reads profile from indicated resource file and returns it after resize
 
-    :param toc_mean: value of mean ToC
-    :param f_path_ori: path to original airfoil file.
-    :param f_path_new: path to new airfoil file.
-
-    :raise FileNotFoundError: if one of the files is not found
+    :param file_name: name of resource (only "BACJ.txt" for now)
+    :param relative_thickness:
+    :param chord_length:
+    :return: Nx2 pandas.DataFrame with x in 1st column and z in 2nd column
     """
-
+    f_path_resources = pth.join(pth.abspath(pth.dirname(__file__)), os.pardir, 'resources')
+    f_path_ori = pth.join(f_path_resources, file_name)
     x_z = np.genfromtxt(f_path_ori, skip_header=1, delimiter='\t', names='x, z')
-
     profile = Profile()
     profile.set_points(x_z['x'], x_z['z'])
 
-    profile.max_relative_thickness = toc_mean
+    if relative_thickness:
+        profile.max_relative_thickness = relative_thickness
 
-    file = open(f_path_new, "w")
-    file.write("Wing\n")
-    for x, z in profile.get_sides().values:
-        file.write('%s\t%s\n' % (x, z))
-    file.close()
+    if chord_length:
+        profile.chord_length = chord_length
+
+    return profile.get_sides()
