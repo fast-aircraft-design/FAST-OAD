@@ -266,12 +266,16 @@ class FASTOADDataFrame():
         return render()
 
     def _build_sheet(self, df):
-        sheet = sh.from_dataframe(df)
-        column = df.columns.get_loc('Value')
+        if not df.empty:
+            sheet = sh.from_dataframe(df)
+            column = df.columns.get_loc('Value')
 
-        for cell in sheet.cells:
-            if cell.column_start != column and cell.column_end != column:
-                cell.read_only = True
+            for cell in sheet.cells:
+                if cell.column_start != column and cell.column_end != column:
+                    cell.read_only = True
+
+        else:
+            sheet = sh.sheet()
 
         return sheet
 
