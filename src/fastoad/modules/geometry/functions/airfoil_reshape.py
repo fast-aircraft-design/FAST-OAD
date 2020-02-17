@@ -24,13 +24,13 @@ from .profile import Profile
 
 
 def get_profile(file_name: str = 'BACJ.txt',
-                relative_thickness=None,
+                thickness_ratio=None,
                 chord_length=None) -> pd.DataFrame:
     """
     Reads profile from indicated resource file and returns it after resize
 
     :param file_name: name of resource (only "BACJ.txt" for now)
-    :param relative_thickness:
+    :param  thickness_ratio:
     :param chord_length:
     :return: Nx2 pandas.DataFrame with x in 1st column and z in 2nd column
     """
@@ -40,8 +40,8 @@ def get_profile(file_name: str = 'BACJ.txt',
     profile = Profile()
     profile.set_points(x_z['x'], x_z['z'])
 
-    if relative_thickness:
-        profile.max_relative_thickness = relative_thickness
+    if thickness_ratio:
+        profile.thickness_ratio = thickness_ratio
 
     if chord_length:
         profile.chord_length = chord_length

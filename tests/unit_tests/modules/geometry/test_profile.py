@@ -134,26 +134,26 @@ def test_set_points(point_set):
     profile = Profile()
     profile.set_points(x * 2.5, z * 2.5)
     assert_allclose(2.5, profile.chord_length, rtol=1e-4)
-    assert_allclose(0.10070, profile.max_relative_thickness, rtol=1e-4)
+    assert_allclose(0.10070, profile.thickness_ratio, rtol=1e-4)
 
     # Initialization after having set chord length
     profile = Profile()
     profile.chord_length = 0.5
     profile.set_points(x, z)
     assert_allclose(0.5, profile.chord_length, rtol=1e-4)
-    assert_allclose(0.10070, profile.max_relative_thickness, rtol=1e-4)
+    assert_allclose(0.10070, profile.thickness_ratio, rtol=1e-4)
 
     # Initialization after having set relative thickness
     profile = Profile()
-    profile.max_relative_thickness = 0.2
+    profile.thickness_ratio = 0.2
     profile.set_points(x * 1.5, z)
     assert_allclose(1.5, profile.chord_length, rtol=1e-4)
-    assert_allclose(0.2, profile.max_relative_thickness, rtol=1e-4)
+    assert_allclose(0.2, profile.thickness_ratio, rtol=1e-4)
 
     # Setting points while explicitly ignoring previous chord length and thickness
     profile.set_points(x, z, False, False)
     assert_allclose(1., profile.chord_length, rtol=1e-4)
-    assert_allclose(0.10070, profile.max_relative_thickness, rtol=1e-4)
+    assert_allclose(0.10070, profile.thickness_ratio, rtol=1e-4)
 
     # Check relative thickness distribution
     relative_thickness = profile.get_relative_thickness()

@@ -32,5 +32,5 @@ def test_get_profile():
     ref_profile = np.genfromtxt(pth.join(DATA_FOLDER_PATH, 'root_ref.txt'),
                                 skip_header=1, delimiter='\t')
 
-    profile = get_profile('BACJ.txt', relative_thickness=0.159)
+    profile = get_profile('BACJ.txt', thickness_ratio=0.159)
     assert_allclose(profile, ref_profile, rtol=1e-10)

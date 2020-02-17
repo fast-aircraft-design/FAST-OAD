@@ -42,10 +42,11 @@ class Profile:
 
         self._rel_mean_line_and_thickness = pd.DataFrame(columns=[X, Z, THICKNESS])
         """
-        Relative Mean line and thickness, computed from input data.
-        DataFrame keys are 'x', 'z' and 'thickness'
-        'x' and 'z' are relative to chord_length
-        'thickness' is relative to max thickness
+        Data of mean line and thickness, computed after inputs of :meth:`set_points`_.
+        
+        DataFrame keys are 'x', 'z' and 'thickness'.
+        - 'x' and 'z' are relative to chord_length
+        - 'thickness' is relative to max thickness (and given according to 'x')
         """
 
         self.chord_length: float = chord_length
@@ -55,11 +56,13 @@ class Profile:
         """ max thickness / chord length"""
 
     @property
-    def max_relative_thickness(self) -> float:
+    def thickness_ratio(self) -> float:
+        """ thickness-to-chord ratio """
         return self._max_relative_thickness
 
-    @max_relative_thickness.setter
-    def max_relative_thickness(self, value: float):
+    @thickness_ratio.setter
+    def thickness_ratio(self, value: float):
+
         # mean line is modified accordingly
         if self._max_relative_thickness != 0.:
             coeff = value / self._max_relative_thickness
@@ -92,8 +95,8 @@ class Profile:
 
         if not keep_chord_length or self.chord_length == 0.:
             self.chord_length = chord_length
-        if not keep_relative_thickness or self.max_relative_thickness == 0.:
-            self.max_relative_thickness = max_thickness / chord_length
+        if not keep_relative_thickness or self.thickness_ratio == 0.:
+            self.thickness_ratio = max_thickness / chord_length
 
     def get_mean_line(self) -> pd.DataFrame:
         """ Point set of mean line of the profile.
@@ -109,7 +112,7 @@ class Profile:
         DataFrame keys are 'x' and 'thickness' and are relative to chord_length.
         'x' is form 0. to 1.
         """
-        return self._rel_mean_line_and_thickness[[X, THICKNESS]] * [1., self.max_relative_thickness]
+        return self._rel_mean_line_and_thickness[[X, THICKNESS]] * [1., self.thickness_ratio]
 
     def get_upper_side(self) -> pd.DataFrame:
         """ Point set of upper side of the profile.
@@ -146,7 +149,7 @@ class Profile:
         half_thickness = pd.DataFrame().reindex_like(mean_line)
         half_thickness[X] = 0.
         half_thickness[Z] = self._rel_mean_line_and_thickness[
-                                THICKNESS] / 2. * self.max_relative_thickness
+                                THICKNESS] / 2. * self.thickness_ratio
         points = operator_(mean_line, half_thickness) * self.chord_length
         return points
 

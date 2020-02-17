@@ -76,7 +76,7 @@ class XfoilPolar(ExternalCodeComp):
         reynolds = inputs['xfoil:reynolds']
         mach = inputs['xfoil:mach']
         sweep_25 = inputs['geometry:wing:sweep_25']
-        relative_thickness = inputs['geometry:wing:thickness_ratio']
+        thickness_ratio = inputs['geometry:wing:thickness_ratio']
 
         # Pre-processing (populating temp directory)
         # Dev Note: XFOIL fails if length of provided file path exceeds 64 characters.
@@ -111,7 +111,7 @@ class XfoilPolar(ExternalCodeComp):
 
         # profile file
         profile = get_profile(
-            file_name=self.options['profile_name'], relative_thickness=relative_thickness)
+            file_name=self.options['profile_name'], thickness_ratio=thickness_ratio)
         np.savetxt(tmp_profile_file_path, profile.to_numpy(), fmt='%.15f', delimiter=' ',
                    header='Wing', comments='')
         # shutil.copy(self.options['profile_path'], tmp_profile_file_path)
