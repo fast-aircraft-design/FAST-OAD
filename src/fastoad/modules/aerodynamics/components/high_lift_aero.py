@@ -15,7 +15,6 @@ Computation of lift and drag increment due to high-lift devices
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-import warnings
 
 import numpy as np
 import openmdao.api as om
@@ -24,11 +23,10 @@ from scipy import interpolate
 
 class ComputeDeltaHighLift(om.ExplicitComponent):
     """
-    Combines DeltaCDHighLift and DeltaCLHighLift
+    Provides lift and drag increments due to high-lift devices
     """
 
     def initialize(self):
-        warnings.warn(DeprecationWarning('use DeltaCDHighLift and DeltaCLHighLift instead'))
         self.options.declare('landing_flag', default=False, types=bool)
         self.options.declare('resources_dir',
                              default=pth.join(pth.dirname(__file__), 'resources'),
