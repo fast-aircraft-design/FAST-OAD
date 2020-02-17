@@ -20,19 +20,24 @@ import os.path as pth
 import shutil
 import tempfile
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 
+from fastoad.modules.aerodynamics.external.xfoil import xfoil699
 from fastoad.modules.geometry.functions.airfoil_reshape import get_profile
+from fastoad.utils.resource_management.copy import copy_resource
 
 _INPUT_FILE_NAME = 'polar_input.txt'
 _STDOUT_FILE_NAME = 'polar_calc.log'
 _STDERR_FILE_NAME = 'polar_calc.err'
 _TMP_PROFILE_FILE_NAME = 'in'  # as short as possible to avoid problems of path length
 _TMP_RESULT_FILE_NAME = 'out'  # as short as possible to avoid problems of path length
-_DEFAULT_XFOIL_EXE_PATH = pth.join(pth.dirname(__file__), 'xfoil6.99', 'xfoil.exe')
+XFOIL_EXE_NAME = 'xfoil.exe'  # name of embedded XFoil executable
+DEFAULT_PROFILE_FILENAME = 'BACJ.txt'
+
 _LOGGER = logging.getLogger(__name__)
 
 _XFOIL_PATH_LIMIT = 64
@@ -47,13 +52,12 @@ class XfoilPolar(ExternalCodeComp):
     """Column names in XFOIL polar result"""
 
     def initialize(self):
-        self.options.declare('xfoil_exe_path', default=_DEFAULT_XFOIL_EXE_PATH, types=str)
+        self.options.declare('xfoil_exe_path', default='', types=str)
         self.options.declare('profile_name', default='BACJ.txt', types=str)
         self.options.declare('result_folder_path', default='', types=str)
         self.options.declare('result_polar_file_name', default='polar_result.txt', types=str)
 
     def setup(self):
-        self.options['command'] = [self.options['xfoil_exe_path']]
 
         self.add_input('xfoil:reynolds', val=np.nan)
         self.add_input('xfoil:mach', val=np.nan)
@@ -78,45 +82,31 @@ class XfoilPolar(ExternalCodeComp):
         sweep_25 = inputs['geometry:wing:sweep_25']
         thickness_ratio = inputs['geometry:wing:thickness_ratio']
 
-        # Pre-processing (populating temp directory)
-        # Dev Note: XFOIL fails if length of provided file path exceeds 64 characters.
-        #           Changing working directory to the tmp dir would allow to just provide file name,
-        #           but it is not really safe (at least, it does mess with the coverage report).
-        #           Then the point is to get a tmp directory with a short path.
-        #           On Windows, the default (user-dependent) tmp dir can exceed the limit.
-        #           Therefore, as a second choice, tmp dir is created as close of user home
-        #           directory as possible.
-        tmp_candidates = []
-        for tmp_base_path in [None, pth.join(str(Path.home()), '.fast')]:
-            if tmp_base_path is not None:
-                os.makedirs(tmp_base_path, exist_ok=True)
-            tmp_directory = tempfile.TemporaryDirectory(prefix='x', dir=tmp_base_path)
-            tmp_candidates.append(tmp_directory.name)
-            tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
-            tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
+        # Pre-processing (populating temp directory) -----------------------------------------------
+        # XFoil exe
+        tmp_directory = self._create_tmp_directory()
+        if self.options['xfoil_exe_path']:
+            # if a path for Xfoil has been provided, simply use it
+            self.options['command'] = [self.options['xfoil_exe_path']]
+        else:
+            # otherwise, copy the embedded resource in tmp dir
+            copy_resource(xfoil699, XFOIL_EXE_NAME, tmp_directory.name)
+            self.options['command'] = [pth.join(tmp_directory.name, XFOIL_EXE_NAME)]
 
-            if max(len(tmp_profile_file_path), len(tmp_result_file_path)) <= _XFOIL_PATH_LIMIT:
-                break
-
-            tmp_directory.cleanup()
-
-        if max(len(tmp_profile_file_path), len(tmp_result_file_path)) > _XFOIL_PATH_LIMIT:
-            raise IOError(
-                'Could not create a tmp directory where file path will respects XFOIL '
-                'limitation (%i): tried %s' % (_XFOIL_PATH_LIMIT, tmp_candidates))
-
+        # I/O files
         self.stdin = pth.join(tmp_directory.name, _INPUT_FILE_NAME)
         self.stdout = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
         self.stderr = pth.join(tmp_directory.name, _STDERR_FILE_NAME)
 
         # profile file
-        profile = get_profile(
-            file_name=self.options['profile_name'], thickness_ratio=thickness_ratio)
+        tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
+        profile = get_profile(file_name=self.options['profile_name'],
+                              thickness_ratio=thickness_ratio)
         np.savetxt(tmp_profile_file_path, profile.to_numpy(), fmt='%.15f', delimiter=' ',
                    header='Wing', comments='')
-        # shutil.copy(self.options['profile_path'], tmp_profile_file_path)
 
         # standard input file
+        tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
         parser = InputFileGenerator()
         parser.set_template_file(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
         parser.set_generated_file(self.stdin)
@@ -130,12 +120,12 @@ class XfoilPolar(ExternalCodeComp):
         parser.transfer_var(tmp_result_file_path, 1, 1)
         parser.generate()
 
-        # Run XFOIL
+        # Run XFOIL --------------------------------------------------------------------------------
         self.options['external_input_files'] = [self.stdin, tmp_profile_file_path]
         self.options['external_output_files'] = [tmp_result_file_path]
-        super(XfoilPolar, self).compute(inputs, outputs)
+        super().compute(inputs, outputs)
 
-        # Post-processing
+        # Post-processing --------------------------------------------------------------------------
         result_array = self._read_polar(tmp_result_file_path)
         if result_array is not None:
             cl_max_2d = self._get_max_cl(result_array['alpha'], result_array['CL'])
@@ -191,3 +181,34 @@ class XfoilPolar(ExternalCodeComp):
 
         _LOGGER.error('CL max not found!')
         return 1.9
+
+    @staticmethod
+    def _create_tmp_directory() -> TemporaryDirectory:
+        # Dev Note: XFOIL fails if length of provided file path exceeds 64 characters.
+        #           Changing working directory to the tmp dir would allow to just provide file name,
+        #           but it is not really safe (at least, it does mess with the coverage report).
+        #           Then the point is to get a tmp directory with a short path.
+        #           On Windows, the default (user-dependent) tmp dir can exceed the limit.
+        #           Therefore, as a second choice, tmp dir is created as close of user home
+        #           directory as possible.
+        tmp_candidates = []
+        for tmp_base_path in [None, pth.join(str(Path.home()), '.fast')]:
+            if tmp_base_path is not None:
+                os.makedirs(tmp_base_path, exist_ok=True)
+            tmp_directory = tempfile.TemporaryDirectory(prefix='x', dir=tmp_base_path)
+            tmp_candidates.append(tmp_directory.name)
+            tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
+            tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
+
+            if max(len(tmp_profile_file_path), len(tmp_result_file_path)) <= _XFOIL_PATH_LIMIT:
+                # tmp_directory is OK. Stop there
+                break
+            # tmp_directory has a too long path. Erase and continue...
+            tmp_directory.cleanup()
+
+        if max(len(tmp_profile_file_path), len(tmp_result_file_path)) > _XFOIL_PATH_LIMIT:
+            raise IOError(
+                'Could not create a tmp directory where file path will respects XFOIL '
+                'limitation (%i): tried %s' % (_XFOIL_PATH_LIMIT, tmp_candidates))
+
+        return tmp_directory
