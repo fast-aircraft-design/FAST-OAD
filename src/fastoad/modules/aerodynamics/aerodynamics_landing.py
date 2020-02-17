@@ -31,7 +31,9 @@ class AerodynamicsLanding(om.Group):
     def setup(self):
         self.add_subsystem('mach_reynolds', ComputeMachReynolds(), promotes=['*'])
         if self.options['use_xfoil']:
-            self.add_subsystem('xfoil_run', XfoilPolar(), promotes=['geometry:wing:sweep_25'])
+            self.add_subsystem('xfoil_run', XfoilPolar(),
+                               promotes=['geometry:wing:sweep_25',
+                                         'geometry:wing:thickness_ratio'])
         self.add_subsystem('delta_cl_landing', ComputeDeltaHighLift(landing_flag=True),
                            promotes=['*'])
         self.add_subsystem('compute_max_cl_landing', ComputeMaxClLanding(), promotes=['*'])

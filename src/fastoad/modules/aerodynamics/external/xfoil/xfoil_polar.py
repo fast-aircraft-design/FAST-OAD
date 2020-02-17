@@ -25,6 +25,8 @@ import numpy as np
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 
+from fastoad.modules.geometry.functions.airfoil_reshape import get_profile
+
 _INPUT_FILE_NAME = 'polar_input.txt'
 _STDOUT_FILE_NAME = 'polar_calc.log'
 _STDERR_FILE_NAME = 'polar_calc.err'
@@ -46,8 +48,7 @@ class XfoilPolar(ExternalCodeComp):
 
     def initialize(self):
         self.options.declare('xfoil_exe_path', default=_DEFAULT_XFOIL_EXE_PATH, types=str)
-        self.options.declare('profile_path',
-                             default=pth.join(pth.dirname(__file__), 'BACJ.txt'), types=str)
+        self.options.declare('profile_name', default='BACJ.txt', types=str)
         self.options.declare('result_folder_path', default='', types=str)
         self.options.declare('result_polar_file_name', default='polar_result.txt', types=str)
 
@@ -57,6 +58,7 @@ class XfoilPolar(ExternalCodeComp):
         self.add_input('xfoil:reynolds', val=np.nan)
         self.add_input('xfoil:mach', val=np.nan)
         self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
+        self.add_input('geometry:wing:thickness_ratio', val=np.nan)
 
         self.add_output('xfoil:Cl_max_2D')
         self.add_output('xfoil:CL_max_clean')
@@ -74,6 +76,7 @@ class XfoilPolar(ExternalCodeComp):
         reynolds = inputs['xfoil:reynolds']
         mach = inputs['xfoil:mach']
         sweep_25 = inputs['geometry:wing:sweep_25']
+        relative_thickness = inputs['geometry:wing:thickness_ratio']
 
         # Pre-processing (populating temp directory)
         # Dev Note: XFOIL fails if length of provided file path exceeds 64 characters.
@@ -107,7 +110,11 @@ class XfoilPolar(ExternalCodeComp):
         self.stderr = pth.join(tmp_directory.name, _STDERR_FILE_NAME)
 
         # profile file
-        shutil.copy(self.options['profile_path'], tmp_profile_file_path)
+        profile = get_profile(
+            file_name=self.options['profile_name'], relative_thickness=relative_thickness)
+        np.savetxt(tmp_profile_file_path, profile.to_numpy(), fmt='%.15f', delimiter=' ',
+                   header='Wing', comments='')
+        # shutil.copy(self.options['profile_path'], tmp_profile_file_path)
 
         # standard input file
         parser = InputFileGenerator()
