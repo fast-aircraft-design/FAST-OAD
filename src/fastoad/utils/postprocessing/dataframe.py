@@ -23,19 +23,7 @@ pd.set_option('display.max_rows', None)
 
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO
-from fastoad.openmdao.connections_utils import get_unconnected_input_names, \
-    get_variables_of_ivc_components
-
-
-class _TopWidget:
-
-    def __init__(self, items):
-        self.items = items
-        self.widget = widgets.HBox(items)
-
-    def __call__(self, *args, **kwargs):
-        display(self.widget)
-        return self.widget
+from fastoad.openmdao.connections_utils import get_variables_of_ivc_components
 
 
 class FASTOADDataFrame():
