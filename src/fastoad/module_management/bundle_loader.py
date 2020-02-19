@@ -210,6 +210,18 @@ class BundleLoader:
             bundle: Bundle = details['bundle']
             return bundle.get_location()
 
+    def get_factory_properties(self, factory_name: str) -> str:
+        """
+
+        :param factory_name:
+        :return: properties of the factory
+        """
+
+        with use_ipopo(self.context) as ipopo:
+            details = ipopo.get_factory_details(factory_name)
+            properties = details['properties']
+            return properties
+
     def instantiate_component(self, factory_name: str,
                               properties: dict = None
                               ) -> Any:

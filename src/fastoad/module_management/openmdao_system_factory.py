@@ -16,16 +16,15 @@ The base layer for registering and retrieving OpenMDAO systems
 
 import logging
 from types import MethodType
-from typing import List
+from typing import List, Union
 
 from fastoad.openmdao.types import SystemSubclass
 from .bundle_loader import BundleLoader
-from .constants import SERVICE_OPENMDAO_SYSTEM
-from .exceptions import FastDuplicateFactoryError, FastNoOMSystemFoundError, \
-    FastUnknownOMSystemIdentifierError, FastDuplicateOMSystemIdentifierException, \
+from .constants import SERVICE_OPENMDAO_SYSTEM, OPTION_PROPERTY_NAME, DESCRIPTION_PROPERTY_NAME, \
+    DOMAIN_PROPERTY_NAME, ModelDomain
+from .exceptions import FastDuplicateFactoryError, FastUnknownOMSystemIdentifierError, \
+    FastDuplicateOMSystemIdentifierException, \
     FastBadSystemOptionError
-
-OPTION_PROPERTY = 'OPTIONS'
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -48,7 +47,11 @@ class OpenMDAOSystemRegistry:
         cls._loader.install_packages(folder_path)
 
     @classmethod
-    def register_system(cls, system_class: type, identifier: str, properties: dict = None):
+    def register_system(cls, system_class: type,
+                        identifier: str,
+                        options: dict = None,
+                        domain: ModelDomain = None,
+                        desc=None):
         """
         Registers the System (or subclass) so it can later be retrieved and
         instantiated.
@@ -60,13 +63,17 @@ class OpenMDAOSystemRegistry:
 
         :param system_class:
         :param identifier:
-        :param properties: properties that will be associated to the service
+        :param options: options to be transmitted to OpenMDAO class
+        :param domain: information about model domain
+        :param desc: description of the model. If not provided, the docstring of
+                     the class will be used.
         :raise FastDuplicateOMSystemIdentifierException:
         """
         try:
-            if not properties:
-                properties = {}
-            properties[OPTION_PROPERTY] = {}
+            properties = {OPTION_PROPERTY_NAME: options if options else {},
+                          DOMAIN_PROPERTY_NAME: domain if domain else ModelDomain.UNSPECIFIED,
+                          DESCRIPTION_PROPERTY_NAME: desc if desc else system_class.__doc__
+                          }
             cls._loader.register_factory(system_class, identifier,
                                          SERVICE_OPENMDAO_SYSTEM, properties)
         except FastDuplicateFactoryError as err:
@@ -92,15 +99,15 @@ class OpenMDAOSystemRegistry:
         :return: an OpenMDAO system instantiated from the registered class
         """
 
-        properties = {OPTION_PROPERTY: options}
+        properties = {OPTION_PROPERTY_NAME: options}
         try:
             system = cls._loader.instantiate_component(identifier, properties=properties)
         except TypeError:
             raise FastUnknownOMSystemIdentifierError(identifier)
 
-        # Before making the system available to get options from OPTION_PROPERTY,
+        # Before making the system available to get options from OPTION_PROPERTY_NAME,
         # check that options are valid to avoid failure at setup()
-        options = getattr(system, '_' + OPTION_PROPERTY, None)
+        options = getattr(system, '_' + OPTION_PROPERTY_NAME, None)
         if options:
             invalid_options = [name for name in options if name not in system.options]
             if invalid_options:
@@ -110,27 +117,28 @@ class OpenMDAOSystemRegistry:
         return decorated_system
 
     @classmethod
-    def get_systems_from_properties(cls, required_properties: dict) -> List[SystemSubclass]:
-        """
-        Returns the System instances with properties that
-        match all required properties.
-
-        :param required_properties:
-        :return: OpenMDAO System (or subclass) instances
+    def get_system_domain(cls, system_or_id: Union[str, SystemSubclass]) -> ModelDomain:
         """
 
-        system_ids = cls.get_system_ids(required_properties)
-        if not system_ids:
-            raise FastNoOMSystemFoundError(required_properties)
-
-        systems = [cls._loader.instantiate_component(id) for id in system_ids]
-        return systems
+        :param system_or_id: an identifier of a registered OpenMDAO System class or
+                             an instance of a registered OpenMDAO System class
+        :return: the model domain associated to given system or system identifier
+        """
+        if isinstance(system_or_id, str):
+            properties = BundleLoader().get_factory_properties(system_or_id)
+            if properties:
+                return properties.get(DOMAIN_PROPERTY_NAME, ModelDomain.UNSPECIFIED)
+        else:
+            try:
+                return getattr(system_or_id, '_' + DOMAIN_PROPERTY_NAME)
+            except AttributeError:
+                return ModelDomain.UNSPECIFIED
 
 
 def _option_decorator(instance: SystemSubclass) -> SystemSubclass:
     """
     Decorates provided OpenMDAO instance so that instance.options are populated
-    using iPOPO property named after OPTION_PROPERTY constant.
+    using iPOPO property named after OPTION_PROPERTY_NAME constant.
 
     :param instance: the instance to decorate
     :return: the decorated instance
@@ -161,7 +169,7 @@ def _option_decorator(instance: SystemSubclass) -> SystemSubclass:
         """ Will replace the original setup() method"""
 
         # Use values from iPOPO option properties
-        option_dict = getattr(self, '_' + OPTION_PROPERTY, None)
+        option_dict = getattr(self, '_' + OPTION_PROPERTY_NAME, None)
         if option_dict:
             for name, value in option_dict.items():
                 self.options[name] = value

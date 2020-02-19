@@ -15,16 +15,15 @@ Demonstrates how to register components in OpenMDAOSystemRegistry
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management import OpenMDAOSystemRegistry
+from fastoad.module_management.constants import ModelDomain
 from .disc1 import Disc1
 from .disc2 import Disc2
 from .functions import Functions
 
-OpenMDAOSystemRegistry.register_system(Disc1, 'sellar.disc1'
-                                       , {'Number': 1
-                                           , 'Discipline': 'generic'
-                                           , 'AnyProp': 'Something'})
-OpenMDAOSystemRegistry.register_system(Disc2, 'sellar.disc2'
-                                       , {'Number': 2
-                                           , 'Discipline': 'generic'})
-OpenMDAOSystemRegistry.register_system(Functions, 'sellar.functions'
-                                       , {'Discipline': 'function'})
+OpenMDAOSystemRegistry.register_system(Disc1, 'sellar.disc1',
+                                       domain=ModelDomain.OTHER,
+                                       desc='some text')
+OpenMDAOSystemRegistry.register_system(Disc2, 'sellar.disc2')
+OpenMDAOSystemRegistry.register_system(Functions, 'sellar.functions',
+                                       domain=ModelDomain.GEOMETRY
+                                       )
