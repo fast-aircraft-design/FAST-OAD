@@ -43,6 +43,12 @@ class FASTOADDataFrame():
         self.all_tag = '--ALL--'
 
     def read_problem(self, problem: FASTOADProblem):
+        """
+        Reads a FASTOADProblem instance and stores it in two separate dataframes
+        (variables and optimization).
+
+        :param problem:
+        """
         problem_variables = {}
         variables = get_variables_of_ivc_components(problem)
         input_names = [var.name for var in variables]
@@ -139,10 +145,31 @@ class FASTOADDataFrame():
         self.df_variables = self.df_variables.reset_index(drop=True)
         self.df_optimization = self.df_optimization.reset_index(drop=True)
 
-    def read_xml(self, aircraft_xml: OMXmlIO):
+    def update_problem(self, problem: FASTOADProblem) -> FASTOADProblem:
+        """
+        Updates a FASTOADProblem with actual values of the dataframe.
+
+        :param problem:
+        :return updated problem
+        """
         pass
 
-    def data_sheet(self, max_depth=6):
+    def read_xml(self, aircraft_xml: OMXmlIO):
+        """
+        Reads a xml file and stores it in two separate dataframes
+        (variables and optimization).
+
+        :param aircraft_xml:
+        """
+        pass
+
+    def data_sheet(self, max_depth: int = 6) -> display:
+        """
+        Renders an interactive pysheet with dropdown menus of the stored dataframe.
+
+        :param max_depth: the maximum depth when searching submodules
+        :return display of the user interface
+        """
 
         df_variables = self.df_variables
 
@@ -155,10 +182,10 @@ class FASTOADDataFrame():
         w_type = widgets.Dropdown(options=[self.all_tag, 'Input', 'Output'],
                                   layout=widgets.Layout(width='auto'))
 
-        def update_items(*args):
+        def _update_items(*args):
             for i in range(max_depth):
                 if i == 0:
-                    items[0].observe(update_items, 'value')
+                    items[0].observe(_update_items, 'value')
                 else:
                     if i <= len(items):
                         modules = [item.value for item in items[0:i]]
@@ -169,7 +196,7 @@ class FASTOADDataFrame():
                                 if len(modules_item) > 1:
                                     modules_item.insert(0, self.all_tag)
                                 w = widgets.Dropdown(options=modules_item)
-                                w.observe(update_items, 'value')
+                                w.observe(_update_items, 'value')
                                 items.append(w)
                             else:
                                 if (self.all_tag not in modules_item) and (len(modules_item) > 1):
@@ -180,7 +207,7 @@ class FASTOADDataFrame():
                                 items.pop(i)
             return items
 
-        def print_sheet(**kwargs):
+        def _print_sheet(**kwargs):
             # Get variable type and remove
             var_type = kwargs['Type']
             del kwargs['Type']
@@ -191,12 +218,12 @@ class FASTOADDataFrame():
             sheet = self._build_sheet(filtered_var)
             return display(sheet)
 
-        def render(*args):
+        def _render(*args):
             clear_output(wait=True)
-            items = update_items()
+            items = _update_items()
             for item in items:
-                item.observe(render, 'value')
-            w_type.observe(render, 'value')
+                item.observe(_render, 'value')
+            w_type.observe(_render, 'value')
             type_box = widgets.VBox([widgets.Label(value='Type'),
                                      w_type],
                                     layout=widgets.Layout(width='auto'))
@@ -212,12 +239,19 @@ class FASTOADDataFrame():
                 kwargs[str(i)] = item
                 i += 1
             kwargs['Type'] = w_type
-            out = widgets.interactive_output(print_sheet, kwargs)
+            out = widgets.interactive_output(_print_sheet, kwargs)
             display(ui, out)
 
-        return render()
+        return _render()
 
-    def _build_sheet(self, df):
+    def _build_sheet(self, df: pd.DataFrame) -> sh.Sheet:
+        """
+        Transforms a pandas dataframe into a pysheet.
+        The cells are set to read only except for the values.
+
+        :param df: the pandas dataframe to be converted
+        :return the equivalent pysheet
+        """
         if not df.empty:
             sheet = sh.from_dataframe(df)
             column = df.columns.get_loc('Value')
@@ -231,7 +265,18 @@ class FASTOADDataFrame():
 
         return sheet
 
-    def _find_submodules(self, df, modules=None):
+    def _find_submodules(self, df: pd.DataFrame, modules: [str] = None) -> [str]:
+        """
+        Search for submodules at root or provided modules.
+
+        To find the submodules the method analyzes the name of the variables.
+        If the kwarg 'modules' is not None, the submodules search will be applied to
+        the variables that are part of these modules.
+
+        :param df: the pandas dataframe containing the variables
+        :param modules: the list of modules to which the variables belong
+        :return the submodules list
+        """
         var_names = df['Name'].unique().tolist()
 
         submodules = set()
@@ -249,7 +294,20 @@ class FASTOADDataFrame():
         submodules = list(submodules)
         return submodules
 
-    def _filter_variables(self, df, modules, var_type=None):
+    def _filter_variables(self, df: pd.DataFrame,
+                          modules: [str],
+                          var_type: str = None) -> pd.DataFrame:
+        """
+        Returns a filtered dataframe with respect to a set of modules and variable type.
+
+        The variables kept must be part of the modules list provided and the variable type
+        'INPUT' or 'OUTPUT (if provided).
+
+        :param df: the pandas dataframe containing the variables
+        :param modules: the list of modules to which the variables belong
+        :param var_type: the type of variables to keep
+        :return the filtered dataframe
+        """
         if var_type is None:
             var_type = self.all_tag
         path = ''
