@@ -14,17 +14,17 @@ Component registration
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from fastoad.module_management import OpenMDAOSystemRegistry
 from . import Aerodynamics
 from .aerodynamics_high_speed import AerodynamicsHighSpeed
 from .aerodynamics_landing import AerodynamicsLanding
 from .aerodynamics_low_speed import AerodynamicsLowSpeed
 
-OpenMDAOSystemFactory.register_system(Aerodynamics,
-                                      'fastoad.aerodynamics.legacy')
-OpenMDAOSystemFactory.register_system(AerodynamicsLanding,
-                                      'fastoad.aerodynamics.landing.legacy')
-OpenMDAOSystemFactory.register_system(AerodynamicsHighSpeed,
-                                      'fastoad.aerodynamics.highspeed.legacy')
-OpenMDAOSystemFactory.register_system(AerodynamicsLowSpeed,
-                                      'fastoad.aerodynamics.lowspeed.legacy')
+OpenMDAOSystemRegistry.register_system(Aerodynamics,
+                                       'fastoad.aerodynamics.legacy')
+OpenMDAOSystemRegistry.register_system(AerodynamicsLanding,
+                                       'fastoad.aerodynamics.landing.legacy')
+OpenMDAOSystemRegistry.register_system(AerodynamicsHighSpeed,
+                                       'fastoad.aerodynamics.highspeed.legacy')
+OpenMDAOSystemRegistry.register_system(AerodynamicsLowSpeed,
+                                       'fastoad.aerodynamics.lowspeed.legacy')

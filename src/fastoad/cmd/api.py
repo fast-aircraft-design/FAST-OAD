@@ -26,7 +26,7 @@ from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
-from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.connections_utils import get_unconnected_input_variables, \
     get_variables_from_problem
 from . import resources
@@ -179,7 +179,7 @@ def list_systems(configuration_file_path: str = None,
         '-- AVAILABLE SYSTEM IDENTIFIERS ------------------------------------------------------\n',
         '%-60s| %s\n' % ('IDENTIFIER', 'PATH')
     ])
-    for identifier in OpenMDAOSystemFactory.get_system_ids():
+    for identifier in OpenMDAOSystemRegistry.get_system_ids():
         path = BundleLoader().get_factory_path(identifier)
         out_file.write('%-60s| %s\n' % (identifier, path))
     out_file.write(

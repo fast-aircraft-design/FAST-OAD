@@ -15,7 +15,6 @@ from pkg_resources import get_distribution, DistributionNotFound
 
 from . import initialize_framework
 from .cmd import api
-from .module_management.openmdao_system_factory import OpenMDAOSystemFactory
 
 try:
     # Change here if project is renamed and does not equal the package name

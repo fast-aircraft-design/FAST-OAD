@@ -24,7 +24,7 @@ from fastoad.module_management import BundleLoader
 from fastoad.module_management.constants import SERVICE_OPENMDAO_SYSTEM
 from fastoad.module_management.exceptions import FastNoOMSystemFoundError, \
     FastUnknownOMSystemIdentifierError, FastBadSystemOptionError
-from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from fastoad.module_management import OpenMDAOSystemRegistry
 from tests import root_folder_path
 from tests.sellar_example.sellar import Sellar, ISellarFactory
 
@@ -41,7 +41,7 @@ logging.basicConfig(level=logging.DEBUG)
 def framework_load_unload():
     """ Loads and unloads Pelix framework for each test """
     # Starts Pelix framework and load components
-    OpenMDAOSystemFactory.explore_folder(pth.join(root_folder_path, 'tests', 'sellar_example'))
+    OpenMDAOSystemRegistry.explore_folder(pth.join(root_folder_path, 'tests', 'sellar_example'))
     yield
 
     # Pelix framework has to be deleted for following tests to run smoothly
@@ -63,7 +63,7 @@ def test_get_system(framework_load_unload):
     """
 
     # Get component 1 #########################################################
-    disc1_component = OpenMDAOSystemFactory.get_system('sellar.disc1')
+    disc1_component = OpenMDAOSystemRegistry.get_system('sellar.disc1')
     assert disc1_component._Discipline == 'generic'  # pylint: disable=protected-access
     assert disc1_component is not None
     disc1_component.setup()
@@ -73,10 +73,10 @@ def test_get_system(framework_load_unload):
 
     # Get component 2 #########################################################
     with pytest.raises(FastBadSystemOptionError):
-        disc2_component = OpenMDAOSystemFactory.get_system('sellar.disc2',
-                                                           options={'not_declared': -1})
+        disc2_component = OpenMDAOSystemRegistry.get_system('sellar.disc2',
+                                                            options={'not_declared': -1})
 
-    disc2_component = OpenMDAOSystemFactory.get_system('sellar.disc2', options={'answer': -1})
+    disc2_component = OpenMDAOSystemRegistry.get_system('sellar.disc2', options={'answer': -1})
     assert disc2_component.options[
                'answer'] == 42  # still the intial value as setup() has not been run
     disc2_component.setup()
@@ -87,7 +87,7 @@ def test_get_system(framework_load_unload):
 
     # Get unknown component
     with pytest.raises(FastUnknownOMSystemIdentifierError):
-        OpenMDAOSystemFactory.get_system('unknown.identifier')
+        OpenMDAOSystemRegistry.get_system('unknown.identifier')
 
 
 def test_get_systems_from_properties(framework_load_unload):
@@ -96,7 +96,7 @@ def test_get_systems_from_properties(framework_load_unload):
     """
 
     # Get component 1 #########################################################
-    systems = OpenMDAOSystemFactory.get_systems_from_properties({'Number': 1})
+    systems = OpenMDAOSystemRegistry.get_systems_from_properties({'Number': 1})
     assert len(systems) == 1
     disc1_component = systems[0]
     assert disc1_component._Discipline == 'generic'  # pylint: disable=protected-access
@@ -107,7 +107,7 @@ def test_get_systems_from_properties(framework_load_unload):
     assert outputs['y1'] == 118.
 
     # Get component 2 #########################################################
-    systems = OpenMDAOSystemFactory.get_systems_from_properties({'Number': 2})
+    systems = OpenMDAOSystemRegistry.get_systems_from_properties({'Number': 2})
     assert len(systems) == 1
     disc2_component = systems[0]
     assert disc2_component is not None
@@ -117,21 +117,21 @@ def test_get_systems_from_properties(framework_load_unload):
     assert outputs['y2'] == 22.
 
     # Get component when several possible #####################################
-    systems = OpenMDAOSystemFactory.get_systems_from_properties({'Discipline': 'generic'})
+    systems = OpenMDAOSystemRegistry.get_systems_from_properties({'Discipline': 'generic'})
     assert len(systems) == 2
 
     # Error raised when property does not exists ##############################
     with pytest.raises(FastNoOMSystemFoundError):
-        OpenMDAOSystemFactory.get_systems_from_properties({'MissingProperty': -5})
+        OpenMDAOSystemRegistry.get_systems_from_properties({'MissingProperty': -5})
 
     # Error raised when no matching component #################################
     with pytest.raises(FastNoOMSystemFoundError):
-        OpenMDAOSystemFactory.get_systems_from_properties({'Number': -5})
+        OpenMDAOSystemRegistry.get_systems_from_properties({'Number': -5})
 
 
 def test_sellar(framework_load_unload):
     """
-    Demonstrates usage of OpenMDAOSystemFactory in a simple Sellar problem
+    Demonstrates usage of OpenMDAOSystemRegistry in a simple Sellar problem
     """
 
     def sellar_setup(sellar_instance: Sellar):
@@ -164,24 +164,24 @@ def test_sellar(framework_load_unload):
 
     class SellarComponentProviderByFast(ISellarFactory):
         """
-        Provides Sellar components using OpenMDAOSystemFactory
+        Provides Sellar components using OpenMDAOSystemRegistry
         """
 
         @staticmethod
         def create_disc1():
-            return OpenMDAOSystemFactory.get_system('sellar.disc1')
+            return OpenMDAOSystemRegistry.get_system('sellar.disc1')
 
         @staticmethod
         def create_disc2():
-            return OpenMDAOSystemFactory.get_system('sellar.disc2')
+            return OpenMDAOSystemRegistry.get_system('sellar.disc2')
 
         @staticmethod
         def create_functions():
-            return OpenMDAOSystemFactory.get_system('sellar.functions')
+            return OpenMDAOSystemRegistry.get_system('sellar.functions')
 
     classical_problem = sellar_setup(Sellar())  # Reference
     fastoad_problem = sellar_setup(
-        Sellar(SellarComponentProviderByFast))  # Using OpenMDAOSystemFactory
+        Sellar(SellarComponentProviderByFast))  # Using OpenMDAOSystemRegistry
 
     classical_problem.run_driver()
     assert classical_problem['f'] != fastoad_problem['f']  # fastoad_problem has not run yet

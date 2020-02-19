@@ -14,7 +14,7 @@ Component registration
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad import OpenMDAOSystemFactory
+from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.modules.loops.compute_wing_area import ComputeWingArea
 
-OpenMDAOSystemFactory.register_system(ComputeWingArea, 'fastoad.loop.wing_area')
+OpenMDAOSystemRegistry.register_system(ComputeWingArea, 'fastoad.loop.wing_area')

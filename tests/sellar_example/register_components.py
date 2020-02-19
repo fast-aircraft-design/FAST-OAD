@@ -1,5 +1,5 @@
 """
-Demonstrates how to register components in OpenMDAOSystemFactory
+Demonstrates how to register components in OpenMDAOSystemRegistry
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
@@ -14,17 +14,17 @@ Demonstrates how to register components in OpenMDAOSystemFactory
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad import OpenMDAOSystemFactory
+from fastoad.module_management import OpenMDAOSystemRegistry
 from .disc1 import Disc1
 from .disc2 import Disc2
 from .functions import Functions
 
-OpenMDAOSystemFactory.register_system(Disc1, 'sellar.disc1'
-                                      , {'Number': 1
-                                          , 'Discipline': 'generic'
-                                          , 'AnyProp': 'Something'})
-OpenMDAOSystemFactory.register_system(Disc2, 'sellar.disc2'
-                                      , {'Number': 2
-                                          , 'Discipline': 'generic'})
-OpenMDAOSystemFactory.register_system(Functions, 'sellar.functions'
-                                      , {'Discipline': 'function'})
+OpenMDAOSystemRegistry.register_system(Disc1, 'sellar.disc1'
+                                       , {'Number': 1
+                                           , 'Discipline': 'generic'
+                                           , 'AnyProp': 'Something'})
+OpenMDAOSystemRegistry.register_system(Disc2, 'sellar.disc2'
+                                       , {'Number': 2
+                                           , 'Discipline': 'generic'})
+OpenMDAOSystemRegistry.register_system(Functions, 'sellar.functions'
+                                       , {'Discipline': 'function'})

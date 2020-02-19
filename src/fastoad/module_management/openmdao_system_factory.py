@@ -1,7 +1,6 @@
 """
 The base layer for registering and retrieving OpenMDAO systems
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -22,9 +21,9 @@ from typing import List
 from fastoad.openmdao.types import SystemSubclass
 from .bundle_loader import BundleLoader
 from .constants import SERVICE_OPENMDAO_SYSTEM
-from .exceptions import FastDuplicateFactoryError, \
-    FastNoOMSystemFoundError, FastUnknownOMSystemIdentifierError, \
-    FastDuplicateOMSystemIdentifierException, FastBadSystemOptionError
+from .exceptions import FastDuplicateFactoryError, FastNoOMSystemFoundError, \
+    FastUnknownOMSystemIdentifierError, FastDuplicateOMSystemIdentifierException, \
+    FastBadSystemOptionError
 
 OPTION_PROPERTY = 'OPTIONS'
 
@@ -32,11 +31,9 @@ _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
 
 
-# TODO: This bunch of class methods should probably be simple functions
-
-class OpenMDAOSystemFactory:
+class OpenMDAOSystemRegistry:
     """
-    Class for providing OpenMDAO System objects depending on their properties.
+    Class for registering and providing OpenMDAO System objects.
     """
     _loader = BundleLoader()
 
@@ -44,7 +41,7 @@ class OpenMDAOSystemFactory:
     def explore_folder(cls, folder_path: str):
         """
         Explores provided folder for Systems to register (i.e. modules that use
-        :meth:`~OpenMDAOSystemFactory.register_system` )
+        :meth:`~OpenMDAOSystemRegistry.register_system` )
 
         :param folder_path:
         """
@@ -57,7 +54,7 @@ class OpenMDAOSystemFactory:
         instantiated.
 
         *WARNING:*
-        **A System cannot be accessed by** :meth:`~OpenMDAOSystemFactory.get_system`
+        **A System cannot be accessed by** :meth:`~OpenMDAOSystemRegistry.get_system`
         **in the Python module where it is registered** (but one normally does not need
         to do that, since in this case, the Python class is directly accessible)
 
@@ -95,9 +92,9 @@ class OpenMDAOSystemFactory:
         :return: an OpenMDAO system instantiated from the registered class
         """
 
+        properties = {OPTION_PROPERTY: options}
         try:
-            system = cls._loader.instantiate_component(identifier,
-                                                       properties={OPTION_PROPERTY: options})
+            system = cls._loader.instantiate_component(identifier, properties=properties)
         except TypeError:
             raise FastUnknownOMSystemIdentifierError(identifier)
 
@@ -109,12 +106,11 @@ class OpenMDAOSystemFactory:
             if invalid_options:
                 raise FastBadSystemOptionError(identifier, invalid_options)
 
-        decorated_system = option_decorator(system)
+        decorated_system = _option_decorator(system)
         return decorated_system
 
     @classmethod
-    def get_systems_from_properties(cls, required_properties: dict) \
-            -> List[SystemSubclass]:
+    def get_systems_from_properties(cls, required_properties: dict) -> List[SystemSubclass]:
         """
         Returns the System instances with properties that
         match all required properties.
@@ -131,7 +127,7 @@ class OpenMDAOSystemFactory:
         return systems
 
 
-def option_decorator(instance: SystemSubclass) -> SystemSubclass:
+def _option_decorator(instance: SystemSubclass) -> SystemSubclass:
     """
     Decorates provided OpenMDAO instance so that instance.options are populated
     using iPOPO property named after OPTION_PROPERTY constant.
