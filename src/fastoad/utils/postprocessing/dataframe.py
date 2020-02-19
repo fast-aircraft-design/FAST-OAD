@@ -30,22 +30,15 @@ class FASTOADDataFrame():
 
     def __init__(self):
 
-        self.col_names_variables = ['Module', 'Type', 'Name',
+        self.col_names_variables = ['Type', 'Name',
                                     'Value', 'Unit', 'Description']
 
-        self.col_names_optimization = ['Module', 'Type', 'Name', 'Value',
+        self.col_names_optimization = ['Type', 'Name', 'Value',
                                        'Lower', 'Upper', 'Unit', 'Description']
 
         self.df_variables = pd.DataFrame()
 
         self.df_optimization = pd.DataFrame()
-
-        self.module_naming = {'TLAR': 'TLAR',
-                              'aerodynamics': 'Aerodynamics',
-                              'geometry': 'Geometry',
-                              'weight': 'Mass Breakdown',
-                              'propulsion': 'Propulsion'
-                              }
 
         self.all_tag = '--ALL--'
 
@@ -65,8 +58,6 @@ class FASTOADDataFrame():
 
         system = problem.model
 
-        module_names = [name for (name, module) in self.module_naming.items()]
-
         # Adding modules infos
         for prom_name, abs_names in problem_variables.items():
             # We assume a variable can not be in two different module
@@ -77,20 +68,18 @@ class FASTOADDataFrame():
                 value = np.asscalar(value)
             else:
                 value = np.ndarray.tolist(value)
-            for module_name in module_names:
-                if module_name in prom_name:
-                    if prom_name in input_names:
-                        var_type = 'Input'
-                    else:
-                        var_type = 'Output'
-                    self.df_variables = self.df_variables.append([{'Module': self.module_naming[module_name],
-                                                                   'Type': var_type,
-                                                                   'Name': prom_name,
-                                                                   'Value': value,
-                                                                   'Unit': system._var_abs2meta[abs_name]['units'],
-                                                                   'Description': system._var_abs2meta[abs_name]['desc']
-                                                                   }
-                                                                  ])[self.col_names_variables]
+
+            if prom_name in input_names:
+                var_type = 'Input'
+            else:
+                var_type = 'Output'
+            self.df_variables = self.df_variables.append([{'Type': var_type,
+                                                           'Name': prom_name,
+                                                           'Value': value,
+                                                           'Unit': system._var_abs2meta[abs_name]['units'],
+                                                           'Description': system._var_abs2meta[abs_name]['desc']
+                                                           }
+                                                          ])[self.col_names_variables]
         # Adding optimization infos
         driver = problem.driver
         for (abs_name, infos) in driver._designvars.items():
@@ -101,8 +90,7 @@ class FASTOADDataFrame():
             else:
                 value = np.ndarray.tolist(value)
 
-            self.df_optimization = self.df_optimization.append([{'Module': 'Optimization',
-                                                                 'Type': 'Design Variable',
+            self.df_optimization = self.df_optimization.append([{'Type': 'Design Variable',
                                                                  'Name': prom_name,
                                                                  'Value': value,
                                                                  'Lower': infos['lower'],
@@ -120,8 +108,7 @@ class FASTOADDataFrame():
             else:
                 value = np.ndarray.tolist(value)
 
-            self.df_optimization = self.df_optimization.append([{'Module': 'Optimization',
-                                                                 'Type': 'Constraint',
+            self.df_optimization = self.df_optimization.append([{'Type': 'Constraint',
                                                                  'Name': prom_name,
                                                                  'Value': value,
                                                                  'Lower': infos['lower'],
@@ -139,8 +126,7 @@ class FASTOADDataFrame():
             else:
                 value = np.ndarray.tolist(value)
 
-            self.df_optimization = self.df_optimization.append([{'Module': 'Optimization',
-                                                                 'Type': 'Objective',
+            self.df_optimization = self.df_optimization.append([{'Type': 'Objective',
                                                                  'Name': prom_name,
                                                                  'Value': value,
                                                                  'Lower': '-',
@@ -155,27 +141,6 @@ class FASTOADDataFrame():
 
     def read_xml(self, aircraft_xml: OMXmlIO):
         pass
-
-    def print(self):
-        items_var = self.df_variables['Module'].unique().tolist()
-        items_opt = self.df_optimization['Module'].unique().tolist()
-        items = sorted(items_var + items_opt)
-
-        def f(Type):
-            if Type == 'Optimization':
-                filtered_var = self.df_optimization[
-                                 self.df_optimization['Module'] == Type]
-                filtered_var = filtered_var.drop(columns='Module')
-                df = display(filtered_var)
-            else:
-                filtered_var = self.df_variables[
-                                 self.df_variables['Module'] == Type]
-                filtered_var = filtered_var.drop(columns='Module')
-                df = display(filtered_var)
-            return df
-
-        widgets.interact(f, Type=items)
-        return f
 
     def data_sheet(self, max_depth=6):
 
@@ -223,7 +188,6 @@ class FASTOADDataFrame():
             kwargs = [module for module in kwargs.values()]
             modules = kwargs
             filtered_var = self._filter_variables(self.df_variables, modules, var_type=var_type)
-            filtered_var = filtered_var.drop(columns='Module')
             sheet = self._build_sheet(filtered_var)
             return display(sheet)
 
