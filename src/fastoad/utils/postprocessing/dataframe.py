@@ -19,14 +19,14 @@ import ipysheet as sh
 import ipywidgets as widgets
 from IPython.display import display, clear_output
 
-pd.set_option('display.max_rows', None)
-
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO
 from fastoad.openmdao.connections_utils import get_variables_of_ivc_components
 
+pd.set_option('display.max_rows', None)
 
-class FASTOADDataFrame():
+
+class FASTOADDataFrame:
 
     def __init__(self):
 
@@ -44,8 +44,8 @@ class FASTOADDataFrame():
 
     def read_problem(self, problem: FASTOADProblem):
         """
-        Reads a FASTOADProblem instance and stores it in two separate dataframes
-        (variables and optimization).
+        Reads a FASTOADProblem instance and stores it in two separate dataframes (variables
+        and optimization).
 
         :param problem:
         """
@@ -79,13 +79,14 @@ class FASTOADDataFrame():
                 var_type = 'Input'
             else:
                 var_type = 'Output'
-            self.df_variables = self.df_variables.append([{'Type': var_type,
-                                                           'Name': prom_name,
-                                                           'Value': value,
-                                                           'Unit': system._var_abs2meta[abs_name]['units'],
-                                                           'Description': system._var_abs2meta[abs_name]['desc']
-                                                           }
-                                                          ])[self.col_names_variables]
+            self.df_variables = \
+                self.df_variables.append([{'Type': var_type,
+                                           'Name': prom_name,
+                                           'Value': value,
+                                           'Unit': system._var_abs2meta[abs_name]['units'],
+                                           'Description': system._var_abs2meta[abs_name]['desc']
+                                           }
+                                          ])[self.col_names_variables]
         # Adding optimization infos
         driver = problem.driver
         for (abs_name, infos) in driver._designvars.items():
@@ -96,15 +97,16 @@ class FASTOADDataFrame():
             else:
                 value = np.ndarray.tolist(value)
 
-            self.df_optimization = self.df_optimization.append([{'Type': 'Design Variable',
-                                                                 'Name': prom_name,
-                                                                 'Value': value,
-                                                                 'Lower': infos['lower'],
-                                                                 'Upper': infos['upper'],
-                                                                 'Unit': system._var_abs2meta[abs_name]['units'],
-                                                                 'Description': system._var_abs2meta[abs_name]['desc']
-                                                                 }
-                                                                ])[self.col_names_optimization]
+            self.df_optimization = \
+                self.df_optimization.append([{'Type': 'Design Variable',
+                                              'Name': prom_name,
+                                              'Value': value,
+                                              'Lower': infos['lower'],
+                                              'Upper': infos['upper'],
+                                              'Unit': system._var_abs2meta[abs_name]['units'],
+                                              'Description': system._var_abs2meta[abs_name]['desc']
+                                              }
+                                             ])[self.col_names_optimization]
 
         for (abs_name, infos) in driver._cons.items():
             prom_name = infos['name']
@@ -114,15 +116,16 @@ class FASTOADDataFrame():
             else:
                 value = np.ndarray.tolist(value)
 
-            self.df_optimization = self.df_optimization.append([{'Type': 'Constraint',
-                                                                 'Name': prom_name,
-                                                                 'Value': value,
-                                                                 'Lower': infos['lower'],
-                                                                 'Upper': infos['upper'],
-                                                                 'Unit': system._var_abs2meta[abs_name]['units'],
-                                                                 'Description': system._var_abs2meta[abs_name]['desc']
-                                                                 }
-                                                                ])[self.col_names_optimization]
+            self.df_optimization = \
+                self.df_optimization.append([{'Type': 'Constraint',
+                                              'Name': prom_name,
+                                              'Value': value,
+                                              'Lower': infos['lower'],
+                                              'Upper': infos['upper'],
+                                              'Unit': system._var_abs2meta[abs_name]['units'],
+                                              'Description': system._var_abs2meta[abs_name]['desc']
+                                              }
+                                             ])[self.col_names_optimization]
 
         for (abs_name, infos) in driver._objs.items():
             prom_name = infos['name']
@@ -132,15 +135,16 @@ class FASTOADDataFrame():
             else:
                 value = np.ndarray.tolist(value)
 
-            self.df_optimization = self.df_optimization.append([{'Type': 'Objective',
-                                                                 'Name': prom_name,
-                                                                 'Value': value,
-                                                                 'Lower': '-',
-                                                                 'Upper': '-',
-                                                                 'Unit': system._var_abs2meta[abs_name]['units'],
-                                                                 'Description': system._var_abs2meta[abs_name]['desc']
-                                                                 }
-                                                                ])[self.col_names_optimization]
+            self.df_optimization = \
+                self.df_optimization.append([{'Type': 'Objective',
+                                              'Name': prom_name,
+                                              'Value': value,
+                                              'Lower': '-',
+                                              'Upper': '-',
+                                              'Unit': system._var_abs2meta[abs_name]['units'],
+                                              'Description': system._var_abs2meta[abs_name]['desc']
+                                              }
+                                             ])[self.col_names_optimization]
 
         self.df_variables = self.df_variables.reset_index(drop=True)
         self.df_optimization = self.df_optimization.reset_index(drop=True)
@@ -311,7 +315,7 @@ class FASTOADDataFrame():
         if var_type is None:
             var_type = self.all_tag
         path = ''
-        for i in range(len(modules)):
+        for i, module in enumerate(modules):
             module = modules[i]
             if module != self.all_tag:
                 if i < len(modules) - 1:
