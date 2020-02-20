@@ -15,7 +15,10 @@ Component registration
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management import OpenMDAOSystemRegistry
+from fastoad.module_management.constants import ModelDomain
 from . import Geometry
 
 OpenMDAOSystemRegistry.register_system(Geometry,
-                                       'fastoad.geometry.legacy')
+                                       'fastoad.geometry.legacy',
+                                       domain=ModelDomain.GEOMETRY
+                                       )
