@@ -15,10 +15,10 @@ Component registration
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management import OpenMDAOSystemRegistry
-from fastoad.modules.performances.breguet import BreguetFromOWE
-from . import BreguetFromMTOW
+from fastoad.module_management.constants import ModelDomain
+from . import BreguetFromOWE
 
-OpenMDAOSystemRegistry.register_system(BreguetFromMTOW,
-                                       'fastoad.performances.breguet.from_mtow')
 OpenMDAOSystemRegistry.register_system(BreguetFromOWE,
-                                       'fastoad.performances.breguet.from_owe')
+                                       'fastoad.performances.breguet',
+                                       domain=ModelDomain.PERFORMANCE
+                                       )

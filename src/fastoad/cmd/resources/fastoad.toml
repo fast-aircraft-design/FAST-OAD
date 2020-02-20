@@ -30,7 +30,7 @@ driver = "om.ScipyOptimizeDriver()"
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false
     [model.performance]
-        id = "fastoad.performances.breguet.from_owe"
+        id = "fastoad.performances.breguet"
     [model.propulsion]
         id = "fastoad.propulsion.rubber_engine"
     [model.loop]

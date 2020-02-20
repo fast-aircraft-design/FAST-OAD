@@ -17,6 +17,6 @@ output_file = "../results/oad_process_outputs.xml"
     [model.aerodynamics]
         id = "fastoad.aerodynamics.highspeed.legacy"
     [model.performance]
-        id = "fastoad.performances.breguet.from_owe"
+        id = "fastoad.performances.breguet"
     [model.propulsion]
         id = "fastoad.propulsion.rubber_engine"
