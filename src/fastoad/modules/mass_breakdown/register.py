@@ -15,7 +15,10 @@ Component registration
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management import OpenMDAOSystemRegistry
+from fastoad.module_management.constants import ModelDomain
 from . import MassBreakdown
 
 OpenMDAOSystemRegistry.register_system(MassBreakdown,
-                                       'fastoad.weights.legacy')
+                                       'fastoad.weights.legacy',
+                                       domain=ModelDomain.WEIGHT
+                                       )
