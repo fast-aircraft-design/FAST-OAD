@@ -18,6 +18,7 @@ import logging
 import os
 import os.path as pth
 import sys
+from textwrap import indent, dedent
 from typing import IO, Union
 
 import openmdao.api as om
@@ -176,19 +177,23 @@ def list_systems(configuration_file_path: str = None,
     else:
         out_file = out
     out_file.writelines([
-        '-- AVAILABLE SYSTEM IDENTIFIERS ------------------------------------------------------\n',
-        '%-60s| %s\n' % ('IDENTIFIER', 'PATH')
+        '-- AVAILABLE SYSTEM IDENTIFIERS ' + '-' * 68 + '\n',
+        '=' * 100 + '\n'
     ])
     for identifier in OpenMDAOSystemRegistry.get_system_ids():
         path = BundleLoader().get_factory_path(identifier)
-        out_file.write('%-60s| %s\n' % (identifier, path))
-    out_file.write(
-        '--------------------------------------------------------------------------------------\n'
-    )
+        domain = OpenMDAOSystemRegistry.get_system_domain(identifier)
+        description = OpenMDAOSystemRegistry.get_system_description(identifier)
+        out_file.write('  IDENTIFIER:   %s\n' % identifier)
+        out_file.write('  PATH:         %s\n' % path)
+        out_file.write('  DOMAIN:       %s\n' % domain.value)
+        out_file.write('  DESCRIPTION:  %s\n' % indent(dedent(description), '    '))
+        out_file.write('=' * 100 + '\n')
+        out_file.write('-' * 100 + '\n')
 
     if isinstance(out, str):
         out_file.close()
-        _LOGGER.info('System list written in %s', out_file)
+    _LOGGER.info('System list written in %s', out_file)
 
 
 def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
