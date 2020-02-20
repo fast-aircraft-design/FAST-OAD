@@ -15,6 +15,10 @@ Component registration
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management import OpenMDAOSystemRegistry
+from fastoad.module_management.constants import ModelDomain
 from fastoad.modules.loops.compute_wing_area import ComputeWingArea
 
-OpenMDAOSystemRegistry.register_system(ComputeWingArea, 'fastoad.loop.wing_area')
+OpenMDAOSystemRegistry.register_system(ComputeWingArea,
+                                       'fastoad.loop.wing_area',
+                                       domain=ModelDomain.OTHER
+                                       )
