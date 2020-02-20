@@ -13,8 +13,8 @@
 
 from pkg_resources import get_distribution, DistributionNotFound
 
-from . import initialize_framework
 from .cmd import api
+from .module_management import BundleLoader
 
 try:
     # Change here if project is renamed and does not equal the package name
@@ -26,4 +26,4 @@ finally:
     del get_distribution, DistributionNotFound
 
 # Loading bundles
-initialize_framework.load()
+BundleLoader().context.install_bundle('fastoad.activator').start()
