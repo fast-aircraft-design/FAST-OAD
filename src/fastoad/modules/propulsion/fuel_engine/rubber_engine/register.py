@@ -15,7 +15,18 @@ Component registration
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management import OpenMDAOSystemRegistry
+from fastoad.module_management.constants import ModelDomain
 from . import OMRubberEngine
 
+description = """
+Parametric engine model as OpenMDAO component.
+
+Implementation of E. Roux models for fuel consumption of low bypass ratio engines
+For more information, see RubberEngine class in FAST-OAD developer documentation.
+"""
+
 OpenMDAOSystemRegistry.register_system(OMRubberEngine,
-                                       'fastoad.propulsion.rubber_engine')
+                                       'fastoad.propulsion.rubber_engine',
+                                       domain=ModelDomain.PROPULSION,
+                                       desc=description
+                                       )
