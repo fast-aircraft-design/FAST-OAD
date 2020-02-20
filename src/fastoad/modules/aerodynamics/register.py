@@ -15,16 +15,13 @@ Component registration
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management import OpenMDAOSystemRegistry
-from . import Aerodynamics
+from fastoad.module_management.constants import ModelDomain
 from .aerodynamics_high_speed import AerodynamicsHighSpeed
 from .aerodynamics_landing import AerodynamicsLanding
-from .aerodynamics_low_speed import AerodynamicsLowSpeed
 
-OpenMDAOSystemRegistry.register_system(Aerodynamics,
-                                       'fastoad.aerodynamics.legacy')
 OpenMDAOSystemRegistry.register_system(AerodynamicsLanding,
-                                       'fastoad.aerodynamics.landing.legacy')
+                                       'fastoad.aerodynamics.landing.legacy',
+                                       domain=ModelDomain.AERODYNAMICS)
 OpenMDAOSystemRegistry.register_system(AerodynamicsHighSpeed,
-                                       'fastoad.aerodynamics.highspeed.legacy')
-OpenMDAOSystemRegistry.register_system(AerodynamicsLowSpeed,
-                                       'fastoad.aerodynamics.lowspeed.legacy')
+                                       'fastoad.aerodynamics.highspeed.legacy',
+                                       domain=ModelDomain.AERODYNAMICS)

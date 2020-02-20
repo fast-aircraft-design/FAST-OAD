@@ -24,6 +24,21 @@ from fastoad.utils.physics import Atmosphere
 
 
 class AerodynamicsLanding(om.Group):
+    """
+    Computes maximum CL of the aircraft in landing conditions.
+
+    Maximum CL without high-lift is computed using XFoil (or provided as input if option use_xfoil
+    is set to False).
+    Contribution of high-lift devices is modelled according to their geometry (span and chord ratio) and
+    their deflection angles.
+
+    Options:
+      - use_xfoil:
+         - if True, maximum CL without high-lift aerodynamics:aircraft:landing:CL_max_clean is
+           computed using XFoil
+         - if False, aerodynamics:aircraft:landing:CL_max_clean must be provided as input (but
+           process is faster)
+    """
 
     def initialize(self):
         self.options.declare('use_xfoil', default=True, types=bool)
