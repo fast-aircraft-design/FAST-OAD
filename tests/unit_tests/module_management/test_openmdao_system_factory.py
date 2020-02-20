@@ -21,12 +21,12 @@ import pytest
 from openmdao.api import Problem, ScipyOptimizeDriver
 
 from fastoad.module_management import BundleLoader
+from fastoad.module_management import OpenMDAOSystemRegistry as Registry
 from fastoad.module_management.constants import SERVICE_OPENMDAO_SYSTEM, ModelDomain
 from fastoad.module_management.exceptions import FastUnknownOMSystemIdentifierError, \
     FastBadSystemOptionError
-from fastoad.module_management import OpenMDAOSystemRegistry as Registry
 from tests import root_folder_path
-from tests.sellar_example.sellar import Sellar, ISellarFactory
+from tests.sellar_example.sellar import Sellar, ISellarFactory, Disc2
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -62,6 +62,7 @@ def test_get_system(load):
     disc1_component = Registry.get_system('sellar.disc1')
     assert Registry.get_system_domain('sellar.disc1').value == ModelDomain.OTHER.value
     assert Registry.get_system_domain(disc1_component).value == ModelDomain.OTHER.value
+    assert Registry.get_system_description(disc1_component) == 'some text'
     assert disc1_component is not None
     disc1_component.setup()
     outputs = {}
@@ -76,6 +77,7 @@ def test_get_system(load):
     disc2_component = Registry.get_system('sellar.disc2', options={'answer': -1})
     assert Registry.get_system_domain('sellar.disc2').value == ModelDomain.GEOMETRY.value
     assert Registry.get_system_domain(disc2_component).value == ModelDomain.GEOMETRY.value
+    assert Registry.get_system_description(disc2_component) == Disc2.__doc__
     assert disc2_component.options[
                'answer'] == 42  # still the initial value as setup() has not been run
     disc2_component.setup()

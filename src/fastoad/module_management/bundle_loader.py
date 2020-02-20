@@ -222,6 +222,30 @@ class BundleLoader:
             properties = details['properties']
             return properties
 
+    def get_factory_property(self, factory_name: str, property_name: str) -> Any:
+        """
+
+        :param factory_name:
+        :param property_name:
+        :return: property value, or None if property is not found
+        """
+
+        properties = self.get_factory_properties(factory_name)
+        return properties.get(property_name)
+
+    def get_instance_property(self, instance: Any, property_name: str) -> Any:
+        """
+
+        :param instance: any instance from :meth:~BundleLoader.instantiate_component
+        :param property_name:
+        :return: property value, or None if property is not found
+        """
+
+        try:
+            return getattr(instance, '_' + self._fieldify(property_name))
+        except AttributeError:
+            return None
+
     def instantiate_component(self, factory_name: str,
                               properties: dict = None
                               ) -> Any:

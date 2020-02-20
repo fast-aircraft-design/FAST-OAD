@@ -16,7 +16,7 @@ The base layer for registering and retrieving OpenMDAO systems
 
 import logging
 from types import MethodType
-from typing import List, Union
+from typing import List, Union, Any
 
 from fastoad.openmdao.types import SystemSubclass
 from .bundle_loader import BundleLoader
@@ -49,9 +49,10 @@ class OpenMDAOSystemRegistry:
     @classmethod
     def register_system(cls, system_class: type,
                         identifier: str,
-                        options: dict = None,
                         domain: ModelDomain = None,
-                        desc=None):
+                        desc=None,
+                        options: dict = None,
+                        ):
         """
         Registers the System (or subclass) so it can later be retrieved and
         instantiated.
@@ -63,17 +64,18 @@ class OpenMDAOSystemRegistry:
 
         :param system_class:
         :param identifier:
-        :param options: options to be transmitted to OpenMDAO class
         :param domain: information about model domain
         :param desc: description of the model. If not provided, the docstring of
                      the class will be used.
+        :param options: options to be transmitted to OpenMDAO class at run-time
         :raise FastDuplicateOMSystemIdentifierException:
         """
         try:
-            properties = {OPTION_PROPERTY_NAME: options if options else {},
-                          DOMAIN_PROPERTY_NAME: domain if domain else ModelDomain.UNSPECIFIED,
-                          DESCRIPTION_PROPERTY_NAME: desc if desc else system_class.__doc__
-                          }
+            properties = {
+                DOMAIN_PROPERTY_NAME: domain if domain else ModelDomain.UNSPECIFIED,
+                DESCRIPTION_PROPERTY_NAME: desc if desc else system_class.__doc__,
+                OPTION_PROPERTY_NAME: options if options else {},
+            }
             factory = cls._loader.register_factory(system_class, identifier,
                                                    SERVICE_OPENMDAO_SYSTEM, properties)
             return factory
@@ -130,15 +132,34 @@ class OpenMDAOSystemRegistry:
                              an instance of a registered OpenMDAO System class
         :return: the model domain associated to given system or system identifier
         """
+        return cls._get_system_property(system_or_id, DOMAIN_PROPERTY_NAME)
+
+    @classmethod
+    def get_system_description(cls, system_or_id: Union[str, SystemSubclass]) -> ModelDomain:
+        """
+
+        :param system_or_id: an identifier of a registered OpenMDAO System class or
+                             an instance of a registered OpenMDAO System class
+        :return: the description associated to given system or system identifier
+        """
+
+        return cls._get_system_property(system_or_id, DESCRIPTION_PROPERTY_NAME)
+
+    @classmethod
+    def _get_system_property(cls, system_or_id: Union[str, SystemSubclass],
+                             property_name: str) -> Any:
+        """
+
+        :param system_or_id: an identifier of a registered OpenMDAO System class or
+                             an instance of a registered OpenMDAO System class
+        :param property_name:
+        :return: the property value associated to given system or system identifier
+        """
+
         if isinstance(system_or_id, str):
-            properties = BundleLoader().get_factory_properties(system_or_id)
-            if properties:
-                return properties.get(DOMAIN_PROPERTY_NAME, ModelDomain.UNSPECIFIED)
+            return BundleLoader().get_factory_property(system_or_id, property_name)
         else:
-            try:
-                return getattr(system_or_id, '_' + DOMAIN_PROPERTY_NAME)
-            except AttributeError:
-                return ModelDomain.UNSPECIFIED
+            return BundleLoader().get_instance_property(system_or_id, property_name)
 
 
 def _option_decorator(instance: SystemSubclass) -> SystemSubclass:
