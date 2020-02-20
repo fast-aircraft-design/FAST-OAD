@@ -23,7 +23,8 @@ from .functions import Functions
 OpenMDAOSystemRegistry.register_system(Disc1, 'sellar.disc1',
                                        domain=ModelDomain.OTHER,
                                        desc='some text')
-OpenMDAOSystemRegistry.register_system(Disc2, 'sellar.disc2')
-OpenMDAOSystemRegistry.register_system(Functions, 'sellar.functions',
-                                       domain=ModelDomain.GEOMETRY
+OpenMDAOSystemRegistry.register_system(Disc2, 'sellar.disc2',
+                                       domain=ModelDomain.GEOMETRY,
                                        )
+OpenMDAOSystemRegistry.register_system(Functions, 'sellar.functions',
+                                       options={'best_doctor': 11})

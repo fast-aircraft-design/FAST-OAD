@@ -74,8 +74,9 @@ class OpenMDAOSystemRegistry:
                           DOMAIN_PROPERTY_NAME: domain if domain else ModelDomain.UNSPECIFIED,
                           DESCRIPTION_PROPERTY_NAME: desc if desc else system_class.__doc__
                           }
-            cls._loader.register_factory(system_class, identifier,
-                                         SERVICE_OPENMDAO_SYSTEM, properties)
+            factory = cls._loader.register_factory(system_class, identifier,
+                                                   SERVICE_OPENMDAO_SYSTEM, properties)
+            return factory
         except FastDuplicateFactoryError as err:
             # Just a more specialized error message
             raise FastDuplicateOMSystemIdentifierException(err.factory_name)
@@ -99,11 +100,16 @@ class OpenMDAOSystemRegistry:
         :return: an OpenMDAO system instantiated from the registered class
         """
 
-        properties = {OPTION_PROPERTY_NAME: options}
         try:
-            system = cls._loader.instantiate_component(identifier, properties=properties)
-        except TypeError:
+            properties = cls._loader.get_factory_properties(identifier).copy()
+        except ValueError:
             raise FastUnknownOMSystemIdentifierError(identifier)
+
+        if options:
+            properties[OPTION_PROPERTY_NAME] = properties[OPTION_PROPERTY_NAME].copy()
+            properties[OPTION_PROPERTY_NAME].update(options)
+
+        system = cls._loader.instantiate_component(identifier, properties=properties)
 
         # Before making the system available to get options from OPTION_PROPERTY_NAME,
         # check that options are valid to avoid failure at setup()

@@ -210,7 +210,7 @@ class BundleLoader:
             bundle: Bundle = details['bundle']
             return bundle.get_location()
 
-    def get_factory_properties(self, factory_name: str) -> str:
+    def get_factory_properties(self, factory_name: str) -> dict:
         """
 
         :param factory_name:

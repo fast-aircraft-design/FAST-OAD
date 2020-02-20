@@ -3,7 +3,7 @@
   Sellar functions
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,9 @@ from openmdao.api import ExplicitComponent
 
 class FunctionsBase(ExplicitComponent):
     """ An OpenMDAO base component to encapsulate Functions discipline """
+
+    def initialize(self):
+        self.options.declare('best_doctor', 10)
 
     def setup(self):
         self.add_input('x', val=2, desc='')
