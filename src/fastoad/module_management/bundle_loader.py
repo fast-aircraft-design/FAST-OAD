@@ -126,11 +126,6 @@ class BundleLoader:
         """
         Registers provided class as iPOPO component factory.
 
-        *WARNING:*
-        **A factory cannot be accessed by its identifier in the Python module
-        where it is registered** (but one normally does not need to do that,
-        since in this case, the Python class is directly accessible)
-
         :param component_class: the class of the components that will be provided by the factory
         :param factory_name: the name of the factory
         :param service_names: the service(s) that will be provided by the components
@@ -143,13 +138,16 @@ class BundleLoader:
             if ipopo.is_registered_factory(factory_name):
                 raise FastDuplicateFactoryError(factory_name)
 
-            if properties:
-                for key, value in properties.items():
-                    obj = Property(field='_' + self._fieldify(key), name=key, value=value)(obj)
+        if properties:
+            for key, value in properties.items():
+                obj = Property(field='_' + self._fieldify(key), name=key, value=value)(obj)
 
-            factory = ComponentFactory(factory_name)(obj)
+        factory = ComponentFactory(factory_name)(obj)
 
-            return factory
+        # Now factory is registered, ensure its bundle is installed and started
+        self.context.install_bundle(component_class.__module__).start()
+
+        return factory
 
     def get_factory_names(self, service_name: str = None
                           , properties: dict = None

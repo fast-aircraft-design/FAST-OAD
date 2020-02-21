@@ -57,11 +57,6 @@ class OpenMDAOSystemRegistry:
         Registers the System (or subclass) so it can later be retrieved and
         instantiated.
 
-        *WARNING:*
-        **A System cannot be accessed by** :meth:`~OpenMDAOSystemRegistry.get_system`
-        **in the Python module where it is registered** (but one normally does not need
-        to do that, since in this case, the Python class is directly accessible)
-
         :param system_class:
         :param identifier:
         :param domain: information about model domain
