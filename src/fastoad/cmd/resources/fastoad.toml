@@ -20,8 +20,8 @@ driver = "om.ScipyOptimizeDriver()"
     [model.geometry]
         # An OpenMDAO component is identified by its "id"
         id = "fastoad.geometry.legacy"
-    [model.weights]
-        id = "fastoad.weights.legacy"
+    [model.weight]
+        id = "fastoad.weight.legacy"
     [model.aerodynamics.highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
 #    [model.aerodynamics.lowspeed]
