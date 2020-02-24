@@ -117,8 +117,6 @@ def test_compute_fuselage_basic(input_xml):
     assert cg_systems_c6 == pytest.approx(9.19, abs=1e-2)
     cg_furniture_d2 = problem['weight:furniture:passenger_seats:CG:x']
     assert cg_furniture_d2 == pytest.approx(14.91, abs=1e-2)
-    cg_pl_cg_pax = problem['cg_pl:CG_PAX']
-    assert cg_pl_cg_pax == pytest.approx(18.34, abs=1e-2)
     fuselage_lcabin = problem['geometry:cabin:length']
     assert fuselage_lcabin == pytest.approx(30.38, abs=1e-2)
     fuselage_wet_area = problem['geometry:fuselage:wetted_area']
