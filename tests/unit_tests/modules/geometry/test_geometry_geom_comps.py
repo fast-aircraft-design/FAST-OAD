@@ -18,7 +18,7 @@ import os.path as pth
 
 import pytest
 
-from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
+from fastoad.io.xml import OMXmlIO
 from fastoad.modules.geometry.geom_components import ComputeTotalArea, UpdateMLG
 from fastoad.modules.geometry.geom_components.fuselage import ComputeFuselageGeometryBasic, \
     ComputeFuselageGeometryCabinSizing
@@ -44,13 +44,12 @@ from tests.testing_utilities import run_system
 
 
 @pytest.fixture(scope="module")
-def input_xml() -> OMLegacy1XmlIO:
+def input_xml() -> OMXmlIO:
     """
     :return: access to the sample xml data
     """
     # TODO: have more consistency in input data (no need for the whole geometry_inputs_full.xml)
-    return OMLegacy1XmlIO(
-        pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
+    return OMXmlIO(pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
 
 
 def test_compute_fuselage_cabin_sizing(input_xml):

@@ -18,8 +18,7 @@ import os.path as pth
 
 import pytest
 
-from fastoad.io.xml import XPathReader
-from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
+from fastoad.io.xml import XPathReader, OMXmlIO
 from fastoad.modules.geometry.cg_components \
     import ComputeAeroCenter
 from fastoad.modules.geometry.cg_components \
@@ -60,13 +59,12 @@ def xpath_reader() -> XPathReader:
 
 
 @pytest.fixture(scope="module")
-def input_xml() -> OMLegacy1XmlIO:
+def input_xml() -> OMXmlIO:
     """
     :return: access to the sample xml data
     """
     # TODO: have more consistency in input data (no need for the whole geometry_inputs_full.xml)
-    return OMLegacy1XmlIO(
-        pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
+    return OMXmlIO(pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
 
 
 def test_compute_aero_center(input_xml):

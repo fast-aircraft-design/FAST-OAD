@@ -20,7 +20,7 @@ import os.path as pth
 import openmdao.api as om
 import pytest
 
-from fastoad.io.xml import XPathReader
+from fastoad.io.xml import XPathReader, OMXmlIO
 from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
 from fastoad.modules.geometry import Geometry
 from fastoad.modules.weight.mass_breakdown import MassBreakdown
@@ -51,7 +51,7 @@ def test_geometry_geometry_global():
 
     input_xml_file_name = pth.join(pth.dirname(__file__), "data", "global_geometry_inputs.xml")
 
-    input_xml = OMLegacy1XmlIO(input_xml_file_name)
+    input_xml = OMXmlIO(input_xml_file_name)
 
     input_vars = input_xml.read()
 
