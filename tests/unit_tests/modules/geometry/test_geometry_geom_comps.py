@@ -19,30 +19,29 @@ import os.path as pth
 import pytest
 
 from fastoad.io.xml import OMXmlIO
-from fastoad.modules.geometry.geom_components import ComputeTotalArea, UpdateMLG
+from fastoad.modules.geometry.geom_components import ComputeTotalArea
 from fastoad.modules.geometry.geom_components.fuselage import ComputeFuselageGeometryBasic, \
     ComputeFuselageGeometryCabinSizing
 from fastoad.modules.geometry.geom_components.fuselage.compute_cnbeta_fuselage import \
     ComputeCnBetaFuselage
 from fastoad.modules.geometry.geom_components.ht import ComputeHorizontalTailGeometry
-from fastoad.modules.geometry.geom_components.ht.components import ComputeHTArea, ComputeHTcg, \
-    ComputeHTMAC, ComputeHTChord, ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTArea, ComputeHTMAC, \
+    ComputeHTChord, ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
 from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
     ComputeNacelleAndPylonsGeometry
 from fastoad.modules.geometry.geom_components.vt import ComputeVerticalTailGeometry
-from fastoad.modules.geometry.geom_components.vt.components import ComputeVTArea, ComputeVTcg, \
-    ComputeVTMAC, ComputeVTChords, ComputeVTClalpha, ComputeVTSweep, ComputeVTVolCoeff, \
+from fastoad.modules.geometry.geom_components.vt.components import ComputeVTArea, ComputeVTMAC, \
+    ComputeVTChords, ComputeVTClalpha, ComputeVTSweep, ComputeVTVolCoeff, \
     ComputeVTDistance
 from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
 from fastoad.modules.geometry.geom_components.wing.components import ComputeB50, ComputeCLalpha, \
     ComputeL1AndL4Wing, ComputeL2AndL3Wing, ComputeMACWing, ComputeMFW, ComputeSweepWing, \
     ComputeToCWing, ComputeWetAreaWing, ComputeXWing, ComputeYWing
+from fastoad.modules.weight.cg.cg_components import ComputeHTcg, ComputeVTcg, UpdateMLG
 from tests.testing_utilities import run_system
 
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
-
-
 @pytest.fixture(scope="module")
 def input_xml() -> OMXmlIO:
     """

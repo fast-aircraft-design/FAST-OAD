@@ -22,7 +22,7 @@ from importlib_resources import open_text
 from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy import interpolate
 
-from .. import resources
+from fastoad.modules.geometry import resources
 
 
 class ComputeTanksCG(ExplicitComponent):

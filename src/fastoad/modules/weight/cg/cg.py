@@ -16,25 +16,19 @@
 
 import openmdao.api as om
 
-from fastoad.modules.geometry.cg_components.compute_cg_control_surfaces import \
-    ComputeControlSurfacesCG
-from fastoad.modules.geometry.cg_components.compute_cg_others import ComputeOthersCG
-from fastoad.modules.geometry.cg_components.compute_cg_tanks import ComputeTanksCG
-from fastoad.modules.geometry.cg_components.compute_cg_wing import ComputeWingCG
-from fastoad.modules.geometry.cg_components.compute_global_cg import ComputeGlobalCG
-from fastoad.modules.geometry.geom_components.ht.components import ComputeHTcg
-from fastoad.modules.geometry.geom_components.update_mlg import UpdateMLG
-from fastoad.modules.geometry.geom_components.vt.components import ComputeVTcg
-from fastoad.modules.options import TAIL_TYPE_OPTION, \
-    AIRCRAFT_FAMILY_OPTION, OpenMdaoOptionDispatcherGroup
+from fastoad.modules.options import OpenMdaoOptionDispatcherGroup
+from fastoad.modules.weight.cg.cg_components import ComputeControlSurfacesCG
+from fastoad.modules.weight.cg.cg_components import ComputeGlobalCG
+from fastoad.modules.weight.cg.cg_components import ComputeHTcg
+from fastoad.modules.weight.cg.cg_components import ComputeOthersCG
+from fastoad.modules.weight.cg.cg_components import ComputeTanksCG
+from fastoad.modules.weight.cg.cg_components import ComputeVTcg
+from fastoad.modules.weight.cg.cg_components import ComputeWingCG
+from fastoad.modules.weight.cg.cg_components import UpdateMLG
 
 
 class CG(OpenMdaoOptionDispatcherGroup):
     """ Model that computes the global center of gravity """
-
-    def initialize(self):
-        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.0)
-        self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
 
     def setup(self):
         self.add_subsystem('ht_cg', ComputeHTcg(), promotes=['*'])

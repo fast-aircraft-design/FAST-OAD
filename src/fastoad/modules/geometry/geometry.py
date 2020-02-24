@@ -15,14 +15,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.modules.geometry.cg_components.compute_aero_center import ComputeAeroCenter
-from fastoad.modules.geometry.cg_components.compute_static_margin import ComputeStaticMargin
+from fastoad.modules.geometry.compute_aero_center import ComputeAeroCenter
+from fastoad.modules.geometry.compute_static_margin import ComputeStaticMargin
+from fastoad.modules.geometry.geom_components import ComputeTotalArea
 from fastoad.modules.geometry.geom_components.fuselage.compute_fuselage \
     import ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizing
+from fastoad.modules.geometry.geom_components.ht import ComputeHorizontalTailGeometry
 from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
     ComputeNacelleAndPylonsGeometry
+from fastoad.modules.geometry.geom_components.vt import ComputeVerticalTailGeometry
 from fastoad.modules.geometry.geom_components.wing.compute_wing import ComputeWingGeometry
-from fastoad.modules.geometry.get_cg import GetCG
 from fastoad.modules.options import OpenMdaoOptionDispatcherGroup, ENGINE_LOCATION_OPTION, \
     TAIL_TYPE_OPTION, AIRCRAFT_FAMILY_OPTION, CABIN_SIZING_OPTION
 
@@ -55,6 +57,8 @@ class Geometry(OpenMdaoOptionDispatcherGroup):
         self.add_subsystem('compute_wing', ComputeWingGeometry(), promotes=['*'])
         self.add_subsystem('compute_engine_nacelle', ComputeNacelleAndPylonsGeometry(),
                            promotes=['*'])
-        self.add_subsystem('get_cg', GetCG(), promotes=['*'])
+        self.add_subsystem('compute_ht', ComputeHorizontalTailGeometry(), promotes=['*'])
+        self.add_subsystem('compute_vt', ComputeVerticalTailGeometry(), promotes=['*'])
+        self.add_subsystem('compute_total_area', ComputeTotalArea(), promotes=['*'])
         self.add_subsystem('compute_aero_center', ComputeAeroCenter(), promotes=['*'])
         self.add_subsystem('compute_sm', ComputeStaticMargin(), promotes=['*'])
