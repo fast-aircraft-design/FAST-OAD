@@ -320,8 +320,6 @@ def test_geometry_global_ht(input_xml):
     assert ht_x0 == pytest.approx(1.656, abs=1e-3)
     ht_y0 = problem['geometry:horizontal_tail:MAC:y']
     assert ht_y0 == pytest.approx(2.519, abs=1e-3)
-    cg_a31 = problem['weight:airframe:horizontal_tail:CG:x']
-    assert cg_a31 == pytest.approx(34.58, abs=1e-2)
     sweep_0 = problem['geometry:horizontal_tail:sweep_0']
     assert sweep_0 == pytest.approx(33.317, abs=1e-3)
     sweep_100 = problem['geometry:horizontal_tail:sweep_100']
@@ -577,8 +575,6 @@ def test_geometry_global_vt(input_xml):
     assert vt_x0 == pytest.approx(2.31, abs=1e-2)
     vt_z0 = problem['geometry:vertical_tail:MAC:z']
     assert vt_z0 == pytest.approx(2.71, abs=1e-2)
-    cg_a32 = problem['weight:airframe:vertical_tail:CG:x']
-    assert cg_a32 == pytest.approx(34.26, abs=1e-2)
     span = problem['geometry:vertical_tail:span']
     assert span == pytest.approx(6.60, abs=1e-2)
     root_chord = problem['geometry:vertical_tail:root_chord']

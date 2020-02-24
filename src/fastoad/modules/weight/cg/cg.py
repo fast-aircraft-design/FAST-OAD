@@ -16,14 +16,20 @@
 
 import openmdao.api as om
 
-from fastoad.modules.geometry.geom_components.compute_total_area import ComputeTotalArea
-from fastoad.modules.geometry.geom_components.ht import ComputeHorizontalTailGeometry
-from fastoad.modules.geometry.geom_components.vt import ComputeVerticalTailGeometry
+from fastoad.modules.geometry.cg_components.compute_cg_control_surfaces import \
+    ComputeControlSurfacesCG
+from fastoad.modules.geometry.cg_components.compute_cg_others import ComputeOthersCG
+from fastoad.modules.geometry.cg_components.compute_cg_tanks import ComputeTanksCG
+from fastoad.modules.geometry.cg_components.compute_cg_wing import ComputeWingCG
+from fastoad.modules.geometry.cg_components.compute_global_cg import ComputeGlobalCG
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTcg
+from fastoad.modules.geometry.geom_components.update_mlg import UpdateMLG
+from fastoad.modules.geometry.geom_components.vt.components import ComputeVTcg
 from fastoad.modules.options import TAIL_TYPE_OPTION, \
     AIRCRAFT_FAMILY_OPTION, OpenMdaoOptionDispatcherGroup
 
 
-class GetCG(OpenMdaoOptionDispatcherGroup):
+class CG(OpenMdaoOptionDispatcherGroup):
     """ Model that computes the global center of gravity """
 
     def initialize(self):
@@ -31,9 +37,14 @@ class GetCG(OpenMdaoOptionDispatcherGroup):
         self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
 
     def setup(self):
-        self.add_subsystem('compute_ht', ComputeHorizontalTailGeometry(), promotes=['*'])
-        self.add_subsystem('compute_vt', ComputeVerticalTailGeometry(), promotes=['*'])
-        self.add_subsystem('compute_total_area', ComputeTotalArea(), promotes=['*'])
+        self.add_subsystem('ht_cg', ComputeHTcg(), promotes=['*'])
+        self.add_subsystem('vt_cg', ComputeVTcg(), promotes=['*'])
+        self.add_subsystem('compute_cg_wing', ComputeWingCG(), promotes=['*'])
+        self.add_subsystem('compute_cg_control_surface', ComputeControlSurfacesCG(), promotes=['*'])
+        self.add_subsystem('compute_cg_tanks', ComputeTanksCG(), promotes=['*'])
+        self.add_subsystem('compute_cg_others', ComputeOthersCG(), promotes=['*'])
+        self.add_subsystem('compute_cg', ComputeGlobalCG(), promotes=['*'])
+        self.add_subsystem('update_mlg', UpdateMLG(), promotes=['*'])
 
         # Solvers setup
         self.nonlinear_solver = om.NonlinearBlockGS()

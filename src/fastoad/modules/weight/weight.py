@@ -16,6 +16,7 @@ Weight computation (mass and CG)
 
 from fastoad.modules.options import OpenMdaoOptionDispatcherGroup, ENGINE_LOCATION_OPTION, \
     TAIL_TYPE_OPTION, AIRCRAFT_TYPE_OPTION
+from fastoad.modules.weight.cg.cg import CG
 from fastoad.modules.weight.mass_breakdown import MassBreakdown
 
 
@@ -38,4 +39,5 @@ class Weight(OpenMdaoOptionDispatcherGroup):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
+        self.add_subsystem('cg', CG(), promotes=['*'])
         self.add_subsystem('mass_breakdown', MassBreakdown(), promotes=['*'])
