@@ -23,7 +23,7 @@ import pytest
 from fastoad.io.xml import XPathReader
 from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
 from fastoad.modules.geometry import GetCG, Geometry
-from fastoad.modules.mass_breakdown import MassBreakdown
+from fastoad.modules.weight.mass_breakdown import MassBreakdown
 from tests.testing_utilities import run_system
 
 

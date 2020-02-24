@@ -21,9 +21,9 @@ from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHig
 from fastoad.modules.aerodynamics.aerodynamics_landing import AerodynamicsLanding
 from fastoad.modules.geometry import Geometry
 from fastoad.modules.loops.compute_wing_area import ComputeWingArea
-from fastoad.modules.mass_breakdown import MassBreakdown
 from fastoad.modules.performances import BreguetFromOWE
 from fastoad.modules.propulsion.fuel_engine.rubber_engine import OMRubberEngine
+from fastoad.modules.weight.mass_breakdown import MassBreakdown
 
 
 def register_openmdao_systems():

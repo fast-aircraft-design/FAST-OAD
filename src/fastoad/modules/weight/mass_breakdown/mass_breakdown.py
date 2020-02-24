@@ -16,20 +16,20 @@ Main components for mass breakdown
 
 import openmdao.api as om
 
-from fastoad.modules.mass_breakdown.a_airframe import WingWeight, FuselageWeight, EmpennageWeight, \
-    FlightControlsWeight, LandingGearWeight, PylonsWeight, PaintWeight
-from fastoad.modules.mass_breakdown.b_propulsion import EngineWeight, FuelLinesWeight, \
+from fastoad.modules.options import OpenMdaoOptionDispatcherGroup, ENGINE_LOCATION_OPTION, \
+    TAIL_TYPE_OPTION, AIRCRAFT_TYPE_OPTION
+from fastoad.modules.weight.mass_breakdown.a_airframe import WingWeight, FuselageWeight, \
+    EmpennageWeight, FlightControlsWeight, LandingGearWeight, PylonsWeight, PaintWeight
+from fastoad.modules.weight.mass_breakdown.b_propulsion import EngineWeight, FuelLinesWeight, \
     UnconsumablesWeight
-from fastoad.modules.mass_breakdown.c_systems import PowerSystemsWeight, LifeSupportSystemsWeight, \
-    NavigationSystemsWeight, TransmissionSystemsWeight, FixedOperationalSystemsWeight, \
-    FlightKitWeight
-from fastoad.modules.mass_breakdown.cs25 import Loads
-from fastoad.modules.mass_breakdown.d_furniture import CargoConfigurationWeight, \
+from fastoad.modules.weight.mass_breakdown.c_systems import PowerSystemsWeight, \
+    LifeSupportSystemsWeight, NavigationSystemsWeight, TransmissionSystemsWeight, \
+    FixedOperationalSystemsWeight, FlightKitWeight
+from fastoad.modules.weight.mass_breakdown.cs25 import Loads
+from fastoad.modules.weight.mass_breakdown.d_furniture import CargoConfigurationWeight, \
     PassengerSeatsWeight, FoodWaterWeight, SecurityKitWeight, ToiletsWeight
-from fastoad.modules.mass_breakdown.e_crew import CrewWeight
-from fastoad.modules.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
-from fastoad.modules.options import OpenMdaoOptionDispatcherGroup, \
-    ENGINE_LOCATION_OPTION, TAIL_TYPE_OPTION, AIRCRAFT_TYPE_OPTION
+from fastoad.modules.weight.mass_breakdown.e_crew import CrewWeight
+from fastoad.modules.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
 
 
 class MassBreakdown(OpenMdaoOptionDispatcherGroup):

@@ -1,8 +1,8 @@
 """
-Estimation of Aircraft Weight
+Estimation of furniture weight
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,5 +13,8 @@ Estimation of Aircraft Weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from .mass_breakdown import MassBreakdown
+from .d1_cargo_configuration_weight import CargoConfigurationWeight
+from .d2_passenger_seats_weight import PassengerSeatsWeight
+from .d3_food_water_weight import FoodWaterWeight
+from .d4_security_kit_weight import SecurityKitWeight
+from .d5_toilets_weight import ToiletsWeight
