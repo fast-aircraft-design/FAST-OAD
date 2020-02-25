@@ -21,8 +21,7 @@ import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 
-import fastoad
-from fastoad import api
+from fastoad import api, BundleLoader
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMLegacy1XmlIO
 from tests import root_folder_path
@@ -39,7 +38,7 @@ def cleanup():
 @pytest.fixture(scope='module')
 def install_components():
     """ Needed because other tests play with Pelix/iPOPO """
-    fastoad.initialize_framework.load()
+    BundleLoader().context.install_bundle('fastoad.activator').start()
 
 
 def test_oad_process(cleanup, install_components):
