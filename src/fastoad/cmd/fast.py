@@ -24,8 +24,8 @@ from distutils.util import strtobool
 
 from fastoad.cmd import api
 from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.utils.resource_management.copy import copy_resource_folder
 
-RESOURCE_FOLDER_PATH = pth.join(pth.dirname(__file__), 'resources')
 NOTEBOOK_FOLDER_NAME = 'FAST_OAD_notebooks'
 
 
@@ -138,28 +138,24 @@ class Main:
 
     @staticmethod
     def _notebooks(args):
+        """
+        Copies the notebook folder in user-selected destination
+        """
+
         # Create and copy folder
-        notebook_path = pth.join(pth.dirname(__file__), pth.pardir, 'notebooks', 'tutorial')
         target_path = pth.abspath(pth.join(args.path, NOTEBOOK_FOLDER_NAME))
         if pth.exists(target_path):
             shutil.rmtree(target_path)
         os.makedirs(target_path)
-
-        for item in os.listdir(notebook_path):
-            source = pth.join(notebook_path, item)
-            dest = pth.join(target_path, item)
-            if pth.isdir(source):
-                if pth.exists(dest):
-                    shutil.rmtree(dest)
-                shutil.copytree(source, dest)
-            else:
-                shutil.copy2(source, dest)
+        copy_resource_folder('fastoad.notebooks.tutorial', target_path)
 
         # Give info for running Jupyter
         print('')
         print('Notebooks have been created in %s' % target_path)
         print('You may now run Jupyter with:')
         print('   jupyter notebook %s' % target_path)
+
+    # UTILITIES ====================================================================================
 
     # PARSER CONFIGURATION =========================================================================
     @staticmethod

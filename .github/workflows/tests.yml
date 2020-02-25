@@ -1,4 +1,4 @@
-name: Unit tests
+name: Tests
 
 on: [push]
 
@@ -26,15 +26,15 @@ jobs:
       - name: Install pipenv
         run: pip install pipenv
 
-      - name: Pipenv venv cache
-        uses: actions/cache@v1
-        id: cache-venv
-        with:
-          path: .venv
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+      #      - name: Pipenv venv cache
+      #        uses: actions/cache@v1
+      #        id: cache-venv
+      #        with:
+      #          path: .venv
+      #          key: ${{ runner.os }}-python${{ matrix.python-version }}-venv-${{ hashFiles('**/Pipfile.lock') }}
 
       - name: Create environment and install dependencies
-        if: steps.cache-venv.outputs.cache-hit != 'true'
+        #        if: steps.cache-venv.outputs.cache-hit != 'true'
         run: pipenv sync --dev
 
       - name: Lint with flake8
@@ -47,3 +47,5 @@ jobs:
       - name: Unit tests
         run: pipenv run pytest --no-cov tests/unit_tests
 
+      - name: Integration tests
+        run: pipenv run pytest --no-cov tests/integration_tests

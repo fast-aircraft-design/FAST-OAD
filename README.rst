@@ -28,7 +28,7 @@ You can install the latest version with this command:
 
 .. code:: bash
 
-    $ pip install git+https://github.com/fast-aircraft-design/FAST-OAD.git
+    $ pip install -e git+https://github.com/fast-aircraft-design/FAST-OAD.git
 
 At the prompt, enter your GitHub credentials.
 

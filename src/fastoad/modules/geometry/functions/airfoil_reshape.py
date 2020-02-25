@@ -14,13 +14,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
-import os.path as pth
-
 import numpy as np
 import pandas as pd
+from importlib_resources import open_text
 
 from .profile import Profile
+from .. import resources
 
 
 def get_profile(file_name: str = 'BACJ.txt',
@@ -34,9 +33,9 @@ def get_profile(file_name: str = 'BACJ.txt',
     :param chord_length:
     :return: Nx2 pandas.DataFrame with x in 1st column and z in 2nd column
     """
-    f_path_resources = pth.join(pth.abspath(pth.dirname(__file__)), os.pardir, 'resources')
-    f_path_ori = pth.join(f_path_resources, file_name)
-    x_z = np.genfromtxt(f_path_ori, skip_header=1, delimiter='\t', names='x, z')
+
+    with open_text(resources, file_name) as source:
+        x_z = np.genfromtxt(source, skip_header=1, delimiter='\t', names='x, z')
     profile = Profile()
     profile.set_points(x_z['x'], x_z['z'])
 
