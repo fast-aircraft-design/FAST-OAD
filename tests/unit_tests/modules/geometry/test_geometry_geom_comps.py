@@ -70,8 +70,6 @@ def test_compute_fuselage_cabin_sizing(input_xml):
 
     npax1 = problem['geometry:cabin:NPAX1']
     assert npax1 == pytest.approx(157, abs=1)
-    n_rows = problem['geometry:cabin:seat_rows:count']
-    assert n_rows == pytest.approx(26, abs=1)
     cg_systems_c6 = problem['weight:systems:flight_kit:CG:x']
     assert cg_systems_c6 == pytest.approx(7.47, abs=1e-2)
     cg_furniture_d2 = problem['weight:furniture:passenger_seats:CG:x']
