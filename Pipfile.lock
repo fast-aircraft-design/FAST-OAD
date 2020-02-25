@@ -125,6 +125,13 @@
             ],
             "version": "==5.1.4"
         },
+        "ipysheet": {
+            "hashes": [
+                "sha256:66046205b4f10b5f8f79b9fca59b1d3a8d921f65bdff0f3315bc988fea2bb093",
+                "sha256:9cc6f2b858ec9649cfa9075a1e19952109acc9f05a529c88a7b7c023fffe89a0"
+            ],
+            "version": "==0.4.3"
+        },
         "ipython": {
             "hashes": [
                 "sha256:ca478e52ae1f88da0102360e57e528b92f3ae4316aabac80a2cd7f7ab2efb48a",
