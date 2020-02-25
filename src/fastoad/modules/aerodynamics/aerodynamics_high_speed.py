@@ -31,6 +31,12 @@ from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
 
 
 class AerodynamicsHighSpeed(Group):
+    """
+    Computes aerodynamic polar of the aircraft in cruise conditions.
+
+    Drag contributions of each part of the aircraft are computed though analytical
+    models.
+    """
 
     def setup(self):
         self.add_subsystem('compute_oswald_coeff', OswaldCoefficient(), promotes=['*'])

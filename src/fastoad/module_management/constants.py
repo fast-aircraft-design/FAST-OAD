@@ -2,7 +2,7 @@
 The place for module-level constants
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,6 +13,25 @@ The place for module-level constants
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from enum import Enum
 
+# Services
 SERVICE_OPENMDAO_SYSTEM = 'fast.openmdao.system'
 SERVICE_RESULT_FOLDER_PROVIDER = 'fast.result.folder'
+
+# Properties for OpenMDAOSystemRegistry
+OPTION_PROPERTY_NAME = 'OPTIONS'
+DESCRIPTION_PROPERTY_NAME = 'DESCRIPTION'
+DOMAIN_PROPERTY_NAME = 'DOMAIN'
+
+
+# Definition of model domains
+class ModelDomain(Enum):
+    """ Enumeration of model domains """
+    GEOMETRY = 'Geometry'
+    AERODYNAMICS = 'Aerodynamics'
+    WEIGHT = 'Weight'
+    PERFORMANCE = 'Performance'
+    PROPULSION = 'Propulsion'
+    OTHER = 'Other'
+    UNSPECIFIED = 'Unspecified'

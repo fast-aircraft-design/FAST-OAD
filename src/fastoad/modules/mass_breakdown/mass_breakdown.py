@@ -34,11 +34,18 @@ from fastoad.modules.options import OpenMdaoOptionDispatcherGroup, \
 
 class MassBreakdown(OpenMdaoOptionDispatcherGroup):
     """
-    The top group for solving mass breakdown
+    Computes analytically the mass of each part of the aircraft, and the resulting sum,
+    the Overall Weight Empty (OWE).
+
+    Some models depend on MZFW (Max Zero Fuel Weight), MLW (Max Landing Weight) and
+    MTOW (Max TakeOff Weight), which depend on OWE.
+
+    This model cycles for having consistent OWE, MZFW and MLW.
+    Consistency with MTOW can be achieved by cycling with a model that computes MTOW from OWE,
+    which should come from a mission computation that will assess needed block fuel.
     """
 
     def initialize(self):
-        # TODO: Manage options through constants or enums
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
@@ -46,9 +53,6 @@ class MassBreakdown(OpenMdaoOptionDispatcherGroup):
     def setup(self):
         self.add_subsystem('owe', OperatingWeightEmpty(), promotes=['*'])
         self.add_subsystem('update_mzfw_and_mlw', UpdateMLWandMZFW(), promotes=['*'])
-
-    def configure(self):
-        super(MassBreakdown, self).configure()
 
         # Solvers setup
         self.nonlinear_solver = om.NonlinearBlockGS()

@@ -25,7 +25,7 @@ from fastoad.io.configuration.exceptions import FASTConfigurationBaseKeyBuilding
     FASTConfigurationBadOpenMDAOInstructionError, FASTConfigurationNoProblemDefined
 from fastoad.io.serialize import OMFileIOSubclass
 from fastoad.io.xml import OMXmlIO
-from fastoad.module_management.openmdao_system_factory import OpenMDAOSystemFactory
+from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.connections_utils import get_unconnected_input_variables, \
     get_variables_from_ivc, get_ivc_from_variables, get_variables_from_problem
 
@@ -103,7 +103,7 @@ class FASTOADProblem(om.Problem):
             if not pth.exists(folder_path):
                 _LOGGER.warning('SKIPPED %s: it does not exist.')
             else:
-                OpenMDAOSystemFactory.explore_folder(folder_path)
+                OpenMDAOSystemRegistry.explore_folder(folder_path)
 
         # Read problem definition
         self._model_definition = self._conf_dict.get(TABLE_MODEL)
@@ -183,7 +183,7 @@ class FASTOADProblem(om.Problem):
             if KEY_COMPONENT_ID in self._model_definition:
                 # The defined model is only one system
                 system_id = self._model_definition[KEY_COMPONENT_ID]
-                sub_component = OpenMDAOSystemFactory.get_system(system_id)
+                sub_component = OpenMDAOSystemRegistry.get_system(system_id)
                 self.model.add_subsystem('system', sub_component, promotes=['*'])
             else:
                 # The defined model is a group
@@ -217,7 +217,7 @@ class FASTOADProblem(om.Problem):
                     # It is a non-group component, that should be registered with its ID
                     options = value.copy()
                     identifier = options.pop(KEY_COMPONENT_ID)
-                    sub_component = OpenMDAOSystemFactory.get_system(identifier, options=options)
+                    sub_component = OpenMDAOSystemRegistry.get_system(identifier, options=options)
                     group.add_subsystem(key, sub_component, promotes=['*'])
                 else:
                     # It is a Group

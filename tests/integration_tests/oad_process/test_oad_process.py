@@ -42,62 +42,6 @@ def install_components():
     fastoad.initialize_framework.load()
 
 
-def test_propulsion_process(cleanup, install_components):
-    """
-    Builds a dummy process for finding altitude of min SFC
-    """
-
-    problem = FASTOADProblem()
-    problem.configure(pth.join(DATA_FOLDER_PATH, 'propulsion_process.toml'))
-
-    problem.read_inputs()
-
-    problem.setup()
-    problem.run_driver()
-    problem.write_outputs()
-
-    assert not problem.driver.fail
-    assert_allclose(problem.get_val('propulsion:altitude', units='ft'),
-                    36700,
-                    atol=50)
-    assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
-                    1.681e-05,
-                    atol=1e-3)
-
-
-def test_perfo_process(cleanup, install_components):
-    """
-    Builds a dummy process for finding altitude for max ZFW
-    """
-
-    problem = FASTOADProblem()
-    problem.configure(pth.join(DATA_FOLDER_PATH, 'perfo_process.toml'))
-
-    problem.read_inputs()
-
-    problem.setup()
-    problem.run_model()
-    assert_allclose(problem.get_val('mission:sizing:ZFW', units='kg'),
-                    55080,
-                    atol=5)
-    assert_allclose(problem.get_val('propulsion:SFC', units='kg/s/N'),
-                    1.698e-05,
-                    atol=1e-3)
-
-    problem.setup()
-    problem.run_driver()
-    problem.write_outputs()
-
-    assert not problem.driver.fail
-    assert_allclose(problem.get_val('mission:sizing:ZFW', units='kg'),
-                    55630,
-                    atol=10)
-    assert_allclose(
-        problem.get_val('mission:sizing:cruise:altitude', units='ft'),
-        36700,
-        atol=100)
-
-
 def test_oad_process(cleanup, install_components):
     """
     Test for the overall aircraft design process.

@@ -2,7 +2,7 @@
 Simple module for performances
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -30,9 +30,16 @@ CLIMB_DESCENT_DISTANCE = 500  # in km, distance of climb + descent
 class BreguetFromMTOW(om.Group):
     """
     Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases. MTOW is an input.
+    of climb and descent phases.
+
+    MTOW (Max TakeOff Weight) being an input, the model computes the ZFW (Zero Fuel
+    Weight) considering that all fuel but the reserve has been consumed during the
+    mission.
+    This model does not ensure consistency with OWE (Operating Empty Weight)
     """
 
+    # TODO: in a more general case, this module will link the starting mass to
+    #   the ending mass. Could we make the module more generic ?
     def setup(self):
         self.add_subsystem('propulsion', _BreguetPropulsion(), promotes=['*'])
         self.add_subsystem('distances', _Distances(), promotes=['*'])
@@ -43,14 +50,19 @@ class BreguetFromMTOW(om.Group):
 class BreguetFromOWE(om.Group):
     """
     Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases. OWE is an input, MTOW is an output.
+    of climb and descent phases.
+
+    For the sizing mission, the Breguet formula links MTOW (Max TakeOff Weight) to
+    ZFW (Zero Fuel Weight).
+    OWE (Operating Weight Empty) being linked to ZFW and MTOW, a cycle is implemented
+    to have consistency between these 3 values.
     """
 
     def setup(self):
         self.add_subsystem('propulsion', _BreguetPropulsion(), promotes=['*'])
         self.add_subsystem('distances', _Distances(), promotes=['*'])
         self.add_subsystem('cruise_mass_ratio', _CruiseMassRatio(), promotes=['*'])
-        self.add_subsystem('breguet', _MTOWFromOWE(), promotes=['*'])
+        self.add_subsystem('mtow', _MTOWFromOWE(), promotes=['*'])
         self.add_subsystem('fuel_weights', _FuelWeightFromMTOW(), promotes=['*'])
 
         self.nonlinear_solver = om.NewtonSolver()

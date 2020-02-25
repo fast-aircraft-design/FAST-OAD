@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -35,6 +35,9 @@ from fastoad.modules.aerodynamics.components.oswald import OswaldCoefficient
 
 
 class AerodynamicsLowSpeed(Group):
+    """
+    Models for low speed aerodynamics
+    """
 
     def setup(self):
         self.add_subsystem('compute_low_speed_aero', ComputeAerodynamicsLowSpeed(),

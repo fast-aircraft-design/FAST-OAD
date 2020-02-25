@@ -28,7 +28,14 @@ from fastoad.modules.options import OpenMdaoOptionDispatcherGroup, ENGINE_LOCATI
 
 
 class Geometry(OpenMdaoOptionDispatcherGroup):
-    """ Overall geometry model """
+    """
+    Computes geometric characteristics of the (tube-wing) aircraft:
+      - fuselage size is computed from payload requirements
+      - wing dimensions are computed from global parameters (area, taper ratio...)
+      - tail planes are dimensioned from HQ requirements
+
+    This module also computes centers of gravity and static margin
+    """
 
     def initialize(self):
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)

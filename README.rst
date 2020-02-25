@@ -355,9 +355,9 @@ To have your OpenMDAO system available in FAST-OAD, requirements are:
   .. code-block:: python
 
     from myclass import MyOMClass
-    from fastoad import OpenMDAOSystemFactory
+    from fastoad.module_management import OpenMDAOSystemRegistry
 
-    OpenMDAOSystemFactory.register_system(MyOMClass, 'my.custom.name')
+    OpenMDAOSystemRegistry.register_system(MyOMClass, 'my.custom.name')
 
 - The folder that contains these Python files must be listed in `module_folders`
   in the configuration file

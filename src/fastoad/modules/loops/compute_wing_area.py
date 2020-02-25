@@ -19,6 +19,11 @@ import openmdao.api as om
 
 
 class ComputeWingArea(om.Group):
+    """
+    Computes needed wing area for:
+      - having enough lift at required approach speed
+      - being able to load enough fuel to achieve the sizing mission
+    """
 
     def setup(self):
         self.add_subsystem('wing_area', _ComputeWingArea(), promotes=['*'])
