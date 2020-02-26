@@ -18,39 +18,37 @@ import os.path as pth
 
 import pytest
 
-from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
-from fastoad.modules.geometry.geom_components import ComputeTotalArea, UpdateMLG
+from fastoad.io.xml import OMXmlIO
+from fastoad.modules.geometry.geom_components import ComputeTotalArea
 from fastoad.modules.geometry.geom_components.fuselage import ComputeFuselageGeometryBasic, \
     ComputeFuselageGeometryCabinSizing
 from fastoad.modules.geometry.geom_components.fuselage.compute_cnbeta_fuselage import \
     ComputeCnBetaFuselage
 from fastoad.modules.geometry.geom_components.ht import ComputeHorizontalTailGeometry
-from fastoad.modules.geometry.geom_components.ht.components import ComputeHTArea, ComputeHTcg, \
-    ComputeHTMAC, ComputeHTChord, ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTArea, ComputeHTMAC, \
+    ComputeHTChord, ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
 from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
     ComputeNacelleAndPylonsGeometry
 from fastoad.modules.geometry.geom_components.vt import ComputeVerticalTailGeometry
-from fastoad.modules.geometry.geom_components.vt.components import ComputeVTArea, ComputeVTcg, \
-    ComputeVTMAC, ComputeVTChords, ComputeVTClalpha, ComputeVTSweep, ComputeVTVolCoeff, \
+from fastoad.modules.geometry.geom_components.vt.components import ComputeVTArea, ComputeVTMAC, \
+    ComputeVTChords, ComputeVTClalpha, ComputeVTSweep, ComputeVTVolCoeff, \
     ComputeVTDistance
 from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
 from fastoad.modules.geometry.geom_components.wing.components import ComputeB50, ComputeCLalpha, \
     ComputeL1AndL4Wing, ComputeL2AndL3Wing, ComputeMACWing, ComputeMFW, ComputeSweepWing, \
     ComputeToCWing, ComputeWetAreaWing, ComputeXWing, ComputeYWing
+from fastoad.modules.weight.cg.cg_components import ComputeHTcg, ComputeVTcg, UpdateMLG
 from tests.testing_utilities import run_system
 
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
-
-
 @pytest.fixture(scope="module")
-def input_xml() -> OMLegacy1XmlIO:
+def input_xml() -> OMXmlIO:
     """
     :return: access to the sample xml data
     """
     # TODO: have more consistency in input data (no need for the whole geometry_inputs_full.xml)
-    return OMLegacy1XmlIO(
-        pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
+    return OMXmlIO(pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
 
 
 def test_compute_fuselage_cabin_sizing(input_xml):
@@ -72,8 +70,6 @@ def test_compute_fuselage_cabin_sizing(input_xml):
 
     npax1 = problem['geometry:cabin:NPAX1']
     assert npax1 == pytest.approx(157, abs=1)
-    n_rows = problem['geometry:cabin:seat_rows:count']
-    assert n_rows == pytest.approx(26, abs=1)
     cg_systems_c6 = problem['weight:systems:flight_kit:CG:x']
     assert cg_systems_c6 == pytest.approx(7.47, abs=1e-2)
     cg_furniture_d2 = problem['weight:furniture:passenger_seats:CG:x']
@@ -119,8 +115,6 @@ def test_compute_fuselage_basic(input_xml):
     assert cg_systems_c6 == pytest.approx(9.19, abs=1e-2)
     cg_furniture_d2 = problem['weight:furniture:passenger_seats:CG:x']
     assert cg_furniture_d2 == pytest.approx(14.91, abs=1e-2)
-    cg_pl_cg_pax = problem['cg_pl:CG_PAX']
-    assert cg_pl_cg_pax == pytest.approx(18.34, abs=1e-2)
     fuselage_lcabin = problem['geometry:cabin:length']
     assert fuselage_lcabin == pytest.approx(30.38, abs=1e-2)
     fuselage_wet_area = problem['geometry:fuselage:wetted_area']
@@ -320,8 +314,6 @@ def test_geometry_global_ht(input_xml):
     assert ht_x0 == pytest.approx(1.656, abs=1e-3)
     ht_y0 = problem['geometry:horizontal_tail:MAC:y']
     assert ht_y0 == pytest.approx(2.519, abs=1e-3)
-    cg_a31 = problem['weight:airframe:horizontal_tail:CG:x']
-    assert cg_a31 == pytest.approx(34.58, abs=1e-2)
     sweep_0 = problem['geometry:horizontal_tail:sweep_0']
     assert sweep_0 == pytest.approx(33.317, abs=1e-3)
     sweep_100 = problem['geometry:horizontal_tail:sweep_100']
@@ -577,8 +569,6 @@ def test_geometry_global_vt(input_xml):
     assert vt_x0 == pytest.approx(2.31, abs=1e-2)
     vt_z0 = problem['geometry:vertical_tail:MAC:z']
     assert vt_z0 == pytest.approx(2.71, abs=1e-2)
-    cg_a32 = problem['weight:airframe:vertical_tail:CG:x']
-    assert cg_a32 == pytest.approx(34.26, abs=1e-2)
     span = problem['geometry:vertical_tail:span']
     assert span == pytest.approx(6.60, abs=1e-2)
     root_chord = problem['geometry:vertical_tail:root_chord']

@@ -21,9 +21,9 @@ from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHig
 from fastoad.modules.aerodynamics.aerodynamics_landing import AerodynamicsLanding
 from fastoad.modules.geometry import Geometry
 from fastoad.modules.loops.compute_wing_area import ComputeWingArea
-from fastoad.modules.mass_breakdown import MassBreakdown
 from fastoad.modules.performances import BreguetFromOWE
 from fastoad.modules.propulsion.fuel_engine.rubber_engine import OMRubberEngine
+from fastoad.modules.weight.weight import Weight
 
 
 def register_openmdao_systems():
@@ -54,8 +54,8 @@ def register_openmdao_systems():
                                            )
 
     # Weight ######################################################################
-    OpenMDAOSystemRegistry.register_system(MassBreakdown,
-                                           'fastoad.weights.legacy',
+    OpenMDAOSystemRegistry.register_system(Weight,
+                                           'fastoad.weight.legacy',
                                            domain=ModelDomain.WEIGHT
                                            )
     # Performance #################################################################

@@ -1,5 +1,5 @@
 """
-Estimation of horizontal tail geometry (components)
+Estimation of furniture weight
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
@@ -13,10 +13,8 @@ Estimation of horizontal tail geometry (components)
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from .compute_ht_area import ComputeHTArea
-from .compute_ht_chords import ComputeHTChord
-from .compute_ht_cl_alpha import ComputeHTClalpha
-from .compute_ht_mac import ComputeHTMAC
-from .compute_ht_sweep import ComputeHTSweep
-from .compute_ht_vol_coeff import ComputeHTVolCoeff
+from .d1_cargo_configuration_weight import CargoConfigurationWeight
+from .d2_passenger_seats_weight import PassengerSeatsWeight
+from .d3_food_water_weight import FoodWaterWeight
+from .d4_security_kit_weight import SecurityKitWeight
+from .d5_toilets_weight import ToiletsWeight

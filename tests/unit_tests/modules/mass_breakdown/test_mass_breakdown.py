@@ -20,25 +20,19 @@ import os.path as pth
 import pytest
 
 from fastoad.io.xml.openmdao_basic_io import OMXmlIO
-from fastoad.modules.mass_breakdown.a_airframe import EmpennageWeight, \
-    FlightControlsWeight, \
-    FuselageWeight, \
-    PaintWeight, PylonsWeight, WingWeight, LandingGearWeight
-from fastoad.modules.mass_breakdown.b_propulsion import FuelLinesWeight, \
-    UnconsumablesWeight, EngineWeight
-from fastoad.modules.mass_breakdown.c_systems import \
-    FixedOperationalSystemsWeight, \
-    FlightKitWeight, \
-    LifeSupportSystemsWeight, NavigationSystemsWeight, PowerSystemsWeight, \
-    TransmissionSystemsWeight
-from fastoad.modules.mass_breakdown.cs25 import Loads
-from fastoad.modules.mass_breakdown.d_furniture import \
-    CargoConfigurationWeight, \
-    PassengerSeatsWeight, FoodWaterWeight, \
-    ToiletsWeight, SecurityKitWeight
-from fastoad.modules.mass_breakdown.e_crew import CrewWeight
-from fastoad.modules.mass_breakdown.mass_breakdown import MassBreakdown, OperatingWeightEmpty
 from fastoad.modules.options import AIRCRAFT_TYPE_OPTION
+from fastoad.modules.weight.mass_breakdown.a_airframe import EmpennageWeight, FlightControlsWeight, \
+    FuselageWeight, PaintWeight, PylonsWeight, WingWeight, LandingGearWeight
+from fastoad.modules.weight.mass_breakdown.b_propulsion import FuelLinesWeight, UnconsumablesWeight, \
+    EngineWeight
+from fastoad.modules.weight.mass_breakdown.c_systems import FixedOperationalSystemsWeight, \
+    FlightKitWeight, LifeSupportSystemsWeight, NavigationSystemsWeight, PowerSystemsWeight, \
+    TransmissionSystemsWeight
+from fastoad.modules.weight.mass_breakdown.cs25 import Loads
+from fastoad.modules.weight.mass_breakdown.d_furniture import CargoConfigurationWeight, \
+    PassengerSeatsWeight, FoodWaterWeight, ToiletsWeight, SecurityKitWeight
+from fastoad.modules.weight.mass_breakdown.e_crew import CrewWeight
+from fastoad.modules.weight.mass_breakdown.mass_breakdown import MassBreakdown, OperatingWeightEmpty
 from tests.testing_utilities import run_system
 
 

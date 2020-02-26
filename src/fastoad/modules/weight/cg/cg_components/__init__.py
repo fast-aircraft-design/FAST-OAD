@@ -1,5 +1,5 @@
 """
-Estimation of horizontal tail geometry (components)
+Estimation of centers of gravity
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
@@ -14,9 +14,17 @@ Estimation of horizontal tail geometry (components)
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_ht_area import ComputeHTArea
-from .compute_ht_chords import ComputeHTChord
-from .compute_ht_cl_alpha import ComputeHTClalpha
-from .compute_ht_mac import ComputeHTMAC
-from .compute_ht_sweep import ComputeHTSweep
-from .compute_ht_vol_coeff import ComputeHTVolCoeff
+from .compute_cg_control_surfaces import ComputeControlSurfacesCG
+from .compute_cg_loadcase1 import ComputeCGLoadCase1
+from .compute_cg_loadcase2 import ComputeCGLoadCase2
+from .compute_cg_loadcase3 import ComputeCGLoadCase3
+from .compute_cg_loadcase4 import ComputeCGLoadCase4
+from .compute_cg_others import ComputeOthersCG
+from .compute_cg_ratio_aft import ComputeCGRatioAft
+from .compute_cg_tanks import ComputeTanksCG
+from .compute_cg_wing import ComputeWingCG
+from .compute_global_cg import ComputeGlobalCG
+from .compute_ht_cg import ComputeHTcg
+from .compute_max_cg_ratio import ComputeMaxCGratio
+from .compute_vt_cg import ComputeVTcg
+from .update_mlg import UpdateMLG

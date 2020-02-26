@@ -34,16 +34,12 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
         self.add_input('geometry:fuselage:PAX_length', val=np.nan, units='m')
 
-        self.add_output('cg_pl:CG_PAX', units='m')
         self.add_output('weight:systems:flight_kit:CG:x', units='m')
         self.add_output('weight:furniture:passenger_seats:CG:x', units='m')
         self.add_output('geometry:cabin:length', units='m')
         self.add_output('geometry:fuselage:wetted_area', units='m**2')
         self.add_output('geometry:cabin:crew_count:commercial')
 
-        self.declare_partials('cg_pl:CG_PAX',
-                              ['geometry:fuselage:front_length', 'geometry:fuselage:PAX_length'],
-                              method='fd')
         self.declare_partials('weight:systems:flight_kit:CG:x',
                               ['geometry:fuselage:front_length', 'geometry:fuselage:PAX_length'],
                               method='fd')
@@ -71,7 +67,6 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
 
         l_cyl = fus_length - lav - lar
         cabin_length = 0.81 * fus_length
-        x_cg_passenger = lav + lpax / 2.0
         x_cg_d2 = lav + 0.35 * lpax
         x_cg_c6 = lav + 0.1 * lpax
         pnc = int((npax_1 + 17) / 35)
@@ -83,7 +78,6 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = (wet_area_nose + wet_area_cyl + wet_area_tail)
 
-        outputs['cg_pl:CG_PAX'] = x_cg_passenger
         outputs['weight:systems:flight_kit:CG:x'] = x_cg_c6
         outputs['weight:furniture:passenger_seats:CG:x'] = x_cg_d2
         outputs['geometry:cabin:length'] = cabin_length
@@ -106,7 +100,6 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         self.add_input('geometry:propulsion:engine:count', val=np.nan)
 
         self.add_output('geometry:cabin:NPAX1')
-        self.add_output('geometry:cabin:seat_rows:count')
         self.add_output('weight:systems:flight_kit:CG:x', units='m')
         self.add_output('weight:furniture:passenger_seats:CG:x', units='m')
         self.add_output('geometry:fuselage:length', units='m')
@@ -120,9 +113,6 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         self.add_output('geometry:cabin:crew_count:commercial')
 
         self.declare_partials('geometry:cabin:NPAX1', ['TLAR:NPAX'], method='fd')
-        self.declare_partials('geometry:cabin:seat_rows:count',
-                              ['geometry:cabin:seats:economical:count_by_row', 'TLAR:NPAX'],
-                              method='fd')
         self.declare_partials('geometry:fuselage:maximum_width',
                               ['geometry:cabin:seats:economical:count_by_row',
                                'geometry:cabin:seats:economical:width',
@@ -215,7 +205,6 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = (wet_area_nose + wet_area_cyl + wet_area_tail)
 
-        outputs['geometry:cabin:seat_rows:count'] = n_rows
         outputs['geometry:cabin:NPAX1'] = npax_1
         outputs['weight:systems:flight_kit:CG:x'] = x_cg_c6
         outputs['weight:furniture:passenger_seats:CG:x'] = x_cg_d2

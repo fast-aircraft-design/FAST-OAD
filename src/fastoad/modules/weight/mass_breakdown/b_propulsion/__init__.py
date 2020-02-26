@@ -1,5 +1,5 @@
 """
-Estimation of horizontal tail geometry (components)
+Estimation of propulsion weight
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
@@ -13,10 +13,6 @@ Estimation of horizontal tail geometry (components)
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from .compute_ht_area import ComputeHTArea
-from .compute_ht_chords import ComputeHTChord
-from .compute_ht_cl_alpha import ComputeHTClalpha
-from .compute_ht_mac import ComputeHTMAC
-from .compute_ht_sweep import ComputeHTSweep
-from .compute_ht_vol_coeff import ComputeHTVolCoeff
+from .b1_engine_weight import EngineWeight
+from .b2_fuel_lines_weight import FuelLinesWeight
+from .b3_unconsumables_weight import UnconsumablesWeight

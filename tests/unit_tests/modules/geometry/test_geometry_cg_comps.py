@@ -18,38 +18,24 @@ import os.path as pth
 
 import pytest
 
-from fastoad.io.xml import XPathReader
-from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
-from fastoad.modules.geometry.cg_components \
-    import ComputeAeroCenter
-from fastoad.modules.geometry.cg_components \
-    import ComputeCGLoadCase1
-from fastoad.modules.geometry.cg_components \
-    import ComputeCGLoadCase2
-from fastoad.modules.geometry.cg_components \
-    import ComputeCGLoadCase3
-from fastoad.modules.geometry.cg_components \
-    import ComputeCGLoadCase4
-from fastoad.modules.geometry.cg_components \
-    import ComputeCGRatioAft
-from fastoad.modules.geometry.cg_components \
-    import ComputeControlSurfacesCG
-from fastoad.modules.geometry.cg_components \
-    import ComputeGlobalCG
-from fastoad.modules.geometry.cg_components \
-    import ComputeMaxCGratio
-from fastoad.modules.geometry.cg_components \
-    import ComputeOthersCG
-from fastoad.modules.geometry.cg_components \
-    import ComputeStaticMargin
-from fastoad.modules.geometry.cg_components \
-    import ComputeTanksCG
-from fastoad.modules.geometry.cg_components \
-    import ComputeWingCG
-# pylint: disable=redefined-outer-name  # needed for pytest fixtures
+from fastoad.io.xml import XPathReader, OMXmlIO
+from fastoad.modules.geometry.compute_aero_center import ComputeAeroCenter
+from fastoad.modules.geometry.compute_static_margin import ComputeStaticMargin
+from fastoad.modules.weight.cg.cg_components import ComputeCGLoadCase1
+from fastoad.modules.weight.cg.cg_components import ComputeCGLoadCase2
+from fastoad.modules.weight.cg.cg_components import ComputeCGLoadCase3
+from fastoad.modules.weight.cg.cg_components import ComputeCGLoadCase4
+from fastoad.modules.weight.cg.cg_components import ComputeCGRatioAft
+from fastoad.modules.weight.cg.cg_components import ComputeControlSurfacesCG
+from fastoad.modules.weight.cg.cg_components import ComputeGlobalCG
+from fastoad.modules.weight.cg.cg_components import ComputeMaxCGratio
+from fastoad.modules.weight.cg.cg_components import ComputeOthersCG
+from fastoad.modules.weight.cg.cg_components import ComputeTanksCG
+from fastoad.modules.weight.cg.cg_components import ComputeWingCG
 from tests.testing_utilities import run_system
 
 
+# pylint: disable=redefined-outer-name  # needed for pytest fixtures
 @pytest.fixture(scope="module")
 def xpath_reader() -> XPathReader:
     """
@@ -60,13 +46,12 @@ def xpath_reader() -> XPathReader:
 
 
 @pytest.fixture(scope="module")
-def input_xml() -> OMLegacy1XmlIO:
+def input_xml() -> OMXmlIO:
     """
     :return: access to the sample xml data
     """
     # TODO: have more consistency in input data (no need for the whole geometry_inputs_full.xml)
-    return OMLegacy1XmlIO(
-        pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
+    return OMXmlIO(pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
 
 
 def test_compute_aero_center(input_xml):

@@ -23,7 +23,6 @@ from fastoad.modules.geometry.geom_components.vt.components import ComputeVTDist
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTMAC
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTSweep
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTVolCoeff
-from fastoad.modules.geometry.geom_components.vt.components import ComputeVTcg
 from fastoad.modules.options import TAIL_TYPE_OPTION, AIRCRAFT_FAMILY_OPTION, \
     OpenMdaoOptionDispatcherGroup
 
@@ -43,5 +42,4 @@ class ComputeVerticalTailGeometry(OpenMdaoOptionDispatcherGroup):
         self.add_subsystem('vt_vol_coeff', ComputeVTVolCoeff(), promotes=['*'])
         self.add_subsystem('vt_chords', ComputeVTChords(), promotes=['*'])
         self.add_subsystem('vt_mac', ComputeVTMAC(), promotes=['*'])
-        self.add_subsystem('vt_cg', ComputeVTcg(), promotes=['*'])
         self.add_subsystem('vt_sweep', ComputeVTSweep(), promotes=['*'])
