@@ -25,36 +25,35 @@ class ComputeHTcg(ExplicitComponent):
     """ Horizontal tail center of gravity estimation """
 
     def setup(self):
+        self.add_input('data:geometry:horizontal_tail:root_chord', val=np.nan, units='m')
+        self.add_input('data:geometry:horizontal_tail:tip_chord', val=np.nan, units='m')
+        self.add_input('data:geometry:horizontal_tail:distance_from_wing', val=np.nan, units='m')
+        self.add_input('data:geometry:horizontal_tail:span', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
+        self.add_input('data:geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
+        self.add_input('data:geometry:horizontal_tail:MAC:length', val=np.nan, units='m')
+        self.add_input('data:geometry:horizontal_tail:MAC:x', val=np.nan, units='m')
 
-        self.add_input('geometry:horizontal_tail:root_chord', val=np.nan, units='m')
-        self.add_input('geometry:horizontal_tail:tip_chord', val=np.nan, units='m')
-        self.add_input('geometry:horizontal_tail:distance_from_wing', val=np.nan, units='m')
-        self.add_input('geometry:horizontal_tail:span', val=np.nan, units='m')
-        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
-        self.add_input('geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:horizontal_tail:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:horizontal_tail:MAC:x', val=np.nan, units='m')
+        self.add_output('data:weight:airframe:horizontal_tail:CG:x', units='m')
 
-        self.add_output('weight:airframe:horizontal_tail:CG:x', units='m')
-
-        self.declare_partials('weight:airframe:horizontal_tail:CG:x', '*', method='fd')
+        self.declare_partials('data:weight:airframe:horizontal_tail:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        root_chord = inputs['geometry:horizontal_tail:root_chord']
-        tip_chord = inputs['geometry:horizontal_tail:tip_chord']
-        b_h = inputs['geometry:horizontal_tail:span']
-        sweep_25_ht = inputs['geometry:horizontal_tail:sweep_25']
-        fa_length = inputs['geometry:wing:MAC:x']
-        lp_ht = inputs['geometry:horizontal_tail:distance_from_wing']
-        mac_ht = inputs['geometry:horizontal_tail:MAC:length']
-        x0_ht = inputs['geometry:horizontal_tail:MAC:x']
+        root_chord = inputs['data:geometry:horizontal_tail:root_chord']
+        tip_chord = inputs['data:geometry:horizontal_tail:tip_chord']
+        b_h = inputs['data:geometry:horizontal_tail:span']
+        sweep_25_ht = inputs['data:geometry:horizontal_tail:sweep_25']
+        fa_length = inputs['data:geometry:wing:MAC:x']
+        lp_ht = inputs['data:geometry:horizontal_tail:distance_from_wing']
+        mac_ht = inputs['data:geometry:horizontal_tail:MAC:length']
+        x0_ht = inputs['data:geometry:horizontal_tail:MAC:x']
 
         tmp = (root_chord * 0.25 + b_h / 2 *
-                 math.tan(sweep_25_ht / 180. * math.pi) - tip_chord * 0.25)
+               math.tan(sweep_25_ht / 180. * math.pi) - tip_chord * 0.25)
 
         l_cg = 0.62 * (root_chord - tip_chord) + tip_chord
         x_cg_ht = 0.42 * l_cg + 0.38 * tmp
         x_cg_ht_absolute = lp_ht + fa_length - \
-            0.25 * mac_ht + (x_cg_ht - x0_ht)
+                           0.25 * mac_ht + (x_cg_ht - x0_ht)
 
-        outputs['weight:airframe:horizontal_tail:CG:x'] = x_cg_ht_absolute
+        outputs['data:weight:airframe:horizontal_tail:CG:x'] = x_cg_ht_absolute

@@ -61,8 +61,8 @@ class XfoilPolar(ExternalCodeComp):
 
         self.add_input('xfoil:reynolds', val=np.nan)
         self.add_input('xfoil:mach', val=np.nan)
-        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:wing:thickness_ratio', val=np.nan)
+        self.add_input('data:geometry:wing:sweep_25', val=np.nan, units='deg')
+        self.add_input('data:geometry:wing:thickness_ratio', val=np.nan)
 
         self.add_output('xfoil:Cl_max_2D')
         self.add_output('xfoil:CL_max_clean')
@@ -79,8 +79,8 @@ class XfoilPolar(ExternalCodeComp):
         # Get inputs
         reynolds = inputs['xfoil:reynolds']
         mach = inputs['xfoil:mach']
-        sweep_25 = inputs['geometry:wing:sweep_25']
-        thickness_ratio = inputs['geometry:wing:thickness_ratio']
+        sweep_25 = inputs['data:geometry:wing:sweep_25']
+        thickness_ratio = inputs['data:geometry:wing:thickness_ratio']
 
         # Pre-processing (populating temp directory) -----------------------------------------------
         # XFoil exe

@@ -36,33 +36,33 @@ class Cd0Fuselage(ExplicitComponent):
             self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('cd0_fuselage_low_speed', shape=POLAR_POINT_COUNT)
         else:
-            self.add_input('aerodynamics:wing:cruise:reynolds', val=np.nan)
-            self.add_input('aerodynamics:aircraft:cruise:CL', val=nans_array)
-            self.add_input('TLAR:cruise_mach', val=np.nan)
-            self.add_output('aerodynamics:fuselage:cruise:CD0', shape=POLAR_POINT_COUNT)
+            self.add_input('data:aerodynamics:wing:cruise:reynolds', val=np.nan)
+            self.add_input('data:aerodynamics:aircraft:cruise:CL', val=nans_array)
+            self.add_input('data:TLAR:cruise_mach', val=np.nan)
+            self.add_output('data:aerodynamics:fuselage:cruise:CD0', shape=POLAR_POINT_COUNT)
 
-        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
-        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:wetted_area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('data:geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('data:geometry:fuselage:maximum_height', val=np.nan, units='m')
+        self.add_input('data:geometry:fuselage:wetted_area', val=np.nan, units='m**2')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        height_max = inputs['geometry:fuselage:maximum_height']
-        width_max = inputs['geometry:fuselage:maximum_width']
-        wet_area_fus = inputs['geometry:fuselage:wetted_area']
-        wing_area = inputs['geometry:wing:area']
-        fus_length = inputs['geometry:fuselage:length']
+        height_max = inputs['data:geometry:fuselage:maximum_height']
+        width_max = inputs['data:geometry:fuselage:maximum_width']
+        wet_area_fus = inputs['data:geometry:fuselage:wetted_area']
+        wing_area = inputs['data:geometry:wing:area']
+        fus_length = inputs['data:geometry:fuselage:length']
         if self.low_speed_aero:
             cl = inputs['cl_low_speed']
             mach = inputs['Mach_low_speed']
             re_hs = inputs['reynolds_low_speed']
         else:
-            cl = inputs['aerodynamics:aircraft:cruise:CL']
-            mach = inputs['TLAR:cruise_mach']
-            re_hs = inputs['aerodynamics:wing:cruise:reynolds']
+            cl = inputs['data:aerodynamics:aircraft:cruise:CL']
+            mach = inputs['data:TLAR:cruise_mach']
+            re_hs = inputs['data:aerodynamics:wing:cruise:reynolds']
 
         cf_fus_hs = 0.455 / (
                 (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(re_hs * fus_length)) ** 2.58)
@@ -76,4 +76,4 @@ class Cd0Fuselage(ExplicitComponent):
         if self.low_speed_aero:
             outputs['cd0_fuselage_low_speed'] = cd0_fus
         else:
-            outputs['aerodynamics:fuselage:cruise:CD0'] = cd0_fus
+            outputs['data:aerodynamics:fuselage:cruise:CD0'] = cd0_fus

@@ -159,7 +159,6 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
     """
     Tests the creation of an XML file with only and ignore options
     """
-    result_folder = pth.join(RESULTS_FOLDER_PATH, 'custom_xml_with_translation_table')
 
     var_names = ['geometry:total_surface',
                  'geometry:wing:span',

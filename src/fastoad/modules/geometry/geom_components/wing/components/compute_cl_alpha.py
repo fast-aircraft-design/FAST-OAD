@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -26,33 +26,32 @@ class ComputeCLalpha(ExplicitComponent):
     """ Wing lift coefficient estimation """
 
     def setup(self):
+        self.add_input('data:TLAR:cruise_mach', val=np.nan)
+        self.add_input('data:geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('data:geometry:fuselage:maximum_height', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:tip:chord', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:tip:thickness_ratio', val=np.nan)
+        self.add_input('data:geometry:wing:sweep_25', val=np.nan, units='deg')
+        self.add_input('data:geometry:wing:aspect_ratio', val=np.nan)
+        self.add_input('data:geometry:wing:span', val=np.nan, units='m')
 
-        self.add_input('TLAR:cruise_mach', val=np.nan)
-        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
-        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
-        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
-        self.add_input('geometry:wing:tip:thickness_ratio', val=np.nan)
-        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:wing:aspect_ratio', val=np.nan)
-        self.add_input('geometry:wing:span', val=np.nan, units='m')
+        self.add_output('data:aerodynamics:aircraft:cruise:CL_alpha')
 
-        self.add_output('aerodynamics:aircraft:cruise:CL_alpha')
-
-        self.declare_partials('aerodynamics:aircraft:cruise:CL_alpha', '*', method='fd')
+        self.declare_partials('data:aerodynamics:aircraft:cruise:CL_alpha', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        cruise_mach = inputs['TLAR:cruise_mach']
-        width_max = inputs['geometry:fuselage:maximum_width']
-        height_max = inputs['geometry:fuselage:maximum_height']
-        span = inputs['geometry:wing:span']
-        lambda_wing = inputs['geometry:wing:aspect_ratio']
-        el_ext = inputs['geometry:wing:tip:thickness_ratio']
-        wing_area = inputs['geometry:wing:area']
-        l2_wing = inputs['geometry:wing:root:chord']
-        l4_wing = inputs['geometry:wing:tip:chord']
-        sweep_25 = inputs['geometry:wing:sweep_25']
+        cruise_mach = inputs['data:TLAR:cruise_mach']
+        width_max = inputs['data:geometry:fuselage:maximum_width']
+        height_max = inputs['data:geometry:fuselage:maximum_height']
+        span = inputs['data:geometry:wing:span']
+        lambda_wing = inputs['data:geometry:wing:aspect_ratio']
+        el_ext = inputs['data:geometry:wing:tip:thickness_ratio']
+        wing_area = inputs['data:geometry:wing:area']
+        l2_wing = inputs['data:geometry:wing:root:chord']
+        l4_wing = inputs['data:geometry:wing:tip:chord']
+        sweep_25 = inputs['data:geometry:wing:sweep_25']
 
         beta = math.sqrt(1 - cruise_mach ** 2)
         d_f = math.sqrt(width_max * height_max)
@@ -63,4 +62,4 @@ class ComputeCLalpha(ExplicitComponent):
                                 1 + (math.tan(sweep_25 / 180. * math.pi)) ** 2 / beta ** 2))) * \
                         (wing_area - l2_wing * width_max) / wing_area * fact_f
 
-        outputs['aerodynamics:aircraft:cruise:CL_alpha'] = cl_alpha_wing
+        outputs['data:aerodynamics:aircraft:cruise:CL_alpha'] = cl_alpha_wing

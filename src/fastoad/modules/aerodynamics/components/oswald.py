@@ -30,35 +30,35 @@ class OswaldCoefficient(ExplicitComponent):
         self.options.declare('low_speed_aero', default=False, types=bool)
 
     def setup(self):
-        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing:span', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:maximum_height', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
-        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
-        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
-        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
+        self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:wing:span', val=np.nan, units='m')
+        self.add_input('data:geometry:fuselage:maximum_height', val=np.nan, units='m')
+        self.add_input('data:geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:tip:chord', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:sweep_25', val=np.nan, units='deg')
 
         if self.options['low_speed_aero']:
             self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('oswald_coeff_low_speed')
         else:
-            self.add_input('TLAR:cruise_mach', val=np.nan)
-            self.add_output('aerodynamics:aircraft:cruise:induced_drag_coefficient')
+            self.add_input('data:TLAR:cruise_mach', val=np.nan)
+            self.add_output('data:aerodynamics:aircraft:cruise:induced_drag_coefficient')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        wing_area = inputs['geometry:wing:area']
-        span = inputs['geometry:wing:span'] / math.cos(5. / 180 * math.pi)
-        height_fus = inputs['geometry:fuselage:maximum_height']
-        width_fus = inputs['geometry:fuselage:maximum_width']
-        l2_wing = inputs['geometry:wing:root:chord']
-        l4_wing = inputs['geometry:wing:tip:chord']
-        sweep_25 = inputs['geometry:wing:sweep_25']
+        wing_area = inputs['data:geometry:wing:area']
+        span = inputs['data:geometry:wing:span'] / math.cos(5. / 180 * math.pi)
+        height_fus = inputs['data:geometry:fuselage:maximum_height']
+        width_fus = inputs['data:geometry:fuselage:maximum_width']
+        l2_wing = inputs['data:geometry:wing:root:chord']
+        l4_wing = inputs['data:geometry:wing:tip:chord']
+        sweep_25 = inputs['data:geometry:wing:sweep_25']
         if self.options['low_speed_aero']:
             mach = inputs['Mach_low_speed']
         else:
-            mach = inputs['TLAR:cruise_mach']
+            mach = inputs['data:TLAR:cruise_mach']
 
         aspect_ratio = span ** 2 / wing_area
         df = math.sqrt(width_fus * height_fus)
@@ -82,4 +82,4 @@ class OswaldCoefficient(ExplicitComponent):
         if self.options['low_speed_aero']:
             outputs['oswald_coeff_low_speed'] = coef_k
         else:
-            outputs['aerodynamics:aircraft:cruise:induced_drag_coefficient'] = coef_k
+            outputs['data:aerodynamics:aircraft:cruise:induced_drag_coefficient'] = coef_k

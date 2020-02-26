@@ -23,17 +23,17 @@ class PaintWeight(ExplicitComponent):
     """ Paint weight estimation (A7) """
 
     def setup(self):
-        self.add_input('geometry:aircraft:wetted_area', val=np.nan, units='m**2')
-        self.add_input('weight:airframe:paint:mass:k', val=1.)
-        self.add_input('weight:airframe:paint:mass:offset', val=0., units='kg')
+        self.add_input('data:geometry:aircraft:wetted_area', val=np.nan, units='m**2')
+        self.add_input('tuning:weight:airframe:paint:mass:k', val=1.)
+        self.add_input('tuning:weight:airframe:paint:mass:offset', val=0., units='kg')
 
-        self.add_output('weight:airframe:paint:mass', units='kg')
+        self.add_output('data:weight:airframe:paint:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        total_wet_surface = inputs['geometry:aircraft:wetted_area']
-        k_a7 = inputs['weight:airframe:paint:mass:k']
-        offset_a7 = inputs['weight:airframe:paint:mass:offset']
+        total_wet_surface = inputs['data:geometry:aircraft:wetted_area']
+        k_a7 = inputs['tuning:weight:airframe:paint:mass:k']
+        offset_a7 = inputs['tuning:weight:airframe:paint:mass:offset']
 
         temp_a7 = 0.180 * total_wet_surface
-        outputs['weight:airframe:paint:mass'] = k_a7 * temp_a7 + offset_a7
+        outputs['data:weight:airframe:paint:mass'] = k_a7 * temp_a7 + offset_a7

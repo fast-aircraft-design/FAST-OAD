@@ -37,150 +37,150 @@ def get_indep_var_comp(var_names):
 def test_aerodynamics_landing():
     """ Tests AerodynamicsHighSpeed """
     input_list = [
-        'TLAR:approach_speed',
-        'mission:sizing:landing:flap_angle',
-        'mission:sizing:landing:slat_angle',
-        'geometry:wing:MAC:length',
-        'geometry:wing:thickness_ratio',
-        'geometry:wing:sweep_25',
-        'geometry:wing:sweep_0',
-        'geometry:wing:sweep_100_outer',
-        'geometry:flap:chord_ratio',
-        'geometry:flap:span_ratio',
-        'geometry:slat:chord_ratio',
-        'geometry:slat:span_ratio',
+        'data:TLAR:approach_speed',
+        'data:mission:sizing:landing:flap_angle',
+        'data:mission:sizing:landing:slat_angle',
+        'data:geometry:wing:MAC:length',
+        'data:geometry:wing:thickness_ratio',
+        'data:geometry:wing:sweep_25',
+        'data:geometry:wing:sweep_0',
+        'data:geometry:wing:sweep_100_outer',
+        'data:geometry:flap:chord_ratio',
+        'data:geometry:flap:span_ratio',
+        'data:geometry:slat:chord_ratio',
+        'data:geometry:slat:span_ratio',
         'xfoil:mach',
-        'aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k'
+        'tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k'
     ]
 
     ivc = get_indep_var_comp(input_list)
     problem = run_system(AerodynamicsLanding(), ivc)
-    assert problem['aerodynamics:aircraft:landing:CL_max_clean'] == approx(1.59359, abs=1e-5)
-    assert problem['aerodynamics:aircraft:landing:CL_max'] == approx(2.82178, abs=1e-5)
+    assert problem['data:aerodynamics:aircraft:landing:CL_max_clean'] == approx(1.59359, abs=1e-5)
+    assert problem['data:aerodynamics:aircraft:landing:CL_max'] == approx(2.82178, abs=1e-5)
 
-    input_list.append('aerodynamics:aircraft:landing:CL_max_clean')
+    input_list.append('data:aerodynamics:aircraft:landing:CL_max_clean')
     ivc = get_indep_var_comp(input_list)
     problem = run_system(AerodynamicsLanding(use_xfoil=False), ivc)
-    assert problem['aerodynamics:aircraft:landing:CL_max_clean'] == approx(1.55, abs=1e-5)
-    assert problem['aerodynamics:aircraft:landing:CL_max'] == approx(2.77819, abs=1e-5)
+    assert problem['data:aerodynamics:aircraft:landing:CL_max_clean'] == approx(1.55, abs=1e-5)
+    assert problem['data:aerodynamics:aircraft:landing:CL_max'] == approx(2.77819, abs=1e-5)
 
 
 def test_aerodynamics_high_speed():
     """ Tests AerodynamicsHighSpeed """
     input_list = [
-        'geometry:propulsion:engine:count',
-        'geometry:propulsion:fan:length',
-        'geometry:flap:chord_ratio',
-        'geometry:flap:span_ratio',
-        'geometry:fuselage:maximum_height',
-        'geometry:fuselage:length',
-        'geometry:fuselage:wetted_area',
-        'geometry:fuselage:maximum_width',
-        'geometry:horizontal_tail:MAC:length',
-        'geometry:horizontal_tail:sweep_25',
-        'geometry:horizontal_tail:thickness_ratio',
-        'geometry:horizontal_tail:wetted_area',
-        'geometry:propulsion:nacelle:length',
-        'geometry:propulsion:nacelle:wetted_area',
-        'geometry:propulsion:pylon:length',
-        'geometry:propulsion:pylon:wetted_area',
-        'geometry:aircraft:wetted_area',
-        'geometry:slat:chord_ratio',
-        'geometry:slat:span_ratio',
-        'geometry:vertical_tail:MAC:length',
-        'geometry:vertical_tail:sweep_25',
-        'geometry:vertical_tail:thickness_ratio',
-        'geometry:vertical_tail:wetted_area',
-        'geometry:wing:area',
-        'geometry:wing:MAC:length',
-        'geometry:wing:root:chord',
-        'geometry:wing:tip:chord',
-        'geometry:wing:span',
-        'geometry:wing:sweep_0',
-        'geometry:wing:sweep_100_outer',
-        'geometry:wing:sweep_25',
-        'geometry:wing:thickness_ratio',
-        'geometry:wing:wetted_area',
-        'aerodynamics:aircraft:cruise:CD:k',
-        'aerodynamics:aircraft:cruise:CL:k',
-        'aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k',
-        'aerodynamics:aircraft:cruise:CD:winglet_effect:k',
-        'aerodynamics:aircraft:cruise:CL:winglet_effect:k',
-        'aerodynamics:aircraft:cruise:CD:offset',
-        'aerodynamics:aircraft:cruise:CL:offset',
-        'aerodynamics:aircraft:cruise:CD:winglet_effect:offset',
-        'aerodynamics:aircraft:cruise:CL:winglet_effect:offset',
-        'mission:sizing:cruise:altitude',
-        'mission:sizing:landing:flap_angle',
-        'mission:sizing:landing:slat_angle',
-        'TLAR:cruise_mach',
-        'TLAR:approach_speed',
+        'data:geometry:propulsion:engine:count',
+        'data:geometry:propulsion:fan:length',
+        'data:geometry:flap:chord_ratio',
+        'data:geometry:flap:span_ratio',
+        'data:geometry:fuselage:maximum_height',
+        'data:geometry:fuselage:length',
+        'data:geometry:fuselage:wetted_area',
+        'data:geometry:fuselage:maximum_width',
+        'data:geometry:horizontal_tail:MAC:length',
+        'data:geometry:horizontal_tail:sweep_25',
+        'data:geometry:horizontal_tail:thickness_ratio',
+        'data:geometry:horizontal_tail:wetted_area',
+        'data:geometry:propulsion:nacelle:length',
+        'data:geometry:propulsion:nacelle:wetted_area',
+        'data:geometry:propulsion:pylon:length',
+        'data:geometry:propulsion:pylon:wetted_area',
+        'data:geometry:aircraft:wetted_area',
+        'data:geometry:slat:chord_ratio',
+        'data:geometry:slat:span_ratio',
+        'data:geometry:vertical_tail:MAC:length',
+        'data:geometry:vertical_tail:sweep_25',
+        'data:geometry:vertical_tail:thickness_ratio',
+        'data:geometry:vertical_tail:wetted_area',
+        'data:geometry:wing:area',
+        'data:geometry:wing:MAC:length',
+        'data:geometry:wing:root:chord',
+        'data:geometry:wing:tip:chord',
+        'data:geometry:wing:span',
+        'data:geometry:wing:sweep_0',
+        'data:geometry:wing:sweep_100_outer',
+        'data:geometry:wing:sweep_25',
+        'data:geometry:wing:thickness_ratio',
+        'data:geometry:wing:wetted_area',
+        'tuning:aerodynamics:aircraft:cruise:CD:k',
+        'tuning:aerodynamics:aircraft:cruise:CL:k',
+        'tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k',
+        'tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k',
+        'tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:k',
+        'tuning:aerodynamics:aircraft:cruise:CD:offset',
+        'tuning:aerodynamics:aircraft:cruise:CL:offset',
+        'tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:offset',
+        'tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:offset',
+        'data:mission:sizing:cruise:altitude',
+        'data:mission:sizing:landing:flap_angle',
+        'data:mission:sizing:landing:slat_angle',
+        'data:TLAR:cruise_mach',
+        'data:TLAR:approach_speed',
     ]
 
     ivc = get_indep_var_comp(input_list)
     problem = run_system(AerodynamicsHighSpeed(), ivc)
 
-    cd = problem['aerodynamics:aircraft:cruise:CD']
-    cl = problem['aerodynamics:aircraft:cruise:CL']
+    cd = problem['data:aerodynamics:aircraft:cruise:CD']
+    cl = problem['data:aerodynamics:aircraft:cruise:CL']
 
     assert cd[cl == 0.] == approx(0.02030, abs=1e-5)
     assert cd[cl == 0.2] == approx(0.02209, abs=1e-5)
     assert cd[cl == 0.42] == approx(0.02897, abs=1e-5)
     assert cd[cl == 0.85] == approx(0.11781, abs=1e-5)
 
-    assert problem['aerodynamics:aircraft:cruise:optimal_CL'] == approx(0.54, abs=1e-3)
-    assert problem['aerodynamics:aircraft:cruise:optimal_CD'] == approx(0.03550, abs=1e-5)
+    assert problem['data:aerodynamics:aircraft:cruise:optimal_CL'] == approx(0.54, abs=1e-3)
+    assert problem['data:aerodynamics:aircraft:cruise:optimal_CD'] == approx(0.03550, abs=1e-5)
 
 
 def test_aerodynamics_low_speed():
     """ Tests AerodynamicsLowSpeed """
     input_list = [
-        'geometry:propulsion:engine:count',
-        'geometry:propulsion:fan:length',
-        'geometry:flap:chord_ratio',
-        'geometry:flap:span_ratio',
-        'geometry:fuselage:maximum_height',
-        'geometry:fuselage:length',
-        'geometry:fuselage:wetted_area',
-        'geometry:fuselage:maximum_width',
-        'geometry:horizontal_tail:MAC:length',
-        'geometry:horizontal_tail:sweep_25',
-        'geometry:horizontal_tail:thickness_ratio',
-        'geometry:horizontal_tail:wetted_area',
-        'geometry:propulsion:nacelle:length',
-        'geometry:propulsion:nacelle:wetted_area',
-        'geometry:propulsion:pylon:length',
-        'geometry:propulsion:pylon:wetted_area',
-        'geometry:aircraft:wetted_area',
-        'geometry:slat:chord_ratio',
-        'geometry:slat:span_ratio',
-        'geometry:vertical_tail:MAC:length',
-        'geometry:vertical_tail:sweep_25',
-        'geometry:vertical_tail:thickness_ratio',
-        'geometry:vertical_tail:wetted_area',
-        'geometry:wing:area',
-        'geometry:wing:aspect_ratio',
-        'geometry:wing:MAC:length',
-        'geometry:wing:root:chord',
-        'geometry:wing:tip:chord',
-        'geometry:wing:span',
-        'geometry:wing:sweep_0',
-        'geometry:wing:sweep_100_outer',
-        'geometry:wing:sweep_25',
-        'geometry:wing:thickness_ratio',
-        'geometry:wing:tip:thickness_ratio',
-        'geometry:wing:wetted_area',
-        'aerodynamics:aircraft:cruise:CD:k',
-        'aerodynamics:aircraft:cruise:CL:k',
-        'aerodynamics:aircraft:cruise:CD:winglet_effect:k',
-        'aerodynamics:aircraft:cruise:CL:winglet_effect:k',
-        'aerodynamics:aircraft:cruise:CD:offset',
-        'aerodynamics:aircraft:cruise:CL:offset',
-        'aerodynamics:aircraft:cruise:CD:winglet_effect:offset',
-        'aerodynamics:aircraft:cruise:CL:winglet_effect:offset',
-        'mission:sizing:landing:flap_angle',
-        'mission:sizing:landing:slat_angle',
-        'TLAR:approach_speed',
+        'data:geometry:propulsion:engine:count',
+        'data:geometry:propulsion:fan:length',
+        'data:geometry:flap:chord_ratio',
+        'data:geometry:flap:span_ratio',
+        'data:geometry:fuselage:maximum_height',
+        'data:geometry:fuselage:length',
+        'data:geometry:fuselage:wetted_area',
+        'data:geometry:fuselage:maximum_width',
+        'data:geometry:horizontal_tail:MAC:length',
+        'data:geometry:horizontal_tail:sweep_25',
+        'data:geometry:horizontal_tail:thickness_ratio',
+        'data:geometry:horizontal_tail:wetted_area',
+        'data:geometry:propulsion:nacelle:length',
+        'data:geometry:propulsion:nacelle:wetted_area',
+        'data:geometry:propulsion:pylon:length',
+        'data:geometry:propulsion:pylon:wetted_area',
+        'data:geometry:aircraft:wetted_area',
+        'data:geometry:slat:chord_ratio',
+        'data:geometry:slat:span_ratio',
+        'data:geometry:vertical_tail:MAC:length',
+        'data:geometry:vertical_tail:sweep_25',
+        'data:geometry:vertical_tail:thickness_ratio',
+        'data:geometry:vertical_tail:wetted_area',
+        'data:geometry:wing:area',
+        'data:geometry:wing:aspect_ratio',
+        'data:geometry:wing:MAC:length',
+        'data:geometry:wing:root:chord',
+        'data:geometry:wing:tip:chord',
+        'data:geometry:wing:span',
+        'data:geometry:wing:sweep_0',
+        'data:geometry:wing:sweep_100_outer',
+        'data:geometry:wing:sweep_25',
+        'data:geometry:wing:thickness_ratio',
+        'data:geometry:wing:tip:thickness_ratio',
+        'data:geometry:wing:wetted_area',
+        'tuning:aerodynamics:aircraft:cruise:CD:k',
+        'tuning:aerodynamics:aircraft:cruise:CL:k',
+        'tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k',
+        'tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:k',
+        'tuning:aerodynamics:aircraft:cruise:CD:offset',
+        'tuning:aerodynamics:aircraft:cruise:CL:offset',
+        'tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:offset',
+        'tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:offset',
+        'data:mission:sizing:landing:flap_angle',
+        'data:mission:sizing:landing:slat_angle',
+        'data:TLAR:approach_speed',
     ]
 
     ivc = get_indep_var_comp(input_list)

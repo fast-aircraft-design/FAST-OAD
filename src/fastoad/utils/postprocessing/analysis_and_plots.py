@@ -40,12 +40,12 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     """
     variables = aircraft_xml.read_variables()
 
-    wing_x4 = variables['geometry:wing:tip:leading_edge:x'].value[0]
-    wing_y2 = variables['geometry:wing:root:y'].value[0]
-    wing_y3 = variables['geometry:wing:kink:y'].value[0]
-    wing_y4 = variables['geometry:wing:tip:y'].value[0]
-    wing_l2 = variables['geometry:wing:root:chord'].value[0]
-    wing_l4 = variables['geometry:wing:tip:chord'].value[0]
+    wing_x4 = variables['data:geometry:wing:tip:leading_edge:x'].value[0]
+    wing_y2 = variables['data:geometry:wing:root:y'].value[0]
+    wing_y3 = variables['data:geometry:wing:kink:y'].value[0]
+    wing_y4 = variables['data:geometry:wing:tip:y'].value[0]
+    wing_l2 = variables['data:geometry:wing:root:chord'].value[0]
+    wing_l4 = variables['data:geometry:wing:tip:chord'].value[0]
 
     x = [0, wing_y2, wing_y4,
          wing_y4, wing_y3,
@@ -91,8 +91,8 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
     """
     # FIXME: the multidimensional array ClCd is overwritten by read_variables()
     variables = aircraft_xml.read_variables()
-    cd = variables['aerodynamics:aircraft:cruise:CD'].value
-    cl = variables['aerodynamics:aircraft:cruise:CL'].value
+    cd = variables['data:aerodynamics:aircraft:cruise:CD'].value
+    cl = variables['data:aerodynamics:aircraft:cruise:CL'].value
 
     if fig is None:
         fig = go.Figure()
@@ -126,54 +126,54 @@ def mass_breakdown_plot(aircraft_xml: OMXmlIO):
     """
     variables = aircraft_xml.read_variables()
 
-    systems = variables['weight:systems:mass'].value[0]
-    C11 = variables['weight:systems:power:auxiliary_power_unit:mass'].value[0]
-    C12 = variables['weight:systems:power:electric_systems:mass'].value[0]
-    C13 = variables['weight:systems:power:hydraulic_systems:mass'].value[0]
-    C21 = variables['weight:systems:life_support:insulation:mass'].value[0]
-    C22 = variables['weight:systems:life_support:air_conditioning:mass'].value[0]
-    C23 = variables['weight:systems:life_support:de-icing:mass'].value[0]
-    C24 = variables['weight:systems:life_support:cabin_lighting:mass'].value[0]
-    C25 = variables['weight:systems:life_support:seats_crew_accommodation:mass'].value[0]
-    C26 = variables['weight:systems:life_support:oxygen:mass'].value[0]
-    C27 = variables['weight:systems:life_support:safety_equipment:mass'].value[0]
-    C3 = variables['weight:systems:navigation:mass'].value[0]
-    C4 = variables['weight:systems:transmission:mass'].value[0]
-    C51 = variables['weight:systems:operational:radar:mass'].value[0]
-    C52 = variables['weight:systems:operational:cargo_hold:mass'].value[0]
-    C6 = variables['weight:systems:flight_kit:mass'].value[0]
+    systems = variables['data:weight:systems:mass'].value[0]
+    C11 = variables['data:weight:systems:power:auxiliary_power_unit:mass'].value[0]
+    C12 = variables['data:weight:systems:power:electric_systems:mass'].value[0]
+    C13 = variables['data:weight:systems:power:hydraulic_systems:mass'].value[0]
+    C21 = variables['data:weight:systems:life_support:insulation:mass'].value[0]
+    C22 = variables['data:weight:systems:life_support:air_conditioning:mass'].value[0]
+    C23 = variables['data:weight:systems:life_support:de-icing:mass'].value[0]
+    C24 = variables['data:weight:systems:life_support:cabin_lighting:mass'].value[0]
+    C25 = variables['data:weight:systems:life_support:seats_crew_accommodation:mass'].value[0]
+    C26 = variables['data:weight:systems:life_support:oxygen:mass'].value[0]
+    C27 = variables['data:weight:systems:life_support:safety_equipment:mass'].value[0]
+    C3 = variables['data:weight:systems:navigation:mass'].value[0]
+    C4 = variables['data:weight:systems:transmission:mass'].value[0]
+    C51 = variables['data:weight:systems:operational:radar:mass'].value[0]
+    C52 = variables['data:weight:systems:operational:cargo_hold:mass'].value[0]
+    C6 = variables['data:weight:systems:flight_kit:mass'].value[0]
 
-    furniture = variables['weight:furniture:mass'].value[0]
-    D1 = variables['weight:furniture:cargo_configuration:mass'].value[0]
-    D2 = variables['weight:furniture:passenger_seats:mass'].value[0]
-    D3 = variables['weight:furniture:food_water:mass'].value[0]
-    D4 = variables['weight:furniture:security_kit:mass'].value[0]
-    D5 = variables['weight:furniture:toilets:mass'].value[0]
+    furniture = variables['data:weight:furniture:mass'].value[0]
+    D1 = variables['data:weight:furniture:cargo_configuration:mass'].value[0]
+    D2 = variables['data:weight:furniture:passenger_seats:mass'].value[0]
+    D3 = variables['data:weight:furniture:food_water:mass'].value[0]
+    D4 = variables['data:weight:furniture:security_kit:mass'].value[0]
+    D5 = variables['data:weight:furniture:toilets:mass'].value[0]
 
-    crew = variables['weight:crew:mass'].value[0]
+    crew = variables['data:weight:crew:mass'].value[0]
 
-    airframe = variables['weight:airframe:mass'].value[0]
-    wing = variables['weight:airframe:wing:mass'].value[0]
-    fuselage = variables['weight:airframe:fuselage:mass'].value[0]
-    h_tail = variables['weight:airframe:horizontal_tail:mass'].value[0]
-    v_tail = variables['weight:airframe:vertical_tail:mass'].value[0]
-    control_surface = variables['weight:airframe:flight_controls:mass'].value[0]
-    landing_gear_1 = variables['weight:airframe:landing_gear:main:mass'].value[0]
-    landing_gear_2 = variables['weight:airframe:landing_gear:front:mass'].value[0]
-    engine_pylon = variables['weight:airframe:pylon:mass'].value[0]
-    paint = variables['weight:airframe:paint:mass'].value[0]
+    airframe = variables['data:weight:airframe:mass'].value[0]
+    wing = variables['data:weight:airframe:wing:mass'].value[0]
+    fuselage = variables['data:weight:airframe:fuselage:mass'].value[0]
+    h_tail = variables['data:weight:airframe:horizontal_tail:mass'].value[0]
+    v_tail = variables['data:weight:airframe:vertical_tail:mass'].value[0]
+    control_surface = variables['data:weight:airframe:flight_controls:mass'].value[0]
+    landing_gear_1 = variables['data:weight:airframe:landing_gear:main:mass'].value[0]
+    landing_gear_2 = variables['data:weight:airframe:landing_gear:front:mass'].value[0]
+    engine_pylon = variables['data:weight:airframe:pylon:mass'].value[0]
+    paint = variables['data:weight:airframe:paint:mass'].value[0]
 
-    propulsion = variables['weight:propulsion:mass'].value[0]
-    B1 = variables['weight:propulsion:engine:mass'].value[0]
-    B2 = variables['weight:propulsion:fuel_lines:mass'].value[0]
-    B3 = variables['weight:propulsion:unconsumables:mass'].value[0]
+    propulsion = variables['data:weight:propulsion:mass'].value[0]
+    B1 = variables['data:weight:propulsion:engine:mass'].value[0]
+    B2 = variables['data:weight:propulsion:fuel_lines:mass'].value[0]
+    B3 = variables['data:weight:propulsion:unconsumables:mass'].value[0]
 
-    MTOW = variables['weight:aircraft:MTOW'].value[0]
-    MZFW = variables['weight:aircraft:MZFW'].value[0]
-    MFW = variables['weight:aircraft:MFW'].value[0]
-    OWE = variables['weight:aircraft:OWE'].value[0]
-    payload = variables['weight:aircraft:payload'].value[0]
-    fuel_mission = variables['mission:sizing:fuel'].value[0]
+    MTOW = variables['data:weight:aircraft:MTOW'].value[0]
+    MZFW = variables['data:weight:aircraft:MZFW'].value[0]
+    MFW = variables['data:weight:aircraft:MFW'].value[0]
+    OWE = variables['data:weight:aircraft:OWE'].value[0]
+    payload = variables['data:weight:aircraft:payload'].value[0]
+    fuel_mission = variables['data:mission:sizing:fuel'].value[0]
 
     # TODO: Deal with this in a more generic manner ?
     if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):
@@ -242,60 +242,60 @@ def mass_breakdown_plot(aircraft_xml: OMXmlIO):
 def mass_breakdown_generic(aircraft_xml: OMXmlIO, root='MTOW', max_depth=10):
     variables = aircraft_xml.read_variables()
 
-    parents = {'mission:sizing:fuel': 'weight:aircraft:MTOW',
-               'weight:aircraft:payload': 'weight:aircraft:MTOW',
-               'weight:aircraft:OWE': 'weight:aircraft:MTOW',
-               'weight:systems:power:auxiliary_power_unit:mass': 'weight:aircraft:OWE',
+    parents = {'data:mission:sizing:fuel': 'data:weight:aircraft:MTOW',
+               'data:weight:aircraft:payload': 'data:weight:aircraft:MTOW',
+               'data:weight:aircraft:OWE': 'data:weight:aircraft:MTOW',
+               'data:weight:systems:power:auxiliary_power_unit:mass': 'data:weight:aircraft:OWE',
                }
 
-    systems = variables['weight:systems:mass'].value[0]
-    C11 = variables['weight:systems:power:auxiliary_power_unit:mass'].value[0]
-    C12 = variables['weight:systems:power:electric_systems:mass'].value[0]
-    C13 = variables['weight:systems:power:hydraulic_systems:mass'].value[0]
-    C21 = variables['weight:systems:life_support:insulation:mass'].value[0]
-    C22 = variables['weight:systems:life_support:air_conditioning:mass'].value[0]
-    C23 = variables['weight:systems:life_support:de-icing:mass'].value[0]
-    C24 = variables['weight:systems:life_support:cabin_lighting:mass'].value[0]
-    C25 = variables['weight:systems:life_support:seats_crew_accommodation:mass'].value[0]
-    C26 = variables['weight:systems:life_support:oxygen:mass'].value[0]
-    C27 = variables['weight:systems:life_support:safety_equipment:mass'].value[0]
-    C3 = variables['weight:systems:navigation:mass'].value[0]
-    C4 = variables['weight:systems:transmission:mass'].value[0]
-    C51 = variables['weight:systems:operational:radar:mass'].value[0]
-    C52 = variables['weight:systems:operational:cargo_hold:mass'].value[0]
-    C6 = variables['weight:systems:flight_kit:mass'].value[0]
+    systems = variables['data:weight:systems:mass'].value[0]
+    C11 = variables['data:weight:systems:power:auxiliary_power_unit:mass'].value[0]
+    C12 = variables['data:weight:systems:power:electric_systems:mass'].value[0]
+    C13 = variables['data:weight:systems:power:hydraulic_systems:mass'].value[0]
+    C21 = variables['data:weight:systems:life_support:insulation:mass'].value[0]
+    C22 = variables['data:weight:systems:life_support:air_conditioning:mass'].value[0]
+    C23 = variables['data:weight:systems:life_support:de-icing:mass'].value[0]
+    C24 = variables['data:weight:systems:life_support:cabin_lighting:mass'].value[0]
+    C25 = variables['data:weight:systems:life_support:seats_crew_accommodation:mass'].value[0]
+    C26 = variables['data:weight:systems:life_support:oxygen:mass'].value[0]
+    C27 = variables['data:weight:systems:life_support:safety_equipment:mass'].value[0]
+    C3 = variables['data:weight:systems:navigation:mass'].value[0]
+    C4 = variables['data:weight:systems:transmission:mass'].value[0]
+    C51 = variables['data:weight:systems:operational:radar:mass'].value[0]
+    C52 = variables['data:weight:systems:operational:cargo_hold:mass'].value[0]
+    C6 = variables['data:weight:systems:flight_kit:mass'].value[0]
 
-    furniture = variables['weight:furniture:mass'].value[0]
-    D1 = variables['weight:furniture:cargo_configuration:mass'].value[0]
-    D2 = variables['weight:furniture:passenger_seats:mass'].value[0]
-    D3 = variables['weight:furniture:food_water:mass'].value[0]
-    D4 = variables['weight:furniture:security_kit:mass'].value[0]
-    D5 = variables['weight:furniture:toilets:mass'].value[0]
+    furniture = variables['data:weight:furniture:mass'].value[0]
+    D1 = variables['data:weight:furniture:cargo_configuration:mass'].value[0]
+    D2 = variables['data:weight:furniture:passenger_seats:mass'].value[0]
+    D3 = variables['data:weight:furniture:food_water:mass'].value[0]
+    D4 = variables['data:weight:furniture:security_kit:mass'].value[0]
+    D5 = variables['data:weight:furniture:toilets:mass'].value[0]
 
-    crew = variables['weight:crew:mass'].value[0]
+    crew = variables['data:weight:crew:mass'].value[0]
 
-    airframe = variables['weight:airframe:mass'].value[0]
-    wing = variables['weight:airframe:wing:mass'].value[0]
-    fuselage = variables['weight:airframe:fuselage:mass'].value[0]
-    h_tail = variables['weight:airframe:horizontal_tail:mass'].value[0]
-    v_tail = variables['weight:airframe:vertical_tail:mass'].value[0]
-    control_surface = variables['weight:airframe:flight_controls:mass'].value[0]
-    landing_gear_1 = variables['weight:airframe:landing_gear:main:mass'].value[0]
-    landing_gear_2 = variables['weight:airframe:landing_gear:front:mass'].value[0]
-    engine_pylon = variables['weight:airframe:pylon:mass'].value[0]
-    paint = variables['weight:airframe:paint:mass'].value[0]
+    airframe = variables['data:weight:airframe:mass'].value[0]
+    wing = variables['data:weight:airframe:wing:mass'].value[0]
+    fuselage = variables['data:weight:airframe:fuselage:mass'].value[0]
+    h_tail = variables['data:weight:airframe:horizontal_tail:mass'].value[0]
+    v_tail = variables['data:weight:airframe:vertical_tail:mass'].value[0]
+    control_surface = variables['data:weight:airframe:flight_controls:mass'].value[0]
+    landing_gear_1 = variables['data:weight:airframe:landing_gear:main:mass'].value[0]
+    landing_gear_2 = variables['data:weight:airframe:landing_gear:front:mass'].value[0]
+    engine_pylon = variables['data:weight:airframe:pylon:mass'].value[0]
+    paint = variables['data:weight:airframe:paint:mass'].value[0]
 
-    propulsion = variables['weight:propulsion:mass'].value[0]
-    B1 = variables['weight:propulsion:engine:mass'].value[0]
-    B2 = variables['weight:propulsion:fuel_lines:mass'].value[0]
-    B3 = variables['weight:propulsion:unconsumables:mass'].value[0]
+    propulsion = variables['data:weight:propulsion:mass'].value[0]
+    B1 = variables['data:weight:propulsion:engine:mass'].value[0]
+    B2 = variables['data:weight:propulsion:fuel_lines:mass'].value[0]
+    B3 = variables['data:weight:propulsion:unconsumables:mass'].value[0]
 
-    MTOW = variables['weight:aircraft:MTOW'].value[0]
-    # MZFW = variables['weight:aircraft:MZFW'].value[0]
-    # MFW = variables['weight:aircraft:MFW'].value[0]
-    OWE = variables['weight:aircraft:OWE'].value[0]
-    payload = variables['weight:aircraft:payload'].value[0]
-    fuel_mission = variables['mission:sizing:fuel'].value[0]
+    MTOW = variables['data:weight:aircraft:MTOW'].value[0]
+    # MZFW = variables['data:weight:aircraft:MZFW'].value[0]
+    # MFW = variables['data:weight:aircraft:MFW'].value[0]
+    OWE = variables['data:weight:aircraft:OWE'].value[0]
+    payload = variables['data:weight:aircraft:payload'].value[0]
+    fuel_mission = variables['data:mission:sizing:fuel'].value[0]
 
     # TODO: Deal with this in a more generic manner ?
     if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):

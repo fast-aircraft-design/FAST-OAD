@@ -27,15 +27,15 @@ class TransmissionSystemsWeight(ExplicitComponent):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
-        self.add_input('weight:systems:transmission:mass:k', val=1.)
-        self.add_input('weight:systems:transmission:mass:offset', val=0., units='kg')
+        self.add_input('tuning:weight:systems:transmission:mass:k', val=1.)
+        self.add_input('tuning:weight:systems:transmission:mass:offset', val=0., units='kg')
 
-        self.add_output('weight:systems:transmission:mass', units='kg')
+        self.add_output('data:weight:systems:transmission:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        k_c4 = inputs['weight:systems:transmission:mass:k']
-        offset_c4 = inputs['weight:systems:transmission:mass:offset']
+        k_c4 = inputs['tuning:weight:systems:transmission:mass:k']
+        offset_c4 = inputs['tuning:weight:systems:transmission:mass:offset']
 
         aircraft_type = self.options[AIRCRAFT_TYPE_OPTION]
         if aircraft_type == 1.0:
@@ -49,4 +49,4 @@ class TransmissionSystemsWeight(ExplicitComponent):
         else:
             raise ValueError("Unexpected aircraft type")
 
-        outputs['weight:systems:transmission:mass'] = k_c4 * temp_c4 + offset_c4
+        outputs['data:weight:systems:transmission:mass'] = k_c4 * temp_c4 + offset_c4

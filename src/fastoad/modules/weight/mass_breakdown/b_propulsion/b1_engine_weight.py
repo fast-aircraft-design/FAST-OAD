@@ -23,19 +23,19 @@ class EngineWeight(ExplicitComponent):
     """ Engine weight estimation (B1) """
 
     def setup(self):
-        self.add_input('propulsion:MTO_thrust', val=np.nan, units='N')
-        self.add_input('geometry:propulsion:engine:count', val=np.nan)
-        self.add_input('weight:propulsion:engine:mass:k', val=1.)
-        self.add_input('weight:propulsion:engine:mass:offset', val=0., units='kg')
+        self.add_input('data:propulsion:MTO_thrust', val=np.nan, units='N')
+        self.add_input('data:geometry:propulsion:engine:count', val=np.nan)
+        self.add_input('tuning:weight:propulsion:engine:mass:k', val=1.)
+        self.add_input('tuning:weight:propulsion:engine:mass:offset', val=0., units='kg')
 
-        self.add_output('weight:propulsion:engine:mass', units='kg')
+        self.add_output('data:weight:propulsion:engine:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        sea_level_thrust = inputs['propulsion:MTO_thrust']
-        n_engines = inputs['geometry:propulsion:engine:count']
-        k_b1 = inputs['weight:propulsion:engine:mass:k']
-        offset_b1 = inputs['weight:propulsion:engine:mass:offset']
+        sea_level_thrust = inputs['data:propulsion:MTO_thrust']
+        n_engines = inputs['data:geometry:propulsion:engine:count']
+        k_b1 = inputs['tuning:weight:propulsion:engine:mass:k']
+        offset_b1 = inputs['tuning:weight:propulsion:engine:mass:offset']
 
         if sea_level_thrust < 80000:
             temp_b1 = 22.2e-3 * sea_level_thrust
@@ -43,4 +43,4 @@ class EngineWeight(ExplicitComponent):
             temp_b1 = 14.1e-3 * sea_level_thrust + 648
 
         temp_b1 *= n_engines * 1.55
-        outputs['weight:propulsion:engine:mass'] = k_b1 * temp_b1 + offset_b1
+        outputs['data:weight:propulsion:engine:mass'] = k_b1 * temp_b1 + offset_b1

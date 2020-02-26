@@ -37,8 +37,8 @@ def test_compute():
     ivc = IndepVarComp()
     ivc.add_output('xfoil:reynolds', 18000000)
     ivc.add_output('xfoil:mach', 0.20)
-    ivc.add_output('geometry:wing:sweep_25', 25.)
-    ivc.add_output('geometry:wing:thickness_ratio', 0.1284)
+    ivc.add_output('data:geometry:wing:sweep_25', 25.)
+    ivc.add_output('data:geometry:wing:thickness_ratio', 0.1284)
 
     xfoil_comp = XfoilPolar()
     problem = run_system(xfoil_comp, ivc)

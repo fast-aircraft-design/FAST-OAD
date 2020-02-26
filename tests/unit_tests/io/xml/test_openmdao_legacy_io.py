@@ -52,12 +52,12 @@ def test_legacy1(cleanup):
     assert entry_count > 400
 
     # Check some random fields
-    assert_allclose(var_list['geometry:wing:MAC:x'].value, 16.457)
-    assert var_list['geometry:wing:MAC:x'].units == 'm'
-    assert_allclose(var_list['TLAR:NPAX'].value, 150)
-    assert var_list['TLAR:NPAX'].units is None
-    assert_allclose(var_list['geometry:wing:wetted_area'].value, 200.607)
-    assert var_list['geometry:wing:wetted_area'].units == 'm**2'
+    assert_allclose(var_list['data:geometry:wing:MAC:x'].value, 16.457)
+    assert var_list['data:geometry:wing:MAC:x'].units == 'm'
+    assert_allclose(var_list['data:TLAR:NPAX'].value, 150)
+    assert var_list['data:TLAR:NPAX'].units is None
+    assert_allclose(var_list['data:geometry:wing:wetted_area'].value, 200.607)
+    assert var_list['data:geometry:wing:wetted_area'].units == 'm**2'
 
     # test write ---------------------------------------------------------------
     new_filename = pth.join(result_folder, 'CeRAS01_baseline.xml')

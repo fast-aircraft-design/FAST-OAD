@@ -47,36 +47,36 @@ class AerodynamicsLanding(om.Group):
         self.add_subsystem('mach_reynolds', ComputeMachReynolds(), promotes=['*'])
         if self.options['use_xfoil']:
             self.add_subsystem('xfoil_run', XfoilPolar(),
-                               promotes=['geometry:wing:sweep_25',
-                                         'geometry:wing:thickness_ratio'])
+                               promotes=['data:geometry:wing:sweep_25',
+                                         'data:geometry:wing:thickness_ratio'])
         self.add_subsystem('delta_cl_landing', ComputeDeltaHighLift(landing_flag=True),
                            promotes=['*'])
         self.add_subsystem('compute_max_cl_landing', ComputeMaxClLanding(), promotes=['*'])
 
         if self.options['use_xfoil']:
-            self.connect('aerodynamics:aircraft:landing:mach', 'xfoil_run.xfoil:mach')
-            self.connect('aerodynamics:aircraft:landing:reynolds', 'xfoil_run.xfoil:reynolds')
+            self.connect('data:aerodynamics:aircraft:landing:mach', 'xfoil_run.xfoil:mach')
+            self.connect('data:aerodynamics:aircraft:landing:reynolds', 'xfoil_run.xfoil:reynolds')
             self.connect('xfoil_run.xfoil:CL_max_clean',
-                         'aerodynamics:aircraft:landing:CL_max_clean')
+                         'data:aerodynamics:aircraft:landing:CL_max_clean')
 
 
 class ComputeMachReynolds(om.ExplicitComponent):
 
     def setup(self):
-        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('TLAR:approach_speed', val=np.nan, units='m/s')
-        self.add_output('aerodynamics:aircraft:landing:mach')
-        self.add_output('aerodynamics:aircraft:landing:reynolds')
+        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('data:TLAR:approach_speed', val=np.nan, units='m/s')
+        self.add_output('data:aerodynamics:aircraft:landing:mach')
+        self.add_output('data:aerodynamics:aircraft:landing:reynolds')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        l0_wing = inputs['geometry:wing:MAC:length']
-        speed = inputs['TLAR:approach_speed']
+        l0_wing = inputs['data:geometry:wing:MAC:length']
+        speed = inputs['data:TLAR:approach_speed']
 
         atm = Atmosphere(0., 15.)
         mach = speed / atm.speed_of_sound
         reynolds = atm.get_unitary_reynolds(mach) * l0_wing
 
-        outputs['aerodynamics:aircraft:landing:mach'] = mach
-        outputs['aerodynamics:aircraft:landing:reynolds'] = reynolds
+        outputs['data:aerodynamics:aircraft:landing:mach'] = mach
+        outputs['data:aerodynamics:aircraft:landing:reynolds'] = reynolds

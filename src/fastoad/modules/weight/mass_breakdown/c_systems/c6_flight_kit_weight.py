@@ -27,19 +27,19 @@ class FlightKitWeight(ExplicitComponent):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
-        self.add_input('weight:systems:flight_kit:mass:k', val=1.)
-        self.add_input('weight:systems:flight_kit:mass:offset', val=0., units='kg')
+        self.add_input('tuning:weight:systems:flight_kit:mass:k', val=1.)
+        self.add_input('tuning:weight:systems:flight_kit:mass:offset', val=0., units='kg')
 
-        self.add_output('weight:systems:flight_kit:mass', units='kg')
+        self.add_output('data:weight:systems:flight_kit:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        k_c6 = inputs['weight:systems:flight_kit:mass:k']
-        offset_c6 = inputs['weight:systems:flight_kit:mass:offset']
+        k_c6 = inputs['tuning:weight:systems:flight_kit:mass:k']
+        offset_c6 = inputs['tuning:weight:systems:flight_kit:mass:offset']
 
         if self.options[AIRCRAFT_TYPE_OPTION] == 1.0:
             temp_c6 = 10.0
         else:
             temp_c6 = 45.0
 
-        outputs['weight:systems:flight_kit:mass'] = k_c6 * temp_c6 + offset_c6
+        outputs['data:weight:systems:flight_kit:mass'] = k_c6 * temp_c6 + offset_c6

@@ -30,39 +30,39 @@ class Loads(ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing:span', val=np.nan, units='m')
-        self.add_input('weight:aircraft:MZFW', val=np.nan, units='kg')
-        self.add_input('weight:aircraft:MFW', val=np.nan, units='kg')
-        self.add_input('weight:aircraft:MTOW', val=np.nan, units='kg')
-        self.add_input('aerodynamics:aircraft:cruise:CL_alpha', val=np.nan)
-        self.add_input('load_case:lc1:U_gust', val=np.nan, units='m/s')
-        self.add_input('load_case:lc1:altitude', val=np.nan, units='ft')
-        self.add_input('load_case:lc1:Vc_EAS', val=np.nan, units='kn')
-        self.add_input('load_case:lc2:U_gust', val=np.nan, units='m/s')
-        self.add_input('load_case:lc2:altitude', val=np.nan, units='ft')
-        self.add_input('load_case:lc2:Vc_EAS', val=np.nan, units='kn')
+        self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:wing:span', val=np.nan, units='m')
+        self.add_input('data:weight:aircraft:MZFW', val=np.nan, units='kg')
+        self.add_input('data:weight:aircraft:MFW', val=np.nan, units='kg')
+        self.add_input('data:weight:aircraft:MTOW', val=np.nan, units='kg')
+        self.add_input('data:aerodynamics:aircraft:cruise:CL_alpha', val=np.nan)
+        self.add_input('data:load_case:lc1:U_gust', val=np.nan, units='m/s')
+        self.add_input('data:load_case:lc1:altitude', val=np.nan, units='ft')
+        self.add_input('data:load_case:lc1:Vc_EAS', val=np.nan, units='kn')
+        self.add_input('data:load_case:lc2:U_gust', val=np.nan, units='m/s')
+        self.add_input('data:load_case:lc2:altitude', val=np.nan, units='ft')
+        self.add_input('data:load_case:lc2:Vc_EAS', val=np.nan, units='kn')
 
-        self.add_output('mission:sizing:cs25:sizing_load_1', units='kg')
-        self.add_output('mission:sizing:cs25:sizing_load_2', units='kg')
+        self.add_output('data:mission:sizing:cs25:sizing_load_1', units='kg')
+        self.add_output('data:mission:sizing:cs25:sizing_load_2', units='kg')
 
     # pylint: disable=too-many-locals
     # pylint: disable=invalid-name
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
         sea_level_density = 1.225
-        wing_area = inputs['geometry:wing:area']
-        span = inputs['geometry:wing:span']
-        mzfw = inputs['weight:aircraft:MZFW']
-        mfw = inputs['weight:aircraft:MFW']
-        mtow = inputs['weight:aircraft:MTOW']
-        cl_alpha = inputs['aerodynamics:aircraft:cruise:CL_alpha']
-        u_gust1 = inputs['load_case:lc1:U_gust']
-        alt_1 = inputs['load_case:lc1:altitude']
-        vc_eas1 = inputs['load_case:lc1:Vc_EAS']
-        u_gust2 = inputs['load_case:lc2:U_gust']
-        alt_2 = inputs['load_case:lc2:altitude']
-        vc_eas2 = inputs['load_case:lc2:Vc_EAS']
+        wing_area = inputs['data:geometry:wing:area']
+        span = inputs['data:geometry:wing:span']
+        mzfw = inputs['data:weight:aircraft:MZFW']
+        mfw = inputs['data:weight:aircraft:MFW']
+        mtow = inputs['data:weight:aircraft:MTOW']
+        cl_alpha = inputs['data:aerodynamics:aircraft:cruise:CL_alpha']
+        u_gust1 = inputs['data:load_case:lc1:U_gust']
+        alt_1 = inputs['data:load_case:lc1:altitude']
+        vc_eas1 = inputs['data:load_case:lc1:Vc_EAS']
+        u_gust2 = inputs['data:load_case:lc2:U_gust']
+        alt_2 = inputs['data:load_case:lc2:altitude']
+        vc_eas2 = inputs['data:load_case:lc2:Vc_EAS']
 
         # calculation of mean geometric chord
         chord_geom = wing_area / span
@@ -81,8 +81,8 @@ class Loads(ExplicitComponent):
         mcv = min(0.8 * mfw, mtow - mzfw)
         n2m2 = n2 * (mtow - 0.55 * mcv)
 
-        outputs['mission:sizing:cs25:sizing_load_1'] = n1m1
-        outputs['mission:sizing:cs25:sizing_load_2'] = n2m2
+        outputs['data:mission:sizing:cs25:sizing_load_1'] = n1m1
+        outputs['data:mission:sizing:cs25:sizing_load_2'] = n2m2
 
     @staticmethod
     def __n_gust(mass, wing_area, rho, sea_level_density, chord_geom, vc_eas, cl_alpha, u_gust):
