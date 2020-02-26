@@ -2,7 +2,7 @@
 Constants for the XML module
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,5 +17,5 @@ Constants for the XML module
 DEFAULT_UNIT_ATTRIBUTE = 'units'
 """label of tag attribute for providing units as a string"""
 
-ROOT_TAG = 'aircraft'
+ROOT_TAG = 'FASTOAD_model'
 """name of root element for XML files"""
