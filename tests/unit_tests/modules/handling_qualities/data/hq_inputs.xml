@@ -1,0 +1,69 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA/ISAE
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<root>
+    <data>
+        <TLAR>
+            <cruise_mach>0.78</cruise_mach>
+        </TLAR>
+        <geometry>
+            <wing>
+                <span>31.603</span>
+                <area>124.843</area>
+                <MAC>
+                    <x>16.457</x>
+                    <length>4.457</length>
+                </MAC>
+            </wing>
+            <fuselage>
+                <length>37.507</length>
+            </fuselage>
+            <vertical_tail>
+                <distance_from_wing>16.55</distance_from_wing>
+            </vertical_tail>
+        </geometry>
+        <aerodynamics>
+            <vertical_tail>
+                <cruise>
+                    <CL_alpha>2.55</CL_alpha>
+                </cruise>
+            </vertical_tail>
+        </aerodynamics>
+        <weight>
+            <aircraft>
+                <MTOW>75797.99</MTOW>
+            </aircraft>
+            <airframe>
+                <landing_gear>
+                    <main>
+                        <mass>2143.75</mass>
+                        <CG>
+                            <x>18.11</x>
+                        </CG>
+                    </main>
+                    <front>
+                        <mass>378.82</mass>
+                        <CG>
+                            <x>5.18</x>
+                        </CG>
+                    </front>
+                </landing_gear>
+            </airframe>
+        </weight>
+        <requirements>
+            <CG_range>0.3</CG_range>
+        </requirements>
+    </data>
+</root>

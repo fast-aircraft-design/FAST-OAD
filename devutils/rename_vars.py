@@ -124,6 +124,7 @@ if __name__ == '__main__':
     file_list = [
         'tests/unit_tests/modules/aerodynamics/data/aerodynamics_inputs.xml',
         'tests/unit_tests/modules/geometry/data/geometry_inputs_full.xml',
+        'tests/unit_tests/modules/handling_qualities/data/hq_inputs.xml',
         'tests/unit_tests/modules/geometry/data/global_geometry_inputs.xml',
         'tests/unit_tests/modules/weight/cg/data/cg_inputs.xml',
         'tests/unit_tests/modules/weight/mass_breakdown/data/mass_breakdown_inputs.xml',

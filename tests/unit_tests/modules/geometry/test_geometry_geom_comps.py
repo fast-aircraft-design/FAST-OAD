@@ -25,12 +25,12 @@ from fastoad.modules.geometry.geom_components.fuselage import ComputeFuselageGeo
 from fastoad.modules.geometry.geom_components.fuselage.compute_cnbeta_fuselage import \
     ComputeCnBetaFuselage
 from fastoad.modules.geometry.geom_components.ht import ComputeHorizontalTailGeometry
-from fastoad.modules.geometry.geom_components.ht.components import ComputeHTArea, ComputeHTMAC, \
-    ComputeHTChord, ComputeHTClalpha, ComputeHTSweep, ComputeHTVolCoeff
+from fastoad.modules.geometry.geom_components.ht.components import ComputeHTMAC, \
+    ComputeHTChord, ComputeHTClalpha, ComputeHTSweep
 from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
     ComputeNacelleAndPylonsGeometry
 from fastoad.modules.geometry.geom_components.vt import ComputeVerticalTailGeometry
-from fastoad.modules.geometry.geom_components.vt.components import ComputeVTArea, ComputeVTMAC, \
+from fastoad.modules.geometry.geom_components.vt.components import ComputeVTMAC, \
     ComputeVTChords, ComputeVTClalpha, ComputeVTSweep, ComputeVTVolCoeff, \
     ComputeVTDistance
 from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
@@ -123,27 +123,6 @@ def test_compute_fuselage_basic(input_xml):
     assert pnc == pytest.approx(4, abs=1)
 
 
-def test_compute_ht_area(input_xml):
-    """ Tests computation of the horizontal tail area """
-
-    input_list = [
-        'data:geometry:fuselage:length',
-        'data:geometry:wing:MAC:x',
-        'data:geometry:horizontal_tail:volume_coefficient',
-        'data:geometry:wing:MAC:length',
-        'data:geometry:wing:area',
-    ]
-
-    input_vars = input_xml.read(only=input_list)
-
-    problem = run_system(ComputeHTArea(), input_vars)
-
-    ht_lp = problem['data:geometry:horizontal_tail:distance_from_wing']
-    assert ht_lp == pytest.approx(17.675, abs=1e-3)
-    wet_area = problem['data:geometry:horizontal_tail:wetted_area']
-    assert wet_area == pytest.approx(70.34, abs=1e-2)
-    ht_area = problem['data:geometry:horizontal_tail:area']
-    assert ht_area == pytest.approx(35.165, abs=1e-3)
 
 
 def test_compute_ht_cg(input_xml):
@@ -248,26 +227,6 @@ def test_compute_ht_sweep(input_xml):
     assert sweep_100 == pytest.approx(8.81, abs=1e-2)
 
 
-def test_compute_ht_vol_co(input_xml):
-    """ Tests computation of the horizontal volume coeeficient """
-
-    input_list = [
-        'data:weight:airframe:landing_gear:main:CG:x',
-        'data:weight:airframe:landing_gear:front:CG:x',
-        'data:weight:aircraft:MTOW',
-        'data:geometry:wing:area',
-        'data:geometry:wing:MAC:length',
-        'data:requirements:CG_range'
-    ]
-
-    input_vars = input_xml.read(only=input_list)
-
-    problem = run_system(ComputeHTVolCoeff(), input_vars)
-
-    delta_lg = problem['data:geometry:landing_gear:front:distance_to_main']
-    assert delta_lg == pytest.approx(12.93, abs=1e-2)
-    vol_coeff = problem['data:geometry:horizontal_tail:volume_coefficient']
-    assert vol_coeff == pytest.approx(1.117, abs=1e-3)
 
 
 def test_geometry_global_ht(input_xml):
@@ -292,10 +251,6 @@ def test_geometry_global_ht(input_xml):
 
     problem = run_system(ComputeHorizontalTailGeometry(), input_vars)
 
-    delta_lg = problem['data:geometry:landing_gear:front:distance_to_main']
-    assert delta_lg == pytest.approx(12.93, abs=1e-2)
-    vol_coeff = problem['data:geometry:horizontal_tail:volume_coefficient']
-    assert vol_coeff == pytest.approx(1.117, abs=1e-3)
     ht_lp = problem['data:geometry:horizontal_tail:distance_from_wing']
     assert ht_lp == pytest.approx(17.675, abs=1e-3)
     wet_area = problem['data:geometry:horizontal_tail:wetted_area']
@@ -344,35 +299,6 @@ def test_compute_fuselage_cnbeta(input_xml):
     cn_beta = problem['data:aerodynamics:fuselage:cruise:CnBeta']
     assert cn_beta == pytest.approx(-0.117901, abs=1e-6)
 
-
-def test_compute_vt_area(input_xml):
-    """ Tests computation of the vertical tail area """
-
-    input_list = [
-        'data:TLAR:cruise_mach',
-        'data:geometry:wing:MAC:length',
-        'data:geometry:wing:MAC:length',
-        'data:geometry:wing:area',
-        'data:geometry:wing:span',
-        'data:geometry:vertical_tail:distance_from_wing',
-        'data:aerodynamics:vertical_tail:cruise:CL_alpha'
-    ]
-
-    input_vars = input_xml.read(only=input_list)
-
-    input_vars.add_output('data:weight:aircraft:CG:ratio', 0.364924)
-    input_vars.add_output('data:aerodynamics:fuselage:cruise:CnBeta', -0.117901)
-
-    component = ComputeVTArea()
-
-    problem = run_system(component, input_vars)
-
-    cn_beta_vt = problem['data:aerodynamics:vertical_tail:cruise:CnBeta']
-    assert cn_beta_vt == pytest.approx(0.258348, abs=1e-6)
-    wet_area = problem['data:geometry:vertical_tail:wetted_area']
-    assert wet_area == pytest.approx(52.34, abs=1e-2)
-    vt_area = problem['data:geometry:vertical_tail:area']
-    assert vt_area == pytest.approx(24.92, abs=1e-2)
 
 
 def test_compute_vt_cg(input_xml):

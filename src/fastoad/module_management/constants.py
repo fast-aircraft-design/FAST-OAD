@@ -30,6 +30,7 @@ class ModelDomain(Enum):
     """ Enumeration of model domains """
     GEOMETRY = 'Geometry'
     AERODYNAMICS = 'Aerodynamics'
+    HANDLING_QUALITIES = 'Handling Qualities'
     WEIGHT = 'Weight'
     PERFORMANCE = 'Performance'
     PROPULSION = 'Propulsion'

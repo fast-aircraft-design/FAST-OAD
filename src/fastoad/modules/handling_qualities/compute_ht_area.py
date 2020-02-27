@@ -18,6 +18,7 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.modules.options import AIRCRAFT_FAMILY_OPTION, TAIL_TYPE_OPTION
+from fastoad.utils.physics import Atmosphere
 
 
 class ComputeHTArea(om.ExplicitComponent):
@@ -32,9 +33,12 @@ class ComputeHTArea(om.ExplicitComponent):
 
         self.add_input('data:geometry:fuselage:length', val=np.nan, units='m')
         self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
-        self.add_input('data:geometry:horizontal_tail:volume_coefficient', val=np.nan)
-        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
         self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('data:weight:airframe:landing_gear:main:CG:x', val=np.nan, units='m')
+        self.add_input('data:weight:airframe:landing_gear:front:CG:x', val=np.nan, units='m')
+        self.add_input('data:weight:aircraft:MTOW', val=np.nan, units='kg')
+        self.add_input('data:requirements:CG_range', val=np.nan)
 
         self.add_output('data:geometry:horizontal_tail:distance_from_wing', units='m')
         self.add_output('data:geometry:horizontal_tail:wetted_area', units='m**2')
@@ -43,10 +47,8 @@ class ComputeHTArea(om.ExplicitComponent):
         self.declare_partials('data:geometry:horizontal_tail:distance_from_wing',
                               ['data:geometry:fuselage:length', 'data:geometry:wing:MAC:x'],
                               method='fd')
-        self.declare_partials('data:geometry:horizontal_tail:wetted_area',
-                              '*', method='fd')
-        self.declare_partials('data:geometry:horizontal_tail:area', '*',
-                              method='fd')
+        self.declare_partials('data:geometry:horizontal_tail:wetted_area', '*', method='fd')
+        self.declare_partials('data:geometry:horizontal_tail:area', '*', method='fd')
 
     def compute(self, inputs, outputs):
         tail_type = self.options[TAIL_TYPE_OPTION]
@@ -54,9 +56,24 @@ class ComputeHTArea(om.ExplicitComponent):
 
         fus_length = inputs['data:geometry:fuselage:length']
         fa_length = inputs['data:geometry:wing:MAC:x']
+        cg_a51 = inputs['data:weight:airframe:landing_gear:main:CG:x']
+        cg_a52 = inputs['data:weight:airframe:landing_gear:front:CG:x']
+        mtow = inputs['data:weight:aircraft:MTOW']
         wing_area = inputs['data:geometry:wing:area']
         l0_wing = inputs['data:geometry:wing:MAC:length']
-        ht_vol_coeff = inputs['data:geometry:horizontal_tail:volume_coefficient']
+        required_cg_range = inputs['data:requirements:CG_range']
+
+        delta_lg = cg_a51 - cg_a52
+        atm = Atmosphere(0.)
+        rho = atm.density
+        sos = atm.speed_of_sound
+        vspeed = sos * 0.2  # assume the corresponding Mach of VR is 0.2
+
+        cm_wheel = 0.08 * delta_lg * mtow * 9.81 / \
+                   (0.5 * rho * vspeed ** 2 * wing_area * l0_wing)
+        delta_cm = mtow * l0_wing * required_cg_range * \
+                   9.81 / (0.5 * rho * vspeed ** 2 * wing_area * l0_wing)
+        ht_vol_coeff = cm_wheel + delta_cm
 
         if tail_type == 1.0:
             if ac_family == 1.0:

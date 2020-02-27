@@ -16,13 +16,13 @@
 
 
 from fastoad.modules.geometry.geom_components.fuselage import ComputeCnBetaFuselage
-from fastoad.modules.geometry.geom_components.vt.components import ComputeVTArea
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTChords
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTClalpha
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTDistance
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTMAC
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTSweep
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTVolCoeff
+from fastoad.modules.handling_qualities.compute_vt_area import ComputeVTArea
 from fastoad.modules.options import TAIL_TYPE_OPTION, AIRCRAFT_FAMILY_OPTION, \
     OpenMdaoOptionDispatcherGroup
 
