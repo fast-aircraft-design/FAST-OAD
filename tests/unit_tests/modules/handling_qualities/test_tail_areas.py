@@ -16,8 +16,8 @@ import os.path as pth
 import pytest
 
 from fastoad.io.xml import OMXmlIO
-from fastoad.modules.handling_qualities.compute_ht_area import ComputeHTArea
-from fastoad.modules.handling_qualities.compute_vt_area import ComputeVTArea
+from fastoad.modules.handling_qualities.tail_sizing.compute_ht_area import ComputeHTArea
+from fastoad.modules.handling_qualities.tail_sizing.compute_vt_area import ComputeVTArea
 from tests.testing_utilities import run_system
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
@@ -56,7 +56,6 @@ def test_compute_ht_area(input_xml):
     assert wet_area == pytest.approx(70.34, abs=1e-2)
     ht_area = problem['data:geometry:horizontal_tail:area']
     assert ht_area == pytest.approx(35.166, abs=1e-2)
-
 
 
 def test_compute_vt_area(input_xml):

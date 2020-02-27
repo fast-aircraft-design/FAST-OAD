@@ -20,7 +20,7 @@ from fastoad.module_management.constants import ModelDomain
 from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastoad.modules.aerodynamics.aerodynamics_landing import AerodynamicsLanding
 from fastoad.modules.geometry import Geometry
-from fastoad.modules.handling_qualities.compute_tail_areas import ComputeTailAreas
+from fastoad.modules.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from fastoad.modules.loops.compute_wing_area import ComputeWingArea
 from fastoad.modules.performances import BreguetFromOWE
 from fastoad.modules.propulsion.fuel_engine.rubber_engine import OMRubberEngine

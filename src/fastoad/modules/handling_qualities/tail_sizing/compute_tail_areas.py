@@ -14,10 +14,10 @@ Computation of tail areas w.r.t. HQ criteria
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.modules.handling_qualities.compute_ht_area import ComputeHTArea
-from fastoad.modules.handling_qualities.compute_vt_area import ComputeVTArea
 from fastoad.modules.options import TAIL_TYPE_OPTION, AIRCRAFT_FAMILY_OPTION, \
     OpenMdaoOptionDispatcherGroup
+from .compute_ht_area import ComputeHTArea
+from .compute_vt_area import ComputeVTArea
 
 
 class ComputeTailAreas(OpenMdaoOptionDispatcherGroup):
