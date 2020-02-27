@@ -20,7 +20,6 @@ import openmdao.api as om
 ENGINE_LOCATION_OPTION = 'engine_location'
 TAIL_TYPE_OPTION = 'tail_type'
 AIRCRAFT_TYPE_OPTION = 'ac_type'
-AIRCRAFT_FAMILY_OPTION = 'ac_family'
 CABIN_SIZING_OPTION = 'cabin_sizing'
 
 

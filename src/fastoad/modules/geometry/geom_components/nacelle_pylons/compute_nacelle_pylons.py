@@ -19,7 +19,7 @@ from math import sqrt
 import numpy as np
 import openmdao.api as om
 
-from fastoad.modules.options import ENGINE_LOCATION_OPTION, AIRCRAFT_FAMILY_OPTION
+from fastoad.modules.options import ENGINE_LOCATION_OPTION
 
 
 class ComputeNacelleAndPylonsGeometry(om.ExplicitComponent):
@@ -28,7 +28,6 @@ class ComputeNacelleAndPylonsGeometry(om.ExplicitComponent):
 
     def initialize(self):
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
-        self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
 
     def setup(self):
 
@@ -92,7 +91,6 @@ class ComputeNacelleAndPylonsGeometry(om.ExplicitComponent):
 
     def compute(self, inputs, outputs):
         engine_loc = self.options[ENGINE_LOCATION_OPTION]
-        ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
 
         thrust_sl = inputs['data:propulsion:MTO_thrust']
         y_ratio_engine = inputs['data:geometry:propulsion:engine:y_ratio']
@@ -133,10 +131,7 @@ class ComputeNacelleAndPylonsGeometry(om.ExplicitComponent):
                           delta_x_nacell - 0.2 * nac_length
             x_nacell_cg_absolute = fa_length - 0.25 * l0_wing - (x0_wing - x_nacell_cg)
         elif engine_loc == 2:
-            if ac_family == 1.0:
-                x_nacell_cg_absolute = 0.8 * fus_length
-            elif ac_family == 2.0:
-                x_nacell_cg_absolute = 0.8 * fus_length - 1.5
+            x_nacell_cg_absolute = 0.8 * fus_length
 
         outputs['data:geometry:propulsion:pylon:length'] = pylon_length
         outputs['data:geometry:propulsion:fan:length'] = fan_length

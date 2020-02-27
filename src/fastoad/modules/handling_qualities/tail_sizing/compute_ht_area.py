@@ -17,7 +17,7 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.modules.options import AIRCRAFT_FAMILY_OPTION, TAIL_TYPE_OPTION
+from fastoad.modules.options import TAIL_TYPE_OPTION
 from fastoad.utils.physics import Atmosphere
 
 
@@ -26,7 +26,6 @@ class ComputeHTArea(om.ExplicitComponent):
     """ Horizontal tail area estimation """
 
     def initialize(self):
-        self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.)
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
 
     def setup(self):
@@ -52,7 +51,6 @@ class ComputeHTArea(om.ExplicitComponent):
 
     def compute(self, inputs, outputs):
         tail_type = self.options[TAIL_TYPE_OPTION]
-        ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
 
         fus_length = inputs['data:geometry:fuselage:length']
         fa_length = inputs['data:geometry:wing:MAC:x']
@@ -76,11 +74,7 @@ class ComputeHTArea(om.ExplicitComponent):
         ht_vol_coeff = cm_wheel + delta_cm
 
         if tail_type == 1.0:
-            if ac_family == 1.0:
-                lp_ht = fus_length - fa_length
-            elif ac_family == 2.0:
-                # TODO: remove this hard coded value
-                lp_ht = 7.7
+            lp_ht = fus_length - fa_length
         else:
             lp_ht = 0.91 * fus_length - fa_length
 

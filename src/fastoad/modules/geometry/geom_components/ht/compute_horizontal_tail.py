@@ -18,8 +18,7 @@ from fastoad.modules.geometry.geom_components.ht.components import ComputeHTChor
 from fastoad.modules.geometry.geom_components.ht.components import ComputeHTClalpha
 from fastoad.modules.geometry.geom_components.ht.components import ComputeHTMAC
 from fastoad.modules.geometry.geom_components.ht.components import ComputeHTSweep
-from fastoad.modules.options import TAIL_TYPE_OPTION, AIRCRAFT_FAMILY_OPTION, \
-    OpenMdaoOptionDispatcherGroup
+from fastoad.modules.options import TAIL_TYPE_OPTION, OpenMdaoOptionDispatcherGroup
 
 
 class ComputeHorizontalTailGeometry(OpenMdaoOptionDispatcherGroup):
@@ -27,7 +26,6 @@ class ComputeHorizontalTailGeometry(OpenMdaoOptionDispatcherGroup):
 
     def initialize(self):
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
-        self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
 
     def setup(self):
         self.add_subsystem('ht_chord', ComputeHTChord(), promotes=['*'])

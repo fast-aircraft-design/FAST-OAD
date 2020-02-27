@@ -14,8 +14,7 @@ Computation of tail areas w.r.t. HQ criteria
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.modules.options import TAIL_TYPE_OPTION, AIRCRAFT_FAMILY_OPTION, \
-    OpenMdaoOptionDispatcherGroup
+from fastoad.modules.options import TAIL_TYPE_OPTION, OpenMdaoOptionDispatcherGroup
 from .compute_ht_area import ComputeHTArea
 from .compute_vt_area import ComputeVTArea
 
@@ -32,7 +31,6 @@ class ComputeTailAreas(OpenMdaoOptionDispatcherGroup):
 
     def initialize(self):
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
-        self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
 
     def setup(self):
         self.add_subsystem('horizontal_tail', ComputeHTArea(), promotes=['*'])

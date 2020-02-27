@@ -26,7 +26,7 @@ from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pyl
 from fastoad.modules.geometry.geom_components.vt import ComputeVerticalTailGeometry
 from fastoad.modules.geometry.geom_components.wing.compute_wing import ComputeWingGeometry
 from fastoad.modules.options import OpenMdaoOptionDispatcherGroup, ENGINE_LOCATION_OPTION, \
-    TAIL_TYPE_OPTION, AIRCRAFT_FAMILY_OPTION, CABIN_SIZING_OPTION
+    TAIL_TYPE_OPTION, CABIN_SIZING_OPTION
 
 
 class Geometry(OpenMdaoOptionDispatcherGroup):
@@ -42,7 +42,6 @@ class Geometry(OpenMdaoOptionDispatcherGroup):
     def initialize(self):
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.0)
-        self.options.declare(AIRCRAFT_FAMILY_OPTION, types=float, default=1.0)
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
 
     def setup(self):
