@@ -3,7 +3,7 @@ Parametric turbofan engine
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -40,6 +40,7 @@ class RubberEngine(IEngine):
     Computes engine characteristics using analytical model from following sources:
 
     .. bibliography:: ../refs.bib
+       :filter: docname in docnames
 
     :param bypass_ratio:
     :param overall_pressure_ratio:
