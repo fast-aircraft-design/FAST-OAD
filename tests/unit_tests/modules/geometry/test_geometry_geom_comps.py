@@ -1014,7 +1014,7 @@ def test_geometry_update_mlg(input_xml):
     input_vars = input_xml.read(only=input_list)
 
     input_vars.add_output('data:weight:aircraft:CG:ratio', 0.364924)
-    input_vars.add_output('data:geometry:landing_gear:front:distance_to_main', 12.93)
+    input_vars.add_output('data:weight:airframe:landing_gear:front:CG:x', 5.07)
 
     problem = run_system(UpdateMLG(), input_vars)
 
