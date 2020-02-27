@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail area
+Estimation of horizontal tail area
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
@@ -16,14 +16,18 @@
 
 import numpy as np
 import openmdao.api as om
+from scipy.constants import g
 
 from fastoad.modules.options import TAIL_TYPE_OPTION
 from fastoad.utils.physics import Atmosphere
 
 
 class ComputeHTArea(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Horizontal tail area estimation """
+    """
+    Computes area of horizontal tail plane
+
+    Area is computed to fulfill aircraft balance requirement at rotation speed
+    """
 
     def initialize(self):
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
@@ -43,50 +47,50 @@ class ComputeHTArea(om.ExplicitComponent):
         self.add_output('data:geometry:horizontal_tail:wetted_area', units='m**2')
         self.add_output('data:geometry:horizontal_tail:area', units='m**2')
 
+        self.declare_partials('*', '*', method='fd')
         self.declare_partials('data:geometry:horizontal_tail:distance_from_wing',
                               ['data:geometry:fuselage:length', 'data:geometry:wing:MAC:x'],
                               method='fd')
-        self.declare_partials('data:geometry:horizontal_tail:wetted_area', '*', method='fd')
-        self.declare_partials('data:geometry:horizontal_tail:area', '*', method='fd')
 
     def compute(self, inputs, outputs):
+        # Area of HTP is computed to balance aircraft at rotation speed, assuming that:
+        # - CM from wing lift + aircraft weight is zero
+        # - main landing gear supports MTOW
+
         tail_type = self.options[TAIL_TYPE_OPTION]
 
-        fus_length = inputs['data:geometry:fuselage:length']
-        fa_length = inputs['data:geometry:wing:MAC:x']
-        cg_a51 = inputs['data:weight:airframe:landing_gear:main:CG:x']
-        cg_a52 = inputs['data:weight:airframe:landing_gear:front:CG:x']
+        fuselage_length = inputs['data:geometry:fuselage:length']
+        x_wing_aero_center = inputs['data:geometry:wing:MAC:x']
+        x_main_lg = inputs['data:weight:airframe:landing_gear:main:CG:x']
+        x_front_lg = inputs['data:weight:airframe:landing_gear:front:CG:x']
         mtow = inputs['data:weight:aircraft:MTOW']
         wing_area = inputs['data:geometry:wing:area']
-        l0_wing = inputs['data:geometry:wing:MAC:length']
+        wing_mac = inputs['data:geometry:wing:MAC:length']
         required_cg_range = inputs['data:requirements:CG_range']
 
-        delta_lg = cg_a51 - cg_a52
+        delta_lg = x_main_lg - x_front_lg
         atm = Atmosphere(0.)
         rho = atm.density
-        sos = atm.speed_of_sound
-        vspeed = sos * 0.2  # assume the corresponding Mach of VR is 0.2
+        vspeed = atm.speed_of_sound * 0.2  # assume the corresponding Mach of VR is 0.2
 
-        cm_wheel = 0.08 * delta_lg * mtow * 9.81 / \
-                   (0.5 * rho * vspeed ** 2 * wing_area * l0_wing)
-        delta_cm = mtow * l0_wing * required_cg_range * \
-                   9.81 / (0.5 * rho * vspeed ** 2 * wing_area * l0_wing)
-        ht_vol_coeff = cm_wheel + delta_cm
+        pdyn = 0.5 * rho * vspeed ** 2
+        # CM of MTOW on main landing gear w.r.t 25% wing MAC
+        lever_arm = 0.08 * delta_lg  # lever arm wrt CoG
+        lever_arm += wing_mac * required_cg_range  # and now wrt 25% wing MAC
+        cm_wheel = mtow * g * lever_arm / (pdyn * wing_area * wing_mac)
+
+        ht_volume_coeff = cm_wheel
 
         if tail_type == 1.0:
-            lp_ht = fus_length - fa_length
+            aero_centers_distance = fuselage_length - x_wing_aero_center
+            wet_area_coeff = 1.6
         else:
-            lp_ht = 0.91 * fus_length - fa_length
+            aero_centers_distance = 0.91 * fuselage_length - x_wing_aero_center
+            wet_area_coeff = 2.
 
-        s_h = ht_vol_coeff / (lp_ht / wing_area / l0_wing)
+        htp_area = ht_volume_coeff / aero_centers_distance * wing_area * wing_mac
+        wet_area_htp = wet_area_coeff * htp_area
 
-        if tail_type == 0.:
-            wet_area_ht = 2 * s_h
-        elif tail_type == 1.:
-            wet_area_ht = 2 * 0.8 * s_h
-        else:
-            print('Error in the tailplane positioning')
-
-        outputs['data:geometry:horizontal_tail:distance_from_wing'] = lp_ht
-        outputs['data:geometry:horizontal_tail:wetted_area'] = wet_area_ht
-        outputs['data:geometry:horizontal_tail:area'] = s_h
+        outputs['data:geometry:horizontal_tail:distance_from_wing'] = aero_centers_distance
+        outputs['data:geometry:horizontal_tail:wetted_area'] = wet_area_htp
+        outputs['data:geometry:horizontal_tail:area'] = htp_area

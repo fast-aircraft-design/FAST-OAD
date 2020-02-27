@@ -1,7 +1,6 @@
 """
-    Estimation of vertical tail area
+Estimation of vertical tail area
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,13 +13,18 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeVTArea(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Vertical tail area estimation """
+class ComputeVTArea(om.ExplicitComponent):
+    """
+    Computes area of vertical tail plane
+
+    Area is computed to fulfill lateral stability requirement (with the most aft CG)
+    as stated in :cite:raymer:1992.
+    """
 
     def setup(self):
         self.add_input('data:TLAR:cruise_mach', val=np.nan)
@@ -32,30 +36,38 @@ class ComputeVTArea(ExplicitComponent):
         self.add_input('data:geometry:wing:span', val=np.nan, units='m')
         self.add_input('data:geometry:vertical_tail:distance_from_wing', val=np.nan, units='m')
 
-        self.add_output('data:geometry:vertical_tail:wetted_area', units='m**2')
-        self.add_output('data:geometry:vertical_tail:area', units='m**2')
-        self.add_output('data:aerodynamics:vertical_tail:cruise:CnBeta', units='m**2')
+        self.add_output('data:geometry:vertical_tail:wetted_area',
+                        units='m**2', ref=100.)
+        self.add_output('data:geometry:vertical_tail:area',
+                        units='m**2', ref=50.)
+        self.add_output('data:aerodynamics:vertical_tail:cruise:CnBeta',
+                        units='m**2')
 
         self.declare_partials('data:geometry:vertical_tail:wetted_area', '*', method='fd')
         self.declare_partials('data:geometry:vertical_tail:area', '*', method='fd')
         self.declare_partials('data:aerodynamics:vertical_tail:cruise:CnBeta', '*', method='fd')
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        # pylint: disable=too-many-locals  # needed for clarity
+
         wing_area = inputs['data:geometry:wing:area']
         span = inputs['data:geometry:wing:span']
         l0_wing = inputs['data:geometry:wing:MAC:length']
-        x_cg_plane = inputs['data:weight:aircraft:CG:ratio']
-        cn_beta_fus = inputs['data:aerodynamics:fuselage:cruise:CnBeta']
+        cg_mac_position = inputs['data:weight:aircraft:CG:ratio']
+        cn_beta_fuselage = inputs['data:aerodynamics:fuselage:cruise:CnBeta']
         cl_alpha_vt = inputs['data:aerodynamics:vertical_tail:cruise:CL_alpha']
-        lp_vt = inputs['data:geometry:vertical_tail:distance_from_wing']
         cruise_mach = inputs['data:TLAR:cruise_mach']
+        # This one is the distance between the 25% MAC points
+        wing_htp_distance = inputs['data:geometry:vertical_tail:distance_from_wing']
 
+        # Matches suggested goal by Raymer, Fig 16.20
         cn_beta_goal = 0.0569 - 0.01694 * cruise_mach + 0.15904 * cruise_mach ** 2
-        dcn_beta = cn_beta_goal - cn_beta_fus
-        dxca_xcg = lp_vt + 0.25 * l0_wing - x_cg_plane * l0_wing
-        s_v = dcn_beta / (dxca_xcg / wing_area / span * cl_alpha_vt)
-        wet_area_vt = 2.1 * s_v
 
-        outputs['data:geometry:vertical_tail:wetted_area'] = wet_area_vt
-        outputs['data:geometry:vertical_tail:area'] = s_v
-        outputs['data:aerodynamics:vertical_tail:cruise:CnBeta'] = dcn_beta
+        required_cnbeta_vtp = cn_beta_goal - cn_beta_fuselage
+        distance_to_cg = wing_htp_distance + 0.25 * l0_wing - cg_mac_position * l0_wing
+        vt_area = required_cnbeta_vtp / (distance_to_cg / wing_area / span * cl_alpha_vt)
+        wet_vt_area = 2.1 * vt_area
+
+        outputs['data:geometry:vertical_tail:wetted_area'] = wet_vt_area
+        outputs['data:geometry:vertical_tail:area'] = vt_area
+        outputs['data:aerodynamics:vertical_tail:cruise:CnBeta'] = required_cnbeta_vtp
