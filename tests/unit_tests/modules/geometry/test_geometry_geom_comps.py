@@ -24,15 +24,12 @@ from fastoad.modules.geometry.geom_components.fuselage import ComputeFuselageGeo
     ComputeFuselageGeometryCabinSizing
 from fastoad.modules.geometry.geom_components.fuselage.compute_cnbeta_fuselage import \
     ComputeCnBetaFuselage
-from fastoad.modules.geometry.geom_components.ht import ComputeHorizontalTailGeometry
 from fastoad.modules.geometry.geom_components.ht.components import ComputeHTMAC, \
     ComputeHTChord, ComputeHTClalpha, ComputeHTSweep
 from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
     ComputeNacelleAndPylonsGeometry
-from fastoad.modules.geometry.geom_components.vt import ComputeVerticalTailGeometry
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTMAC, \
     ComputeVTChords, ComputeVTClalpha, ComputeVTSweep, ComputeVTDistance
-from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
 from fastoad.modules.geometry.geom_components.wing.components import ComputeB50, ComputeCLalpha, \
     ComputeL1AndL4Wing, ComputeL2AndL3Wing, ComputeMACWing, ComputeMFW, ComputeSweepWing, \
     ComputeToCWing, ComputeWetAreaWing, ComputeXWing, ComputeYWing
@@ -224,52 +221,6 @@ def test_compute_ht_sweep(input_xml):
     assert sweep_100 == pytest.approx(8.81, abs=1e-2)
 
 
-def test_geometry_global_ht(input_xml):
-    """ Tests computation of the global HT geometry components """
-
-    input_list = [
-        'data:weight:airframe:landing_gear:main:CG:x',
-        'data:weight:airframe:landing_gear:front:CG:x',
-        'data:weight:aircraft:MTOW',
-        'data:geometry:wing:area',
-        'data:geometry:wing:MAC:length',
-        'data:requirements:CG_range',
-        'data:geometry:fuselage:length',
-        'data:geometry:wing:MAC:x',
-        'data:geometry:horizontal_tail:taper_ratio',
-        'data:geometry:horizontal_tail:aspect_ratio',
-        'data:geometry:horizontal_tail:sweep_25',
-        'data:TLAR:cruise_mach'
-    ]
-
-    input_vars = input_xml.read(only=input_list)
-
-    problem = run_system(ComputeHorizontalTailGeometry(), input_vars)
-
-    ht_lp = problem['data:geometry:horizontal_tail:distance_from_wing']
-    assert ht_lp == pytest.approx(17.675, abs=1e-3)
-    wet_area = problem['data:geometry:horizontal_tail:wetted_area']
-    assert wet_area == pytest.approx(70.34, abs=1e-2)
-    ht_area = problem['data:geometry:horizontal_tail:area']
-    assert ht_area == pytest.approx(35.167, abs=1e-3)
-    span = problem['data:geometry:horizontal_tail:span']
-    assert span == pytest.approx(12.28, abs=1e-2)
-    root_chord = problem['data:geometry:horizontal_tail:root_chord']
-    assert root_chord == pytest.approx(4.406, abs=1e-3)
-    tip_chord = problem['data:geometry:horizontal_tail:tip_chord']
-    assert tip_chord == pytest.approx(1.322, abs=1e-3)
-    length = problem['data:geometry:horizontal_tail:MAC:length']
-    assert length == pytest.approx(3.141, abs=1e-3)
-    ht_x0 = problem['data:geometry:horizontal_tail:MAC:x']
-    assert ht_x0 == pytest.approx(1.656, abs=1e-3)
-    ht_y0 = problem['data:geometry:horizontal_tail:MAC:y']
-    assert ht_y0 == pytest.approx(2.519, abs=1e-3)
-    sweep_0 = problem['data:geometry:horizontal_tail:sweep_0']
-    assert sweep_0 == pytest.approx(33.317, abs=1e-3)
-    sweep_100 = problem['data:geometry:horizontal_tail:sweep_100']
-    assert sweep_100 == pytest.approx(8.81, abs=1e-2)
-    cl_alpha = problem['data:aerodynamics:horizontal_tail:cruise:CL_alpha']
-    assert cl_alpha == pytest.approx(3.47, abs=1e-2)
 
 
 def test_compute_fuselage_cnbeta(input_xml):
@@ -428,61 +379,6 @@ def test_compute_vt_cl(input_xml):
     assert cl_alpha == pytest.approx(2.55, abs=1e-2)
 
 
-def test_geometry_global_vt(input_xml):
-    """ Tests computation of the global VT geometry components """
-
-    input_list = [
-        'data:geometry:wing:area',
-        'data:geometry:fuselage:length',
-        'data:geometry:wing:MAC:x',
-        'data:geometry:vertical_tail:taper_ratio',
-        'data:geometry:vertical_tail:aspect_ratio',
-        'data:geometry:vertical_tail:sweep_25',
-        'data:geometry:fuselage:rear_length',
-        'data:geometry:fuselage:front_length',
-        'data:geometry:fuselage:maximum_height',
-        'data:geometry:fuselage:maximum_width',
-        'data:geometry:wing:span',
-        'data:TLAR:cruise_mach',
-        'data:geometry:wing:MAC:length'
-    ]
-
-    input_vars = input_xml.read(only=input_list)
-
-    input_vars.add_output('data:weight:aircraft:CG:ratio', 0.364924)
-
-    component = ComputeVerticalTailGeometry()
-
-    problem = run_system(component, input_vars)
-
-    cn_beta_vt = problem['data:aerodynamics:vertical_tail:cruise:CnBeta']
-    assert cn_beta_vt == pytest.approx(0.258348, abs=1e-6)
-    cn_beta_fuselage = problem['data:aerodynamics:fuselage:cruise:CnBeta']
-    assert cn_beta_fuselage == pytest.approx(-0.117901, abs=1e-6)
-    wet_area = problem['data:geometry:vertical_tail:wetted_area']
-    assert wet_area == pytest.approx(52.41, abs=1e-2)
-    vt_area = problem['data:geometry:vertical_tail:area']
-    assert vt_area == pytest.approx(24.96, abs=1e-2)
-    length = problem['data:geometry:vertical_tail:MAC:length']
-    assert length == pytest.approx(4.15, abs=1e-2)
-    vt_x0 = problem['data:geometry:vertical_tail:MAC:x']
-    assert vt_x0 == pytest.approx(2.31, abs=1e-2)
-    vt_z0 = problem['data:geometry:vertical_tail:MAC:z']
-    assert vt_z0 == pytest.approx(2.71, abs=1e-2)
-    span = problem['data:geometry:vertical_tail:span']
-    assert span == pytest.approx(6.60, abs=1e-2)
-    root_chord = problem['data:geometry:vertical_tail:root_chord']
-    assert root_chord == pytest.approx(5.82, abs=1e-2)
-    tip_chord = problem['data:geometry:vertical_tail:tip_chord']
-    assert tip_chord == pytest.approx(1.75, abs=1e-2)
-    sweep_0 = problem['data:geometry:vertical_tail:sweep_0']
-    assert sweep_0 == pytest.approx(40.514, abs=1e-3)
-    sweep_100 = problem['data:geometry:vertical_tail:sweep_100']
-    assert sweep_100 == pytest.approx(13.35, abs=1e-2)
-    lp_vt = problem['data:geometry:vertical_tail:distance_from_wing']
-    assert lp_vt == pytest.approx(16.55, abs=1e-2)
-    cl_alpha = problem['data:aerodynamics:vertical_tail:cruise:CL_alpha']
-    assert cl_alpha == pytest.approx(2.55, abs=1e-2)
 
 
 def test_geometry_wing_b50(input_xml):
@@ -759,78 +655,7 @@ def test_geometry_wing_y(input_xml):
     assert wing_y4 == pytest.approx(17.2, abs=1e-1)
 
 
-# TODO: One module for drawing the wing shall be externalized from OpenMDAO
 
-def test_geometry_global_wing(input_xml):
-    """ Tests computation of the global wing geometry components """
-
-    input_list = [
-        'data:TLAR:cruise_mach',
-        'data:geometry:fuselage:maximum_width',
-        'data:geometry:fuselage:maximum_height',
-        'data:geometry:wing:area',
-        'data:geometry:wing:sweep_25',
-        'data:geometry:wing:aspect_ratio',
-        'data:geometry:wing:taper_ratio',
-        'data:geometry:wing:kink:span_ratio'
-    ]
-
-    input_vars = input_xml.read(only=input_list)
-
-    component = ComputeWingGeometry()
-
-    problem = run_system(component, input_vars)
-
-    wing_b_50 = problem['data:geometry:wing:b_50']
-    assert wing_b_50 == pytest.approx(37.330, abs=1e-3)
-    cl_alpha = problem['data:aerodynamics:aircraft:cruise:CL_alpha']
-    assert cl_alpha == pytest.approx(6.42, abs=1e-2)
-    wing_l1 = problem['data:geometry:wing:root:virtual_chord']
-    assert wing_l1 == pytest.approx(4.426, abs=1e-3)
-    wing_l4 = problem['data:geometry:wing:tip:chord']
-    assert wing_l4 == pytest.approx(1.682, abs=1e-3)
-    wing_l2 = problem['data:geometry:wing:root:chord']
-    assert wing_l2 == pytest.approx(6.055, abs=1e-2)
-    wing_l3 = problem['data:geometry:wing:kink:chord']
-    assert wing_l3 == pytest.approx(3.540, abs=1e-3)
-    wing_l0 = problem['data:geometry:wing:MAC:length']
-    assert wing_l0 == pytest.approx(4.182, abs=1e-3)
-    wing_x0 = problem['data:geometry:wing:root:leading_edge:x']
-    assert wing_x0 == pytest.approx(2.524, abs=1e-3)
-    wing_y0 = problem['data:geometry:wing:MAC:y']
-    assert wing_y0 == pytest.approx(6.710, abs=1e-3)
-    mfw = problem['data:weight:aircraft:MFW']
-    assert mfw == pytest.approx(19322.5, abs=1e-1)
-    sweep_0 = problem['data:geometry:wing:sweep_0']
-    assert sweep_0 == pytest.approx(27.08, abs=1e-2)
-    sweep_100_inner = problem['data:geometry:wing:sweep_100_inner']
-    assert sweep_100_inner == pytest.approx(0.0, abs=1e-1)
-    sweep_100_outer = problem['data:geometry:wing:sweep_100_outer']
-    assert sweep_100_outer == pytest.approx(18.3, abs=1e-1)
-    toc_aero = problem['data:geometry:wing:thickness_ratio']
-    assert toc_aero == pytest.approx(0.128, abs=1e-3)
-    toc_root = problem['data:geometry:wing:root:thickness_ratio']
-    assert toc_root == pytest.approx(0.159, abs=1e-3)
-    toc_kink = problem['data:geometry:wing:kink:thickness_ratio']
-    assert toc_kink == pytest.approx(0.121, abs=1e-3)
-    toc_tip = problem['data:geometry:wing:tip:thickness_ratio']
-    assert toc_tip == pytest.approx(0.11, abs=1e-2)
-    area_pf = problem['data:geometry:wing:outer_area']
-    assert area_pf == pytest.approx(101.104, abs=1e-3)
-    wet_area = problem['data:geometry:wing:wetted_area']
-    assert wet_area == pytest.approx(202.209, abs=1e-3)
-    wing_x3 = problem['data:geometry:wing:kink:leading_edge:x']
-    assert wing_x3 == pytest.approx(2.516, abs=1e-3)
-    wing_x4 = problem['data:geometry:wing:tip:leading_edge:x']
-    assert wing_x4 == pytest.approx(7.793, abs=1e-3)
-    span = problem['data:geometry:wing:span']
-    assert span == pytest.approx(34.4, abs=1e-1)
-    wing_y2 = problem['data:geometry:wing:root:y']
-    assert wing_y2 == pytest.approx(1.96, abs=1e-2)
-    wing_y3 = problem['data:geometry:wing:kink:y']
-    assert wing_y3 == pytest.approx(6.88, abs=1e-2)
-    wing_y4 = problem['data:geometry:wing:tip:y']
-    assert wing_y4 == pytest.approx(17.2, abs=1e-1)
 
 
 def test_geometry_nacelle_pylons(input_xml):
