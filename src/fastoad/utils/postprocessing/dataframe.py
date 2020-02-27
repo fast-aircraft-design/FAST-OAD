@@ -21,7 +21,7 @@ from IPython.display import display, clear_output
 
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO
-from fastoad.openmdao.connections_utils import get_variables_of_ivc_components
+from fastoad.openmdao.connections_utils import get_variables_from_ivc
 
 pd.set_option('display.max_rows', None)
 
@@ -337,3 +337,54 @@ class FASTOADDataFrame:
                     filtered_df = filtered_df.append(element)
 
         return filtered_df
+
+    def xml_interact(self, xml_file):
+        """
+        Renders an interactive pysheet with dropdown menus of the xml file.
+
+        :param xml_file: the xml file to interact with
+        :return display of the user interface
+        """
+
+    @staticmethod
+    def xml_to_df(xml: OMXmlIO) -> pd.DataFrame:
+        """
+        Returns the equivalent pandas dataframe of the xml file.
+
+        :param xml: the xml file to convert
+        :return the equivalent dataframe
+        """
+        # TODO: should we add a 'Type' field if we decide to add a type attribute to Variable ?
+        col_names = ['Name', 'Value', 'Unit', 'Description']
+        df = pd.DataFrame()
+
+        # Read the xml
+        ivc = xml.read()
+
+        # Extract the variables list
+        variables = get_variables_from_ivc(ivc)
+
+        # Add a row in the dataframe for each variable
+        for variable in variables:
+            name = variable.name
+
+            value = variable.value
+            if len(value) == 1:
+                # FIXME: value is a list when reading the xml ?
+                value = np.array(value)
+                value = np.asscalar(value)
+            else:
+                value = np.ndarray.tolist(value)
+
+            unit = variable.units
+            desc = variable.description
+
+            df = df.append([{
+                            'Name': name,
+                            'Value': value,
+                            'Unit': unit,
+                            'Description': desc
+                            }
+            ])[col_names]
+
+        return df
