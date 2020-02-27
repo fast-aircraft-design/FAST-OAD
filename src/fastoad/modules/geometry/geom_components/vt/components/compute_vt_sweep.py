@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-import numpy as np
 
+import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -26,23 +26,22 @@ class ComputeVTSweep(ExplicitComponent):
     """ Vertical tail sweeps estimation """
 
     def setup(self):
+        self.add_input('data:geometry:vertical_tail:span', val=np.nan, units='m')
+        self.add_input('data:geometry:vertical_tail:root_chord', val=np.nan, units='m')
+        self.add_input('data:geometry:vertical_tail:tip_chord', val=np.nan, units='m')
+        self.add_input('data:geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
 
-        self.add_input('geometry:vertical_tail:span', val=np.nan, units='m')
-        self.add_input('geometry:vertical_tail:root_chord', val=np.nan, units='m')
-        self.add_input('geometry:vertical_tail:tip_chord', val=np.nan, units='m')
-        self.add_input('geometry:vertical_tail:sweep_25', val=np.nan, units='deg')
+        self.add_output('data:geometry:vertical_tail:sweep_0', units='deg')
+        self.add_output('data:geometry:vertical_tail:sweep_100', units='deg')
 
-        self.add_output('geometry:vertical_tail:sweep_0', units='deg')
-        self.add_output('geometry:vertical_tail:sweep_100', units='deg')
-
-        self.declare_partials('geometry:vertical_tail:sweep_0', '*', method='fd')
-        self.declare_partials('geometry:vertical_tail:sweep_100', '*', method='fd')
+        self.declare_partials('data:geometry:vertical_tail:sweep_0', '*', method='fd')
+        self.declare_partials('data:geometry:vertical_tail:sweep_100', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        root_chord = inputs['geometry:vertical_tail:root_chord']
-        tip_chord = inputs['geometry:vertical_tail:tip_chord']
-        sweep_25_vt = inputs['geometry:vertical_tail:sweep_25']
-        b_v = inputs['geometry:vertical_tail:span']
+        root_chord = inputs['data:geometry:vertical_tail:root_chord']
+        tip_chord = inputs['data:geometry:vertical_tail:tip_chord']
+        sweep_25_vt = inputs['data:geometry:vertical_tail:sweep_25']
+        b_v = inputs['data:geometry:vertical_tail:span']
 
         sweep_0_vt = (math.pi / 2 -
                       math.atan(b_v / (0.25 * root_chord - 0.25 *
@@ -53,5 +52,5 @@ class ComputeVTSweep(ExplicitComponent):
                                                         180. * math.pi) - 0.75 *
                                          root_chord + 0.75 * tip_chord))) / math.pi * 180.
 
-        outputs['geometry:vertical_tail:sweep_0'] = sweep_0_vt
-        outputs['geometry:vertical_tail:sweep_100'] = sweep_100_vt
+        outputs['data:geometry:vertical_tail:sweep_0'] = sweep_0_vt
+        outputs['data:geometry:vertical_tail:sweep_100'] = sweep_100_vt

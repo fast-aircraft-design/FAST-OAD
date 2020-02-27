@@ -22,29 +22,28 @@ class ComputeCGLoadCase1(ExplicitComponent):
     """ Center of gravity estimation for load case 1 """
 
     def setup(self):
+        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
+        self.add_input('data:weight:payload:PAX:CG:x', val=np.nan, units='m')
+        self.add_input('data:weight:payload:rear_fret:CG:x', val=np.nan, units='m')
+        self.add_input('data:weight:payload:front_fret:CG:x', val=np.nan, units='m')
+        self.add_input('data:TLAR:NPAX', val=np.nan)
+        self.add_input('data:weight:aircraft_empty:CG:x', val=np.nan, units='m')
+        self.add_input('data:weight:aircraft_empty:mass', val=np.nan, units='m')
 
-        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
-        self.add_input('weight:payload:PAX:CG:x', val=np.nan, units='m')
-        self.add_input('weight:payload:rear_fret:CG:x', val=np.nan, units='m')
-        self.add_input('weight:payload:front_fret:CG:x', val=np.nan, units='m')
-        self.add_input('TLAR:NPAX', val=np.nan)
-        self.add_input('weight:aircraft_empty:CG:x', val=np.nan, units='m')
-        self.add_input('weight:aircraft_empty:mass', val=np.nan, units='m')
-
-        self.add_output('weight:aircraft:load_case_1:CG:ratio')
+        self.add_output('data:weight:aircraft:load_case_1:CG:ratio')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        l0_wing = inputs['geometry:wing:MAC:length']
-        fa_length = inputs['geometry:wing:MAC:x']
-        cg_pax = inputs['weight:payload:PAX:CG:x']
-        cg_rear_fret = inputs['weight:payload:rear_fret:CG:x']
-        cg_front_fret = inputs['weight:payload:front_fret:CG:x']
-        npax = inputs['TLAR:NPAX']
-        x_cg_plane_aft = inputs['weight:aircraft_empty:CG:x']
-        x_cg_plane_down = inputs['weight:aircraft_empty:mass']
+        l0_wing = inputs['data:geometry:wing:MAC:length']
+        fa_length = inputs['data:geometry:wing:MAC:x']
+        cg_pax = inputs['data:weight:payload:PAX:CG:x']
+        cg_rear_fret = inputs['data:weight:payload:rear_fret:CG:x']
+        cg_front_fret = inputs['data:weight:payload:front_fret:CG:x']
+        npax = inputs['data:TLAR:NPAX']
+        x_cg_plane_aft = inputs['data:weight:aircraft_empty:CG:x']
+        x_cg_plane_down = inputs['data:weight:aircraft_empty:mass']
         x_cg_plane_up = x_cg_plane_aft * x_cg_plane_down
 
         # TODO: factorize the four load cases as they are relatively similar
@@ -61,4 +60,4 @@ class ComputeCGLoadCase1(ExplicitComponent):
         cg_ratio_pl_1 = (
             x_cg_plane_pl_1 - fa_length + 0.25 * l0_wing) / l0_wing
 
-        outputs['weight:aircraft:load_case_1:CG:ratio'] = cg_ratio_pl_1
+        outputs['data:weight:aircraft:load_case_1:CG:ratio'] = cg_ratio_pl_1

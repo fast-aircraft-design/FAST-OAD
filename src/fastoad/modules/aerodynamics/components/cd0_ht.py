@@ -29,34 +29,34 @@ class Cd0HorizontalTail(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('geometry:horizontal_tail:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:horizontal_tail:thickness_ratio', val=np.nan)
-        self.add_input('geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
-        self.add_input('geometry:horizontal_tail:wetted_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:horizontal_tail:MAC:length', val=np.nan, units='m')
+        self.add_input('data:geometry:horizontal_tail:thickness_ratio', val=np.nan)
+        self.add_input('data:geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
+        self.add_input('data:geometry:horizontal_tail:wetted_area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
         if self.low_speed_aero:
             self.add_input('reynolds_low_speed', val=np.nan)
             self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('cd0_ht_low_speed')
         else:
-            self.add_input('aerodynamics:wing:cruise:reynolds', val=np.nan)
-            self.add_input('TLAR:cruise_mach', val=np.nan)
-            self.add_output('aerodynamics:horizontal_tail:cruise:CD0')
+            self.add_input('data:aerodynamics:wing:cruise:reynolds', val=np.nan)
+            self.add_input('data:TLAR:cruise_mach', val=np.nan)
+            self.add_output('data:aerodynamics:horizontal_tail:cruise:CD0')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        el_ht = inputs['geometry:horizontal_tail:thickness_ratio']
-        ht_length = inputs['geometry:horizontal_tail:MAC:length']
-        sweep_25_ht = inputs['geometry:horizontal_tail:sweep_25']
-        wet_area_ht = inputs['geometry:horizontal_tail:wetted_area']
-        wing_area = inputs['geometry:wing:area']
+        el_ht = inputs['data:geometry:horizontal_tail:thickness_ratio']
+        ht_length = inputs['data:geometry:horizontal_tail:MAC:length']
+        sweep_25_ht = inputs['data:geometry:horizontal_tail:sweep_25']
+        wet_area_ht = inputs['data:geometry:horizontal_tail:wetted_area']
+        wing_area = inputs['data:geometry:wing:area']
         if self.low_speed_aero:
             mach = inputs['Mach_low_speed']
             re_hs = inputs['reynolds_low_speed']
         else:
-            mach = inputs['TLAR:cruise_mach']
-            re_hs = inputs['aerodynamics:wing:cruise:reynolds']
+            mach = inputs['data:TLAR:cruise_mach']
+            re_hs = inputs['data:aerodynamics:wing:cruise:reynolds']
 
         ki_arrow_cd0 = 0.04
 
@@ -70,4 +70,4 @@ class Cd0HorizontalTail(ExplicitComponent):
         if self.low_speed_aero:
             outputs['cd0_ht_low_speed'] = cd0_ht_hs
         else:
-            outputs['aerodynamics:horizontal_tail:cruise:CD0'] = cd0_ht_hs
+            outputs['data:aerodynamics:horizontal_tail:cruise:CD0'] = cd0_ht_hs

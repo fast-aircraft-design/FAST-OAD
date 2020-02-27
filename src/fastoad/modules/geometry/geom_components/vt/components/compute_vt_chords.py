@@ -24,30 +24,30 @@ class ComputeVTChords(ExplicitComponent):
     """ Vertical tail chords and span estimation """
 
     def setup(self):
-        self.add_input('geometry:vertical_tail:aspect_ratio', val=np.nan)
-        self.add_input('geometry:vertical_tail:area', val=np.nan, units='m**2')
-        self.add_input('geometry:vertical_tail:taper_ratio', val=np.nan)
+        self.add_input('data:geometry:vertical_tail:aspect_ratio', val=np.nan)
+        self.add_input('data:geometry:vertical_tail:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:vertical_tail:taper_ratio', val=np.nan)
 
-        self.add_output('geometry:vertical_tail:span', units='m')
-        self.add_output('geometry:vertical_tail:root_chord', units='m')
-        self.add_output('geometry:vertical_tail:tip_chord', units='m')
+        self.add_output('data:geometry:vertical_tail:span', units='m')
+        self.add_output('data:geometry:vertical_tail:root_chord', units='m')
+        self.add_output('data:geometry:vertical_tail:tip_chord', units='m')
 
-        self.declare_partials('geometry:vertical_tail:span',
-                              ['geometry:vertical_tail:aspect_ratio',
-                               'geometry:vertical_tail:area'],
+        self.declare_partials('data:geometry:vertical_tail:span',
+                              ['data:geometry:vertical_tail:aspect_ratio',
+                               'data:geometry:vertical_tail:area'],
                               method='fd')
-        self.declare_partials('geometry:vertical_tail:root_chord', '*', method='fd')
-        self.declare_partials('geometry:vertical_tail:tip_chord', '*', method='fd')
+        self.declare_partials('data:geometry:vertical_tail:root_chord', '*', method='fd')
+        self.declare_partials('data:geometry:vertical_tail:tip_chord', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        lambda_vt = inputs['geometry:vertical_tail:aspect_ratio']
-        s_v = inputs['geometry:vertical_tail:area']
-        taper_v = inputs['geometry:vertical_tail:taper_ratio']
+        lambda_vt = inputs['data:geometry:vertical_tail:aspect_ratio']
+        s_v = inputs['data:geometry:vertical_tail:area']
+        taper_v = inputs['data:geometry:vertical_tail:taper_ratio']
 
         b_v = np.sqrt(max(lambda_vt * s_v, 0.1))  #
         root_chord = s_v * 2 / (1 + taper_v) / b_v
         tip_chord = root_chord * taper_v
 
-        outputs['geometry:vertical_tail:span'] = b_v
-        outputs['geometry:vertical_tail:root_chord'] = root_chord
-        outputs['geometry:vertical_tail:tip_chord'] = tip_chord
+        outputs['data:geometry:vertical_tail:span'] = b_v
+        outputs['data:geometry:vertical_tail:root_chord'] = root_chord
+        outputs['data:geometry:vertical_tail:tip_chord'] = tip_chord

@@ -23,24 +23,23 @@ class UpdateMLG(ExplicitComponent):
     """ Main landing gear center of gravity estimation """
 
     def setup(self):
+        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
+        self.add_input('data:weight:aircraft:CG:ratio', val=np.nan)
+        self.add_input('data:geometry:landing_gear:front:distance_to_main', val=np.nan)
 
-        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
-        self.add_input('weight:aircraft:CG:ratio', val=np.nan)
-        self.add_input('geometry:landing_gear:front:distance_to_main', val=np.nan)
+        self.add_output('data:weight:airframe:landing_gear:main:CG:x', units='m')
 
-        self.add_output('weight:airframe:landing_gear:main:CG:x', units='m')
-
-        self.declare_partials('weight:airframe:landing_gear:main:CG:x', '*', method='fd')
+        self.declare_partials('data:weight:airframe:landing_gear:main:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        l0_wing = inputs['geometry:wing:MAC:length']
-        fa_length = inputs['geometry:wing:MAC:x']
-        cg_ratio = inputs['weight:aircraft:CG:ratio']
-        delta_lg = inputs['geometry:landing_gear:front:distance_to_main']
+        l0_wing = inputs['data:geometry:wing:MAC:length']
+        fa_length = inputs['data:geometry:wing:MAC:x']
+        cg_ratio = inputs['data:weight:aircraft:CG:ratio']
+        delta_lg = inputs['data:geometry:landing_gear:front:distance_to_main']
 
         x_cg = fa_length - 0.25 * l0_wing + cg_ratio * l0_wing
 
         cg_airframe_a51 = x_cg + 0.08 * delta_lg
 
-        outputs['weight:airframe:landing_gear:main:CG:x'] = cg_airframe_a51
+        outputs['data:weight:airframe:landing_gear:main:CG:x'] = cg_airframe_a51

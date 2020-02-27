@@ -25,30 +25,30 @@ class ComputeHTChord(ExplicitComponent):
     """ Horizontal tail chords and span estimation """
 
     def setup(self):
-        self.add_input('geometry:horizontal_tail:aspect_ratio', val=np.nan)
-        self.add_input('geometry:horizontal_tail:area', val=np.nan, units='m**2')
-        self.add_input('geometry:horizontal_tail:taper_ratio', val=np.nan)
+        self.add_input('data:geometry:horizontal_tail:aspect_ratio', val=np.nan)
+        self.add_input('data:geometry:horizontal_tail:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:horizontal_tail:taper_ratio', val=np.nan)
 
-        self.add_output('geometry:horizontal_tail:span', units='m')
-        self.add_output('geometry:horizontal_tail:root_chord', units='m')
-        self.add_output('geometry:horizontal_tail:tip_chord', units='m')
+        self.add_output('data:geometry:horizontal_tail:span', units='m')
+        self.add_output('data:geometry:horizontal_tail:root_chord', units='m')
+        self.add_output('data:geometry:horizontal_tail:tip_chord', units='m')
 
-        self.declare_partials('geometry:horizontal_tail:span',
-                              ['geometry:horizontal_tail:area',
-                               'geometry:horizontal_tail:aspect_ratio'],
+        self.declare_partials('data:geometry:horizontal_tail:span',
+                              ['data:geometry:horizontal_tail:area',
+                               'data:geometry:horizontal_tail:aspect_ratio'],
                               method='fd')
-        self.declare_partials('geometry:horizontal_tail:root_chord', '*', method='fd')
-        self.declare_partials('geometry:horizontal_tail:tip_chord', '*', method='fd')
+        self.declare_partials('data:geometry:horizontal_tail:root_chord', '*', method='fd')
+        self.declare_partials('data:geometry:horizontal_tail:tip_chord', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        lambda_ht = inputs['geometry:horizontal_tail:aspect_ratio']
-        s_h = inputs['geometry:horizontal_tail:area']
-        taper_ht = inputs['geometry:horizontal_tail:taper_ratio']
+        lambda_ht = inputs['data:geometry:horizontal_tail:aspect_ratio']
+        s_h = inputs['data:geometry:horizontal_tail:area']
+        taper_ht = inputs['data:geometry:horizontal_tail:taper_ratio']
 
         b_h = np.sqrt(max(lambda_ht * s_h, 0.1))
         root_chord = s_h * 2 / (1 + taper_ht) / b_h
         tip_chord = root_chord * taper_ht
 
-        outputs['geometry:horizontal_tail:span'] = b_h
-        outputs['geometry:horizontal_tail:root_chord'] = root_chord
-        outputs['geometry:horizontal_tail:tip_chord'] = tip_chord
+        outputs['data:geometry:horizontal_tail:span'] = b_h
+        outputs['data:geometry:horizontal_tail:root_chord'] = root_chord
+        outputs['data:geometry:horizontal_tail:tip_chord'] = tip_chord

@@ -46,102 +46,102 @@ def get_indep_var_comp(var_names):
 
 def test_compute_loads():
     """ Tests computation of sizing loads """
-    input_list = ['geometry:wing:area',
-                  'geometry:wing:span',
-                  'weight:aircraft:MZFW',
-                  'weight:aircraft:MFW',
-                  'weight:aircraft:MTOW',
-                  'aerodynamics:aircraft:cruise:CL_alpha',
-                  'load_case:lc1:U_gust',
-                  'load_case:lc1:altitude',
-                  'load_case:lc1:Vc_EAS',
-                  'load_case:lc2:U_gust',
-                  'load_case:lc2:altitude',
-                  'load_case:lc2:Vc_EAS',
+    input_list = ['data:geometry:wing:area',
+                  'data:geometry:wing:span',
+                  'data:weight:aircraft:MZFW',
+                  'data:weight:aircraft:MFW',
+                  'data:weight:aircraft:MTOW',
+                  'data:aerodynamics:aircraft:cruise:CL_alpha',
+                  'data:load_case:lc1:U_gust',
+                  'data:load_case:lc1:altitude',
+                  'data:load_case:lc1:Vc_EAS',
+                  'data:load_case:lc2:U_gust',
+                  'data:load_case:lc2:altitude',
+                  'data:load_case:lc2:Vc_EAS',
 
                   ]
     ivc = get_indep_var_comp(input_list)
     problem = run_system(Loads(), ivc)
 
-    n1m1 = problem['mission:sizing:cs25:sizing_load_1']
-    n2m2 = problem['mission:sizing:cs25:sizing_load_2']
+    n1m1 = problem['data:mission:sizing:cs25:sizing_load_1']
+    n2m2 = problem['data:mission:sizing:cs25:sizing_load_2']
     assert n1m1 == pytest.approx(240968, abs=10)
     assert n2m2 == pytest.approx(254130, abs=10)
 
 
 def test_compute_wing_weight():
     """ Tests wing weight computation from sample XML data """
-    input_list = ['geometry:wing:area',
-                  'geometry:wing:span',
-                  'geometry:wing:root:thickness_ratio',
-                  'geometry:wing:kink:thickness_ratio',
-                  'geometry:wing:tip:thickness_ratio',
-                  'geometry:wing:root:chord',
-                  'geometry:wing:sweep_25',
-                  'geometry:wing:outer_area',
-                  'weight:aircraft:MTOW',
-                  'weight:aircraft:MLW',
-                  'weight:airframe:wing:mass:k',
-                  'weight:airframe:wing:mass:offset',
-                  'weight:airframe:wing:bending_sizing:mass:k',
-                  'weight:airframe:wing:bending_sizing:mass:offset',
-                  'weight:airframe:wing:shear_sizing:mass:k',
-                  'weight:airframe:wing:shear_sizing:mass:offset',
-                  'weight:airframe:wing:ribs:mass:k',
-                  'weight:airframe:wing:ribs:mass:offset',
-                  'weight:airframe:wing:reinforcements:mass:k',
-                  'weight:airframe:wing:reinforcements:mass:offset',
-                  'weight:airframe:wing:secondary_parts:mass:k',
-                  'weight:airframe:wing:secondary_parts:mass:offset',
-                  'weight:airframe:wing:mass:k_voil',
-                  'weight:airframe:wing:mass:k_mvo']
+    input_list = ['data:geometry:wing:area',
+                  'data:geometry:wing:span',
+                  'data:geometry:wing:root:thickness_ratio',
+                  'data:geometry:wing:kink:thickness_ratio',
+                  'data:geometry:wing:tip:thickness_ratio',
+                  'data:geometry:wing:root:chord',
+                  'data:geometry:wing:sweep_25',
+                  'data:geometry:wing:outer_area',
+                  'data:weight:aircraft:MTOW',
+                  'data:weight:aircraft:MLW',
+                  'tuning:weight:airframe:wing:mass:k',
+                  'tuning:weight:airframe:wing:mass:offset',
+                  'tuning:weight:airframe:wing:bending_sizing:mass:k',
+                  'tuning:weight:airframe:wing:bending_sizing:mass:offset',
+                  'tuning:weight:airframe:wing:shear_sizing:mass:k',
+                  'tuning:weight:airframe:wing:shear_sizing:mass:offset',
+                  'tuning:weight:airframe:wing:ribs:mass:k',
+                  'tuning:weight:airframe:wing:ribs:mass:offset',
+                  'tuning:weight:airframe:wing:reinforcements:mass:k',
+                  'tuning:weight:airframe:wing:reinforcements:mass:offset',
+                  'tuning:weight:airframe:wing:secondary_parts:mass:k',
+                  'tuning:weight:airframe:wing:secondary_parts:mass:offset',
+                  'settings:weight:airframe:wing:mass:k_voil',
+                  'settings:weight:airframe:wing:mass:k_mvo']
 
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('mission:sizing:cs25:sizing_load_1', 241000, units='kg')
-    ivc.add_output('mission:sizing:cs25:sizing_load_2', 250000, units='kg')
+    ivc.add_output('data:mission:sizing:cs25:sizing_load_1', 241000, units='kg')
+    ivc.add_output('data:mission:sizing:cs25:sizing_load_2', 250000, units='kg')
 
     problem = run_system(WingWeight(), ivc)
 
-    val = problem['weight:airframe:wing:mass']
+    val = problem['data:weight:airframe:wing:mass']
     assert val == pytest.approx(7681, abs=1)
 
 
 def test_compute_fuselage_weight():
     """ Tests fuselage weight computation from sample XML data """
     input_list = [
-        'geometry:fuselage:wetted_area',
-        'geometry:fuselage:maximum_width',
-        'geometry:fuselage:maximum_height',
-        'weight:airframe:fuselage:mass:k',
-        'weight:airframe:fuselage:mass:offset',
-        'weight:airframe:fuselage:mass:k_lg',
-        'weight:airframe:fuselage:mass:k_fus',
+        'data:geometry:fuselage:wetted_area',
+        'data:geometry:fuselage:maximum_width',
+        'data:geometry:fuselage:maximum_height',
+        'tuning:weight:airframe:fuselage:mass:k',
+        'tuning:weight:airframe:fuselage:mass:offset',
+        'settings:weight:airframe:fuselage:mass:k_lg',
+        'settings:weight:airframe:fuselage:mass:k_fus',
     ]
 
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('mission:sizing:cs25:sizing_load_1', 241000, units='kg')
+    ivc.add_output('data:mission:sizing:cs25:sizing_load_1', 241000, units='kg')
 
     problem = run_system(FuselageWeight(), ivc)
 
-    val = problem['weight:airframe:fuselage:mass']
+    val = problem['data:weight:airframe:fuselage:mass']
     assert val == pytest.approx(8828, abs=1)
 
 
 def test_compute_empennage_weight():
     """ Tests empennage weight computation from sample XML data """
     input_list = [
-        'geometry:horizontal_tail:area',
-        'geometry:vertical_tail:area',
-        'weight:airframe:horizontal_tail:mass:k',
-        'weight:airframe:horizontal_tail:mass:offset',
-        'weight:airframe:vertical_tail:mass:k',
-        'weight:airframe:vertical_tail:mass:offset',
+        'data:geometry:horizontal_tail:area',
+        'data:geometry:vertical_tail:area',
+        'tuning:weight:airframe:horizontal_tail:mass:k',
+        'tuning:weight:airframe:horizontal_tail:mass:offset',
+        'tuning:weight:airframe:vertical_tail:mass:k',
+        'tuning:weight:airframe:vertical_tail:mass:offset',
     ]
 
     ivc = get_indep_var_comp(input_list)
     problem = run_system(EmpennageWeight(), ivc)
-    val1 = problem['weight:airframe:horizontal_tail:mass']
-    val2 = problem['weight:airframe:vertical_tail:mass']
+    val1 = problem['data:weight:airframe:horizontal_tail:mass']
+    val2 = problem['data:weight:airframe:vertical_tail:mass']
     assert val1 == pytest.approx(754, abs=1)
     assert val2 == pytest.approx(515, abs=1)
 
@@ -149,33 +149,33 @@ def test_compute_empennage_weight():
 def test_compute_flight_controls_weight():
     """ Tests flight controls weight computation from sample XML data """
     input_list = [
-        'geometry:fuselage:length',
-        'geometry:wing:b_50',
-        'weight:airframe:flight_controls:mass:k',
-        'weight:airframe:flight_controls:mass:offset',
-        'weight:airframe:flight_controls:mass:k_fc',
+        'data:geometry:fuselage:length',
+        'data:geometry:wing:b_50',
+        'tuning:weight:airframe:flight_controls:mass:k',
+        'tuning:weight:airframe:flight_controls:mass:offset',
+        'settings:weight:airframe:flight_controls:mass:k_fc',
     ]
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('mission:sizing:cs25:sizing_load_1', 241000, units='kg')
-    ivc.add_output('mission:sizing:cs25:sizing_load_2', 250000, units='kg')
+    ivc.add_output('data:mission:sizing:cs25:sizing_load_1', 241000, units='kg')
+    ivc.add_output('data:mission:sizing:cs25:sizing_load_2', 250000, units='kg')
     problem = run_system(FlightControlsWeight(), ivc)
 
-    val = problem['weight:airframe:flight_controls:mass']
+    val = problem['data:weight:airframe:flight_controls:mass']
     assert val == pytest.approx(716, abs=1)
 
 
 def test_compute_landing_gear_weight():
     """ Tests landing gear weight computation from sample XML data """
     input_list = [
-        'weight:aircraft:MTOW',
-        'weight:airframe:landing_gear:mass:k',
-        'weight:airframe:landing_gear:mass:offset',
+        'data:weight:aircraft:MTOW',
+        'tuning:weight:airframe:landing_gear:mass:k',
+        'tuning:weight:airframe:landing_gear:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
     problem = run_system(LandingGearWeight(), ivc)
 
-    val1 = problem['weight:airframe:landing_gear:main:mass']
-    val2 = problem['weight:airframe:landing_gear:front:mass']
+    val1 = problem['data:weight:airframe:landing_gear:main:mass']
+    val2 = problem['data:weight:airframe:landing_gear:front:mass']
     assert val1 == pytest.approx(2144, abs=1)
     assert val2 == pytest.approx(379, abs=1)
 
@@ -183,99 +183,99 @@ def test_compute_landing_gear_weight():
 def test_compute_pylons_weight():
     """ Tests pylons weight computation from sample XML data """
     input_list = [
-        'geometry:propulsion:pylon:wetted_area',
-        'geometry:propulsion:engine:count',
-        'weight:airframe:pylon:mass:k',
-        'weight:airframe:pylon:mass:offset',
+        'data:geometry:propulsion:pylon:wetted_area',
+        'data:geometry:propulsion:engine:count',
+        'tuning:weight:airframe:pylon:mass:k',
+        'tuning:weight:airframe:pylon:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('weight:propulsion:engine:mass', 7161.33, units='kg')
+    ivc.add_output('data:weight:propulsion:engine:mass', 7161.33, units='kg')
     problem = run_system(PylonsWeight(), ivc)
 
-    val = problem['weight:airframe:pylon:mass']
+    val = problem['data:weight:airframe:pylon:mass']
     assert val == pytest.approx(1212, abs=1)
 
 
 def test_compute_paint_weight():
     """ Tests paint weight computation from sample XML data """
     input_list = [
-        'geometry:aircraft:wetted_area',
-        'weight:airframe:paint:mass:k',
-        'weight:airframe:paint:mass:offset',
+        'data:geometry:aircraft:wetted_area',
+        'tuning:weight:airframe:paint:mass:k',
+        'tuning:weight:airframe:paint:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
     problem = run_system(PaintWeight(), ivc)
 
-    val = problem['weight:airframe:paint:mass']
+    val = problem['data:weight:airframe:paint:mass']
     assert val == pytest.approx(141.1, abs=0.1)
 
 
 def test_compute_engine_weight():
     """ Tests engine weight computation from sample XML data """
     input_list = [
-        'propulsion:MTO_thrust',
-        'geometry:propulsion:engine:count',
-        'weight:propulsion:engine:mass:k',
-        'weight:propulsion:engine:mass:offset',
+        'data:propulsion:MTO_thrust',
+        'data:geometry:propulsion:engine:count',
+        'tuning:weight:propulsion:engine:mass:k',
+        'tuning:weight:propulsion:engine:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
     problem = run_system(EngineWeight(), ivc)
 
-    val = problem['weight:propulsion:engine:mass']
+    val = problem['data:weight:propulsion:engine:mass']
     assert val == pytest.approx(7161, abs=1)
 
 
 def test_compute_fuel_lines_weight():
     """ Tests fuel lines weight computation from sample XML data """
     input_list = [
-        'geometry:wing:b_50',
-        'weight:aircraft:MFW',
-        'weight:propulsion:fuel_lines:mass:k',
-        'weight:propulsion:fuel_lines:mass:offset',
+        'data:geometry:wing:b_50',
+        'data:weight:aircraft:MFW',
+        'tuning:weight:propulsion:fuel_lines:mass:k',
+        'tuning:weight:propulsion:fuel_lines:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('weight:propulsion:engine:mass', 7161.33, units='kg')
+    ivc.add_output('data:weight:propulsion:engine:mass', 7161.33, units='kg')
     problem = run_system(FuelLinesWeight(), ivc)
 
-    val = problem['weight:propulsion:fuel_lines:mass']
+    val = problem['data:weight:propulsion:fuel_lines:mass']
     assert val == pytest.approx(457, abs=1)
 
 
 def test_compute_unconsumables_weight():
     """ Tests "unconsumables" weight computation from sample XML data """
     input_list = [
-        'geometry:propulsion:engine:count',
-        'weight:aircraft:MFW',
-        'weight:propulsion:unconsumables:mass:k',
-        'weight:propulsion:unconsumables:mass:offset',
+        'data:geometry:propulsion:engine:count',
+        'data:weight:aircraft:MFW',
+        'tuning:weight:propulsion:unconsumables:mass:k',
+        'tuning:weight:propulsion:unconsumables:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
     problem = run_system(UnconsumablesWeight(), ivc)
 
-    val = problem['weight:propulsion:unconsumables:mass']
+    val = problem['data:weight:propulsion:unconsumables:mass']
     assert val == pytest.approx(122, abs=1)
 
 
 def test_compute_power_systems_weight():
     """ Tests power systems weight computation from sample XML data """
     input_list = [
-        'weight:aircraft:MTOW',
-        'weight:systems:power:auxiliary_power_unit:mass:k',
-        'weight:systems:power:auxiliary_power_unit:mass:offset',
-        'weight:systems:power:electric_systems:mass:k',
-        'weight:systems:power:electric_systems:mass:offset',
-        'weight:systems:power:hydraulic_systems:mass:k',
-        'weight:systems:power:hydraulic_systems:mass:offset',
-        'weight:systems:power:mass:k_elec',
+        'data:weight:aircraft:MTOW',
+        'tuning:weight:systems:power:auxiliary_power_unit:mass:k',
+        'tuning:weight:systems:power:auxiliary_power_unit:mass:offset',
+        'tuning:weight:systems:power:electric_systems:mass:k',
+        'tuning:weight:systems:power:electric_systems:mass:offset',
+        'tuning:weight:systems:power:hydraulic_systems:mass:k',
+        'tuning:weight:systems:power:hydraulic_systems:mass:offset',
+        'settings:weight:systems:power:mass:k_elec',
     ]
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('geometry:cabin:NPAX1', 150)
-    ivc.add_output('weight:airframe:flight_controls:mass', 700, units='kg')
+    ivc.add_output('data:geometry:cabin:NPAX1', 150)
+    ivc.add_output('data:weight:airframe:flight_controls:mass', 700, units='kg')
     problem = run_system(PowerSystemsWeight(), ivc)
 
-    val1 = problem['weight:systems:power:auxiliary_power_unit:mass']
-    val2 = problem['weight:systems:power:electric_systems:mass']
-    val3 = problem['weight:systems:power:hydraulic_systems:mass']
+    val1 = problem['data:weight:systems:power:auxiliary_power_unit:mass']
+    val2 = problem['data:weight:systems:power:electric_systems:mass']
+    val3 = problem['data:weight:systems:power:hydraulic_systems:mass']
     assert val1 == pytest.approx(279, abs=1)
     assert val2 == pytest.approx(1297, abs=1)
     assert val3 == pytest.approx(747, abs=1)
@@ -284,42 +284,42 @@ def test_compute_power_systems_weight():
 def test_compute_life_support_systems_weight():
     """ Tests life support systems weight computation from sample XML data """
     input_list = [
-        'geometry:fuselage:maximum_width',
-        'geometry:fuselage:maximum_height',
-        'geometry:cabin:length',
-        'geometry:wing:sweep_0',
-        'geometry:propulsion:nacelle:diameter',
-        'geometry:propulsion:engine:count',
-        'geometry:cabin:crew_count:technical',
-        'geometry:cabin:crew_count:commercial',
-        'geometry:wing:span',
-        'weight:systems:life_support:insulation:mass:k',
-        'weight:systems:life_support:insulation:mass:offset',
-        'weight:systems:life_support:air_conditioning:mass:k',
-        'weight:systems:life_support:air_conditioning:mass:offset',
-        'weight:systems:life_support:de-icing:mass:k',
-        'weight:systems:life_support:de-icing:mass:offset',
-        'weight:systems:life_support:cabin_lighting:mass:k',
-        'weight:systems:life_support:cabin_lighting:mass:offset',
-        'weight:systems:life_support:seats_crew_accommodation:mass:k',
-        'weight:systems:life_support:seats_crew_accommodation:mass:offset',
-        'weight:systems:life_support:oxygen:mass:k',
-        'weight:systems:life_support:oxygen:mass:offset',
-        'weight:systems:life_support:safety_equipment:mass:k',
-        'weight:systems:life_support:safety_equipment:mass:offset',
+        'data:geometry:fuselage:maximum_width',
+        'data:geometry:fuselage:maximum_height',
+        'data:geometry:cabin:length',
+        'data:geometry:wing:sweep_0',
+        'data:geometry:propulsion:nacelle:diameter',
+        'data:geometry:propulsion:engine:count',
+        'data:geometry:cabin:crew_count:technical',
+        'data:geometry:cabin:crew_count:commercial',
+        'data:geometry:wing:span',
+        'tuning:weight:systems:life_support:insulation:mass:k',
+        'tuning:weight:systems:life_support:insulation:mass:offset',
+        'tuning:weight:systems:life_support:air_conditioning:mass:k',
+        'tuning:weight:systems:life_support:air_conditioning:mass:offset',
+        'tuning:weight:systems:life_support:de-icing:mass:k',
+        'tuning:weight:systems:life_support:de-icing:mass:offset',
+        'tuning:weight:systems:life_support:cabin_lighting:mass:k',
+        'tuning:weight:systems:life_support:cabin_lighting:mass:offset',
+        'tuning:weight:systems:life_support:seats_crew_accommodation:mass:k',
+        'tuning:weight:systems:life_support:seats_crew_accommodation:mass:offset',
+        'tuning:weight:systems:life_support:oxygen:mass:k',
+        'tuning:weight:systems:life_support:oxygen:mass:offset',
+        'tuning:weight:systems:life_support:safety_equipment:mass:k',
+        'tuning:weight:systems:life_support:safety_equipment:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('geometry:cabin:NPAX1', 150)
-    ivc.add_output('weight:propulsion:engine:mass', 7161.33, units='kg')
+    ivc.add_output('data:geometry:cabin:NPAX1', 150)
+    ivc.add_output('data:weight:propulsion:engine:mass', 7161.33, units='kg')
     problem = run_system(LifeSupportSystemsWeight(), ivc)
 
-    val1 = problem['weight:systems:life_support:insulation:mass']
-    val2 = problem['weight:systems:life_support:air_conditioning:mass']
-    val3 = problem['weight:systems:life_support:de-icing:mass']
-    val4 = problem['weight:systems:life_support:cabin_lighting:mass']
-    val5 = problem['weight:systems:life_support:seats_crew_accommodation:mass']
-    val6 = problem['weight:systems:life_support:oxygen:mass']
-    val7 = problem['weight:systems:life_support:safety_equipment:mass']
+    val1 = problem['data:weight:systems:life_support:insulation:mass']
+    val2 = problem['data:weight:systems:life_support:air_conditioning:mass']
+    val3 = problem['data:weight:systems:life_support:de-icing:mass']
+    val4 = problem['data:weight:systems:life_support:cabin_lighting:mass']
+    val5 = problem['data:weight:systems:life_support:seats_crew_accommodation:mass']
+    val6 = problem['data:weight:systems:life_support:oxygen:mass']
+    val7 = problem['data:weight:systems:life_support:safety_equipment:mass']
     assert val1 == pytest.approx(2226, abs=1)
     assert val2 == pytest.approx(920, abs=1)
     assert val3 == pytest.approx(154, abs=1)
@@ -332,33 +332,33 @@ def test_compute_life_support_systems_weight():
 def test_compute_navigation_systems_weight():
     """ Tests navigation systems weight computation from sample XML data """
     input_list = [
-        'geometry:fuselage:length',
-        'geometry:wing:b_50',
-        'weight:systems:navigation:mass:k',
-        'weight:systems:navigation:mass:offset',
+        'data:geometry:fuselage:length',
+        'data:geometry:wing:b_50',
+        'tuning:weight:systems:navigation:mass:k',
+        'tuning:weight:systems:navigation:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
     component = NavigationSystemsWeight()
 
     component.options[AIRCRAFT_TYPE_OPTION] = 1.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:navigation:mass'] == pytest.approx(193, abs=1)
+    assert problem['data:weight:systems:navigation:mass'] == pytest.approx(193, abs=1)
 
     component.options[AIRCRAFT_TYPE_OPTION] = 2.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:navigation:mass'] == pytest.approx(493, abs=1)
+    assert problem['data:weight:systems:navigation:mass'] == pytest.approx(493, abs=1)
 
     component.options[AIRCRAFT_TYPE_OPTION] = 3.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:navigation:mass'] == pytest.approx(743, abs=1)
+    assert problem['data:weight:systems:navigation:mass'] == pytest.approx(743, abs=1)
 
     component.options[AIRCRAFT_TYPE_OPTION] = 4.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:navigation:mass'] == pytest.approx(843, abs=1)
+    assert problem['data:weight:systems:navigation:mass'] == pytest.approx(843, abs=1)
 
     component.options[AIRCRAFT_TYPE_OPTION] = 5.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:navigation:mass'] == pytest.approx(843, abs=1)
+    assert problem['data:weight:systems:navigation:mass'] == pytest.approx(843, abs=1)
 
     got_value_error = False
     try:
@@ -372,8 +372,8 @@ def test_compute_navigation_systems_weight():
 def test_compute_transmissions_systems_weight():
     """ Tests transmissions weight computation from sample XML data """
     input_list = [
-        'weight:systems:transmission:mass:k',
-        'weight:systems:transmission:mass:offset',
+        'tuning:weight:systems:transmission:mass:k',
+        'tuning:weight:systems:transmission:mass:offset',
     ]
 
     ivc = get_indep_var_comp(input_list)
@@ -381,19 +381,19 @@ def test_compute_transmissions_systems_weight():
 
     component.options[AIRCRAFT_TYPE_OPTION] = 1.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:transmission:mass'] == pytest.approx(100, abs=1)
+    assert problem['data:weight:systems:transmission:mass'] == pytest.approx(100, abs=1)
     component.options[AIRCRAFT_TYPE_OPTION] = 2.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:transmission:mass'] == pytest.approx(200, abs=1)
+    assert problem['data:weight:systems:transmission:mass'] == pytest.approx(200, abs=1)
     component.options[AIRCRAFT_TYPE_OPTION] = 3.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:transmission:mass'] == pytest.approx(250, abs=1)
+    assert problem['data:weight:systems:transmission:mass'] == pytest.approx(250, abs=1)
     component.options[AIRCRAFT_TYPE_OPTION] = 4.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:transmission:mass'] == pytest.approx(350, abs=1)
+    assert problem['data:weight:systems:transmission:mass'] == pytest.approx(350, abs=1)
     component.options[AIRCRAFT_TYPE_OPTION] = 5.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:transmission:mass'] == pytest.approx(350, abs=1)
+    assert problem['data:weight:systems:transmission:mass'] == pytest.approx(350, abs=1)
 
     got_value_error = False
     try:
@@ -409,21 +409,21 @@ def test_compute_fixed_operational_systems_weight():
     Tests fixed operational systems weight computation from sample XML data
     """
     input_list = [
-        'geometry:fuselage:front_length',
-        'geometry:fuselage:rear_length',
-        'geometry:fuselage:length',
-        'geometry:cabin:seats:economical:count_by_row',
-        'geometry:wing:root:chord',
-        'geometry:cabin:containers:count_by_row',
-        'weight:systems:operational:mass:k',
-        'weight:systems:operational:mass:offset',
+        'data:geometry:fuselage:front_length',
+        'data:geometry:fuselage:rear_length',
+        'data:geometry:fuselage:length',
+        'data:geometry:cabin:seats:economical:count_by_row',
+        'data:geometry:wing:root:chord',
+        'data:geometry:cabin:containers:count_by_row',
+        'tuning:weight:systems:operational:mass:k',
+        'tuning:weight:systems:operational:mass:offset',
     ]
 
     ivc = get_indep_var_comp(input_list)
     problem = run_system(FixedOperationalSystemsWeight(), ivc)
 
-    val1 = problem['weight:systems:operational:radar:mass']
-    val2 = problem['weight:systems:operational:cargo_hold:mass']
+    val1 = problem['data:weight:systems:operational:radar:mass']
+    val2 = problem['data:weight:systems:operational:cargo_hold:mass']
     assert val1 == pytest.approx(100, abs=1)
     assert val2 == pytest.approx(277, abs=1)
 
@@ -431,138 +431,138 @@ def test_compute_fixed_operational_systems_weight():
 def test_compute_flight_kit_weight():
     """ Tests flight kit weight computation from sample XML data """
     input_list = [
-        'weight:systems:flight_kit:mass:k',
-        'weight:systems:flight_kit:mass:offset',
+        'tuning:weight:systems:flight_kit:mass:k',
+        'tuning:weight:systems:flight_kit:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
     component = FlightKitWeight()
 
     component.options[AIRCRAFT_TYPE_OPTION] = 1.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:flight_kit:mass'] == pytest.approx(10, abs=1)
+    assert problem['data:weight:systems:flight_kit:mass'] == pytest.approx(10, abs=1)
 
     component.options[AIRCRAFT_TYPE_OPTION] = 5.
     problem = run_system(component, ivc)
-    assert problem['weight:systems:flight_kit:mass'] == pytest.approx(45, abs=1)
+    assert problem['data:weight:systems:flight_kit:mass'] == pytest.approx(45, abs=1)
 
 
 def test_compute_cargo_configuration_weight():
     """ Tests cargo configuration weight computation from sample XML data """
     input_list = [
-        'geometry:cabin:containers:count',
-        'geometry:cabin:pallet_count',
-        'geometry:cabin:seats:economical:count_by_row',
-        'weight:furniture:cargo_configuration:mass:k',
-        'weight:furniture:cargo_configuration:mass:offset',
+        'data:geometry:cabin:containers:count',
+        'data:geometry:cabin:pallet_count',
+        'data:geometry:cabin:seats:economical:count_by_row',
+        'tuning:weight:furniture:cargo_configuration:mass:k',
+        'tuning:weight:furniture:cargo_configuration:mass:offset',
     ]
     ivc = get_indep_var_comp(input_list)
-    ivc.add_output('geometry:cabin:NPAX1', 150)
+    ivc.add_output('data:geometry:cabin:NPAX1', 150)
     component = CargoConfigurationWeight()
 
     problem = run_system(component, ivc)
-    val = problem['weight:furniture:cargo_configuration:mass']
+    val = problem['data:weight:furniture:cargo_configuration:mass']
     assert val == 0.
 
     component.options['ac_type'] = 6.
     problem = run_system(component, ivc)
-    val = problem['weight:furniture:cargo_configuration:mass']
+    val = problem['data:weight:furniture:cargo_configuration:mass']
     assert val == pytest.approx(39.3, abs=0.1)
 
 
 def test_compute_passenger_seats_weight():
     """ Tests passenger seats weight computation from sample XML data """
     input_list = [
-        'TLAR:NPAX',
-        'weight:furniture:passenger_seats:mass:k',
-        'weight:furniture:passenger_seats:mass:offset',
+        'data:TLAR:NPAX',
+        'tuning:weight:furniture:passenger_seats:mass:k',
+        'tuning:weight:furniture:passenger_seats:mass:offset',
     ]
 
     ivc = get_indep_var_comp(input_list)
     component = PassengerSeatsWeight()
 
     problem = run_system(component, ivc)
-    val = problem['weight:furniture:passenger_seats:mass']
+    val = problem['data:weight:furniture:passenger_seats:mass']
     assert val == pytest.approx(1500, abs=1)
 
     component.options['ac_type'] = 6.
     problem = run_system(component, ivc)
-    val = problem['weight:furniture:passenger_seats:mass']
+    val = problem['data:weight:furniture:passenger_seats:mass']
     assert val == 0.
 
 
 def test_compute_food_water_weight():
     """ Tests food water weight computation from sample XML data """
     input_list = [
-        'TLAR:NPAX',
-        'weight:furniture:food_water:mass:k',
-        'weight:furniture:food_water:mass:offset',
+        'data:TLAR:NPAX',
+        'tuning:weight:furniture:food_water:mass:k',
+        'tuning:weight:furniture:food_water:mass:offset',
     ]
 
     ivc = get_indep_var_comp(input_list)
     component = FoodWaterWeight()
 
     problem = run_system(component, ivc)
-    val = problem['weight:furniture:food_water:mass']
+    val = problem['data:weight:furniture:food_water:mass']
     assert val == pytest.approx(1312, abs=1)
 
     component.options['ac_type'] = 6.
     problem = run_system(component, ivc)
-    val = problem['weight:furniture:food_water:mass']
+    val = problem['data:weight:furniture:food_water:mass']
     assert val == 0.
 
 
 def test_compute_security_kit_weight():
     """ Tests security kit weight computation from sample XML data """
     input_list = [
-        'TLAR:NPAX',
-        'weight:furniture:security_kit:mass:k',
-        'weight:furniture:security_kit:mass:offset',
+        'data:TLAR:NPAX',
+        'tuning:weight:furniture:security_kit:mass:k',
+        'tuning:weight:furniture:security_kit:mass:offset',
     ]
 
     ivc = get_indep_var_comp(input_list)
     component = SecurityKitWeight()
 
     problem = run_system(component, ivc)
-    val = problem['weight:furniture:security_kit:mass']
+    val = problem['data:weight:furniture:security_kit:mass']
     assert val == pytest.approx(225, abs=1)
 
     component.options['ac_type'] = 6.
     problem = run_system(component, ivc)
-    val = problem['weight:furniture:security_kit:mass']
+    val = problem['data:weight:furniture:security_kit:mass']
     assert val == 0.
 
 
 def test_compute_toilets_weight():
     """ Tests toilets weight computation from sample XML data """
     input_list = [
-        'TLAR:NPAX',
-        'weight:furniture:toilets:mass:k',
-        'weight:furniture:toilets:mass:offset',
+        'data:TLAR:NPAX',
+        'tuning:weight:furniture:toilets:mass:k',
+        'tuning:weight:furniture:toilets:mass:offset',
     ]
 
     ivc = get_indep_var_comp(input_list)
     component = ToiletsWeight()
 
     problem = run_system(component, ivc)
-    val = problem['weight:furniture:toilets:mass']
+    val = problem['data:weight:furniture:toilets:mass']
     assert val == pytest.approx(75, abs=0.1)
 
     component.options['ac_type'] = 6.
     problem = run_system(component, ivc)
-    val = problem['weight:furniture:toilets:mass']
+    val = problem['data:weight:furniture:toilets:mass']
     assert val == 0.
 
 
 def test_compute_crew_weight():
     """ Tests crew weight computation from sample XML data """
     input_list = [
-        'geometry:cabin:crew_count:technical',
-        'geometry:cabin:crew_count:commercial',
+        'data:geometry:cabin:crew_count:technical',
+        'data:geometry:cabin:crew_count:commercial',
     ]
     ivc = get_indep_var_comp(input_list)
     problem = run_system(CrewWeight(), ivc)
 
-    val = problem['weight:crew:mass']
+    val = problem['data:weight:crew:mass']
     assert val == pytest.approx(470, abs=1)
 
 
@@ -576,7 +576,7 @@ def test_evaluate_oew():
 
     mass_computation = run_system(OperatingWeightEmpty(), input_vars, setup_mode='fwd')
 
-    oew = mass_computation['weight:aircraft:OWE']
+    oew = mass_computation['data:weight:aircraft:OWE']
     assert oew == pytest.approx(41591, abs=1)
 
 
@@ -586,9 +586,9 @@ def test_loop_compute_oew():
     """
     reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ':'
-    input_vars = reader.read(ignore=['weight:aircraft:MLW', 'weight:aircraft:MZFW'])
+    input_vars = reader.read(ignore=['data:weight:aircraft:MLW', 'data:weight:aircraft:MZFW'])
 
     mass_computation = run_system(MassBreakdown(), input_vars)
 
-    oew = mass_computation['weight:aircraft:OWE']
+    oew = mass_computation['data:weight:aircraft:OWE']
     assert oew == pytest.approx(42060, abs=1)

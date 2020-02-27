@@ -22,19 +22,20 @@ class ComputeMaxCGratio(ExplicitComponent):
     """ Maximum center of gravity ratio estimation """
 
     def setup(self):
-        self.add_input('weight:aircraft:empty:CG:ratio', val=np.nan)
-        self.add_input('weight:aircraft:load_case_1:CG:ratio', val=np.nan)
-        self.add_input('weight:aircraft:load_case_2:CG:ratio', val=np.nan)
-        self.add_input('weight:aircraft:load_case_3:CG:ratio', val=np.nan)
-        self.add_input('weight:aircraft:load_case_4:CG:ratio', val=np.nan)
+        self.add_input('data:weight:aircraft:empty:CG:ratio', val=np.nan)
+        self.add_input('data:weight:aircraft:load_case_1:CG:ratio', val=np.nan)
+        self.add_input('data:weight:aircraft:load_case_2:CG:ratio', val=np.nan)
+        self.add_input('data:weight:aircraft:load_case_3:CG:ratio', val=np.nan)
+        self.add_input('data:weight:aircraft:load_case_4:CG:ratio', val=np.nan)
 
-        self.add_output('weight:aircraft:CG:ratio')
+        self.add_output('data:weight:aircraft:CG:ratio')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        outputs['weight:aircraft:CG:ratio'] = max(inputs['weight:aircraft:empty:CG:ratio'],
-                                                  inputs['weight:aircraft:load_case_1:CG:ratio'],
-                                                  inputs['weight:aircraft:load_case_2:CG:ratio'],
-                                                  inputs['weight:aircraft:load_case_3:CG:ratio'],
-                                                  inputs['weight:aircraft:load_case_4:CG:ratio'])
+        outputs['data:weight:aircraft:CG:ratio'] = max(
+            inputs['data:weight:aircraft:empty:CG:ratio'],
+            inputs['data:weight:aircraft:load_case_1:CG:ratio'],
+            inputs['data:weight:aircraft:load_case_2:CG:ratio'],
+            inputs['data:weight:aircraft:load_case_3:CG:ratio'],
+            inputs['data:weight:aircraft:load_case_4:CG:ratio'])

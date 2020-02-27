@@ -64,17 +64,18 @@ def test_oad_process(cleanup, install_components):
     problem.write_outputs()
 
     # Check that weight-performances loop correctly converged
-    assert_allclose(problem['weight:aircraft:OWE'],
-                    problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
-                    + problem['weight:systems:mass'] + problem['weight:furniture:mass']
-                    + problem['weight:crew:mass'],
+    assert_allclose(problem['data:weight:aircraft:OWE'],
+                    problem['data:weight:airframe:mass'] + problem['data:weight:propulsion:mass']
+                    + problem['data:weight:systems:mass'] + problem['data:weight:furniture:mass']
+                    + problem['data:weight:crew:mass'],
                     atol=1)
-    assert_allclose(problem['weight:aircraft:MZFW'],
-                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:max_payload'],
+    assert_allclose(problem['data:weight:aircraft:MZFW'],
+                    problem['data:weight:aircraft:OWE'] + problem[
+                        'data:weight:aircraft:max_payload'],
                     atol=1)
-    assert_allclose(problem['weight:aircraft:MTOW'],
-                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:fuel'],
+    assert_allclose(problem['data:weight:aircraft:MTOW'],
+                    problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
+                    + problem['data:mission:sizing:fuel'],
                     atol=1)
 
 
@@ -95,40 +96,42 @@ def test_api(cleanup, install_components):
     problem = api.evaluate_problem(configuration_file_path, True)
 
     # Check that weight-performances loop correctly converged
-    assert_allclose(problem['weight:aircraft:OWE'],
-                    problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
-                    + problem['weight:systems:mass'] + problem['weight:furniture:mass']
-                    + problem['weight:crew:mass'],
+    assert_allclose(problem['data:weight:aircraft:OWE'],
+                    problem['data:weight:airframe:mass'] + problem['data:weight:propulsion:mass']
+                    + problem['data:weight:systems:mass'] + problem['data:weight:furniture:mass']
+                    + problem['data:weight:crew:mass'],
                     atol=1)
-    assert_allclose(problem['weight:aircraft:MZFW'],
-                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:max_payload'],
+    assert_allclose(problem['data:weight:aircraft:MZFW'],
+                    problem['data:weight:aircraft:OWE'] + problem[
+                        'data:weight:aircraft:max_payload'],
                     atol=1)
-    assert_allclose(problem['weight:aircraft:MTOW'],
-                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:fuel'],
+    assert_allclose(problem['data:weight:aircraft:MTOW'],
+                    problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
+                    + problem['data:mission:sizing:fuel'],
                     atol=1)
-    base_thrust = problem['propulsion:MTO_thrust']
-    base_thrust_rate = problem['propulsion:thrust_rate']
-    base_MTOW = problem['weight:aircraft:MTOW']
-    wing_area = problem['geometry:wing:area']
-    ht_area = problem['geometry:horizontal_tail:area']
-    vt_area = problem['geometry:vertical_tail:area']
+    base_thrust = problem['data:propulsion:MTO_thrust']
+    base_thrust_rate = problem['data:propulsion:thrust_rate']
+    base_MTOW = problem['data:weight:aircraft:MTOW']
+    wing_area = problem['data:geometry:wing:area']
+    ht_area = problem['data:geometry:horizontal_tail:area']
+    vt_area = problem['data:geometry:vertical_tail:area']
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
 
     # Check that weight-performances loop correctly converged
-    assert_allclose(problem['weight:aircraft:OWE'],
-                    problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
-                    + problem['weight:systems:mass'] + problem['weight:furniture:mass']
-                    + problem['weight:crew:mass'],
+    assert_allclose(problem['data:weight:aircraft:OWE'],
+                    problem['data:weight:airframe:mass'] + problem['data:weight:propulsion:mass']
+                    + problem['data:weight:systems:mass'] + problem['data:weight:furniture:mass']
+                    + problem['data:weight:crew:mass'],
                     atol=1)
-    assert_allclose(problem['weight:aircraft:MZFW'],
-                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:max_payload'],
+    assert_allclose(problem['data:weight:aircraft:MZFW'],
+                    problem['data:weight:aircraft:OWE'] + problem[
+                        'data:weight:aircraft:max_payload'],
                     atol=1)
-    assert_allclose(problem['weight:aircraft:MTOW'],
-                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:fuel'],
+    assert_allclose(problem['data:weight:aircraft:MTOW'],
+                    problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
+                    + problem['data:mission:sizing:fuel'],
                     atol=1)
 
     print('before optimization')
@@ -140,11 +143,11 @@ def test_api(cleanup, install_components):
     print(vt_area)
 
     print('after optimization')
-    print(problem['propulsion:MTO_thrust'])
-    print(problem['propulsion:thrust_rate'])
-    print(problem['weight:aircraft:MTOW'])
-    print(problem['geometry:wing:area'])
-    print(problem['geometry:vertical_tail:area'])
+    print(problem['data:propulsion:MTO_thrust'])
+    print(problem['data:propulsion:thrust_rate'])
+    print(problem['data:weight:aircraft:MTOW'])
+    print(problem['data:geometry:wing:area'])
+    print(problem['data:geometry:vertical_tail:area'])
 
 
 def test_non_regression(cleanup, install_components):
@@ -166,17 +169,18 @@ def test_non_regression(cleanup, install_components):
                         show_browser=False)
 
     # Check that weight-performances loop correctly converged
-    assert_allclose(problem['weight:aircraft:OWE'],
-                    problem['weight:airframe:mass'] + problem['weight:propulsion:mass']
-                    + problem['weight:systems:mass'] + problem['weight:furniture:mass']
-                    + problem['weight:crew:mass'],
+    assert_allclose(problem['data:weight:aircraft:OWE'],
+                    problem['data:weight:airframe:mass'] + problem['data:weight:propulsion:mass']
+                    + problem['data:weight:systems:mass'] + problem['data:weight:furniture:mass']
+                    + problem['data:weight:crew:mass'],
                     atol=1)
-    assert_allclose(problem['weight:aircraft:MZFW'],
-                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:max_payload'],
+    assert_allclose(problem['data:weight:aircraft:MZFW'],
+                    problem['data:weight:aircraft:OWE'] + problem[
+                        'data:weight:aircraft:max_payload'],
                     atol=1)
-    assert_allclose(problem['weight:aircraft:MTOW'],
-                    problem['weight:aircraft:OWE'] + problem['weight:aircraft:payload']
-                    + problem['mission:sizing:fuel'],
+    assert_allclose(problem['data:weight:aircraft:MTOW'],
+                    problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
+                    + problem['data:mission:sizing:fuel'],
                     atol=1)
 
     ref_var_list = OMLegacy1XmlIO(

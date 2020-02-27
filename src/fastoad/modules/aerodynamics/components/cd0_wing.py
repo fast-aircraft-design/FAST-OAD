@@ -35,33 +35,33 @@ class Cd0Wing(ExplicitComponent):
             self.add_input('Mach_low_speed', val=np.nan)
             self.add_output('cd0_wing_low_speed', shape=POLAR_POINT_COUNT)
         else:
-            self.add_input('aerodynamics:wing:cruise:reynolds', val=np.nan)
-            self.add_input('aerodynamics:aircraft:cruise:CL', val=nans_array)
-            self.add_input('TLAR:cruise_mach', val=np.nan)
-            self.add_output('aerodynamics:wing:cruise:CD0', shape=POLAR_POINT_COUNT)
+            self.add_input('data:aerodynamics:wing:cruise:reynolds', val=np.nan)
+            self.add_input('data:aerodynamics:aircraft:cruise:CL', val=nans_array)
+            self.add_input('data:TLAR:cruise_mach', val=np.nan)
+            self.add_output('data:aerodynamics:wing:cruise:CD0', shape=POLAR_POINT_COUNT)
 
-        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing:thickness_ratio', val=np.nan)
-        self.add_input('geometry:wing:wetted_area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
+        self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:wing:thickness_ratio', val=np.nan)
+        self.add_input('data:geometry:wing:wetted_area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:sweep_25', val=np.nan, units='deg')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        wing_area = inputs['geometry:wing:area']
-        wet_area_wing = inputs['geometry:wing:wetted_area']
-        el_aero = inputs['geometry:wing:thickness_ratio']
-        sweep_25 = inputs['geometry:wing:sweep_25']
-        l0_wing = inputs['geometry:wing:MAC:length']
+        wing_area = inputs['data:geometry:wing:area']
+        wet_area_wing = inputs['data:geometry:wing:wetted_area']
+        el_aero = inputs['data:geometry:wing:thickness_ratio']
+        sweep_25 = inputs['data:geometry:wing:sweep_25']
+        l0_wing = inputs['data:geometry:wing:MAC:length']
         if self.low_speed_aero:
             cl = inputs['cl_low_speed']
             mach = inputs['Mach_low_speed']
             re_hs = inputs['reynolds_low_speed']
         else:
-            cl = inputs['aerodynamics:aircraft:cruise:CL']
-            mach = inputs['TLAR:cruise_mach']
-            re_hs = inputs['aerodynamics:wing:cruise:reynolds']
+            cl = inputs['data:aerodynamics:aircraft:cruise:CL']
+            mach = inputs['data:TLAR:cruise_mach']
+            re_hs = inputs['data:aerodynamics:wing:cruise:reynolds']
 
         ki_arrow_cd0 = 0.04
         # Friction coefficients
@@ -82,4 +82,4 @@ class Cd0Wing(ExplicitComponent):
         if self.low_speed_aero:
             outputs['cd0_wing_low_speed'] = cd0_wing
         else:
-            outputs['aerodynamics:wing:cruise:CD0'] = cd0_wing
+            outputs['data:aerodynamics:wing:cruise:CD0'] = cd0_wing

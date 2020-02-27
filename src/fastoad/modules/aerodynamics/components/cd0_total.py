@@ -27,7 +27,7 @@ class Cd0Total(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options['low_speed_aero']
 
-        self.add_input('geometry:aircraft:wetted_area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:aircraft:wetted_area', val=np.nan, units='m**2')
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
@@ -39,18 +39,18 @@ class Cd0Total(ExplicitComponent):
             self.add_input('cd0_pylon_low_speed', val=np.nan)
             self.add_output('cd0_total_low_speed', shape=POLAR_POINT_COUNT)
         else:
-            self.add_input('aerodynamics:wing:cruise:CD0', val=nans_array)
-            self.add_input('aerodynamics:fuselage:cruise:CD0', val=nans_array)
-            self.add_input('aerodynamics:horizontal_tail:cruise:CD0', val=np.nan)
-            self.add_input('aerodynamics:vertical_tail:cruise:CD0', val=np.nan)
-            self.add_input('aerodynamics:nacelles:cruise:CD0', val=np.nan)
-            self.add_input('aerodynamics:pylons:cruise:CD0', val=np.nan)
-            self.add_output('aerodynamics:aircraft:cruise:CD0', shape=POLAR_POINT_COUNT)
+            self.add_input('data:aerodynamics:wing:cruise:CD0', val=nans_array)
+            self.add_input('data:aerodynamics:fuselage:cruise:CD0', val=nans_array)
+            self.add_input('data:aerodynamics:horizontal_tail:cruise:CD0', val=np.nan)
+            self.add_input('data:aerodynamics:vertical_tail:cruise:CD0', val=np.nan)
+            self.add_input('data:aerodynamics:nacelles:cruise:CD0', val=np.nan)
+            self.add_input('data:aerodynamics:pylons:cruise:CD0', val=np.nan)
+            self.add_output('data:aerodynamics:aircraft:cruise:CD0', shape=POLAR_POINT_COUNT)
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        wet_area_total = inputs['geometry:aircraft:wetted_area']
+        wet_area_total = inputs['data:geometry:aircraft:wetted_area']
         if self.low_speed_aero:
             cd0_wing = inputs['cd0_wing_low_speed']
             cd0_fus = inputs['cd0_fuselage_low_speed']
@@ -59,12 +59,12 @@ class Cd0Total(ExplicitComponent):
             cd0_nac = inputs['cd0_nacelle_low_speed']
             cd0_pylon = inputs['cd0_pylon_low_speed']
         else:
-            cd0_wing = inputs['aerodynamics:wing:cruise:CD0']
-            cd0_fus = inputs['aerodynamics:fuselage:cruise:CD0']
-            cd0_ht = inputs['aerodynamics:horizontal_tail:cruise:CD0']
-            cd0_vt = inputs['aerodynamics:vertical_tail:cruise:CD0']
-            cd0_nac = inputs['aerodynamics:nacelles:cruise:CD0']
-            cd0_pylon = inputs['aerodynamics:pylons:cruise:CD0']
+            cd0_wing = inputs['data:aerodynamics:wing:cruise:CD0']
+            cd0_fus = inputs['data:aerodynamics:fuselage:cruise:CD0']
+            cd0_ht = inputs['data:aerodynamics:horizontal_tail:cruise:CD0']
+            cd0_vt = inputs['data:aerodynamics:vertical_tail:cruise:CD0']
+            cd0_nac = inputs['data:aerodynamics:nacelles:cruise:CD0']
+            cd0_pylon = inputs['data:aerodynamics:pylons:cruise:CD0']
 
         k_techno = 1
         k_parasite = - 2.39 * pow(10, -12) * wet_area_total ** 3 + 2.58 * pow(
@@ -76,4 +76,4 @@ class Cd0Total(ExplicitComponent):
         if self.low_speed_aero:
             outputs['cd0_total_low_speed'] = cd0_total
         else:
-            outputs['aerodynamics:aircraft:cruise:CD0'] = cd0_total
+            outputs['data:aerodynamics:aircraft:cruise:CD0'] = cd0_total

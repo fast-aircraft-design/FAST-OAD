@@ -62,6 +62,6 @@ def test_geometry_geometry_global():
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = run_system(group, input_vars)
 
-    static_margin = problem['handling_qualities:static_margin']
+    static_margin = problem['data:handling_qualities:static_margin']
     # TODO: see if this static margin is correct
     assert static_margin == pytest.approx(-0.0102, abs=1e-5)

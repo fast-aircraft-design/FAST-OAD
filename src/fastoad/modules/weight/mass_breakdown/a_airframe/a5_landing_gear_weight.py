@@ -22,18 +22,18 @@ class LandingGearWeight(ExplicitComponent):
     """ Landing gear weight estimation (A5) """
 
     def setup(self):
-        self.add_input('weight:aircraft:MTOW', val=np.nan, units='kg')
-        self.add_input('weight:airframe:landing_gear:mass:k', val=1.)
-        self.add_input('weight:airframe:landing_gear:mass:offset', val=0., units='kg')
+        self.add_input('data:weight:aircraft:MTOW', val=np.nan, units='kg')
+        self.add_input('tuning:weight:airframe:landing_gear:mass:k', val=1.)
+        self.add_input('tuning:weight:airframe:landing_gear:mass:offset', val=0., units='kg')
 
-        self.add_output('weight:airframe:landing_gear:main:mass', units='kg')
-        self.add_output('weight:airframe:landing_gear:front:mass', units='kg')
+        self.add_output('data:weight:airframe:landing_gear:main:mass', units='kg')
+        self.add_output('data:weight:airframe:landing_gear:front:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        mtow = inputs['weight:aircraft:MTOW']
-        k_a5 = inputs['weight:airframe:landing_gear:mass:k']
-        offset_a5 = inputs['weight:airframe:landing_gear:mass:offset']
+        mtow = inputs['data:weight:aircraft:MTOW']
+        k_a5 = inputs['tuning:weight:airframe:landing_gear:mass:k']
+        offset_a5 = inputs['tuning:weight:airframe:landing_gear:mass:offset']
 
         temp_a51 = 18.1 + 0.131 * mtow ** 0.75 + 0.019 * mtow + 2.23E-5 * mtow ** 1.5
         temp_a52 = 9.1 + 0.082 * mtow ** 0.75 + 2.97E-6 * mtow ** 1.5
@@ -41,5 +41,5 @@ class LandingGearWeight(ExplicitComponent):
         a51 = k_a5 * temp_a51 + offset_a5
         a52 = k_a5 * temp_a52 + offset_a5
 
-        outputs['weight:airframe:landing_gear:main:mass'] = a51
-        outputs['weight:airframe:landing_gear:front:mass'] = a52
+        outputs['data:weight:airframe:landing_gear:main:mass'] = a51
+        outputs['data:weight:airframe:landing_gear:front:mass'] = a52

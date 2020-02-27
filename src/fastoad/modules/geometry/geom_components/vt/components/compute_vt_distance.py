@@ -31,21 +31,21 @@ class ComputeVTDistance(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
+        self.add_input('data:geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
 
-        self.add_output('geometry:vertical_tail:distance_from_wing', units='m')
+        self.add_output('data:geometry:vertical_tail:distance_from_wing', units='m')
 
-        self.declare_partials('geometry:vertical_tail:distance_from_wing',
-                              ['geometry:fuselage:length', 'geometry:wing:MAC:x'],
+        self.declare_partials('data:geometry:vertical_tail:distance_from_wing',
+                              ['data:geometry:fuselage:length', 'data:geometry:wing:MAC:x'],
                               method='fd')
 
     def compute(self, inputs, outputs):
         tail_type = self.options[TAIL_TYPE_OPTION]
         ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
 
-        fus_length = inputs['geometry:fuselage:length']
-        fa_length = inputs['geometry:wing:MAC:x']
+        fus_length = inputs['data:geometry:fuselage:length']
+        fa_length = inputs['data:geometry:wing:MAC:x']
 
         if tail_type == 1.0:
             if ac_family == 1.0:
@@ -55,4 +55,4 @@ class ComputeVTDistance(om.ExplicitComponent):
         else:
             lp_vt = 0.88 * fus_length - fa_length
 
-        outputs['geometry:vertical_tail:distance_from_wing'] = lp_vt
+        outputs['data:geometry:vertical_tail:distance_from_wing'] = lp_vt

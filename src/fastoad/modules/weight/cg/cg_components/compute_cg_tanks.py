@@ -34,28 +34,28 @@ class ComputeTanksCG(ExplicitComponent):
         self.ratio = self.options['ratio']
 
     def setup(self):
-        self.add_input('geometry:wing:spar_ratio:front:root', val=np.nan)
-        self.add_input('geometry:wing:spar_ratio:front:kink', val=np.nan)
-        self.add_input('geometry:wing:spar_ratio:front:tip', val=np.nan)
-        self.add_input('geometry:wing:spar_ratio:rear:root', val=np.nan)
-        self.add_input('geometry:wing:spar_ratio:rear:kink', val=np.nan)
-        self.add_input('geometry:wing:spar_ratio:rear:tip', val=np.nan)
-        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:root:leading_edge:x', val=np.nan, units='m')
-        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
-        self.add_input('geometry:wing:kink:chord', val=np.nan, units='m')
-        self.add_input('geometry:wing:tip:chord', val=np.nan, units='m')
-        self.add_input('geometry:wing:root:y', val=np.nan, units='m')
-        self.add_input('geometry:wing:kink:leading_edge:x', val=np.nan, units='m')
-        self.add_input('geometry:wing:kink:y', val=np.nan, units='m')
-        self.add_input('geometry:wing:tip:leading_edge:x', val=np.nan, units='m')
-        self.add_input('geometry:wing:tip:y', val=np.nan, units='m')
-        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:maximum_width', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:spar_ratio:front:root', val=np.nan)
+        self.add_input('data:geometry:wing:spar_ratio:front:kink', val=np.nan)
+        self.add_input('data:geometry:wing:spar_ratio:front:tip', val=np.nan)
+        self.add_input('data:geometry:wing:spar_ratio:rear:root', val=np.nan)
+        self.add_input('data:geometry:wing:spar_ratio:rear:kink', val=np.nan)
+        self.add_input('data:geometry:wing:spar_ratio:rear:tip', val=np.nan)
+        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:root:leading_edge:x', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:kink:chord', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:tip:chord', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:root:y', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:kink:leading_edge:x', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:kink:y', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:tip:leading_edge:x', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:tip:y', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
+        self.add_input('data:geometry:fuselage:maximum_width', val=np.nan, units='m')
 
-        self.add_output('weight:fuel_tank:CG:x', units='m')
+        self.add_output('data:weight:fuel_tank:CG:x', units='m')
 
-        self.declare_partials('weight:fuel_tank:CG:x', '*', method='fd')
+        self.declare_partials('data:weight:fuel_tank:CG:x', '*', method='fd')
 
     def compute(self, inputs, outputs):
 
@@ -66,24 +66,24 @@ class ComputeTanksCG(ExplicitComponent):
         y_down = []
         xy_up = []
         xy_down = []
-        front_spar_ratio_root = inputs['geometry:wing:spar_ratio:front:root']
-        front_spar_ratio_kink = inputs['geometry:wing:spar_ratio:front:kink']
-        front_spar_ratio_tip = inputs['geometry:wing:spar_ratio:front:tip']
-        rear_spar_ratio_root = inputs['geometry:wing:spar_ratio:rear:root']
-        rear_spar_ratio_kink = inputs['geometry:wing:spar_ratio:rear:kink']
-        rear_spar_ratio_tip = inputs['geometry:wing:spar_ratio:rear:tip']
-        l0_wing = inputs['geometry:wing:MAC:length']
-        x0_wing = inputs['geometry:wing:root:leading_edge:x']
-        l2_wing = inputs['geometry:wing:root:chord']
-        l3_wing = inputs['geometry:wing:kink:chord']
-        l4_wing = inputs['geometry:wing:tip:chord']
-        y2_wing = inputs['geometry:wing:root:y']
-        x3_wing = inputs['geometry:wing:kink:leading_edge:x']
-        y3_wing = inputs['geometry:wing:kink:y']
-        y4_wing = inputs['geometry:wing:tip:y']
-        x4_wing = inputs['geometry:wing:tip:leading_edge:x']
-        fa_length = inputs['geometry:wing:MAC:x']
-        width_max = inputs['geometry:fuselage:maximum_width']
+        front_spar_ratio_root = inputs['data:geometry:wing:spar_ratio:front:root']
+        front_spar_ratio_kink = inputs['data:geometry:wing:spar_ratio:front:kink']
+        front_spar_ratio_tip = inputs['data:geometry:wing:spar_ratio:front:tip']
+        rear_spar_ratio_root = inputs['data:geometry:wing:spar_ratio:rear:root']
+        rear_spar_ratio_kink = inputs['data:geometry:wing:spar_ratio:rear:kink']
+        rear_spar_ratio_tip = inputs['data:geometry:wing:spar_ratio:rear:tip']
+        l0_wing = inputs['data:geometry:wing:MAC:length']
+        x0_wing = inputs['data:geometry:wing:root:leading_edge:x']
+        l2_wing = inputs['data:geometry:wing:root:chord']
+        l3_wing = inputs['data:geometry:wing:kink:chord']
+        l4_wing = inputs['data:geometry:wing:tip:chord']
+        y2_wing = inputs['data:geometry:wing:root:y']
+        x3_wing = inputs['data:geometry:wing:kink:leading_edge:x']
+        y3_wing = inputs['data:geometry:wing:kink:y']
+        y4_wing = inputs['data:geometry:wing:tip:y']
+        x4_wing = inputs['data:geometry:wing:tip:leading_edge:x']
+        fa_length = inputs['data:geometry:wing:MAC:x']
+        width_max = inputs['data:geometry:fuselage:maximum_width']
 
         airfoil_file = open_text(resources, 'airfoil_f_15_15.dat')
         node_number = int(airfoil_file.readline())
@@ -247,4 +247,4 @@ class ComputeTanksCG(ExplicitComponent):
         # *0.8*x_cg_side_inner+vol_central*0.8*x_cg_central)/
         # (vol_side_out*0.8+vol_side_inner*0.8+vol_central*0.8)
 
-        outputs['weight:fuel_tank:CG:x'] = x_cg_tank
+        outputs['data:weight:fuel_tank:CG:x'] = x_cg_tank

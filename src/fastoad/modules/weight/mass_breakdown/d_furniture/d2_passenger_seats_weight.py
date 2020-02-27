@@ -28,17 +28,17 @@ class PassengerSeatsWeight(ExplicitComponent):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
-        self.add_input('TLAR:NPAX', val=np.nan)
-        self.add_input('weight:furniture:passenger_seats:mass:k', val=1.)
-        self.add_input('weight:furniture:passenger_seats:mass:offset', val=0., units='kg')
+        self.add_input('data:TLAR:NPAX', val=np.nan)
+        self.add_input('tuning:weight:furniture:passenger_seats:mass:k', val=1.)
+        self.add_input('tuning:weight:furniture:passenger_seats:mass:offset', val=0., units='kg')
 
-        self.add_output('weight:furniture:passenger_seats:mass', units='kg')
+        self.add_output('data:weight:furniture:passenger_seats:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        npax = inputs['TLAR:NPAX']
-        k_d2 = inputs['weight:furniture:passenger_seats:mass:k']
-        offset_d2 = inputs['weight:furniture:passenger_seats:mass:offset']
+        npax = inputs['data:TLAR:NPAX']
+        k_d2 = inputs['tuning:weight:furniture:passenger_seats:mass:k']
+        offset_d2 = inputs['tuning:weight:furniture:passenger_seats:mass:offset']
 
         aircraft_type = self.options[AIRCRAFT_TYPE_OPTION]
         if aircraft_type == 1.0:
@@ -51,4 +51,4 @@ class PassengerSeatsWeight(ExplicitComponent):
             k_ps = 0.
 
         temp_d2 = k_ps * npax
-        outputs['weight:furniture:passenger_seats:mass'] = k_d2 * temp_d2 + offset_d2
+        outputs['data:weight:furniture:passenger_seats:mass'] = k_d2 * temp_d2 + offset_d2

@@ -30,33 +30,33 @@ class ComputeHTArea(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:MAC:x', val=np.nan, units='m')
-        self.add_input('geometry:horizontal_tail:volume_coefficient', val=np.nan)
-        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
+        self.add_input('data:geometry:horizontal_tail:volume_coefficient', val=np.nan)
+        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
 
-        self.add_output('geometry:horizontal_tail:distance_from_wing', units='m')
-        self.add_output('geometry:horizontal_tail:wetted_area', units='m**2')
-        self.add_output('geometry:horizontal_tail:area', units='m**2')
+        self.add_output('data:geometry:horizontal_tail:distance_from_wing', units='m')
+        self.add_output('data:geometry:horizontal_tail:wetted_area', units='m**2')
+        self.add_output('data:geometry:horizontal_tail:area', units='m**2')
 
-        self.declare_partials('geometry:horizontal_tail:distance_from_wing',
-                              ['geometry:fuselage:length', 'geometry:wing:MAC:x'],
+        self.declare_partials('data:geometry:horizontal_tail:distance_from_wing',
+                              ['data:geometry:fuselage:length', 'data:geometry:wing:MAC:x'],
                               method='fd')
-        self.declare_partials('geometry:horizontal_tail:wetted_area',
+        self.declare_partials('data:geometry:horizontal_tail:wetted_area',
                               '*', method='fd')
-        self.declare_partials('geometry:horizontal_tail:area', '*',
+        self.declare_partials('data:geometry:horizontal_tail:area', '*',
                               method='fd')
 
     def compute(self, inputs, outputs):
         tail_type = self.options[TAIL_TYPE_OPTION]
         ac_family = self.options[AIRCRAFT_FAMILY_OPTION]
 
-        fus_length = inputs['geometry:fuselage:length']
-        fa_length = inputs['geometry:wing:MAC:x']
-        wing_area = inputs['geometry:wing:area']
-        l0_wing = inputs['geometry:wing:MAC:length']
-        ht_vol_coeff = inputs['geometry:horizontal_tail:volume_coefficient']
+        fus_length = inputs['data:geometry:fuselage:length']
+        fa_length = inputs['data:geometry:wing:MAC:x']
+        wing_area = inputs['data:geometry:wing:area']
+        l0_wing = inputs['data:geometry:wing:MAC:length']
+        ht_vol_coeff = inputs['data:geometry:horizontal_tail:volume_coefficient']
 
         if tail_type == 1.0:
             if ac_family == 1.0:
@@ -76,6 +76,6 @@ class ComputeHTArea(om.ExplicitComponent):
         else:
             print('Error in the tailplane positioning')
 
-        outputs['geometry:horizontal_tail:distance_from_wing'] = lp_ht
-        outputs['geometry:horizontal_tail:wetted_area'] = wet_area_ht
-        outputs['geometry:horizontal_tail:area'] = s_h
+        outputs['data:geometry:horizontal_tail:distance_from_wing'] = lp_ht
+        outputs['data:geometry:horizontal_tail:wetted_area'] = wet_area_ht
+        outputs['data:geometry:horizontal_tail:area'] = s_h

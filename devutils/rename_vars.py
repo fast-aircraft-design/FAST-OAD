@@ -122,12 +122,12 @@ if __name__ == '__main__':
     # process XML files
     old_new_translator = build_translator(old_new_names)
     file_list = [
-        'tests/integration_tests/oad_process/data/perfo_process_inputs.xml',
-        'tests/integration_tests/oad_process/data/propulsion_process_inputs.xml',
         'tests/unit_tests/modules/aerodynamics/data/aerodynamics_inputs.xml',
-        'tests/unit_tests/modules/geometry/data/geometry_inputs.xml',
+        'tests/unit_tests/modules/geometry/data/geometry_inputs_full.xml',
+        'tests/unit_tests/modules/geometry/data/global_geometry_inputs.xml',
         'tests/unit_tests/modules/mass_breakdown/data/mass_breakdown_inputs.xml',
         'tests/unit_tests/utils/postprocessing/data/problem_outputs.xml',
+        'src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml'
     ]
     for xml_file_path in file_list:
         print('processing %s' % xml_file_path)

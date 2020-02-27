@@ -23,19 +23,19 @@ class UnconsumablesWeight(ExplicitComponent):
     """ unconsumables weight estimation (B2) """
 
     def setup(self):
-        self.add_input('geometry:propulsion:engine:count', val=np.nan)
-        self.add_input('weight:aircraft:MFW', val=np.nan, units='kg')
-        self.add_input('weight:propulsion:unconsumables:mass:k', val=1.)
-        self.add_input('weight:propulsion:unconsumables:mass:offset', val=0., units='kg')
+        self.add_input('data:geometry:propulsion:engine:count', val=np.nan)
+        self.add_input('data:weight:aircraft:MFW', val=np.nan, units='kg')
+        self.add_input('tuning:weight:propulsion:unconsumables:mass:k', val=1.)
+        self.add_input('tuning:weight:propulsion:unconsumables:mass:offset', val=0., units='kg')
 
-        self.add_output('weight:propulsion:unconsumables:mass', units='kg')
+        self.add_output('data:weight:propulsion:unconsumables:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        n_engines = inputs['geometry:propulsion:engine:count']
-        mfw = inputs['weight:aircraft:MFW']
-        k_b3 = inputs['weight:propulsion:unconsumables:mass:k']
-        offset_b3 = inputs['weight:propulsion:unconsumables:mass:offset']
+        n_engines = inputs['data:geometry:propulsion:engine:count']
+        mfw = inputs['data:weight:aircraft:MFW']
+        k_b3 = inputs['tuning:weight:propulsion:unconsumables:mass:k']
+        offset_b3 = inputs['tuning:weight:propulsion:unconsumables:mass:offset']
 
         temp_b3 = 25 * n_engines + 0.0035 * mfw
-        outputs['weight:propulsion:unconsumables:mass'] = k_b3 * temp_b3 + offset_b3
+        outputs['data:weight:propulsion:unconsumables:mass'] = k_b3 * temp_b3 + offset_b3

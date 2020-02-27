@@ -23,28 +23,28 @@ class FlightControlsWeight(ExplicitComponent):
     """ Flight controls weight estimation (A4) """
 
     def setup(self):
-        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('geometry:wing:b_50', val=np.nan, units='m')
-        self.add_input('mission:sizing:cs25:sizing_load_1', val=np.nan, units='kg')
-        self.add_input('mission:sizing:cs25:sizing_load_2', val=np.nan, units='kg')
-        self.add_input('weight:airframe:flight_controls:mass:k_fc',
+        self.add_input('data:geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('data:geometry:wing:b_50', val=np.nan, units='m')
+        self.add_input('data:mission:sizing:cs25:sizing_load_1', val=np.nan, units='kg')
+        self.add_input('data:mission:sizing:cs25:sizing_load_2', val=np.nan, units='kg')
+        self.add_input('settings:weight:airframe:flight_controls:mass:k_fc',
                        val=np.nan)  # FIXME: this is a coeff of the model
-        self.add_input('weight:airframe:flight_controls:mass:k', val=1.)
-        self.add_input('weight:airframe:flight_controls:mass:offset', val=0., units='kg')
+        self.add_input('tuning:weight:airframe:flight_controls:mass:k', val=1.)
+        self.add_input('tuning:weight:airframe:flight_controls:mass:offset', val=0., units='kg')
 
-        self.add_output('weight:airframe:flight_controls:mass', units='kg')
+        self.add_output('data:weight:airframe:flight_controls:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        fus_length = inputs['geometry:fuselage:length']
-        b_50 = inputs['geometry:wing:b_50']
-        k_fc = inputs['weight:airframe:flight_controls:mass:k_fc']
-        k_a4 = inputs['weight:airframe:flight_controls:mass:k']
-        offset_a4 = inputs['weight:airframe:flight_controls:mass:offset']
+        fus_length = inputs['data:geometry:fuselage:length']
+        b_50 = inputs['data:geometry:wing:b_50']
+        k_fc = inputs['settings:weight:airframe:flight_controls:mass:k_fc']
+        k_a4 = inputs['tuning:weight:airframe:flight_controls:mass:k']
+        offset_a4 = inputs['tuning:weight:airframe:flight_controls:mass:offset']
 
-        max_nm = max(inputs['mission:sizing:cs25:sizing_load_1'],
-                     inputs['mission:sizing:cs25:sizing_load_2'])
+        max_nm = max(inputs['data:mission:sizing:cs25:sizing_load_1'],
+                     inputs['data:mission:sizing:cs25:sizing_load_2'])
 
         temp_a4 = k_fc * max_nm * (fus_length ** 0.66 + b_50 ** 0.66)
 
-        outputs['weight:airframe:flight_controls:mass'] = k_a4 * temp_a4 + offset_a4
+        outputs['data:weight:airframe:flight_controls:mass'] = k_a4 * temp_a4 + offset_a4

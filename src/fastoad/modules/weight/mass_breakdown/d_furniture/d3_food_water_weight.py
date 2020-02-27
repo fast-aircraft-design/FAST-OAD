@@ -28,20 +28,20 @@ class FoodWaterWeight(ExplicitComponent):
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
-        self.add_input('TLAR:NPAX', val=np.nan)
-        self.add_input('weight:furniture:food_water:mass:k', val=1.)
-        self.add_input('weight:furniture:food_water:mass:offset', val=0., units='kg')
+        self.add_input('data:TLAR:NPAX', val=np.nan)
+        self.add_input('tuning:weight:furniture:food_water:mass:k', val=1.)
+        self.add_input('tuning:weight:furniture:food_water:mass:offset', val=0., units='kg')
 
-        self.add_output('weight:furniture:food_water:mass', units='kg')
+        self.add_output('data:weight:furniture:food_water:mass', units='kg')
 
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        npax = inputs['TLAR:NPAX']
-        k_d3 = inputs['weight:furniture:food_water:mass:k']
-        offset_d3 = inputs['weight:furniture:food_water:mass:offset']
+        npax = inputs['data:TLAR:NPAX']
+        k_d3 = inputs['tuning:weight:furniture:food_water:mass:k']
+        offset_d3 = inputs['tuning:weight:furniture:food_water:mass:offset']
 
         if self.options[AIRCRAFT_TYPE_OPTION] == 6.0:
-            outputs['weight:furniture:food_water:mass'] = 0.
+            outputs['data:weight:furniture:food_water:mass'] = 0.
         else:
             temp_d3 = 8.75 * npax
-            outputs['weight:furniture:food_water:mass'] = k_d3 * temp_d3 + offset_d3
+            outputs['data:weight:furniture:food_water:mass'] = k_d3 * temp_d3 + offset_d3

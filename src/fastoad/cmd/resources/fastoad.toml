@@ -37,17 +37,17 @@ driver = "om.ScipyOptimizeDriver()"
         id = "fastoad.loop.wing_area"
 
 [[design_var]]
-    name = "propulsion:MTO_thrust"
+    name = "data:propulsion:MTO_thrust"
     lower = 0
     ref = 1.5e5
     ref0 = 50000
 
 [[objective]]
-    name = "weight:aircraft:MTOW"
+    name = "data:weight:aircraft:MTOW"
     ref = 90000
     ref0 = 60000
 
 [[constraint]]
-    name = "propulsion:thrust_rate"
+    name = "data:propulsion:thrust_rate"
     lower = 0
     upper = 1

@@ -23,29 +23,29 @@ class FixedOperationalSystemsWeight(ExplicitComponent):
     """ Fixed operational systems weight estimation (C5) """
 
     def setup(self):
-        self.add_input('geometry:fuselage:front_length', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:rear_length', val=np.nan, units='m')
-        self.add_input('geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('geometry:cabin:seats:economical:count_by_row', val=np.nan)
-        self.add_input('geometry:wing:root:chord', val=np.nan, units='m')
-        self.add_input('geometry:cabin:containers:count_by_row', val=np.nan)
-        self.add_input('weight:systems:operational:mass:k', val=1.)
-        self.add_input('weight:systems:operational:mass:offset', val=0., units='kg')
+        self.add_input('data:geometry:fuselage:front_length', val=np.nan, units='m')
+        self.add_input('data:geometry:fuselage:rear_length', val=np.nan, units='m')
+        self.add_input('data:geometry:fuselage:length', val=np.nan, units='m')
+        self.add_input('data:geometry:cabin:seats:economical:count_by_row', val=np.nan)
+        self.add_input('data:geometry:wing:root:chord', val=np.nan, units='m')
+        self.add_input('data:geometry:cabin:containers:count_by_row', val=np.nan)
+        self.add_input('tuning:weight:systems:operational:mass:k', val=1.)
+        self.add_input('tuning:weight:systems:operational:mass:offset', val=0., units='kg')
 
-        self.add_output('weight:systems:operational:radar:mass', units='kg')
-        self.add_output('weight:systems:operational:cargo_hold:mass', units='kg')
+        self.add_output('data:weight:systems:operational:radar:mass', units='kg')
+        self.add_output('data:weight:systems:operational:cargo_hold:mass', units='kg')
 
     # pylint: disable=too-many-locals
     def compute(self, inputs, outputs
                 , discrete_inputs=None, discrete_outputs=None):
-        front_section_length = inputs['geometry:fuselage:front_length']
-        aft_section_length = inputs['geometry:fuselage:rear_length']
-        fuselage_length = inputs['geometry:fuselage:length']
-        front_seat_number_eco = inputs['geometry:cabin:seats:economical:count_by_row']
-        l2_wing = inputs['geometry:wing:root:chord']
-        side_by_side_container_number = inputs['geometry:cabin:containers:count_by_row']
-        k_c5 = inputs['weight:systems:operational:mass:k']
-        offset_c5 = inputs['weight:systems:operational:mass:offset']
+        front_section_length = inputs['data:geometry:fuselage:front_length']
+        aft_section_length = inputs['data:geometry:fuselage:rear_length']
+        fuselage_length = inputs['data:geometry:fuselage:length']
+        front_seat_number_eco = inputs['data:geometry:cabin:seats:economical:count_by_row']
+        l2_wing = inputs['data:geometry:wing:root:chord']
+        side_by_side_container_number = inputs['data:geometry:cabin:containers:count_by_row']
+        k_c5 = inputs['tuning:weight:systems:operational:mass:k']
+        offset_c5 = inputs['tuning:weight:systems:operational:mass:offset']
 
         cylindrical_section_length = fuselage_length \
                                      - front_section_length \
@@ -56,9 +56,9 @@ class FixedOperationalSystemsWeight(ExplicitComponent):
 
         # Radar
         temp_c51 = 100.
-        outputs['weight:systems:operational:radar:mass'] = k_c5 * temp_c51 + offset_c5
+        outputs['data:weight:systems:operational:radar:mass'] = k_c5 * temp_c51 + offset_c5
 
         # Cargo container systems
         temp_c52 = 23.4 * cargo_compartment_length \
                    * side_by_side_container_number
-        outputs['weight:systems:operational:cargo_hold:mass'] = k_c5 * temp_c52 + offset_c5
+        outputs['data:weight:systems:operational:cargo_hold:mass'] = k_c5 * temp_c52 + offset_c5

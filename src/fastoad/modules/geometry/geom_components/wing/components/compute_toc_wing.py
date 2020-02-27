@@ -26,23 +26,22 @@ class ComputeToCWing(ExplicitComponent):
     """ Wing ToC estimation """
 
     def setup(self):
+        self.add_input('data:TLAR:cruise_mach', val=np.nan)
+        self.add_input('data:geometry:wing:sweep_25', val=np.nan, units='deg')
 
-        self.add_input('TLAR:cruise_mach', val=np.nan)
-        self.add_input('geometry:wing:sweep_25', val=np.nan, units='deg')
+        self.add_output('data:geometry:wing:thickness_ratio')
+        self.add_output('data:geometry:wing:root:thickness_ratio')
+        self.add_output('data:geometry:wing:kink:thickness_ratio')
+        self.add_output('data:geometry:wing:tip:thickness_ratio')
 
-        self.add_output('geometry:wing:thickness_ratio')
-        self.add_output('geometry:wing:root:thickness_ratio')
-        self.add_output('geometry:wing:kink:thickness_ratio')
-        self.add_output('geometry:wing:tip:thickness_ratio')
-
-        self.declare_partials('geometry:wing:thickness_ratio', '*', method='fd')
-        self.declare_partials('geometry:wing:root:thickness_ratio', '*', method='fd')
-        self.declare_partials('geometry:wing:kink:thickness_ratio', '*', method='fd')
-        self.declare_partials('geometry:wing:tip:thickness_ratio', '*', method='fd')
+        self.declare_partials('data:geometry:wing:thickness_ratio', '*', method='fd')
+        self.declare_partials('data:geometry:wing:root:thickness_ratio', '*', method='fd')
+        self.declare_partials('data:geometry:wing:kink:thickness_ratio', '*', method='fd')
+        self.declare_partials('data:geometry:wing:tip:thickness_ratio', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        cruise_mach = inputs['TLAR:cruise_mach']
-        sweep_25 = inputs['geometry:wing:sweep_25']
+        cruise_mach = inputs['data:TLAR:cruise_mach']
+        sweep_25 = inputs['data:geometry:wing:sweep_25']
 
         # Relative thickness
         el_aero = 0.89 - (cruise_mach + 0.02) * math.sqrt(math.cos(sweep_25 / 180. * math.pi))
@@ -50,7 +49,7 @@ class ComputeToCWing(ExplicitComponent):
         el_break = 0.94 * el_aero
         el_ext = 0.86 * el_aero
 
-        outputs['geometry:wing:thickness_ratio'] = el_aero
-        outputs['geometry:wing:root:thickness_ratio'] = el_emp
-        outputs['geometry:wing:kink:thickness_ratio'] = el_break
-        outputs['geometry:wing:tip:thickness_ratio'] = el_ext
+        outputs['data:geometry:wing:thickness_ratio'] = el_aero
+        outputs['data:geometry:wing:root:thickness_ratio'] = el_emp
+        outputs['data:geometry:wing:kink:thickness_ratio'] = el_break
+        outputs['data:geometry:wing:tip:thickness_ratio'] = el_ext

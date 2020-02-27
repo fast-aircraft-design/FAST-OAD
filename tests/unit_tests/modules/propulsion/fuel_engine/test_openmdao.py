@@ -2,7 +2,7 @@
 Test module for OpenMDAO versions of RubberEngine
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -37,23 +37,24 @@ def test_OMRubberEngine():
     expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.60e-5]
 
     ivc = om.IndepVarComp()
-    ivc.add_output('propulsion:rubber_engine:bypass_ratio', 5)
-    ivc.add_output('propulsion:rubber_engine:overall_pressure_ratio', 30)
-    ivc.add_output('propulsion:rubber_engine:turbine_inlet_temperature', 1500, units='K')
-    ivc.add_output('propulsion:MTO_thrust', 1, units='N')
-    ivc.add_output('propulsion:rubber_engine:maximum_mach', 0.95)
-    ivc.add_output('propulsion:rubber_engine:design_altitude', 10000, units='m')
+    ivc.add_output('data:propulsion:rubber_engine:bypass_ratio', 5)
+    ivc.add_output('data:propulsion:rubber_engine:overall_pressure_ratio', 30)
+    ivc.add_output('data:propulsion:rubber_engine:turbine_inlet_temperature', 1500, units='K')
+    ivc.add_output('data:propulsion:MTO_thrust', 1, units='N')
+    ivc.add_output('data:propulsion:rubber_engine:maximum_mach', 0.95)
+    ivc.add_output('data:propulsion:rubber_engine:design_altitude', 10000, units='m')
 
-    ivc.add_output('propulsion:mach', [machs, machs])
-    ivc.add_output('propulsion:altitude', [altitudes, altitudes], units='m')
-    ivc.add_output('propulsion:phase', [phases, phases])
-    ivc.add_output('propulsion:use_thrust_rate', [[True] * 5, [False] * 5])
-    ivc.add_output('propulsion:required_thrust_rate', [thrust_rates, [0] * 5])
-    ivc.add_output('propulsion:required_thrust', [[0] * 5, thrusts])
+    ivc.add_output('data:propulsion:mach', [machs, machs])
+    ivc.add_output('data:propulsion:altitude', [altitudes, altitudes], units='m')
+    ivc.add_output('data:propulsion:phase', [phases, phases])
+    ivc.add_output('data:propulsion:use_thrust_rate', [[True] * 5, [False] * 5])
+    ivc.add_output('data:propulsion:required_thrust_rate', [thrust_rates, [0] * 5])
+    ivc.add_output('data:propulsion:required_thrust', [[0] * 5, thrusts])
 
     problem = run_system(engine, ivc)
 
-    np.testing.assert_allclose(problem['propulsion:SFC'], [expected_sfc, expected_sfc], rtol=1e-2)
-    np.testing.assert_allclose(problem['propulsion:thrust_rate'], [thrust_rates, thrust_rates],
+    np.testing.assert_allclose(problem['data:propulsion:SFC'], [expected_sfc, expected_sfc],
                                rtol=1e-2)
-    np.testing.assert_allclose(problem['propulsion:thrust'], [thrusts, thrusts], rtol=1e-2)
+    np.testing.assert_allclose(problem['data:propulsion:thrust_rate'], [thrust_rates, thrust_rates],
+                               rtol=1e-2)
+    np.testing.assert_allclose(problem['data:propulsion:thrust'], [thrusts, thrusts], rtol=1e-2)

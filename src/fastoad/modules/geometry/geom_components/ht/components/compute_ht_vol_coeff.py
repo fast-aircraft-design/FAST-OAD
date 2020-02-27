@@ -25,30 +25,29 @@ class ComputeHTVolCoeff(ExplicitComponent):
     """ Horizontal tail volume coefficient estimation """
 
     def setup(self):
+        self.add_input('data:weight:airframe:landing_gear:main:CG:x', val=np.nan, units='m')
+        self.add_input('data:weight:airframe:landing_gear:front:CG:x', val=np.nan, units='m')
+        self.add_input('data:weight:aircraft:MTOW', val=np.nan, units='kg')
+        self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
+        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input('data:requirements:CG_range', val=np.nan)
 
-        self.add_input('weight:airframe:landing_gear:main:CG:x', val=np.nan, units='m')
-        self.add_input('weight:airframe:landing_gear:front:CG:x', val=np.nan, units='m')
-        self.add_input('weight:aircraft:MTOW', val=np.nan, units='kg')
-        self.add_input('geometry:wing:area', val=np.nan, units='m**2')
-        self.add_input('geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('requirements:CG_range', val=np.nan)
+        self.add_output('data:geometry:landing_gear:front:distance_to_main')
+        self.add_output('data:geometry:horizontal_tail:volume_coefficient')
 
-        self.add_output('geometry:landing_gear:front:distance_to_main')
-        self.add_output('geometry:horizontal_tail:volume_coefficient')
-
-        self.declare_partials('geometry:landing_gear:front:distance_to_main',
-                              ['weight:airframe:landing_gear:main:CG:x',
-                               'weight:airframe:landing_gear:front:CG:x'],
+        self.declare_partials('data:geometry:landing_gear:front:distance_to_main',
+                              ['data:weight:airframe:landing_gear:main:CG:x',
+                               'data:weight:airframe:landing_gear:front:CG:x'],
                               method='fd')
-        self.declare_partials('geometry:horizontal_tail:volume_coefficient', '*', method='fd')
+        self.declare_partials('data:geometry:horizontal_tail:volume_coefficient', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        cg_a51 = inputs['weight:airframe:landing_gear:main:CG:x']
-        cg_a52 = inputs['weight:airframe:landing_gear:front:CG:x']
-        mtow = inputs['weight:aircraft:MTOW']
-        wing_area = inputs['geometry:wing:area']
-        l0_wing = inputs['geometry:wing:MAC:length']
-        required_cg_range = inputs['requirements:CG_range']
+        cg_a51 = inputs['data:weight:airframe:landing_gear:main:CG:x']
+        cg_a52 = inputs['data:weight:airframe:landing_gear:front:CG:x']
+        mtow = inputs['data:weight:aircraft:MTOW']
+        wing_area = inputs['data:geometry:wing:area']
+        l0_wing = inputs['data:geometry:wing:MAC:length']
+        required_cg_range = inputs['data:requirements:CG_range']
 
         delta_lg = cg_a51 - cg_a52
         atm = Atmosphere(0.)
@@ -57,9 +56,9 @@ class ComputeHTVolCoeff(ExplicitComponent):
         vspeed = sos * 0.2  # assume the corresponding Mach of VR is 0.2
 
         cm_wheel = 0.08 * delta_lg * mtow * 9.81 / \
-            (0.5 * rho * vspeed**2 * wing_area * l0_wing)
+                   (0.5 * rho * vspeed ** 2 * wing_area * l0_wing)
         delta_cm = mtow * l0_wing * required_cg_range * \
-            9.81 / (0.5 * rho * vspeed**2 * wing_area * l0_wing)
+                   9.81 / (0.5 * rho * vspeed ** 2 * wing_area * l0_wing)
         ht_vol_coeff = cm_wheel + delta_cm
-        outputs['geometry:landing_gear:front:distance_to_main'] = delta_lg
-        outputs['geometry:horizontal_tail:volume_coefficient'] = ht_vol_coeff
+        outputs['data:geometry:landing_gear:front:distance_to_main'] = delta_lg
+        outputs['data:geometry:horizontal_tail:volume_coefficient'] = ht_vol_coeff

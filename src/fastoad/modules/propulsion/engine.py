@@ -3,7 +3,7 @@ Base module for engine models
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -91,33 +91,33 @@ class OMIEngine(om.ExplicitComponent, ABC):
 
     def setup(self):
         shape = self.options['flight_point_count']
-        self.add_input('propulsion:mach', np.nan, shape=shape)
-        self.add_input('propulsion:altitude', np.nan, shape=shape, units='m')
-        self.add_input('propulsion:phase', np.nan, shape=shape)
-        self.add_input('propulsion:use_thrust_rate', np.nan, shape=shape)
-        self.add_input('propulsion:required_thrust_rate', np.nan, shape=shape)
-        self.add_input('propulsion:required_thrust', np.nan, shape=shape, units='N')
+        self.add_input('data:propulsion:mach', np.nan, shape=shape)
+        self.add_input('data:propulsion:altitude', np.nan, shape=shape, units='m')
+        self.add_input('data:propulsion:phase', np.nan, shape=shape)
+        self.add_input('data:propulsion:use_thrust_rate', np.nan, shape=shape)
+        self.add_input('data:propulsion:required_thrust_rate', np.nan, shape=shape)
+        self.add_input('data:propulsion:required_thrust', np.nan, shape=shape, units='N')
 
-        self.add_output('propulsion:SFC', shape=shape, units='kg/s/N', ref=1e-4)
-        self.add_output('propulsion:thrust_rate', shape=shape)
-        self.add_output('propulsion:thrust', shape=shape, units='N', ref=1e5)
+        self.add_output('data:propulsion:SFC', shape=shape, units='kg/s/N', ref=1e-4)
+        self.add_output('data:propulsion:thrust_rate', shape=shape)
+        self.add_output('data:propulsion:thrust', shape=shape, units='N', ref=1e5)
 
-        self.declare_partials('propulsion:SFC', '*', method='fd')
-        self.declare_partials('propulsion:thrust_rate', '*', method='fd')
-        self.declare_partials('propulsion:thrust', '*', method='fd')
+        self.declare_partials('data:propulsion:SFC', '*', method='fd')
+        self.declare_partials('data:propulsion:thrust_rate', '*', method='fd')
+        self.declare_partials('data:propulsion:thrust', '*', method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         engine = self.get_engine(inputs)
         sfc, thrust_rate, thrust = engine.compute_flight_points(
-            inputs['propulsion:mach'],
-            inputs['propulsion:altitude'],
-            inputs['propulsion:phase'],
-            inputs['propulsion:use_thrust_rate'],
-            inputs['propulsion:required_thrust_rate'],
-            inputs['propulsion:required_thrust'])
-        outputs['propulsion:SFC'] = sfc
-        outputs['propulsion:thrust_rate'] = thrust_rate
-        outputs['propulsion:thrust'] = thrust
+            inputs['data:propulsion:mach'],
+            inputs['data:propulsion:altitude'],
+            inputs['data:propulsion:phase'],
+            inputs['data:propulsion:use_thrust_rate'],
+            inputs['data:propulsion:required_thrust_rate'],
+            inputs['data:propulsion:required_thrust'])
+        outputs['data:propulsion:SFC'] = sfc
+        outputs['data:propulsion:thrust_rate'] = thrust_rate
+        outputs['data:propulsion:thrust'] = thrust
 
     @staticmethod
     @abstractmethod
