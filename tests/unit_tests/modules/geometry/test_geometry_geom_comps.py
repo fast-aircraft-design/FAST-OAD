@@ -31,8 +31,7 @@ from fastoad.modules.geometry.geom_components.nacelle_pylons.compute_nacelle_pyl
     ComputeNacelleAndPylonsGeometry
 from fastoad.modules.geometry.geom_components.vt import ComputeVerticalTailGeometry
 from fastoad.modules.geometry.geom_components.vt.components import ComputeVTMAC, \
-    ComputeVTChords, ComputeVTClalpha, ComputeVTSweep, ComputeVTVolCoeff, \
-    ComputeVTDistance
+    ComputeVTChords, ComputeVTClalpha, ComputeVTSweep, ComputeVTDistance
 from fastoad.modules.geometry.geom_components.wing import ComputeWingGeometry
 from fastoad.modules.geometry.geom_components.wing.components import ComputeB50, ComputeCLalpha, \
     ComputeL1AndL4Wing, ComputeL2AndL3Wing, ComputeMACWing, ComputeMFW, ComputeSweepWing, \
@@ -121,8 +120,6 @@ def test_compute_fuselage_basic(input_xml):
     assert fuselage_wet_area == pytest.approx(401.962, abs=1e-3)
     pnc = problem['data:geometry:cabin:crew_count:commercial']
     assert pnc == pytest.approx(4, abs=1)
-
-
 
 
 def test_compute_ht_cg(input_xml):
@@ -227,8 +224,6 @@ def test_compute_ht_sweep(input_xml):
     assert sweep_100 == pytest.approx(8.81, abs=1e-2)
 
 
-
-
 def test_geometry_global_ht(input_xml):
     """ Tests computation of the global HT geometry components """
 
@@ -298,7 +293,6 @@ def test_compute_fuselage_cnbeta(input_xml):
 
     cn_beta = problem['data:aerodynamics:fuselage:cruise:CnBeta']
     assert cn_beta == pytest.approx(-0.117901, abs=1e-6)
-
 
 
 def test_compute_vt_cg(input_xml):
@@ -434,26 +428,6 @@ def test_compute_vt_cl(input_xml):
     assert cl_alpha == pytest.approx(2.55, abs=1e-2)
 
 
-def test_compute_vt_vol_co(input_xml):
-    """ Tests computation of the vertical volume coefficient """
-
-    input_list = [
-        'data:geometry:vertical_tail:area',
-        'data:geometry:vertical_tail:distance_from_wing',
-        'data:geometry:wing:area',
-        'data:geometry:wing:span',
-    ]
-
-    input_vars = input_xml.read(only=input_list)
-
-    component = ComputeVTVolCoeff()
-
-    problem = run_system(component, input_vars)
-
-    vol_coeff = problem['data:geometry:vertical_tail:volume_coefficient']
-    assert vol_coeff == pytest.approx(0.105, abs=1e-3)
-
-
 def test_geometry_global_vt(input_xml):
     """ Tests computation of the global VT geometry components """
 
@@ -509,8 +483,6 @@ def test_geometry_global_vt(input_xml):
     assert lp_vt == pytest.approx(16.55, abs=1e-2)
     cl_alpha = problem['data:aerodynamics:vertical_tail:cruise:CL_alpha']
     assert cl_alpha == pytest.approx(2.55, abs=1e-2)
-    vol_coeff = problem['data:geometry:vertical_tail:volume_coefficient']
-    assert vol_coeff == pytest.approx(0.105, abs=1e-3)
 
 
 def test_geometry_wing_b50(input_xml):

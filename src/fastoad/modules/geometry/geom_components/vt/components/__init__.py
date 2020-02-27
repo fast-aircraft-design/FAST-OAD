@@ -19,4 +19,3 @@ from .compute_vt_clalpha import ComputeVTClalpha
 from .compute_vt_distance import ComputeVTDistance
 from .compute_vt_mac import ComputeVTMAC
 from .compute_vt_sweep import ComputeVTSweep
-from .compute_vt_vol_coeff import ComputeVTVolCoeff
