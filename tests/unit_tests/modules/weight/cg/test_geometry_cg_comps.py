@@ -19,6 +19,7 @@ import os.path as pth
 import pytest
 
 from fastoad.io.xml import OMXmlIO
+from fastoad.modules.weight.cg.cg import ComputeAircraftCG
 from fastoad.modules.weight.cg.cg_components import ComputeCGLoadCase1
 from fastoad.modules.weight.cg.cg_components import ComputeCGLoadCase2
 from fastoad.modules.weight.cg.cg_components import ComputeCGLoadCase3
@@ -492,3 +493,20 @@ def test_compute_max_cg_ratio(input_xml):
 
     cg_ratio = problem['data:weight:aircraft:CG:ratio']
     assert cg_ratio == pytest.approx(0.388971, abs=1e-6)
+
+
+def test_compute_aircraft_cg(input_xml):
+    """ Tests computation of static margin """
+
+    input_list = [
+        'data:geometry:wing:MAC:length',
+        'data:geometry:wing:MAC:x',
+    ]
+
+    input_vars = input_xml.read(only=input_list)
+    input_vars.add_output('data:weight:aircraft:CG:ratio', 0.388971)
+
+    problem = run_system(ComputeAircraftCG(), input_vars)
+
+    cg_global = problem['data:weight:aircraft:CG:x']
+    assert cg_global == pytest.approx(17.3, abs=1e-1)
