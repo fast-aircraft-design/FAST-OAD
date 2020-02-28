@@ -17,7 +17,7 @@ import openmdao.api as om
 import pytest
 
 from fastoad.io.xml import OMXmlIO
-from fastoad.modules.geometry.compute_static_margin import ComputeStaticMargin
+from fastoad.modules.handling_qualities.compute_static_margin import ComputeStaticMargin
 from tests.testing_utilities import run_system
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')

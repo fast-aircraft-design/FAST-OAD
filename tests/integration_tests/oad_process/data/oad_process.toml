@@ -23,7 +23,9 @@ output_file = "../results/oad_process_outputs.xml"
         id = "fastoad.performances.breguet"
     [model.propulsion]
         id = "fastoad.propulsion.rubber_engine"
-    [model.hq]
-        id = "fastoad.handling_qualities.legacy"
+    [model.hq.tail_sizing]
+        id = "fastoad.handling_qualities.tail_sizing"
+    [model.hq.static_margin]
+        id = "fastoad.handling_qualities.static_margin"
     [model.loop]
         id = "fastoad.loop.wing_area"
