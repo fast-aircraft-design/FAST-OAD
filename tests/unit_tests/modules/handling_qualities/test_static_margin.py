@@ -42,6 +42,13 @@ def test_compute_static_margin(input_xml):
     input_vars.add_output('data:aerodynamics:cruise:neutral_point:x', 0.537521)
 
     problem = run_system(ComputeStaticMargin(), input_vars)
-
     static_margin = problem['data:handling_qualities:static_margin']
     assert static_margin == pytest.approx(0.098550, abs=1e-6)
+
+    problem = run_system(ComputeStaticMargin(objective=0.05), input_vars)
+    static_margin = problem['data:handling_qualities:static_margin:to_objective']
+    assert static_margin == pytest.approx(0.048550, abs=1e-6)
+
+    problem = run_system(ComputeStaticMargin(objective=0.15), input_vars)
+    static_margin = problem['data:handling_qualities:static_margin:to_objective']
+    assert static_margin == pytest.approx(0.051450, abs=1e-6)
