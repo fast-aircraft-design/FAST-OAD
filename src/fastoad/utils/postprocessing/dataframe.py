@@ -341,10 +341,10 @@ class FASTOADDataFrame:
             out = widgets.interactive_output(_print_sheet, kwargs)
             display(ui, out)
 
-        return _render()
+        _render()
 
-
-    def _build_sheet(self, df: pd.DataFrame) -> sh.Sheet:
+    @staticmethod
+    def _build_sheet(df: pd.DataFrame) -> sh.Sheet:
         """
         Transforms a pandas dataframe into a pysheet.
         The cells are set to read only except for the values.
@@ -365,7 +365,8 @@ class FASTOADDataFrame:
 
         return sheet
 
-    def _find_submodules(self, df: pd.DataFrame, modules: [str] = None) -> [str]:
+    @staticmethod
+    def _find_submodules(df: pd.DataFrame, modules: [str] = None) -> [str]:
         """
         Search for submodules at root or provided modules.
 
@@ -444,7 +445,7 @@ class FASTOADDataFrame:
 
         df = self.xml_to_df(xml)
 
-        return self.render_sheet(df)
+        self.render_sheet(df)
 
     @staticmethod
     def xml_to_df(xml: OMXmlIO) -> pd.DataFrame:
