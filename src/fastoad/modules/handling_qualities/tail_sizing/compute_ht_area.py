@@ -42,20 +42,27 @@ class ComputeHTArea(om.ExplicitComponent):
         self.add_input('data:weight:airframe:landing_gear:front:CG:x', val=np.nan, units='m')
         self.add_input('data:weight:aircraft:MTOW', val=np.nan, units='kg')
         self.add_input('data:requirements:CG_range', val=np.nan)
+        self.add_input('settings:weight:airframe:landing_gear:front:weight_ratio', val=0.08)
+        self.add_input('settings:geometry:horizontal_tail:position_ratio_on_fuselage', val=0.91,
+                       desc='(does not apply for T-tails) distance to aircraft nose of 25% MAC of '
+                            'horizontal tail divided by fuselage length')
 
-        self.add_output('data:geometry:horizontal_tail:distance_from_wing', units='m')
-        self.add_output('data:geometry:horizontal_tail:wetted_area', units='m**2')
-        self.add_output('data:geometry:horizontal_tail:area', units='m**2')
+        self.add_output('data:geometry:horizontal_tail:distance_from_wing',
+                        units='m', ref=30.)
+        self.add_output('data:geometry:horizontal_tail:wetted_area',
+                        units='m**2', ref=100.)
+        self.add_output('data:geometry:horizontal_tail:area',
+                        units='m**2', ref=50.)
 
         self.declare_partials('*', '*', method='fd')
         self.declare_partials('data:geometry:horizontal_tail:distance_from_wing',
                               ['data:geometry:fuselage:length', 'data:geometry:wing:MAC:x'],
                               method='fd')
 
-    def compute(self, inputs, outputs):
-        # Area of HTP is computed to balance aircraft at rotation speed, assuming that:
-        # - CM from wing lift + aircraft weight is zero
-        # - main landing gear supports MTOW
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        # Area of HTP is computed so its "lift" can counter the moment of weight
+        # on front landing gear w.r.t. main landing gear when the CG is in its
+        # most front position.
 
         tail_type = self.options[TAIL_TYPE_OPTION]
 
@@ -66,26 +73,43 @@ class ComputeHTArea(om.ExplicitComponent):
         mtow = inputs['data:weight:aircraft:MTOW']
         wing_area = inputs['data:geometry:wing:area']
         wing_mac = inputs['data:geometry:wing:MAC:length']
-        required_cg_range = inputs['data:requirements:CG_range']
+        cg_range = inputs['data:requirements:CG_range']
+        front_lg_weight_ratio = inputs['settings:weight:airframe:landing_gear:front:weight_ratio']
+        htp_aero_center_ratio = inputs[
+            'settings:geometry:horizontal_tail:position_ratio_on_fuselage']
 
         delta_lg = x_main_lg - x_front_lg
         atm = Atmosphere(0.)
         rho = atm.density
         vspeed = atm.speed_of_sound * 0.2  # assume the corresponding Mach of VR is 0.2
 
-        pdyn = 0.5 * rho * vspeed ** 2
-        # CM of MTOW on main landing gear w.r.t 25% wing MAC
-        lever_arm = 0.08 * delta_lg  # lever arm wrt CoG
-        lever_arm += wing_mac * required_cg_range  # and now wrt 25% wing MAC
-        cm_wheel = mtow * g * lever_arm / (pdyn * wing_area * wing_mac)
+        # Proportion of weight on front landing gear is equal to distance between
+        # main landing gear and center of gravity, divided by distance between landing gears.
 
-        ht_volume_coeff = cm_wheel
+        # If CG is in the most front position, the distance between main landing gear
+        # and center of gravity is:
+        distance_cg_to_mlg = front_lg_weight_ratio * delta_lg + wing_mac * cg_range
+
+        # So with this front CG, moment of (weight on front landing gear) w.r.t.
+        # main landing gear is:
+        m_front_lg = mtow * g * distance_cg_to_mlg
+
+        # Moment coefficient
+        pdyn = 0.5 * rho * vspeed ** 2
+        cm_front_lg = m_front_lg / (pdyn * wing_area * wing_mac)
+
+        # # CM of MTOW on main landing gear w.r.t 25% wing MAC
+        # lever_arm = front_lg_weight_ratio * delta_lg  # lever arm wrt CoG
+        # lever_arm += wing_mac * cg_range  # and now wrt 25% wing MAC
+        # cm_wheel = mtow * g * lever_arm / (pdyn * wing_area * wing_mac)
+
+        ht_volume_coeff = cm_front_lg
 
         if tail_type == 1.0:
             aero_centers_distance = fuselage_length - x_wing_aero_center
             wet_area_coeff = 1.6
         else:
-            aero_centers_distance = 0.91 * fuselage_length - x_wing_aero_center
+            aero_centers_distance = htp_aero_center_ratio * fuselage_length - x_wing_aero_center
             wet_area_coeff = 2.
 
         htp_area = ht_volume_coeff / aero_centers_distance * wing_area * wing_mac

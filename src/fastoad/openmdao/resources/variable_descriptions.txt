@@ -458,8 +458,9 @@ data:weight:systems:power:hydraulic_systems:CG:x	power (C1): X-position of cente
 data:weight:systems:power:hydraulic_systems:mass	power (C1): mass
 tuning:weight:systems:power:hydraulic_systems:mass:k	power (C1): correction ratio to be applied on computed mass
 tuning:weight:systems:power:hydraulic_systems:mass:offset	power (C1): correction offset to be applied on computed mass
-settings:weight:systems:power:mass:k_elec	Electricity coefficient: 1.00 if 2 engines (A300, A310 type) / (1.02 if 2 engines (DC9, Caravelle type) / 1.03 if 3 engines (B727 type) / 1.05 if 3 engines (DC10, L1011 type) / 1.08 if 4 engines (B747 type)
+settings:weight:systems:power:mass:k_elec	electricity coefficient: 1.00 if 2 engines (A300, A310 type) / (1.02 if 2 engines (DC9, Caravelle type) / 1.03 if 3 engines (B727 type) / 1.05 if 3 engines (DC10, L1011 type) / 1.08 if 4 engines (B747 type)
 data:weight:systems:transmission:CG:x	transmission (C4): X-position of center of gravity
 data:weight:systems:transmission:mass	transmission (C4): mass
 tuning:weight:systems:transmission:mass:k	transmission (C4): correction ratio to be applied on computed mass
 tuning:weight:systems:transmission:mass:offset	transmission (C4): correction offset to be applied on computed mass
+settings:weight:airframe:landing_gear:front:weight_ratio	part of aircraft weight that is supported by front landing gear
