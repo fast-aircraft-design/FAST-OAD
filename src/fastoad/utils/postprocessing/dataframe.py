@@ -248,6 +248,102 @@ class FASTOADDataFrame:
 
         return _render()
 
+
+    def render_sheet(self, df:pd.DataFrame, max_depth: int = 6) -> display:
+        """
+        Renders an interactive pysheet with dropdown menus of the stored dataframe.
+
+        :param df: the dataframe to render
+        :param max_depth: the maximum depth when searching submodules
+        :return display of the user interface
+        """
+
+        df_variables = df
+
+
+
+        items = []
+        modules_item = sorted(self._find_submodules(df_variables))
+        if modules_item:
+            w = widgets.Dropdown(options=modules_item)
+            items.append(w)
+        if 'Type' in modules_item:
+            w_type = widgets.Dropdown(options=[self.all_tag, 'Input', 'Output'],
+                                      layout=widgets.Layout(width='auto'))
+        else:
+            w_type = None
+
+        def _update_items(*args):
+            for i in range(max_depth):
+                if i == 0:
+                    items[0].observe(_update_items, 'value')
+                else:
+                    if i <= len(items):
+                        modules = [item.value for item in items[0:i]]
+                        modules_item = sorted(self._find_submodules(df_variables, modules))
+                        if modules_item:
+                            # Check if the item exists already
+                            if i == len(items):
+                                if len(modules_item) > 1:
+                                    modules_item.insert(0, self.all_tag)
+                                w = widgets.Dropdown(options=modules_item)
+                                w.observe(_update_items, 'value')
+                                items.append(w)
+                            else:
+                                if (self.all_tag not in modules_item) and (len(modules_item) > 1):
+                                    modules_item.insert(0, self.all_tag)
+                                items[i].options = modules_item
+                        else:
+                            if i < len(items):
+                                items.pop(i)
+            return items
+
+        def _print_sheet(**kwargs):
+            # Get variable type and remove
+            if 'Type' in kwargs:
+                var_type = kwargs['Type']
+                del kwargs['Type']
+            else:
+                var_type = None
+            # Build list of items
+            kwargs = [module for module in kwargs.values()]
+            modules = kwargs
+            filtered_var = self._filter_variables(df_variables, modules, var_type=var_type)
+            sheet = self._build_sheet(filtered_var)
+            return display(sheet)
+
+        def _render(*args):
+            clear_output(wait=True)
+            items = _update_items()
+            for item in items:
+                item.observe(_render, 'value')
+            if w_type is not None:
+                w_type.observe(_render, 'value')
+                type_box = widgets.VBox([widgets.Label(value='Type'),
+                                         w_type],
+                                        layout=widgets.Layout(width='auto'))
+            items_box = widgets.HBox(items)
+            items_box = widgets.VBox([widgets.Label(value='Variable name'),
+                                      items_box])
+            if w_type is not None:
+                ui = widgets.HBox([type_box, items_box])
+            else:
+                ui = items_box
+
+            kwargs = {}
+
+            i = 0
+            for item in items:
+                kwargs[str(i)] = item
+                i += 1
+            if w_type is not None:
+                kwargs['Type'] = w_type
+            out = widgets.interactive_output(_print_sheet, kwargs)
+            display(ui, out)
+
+        return _render()
+
+
     def _build_sheet(self, df: pd.DataFrame) -> sh.Sheet:
         """
         Transforms a pandas dataframe into a pysheet.
@@ -338,13 +434,17 @@ class FASTOADDataFrame:
 
         return filtered_df
 
-    def xml_interact(self, xml_file):
+    def xml_interact(self, xml: OMXmlIO):
         """
         Renders an interactive pysheet with dropdown menus of the xml file.
 
         :param xml_file: the xml file to interact with
         :return display of the user interface
         """
+
+        df = self.xml_to_df(xml)
+
+        return self.render_sheet(df)
 
     @staticmethod
     def xml_to_df(xml: OMXmlIO) -> pd.DataFrame:
@@ -374,17 +474,18 @@ class FASTOADDataFrame:
                 value = np.array(value)
                 value = np.asscalar(value)
             else:
+                value = np.array(value)
                 value = np.ndarray.tolist(value)
 
             unit = variable.units
             desc = variable.description
 
             df = df.append([{
-                            'Name': name,
-                            'Value': value,
-                            'Unit': unit,
-                            'Description': desc
-                            }
+                'Name': name,
+                'Value': value,
+                'Unit': unit,
+                'Description': desc
+            }
             ])[col_names]
 
         return df
