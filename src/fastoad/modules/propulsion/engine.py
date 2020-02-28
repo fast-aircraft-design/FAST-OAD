@@ -99,7 +99,7 @@ class OMIEngine(om.ExplicitComponent, ABC):
         self.add_input('data:propulsion:required_thrust', np.nan, shape=shape, units='N')
 
         self.add_output('data:propulsion:SFC', shape=shape, units='kg/s/N', ref=1e-4)
-        self.add_output('data:propulsion:thrust_rate', shape=shape)
+        self.add_output('data:propulsion:thrust_rate', shape=shape, lower=0., upper=1.)
         self.add_output('data:propulsion:thrust', shape=shape, units='N', ref=1e5)
 
         self.declare_partials('data:propulsion:SFC', '*', method='fd')

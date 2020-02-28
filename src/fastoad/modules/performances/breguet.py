@@ -87,7 +87,7 @@ class _BreguetPropulsion(om.ExplicitComponent):
 
         self.add_output('data:propulsion:phase', FlightPhase.CRUISE)
         self.add_output('data:propulsion:use_thrust_rate', False)
-        self.add_output('data:propulsion:required_thrust_rate', 0.)
+        self.add_output('data:propulsion:required_thrust_rate', 0., lower=0., upper=1.)
         self.add_output('data:propulsion:required_thrust', units='N', ref=1e5)
         self.add_output('data:propulsion:altitude', units='m', ref=1e4)
         self.add_output('data:propulsion:mach')

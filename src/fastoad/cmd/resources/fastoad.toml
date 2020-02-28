@@ -48,8 +48,3 @@ driver = "om.ScipyOptimizeDriver()"
     name = "data:weight:aircraft:MTOW"
     ref = 90000
     ref0 = 60000
-
-[[constraint]]
-    name = "data:propulsion:thrust_rate"
-    lower = 0
-    upper = 1
