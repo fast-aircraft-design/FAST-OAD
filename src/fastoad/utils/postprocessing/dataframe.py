@@ -42,6 +42,11 @@ class FASTOADDataFrame:
 
         self.all_tag = '--ALL--'
 
+        self.sheet = None
+        self.items = None
+        self.ui = None
+        self.out = None
+
     def update_df(self, *args):
         df = self.sheet_to_df(self.sheet)
         self._update_df(df)
@@ -252,81 +257,82 @@ class FASTOADDataFrame:
 
         return _render()
 
-    def render_sheet(self, df: pd.DataFrame, max_depth: int = 6) -> display:
+    def render_sheet(self, max_depth: int = 6) -> display:
         """
         Renders an interactive pysheet with dropdown menus of the stored dataframe.
 
-        :param df: the dataframe to render
         :param max_depth: the maximum depth when searching submodules
         :return display of the user interface
         """
-
-        items = []
+        self.max_depth = max_depth
+        self.items = []
         modules_item = sorted(self._find_submodules(self.df_variables))
         if modules_item:
             w = widgets.Dropdown(options=modules_item)
-            items.append(w)
-        if 'Type' in modules_item:
-            w_type = widgets.Dropdown(options=[self.all_tag, 'Input', 'Output'],
-                                      layout=widgets.Layout(width='auto'))
-        else:
-            w_type = None
+            self.items.append(w)
+        return self.render()
 
-        def _update_items(*args):
-            for i in range(max_depth):
-                if i == 0:
-                    items[0].observe(_update_items, 'value')
-                else:
-                    if i <= len(items):
-                        modules = [item.value for item in items[0:i]]
-                        modules_item = sorted(self._find_submodules(self.df_variables, modules))
-                        if modules_item:
-                            # Check if the item exists already
-                            if i == len(items):
-                                if len(modules_item) > 1:
-                                    modules_item.insert(0, self.all_tag)
-                                w = widgets.Dropdown(options=modules_item)
-                                w.observe(_update_items, 'value')
-                                items.append(w)
-                            else:
-                                if (self.all_tag not in modules_item) and (len(modules_item) > 1):
-                                    modules_item.insert(0, self.all_tag)
-                                items[i].options = modules_item
-                        else:
-                            if i < len(items):
-                                items.pop(i)
-            return items
+    def _update_items(self, *args):
 
-        def _render(*args):
-            items = _update_items()
-            if w_type is not None:
-                type_box = widgets.VBox([widgets.Label(value='Type'),
-                                         w_type],
-                                        layout=widgets.Layout(width='auto'))
-            items_box = widgets.HBox(items)
-            items_box = widgets.VBox([widgets.Label(value='Variable name'),
-                                      items_box])
-            if w_type is not None:
-                ui = widgets.HBox([type_box, items_box])
+        for i in range(self.max_depth):
+            if i == 0:
+                self.items[0].observe(self._update_items, 'value')
+                self.items[0].observe(self._update_ui, 'value')
             else:
-                ui = items_box
+                if i <= len(self.items):
+                    modules = [item.value for item in self.items[0:i]]
+                    modules_item = sorted(self._find_submodules(self.df_variables, modules))
+                    if modules_item:
+                        # Check if the item exists already
+                        if i == len(self.items):
+                            if len(modules_item) > 1:
+                                modules_item.insert(0, self.all_tag)
+                            w = widgets.Dropdown(options=modules_item)
+                            w.observe(self._update_items, 'value')
+                            w.observe(self._update_ui, 'value')
+                            self.items.append(w)
+                        else:
+                            if (self.all_tag not in modules_item) and (len(modules_item) > 1):
+                                modules_item.insert(0, self.all_tag)
+                            self.items[i].options = modules_item
+                    else:
+                        if i < len(self.items):
+                            self.items.pop(i)
 
-            kwargs = {}
+    def _update_ui(self, *args):
+        items_box = widgets.HBox(self.items)
+        items_box = widgets.VBox([widgets.Label(value='Variable name'),
+                                  items_box])
+        self.ui = items_box
 
-            i = 0
-            for item in items:
-                kwargs[str(i)] = item
-                i += 1
-            if w_type is not None:
-                kwargs['Type'] = w_type
+    def render_ui(self, *args):
+        clear_output(wait=True)
+        self._update_items()
+        self._update_ui()
+        for item in self.items:
+            item.observe(self.render_ui, 'value')
+        display(self.ui, self.out)
 
-            out = widgets.interactive_output(self._print_sheet, kwargs)
+    def render_out(self, *args):
+        kwargs = {}
+        i = 0
+        for item in self.items:
+            kwargs[str(i)] = item
+            i += 1
+        self.out = widgets.interactive_output(self._print_sheet, kwargs)
 
-            return display(ui, out)
+    def render(self, *args):
+        if self.sheet is None:
+            self.render_out()
+        self.render_ui()
+        self.render_out()
 
-        return _render()
+        for cell in self.sheet.cells:
+            cell.observe(self.update_df, 'value')
 
-    def _print_sheet(self, **kwargs):
+    def _print_sheet(self, *args, **kwargs):
+
+        clear_output(wait=True)
         # Get variable type and remove
         if 'Type' in kwargs:
             var_type = kwargs['Type']
@@ -335,12 +341,12 @@ class FASTOADDataFrame:
             var_type = None
         # Build list of items
         kwargs = [module for module in kwargs.values()]
+
         modules = kwargs
+
         filtered_var = self._filter_variables(self.df_variables, modules, var_type=var_type)
 
         self.sheet = self.df_to_sheet(filtered_var)
-        for cell in self.sheet.cells:
-            cell.observe(self.update_df, 'value')
         return display(self.sheet)
 
     @staticmethod
@@ -462,7 +468,7 @@ class FASTOADDataFrame:
         self.df_variables = self.xml_to_df(xml)
         self.df_variables = self.df_variables.reset_index(drop=True)
 
-        return self.render_sheet(self.df_variables)
+        return self.render_sheet()
 
     @staticmethod
     def xml_to_df(xml: OMXmlIO) -> pd.DataFrame:
