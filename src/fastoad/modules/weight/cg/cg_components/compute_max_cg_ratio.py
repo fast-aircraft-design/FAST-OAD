@@ -17,6 +17,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+
 class ComputeMaxCGratio(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Maximum center of gravity ratio estimation """
@@ -27,15 +28,22 @@ class ComputeMaxCGratio(ExplicitComponent):
         self.add_input('data:weight:aircraft:load_case_2:CG:MAC_position', val=np.nan)
         self.add_input('data:weight:aircraft:load_case_3:CG:MAC_position', val=np.nan)
         self.add_input('data:weight:aircraft:load_case_4:CG:MAC_position', val=np.nan)
+        self.add_input('settings:weight:aircraft:CG:aft:MAC_position:margin',
+                       val=0.05,
+                       desc='Added margin for getting most aft CG position, '
+                            'as ratio of mean aerodynamic chord')
 
         self.add_output('data:weight:aircraft:CG:aft:MAC_position')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        outputs['data:weight:aircraft:CG:aft:MAC_position'] = max(
-            inputs['data:weight:aircraft:empty:CG:MAC_position'],
-            inputs['data:weight:aircraft:load_case_1:CG:MAC_position'],
-            inputs['data:weight:aircraft:load_case_2:CG:MAC_position'],
-            inputs['data:weight:aircraft:load_case_3:CG:MAC_position'],
-            inputs['data:weight:aircraft:load_case_4:CG:MAC_position'])
+        outputs['data:weight:aircraft:CG:aft:MAC_position'] = \
+            inputs['settings:weight:aircraft:CG:aft:MAC_position:margin'] + \
+            max(
+                inputs['data:weight:aircraft:empty:CG:MAC_position'],
+                inputs['data:weight:aircraft:load_case_1:CG:MAC_position'],
+                inputs['data:weight:aircraft:load_case_2:CG:MAC_position'],
+                inputs['data:weight:aircraft:load_case_3:CG:MAC_position'],
+                inputs['data:weight:aircraft:load_case_4:CG:MAC_position']
+            )

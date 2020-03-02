@@ -473,7 +473,7 @@ def test_compute_global_cg(input_xml):
     problem = run_system(ComputeGlobalCG(), input_vars)
 
     cg_ratio = problem['data:weight:aircraft:CG:aft:MAC_position']
-    assert cg_ratio == pytest.approx(0.377420, abs=1e-6)
+    assert cg_ratio == pytest.approx(0.427420, abs=1e-6)
 
 
 def test_compute_max_cg_ratio(input_xml):
@@ -492,7 +492,7 @@ def test_compute_max_cg_ratio(input_xml):
     problem = run_system(ComputeMaxCGratio(), input_vars)
 
     cg_ratio = problem['data:weight:aircraft:CG:aft:MAC_position']
-    assert cg_ratio == pytest.approx(0.388971, abs=1e-6)
+    assert cg_ratio == pytest.approx(0.438971, abs=1e-6)
 
 
 def test_compute_aircraft_cg(input_xml):
@@ -509,4 +509,4 @@ def test_compute_aircraft_cg(input_xml):
     problem = run_system(ComputeAircraftCG(), input_vars)
 
     cg_global = problem['data:weight:aircraft:CG:aft:x']
-    assert cg_global == pytest.approx(17.3, abs=1e-1)
+    assert cg_global == pytest.approx(17.1, abs=1e-1)

@@ -65,8 +65,7 @@ class ComputeAircraftCG(om.ExplicitComponent):
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
-        # TODO: have this 5% margin consistent
-        cg_ratio = inputs['data:weight:aircraft:CG:aft:MAC_position'] + 0.05
+        cg_ratio = inputs['data:weight:aircraft:CG:aft:MAC_position']
         l0_wing = inputs['data:geometry:wing:MAC:length']
         mac_position = inputs['data:geometry:wing:MAC:x']
 

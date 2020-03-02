@@ -91,7 +91,7 @@
         </tip>
         <MAC>
           <length units="m">4.273564786890131<!--length of mean aerodynamic chord of wing--></length>
-          <x units="m">16.586796<!--X-position of leading edge of mean aerodynamic chord of wing--></x>
+          <x units="m">16.5<!--X-position of leading edge of mean aerodynamic chord of wing--></x>
           <y units="m">6.850359383096644<!--Y-position of mean aerodynamic chord of wing--></y>
         </MAC>
         <wetted_area units="m**2">211.84115525372096<!--wetted area of wing--></wetted_area>

@@ -45,8 +45,7 @@ class ComputeStaticMargin(om.ExplicitComponent):
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        # TODO: have this 5% margin consistent
-        cg_ratio = inputs['data:weight:aircraft:CG:aft:MAC_position'] + 0.05
+        cg_ratio = inputs['data:weight:aircraft:CG:aft:MAC_position']
         ac_ratio = inputs['data:aerodynamics:cruise:neutral_point:x']
 
         outputs['data:handling_qualities:static_margin'] = ac_ratio - cg_ratio
