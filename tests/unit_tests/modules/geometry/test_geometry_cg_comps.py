@@ -18,7 +18,7 @@ import os.path as pth
 
 import pytest
 
-from fastoad.io.xml import XPathReader, OMXmlIO
+from fastoad.io.xml import OMXmlIO
 from fastoad.modules.geometry.compute_aero_center import ComputeAeroCenter
 from fastoad.modules.geometry.compute_static_margin import ComputeStaticMargin
 from fastoad.modules.weight.cg.cg_components import ComputeCGLoadCase1
@@ -36,15 +36,6 @@ from tests.testing_utilities import run_system
 
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
-@pytest.fixture(scope="module")
-def xpath_reader() -> XPathReader:
-    """
-    :return: access to the sample xml data
-    """
-    return XPathReader(
-        pth.join(pth.dirname(__file__), "data", "geometry_inputs_full.xml"))
-
-
 @pytest.fixture(scope="module")
 def input_xml() -> OMXmlIO:
     """

@@ -13,7 +13,6 @@ Utility functions for OpenMDAO classes/instances
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import warnings
 from logging import Logger
 from typing import Tuple, List
 
@@ -209,86 +208,3 @@ def get_unconnected_input_names(problem: om.Problem,
                 logger.warning('    %s : %s', abs_name, value)
 
     return mandatory_unconnected, optional_unconnected
-
-
-def build_ivc_of_unconnected_inputs(problem: om.Problem,
-                                    with_optional_inputs: bool = False) -> om.IndepVarComp:
-    """
-    This function returns an OpenMDAO IndepVarComp instance containing
-    all the unconnected inputs of a Problem.
-
-    If *optional_inputs* is False, only inputs that have numpy.nan as default value (hence
-    considered as mandatory) will be in returned instance. Otherwise, all unconnected inputs will
-    be in returned instance.
-
-    :param problem: OpenMDAO Problem instance to inspect
-    :param with_optional_inputs: If True, returned instance will contain all unconnected inputs.
-                            Otherwise, it will contain only mandatory ones.
-    :return: IndepVarComp instance
-    """
-
-    warnings.warn('Use get_unconnected_input_variables() and get_ivc_from_variables() instead',
-                  DeprecationWarning)
-
-    variables = get_unconnected_input_variables(problem, with_optional_inputs)
-    return get_ivc_from_variables(variables)
-
-
-def build_ivc_of_variables(problem: om.Problem,
-                           initial_values: bool = False,
-                           use_inputs: bool = True,
-                           use_outputs: bool = True) -> om.IndepVarComp:
-    """
-    This function returns an OpenMDAO IndepVarComp instance containing
-    variables (inputs and/or outputs) of a an OpenMDAO Problem.
-
-    If variables are promoted, the promoted name will be used. Otherwise, the absolute name will be
-    used.
-
-    :param problem: OpenMDAO Problem instance to inspect
-    :param initial_values: if True, returned instance will contain values before computation
-    :param use_inputs: if True, returned instance will contain inputs of the problem
-    :param use_outputs: if True, returned instance will contain outputs of the problem
-    :return: IndepVarComp instance
-    """
-
-    warnings.warn('Use get_variables_from_problem() and get_ivc_from_variables() instead',
-                  DeprecationWarning)
-
-    variables = get_variables_from_problem(problem, initial_values, use_inputs, use_outputs)
-    return get_ivc_from_variables(variables)
-
-
-def update_ivc(original_ivc: om.IndepVarComp, reference_ivc: om.IndepVarComp) -> om.IndepVarComp:
-    """
-    Updates the values of an IndepVarComp instance with respect to a reference IndepVarComp
-    instance
-
-    :param original_ivc: IndepVarComp instance to be updated
-    :param reference_ivc: IndepVarComp instance containing the default values for update
-    :return updated_ivc: resulting IndepVarComp instance of the update
-    """
-
-    warnings.warn(
-        'Use VariableList.update(), possibly with '
-        'get_ivc_from_variables() and/or get_variables_from_ivc ',
-        DeprecationWarning)
-
-    variables = get_variables_from_ivc(original_ivc)
-    ref_variables = get_variables_from_ivc(reference_ivc)
-
-    variables.update(ref_variables)
-    return get_ivc_from_variables(variables)
-
-    # reference_variables = {}
-    # for (name, value, attributes) in reference_ivc._indep_external:
-    #     reference_variables[name] = (value, attributes)
-    #
-    # updated_ivc = om.IndepVarComp()
-    # for (name, value, attributes) in original_ivc._indep_external:
-    #     if name in reference_variables:
-    #         value = reference_variables[name][0]
-    #         attributes = reference_variables[name][1]
-    #     updated_ivc.add_output(name, value, **attributes)
-    #
-    # return updated_ivc

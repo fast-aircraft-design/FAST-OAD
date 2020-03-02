@@ -19,11 +19,11 @@ from shutil import rmtree
 
 import numpy as np
 import pytest
+from lxml import etree
 from numpy.testing import assert_allclose
 from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.io.xml import OMXmlIO
-from fastoad.io.xml import XPathReader
 from fastoad.io.xml.exceptions import FastXPathEvalError
 from fastoad.openmdao.connections_utils import get_variables_from_ivc
 
@@ -160,9 +160,9 @@ def test_basic_xml_partial_read_and_write_from_ivc(cleanup):
     xml_write.path_separator = ':'
     xml_write.write(ivc, ignore=['does_not_exist'])  # Check with non-existent var in ignore list
 
-    reader = XPathReader(badvar_filename)
-    assert reader.get_float('should_be_ignored/pointless') == 0.0
-    assert reader.get_float('should_also_be_ignored') == -10.0
+    tree = etree.parse(badvar_filename)
+    assert float(tree.xpath('should_be_ignored/pointless')[0].text.strip()) == 0.0
+    assert float(tree.xpath('should_also_be_ignored')[0].text.strip()) == -10.0
 
     # Check partial reading with 'ignore'
     xml_read = OMXmlIO(badvar_filename)
