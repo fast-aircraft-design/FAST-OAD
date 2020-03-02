@@ -113,8 +113,7 @@ class FASTOADProblem(om.Problem):
         # Define driver
         driver = self._conf_dict.get(KEY_DRIVER, '')
         if driver:
-            # FIXME: remove this eval()
-            self.driver = eval(driver)
+            self.driver = _om_eval(driver)
 
         self.build_model()
 
@@ -231,8 +230,7 @@ class FASTOADProblem(om.Problem):
             else:
                 # value is an attribute of current component and will be literally interpreted
                 try:
-                    # FIXME: remove this eval()
-                    setattr(group, key, eval(value))  # pylint:disable=eval-used
+                    setattr(group, key, _om_eval(value))  # pylint:disable=eval-used
                 except Exception as err:
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
@@ -254,3 +252,17 @@ class FASTOADProblem(om.Problem):
         design_var_tables = self._conf_dict.get(TABLES_DESIGN_VAR, [])
         for design_var_table in design_var_tables:
             self.model.add_design_var(**design_var_table)
+
+
+def _om_eval(string_to_eval: str):
+    """
+    Evaluates strings that assume `import openmdao.api as om` is done.
+
+    eval() is used for that, as safely as possible.
+
+    :param string_to_eval:
+    :return: result of eval()
+    """
+    if '__' in string_to_eval:
+        raise ValueError('No double underscore allowed in evaluated string for security reasons')
+    return eval(string_to_eval, {'__builtins__': {}}, {'om': om})
