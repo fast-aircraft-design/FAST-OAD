@@ -246,10 +246,17 @@ def _run_problem(configuration_file_path: str,
     problem.setup()
     if mode == 'run_model':
         problem.run_model()
+        problem.optim_failed = False  # Actually, we don't know
     else:
-        problem.run_driver()
+        problem.optim_failed = problem.run_driver()
+
     problem.write_outputs()
-    _LOGGER.info('Computation finished. Problem outputs written in %s', outputs_path)
+    if problem.optim_failed:
+        _LOGGER.error('Optimization failed')
+    else:
+        _LOGGER.info('Computation finished')
+
+    _LOGGER.info('Problem outputs written in %s', outputs_path)
 
     return problem
 
