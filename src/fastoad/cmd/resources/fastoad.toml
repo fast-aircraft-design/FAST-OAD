@@ -35,16 +35,16 @@ driver = "om.ScipyOptimizeDriver()"
         id = "fastoad.handling_qualities.tail_sizing"
     [model.hq.static_margin]
         id = "fastoad.handling_qualities.static_margin"
+        objective = 0.05
     [model.loop]
         id = "fastoad.loop.wing_area"
 
 [[design_var]]
-    name = "data:propulsion:MTO_thrust"
-    lower = 0
-    ref = 1.5e5
-    ref0 = 50000
+    name = "data:geometry:wing:MAC:x"
+    lower = 10.0
+    upper = 25.0
+    ref = 15.0
 
 [[objective]]
-    name = "data:weight:aircraft:MTOW"
-    ref = 90000
-    ref0 = 60000
+    name = "data:handling_qualities:static_margin:to_objective"
+

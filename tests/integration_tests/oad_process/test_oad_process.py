@@ -109,15 +109,17 @@ def test_api(cleanup, install_components):
                     problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
                     + problem['data:mission:sizing:fuel'],
                     atol=1)
-    base_thrust = problem['data:propulsion:MTO_thrust']
-    base_thrust_rate = problem['data:propulsion:thrust_rate']
-    base_MTOW = problem['data:weight:aircraft:MTOW']
-    wing_area = problem['data:geometry:wing:area']
-    ht_area = problem['data:geometry:horizontal_tail:area']
-    vt_area = problem['data:geometry:vertical_tail:area']
+
+    assert_allclose(problem['data:handling_qualities:static_margin'], 0.006, atol=1e-3)
+    assert_allclose(problem['data:geometry:wing:MAC:x'], 16.59, atol=1e-2)
+    assert_allclose(problem['data:weight:aircraft:MTOW'], 77035, atol=1)
+    assert_allclose(problem['data:geometry:wing:area'], 130.23, atol=1e-2)
+    assert_allclose(problem['data:geometry:vertical_tail:area'], 27.30, atol=1e-2)
+    assert_allclose(problem['data:geometry:horizontal_tail:area'], 35.15, atol=1e-2)
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
+    assert not problem.optim_failed
 
     # Check that weight-performances loop correctly converged
     assert_allclose(problem['data:weight:aircraft:OWE'],
@@ -134,20 +136,13 @@ def test_api(cleanup, install_components):
                     + problem['data:mission:sizing:fuel'],
                     atol=1)
 
-    print('before optimization')
-    print(base_thrust)
-    print(base_thrust_rate)
-    print(base_MTOW)
-    print(wing_area)
-    print(ht_area)
-    print(vt_area)
-
-    print('after optimization')
-    print(problem['data:propulsion:MTO_thrust'])
-    print(problem['data:propulsion:thrust_rate'])
-    print(problem['data:weight:aircraft:MTOW'])
-    print(problem['data:geometry:wing:area'])
-    print(problem['data:geometry:vertical_tail:area'])
+    assert problem.driver
+    assert_allclose(problem['data:handling_qualities:static_margin'], 0.051, atol=1e-3)
+    assert_allclose(problem['data:geometry:wing:MAC:x'], 17.04, atol=1e-2)
+    assert_allclose(problem['data:weight:aircraft:MTOW'], 77170, atol=1)
+    assert_allclose(problem['data:geometry:wing:area'], 130.48, atol=1e-2)
+    assert_allclose(problem['data:geometry:vertical_tail:area'], 27.75, atol=1e-2)
+    assert_allclose(problem['data:geometry:horizontal_tail:area'], 36.49, atol=1e-2)
 
 
 def test_non_regression(cleanup, install_components):
