@@ -21,7 +21,7 @@ from IPython.display import display, clear_output
 
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO
-from fastoad.openmdao.connections_utils import get_variables_from_ivc
+from fastoad.openmdao.connections_utils import get_variables_from_ivc, get_variables_of_ivc_components
 
 pd.set_option('display.max_rows', None)
 
@@ -41,6 +41,10 @@ class FASTOADDataFrame:
         self.df_optimization = pd.DataFrame()
 
         self.all_tag = '--ALL--'
+
+    def update_df(self, *args):
+        df = self.sheet_to_df(self.sheet)
+        self._update_df(df)
 
     def read_problem(self, problem: FASTOADProblem):
         """
@@ -219,7 +223,7 @@ class FASTOADDataFrame:
             kwargs = [module for module in kwargs.values()]
             modules = kwargs
             filtered_var = self._filter_variables(self.df_variables, modules, var_type=var_type)
-            sheet = self._build_sheet(filtered_var)
+            sheet = self.df_to_sheet(filtered_var)
             return display(sheet)
 
         def _render(*args):
@@ -248,8 +252,7 @@ class FASTOADDataFrame:
 
         return _render()
 
-
-    def render_sheet(self, df:pd.DataFrame, max_depth: int = 6) -> display:
+    def render_sheet(self, df: pd.DataFrame, max_depth: int = 6) -> display:
         """
         Renders an interactive pysheet with dropdown menus of the stored dataframe.
 
@@ -258,12 +261,8 @@ class FASTOADDataFrame:
         :return display of the user interface
         """
 
-        df_variables = df
-
-
-
         items = []
-        modules_item = sorted(self._find_submodules(df_variables))
+        modules_item = sorted(self._find_submodules(self.df_variables))
         if modules_item:
             w = widgets.Dropdown(options=modules_item)
             items.append(w)
@@ -280,7 +279,7 @@ class FASTOADDataFrame:
                 else:
                     if i <= len(items):
                         modules = [item.value for item in items[0:i]]
-                        modules_item = sorted(self._find_submodules(df_variables, modules))
+                        modules_item = sorted(self._find_submodules(self.df_variables, modules))
                         if modules_item:
                             # Check if the item exists already
                             if i == len(items):
@@ -298,27 +297,9 @@ class FASTOADDataFrame:
                                 items.pop(i)
             return items
 
-        def _print_sheet(**kwargs):
-            # Get variable type and remove
-            if 'Type' in kwargs:
-                var_type = kwargs['Type']
-                del kwargs['Type']
-            else:
-                var_type = None
-            # Build list of items
-            kwargs = [module for module in kwargs.values()]
-            modules = kwargs
-            filtered_var = self._filter_variables(df_variables, modules, var_type=var_type)
-            sheet = self._build_sheet(filtered_var)
-            return display(sheet)
-
         def _render(*args):
-            clear_output(wait=True)
             items = _update_items()
-            for item in items:
-                item.observe(_render, 'value')
             if w_type is not None:
-                w_type.observe(_render, 'value')
                 type_box = widgets.VBox([widgets.Label(value='Type'),
                                          w_type],
                                         layout=widgets.Layout(width='auto'))
@@ -338,19 +319,38 @@ class FASTOADDataFrame:
                 i += 1
             if w_type is not None:
                 kwargs['Type'] = w_type
-            out = widgets.interactive_output(_print_sheet, kwargs)
-            display(ui, out)
 
-        _render()
+            out = widgets.interactive_output(self._print_sheet, kwargs)
+
+            return display(ui, out)
+
+        return _render()
+
+    def _print_sheet(self, **kwargs):
+        # Get variable type and remove
+        if 'Type' in kwargs:
+            var_type = kwargs['Type']
+            del kwargs['Type']
+        else:
+            var_type = None
+        # Build list of items
+        kwargs = [module for module in kwargs.values()]
+        modules = kwargs
+        filtered_var = self._filter_variables(self.df_variables, modules, var_type=var_type)
+
+        self.sheet = self.df_to_sheet(filtered_var)
+        for cell in self.sheet.cells:
+            cell.observe(self.update_df, 'value')
+        return display(self.sheet)
 
     @staticmethod
-    def _build_sheet(df: pd.DataFrame) -> sh.Sheet:
+    def df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
         """
-        Transforms a pandas dataframe into a pysheet.
+        Transforms a pandas DataFrame into a ipysheet Sheet.
         The cells are set to read only except for the values.
 
-        :param df: the pandas dataframe to be converted
-        :return the equivalent pysheet
+        :param df: the pandas DataFrame to be converted
+        :return the equivalent ipysheet Sheet
         """
         if not df.empty:
             sheet = sh.from_dataframe(df)
@@ -364,6 +364,22 @@ class FASTOADDataFrame:
             sheet = sh.sheet()
 
         return sheet
+
+    @staticmethod
+    def sheet_to_df(sheet: sh.Sheet) -> pd.DataFrame:
+        """
+        Transforms a ipysheet Sheet into a pandas DataFrame.
+
+        :param sheet: the ipysheet Sheet to be converted
+        :return the equivalent pandas DataFrame
+        """
+        df = sh.to_dataframe(sheet)
+
+        return df
+
+    def _update_df(self, df):
+        for i in df.index:
+            self.df_variables.loc[int(i), :] = df.loc[i, :].values
 
     @staticmethod
     def _find_submodules(df: pd.DataFrame, modules: [str] = None) -> [str]:
@@ -443,9 +459,10 @@ class FASTOADDataFrame:
         :return display of the user interface
         """
 
-        df = self.xml_to_df(xml)
+        self.df_variables = self.xml_to_df(xml)
+        self.df_variables = self.df_variables.reset_index(drop=True)
 
-        self.render_sheet(df)
+        return self.render_sheet(self.df_variables)
 
     @staticmethod
     def xml_to_df(xml: OMXmlIO) -> pd.DataFrame:
