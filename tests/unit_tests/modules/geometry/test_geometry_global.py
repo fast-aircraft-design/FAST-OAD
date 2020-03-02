@@ -50,7 +50,7 @@ def test_geometry_geometry_global():
     # TODO: Inputs should contain mass breakdown data so only Geometry() is run
     group.add_subsystem('mass_breakdown', MassBreakdown(), promotes=['*'])
     group.add_subsystem('geometry', Geometry(), promotes=['*'])
-    group.nonlinear_solver = om.NonlinearBlockGS()
+    group.nonlinear_solver = om.NonlinearBlockGS(reraise_child_analysiserror=False)
     problem = run_system(group, input_vars)
 
     static_margin = problem['data:handling_qualities:static_margin']

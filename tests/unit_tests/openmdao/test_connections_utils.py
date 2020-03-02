@@ -234,7 +234,7 @@ def test_get_variables_from_problem():
     group.add_subsystem('disc1', Disc1(), promotes=['*'])
     group.add_subsystem('disc2', Disc2(), promotes=['*'])
     group.add_subsystem('functions', Functions(), promotes=['*'])
-    group.nonlinear_solver = NonlinearBlockGS()
+    group.nonlinear_solver = NonlinearBlockGS(reraise_child_analysiserror=False)
     problem = Problem(group)
 
     expected_input_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
@@ -275,7 +275,7 @@ def test_get_variables_from_problem():
     group.add_subsystem('disc2', Disc2())
     group.add_subsystem('disc1', Disc1())
     group.add_subsystem('functions', Functions())
-    group.nonlinear_solver = NonlinearBlockGS()
+    group.nonlinear_solver = NonlinearBlockGS(reraise_child_analysiserror=False)
     group.connect('indeps.x', 'disc1.x')
     group.connect('indeps.x', 'functions.x')
     group.connect('indeps.z', 'disc1.z')

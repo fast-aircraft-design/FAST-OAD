@@ -78,7 +78,7 @@ def test_breguet_from_mtow_with_rubber_engine():
     group = om.Group()
     group.add_subsystem('breguet', BreguetFromMTOW(), promotes=['*'])
     group.add_subsystem('engine', OMRubberEngine(), promotes=['*'])
-    group.nonlinear_solver = om.NonlinearBlockGS()
+    group.nonlinear_solver = om.NonlinearBlockGS(reraise_child_analysiserror=False)
     problem = run_system(group, ivc)
 
     assert_allclose(problem['data:mission:sizing:ZFW'], 65076., atol=1)
@@ -122,7 +122,7 @@ def test_breguet_from_owe_with_rubber_engine():
 
     group.add_subsystem('engine', OMRubberEngine(), promotes=['*'])
     group.add_subsystem('breguet', BreguetFromOWE(), promotes=['*'])
-    group.nonlinear_solver = om.NonlinearBlockGS()
+    group.nonlinear_solver = om.NonlinearBlockGS(reraise_child_analysiserror=False)
     problem = run_system(group, ivc)
 
     assert_allclose(problem['data:weight:aircraft:MTOW'], 74000., atol=10)

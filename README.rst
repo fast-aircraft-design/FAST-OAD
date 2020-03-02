@@ -74,7 +74,7 @@ FAST-OAD configuration files are in `TOML format <https://github.com/toml-lang/t
     # Definition of OpenMDAO model
     [model]
         # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
-        nonlinear_solver = "om.NonlinearBlockGS(iprint=1, maxiter=100)"
+        nonlinear_solver = "om.NonlinearBlockGS(maxiter=100, reraise_child_analysiserror=False)"
         linear_solver = "om.DirectSolver()"
 
         # Though "model" is a mandatory name for the top level of the model, sublevels can be freely named by user
@@ -141,7 +141,7 @@ For more details, please see the OpenMDAO documentation on `drivers <http://open
 .. code:: toml
 
     [model]
-        nonlinear_solver = "om.NonlinearBlockGS(iprint=1, maxiter=100)"
+        nonlinear_solver = "om.NonlinearBlockGS(maxiter=100, reraise_child_analysiserror=False)"
         linear_solver = "om.DirectSolver()"
 
 This is the starting point for defining the model of the problem. The model is a group of components.
