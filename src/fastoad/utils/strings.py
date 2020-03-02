@@ -60,8 +60,15 @@ def get_float_list_from_string(text: str):
     # Deals with multiple values in same element. numpy.fromstring can parse a string,
     # but we have to test with either ' ' or ',' as separator. The longest result should be
     # the good one.
-    value1 = np.fromstring(text_value, dtype=float, sep=' ').tolist()
-    value2 = np.fromstring(text_value, dtype=float, sep=',').tolist()
+    try:
+        value1 = np.fromstring(text_value, dtype=float, sep=' ').tolist()
+    except ValueError:
+        pass
+
+    try:
+        value2 = np.fromstring(text_value, dtype=float, sep=',').tolist()
+    except ValueError:
+        pass
 
     if not value1 and not value2:
         return None
