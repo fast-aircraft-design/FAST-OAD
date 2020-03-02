@@ -17,6 +17,7 @@ Test module for mass breakdown functions
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
 import os.path as pth
 
+import openmdao.api as om
 import pytest
 
 from fastoad.io.xml.openmdao_basic_io import OMXmlIO
@@ -33,6 +34,7 @@ from fastoad.modules.weight.mass_breakdown.d_furniture import CargoConfiguration
     PassengerSeatsWeight, FoodWaterWeight, ToiletsWeight, SecurityKitWeight
 from fastoad.modules.weight.mass_breakdown.e_crew import CrewWeight
 from fastoad.modules.weight.mass_breakdown.mass_breakdown import MassBreakdown, OperatingWeightEmpty
+from fastoad.modules.weight.mass_breakdown.payload import ComputePayload
 from tests.testing_utilities import run_system
 
 
@@ -42,6 +44,22 @@ def get_indep_var_comp(var_names):
     reader.path_separator = ':'
     ivc = reader.read(only=var_names)
     return ivc
+
+
+def test_compute_payload():
+    ivc = om.IndepVarComp()
+    ivc.add_output('data:TLAR:NPAX', val=150)
+    problem = run_system(ComputePayload(), ivc)
+    assert problem['data:weight:aircraft:payload'] == pytest.approx(13608.0, abs=0.1)
+    assert problem['data:weight:aircraft:max_payload'] == pytest.approx(19608.0, abs=0.1)
+
+    ivc = om.IndepVarComp()
+    ivc.add_output('data:TLAR:NPAX', val=150)
+    ivc.add_output('settings:weight:aircraft:payload:design_mass_per_passenger', val=1., units='kg')
+    ivc.add_output('settings:weight:aircraft:payload:max_mass_per_passenger', val=2., units='kg')
+    problem = run_system(ComputePayload(), ivc)
+    assert problem['data:weight:aircraft:payload'] == pytest.approx(150.0, abs=0.1)
+    assert problem['data:weight:aircraft:max_payload'] == pytest.approx(300.0, abs=0.1)
 
 
 def test_compute_loads():
@@ -584,11 +602,22 @@ def test_loop_compute_oew():
     """
     Tests a weight computation loop using matching the max payload criterion.
     """
+    # With payload from npax
     reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ':'
-    input_vars = reader.read(ignore=['data:weight:aircraft:MLW', 'data:weight:aircraft:MZFW'])
-
+    input_vars = reader.read(ignore=['data:weight:aircraft:MLW',
+                                     'data:weight:aircraft:MZFW',
+                                     'data:weight:aircraft:max_payload'])
     mass_computation = run_system(MassBreakdown(), input_vars)
+    oew = mass_computation['data:weight:aircraft:OWE']
+    assert oew == pytest.approx(41591, abs=1)
 
+    # with payload as input
+    reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
+    reader.path_separator = ':'
+    input_vars = reader.read(ignore=['data:weight:aircraft:MLW',
+                                     'data:weight:aircraft:MZFW',
+                                     ])
+    mass_computation = run_system(MassBreakdown(payload_from_npax=False), input_vars)
     oew = mass_computation['data:weight:aircraft:OWE']
     assert oew == pytest.approx(42060, abs=1)

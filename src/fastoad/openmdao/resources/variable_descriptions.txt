@@ -289,7 +289,7 @@ settings:weight:aircraft:CG:range	distance between front position and aft positi
 data:TLAR:approach_speed	top-level requirement: approach speed
 data:TLAR:cruise_mach	top-level requirement: cruise Mach number
 data:TLAR:max_TOFL	top-level requirement: maximum takeoff field length
-data:TLAR:NPAX	top-level requirement: number of passengers
+data:TLAR:NPAX	top-level requirement: number of passengers, assuming a classic eco/business class repartition
 data:TLAR:range	top-level requirement: design range
 data:weight:aircraft:additional_fuel_capacity	fuel mass capacity of wing that exceeds sizing mission requirement
 data:weight:aircraft:CG:aft:MAC_position	most aft X-position of center of gravity as ratio of mean aerodynamic chord
