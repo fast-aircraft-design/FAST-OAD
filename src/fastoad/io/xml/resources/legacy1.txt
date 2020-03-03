@@ -232,7 +232,7 @@ data:geometry:vertical_tail:span, Aircraft/geometry/vt/span
 data:geometry:vertical_tail:aspect_ratio, Aircraft/geometry/vt/aspect
 data:geometry:vertical_tail:taper_ratio, Aircraft/geometry/vt/taper
 data:TLAR:cruise_mach, Aircraft/TLAR/cruise_Mach
-data:requirements:CG_range, Aircraft/balance/required_cg_range
+settings:weight:aircraft:CG:range, Aircraft/balance/required_cg_range
 data:geometry:wing:aspect_ratio, Aircraft/geometry/wing/aspect_ratio
 data:geometry:wing:taper_ratio, Aircraft/geometry/wing/eps1
 data:geometry:propulsion:engine:y_ratio, Aircraft/geometry/propulsion/y_ratio_engine
@@ -439,7 +439,7 @@ weight:propulsion:batteries:mass, Aircraft/weight/propulsion/weight_B5
 weight:propulsion:generator:mass, Aircraft/weight/propulsion/weight_B6
 weight:propulsion:IDC:mass, Aircraft/weight/propulsion/weight_B7
 data:weight:crew:mass, Aircraft/weight/crew/weight_E
-data:weight:aircraft:CG:x, Aircraft/balance/cg
+data:weight:aircraft:CG:aft:x, Aircraft/balance/cg
 weight:propulsion:cables:CG:x, Aircraft/balance/propulsion/CG_B4
 weight:propulsion:batteries:CG:x, Aircraft/balance/propulsion/CG_B5
 weight:propulsion:generator:CG:x, Aircraft/balance/propulsion/CG_B6

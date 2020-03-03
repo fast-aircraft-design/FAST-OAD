@@ -13,647 +13,681 @@
   ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<aircraft>
+<FASTOAD_model>
     <TLAR>
         <AC_family>1.0</AC_family>
         <AC_type>2.0</AC_type>
     </TLAR>
     <data>
         <TLAR>
-            <NPAX>150.0</NPAX>
-            <approach_speed>132.0</approach_speed>
-            <range>2750.0</range>
-            <cruise_mach>0.78</cruise_mach>
-            <max_TOFL>0.0</max_TOFL>
+            <NPAX>150.0<!--top-level requirement: number of passengers--></NPAX>
+            <approach_speed>132.0<!--top-level requirement: approach speed--></approach_speed>
+            <range>2750.0<!--top-level requirement: design range--></range>
+            <cruise_mach>0.78<!--top-level requirement: cruise Mach number--></cruise_mach>
+            <max_TOFL>0.0<!--top-level requirement: maximum takeoff field length--></max_TOFL>
         </TLAR>
         <mission>
             <sizing>
                 <taxi_out>
-                    <fuel>282.7</fuel>
-                    <duration>540.0</duration>
-                    <thrust_rate>0.3</thrust_rate>
-                    <speed>30.0</speed>
+                    <fuel>282.7<!--mass of consumed fuel during taxi-out phase in sizing mission--></fuel>
+                    <duration>540.0<!--duration of taxi-out phase in sizing mission--></duration>
+                    <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
+                    <speed>30.0<!--speed during taxi-out phase in sizing mission--></speed>
                 </taxi_out>
                 <takeoff>
-                    <fuel>92.66</fuel>
-                    <duration>0.66</duration>
-                    <TOFL>1954.91</TOFL>
-                    <altitude>0.0</altitude>
-                    <delta_ISA>15.0</delta_ISA>
-                    <friction_coefficient_no_brake>0.03</friction_coefficient_no_brake>
-                    <flap_angle>10.0</flap_angle>
-                    <slat_angle>18.0</slat_angle>
-                    <VMCA>60.86</VMCA>
-                    <V2>79.1</V2>
-                    <VR>76.8</VR>
-                    <VLOF>79.06</VLOF>
+                    <fuel>92.66<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
+                    <duration>0.66<!--duration of takeoff phase in sizing mission--></duration>
+                    <TOFL>1954.91<!--TakeOff Field Length in sizing mission--></TOFL>
+                    <altitude>0.0<!--altitude at takeoff in sizing mission--></altitude>
+                    <delta_ISA>15.0<!--ISA temperature increment during takeoff phase in sizing mission--></delta_ISA>
+                    <friction_coefficient_no_brake>0.03<!--ground friction coefficient with no brake in sizing mission--></friction_coefficient_no_brake>
+                    <flap_angle>10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
+                    <slat_angle>18.0<!--slat angle during takeoff phase in sizing mission--></slat_angle>
+                    <VMCA>60.86<!--air minimum control speed in sizing mission--></VMCA>
+                    <V2>79.1<!--safety speed before reaching 35 feet height in sizing mission--></V2>
+                    <VR>76.8<!--rotation speed in sizing mission--></VR>
+                    <VLOF>79.06<!--lift-off speed in sizing mission--></VLOF>
                 </takeoff>
                 <initial_climb>
-                    <fuel>117.1</fuel>
+                    <fuel>117.1<!--mass of consumed fuel during initial climb phase in sizing mission--></fuel>
                 </initial_climb>
                 <climb>
-                    <fuel>2273.94</fuel>
-                    <duration>26.42</duration>
-                    <thrust_rate>0.93</thrust_rate>
-                    <max_climb_rate>2.4</max_climb_rate>
+                    <fuel>2273.94<!--mass of consumed fuel during climb phase in sizing mission--></fuel>
+                    <duration>26.42<!--duration of climb phase in sizing mission--></duration>
+                    <thrust_rate>0.93<!--thrust rate (between 0.0 and 1.0) during climb phase  in sizing mission--></thrust_rate>
+                    <max_climb_rate>2.4<!--maximum climb rate in sizing mission--></max_climb_rate>
                 </climb>
                 <cruise>
-                    <fuel>13675.36</fuel>
-                    <duration>5.44</duration>
-                    <altitude>35000.0</altitude>
+                    <fuel>13675.36<!--mass of consumed fuel during cruise phase in sizing mission--></fuel>
+                    <duration>5.44<!--duration of cruise phase in sizing mission--></duration>
+                    <altitude>35000.0<!--altitude during cruise phase in sizing mission--></altitude>
                 </cruise>
                 <descent>
-                    <fuel>1196.97</fuel>
-                    <duration>23.17</duration>
-                    <thrust_rate>0.55</thrust_rate>
+                    <fuel>1196.97<!--mass of consumed fuel during descent phase in sizing mission--></fuel>
+                    <duration>23.17<!--duration of descent phase in sizing mission--></duration>
+                    <thrust_rate>0.55<!--thrust rate (between 0.0 and 1.0) during descent phase  in sizing mission--></thrust_rate>
                 </descent>
                 <alternate_climb>
-                    <fuel>602.65</fuel>
-                    <duration>6.75</duration>
+                    <fuel>602.65<!--mass of consumed fuel during alternate climb phase in sizing mission--></fuel>
+                    <duration>6.75<!--duration of alternate climb phase in sizing mission--></duration>
                 </alternate_climb>
                 <alternate_cruise>
-                    <distance>200.0</distance>
-                    <fuel>414.75</fuel>
-                    <duration>0.19</duration>
+                    <distance>200.0<!--travelled distance during alternate cruise phase in sizing mission--></distance>
+                    <fuel>414.75<!--mass of consumed fuel during alternate alternate cruise phase in sizing mission--></fuel>
+                    <duration>0.19<!--duration of alternate alternate cruise phase in sizing mission--></duration>
                 </alternate_cruise>
                 <alternate_descent>
-                    <fuel>348.79</fuel>
-                    <duration>16.83</duration>
+                    <fuel>348.79<!--mass of consumed fuel during alternate descent phase in sizing mission--></fuel>
+                    <duration>16.83<!--duration of alternate descent phase in sizing mission--></duration>
                 </alternate_descent>
                 <holding>
-                    <fuel>1543.12</fuel>
-                    <altitude>1500.0</altitude>
-                    <CAS>230.0</CAS>
-                    <duration>2700.0</duration>
+                    <fuel>1543.12<!--mass of consumed fuel during holding phase in sizing mission--></fuel>
+                    <altitude>1500.0<!--altitude during holding phase in sizing mission--></altitude>
+                    <CAS>230.0<!--Calibrated Air Speed during holding phase in sizing mission--></CAS>
+                    <duration>2700.0<!--duration of holding phase in sizing mission--></duration>
                 </holding>
                 <landing>
-                    <fuel>0.33</fuel>
-                    <duration>1.84</duration>
-                    <thrust_rate>0.1</thrust_rate>
-                    <length>44.07</length>
-                    <friction_coefficient_brake>0.3</friction_coefficient_brake>
-                    <flap_angle>30.0</flap_angle>
-                    <slat_angle>20.0</slat_angle>
+                    <fuel>0.33<!--mass of consumed fuel during landing phase in sizing mission--></fuel>
+                    <duration>1.84<!--duration of landing phase in sizing mission--></duration>
+                    <thrust_rate>0.1<!--thrust rate (between 0.0 and 1.0) during landing phase in sizing mission--></thrust_rate>
+                    <length>44.07<!--runway length required for landing in sizing mission--></length>
+                    <friction_coefficient_brake>0.3<!--ground friction coefficient with full brakes in sizing mission--></friction_coefficient_brake>
+                    <flap_angle>30.0<!--flap angle during landing phase in sizing mission--></flap_angle>
+                    <slat_angle>20.0<!--slat angle during landing phase in sizing mission--></slat_angle>
                 </landing>
                 <taxi_in>
-                    <fuel>157.06</fuel>
-                    <duration>300.0</duration>
-                    <thrust_rate>0.3</thrust_rate>
-                    <speed>30.0</speed>
+                    <fuel>157.06<!--mass of consumed fuel during taxi-in phase in sizing mission--></fuel>
+                    <duration>300.0<!--duration of taxi-in phase in sizing mission--></duration>
+                    <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
+                    <speed>30.0<!--speed during taxi-in phase in sizing mission--></speed>
                 </taxi_in>
-                <fuel>21225.79</fuel>
-                <block_fuel>17795.8</block_fuel>
-                <fuel_reserve>3429.99</fuel_reserve>
+                <fuel>21225.79<!--consumed fuel mass during whole mission--></fuel>
+                <block_fuel>17795.8<!--total fuel mass at start--></block_fuel>
+                <fuel_reserve>3429.99<!--mass of fuel reserve--></fuel_reserve>
                 <flight>
-                    <fuel>17356.04</fuel>
-                    <duration>376.75</duration>
+                    <fuel>17356.04<!--mass of consumed fuel during flight in sizing mission--></fuel>
+                    <duration>376.75<!--total flight time in sizing mission--></duration>
                 </flight>
-                <block_time>391.75</block_time>
+                <block_time>391.75<!--total duration of mission--></block_time>
             </sizing>
             <operational>
                 <taxi_out>
-                    <fuel>282.7</fuel>
-                    <duration>540.0</duration>
-                    <thrust_rate>0.3</thrust_rate>
-                    <speed>30.0</speed>
+                    <fuel>282.7<!--mass of consumed fuel during taxi-out phase in operational mission--></fuel>
+                    <duration>540.0<!--duration of taxi-out phase in operational mission--></duration>
+                    <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in operational mission--></thrust_rate>
+                    <speed>30.0<!--speed during taxi-out phase in operational mission--></speed>
                 </taxi_out>
                 <takeoff>
-                    <fuel>77.8</fuel>
-                    <duration>0.55</duration>
-                    <TOFL>1560.94</TOFL>
-                    <altitude>0.0</altitude>
-                    <delta_ISA>15.0</delta_ISA>
-                    <friction_coefficient_no_brake>0.03</friction_coefficient_no_brake>
-                    <flap_angle>10.0</flap_angle>
-                    <slat_angle>18.0</slat_angle>
-                    <VMCA>0.0</VMCA>
-                    <V2>0.0</V2>
-                    <VR>0.0</VR>
-                    <VLOF>0.0</VLOF>
+                    <fuel>77.8<!--mass of consumed fuel during takeoff phase in operational mission--></fuel>
+                    <duration>0.55<!--duration of takeoff phase in operational mission--></duration>
+                    <TOFL>1560.94<!--TakeOff Field Length in operational mission--></TOFL>
+                    <altitude>0.0<!--altitude at takeoff in operational mission--></altitude>
+                    <delta_ISA>15.0<!--ISA temperature increment during takeoff phase in operational mission--></delta_ISA>
+                    <friction_coefficient_no_brake>0.03<!--ground friction coefficient with no brake in operational mission--></friction_coefficient_no_brake>
+                    <flap_angle>10.0<!--flap angle during takeoff phase in operational mission--></flap_angle>
+                    <slat_angle>18.0<!--slat angle during takeoff phase in operational mission--></slat_angle>
+                    <VMCA>0.0<!--air minimum control speed in operational mission--></VMCA>
+                    <V2>0.0<!--safety speed before reaching 35 feet height in operational mission--></V2>
+                    <VR>0.0<!--rotation speed in operational mission--></VR>
+                    <VLOF>0.0<!--lift-off speed in operational mission--></VLOF>
                 </takeoff>
                 <initial_climb>
-                    <fuel>1298.63</fuel>
+                    <fuel>1298.63<!--mass of consumed fuel during initial climb phase in operational mission--></fuel>
                 </initial_climb>
                 <climb>
-                    <fuel>1298.63</fuel>
-                    <duration>19.84</duration>
-                    <thrust_rate>0.93</thrust_rate>
-                    <max_climb_rate>0.0</max_climb_rate>
+                    <fuel>1298.63<!--mass of consumed fuel during climb phase in operational mission--></fuel>
+                    <duration>19.84<!--duration of climb phase in operational mission--></duration>
+                    <thrust_rate>0.93<!--thrust rate (between 0.0 and 1.0) during climb phase  in operational mission--></thrust_rate>
+                    <max_climb_rate>0.0<!--maximum climb rate in operational mission--></max_climb_rate>
                 </climb>
                 <cruise>
-                    <fuel>586.64</fuel>
-                    <duration>17.0</duration>
-                    <altitude>35000.0</altitude>
-                    <mach>0.78</mach>
+                    <fuel>586.64<!--mass of consumed fuel during cruise phase in operational mission--></fuel>
+                    <duration>17.0<!--duration of cruise phase in operational mission--></duration>
+                    <altitude>35000.0<!--altitude during cruise phase in operational mission--></altitude>
+                    <mach>0.78<!--Mach number during cruise phase in operational mission--></mach>
                 </cruise>
                 <descent>
-                    <fuel>350.45</fuel>
-                    <duration>21.42</duration>
-                    <thrust_rate>0.0</thrust_rate>
+                    <fuel>350.45<!--mass of consumed fuel during descent phase in operational mission--></fuel>
+                    <duration>21.42<!--duration of descent phase in operational mission--></duration>
+                    <thrust_rate>0.0<!--thrust rate (between 0.0 and 1.0) during descent phase  in operational mission--></thrust_rate>
                 </descent>
                 <alternate_climb>
-                    <fuel>602.43</fuel>
-                    <duration>7.5</duration>
+                    <fuel>602.43<!--mass of consumed fuel during alternate climb phase in operational mission--></fuel>
+                    <duration>7.5<!--duration of alternate climb phase in operational mission--></duration>
                 </alternate_climb>
                 <alternate_cruise>
-                    <distance>200.0</distance>
-                    <fuel>24.75</fuel>
-                    <duration>0.5</duration>
+                    <distance>200.0<!--travelled distance during alternate cruise phase in operational mission--></distance>
+                    <fuel>24.75<!--mass of consumed fuel during alternate alternate cruise phase in operational mission--></fuel>
+                    <duration>0.5<!--duration of alternate alternate cruise phase in operational mission--></duration>
                 </alternate_cruise>
                 <alternate_descent>
-                    <fuel>306.82</fuel>
-                    <duration>21.42</duration>
+                    <fuel>306.82<!--mass of consumed fuel during alternate descent phase in operational mission--></fuel>
+                    <duration>21.42<!--duration of alternate descent phase in operational mission--></duration>
                 </alternate_descent>
                 <holding>
-                    <fuel>1482.07</fuel>
-                    <altitude>1500.0</altitude>
-                    <CAS>230.0</CAS>
-                    <duration>2700.0</duration>
+                    <fuel>1482.07<!--mass of consumed fuel during holding phase in operational mission--></fuel>
+                    <altitude>1500.0<!--altitude during holding phase in operational mission--></altitude>
+                    <CAS>230.0<!--Calibrated Air Speed during holding phase in operational mission--></CAS>
+                    <duration>2700.0<!--duration of holding phase in operational mission--></duration>
                 </holding>
                 <landing>
-                    <fuel>0.32</fuel>
-                    <duration>1.88</duration>
-                    <thrust_rate>0.1</thrust_rate>
-                    <length>45.92</length>
-                    <friction_coefficient_brake>0.3</friction_coefficient_brake>
-                    <flap_angle>40.0</flap_angle>
-                    <slat_angle>27.0</slat_angle>
+                    <fuel>0.32<!--mass of consumed fuel during landing phase in operational mission--></fuel>
+                    <duration>1.88<!--duration of landing phase in operational mission--></duration>
+                    <thrust_rate>0.1<!--thrust rate (between 0.0 and 1.0) during landing phase in operational mission--></thrust_rate>
+                    <length>45.92<!--runway length required for landing in operational mission--></length>
+                    <friction_coefficient_brake>0.3<!--ground friction coefficient with full brakes in operational mission--></friction_coefficient_brake>
+                    <flap_angle>40.0<!--flap angle during landing phase in operational mission--></flap_angle>
+                    <slat_angle>27.0<!--slat angle during landing phase in operational mission--></slat_angle>
                 </landing>
                 <taxi_in>
-                    <fuel>157.06</fuel>
-                    <duration>300.0</duration>
-                    <thrust_rate>0.3</thrust_rate>
-                    <speed>30.0</speed>
+                    <fuel>157.06<!--mass of consumed fuel during taxi-in phase in operational mission--></fuel>
+                    <duration>300.0<!--duration of taxi-in phase in operational mission--></duration>
+                    <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in operational mission--></thrust_rate>
+                    <speed>30.0<!--speed during taxi-in phase in operational mission--></speed>
                 </taxi_in>
                 <flight>
-                    <range>500.0</range>
-                    <fuel>5023.71</fuel>
-                    <duration>52.97</duration>
+                    <range>500.0<!--total travelled distance during flight in operational mission--></range>
+                    <fuel>5023.71<!--mass of total fuel consumed during flight in operational mission--></fuel>
+                    <duration>52.97<!--total flight time in operational mission--></duration>
                 </flight>
             </operational>
         </mission>
         <geometry>
             <cabin>
-                <NPAX1>157.0</NPAX1>
+                <NPAX1>157.0<!--number of passengers if there are only economical class seats--></NPAX1>
                 <crew_count>
-                    <technical>2.0</technical>
-                    <commercial>4.0</commercial>
+                    <technical>2.0<!--number of technical crew members--></technical>
+                    <commercial>4.0<!--number of commercial crew members--></commercial>
                 </crew_count>
                 <seats>
                     <economical>
-                        <count_by_row>6.0</count_by_row>
-                        <width>0.46</width>
-                        <length>0.86</length>
+                        <count_by_row>6.0<!--number of economical class seats along width--></count_by_row>
+                        <width>0.46<!--width of economical class seats--></width>
+                        <length>0.86<!--length of economical class seats--></length>
                     </economical>
                     <business>
-                        <count_by_row>4.0</count_by_row>
-                        <width>0.53</width>
-                        <length>0.92</length>
+                        <count_by_row>4.0<!--number of business class seats along width--></count_by_row>
+                        <width>0.53<!--width of business class seats--></width>
+                        <length>0.92<!--length of business class seats--></length>
                     </business>
                 </seats>
-                <aisle_width>0.48</aisle_width>
-                <exit_width>0.51</exit_width>
+                <aisle_width>0.48<!--width of aisles--></aisle_width>
+                <exit_width>0.51<!--width of exits--></exit_width>
                 <containers>
-                    <count_by_row>1.0</count_by_row>
-                    <count>5.0</count>
+                    <count_by_row>1.0<!--number of cargo containers along width--></count_by_row>
+                    <count>5.0<!--total number of cargo containers--></count>
                 </containers>
-                <pallet_count>10.0</pallet_count>
+                <pallet_count>10.0<!--number of pallet in cargo hold--></pallet_count>
             </cabin>
             <aircraft>
-                <wetted_area>784.007</wetted_area>
+                <wetted_area>784.007<!--total wetted area--></wetted_area>
             </aircraft>
             <wing>
-                <wetted_area>200.607</wetted_area>
-                <span>31.603</span>
-                <aspect_ratio>9.48</aspect_ratio>
-                <area>124.843</area>
+                <wetted_area>200.607<!--wetted area of wing--></wetted_area>
+                <span>31.603<!--wing span--></span>
+                <aspect_ratio>9.48<!--wing aspect ratio--></aspect_ratio>
+                <area>124.843<!--wing reference area--></area>
                 <kink>
-                    <span_ratio>0.4</span_ratio>
-                    <chord>3.985</chord>
+                    <span_ratio>0.4<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
+                    <chord>3.985<!--chord length at wing kink--></chord>
                     <leading_edge>
-                        <x>2.275</x>
+                        <x>2.275<!--X-position of leading edge at wing kink--></x>
                     </leading_edge>
-                    <y>6.321</y>
-                    <thickness_ratio>0.121</thickness_ratio>
+                    <y>6.321<!--Y-position of wing kink--></y>
+                    <thickness_ratio>0.121<!--thickness ratio at wing kink--></thickness_ratio>
                 </kink>
-                <taper_ratio>0.38</taper_ratio>
+                <taper_ratio>0.38<!--taper ratio of wing--></taper_ratio>
                 <MAC>
-                    <x>16.457</x>
-                    <y>6.293</y>
-                    <length>4.457</length>
+                    <x>16.457<!--X-position of leading edge of mean aerodynamic chord of wing--></x>
+                    <y>6.293<!--Y-position of mean aerodynamic chord of wing--></y>
+                    <length>4.457<!--length of mean aerodynamic chord of wing--></length>
                 </MAC>
                 <root>
                     <leading_edge>
-                        <x>2.361</x>
+                        <x>2.361<!--X-position of leading edge at wing root--></x>
                     </leading_edge>
-                    <virtual_chord>4.953</virtual_chord>
-                    <chord>6.26</chord>
-                    <y>1.96</y>
-                    <thickness_ratio>0.159</thickness_ratio>
+                    <virtual_chord>4.953<!--virtual chord length at wing root if sweep angle of trailing edge of outer wing part was on the whole wing (no kink)--></virtual_chord>
+                    <chord>6.26<!--chord length at wing root--></chord>
+                    <y>1.96<!--Y-position of wing root--></y>
+                    <thickness_ratio>0.159<!--thickness ratio at wing root--></thickness_ratio>
                 </root>
                 <tip>
-                    <chord>1.882</chord>
+                    <chord>1.882<!--chord length at wing tip--></chord>
                     <leading_edge>
-                        <x>7.222</x>
+                        <x>7.222<!--X-position of leading edge at wing tip--></x>
                     </leading_edge>
-                    <y>15.801</y>
-                    <thickness_ratio>0.11</thickness_ratio>
+                    <y>15.801<!--Y-position of wing tip--></y>
+                    <thickness_ratio>0.11<!--thickness ratio at wing tip--></thickness_ratio>
                 </tip>
-                <thickness_ratio>0.128</thickness_ratio>
-                <sweep_25>25.0</sweep_25>
-                <sweep_0>27.554</sweep_0>
-                <sweep_100_inner>0.0</sweep_100_inner>
-                <sweep_100_outer>16.696</sweep_100_outer>
+                <thickness_ratio>0.128<!--mean thickness ratio of wing--></thickness_ratio>
+                <sweep_25>25.0<!--sweep angle at 25% chord of wing--></sweep_25>
+                <sweep_0>27.554<!--sweep angle at leading edge of wing--></sweep_0>
+                <sweep_100_inner>0.0<!--sweep angle at trailing edge of wing (inner side of the kink)--></sweep_100_inner>
+                <sweep_100_outer>16.696<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>
                 <spar_ratio>
                     <front>
-                        <root>0.11</root>
-                        <kink>0.15</kink>
-                        <tip>0.27</tip>
+                        <root>0.11<!--ratio (front spar position)/(chord length) at wing root--></root>
+                        <kink>0.15<!--ratio (front spar position)/(chord length) at wing kink--></kink>
+                        <tip>0.27<!--ratio (front spar position)/(chord length) at wing tip--></tip>
                     </front>
                     <rear>
-                        <root>0.57</root>
-                        <kink>0.66</kink>
-                        <tip>0.56</tip>
+                        <root>0.57<!--ratio (rear spar position)/(chord length) at wing root--></root>
+                        <kink>0.66<!--ratio (rear spar position)/(chord length) at wing kink--></kink>
+                        <tip>0.56<!--ratio (rear spar position)/(chord length) at wing tip--></tip>
                     </rear>
                 </spar_ratio>
-                <outer_area>100.303</outer_area>
-                <b_50>34.166</b_50>
+                <outer_area>100.303<!--wing area outside of fuselage--></outer_area>
+                <b_50>34.166<!--actual length between root and tip along 50% of chord--></b_50>
             </wing>
             <flap>
-                <chord_ratio>0.197</chord_ratio>
-                <span_ratio>0.8</span_ratio>
+                <chord_ratio>0.197<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+                <span_ratio>0.8<!--ratio (width of flaps)/(total span)--></span_ratio>
             </flap>
             <slat>
-                <chord_ratio>0.177</chord_ratio>
-                <span_ratio>0.9</span_ratio>
+                <chord_ratio>0.177<!--mean value of slat chord)/(section chord)--></chord_ratio>
+                <span_ratio>0.9<!--ratio (width of slats)/(total span)--></span_ratio>
             </slat>
             <fuselage>
-                <wetted_area>401.956</wetted_area>
-                <length>37.507</length>
-                <PAX_length>22.87</PAX_length>
-                <maximum_height>4.06</maximum_height>
-                <maximum_width>3.92</maximum_width>
-                <front_length>6.902</front_length>
-                <rear_length>14.616</rear_length>
+                <wetted_area>401.956<!--wetted area of fuselage--></wetted_area>
+                <length>37.507<!--total fuselage length--></length>
+                <PAX_length>22.87<!--length of passenger-dedicated zone--></PAX_length>
+                <maximum_height>4.06<!--maximum fuselage height--></maximum_height>
+                <maximum_width>3.92<!--maximum fuselage width--></maximum_width>
+                <front_length>6.902<!--length of front non-cylindrical part of the fuselage--></front_length>
+                <rear_length>14.616<!--length of rear non-cylindrical part of the fuselage--></rear_length>
             </fuselage>
             <horizontal_tail>
-                <distance_from_wing>17.675</distance_from_wing>
-                <aspect_ratio>4.288</aspect_ratio>
-                <wetted_area>70.341</wetted_area>
-                <sweep_25>28.0</sweep_25>
-                <sweep_0>33.317</sweep_0>
-                <sweep_100>8.809</sweep_100>
-                <taper_ratio>0.3</taper_ratio>
-                <thickness_ratio>0.1</thickness_ratio>
-                <span>12.28</span>
+                <distance_from_wing>17.675<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></distance_from_wing>
+                <aspect_ratio>4.288<!--aspect ratio of horizontal tail--></aspect_ratio>
+                <wetted_area>70.341<!--wetted area of horizontal tail--></wetted_area>
+                <sweep_25>28.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
+                <sweep_0>33.317<!--sweep angle at leading edge of horizontal tail--></sweep_0>
+                <sweep_100>8.809<!--sweep angle at trailing edge of horizontal tail--></sweep_100>
+                <taper_ratio>0.3<!--taper ratio of horizontal tail--></taper_ratio>
+                <thickness_ratio>0.1<!--thickness ratio of horizontal tail--></thickness_ratio>
+                <span>12.28<!--horizontal tail span--></span>
                 <MAC>
-                    <length>3.141</length>
-                    <y>2.519</y>
+                    <length>3.141<!--mean aerodynamic chord length of horizontal tail--></length>
+                    <y>2.519<!--Y-position of mean aerodynamic chord of horizontal tail--></y>
                 </MAC>
-                <root_chord>4.406</root_chord>
-                <tip_chord>1.322</tip_chord>
-                <volume_coefficient>1.117</volume_coefficient>
-                <area>35.171</area>
+                <root_chord>4.406<!--chord length at root of horizontal tail--></root_chord>
+                <tip_chord>1.322<!--chord length at tip of horizontal tail--></tip_chord>
+                <volume_coefficient>1.117<!--volume coefficient of horizontal tail--></volume_coefficient>
+                <area>35.171<!--horizontal tail area--></area>
             </horizontal_tail>
             <vertical_tail>
-                <distance_from_wing>16.55</distance_from_wing>
-                <aspect_ratio>1.745</aspect_ratio>
-                <wetted_area>52.749</wetted_area>
-                <sweep_25>35.0</sweep_25>
-                <sweep_0>40.515</sweep_0>
-                <sweep_100>13.347</sweep_100>
-                <taper_ratio>0.3</taper_ratio>
-                <thickness_ratio>0.1</thickness_ratio>
-                <span>6.62</span>
+                <distance_from_wing>16.55<!--distance along X between 25% MAC of wing and 25% MAC of vertical tail--></distance_from_wing>
+                <aspect_ratio>1.745<!--aspect ratio of vertical tail--></aspect_ratio>
+                <wetted_area>52.749<!--wetted area of vertical tail--></wetted_area>
+                <sweep_25>35.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
+                <sweep_0>40.515<!--sweep angle at leading edge of vertical tail--></sweep_0>
+                <sweep_100>13.347<!--sweep angle at trailing edge of vertical tail--></sweep_100>
+                <taper_ratio>0.3<!--taper ratio of vertical tail--></taper_ratio>
+                <thickness_ratio>0.1<!--thickness ratio of vertical tail--></thickness_ratio>
+                <span>6.62<!--vertical tail span--></span>
                 <MAC>
-                    <length>4.161</length>
-                    <z>2.716</z>
+                    <length>4.161<!--mean aerodynamic chord length of vertical tail--></length>
+                    <z>2.716<!--Z-position of mean aerodynamic chord of vertical tail--></z>
                 </MAC>
-                <root_chord>5.838</root_chord>
-                <tip_chord>1.751</tip_chord>
-                <volume_coefficient>0.105</volume_coefficient>
-                <area>25.118</area>
+                <root_chord>5.838<!--chord length at root of vertical tail--></root_chord>
+                <tip_chord>1.751<!--chord length at tip of vertical tail--></tip_chord>
+                <volume_coefficient>0.105<!--volume coefficient of vertical tail--></volume_coefficient>
+                <area>25.118<!--vertical tail area--></area>
             </vertical_tail>
             <propulsion>
                 <engine>
-                    <count>2.0</count>
-                    <y_ratio>0.34</y_ratio>
+                    <count>2.0<!--number of engines--></count>
+                    <y_ratio>0.34<!--engine position with respect to total span--></y_ratio>
                 </engine>
                 <pylon>
-                    <length>5.733</length>
-                    <wetted_area>7.563</wetted_area>
+                    <length>5.733<!--pylon length--></length>
+                    <wetted_area>7.563<!--wetted area of pylon--></wetted_area>
                 </pylon>
                 <nacelle>
-                    <length>5.211</length>
-                    <wetted_area>21.609</wetted_area>
-                    <diameter>2.172</diameter>
-                    <y>5.373</y>
+                    <length>5.211<!--nacelle length--></length>
+                    <wetted_area>21.609<!--wetted area of nacelle--></wetted_area>
+                    <diameter>2.172<!--nacelle diameter--></diameter>
+                    <y>5.373<!--Y-position of nacelle center--></y>
                 </nacelle>
                 <fan>
-                    <length>3.127</length>
+                    <length>3.127<!--engine length--></length>
                 </fan>
             </propulsion>
             <landing_gear>
-                <height>3.041</height>
+                <height>3.041<!--height of landing gear--></height>
             </landing_gear>
         </geometry>
         <propulsion>
             <rubber_engine>
-                <bypass_ratio>4.9</bypass_ratio>
-                <overall_pressure_ratio>32.6</overall_pressure_ratio>
-                <turbine_inlet_temperature>1633.0</turbine_inlet_temperature>
-                <delta_t4_climb>0.0</delta_t4_climb>
-                <delta_t4_cruise>0.0</delta_t4_cruise>
-                <maximum_mach>0.85</maximum_mach>
-                <design_altitude>10058.4</design_altitude>
+                <bypass_ratio>4.9<!--bypass ratio for rubber engine model--></bypass_ratio>
+                <overall_pressure_ratio>32.6<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
+                <turbine_inlet_temperature>1633.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
+                <delta_t4_climb>0.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
+                <delta_t4_cruise>0.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_cruise>
+                <maximum_mach>0.85<!--maximum Mach number for rubber engine model--></maximum_mach>
+                <design_altitude>10058.4<!--design altitude for rubber engine model--></design_altitude>
             </rubber_engine>
-            <MTO_thrust>117880.0</MTO_thrust>
+            <MTO_thrust>117880.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
         </propulsion>
         <aerodynamics>
             <aircraft>
                 <cruise>
-                    <CL_alpha>6.2</CL_alpha>
-                    <L_D_max>16.0</L_D_max>
+                    <CL_alpha>6.2<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
+                    <L_D_max>16.0<!--max lift/drag ratio in cruise conditions--></L_D_max>
                 </cruise>
                 <landing>
-                    <CL_max_clean>1.59</CL_max_clean>
-                    <CL_max>2.84</CL_max>
+                    <CL_max_clean>1.59<!--maximum lift coefficient in landing conditions without high-lift devices--></CL_max_clean>
+                    <CL_max>2.84<!--maximum lift coefficient in landing conditions--></CL_max>
                 </landing>
                 <takeoff>
-                    <CL0_clean>0.02</CL0_clean>
-                    <CL_alpha>4.46</CL_alpha>
+                    <CL0_clean>0.02<!--value of lift coefficient at angle of attack 0 in clean configuration at takeoff--></CL0_clean>
+                    <CL_alpha>4.46<!--derivative of lift coefficient with respect to angle of attack in takeoff conditions--></CL_alpha>
                 </takeoff>
             </aircraft>
             <horizontal_tail>
                 <cruise>
-                    <CL_alpha>3.47</CL_alpha>
+                    <CL_alpha>3.47<!--derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions--></CL_alpha>
                 </cruise>
             </horizontal_tail>
             <vertical_tail>
                 <cruise>
-                    <CL_alpha>2.55</CL_alpha>
+                    <CL_alpha>2.55<!--derivative of lift coefficient of horizontal tail with respect to local "angle of attack" in cruise conditions--></CL_alpha>
                 </cruise>
             </vertical_tail>
         </aerodynamics>
         <weight>
             <aircraft>
-                <MTOW>75797.99</MTOW>
-                <payload>13608.0</payload>
-                <max_payload>25000.0</max_payload>
-                <OWE>41590.25</OWE>
-                <LW>59328.62</LW>
-                <MLW>64870.14</MLW>
-                <MZFW>61198.25</MZFW>
-                <MFW>20569.81</MFW>
+                <MTOW>75797.99<!--maximum takeoff weight--></MTOW>
+                <payload>13608.0<!--payload weight--></payload>
+                <max_payload>25000.0<!--max payload weight--></max_payload>
+                <OWE>41590.25<!--operating weight - empty--></OWE>
+                <LW>59328.62<!--landing weight--></LW>
+                <MLW>64870.14<!--maximum landing weight--></MLW>
+                <MZFW>61198.25<!--maximum zero fuel weight--></MZFW>
+                <MFW>20569.81<!--maximum fuel weight--></MFW>
                 <CG>
-                    <x>17.3</x>
+                    <aft>
+                        <x>17.3</x>
+                    </aft>
                 </CG>
             </aircraft>
             <airframe>
-                <mass>22448.35</mass>
+                <mass>22448.35<!--airframe (A): mass--></mass>
                 <wing>
-                    <mass>7746.72</mass>
+                    <mass>7746.72<!--wing (A1): total mass--></mass>
                     <CG>
-                        <x>16.67</x>
+                        <x>16.67<!--wing (A1): X-position of center of gravity--></x>
                     </CG>
                 </wing>
                 <fuselage>
-                    <mass>8828.42</mass>
+                    <mass>8828.42<!--fuselage (A2): total mass--></mass>
                     <CG>
-                        <x>16.88</x>
+                        <x>16.88<!--fuselage (A2): X-position of center of gravity--></x>
                     </CG>
                 </fuselage>
                 <horizontal_tail>
-                    <mass>754.04</mass>
+                    <mass>754.04<!--horizontal tail (A31): mass--></mass>
                     <CG>
-                        <x>34.58</x>
+                        <x>34.58<!--horizontal tail (A31): X-position of center of gravity--></x>
                     </CG>
                 </horizontal_tail>
                 <vertical_tail>
-                    <mass>515.53</mass>
+                    <mass>515.53<!--vertical tail (A32): mass--></mass>
                     <CG>
-                        <x>35.11</x>
+                        <x>35.11<!--vertical tail (A32): X-position of center of gravity--></x>
                     </CG>
                 </vertical_tail>
                 <flight_controls>
-                    <mass>728.07</mass>
+                    <mass>728.07<!--flight controls (A4): total mass--></mass>
                     <CG>
-                        <x>19.24</x>
+                        <x>19.24<!--flight controls (A4): X-position of center of gravity--></x>
                     </CG>
                 </flight_controls>
                 <landing_gear>
                     <main>
-                        <mass>2143.75</mass>
+                        <mass>2143.75<!--main landing gear (A51): mass--></mass>
                         <CG>
-                            <x>18.11</x>
+                            <x>18.11<!--main landing gear (A51): X-position of center of gravity--></x>
                         </CG>
                     </main>
                     <front>
-                        <mass>378.82</mass>
+                        <mass>378.82<!--front landing gear (A52): mass--></mass>
                         <CG>
-                            <x>5.18</x>
+                            <x>5.18<!--front landing gear (A52): X-position of center of gravity--></x>
                         </CG>
                     </front>
                 </landing_gear>
                 <pylon>
-                    <mass>1211.88</mass>
+                    <mass>1211.88<!--pylon (A6): total mass--></mass>
                     <CG>
-                        <x>13.5</x>
+                        <x>13.5<!--pylon (A6): X-position of center of gravity--></x>
                     </CG>
                 </pylon>
                 <paint>
-                    <mass>141.12</mass>
+                    <mass>141.12<!--paint (A7): total mass--></mass>
                     <CG>
-                        <x>0.0</x>
+                        <x>0.0<!--paint (A7): X-position of center of gravity--></x>
                     </CG>
                 </paint>
             </airframe>
             <propulsion>
-                <mass>7740.81</mass>
+                <mass>7740.81<!--propulsion system (B): mass--></mass>
                 <engine>
-                    <mass>7161.33</mass>
+                    <mass>7161.33<!--engine (B1): mass--></mass>
                     <CG>
-                        <x>13.5</x>
+                        <x>13.5<!--engine (B1): X-position of center of gravity--></x>
                     </CG>
                 </engine>
                 <fuel_lines>
-                    <mass>457.48</mass>
+                    <mass>457.48<!--fuel lines (B2): mass--></mass>
                     <CG>
-                        <x>13.5</x>
+                        <x>13.5<!--fuel lines (B2): X-position of center of gravity--></x>
                     </CG>
                 </fuel_lines>
                 <unconsumables>
-                    <mass>121.99</mass>
+                    <mass>121.99<!--unconsumables (B3): mass--></mass>
                     <CG>
-                        <x>13.5</x>
+                        <x>13.5<!--unconsumables (B3): X-position of center of gravity--></x>
                     </CG>
                 </unconsumables>
             </propulsion>
             <systems>
-                <mass>7818.58</mass>
+                <mass>7818.58<!--aircraft systems (C): mass--></mass>
                 <power>
                     <auxiliary_power_unit>
-                        <mass>287.38</mass>
+                        <mass>287.38<!--power (C1): mass--></mass>
                         <CG>
-                            <x>35.63</x>
+                            <x>35.63<!--power (C1): X-position of center of gravity--></x>
                         </CG>
                     </auxiliary_power_unit>
                     <electric_systems>
-                        <mass>1321.54</mass>
+                        <mass>1321.54<!--power (C1): mass--></mass>
                         <CG>
-                            <x>18.75</x>
+                            <x>18.75<!--power (C1): X-position of center of gravity--></x>
                         </CG>
                     </electric_systems>
                     <hydraulic_systems>
-                        <mass>760.93</mass>
+                        <mass>760.93<!--power (C1): mass--></mass>
                         <CG>
-                            <x>18.75</x>
+                            <x>18.75<!--power (C1): X-position of center of gravity--></x>
                         </CG>
                     </hydraulic_systems>
                 </power>
                 <life_support>
                     <insulation>
-                        <mass>2226.45</mass>
+                        <mass>2226.45<!--insulation (C21): mass--></mass>
                         <CG>
-                            <x>16.88</x>
+                            <x>16.88<!--insulation (C21): X-position of center of gravity--></x>
                         </CG>
                     </insulation>
                     <air_conditioning>
-                        <mass>942.4</mass>
+                        <mass>942.4<!--air conditioning (C2): mass--></mass>
                         <CG>
-                            <x>16.62</x>
+                            <x>16.62<!--air conditioning (C2): X-position of center of gravity--></x>
                         </CG>
                     </air_conditioning>
                     <de-icing>
-                        <mass>155.01</mass>
+                        <mass>155.01<!--de-icing (C2): mass--></mass>
                         <CG>
-                            <x>15.79</x>
+                            <x>15.79<!--de-icing (C2): X-position of center of gravity--></x>
                         </CG>
                     </de-icing>
                     <cabin_lighting>
-                        <mass>167.58</mass>
+                        <mass>167.58<!--cabin lighting (C2): mass--></mass>
                         <CG>
-                            <x>16.88</x>
+                            <x>16.88<!--cabin lighting (C2): X-position of center of gravity--></x>
                         </CG>
                     </cabin_lighting>
                     <seats_crew_accommodation>
-                        <mass>126.0</mass>
+                        <mass>126.0<!--seats crew accommodation (C21): mass--></mass>
                         <CG>
-                            <x>16.62</x>
+                            <x>16.62<!--seats crew accommodation (C21): X-position of center of gravity--></x>
                         </CG>
                     </seats_crew_accommodation>
                     <oxygen>
-                        <mass>284.1</mass>
+                        <mass>284.1<!--oxygen (C21): mass--></mass>
                         <CG>
-                            <x>16.62</x>
+                            <x>16.62<!--oxygen (C21): X-position of center of gravity--></x>
                         </CG>
                     </oxygen>
                     <safety_equipment>
-                        <mass>432.71</mass>
+                        <mass>432.71<!--safety equipment (C21): mass--></mass>
                         <CG>
-                            <x>16.1</x>
+                            <x>16.1<!--safety equipment (C21): X-position of center of gravity--></x>
                         </CG>
                     </safety_equipment>
                 </life_support>
                 <navigation>
-                    <mass>492.29</mass>
+                    <mass>492.29<!--navigation (C3): mass--></mass>
                     <CG>
-                        <x>5.52</x>
+                        <x>5.52<!--navigation (C3): X-position of center of gravity--></x>
                     </CG>
                 </navigation>
                 <transmission>
-                    <mass>200.0</mass>
+                    <mass>200.0<!--transmission (C4): mass--></mass>
                     <CG>
-                        <x>18.75</x>
+                        <x>18.75<!--transmission (C4): X-position of center of gravity--></x>
                     </CG>
                 </transmission>
                 <operational>
                     <radar>
-                        <mass>100.0</mass>
+                        <mass>100.0<!--radar (C51): mass--></mass>
                         <CG>
-                            <x>0.75</x>
+                            <x>0.75<!--radar (C51): X-position of center of gravity--></x>
                         </CG>
                     </radar>
                     <cargo_hold>
-                        <mass>277.19</mass>
+                        <mass>277.19<!--cargo hold (C52): mass--></mass>
                         <CG>
-                            <x>16.62</x>
+                            <x>16.62<!--cargo hold (C52): X-position of center of gravity--></x>
                         </CG>
                     </cargo_hold>
                 </operational>
                 <flight_kit>
-                    <mass>45.0</mass>
+                    <mass>45.0<!--flight kit (C6): mass--></mass>
                     <CG>
-                        <x>7.47</x>
+                        <x>7.47<!--flight kit (C6): X-position of center of gravity--></x>
                     </CG>
                 </flight_kit>
             </systems>
             <furniture>
-                <mass>3112.5</mass>
+                <mass>3112.5<!--aircraft furniture (D): mass--></mass>
                 <cargo_configuration>
-                    <mass>41.769</mass>
+                    <mass>41.769<!--cargo configuration (D1): mass--></mass>
                     <CG>
-                        <x>0.0</x>
+                        <x>0.0<!--cargo configuration (D1): X-position of center of gravity--></x>
                     </CG>
                 </cargo_configuration>
                 <passenger_seats>
-                    <mass>1500.0</mass>
+                    <mass>1500.0<!--passenger seats (D2): mass--></mass>
                     <CG>
-                        <x>16.62</x>
+                        <x>16.62<!--passenger seats (D2): X-position of center of gravity--></x>
                     </CG>
                 </passenger_seats>
                 <food_water>
-                    <mass>1312.5</mass>
+                    <mass>1312.5<!--food water (D3): mass--></mass>
                     <CG>
-                        <x>29.4</x>
+                        <x>29.4<!--food water (D3): X-position of center of gravity--></x>
                     </CG>
                 </food_water>
                 <security_kit>
-                    <mass>225.0</mass>
+                    <mass>225.0<!--security kit (D4): mass--></mass>
                     <CG>
-                        <x>16.62</x>
+                        <x>16.62<!--security kit (D4): X-position of center of gravity--></x>
                     </CG>
                 </security_kit>
                 <toilets>
-                    <mass>75.0</mass>
+                    <mass>75.0<!--toilets (D5): mass--></mass>
                     <CG>
-                        <x>16.62</x>
+                        <x>16.62<!--toilets (D5): X-position of center of gravity--></x>
                     </CG>
                 </toilets>
             </furniture>
             <crew>
-                <mass>470.0</mass>
+                <mass>470.0<!--crew (E): mass--></mass>
                 <CG>
-                    <x>0.0</x>
+                    <x>0.0<!--crew (E): X-position of center of gravity--></x>
                 </CG>
             </crew>
             <fuel_tank>
                 <CG>
-                    <x>16.05</x>
+                    <x>16.05<!--fuel tank: X-position of center of gravity--></x>
                 </CG>
             </fuel_tank>
             <payload>
                 <rear_fret>
                     <CG>
-                        <x>20.87</x>
+                        <x>20.87<!--rear fret: X-position of center of gravity--></x>
                     </CG>
                 </rear_fret>
                 <front_fret>
                     <CG>
-                        <x>9.94</x>
+                        <x>9.94<!--front fret: X-position of center of gravity--></x>
                     </CG>
                 </front_fret>
                 <PAX>
                     <CG>
-                        <x>16.62</x>
+                        <x>16.62<!--passengers: X-position of center of gravity--></x>
                     </CG>
                 </PAX>
             </payload>
         </weight>
-        <requirements>
-            <CG_range>0.3</CG_range>
-        </requirements>
     </data>
+    <settings>
+        <weight>
+            <aircraft>
+                <CG>
+                    <range>0.3</range>
+                </CG>
+            </aircraft>
+            <airframe>
+                <wing>
+                    <mass>
+                        <k_voil>1.05<!--1.00 if 4 engines / 1.05 if 2 or 3 engines / 1.10 if engines on fuselage--></k_voil>
+                        <k_mvo>1.39<!--1.39 for Airbus type aircrafts--></k_mvo>
+                    </mass>
+                </wing>
+                <fuselage>
+                    <mass>
+                        <k_lg>1.05<!--correction coefficient: 1.05 if main landing gear under wing / 1.10 if main landing gear under fuselage--></k_lg>
+                        <k_fus>1.0<!--correction coefficient: 1.00 if all engines under wing / 1.02 with 2 engines at rear / 1.03 if 3 engines at rear / 1.05 if 1 engine in vertical tail (with or without 2 engines under wing)--></k_fus>
+                    </mass>
+                </fuselage>
+                <flight_controls>
+                    <mass>
+                        <k_fc>0.000135<!--flight controls (A4): 0.85e-4 if electrical, 1.35e-4 if conventional--></k_fc>
+                    </mass>
+                </flight_controls>
+            </airframe>
+            <systems>
+                <power>
+                    <mass>
+                        <k_elec>1.0<!--electricity coefficient: 1.00 if 2 engines (A300, A310 type) / (1.02 if 2 engines (DC9, Caravelle type) / 1.03 if 3 engines (B727 type) / 1.05 if 3 engines (DC10, L1011 type) / 1.08 if 4 engines (B747 type)--></k_elec>
+                    </mass>
+                </power>
+            </systems>
+        </weight>
+    </settings>
     <configuration>
         <configuration>1.0</configuration>
         <T_tail>0.0</T_tail>
@@ -761,27 +795,27 @@
             <aircraft>
                 <cruise>
                     <CL>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation--></k>
+                        <offset>0.0<!--offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation--></offset>
                         <winglet_effect>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation--></k>
+                            <offset>0.0<!--offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation--></offset>
                         </winglet_effect>
                     </CL>
                     <CD>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--correction ratio to apply to computed drag coefficient in cruise conditions--></k>
+                        <offset>0.0<!--correction offset to apply to computed drag coefficient in cruise conditions--></offset>
                         <winglet_effect>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--correction ratio to apply to computed induced drag coefficient in cruise conditions--></k>
+                            <offset>0.0<!--correction ratio to apply to computed drag coefficient in cruise conditions--></offset>
                         </winglet_effect>
                     </CD>
                 </cruise>
                 <landing>
                     <CL_max>
                         <landing_gear_effect>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--correction ratio to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear--></k>
+                            <offset>0.0<!--correction offset to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear--></offset>
                         </landing_gear_effect>
                     </CL_max>
                 </landing>
@@ -791,100 +825,100 @@
             <airframe>
                 <wing>
                     <mass>
-                        <k>1.05</k>
-                        <offset>0.0</offset>
+                        <k>1.05<!--wing (A1): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--wing (A1): correction offset to be applied on computed mass--></offset>
                     </mass>
                     <bending_sizing>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--wing bending sizing (A11): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--wing bending sizing (A11): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </bending_sizing>
                     <shear_sizing>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--wing shear sizing (A12): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--wing shear sizing (A12): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </shear_sizing>
                     <ribs>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--wing ribs (A13): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--wing ribs (A13): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </ribs>
                     <reinforcements>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--wing reinforcements (A14): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--wing reinforcements (A14): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </reinforcements>
                     <secondary_parts>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--wing secondary parts (A15): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--wing secondary parts (A15): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </secondary_parts>
                 </wing>
                 <fuselage>
                     <mass>
-                        <k>1.1</k>
-                        <offset>0.0</offset>
+                        <k>1.1<!--fuselage (A2): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--fuselage (A2): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </fuselage>
                 <horizontal_tail>
                     <mass>
-                        <k>1.08</k>
-                        <offset>0.0</offset>
+                        <k>1.08<!--horizontal tail (A31): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--horizontal tail (A31): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </horizontal_tail>
                 <vertical_tail>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--vertical tail (A32): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--vertical tail (A32): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </vertical_tail>
                 <flight_controls>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--flight controls (A4): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--flight controls (A4): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </flight_controls>
                 <landing_gear>
                     <mass>
-                        <k>0.85</k>
-                        <offset>0.0</offset>
+                        <k>0.85<!--landing gears (A5): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--landing gears (A5): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </landing_gear>
                 <pylon>
                     <mass>
-                        <k>0.85</k>
-                        <offset>0.0</offset>
+                        <k>0.85<!--pylon (A6): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--pylon (A6): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </pylon>
                 <paint>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--paint (A7): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--paint (A7): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </paint>
             </airframe>
             <propulsion>
                 <engine>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--engine (B1): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--engine (B1): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </engine>
                 <fuel_lines>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--fuel lines (B2): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--fuel lines (B2): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </fuel_lines>
                 <unconsumables>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--unconsumables (B3): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--unconsumables (B3): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </unconsumables>
             </propulsion>
@@ -892,121 +926,121 @@
                 <power>
                     <auxiliary_power_unit>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--power (C1): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </auxiliary_power_unit>
                     <electric_systems>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--power (C1): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </electric_systems>
                     <hydraulic_systems>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--power (C1): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </hydraulic_systems>
                 </power>
                 <life_support>
                     <insulation>
                         <mass>
-                            <k>2.0</k>
-                            <offset>0.0</offset>
+                            <k>2.0<!--insulation (C21): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--insulation (C21): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </insulation>
                     <air_conditioning>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--air conditioning (C21): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--air conditioning (C21): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </air_conditioning>
                     <de-icing>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--de-icing (C21): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--de-icing (C21): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </de-icing>
                     <cabin_lighting>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--cabin lighting (C21): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--cabin lighting (C21): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </cabin_lighting>
                     <seats_crew_accommodation>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--seats crew accommodation (C21): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--seats crew accommodation (C21): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </seats_crew_accommodation>
                     <oxygen>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--oxygen (C21): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--oxygen (C21): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </oxygen>
                     <safety_equipment>
                         <mass>
-                            <k>1.0</k>
-                            <offset>0.0</offset>
+                            <k>1.0<!--safety equipment (C21): correction ratio to be applied on computed mass--></k>
+                            <offset>0.0<!--safety equipment (C21): correction offset to be applied on computed mass--></offset>
                         </mass>
                     </safety_equipment>
                 </life_support>
                 <navigation>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--navigation (C3): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--navigation (C3): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </navigation>
                 <transmission>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--transmission (C4): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--transmission (C4): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </transmission>
                 <operational>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--operational (C5): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--operational (C5): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </operational>
                 <flight_kit>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--flight kit (C6): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--flight kit (C6): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </flight_kit>
             </systems>
             <furniture>
                 <cargo_configuration>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--cargo configuration (D1): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--cargo configuration (D1): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </cargo_configuration>
                 <passenger_seats>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--passenger seats (D2): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--passenger seats (D2): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </passenger_seats>
                 <food_water>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--food water (D3): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--food water (D3): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </food_water>
                 <security_kit>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--security kit (D4): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--security kit (D4): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </security_kit>
                 <toilets>
                     <mass>
-                        <k>1.0</k>
-                        <offset>0.0</offset>
+                        <k>1.0<!--toilets (D5): correction ratio to be applied on computed mass--></k>
+                        <offset>0.0<!--toilets (D5): correction offset to be applied on computed mass--></offset>
                     </mass>
                 </toilets>
             </furniture>
@@ -1022,36 +1056,6 @@
             </takeoff>
         </aircraft>
     </aerodynamics>
-    <settings>
-        <weight>
-            <airframe>
-                <wing>
-                    <mass>
-                        <k_voil>1.05</k_voil>
-                        <k_mvo>1.39</k_mvo>
-                    </mass>
-                </wing>
-                <fuselage>
-                    <mass>
-                        <k_lg>1.05</k_lg>
-                        <k_fus>1.0</k_fus>
-                    </mass>
-                </fuselage>
-                <flight_controls>
-                    <mass>
-                        <k_fc>0.000135</k_fc>
-                    </mass>
-                </flight_controls>
-            </airframe>
-            <systems>
-                <power>
-                    <mass>
-                        <k_elec>1.0</k_elec>
-                    </mass>
-                </power>
-            </systems>
-        </weight>
-    </settings>
     <weight>
         <propulsion>
             <cables>
@@ -1106,4 +1110,4 @@
             <Dtpa>2748.8</Dtpa>
         </time>
     </DOC>
-</aircraft>
+</FASTOAD_model>

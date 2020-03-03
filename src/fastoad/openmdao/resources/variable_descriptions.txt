@@ -285,20 +285,20 @@ data:propulsion:SFC	Specific Fuel Consumption (can be a vector)
 data:propulsion:thrust	actual thrust value (can be a vector)
 data:propulsion:thrust_rate	actual thrust rate (can be a vector)
 data:propulsion:use_thrust_rate	(can be a vector) If 1, calculation will use data:propulsion:required_thrust_rate. If 0, calculation will use data:propulsion:required_thrust
-data:requirements:CG_range	between 0.0 and 1.0
+settings:weight:aircraft:CG:range	distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)
 data:TLAR:approach_speed	top-level requirement: approach speed
 data:TLAR:cruise_mach	top-level requirement: cruise Mach number
 data:TLAR:max_TOFL	top-level requirement: maximum takeoff field length
 data:TLAR:NPAX	top-level requirement: number of passengers
 data:TLAR:range	top-level requirement: design range
 data:weight:aircraft:additional_fuel_capacity	fuel mass capacity of wing that exceeds sizing mission requirement
-data:weight:aircraft:CG:ratio	used X-position of center of gravity as ratio of mean aerodynamic chord (=maximum estimate)
-data:weight:aircraft:CG:x	X-position of aircraft center of gravity
-data:weight:aircraft:empty:CG:ratio	X-position of center of gravity as ratio of mean aerodynamic chord for empty aircraft
-data:weight:aircraft:load_case_1:CG:ratio	X-position of center of gravity as ratio of mean aerodynamic chord for load case 1
-data:weight:aircraft:load_case_2:CG:ratio	X-position of center of gravity as ratio of mean aerodynamic chord for load case 2
-data:weight:aircraft:load_case_3:CG:ratio	X-position of center of gravity as ratio of mean aerodynamic chord for load case 3
-data:weight:aircraft:load_case_4:CG:ratio	X-position of center of gravity as ratio of mean aerodynamic chord for load case 4
+data:weight:aircraft:CG:aft:MAC_position	most aft X-position of center of gravity as ratio of mean aerodynamic chord
+data:weight:aircraft:CG:aft:x	most aft X-position of aircraft center of gravity
+data:weight:aircraft:empty:CG:MAC_position	X-position of center of gravity as ratio of mean aerodynamic chord for empty aircraft
+data:weight:aircraft:load_case_1:CG:MAC_position	X-position of center of gravity as ratio of mean aerodynamic chord for load case 1
+data:weight:aircraft:load_case_2:CG:MAC_position	X-position of center of gravity as ratio of mean aerodynamic chord for load case 2
+data:weight:aircraft:load_case_3:CG:MAC_position	X-position of center of gravity as ratio of mean aerodynamic chord for load case 3
+data:weight:aircraft:load_case_4:CG:MAC_position	X-position of center of gravity as ratio of mean aerodynamic chord for load case 4
 data:weight:aircraft:LW	landing weight
 data:weight:aircraft:max_payload	max payload weight
 data:weight:aircraft:MFW	maximum fuel weight

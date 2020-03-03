@@ -56,18 +56,19 @@ class ComputeAircraftCG(om.ExplicitComponent):
     """ Compute position of aircraft CG from CG ratio """
 
     def setup(self):
-        self.add_input('data:weight:aircraft:CG:ratio', val=np.nan)
+        self.add_input('data:weight:aircraft:CG:aft:MAC_position', val=np.nan)
         self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
         self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
 
-        self.add_output('data:weight:aircraft:CG:x', units='m')
+        self.add_output('data:weight:aircraft:CG:aft:x', units='m')
 
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
         # TODO: have this 5% margin consistent
-        cg_ratio = inputs['data:weight:aircraft:CG:ratio'] + 0.05
+        cg_ratio = inputs['data:weight:aircraft:CG:aft:MAC_position'] + 0.05
         l0_wing = inputs['data:geometry:wing:MAC:length']
         mac_position = inputs['data:geometry:wing:MAC:x']
 
-        outputs['data:weight:aircraft:CG:x'] = mac_position - 0.25 * l0_wing + cg_ratio * l0_wing
+        outputs[
+            'data:weight:aircraft:CG:aft:x'] = mac_position - 0.25 * l0_wing + cg_ratio * l0_wing

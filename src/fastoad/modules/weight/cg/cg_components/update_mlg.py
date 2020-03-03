@@ -37,7 +37,7 @@ class _UpdateMLG(om.ImplicitComponent):
     def setup(self):
         self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
         self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
-        self.add_input('data:weight:aircraft:CG:ratio', val=np.nan)
+        self.add_input('data:weight:aircraft:CG:aft:MAC_position', val=np.nan)
         self.add_input('data:weight:airframe:landing_gear:front:CG:x', units='m')
         self.add_input('settings:weight:airframe:landing_gear:front:weight_ratio', val=0.08)
 
@@ -49,7 +49,7 @@ class _UpdateMLG(om.ImplicitComponent):
                         discrete_outputs=None):
         l0_wing = inputs['data:geometry:wing:MAC:length']
         fa_length = inputs['data:geometry:wing:MAC:x']
-        cg_ratio = inputs['data:weight:aircraft:CG:ratio']
+        cg_ratio = inputs['data:weight:aircraft:CG:aft:MAC_position']
         cg_a51 = outputs['data:weight:airframe:landing_gear:main:CG:x']
         cg_a52 = inputs['data:weight:airframe:landing_gear:front:CG:x']
         front_lg_weight_ratio = inputs['settings:weight:airframe:landing_gear:front:weight_ratio']

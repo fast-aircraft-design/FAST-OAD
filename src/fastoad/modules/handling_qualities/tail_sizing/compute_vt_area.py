@@ -28,7 +28,7 @@ class ComputeVTArea(om.ExplicitComponent):
 
     def setup(self):
         self.add_input('data:TLAR:cruise_mach', val=np.nan)
-        self.add_input('data:weight:aircraft:CG:ratio', val=np.nan)
+        self.add_input('data:weight:aircraft:CG:aft:MAC_position', val=np.nan)
         self.add_input('data:aerodynamics:fuselage:cruise:CnBeta', val=np.nan)
         self.add_input('data:aerodynamics:vertical_tail:cruise:CL_alpha', val=np.nan)
         self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
@@ -53,7 +53,7 @@ class ComputeVTArea(om.ExplicitComponent):
         wing_area = inputs['data:geometry:wing:area']
         span = inputs['data:geometry:wing:span']
         l0_wing = inputs['data:geometry:wing:MAC:length']
-        cg_mac_position = inputs['data:weight:aircraft:CG:ratio']
+        cg_mac_position = inputs['data:weight:aircraft:CG:aft:MAC_position']
         cn_beta_fuselage = inputs['data:aerodynamics:fuselage:cruise:CnBeta']
         cl_alpha_vt = inputs['data:aerodynamics:vertical_tail:cruise:CL_alpha']
         cruise_mach = inputs['data:TLAR:cruise_mach']

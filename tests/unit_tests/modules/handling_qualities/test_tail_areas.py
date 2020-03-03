@@ -44,7 +44,7 @@ def test_compute_ht_area(input_xml):
         'data:weight:airframe:landing_gear:main:CG:x',
         'data:weight:airframe:landing_gear:front:CG:x',
         'data:weight:aircraft:MTOW',
-        'data:requirements:CG_range'
+        'settings:weight:aircraft:CG:range'
     ]
 
     input_vars = input_xml.read(only=input_list)
@@ -73,7 +73,7 @@ def test_compute_vt_area(input_xml):
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output('data:weight:aircraft:CG:ratio', 0.364924)
+    input_vars.add_output('data:weight:aircraft:CG:aft:MAC_position', 0.364924)
     input_vars.add_output('data:aerodynamics:fuselage:cruise:CnBeta', -0.117901)
 
     component = ComputeVTArea()
