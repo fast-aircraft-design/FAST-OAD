@@ -270,7 +270,7 @@ class FASTOADDataFrame:
         if modules_item:
             w = widgets.Dropdown(options=modules_item)
             self.items.append(w)
-        return self.render()
+        return self._render_ui()
 
     def _update_items(self, *args):
 
@@ -305,49 +305,24 @@ class FASTOADDataFrame:
                                   items_box])
         self.ui = items_box
 
-    def render_ui(self, *args):
-        clear_output(wait=True)
-        self._update_items()
-        self._update_ui()
-        for item in self.items:
-            item.observe(self.render_ui, 'value')
-        display(self.ui, self.out)
+    def _update_sheet(self):
+        modules = [item.value for item in self.items]
 
-    def render_out(self, *args):
-        kwargs = {}
-        i = 0
-        for item in self.items:
-            kwargs[str(i)] = item
-            i += 1
-        self.out = widgets.interactive_output(self._print_sheet, kwargs)
+        filtered_var = self._filter_variables(self.df_variables, modules, var_type=None)
 
-    def render(self, *args):
-        if self.sheet is None:
-            self.render_out()
-        self.render_ui()
-        self.render_out()
+        self.sheet = self.df_to_sheet(filtered_var)
 
         for cell in self.sheet.cells:
             cell.observe(self.update_df, 'value')
 
-    def _print_sheet(self, *args, **kwargs):
-
+    def _render_ui(self, *args):
         clear_output(wait=True)
-        # Get variable type and remove
-        if 'Type' in kwargs:
-            var_type = kwargs['Type']
-            del kwargs['Type']
-        else:
-            var_type = None
-        # Build list of items
-        kwargs = [module for module in kwargs.values()]
-
-        modules = kwargs
-
-        filtered_var = self._filter_variables(self.df_variables, modules, var_type=var_type)
-
-        self.sheet = self.df_to_sheet(filtered_var)
-        return display(self.sheet)
+        self._update_items()
+        self._update_ui()
+        self._update_sheet()
+        for item in self.items:
+            item.observe(self._render_ui, 'value')
+        display(self.ui, self.sheet)
 
     @staticmethod
     def df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
