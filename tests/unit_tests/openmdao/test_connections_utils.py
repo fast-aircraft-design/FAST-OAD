@@ -19,7 +19,6 @@ from typing import List
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 from openmdao.core.group import Group
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.problem import Problem
@@ -27,7 +26,7 @@ from openmdao.solvers.nonlinear.nonlinear_block_gs import NonlinearBlockGS
 
 from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.connections_utils import get_unconnected_input_names, \
-    update_ivc, get_ivc_from_variables, \
+    get_ivc_from_variables, \
     get_variables_from_ivc, get_unconnected_input_variables, get_variables_from_problem
 from fastoad.openmdao.variables import Variable, VariableList
 from tests.sellar_example.disc1 import Disc1
@@ -235,7 +234,7 @@ def test_get_variables_from_problem():
     group.add_subsystem('disc1', Disc1(), promotes=['*'])
     group.add_subsystem('disc2', Disc2(), promotes=['*'])
     group.add_subsystem('functions', Functions(), promotes=['*'])
-    group.nonlinear_solver = NonlinearBlockGS()
+    group.nonlinear_solver = NonlinearBlockGS(reraise_child_analysiserror=False)
     problem = Problem(group)
 
     expected_input_vars = [Variable(name='x', value=np.array([np.nan]), units=None),
@@ -276,7 +275,7 @@ def test_get_variables_from_problem():
     group.add_subsystem('disc2', Disc2())
     group.add_subsystem('disc1', Disc1())
     group.add_subsystem('functions', Functions())
-    group.nonlinear_solver = NonlinearBlockGS()
+    group.nonlinear_solver = NonlinearBlockGS(reraise_child_analysiserror=False)
     group.connect('indeps.x', 'disc1.x')
     group.connect('indeps.x', 'functions.x')
     group.connect('indeps.z', 'disc1.z')
@@ -351,42 +350,3 @@ def test_get_variables_from_problem():
     problem.run_model()
     _test_and_check(problem, True, True, True, expected_vars)
     _test_and_check(problem, False, True, True, expected_computed_vars)
-
-
-def test_update_ivc():
-    def create_sellar_problem():
-        # Build a Sellar problem
-        group = Group()
-        group.add_subsystem('disc1', Disc1(), promotes=['*'])
-        group.add_subsystem('disc2', Disc2(), promotes=['*'])
-        group.add_subsystem('functions', Functions(), promotes=['*'])
-        return Problem(group)
-
-    # Test without IndepVarComp (just to see)
-    sellar = create_sellar_problem()
-    sellar.setup()
-    sellar.run_model()
-    assert np.isnan(sellar['f'])
-
-    # Test with an IndepVarcomp
-    ivc = IndepVarComp()
-    ivc.add_output('x', 0.)
-    ivc.add_output('z', [0., 0.])
-
-    sellar.model.add_subsystem('inputs', ivc, promotes=['*'])
-    sellar.setup()
-    sellar.run_model()
-    assert_allclose(0.439407, sellar['f'], rtol=1e-5)
-
-    # Test with the updated IndepVarcomp
-    ivc_ref = IndepVarComp()
-    ivc_ref.add_output('y1', 1.)  # If this one is kept in updated_ivc, run_model() will fail
-    ivc_ref.add_output('z', [5., 2.])
-
-    updated_ivc = update_ivc(ivc, ivc_ref)
-
-    sellar = create_sellar_problem()
-    sellar.model.add_subsystem('inputs', updated_ivc, promotes=['*'])
-    sellar.setup()
-    sellar.run_model()
-    assert_allclose(28.800005, sellar['f'], rtol=1e-5)

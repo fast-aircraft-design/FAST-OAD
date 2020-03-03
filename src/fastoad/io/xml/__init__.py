@@ -2,7 +2,7 @@
 Package for handling XML files
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,4 +17,3 @@ Package for handling XML files
 from .openmdao_basic_io import OMXmlIO
 from .openmdao_custom_io import OMCustomXmlIO
 from .openmdao_legacy_io import OMLegacy1XmlIO
-from .xpath_reader import XPathReader

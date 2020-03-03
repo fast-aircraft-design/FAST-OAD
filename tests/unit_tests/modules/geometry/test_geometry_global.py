@@ -20,20 +20,11 @@ import os.path as pth
 import openmdao.api as om
 import pytest
 
-from fastoad.io.xml import XPathReader, OMXmlIO
+from fastoad.io.xml import OMXmlIO
 from fastoad.io.xml.openmdao_legacy_io import OMLegacy1XmlIO
 from fastoad.modules.geometry import Geometry
 from fastoad.modules.weight.mass_breakdown import MassBreakdown
 from tests.testing_utilities import run_system
-
-
-@pytest.fixture(scope="module")
-def xpath_reader() -> XPathReader:
-    """
-    :return: access to the sample xml data
-    """
-    return XPathReader(
-        pth.join(pth.dirname(__file__), "data", "CeRAS01_baseline.xml"))
 
 
 @pytest.fixture(scope="module")
@@ -59,7 +50,7 @@ def test_geometry_geometry_global():
     # TODO: Inputs should contain mass breakdown data so only Geometry() is run
     group.add_subsystem('mass_breakdown', MassBreakdown(), promotes=['*'])
     group.add_subsystem('geometry', Geometry(), promotes=['*'])
-    group.nonlinear_solver = om.NonlinearBlockGS()
+    group.nonlinear_solver = om.NonlinearBlockGS(reraise_child_analysiserror=False)
     problem = run_system(group, input_vars)
 
     static_margin = problem['data:handling_qualities:static_margin']

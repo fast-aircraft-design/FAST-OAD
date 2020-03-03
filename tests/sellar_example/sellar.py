@@ -3,7 +3,7 @@
   Sellar openMDAO group
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -86,7 +86,8 @@ class Sellar(Group):
         self.nonlinear_solver.options['atol'] = 1.0e-10
         self.nonlinear_solver.options['rtol'] = 1.0e-10
         self.nonlinear_solver.options['maxiter'] = 10
-        self.nonlinear_solver.options['err_on_maxiter'] = True
+        self.nonlinear_solver.options['err_on_non_converge'] = True
+        self.nonlinear_solver.options['reraise_child_analysiserror'] = False
         self.nonlinear_solver.options['iprint'] = 1
 
     def setup(self):

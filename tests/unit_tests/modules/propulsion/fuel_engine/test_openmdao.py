@@ -49,7 +49,7 @@ def test_OMRubberEngine():
     ivc.add_output('data:propulsion:phase', [phases, phases])
     ivc.add_output('data:propulsion:use_thrust_rate', [[True] * 5, [False] * 5])
     ivc.add_output('data:propulsion:required_thrust_rate', [thrust_rates, [0] * 5])
-    ivc.add_output('data:propulsion:required_thrust', [[0] * 5, thrusts])
+    ivc.add_output('data:propulsion:required_thrust', [[0] * 5, thrusts], units='N')
 
     problem = run_system(engine, ivc)
 
