@@ -72,7 +72,12 @@ def get_df_from_variables(variables: VariableList) -> pd.DataFrame:
     for variable in variables:
         attributes = variable.metadata.copy()
         value = attributes.pop('value')
-
+        # FIXME: value is a list when reading the xml ?
+        value = np.array([value])
+        if len(value) == 1:
+            value = np.asscalar(value)
+        else:
+            value = np.ndarray.tolist(value)
         df = df.append([{
             'Name': variable.name,
             'Value': value,

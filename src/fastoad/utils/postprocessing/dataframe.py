@@ -21,7 +21,9 @@ from IPython.display import display, clear_output
 
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO
-from fastoad.openmdao.connections_utils import get_variables_from_ivc, get_variables_of_ivc_components
+from fastoad.openmdao.connections_utils import get_variables_from_ivc, \
+    get_variables_of_ivc_components, get_variables_from_df, \
+    get_df_from_variables
 
 pd.set_option('display.max_rows', None)
 
@@ -479,29 +481,6 @@ class FASTOADDataFrame:
 
         # Extract the variables list
         variables = get_variables_from_ivc(ivc)
-
-        # Add a row in the dataframe for each variable
-        for variable in variables:
-            name = variable.name
-
-            value = variable.value
-            if len(value) == 1:
-                # FIXME: value is a list when reading the xml ?
-                value = np.array(value)
-                value = np.asscalar(value)
-            else:
-                value = np.array(value)
-                value = np.ndarray.tolist(value)
-
-            unit = variable.units
-            desc = variable.description
-
-            df = df.append([{
-                'Name': name,
-                'Value': value,
-                'Unit': unit,
-                'Description': desc
-            }
-            ])[col_names]
+        df = get_df_from_variables(variables)
 
         return df
