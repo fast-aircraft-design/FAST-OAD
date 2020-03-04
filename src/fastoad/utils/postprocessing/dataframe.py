@@ -48,10 +48,15 @@ class FASTOADDataFrame:
         self.items = None
         self.variable_selector = None
         self.out = None
+        self.xml = None
 
     def update_df(self, *args):
         df = self.sheet_to_df(self.sheet)
         self._update_df(df)
+        self.update_xml()
+
+    def update_xml(self, *args):
+        self.df_to_xml(self.df_variables, self.xml)
 
     def read_problem(self, problem: FASTOADProblem):
         """
@@ -458,8 +463,8 @@ class FASTOADDataFrame:
         :param xml_file: the xml file to interact with
         :return display of the user interface
         """
-
-        self.df_variables = self.xml_to_df(xml)
+        self.xml = xml
+        self.df_variables = self.xml_to_df(self.xml)
         self.df_variables = self.df_variables.reset_index(drop=True)
 
         return self.render_sheet()
