@@ -115,12 +115,6 @@
         <Vc_EAS units="m/s">375.0<!--equivalent air speed for sizing load case 2 (gust with maximum aircraft mass)--></Vc_EAS>
       </lc2>
     </load_case>
-    <weight>
-      <aircraft>
-        <max_payload units="kg">25000.0<!--max payload weight--></max_payload>
-        <payload units="kg">13608.0<!--payload weight--></payload>
-      </aircraft>
-    </weight>
     <mission>
       <sizing>
         <cruise>
