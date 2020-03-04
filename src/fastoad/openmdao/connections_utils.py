@@ -73,7 +73,10 @@ def get_df_from_variables(variables: VariableList) -> pd.DataFrame:
         attributes = variable.metadata.copy()
         value = attributes.pop('value')
         # FIXME: value is a list when reading the xml ?
-        value = np.array([value])
+        if type(value) is float or type(value) is int:
+            value = np.array([value])
+        else:
+            value = np.array(value)
         if len(value) == 1:
             value = np.asscalar(value)
         else:
