@@ -22,7 +22,7 @@ from IPython.display import display, clear_output
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO
 from fastoad.openmdao.connections_utils import get_variables_from_ivc, \
-    get_variables_of_ivc_components, get_variables_from_df, \
+    get_unconnected_input_variables, get_variables_from_df, \
     get_df_from_variables, get_ivc_from_variables
 
 pd.set_option('display.max_rows', None)
@@ -66,7 +66,7 @@ class FASTOADDataFrame:
         :param problem:
         """
         problem_variables = {}
-        variables = get_variables_of_ivc_components(problem)
+        variables = get_unconnected_input_variables(problem)
         input_names = [var.name for var in variables]
         filtered_inputs = {}
 

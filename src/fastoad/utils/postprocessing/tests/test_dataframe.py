@@ -22,10 +22,6 @@ from pandas.util.testing import assert_frame_equal
 from fastoad.io.xml import OMXmlIO
 from fastoad.utils.postprocessing.dataframe import FASTOADDataFrame
 
-from doctest import Example
-from lxml.doctestcompare import LXMLOutputChecker
-from lxml import etree
-
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
 
