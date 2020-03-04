@@ -44,7 +44,7 @@ class FASTOADDataFrame:
 
         self.sheet = None
         self.items = None
-        self.ui = None
+        self.variable_selector = None
         self.out = None
 
     def update_df(self, *args):
@@ -273,11 +273,14 @@ class FASTOADDataFrame:
         return self._render_ui()
 
     def _update_items(self, *args):
-
+        """
+        Updates the items with respect to higher level items values with
+        a limited depth of self.max_depth.
+        """
         for i in range(self.max_depth):
             if i == 0:
                 self.items[0].observe(self._update_items, 'value')
-                self.items[0].observe(self._update_ui, 'value')
+                self.items[0].observe(self._update_variable_selector, 'value')
             else:
                 if i <= len(self.items):
                     modules = [item.value for item in self.items[0:i]]
@@ -289,7 +292,7 @@ class FASTOADDataFrame:
                                 modules_item.insert(0, self.all_tag)
                             w = widgets.Dropdown(options=modules_item)
                             w.observe(self._update_items, 'value')
-                            w.observe(self._update_ui, 'value')
+                            w.observe(self._update_variable_selector, 'value')
                             self.items.append(w)
                         else:
                             if (self.all_tag not in modules_item) and (len(modules_item) > 1):
@@ -299,13 +302,21 @@ class FASTOADDataFrame:
                         if i < len(self.items):
                             self.items.pop(i)
 
-    def _update_ui(self, *args):
+    def _update_variable_selector(self, *args):
+        """
+        Updates the variable selector with respect to the
+        actual items stored.
+        """
         items_box = widgets.HBox(self.items)
         items_box = widgets.VBox([widgets.Label(value='Variable name'),
                                   items_box])
-        self.ui = items_box
+        self.variable_selector = items_box
 
     def _update_sheet(self):
+        """
+        Updates the sheet after filtering the dataframe with respect to
+        the actual values of the variable dropdown menus.
+        """
         modules = [item.value for item in self.items]
 
         filtered_var = self._filter_variables(self.df_variables, modules, var_type=None)
@@ -315,14 +326,20 @@ class FASTOADDataFrame:
         for cell in self.sheet.cells:
             cell.observe(self.update_df, 'value')
 
-    def _render_ui(self, *args):
+    def _render_ui(self, *args) -> display:
+        """
+        Renders the dropdown menus for the variable selector and the corresponding
+        ipysheet Sheet containing the variable infos.
+
+        :return the display object
+        """
         clear_output(wait=True)
         self._update_items()
-        self._update_ui()
+        self._update_variable_selector()
         self._update_sheet()
         for item in self.items:
             item.observe(self._render_ui, 'value')
-        display(self.ui, self.sheet)
+        return display(self.variable_selector, self.sheet)
 
     @staticmethod
     def df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
