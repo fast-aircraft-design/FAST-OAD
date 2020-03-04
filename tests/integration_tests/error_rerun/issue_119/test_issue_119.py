@@ -18,7 +18,6 @@ from shutil import rmtree
 
 import pytest
 
-import fastoad
 from fastoad import api
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
@@ -30,13 +29,7 @@ def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-@pytest.fixture(scope='module')
-def install_components():
-    """ Needed because other tests play with Pelix/iPOPO """
-    fastoad.initialize_framework.load()
-
-
-def test_issue_119(cleanup, install_components):
+def test_issue_119(cleanup):
     configuration_file_path = pth.join(DATA_FOLDER_PATH, 'oad_process.toml')
 
     # Run model ---------------------------------------------------------------
