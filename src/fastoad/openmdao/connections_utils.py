@@ -18,6 +18,7 @@ from logging import Logger
 from typing import Tuple, List
 
 import numpy as np
+import pandas as pd
 import openmdao.api as om
 
 from fastoad.exceptions import NoSetupError
@@ -53,6 +54,50 @@ def get_variables_from_ivc(ivc: om.IndepVarComp) -> VariableList:
     for (name, value, attributes) in ivc._indep + ivc._indep_external:
         metadata = {'value': value}
         metadata.update(attributes)
+        variables[name] = metadata
+
+    return variables
+
+
+def get_df_from_variables(variables: VariableList) -> pd.DataFrame:
+    """
+    Creates a DataFrame instance from a VariableList instance
+
+    :param variables: a VariableList instance
+    :return: a DataFrame instance
+    """
+    df = pd.DataFrame()
+    col_names = ['Name', 'Value', 'Unit', 'Description']
+
+    for variable in variables:
+        attributes = variable.metadata.copy()
+        value = attributes.pop('value')
+
+        df = df.append([{
+            'Name': variable.name,
+            'Value': value,
+            'Unit': attributes['units'],
+            'Description': attributes['desc']
+        }
+        ])[col_names]
+
+    return df
+
+
+def get_variables_from_df(df: pd.DataFrame) -> VariableList:
+    """
+    Creates a VariableList instance from a DataFrame instance
+
+    :param df: a DataFrame instance
+    :return: a VariableList instance
+    """
+    variables = VariableList()
+
+    for i, row in df.iterrows():
+        name = row['Name']
+        metadata = {'value': row['Value']}
+        metadata.update({'units': row['Unit']})
+        metadata.update({'desc': row['Description']})
         variables[name] = metadata
 
     return variables
