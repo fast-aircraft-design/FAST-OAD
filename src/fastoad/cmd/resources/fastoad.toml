@@ -35,7 +35,7 @@ driver = "om.ScipyOptimizeDriver(debug_print=['desvars', 'objs'])"
         id = "fastoad.handling_qualities.tail_sizing"
     [model.hq.static_margin]
         id = "fastoad.handling_qualities.static_margin"
-        objective = 0.05
+        target = 0.05
     [model.loop]
         id = "fastoad.loop.wing_area"
 
@@ -46,4 +46,4 @@ driver = "om.ScipyOptimizeDriver(debug_print=['desvars', 'objs'])"
     ref = 15.0
 
 [[objective]]
-    name = "data:handling_qualities:static_margin:to_objective"
+    name = "data:handling_qualities:static_margin:to_target"

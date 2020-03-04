@@ -136,12 +136,12 @@ def test_api(cleanup, install_components):
                     + problem['data:mission:sizing:fuel'],
                     atol=1)
 
-    assert_allclose(problem['data:handling_qualities:static_margin'], 0.0499, atol=1e-3)
-    assert_allclose(problem['data:geometry:wing:MAC:x'], 17.05, atol=1e-2)
-    assert_allclose(problem['data:weight:aircraft:MTOW'], 77235, atol=1)
-    assert_allclose(problem['data:geometry:wing:area'], 130.60, atol=1e-2)
-    assert_allclose(problem['data:geometry:vertical_tail:area'], 28.20, atol=1e-2)
-    assert_allclose(problem['data:geometry:horizontal_tail:area'], 36.88, atol=1e-2)
+    assert_allclose(problem['data:handling_qualities:static_margin'], 0.05, atol=2e-3)
+    assert_allclose(problem['data:geometry:wing:MAC:x'], 17.1, atol=1e-1)
+    assert_allclose(problem['data:weight:aircraft:MTOW'], 77235, atol=5)
+    assert_allclose(problem['data:geometry:wing:area'], 130.6, atol=1e-1)
+    assert_allclose(problem['data:geometry:vertical_tail:area'], 28.2, atol=1e-1)
+    assert_allclose(problem['data:geometry:horizontal_tail:area'], 36.9, atol=1e-1)
 
 
 def test_non_regression(cleanup, install_components):

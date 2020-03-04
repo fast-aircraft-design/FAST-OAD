@@ -24,23 +24,24 @@ class ComputeStaticMargin(om.ExplicitComponent):
     Computation of static margin i.e. difference between CG ratio and neutral
     point.
 
-    If option 'objective' is provided, this module will provide the output
-    `data:handling_qualities:static_margin:to_objective` that will give absolute
-    difference between computed static margin and provided objective.
-
-    This variable can then be used as objective function in an optimization problem
+    If option 'target' is provided, this module will provide the output
+    `data:handling_qualities:static_margin:to_target` that can be used as
+    objective function in an optimization problem.
     """
 
     def initialize(self):
-        self.options.declare('objective', types=float, allow_none=True, default=None)
+        self.options.declare('target', types=float, allow_none=True, default=None)
 
     def setup(self):
         self.add_input('data:weight:aircraft:CG:aft:MAC_position', val=np.nan)
         self.add_input('data:aerodynamics:cruise:neutral_point:x', val=np.nan)
 
         self.add_output('data:handling_qualities:static_margin')
-        if self.options['objective']:
-            self.add_output('data:handling_qualities:static_margin:to_objective')
+        if self.options['target']:
+            self.add_output('data:handling_qualities:static_margin:to_target',
+                            desc='objective function to minimize to 0. for getting '
+                                 'static margin close to fixed target (equal to the '
+                                 'square of 100 times the difference to target)')
 
         self.declare_partials('*', '*', method='fd')
 
@@ -50,6 +51,8 @@ class ComputeStaticMargin(om.ExplicitComponent):
 
         outputs['data:handling_qualities:static_margin'] = ac_ratio - cg_ratio
 
-        if self.options['objective']:
-            outputs['data:handling_qualities:static_margin:to_objective'] = \
-                abs(self.options['objective'] - outputs['data:handling_qualities:static_margin'])
+        if self.options['target']:
+            outputs['data:handling_qualities:static_margin:to_target'] = \
+                (100 * (self.options['target']
+                        - outputs['data:handling_qualities:static_margin'])
+                 ) ** 2
