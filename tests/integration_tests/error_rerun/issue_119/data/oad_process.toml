@@ -13,19 +13,17 @@ driver = "om.ScipyOptimizeDriver()"
 # Definition of OpenMDAO model
 [model]
     # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
-    nonlinear_solver = "om.NonlinearBlockGS(iprint=1, maxiter=100)"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100, reraise_child_analysiserror=False)"
     linear_solver = "om.DirectSolver()"
 
     # AlThough "model" is a mandatory name for the top level of the model, its sub-components can be freely named by user
     [model.geometry]
         # An OpenMDAO component is identified by its "id"
         id = "fastoad.geometry.legacy"
-    [model.weights]
+    [model.weight]
         id = "fastoad.weight.legacy"
     [model.aerodynamics.highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
-#    [model.aerodynamics.lowspeed]
-#        id = "fastoad.aerodynamics.lowspeed.legacy"
     [model.aerodynamics.landing]
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false
@@ -33,6 +31,10 @@ driver = "om.ScipyOptimizeDriver()"
         id = "fastoad.performances.breguet"
     [model.propulsion]
         id = "fastoad.propulsion.rubber_engine"
+    [model.hq.tail_sizing]
+        id = "fastoad.handling_qualities.tail_sizing"
+    [model.hq.static_margin]
+        id = "fastoad.handling_qualities.static_margin"
     [model.loop]
         id = "fastoad.loop.wing_area"
 
