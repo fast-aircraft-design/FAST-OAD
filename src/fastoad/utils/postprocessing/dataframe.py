@@ -23,7 +23,7 @@ from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO
 from fastoad.openmdao.connections_utils import get_variables_from_ivc, \
     get_variables_of_ivc_components, get_variables_from_df, \
-    get_df_from_variables
+    get_df_from_variables, get_ivc_from_variables
 
 pd.set_option('display.max_rows', None)
 
@@ -484,3 +484,17 @@ class FASTOADDataFrame:
         df = get_df_from_variables(variables)
 
         return df
+
+    @staticmethod
+    def df_to_xml(df: pd.DataFrame, xml: OMXmlIO):
+        """
+        Returns the equivalent xml file of the pandas dataframe .
+
+        :param df: the dataframe to convert
+        :param xml: the resulting xml file
+        """
+
+        # Extract the variables list
+        variables = get_variables_from_df(df)
+        ivc = get_ivc_from_variables(variables)
+        xml.write(ivc)

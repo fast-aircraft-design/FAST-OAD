@@ -22,10 +22,14 @@ from pandas.util.testing import assert_frame_equal
 from fastoad.io.xml import OMXmlIO
 from fastoad.utils.postprocessing.dataframe import FASTOADDataFrame
 
+from doctest import Example
+from lxml.doctestcompare import LXMLOutputChecker
+from lxml import etree
+
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
 
-
-def test_xml_to_df():
+def test_xml_to_from_df():
     """
     Basic tests for testing the conversion of xml to dataframe.
     """
@@ -68,11 +72,20 @@ def test_xml_to_df():
 
     xml = OMXmlIO(filename)
 
+    # Testing xml to df
     resulting_df = FASTOADDataFrame.xml_to_df(xml)
 
     assert_frame_equal(ref_df, resulting_df)
 
+    new_filename = pth.join(RESULTS_FOLDER_PATH, 'new_light_data.xml')
+    new_xml = OMXmlIO(new_filename)
 
+    # Testing df to xml
+    FASTOADDataFrame.df_to_xml(ref_df, new_xml)
 
+    # Reloading the generated xml
+    del new_xml
+    new_xml = OMXmlIO(new_filename)
+    resulting_df = FASTOADDataFrame.xml_to_df(new_xml)
 
-
+    assert_frame_equal(ref_df, resulting_df)
