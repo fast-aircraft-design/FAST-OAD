@@ -15,17 +15,17 @@ available through OpenMDAOSystemRegistry
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fastoad.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
+from fastoad.models.aerodynamics.aerodynamics_landing import AerodynamicsLanding
+from fastoad.models.geometry import Geometry
+from fastoad.models.handling_qualities.compute_static_margin import ComputeStaticMargin
+from fastoad.models.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
+from fastoad.models.loops.compute_wing_area import ComputeWingArea
+from fastoad.models.performances import BreguetFromOWE
+from fastoad.models.propulsion.fuel_engine.rubber_engine import OMRubberEngine
+from fastoad.models.weight.weight import Weight
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.module_management.constants import ModelDomain
-from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
-from fastoad.modules.aerodynamics.aerodynamics_landing import AerodynamicsLanding
-from fastoad.modules.geometry import Geometry
-from fastoad.modules.handling_qualities.compute_static_margin import ComputeStaticMargin
-from fastoad.modules.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
-from fastoad.modules.loops.compute_wing_area import ComputeWingArea
-from fastoad.modules.performances import BreguetFromOWE
-from fastoad.modules.propulsion.fuel_engine.rubber_engine import OMRubberEngine
-from fastoad.modules.weight.weight import Weight
 
 
 def register_openmdao_systems():
