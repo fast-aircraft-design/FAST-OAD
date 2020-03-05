@@ -40,15 +40,20 @@ def test_compute():
     ivc.add_output('data:geometry:wing:sweep_25', 25.)
     ivc.add_output('data:geometry:wing:thickness_ratio', 0.1284)
 
-    xfoil_comp = XfoilPolar()
+    xfoil_comp = XfoilPolar(alpha_start=15., alpha_end=25.)
     problem = run_system(xfoil_comp, ivc)
-    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
-    assert problem['xfoil:CL_max_clean'] == pytest.approx(1.5831, 1e-4)
+    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.94, 1e-2)
+    assert problem['xfoil:CL_max_clean'] == pytest.approx(1.58, 1e-2)
+    assert not pth.exists(XFOIL_RESULTS)
+
+    xfoil_comp = XfoilPolar(alpha_start=12., alpha_end=20.)  # will stop before real max CL
+    problem = run_system(xfoil_comp, ivc)
+    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.92, 1e-2)
     assert not pth.exists(XFOIL_RESULTS)
 
     xfoil_comp = XfoilPolar(result_folder_path=XFOIL_RESULTS)
     problem = run_system(xfoil_comp, ivc)
-    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.9408, 1e-4)
-    assert problem['xfoil:CL_max_clean'] == pytest.approx(1.5831, 1e-4)
+    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.94, 1e-2)
+    assert problem['xfoil:CL_max_clean'] == pytest.approx(1.58, 1e-2)
     assert pth.exists(XFOIL_RESULTS)
     assert pth.exists(pth.join(XFOIL_RESULTS, 'polar_result.txt'))

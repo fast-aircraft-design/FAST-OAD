@@ -20,10 +20,12 @@ import openmdao.api as om
 from fastoad.models.aerodynamics.components.compute_max_cl_landing import ComputeMaxClLanding
 from fastoad.models.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
 from fastoad.models.aerodynamics.external.xfoil import XfoilPolar
+from fastoad.models.aerodynamics.external.xfoil.xfoil_polar import OPTION_XFOIL_EXE_PATH
+from fastoad.models.options import OpenMdaoOptionDispatcherGroup
 from fastoad.utils.physics import Atmosphere
 
 
-class AerodynamicsLanding(om.Group):
+class AerodynamicsLanding(OpenMdaoOptionDispatcherGroup):
     """
     Computes maximum CL of the aircraft in landing conditions.
 
@@ -35,18 +37,28 @@ class AerodynamicsLanding(om.Group):
     Options:
       - use_xfoil:
          - if True, maximum CL without high-lift aerodynamics:aircraft:landing:CL_max_clean is
-           computed using XFoil
+           computed using XFOIL
          - if False, aerodynamics:aircraft:landing:CL_max_clean must be provided as input (but
            process is faster)
+      - alpha_min, alpha_max:
+         - used if use_xfoil is True. Sets the alpha range that is explored to find maximum CL
+           without high-lift
+      - xfoil_exe_path:
+         - the path to the XFOIL executable. Needed for non-Windows OS.
     """
 
     def initialize(self):
         self.options.declare('use_xfoil', default=True, types=bool)
+        self.options.declare('alpha_min', default=15., types=float)
+        self.options.declare('alpha_max', default=25., types=float)
+        self.options.declare(OPTION_XFOIL_EXE_PATH, default='', types=str)
 
     def setup(self):
         self.add_subsystem('mach_reynolds', ComputeMachReynolds(), promotes=['*'])
         if self.options['use_xfoil']:
-            self.add_subsystem('xfoil_run', XfoilPolar(),
+            start = self.options['alpha_min']
+            end = self.options['alpha_max']
+            self.add_subsystem('xfoil_run', XfoilPolar(alpha_start=start, alpha_end=end),
                                promotes=['data:geometry:wing:sweep_25',
                                          'data:geometry:wing:thickness_ratio'])
         self.add_subsystem('delta_cl_landing', ComputeDeltaHighLift(landing_flag=True),

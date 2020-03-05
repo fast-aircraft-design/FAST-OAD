@@ -23,14 +23,23 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
+from importlib_resources import path
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 
 from fastoad.models.aerodynamics.external.xfoil import xfoil699
 from fastoad.models.geometry.profiles.get_profile import get_profile
 from fastoad.utils.resource_management.copy import copy_resource
+from . import resources
 
-_INPUT_FILE_NAME = 'polar_input.txt'
+OPTION_RESULT_POLAR_FILENAME = 'result_polar_filename'
+OPTION_RESULT_FOLDER_PATH = 'result_folder_path'
+OPTION_PROFILE_NAME = 'profile_name'
+OPTION_XFOIL_EXE_PATH = 'xfoil_exe_path'
+OPTION_ALPHA_START = 'alpha_start'
+OPTION_ALPHA_END = 'alpha_end'
+
+_INPUT_FILE_NAME = 'polar_session.txt'
 _STDOUT_FILE_NAME = 'polar_calc.log'
 _STDERR_FILE_NAME = 'polar_calc.err'
 _TMP_PROFILE_FILE_NAME = 'in'  # as short as possible to avoid problems of path length
@@ -51,11 +60,16 @@ class XfoilPolar(ExternalCodeComp):
     _xfoil_output_names = ['alpha', 'CL', 'CD', 'CDp', 'CM', 'Top_Xtr', 'Bot_Xtr']
     """Column names in XFOIL polar result"""
 
+    run_count = 0
+    """ class variable to keep track of the total count of XFOIL runs """
+
     def initialize(self):
-        self.options.declare('xfoil_exe_path', default='', types=str)
-        self.options.declare('profile_name', default='BACJ.txt', types=str)
-        self.options.declare('result_folder_path', default='', types=str)
-        self.options.declare('result_polar_file_name', default='polar_result.txt', types=str)
+        self.options.declare(OPTION_XFOIL_EXE_PATH, default='', types=str)
+        self.options.declare(OPTION_PROFILE_NAME, default='BACJ.txt', types=str)
+        self.options.declare(OPTION_RESULT_FOLDER_PATH, default='', types=str)
+        self.options.declare(OPTION_RESULT_POLAR_FILENAME, default='polar_result.txt', types=str)
+        self.options.declare(OPTION_ALPHA_START, default=0., types=float)
+        self.options.declare(OPTION_ALPHA_END, default=30., types=float)
 
     def setup(self):
 
@@ -70,9 +84,10 @@ class XfoilPolar(ExternalCodeComp):
         self.declare_partials('*', '*', method='fd')
 
     def compute(self, inputs, outputs):
+        self.__class__.run_count += 1
 
         # Create result folder first (if it must fail, let it fail as soon as possible)
-        result_folder_path = self.options['result_folder_path']
+        result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
         if result_folder_path != '':
             os.makedirs(result_folder_path, exist_ok=True)
 
@@ -85,9 +100,9 @@ class XfoilPolar(ExternalCodeComp):
         # Pre-processing (populating temp directory) -----------------------------------------------
         # XFoil exe
         tmp_directory = self._create_tmp_directory()
-        if self.options['xfoil_exe_path']:
+        if self.options[OPTION_XFOIL_EXE_PATH]:
             # if a path for Xfoil has been provided, simply use it
-            self.options['command'] = [self.options['xfoil_exe_path']]
+            self.options['command'] = [self.options[OPTION_XFOIL_EXE_PATH]]
         else:
             # otherwise, copy the embedded resource in tmp dir
             copy_resource(xfoil699, XFOIL_EXE_NAME, tmp_directory.name)
@@ -100,7 +115,7 @@ class XfoilPolar(ExternalCodeComp):
 
         # profile file
         tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
-        profile = get_profile(file_name=self.options['profile_name'],
+        profile = get_profile(file_name=self.options[OPTION_PROFILE_NAME],
                               thickness_ratio=thickness_ratio)
         np.savetxt(tmp_profile_file_path, profile.to_numpy(), fmt='%.15f', delimiter=' ',
                    header='Wing', comments='')
@@ -108,17 +123,21 @@ class XfoilPolar(ExternalCodeComp):
         # standard input file
         tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
         parser = InputFileGenerator()
-        parser.set_template_file(pth.join(os.path.dirname(__file__), _INPUT_FILE_NAME))
-        parser.set_generated_file(self.stdin)
-        parser.mark_anchor('LOAD')
-        parser.transfer_var(tmp_profile_file_path, 1, 1)
-        parser.mark_anchor('RE')
-        parser.transfer_var(float(reynolds), 1, 1)
-        parser.mark_anchor('M')
-        parser.transfer_var(float(mach), 1, 1)
-        parser.mark_anchor('PACC')
-        parser.transfer_var(tmp_result_file_path, 1, 1)
-        parser.generate()
+        with path(resources, _INPUT_FILE_NAME) as input_template_path:
+            parser.set_template_file(input_template_path)
+            parser.set_generated_file(self.stdin)
+            parser.mark_anchor('LOAD')
+            parser.transfer_var(tmp_profile_file_path, 1, 1)
+            parser.mark_anchor('RE')
+            parser.transfer_var(float(reynolds), 1, 1)
+            parser.mark_anchor('M')
+            parser.transfer_var(float(mach), 1, 1)
+            parser.mark_anchor('PACC')
+            parser.transfer_var(tmp_result_file_path, 1, 1)
+            parser.mark_anchor('ASEQ')
+            parser.transfer_var(self.options[OPTION_ALPHA_START], 1, 1)
+            parser.transfer_var(self.options[OPTION_ALPHA_END], 2, 1)
+            parser.generate()
 
         # Run XFOIL --------------------------------------------------------------------------------
         self.options['external_input_files'] = [self.stdin, tmp_profile_file_path]
@@ -137,10 +156,10 @@ class XfoilPolar(ExternalCodeComp):
             np.radians(sweep_25))
 
         # Getting output files if needed
-        if self.options['result_folder_path'] != '':
+        if self.options[OPTION_RESULT_FOLDER_PATH] != '':
             if pth.exists(tmp_result_file_path):
                 polar_file_path = pth.join(result_folder_path,
-                                           self.options['result_polar_file_name'])
+                                           self.options[OPTION_RESULT_POLAR_FILENAME])
                 shutil.move(tmp_result_file_path, polar_file_path)
 
             if pth.exists(self.stdout):
@@ -176,6 +195,7 @@ class XfoilPolar(ExternalCodeComp):
         :param lift_coeff: CL
         :return: max CL if enough alpha computed
         """
+        print(alpha[np.argmax(lift_coeff)])
         if max(alpha) >= 5.0:
             return max(lift_coeff)
 
