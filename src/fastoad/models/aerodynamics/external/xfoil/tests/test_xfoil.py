@@ -57,3 +57,25 @@ def test_compute():
     assert problem['xfoil:CL_max_clean'] == pytest.approx(1.58, 1e-2)
     assert pth.exists(XFOIL_RESULTS)
     assert pth.exists(pth.join(XFOIL_RESULTS, 'polar_result.txt'))
+
+
+def test_compute_with_provided_path():
+    """ Test that option "use_exe_path" works """
+    ivc = IndepVarComp()
+    ivc.add_output('xfoil:reynolds', 18000000)
+    ivc.add_output('xfoil:mach', 0.20)
+    ivc.add_output('data:geometry:wing:sweep_25', 25.)
+    ivc.add_output('data:geometry:wing:thickness_ratio', 0.1284)
+
+    xfoil_comp = XfoilPolar(alpha_start=18., alpha_end=21.)
+    xfoil_comp.options['xfoil_exe_path'] = 'Dummy'  # bad name
+    with pytest.raises(ValueError):
+        problem = run_system(xfoil_comp, ivc)
+
+    xfoil_comp.options['xfoil_exe_path'] = pth.join(pth.dirname(__file__),
+                                                    pth.pardir,
+                                                    'xfoil699',
+                                                    'xfoil.exe')
+    problem = run_system(xfoil_comp, ivc)
+    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.94, 1e-2)
+    assert problem['xfoil:CL_max_clean'] == pytest.approx(1.58, 1e-2)

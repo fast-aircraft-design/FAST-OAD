@@ -118,6 +118,7 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     assert problem['f'] == pytest.approx(3.18339395, abs=1e-6)
 
     # Runs optimization problem with monolithic FD
+    problem.build_model()
     problem.read_inputs()  # resets the problem
     problem.model.approx_totals()
     problem.setup()

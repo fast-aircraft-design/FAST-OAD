@@ -47,7 +47,6 @@ def test_oad_process(cleanup):
     problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'oad_process.toml'))
 
-    problem.setup()
     ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
@@ -87,16 +86,14 @@ def test_non_regression(cleanup):
     problem.configure(configuration_file_path)
     # Next trick is needed for overloading option setting from TOML file
     problem.model.aerodynamics.landing._OPTIONS['use_xfoil'] = True
+    # BTW we narrow computed alpha range for sake of CPU time
+    problem.model.aerodynamics.landing._OPTIONS['alpha_min'] = 20.
+    problem.model.aerodynamics.landing._OPTIONS['alpha_max'] = 22.
 
     # Generation and reading of inputs ----------------------------------------
     ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy.xml'))
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
-    # As read_inputs() rebuilds the model, we need to set again the option
-    # We also narrow the alpha range using options, for sake of CPU time
-    problem.model.aerodynamics.landing._OPTIONS['use_xfoil'] = True
-    problem.model.aerodynamics.landing._OPTIONS['alpha_min'] = 20.
-    problem.model.aerodynamics.landing._OPTIONS['alpha_max'] = 22.
     problem.setup()
 
     # Run model ---------------------------------------------------------------

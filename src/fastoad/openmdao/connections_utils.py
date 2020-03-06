@@ -13,6 +13,7 @@ Utility functions for OpenMDAO classes/instances
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from copy import deepcopy
 from logging import Logger
 from typing import Tuple, List
 
@@ -23,9 +24,6 @@ from fastoad.exceptions import NoSetupError
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
 from fastoad.openmdao.variables import Variable, VariableList
 
-
-# TODO: separate the construction of Variable list from the creation of IndepVarComp
-# TODO: factorize more code
 
 def get_ivc_from_variables(variables: VariableList) -> om.IndepVarComp:
     """
@@ -79,7 +77,12 @@ def get_variables_from_problem(problem: om.Problem,
     """
     variables = VariableList()
     if problem._setup_status == 0:
-        problem.setup()
+        # If setup() has not been done, we create a copy of the problem so we can work
+        # on the model without doing setup() out of user notice
+        tmp_problem = deepcopy(problem)
+        tmp_problem.setup()
+        problem = tmp_problem
+
     system = problem.model
 
     prom2abs = {}
@@ -125,7 +128,12 @@ def get_unconnected_input_variables(problem: om.Problem,
     variables = VariableList()
 
     if problem._setup_status == 0:
-        problem.setup()
+        # If setup() has not been done, we create a copy of the problem so we can work
+        # on the model without doing setup() out of user notice
+        tmp_problem = deepcopy(problem)
+        tmp_problem.setup()
+        problem = tmp_problem
+
     mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
     model = problem.model
 

@@ -17,6 +17,7 @@ Module for building OpenMDAO problem from configuration file
 
 import logging
 import os.path as pth
+from copy import deepcopy
 
 import openmdao.api as om
 import toml
@@ -30,6 +31,7 @@ from fastoad.openmdao.connections_utils import get_unconnected_input_variables, 
     get_variables_from_ivc, get_ivc_from_variables, get_variables_from_problem
 
 # Logger for this module
+INPUT_SYSTEM_NAME = 'inputs'
 _LOGGER = logging.getLogger(__name__)
 
 KEY_FOLDERS = 'module_folders'
@@ -144,13 +146,30 @@ class FASTOADProblem(om.Problem):
 
     def read_inputs(self):
         """
-        Once problem is configured, reads inputs from the configured input file.
+        Reads inputs from the configured input file.
 
-        Note: the OpenMDAO problem is fully rebuilt
+        Must be done once problem is configured, before self.setup() is called.
         """
         if self.input_file_path:
+            # Reads input file
             reader = OMXmlIO(self.input_file_path)
-            self.build_model(reader.read())
+            ivc = reader.read()
+
+            # ivc will be added through add_subsystem, but we must use set_order() to
+            # put it first.
+            # So we need order of existing subsystem to provide the full order list to set_order()
+            # To get order of systems, we use system_iter() that can be used only after setup().
+            # But we will not be allowed to use add_subsystem() after setup().
+            # So we use setup() on a copy of current instance, and get order from this copy
+            tmp_prob = deepcopy(self)
+            tmp_prob.setup()
+            previous_order = [system.name for system in tmp_prob.model.system_iter(recurse=False)]
+
+            self.model.add_subsystem(INPUT_SYSTEM_NAME, ivc, promotes=['*'])
+            self.model.set_order([INPUT_SYSTEM_NAME] + previous_order)
+
+            # Inputs are loaded, so we can add design variables
+            self._add_design_vars()
 
     def write_outputs(self):
         """
@@ -161,23 +180,15 @@ class FASTOADProblem(om.Problem):
             variables = get_variables_from_problem(self)
             writer.write(get_ivc_from_variables(variables))
 
-    def build_model(self, ivc: om.IndepVarComp = None):
+    def build_model(self):
         """
         Builds (or rebuilds) the problem as defined in the configuration file.
 
-        self.model is initialized as a new group and populated with provided IndepVarComp
-        instance (if any) and subsystems indicated in configuration file.
-
-        Objectives and constraints are defined as indicated in configuration file.
-        Same for design variables, if an IndepVarcomp instance as been provided.
-
-        :param ivc: if provided, will be be added to the model subsystems (in first position)
+        self.model is initialized as a new group and populated subsystems indicated in
+        configuration file.
         """
 
         self.model = om.Group()
-
-        if ivc:
-            self.model.add_subsystem('inputs', ivc, promotes=['*'])
 
         try:
             if KEY_COMPONENT_ID in self._model_definition:
@@ -196,9 +207,6 @@ class FASTOADProblem(om.Problem):
 
         self._add_objectives()
         self._add_constraints()
-
-        if ivc:
-            self._add_design_vars()
 
     def _parse_problem_table(self, group: om.Group, table: dict):
         """
