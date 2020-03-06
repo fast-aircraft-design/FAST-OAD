@@ -81,17 +81,28 @@ def test_non_regression(cleanup):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, 'non_regression')
     configuration_file_path = pth.join(results_folder_path, 'oad_process.toml')
 
-    # Generation of configuration file ----------------------------------------
+    # Generation of configuration file  and problem instance ------------------
     api.generate_configuration_file(configuration_file_path, True)
+    problem = FASTOADProblem()
+    problem.configure(configuration_file_path)
+    # Next trick is needed for overloading option setting from TOML file
+    problem.model.aerodynamics.landing._OPTIONS['use_xfoil'] = True
 
-    # Generation of inputs ----------------------------------------------------
-    # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy.xml')
-    api.generate_inputs(configuration_file_path, source_xml, source_path_schema='legacy',
-                        overwrite=True)
+    # Generation and reading of inputs ----------------------------------------
+    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy.xml'))
+    problem.write_needed_inputs(ref_input_reader)
+    problem.read_inputs()
+    # As read_inputs() rebuilds the model, we need to set again the option
+    # We also narrow the alpha range using options, for sake of CPU time
+    problem.model.aerodynamics.landing._OPTIONS['use_xfoil'] = True
+    problem.model.aerodynamics.landing._OPTIONS['alpha_min'] = 20.
+    problem.model.aerodynamics.landing._OPTIONS['alpha_max'] = 22.
+    problem.setup()
 
     # Run model ---------------------------------------------------------------
-    problem = api.evaluate_problem(configuration_file_path, True)
+    problem.run_model()
+    problem.write_outputs()
+
     om.view_connections(problem, outfile=pth.join(results_folder_path, 'connections.html'),
                         show_browser=False)
 
