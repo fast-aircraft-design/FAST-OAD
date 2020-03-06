@@ -16,6 +16,7 @@ Computation of wing area
 
 import numpy as np
 import openmdao.api as om
+from scipy.constants import g
 
 
 class ComputeWingArea(om.Group):
@@ -27,7 +28,7 @@ class ComputeWingArea(om.Group):
 
     def setup(self):
         self.add_subsystem('wing_area', _ComputeWingArea(), promotes=['*'])
-        self.add_subsystem('constraints', ComputeWingAreaConstraints(), promotes=['*'])
+        self.add_subsystem('constraints', _ComputeWingAreaConstraints(), promotes=['*'])
 
 
 class _ComputeWingArea(om.ExplicitComponent):
@@ -51,20 +52,20 @@ class _ComputeWingArea(om.ExplicitComponent):
         root_thickness_ratio = inputs['data:geometry:wing:root:thickness_ratio']
         tip_thickness_ratio = inputs['data:geometry:wing:tip:thickness_ratio']
         mfw_mission = inputs['data:mission:sizing:fuel']
-        wing_area_mission = ((mfw_mission - 1570) /
+        wing_area_mission = ((mfw_mission - 1570.) /
                              224 / lambda_wing ** -0.4 /
                              (0.6 * root_thickness_ratio + 0.4 * tip_thickness_ratio)
-                             ) ** (1 / 1.5)
+                             ) ** (1. / 1.5)
 
         approach_speed = inputs['data:TLAR:approach_speed']
         mlw = inputs['data:weight:aircraft:MLW']
         max_CL = inputs['data:aerodynamics:aircraft:landing:CL_max']
-        wing_area_approach = 2 * mlw * 9.81 / ((approach_speed / 1.23) ** 2) / (1.225 * max_CL)
+        wing_area_approach = 2 * mlw * g / ((approach_speed / 1.23) ** 2) / (1.225 * max_CL)
 
         outputs['data:geometry:wing:area'] = max(wing_area_mission, wing_area_approach)
 
 
-class ComputeWingAreaConstraints(om.ExplicitComponent):
+class _ComputeWingAreaConstraints(om.ExplicitComponent):
 
     def setup(self):
         self.add_input('data:mission:sizing:fuel', val=np.nan, units='kg')
@@ -86,7 +87,7 @@ class ComputeWingAreaConstraints(om.ExplicitComponent):
                                'data:aerodynamics:aircraft:landing:CL_max',
                                'data:geometry:wing:area'], method='fd')
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mfw = inputs['data:weight:aircraft:MFW']
         mission_fuel = inputs['data:mission:sizing:fuel']
         v_approach = inputs['data:TLAR:approach_speed']
@@ -96,5 +97,5 @@ class ComputeWingAreaConstraints(om.ExplicitComponent):
 
         outputs['data:weight:aircraft:additional_fuel_capacity'] = mfw - mission_fuel
         outputs[
-            'data:aerodynamics:aircraft:landing:additional_CL_capacity'] = cl_max - mlw * 9.81 / (
+            'data:aerodynamics:aircraft:landing:additional_CL_capacity'] = cl_max - mlw * g / (
                 0.5 * 1.225 * (v_approach / 1.23) ** 2 * wing_area)
