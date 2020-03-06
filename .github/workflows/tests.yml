@@ -49,3 +49,6 @@ jobs:
 
       - name: Integration tests
         run: pipenv run pytest --no-cov tests/integration_tests
+
+      - name: Notebook tests
+        run: pipenv run pytest --no-cov --nbval-lax -p no:python src

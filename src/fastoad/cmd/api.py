@@ -193,7 +193,7 @@ def list_systems(configuration_file_path: str = None,
 
     if isinstance(out, str):
         out_file.close()
-    _LOGGER.info('System list written in %s', out_file)
+        _LOGGER.info('System list written in %s', out_file)
 
 
 def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
