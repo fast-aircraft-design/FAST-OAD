@@ -216,6 +216,8 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
 
     problem = FASTOADProblem()
     problem.configure(configuration_file_path)
+    problem.setup()
+    problem.final_setup()
 
     om.n2(problem, outfile=n2_file_path, show_browser=False)
     _LOGGER.info('N2 diagram written in %s', n2_file_path)
