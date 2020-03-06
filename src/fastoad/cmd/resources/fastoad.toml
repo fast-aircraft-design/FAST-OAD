@@ -24,8 +24,6 @@ driver = "om.ScipyOptimizeDriver()"
         id = "fastoad.weight.legacy"
     [model.aerodynamics.highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
-#    [model.aerodynamics.lowspeed]
-#        id = "fastoad.aerodynamics.lowspeed.legacy"
     [model.aerodynamics.landing]
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false
@@ -33,21 +31,19 @@ driver = "om.ScipyOptimizeDriver()"
         id = "fastoad.performances.breguet"
     [model.propulsion]
         id = "fastoad.propulsion.rubber_engine"
+    [model.hq.tail_sizing]
+        id = "fastoad.handling_qualities.tail_sizing"
+    [model.hq.static_margin]
+        id = "fastoad.handling_qualities.static_margin"
+        target = 0.05
     [model.loop]
         id = "fastoad.loop.wing_area"
 
 [[design_var]]
-    name = "data:propulsion:MTO_thrust"
-    lower = 0
-    ref = 1.5e5
-    ref0 = 50000
+    name = "data:geometry:wing:MAC:x"
+    lower = 10.0
+    upper = 25.0
+    ref = 15.0
 
 [[objective]]
-    name = "data:weight:aircraft:MTOW"
-    ref = 90000
-    ref0 = 60000
-
-[[constraint]]
-    name = "data:propulsion:thrust_rate"
-    lower = 0
-    upper = 1
+    name = "data:handling_qualities:static_margin:to_target"

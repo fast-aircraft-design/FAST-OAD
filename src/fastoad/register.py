@@ -20,6 +20,8 @@ from fastoad.module_management.constants import ModelDomain
 from fastoad.modules.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastoad.modules.aerodynamics.aerodynamics_landing import AerodynamicsLanding
 from fastoad.modules.geometry import Geometry
+from fastoad.modules.handling_qualities.compute_static_margin import ComputeStaticMargin
+from fastoad.modules.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from fastoad.modules.loops.compute_wing_area import ComputeWingArea
 from fastoad.modules.performances import BreguetFromOWE
 from fastoad.modules.propulsion.fuel_engine.rubber_engine import OMRubberEngine
@@ -45,6 +47,16 @@ def register_openmdao_systems():
     OpenMDAOSystemRegistry.register_system(Geometry,
                                            'fastoad.geometry.legacy',
                                            domain=ModelDomain.GEOMETRY
+                                           )
+
+    # handling qualities ##########################################################
+    OpenMDAOSystemRegistry.register_system(ComputeTailAreas,
+                                           'fastoad.handling_qualities.tail_sizing',
+                                           domain=ModelDomain.HANDLING_QUALITIES
+                                           )
+    OpenMDAOSystemRegistry.register_system(ComputeStaticMargin,
+                                           'fastoad.handling_qualities.static_margin',
+                                           domain=ModelDomain.HANDLING_QUALITIES
                                            )
 
     # Loops #######################################################################

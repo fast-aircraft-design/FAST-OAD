@@ -67,6 +67,9 @@ class FASTOADProblem(om.Problem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.optim_failed = False
+        """ Tells if last optimization (run_driver) failed """
+
         self._conf_dict = {}
         self.input_file_path = None
         self.output_file_path = None

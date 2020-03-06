@@ -31,7 +31,7 @@ class ComputeCGLoadCase1(ExplicitComponent):
         self.add_input('data:weight:aircraft_empty:CG:x', val=np.nan, units='m')
         self.add_input('data:weight:aircraft_empty:mass', val=np.nan, units='m')
 
-        self.add_output('data:weight:aircraft:load_case_1:CG:ratio')
+        self.add_output('data:weight:aircraft:load_case_1:CG:MAC_position')
 
         self.declare_partials('*', '*', method='fd')
 
@@ -60,4 +60,4 @@ class ComputeCGLoadCase1(ExplicitComponent):
         cg_ratio_pl_1 = (
             x_cg_plane_pl_1 - fa_length + 0.25 * l0_wing) / l0_wing
 
-        outputs['data:weight:aircraft:load_case_1:CG:ratio'] = cg_ratio_pl_1
+        outputs['data:weight:aircraft:load_case_1:CG:MAC_position'] = cg_ratio_pl_1

@@ -1,5 +1,5 @@
 """
-    Estimation of geometry of horizontal tail
+Computation of tail areas w.r.t. HQ criteria
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
@@ -14,21 +14,24 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.modules.geometry.geom_components.ht.components import ComputeHTChord
-from fastoad.modules.geometry.geom_components.ht.components import ComputeHTClalpha
-from fastoad.modules.geometry.geom_components.ht.components import ComputeHTMAC
-from fastoad.modules.geometry.geom_components.ht.components import ComputeHTSweep
 from fastoad.modules.options import TAIL_TYPE_OPTION, OpenMdaoOptionDispatcherGroup
+from .compute_ht_area import ComputeHTArea
+from .compute_vt_area import ComputeVTArea
 
 
-class ComputeHorizontalTailGeometry(OpenMdaoOptionDispatcherGroup):
-    """ Horizontal tail geometry estimation """
+class ComputeTailAreas(OpenMdaoOptionDispatcherGroup):
+    """
+    Computes areas of vertical and horizontal tail.
+
+    - Horizontal tail area is computed so it can balance pitching moment of
+      aircraft at rotation speed.
+    - Vertical tail area is computed so aircraft can have the CNbeta in cruise
+      conditions
+    """
 
     def initialize(self):
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
 
     def setup(self):
-        self.add_subsystem('ht_chord', ComputeHTChord(), promotes=['*'])
-        self.add_subsystem('ht_mac', ComputeHTMAC(), promotes=['*'])
-        self.add_subsystem('ht_sweep', ComputeHTSweep(), promotes=['*'])
-        self.add_subsystem('ht_cl_alpha', ComputeHTClalpha(), promotes=['*'])
+        self.add_subsystem('horizontal_tail', ComputeHTArea(), promotes=['*'])
+        self.add_subsystem('vertical_tail', ComputeVTArea(), promotes=['*'])

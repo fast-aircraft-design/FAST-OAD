@@ -1,6 +1,3 @@
-"""
-Estimation of vertical tail geometry (components)
-"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,9 +10,3 @@ Estimation of vertical tail geometry (components)
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from .compute_vt_chords import ComputeVTChords
-from .compute_vt_clalpha import ComputeVTClalpha
-from .compute_vt_distance import ComputeVTDistance
-from .compute_vt_mac import ComputeVTMAC
-from .compute_vt_sweep import ComputeVTSweep

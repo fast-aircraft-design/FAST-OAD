@@ -16,7 +16,16 @@ output_file = "../results/oad_process_outputs.xml"
         id = "fastoad.weight.legacy"
     [model.aerodynamics]
         id = "fastoad.aerodynamics.highspeed.legacy"
+    [model.aerodynamics_landing]
+        id = "fastoad.aerodynamics.landing.legacy"
+        use_xfoil = false
     [model.performance]
         id = "fastoad.performances.breguet"
     [model.propulsion]
         id = "fastoad.propulsion.rubber_engine"
+    [model.hq.tail_sizing]
+        id = "fastoad.handling_qualities.tail_sizing"
+    [model.hq.static_margin]
+        id = "fastoad.handling_qualities.static_margin"
+    [model.loop]
+        id = "fastoad.loop.wing_area"
