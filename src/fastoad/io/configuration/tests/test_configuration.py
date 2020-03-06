@@ -29,7 +29,7 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
@@ -72,6 +72,7 @@ def test_problem_definition(cleanup):
     assert isinstance(problem.driver, om.ScipyOptimizeDriver)
     assert problem.driver.options['optimizer'] == 'SLSQP'
     assert isinstance(problem.model.cycle.nonlinear_solver, om.NonlinearBlockGS)
+    problem.setup()
     problem.run_driver()
 
     problem.run_model()
@@ -89,6 +90,7 @@ def test_problem_definition_with_xml_ref(cleanup):
     problem.read_inputs()
 
     # runs evaluation without oprimzation loop to check that inputs are taken into account
+    problem.setup()
     problem.run_model()
 
     assert problem['f'] == pytest.approx(28.58830817, abs=1e-6)
@@ -109,6 +111,7 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
 
     # Runs optimization problem with semi-analytic FD
     problem.read_inputs()
+    problem.setup()
     problem.run_model()
     assert problem['f'] == pytest.approx(28.58830817, abs=1e-6)
     problem.run_driver()
@@ -117,6 +120,7 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     # Runs optimization problem with monolithic FD
     problem.read_inputs()  # resets the problem
     problem.model.approx_totals()
+    problem.setup()
     problem.run_model()  # checks problem has been reset
     assert problem['f'] == pytest.approx(28.58830817, abs=1e-6)
     problem.run_driver()

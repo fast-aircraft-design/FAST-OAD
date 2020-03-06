@@ -51,15 +51,15 @@ def test_oad_process(cleanup):
     ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
-    problem.final_setup()
+    problem.setup()
+    problem.run_model()
+    problem.write_outputs()
+
     if not pth.exists(RESULTS_FOLDER_PATH):
         os.mkdir(RESULTS_FOLDER_PATH)
     om.view_connections(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'connections.html'),
                         show_browser=False)
     om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'n2.html'), show_browser=False)
-    problem.run_model()
-
-    problem.write_outputs()
 
     # Check that weight-performances loop correctly converged
     assert_allclose(problem['data:weight:aircraft:OWE'],

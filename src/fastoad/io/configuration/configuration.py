@@ -171,8 +171,6 @@ class FASTOADProblem(om.Problem):
         Objectives and constraints are defined as indicated in configuration file.
         Same for design variables, if an IndepVarcomp instance as been provided.
 
-        Then self.setup() is called.
-
         :param ivc: if provided, will be be added to the model subsystems (in first position)
         """
 
@@ -201,8 +199,6 @@ class FASTOADProblem(om.Problem):
 
         if ivc:
             self._add_design_vars()
-
-        self.setup()
 
     def _parse_problem_table(self, group: om.Group, table: dict):
         """
