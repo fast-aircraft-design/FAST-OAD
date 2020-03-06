@@ -346,7 +346,9 @@ class FASTOADDataFrame:
         self._update_sheet()
         for item in self.items:
             item.observe(self._render_ui, 'value')
-        return display(self.variable_selector, self.sheet)
+        self.sheet.layout.height = '400px'
+        ui = widgets.VBox([self.variable_selector, self.sheet])
+        return display(ui)
 
     @staticmethod
     def df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
