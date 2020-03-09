@@ -27,7 +27,7 @@ from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 
 from fastoad.modules.aerodynamics.external.xfoil import xfoil699
-from fastoad.modules.geometry.functions.airfoil_reshape import get_profile
+from fastoad.modules.geometry.profiles.get_profile import get_profile
 from fastoad.utils.resource_management.copy import copy_resource
 
 _INPUT_FILE_NAME = 'polar_input.txt'

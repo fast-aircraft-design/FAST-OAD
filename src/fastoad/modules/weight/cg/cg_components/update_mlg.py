@@ -27,6 +27,10 @@ class UpdateMLG(om.Group):
         self.add_subsystem('mlg', _UpdateMLG(), promotes=['*'])
 
         self.nonlinear_solver = om.NewtonSolver()
+        self.nonlinear_solver.options['iprint'] = 0
+        self.nonlinear_solver.options['reraise_child_analysiserror'] = False
+        self.nonlinear_solver.options['solve_subsystems'] = False
+        self.nonlinear_solver.linesearch = om.BoundsEnforceLS()
         self.linear_solver = om.DirectSolver()
 
 

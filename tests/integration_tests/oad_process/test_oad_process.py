@@ -13,6 +13,7 @@ Test module for Overall Aircraft Design process
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import os.path as pth
 from shutil import rmtree
@@ -21,7 +22,7 @@ import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 
-from fastoad import api, BundleLoader
+from fastoad import api
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMLegacy1XmlIO
 from tests import root_folder_path
@@ -35,13 +36,7 @@ def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-@pytest.fixture(scope='module')
-def install_components():
-    """ Needed because other tests play with Pelix/iPOPO """
-    BundleLoader().context.install_bundle('fastoad.activator').start()
-
-
-def test_oad_process(cleanup, install_components):
+def test_oad_process(cleanup):
     """
     Test for the overall aircraft design process.
     """
@@ -79,7 +74,70 @@ def test_oad_process(cleanup, install_components):
                     atol=1)
 
 
-def test_api(cleanup, install_components):
+def test_non_regression(cleanup):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, 'non_regression')
+    configuration_file_path = pth.join(results_folder_path, 'oad_process.toml')
+
+    # Generation of configuration file ----------------------------------------
+    api.generate_configuration_file(configuration_file_path, True)
+
+    # Generation of inputs ----------------------------------------------------
+    # We get the same inputs as in tutorial notebook
+    source_xml = pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy.xml')
+    api.generate_inputs(configuration_file_path, source_xml, source_path_schema='legacy',
+                        overwrite=True)
+
+    # Run model ---------------------------------------------------------------
+    problem = api.evaluate_problem(configuration_file_path, True)
+    om.view_connections(problem, outfile=pth.join(results_folder_path, 'connections.html'),
+                        show_browser=False)
+
+    # Check that weight-performances loop correctly converged
+    assert_allclose(problem['data:weight:aircraft:OWE'],
+                    problem['data:weight:airframe:mass'] + problem['data:weight:propulsion:mass']
+                    + problem['data:weight:systems:mass'] + problem['data:weight:furniture:mass']
+                    + problem['data:weight:crew:mass'],
+                    atol=1)
+    assert_allclose(problem['data:weight:aircraft:MZFW'],
+                    problem['data:weight:aircraft:OWE'] + problem[
+                        'data:weight:aircraft:max_payload'],
+                    atol=1)
+    assert_allclose(problem['data:weight:aircraft:MTOW'],
+                    problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
+                    + problem['data:mission:sizing:fuel'],
+                    atol=1)
+
+    ref_var_list = OMLegacy1XmlIO(
+        pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy_result.xml')).read_variables()
+
+    import pandas as pd
+    import numpy as np
+
+    row_list = []
+    for ref_var in ref_var_list:
+        try:
+            value = problem.get_val(ref_var.name, units=ref_var.units)[0]
+        except KeyError:
+            continue
+        row_list.append(
+            {'name': ref_var.name, 'units': ref_var.units,
+             'ref_value': ref_var.value[0], 'value': value}
+        )
+
+    df = pd.DataFrame(row_list)
+    df['rel_delta'] = (df['value'] - df['ref_value']) / df['ref_value']
+    df['rel_delta'][(df['ref_value'] == 0) & (abs(df['value']) <= 1e-10)] = 0.
+    df['abs_rel_delta'] = np.abs(df['rel_delta'])
+
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', 1000)
+    print(df.sort_values(by=['abs_rel_delta']))
+
+    assert np.all(df['abs_rel_delta'] < 0.005)
+
+
+def test_api(cleanup):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, 'api')
     configuration_file_path = pth.join(results_folder_path, 'oad_process.toml')
 
@@ -142,66 +200,3 @@ def test_api(cleanup, install_components):
     assert_allclose(problem['data:geometry:wing:area'], 130.6, atol=1e-1)
     assert_allclose(problem['data:geometry:vertical_tail:area'], 28.2, atol=1e-1)
     assert_allclose(problem['data:geometry:horizontal_tail:area'], 36.9, atol=1e-1)
-
-
-def test_non_regression(cleanup, install_components):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, 'non_regression')
-    configuration_file_path = pth.join(results_folder_path, 'oad_process.toml')
-
-    # Generation of configuration file ----------------------------------------
-    api.generate_configuration_file(configuration_file_path, True)
-
-    # Generation of inputs ----------------------------------------------------
-    # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy.xml')
-    api.generate_inputs(configuration_file_path, source_xml, source_path_schema='legacy',
-                        overwrite=True)
-
-    # Run model ---------------------------------------------------------------
-    problem = api.evaluate_problem(configuration_file_path, True)
-    om.view_connections(problem, outfile=pth.join(results_folder_path, 'connections.html'),
-                        show_browser=False)
-
-    # Check that weight-performances loop correctly converged
-    assert_allclose(problem['data:weight:aircraft:OWE'],
-                    problem['data:weight:airframe:mass'] + problem['data:weight:propulsion:mass']
-                    + problem['data:weight:systems:mass'] + problem['data:weight:furniture:mass']
-                    + problem['data:weight:crew:mass'],
-                    atol=1)
-    assert_allclose(problem['data:weight:aircraft:MZFW'],
-                    problem['data:weight:aircraft:OWE'] + problem[
-                        'data:weight:aircraft:max_payload'],
-                    atol=1)
-    assert_allclose(problem['data:weight:aircraft:MTOW'],
-                    problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
-                    + problem['data:mission:sizing:fuel'],
-                    atol=1)
-
-    ref_var_list = OMLegacy1XmlIO(
-        pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy_result.xml')).read_variables()
-
-    import pandas as pd
-    import numpy as np
-
-    row_list = []
-    for ref_var in ref_var_list:
-        try:
-            value = problem.get_val(ref_var.name, units=ref_var.units)[0]
-        except KeyError:
-            continue
-        row_list.append(
-            {'name': ref_var.name, 'units': ref_var.units,
-             'ref_value': ref_var.value[0], 'value': value}
-        )
-
-    df = pd.DataFrame(row_list)
-    df['rel_delta'] = (df['value'] - df['ref_value']) / df['ref_value']
-    df['rel_delta'][(df['ref_value'] == 0) & (abs(df['value']) <= 1e-10)] = 0.
-    df['abs_rel_delta'] = np.abs(df['rel_delta'])
-
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.width', 1000)
-    print(df.sort_values(by=['abs_rel_delta']))
-
-    assert np.all(df['abs_rel_delta'] < 0.005)

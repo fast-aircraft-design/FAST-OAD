@@ -670,79 +670,79 @@
                 <wing>
                     <mass>
                         <k>1.05<!--wing (A1): correction ratio to be applied on computed mass--></k>
-                        <offset>0.0<!--wing (A1): correction offset to be applied on computed mass--></offset>
+                        <offset units="kg">0.0<!--wing (A1): correction offset to be applied on computed mass--></offset>
                     </mass>
                     <bending_sizing>
                         <mass>
               <k>1.0<!--wing bending sizing (A11): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--wing bending sizing (A11): correction offset to be applied on computed mass--></offset>
+                          <offset units="kg">0.0<!--wing bending sizing (A11): correction offset to be applied on computed mass--></offset>
             </mass>
           </bending_sizing>
           <shear_sizing>
             <mass>
               <k>1.0<!--wing shear sizing (A12): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--wing shear sizing (A12): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--wing shear sizing (A12): correction offset to be applied on computed mass--></offset>
             </mass>
           </shear_sizing>
           <ribs>
             <mass>
               <k>1.0<!--wing ribs (A13): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--wing ribs (A13): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--wing ribs (A13): correction offset to be applied on computed mass--></offset>
             </mass>
           </ribs>
           <reinforcements>
             <mass>
               <k>1.0<!--wing reinforcements (A14): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--wing reinforcements (A14): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--wing reinforcements (A14): correction offset to be applied on computed mass--></offset>
             </mass>
           </reinforcements>
           <secondary_parts>
             <mass>
               <k>1.0<!--wing secondary parts (A15): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--wing secondary parts (A15): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--wing secondary parts (A15): correction offset to be applied on computed mass--></offset>
             </mass>
           </secondary_parts>
         </wing>
         <fuselage>
           <mass>
             <k>1.1<!--fuselage (A2): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--fuselage (A2): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--fuselage (A2): correction offset to be applied on computed mass--></offset>
           </mass>
         </fuselage>
         <horizontal_tail>
           <mass>
             <k>1.08<!--horizontal tail (A31): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--horizontal tail (A31): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--horizontal tail (A31): correction offset to be applied on computed mass--></offset>
           </mass>
         </horizontal_tail>
         <vertical_tail>
           <mass>
             <k>1.0<!--vertical tail (A32): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--vertical tail (A32): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--vertical tail (A32): correction offset to be applied on computed mass--></offset>
           </mass>
         </vertical_tail>
         <flight_controls>
           <mass>
             <k>1.0<!--flight controls (A4): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--flight controls (A4): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--flight controls (A4): correction offset to be applied on computed mass--></offset>
           </mass>
         </flight_controls>
         <landing_gear>
           <mass>
             <k>0.85<!--landing gears (A5): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--landing gears (A5): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--landing gears (A5): correction offset to be applied on computed mass--></offset>
           </mass>
         </landing_gear>
         <pylon>
           <mass>
             <k>0.85<!--pylon (A6): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--pylon (A6): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--pylon (A6): correction offset to be applied on computed mass--></offset>
           </mass>
         </pylon>
         <paint>
           <mass>
             <k>1.0<!--paint (A7): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--paint (A7): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--paint (A7): correction offset to be applied on computed mass--></offset>
           </mass>
         </paint>
       </airframe>
@@ -750,19 +750,19 @@
         <engine>
           <mass>
             <k>1.0<!--engine (B1): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--engine (B1): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--engine (B1): correction offset to be applied on computed mass--></offset>
           </mass>
         </engine>
         <fuel_lines>
           <mass>
             <k>1.0<!--fuel lines (B2): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--fuel lines (B2): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--fuel lines (B2): correction offset to be applied on computed mass--></offset>
           </mass>
         </fuel_lines>
         <unconsumables>
           <mass>
             <k>1.0<!--unconsumables (B3): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--unconsumables (B3): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--unconsumables (B3): correction offset to be applied on computed mass--></offset>
           </mass>
         </unconsumables>
       </propulsion>
@@ -771,19 +771,19 @@
           <auxiliary_power_unit>
             <mass>
               <k>1.0<!--power (C1): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
             </mass>
           </auxiliary_power_unit>
           <electric_systems>
             <mass>
               <k>1.0<!--power (C1): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
             </mass>
           </electric_systems>
           <hydraulic_systems>
             <mass>
               <k>1.0<!--power (C1): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
             </mass>
           </hydraulic_systems>
         </power>
@@ -791,68 +791,68 @@
           <insulation>
             <mass>
               <k>2.0<!--insulation (C21): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--insulation (C21): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--insulation (C21): correction offset to be applied on computed mass--></offset>
             </mass>
           </insulation>
           <air_conditioning>
             <mass>
               <k>1.0<!--air conditioning (C21): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--air conditioning (C21): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--air conditioning (C21): correction offset to be applied on computed mass--></offset>
             </mass>
           </air_conditioning>
           <de-icing>
             <mass>
               <k>1.0<!--de-icing (C21): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--de-icing (C21): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--de-icing (C21): correction offset to be applied on computed mass--></offset>
             </mass>
           </de-icing>
           <cabin_lighting>
             <mass>
               <k>1.0<!--cabin lighting (C21): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--cabin lighting (C21): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--cabin lighting (C21): correction offset to be applied on computed mass--></offset>
             </mass>
           </cabin_lighting>
           <seats_crew_accommodation>
             <mass>
               <k>1.0<!--seats crew accommodation (C21): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--seats crew accommodation (C21): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--seats crew accommodation (C21): correction offset to be applied on computed mass--></offset>
             </mass>
           </seats_crew_accommodation>
           <oxygen>
             <mass>
               <k>1.0<!--oxygen (C21): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--oxygen (C21): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--oxygen (C21): correction offset to be applied on computed mass--></offset>
             </mass>
           </oxygen>
           <safety_equipment>
             <mass>
               <k>1.0<!--safety equipment (C21): correction ratio to be applied on computed mass--></k>
-              <offset>0.0<!--safety equipment (C21): correction offset to be applied on computed mass--></offset>
+              <offset units="kg">0.0<!--safety equipment (C21): correction offset to be applied on computed mass--></offset>
             </mass>
           </safety_equipment>
         </life_support>
         <navigation>
           <mass>
             <k>1.0<!--navigation (C3): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--navigation (C3): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--navigation (C3): correction offset to be applied on computed mass--></offset>
           </mass>
         </navigation>
         <transmission>
           <mass>
             <k>1.0<!--transmission (C4): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--transmission (C4): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--transmission (C4): correction offset to be applied on computed mass--></offset>
           </mass>
         </transmission>
         <operational>
           <mass>
             <k>1.0<!--operational (C5): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--operational (C5): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--operational (C5): correction offset to be applied on computed mass--></offset>
           </mass>
         </operational>
         <flight_kit>
           <mass>
             <k>1.0<!--flight kit (C6): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--flight kit (C6): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--flight kit (C6): correction offset to be applied on computed mass--></offset>
           </mass>
         </flight_kit>
       </systems>
@@ -860,31 +860,31 @@
         <cargo_configuration>
           <mass>
             <k>1.0<!--cargo configuration (D1): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--cargo configuration (D1): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--cargo configuration (D1): correction offset to be applied on computed mass--></offset>
           </mass>
         </cargo_configuration>
         <passenger_seats>
           <mass>
             <k>1.0<!--passenger seats (D2): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--passenger seats (D2): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--passenger seats (D2): correction offset to be applied on computed mass--></offset>
           </mass>
         </passenger_seats>
         <food_water>
           <mass>
             <k>1.0<!--food water (D3): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--food water (D3): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--food water (D3): correction offset to be applied on computed mass--></offset>
           </mass>
         </food_water>
         <security_kit>
           <mass>
             <k>1.0<!--security kit (D4): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--security kit (D4): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--security kit (D4): correction offset to be applied on computed mass--></offset>
           </mass>
         </security_kit>
         <toilets>
           <mass>
             <k>1.0<!--toilets (D5): correction ratio to be applied on computed mass--></k>
-            <offset>0.0<!--toilets (D5): correction offset to be applied on computed mass--></offset>
+            <offset units="kg">0.0<!--toilets (D5): correction offset to be applied on computed mass--></offset>
           </mass>
         </toilets>
       </furniture>
