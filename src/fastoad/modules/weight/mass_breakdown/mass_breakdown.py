@@ -17,7 +17,7 @@ Main components for mass breakdown
 import openmdao.api as om
 
 from fastoad.modules.options import OpenMdaoOptionDispatcherGroup, ENGINE_LOCATION_OPTION, \
-    TAIL_TYPE_OPTION, AIRCRAFT_TYPE_OPTION
+    TAIL_TYPE_OPTION, AIRCRAFT_TYPE_OPTION, PAYLOAD_FROM_NPAX
 from fastoad.modules.weight.mass_breakdown.a_airframe import WingWeight, FuselageWeight, \
     EmpennageWeight, FlightControlsWeight, LandingGearWeight, PylonsWeight, PaintWeight
 from fastoad.modules.weight.mass_breakdown.b_propulsion import EngineWeight, FuelLinesWeight, \
@@ -29,6 +29,7 @@ from fastoad.modules.weight.mass_breakdown.cs25 import Loads
 from fastoad.modules.weight.mass_breakdown.d_furniture import CargoConfigurationWeight, \
     PassengerSeatsWeight, FoodWaterWeight, SecurityKitWeight, ToiletsWeight
 from fastoad.modules.weight.mass_breakdown.e_crew import CrewWeight
+from fastoad.modules.weight.mass_breakdown.payload import ComputePayload
 from fastoad.modules.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
 
 
@@ -43,14 +44,21 @@ class MassBreakdown(OpenMdaoOptionDispatcherGroup):
     This model cycles for having consistent OWE, MZFW and MLW.
     Consistency with MTOW can be achieved by cycling with a model that computes MTOW from OWE,
     which should come from a mission computation that will assess needed block fuel.
+
+    Options:
+    - payload_from_npax: If True (default), payload masses will be computed from NPAX, if False
+                         design payload mass and maximum payload mass must be provided.
     """
 
     def initialize(self):
         self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
         self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
+        self.options.declare(PAYLOAD_FROM_NPAX, types=bool, default=True)
 
     def setup(self):
+        if self.options[PAYLOAD_FROM_NPAX]:
+            self.add_subsystem('payload', ComputePayload(), promotes=['*'])
         self.add_subsystem('owe', OperatingWeightEmpty(), promotes=['*'])
         self.add_subsystem('update_mzfw_and_mlw', UpdateMLWandMZFW(), promotes=['*'])
 
