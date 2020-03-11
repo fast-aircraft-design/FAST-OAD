@@ -1,5 +1,5 @@
 """
-Tests for postprocessing functions
+Tests for analysis and plots functions
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
@@ -17,7 +17,8 @@ Tests for postprocessing functions
 import os.path as pth
 
 from fastoad.io.xml import OMXmlIO
-from ..analysis_and_plots import wing_geometry_plot, drag_polar_plot, mass_breakdown_plot
+from fastoad.utils.postprocessing.analysis_and_plots import \
+    wing_geometry_plot, drag_polar_plot, mass_breakdown_plot
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 
