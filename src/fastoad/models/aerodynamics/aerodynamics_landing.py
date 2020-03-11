@@ -49,16 +49,20 @@ class AerodynamicsLanding(OpenMdaoOptionDispatcherGroup):
 
     def initialize(self):
         self.options.declare('use_xfoil', default=True, types=bool)
-        self.options.declare('alpha_min', default=15., types=float)
-        self.options.declare('alpha_max', default=25., types=float)
+        self.options.declare('xfoil_alpha_min', default=15., types=float)
+        self.options.declare('xfoil_alpha_max', default=25., types=float)
+        self.options.declare('xfoil_iter_limit', default=20, types=int)
         self.options.declare(OPTION_XFOIL_EXE_PATH, default='', types=str)
 
     def setup(self):
         self.add_subsystem('mach_reynolds', ComputeMachReynolds(), promotes=['*'])
         if self.options['use_xfoil']:
-            start = self.options['alpha_min']
-            end = self.options['alpha_max']
-            self.add_subsystem('xfoil_run', XfoilPolar(alpha_start=start, alpha_end=end),
+            start = self.options['xfoil_alpha_min']
+            end = self.options['xfoil_alpha_max']
+            iter_limit = self.options['xfoil_iter_limit']
+            self.add_subsystem('xfoil_run', XfoilPolar(alpha_start=start,
+                                                       alpha_end=end,
+                                                       iter_limit=iter_limit),
                                promotes=['data:geometry:wing:sweep_25',
                                          'data:geometry:wing:thickness_ratio'])
         self.add_subsystem('delta_cl_landing', ComputeDeltaHighLift(landing_flag=True),

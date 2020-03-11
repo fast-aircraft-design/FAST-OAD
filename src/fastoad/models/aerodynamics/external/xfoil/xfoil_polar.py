@@ -38,6 +38,7 @@ OPTION_PROFILE_NAME = 'profile_name'
 OPTION_XFOIL_EXE_PATH = 'xfoil_exe_path'
 OPTION_ALPHA_START = 'alpha_start'
 OPTION_ALPHA_END = 'alpha_end'
+OPTION_ITER_LIMIT = 'iter_limit'
 
 _INPUT_FILE_NAME = 'polar_session.txt'
 _STDOUT_FILE_NAME = 'polar_calc.log'
@@ -70,6 +71,7 @@ class XfoilPolar(ExternalCodeComp):
         self.options.declare(OPTION_RESULT_POLAR_FILENAME, default='polar_result.txt', types=str)
         self.options.declare(OPTION_ALPHA_START, default=0., types=float)
         self.options.declare(OPTION_ALPHA_END, default=30., types=float)
+        self.options.declare(OPTION_ITER_LIMIT, default=40, types=int)
 
     def setup(self):
 
@@ -132,6 +134,8 @@ class XfoilPolar(ExternalCodeComp):
             parser.transfer_var(float(reynolds), 1, 1)
             parser.mark_anchor('M')
             parser.transfer_var(float(mach), 1, 1)
+            parser.mark_anchor('ITER')
+            parser.transfer_var(self.options[OPTION_ITER_LIMIT], 1, 1)
             parser.mark_anchor('PACC')
             parser.transfer_var(tmp_result_file_path, 1, 1)
             parser.mark_anchor('ASEQ')

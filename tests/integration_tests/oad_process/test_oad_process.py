@@ -87,8 +87,8 @@ def test_non_regression(cleanup):
     # Next trick is needed for overloading option setting from TOML file
     problem.model.aerodynamics.landing._OPTIONS['use_xfoil'] = True
     # BTW we narrow computed alpha range for sake of CPU time
-    problem.model.aerodynamics.landing._OPTIONS['alpha_min'] = 20.
-    problem.model.aerodynamics.landing._OPTIONS['alpha_max'] = 22.
+    problem.model.aerodynamics.landing._OPTIONS['xfoil_alpha_min'] = 20.
+    problem.model.aerodynamics.landing._OPTIONS['xfoil_alpha_max'] = 22.
 
     # Generation and reading of inputs ----------------------------------------
     ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy.xml'))
