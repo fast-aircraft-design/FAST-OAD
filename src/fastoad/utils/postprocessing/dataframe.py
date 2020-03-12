@@ -59,11 +59,18 @@ class FASTOADDataFrame:
         self.xml = None
 
     def update_df(self, *args):
+        """
+        Updates the stored DataFrame with respect to the actual values of the Sheet.
+        """
         df = self.sheet_to_df(self.sheet)
         self._update_df(df)
         self.update_xml()
 
     def update_xml(self, *args):
+        """
+        Updates the variables values and attributes in the xml file with respect to the
+        actual values of the stored DataFrame .
+        """
         self.df_to_xml(self.df_variables, self.xml)
 
     def render_sheet(self, max_depth: int = 6) -> display:
