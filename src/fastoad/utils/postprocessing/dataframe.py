@@ -26,7 +26,18 @@ pd.set_option('display.max_rows', None)
 
 
 class FASTOADDataFrame:
+    """
+    A class for interacting with FAST-OAD xml files.
+    The xml file data is stored in a pandas DataFrame. The class built so that a modification
+    of the DataFrame is instantly replicated on the xml file.
+    The interaction is achieved using a user interface built with widgets from ipywidgets and
+    Sheets from ipysheet.
 
+    A classical usage of this class will be::
+
+        df = FASTOADDataFrame()  # instantiation
+        df.xml_interact('problem_outputs.xml')  # renders a ui for reading/modifying the xml file
+    """
     def __init__(self):
 
         self.col_names_variables = ['Type', 'Name',
