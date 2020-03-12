@@ -81,9 +81,6 @@ class FASTOADDataFrame:
         :return the equivalent dataframe
         """
         # TODO: should we add a 'Type' field if we decide to add a type attribute to Variable ?
-        col_names = ['Name', 'Value', 'Unit', 'Description']
-        df = pd.DataFrame()
-
         # Read the xml
         ivc = xml.read()
 
@@ -101,7 +98,6 @@ class FASTOADDataFrame:
         :param df: the dataframe to convert
         :param xml: the resulting xml file
         """
-
         # Extract the variables list
         variables = get_variables_from_df(df)
         ivc = get_ivc_from_variables(variables)
@@ -138,7 +134,6 @@ class FASTOADDataFrame:
         :return the equivalent pandas DataFrame
         """
         df = sh.to_dataframe(sheet)
-
         return df
 
     def _update_df(self, *args):
