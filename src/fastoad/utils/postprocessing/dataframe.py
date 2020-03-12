@@ -35,8 +35,9 @@ class FASTOADDataFrame:
 
     A classical usage of this class will be::
 
-        df = FASTOADDataFrame()  # instantiation
-        df.xml_interact('problem_outputs.xml')  # renders a ui for reading/modifying the xml file
+        df = FASTOADDataFrame()  # instantiation of dataframe
+        xml = OMXmlIO('problem_outputs.xml') #  instantiation of xml io
+        df.xml_interact(xml)  # renders a ui for reading/modifying the xml file
     """
 
     def __init__(self):
