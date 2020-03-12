@@ -18,13 +18,16 @@ import os
 import os.path as pth
 from shutil import rmtree
 
+import numpy as np
 import openmdao.api as om
+import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
 from fastoad import api
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMLegacy1XmlIO
+from fastoad.models.aerodynamics.external.xfoil import XfoilPolar
 from tests import root_folder_path
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
@@ -44,19 +47,18 @@ def test_oad_process(cleanup):
     problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, 'oad_process.toml'))
 
-    problem.setup()
     ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
-    problem.final_setup()
+    problem.setup()
+    problem.run_model()
+    problem.write_outputs()
+
     if not pth.exists(RESULTS_FOLDER_PATH):
         os.mkdir(RESULTS_FOLDER_PATH)
     om.view_connections(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'connections.html'),
                         show_browser=False)
     om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'n2.html'), show_browser=False)
-    problem.run_model()
-
-    problem.write_outputs()
 
     # Check that weight-performances loop correctly converged
     assert_allclose(problem['data:weight:aircraft:OWE'],
@@ -78,17 +80,26 @@ def test_non_regression(cleanup):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, 'non_regression')
     configuration_file_path = pth.join(results_folder_path, 'oad_process.toml')
 
-    # Generation of configuration file ----------------------------------------
+    # Generation of configuration file  and problem instance ------------------
     api.generate_configuration_file(configuration_file_path, True)
+    problem = FASTOADProblem()
+    problem.configure(configuration_file_path)
+    # Next trick is needed for overloading option setting from TOML file
+    problem.model.aerodynamics.landing._OPTIONS['use_xfoil'] = True
+    # BTW we narrow computed alpha range for sake of CPU time
+    problem.model.aerodynamics.landing._OPTIONS['xfoil_alpha_min'] = 20.
+    problem.model.aerodynamics.landing._OPTIONS['xfoil_alpha_max'] = 22.
 
-    # Generation of inputs ----------------------------------------------------
-    # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy.xml')
-    api.generate_inputs(configuration_file_path, source_xml, source_path_schema='legacy',
-                        overwrite=True)
+    # Generation and reading of inputs ----------------------------------------
+    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy.xml'))
+    problem.write_needed_inputs(ref_input_reader)
+    problem.read_inputs()
+    problem.setup()
 
     # Run model ---------------------------------------------------------------
-    problem = api.evaluate_problem(configuration_file_path, True)
+    problem.run_model()
+    problem.write_outputs()
+
     om.view_connections(problem, outfile=pth.join(results_folder_path, 'connections.html'),
                         show_browser=False)
 
@@ -109,9 +120,6 @@ def test_non_regression(cleanup):
 
     ref_var_list = OMLegacy1XmlIO(
         pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy_result.xml')).read_variables()
-
-    import pandas as pd
-    import numpy as np
 
     row_list = []
     for ref_var in ref_var_list:
@@ -135,6 +143,8 @@ def test_non_regression(cleanup):
     print(df.sort_values(by=['abs_rel_delta']))
 
     assert np.all(df['abs_rel_delta'] < 0.005)
+
+    print('XFOIL runs:', XfoilPolar.run_count)
 
 
 def test_api(cleanup):
