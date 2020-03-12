@@ -38,6 +38,7 @@ class FASTOADDataFrame:
         df = FASTOADDataFrame()  # instantiation
         df.xml_interact('problem_outputs.xml')  # renders a ui for reading/modifying the xml file
     """
+
     def __init__(self):
 
         self.col_names_variables = ['Type', 'Name',
@@ -58,22 +59,106 @@ class FASTOADDataFrame:
         self.out = None
         self.xml = None
 
-    def update_df(self, *args):
+    def xml_interact(self, xml: OMXmlIO):
+        """
+        Renders an interactive pysheet with dropdown menus of the xml file.
+
+        :param xml: the xml file to interact with
+        :return display of the user interface
+        """
+        self.xml = xml
+        self.df_variables = self.xml_to_df(self.xml)
+        self.df_variables = self.df_variables.reset_index(drop=True)
+
+        return self._render_sheet()
+
+    @staticmethod
+    def xml_to_df(xml: OMXmlIO) -> pd.DataFrame:
+        """
+        Returns the equivalent pandas dataframe of the xml file.
+
+        :param xml: the xml file to convert
+        :return the equivalent dataframe
+        """
+        # TODO: should we add a 'Type' field if we decide to add a type attribute to Variable ?
+        col_names = ['Name', 'Value', 'Unit', 'Description']
+        df = pd.DataFrame()
+
+        # Read the xml
+        ivc = xml.read()
+
+        # Extract the variables list
+        variables = get_variables_from_ivc(ivc)
+        df = get_df_from_variables(variables)
+
+        return df
+
+    @staticmethod
+    def df_to_xml(df: pd.DataFrame, xml: OMXmlIO):
+        """
+        Returns the equivalent xml file of the pandas dataframe .
+
+        :param df: the dataframe to convert
+        :param xml: the resulting xml file
+        """
+
+        # Extract the variables list
+        variables = get_variables_from_df(df)
+        ivc = get_ivc_from_variables(variables)
+        xml.write(ivc)
+
+    @staticmethod
+    def df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
+        """
+        Transforms a pandas DataFrame into a ipysheet Sheet.
+        The cells are set to read only except for the values.
+
+        :param df: the pandas DataFrame to be converted
+        :return the equivalent ipysheet Sheet
+        """
+        if not df.empty:
+            sheet = sh.from_dataframe(df)
+            column = df.columns.get_loc('Value')
+
+            for cell in sheet.cells:
+                if cell.column_start != column and cell.column_end != column:
+                    cell.read_only = True
+
+        else:
+            sheet = sh.sheet()
+
+        return sheet
+
+    @staticmethod
+    def sheet_to_df(sheet: sh.Sheet) -> pd.DataFrame:
+        """
+        Transforms a ipysheet Sheet into a pandas DataFrame.
+
+        :param sheet: the ipysheet Sheet to be converted
+        :return the equivalent pandas DataFrame
+        """
+        df = sh.to_dataframe(sheet)
+
+        return df
+
+    def _update_df(self, *args):
         """
         Updates the stored DataFrame with respect to the actual values of the Sheet.
+        Then updates the xml file with respect to the stored DataFrame.
         """
         df = self.sheet_to_df(self.sheet)
-        self._update_df(df)
-        self.update_xml()
+        for i in df.index:
+            self.df_variables.loc[int(i), :] = df.loc[i, :].values
+        self._update_xml()
 
-    def update_xml(self, *args):
+    def _update_xml(self, *args):
         """
         Updates the variables values and attributes in the xml file with respect to the
         actual values of the stored DataFrame .
         """
         self.df_to_xml(self.df_variables, self.xml)
 
-    def render_sheet(self, max_depth: int = 6) -> display:
+    def _render_sheet(self, max_depth: int = 6) -> display:
         """
         Renders an interactive pysheet with dropdown menus of the stored dataframe.
 
@@ -140,7 +225,7 @@ class FASTOADDataFrame:
         self.sheet = self.df_to_sheet(filtered_var)
 
         for cell in self.sheet.cells:
-            cell.observe(self.update_df, 'value')
+            cell.observe(self._update_df, 'value')
 
     def _render_ui(self, *args) -> display:
         """
@@ -158,44 +243,6 @@ class FASTOADDataFrame:
         self.sheet.layout.height = '400px'
         ui = widgets.VBox([self.variable_selector, self.sheet])
         return display(ui)
-
-    @staticmethod
-    def df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
-        """
-        Transforms a pandas DataFrame into a ipysheet Sheet.
-        The cells are set to read only except for the values.
-
-        :param df: the pandas DataFrame to be converted
-        :return the equivalent ipysheet Sheet
-        """
-        if not df.empty:
-            sheet = sh.from_dataframe(df)
-            column = df.columns.get_loc('Value')
-
-            for cell in sheet.cells:
-                if cell.column_start != column and cell.column_end != column:
-                    cell.read_only = True
-
-        else:
-            sheet = sh.sheet()
-
-        return sheet
-
-    @staticmethod
-    def sheet_to_df(sheet: sh.Sheet) -> pd.DataFrame:
-        """
-        Transforms a ipysheet Sheet into a pandas DataFrame.
-
-        :param sheet: the ipysheet Sheet to be converted
-        :return the equivalent pandas DataFrame
-        """
-        df = sh.to_dataframe(sheet)
-
-        return df
-
-    def _update_df(self, df):
-        for i in df.index:
-            self.df_variables.loc[int(i), :] = df.loc[i, :].values
 
     @staticmethod
     def _find_submodules(df: pd.DataFrame, modules: [str] = None) -> [str]:
@@ -266,51 +313,3 @@ class FASTOADDataFrame:
                     filtered_df = filtered_df.append(element)
 
         return filtered_df
-
-    def xml_interact(self, xml: OMXmlIO):
-        """
-        Renders an interactive pysheet with dropdown menus of the xml file.
-
-        :param xml_file: the xml file to interact with
-        :return display of the user interface
-        """
-        self.xml = xml
-        self.df_variables = self.xml_to_df(self.xml)
-        self.df_variables = self.df_variables.reset_index(drop=True)
-
-        return self.render_sheet()
-
-    @staticmethod
-    def xml_to_df(xml: OMXmlIO) -> pd.DataFrame:
-        """
-        Returns the equivalent pandas dataframe of the xml file.
-
-        :param xml: the xml file to convert
-        :return the equivalent dataframe
-        """
-        # TODO: should we add a 'Type' field if we decide to add a type attribute to Variable ?
-        col_names = ['Name', 'Value', 'Unit', 'Description']
-        df = pd.DataFrame()
-
-        # Read the xml
-        ivc = xml.read()
-
-        # Extract the variables list
-        variables = get_variables_from_ivc(ivc)
-        df = get_df_from_variables(variables)
-
-        return df
-
-    @staticmethod
-    def df_to_xml(df: pd.DataFrame, xml: OMXmlIO):
-        """
-        Returns the equivalent xml file of the pandas dataframe .
-
-        :param df: the dataframe to convert
-        :param xml: the resulting xml file
-        """
-
-        # Extract the variables list
-        variables = get_variables_from_df(df)
-        ivc = get_ivc_from_variables(variables)
-        xml.write(ivc)
