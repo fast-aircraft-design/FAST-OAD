@@ -25,6 +25,7 @@ from fastoad.utils.postprocessing.dataframe import FASTOADDataFrame
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
 
+
 def test_xml_to_from_df():
     """
     Basic tests for testing the conversion of xml to dataframe.
@@ -85,3 +86,18 @@ def test_xml_to_from_df():
     resulting_df = FASTOADDataFrame.xml_to_df(new_xml)
 
     assert_frame_equal(ref_df, resulting_df)
+
+
+def test_xml_interact():
+    """
+    Basic tests for testing the xml interaction.
+    """
+    filename = pth.join(DATA_FOLDER_PATH, 'problem_outputs.xml')
+
+    xml = OMXmlIO(filename)
+
+    df = FASTOADDataFrame()
+
+    # This is a rudimentary test as ui are difficult to verify
+    # The test will fail if an error is raised by the following line
+    df.xml_interact(xml)
