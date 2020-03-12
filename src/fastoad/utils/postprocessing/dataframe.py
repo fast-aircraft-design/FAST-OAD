@@ -13,17 +13,14 @@ Defines the data frame for postprocessing
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 import pandas as pd
 import ipysheet as sh
 import ipywidgets as widgets
 from IPython.display import display, clear_output
 
-from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO
 from fastoad.openmdao.connections_utils import get_variables_from_ivc, \
-    get_unconnected_input_variables, get_variables_from_df, \
-    get_df_from_variables, get_ivc_from_variables
+    get_variables_from_df, get_df_from_variables, get_ivc_from_variables
 
 pd.set_option('display.max_rows', None)
 
