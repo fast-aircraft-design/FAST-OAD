@@ -41,23 +41,23 @@ class FASTOADDataFrame:
 
     def __init__(self):
 
-        self.col_names_variables = ['Type', 'Name',
-                                    'Value', 'Unit', 'Description']
+        # The xml file to be set
+        self.xml = None
 
-        self.col_names_optimization = ['Type', 'Name', 'Value',
-                                       'Lower', 'Upper', 'Unit', 'Description']
-
+        # The dataframe which is the mirror of the xml file
         self.df_variables = pd.DataFrame()
 
-        self.df_optimization = pd.DataFrame()
-
-        self.all_tag = '--ALL--'
-
+        # The sheet which is the mirror of the dataframe
         self.sheet = None
+
+        # The list of stored widgets
         self.items = None
+
+        # The ui containing all the dropdown menus
         self.variable_selector = None
-        self.out = None
-        self.xml = None
+
+        # A tag used to select all submodules
+        self.all_tag = '--ALL--'
 
     def xml_interact(self, xml: OMXmlIO):
         """
