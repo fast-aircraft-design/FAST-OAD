@@ -60,6 +60,9 @@ class FASTOADDataFrame:
         # A tag used to select all submodules
         self.all_tag = '--ALL--'
 
+        # Max depth when searching for submodules
+        self.max_depth = None
+
     def xml_interact(self, xml: OMXmlIO):
         """
         Renders an interactive pysheet with dropdown menus of the xml file.
@@ -118,7 +121,7 @@ class FASTOADDataFrame:
             column = df.columns.get_loc('Value')
 
             for cell in sheet.cells:
-                if cell.column_start != column and cell.column_end != column:
+                if column not in (cell.column_start, cell.column_end):
                     cell.read_only = True
 
         else:
@@ -178,26 +181,27 @@ class FASTOADDataFrame:
             if i == 0:
                 self.items[0].observe(self._update_items, 'value')
                 self.items[0].observe(self._update_variable_selector, 'value')
-            else:
-                if i <= len(self.items):
-                    modules = [item.value for item in self.items[0:i]]
-                    modules_item = sorted(self._find_submodules(self.df_variables, modules))
-                    if modules_item:
-                        # Check if the item exists already
-                        if i == len(self.items):
-                            if len(modules_item) > 1:
-                                modules_item.insert(0, self.all_tag)
-                            w = widgets.Dropdown(options=modules_item)
-                            w.observe(self._update_items, 'value')
-                            w.observe(self._update_variable_selector, 'value')
-                            self.items.append(w)
-                        else:
-                            if (self.all_tag not in modules_item) and (len(modules_item) > 1):
-                                modules_item.insert(0, self.all_tag)
-                            self.items[i].options = modules_item
+            elif i <= len(self.items):
+                modules = [item.value for item in self.items[0:i]]
+                modules_item = sorted(self._find_submodules(self.df_variables, modules))
+                if modules_item:
+                    # Check if the item exists already
+                    if i == len(self.items):
+                        if len(modules_item) > 1:
+                            modules_item.insert(0, self.all_tag)
+                        w = widgets.Dropdown(options=modules_item)
+                        w.observe(self._update_items, 'value')
+                        w.observe(self._update_variable_selector, 'value')
+                        self.items.append(w)
                     else:
-                        if i < len(self.items):
-                            self.items.pop(i)
+                        if (self.all_tag not in modules_item) and (len(modules_item) > 1):
+                            modules_item.insert(0, self.all_tag)
+                        self.items[i].options = modules_item
+                else:
+                    if i < len(self.items):
+                        self.items.pop(i)
+            else:
+                pass
 
     def _update_variable_selector(self, *args):
         """
