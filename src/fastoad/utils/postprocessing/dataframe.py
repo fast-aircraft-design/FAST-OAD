@@ -90,10 +90,12 @@ class FASTOADDataFrame:
 
         # Extract the variables list
         variables = get_variables_from_ivc(ivc)
+        # pylint: disable=invalid-name # that's a common naming
         df = get_df_from_variables(variables)
 
         return df
 
+    # pylint: disable=invalid-name # that's a common naming
     @staticmethod
     def df_to_xml(df: pd.DataFrame, xml: OMXmlIO):
         """
@@ -107,6 +109,7 @@ class FASTOADDataFrame:
         ivc = get_ivc_from_variables(variables)
         xml.write(ivc)
 
+    # pylint: disable=invalid-name # that's a common naming
     @staticmethod
     def df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
         """
@@ -140,6 +143,7 @@ class FASTOADDataFrame:
         df = sh.to_dataframe(sheet)
         return df
 
+    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_df(self, *args):
         """
         Updates the stored DataFrame with respect to the actual values of the Sheet.
@@ -150,6 +154,7 @@ class FASTOADDataFrame:
             self.df_variables.loc[int(i), :] = df.loc[i, :].values
         self._update_xml()
 
+    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_xml(self, *args):
         """
         Updates the variables values and attributes in the xml file with respect to the
@@ -172,6 +177,7 @@ class FASTOADDataFrame:
             self.items.append(w)
         return self._render_ui()
 
+    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_items(self, *args):
         """
         Updates the items with respect to higher level items values with
@@ -189,10 +195,10 @@ class FASTOADDataFrame:
                     if i == len(self.items):
                         if len(modules_item) > 1:
                             modules_item.insert(0, self.all_tag)
-                        w = widgets.Dropdown(options=modules_item)
-                        w.observe(self._update_items, 'value')
-                        w.observe(self._update_variable_selector, 'value')
-                        self.items.append(w)
+                        widget = widgets.Dropdown(options=modules_item)
+                        widget.observe(self._update_items, 'value')
+                        widget.observe(self._update_variable_selector, 'value')
+                        self.items.append(widget)
                     else:
                         if (self.all_tag not in modules_item) and (len(modules_item) > 1):
                             modules_item.insert(0, self.all_tag)
@@ -203,6 +209,7 @@ class FASTOADDataFrame:
             else:
                 pass
 
+    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_variable_selector(self, *args):
         """
         Updates the variable selector with respect to the
@@ -227,6 +234,7 @@ class FASTOADDataFrame:
         for cell in self.sheet.cells:
             cell.observe(self._update_df, 'value')
 
+    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _render_ui(self, *args) -> display:
         """
         Renders the dropdown menus for the variable selector and the corresponding

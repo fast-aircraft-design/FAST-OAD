@@ -96,6 +96,7 @@ def test_xml_interact():
 
     xml = OMXmlIO(filename)
 
+    # pylint: disable=invalid-name # that's a common naming
     df = FASTOADDataFrame()
 
     # This is a rudimentary test as ui are difficult to verify
