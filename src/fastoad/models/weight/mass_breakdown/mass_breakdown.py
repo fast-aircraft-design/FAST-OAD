@@ -16,11 +16,7 @@ Main components for mass breakdown
 
 import openmdao.api as om
 
-from fastoad.models.options import (
-    OpenMdaoOptionDispatcherGroup,
-    AIRCRAFT_TYPE_OPTION,
-    PAYLOAD_FROM_NPAX,
-)
+from fastoad.models.options import PAYLOAD_FROM_NPAX
 from fastoad.models.weight.mass_breakdown.a_airframe import (
     WingWeight,
     FuselageWeight,
@@ -45,7 +41,6 @@ from fastoad.models.weight.mass_breakdown.c_systems import (
 )
 from fastoad.models.weight.mass_breakdown.cs25 import Loads
 from fastoad.models.weight.mass_breakdown.d_furniture import (
-    CargoConfigurationWeight,
     PassengerSeatsWeight,
     FoodWaterWeight,
     SecurityKitWeight,
@@ -56,7 +51,7 @@ from fastoad.models.weight.mass_breakdown.payload import ComputePayload
 from fastoad.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
 
 
-class MassBreakdown(OpenMdaoOptionDispatcherGroup):
+class MassBreakdown(om.Group):
     """
     Computes analytically the mass of each part of the aircraft, and the resulting sum,
     the Overall Weight Empty (OWE).
@@ -74,7 +69,6 @@ class MassBreakdown(OpenMdaoOptionDispatcherGroup):
     """
 
     def initialize(self):
-        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
         self.options.declare(PAYLOAD_FROM_NPAX, types=bool, default=True)
 
     def setup(self):
@@ -93,15 +87,11 @@ class MassBreakdown(OpenMdaoOptionDispatcherGroup):
         self.linear_solver.options["iprint"] = 0
 
 
-class OperatingWeightEmpty(OpenMdaoOptionDispatcherGroup):
+class OperatingWeightEmpty(om.Group):
     """ Operating Empty Weight (OEW) estimation
 
     This group aggregates weight from all components of the aircraft.
     """
-
-    def initialize(self):
-        # TODO: Manage options through constants or enums
-        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):
         # Airframe
@@ -132,7 +122,6 @@ class OperatingWeightEmpty(OpenMdaoOptionDispatcherGroup):
         )
         self.add_subsystem("flight_kit_weight", FlightKitWeight(), promotes=["*"])
         # Cargo and furniture
-        self.add_subsystem("cargo_configuration_weight", CargoConfigurationWeight(), promotes=["*"])
         self.add_subsystem("passenger_seats_weight", PassengerSeatsWeight(), promotes=["*"])
         self.add_subsystem("food_water_weight", FoodWaterWeight(), promotes=["*"])
         self.add_subsystem("security_kit_weight", SecurityKitWeight(), promotes=["*"])
@@ -209,7 +198,6 @@ class OperatingWeightEmpty(OpenMdaoOptionDispatcherGroup):
             om.AddSubtractComp(
                 "data:weight:furniture:mass",
                 [
-                    "data:weight:furniture:cargo_configuration:mass",
                     "data:weight:furniture:passenger_seats:mass",
                     "data:weight:furniture:food_water:mass",
                     "data:weight:furniture:security_kit:mass",

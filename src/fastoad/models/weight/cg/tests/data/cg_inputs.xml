@@ -414,7 +414,7 @@
             <furniture>
                 <mass>3112.5<!--aircraft furniture (D): mass--></mass>
                 <cargo_configuration>
-                    <mass>41.769<!--cargo configuration (D1): mass--></mass>
+                    <mass>0.0<!--cargo configuration (D1): mass--></mass>
                     <CG>
                         <x>0.0<!--cargo configuration (D1): X-position of center of gravity--></x>
                     </CG>

@@ -1,7 +1,6 @@
 """
 Module for management of options and factorizing their definition.
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,7 +16,6 @@ Module for management of options and factorizing their definition.
 
 import openmdao.api as om
 
-AIRCRAFT_TYPE_OPTION = "ac_type"
 CABIN_SIZING_OPTION = "cabin_sizing"
 PAYLOAD_FROM_NPAX = "payload_from_npax"
 

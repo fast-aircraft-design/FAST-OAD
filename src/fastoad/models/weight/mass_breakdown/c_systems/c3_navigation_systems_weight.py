@@ -1,7 +1,6 @@
 """
 Estimation of navigation systems weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,45 +13,43 @@ Estimation of navigation systems weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.models.options import AIRCRAFT_TYPE_OPTION
+from fastoad.constants import RangeCategory
 
 
 class NavigationSystemsWeight(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Navigation systems weight estimation (C3) """
 
-    def initialize(self):
-        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
-
     def setup(self):
-        self.add_input('data:geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('data:geometry:wing:b_50', val=np.nan, units='m')
-        self.add_input('tuning:weight:systems:navigation:mass:k', val=1.)
-        self.add_input('tuning:weight:systems:navigation:mass:offset', val=0., units='kg')
+        self.add_input("data:TLAR:range", val=np.nan, units="NM")
+        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:b_50", val=np.nan, units="m")
+        self.add_input("tuning:weight:systems:navigation:mass:k", val=1.0)
+        self.add_input("tuning:weight:systems:navigation:mass:offset", val=0.0, units="kg")
 
-        self.add_output('data:weight:systems:navigation:mass', units='kg')
+        self.add_output("data:weight:systems:navigation:mass", units="kg")
 
-    def compute(self, inputs, outputs
-                , discrete_inputs=None, discrete_outputs=None):
-        fuselage_length = inputs['data:geometry:fuselage:length']
-        b_50 = inputs['data:geometry:wing:b_50']
-        k_c3 = inputs['tuning:weight:systems:navigation:mass:k']
-        offset_c3 = inputs['tuning:weight:systems:navigation:mass:offset']
+        self.declare_partials("*", "*", method="fd")
 
-        aircraft_type = self.options[AIRCRAFT_TYPE_OPTION]
-        if aircraft_type == 1.0:
-            base_weight = 150
-        elif aircraft_type == 2.0:
-            base_weight = 450
-        elif aircraft_type == 3.0:
-            base_weight = 700
-        elif aircraft_type in [4.0, 5.0]:
-            base_weight = 800
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        tlar_range = inputs["data:TLAR:range"]
+        fuselage_length = inputs["data:geometry:fuselage:length"]
+        b_50 = inputs["data:geometry:wing:b_50"]
+        k_c3 = inputs["tuning:weight:systems:navigation:mass:k"]
+        offset_c3 = inputs["tuning:weight:systems:navigation:mass:offset"]
+
+        if tlar_range in RangeCategory.SHORT:
+            base_weight = 150.0
+        elif tlar_range in RangeCategory.SHORT_MEDIUM:
+            base_weight = 450.0
+        elif tlar_range in RangeCategory.MEDIUM:
+            base_weight = 700.0
         else:
-            raise ValueError("Unexpected aircraft type")
+            base_weight = 800.0
 
         temp_c3 = base_weight + 0.033 * fuselage_length * b_50
-        outputs['data:weight:systems:navigation:mass'] = k_c3 * temp_c3 + offset_c3
+        outputs["data:weight:systems:navigation:mass"] = k_c3 * temp_c3 + offset_c3

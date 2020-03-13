@@ -21,7 +21,6 @@ import openmdao.api as om
 import pytest
 
 from fastoad.io.xml.openmdao_basic_io import OMXmlIO
-from fastoad.models.options import AIRCRAFT_TYPE_OPTION
 from tests.testing_utilities import run_system
 from ..a_airframe import (
     EmpennageWeight,
@@ -325,6 +324,7 @@ def test_compute_power_systems_weight():
 def test_compute_life_support_systems_weight():
     """ Tests life support systems weight computation from sample XML data """
     input_list = [
+        "data:TLAR:range",
         "data:geometry:fuselage:maximum_width",
         "data:geometry:fuselage:maximum_height",
         "data:geometry:cabin:length",
@@ -378,36 +378,32 @@ def test_compute_navigation_systems_weight():
         "tuning:weight:systems:navigation:mass:k",
         "tuning:weight:systems:navigation:mass:offset",
     ]
-    ivc = get_indep_var_comp(input_list)
     component = NavigationSystemsWeight()
 
-    component.options[AIRCRAFT_TYPE_OPTION] = 1.0
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 2000.0, units="km")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:navigation:mass"] == pytest.approx(193, abs=1)
 
-    component.options[AIRCRAFT_TYPE_OPTION] = 2.0
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 2000.0, units="NM")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:navigation:mass"] == pytest.approx(493, abs=1)
 
-    component.options[AIRCRAFT_TYPE_OPTION] = 3.0
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 4000.0, units="NM")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:navigation:mass"] == pytest.approx(743, abs=1)
 
-    component.options[AIRCRAFT_TYPE_OPTION] = 4.0
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 5000.0, units="NM")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:navigation:mass"] == pytest.approx(843, abs=1)
 
-    component.options[AIRCRAFT_TYPE_OPTION] = 5.0
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 8000.0, units="NM")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:navigation:mass"] == pytest.approx(843, abs=1)
-
-    got_value_error = False
-    try:
-        component.options[AIRCRAFT_TYPE_OPTION] = 6.0
-        problem = run_system(component, ivc)
-    except ValueError:
-        got_value_error = True
-    assert got_value_error
 
 
 def test_compute_transmissions_systems_weight():
@@ -417,32 +413,32 @@ def test_compute_transmissions_systems_weight():
         "tuning:weight:systems:transmission:mass:offset",
     ]
 
-    ivc = get_indep_var_comp(input_list)
     component = TransmissionSystemsWeight()
 
-    component.options[AIRCRAFT_TYPE_OPTION] = 1.0
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 2000.0, units="km")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:transmission:mass"] == pytest.approx(100, abs=1)
-    component.options[AIRCRAFT_TYPE_OPTION] = 2.0
+
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 2000.0, units="NM")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:transmission:mass"] == pytest.approx(200, abs=1)
-    component.options[AIRCRAFT_TYPE_OPTION] = 3.0
+
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 4000.0, units="NM")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:transmission:mass"] == pytest.approx(250, abs=1)
-    component.options[AIRCRAFT_TYPE_OPTION] = 4.0
-    problem = run_system(component, ivc)
-    assert problem["data:weight:systems:transmission:mass"] == pytest.approx(350, abs=1)
-    component.options[AIRCRAFT_TYPE_OPTION] = 5.0
+
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 5000.0, units="NM")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:transmission:mass"] == pytest.approx(350, abs=1)
 
-    got_value_error = False
-    try:
-        component.options[AIRCRAFT_TYPE_OPTION] = 6.0
-        problem = run_system(component, ivc)
-    except ValueError:
-        got_value_error = True
-    assert got_value_error
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 8000.0, units="NM")
+    problem = run_system(component, ivc)
+    assert problem["data:weight:systems:transmission:mass"] == pytest.approx(350, abs=1)
 
 
 def test_compute_fixed_operational_systems_weight():
@@ -475,14 +471,15 @@ def test_compute_flight_kit_weight():
         "tuning:weight:systems:flight_kit:mass:k",
         "tuning:weight:systems:flight_kit:mass:offset",
     ]
-    ivc = get_indep_var_comp(input_list)
     component = FlightKitWeight()
 
-    component.options[AIRCRAFT_TYPE_OPTION] = 1.0
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 2000.0, units="km")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:flight_kit:mass"] == pytest.approx(10, abs=1)
 
-    component.options[AIRCRAFT_TYPE_OPTION] = 5.0
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:TLAR:range", 2000.0, units="NM")
     problem = run_system(component, ivc)
     assert problem["data:weight:systems:flight_kit:mass"] == pytest.approx(45, abs=1)
 
@@ -496,15 +493,10 @@ def test_compute_cargo_configuration_weight():
         "tuning:weight:furniture:cargo_configuration:mass:k",
         "tuning:weight:furniture:cargo_configuration:mass:offset",
     ]
-    ivc = get_indep_var_comp(input_list)
-    ivc.add_output("data:geometry:cabin:NPAX1", 150)
     component = CargoConfigurationWeight()
 
-    problem = run_system(component, ivc)
-    val = problem["data:weight:furniture:cargo_configuration:mass"]
-    assert val == 0.0
-
-    component.options["ac_type"] = 6.0
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:geometry:cabin:NPAX1", 150)
     problem = run_system(component, ivc)
     val = problem["data:weight:furniture:cargo_configuration:mass"]
     assert val == pytest.approx(39.3, abs=0.1)
@@ -513,6 +505,7 @@ def test_compute_cargo_configuration_weight():
 def test_compute_passenger_seats_weight():
     """ Tests passenger seats weight computation from sample XML data """
     input_list = [
+        "data:TLAR:range",
         "data:TLAR:NPAX",
         "tuning:weight:furniture:passenger_seats:mass:k",
         "tuning:weight:furniture:passenger_seats:mass:offset",
@@ -525,15 +518,11 @@ def test_compute_passenger_seats_weight():
     val = problem["data:weight:furniture:passenger_seats:mass"]
     assert val == pytest.approx(1500, abs=1)
 
-    component.options["ac_type"] = 6.0
-    problem = run_system(component, ivc)
-    val = problem["data:weight:furniture:passenger_seats:mass"]
-    assert val == 0.0
-
 
 def test_compute_food_water_weight():
     """ Tests food water weight computation from sample XML data """
     input_list = [
+        "data:TLAR:range",
         "data:TLAR:NPAX",
         "tuning:weight:furniture:food_water:mass:k",
         "tuning:weight:furniture:food_water:mass:offset",
@@ -546,15 +535,11 @@ def test_compute_food_water_weight():
     val = problem["data:weight:furniture:food_water:mass"]
     assert val == pytest.approx(1312, abs=1)
 
-    component.options["ac_type"] = 6.0
-    problem = run_system(component, ivc)
-    val = problem["data:weight:furniture:food_water:mass"]
-    assert val == 0.0
-
 
 def test_compute_security_kit_weight():
     """ Tests security kit weight computation from sample XML data """
     input_list = [
+        "data:TLAR:range",
         "data:TLAR:NPAX",
         "tuning:weight:furniture:security_kit:mass:k",
         "tuning:weight:furniture:security_kit:mass:offset",
@@ -567,15 +552,11 @@ def test_compute_security_kit_weight():
     val = problem["data:weight:furniture:security_kit:mass"]
     assert val == pytest.approx(225, abs=1)
 
-    component.options["ac_type"] = 6.0
-    problem = run_system(component, ivc)
-    val = problem["data:weight:furniture:security_kit:mass"]
-    assert val == 0.0
-
 
 def test_compute_toilets_weight():
     """ Tests toilets weight computation from sample XML data """
     input_list = [
+        "data:TLAR:range",
         "data:TLAR:NPAX",
         "tuning:weight:furniture:toilets:mass:k",
         "tuning:weight:furniture:toilets:mass:offset",
@@ -587,11 +568,6 @@ def test_compute_toilets_weight():
     problem = run_system(component, ivc)
     val = problem["data:weight:furniture:toilets:mass"]
     assert val == pytest.approx(75, abs=0.1)
-
-    component.options["ac_type"] = 6.0
-    problem = run_system(component, ivc)
-    val = problem["data:weight:furniture:toilets:mass"]
-    assert val == 0.0
 
 
 def test_compute_crew_weight():

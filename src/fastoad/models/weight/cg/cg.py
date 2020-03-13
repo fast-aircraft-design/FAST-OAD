@@ -17,7 +17,6 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.models.options import OpenMdaoOptionDispatcherGroup
 from fastoad.models.weight.cg.cg_components import ComputeControlSurfacesCG
 from fastoad.models.weight.cg.cg_components import ComputeGlobalCG
 from fastoad.models.weight.cg.cg_components import ComputeHTcg
@@ -28,46 +27,47 @@ from fastoad.models.weight.cg.cg_components import ComputeWingCG
 from fastoad.models.weight.cg.cg_components import UpdateMLG
 
 
-class CG(OpenMdaoOptionDispatcherGroup):
+class CG(om.Group):
     """ Model that computes the global center of gravity """
 
     def setup(self):
-        self.add_subsystem('ht_cg', ComputeHTcg(), promotes=['*'])
-        self.add_subsystem('vt_cg', ComputeVTcg(), promotes=['*'])
-        self.add_subsystem('compute_cg_wing', ComputeWingCG(), promotes=['*'])
-        self.add_subsystem('compute_cg_control_surface', ComputeControlSurfacesCG(), promotes=['*'])
-        self.add_subsystem('compute_cg_tanks', ComputeTanksCG(), promotes=['*'])
-        self.add_subsystem('compute_cg_others', ComputeOthersCG(), promotes=['*'])
-        self.add_subsystem('compute_cg', ComputeGlobalCG(), promotes=['*'])
-        self.add_subsystem('update_mlg', UpdateMLG(), promotes=['*'])
-        self.add_subsystem('aircraft', ComputeAircraftCG(), promotes=['*'])
+        self.add_subsystem("ht_cg", ComputeHTcg(), promotes=["*"])
+        self.add_subsystem("vt_cg", ComputeVTcg(), promotes=["*"])
+        self.add_subsystem("compute_cg_wing", ComputeWingCG(), promotes=["*"])
+        self.add_subsystem("compute_cg_control_surface", ComputeControlSurfacesCG(), promotes=["*"])
+        self.add_subsystem("compute_cg_tanks", ComputeTanksCG(), promotes=["*"])
+        self.add_subsystem("compute_cg_others", ComputeOthersCG(), promotes=["*"])
+        self.add_subsystem("compute_cg", ComputeGlobalCG(), promotes=["*"])
+        self.add_subsystem("update_mlg", UpdateMLG(), promotes=["*"])
+        self.add_subsystem("aircraft", ComputeAircraftCG(), promotes=["*"])
 
         # Solvers setup
         self.nonlinear_solver = om.NonlinearBlockGS()
-        self.nonlinear_solver.options['iprint'] = 0
-        self.nonlinear_solver.options['maxiter'] = 100
-        self.nonlinear_solver.options['reraise_child_analysiserror'] = False
+        self.nonlinear_solver.options["iprint"] = 0
+        self.nonlinear_solver.options["maxiter"] = 100
+        self.nonlinear_solver.options["reraise_child_analysiserror"] = False
 
         self.linear_solver = om.LinearBlockGS()
-        self.linear_solver.options['iprint'] = 0
+        self.linear_solver.options["iprint"] = 0
 
 
 class ComputeAircraftCG(om.ExplicitComponent):
     """ Compute position of aircraft CG from CG ratio """
 
     def setup(self):
-        self.add_input('data:weight:aircraft:CG:aft:MAC_position', val=np.nan)
-        self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
-        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
+        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
+        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
 
-        self.add_output('data:weight:aircraft:CG:aft:x', units='m')
+        self.add_output("data:weight:aircraft:CG:aft:x", units="m")
 
-        self.declare_partials('*', '*', method='fd')
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        cg_ratio = inputs['data:weight:aircraft:CG:aft:MAC_position']
-        l0_wing = inputs['data:geometry:wing:MAC:length']
-        mac_position = inputs['data:geometry:wing:MAC:x']
+        cg_ratio = inputs["data:weight:aircraft:CG:aft:MAC_position"]
+        l0_wing = inputs["data:geometry:wing:MAC:length"]
+        mac_position = inputs["data:geometry:wing:MAC:x"]
 
-        outputs[
-            'data:weight:aircraft:CG:aft:x'] = mac_position - 0.25 * l0_wing + cg_ratio * l0_wing
+        outputs["data:weight:aircraft:CG:aft:x"] = (
+            mac_position - 0.25 * l0_wing + cg_ratio * l0_wing
+        )

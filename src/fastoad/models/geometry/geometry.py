@@ -15,6 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import openmdao.api as om
+
 from fastoad.models.geometry.compute_aero_center import ComputeAeroCenter
 from fastoad.models.geometry.geom_components import ComputeTotalArea
 from fastoad.models.geometry.geom_components.fuselage.compute_fuselage import (
@@ -27,10 +29,10 @@ from fastoad.models.geometry.geom_components.nacelle_pylons.compute_nacelle_pylo
 )
 from fastoad.models.geometry.geom_components.vt import ComputeVerticalTailGeometry
 from fastoad.models.geometry.geom_components.wing.compute_wing import ComputeWingGeometry
-from fastoad.models.options import OpenMdaoOptionDispatcherGroup, CABIN_SIZING_OPTION
+from fastoad.models.options import CABIN_SIZING_OPTION
 
 
-class Geometry(OpenMdaoOptionDispatcherGroup):
+class Geometry(om.Group):
     """
     Computes geometric characteristics of the (tube-wing) aircraft:
       - fuselage size is computed from payload requirements
