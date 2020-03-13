@@ -1,7 +1,6 @@
 """
 Estimation of power systems weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,6 +13,7 @@ Estimation of power systems weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -43,6 +43,8 @@ class PowerSystemsWeight(ExplicitComponent):
         self.add_output("data:weight:systems:power:auxiliary_power_unit:mass", units="kg")
         self.add_output("data:weight:systems:power:electric_systems:mass", units="kg")
         self.add_output("data:weight:systems:power:hydraulic_systems:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     # pylint: disable=too-many-locals
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

@@ -1,7 +1,6 @@
 """
 Estimation of crew weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,6 +13,7 @@ Estimation of crew weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -27,6 +27,8 @@ class CrewWeight(ExplicitComponent):
         self.add_input("data:geometry:cabin:crew_count:commercial", val=np.nan)
 
         self.add_output("data:weight:crew:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cockpit_crew = inputs["data:geometry:cabin:crew_count:technical"]

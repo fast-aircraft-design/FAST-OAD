@@ -1,7 +1,6 @@
 """
 Estimation of paint weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,11 +13,12 @@ Estimation of paint weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class PaintWeight(ExplicitComponent):
+class PaintWeight(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Paint weight estimation (A7) """
 
@@ -28,6 +28,8 @@ class PaintWeight(ExplicitComponent):
         self.add_input("tuning:weight:airframe:paint:mass:offset", val=0.0, units="kg")
 
         self.add_output("data:weight:airframe:paint:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         total_wet_surface = inputs["data:geometry:aircraft:wetted_area"]

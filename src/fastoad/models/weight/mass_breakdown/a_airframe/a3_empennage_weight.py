@@ -35,6 +35,8 @@ class EmpennageWeight(om.ExplicitComponent):
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="kg")
         self.add_output("data:weight:airframe:vertical_tail:mass", units="kg")
 
+        self.declare_partials("*", "*", method="fd")
+
     # pylint: disable=too-many-locals
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ht_area = inputs["data:geometry:horizontal_tail:area"]

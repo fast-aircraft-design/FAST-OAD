@@ -1,7 +1,6 @@
 """
 Estimation of engine weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,6 +13,7 @@ Estimation of engine weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -29,6 +29,8 @@ class EngineWeight(ExplicitComponent):
         self.add_input("tuning:weight:propulsion:engine:mass:offset", val=0.0, units="kg")
 
         self.add_output("data:weight:propulsion:engine:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sea_level_thrust = inputs["data:propulsion:MTO_thrust"]

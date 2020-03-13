@@ -13,11 +13,12 @@ Estimation of landing gear weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class LandingGearWeight(ExplicitComponent):
+class LandingGearWeight(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Landing gear weight estimation (A5) """
 
@@ -28,6 +29,8 @@ class LandingGearWeight(ExplicitComponent):
 
         self.add_output("data:weight:airframe:landing_gear:main:mass", units="kg")
         self.add_output("data:weight:airframe:landing_gear:front:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]

@@ -1,7 +1,6 @@
 """
 Estimation of wing weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,11 +13,12 @@ Estimation of wing weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class WingWeight(ExplicitComponent):
+class WingWeight(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing weight estimation (A1) """
 
@@ -59,6 +59,8 @@ class WingWeight(ExplicitComponent):
         self.add_input("settings:weight:airframe:wing:mass:k_mvo", val=1.39)
 
         self.add_output("data:weight:airframe:wing:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     # pylint: disable=too-many-locals
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
