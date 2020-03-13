@@ -126,6 +126,11 @@ class FASTOADDataFrame:
             for cell in sheet.cells:
                 if column not in (cell.column_start, cell.column_end):
                     cell.read_only = True
+                else:
+                    cell.type = 'numeric'
+                    # TODO: make the number of decimals depnd on the module ?
+                    # or chosen in the ui by the user
+                    cell.numeric_format = '0.000'
 
             # Name, Value, Unit, Description
             sheet.column_width = [150, 50, 20, 150]
