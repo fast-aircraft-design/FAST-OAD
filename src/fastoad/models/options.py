@@ -17,11 +17,11 @@ Module for management of options and factorizing their definition.
 
 import openmdao.api as om
 
-ENGINE_LOCATION_OPTION = 'engine_location'
-TAIL_TYPE_OPTION = 'tail_type'
-AIRCRAFT_TYPE_OPTION = 'ac_type'
-CABIN_SIZING_OPTION = 'cabin_sizing'
-PAYLOAD_FROM_NPAX = 'payload_from_npax'
+TAIL_TYPE_OPTION = "tail_type"
+AIRCRAFT_TYPE_OPTION = "ac_type"
+CABIN_SIZING_OPTION = "cabin_sizing"
+PAYLOAD_FROM_NPAX = "payload_from_npax"
+
 
 class OpenMdaoOptionDispatcherGroup(om.Group):
     """
