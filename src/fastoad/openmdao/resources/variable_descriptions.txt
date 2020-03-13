@@ -55,6 +55,7 @@ data:geometry:fuselage:maximum_width	maximum fuselage width
 data:geometry:fuselage:PAX_length	length of passenger-dedicated zone
 data:geometry:fuselage:rear_length	length of rear non-cylindrical part of the fuselage
 data:geometry:fuselage:wetted_area	wetted area of fuselage
+data:geometry:has_T_tail	0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail
 data:geometry:horizontal_tail:area	horizontal tail area
 data:geometry:horizontal_tail:aspect_ratio	aspect ratio of horizontal tail
 data:geometry:horizontal_tail:distance_from_wing	distance along X between 25% MAC of wing and 25% MAC of horizontal tail

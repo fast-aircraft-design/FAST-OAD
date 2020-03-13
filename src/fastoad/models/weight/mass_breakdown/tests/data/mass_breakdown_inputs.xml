@@ -19,6 +19,7 @@
             <NPAX>150.0<!--top-level requirement: number of passengers--></NPAX>
         </TLAR>
         <geometry>
+            <has_T_tail>0</has_T_tail><!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail-->
             <wing>
                 <area units="m**2">124.843<!--wing reference area--></area>
                 <span units="m">31.603<!--wing span--></span>

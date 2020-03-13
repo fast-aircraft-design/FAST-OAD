@@ -18,7 +18,6 @@ import numpy as np
 import openmdao.api as om
 from scipy.constants import g
 
-from fastoad.models.options import TAIL_TYPE_OPTION
 from fastoad.utils.physics import Atmosphere
 
 
@@ -29,57 +28,56 @@ class ComputeHTArea(om.ExplicitComponent):
     Area is computed to fulfill aircraft balance requirement at rotation speed
     """
 
-    def initialize(self):
-        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
-
     def setup(self):
+        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
+        self.add_input("data:geometry:has_T_tail", val=np.nan)
+        self.add_input("data:weight:airframe:landing_gear:main:CG:x", val=np.nan, units="m")
+        self.add_input("data:weight:airframe:landing_gear:front:CG:x", val=np.nan, units="m")
+        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
+        self.add_input("settings:weight:aircraft:CG:range", val=0.3)
+        self.add_input("settings:weight:airframe:landing_gear:front:weight_ratio", val=0.08)
+        self.add_input(
+            "settings:geometry:horizontal_tail:position_ratio_on_fuselage",
+            val=0.91,
+            desc="(does not apply for T-tails) distance to aircraft nose of 25% MAC of "
+            "horizontal tail divided by fuselage length",
+        )
 
-        self.add_input('data:geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
-        self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
-        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('data:weight:airframe:landing_gear:main:CG:x', val=np.nan, units='m')
-        self.add_input('data:weight:airframe:landing_gear:front:CG:x', val=np.nan, units='m')
-        self.add_input('data:weight:aircraft:MTOW', val=np.nan, units='kg')
-        self.add_input('settings:weight:aircraft:CG:range', val=0.3)
-        self.add_input('settings:weight:airframe:landing_gear:front:weight_ratio', val=0.08)
-        self.add_input('settings:geometry:horizontal_tail:position_ratio_on_fuselage', val=0.91,
-                       desc='(does not apply for T-tails) distance to aircraft nose of 25% MAC of '
-                            'horizontal tail divided by fuselage length')
+        self.add_output("data:geometry:horizontal_tail:distance_from_wing", units="m", ref=30.0)
+        self.add_output("data:geometry:horizontal_tail:wetted_area", units="m**2", ref=100.0)
+        self.add_output("data:geometry:horizontal_tail:area", units="m**2", ref=50.0)
 
-        self.add_output('data:geometry:horizontal_tail:distance_from_wing',
-                        units='m', ref=30.)
-        self.add_output('data:geometry:horizontal_tail:wetted_area',
-                        units='m**2', ref=100.)
-        self.add_output('data:geometry:horizontal_tail:area',
-                        units='m**2', ref=50.)
-
-        self.declare_partials('*', '*', method='fd')
-        self.declare_partials('data:geometry:horizontal_tail:distance_from_wing',
-                              ['data:geometry:fuselage:length', 'data:geometry:wing:MAC:x'],
-                              method='fd')
+        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            "data:geometry:horizontal_tail:distance_from_wing",
+            ["data:geometry:fuselage:length", "data:geometry:wing:MAC:x"],
+            method="fd",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # Area of HTP is computed so its "lift" can counter the moment of weight
         # on front landing gear w.r.t. main landing gear when the CG is in its
         # most front position.
 
-        tail_type = self.options[TAIL_TYPE_OPTION]
-
-        fuselage_length = inputs['data:geometry:fuselage:length']
-        x_wing_aero_center = inputs['data:geometry:wing:MAC:x']
-        x_main_lg = inputs['data:weight:airframe:landing_gear:main:CG:x']
-        x_front_lg = inputs['data:weight:airframe:landing_gear:front:CG:x']
-        mtow = inputs['data:weight:aircraft:MTOW']
-        wing_area = inputs['data:geometry:wing:area']
-        wing_mac = inputs['data:geometry:wing:MAC:length']
-        cg_range = inputs['settings:weight:aircraft:CG:range']
-        front_lg_weight_ratio = inputs['settings:weight:airframe:landing_gear:front:weight_ratio']
+        tail_type = np.round(inputs["data:geometry:has_T_tail"])
+        fuselage_length = inputs["data:geometry:fuselage:length"]
+        x_wing_aero_center = inputs["data:geometry:wing:MAC:x"]
+        x_main_lg = inputs["data:weight:airframe:landing_gear:main:CG:x"]
+        x_front_lg = inputs["data:weight:airframe:landing_gear:front:CG:x"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        wing_area = inputs["data:geometry:wing:area"]
+        wing_mac = inputs["data:geometry:wing:MAC:length"]
+        cg_range = inputs["settings:weight:aircraft:CG:range"]
+        front_lg_weight_ratio = inputs["settings:weight:airframe:landing_gear:front:weight_ratio"]
         htp_aero_center_ratio = inputs[
-            'settings:geometry:horizontal_tail:position_ratio_on_fuselage']
+            "settings:geometry:horizontal_tail:position_ratio_on_fuselage"
+        ]
 
         delta_lg = x_main_lg - x_front_lg
-        atm = Atmosphere(0.)
+        atm = Atmosphere(0.0)
         rho = atm.density
         vspeed = atm.speed_of_sound * 0.2  # assume the corresponding Mach of VR is 0.2
 
@@ -105,16 +103,18 @@ class ComputeHTArea(om.ExplicitComponent):
 
         ht_volume_coeff = cm_front_lg
 
-        if tail_type == 1.0:
+        if tail_type == 1:
             aero_centers_distance = fuselage_length - x_wing_aero_center
             wet_area_coeff = 1.6
-        else:
+        elif tail_type == 0:
             aero_centers_distance = htp_aero_center_ratio * fuselage_length - x_wing_aero_center
-            wet_area_coeff = 2.
+            wet_area_coeff = 2.0
+        else:
+            raise ValueError("Value of data:geometry:has_T_tail can only be 0 or 1")
 
         htp_area = ht_volume_coeff / aero_centers_distance * wing_area * wing_mac
         wet_area_htp = wet_area_coeff * htp_area
 
-        outputs['data:geometry:horizontal_tail:distance_from_wing'] = aero_centers_distance
-        outputs['data:geometry:horizontal_tail:wetted_area'] = wet_area_htp
-        outputs['data:geometry:horizontal_tail:area'] = htp_area
+        outputs["data:geometry:horizontal_tail:distance_from_wing"] = aero_centers_distance
+        outputs["data:geometry:horizontal_tail:wetted_area"] = wet_area_htp
+        outputs["data:geometry:horizontal_tail:area"] = htp_area

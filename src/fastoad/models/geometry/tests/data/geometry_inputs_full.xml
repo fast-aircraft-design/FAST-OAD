@@ -193,6 +193,7 @@
             </operational>
         </mission>
         <geometry>
+            <has_T_tail>0</has_T_tail><!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail-->
             <cabin>
                 <NPAX1>157.0<!--number of passengers if there are only economical class seats--></NPAX1>
                 <crew_count>

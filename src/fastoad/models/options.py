@@ -17,7 +17,6 @@ Module for management of options and factorizing their definition.
 
 import openmdao.api as om
 
-TAIL_TYPE_OPTION = "tail_type"
 AIRCRAFT_TYPE_OPTION = "ac_type"
 CABIN_SIZING_OPTION = "cabin_sizing"
 PAYLOAD_FROM_NPAX = "payload_from_npax"

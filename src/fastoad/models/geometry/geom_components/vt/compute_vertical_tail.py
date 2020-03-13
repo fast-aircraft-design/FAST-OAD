@@ -15,25 +15,23 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import openmdao.api as om
+
 from fastoad.models.geometry.geom_components.fuselage import ComputeCnBetaFuselage
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTChords
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTClalpha
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTDistance
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTMAC
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTSweep
-from fastoad.models.options import TAIL_TYPE_OPTION, OpenMdaoOptionDispatcherGroup
 
 
-class ComputeVerticalTailGeometry(OpenMdaoOptionDispatcherGroup):
+class ComputeVerticalTailGeometry(om.Group):
     """ Vertical tail geometry estimation """
 
-    def initialize(self):
-        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
-
     def setup(self):
-        self.add_subsystem('fuselage_cnbeta', ComputeCnBetaFuselage(), promotes=['*'])
-        self.add_subsystem('vt_aspect_ratio', ComputeVTDistance(), promotes=['*'])
-        self.add_subsystem('vt_clalpha', ComputeVTClalpha(), promotes=['*'])
-        self.add_subsystem('vt_chords', ComputeVTChords(), promotes=['*'])
-        self.add_subsystem('vt_mac', ComputeVTMAC(), promotes=['*'])
-        self.add_subsystem('vt_sweep', ComputeVTSweep(), promotes=['*'])
+        self.add_subsystem("fuselage_cnbeta", ComputeCnBetaFuselage(), promotes=["*"])
+        self.add_subsystem("vt_aspect_ratio", ComputeVTDistance(), promotes=["*"])
+        self.add_subsystem("vt_clalpha", ComputeVTClalpha(), promotes=["*"])
+        self.add_subsystem("vt_chords", ComputeVTChords(), promotes=["*"])
+        self.add_subsystem("vt_mac", ComputeVTMAC(), promotes=["*"])
+        self.add_subsystem("vt_sweep", ComputeVTSweep(), promotes=["*"])

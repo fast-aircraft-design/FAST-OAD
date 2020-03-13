@@ -360,13 +360,14 @@ def test_compute_vt_sweep(input_xml):
 def test_compute_vt_distance(input_xml):
     """ Tests computation of the vertical tail distance """
 
-    input_list = ["data:geometry:fuselage:length", "data:geometry:wing:MAC:x"]
+    input_list = [
+        "data:geometry:fuselage:length",
+        "data:geometry:wing:MAC:x",
+        "data:geometry:has_T_tail",
+    ]
 
     input_vars = input_xml.read(only=input_list)
-
-    component = ComputeVTDistance()
-
-    problem = run_system(component, input_vars)
+    problem = run_system(ComputeVTDistance(), input_vars)
 
     lp_vt = problem["data:geometry:vertical_tail:distance_from_wing"]
     assert lp_vt == pytest.approx(16.55, abs=1e-2)
@@ -376,18 +377,14 @@ def test_compute_vt_cl(input_xml):
     """ Tests computation of the vertical tail lift coefficient """
 
     input_list = [
-        "data:geometry:vertical_tail:aspect_ratio",
         "data:TLAR:cruise_mach",
+        "data:geometry:vertical_tail:aspect_ratio",
         "data:geometry:vertical_tail:sweep_25",
+        "data:geometry:has_T_tail",
     ]
 
     input_vars = input_xml.read(only=input_list)
-
-    input_vars.add_output("k_ar_effective", 1.55)
-
-    component = ComputeVTClalpha()
-
-    problem = run_system(component, input_vars)
+    problem = run_system(ComputeVTClalpha(), input_vars)
 
     cl_alpha = problem["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
     assert cl_alpha == pytest.approx(2.55, abs=1e-2)

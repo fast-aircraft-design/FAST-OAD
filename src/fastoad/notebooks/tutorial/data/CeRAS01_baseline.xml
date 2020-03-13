@@ -16,6 +16,7 @@
 <FASTOAD_model>
     <data>
         <geometry>
+            <has_T_tail>0</has_T_tail><!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail-->
             <cabin>
                 <seats>
                     <economical>

@@ -20,7 +20,6 @@ from fastoad.models.options import (
     OpenMdaoOptionDispatcherGroup,
     AIRCRAFT_TYPE_OPTION,
     PAYLOAD_FROM_NPAX,
-    TAIL_TYPE_OPTION,
 )
 from fastoad.models.weight.mass_breakdown.a_airframe import (
     WingWeight,
@@ -75,7 +74,6 @@ class MassBreakdown(OpenMdaoOptionDispatcherGroup):
     """
 
     def initialize(self):
-        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.0)
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
         self.options.declare(PAYLOAD_FROM_NPAX, types=bool, default=True)
 
@@ -103,7 +101,6 @@ class OperatingWeightEmpty(OpenMdaoOptionDispatcherGroup):
 
     def initialize(self):
         # TODO: Manage options through constants or enums
-        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.0)
         self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
 
     def setup(self):

@@ -168,6 +168,7 @@ def test_compute_fuselage_weight():
 def test_compute_empennage_weight():
     """ Tests empennage weight computation from sample XML data """
     input_list = [
+        "data:geometry:has_T_tail",
         "data:geometry:horizontal_tail:area",
         "data:geometry:vertical_tail:area",
         "data:geometry:propulsion:layout",

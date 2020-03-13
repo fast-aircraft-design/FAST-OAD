@@ -13,20 +13,17 @@ Estimation of empennage weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
-
-from fastoad.models.options import TAIL_TYPE_OPTION
+import openmdao.api as om
 
 
-class EmpennageWeight(ExplicitComponent):
+class EmpennageWeight(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing weight estimation (A3) """
 
-    def initialize(self):
-        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.0)
-
     def setup(self):
+        self.add_input("data:geometry:has_T_tail", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
@@ -47,8 +44,9 @@ class EmpennageWeight(ExplicitComponent):
         k_a32 = inputs["tuning:weight:airframe:vertical_tail:mass:k"]
         offset_a32 = inputs["tuning:weight:airframe:vertical_tail:mass:offset"]
         propulsion_layout = np.round(inputs["data:geometry:propulsion:layout"])
+        tail_type = np.round(inputs["data:geometry:has_T_tail"])
 
-        k_tail = 1.3 if self.options[TAIL_TYPE_OPTION] == 1 else 1.0
+        k_tail = 1.3 if tail_type == 1 else 1.0
 
         # Mass of the horizontal tail plane
         temp_a31 = ht_area * (14.4 + 0.155 * ht_area) * k_tail
