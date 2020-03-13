@@ -127,9 +127,11 @@ class FASTOADDataFrame:
                 if column not in (cell.column_start, cell.column_end):
                     cell.read_only = True
 
+            # Name, Value, Unit, Description
+            sheet.column_width = [150, 50, 20, 150]
+
         else:
             sheet = sh.sheet()
-
         return sheet
 
     @staticmethod
