@@ -19,8 +19,11 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FuelLinesWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Fuel lines weight estimation (B2) """
+    """
+    Weight estimation for fuel lines
+    
+    Based on formula in :cite:`supaero:2014`, mass contribution B2
+    """
 
     def setup(self):
         self.add_input("data:geometry:wing:b_50", val=np.nan, units="m")

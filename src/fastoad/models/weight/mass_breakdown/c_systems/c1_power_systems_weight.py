@@ -19,8 +19,17 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class PowerSystemsWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Power systems weight estimation (C1) """
+    """
+    Weight estimation for power systems (generation and distribution)
+
+    This includes:
+    
+    - Auxiliary Power Unit (APU)
+    - electric systems
+    - hydraulic systems
+
+    Based on formulas in :cite:`supaero:2014`, mass contribution C1
+    """
 
     def setup(self):
         self.add_input("data:geometry:cabin:NPAX1", val=np.nan)

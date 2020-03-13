@@ -19,8 +19,11 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class UnconsumablesWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ unconsumables weight estimation (B2) """
+    """
+    Weight estimation for oil and unusable fuel
+
+    Based on formula in :cite:`supaero:2014`, mass contribution B3
+    """
 
     def setup(self):
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)

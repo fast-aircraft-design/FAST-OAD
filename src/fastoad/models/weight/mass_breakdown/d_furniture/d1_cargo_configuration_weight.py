@@ -19,8 +19,11 @@ import openmdao.api as om
 
 
 class CargoConfigurationWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Cargo configuration weight estimation (D1) """
+    """
+    Weight estimation for equipments for freight transport (applies only for freighters)
+
+    Based on :cite:`supaero:2014`, mass contribution D1
+    """
 
     def setup(self):
         self.add_input("data:geometry:cabin:NPAX1", val=np.nan)

@@ -19,8 +19,11 @@ import openmdao.api as om
 
 
 class FuselageWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Fuselage weight estimation (A2) """
+    """
+    Fuselage weight estimation
+
+    Based on a statistical analysis. See :cite:`supaero:2014`, mass contribution A2
+    """
 
     def setup(self):
         self.add_input("data:geometry:fuselage:wetted_area", val=np.nan, units="m**2")

@@ -19,8 +19,11 @@ import openmdao.api as om
 
 
 class PaintWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Paint weight estimation (A7) """
+    """
+    Weight estimation for paint
+    
+    Based on formula in :cite:`supaero:2014`, mass contribution A7
+    """
 
     def setup(self):
         self.add_input("data:geometry:aircraft:wetted_area", val=np.nan, units="m**2")

@@ -19,8 +19,13 @@ import openmdao.api as om
 
 
 class FoodWaterWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Passenger food water weight estimation (D3) """
+    """
+    Weight estimation for food and water
+
+    Includes trolleys, trays, cutlery...
+
+    Based on :cite:`supaero:2014`, mass contribution D3
+    """
 
     def setup(self):
         self.add_input("data:TLAR:NPAX", val=np.nan)

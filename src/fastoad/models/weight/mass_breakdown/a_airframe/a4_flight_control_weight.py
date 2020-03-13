@@ -19,8 +19,11 @@ import openmdao.api as om
 
 
 class FlightControlsWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Flight controls weight estimation (A4) """
+    """
+    Flight controls weight estimation
+
+    Based on formulas in :cite:`supaero:2014`, mass contribution A4
+    """
 
     def setup(self):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
@@ -28,8 +31,8 @@ class FlightControlsWeight(om.ExplicitComponent):
         self.add_input("data:mission:sizing:cs25:sizing_load_1", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:cs25:sizing_load_2", val=np.nan, units="kg")
         self.add_input(
-            "settings:weight:airframe:flight_controls:mass:k_fc", val=np.nan
-        )  # FIXME: this is a coeff of the model
+            "settings:weight:airframe:flight_controls:mass:k_fc", val=0.85
+        )  # FIXME: this one should depend on a boolan electric/not-electric flight_controls
         self.add_input("tuning:weight:airframe:flight_controls:mass:k", val=1.0)
         self.add_input("tuning:weight:airframe:flight_controls:mass:offset", val=0.0, units="kg")
 

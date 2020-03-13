@@ -19,8 +19,11 @@ import openmdao.api as om
 
 
 class PylonsWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Pylons weight estimation (A6) """
+    """
+    Weight estimation for pylons
+
+    Based on formula in :cite:`supaero:2014`, mass contribution A6
+    """
 
     def setup(self):
         self.add_input("data:geometry:propulsion:pylon:wetted_area", val=np.nan, units="m**2")

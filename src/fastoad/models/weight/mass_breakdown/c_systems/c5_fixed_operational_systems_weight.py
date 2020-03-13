@@ -19,8 +19,11 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class FixedOperationalSystemsWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Fixed operational systems weight estimation (C5) """
+    """
+    Weight estimation for fixed operational systems (weather radar, flight recorder, ...)
+
+    Based on formulas in :cite:`supaero:2014`, mass contribution C5
+    """
 
     def setup(self):
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")

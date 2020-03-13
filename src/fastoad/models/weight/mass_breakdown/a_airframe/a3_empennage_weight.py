@@ -19,8 +19,11 @@ import openmdao.api as om
 
 
 class EmpennageWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Wing weight estimation (A3) """
+    """
+    Weight estimation for tail planes
+
+    Based on formulas in :cite:`supaero:2014`, mass contribution A3
+    """
 
     def setup(self):
         self.add_input("data:geometry:has_T_tail", val=np.nan)

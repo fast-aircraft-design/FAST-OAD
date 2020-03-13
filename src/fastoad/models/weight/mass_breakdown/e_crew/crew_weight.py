@@ -19,8 +19,11 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class CrewWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ crew weight estimation (E) """
+    """
+    Weight estimation for aircraft crew
+
+    Based on :cite:`supaero:2014`, mass contribution E
+    """
 
     def setup(self):
         self.add_input("data:geometry:cabin:crew_count:technical", val=np.nan)

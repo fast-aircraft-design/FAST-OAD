@@ -19,8 +19,11 @@ import openmdao.api as om
 
 
 class LandingGearWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Landing gear weight estimation (A5) """
+    """
+    Weight estimation for landing gears
+
+    Based on formulas in :cite:`supaero:2014`, mass contribution A5
+    """
 
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")

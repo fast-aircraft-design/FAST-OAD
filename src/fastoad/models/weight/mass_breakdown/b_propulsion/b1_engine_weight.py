@@ -18,9 +18,13 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
+# TODO:  this is also provided by class RubberEngine
 class EngineWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Engine weight estimation (B1) """
+    """
+    Engine weight estimation
+
+    Uses model described in :cite:`roux:2005`, p.74
+    """
 
     def setup(self):
         self.add_input("data:propulsion:MTO_thrust", val=np.nan, units="N")

@@ -21,8 +21,11 @@ from fastoad.constants import RangeCategory
 
 
 class ToiletsWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Toilets kit weight estimation (D5) """
+    """
+    Weight estimation for toilets
+
+    Based on :cite:`supaero:2014`, mass contribution D5
+    """
 
     def setup(self):
         self.add_input("data:TLAR:range", val=np.nan, units="NM")

@@ -25,6 +25,9 @@ class Loads(ExplicitComponent):
 
     Load case 1: with wings with almost no fuel
     Load case 2: at maximum take-off width
+
+    Based on formulas in :cite:`supaero:2014`, §6.3
+
     """
 
     def setup(self):
@@ -102,6 +105,7 @@ class Loads(ExplicitComponent):
     @staticmethod
     def __n_gust(mass, wing_area, rho, sea_level_density, chord_geom, vc_eas, cl_alpha, u_gust):
         """
+        Computes a reference gust load.
 
         :param mass:
         :param wing_area:

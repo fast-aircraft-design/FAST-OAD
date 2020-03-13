@@ -20,8 +20,11 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class NavigationSystemsWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Navigation systems weight estimation (C3) """
+    """
+    Weight estimation for navigation systems
+
+    Based on figures in :cite:`supaero:2014`, mass contribution C3
+    """
 
     def setup(self):
         self.add_input("data:TLAR:range", val=np.nan, units="NM")
