@@ -171,7 +171,6 @@ class VariableViewer:
         df = self.sheet_to_df(self.sheet)
         for i in df.index:
             self.dataframe.loc[int(i), :] = df.loc[i, :].values
-        self._update_xml()
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_xml(self, *args):
