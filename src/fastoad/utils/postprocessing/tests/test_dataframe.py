@@ -88,7 +88,6 @@ def test_xml_to_from_df():
     assert_frame_equal(ref_df, resulting_df)
 
 
-
 def test_variable_reader_display():
     """
     Basic tests for testing the VariableReader display method.
@@ -153,6 +152,62 @@ def test_variable_reader_load():
 
     # Testing xml to df
     variable_viewer = VariableViewer()
+    variable_viewer.load(xml)
+
+    assert_frame_equal(ref_df, variable_viewer.dataframe)
+
+
+def test_variable_reader_save():
+    """
+    Basic tests for testing the VariableReader save method.
+    """
+    col_names = ['Name', 'Value', 'Unit', 'Description']
+    ref_df = pd.DataFrame()
+
+    ref_df = ref_df.append([{
+        'Name': 'data:geometry:cabin:seats:economical:width',
+        'Value': 0.46,
+        'Unit': 'm',
+        'Description': 'width of economical class seats'
+    }
+    ])[col_names]
+
+    ref_df = ref_df.append([{
+        'Name': 'data:geometry:cabin:seats:economical:length',
+        'Value': 0.86,
+        'Unit': 'm',
+        'Description': 'length of economical class seats'
+    }
+    ])[col_names]
+
+    ref_df = ref_df.append([{
+        'Name': 'data:geometry:cabin:aisle_width',
+        'Value': 0.48,
+        'Unit': 'm',
+        'Description': 'width of aisles'
+    }
+    ])[col_names]
+
+    ref_df = ref_df.append([{
+        'Name': 'data:geometry:propulsion:engine:count',
+        'Value': 2.0,
+        'Unit': None,
+        'Description': 'number of engines'
+    }
+    ])[col_names]
+
+    ref_df = ref_df.reset_index(drop=True)
+
+    filename = pth.join(DATA_FOLDER_PATH, 'light_data.xml')
+
+    xml = OMXmlIO(filename)
+
+    # Testing xml to df
+    variable_viewer = VariableViewer()
+    variable_viewer.dataframe = ref_df
+    variable_viewer.save(xml)
+
+    # Loading the generated xml
     variable_viewer.load(xml)
 
     assert_frame_equal(ref_df, variable_viewer.dataframe)

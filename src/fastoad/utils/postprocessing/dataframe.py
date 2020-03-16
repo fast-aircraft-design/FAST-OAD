@@ -73,6 +73,14 @@ class VariableViewer:
         self.dataframe = self.xml_to_df(self.xml)
         self.dataframe = self.dataframe.reset_index(drop=True)
 
+    def save(self, xml: OMXmlIO):
+        """
+        Save the dataframe to the xml file.
+
+        :param xml: the xml file to save
+        """
+        self.df_to_xml(self.dataframe, xml)
+
     def display(self):
         """
         Displays the datasheet
