@@ -88,21 +88,6 @@ def test_xml_to_from_df():
     assert_frame_equal(ref_df, resulting_df)
 
 
-def test_xml_interact():
-    """
-    Basic tests for testing the xml interaction.
-    """
-    filename = pth.join(DATA_FOLDER_PATH, 'problem_outputs.xml')
-
-    xml = OMXmlIO(filename)
-
-    # pylint: disable=invalid-name # that's a common naming
-    df = VariableViewer()
-
-    # This is a rudimentary test as ui are difficult to verify
-    # The test will fail if an error is raised by the following line
-    df.xml_interact_deprecated(xml)
-
 
 def test_variable_reader_display():
     """

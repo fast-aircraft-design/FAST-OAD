@@ -63,19 +63,6 @@ class VariableViewer:
         # Max depth when searching for submodules
         self.max_depth = None
 
-    def xml_interact_deprecated(self, xml: OMXmlIO):
-        """
-        Renders an interactive pysheet with dropdown menus of the xml file.
-
-        :param xml: the xml file to interact with
-        :return display of the user interface
-        """
-        self.xml = xml
-        self.dataframe = self.xml_to_df(self.xml)
-        self.dataframe = self.dataframe.reset_index(drop=True)
-
-        return self._render_sheet()
-
     def load(self, xml: OMXmlIO):
         """
         Loads the xml file and stores it in a dataframe.
