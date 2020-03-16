@@ -46,7 +46,7 @@ class VariableViewer:
         self.xml = None
 
         # The dataframe which is the mirror of the xml file
-        self.df_variables = pd.DataFrame()
+        self.dataframe = pd.DataFrame()
 
         # The sheet which is the mirror of the dataframe
         self.sheet = None
@@ -71,8 +71,8 @@ class VariableViewer:
         :return display of the user interface
         """
         self.xml = xml
-        self.df_variables = self.xml_to_df(self.xml)
-        self.df_variables = self.df_variables.reset_index(drop=True)
+        self.dataframe = self.xml_to_df(self.xml)
+        self.dataframe = self.dataframe.reset_index(drop=True)
 
         return self._render_sheet()
 
@@ -158,7 +158,7 @@ class VariableViewer:
         """
         df = self.sheet_to_df(self.sheet)
         for i in df.index:
-            self.df_variables.loc[int(i), :] = df.loc[i, :].values
+            self.dataframe.loc[int(i), :] = df.loc[i, :].values
         self._update_xml()
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
@@ -167,7 +167,7 @@ class VariableViewer:
         Updates the variables values and attributes in the xml file with respect to the
         actual values of the stored DataFrame .
         """
-        self.df_to_xml(self.df_variables, self.xml)
+        self.df_to_xml(self.dataframe, self.xml)
 
     def _render_sheet(self, max_depth: int = 6) -> display:
         """
@@ -178,7 +178,7 @@ class VariableViewer:
         """
         self.max_depth = max_depth
         self.items = []
-        modules_item = sorted(self._find_submodules(self.df_variables))
+        modules_item = sorted(self._find_submodules(self.dataframe))
         if modules_item:
             w = widgets.Dropdown(options=modules_item)
             self.items.append(w)
@@ -196,7 +196,7 @@ class VariableViewer:
                 self.items[0].observe(self._update_variable_selector, 'value')
             elif i <= len(self.items):
                 modules = [item.value for item in self.items[0:i]]
-                modules_item = sorted(self._find_submodules(self.df_variables, modules))
+                modules_item = sorted(self._find_submodules(self.dataframe, modules))
                 if modules_item:
                     # Check if the item exists already
                     if i == len(self.items):
@@ -234,7 +234,7 @@ class VariableViewer:
         """
         modules = [item.value for item in self.items]
 
-        filtered_var = self._filter_variables(self.df_variables, modules, var_type=None)
+        filtered_var = self._filter_variables(self.dataframe, modules, var_type=None)
 
         self.sheet = self.df_to_sheet(filtered_var)
 
