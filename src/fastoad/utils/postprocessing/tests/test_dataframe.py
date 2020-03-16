@@ -20,7 +20,7 @@ import pandas as pd
 from pandas.util.testing import assert_frame_equal
 
 from fastoad.io.xml import OMXmlIO
-from fastoad.utils.postprocessing.dataframe import FASTOADDataFrame
+from fastoad.utils.postprocessing.dataframe import VariableViewer
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
@@ -70,7 +70,7 @@ def test_xml_to_from_df():
     xml = OMXmlIO(filename)
 
     # Testing xml to df
-    resulting_df = FASTOADDataFrame.xml_to_df(xml)
+    resulting_df = VariableViewer.xml_to_df(xml)
 
     assert_frame_equal(ref_df, resulting_df)
 
@@ -78,12 +78,12 @@ def test_xml_to_from_df():
     new_xml = OMXmlIO(new_filename)
 
     # Testing df to xml
-    FASTOADDataFrame.df_to_xml(ref_df, new_xml)
+    VariableViewer.df_to_xml(ref_df, new_xml)
 
     # Reloading the generated xml
     del new_xml
     new_xml = OMXmlIO(new_filename)
-    resulting_df = FASTOADDataFrame.xml_to_df(new_xml)
+    resulting_df = VariableViewer.xml_to_df(new_xml)
 
     assert_frame_equal(ref_df, resulting_df)
 
@@ -97,7 +97,7 @@ def test_xml_interact():
     xml = OMXmlIO(filename)
 
     # pylint: disable=invalid-name # that's a common naming
-    df = FASTOADDataFrame()
+    df = VariableViewer()
 
     # This is a rudimentary test as ui are difficult to verify
     # The test will fail if an error is raised by the following line

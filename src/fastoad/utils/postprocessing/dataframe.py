@@ -25,7 +25,7 @@ from fastoad.openmdao.connections_utils import get_variables_from_ivc, \
 pd.set_option('display.max_rows', None)
 
 
-class FASTOADDataFrame:
+class VariableViewer:
     """
     A class for interacting with FAST-OAD xml files.
     The xml file data is stored in a pandas DataFrame. The class built so that a modification
@@ -35,7 +35,7 @@ class FASTOADDataFrame:
 
     A classical usage of this class will be::
 
-        df = FASTOADDataFrame()  # instantiation of dataframe
+        df = VariableViewer()  # instantiation of dataframe
         xml = OMXmlIO('problem_outputs.xml') #  instantiation of xml io
         df.xml_interact(xml)  # renders a ui for reading/modifying the xml file
     """
