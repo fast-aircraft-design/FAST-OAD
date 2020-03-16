@@ -76,7 +76,7 @@ class VariableViewer:
     def display(self):
         """
         Displays the datasheet
-        :return:
+        :return display of the user interface:
         """
         return self._render_sheet()
 
