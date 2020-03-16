@@ -18,7 +18,7 @@ import ipysheet as sh
 import ipywidgets as widgets
 from IPython.display import display, clear_output
 
-from fastoad.io.xml import OMXmlIO
+from fastoad.io.serialize import AbstractOMFileIO
 from fastoad.openmdao.connections_utils import get_variables_from_ivc, \
     get_variables_from_df, get_df_from_variables, get_ivc_from_variables
 
@@ -27,25 +27,26 @@ pd.set_option('display.max_rows', None)
 
 class VariableViewer:
     """
-    A class for interacting with FAST-OAD xml files.
-    The xml file data is stored in a pandas DataFrame. The class built so that a modification
-    of the DataFrame is instantly replicated on the xml file.
+    A class for interacting with FAST-OAD file files.
+    The file file data is stored in a pandas DataFrame. The class built so that a modification
+    of the DataFrame is instantly replicated on the file file.
     The interaction is achieved using a user interface built with widgets from ipywidgets and
     Sheets from ipysheet.
 
     A classical usage of this class will be::
 
         df = VariableViewer()  # instantiation of dataframe
-        xml = OMXmlIO('problem_outputs.xml') #  instantiation of xml io
-        df.xml_interact(xml)  # renders a ui for reading/modifying the xml file
+        file = AbstractOMFileIO('problem_outputs.file') #  instantiation of file io
+        df.load(file)  # load the file
+        df.display()  # renders a ui for reading/modifying the file
     """
 
     def __init__(self):
 
-        # The xml file to be set
-        self.xml = None
+        # The file file to be set
+        self.file = None
 
-        # The dataframe which is the mirror of the xml file
+        # The dataframe which is the mirror of the file file
         self.dataframe = pd.DataFrame()
 
         # The sheet which is the mirror of the dataframe
@@ -63,23 +64,23 @@ class VariableViewer:
         # Max depth when searching for submodules
         self.max_depth = None
 
-    def load(self, xml: OMXmlIO):
+    def load(self, file: AbstractOMFileIO):
         """
-        Loads the xml file and stores it in a dataframe.
+        Loads the file file and stores it in a dataframe.
 
-        :param xml: the xml file to interact with
+        :param file: the file file to interact with
         """
-        self.xml = xml
-        self.dataframe = self.xml_to_df(self.xml)
+        self.file = file
+        self.dataframe = self.file_to_df(self.file)
         self.dataframe = self.dataframe.reset_index(drop=True)
 
-    def save(self, xml: OMXmlIO):
+    def save(self, file: AbstractOMFileIO):
         """
-        Save the dataframe to the xml file.
+        Save the dataframe to the file file.
 
-        :param xml: the xml file to save
+        :param file: the file file to save
         """
-        self.df_to_xml(self.dataframe, xml)
+        self.df_to_file(self.dataframe, file)
 
     def display(self):
         """
@@ -89,16 +90,16 @@ class VariableViewer:
         return self._render_sheet()
 
     @staticmethod
-    def xml_to_df(xml: OMXmlIO) -> pd.DataFrame:
+    def file_to_df(file: AbstractOMFileIO) -> pd.DataFrame:
         """
-        Returns the equivalent pandas dataframe of the xml file.
+        Returns the equivalent pandas dataframe of the file.
 
-        :param xml: the xml file to convert
+        :param file: the file to convert
         :return the equivalent dataframe
         """
         # TODO: should we add a 'Type' field if we decide to add a type attribute to Variable ?
-        # Read the xml
-        ivc = xml.read()
+        # Read the file
+        ivc = file.read()
 
         # Extract the variables list
         variables = get_variables_from_ivc(ivc)
@@ -109,17 +110,17 @@ class VariableViewer:
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
-    def df_to_xml(df: pd.DataFrame, xml: OMXmlIO):
+    def df_to_file(df: pd.DataFrame, file: AbstractOMFileIO):
         """
-        Returns the equivalent xml file of the pandas dataframe .
+        Returns the equivalent file of the pandas dataframe .
 
         :param df: the dataframe to convert
-        :param xml: the resulting xml file
+        :param file: the resulting file
         """
         # Extract the variables list
         variables = get_variables_from_df(df)
         ivc = get_ivc_from_variables(variables)
-        xml.write(ivc)
+        file.write(ivc)
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
@@ -166,19 +167,19 @@ class VariableViewer:
     def _update_df(self, *args):
         """
         Updates the stored DataFrame with respect to the actual values of the Sheet.
-        Then updates the xml file with respect to the stored DataFrame.
+        Then updates the file with respect to the stored DataFrame.
         """
         df = self.sheet_to_df(self.sheet)
         for i in df.index:
             self.dataframe.loc[int(i), :] = df.loc[i, :].values
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def _update_xml(self, *args):
+    def _update_file(self, *args):
         """
-        Updates the variables values and attributes in the xml file with respect to the
+        Updates the variables values and attributes in the file with respect to the
         actual values of the stored DataFrame .
         """
-        self.df_to_xml(self.dataframe, self.xml)
+        self.df_to_file(self.dataframe, self.file)
 
     def _render_sheet(self, max_depth: int = 6) -> display:
         """

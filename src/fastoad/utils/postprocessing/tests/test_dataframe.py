@@ -28,7 +28,7 @@ RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
 
 def test_xml_to_from_df():
     """
-    Basic tests for testing the conversion of xml to dataframe.
+    Basic tests for testing the conversion of file to dataframe.
     """
     col_names = ['Name', 'Value', 'Unit', 'Description']
     ref_df = pd.DataFrame()
@@ -69,21 +69,21 @@ def test_xml_to_from_df():
 
     xml = OMXmlIO(filename)
 
-    # Testing xml to df
-    resulting_df = VariableViewer.xml_to_df(xml)
+    # Testing file to df
+    resulting_df = VariableViewer.file_to_df(xml)
 
     assert_frame_equal(ref_df, resulting_df)
 
     new_filename = pth.join(RESULTS_FOLDER_PATH, 'new_light_data.xml')
     new_xml = OMXmlIO(new_filename)
 
-    # Testing df to xml
-    VariableViewer.df_to_xml(ref_df, new_xml)
+    # Testing df to file
+    VariableViewer.df_to_file(ref_df, new_xml)
 
-    # Reloading the generated xml
+    # Reloading the generated file
     del new_xml
     new_xml = OMXmlIO(new_filename)
-    resulting_df = VariableViewer.xml_to_df(new_xml)
+    resulting_df = VariableViewer.file_to_df(new_xml)
 
     assert_frame_equal(ref_df, resulting_df)
 
@@ -150,7 +150,7 @@ def test_variable_reader_load():
 
     xml = OMXmlIO(filename)
 
-    # Testing xml to df
+    # Testing file to df
     variable_viewer = VariableViewer()
     variable_viewer.load(xml)
 
@@ -202,12 +202,12 @@ def test_variable_reader_save():
 
     xml = OMXmlIO(filename)
 
-    # Testing xml to df
+    # Testing file to df
     variable_viewer = VariableViewer()
     variable_viewer.dataframe = ref_df
     variable_viewer.save(xml)
 
-    # Loading the generated xml
+    # Loading the generated file
     variable_viewer.load(xml)
 
     assert_frame_equal(ref_df, variable_viewer.dataframe)
