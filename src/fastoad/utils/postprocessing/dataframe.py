@@ -162,7 +162,7 @@ class VariableViewer:
         return df
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def _update_df(self, *args):
+    def _update_df(self, change=None):
         """
         Updates the stored DataFrame with respect to the actual values of the Sheet.
         Then updates the file with respect to the stored DataFrame.
@@ -172,7 +172,7 @@ class VariableViewer:
             self.dataframe.loc[int(i), :] = df.loc[i, :].values
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def _update_file(self, *args):
+    def _update_file(self, change=None):
         """
         Updates the variables values and attributes in the file with respect to the
         actual values of the stored DataFrame .
@@ -193,7 +193,7 @@ class VariableViewer:
         return self._render_ui()
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def _update_items(self, *args):
+    def _update_items(self, change=None):
         """
         Updates the filter_widgets with respect to higher level filter_widgets values.
         """
@@ -225,7 +225,7 @@ class VariableViewer:
                 break
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def _update_variable_selector(self, *args):
+    def _update_variable_selector(self, change=None):
         """
         Updates the variable selector with respect to the
         actual filter_widgets stored.
@@ -250,7 +250,7 @@ class VariableViewer:
             cell.observe(self._update_df, 'value')
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def _render_ui(self, *args) -> display:
+    def _render_ui(self, change=None) -> display:
         """
         Renders the dropdown menus for the variable selector and the corresponding
         ipysheet Sheet containing the variable infos.
