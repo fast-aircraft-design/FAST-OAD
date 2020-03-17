@@ -14,21 +14,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import openmdao.api as om
+
 from fastoad.models.geometry.geom_components.ht.components import ComputeHTChord
 from fastoad.models.geometry.geom_components.ht.components import ComputeHTClalpha
 from fastoad.models.geometry.geom_components.ht.components import ComputeHTMAC
 from fastoad.models.geometry.geom_components.ht.components import ComputeHTSweep
-from fastoad.models.options import TAIL_TYPE_OPTION, OpenMdaoOptionDispatcherGroup
 
 
-class ComputeHorizontalTailGeometry(OpenMdaoOptionDispatcherGroup):
+class ComputeHorizontalTailGeometry(om.Group):
     """ Horizontal tail geometry estimation """
 
-    def initialize(self):
-        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
-
     def setup(self):
-        self.add_subsystem('ht_chord', ComputeHTChord(), promotes=['*'])
-        self.add_subsystem('ht_mac', ComputeHTMAC(), promotes=['*'])
-        self.add_subsystem('ht_sweep', ComputeHTSweep(), promotes=['*'])
-        self.add_subsystem('ht_cl_alpha', ComputeHTClalpha(), promotes=['*'])
+        self.add_subsystem("ht_chord", ComputeHTChord(), promotes=["*"])
+        self.add_subsystem("ht_mac", ComputeHTMAC(), promotes=["*"])
+        self.add_subsystem("ht_sweep", ComputeHTSweep(), promotes=["*"])
+        self.add_subsystem("ht_cl_alpha", ComputeHTClalpha(), promotes=["*"])

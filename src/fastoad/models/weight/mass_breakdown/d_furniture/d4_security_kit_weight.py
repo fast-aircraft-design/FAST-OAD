@@ -1,7 +1,6 @@
 """
 Estimation of security kit weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,34 +13,28 @@ Estimation of security kit weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
-
-from fastoad.models.options import AIRCRAFT_TYPE_OPTION
+import openmdao.api as om
 
 
-class SecurityKitWeight(ExplicitComponent):
+class SecurityKitWeight(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Passenger security kit weight estimation (D4) """
 
-    def initialize(self):
-        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
-
     def setup(self):
-        self.add_input('data:TLAR:NPAX', val=np.nan)
-        self.add_input('tuning:weight:furniture:security_kit:mass:k', val=1.)
-        self.add_input('tuning:weight:furniture:security_kit:mass:offset', val=0., units='kg')
+        self.add_input("data:TLAR:NPAX", val=np.nan)
+        self.add_input("tuning:weight:furniture:security_kit:mass:k", val=1.0)
+        self.add_input("tuning:weight:furniture:security_kit:mass:offset", val=0.0, units="kg")
 
-        self.add_output('data:weight:furniture:security_kit:mass', units='kg')
+        self.add_output("data:weight:furniture:security_kit:mass", units="kg")
 
-    def compute(self, inputs, outputs
-                , discrete_inputs=None, discrete_outputs=None):
-        npax = inputs['data:TLAR:NPAX']
-        k_d4 = inputs['tuning:weight:furniture:security_kit:mass:k']
-        offset_d4 = inputs['tuning:weight:furniture:security_kit:mass:offset']
+        self.declare_partials("*", "*", method="fd")
 
-        if self.options[AIRCRAFT_TYPE_OPTION] == 6.0:
-            outputs['data:weight:furniture:security_kit:mass'] = 0.
-        else:
-            temp_d4 = 1.5 * npax
-            outputs['data:weight:furniture:security_kit:mass'] = k_d4 * temp_d4 + offset_d4
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        npax = inputs["data:TLAR:NPAX"]
+        k_d4 = inputs["tuning:weight:furniture:security_kit:mass:k"]
+        offset_d4 = inputs["tuning:weight:furniture:security_kit:mass:offset"]
+
+        temp_d4 = 1.5 * npax
+        outputs["data:weight:furniture:security_kit:mass"] = k_d4 * temp_d4 + offset_d4

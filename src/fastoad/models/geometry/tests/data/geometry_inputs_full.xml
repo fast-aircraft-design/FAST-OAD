@@ -193,6 +193,7 @@
             </operational>
         </mission>
         <geometry>
+            <has_T_tail>0</has_T_tail><!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail-->
             <cabin>
                 <NPAX1>157.0<!--number of passengers if there are only economical class seats--></NPAX1>
                 <crew_count>
@@ -335,6 +336,7 @@
                 <area>25.118<!--vertical tail area--></area>
             </vertical_tail>
             <propulsion>
+                <layout>1</layout><!--position of engines (1=under the wing / 2=rear fuselage)-->
                 <engine>
                     <count>2.0<!--number of engines--></count>
                     <y_ratio>0.34<!--engine position with respect to total span--></y_ratio>

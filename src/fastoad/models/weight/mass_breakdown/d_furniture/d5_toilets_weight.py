@@ -1,7 +1,6 @@
 """
 Estimation of toilets weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,45 +13,41 @@ Estimation of toilets weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
-from fastoad.models.options import AIRCRAFT_TYPE_OPTION
+from fastoad.constants import RangeCategory
 
 
-class ToiletsWeight(ExplicitComponent):
+class ToiletsWeight(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Toilets kit weight estimation (D5) """
 
-    def initialize(self):
-        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
-
     def setup(self):
-        self.add_input('data:TLAR:NPAX', val=np.nan)
-        self.add_input('tuning:weight:furniture:toilets:mass:k', val=1.)
-        self.add_input('tuning:weight:furniture:toilets:mass:offset', val=0., units='kg')
+        self.add_input("data:TLAR:range", val=np.nan, units="NM")
+        self.add_input("data:TLAR:NPAX", val=np.nan)
+        self.add_input("tuning:weight:furniture:toilets:mass:k", val=1.0)
+        self.add_input("tuning:weight:furniture:toilets:mass:offset", val=0.0, units="kg")
 
-        self.add_output('data:weight:furniture:toilets:mass', units='kg')
+        self.add_output("data:weight:furniture:toilets:mass", units="kg")
 
-    def compute(self, inputs, outputs
-                , discrete_inputs=None, discrete_outputs=None):
-        npax = inputs['data:TLAR:NPAX']
-        k_d5 = inputs['tuning:weight:furniture:toilets:mass:k']
-        offset_d5 = inputs['tuning:weight:furniture:toilets:mass:offset']
+        self.declare_partials("*", "*", method="fd")
 
-        aircraft_type = self.options[AIRCRAFT_TYPE_OPTION]
-        if aircraft_type == 1.0:
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        tlar_range = inputs["data:TLAR:range"]
+        npax = inputs["data:TLAR:NPAX"]
+        k_d5 = inputs["tuning:weight:furniture:toilets:mass:k"]
+        offset_d5 = inputs["tuning:weight:furniture:toilets:mass:offset"]
+
+        if tlar_range in RangeCategory.SHORT:
             k_toilet = 0.1
-        elif aircraft_type == 2.0:
+        elif tlar_range in RangeCategory.SHORT_MEDIUM:
             k_toilet = 0.5
-        elif aircraft_type == 3.0:
+        elif tlar_range in RangeCategory.MEDIUM:
             k_toilet = 1.0
-        elif aircraft_type in (4.0, 5.0):
-            k_toilet = 1.5
-        elif aircraft_type == 6.0:
-            k_toilet = 0.
         else:
-            raise ValueError("Unexpected aircraft type")
+            k_toilet = 1.5
 
         temp_d5 = k_toilet * npax
-        outputs['data:weight:furniture:toilets:mass'] = k_d5 * temp_d5 + offset_d5
+        outputs["data:weight:furniture:toilets:mass"] = k_d5 * temp_d5 + offset_d5

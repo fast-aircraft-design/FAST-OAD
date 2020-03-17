@@ -251,10 +251,10 @@ data:TLAR:approach_speed, Aircraft/TLAR/v_approach
 data:TLAR:range, Aircraft/TLAR/Range
 data:TLAR:max_TOFL, Aircraft/TLAR/max_TOFL
 configuration:configuration, Aircraft/configuration/AC_config
-configuration:T_tail, Aircraft/configuration/T_tail
+data:geometry:has_T_tail, Aircraft/configuration/T_tail
 configuration:landing_gear_type, Aircraft/configuration/LG_type
 configuration:engine:type, Aircraft/configuration/engine_type
-configuration:engine:location, Aircraft/configuration/engine_loc
+data:geometry:propulsion:layout, Aircraft/configuration/engine_loc
 configuration:cruise_option, Aircraft/configuration/cruise_option
 data:mission:sizing:fuel, Aircraft/mission/sizing/fuel_mission
 data:mission:sizing:block_fuel, Aircraft/mission/sizing/fuel_block

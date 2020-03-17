@@ -14,13 +14,13 @@ Weight computation (mass and CG)
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.models.options import OpenMdaoOptionDispatcherGroup, ENGINE_LOCATION_OPTION, \
-    TAIL_TYPE_OPTION, AIRCRAFT_TYPE_OPTION
+import openmdao.api as om
+
 from fastoad.models.weight.cg.cg import CG
 from fastoad.models.weight.mass_breakdown import MassBreakdown
 
 
-class Weight(OpenMdaoOptionDispatcherGroup):
+class Weight(om.Group):
     """
     Computes masses and Centers of Gravity for each part of the empty operating aircraft, among
     these 5 categories:
@@ -33,11 +33,6 @@ class Weight(OpenMdaoOptionDispatcherGroup):
     from OWE, which should come from a mission computation that will assess needed block fuel.
     """
 
-    def initialize(self):
-        self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
-        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
-        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
-
     def setup(self):
-        self.add_subsystem('cg', CG(), promotes=['*'])
-        self.add_subsystem('mass_breakdown', MassBreakdown(), promotes=['*'])
+        self.add_subsystem("cg", CG(), promotes=["*"])
+        self.add_subsystem("mass_breakdown", MassBreakdown(), promotes=["*"])

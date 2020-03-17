@@ -14,6 +14,11 @@ flake8 = "*"
 sphinx = "*"
 sphinx-rtd-theme = "*"
 sphinxcontrib-bibtex = "*"
+pre-commit = "*"
+black = "*"
 
 [packages]
 fastoad = {editable = true,path = "."}
+
+[pipenv]
+allow_prereleases = true

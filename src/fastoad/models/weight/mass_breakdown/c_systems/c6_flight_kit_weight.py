@@ -1,7 +1,6 @@
 """
 Estimation of flight kit weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,32 +13,34 @@ Estimation of flight kit weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.models.options import AIRCRAFT_TYPE_OPTION
+import numpy as np
+import openmdao.api as om
+
+from fastoad.constants import RangeCategory
 
 
-class FlightKitWeight(ExplicitComponent):
+class FlightKitWeight(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Flight kit weight estimation (C6) """
 
-    def initialize(self):
-        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
-
     def setup(self):
-        self.add_input('tuning:weight:systems:flight_kit:mass:k', val=1.)
-        self.add_input('tuning:weight:systems:flight_kit:mass:offset', val=0., units='kg')
+        self.add_input("data:TLAR:range", val=np.nan, units="NM")
+        self.add_input("tuning:weight:systems:flight_kit:mass:k", val=1.0)
+        self.add_input("tuning:weight:systems:flight_kit:mass:offset", val=0.0, units="kg")
 
-        self.add_output('data:weight:systems:flight_kit:mass', units='kg')
+        self.add_output("data:weight:systems:flight_kit:mass", units="kg")
 
-    def compute(self, inputs, outputs
-                , discrete_inputs=None, discrete_outputs=None):
-        k_c6 = inputs['tuning:weight:systems:flight_kit:mass:k']
-        offset_c6 = inputs['tuning:weight:systems:flight_kit:mass:offset']
+        self.declare_partials("*", "*", method="fd")
 
-        if self.options[AIRCRAFT_TYPE_OPTION] == 1.0:
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        tlar_range = inputs["data:TLAR:range"]
+        k_c6 = inputs["tuning:weight:systems:flight_kit:mass:k"]
+        offset_c6 = inputs["tuning:weight:systems:flight_kit:mass:offset"]
+
+        if tlar_range <= RangeCategory.SHORT.max():
             temp_c6 = 10.0
         else:
             temp_c6 = 45.0
 
-        outputs['data:weight:systems:flight_kit:mass'] = k_c6 * temp_c6 + offset_c6
+        outputs["data:weight:systems:flight_kit:mass"] = k_c6 * temp_c6 + offset_c6

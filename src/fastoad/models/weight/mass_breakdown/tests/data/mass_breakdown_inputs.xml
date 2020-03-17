@@ -17,8 +17,10 @@
     <data>
         <TLAR>
             <NPAX>150.0<!--top-level requirement: number of passengers--></NPAX>
+            <range units="NM">2750.0<!--top-level requirement: design range--></range>
         </TLAR>
         <geometry>
+            <has_T_tail>0</has_T_tail><!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail-->
             <wing>
                 <area units="m**2">124.843<!--wing reference area--></area>
                 <span units="m">31.603<!--wing span--></span>
@@ -64,6 +66,7 @@
                 <pallet_count>10.0<!--number of pallet in cargo hold--></pallet_count>
             </cabin>
             <propulsion>
+                <layout>1</layout><!--position of engines (1=under the wing / 2=rear fuselage)-->
                 <engine>
                     <count>2.0<!--number of engines--></count>
                 </engine>

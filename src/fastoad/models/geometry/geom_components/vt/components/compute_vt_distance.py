@@ -18,36 +18,35 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.models.options import TAIL_TYPE_OPTION
-
 
 class ComputeVTDistance(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail distance estimation """
 
-    def initialize(self):
-        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.)
-
     def setup(self):
 
-        self.add_input('data:geometry:fuselage:length', val=np.nan, units='m')
-        self.add_input('data:geometry:wing:MAC:x', val=np.nan, units='m')
+        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:has_T_tail", val=np.nan)
 
-        self.add_output('data:geometry:vertical_tail:distance_from_wing', units='m')
+        self.add_output("data:geometry:vertical_tail:distance_from_wing", units="m")
 
-        self.declare_partials('data:geometry:vertical_tail:distance_from_wing',
-                              ['data:geometry:fuselage:length', 'data:geometry:wing:MAC:x'],
-                              method='fd')
+        self.declare_partials(
+            "data:geometry:vertical_tail:distance_from_wing",
+            ["data:geometry:fuselage:length", "data:geometry:wing:MAC:x"],
+            method="fd",
+        )
 
-    def compute(self, inputs, outputs):
-        tail_type = self.options[TAIL_TYPE_OPTION]
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        tail_type = np.round(inputs["data:geometry:has_T_tail"])
+        fus_length = inputs["data:geometry:fuselage:length"]
+        fa_length = inputs["data:geometry:wing:MAC:x"]
 
-        fus_length = inputs['data:geometry:fuselage:length']
-        fa_length = inputs['data:geometry:wing:MAC:x']
-
-        if tail_type == 1.0:
+        if tail_type == 1:
             lp_vt = 0.93 * fus_length - fa_length
-        else:
+        elif tail_type == 0:
             lp_vt = 0.88 * fus_length - fa_length
+        else:
+            raise ValueError("Value of data:geometry:has_T_tail can only be 0 or 1")
 
-        outputs['data:geometry:vertical_tail:distance_from_wing'] = lp_vt
+        outputs["data:geometry:vertical_tail:distance_from_wing"] = lp_vt

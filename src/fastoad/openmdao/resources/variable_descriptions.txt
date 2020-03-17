@@ -1,17 +1,9 @@
 test:test_variable	for testing (do not remove)
 data:aerodynamics:aircraft:cruise:CD	drag coefficient in cruise conditions w.r.t. data:aerodynamics:aircraft:cruise:CL
 data:aerodynamics:aircraft:cruise:CD:compressibility	increment of drag coefficient due to compressibility effects (shock waves) w.r.t. data:aerodynamics:aircraft:cruise:CL
-tuning:aerodynamics:aircraft:cruise:CD:k	correction ratio to apply to computed drag coefficient in cruise conditions
-tuning:aerodynamics:aircraft:cruise:CD:offset	correction offset to apply to computed drag coefficient in cruise conditions
 data:aerodynamics:aircraft:cruise:CD:trim	increment of drag coefficient due to aircraft trim w.r.t. data:aerodynamics:aircraft:cruise:CL
-tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k	correction ratio to apply to computed induced drag coefficient in cruise conditions
-tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:offset	correction ratio to apply to computed drag coefficient in cruise conditions
 data:aerodynamics:aircraft:cruise:CD0	profile drag coefficient for whole aircraft w.r.t. data:aerodynamics:aircraft:cruise:CL
 data:aerodynamics:aircraft:cruise:CL	scale of lift coefficient values for drag computations in cruise conditions
-tuning:aerodynamics:aircraft:cruise:CL:k	ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
-tuning:aerodynamics:aircraft:cruise:CL:offset	offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
-tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:k	ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
-tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:offset	offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
 data:aerodynamics:aircraft:cruise:CL_alpha	derivative of lift coefficient with respect to angle of attack in cruise conditions
 data:aerodynamics:aircraft:cruise:induced_drag_coefficient	multiply squared lift coefficient by this coefficient to get induced drag coefficient
 data:aerodynamics:aircraft:cruise:L_D_max	max lift/drag ratio in cruise conditions
@@ -19,8 +11,6 @@ data:aerodynamics:aircraft:cruise:optimal_CD	drag coefficient at maximum lift/dr
 data:aerodynamics:aircraft:cruise:optimal_CL	lift coefficient at maximum lift/drag ratio in cruise conditions
 data:aerodynamics:aircraft:landing:additional_CL_capacity	at landing, is equal to (maximum lift coefficient)-(maximum required lift coefficient)
 data:aerodynamics:aircraft:landing:CL_max	maximum lift coefficient in landing conditions
-tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k	correction ratio to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
-tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:offset	correction offset to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
 data:aerodynamics:aircraft:landing:CL_max_clean	maximum lift coefficient in landing conditions without high-lift devices
 data:aerodynamics:aircraft:landing:mach	considered Mach number for landing phase
 data:aerodynamics:aircraft:landing:reynolds	considered Reynolds number for landing phase
@@ -65,6 +55,7 @@ data:geometry:fuselage:maximum_width	maximum fuselage width
 data:geometry:fuselage:PAX_length	length of passenger-dedicated zone
 data:geometry:fuselage:rear_length	length of rear non-cylindrical part of the fuselage
 data:geometry:fuselage:wetted_area	wetted area of fuselage
+data:geometry:has_T_tail	0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail
 data:geometry:horizontal_tail:area	horizontal tail area
 data:geometry:horizontal_tail:aspect_ratio	aspect ratio of horizontal tail
 data:geometry:horizontal_tail:distance_from_wing	distance along X between 25% MAC of wing and 25% MAC of horizontal tail
@@ -86,6 +77,7 @@ data:geometry:landing_gear:height	height of landing gear
 data:geometry:propulsion:engine:count	number of engines
 data:geometry:propulsion:engine:y_ratio	engine position with respect to total span
 data:geometry:propulsion:fan:length	engine length
+data:geometry:propulsion:layout	position of engines (1=under the wing / 2=rear fuselage)
 data:geometry:propulsion:nacelle:diameter	nacelle diameter
 data:geometry:propulsion:nacelle:length	nacelle length
 data:geometry:propulsion:nacelle:wetted_area	wetted area of nacelle
@@ -285,7 +277,6 @@ data:propulsion:SFC	Specific Fuel Consumption (can be a vector)
 data:propulsion:thrust	actual thrust value (can be a vector)
 data:propulsion:thrust_rate	actual thrust rate (can be a vector)
 data:propulsion:use_thrust_rate	(can be a vector) If 1, calculation will use data:propulsion:required_thrust_rate. If 0, calculation will use data:propulsion:required_thrust
-settings:weight:aircraft:CG:range	distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)
 data:TLAR:approach_speed	top-level requirement: approach speed
 data:TLAR:cruise_mach	top-level requirement: cruise Mach number
 data:TLAR:max_TOFL	top-level requirement: maximum takeoff field length
@@ -312,45 +303,116 @@ data:weight:aircraft_empty:mass	mass of empty aircraft (=OWE - mass of crew)
 data:weight:airframe:CG:x	airframe (A): X-position of center of gravity
 data:weight:airframe:flight_controls:CG:x	flight controls (A4): X-position of center of gravity
 data:weight:airframe:flight_controls:mass	flight controls (A4): total mass
-tuning:weight:airframe:flight_controls:mass:k	flight controls (A4): correction ratio to be applied on computed mass
-settings:weight:airframe:flight_controls:mass:k_fc	flight controls (A4): 0.85e-4 if electrical, 1.35e-4 if conventional
-tuning:weight:airframe:flight_controls:mass:offset	flight controls (A4): correction offset to be applied on computed mass
 data:weight:airframe:fuselage:CG:x	fuselage (A2): X-position of center of gravity
 data:weight:airframe:fuselage:mass	fuselage (A2): total mass
-tuning:weight:airframe:fuselage:mass:k	fuselage (A2): correction ratio to be applied on computed mass
-settings:weight:airframe:fuselage:mass:k_fus	correction coefficient: 1.00 if all engines under wing / 1.02 with 2 engines at rear / 1.03 if 3 engines at rear / 1.05 if 1 engine in vertical tail (with or without 2 engines under wing)
-settings:weight:airframe:fuselage:mass:k_lg	correction coefficient: 1.05 if main landing gear under wing / 1.10 if main landing gear under fuselage
-tuning:weight:airframe:fuselage:mass:offset	fuselage (A2): correction offset to be applied on computed mass
 data:weight:airframe:horizontal_tail:CG:x	horizontal tail (A31): X-position of center of gravity
 data:weight:airframe:horizontal_tail:mass	horizontal tail (A31): mass
-tuning:weight:airframe:horizontal_tail:mass:k	horizontal tail (A31): correction ratio to be applied on computed mass
-tuning:weight:airframe:horizontal_tail:mass:offset	horizontal tail (A31): correction offset to be applied on computed mass
 data:weight:airframe:landing_gear:front:CG:x	front landing gear (A52): X-position of center of gravity
 data:weight:airframe:landing_gear:front:mass	front landing gear (A52): mass
 data:weight:airframe:landing_gear:main:CG:x	main landing gear (A51): X-position of center of gravity
 data:weight:airframe:landing_gear:main:mass	main landing gear (A51): mass
-tuning:weight:airframe:landing_gear:mass:k	landing gears (A5): correction ratio to be applied on computed mass
-tuning:weight:airframe:landing_gear:mass:offset	landing gears (A5): correction offset to be applied on computed mass
 data:weight:airframe:mass	airframe (A): mass
 data:weight:airframe:paint:CG:x	paint (A7): X-position of center of gravity
 data:weight:airframe:paint:mass	paint (A7): total mass
-tuning:weight:airframe:paint:mass:k	paint (A7): correction ratio to be applied on computed mass
-tuning:weight:airframe:paint:mass:offset	paint (A7): correction offset to be applied on computed mass
 data:weight:airframe:pylon:CG:x	pylon (A6): X-position of center of gravity
 data:weight:airframe:pylon:mass	pylon (A6): total mass
-tuning:weight:airframe:pylon:mass:k	pylon (A6): correction ratio to be applied on computed mass
-tuning:weight:airframe:pylon:mass:offset	pylon (A6): correction offset to be applied on computed mass
 data:weight:airframe:vertical_tail:CG:x	vertical tail (A32): X-position of center of gravity
 data:weight:airframe:vertical_tail:mass	vertical tail (A32): mass
+data:weight:airframe:wing:CG:x	wing (A1): X-position of center of gravity
+data:weight:airframe:wing:mass	wing (A1): total mass
+data:weight:crew:CG:x	crew (E): X-position of center of gravity
+data:weight:crew:mass	crew (E): mass
+data:weight:fuel_tank:CG:x	fuel tank: X-position of center of gravity
+data:weight:furniture:cargo_configuration:CG:x	cargo configuration (D1): X-position of center of gravity
+data:weight:furniture:cargo_configuration:mass	cargo configuration (D1): mass
+data:weight:furniture:CG:x	aircraft furniture (D): X-position of center of gravity
+data:weight:furniture:food_water:CG:x	food water (D3): X-position of center of gravity
+data:weight:furniture:food_water:mass	food water (D3): mass
+data:weight:furniture:mass	aircraft furniture (D): mass
+data:weight:furniture:passenger_seats:CG:x	passenger seats (D2): X-position of center of gravity
+data:weight:furniture:passenger_seats:mass	passenger seats (D2): mass
+data:weight:furniture:security_kit:CG:x	security kit (D4): X-position of center of gravity
+data:weight:furniture:security_kit:mass	security kit (D4): mass
+data:weight:furniture:toilets:CG:x	toilets (D5): X-position of center of gravity
+data:weight:furniture:toilets:mass	toilets (D5): mass
+data:weight:payload:front_fret:CG:x	front fret: X-position of center of gravity
+data:weight:payload:PAX:CG:x	passengers: X-position of center of gravity
+data:weight:payload:rear_fret:CG:x	rear fret: X-position of center of gravity
+data:weight:propulsion:CG:x	propulsion system (B): X-position of center of gravity
+data:weight:propulsion:engine:CG:x	engine (B1): X-position of center of gravity
+data:weight:propulsion:engine:mass	engine (B1): mass
+data:weight:propulsion:fuel_lines:CG:x	fuel lines (B2): X-position of center of gravity
+data:weight:propulsion:fuel_lines:mass	fuel lines (B2): mass
+data:weight:propulsion:mass	propulsion system (B): mass
+data:weight:propulsion:unconsumables:CG:x	unconsumables (B3): X-position of center of gravity
+data:weight:propulsion:unconsumables:mass	unconsumables (B3): mass
+data:weight:systems:CG:x	aircraft systems (C): X-position of center of gravity
+data:weight:systems:flight_kit:CG:x	flight kit (C6): X-position of center of gravity
+data:weight:systems:flight_kit:mass	flight kit (C6): mass
+data:weight:systems:life_support:air_conditioning:CG:x	air conditioning (C2): X-position of center of gravity
+data:weight:systems:life_support:air_conditioning:mass	air conditioning (C2): mass
+data:weight:systems:life_support:cabin_lighting:CG:x	cabin lighting (C2): X-position of center of gravity
+data:weight:systems:life_support:cabin_lighting:mass	cabin lighting (C2): mass
+data:weight:systems:life_support:de-icing:CG:x	de-icing (C2): X-position of center of gravity
+data:weight:systems:life_support:de-icing:mass	de-icing (C2): mass
+data:weight:systems:life_support:insulation:CG:x	insulation (C21): X-position of center of gravity
+data:weight:systems:life_support:insulation:mass	insulation (C21): mass
+data:weight:systems:life_support:oxygen:CG:x	oxygen (C21): X-position of center of gravity
+data:weight:systems:life_support:oxygen:mass	oxygen (C21): mass
+data:weight:systems:life_support:safety_equipment:CG:x	safety equipment (C21): X-position of center of gravity
+data:weight:systems:life_support:safety_equipment:mass	safety equipment (C21): mass
+data:weight:systems:life_support:seats_crew_accommodation:CG:x	seats crew accommodation (C21): X-position of center of gravity
+data:weight:systems:life_support:seats_crew_accommodation:mass	seats crew accommodation (C21): mass
+data:weight:systems:mass	aircraft systems (C): mass
+data:weight:systems:navigation:CG:x	navigation (C3): X-position of center of gravity
+data:weight:systems:navigation:mass	navigation (C3): mass
+data:weight:systems:operational:cargo_hold:CG:x	cargo hold (C52): X-position of center of gravity
+data:weight:systems:operational:cargo_hold:mass	cargo hold (C52): mass
+data:weight:systems:operational:radar:CG:x	radar (C51): X-position of center of gravity
+data:weight:systems:operational:radar:mass	radar (C51): mass
+data:weight:systems:power:auxiliary_power_unit:CG:x	power (C1): X-position of center of gravity
+data:weight:systems:power:auxiliary_power_unit:mass	power (C1): mass
+data:weight:systems:power:electric_systems:CG:x	power (C1): X-position of center of gravity
+data:weight:systems:power:electric_systems:mass	power (C1): mass
+data:weight:systems:power:hydraulic_systems:CG:x	power (C1): X-position of center of gravity
+data:weight:systems:power:hydraulic_systems:mass	power (C1): mass
+data:weight:systems:transmission:CG:x	transmission (C4): X-position of center of gravity
+data:weight:systems:transmission:mass	transmission (C4): mass
+settings:weight:aircraft:CG:range	distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)
+settings:weight:airframe:flight_controls:mass:k_fc	flight controls (A4): 0.85e-4 if electrical, 1.35e-4 if conventional
+settings:weight:airframe:fuselage:mass:k_fus	correction coefficient: 1.00 if all engines under wing / 1.02 with 2 engines at rear / 1.03 if 3 engines at rear / 1.05 if 1 engine in vertical tail (with or without 2 engines under wing)
+settings:weight:airframe:fuselage:mass:k_lg	correction coefficient: 1.05 if main landing gear under wing / 1.10 if main landing gear under fuselage
+settings:weight:airframe:landing_gear:front:weight_ratio	part of aircraft weight that is supported by front landing gear
+settings:weight:airframe:wing:mass:k_mvo	1.39 for Airbus type aircrafts
+settings:weight:airframe:wing:mass:k_voil	1.00 if 4 engines / 1.05 if 2 or 3 engines / 1.10 if engines on fuselage
+settings:weight:systems:power:mass:k_elec	electricity coefficient: 1.00 if 2 engines (A300, A310 type) / (1.02 if 2 engines (DC9, Caravelle type) / 1.03 if 3 engines (B727 type) / 1.05 if 3 engines (DC10, L1011 type) / 1.08 if 4 engines (B747 type)
+tuning:aerodynamics:aircraft:cruise:CD:k	correction ratio to apply to computed drag coefficient in cruise conditions
+tuning:aerodynamics:aircraft:cruise:CD:offset	correction offset to apply to computed drag coefficient in cruise conditions
+tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k	correction ratio to apply to computed induced drag coefficient in cruise conditions
+tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:offset	correction ratio to apply to computed drag coefficient in cruise conditions
+tuning:aerodynamics:aircraft:cruise:CL:k	ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
+tuning:aerodynamics:aircraft:cruise:CL:offset	offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
+tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:k	ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
+tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:offset	offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
+tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k	correction ratio to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
+tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:offset	correction offset to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
+tuning:weight:airframe:flight_controls:mass:k	flight controls (A4): correction ratio to be applied on computed mass
+tuning:weight:airframe:flight_controls:mass:offset	flight controls (A4): correction offset to be applied on computed mass
+tuning:weight:airframe:fuselage:mass:k	fuselage (A2): correction ratio to be applied on computed mass
+tuning:weight:airframe:fuselage:mass:offset	fuselage (A2): correction offset to be applied on computed mass
+tuning:weight:airframe:horizontal_tail:mass:k	horizontal tail (A31): correction ratio to be applied on computed mass
+tuning:weight:airframe:horizontal_tail:mass:offset	horizontal tail (A31): correction offset to be applied on computed mass
+tuning:weight:airframe:landing_gear:mass:k	landing gears (A5): correction ratio to be applied on computed mass
+tuning:weight:airframe:landing_gear:mass:offset	landing gears (A5): correction offset to be applied on computed mass
+tuning:weight:airframe:paint:mass:k	paint (A7): correction ratio to be applied on computed mass
+tuning:weight:airframe:paint:mass:offset	paint (A7): correction offset to be applied on computed mass
+tuning:weight:airframe:pylon:mass:k	pylon (A6): correction ratio to be applied on computed mass
+tuning:weight:airframe:pylon:mass:offset	pylon (A6): correction offset to be applied on computed mass
 tuning:weight:airframe:vertical_tail:mass:k	vertical tail (A32): correction ratio to be applied on computed mass
 tuning:weight:airframe:vertical_tail:mass:offset	vertical tail (A32): correction offset to be applied on computed mass
 tuning:weight:airframe:wing:bending_sizing:mass:k	wing bending sizing (A11): correction ratio to be applied on computed mass
 tuning:weight:airframe:wing:bending_sizing:mass:offset	wing bending sizing (A11): correction offset to be applied on computed mass
-data:weight:airframe:wing:CG:x	wing (A1): X-position of center of gravity
-data:weight:airframe:wing:mass	wing (A1): total mass
 tuning:weight:airframe:wing:mass:k	wing (A1): correction ratio to be applied on computed mass
-settings:weight:airframe:wing:mass:k_mvo	1.39 for Airbus type aircrafts
-settings:weight:airframe:wing:mass:k_voil	1.00 if 4 engines / 1.05 if 2 or 3 engines / 1.10 if engines on fuselage
 tuning:weight:airframe:wing:mass:offset	wing (A1): correction offset to be applied on computed mass
 tuning:weight:airframe:wing:reinforcements:mass:k	wing reinforcements (A14): correction ratio to be applied on computed mass
 tuning:weight:airframe:wing:reinforcements:mass:offset	wing reinforcements (A14): correction offset to be applied on computed mass
@@ -360,107 +422,47 @@ tuning:weight:airframe:wing:secondary_parts:mass:k	wing secondary parts (A15): c
 tuning:weight:airframe:wing:secondary_parts:mass:offset	wing secondary parts (A15): correction offset to be applied on computed mass
 tuning:weight:airframe:wing:shear_sizing:mass:k	wing shear sizing (A12): correction ratio to be applied on computed mass
 tuning:weight:airframe:wing:shear_sizing:mass:offset	wing shear sizing (A12): correction offset to be applied on computed mass
-data:weight:crew:CG:x	crew (E): X-position of center of gravity
-data:weight:crew:mass	crew (E): mass
-data:weight:fuel_tank:CG:x	fuel tank: X-position of center of gravity
-data:weight:furniture:cargo_configuration:CG:x	cargo configuration (D1): X-position of center of gravity
-data:weight:furniture:cargo_configuration:mass	cargo configuration (D1): mass
 tuning:weight:furniture:cargo_configuration:mass:k	cargo configuration (D1): correction ratio to be applied on computed mass
 tuning:weight:furniture:cargo_configuration:mass:offset	cargo configuration (D1): correction offset to be applied on computed mass
-data:weight:furniture:CG:x	aircraft furniture (D): X-position of center of gravity
-data:weight:furniture:food_water:CG:x	food water (D3): X-position of center of gravity
-data:weight:furniture:food_water:mass	food water (D3): mass
 tuning:weight:furniture:food_water:mass:k	food water (D3): correction ratio to be applied on computed mass
 tuning:weight:furniture:food_water:mass:offset	food water (D3): correction offset to be applied on computed mass
-data:weight:furniture:mass	aircraft furniture (D): mass
-data:weight:furniture:passenger_seats:CG:x	passenger seats (D2): X-position of center of gravity
-data:weight:furniture:passenger_seats:mass	passenger seats (D2): mass
 tuning:weight:furniture:passenger_seats:mass:k	passenger seats (D2): correction ratio to be applied on computed mass
 tuning:weight:furniture:passenger_seats:mass:offset	passenger seats (D2): correction offset to be applied on computed mass
-data:weight:furniture:security_kit:CG:x	security kit (D4): X-position of center of gravity
-data:weight:furniture:security_kit:mass	security kit (D4): mass
 tuning:weight:furniture:security_kit:mass:k	security kit (D4): correction ratio to be applied on computed mass
 tuning:weight:furniture:security_kit:mass:offset	security kit (D4): correction offset to be applied on computed mass
-data:weight:furniture:toilets:CG:x	toilets (D5): X-position of center of gravity
-data:weight:furniture:toilets:mass	toilets (D5): mass
 tuning:weight:furniture:toilets:mass:k	toilets (D5): correction ratio to be applied on computed mass
 tuning:weight:furniture:toilets:mass:offset	toilets (D5): correction offset to be applied on computed mass
-data:weight:payload:front_fret:CG:x	front fret: X-position of center of gravity
-data:weight:payload:PAX:CG:x	passengers: X-position of center of gravity
-data:weight:payload:rear_fret:CG:x	rear fret: X-position of center of gravity
-data:weight:propulsion:CG:x	propulsion system (B): X-position of center of gravity
-data:weight:propulsion:engine:CG:x	engine (B1): X-position of center of gravity
-data:weight:propulsion:engine:mass	engine (B1): mass
 tuning:weight:propulsion:engine:mass:k	engine (B1): correction ratio to be applied on computed mass
 tuning:weight:propulsion:engine:mass:offset	engine (B1): correction offset to be applied on computed mass
-data:weight:propulsion:fuel_lines:CG:x	fuel lines (B2): X-position of center of gravity
-data:weight:propulsion:fuel_lines:mass	fuel lines (B2): mass
 tuning:weight:propulsion:fuel_lines:mass:k	fuel lines (B2): correction ratio to be applied on computed mass
 tuning:weight:propulsion:fuel_lines:mass:offset	fuel lines (B2): correction offset to be applied on computed mass
-data:weight:propulsion:mass	propulsion system (B): mass
-data:weight:propulsion:unconsumables:CG:x	unconsumables (B3): X-position of center of gravity
-data:weight:propulsion:unconsumables:mass	unconsumables (B3): mass
 tuning:weight:propulsion:unconsumables:mass:k	unconsumables (B3): correction ratio to be applied on computed mass
 tuning:weight:propulsion:unconsumables:mass:offset	unconsumables (B3): correction offset to be applied on computed mass
-data:weight:systems:CG:x	aircraft systems (C): X-position of center of gravity
-data:weight:systems:flight_kit:CG:x	flight kit (C6): X-position of center of gravity
-data:weight:systems:flight_kit:mass	flight kit (C6): mass
 tuning:weight:systems:flight_kit:mass:k	flight kit (C6): correction ratio to be applied on computed mass
 tuning:weight:systems:flight_kit:mass:offset	flight kit (C6): correction offset to be applied on computed mass
-data:weight:systems:life_support:air_conditioning:CG:x	air conditioning (C2): X-position of center of gravity
-data:weight:systems:life_support:air_conditioning:mass	air conditioning (C2): mass
 tuning:weight:systems:life_support:air_conditioning:mass:k	air conditioning (C21): correction ratio to be applied on computed mass
 tuning:weight:systems:life_support:air_conditioning:mass:offset	air conditioning (C21): correction offset to be applied on computed mass
-data:weight:systems:life_support:cabin_lighting:CG:x	cabin lighting (C2): X-position of center of gravity
-data:weight:systems:life_support:cabin_lighting:mass	cabin lighting (C2): mass
 tuning:weight:systems:life_support:cabin_lighting:mass:k	cabin lighting (C21): correction ratio to be applied on computed mass
 tuning:weight:systems:life_support:cabin_lighting:mass:offset	cabin lighting (C21): correction offset to be applied on computed mass
-data:weight:systems:life_support:de-icing:CG:x	de-icing (C2): X-position of center of gravity
-data:weight:systems:life_support:de-icing:mass	de-icing (C2): mass
 tuning:weight:systems:life_support:de-icing:mass:k	de-icing (C21): correction ratio to be applied on computed mass
 tuning:weight:systems:life_support:de-icing:mass:offset	de-icing (C21): correction offset to be applied on computed mass
-data:weight:systems:life_support:insulation:CG:x	insulation (C21): X-position of center of gravity
-data:weight:systems:life_support:insulation:mass	insulation (C21): mass
 tuning:weight:systems:life_support:insulation:mass:k	insulation (C21): correction ratio to be applied on computed mass
 tuning:weight:systems:life_support:insulation:mass:offset	insulation (C21): correction offset to be applied on computed mass
-data:weight:systems:life_support:oxygen:CG:x	oxygen (C21): X-position of center of gravity
-data:weight:systems:life_support:oxygen:mass	oxygen (C21): mass
 tuning:weight:systems:life_support:oxygen:mass:k	oxygen (C21): correction ratio to be applied on computed mass
 tuning:weight:systems:life_support:oxygen:mass:offset	oxygen (C21): correction offset to be applied on computed mass
-data:weight:systems:life_support:safety_equipment:CG:x	safety equipment (C21): X-position of center of gravity
-data:weight:systems:life_support:safety_equipment:mass	safety equipment (C21): mass
 tuning:weight:systems:life_support:safety_equipment:mass:k	safety equipment (C21): correction ratio to be applied on computed mass
 tuning:weight:systems:life_support:safety_equipment:mass:offset	safety equipment (C21): correction offset to be applied on computed mass
-data:weight:systems:life_support:seats_crew_accommodation:CG:x	seats crew accommodation (C21): X-position of center of gravity
-data:weight:systems:life_support:seats_crew_accommodation:mass	seats crew accommodation (C21): mass
 tuning:weight:systems:life_support:seats_crew_accommodation:mass:k	seats crew accommodation (C21): correction ratio to be applied on computed mass
 tuning:weight:systems:life_support:seats_crew_accommodation:mass:offset	seats crew accommodation (C21): correction offset to be applied on computed mass
-data:weight:systems:mass	aircraft systems (C): mass
-data:weight:systems:navigation:CG:x	navigation (C3): X-position of center of gravity
-data:weight:systems:navigation:mass	navigation (C3): mass
 tuning:weight:systems:navigation:mass:k	navigation (C3): correction ratio to be applied on computed mass
 tuning:weight:systems:navigation:mass:offset	navigation (C3): correction offset to be applied on computed mass
-data:weight:systems:operational:cargo_hold:CG:x	cargo hold (C52): X-position of center of gravity
-data:weight:systems:operational:cargo_hold:mass	cargo hold (C52): mass
 tuning:weight:systems:operational:mass:k	operational (C5): correction ratio to be applied on computed mass
 tuning:weight:systems:operational:mass:offset	operational (C5): correction offset to be applied on computed mass
-data:weight:systems:operational:radar:CG:x	radar (C51): X-position of center of gravity
-data:weight:systems:operational:radar:mass	radar (C51): mass
-data:weight:systems:power:auxiliary_power_unit:CG:x	power (C1): X-position of center of gravity
-data:weight:systems:power:auxiliary_power_unit:mass	power (C1): mass
 tuning:weight:systems:power:auxiliary_power_unit:mass:k	power (C1): correction ratio to be applied on computed mass
 tuning:weight:systems:power:auxiliary_power_unit:mass:offset	power (C1): correction offset to be applied on computed mass
-data:weight:systems:power:electric_systems:CG:x	power (C1): X-position of center of gravity
-data:weight:systems:power:electric_systems:mass	power (C1): mass
 tuning:weight:systems:power:electric_systems:mass:k	power (C1): correction ratio to be applied on computed mass
 tuning:weight:systems:power:electric_systems:mass:offset	power (C1): correction offset to be applied on computed mass
-data:weight:systems:power:hydraulic_systems:CG:x	power (C1): X-position of center of gravity
-data:weight:systems:power:hydraulic_systems:mass	power (C1): mass
 tuning:weight:systems:power:hydraulic_systems:mass:k	power (C1): correction ratio to be applied on computed mass
 tuning:weight:systems:power:hydraulic_systems:mass:offset	power (C1): correction offset to be applied on computed mass
-settings:weight:systems:power:mass:k_elec	electricity coefficient: 1.00 if 2 engines (A300, A310 type) / (1.02 if 2 engines (DC9, Caravelle type) / 1.03 if 3 engines (B727 type) / 1.05 if 3 engines (DC10, L1011 type) / 1.08 if 4 engines (B747 type)
-data:weight:systems:transmission:CG:x	transmission (C4): X-position of center of gravity
-data:weight:systems:transmission:mass	transmission (C4): mass
 tuning:weight:systems:transmission:mass:k	transmission (C4): correction ratio to be applied on computed mass
 tuning:weight:systems:transmission:mass:offset	transmission (C4): correction offset to be applied on computed mass
-settings:weight:airframe:landing_gear:front:weight_ratio	part of aircraft weight that is supported by front landing gear

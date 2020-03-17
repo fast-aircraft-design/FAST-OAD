@@ -14,44 +14,39 @@ Estimation of cargo configuration weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
-
-from fastoad.models.options import AIRCRAFT_TYPE_OPTION
+import openmdao.api as om
 
 
-class CargoConfigurationWeight(ExplicitComponent):
+class CargoConfigurationWeight(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Cargo configuration weight estimation (D1) """
 
-    def initialize(self):
-        self.options.declare(AIRCRAFT_TYPE_OPTION, types=float, default=2.0)
-
     def setup(self):
-        self.add_input('data:geometry:cabin:NPAX1', val=np.nan)
-        self.add_input('data:geometry:cabin:containers:count', val=np.nan)
-        self.add_input('data:geometry:cabin:pallet_count', val=np.nan)
-        self.add_input('data:geometry:cabin:seats:economical:count_by_row', val=np.nan)
-        self.add_input('tuning:weight:furniture:cargo_configuration:mass:k', val=1.)
-        self.add_input('tuning:weight:furniture:cargo_configuration:mass:offset', val=0.,
-                       units='kg')
+        self.add_input("data:geometry:cabin:NPAX1", val=np.nan)
+        self.add_input("data:geometry:cabin:containers:count", val=np.nan)
+        self.add_input("data:geometry:cabin:pallet_count", val=np.nan)
+        self.add_input("data:geometry:cabin:seats:economical:count_by_row", val=np.nan)
+        self.add_input("tuning:weight:furniture:cargo_configuration:mass:k", val=1.0)
+        self.add_input(
+            "tuning:weight:furniture:cargo_configuration:mass:offset", val=0.0, units="kg"
+        )
 
-        self.add_output('data:weight:furniture:cargo_configuration:mass', units='kg')
+        self.add_output("data:weight:furniture:cargo_configuration:mass", units="kg")
 
-    def compute(self, inputs, outputs
-                , discrete_inputs=None, discrete_outputs=None):
-        npax1 = inputs['data:geometry:cabin:NPAX1']
-        side_by_side_eco_seat_count = inputs['data:geometry:cabin:seats:economical:count_by_row']
-        container_count = inputs['data:geometry:cabin:containers:count']
-        pallet_number = inputs['data:geometry:cabin:pallet_count']
-        k_d1 = inputs['tuning:weight:furniture:cargo_configuration:mass:k']
-        offset_d1 = inputs['tuning:weight:furniture:cargo_configuration:mass:offset']
+        self.declare_partials("*", "*", method="fd")
 
-        if self.options[AIRCRAFT_TYPE_OPTION] == 6.0:
-            if side_by_side_eco_seat_count <= 6.0:
-                temp_d1 = 0.351 * (npax1 - 38)
-            else:
-                temp_d1 = 85 * container_count + 110 * pallet_number
-            outputs['data:weight:furniture:cargo_configuration:mass'] = k_d1 * temp_d1 + offset_d1
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        npax1 = inputs["data:geometry:cabin:NPAX1"]
+        side_by_side_eco_seat_count = inputs["data:geometry:cabin:seats:economical:count_by_row"]
+        container_count = inputs["data:geometry:cabin:containers:count"]
+        pallet_number = inputs["data:geometry:cabin:pallet_count"]
+        k_d1 = inputs["tuning:weight:furniture:cargo_configuration:mass:k"]
+        offset_d1 = inputs["tuning:weight:furniture:cargo_configuration:mass:offset"]
+
+        if side_by_side_eco_seat_count <= 6.0:
+            temp_d1 = 0.351 * (npax1 - 38)
         else:
-            outputs['data:weight:furniture:cargo_configuration:mass'] = 0.
+            temp_d1 = 85 * container_count + 110 * pallet_number
+        outputs["data:weight:furniture:cargo_configuration:mass"] = k_d1 * temp_d1 + offset_d1

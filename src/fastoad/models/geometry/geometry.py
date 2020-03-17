@@ -15,20 +15,24 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import openmdao.api as om
+
 from fastoad.models.geometry.compute_aero_center import ComputeAeroCenter
 from fastoad.models.geometry.geom_components import ComputeTotalArea
-from fastoad.models.geometry.geom_components.fuselage.compute_fuselage \
-    import ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizing
+from fastoad.models.geometry.geom_components.fuselage.compute_fuselage import (
+    ComputeFuselageGeometryBasic,
+    ComputeFuselageGeometryCabinSizing,
+)
 from fastoad.models.geometry.geom_components.ht import ComputeHorizontalTailGeometry
-from fastoad.models.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import \
-    ComputeNacelleAndPylonsGeometry
+from fastoad.models.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import (
+    ComputeNacelleAndPylonsGeometry,
+)
 from fastoad.models.geometry.geom_components.vt import ComputeVerticalTailGeometry
 from fastoad.models.geometry.geom_components.wing.compute_wing import ComputeWingGeometry
-from fastoad.models.options import OpenMdaoOptionDispatcherGroup, ENGINE_LOCATION_OPTION, \
-    TAIL_TYPE_OPTION, CABIN_SIZING_OPTION
+from fastoad.models.options import CABIN_SIZING_OPTION
 
 
-class Geometry(OpenMdaoOptionDispatcherGroup):
+class Geometry(om.Group):
     """
     Computes geometric characteristics of the (tube-wing) aircraft:
       - fuselage size is computed from payload requirements
@@ -39,23 +43,22 @@ class Geometry(OpenMdaoOptionDispatcherGroup):
     """
 
     def initialize(self):
-        self.options.declare(ENGINE_LOCATION_OPTION, types=float, default=1.0)
-        self.options.declare(TAIL_TYPE_OPTION, types=float, default=0.0)
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
 
     def setup(self):
 
         if self.options[CABIN_SIZING_OPTION] == 1.0:
-            self.add_subsystem('compute_fuselage', ComputeFuselageGeometryCabinSizing(),
-                               promotes=['*'])
+            self.add_subsystem(
+                "compute_fuselage", ComputeFuselageGeometryCabinSizing(), promotes=["*"]
+            )
         else:
-            self.add_subsystem('compute_fuselage', ComputeFuselageGeometryBasic(),
-                               promotes=['*'])
+            self.add_subsystem("compute_fuselage", ComputeFuselageGeometryBasic(), promotes=["*"])
 
-        self.add_subsystem('compute_wing', ComputeWingGeometry(), promotes=['*'])
-        self.add_subsystem('compute_engine_nacelle', ComputeNacelleAndPylonsGeometry(),
-                           promotes=['*'])
-        self.add_subsystem('compute_ht', ComputeHorizontalTailGeometry(), promotes=['*'])
-        self.add_subsystem('compute_vt', ComputeVerticalTailGeometry(), promotes=['*'])
-        self.add_subsystem('compute_total_area', ComputeTotalArea(), promotes=['*'])
-        self.add_subsystem('compute_aero_center', ComputeAeroCenter(), promotes=['*'])
+        self.add_subsystem("compute_wing", ComputeWingGeometry(), promotes=["*"])
+        self.add_subsystem(
+            "compute_engine_nacelle", ComputeNacelleAndPylonsGeometry(), promotes=["*"]
+        )
+        self.add_subsystem("compute_ht", ComputeHorizontalTailGeometry(), promotes=["*"])
+        self.add_subsystem("compute_vt", ComputeVerticalTailGeometry(), promotes=["*"])
+        self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
+        self.add_subsystem("compute_aero_center", ComputeAeroCenter(), promotes=["*"])
