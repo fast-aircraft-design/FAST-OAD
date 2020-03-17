@@ -199,7 +199,7 @@ def test_variable_reader_save():
 
     ref_df = ref_df.reset_index(drop=True)
 
-    filename = pth.join(DATA_FOLDER_PATH, 'light_data.xml')
+    filename = pth.join(RESULTS_FOLDER_PATH, 'light_data.xml')
 
     xml = OMXmlIO(filename)
 
