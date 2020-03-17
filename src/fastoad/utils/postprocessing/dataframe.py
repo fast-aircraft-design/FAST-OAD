@@ -227,7 +227,7 @@ class VariableViewer:
                     if i < len(self.filter_widgets):
                         self.filter_widgets.pop(i)
             else:
-                pass
+                break
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_variable_selector(self, *args):
