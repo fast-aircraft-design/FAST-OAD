@@ -16,6 +16,7 @@ Tests for FAST-OAD dataframe
 
 import os.path as pth
 
+import numpy as np
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
 
@@ -35,7 +36,7 @@ def test_xml_to_from_df():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:cabin:seats:economical:width',
-        'Value': 0.46,
+        'Value': np.asarray(0.46),
         'Unit': 'm',
         'Description': 'width of economical class seats'
     }
@@ -43,7 +44,7 @@ def test_xml_to_from_df():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:cabin:seats:economical:length',
-        'Value': 0.86,
+        'Value': np.asarray(0.86),
         'Unit': 'm',
         'Description': 'length of economical class seats'
     }
@@ -51,7 +52,7 @@ def test_xml_to_from_df():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:cabin:aisle_width',
-        'Value': 0.48,
+        'Value': np.asarray(0.48),
         'Unit': 'm',
         'Description': 'width of aisles'
     }
@@ -59,7 +60,7 @@ def test_xml_to_from_df():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:propulsion:engine:count',
-        'Value': 2.0,
+        'Value': np.asarray(2.0),
         'Unit': None,
         'Description': 'number of engines'
     }
@@ -114,7 +115,7 @@ def test_variable_reader_load():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:cabin:seats:economical:width',
-        'Value': 0.46,
+        'Value': np.asarray(0.46),
         'Unit': 'm',
         'Description': 'width of economical class seats'
     }
@@ -122,7 +123,7 @@ def test_variable_reader_load():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:cabin:seats:economical:length',
-        'Value': 0.86,
+        'Value': np.asarray(0.86),
         'Unit': 'm',
         'Description': 'length of economical class seats'
     }
@@ -130,7 +131,7 @@ def test_variable_reader_load():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:cabin:aisle_width',
-        'Value': 0.48,
+        'Value': np.asarray(0.48),
         'Unit': 'm',
         'Description': 'width of aisles'
     }
@@ -138,7 +139,7 @@ def test_variable_reader_load():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:propulsion:engine:count',
-        'Value': 2.0,
+        'Value': np.asarray(2.0),
         'Unit': None,
         'Description': 'number of engines'
     }
@@ -166,7 +167,7 @@ def test_variable_reader_save():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:cabin:seats:economical:width',
-        'Value': 0.46,
+        'Value': np.asarray(0.46),
         'Unit': 'm',
         'Description': 'width of economical class seats'
     }
@@ -174,7 +175,7 @@ def test_variable_reader_save():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:cabin:seats:economical:length',
-        'Value': 0.86,
+        'Value': np.asarray(0.86),
         'Unit': 'm',
         'Description': 'length of economical class seats'
     }
@@ -182,7 +183,7 @@ def test_variable_reader_save():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:cabin:aisle_width',
-        'Value': 0.48,
+        'Value': np.asarray(0.48),
         'Unit': 'm',
         'Description': 'width of aisles'
     }
@@ -190,7 +191,7 @@ def test_variable_reader_save():
 
     ref_df = ref_df.append([{
         'Name': 'data:geometry:propulsion:engine:count',
-        'Value': 2.0,
+        'Value': np.asarray(2.0),
         'Unit': None,
         'Description': 'number of engines'
     }
