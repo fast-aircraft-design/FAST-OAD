@@ -62,9 +62,6 @@ class VariableViewer:
         # A tag used to select all submodules
         self.all_tag = '--ALL--'
 
-        # Max depth when searching for submodules
-        self.max_depth = None
-
     def load(self, file: AbstractOMFileIO):
         """
         Loads the file file and stores it in a dataframe.
@@ -182,14 +179,12 @@ class VariableViewer:
         """
         self.df_to_file(self.dataframe, self.file)
 
-    def _render_sheet(self, max_depth: int = 6) -> display:
+    def _render_sheet(self) -> display:
         """
         Renders an interactive pysheet with dropdown menus of the stored dataframe.
 
-        :param max_depth: the maximum depth when searching submodules
         :return display of the user interface
         """
-        self.max_depth = max_depth
         self.filter_widgets = []
         modules_item = sorted(self._find_submodules(self.dataframe))
         if modules_item:
@@ -200,10 +195,10 @@ class VariableViewer:
     # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_items(self, *args):
         """
-        Updates the filter_widgets with respect to higher level filter_widgets values with
-        a limited depth of self.max_depth.
+        Updates the filter_widgets with respect to higher level filter_widgets values.
         """
-        for i in range(self.max_depth):
+        # 20 will never be reached
+        for i in range(20):
             if i == 0:
                 self.filter_widgets[0].observe(self._update_items, 'value')
                 self.filter_widgets[0].observe(self._update_variable_selector, 'value')
