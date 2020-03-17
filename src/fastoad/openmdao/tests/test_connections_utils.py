@@ -54,6 +54,8 @@ def test_df_from_to_variables():
     vars['a'] = {'value': 5}
     vars['b'] = {'value': 2.5, 'units': 'm'}
     vars['c'] = {'value': -3.2, 'units': 'kg/s', 'desc': 'some test'}
+    vars['d'] = {'value': np.array([1., 2., 3.]), 'units': 'kg/s'}
+    vars['e'] = {'value': [1., 2., 3.], 'units': 'kg/s'}
 
     df = get_df_from_variables(vars)
     new_vars = get_variables_from_df(df)
