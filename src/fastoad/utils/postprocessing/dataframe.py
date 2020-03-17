@@ -13,6 +13,7 @@ Defines the data frame for postprocessing
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from typing import List
 import pandas as pd
 import ipysheet as sh
 import ipywidgets as widgets
@@ -272,7 +273,7 @@ class VariableViewer:
         return display(ui)
 
     @staticmethod
-    def _find_submodules(df: pd.DataFrame, modules: [str] = None) -> [str]:
+    def _find_submodules(df: pd.DataFrame, modules: List[str] = None) -> List[str]:
         """
         Search for submodules at root or provided modules.
 
@@ -302,7 +303,7 @@ class VariableViewer:
         return submodules
 
     def _filter_variables(self, df: pd.DataFrame,
-                          modules: [str],
+                          modules: List[str],
                           var_type: str = None) -> pd.DataFrame:
         """
         Returns a filtered dataframe with respect to a set of modules and variable type.
