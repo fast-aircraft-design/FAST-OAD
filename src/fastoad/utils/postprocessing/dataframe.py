@@ -53,7 +53,7 @@ class VariableViewer:
         self.sheet = None
 
         # The list of stored widgets
-        self.items = None
+        self.filter_widgets = None
 
         # The ui containing all the dropdown menus
         self.variable_selector = None
@@ -189,42 +189,42 @@ class VariableViewer:
         :return display of the user interface
         """
         self.max_depth = max_depth
-        self.items = []
+        self.filter_widgets = []
         modules_item = sorted(self._find_submodules(self.dataframe))
         if modules_item:
             w = widgets.Dropdown(options=modules_item)
-            self.items.append(w)
+            self.filter_widgets.append(w)
         return self._render_ui()
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_items(self, *args):
         """
-        Updates the items with respect to higher level items values with
+        Updates the filter_widgets with respect to higher level filter_widgets values with
         a limited depth of self.max_depth.
         """
         for i in range(self.max_depth):
             if i == 0:
-                self.items[0].observe(self._update_items, 'value')
-                self.items[0].observe(self._update_variable_selector, 'value')
-            elif i <= len(self.items):
-                modules = [item.value for item in self.items[0:i]]
+                self.filter_widgets[0].observe(self._update_items, 'value')
+                self.filter_widgets[0].observe(self._update_variable_selector, 'value')
+            elif i <= len(self.filter_widgets):
+                modules = [item.value for item in self.filter_widgets[0:i]]
                 modules_item = sorted(self._find_submodules(self.dataframe, modules))
                 if modules_item:
                     # Check if the item exists already
-                    if i == len(self.items):
+                    if i == len(self.filter_widgets):
                         if len(modules_item) > 1:
                             modules_item.insert(0, self.all_tag)
                         widget = widgets.Dropdown(options=modules_item)
                         widget.observe(self._update_items, 'value')
                         widget.observe(self._update_variable_selector, 'value')
-                        self.items.append(widget)
+                        self.filter_widgets.append(widget)
                     else:
                         if (self.all_tag not in modules_item) and (len(modules_item) > 1):
                             modules_item.insert(0, self.all_tag)
-                        self.items[i].options = modules_item
+                        self.filter_widgets[i].options = modules_item
                 else:
-                    if i < len(self.items):
-                        self.items.pop(i)
+                    if i < len(self.filter_widgets):
+                        self.filter_widgets.pop(i)
             else:
                 pass
 
@@ -232,9 +232,9 @@ class VariableViewer:
     def _update_variable_selector(self, *args):
         """
         Updates the variable selector with respect to the
-        actual items stored.
+        actual filter_widgets stored.
         """
-        items_box = widgets.HBox(self.items)
+        items_box = widgets.HBox(self.filter_widgets)
         items_box = widgets.VBox([widgets.Label(value='Variable name'),
                                   items_box])
         self.variable_selector = items_box
@@ -244,7 +244,7 @@ class VariableViewer:
         Updates the sheet after filtering the dataframe with respect to
         the actual values of the variable dropdown menus.
         """
-        modules = [item.value for item in self.items]
+        modules = [item.value for item in self.filter_widgets]
 
         filtered_var = self._filter_variables(self.dataframe, modules, var_type=None)
 
@@ -265,7 +265,7 @@ class VariableViewer:
         self._update_items()
         self._update_variable_selector()
         self._update_sheet()
-        for item in self.items:
+        for item in self.filter_widgets:
             item.observe(self._render_ui, 'value')
         self.sheet.layout.height = '400px'
         ui = widgets.VBox([self.variable_selector, self.sheet])
