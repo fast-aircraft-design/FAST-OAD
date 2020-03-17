@@ -319,13 +319,11 @@ class VariableViewer:
         if var_type is None:
             var_type = self.all_tag
         path = ''
-        for i, module in enumerate(modules):
-            module = modules[i]
-            if module != self.all_tag:
-                if i < len(modules) - 1:
-                    path += module + ':'
-                else:
-                    path += module
+        for _ in modules:
+            if modules[-1] == self.all_tag:
+                path = ':'.join(modules[:-1])
+            else:
+                path = ':'.join(modules)
 
         var_names = df['Name'].unique().tolist()
 
