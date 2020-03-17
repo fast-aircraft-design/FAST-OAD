@@ -285,22 +285,22 @@ class VariableViewer:
         :param modules: the list of modules to which the variables belong
         :return the submodules list
         """
-        var_names = df['Name'].unique().tolist()
+        var_names = df.filter(items=['Name'])
 
-        submodules = set()
+        if not modules:
+            modules = []
 
-        for var_name in var_names:
-            full_submodules = var_name.split(':')
-            if modules is not None:
-                if all(module in full_submodules for module in modules):
-                    module_idx = full_submodules.index(modules[-1])
-                    if module_idx < len(full_submodules) - 1:
-                        submodules.add(full_submodules[module_idx + 1])
+        def get_next_module(path):
+            submodules = path.split(':')
+            if len(modules) >= len(submodules) or submodules[:len(modules)] != modules:
+                return ''
             else:
-                submodules.add(full_submodules[0])
+                return submodules[len(modules)]
 
-        submodules = list(submodules)
-        return submodules
+        submodules = var_names.applymap(get_next_module)
+        submodules = submodules[submodules.Name != '']
+
+        return set(submodules['Name'].tolist())
 
     def _filter_variables(self, df: pd.DataFrame,
                           modules: List[str],
