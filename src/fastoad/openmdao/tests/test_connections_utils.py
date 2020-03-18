@@ -27,7 +27,8 @@ from .sellar_example.disc2 import Disc2
 from .sellar_example.functions import Functions
 from .sellar_example.sellar import Sellar
 from ..connections_utils import get_unconnected_input_names, get_ivc_from_variables, \
-    get_variables_from_ivc, get_unconnected_input_variables, get_variables_from_problem
+    get_variables_from_ivc, get_unconnected_input_variables, get_variables_from_problem, \
+    get_df_from_variables, get_variables_from_df
 from ..variables import Variable, VariableList
 
 # Logger for this module
@@ -42,6 +43,22 @@ def test_ivc_from_to_variables():
 
     ivc = get_ivc_from_variables(vars)
     new_vars = get_variables_from_ivc(ivc)
+
+    assert vars.names() == new_vars.names()
+    for var, new_var in zip(vars, new_vars):
+        assert var == new_var
+
+
+def test_df_from_to_variables():
+    vars = VariableList()
+    vars['a'] = {'value': 5}
+    vars['b'] = {'value': 2.5, 'units': 'm'}
+    vars['c'] = {'value': -3.2, 'units': 'kg/s', 'desc': 'some test'}
+    vars['d'] = {'value': np.array([1., 2., 3.]), 'units': 'kg/s'}
+    vars['e'] = {'value': [1., 2., 3.], 'units': 'kg/s'}
+
+    df = get_df_from_variables(vars)
+    new_vars = get_variables_from_df(df)
 
     assert vars.names() == new_vars.names()
     for var, new_var in zip(vars, new_vars):
