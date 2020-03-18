@@ -56,28 +56,36 @@ class VariableViewer:
         # The list of stored widgets
         self.filter_widgets = None
 
+        # The ui containing save and load buttons
+        self.save_load_buttons = None
+
         # The ui containing all the dropdown menus
         self.variable_selector = None
 
         # A tag used to select all submodules
         self.all_tag = '--ALL--'
 
-    def load(self, file: AbstractOMFileIO):
+    def load(self, file: AbstractOMFileIO = None):
         """
         Loads the file file and stores it in a dataframe.
 
         :param file: the file file to interact with
         """
-        self.file = file
-        self.dataframe = self.file_to_df(self.file)
+        if file is None:
+            file = self.file
+        else:
+            self.file = file
+        self.dataframe = self.file_to_df(file)
         self.dataframe = self.dataframe.reset_index(drop=True)
 
-    def save(self, file: AbstractOMFileIO):
+    def save(self, file: AbstractOMFileIO = None):
         """
         Save the dataframe to the file file.
 
         :param file: the file file to save
         """
+        if file is None:
+            file = self.file
         self.df_to_file(self.dataframe, file)
 
     def display(self):
@@ -85,6 +93,7 @@ class VariableViewer:
         Displays the datasheet
         :return display of the user interface:
         """
+        self._create_save_load_buttons()
         return self._render_sheet()
 
     @staticmethod
@@ -235,6 +244,43 @@ class VariableViewer:
                                   items_box])
         self.variable_selector = items_box
 
+    def _create_save_load_buttons(self):
+        """
+        The save button saves the present state of the dataframe to the xml.
+        The load button loads the xml and replaces actual the dataframe.
+        """
+
+        save_button = widgets.Button(
+            description='Save',
+            disabled=False,
+            button_style='',  # 'success', 'info', 'warning', 'danger' or ''
+            tooltip='Save to the file',
+            icon='save'
+        )
+
+        def on_save_button_clicked(b):
+            self.save()
+
+        save_button.on_click(on_save_button_clicked)
+
+        load_button = widgets.Button(
+            description='Load',
+            disabled=False,
+            button_style='',  # 'success', 'info', 'warning', 'danger' or ''
+            tooltip='Load the file',
+            icon='upload'
+        )
+
+        def on_load_button_clicked(b):
+            self.load()
+            self._render_sheet()
+
+        load_button.on_click(on_load_button_clicked)
+
+        items_box = widgets.HBox([save_button, load_button])
+
+        self.save_load_buttons = items_box
+
     def _update_sheet(self):
         """
         Updates the sheet after filtering the dataframe with respect to
@@ -264,7 +310,9 @@ class VariableViewer:
         for item in self.filter_widgets:
             item.observe(self._render_ui, 'value')
         self.sheet.layout.height = '400px'
-        ui = widgets.VBox([self.variable_selector, self.sheet])
+        ui = widgets.VBox([self.save_load_buttons,
+                           self.variable_selector,
+                           self.sheet])
         return display(ui)
 
     @staticmethod
