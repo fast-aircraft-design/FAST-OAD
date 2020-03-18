@@ -71,9 +71,17 @@ def get_df_from_variables(variables: VariableList) -> pd.DataFrame:
 
     for variable in variables:
         attributes = variable.metadata.copy()
+        value = variable.value
+        if np.shape(value) == (1,):
+            value = float(value[0])
+        elif np.shape(value) == ():
+            pass
+        else:
+            value = [float(val) for val in value]
+
         df = df.append([{
             'Name': variable.name,
-            'Value': variable.value,
+            'Value': value,
             'Unit': attributes['units'],
             'Description': attributes['desc']
         }
