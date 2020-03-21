@@ -48,13 +48,13 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
     wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
 
-    x = [0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
+    x = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
+    x = np.concatenate((-x, x))
 
-    x = [-x_i for x_i in x] + x
-    y = [0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
-         wing_root_chord, wing_root_chord, wing_root_chord, 0]
+    y = np.array([0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
+                  wing_root_chord, wing_root_chord, wing_root_chord, 0])
+    y = np.concatenate((y, y))
 
-    y = y + y
     if fig is None:
         fig = go.Figure()
 
@@ -171,7 +171,7 @@ def mass_breakdown_plot(aircraft_xml: OMXmlIO):
     if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):
         MTOW = OWE + payload + fuel_mission
 
-    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]],)
+    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]], )
 
     # FIXME: the first sunburst looks broken, but I don't know why
     fig.add_trace(
@@ -206,39 +206,39 @@ def mass_breakdown_plot(aircraft_xml: OMXmlIO):
     )
 
     airframe_str = (
-        "airframe"
-        + "<br>"
-        + str(int(airframe))
-        + " [kg] ("
-        + str(round(airframe / OWE * 100, 1))
-        + "%)"
+            "airframe"
+            + "<br>"
+            + str(int(airframe))
+            + " [kg] ("
+            + str(round(airframe / OWE * 100, 1))
+            + "%)"
     )
     propulsion_str = (
-        "propulsion"
-        + "<br>"
-        + str(int(propulsion))
-        + " [kg] ("
-        + str(round(propulsion / MTOW * 100, 1))
-        + "%)"
+            "propulsion"
+            + "<br>"
+            + str(int(propulsion))
+            + " [kg] ("
+            + str(round(propulsion / MTOW * 100, 1))
+            + "%)"
     )
     systems_str = (
-        "systems"
-        + "<br>"
-        + str(int(systems))
-        + " [kg] ("
-        + str(round(systems / MTOW * 100, 1))
-        + "%)"
+            "systems"
+            + "<br>"
+            + str(int(systems))
+            + " [kg] ("
+            + str(round(systems / MTOW * 100, 1))
+            + "%)"
     )
     furniture_str = (
-        "furniture"
-        + "<br>"
-        + str(int(furniture))
-        + " [kg] ("
-        + str(round(furniture / MTOW * 100, 1))
-        + "%)"
+            "furniture"
+            + "<br>"
+            + str(int(furniture))
+            + " [kg] ("
+            + str(round(furniture / MTOW * 100, 1))
+            + "%)"
     )
     crew_str = (
-        "crew" + "<br>" + str(int(crew)) + " [kg] (" + str(round(crew / MTOW * 100, 1)) + "%)"
+            "crew" + "<br>" + str(int(crew)) + " [kg] (" + str(round(crew / MTOW * 100, 1)) + "%)"
     )
 
     fig.add_trace(
@@ -435,7 +435,7 @@ def mass_breakdown_generic(aircraft_xml: OMXmlIO, root="MTOW", max_depth=10):
     if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):
         MTOW = OWE + payload + fuel_mission
 
-    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]],)
+    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]], )
 
     # FIXME: the first sunburst looks broken, but I don't know why
     fig.add_trace(
