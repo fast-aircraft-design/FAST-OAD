@@ -41,17 +41,18 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     """
     variables = aircraft_xml.read_variables()
 
-    wing_x4 = variables["data:geometry:wing:tip:leading_edge:x"].value[0]
-    wing_y2 = variables["data:geometry:wing:root:y"].value[0]
-    wing_y3 = variables["data:geometry:wing:kink:y"].value[0]
-    wing_y4 = variables["data:geometry:wing:tip:y"].value[0]
-    wing_l2 = variables["data:geometry:wing:root:chord"].value[0]
-    wing_l4 = variables["data:geometry:wing:tip:chord"].value[0]
+    wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x"].value[0]
+    wing_root_y = variables["data:geometry:wing:root:y"].value[0]
+    wing_kink_y = variables["data:geometry:wing:kink:y"].value[0]
+    wing_tip_y = variables["data:geometry:wing:tip:y"].value[0]
+    wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
+    wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
 
-    x = [0, wing_y2, wing_y4, wing_y4, wing_y3, wing_y2, 0, 0]
+    x = [0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
 
     x = [-x_i for x_i in x] + x
-    y = [0, 0, wing_x4, wing_x4 + wing_l4, wing_l2, wing_l2, wing_l2, 0]
+    y = [0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
+         wing_root_chord, wing_root_chord, wing_root_chord, 0]
 
     y = y + y
     if fig is None:
