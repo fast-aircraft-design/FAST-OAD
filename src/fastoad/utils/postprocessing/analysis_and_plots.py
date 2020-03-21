@@ -73,6 +73,83 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     return fig
 
 
+def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
+    """
+    Returns a figure plot of the top view of the wing.
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
+
+    :param aircraft_xml: xml file reader instance
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :return: wing plot figure
+    """
+    variables = aircraft_xml.read_variables()
+
+    # Wing parameters
+    wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x"].value[0]
+    wing_root_y = variables["data:geometry:wing:root:y"].value[0]
+    wing_kink_y = variables["data:geometry:wing:kink:y"].value[0]
+    wing_tip_y = variables["data:geometry:wing:tip:y"].value[0]
+    wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
+    wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
+
+    x_wing = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
+
+    y_wing = np.array([0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
+                       wing_root_chord, wing_root_chord, wing_root_chord, 0])
+
+    # Fuselage parameters
+    fuselage_max_width = variables["data:geometry:fuselage:maximum_width"].value[0]
+    fuselage_length = variables["data:geometry:fuselage:length"].value[0]
+    fuselage_front_length = variables["data:geometry:fuselage:front_length"].value[0]
+    fuselage_rear_length = variables["data:geometry:fuselage:rear_length"].value[0]
+
+    y_fuselage = np.array([0., 0.,
+                           fuselage_front_length,
+                           fuselage_length - fuselage_rear_length,
+                           fuselage_length,
+                           fuselage_length
+                           ])
+
+    x_fuselage = np.array([0.,
+                           fuselage_max_width/4.,
+                           fuselage_max_width/2.,
+                           fuselage_max_width/2.,
+                           fuselage_max_width/4.,
+                           0.])
+
+    # CGs
+    wing_mac_length = variables['data:geometry:wing:MAC:length'].value[0]
+    wing_max_x = variables['data:geometry:wing:MAC:x'].value[0]
+
+    y_wing = y_wing + wing_max_x - wing_mac_length
+
+    x = np.concatenate((x_fuselage, x_wing))
+    y = np.concatenate((y_fuselage, y_wing))
+
+    x = np.concatenate((-x, x))
+    y = np.concatenate((y, y))
+
+
+    if fig is None:
+        fig = go.Figure()
+
+    scatter = go.Scatter(x=x, y=y, mode="lines+markers", name=name)
+
+    fig.add_trace(scatter)
+
+    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+
+    fig = go.FigureWidget(fig)
+
+    fig.update_layout(
+        title_text="Aircraft Geometry", title_x=0.5, xaxis_title="x", yaxis_title="y",
+    )
+
+    return fig
+
+
 def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft drag polar.
