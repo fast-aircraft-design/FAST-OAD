@@ -13,6 +13,7 @@ Defines the analysis and plotting functions for postprocessing
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -82,15 +83,17 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
     :param fig: existing figure to which add the plot
     :return: wing plot figure
     """
-    # FIXME: the multidimensional array ClCd is overwritten by read_variables()
     variables = aircraft_xml.read_variables()
     cd = variables["data:aerodynamics:aircraft:cruise:CD"].value
     cl = variables["data:aerodynamics:aircraft:cruise:CL"].value
 
+    cd_short = np.linspace(0.1, 2., num=50)
+    cl_short = np.interp(cd_short, cd, cl)
+
     if fig is None:
         fig = go.Figure()
 
-    scatter = go.Scatter(x=cd, y=cl, mode="lines+markers", name=name)
+    scatter = go.Scatter(x=cd_short, y=cl_short, mode="lines+markers", name=name)
 
     fig.add_trace(scatter)
 
