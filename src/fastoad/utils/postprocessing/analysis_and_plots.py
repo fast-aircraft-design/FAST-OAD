@@ -99,6 +99,21 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     y_wing = np.array([0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
                        wing_root_chord, wing_root_chord, wing_root_chord, 0])
 
+    # Horizontal Tail parameters
+    # TODO: Change "data:geometry:horizontal_tail:root_chord"
+    #  to "data:geometry:horizontal_tail:root:chord"
+    ht_root_chord = variables["data:geometry:horizontal_tail:root_chord"].value[0]
+    ht_tip_chord = variables["data:geometry:horizontal_tail:tip_chord"].value[0]
+    ht_span = variables["data:geometry:horizontal_tail:span"].value[0]
+    ht_sweep_0 = variables["data:geometry:horizontal_tail:sweep_0"].value[0]
+
+    ht_tip_leading_edge_x = ht_span / 2. * np.tan(ht_sweep_0 * np.pi / 180.)
+
+    x_ht = np.array([0, ht_span / 2., ht_span / 2., 0., 0.])
+
+    y_ht = np.array([0, ht_tip_leading_edge_x, ht_tip_leading_edge_x + ht_tip_chord,
+                     ht_root_chord, 0])
+
     # Fuselage parameters
     fuselage_max_width = variables["data:geometry:fuselage:maximum_width"].value[0]
     fuselage_length = variables["data:geometry:fuselage:length"].value[0]
@@ -113,24 +128,26 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
                            ])
 
     x_fuselage = np.array([0.,
-                           fuselage_max_width/4.,
-                           fuselage_max_width/2.,
-                           fuselage_max_width/2.,
-                           fuselage_max_width/4.,
+                           fuselage_max_width / 4.,
+                           fuselage_max_width / 2.,
+                           fuselage_max_width / 2.,
+                           fuselage_max_width / 4.,
                            0.])
 
     # CGs
-    wing_mac_length = variables['data:geometry:wing:MAC:length'].value[0]
-    wing_max_x = variables['data:geometry:wing:MAC:x'].value[0]
+    wing_mac_x = variables["data:geometry:wing:MAC:x"].value[0]
+    wing_root_x = variables["data:geometry:wing:root:leading_edge:x"].value[0]
+    ht_mac_x = variables["data:geometry:horizontal_tail:MAC:x"].value[0]
+    ht_distance_from_wing = variables["data:geometry:horizontal_tail:distance_from_wing"].value[0]
 
-    y_wing = y_wing + wing_max_x - wing_mac_length
+    y_wing = y_wing + wing_mac_x - wing_root_x
+    y_ht = y_ht + wing_mac_x + ht_distance_from_wing - ht_mac_x
 
-    x = np.concatenate((x_fuselage, x_wing))
-    y = np.concatenate((y_fuselage, y_wing))
+    x = np.concatenate((x_fuselage, x_wing, x_ht))
+    y = np.concatenate((y_fuselage, y_wing, y_ht))
 
     x = np.concatenate((-x, x))
     y = np.concatenate((y, y))
-
 
     if fig is None:
         fig = go.Figure()
