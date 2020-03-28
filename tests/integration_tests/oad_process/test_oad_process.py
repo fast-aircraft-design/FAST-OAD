@@ -16,25 +16,29 @@ Test module for Overall Aircraft Design process
 
 import os
 import os.path as pth
+from platform import system
 from shutil import rmtree
 
 import numpy as np
 import openmdao.api as om
 import pandas as pd
 import pytest
-from numpy.testing import assert_allclose
-
 from fastoad import api
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMLegacy1XmlIO
 from fastoad.models.aerodynamics.external.xfoil import XfoilPolar
+from numpy.testing import assert_allclose
+
 from tests import root_folder_path
+from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+
+xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
@@ -45,9 +49,9 @@ def test_oad_process(cleanup):
     """
 
     problem = FASTOADProblem()
-    problem.configure(pth.join(DATA_FOLDER_PATH, 'oad_process.toml'))
+    problem.configure(pth.join(DATA_FOLDER_PATH, "oad_process.toml"))
 
-    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml'))
+    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, "CeRAS01_baseline.xml"))
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
     problem.setup()
@@ -56,42 +60,54 @@ def test_oad_process(cleanup):
 
     if not pth.exists(RESULTS_FOLDER_PATH):
         os.mkdir(RESULTS_FOLDER_PATH)
-    om.view_connections(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'connections.html'),
-                        show_browser=False)
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, 'n2.html'), show_browser=False)
+    om.view_connections(
+        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+    )
+    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
 
     # Check that weight-performances loop correctly converged
-    assert_allclose(problem['data:weight:aircraft:OWE'],
-                    problem['data:weight:airframe:mass'] + problem['data:weight:propulsion:mass']
-                    + problem['data:weight:systems:mass'] + problem['data:weight:furniture:mass']
-                    + problem['data:weight:crew:mass'],
-                    atol=1)
-    assert_allclose(problem['data:weight:aircraft:MZFW'],
-                    problem['data:weight:aircraft:OWE'] + problem[
-                        'data:weight:aircraft:max_payload'],
-                    atol=1)
-    assert_allclose(problem['data:weight:aircraft:MTOW'],
-                    problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
-                    + problem['data:mission:sizing:fuel'],
-                    atol=1)
+    assert_allclose(
+        problem["data:weight:aircraft:OWE"],
+        problem["data:weight:airframe:mass"]
+        + problem["data:weight:propulsion:mass"]
+        + problem["data:weight:systems:mass"]
+        + problem["data:weight:furniture:mass"]
+        + problem["data:weight:crew:mass"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MZFW"],
+        problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MTOW"],
+        problem["data:weight:aircraft:OWE"]
+        + problem["data:weight:aircraft:payload"]
+        + problem["data:mission:sizing:fuel"],
+        atol=1,
+    )
 
 
 def test_non_regression(cleanup):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, 'non_regression')
-    configuration_file_path = pth.join(results_folder_path, 'oad_process.toml')
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "non_regression")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
 
     # Generation of configuration file  and problem instance ------------------
     api.generate_configuration_file(configuration_file_path, True)
     problem = FASTOADProblem()
     problem.configure(configuration_file_path)
     # Next trick is needed for overloading option setting from TOML file
-    problem.model.aerodynamics.landing._OPTIONS['use_xfoil'] = True
-    # BTW we narrow computed alpha range for sake of CPU time
-    problem.model.aerodynamics.landing._OPTIONS['xfoil_alpha_min'] = 20.
-    problem.model.aerodynamics.landing._OPTIONS['xfoil_alpha_max'] = 22.
+    if system() == "Windows" or xfoil_path:
+        problem.model.aerodynamics.landing._OPTIONS["use_xfoil"] = True
+        if system() != "Windows":
+            problem.model.aerodynamics.landing._OPTIONS["xfoil_exe_path"] = xfoil_path
+        # BTW we narrow computed alpha range for sake of CPU time
+        problem.model.aerodynamics.landing._OPTIONS["xfoil_alpha_min"] = 20.0
+        problem.model.aerodynamics.landing._OPTIONS["xfoil_alpha_max"] = 22.0
 
     # Generation and reading of inputs ----------------------------------------
-    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy.xml'))
+    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml"))
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
     problem.setup()
@@ -100,26 +116,36 @@ def test_non_regression(cleanup):
     problem.run_model()
     problem.write_outputs()
 
-    om.view_connections(problem, outfile=pth.join(results_folder_path, 'connections.html'),
-                        show_browser=False)
+    om.view_connections(
+        problem, outfile=pth.join(results_folder_path, "connections.html"), show_browser=False
+    )
 
     # Check that weight-performances loop correctly converged
-    assert_allclose(problem['data:weight:aircraft:OWE'],
-                    problem['data:weight:airframe:mass'] + problem['data:weight:propulsion:mass']
-                    + problem['data:weight:systems:mass'] + problem['data:weight:furniture:mass']
-                    + problem['data:weight:crew:mass'],
-                    atol=1)
-    assert_allclose(problem['data:weight:aircraft:MZFW'],
-                    problem['data:weight:aircraft:OWE'] + problem[
-                        'data:weight:aircraft:max_payload'],
-                    atol=1)
-    assert_allclose(problem['data:weight:aircraft:MTOW'],
-                    problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
-                    + problem['data:mission:sizing:fuel'],
-                    atol=1)
+    assert_allclose(
+        problem["data:weight:aircraft:OWE"],
+        problem["data:weight:airframe:mass"]
+        + problem["data:weight:propulsion:mass"]
+        + problem["data:weight:systems:mass"]
+        + problem["data:weight:furniture:mass"]
+        + problem["data:weight:crew:mass"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MZFW"],
+        problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MTOW"],
+        problem["data:weight:aircraft:OWE"]
+        + problem["data:weight:aircraft:payload"]
+        + problem["data:mission:sizing:fuel"],
+        atol=1,
+    )
 
     ref_var_list = OMLegacy1XmlIO(
-        pth.join(DATA_FOLDER_PATH, 'CeRAS01_legacy_result.xml')).read_variables()
+        pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy_result.xml")
+    ).read_variables()
 
     row_list = []
     for ref_var in ref_var_list:
@@ -128,85 +154,106 @@ def test_non_regression(cleanup):
         except KeyError:
             continue
         row_list.append(
-            {'name': ref_var.name, 'units': ref_var.units,
-             'ref_value': ref_var.value[0], 'value': value}
+            {
+                "name": ref_var.name,
+                "units": ref_var.units,
+                "ref_value": ref_var.value[0],
+                "value": value,
+            }
         )
 
     df = pd.DataFrame(row_list)
-    df['rel_delta'] = (df['value'] - df['ref_value']) / df['ref_value']
-    df['rel_delta'][(df['ref_value'] == 0) & (abs(df['value']) <= 1e-10)] = 0.
-    df['abs_rel_delta'] = np.abs(df['rel_delta'])
+    df["rel_delta"] = (df["value"] - df["ref_value"]) / df["ref_value"]
+    df["rel_delta"][(df["ref_value"] == 0) & (abs(df["value"]) <= 1e-10)] = 0.0
+    df["abs_rel_delta"] = np.abs(df["rel_delta"])
 
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.width', 1000)
-    print(df.sort_values(by=['abs_rel_delta']))
+    pd.set_option("display.max_rows", None)
+    pd.set_option("display.max_columns", None)
+    pd.set_option("display.width", 1000)
+    print(df.sort_values(by=["abs_rel_delta"]))
 
-    assert np.all(df['abs_rel_delta'] < 0.005)
+    assert np.all(df["abs_rel_delta"] < 0.005)
 
-    print('XFOIL runs:', XfoilPolar.run_count)
+    print("XFOIL runs:", XfoilPolar.run_count)
 
 
 def test_api(cleanup):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, 'api')
-    configuration_file_path = pth.join(results_folder_path, 'oad_process.toml')
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
 
     # Generation of configuration file ----------------------------------------
     api.generate_configuration_file(configuration_file_path, True)
 
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(root_folder_path, 'src', 'fastoad',
-                          'notebooks', 'tutorial', 'data', 'CeRAS01_baseline.xml')
+    source_xml = pth.join(
+        root_folder_path, "src", "fastoad", "notebooks", "tutorial", "data", "CeRAS01_baseline.xml"
+    )
     api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run model ---------------------------------------------------------------
     problem = api.evaluate_problem(configuration_file_path, True)
 
     # Check that weight-performances loop correctly converged
-    assert_allclose(problem['data:weight:aircraft:OWE'],
-                    problem['data:weight:airframe:mass'] + problem['data:weight:propulsion:mass']
-                    + problem['data:weight:systems:mass'] + problem['data:weight:furniture:mass']
-                    + problem['data:weight:crew:mass'],
-                    atol=1)
-    assert_allclose(problem['data:weight:aircraft:MZFW'],
-                    problem['data:weight:aircraft:OWE'] + problem[
-                        'data:weight:aircraft:max_payload'],
-                    atol=1)
-    assert_allclose(problem['data:weight:aircraft:MTOW'],
-                    problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
-                    + problem['data:mission:sizing:fuel'],
-                    atol=1)
+    assert_allclose(
+        problem["data:weight:aircraft:OWE"],
+        problem["data:weight:airframe:mass"]
+        + problem["data:weight:propulsion:mass"]
+        + problem["data:weight:systems:mass"]
+        + problem["data:weight:furniture:mass"]
+        + problem["data:weight:crew:mass"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MZFW"],
+        problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MTOW"],
+        problem["data:weight:aircraft:OWE"]
+        + problem["data:weight:aircraft:payload"]
+        + problem["data:mission:sizing:fuel"],
+        atol=1,
+    )
 
-    assert_allclose(problem['data:handling_qualities:static_margin'], -0.005519, atol=1e-3)
-    assert_allclose(problem['data:geometry:wing:MAC:x'], 16.5, atol=1e-2)
-    assert_allclose(problem['data:weight:aircraft:MTOW'], 77069, atol=1)
-    assert_allclose(problem['data:geometry:wing:area'], 130.29, atol=1e-2)
-    assert_allclose(problem['data:geometry:vertical_tail:area'], 27.65, atol=1e-2)
-    assert_allclose(problem['data:geometry:horizontal_tail:area'], 35.25, atol=1e-2)
+    assert_allclose(problem["data:handling_qualities:static_margin"], -0.005519, atol=1e-3)
+    assert_allclose(problem["data:geometry:wing:MAC:x"], 16.5, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 77069, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 130.29, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.65, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.25, atol=1e-2)
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
     assert not problem.optim_failed
 
     # Check that weight-performances loop correctly converged
-    assert_allclose(problem['data:weight:aircraft:OWE'],
-                    problem['data:weight:airframe:mass'] + problem['data:weight:propulsion:mass']
-                    + problem['data:weight:systems:mass'] + problem['data:weight:furniture:mass']
-                    + problem['data:weight:crew:mass'],
-                    atol=1)
-    assert_allclose(problem['data:weight:aircraft:MZFW'],
-                    problem['data:weight:aircraft:OWE'] + problem[
-                        'data:weight:aircraft:max_payload'],
-                    atol=1)
-    assert_allclose(problem['data:weight:aircraft:MTOW'],
-                    problem['data:weight:aircraft:OWE'] + problem['data:weight:aircraft:payload']
-                    + problem['data:mission:sizing:fuel'],
-                    atol=1)
+    assert_allclose(
+        problem["data:weight:aircraft:OWE"],
+        problem["data:weight:airframe:mass"]
+        + problem["data:weight:propulsion:mass"]
+        + problem["data:weight:systems:mass"]
+        + problem["data:weight:furniture:mass"]
+        + problem["data:weight:crew:mass"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MZFW"],
+        problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MTOW"],
+        problem["data:weight:aircraft:OWE"]
+        + problem["data:weight:aircraft:payload"]
+        + problem["data:mission:sizing:fuel"],
+        atol=1,
+    )
 
-    assert_allclose(problem['data:handling_qualities:static_margin'], 0.05, atol=2e-3)
-    assert_allclose(problem['data:geometry:wing:MAC:x'], 17.1, atol=1e-1)
-    assert_allclose(problem['data:weight:aircraft:MTOW'], 77235, atol=5)
-    assert_allclose(problem['data:geometry:wing:area'], 130.6, atol=1e-1)
-    assert_allclose(problem['data:geometry:vertical_tail:area'], 28.2, atol=1e-1)
-    assert_allclose(problem['data:geometry:horizontal_tail:area'], 36.9, atol=1e-1)
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=2e-3)
+    assert_allclose(problem["data:geometry:wing:MAC:x"], 17.1, atol=1e-1)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 77235, atol=5)
+    assert_allclose(problem["data:geometry:wing:area"], 130.6, atol=1e-1)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 28.2, atol=1e-1)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 36.9, atol=1e-1)

@@ -18,16 +18,23 @@ Test module for XFOIL component
 
 import os.path as pth
 import shutil
+from platform import system
 
 import pytest
 from openmdao.core.indepvarcomp import IndepVarComp
 
 from tests.testing_utilities import run_system
+from tests.xfoil_exe.get_xfoil import get_xfoil_path
 from .. import XfoilPolar
 
-XFOIL_RESULTS = pth.join(pth.dirname(__file__), 'results')
+XFOIL_RESULTS = pth.join(pth.dirname(__file__), "results")
+
+xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available"
+)
 def test_compute():
     """ Tests a simple XFOIL run"""
 
@@ -35,47 +42,53 @@ def test_compute():
         shutil.rmtree(XFOIL_RESULTS)
 
     ivc = IndepVarComp()
-    ivc.add_output('xfoil:reynolds', 18000000)
-    ivc.add_output('xfoil:mach', 0.20)
-    ivc.add_output('data:geometry:wing:sweep_25', 25.)
-    ivc.add_output('data:geometry:wing:thickness_ratio', 0.1284)
+    ivc.add_output("xfoil:reynolds", 18000000)
+    ivc.add_output("xfoil:mach", 0.20)
+    ivc.add_output("data:geometry:wing:sweep_25", 25.0)
+    ivc.add_output("data:geometry:wing:thickness_ratio", 0.1284)
 
-    xfoil_comp = XfoilPolar(alpha_start=15., alpha_end=25.)
+    xfoil_comp = XfoilPolar(alpha_start=15.0, alpha_end=25.0, xfoil_exe_path=xfoil_path)
     problem = run_system(xfoil_comp, ivc)
-    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.94, 1e-2)
-    assert problem['xfoil:CL_max_clean'] == pytest.approx(1.58, 1e-2)
+    assert problem["xfoil:Cl_max_2D"] == pytest.approx(1.94, 1e-2)
+    assert problem["xfoil:CL_max_clean"] == pytest.approx(1.58, 1e-2)
     assert not pth.exists(XFOIL_RESULTS)
 
-    xfoil_comp = XfoilPolar(alpha_start=12., alpha_end=20.)  # will stop before real max CL
+    xfoil_comp = XfoilPolar(
+        alpha_start=12.0, alpha_end=20.0, xfoil_exe_path=xfoil_path
+    )  # will stop before real max CL
     problem = run_system(xfoil_comp, ivc)
-    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.92, 1e-2)
+    assert problem["xfoil:Cl_max_2D"] == pytest.approx(1.92, 1e-2)
     assert not pth.exists(XFOIL_RESULTS)
 
-    xfoil_comp = XfoilPolar(result_folder_path=XFOIL_RESULTS)
+    xfoil_comp = XfoilPolar(result_folder_path=XFOIL_RESULTS, xfoil_exe_path=xfoil_path)
     problem = run_system(xfoil_comp, ivc)
-    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.94, 1e-2)
-    assert problem['xfoil:CL_max_clean'] == pytest.approx(1.58, 1e-2)
+    assert problem["xfoil:Cl_max_2D"] == pytest.approx(1.94, 1e-2)
+    assert problem["xfoil:CL_max_clean"] == pytest.approx(1.58, 1e-2)
     assert pth.exists(XFOIL_RESULTS)
-    assert pth.exists(pth.join(XFOIL_RESULTS, 'polar_result.txt'))
+    assert pth.exists(pth.join(XFOIL_RESULTS, "polar_result.txt"))
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available"
+)
 def test_compute_with_provided_path():
     """ Test that option "use_exe_path" works """
     ivc = IndepVarComp()
-    ivc.add_output('xfoil:reynolds', 18000000)
-    ivc.add_output('xfoil:mach', 0.20)
-    ivc.add_output('data:geometry:wing:sweep_25', 25.)
-    ivc.add_output('data:geometry:wing:thickness_ratio', 0.1284)
+    ivc.add_output("xfoil:reynolds", 18000000)
+    ivc.add_output("xfoil:mach", 0.20)
+    ivc.add_output("data:geometry:wing:sweep_25", 25.0)
+    ivc.add_output("data:geometry:wing:thickness_ratio", 0.1284)
 
-    xfoil_comp = XfoilPolar(alpha_start=18., alpha_end=21.)
-    xfoil_comp.options['xfoil_exe_path'] = 'Dummy'  # bad name
+    xfoil_comp = XfoilPolar(alpha_start=18.0, alpha_end=21.0)
+    xfoil_comp.options["xfoil_exe_path"] = "Dummy"  # bad name
     with pytest.raises(ValueError):
         problem = run_system(xfoil_comp, ivc)
 
-    xfoil_comp.options['xfoil_exe_path'] = pth.join(pth.dirname(__file__),
-                                                    pth.pardir,
-                                                    'xfoil699',
-                                                    'xfoil.exe')
+    xfoil_comp.options["xfoil_exe_path"] = (
+        xfoil_path
+        if xfoil_path
+        else pth.join(pth.dirname(__file__), pth.pardir, "xfoil699", "xfoil.exe")
+    )
     problem = run_system(xfoil_comp, ivc)
-    assert problem['xfoil:Cl_max_2D'] == pytest.approx(1.94, 1e-2)
-    assert problem['xfoil:CL_max_clean'] == pytest.approx(1.58, 1e-2)
+    assert problem["xfoil:Cl_max_2D"] == pytest.approx(1.94, 1e-2)
+    assert problem["xfoil:CL_max_clean"] == pytest.approx(1.58, 1e-2)
