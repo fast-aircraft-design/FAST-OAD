@@ -16,6 +16,8 @@ Defines the analysis and plotting functions for postprocessing
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly
+cols = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 from fastoad.io.xml import OMXmlIO
 
@@ -201,6 +203,64 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
     return fig
 
 
+def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
+    """
+    Returns a figure plot of the aircraft mass breakdown using bar plots.
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
+
+    :param aircraft_xml: xml file reader instance
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :return: bar plot figure
+    """
+    variables = aircraft_xml.read_variables()
+
+    systems = variables["data:weight:systems:mass"].value[0]
+
+    furniture = variables["data:weight:furniture:mass"].value[0]
+
+    crew = variables["data:weight:crew:mass"].value[0]
+
+    airframe = variables["data:weight:airframe:mass"].value[0]
+
+    propulsion = variables["data:weight:propulsion:mass"].value[0]
+
+    MTOW = variables["data:weight:aircraft:MTOW"].value[0]
+    MZFW = variables["data:weight:aircraft:MZFW"].value[0]
+    MFW = variables["data:weight:aircraft:MFW"].value[0]
+    OWE = variables["data:weight:aircraft:OWE"].value[0]
+    payload = variables["data:weight:aircraft:payload"].value[0]
+    fuel_mission = variables["data:mission:sizing:fuel"].value[0]
+
+    if fig is None:
+        fig = make_subplots(rows=1, cols=2,
+                            subplot_titles=("Maximum Take-Off Weight Breakdown", "Overall Weight Empty Breakdown"))
+
+    # Same color for each aircraft configuration
+    i = len(fig.data)
+
+    weight_labels = ['MTOW', 'OWE', 'Fuel - Mission', 'Payload']
+    weight_values = [MTOW, OWE, fuel_mission, payload]
+    fig.add_trace(
+        go.Bar(name='', x=weight_labels, y=weight_values, marker_color=cols[i], showlegend=False),
+        row=1,
+        col=1,
+    )
+
+    weight_labels = ['Airframe', 'Propulsion', 'Systems', 'Furniture', 'Crew']
+    weight_values = [airframe, propulsion, systems, furniture, crew]
+    fig.add_trace(
+        go.Bar(name=name, x=weight_labels, y=weight_values, marker_color=cols[i]),
+        row=1,
+        col=2,
+    )
+
+    fig.update_layout(yaxis_title="[kg]")
+
+    return fig
+
+
 def mass_breakdown_plot(aircraft_xml: OMXmlIO):
     """
     Returns a figure plot of the mass breakdown.
@@ -209,7 +269,7 @@ def mass_breakdown_plot(aircraft_xml: OMXmlIO):
     Each design can be provided a name.
 
     :param aircraft_xml: xml file reader instance
-    :return: wing plot figure
+    :return: sunburst plot figure
     """
     variables = aircraft_xml.read_variables()
 
