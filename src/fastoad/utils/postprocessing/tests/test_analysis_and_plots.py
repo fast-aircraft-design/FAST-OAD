@@ -18,7 +18,7 @@ import os.path as pth
 
 from fastoad.io.xml import OMXmlIO
 from fastoad.utils.postprocessing.analysis_and_plots import \
-    wing_geometry_plot, drag_polar_plot, mass_breakdown_plot, \
+    wing_geometry_plot, drag_polar_plot, mass_breakdown_sun_plot, \
     aircraft_geometry_plot, mass_breakdown_bar_plot
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
@@ -114,7 +114,7 @@ def test_drag_polar_plot():
     fig = drag_polar_plot(xml)
 
 
-def test_mass_breakdown_plot():
+def test_mass_breakdown_sun_plot():
     """
     Basic tests for testing the plotting.
     """
@@ -126,4 +126,4 @@ def test_mass_breakdown_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = mass_breakdown_plot(xml)
+    fig = mass_breakdown_sun_plot(xml)

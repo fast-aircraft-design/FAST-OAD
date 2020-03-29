@@ -261,9 +261,9 @@ def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fi
     return fig
 
 
-def mass_breakdown_plot(aircraft_xml: OMXmlIO):
+def mass_breakdown_sun_plot(aircraft_xml: OMXmlIO):
     """
-    Returns a figure plot of the mass breakdown.
+    Returns a figure sunburst plot of the mass breakdown.
     On the left a MTOW sunburst and on the right a OWE sunburst.
     Different designs can be superposed by providing an existing fig.
     Each design can be provided a name.
