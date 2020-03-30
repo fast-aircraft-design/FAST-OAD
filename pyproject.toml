@@ -1,2 +1,44 @@
 [tool.black]
     line-length = 100
+
+[tool.poetry]
+    name = "FAST-OAD"
+    version = "0.3.0"
+    description = ""
+    authors = ["Christophe DAVID <christophe.david@onera.fr>", "Scott DELBECQ <Scott.DELBECQ@isae-supaero.fr>"]
+    packages = [
+        { include = "fastoad", from = "src" },
+    ]
+[tool.poetry.dependencies]
+    python = "^3.6"
+    numpy = "*"
+    scipy = "*"
+    pandas = "*"
+    openmdao="^3"
+    lxml = "*"
+    ipopo = "^1"
+    toml = "*"
+    jupyterlab = "*"
+    matplotlib = "*"
+    plotly = "*"
+    ipywidgets = "*"
+    importlib_resources = "*"
+    ipysheet = "*"
+
+[tool.poetry.dev-dependencies]
+    pytest = "^5.2"
+    wheel = "*"
+    pipenv = "*"
+    pytest-cov = "*"
+    nbval = "*"
+    pylint = "*"
+    flake8 = "*"
+    sphinx = "*"
+    sphinx-rtd-theme = "*"
+    sphinxcontrib-bibtex = "*"
+    pre-commit = "*"
+    black = { version = "*", allow-prereleases = true }
+
+[build-system]
+    requires = ["poetry>=0.12"]
+    build-backend = "poetry.masonry.api"
