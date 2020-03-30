@@ -23,14 +23,6 @@ from fastoad.io.xml import OMXmlIO
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
-# TODO: as it has been done before, read_variables could directly return a dictionary but:
-#   - its docstring and return type should be updated accordingly
-#   - the present module should be properly unit-tested to make easily visible if a change in
-#     read_variables() break something
-#   - a better structure should be found than a dict where keys are also a property of
-#     the item values (same information twice, not DRY)
-
-
 def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -214,6 +206,7 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
     )
 
     return fig
+
 
 # pylint: disable-msg=too-many-locals
 def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
