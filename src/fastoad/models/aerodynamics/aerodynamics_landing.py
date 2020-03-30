@@ -48,51 +48,52 @@ class AerodynamicsLanding(OpenMdaoOptionDispatcherGroup):
     """
 
     def initialize(self):
-        self.options.declare('use_xfoil', default=True, types=bool)
-        self.options.declare('xfoil_alpha_min', default=15., types=float)
-        self.options.declare('xfoil_alpha_max', default=25., types=float)
-        self.options.declare('xfoil_iter_limit', default=20, types=int)
-        self.options.declare(OPTION_XFOIL_EXE_PATH, default='', types=str)
+        self.options.declare("use_xfoil", default=True, types=bool)
+        self.options.declare("xfoil_alpha_min", default=15.0, types=float)
+        self.options.declare("xfoil_alpha_max", default=25.0, types=float)
+        self.options.declare("xfoil_iter_limit", default=20, types=int)
+        self.options.declare(OPTION_XFOIL_EXE_PATH, default="", types=str, allow_none=True)
 
     def setup(self):
-        self.add_subsystem('mach_reynolds', ComputeMachReynolds(), promotes=['*'])
-        if self.options['use_xfoil']:
-            start = self.options['xfoil_alpha_min']
-            end = self.options['xfoil_alpha_max']
-            iter_limit = self.options['xfoil_iter_limit']
-            self.add_subsystem('xfoil_run', XfoilPolar(alpha_start=start,
-                                                       alpha_end=end,
-                                                       iter_limit=iter_limit),
-                               promotes=['data:geometry:wing:sweep_25',
-                                         'data:geometry:wing:thickness_ratio'])
-        self.add_subsystem('delta_cl_landing', ComputeDeltaHighLift(landing_flag=True),
-                           promotes=['*'])
-        self.add_subsystem('compute_max_cl_landing', ComputeMaxClLanding(), promotes=['*'])
+        self.add_subsystem("mach_reynolds", ComputeMachReynolds(), promotes=["*"])
+        if self.options["use_xfoil"]:
+            start = self.options["xfoil_alpha_min"]
+            end = self.options["xfoil_alpha_max"]
+            iter_limit = self.options["xfoil_iter_limit"]
+            self.add_subsystem(
+                "xfoil_run",
+                XfoilPolar(alpha_start=start, alpha_end=end, iter_limit=iter_limit),
+                promotes=["data:geometry:wing:sweep_25", "data:geometry:wing:thickness_ratio"],
+            )
+        self.add_subsystem(
+            "delta_cl_landing", ComputeDeltaHighLift(landing_flag=True), promotes=["*"]
+        )
+        self.add_subsystem("compute_max_cl_landing", ComputeMaxClLanding(), promotes=["*"])
 
-        if self.options['use_xfoil']:
-            self.connect('data:aerodynamics:aircraft:landing:mach', 'xfoil_run.xfoil:mach')
-            self.connect('data:aerodynamics:aircraft:landing:reynolds', 'xfoil_run.xfoil:reynolds')
-            self.connect('xfoil_run.xfoil:CL_max_clean',
-                         'data:aerodynamics:aircraft:landing:CL_max_clean')
+        if self.options["use_xfoil"]:
+            self.connect("data:aerodynamics:aircraft:landing:mach", "xfoil_run.xfoil:mach")
+            self.connect("data:aerodynamics:aircraft:landing:reynolds", "xfoil_run.xfoil:reynolds")
+            self.connect(
+                "xfoil_run.xfoil:CL_max_clean", "data:aerodynamics:aircraft:landing:CL_max_clean"
+            )
 
 
 class ComputeMachReynolds(om.ExplicitComponent):
-
     def setup(self):
-        self.add_input('data:geometry:wing:MAC:length', val=np.nan, units='m')
-        self.add_input('data:TLAR:approach_speed', val=np.nan, units='m/s')
-        self.add_output('data:aerodynamics:aircraft:landing:mach')
-        self.add_output('data:aerodynamics:aircraft:landing:reynolds')
+        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
+        self.add_input("data:TLAR:approach_speed", val=np.nan, units="m/s")
+        self.add_output("data:aerodynamics:aircraft:landing:mach")
+        self.add_output("data:aerodynamics:aircraft:landing:reynolds")
 
-        self.declare_partials('*', '*', method='fd')
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        l0_wing = inputs['data:geometry:wing:MAC:length']
-        speed = inputs['data:TLAR:approach_speed']
+        l0_wing = inputs["data:geometry:wing:MAC:length"]
+        speed = inputs["data:TLAR:approach_speed"]
 
-        atm = Atmosphere(0., 15.)
+        atm = Atmosphere(0.0, 15.0)
         mach = speed / atm.speed_of_sound
         reynolds = atm.get_unitary_reynolds(mach) * l0_wing
 
-        outputs['data:aerodynamics:aircraft:landing:mach'] = mach
-        outputs['data:aerodynamics:aircraft:landing:reynolds'] = reynolds
+        outputs["data:aerodynamics:aircraft:landing:mach"] = mach
+        outputs["data:aerodynamics:aircraft:landing:reynolds"] = reynolds
