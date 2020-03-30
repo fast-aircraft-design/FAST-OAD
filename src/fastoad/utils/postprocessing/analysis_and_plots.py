@@ -100,8 +100,6 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
                        wing_root_chord, wing_root_chord, wing_root_chord, 0])
 
     # Horizontal Tail parameters
-    # TODO: Change "data:geometry:horizontal_tail:root_chord"
-    #  to "data:geometry:horizontal_tail:root:chord"
     ht_root_chord = variables["data:geometry:horizontal_tail:root_chord"].value[0]
     ht_tip_chord = variables["data:geometry:horizontal_tail:tip_chord"].value[0]
     ht_span = variables["data:geometry:horizontal_tail:span"].value[0]
