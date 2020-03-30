@@ -185,12 +185,13 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
     variables = aircraft_xml.read_variables()
 
     # pylint: disable=invalid-name # that's a common naming
-    cd = variables["data:aerodynamics:aircraft:cruise:CD"].value
+    cd = np.asarray(variables["data:aerodynamics:aircraft:cruise:CD"].value)
     # pylint: disable=invalid-name # that's a common naming
-    cl = variables["data:aerodynamics:aircraft:cruise:CL"].value
+    cl = np.asarray(variables["data:aerodynamics:aircraft:cruise:CL"].value)
 
-    cd_short = np.linspace(0.1, 2., num=50)
-    cl_short = np.interp(cd_short, cd, cl)
+    # TODO: remove filtering one models provide proper bounds
+    cd_short = cd[cd <= 2.]
+    cl_short = cl[cd <= 2.]
 
     if fig is None:
         fig = go.Figure()
