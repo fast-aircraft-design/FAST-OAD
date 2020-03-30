@@ -44,20 +44,20 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
 
     # pylint: disable=invalid-name # that's a common naming
-    x = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
+    y = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
     # pylint: disable=invalid-name # that's a common naming
-    x = np.concatenate((-x, x))
+    y = np.concatenate((-y, y))
 
     # pylint: disable=invalid-name # that's a common naming
-    y = np.array([0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
+    x = np.array([0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
                   wing_root_chord, wing_root_chord, wing_root_chord, 0])
     # pylint: disable=invalid-name # that's a common naming
-    y = np.concatenate((y, y))
+    x = np.concatenate((x, x))
 
     if fig is None:
         fig = go.Figure()
 
-    scatter = go.Scatter(x=x, y=y, mode="lines+markers", name=name)
+    scatter = go.Scatter(x=y, y=x, mode="lines+markers", name=name)
 
     fig.add_trace(scatter)
 
@@ -94,9 +94,9 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
     wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
 
-    x_wing = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
+    y_wing = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
 
-    y_wing = np.array([0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
+    x_wing = np.array([0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
                        wing_root_chord, wing_root_chord, wing_root_chord, 0])
 
     # Horizontal Tail parameters
@@ -107,9 +107,9 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
 
     ht_tip_leading_edge_x = ht_span / 2. * np.tan(ht_sweep_0 * np.pi / 180.)
 
-    x_ht = np.array([0, ht_span / 2., ht_span / 2., 0., 0.])
+    y_ht = np.array([0, ht_span / 2., ht_span / 2., 0., 0.])
 
-    y_ht = np.array([0, ht_tip_leading_edge_x, ht_tip_leading_edge_x + ht_tip_chord,
+    x_ht = np.array([0, ht_tip_leading_edge_x, ht_tip_leading_edge_x + ht_tip_chord,
                      ht_root_chord, 0])
 
     # Fuselage parameters
@@ -118,14 +118,14 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     fuselage_front_length = variables["data:geometry:fuselage:front_length"].value[0]
     fuselage_rear_length = variables["data:geometry:fuselage:rear_length"].value[0]
 
-    y_fuselage = np.array([0., 0.,
+    x_fuselage = np.array([0., 0.,
                            fuselage_front_length,
                            fuselage_length - fuselage_rear_length,
                            fuselage_length,
                            fuselage_length
                            ])
 
-    x_fuselage = np.array([0.,
+    y_fuselage = np.array([0.,
                            fuselage_max_width / 4.,
                            fuselage_max_width / 2.,
                            fuselage_max_width / 2.,
@@ -138,8 +138,8 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     ht_mac_x = variables["data:geometry:horizontal_tail:MAC:x"].value[0]
     ht_distance_from_wing = variables["data:geometry:horizontal_tail:distance_from_wing"].value[0]
 
-    y_wing = y_wing + wing_mac_x - wing_root_x
-    y_ht = y_ht + wing_mac_x + ht_distance_from_wing - ht_mac_x
+    x_wing = x_wing + wing_mac_x - wing_root_x
+    x_ht = x_ht + wing_mac_x + ht_distance_from_wing - ht_mac_x
 
     # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x_fuselage, x_wing, x_ht))
@@ -147,14 +147,14 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     y = np.concatenate((y_fuselage, y_wing, y_ht))
 
     # pylint: disable=invalid-name # that's a common naming
-    x = np.concatenate((-x, x))
+    y = np.concatenate((-y, y))
     # pylint: disable=invalid-name # that's a common naming
-    y = np.concatenate((y, y))
+    x = np.concatenate((x, x))
 
     if fig is None:
         fig = go.Figure()
 
-    scatter = go.Scatter(x=x, y=y, mode="lines+markers", name=name)
+    scatter = go.Scatter(x=y, y=x, mode="lines+markers", name=name)
 
     fig.add_trace(scatter)
 
