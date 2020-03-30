@@ -334,7 +334,6 @@ def mass_breakdown_sun_plot(aircraft_xml: OMXmlIO):
 
     fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]], )
 
-    # FIXME: the first sunburst looks broken, but I don't know why
     fig.add_trace(
         go.Sunburst(
             labels=[
