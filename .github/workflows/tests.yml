@@ -6,49 +6,58 @@ jobs:
 
   build:
 
-    env:
-      PIPENV_VENV_IN_PROJECT: 1
-
     runs-on: ${{ matrix.os }}
     strategy:
-      max-parallel: 4
+      max-parallel: 20
       matrix:
         python-version: [3.6, 3.7, 3.8]
-        os: [windows-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install pipenv
-        run: pip install pipenv
+      - name: Install poetry
+        run: |
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          echo "::add-path::$HOME/.poetry/bin"
+        shell: bash
 
-      #      - name: Pipenv venv cache
-      #        uses: actions/cache@v1
-      #        id: cache-venv
-      #        with:
-      #          path: .venv
-      #          key: ${{ runner.os }}-python${{ matrix.python-version }}-venv-${{ hashFiles('**/Pipfile.lock') }}
+      - name: venv cache
+        uses: actions/cache@v1
+        id: cache-venv
+        with:
+          path: .venv
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-fastoad_venv-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Create environment and install dependencies
-        #        if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: pipenv sync --dev
+      - name: Create environment
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: python -m venv .venv
+        shell: bash
+
+      - name: Activate environment and install dependencies
+        run: poetry install
+        shell: bash
 
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
-          pipenv run flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
+          poetry run flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          pipenv run flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          poetry run flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        shell: bash
 
       - name: Unit tests
-        run: pipenv run pytest --no-cov src
+        run: poetry run pytest --no-cov src
+        shell: bash
 
       - name: Integration tests
-        run: pipenv run pytest --no-cov tests/integration_tests
+        run: poetry run pytest --no-cov tests/integration_tests
+        shell: bash
 
       - name: Notebook tests
-        run: pipenv run pytest --no-cov --nbval-lax -p no:python src
+        run: poetry run pytest --no-cov --nbval-lax -p no:python src
+        shell: bash
