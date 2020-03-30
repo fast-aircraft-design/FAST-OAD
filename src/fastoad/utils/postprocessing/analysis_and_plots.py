@@ -17,9 +17,10 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly
-cols = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 from fastoad.io.xml import OMXmlIO
+
+COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
 # TODO: as it has been done before, read_variables could directly return a dictionary but:
@@ -50,11 +51,15 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
     wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
 
+    # pylint: disable=invalid-name # that's a common naming
     x = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
+    # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((-x, x))
 
+    # pylint: disable=invalid-name # that's a common naming
     y = np.array([0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
                   wing_root_chord, wing_root_chord, wing_root_chord, 0])
+    # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((y, y))
 
     if fig is None:
@@ -75,6 +80,7 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     return fig
 
 
+# pylint: disable-msg=too-many-locals
 def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -145,10 +151,14 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     y_wing = y_wing + wing_mac_x - wing_root_x
     y_ht = y_ht + wing_mac_x + ht_distance_from_wing - ht_mac_x
 
+    # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x_fuselage, x_wing, x_ht))
+    # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((y_fuselage, y_wing, y_ht))
 
+    # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((-x, x))
+    # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((y, y))
 
     if fig is None:
@@ -181,7 +191,10 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
     :return: wing plot figure
     """
     variables = aircraft_xml.read_variables()
+
+    # pylint: disable=invalid-name # that's a common naming
     cd = variables["data:aerodynamics:aircraft:cruise:CD"].value
+    # pylint: disable=invalid-name # that's a common naming
     cl = variables["data:aerodynamics:aircraft:cruise:CL"].value
 
     cd_short = np.linspace(0.1, 2., num=50)
@@ -202,7 +215,7 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
 
     return fig
 
-
+# pylint: disable-msg=too-many-locals
 def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft mass breakdown using bar plots.
@@ -226,16 +239,17 @@ def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fi
 
     propulsion = variables["data:weight:propulsion:mass"].value[0]
 
+    # pylint: disable=invalid-name # that's a common naming
     MTOW = variables["data:weight:aircraft:MTOW"].value[0]
-    MZFW = variables["data:weight:aircraft:MZFW"].value[0]
-    MFW = variables["data:weight:aircraft:MFW"].value[0]
+    # pylint: disable=invalid-name # that's a common naming
     OWE = variables["data:weight:aircraft:OWE"].value[0]
     payload = variables["data:weight:aircraft:payload"].value[0]
     fuel_mission = variables["data:mission:sizing:fuel"].value[0]
 
     if fig is None:
         fig = make_subplots(rows=1, cols=2,
-                            subplot_titles=("Maximum Take-Off Weight Breakdown", "Overall Weight Empty Breakdown"))
+                            subplot_titles=("Maximum Take-Off Weight Breakdown",
+                                            "Overall Weight Empty Breakdown"))
 
     # Same color for each aircraft configuration
     i = len(fig.data)
@@ -243,7 +257,7 @@ def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fi
     weight_labels = ['MTOW', 'OWE', 'Fuel - Mission', 'Payload']
     weight_values = [MTOW, OWE, fuel_mission, payload]
     fig.add_trace(
-        go.Bar(name='', x=weight_labels, y=weight_values, marker_color=cols[i], showlegend=False),
+        go.Bar(name='', x=weight_labels, y=weight_values, marker_color=COLS[i], showlegend=False),
         row=1,
         col=1,
     )
@@ -251,7 +265,7 @@ def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fi
     weight_labels = ['Airframe', 'Propulsion', 'Systems', 'Furniture', 'Crew']
     weight_values = [airframe, propulsion, systems, furniture, crew]
     fig.add_trace(
-        go.Bar(name=name, x=weight_labels, y=weight_values, marker_color=cols[i]),
+        go.Bar(name=name, x=weight_labels, y=weight_values, marker_color=COLS[i]),
         row=1,
         col=2,
     )
@@ -261,6 +275,9 @@ def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fi
     return fig
 
 
+# pylint: disable-msg=too-many-locals
+# pylint: disable-msg=too-many-statements
+# pylint: disable=invalid-name # that's a common naming
 def mass_breakdown_sun_plot(aircraft_xml: OMXmlIO):
     """
     Returns a figure sunburst plot of the mass breakdown.
@@ -315,8 +332,6 @@ def mass_breakdown_sun_plot(aircraft_xml: OMXmlIO):
     B3 = variables["data:weight:propulsion:unconsumables:mass"].value[0]
 
     MTOW = variables["data:weight:aircraft:MTOW"].value[0]
-    MZFW = variables["data:weight:aircraft:MZFW"].value[0]
-    MFW = variables["data:weight:aircraft:MFW"].value[0]
     OWE = variables["data:weight:aircraft:OWE"].value[0]
     payload = variables["data:weight:aircraft:payload"].value[0]
     fuel_mission = variables["data:mission:sizing:fuel"].value[0]

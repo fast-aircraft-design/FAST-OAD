@@ -96,7 +96,7 @@ def test_mass_breakdown_bar_plot():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = mass_breakdown_bar_plot(xml, name='Second plot', fig=fig)
+    _ = mass_breakdown_bar_plot(xml, name='Second plot', fig=fig)
 
 
 def test_drag_polar_plot():
@@ -111,7 +111,7 @@ def test_drag_polar_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = drag_polar_plot(xml)
+    _ = drag_polar_plot(xml)
 
 
 def test_mass_breakdown_sun_plot():
@@ -126,4 +126,4 @@ def test_mass_breakdown_sun_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = mass_breakdown_sun_plot(xml)
+    _ = mass_breakdown_sun_plot(xml)
