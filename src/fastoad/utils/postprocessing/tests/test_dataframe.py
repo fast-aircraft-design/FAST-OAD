@@ -2,7 +2,7 @@
 Tests for FAST-OAD dataframe
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,57 +16,67 @@ Tests for FAST-OAD dataframe
 
 import os.path as pth
 
-import numpy as np
 import pandas as pd
-from pandas.util.testing import assert_frame_equal
-
 from fastoad.io.xml import OMXmlIO
 from fastoad.utils.postprocessing.dataframe import VariableViewer
+from pandas.util.testing import assert_frame_equal
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), 'results')
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 
 
 def test_xml_to_from_df():
     """
     Basic tests for testing the conversion of file to dataframe.
     """
-    col_names = ['Name', 'Value', 'Unit', 'Description']
+    col_names = ["Name", "Value", "Unit", "Description"]
     ref_df = pd.DataFrame()
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:cabin:seats:economical:width',
-        'Value': 0.46,
-        'Unit': 'm',
-        'Description': 'width of economical class seats'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:cabin:seats:economical:width",
+                "Value": 0.46,
+                "Unit": "m",
+                "Description": "width of economical class seats",
+            }
+        ]
+    )[col_names]
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:cabin:seats:economical:length',
-        'Value': 0.86,
-        'Unit': 'm',
-        'Description': 'length of economical class seats'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:cabin:seats:economical:length",
+                "Value": 0.86,
+                "Unit": "m",
+                "Description": "length of economical class seats",
+            }
+        ]
+    )[col_names]
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:cabin:aisle_width',
-        'Value': 0.48,
-        'Unit': 'm',
-        'Description': 'width of aisles'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:cabin:aisle_width",
+                "Value": 0.48,
+                "Unit": "m",
+                "Description": "width of aisles",
+            }
+        ]
+    )[col_names]
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:propulsion:engine:count',
-        'Value': 2.0,
-        'Unit': None,
-        'Description': 'number of engines'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:propulsion:engine:count",
+                "Value": 2.0,
+                "Unit": None,
+                "Description": "number of engines",
+            }
+        ]
+    )[col_names]
 
-    filename = pth.join(DATA_FOLDER_PATH, 'light_data.xml')
+    filename = pth.join(DATA_FOLDER_PATH, "light_data.xml")
 
     xml = OMXmlIO(filename)
 
@@ -75,7 +85,7 @@ def test_xml_to_from_df():
 
     assert_frame_equal(ref_df, resulting_df)
 
-    new_filename = pth.join(RESULTS_FOLDER_PATH, 'new_light_data.xml')
+    new_filename = pth.join(RESULTS_FOLDER_PATH, "new_light_data.xml")
     new_xml = OMXmlIO(new_filename)
 
     # Testing df to file
@@ -93,7 +103,7 @@ def test_variable_reader_display():
     """
     Basic tests for testing the VariableReader display method.
     """
-    filename = pth.join(DATA_FOLDER_PATH, 'problem_outputs.xml')
+    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
     xml = OMXmlIO(filename)
 
@@ -110,44 +120,56 @@ def test_variable_reader_load():
     """
     Basic tests for testing the VariableReader load method.
     """
-    col_names = ['Name', 'Value', 'Unit', 'Description']
+    col_names = ["Name", "Value", "Unit", "Description"]
     ref_df = pd.DataFrame()
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:cabin:seats:economical:width',
-        'Value': 0.46,
-        'Unit': 'm',
-        'Description': 'width of economical class seats'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:cabin:seats:economical:width",
+                "Value": 0.46,
+                "Unit": "m",
+                "Description": "width of economical class seats",
+            }
+        ]
+    )[col_names]
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:cabin:seats:economical:length',
-        'Value': 0.86,
-        'Unit': 'm',
-        'Description': 'length of economical class seats'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:cabin:seats:economical:length",
+                "Value": 0.86,
+                "Unit": "m",
+                "Description": "length of economical class seats",
+            }
+        ]
+    )[col_names]
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:cabin:aisle_width',
-        'Value': 0.48,
-        'Unit': 'm',
-        'Description': 'width of aisles'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:cabin:aisle_width",
+                "Value": 0.48,
+                "Unit": "m",
+                "Description": "width of aisles",
+            }
+        ]
+    )[col_names]
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:propulsion:engine:count',
-        'Value': 2.0,
-        'Unit': None,
-        'Description': 'number of engines'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:propulsion:engine:count",
+                "Value": 2.0,
+                "Unit": None,
+                "Description": "number of engines",
+            }
+        ]
+    )[col_names]
 
     ref_df = ref_df.reset_index(drop=True)
 
-    filename = pth.join(DATA_FOLDER_PATH, 'light_data.xml')
+    filename = pth.join(DATA_FOLDER_PATH, "light_data.xml")
 
     xml = OMXmlIO(filename)
 
@@ -162,44 +184,56 @@ def test_variable_reader_save():
     """
     Basic tests for testing the VariableReader save method.
     """
-    col_names = ['Name', 'Value', 'Unit', 'Description']
+    col_names = ["Name", "Value", "Unit", "Description"]
     ref_df = pd.DataFrame()
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:cabin:seats:economical:width',
-        'Value': 0.46,
-        'Unit': 'm',
-        'Description': 'width of economical class seats'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:cabin:seats:economical:width",
+                "Value": 0.46,
+                "Unit": "m",
+                "Description": "width of economical class seats",
+            }
+        ]
+    )[col_names]
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:cabin:seats:economical:length',
-        'Value': 0.86,
-        'Unit': 'm',
-        'Description': 'length of economical class seats'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:cabin:seats:economical:length",
+                "Value": 0.86,
+                "Unit": "m",
+                "Description": "length of economical class seats",
+            }
+        ]
+    )[col_names]
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:cabin:aisle_width',
-        'Value': 0.48,
-        'Unit': 'm',
-        'Description': 'width of aisles'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:cabin:aisle_width",
+                "Value": 0.48,
+                "Unit": "m",
+                "Description": "width of aisles",
+            }
+        ]
+    )[col_names]
 
-    ref_df = ref_df.append([{
-        'Name': 'data:geometry:propulsion:engine:count',
-        'Value': 2.0,
-        'Unit': None,
-        'Description': 'number of engines'
-    }
-    ])[col_names]
+    ref_df = ref_df.append(
+        [
+            {
+                "Name": "data:geometry:propulsion:engine:count",
+                "Value": 2.0,
+                "Unit": None,
+                "Description": "number of engines",
+            }
+        ]
+    )[col_names]
 
     ref_df = ref_df.reset_index(drop=True)
 
-    filename = pth.join(RESULTS_FOLDER_PATH, 'light_data.xml')
+    filename = pth.join(RESULTS_FOLDER_PATH, "light_data.xml")
 
     xml = OMXmlIO(filename)
 

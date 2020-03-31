@@ -2,7 +2,7 @@
 Module for managing OpenMDAO variables
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -27,7 +27,7 @@ from . import resources
 
 _LOGGER = logging.getLogger(__name__)
 
-DESCRIPTION_FILENAME = 'variable_descriptions.txt'
+DESCRIPTION_FILENAME = "variable_descriptions.txt"
 
 
 class Variable(Hashable):
@@ -76,17 +76,17 @@ class Variable(Hashable):
         if not self._variable_descriptions:
             # Class attribute, but it's safer to initialize it at first instantiation
             with open_text(resources, DESCRIPTION_FILENAME) as desc_io:
-                vars_descs = np.genfromtxt(desc_io, delimiter='\t', dtype=str)
+                vars_descs = np.genfromtxt(desc_io, delimiter="\t", dtype=str)
             self.__class__._variable_descriptions.update(vars_descs)
 
         if not self._base_metadata:
             # Get variable base metadata from an IndepVarComp
             ivc = om.IndepVarComp()
-            ivc.add_output(name='a')
+            ivc.add_output(name="a")
             # get attributes (3rd element of the tuple) of first element
             self._base_metadata = ivc._indep_external[0][2]
-            self._base_metadata['value'] = 1.0
-            self._base_metadata['tags'] = set()
+            self._base_metadata["value"] = 1.0
+            self._base_metadata["tags"] = set()
         # Done with class attributes ------------------------------------------
 
         self.metadata = self._base_metadata.copy()
@@ -109,61 +109,62 @@ class Variable(Hashable):
     @property
     def value(self):
         """ value of the variable"""
-        return self.metadata.get('value')
+        return self.metadata.get("value")
 
     @value.setter
     def value(self, value):
-        self.metadata['value'] = value
+        self.metadata["value"] = value
         self._set_default_shape()
 
     @property
     def units(self):
         """ units associated to value (or None if not found) """
-        return self.metadata.get('units')
+        return self.metadata.get("units")
 
     @units.setter
     def units(self, value):
-        self.metadata['units'] = value
+        self.metadata["units"] = value
 
     @property
     def description(self):
         """ description of the variable (or None if not found) """
-        return self.metadata.get('desc')
+        return self.metadata.get("desc")
 
     @description.setter
     def description(self, value):
-        self.metadata['desc'] = value
+        self.metadata["desc"] = value
 
     def _set_default_shape(self):
         """ Automatically sets shape if not set"""
-        if self.metadata['shape'] is None:
+        if self.metadata["shape"] is None:
             shape = np.shape(self.value)
             if not shape:
                 shape = (1,)
-            self.metadata['shape'] = shape
+            self.metadata["shape"] = shape
 
     def __eq__(self, other):
         # same arrays with nan are declared non equals, so we need a workaround
         my_metadata = dict(self.metadata)
         other_metadata = dict(other.metadata)
-        my_value = np.asarray(my_metadata.pop('value'))
-        other_value = np.asarray(other_metadata.pop('value'))
+        my_value = np.asarray(my_metadata.pop("value"))
+        other_value = np.asarray(other_metadata.pop("value"))
 
         # Let's also ignore tags
-        del my_metadata['tags']
-        del other_metadata['tags']
+        del my_metadata["tags"]
+        del other_metadata["tags"]
 
         return (
-                isinstance(other, Variable) and
-                self.name == other.name and
-                ((my_value == other_value) | (np.isnan(my_value) & np.isnan(other_value))).all() and
-                my_metadata == other_metadata)
+            isinstance(other, Variable)
+            and self.name == other.name
+            and ((my_value == other_value) | (np.isnan(my_value) & np.isnan(other_value))).all()
+            and my_metadata == other_metadata
+        )
 
     def __repr__(self):
-        return 'Variable(name=%s, metadata=%s)' % (self.name, self.metadata)
+        return "Variable(name=%s, metadata=%s)" % (self.name, self.metadata)
 
     def __hash__(self) -> int:
-        return hash('var=' + self.name)  # Name is normally unique
+        return hash("var=" + self.name)  # Name is normally unique
 
 
 class VariableList(list):
@@ -206,14 +207,14 @@ class VariableList(list):
         will replace the previous Variable instance with the same name.
         """
         if not isinstance(var, Variable):
-            raise TypeError('VariableList items should be Variable instances')
+            raise TypeError("VariableList items should be Variable instances")
 
         if var.name in self.names():
             self[self.names().index(var.name)] = var
         else:
             super().append(var)
 
-    def update(self, other_var_list: 'VariableList', add_variables: bool = False):
+    def update(self, other_var_list: "VariableList", add_variables: bool = False):
         """
         uses variables in other_var_list to update the current VariableList instance.
 
@@ -245,10 +246,12 @@ class VariableList(list):
                 else:
                     self.append(Variable(key, **value))
             else:
-                raise TypeError('VariableList can be set with a "string index" only if value is a '
-                                'dict of metadata')
+                raise TypeError(
+                    'VariableList can be set with a "string index" only if value is a '
+                    "dict of metadata"
+                )
         elif not isinstance(value, Variable):
-            raise TypeError('VariableList items should be Variable instances')
+            raise TypeError("VariableList items should be Variable instances")
         else:
             super().__setitem__(key, value)
 

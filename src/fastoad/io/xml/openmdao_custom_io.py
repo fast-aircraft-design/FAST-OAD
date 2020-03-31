@@ -2,7 +2,7 @@
 Defines how OpenMDAO variables are serialized to XML using a conversion table
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,18 +20,22 @@ import os.path as pth
 import re
 
 import numpy as np
+from fastoad.io.serialize import AbstractOMFileIO
+from fastoad.io.xml.exceptions import (
+    FastMissingTranslatorError,
+    FastXPathEvalError,
+    FastXpathTranslatorXPathError,
+    FastXpathTranslatorVariableError,
+    FastOMXmlIODuplicateVariableError,
+)
+from fastoad.io.xml.translator import VarXpathTranslator
+from fastoad.openmdao.variables import VariableList
+from fastoad.utils.strings import get_float_list_from_string
 from lxml import etree
 from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.vectors.vector import Vector
 
-from fastoad.io.serialize import AbstractOMFileIO
-from fastoad.io.xml.exceptions import FastMissingTranslatorError, FastXPathEvalError, \
-    FastXpathTranslatorXPathError, FastXpathTranslatorVariableError, \
-    FastOMXmlIODuplicateVariableError
-from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.openmdao.variables import VariableList
-from fastoad.utils.strings import get_float_list_from_string
 from .constants import DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
 
 # Logger for this module
@@ -64,13 +68,14 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         self._translator = None
         self.xml_unit_attribute = DEFAULT_UNIT_ATTRIBUTE
-        self.unit_translation = {'²': '**2',
-                                 '³': '**3',
-                                 '°': 'deg',
-                                 '°C': 'degC',
-                                 'kt': 'kn',
-                                 '\bin\b': 'inch',
-                                 }
+        self.unit_translation = {
+            "²": "**2",
+            "³": "**3",
+            "°": "deg",
+            "°C": "degC",
+            "kt": "kn",
+            "\bin\b": "inch",
+        }
         """
         Used for converting read units in units recognized by OpenMDAO
         Dict keys can use regular expressions.
@@ -88,7 +93,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
     def read_variables(self) -> VariableList:
 
         if self._translator is None:
-            raise FastMissingTranslatorError('Missing translator instance')
+            raise FastMissingTranslatorError("Missing translator instance")
 
         variables = VariableList()
 
@@ -111,27 +116,30 @@ class OMCustomXmlIO(AbstractOMFileIO):
                     path_tags = [ancestor.tag for ancestor in elem.iterancestors()]
                     path_tags.reverse()
                     path_tags.append(elem.tag)
-                    xpath = '/'.join(path_tags[1:])  # Do not use root tag
+                    xpath = "/".join(path_tags[1:])  # Do not use root tag
                     name = self._translator.get_variable_name(xpath)
                 except FastXpathTranslatorXPathError as err:
-                    _LOGGER.warning('The xpath %s does not have any variable '
-                                    'affected in the translator.', err.xpath)
+                    _LOGGER.warning(
+                        "The xpath %s does not have any variable " "affected in the translator.",
+                        err.xpath,
+                    )
                     continue
 
                 if name not in variables.names():
                     # Add Variable
-                    variables[name] = {'value': value, 'units': units}
+                    variables[name] = {"value": value, "units": units}
                 else:
                     raise FastOMXmlIODuplicateVariableError(
-                        'Variable %s is defined in more than one place in file %s' % (
-                            name, self._data_source))
+                        "Variable %s is defined in more than one place in file %s"
+                        % (name, self._data_source)
+                    )
 
         return variables
 
     def write_variables(self, variables: VariableList):
 
         if self._translator is None:
-            raise FastMissingTranslatorError('Missing translator instance')
+            raise FastMissingTranslatorError("Missing translator instance")
 
         root = etree.Element(ROOT_TAG)
 
@@ -140,7 +148,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
             try:
                 xpath = self._translator.get_xpath(variable.name)
             except FastXpathTranslatorVariableError as exc:
-                _LOGGER.warning('No translation found: %s', exc)
+                _LOGGER.warning("No translation found: %s", exc)
                 continue
             element = self._create_xpath(root, xpath)
 
@@ -175,9 +183,9 @@ class OMCustomXmlIO(AbstractOMFileIO):
         :param xpath:
         :return: created element
         """
-        if xpath.startswith('/'):
+        if xpath.startswith("/"):
             xpath = xpath[1:]  # needed to avoid empty string at first place after split
-        path_components = xpath.split('/')
+        path_components = xpath.split("/")
         element = root
         children = []
         # Create XML path if needed

@@ -2,7 +2,7 @@
 Simple implementation of International Standard Atmosphere
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -60,10 +60,12 @@ class Atmosphere:
     """
 
     # pylint: disable=too-many-instance-attributes  # Needed for avoiding redoing computations
-    def __init__(self,
-                 altitude: Union[float, Sequence[float]],
-                 delta_t: float = 0.,
-                 altitude_in_feet: bool = True):
+    def __init__(
+        self,
+        altitude: Union[float, Sequence[float]],
+        delta_t: float = 0.0,
+        altitude_in_feet: bool = True,
+    ):
         """
         Builds an atmosphere instance that will provide atmosphere values
         """
@@ -74,7 +76,7 @@ class Atmosphere:
         self._float_expected = isinstance(altitude, Number)
 
         # For convenience, let's have altitude as numpy arrays and in meters in all cases
-        unit_coeff = foot if altitude_in_feet else 1.
+        unit_coeff = foot if altitude_in_feet else 1.0
         self._altitude = np.asarray(altitude) * unit_coeff
 
         # Sets indices for tropopause
@@ -111,9 +113,9 @@ class Atmosphere:
         """ Temperature in K """
         if self._temperature is None:
             self._temperature = np.zeros(self._altitude.shape)
-            self._temperature[self._idx_tropo] = SEA_LEVEL_TEMPERATURE - 0.0065 \
-                                                 * self._altitude[self._idx_tropo] \
-                                                 + self._delta_t
+            self._temperature[self._idx_tropo] = (
+                SEA_LEVEL_TEMPERATURE - 0.0065 * self._altitude[self._idx_tropo] + self._delta_t
+            )
             self._temperature[self._idx_strato] = 216.65 + self._delta_t
         return self._return_value(self._temperature)
 
@@ -122,11 +124,13 @@ class Atmosphere:
         """ Pressure in Pa """
         if self._pressure is None:
             self._pressure = np.zeros(self._altitude.shape)
-            self._pressure[self._idx_tropo] = \
-                SEA_LEVEL_PRESSURE * (1 -
-                                      (self._altitude[self._idx_tropo] / 44330.78)) ** 5.25587611
-            self._pressure[self._idx_strato] = \
-                22632 * 2.718281 ** (1.7345725 - 0.0001576883 * self._altitude[self._idx_strato])
+            self._pressure[self._idx_tropo] = (
+                SEA_LEVEL_PRESSURE
+                * (1 - (self._altitude[self._idx_tropo] / 44330.78)) ** 5.25587611
+            )
+            self._pressure[self._idx_strato] = 22632 * 2.718281 ** (
+                1.7345725 - 0.0001576883 * self._altitude[self._idx_strato]
+            )
         return self._return_value(self._pressure)
 
     @property
@@ -147,11 +151,10 @@ class Atmosphere:
     def kinematic_viscosity(self) -> Union[float, Sequence[float]]:
         """ Kinematic viscosity in m2/s """
         if self._kinematic_viscosity is None:
-            self._kinematic_viscosity = ((0.000017894 *
-                                           (self.temperature / SEA_LEVEL_TEMPERATURE) ** (3 / 2))
-                                          * ((SEA_LEVEL_TEMPERATURE + 110.4) /
-                                             (self.temperature + 110.4))
-                                          ) / self.density
+            self._kinematic_viscosity = (
+                (0.000017894 * (self.temperature / SEA_LEVEL_TEMPERATURE) ** (3 / 2))
+                * ((SEA_LEVEL_TEMPERATURE + 110.4) / (self.temperature + 110.4))
+            ) / self.density
         return self._return_value(self._kinematic_viscosity)
 
     def get_unitary_reynolds(self, mach):

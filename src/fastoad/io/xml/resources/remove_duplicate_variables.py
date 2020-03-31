@@ -2,7 +2,7 @@
 Enables to remove duplicate variables from text file
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,12 +15,13 @@ Enables to remove duplicate variables from text file
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from os import remove
 
+
 def remove_duplicate(input_file_name: str):
     """
     Removes duplicate lines in a text file
 
     """
-    input_file = open(input_file_name, 'r')
+    input_file = open(input_file_name, "r")
 
     # Store all the variables
     stored_lines = []
@@ -32,7 +33,7 @@ def remove_duplicate(input_file_name: str):
     remove(input_file_name)
 
     # Create new file
-    input_file = open(input_file_name, 'w')
+    input_file = open(input_file_name, "w")
 
     # Write non duplicate lines
     for line in stored_lines:
@@ -43,4 +44,4 @@ def remove_duplicate(input_file_name: str):
 
 if __name__ == "__main__":
 
-    remove_duplicate('legacy1.txt')
+    remove_duplicate("legacy1.txt")

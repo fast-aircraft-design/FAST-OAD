@@ -3,7 +3,7 @@ Test module for rubber_engine.py
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,9 +17,9 @@ Test module for rubber_engine.py
 
 import numpy as np
 import pytest
-
 from fastoad.constants import FlightPhase
 from fastoad.utils.physics import Atmosphere
+
 from ..rubber_engine import RubberEngine
 
 
@@ -27,13 +27,15 @@ def test_compute_flight_points():
     engine = RubberEngine(5, 30, 1500, 1, 0.95, 10000)  # f0=1 so that output is simply fc/f0
 
     # Test with scalars
-    sfc, thrust_rate, thrust = engine.compute_flight_points(0, 0, FlightPhase.TAKEOFF,
-                                                            thrust_rate=0.8)  # with phase as FlightPhase
+    sfc, thrust_rate, thrust = engine.compute_flight_points(
+        0, 0, FlightPhase.TAKEOFF, thrust_rate=0.8
+    )  # with phase as FlightPhase
     np.testing.assert_allclose(thrust, 0.9553 * 0.8, rtol=1e-4)
     np.testing.assert_allclose(sfc, 0.99210e-5, rtol=1e-4)
 
-    sfc, thrust_rate, thrust = engine.compute_flight_points(0.3, 0, FlightPhase.CLIMB.value,
-                                                            thrust=0.35677)  # with phase as int
+    sfc, thrust_rate, thrust = engine.compute_flight_points(
+        0.3, 0, FlightPhase.CLIMB.value, thrust=0.35677
+    )  # with phase as int
     np.testing.assert_allclose(thrust_rate, 0.5, rtol=1e-4)
     np.testing.assert_allclose(sfc, 1.3496e-5, rtol=1e-4)
 
@@ -46,35 +48,48 @@ def test_compute_flight_points():
     altitudes = [0, 0, 0, 10000, 13000]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
     thrusts = [0.9553 * 0.8, 0.38851, 0.35677, 0.09680, 0.11273]
-    phases = [FlightPhase.TAKEOFF, FlightPhase.TAKEOFF,
-              FlightPhase.CLIMB, FlightPhase.IDLE,
-              FlightPhase.CRUISE.value]  # mix FlightPhase with integers
+    phases = [
+        FlightPhase.TAKEOFF,
+        FlightPhase.TAKEOFF,
+        FlightPhase.CLIMB,
+        FlightPhase.IDLE,
+        FlightPhase.CRUISE.value,
+    ]  # mix FlightPhase with integers
     expected_sfc = [0.99210e-5, 1.3496e-5, 1.3496e-5, 1.8386e-5, 1.5957e-5]
 
-    sfc, thrust_rate, thrust = engine.compute_flight_points([machs, machs],
-                                                            [altitudes, altitudes],
-                                                            [phases, phases],
-                                                            [[True] * 5, [False] * 5],
-                                                            [thrust_rates, [0] * 5],
-                                                            [[0] * 5, thrusts])
+    sfc, thrust_rate, thrust = engine.compute_flight_points(
+        [machs, machs],
+        [altitudes, altitudes],
+        [phases, phases],
+        [[True] * 5, [False] * 5],
+        [thrust_rates, [0] * 5],
+        [[0] * 5, thrusts],
+    )
     np.testing.assert_allclose(sfc, [expected_sfc, expected_sfc], rtol=1e-4)
     np.testing.assert_allclose(thrust_rate, [thrust_rates, thrust_rates], rtol=1e-4)
     np.testing.assert_allclose(thrust, [thrusts, thrusts], rtol=1e-4)
 
     # Test scalars + arrays 1
-    machs = [0, 0.3, ]
+    machs = [
+        0,
+        0.3,
+    ]
     thrust_rates = [0.8, 0.5]
     expected_thrust = [0.9553 * 0.8, 0.38851]
     expected_sfc = [0.99210e-5, 1.3496e-5]
 
-    sfc, _, thrust = engine.compute_flight_points(machs, 0, FlightPhase.TAKEOFF,
-                                                  thrust_rate=thrust_rates)
+    sfc, _, thrust = engine.compute_flight_points(
+        machs, 0, FlightPhase.TAKEOFF, thrust_rate=thrust_rates
+    )
     np.testing.assert_allclose(thrust, expected_thrust, rtol=1e-4)
     np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-4)
 
     # Test scalars + arrays 2
     altitudes = [0, 0]
-    phases = [FlightPhase.TAKEOFF.value, FlightPhase.CLIMB.value, ]
+    phases = [
+        FlightPhase.TAKEOFF.value,
+        FlightPhase.CLIMB.value,
+    ]
     expected_thrust = [0.38851, 0.35677]
     expected_sfc = [1.3496e-5, 1.3496e-5]
 
@@ -124,23 +139,26 @@ def test_max_thrust():
     # Check with cruise altitude
     atm = Atmosphere(11000, altitude_in_feet=False)
     max_thrust_ratio = engine.max_thrust(atm, machs, -100)
-    ref_max_thrust_ratio = 0.94916 * atm.density / 1.225 * (
-            1 - 0.68060 * machs + 0.51149 * machs ** 2)
+    ref_max_thrust_ratio = (
+        0.94916 * atm.density / 1.225 * (1 - 0.68060 * machs + 0.51149 * machs ** 2)
+    )
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-4)
 
     # Check with Takeoff altitude
     atm = Atmosphere(0, altitude_in_feet=False)
     max_thrust_ratio = engine.max_thrust(atm, machs, 0)
-    ref_max_thrust_ratio = 0.9553 * atm.density / 1.225 * (
-            1 - 0.72971 * machs + 0.35886 * machs ** 2)
+    ref_max_thrust_ratio = (
+        0.9553 * atm.density / 1.225 * (1 - 0.72971 * machs + 0.35886 * machs ** 2)
+    )
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-4)
 
     # Check Cruise above 11000 with compression rate != 30 and bypass ratio != 5
     engine = RubberEngine(4, 35, 1500, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
     atm = Atmosphere(13000, altitude_in_feet=False)
     max_thrust_ratio = engine.max_thrust(atm, machs, -50)
-    ref_max_thrust_ratio = 0.96880 * atm.density / 1.225 * (
-            1 - 0.63557 * machs + 0.52108 * machs ** 2)
+    ref_max_thrust_ratio = (
+        0.96880 * atm.density / 1.225 * (1 - 0.63557 * machs + 0.52108 * machs ** 2)
+    )
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-4)
 
     # Check with compression rate != 30 and bypass ratio != 5 and an array for altitudes (as
@@ -148,8 +166,19 @@ def test_max_thrust():
     engine = RubberEngine(6, 22, 1500, 1, 0, 0)  # f0=1 so that output is simply fmax/f0
     atm = Atmosphere(np.arange(3000, 13100, 1000), altitude_in_feet=False)
     max_thrust_ratio = engine.max_thrust(atm, machs, -50)
-    ref_max_thrust_ratio = [0.69811, 0.59162, 0.50117, 0.42573, 0.36417, 0.31512,
-                            0.27704, 0.24820, 0.22678, 0.19965, 0.17795]
+    ref_max_thrust_ratio = [
+        0.69811,
+        0.59162,
+        0.50117,
+        0.42573,
+        0.36417,
+        0.31512,
+        0.27704,
+        0.24820,
+        0.22678,
+        0.19965,
+        0.17795,
+    ]
     np.testing.assert_allclose(max_thrust_ratio, ref_max_thrust_ratio, rtol=1e-4)
 
 
@@ -200,11 +229,13 @@ def test_sfc_ratio():
     altitudes = design_alt + np.array([-2370, -1564, -1562.5, -1560, -846, 678, 2202, 3726])
 
     ratio = engine.sfc_ratio(altitudes, 0.8)
-    assert ratio == pytest.approx([1.024, 1.020, 1.020, 1.020, 1.005, 0.977, 0.948, 0.918],
-                                  rel=1e-3)
+    assert ratio == pytest.approx(
+        [1.024, 1.020, 1.020, 1.020, 1.005, 0.977, 0.948, 0.918], rel=1e-3
+    )
     ratio = engine.sfc_ratio(altitudes, 0.6)
-    assert ratio == pytest.approx([1.074, 1.080, 1.080, 1.080, 1.044, 0.994, 0.935, 0.877],
-                                  rel=1e-3)
+    assert ratio == pytest.approx(
+        [1.074, 1.080, 1.080, 1.080, 1.044, 0.994, 0.935, 0.877], rel=1e-3
+    )
     assert engine.sfc_ratio(altitudes, 1.0) == pytest.approx(1.0, rel=1e-3)
 
     # Because there some code differs when we have scalars:

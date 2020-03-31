@@ -2,7 +2,7 @@
 Exceptions for module_management package
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -33,8 +33,10 @@ class FastDuplicateOMSystemIdentifierException(FastDuplicateFactoryError):
     """
 
     def __str__(self):
-        return 'Tried to register an OpenMDAO system with an already used identifier : %s' \
-               % self.factory_name
+        return (
+            "Tried to register an OpenMDAO system with an already used identifier : %s"
+            % self.factory_name
+        )
 
 
 class FastNoOMSystemFoundError(FastError):
@@ -43,7 +45,7 @@ class FastNoOMSystemFoundError(FastError):
     """
 
     def __init__(self, properties):
-        super().__init__('No OpenMDAO system found with these properties: %s' % properties)
+        super().__init__("No OpenMDAO system found with these properties: %s" % properties)
         self.properties = properties
 
 
@@ -53,7 +55,7 @@ class FastUnknownOMSystemIdentifierError(FastError):
     """
 
     def __init__(self, identifier):
-        super().__init__('No OpenMDAO system found with this identifier: %s' % identifier)
+        super().__init__("No OpenMDAO system found with this identifier: %s" % identifier)
         self.identifier = identifier
 
 
@@ -63,7 +65,9 @@ class FastBadSystemOptionError(FastError):
     """
 
     def __init__(self, identifier, option_names):
-        super().__init__('OpenMDAO system %s does not accept following option(s): %s'
-                         % (identifier, option_names))
+        super().__init__(
+            "OpenMDAO system %s does not accept following option(s): %s"
+            % (identifier, option_names)
+        )
         self.identifier = identifier
         self.option_names = option_names

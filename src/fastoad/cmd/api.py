@@ -2,7 +2,7 @@
 API
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -22,21 +22,23 @@ from textwrap import indent, dedent
 from typing import IO, Union
 
 import openmdao.api as om
-
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management import OpenMDAOSystemRegistry
-from fastoad.openmdao.connections_utils import get_unconnected_input_variables, \
-    get_variables_from_problem
+from fastoad.openmdao.connections_utils import (
+    get_unconnected_input_variables,
+    get_variables_from_problem,
+)
+
 from . import resources
-# Logger for this module
 from ..utils.resource_management.copy import copy_resource
 
+# Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
-SAMPLE_FILENAME = 'fastoad.toml'
+SAMPLE_FILENAME = "fastoad.toml"
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
@@ -48,23 +50,25 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
     """
     if not overwrite and pth.exists(configuration_file_path):
-        raise FastFileExistsError('Configuration file %s not written because it already exists. '
-                                  'Use overwrite=True to bypass.'
-                                  % configuration_file_path)
+        raise FastFileExistsError(
+            "Configuration file %s not written because it already exists. "
+            "Use overwrite=True to bypass." % configuration_file_path
+        )
 
     dirname = pth.abspath(pth.dirname(configuration_file_path))
     if not pth.exists(dirname):
         os.makedirs(dirname)
 
     copy_resource(resources, SAMPLE_FILENAME, configuration_file_path)
-    _LOGGER.info('Sample configuration written in %s', configuration_file_path)
+    _LOGGER.info("Sample configuration written in %s", configuration_file_path)
 
 
-def generate_inputs(configuration_file_path: str,
-                    source_path: str = None,
-                    source_path_schema='native',
-                    overwrite: bool = False
-                    ):
+def generate_inputs(
+    configuration_file_path: str,
+    source_path: str = None,
+    source_path_schema="native",
+    overwrite: bool = False,
+):
     """
     Generates input file for the :class:`FASTOADProblem` specified in configuration_file_path.
 
@@ -79,12 +83,14 @@ def generate_inputs(configuration_file_path: str,
 
     inputs_path = pth.normpath(problem.input_file_path)
     if not overwrite and pth.exists(inputs_path):
-        raise FastFileExistsError('Input file %s not written because it already exists. '
-                                  'Use overwrite=True to bypass.'
-                                  % inputs_path, inputs_path)
+        raise FastFileExistsError(
+            "Input file %s not written because it already exists. "
+            "Use overwrite=True to bypass." % inputs_path,
+            inputs_path,
+        )
 
     if source_path:
-        if source_path_schema == 'legacy':
+        if source_path_schema == "legacy":
             source = OMLegacy1XmlIO(source_path)
         else:
             source = OMXmlIO(source_path)
@@ -92,12 +98,12 @@ def generate_inputs(configuration_file_path: str,
         source = None
 
     problem.write_needed_inputs(source)
-    _LOGGER.info('Problem inputs written in %s', inputs_path)
+    _LOGGER.info("Problem inputs written in %s", inputs_path)
 
 
-def list_variables(configuration_file_path: str,
-                   out: Union[IO, str] = sys.stdout,
-                   overwrite: bool = False):
+def list_variables(
+    configuration_file_path: str, out: Union[IO, str] = sys.stdout, overwrite: bool = False
+):
     """
     Writes list of system outputs for the :class:`FASTOADProblem` specified in
     configuration_file_path.
@@ -116,41 +122,46 @@ def list_variables(configuration_file_path: str,
 
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
-            raise FastFileExistsError('File %s not written because it already exists. '
-                                      'Use overwrite=True to bypass.'
-                                      % out)
-        out_file = open(out, 'w')
+            raise FastFileExistsError(
+                "File %s not written because it already exists. "
+                "Use overwrite=True to bypass." % out
+            )
+        out_file = open(out, "w")
     else:
         out_file = out
 
     # Inputs
-    out_file.writelines([
-        '-- INPUTS OF THE PROBLEM -------------------------------------------------------------\n',
-        '%-60s| %s\n' % ('VARIABLE', 'DESCRIPTION')
-    ])
-    out_file.writelines(['%-60s| %s\n' % (var.name, var.description) for var in input_variables])
+    out_file.writelines(
+        [
+            "-- INPUTS OF THE PROBLEM -------------------------------------------------------------\n",
+            "%-60s| %s\n" % ("VARIABLE", "DESCRIPTION"),
+        ]
+    )
+    out_file.writelines(["%-60s| %s\n" % (var.name, var.description) for var in input_variables])
     out_file.write(
-        '--------------------------------------------------------------------------------------\n'
+        "--------------------------------------------------------------------------------------\n"
     )
 
     # Outputs
-    out_file.writelines([
-        '-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------\n',
-        '%-60s| %s\n' % ('VARIABLE', 'DESCRIPTION')
-    ])
-    out_file.writelines(['%-60s| %s\n' % (var.name, var.description) for var in output_variables])
+    out_file.writelines(
+        [
+            "-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------\n",
+            "%-60s| %s\n" % ("VARIABLE", "DESCRIPTION"),
+        ]
+    )
+    out_file.writelines(["%-60s| %s\n" % (var.name, var.description) for var in output_variables])
     out_file.write(
-        '--------------------------------------------------------------------------------------\n'
+        "--------------------------------------------------------------------------------------\n"
     )
 
     if isinstance(out, str):
         out_file.close()
-        _LOGGER.info('Output list written in %s', out_file)
+        _LOGGER.info("Output list written in %s", out_file)
 
 
-def list_systems(configuration_file_path: str = None,
-                 out: Union[IO, str] = sys.stdout,
-                 overwrite: bool = False):
+def list_systems(
+    configuration_file_path: str = None, out: Union[IO, str] = sys.stdout, overwrite: bool = False
+):
     """
     Writes list of available systems.
     If configuration_file_path is given and if it defines paths where there are registered systems,
@@ -170,30 +181,28 @@ def list_systems(configuration_file_path: str = None,
 
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
-            raise FastFileExistsError('File %s not written because it already exists. '
-                                      'Use overwrite=True to bypass.'
-                                      % out)
-        out_file = open(out, 'w')
+            raise FastFileExistsError(
+                "File %s not written because it already exists. "
+                "Use overwrite=True to bypass." % out
+            )
+        out_file = open(out, "w")
     else:
         out_file = out
-    out_file.writelines([
-        '-- AVAILABLE SYSTEM IDENTIFIERS ' + '-' * 68 + '\n',
-        '=' * 100 + '\n'
-    ])
+    out_file.writelines(["-- AVAILABLE SYSTEM IDENTIFIERS " + "-" * 68 + "\n", "=" * 100 + "\n"])
     for identifier in OpenMDAOSystemRegistry.get_system_ids():
         path = BundleLoader().get_factory_path(identifier)
         domain = OpenMDAOSystemRegistry.get_system_domain(identifier)
         description = OpenMDAOSystemRegistry.get_system_description(identifier)
-        out_file.write('  IDENTIFIER:   %s\n' % identifier)
-        out_file.write('  PATH:         %s\n' % path)
-        out_file.write('  DOMAIN:       %s\n' % domain.value)
-        out_file.write('  DESCRIPTION:  %s\n' % indent(dedent(description), '    '))
-        out_file.write('=' * 100 + '\n')
-        out_file.write('-' * 100 + '\n')
+        out_file.write("  IDENTIFIER:   %s\n" % identifier)
+        out_file.write("  PATH:         %s\n" % path)
+        out_file.write("  DOMAIN:       %s\n" % domain.value)
+        out_file.write("  DESCRIPTION:  %s\n" % indent(dedent(description), "    "))
+        out_file.write("=" * 100 + "\n")
+        out_file.write("-" * 100 + "\n")
 
     if isinstance(out, str):
         out_file.close()
-        _LOGGER.info('System list written in %s', out_file)
+        _LOGGER.info("System list written in %s", out_file)
 
 
 def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
@@ -206,13 +215,14 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     """
 
     if not n2_file_path:
-        n2_file_path = pth.join(pth.dirname(configuration_file_path), 'n2.html')
+        n2_file_path = pth.join(pth.dirname(configuration_file_path), "n2.html")
     n2_file_path = pth.normpath(n2_file_path)
 
     if not overwrite and pth.exists(n2_file_path):
-        raise FastFileExistsError('N2-diagram file %s not written because it already exists. '
-                                  'Use overwrite=True to bypass.'
-                                  % n2_file_path)
+        raise FastFileExistsError(
+            "N2-diagram file %s not written because it already exists. "
+            "Use overwrite=True to bypass." % n2_file_path
+        )
 
     if not pth.exists(pth.dirname(n2_file_path)):
         os.makedirs(pth.dirname(n2_file_path))
@@ -223,12 +233,12 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     problem.final_setup()
 
     om.n2(problem, outfile=n2_file_path, show_browser=False)
-    _LOGGER.info('N2 diagram written in %s', n2_file_path)
+    _LOGGER.info("N2 diagram written in %s", n2_file_path)
 
 
-def _run_problem(configuration_file_path: str,
-                 overwrite: bool = False,
-                 mode='run_model') -> FASTOADProblem:
+def _run_problem(
+    configuration_file_path: str, overwrite: bool = False, mode="run_model"
+) -> FASTOADProblem:
     """
     Runs problem according to provided file
 
@@ -243,13 +253,14 @@ def _run_problem(configuration_file_path: str,
 
     outputs_path = pth.normpath(problem.output_file_path)
     if not overwrite and pth.exists(outputs_path):
-        raise FastFileExistsError('Problem not run because output file %s already exists. '
-                                  'Use overwrite=True to bypass.'
-                                  % outputs_path)
+        raise FastFileExistsError(
+            "Problem not run because output file %s already exists. "
+            "Use overwrite=True to bypass." % outputs_path
+        )
 
     problem.read_inputs()
     problem.setup()
-    if mode == 'run_model':
+    if mode == "run_model":
         problem.run_model()
         problem.optim_failed = False  # Actually, we don't know
     else:
@@ -257,11 +268,11 @@ def _run_problem(configuration_file_path: str,
 
     problem.write_outputs()
     if problem.optim_failed:
-        _LOGGER.error('Optimization failed')
+        _LOGGER.error("Optimization failed")
     else:
-        _LOGGER.info('Computation finished')
+        _LOGGER.info("Computation finished")
 
-    _LOGGER.info('Problem outputs written in %s', outputs_path)
+    _LOGGER.info("Problem outputs written in %s", outputs_path)
 
     return problem
 
@@ -274,7 +285,7 @@ def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> F
     :param overwrite: if True, output file will be overwritten
     :return: the OpenMDAO problem after run
     """
-    return _run_problem(configuration_file_path, overwrite, 'run_model')
+    return _run_problem(configuration_file_path, overwrite, "run_model")
 
 
 def optimize_problem(configuration_file_path: str, overwrite: bool = False) -> FASTOADProblem:
@@ -285,4 +296,4 @@ def optimize_problem(configuration_file_path: str, overwrite: bool = False) -> F
     :param overwrite: if True, output file will be overwritten
     :return: the OpenMDAO problem after run
     """
-    return _run_problem(configuration_file_path, overwrite, 'run_driver')
+    return _run_problem(configuration_file_path, overwrite, "run_driver")

@@ -2,7 +2,7 @@
 Defines how OpenMDAO variables are serialized to XML
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,7 +17,6 @@ Defines how OpenMDAO variables are serialized to XML
 from typing import Sequence
 
 import openmdao.api as om
-
 from fastoad.io.xml.exceptions import FastXPathEvalError, FastOMXmlIOBadPathSeparatorError
 from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO
 from fastoad.io.xml.translator import VarXpathTranslator
@@ -61,7 +60,7 @@ class OMXmlIO(OMCustomXmlIO):
     def __init__(self, *args, **kwargs):
         super(OMXmlIO, self).__init__(*args, **kwargs)
 
-        self._translator: BasicVarXpathTranslator = BasicVarXpathTranslator(':')
+        self._translator: BasicVarXpathTranslator = BasicVarXpathTranslator(":")
 
     @property
     def path_separator(self):
@@ -77,7 +76,7 @@ class OMXmlIO(OMCustomXmlIO):
 
     def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> om.IndepVarComp:
         # Check separator, as OpenMDAO won't accept the dot.
-        if self.path_separator == '.':
+        if self.path_separator == ".":
             raise FastOMXmlIOBadPathSeparatorError('Cannot use dot "." in OpenMDAO variables.')
 
         return super().read(only, ignore)
@@ -87,21 +86,23 @@ class OMXmlIO(OMCustomXmlIO):
             super().write(ivc, only, ignore)
         except FastXPathEvalError as err:
             # Trying to help...
-            raise FastXPathEvalError(err.args[0] +
-                                     ' : self.path_separator is "%s". It is correct?'
-                                     % self.path_separator)
+            raise FastXPathEvalError(
+                err.args[0] + ' : self.path_separator is "%s". It is correct?' % self.path_separator
+            )
 
     def _create_openmdao_code(self) -> str:  # pragma: no cover
         """dev utility for generating code"""
         variables = self.read_variables()
         variables = list(variables.values())
 
-        lines = ['ivc = IndepVarComp()']
+        lines = ["ivc = IndepVarComp()"]
         for name, value, units in variables:
-            lines.append("ivc.add_output('%s', val=%s%s)" %
-                         (name, value, ", units='%s'" % units if units else ''))
+            lines.append(
+                "ivc.add_output('%s', val=%s%s)"
+                % (name, value, ", units='%s'" % units if units else "")
+            )
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
 
 class BasicVarXpathTranslator(VarXpathTranslator):
@@ -115,11 +116,11 @@ class BasicVarXpathTranslator(VarXpathTranslator):
         self.path_separator = path_separator
 
     def get_variable_name(self, xpath: str) -> str:
-        path_components = xpath.split('/')
+        path_components = xpath.split("/")
         name = self.path_separator.join(path_components)
         return name
 
     def get_xpath(self, var_name: str) -> str:
         path_components = var_name.split(self.path_separator)
-        xpath = '/'.join(path_components)
+        xpath = "/".join(path_components)
         return xpath

@@ -3,7 +3,7 @@ Module for string-related operations
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,7 +19,6 @@ import io
 import re
 
 import numpy as np
-
 from fastoad.exceptions import FastError
 
 
@@ -46,14 +45,14 @@ def get_float_list_from_string(text: str):
         return None
 
     # If it begins by '[', an array is expected, potentially multidimensional
-    if text_value.startswith('['):
+    if text_value.startswith("["):
         # The string is first transformed in a way that can be parsed by genfromtxt
-        text_value = re.sub(r'\r?\n|\r', '', text_value)  # first remove all new lines
-        text_value = re.sub(r'\]\s*,\s*\[', '\n', text_value)
-        text_value = text_value.strip('[]')
+        text_value = re.sub(r"\r?\n|\r", "", text_value)  # first remove all new lines
+        text_value = re.sub(r"\]\s*,\s*\[", "\n", text_value)
+        text_value = text_value.strip("[]")
         text_io = io.StringIO(text_value)
         try:
-            return np.genfromtxt(text_io, delimiter=',').tolist()
+            return np.genfromtxt(text_io, delimiter=",").tolist()
         except ValueError as exc:
             raise FastCouldNotParseStringToArrayError(text.strip(), exc)
 
@@ -61,12 +60,12 @@ def get_float_list_from_string(text: str):
     # but we have to test with either ' ' or ',' as separator. The longest result should be
     # the good one.
     try:
-        value1 = np.fromstring(text_value, dtype=float, sep=' ').tolist()
+        value1 = np.fromstring(text_value, dtype=float, sep=" ").tolist()
     except ValueError:
         pass
 
     try:
-        value2 = np.fromstring(text_value, dtype=float, sep=',').tolist()
+        value2 = np.fromstring(text_value, dtype=float, sep=",").tolist()
     except ValueError:
         pass
 

@@ -3,7 +3,7 @@
   Sellar openMDAO group
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -69,9 +69,7 @@ class StandardSellarFactory(ISellarFactory):
 class Sellar(Group):
     """ An OpenMDAO base component to encapsulate Sellar MDA """
 
-    def __init__(self,
-                 sellar_factory: Type[ISellarFactory] = StandardSellarFactory
-                 , **kwargs):
+    def __init__(self, sellar_factory: Type[ISellarFactory] = StandardSellarFactory, **kwargs):
         """
 
         :param sellar_factory: will provide the components
@@ -83,20 +81,23 @@ class Sellar(Group):
 
         self._sellar_factory = sellar_factory
         self.nonlinear_solver = NonlinearBlockGS()
-        self.nonlinear_solver.options['atol'] = 1.0e-10
-        self.nonlinear_solver.options['rtol'] = 1.0e-10
-        self.nonlinear_solver.options['maxiter'] = 10
-        self.nonlinear_solver.options['err_on_non_converge'] = True
-        self.nonlinear_solver.options['reraise_child_analysiserror'] = False
-        self.nonlinear_solver.options['iprint'] = 1
+        self.nonlinear_solver.options["atol"] = 1.0e-10
+        self.nonlinear_solver.options["rtol"] = 1.0e-10
+        self.nonlinear_solver.options["maxiter"] = 10
+        self.nonlinear_solver.options["err_on_non_converge"] = True
+        self.nonlinear_solver.options["reraise_child_analysiserror"] = False
+        self.nonlinear_solver.options["iprint"] = 1
 
     def setup(self):
-        indeps = self.add_subsystem('indeps', IndepVarComp(), promotes=['*'])
-        indeps.add_output('x', 2)
-        indeps.add_output('z', [5, 2])
-        self.add_subsystem('Disc1', self._sellar_factory.create_disc1(),
-                           promotes=['x', 'z', 'y1', 'y2'])
-        self.add_subsystem('Disc2', self._sellar_factory.create_disc2(),
-                           promotes=['z', 'y1', 'y2'])
-        self.add_subsystem('Functions', self._sellar_factory.create_functions(),
-                           promotes=['x', 'z', 'y1', 'y2', 'f', 'g1', 'g2'])
+        indeps = self.add_subsystem("indeps", IndepVarComp(), promotes=["*"])
+        indeps.add_output("x", 2)
+        indeps.add_output("z", [5, 2])
+        self.add_subsystem(
+            "Disc1", self._sellar_factory.create_disc1(), promotes=["x", "z", "y1", "y2"]
+        )
+        self.add_subsystem("Disc2", self._sellar_factory.create_disc2(), promotes=["z", "y1", "y2"])
+        self.add_subsystem(
+            "Functions",
+            self._sellar_factory.create_functions(),
+            promotes=["x", "z", "y1", "y2", "f", "g1", "g2"],
+        )

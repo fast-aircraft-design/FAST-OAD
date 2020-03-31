@@ -2,7 +2,7 @@
 The base layer for registering and retrieving OpenMDAO systems
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,12 +19,21 @@ from types import MethodType
 from typing import List, Union, Any
 
 from fastoad.openmdao.types import SystemSubclass
+
 from .bundle_loader import BundleLoader
-from .constants import SERVICE_OPENMDAO_SYSTEM, OPTION_PROPERTY_NAME, DESCRIPTION_PROPERTY_NAME, \
-    DOMAIN_PROPERTY_NAME, ModelDomain
-from .exceptions import FastDuplicateFactoryError, FastUnknownOMSystemIdentifierError, \
-    FastDuplicateOMSystemIdentifierException, \
-    FastBadSystemOptionError
+from .constants import (
+    SERVICE_OPENMDAO_SYSTEM,
+    OPTION_PROPERTY_NAME,
+    DESCRIPTION_PROPERTY_NAME,
+    DOMAIN_PROPERTY_NAME,
+    ModelDomain,
+)
+from .exceptions import (
+    FastDuplicateFactoryError,
+    FastUnknownOMSystemIdentifierError,
+    FastDuplicateOMSystemIdentifierException,
+    FastBadSystemOptionError,
+)
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -34,6 +43,7 @@ class OpenMDAOSystemRegistry:
     """
     Class for registering and providing OpenMDAO System objects.
     """
+
     _loader = BundleLoader()
 
     @classmethod
@@ -47,12 +57,14 @@ class OpenMDAOSystemRegistry:
         cls._loader.install_packages(folder_path)
 
     @classmethod
-    def register_system(cls, system_class: type,
-                        identifier: str,
-                        domain: ModelDomain = None,
-                        desc=None,
-                        options: dict = None,
-                        ):
+    def register_system(
+        cls,
+        system_class: type,
+        identifier: str,
+        domain: ModelDomain = None,
+        desc=None,
+        options: dict = None,
+    ):
         """
         Registers the System (or subclass) so it can later be retrieved and
         instantiated.
@@ -71,8 +83,9 @@ class OpenMDAOSystemRegistry:
                 DESCRIPTION_PROPERTY_NAME: desc if desc else system_class.__doc__,
                 OPTION_PROPERTY_NAME: options if options else {},
             }
-            factory = cls._loader.register_factory(system_class, identifier,
-                                                   SERVICE_OPENMDAO_SYSTEM, properties)
+            factory = cls._loader.register_factory(
+                system_class, identifier, SERVICE_OPENMDAO_SYSTEM, properties
+            )
             return factory
         except FastDuplicateFactoryError as err:
             # Just a more specialized error message
@@ -110,7 +123,7 @@ class OpenMDAOSystemRegistry:
 
         # Before making the system available to get options from OPTION_PROPERTY_NAME,
         # check that options are valid to avoid failure at setup()
-        options = getattr(system, '_' + OPTION_PROPERTY_NAME, None)
+        options = getattr(system, "_" + OPTION_PROPERTY_NAME, None)
         if options:
             invalid_options = [name for name in options if name not in system.options]
             if invalid_options:
@@ -141,8 +154,9 @@ class OpenMDAOSystemRegistry:
         return cls._get_system_property(system_or_id, DESCRIPTION_PROPERTY_NAME)
 
     @classmethod
-    def _get_system_property(cls, system_or_id: Union[str, SystemSubclass],
-                             property_name: str) -> Any:
+    def _get_system_property(
+        cls, system_or_id: Union[str, SystemSubclass], property_name: str
+    ) -> Any:
         """
 
         :param system_or_id: an identifier of a registered OpenMDAO System class or
@@ -191,7 +205,7 @@ def _option_decorator(instance: SystemSubclass) -> SystemSubclass:
         """ Will replace the original setup() method"""
 
         # Use values from iPOPO option properties
-        option_dict = getattr(self, '_' + OPTION_PROPERTY_NAME, None)
+        option_dict = getattr(self, "_" + OPTION_PROPERTY_NAME, None)
         if option_dict:
             for name, value in option_dict.items():
                 self.options[name] = value
@@ -200,10 +214,10 @@ def _option_decorator(instance: SystemSubclass) -> SystemSubclass:
         self.original_setup()
 
     # Move the (already bound) method "setup" to "original_setup"
-    setattr(instance, 'original_setup', instance.setup)
+    setattr(instance, "original_setup", instance.setup)
 
     # Create and bind the new "setup" method
     setup_method = MethodType(setup, instance)
-    setattr(instance, 'setup', setup_method)
+    setattr(instance, "setup", setup_method)
 
     return instance

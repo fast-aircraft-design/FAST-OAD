@@ -2,7 +2,7 @@
 Defines the data frame for postprocessing
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,16 +14,20 @@ Defines the data frame for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from typing import List
-import pandas as pd
+
 import ipysheet as sh
 import ipywidgets as widgets
+import pandas as pd
 from IPython.display import display, clear_output
-
 from fastoad.io.serialize import AbstractOMFileIO
-from fastoad.openmdao.connections_utils import get_variables_from_ivc, \
-    get_variables_from_df, get_df_from_variables, get_ivc_from_variables
+from fastoad.openmdao.connections_utils import (
+    get_variables_from_ivc,
+    get_variables_from_df,
+    get_df_from_variables,
+    get_ivc_from_variables,
+)
 
-pd.set_option('display.max_rows', None)
+pd.set_option("display.max_rows", None)
 
 
 class VariableViewer:
@@ -63,7 +67,7 @@ class VariableViewer:
         self.variable_selector = None
 
         # A tag used to select all submodules
-        self.all_tag = '--ALL--'
+        self.all_tag = "--ALL--"
 
     def load(self, file: AbstractOMFileIO = None):
         """
@@ -141,16 +145,16 @@ class VariableViewer:
         """
         if not df.empty:
             sheet = sh.from_dataframe(df)
-            column = df.columns.get_loc('Value')
+            column = df.columns.get_loc("Value")
 
             for cell in sheet.cells:
                 if column not in (cell.column_start, cell.column_end):
                     cell.read_only = True
                 else:
-                    cell.type = 'numeric'
+                    cell.type = "numeric"
                     # TODO: make the number of decimals depnd on the module ?
                     # or chosen in the ui by the user
-                    cell.numeric_format = '0.000'
+                    cell.numeric_format = "0.000"
 
             # Name, Value, Unit, Description
             sheet.column_width = [150, 50, 20, 150]
@@ -209,8 +213,8 @@ class VariableViewer:
         # 20 will never be reached
         for i in range(20):
             if i == 0:
-                self.filter_widgets[0].observe(self._update_items, 'value')
-                self.filter_widgets[0].observe(self._update_variable_selector, 'value')
+                self.filter_widgets[0].observe(self._update_items, "value")
+                self.filter_widgets[0].observe(self._update_variable_selector, "value")
             elif i <= len(self.filter_widgets):
                 modules = [item.value for item in self.filter_widgets[0:i]]
                 modules_item = sorted(self._find_submodules(self.dataframe, modules))
@@ -220,8 +224,8 @@ class VariableViewer:
                         if len(modules_item) > 1:
                             modules_item.insert(0, self.all_tag)
                         widget = widgets.Dropdown(options=modules_item)
-                        widget.observe(self._update_items, 'value')
-                        widget.observe(self._update_variable_selector, 'value')
+                        widget.observe(self._update_items, "value")
+                        widget.observe(self._update_variable_selector, "value")
                         self.filter_widgets.append(widget)
                     else:
                         if (self.all_tag not in modules_item) and (len(modules_item) > 1):
@@ -240,8 +244,7 @@ class VariableViewer:
         actual filter_widgets stored.
         """
         items_box = widgets.HBox(self.filter_widgets)
-        items_box = widgets.VBox([widgets.Label(value='Variable name'),
-                                  items_box])
+        items_box = widgets.VBox([widgets.Label(value="Variable name"), items_box])
         self.variable_selector = items_box
 
     def _create_save_load_buttons(self):
@@ -251,11 +254,11 @@ class VariableViewer:
         """
 
         save_button = widgets.Button(
-            description='Save',
+            description="Save",
             disabled=False,
-            button_style='',  # 'success', 'info', 'warning', 'danger' or ''
-            tooltip='Save to the file',
-            icon='save'
+            button_style="",  # 'success', 'info', 'warning', 'danger' or ''
+            tooltip="Save to the file",
+            icon="save",
         )
 
         def on_save_button_clicked(b):
@@ -264,11 +267,11 @@ class VariableViewer:
         save_button.on_click(on_save_button_clicked)
 
         load_button = widgets.Button(
-            description='Load',
+            description="Load",
             disabled=False,
-            button_style='',  # 'success', 'info', 'warning', 'danger' or ''
-            tooltip='Load the file',
-            icon='upload'
+            button_style="",  # 'success', 'info', 'warning', 'danger' or ''
+            tooltip="Load the file",
+            icon="upload",
         )
 
         def on_load_button_clicked(b):
@@ -293,7 +296,7 @@ class VariableViewer:
         self.sheet = self.df_to_sheet(filtered_var)
 
         for cell in self.sheet.cells:
-            cell.observe(self._update_df, 'value')
+            cell.observe(self._update_df, "value")
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _render_ui(self, change=None) -> display:
@@ -308,11 +311,9 @@ class VariableViewer:
         self._update_variable_selector()
         self._update_sheet()
         for item in self.filter_widgets:
-            item.observe(self._render_ui, 'value')
-        self.sheet.layout.height = '400px'
-        ui = widgets.VBox([self.save_load_buttons,
-                           self.variable_selector,
-                           self.sheet])
+            item.observe(self._render_ui, "value")
+        self.sheet.layout.height = "400px"
+        ui = widgets.VBox([self.save_load_buttons, self.variable_selector, self.sheet])
         return display(ui)
 
     @staticmethod
@@ -328,26 +329,26 @@ class VariableViewer:
         :param modules: the list of modules to which the variables belong
         :return the submodules list
         """
-        var_names = df.filter(items=['Name'])
+        var_names = df.filter(items=["Name"])
 
         if not modules:
             modules = []
 
         def get_next_module(path):
-            submodules = path.split(':')
-            if len(modules) >= len(submodules) or submodules[:len(modules)] != modules:
-                return ''
+            submodules = path.split(":")
+            if len(modules) >= len(submodules) or submodules[: len(modules)] != modules:
+                return ""
             else:
                 return submodules[len(modules)]
 
         submodules = var_names.applymap(get_next_module)
-        submodules = submodules[submodules.Name != '']
+        submodules = submodules[submodules.Name != ""]
 
-        return set(submodules['Name'].tolist())
+        return set(submodules["Name"].tolist())
 
-    def _filter_variables(self, df: pd.DataFrame,
-                          modules: List[str],
-                          var_type: str = None) -> pd.DataFrame:
+    def _filter_variables(
+        self, df: pd.DataFrame, modules: List[str], var_type: str = None
+    ) -> pd.DataFrame:
         """
         Returns a filtered dataframe with respect to a set of modules and variable type.
 
@@ -361,24 +362,24 @@ class VariableViewer:
         """
         if var_type is None:
             var_type = self.all_tag
-        path = ''
+        path = ""
         for _ in modules:
             if modules[-1] == self.all_tag:
-                path = ':'.join(modules[:-1])
+                path = ":".join(modules[:-1])
             else:
-                path = ':'.join(modules)
+                path = ":".join(modules)
 
-        var_names = df['Name'].unique().tolist()
+        var_names = df["Name"].unique().tolist()
 
         filtered_df = pd.DataFrame()
 
         for var_name in var_names:
             if path in var_name:
                 if var_type == self.all_tag:
-                    element = df[df['Name'] == var_name]
+                    element = df[df["Name"] == var_name]
                     filtered_df = filtered_df.append(element)
                 else:
-                    element = df[(df['Name'] == var_name) & (df['Type'] == var_type)]
+                    element = df[(df["Name"] == var_name) & (df["Type"] == var_type)]
                     filtered_df = filtered_df.append(element)
 
         return filtered_df

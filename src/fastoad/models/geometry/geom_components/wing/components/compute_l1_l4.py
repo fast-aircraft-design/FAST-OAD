@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,36 +25,40 @@ class ComputeL1AndL4Wing(ExplicitComponent):
     """ Wing chords (l1 and l4) estimation """
 
     def setup(self):
-        self.add_input('data:geometry:wing:area', val=np.nan, units='m**2')
-        self.add_input('data:geometry:wing:root:y', val=np.nan, units='m')
-        self.add_input('data:geometry:wing:kink:y', val=np.nan, units='m')
-        self.add_input('data:geometry:wing:span', val=np.nan, units='m')
-        self.add_input('data:geometry:fuselage:maximum_width', val=np.nan, units='m')
-        self.add_input('data:geometry:wing:taper_ratio', val=np.nan)
-        self.add_input('data:geometry:wing:sweep_25', val=np.nan, units='deg')
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:span", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
 
-        self.add_output('data:geometry:wing:root:virtual_chord', units='m')
-        self.add_output('data:geometry:wing:tip:chord', units='m')
+        self.add_output("data:geometry:wing:root:virtual_chord", units="m")
+        self.add_output("data:geometry:wing:tip:chord", units="m")
 
-        self.declare_partials('data:geometry:wing:root:virtual_chord', '*', method='fd')
-        self.declare_partials('data:geometry:wing:tip:chord', '*', method='fd')
+        self.declare_partials("data:geometry:wing:root:virtual_chord", "*", method="fd")
+        self.declare_partials("data:geometry:wing:tip:chord", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        wing_area = inputs['data:geometry:wing:area']
-        span = inputs['data:geometry:wing:span']
-        y2_wing = inputs['data:geometry:wing:root:y']
-        y3_wing = inputs['data:geometry:wing:kink:y']
-        sweep_25 = inputs['data:geometry:wing:sweep_25']
-        width_max = inputs['data:geometry:fuselage:maximum_width']
-        taper_ratio = inputs['data:geometry:wing:taper_ratio']
+        wing_area = inputs["data:geometry:wing:area"]
+        span = inputs["data:geometry:wing:span"]
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        y3_wing = inputs["data:geometry:wing:kink:y"]
+        sweep_25 = inputs["data:geometry:wing:sweep_25"]
+        width_max = inputs["data:geometry:fuselage:maximum_width"]
+        taper_ratio = inputs["data:geometry:wing:taper_ratio"]
 
-        l1_wing = (wing_area - (y3_wing - y2_wing) * (y3_wing + y2_wing) *
-                   math.tan(sweep_25 / 180. * math.pi)) / \
-                  ((1. + taper_ratio) / 2. * (span - width_max) + width_max - \
-                   (3. * (1. - taper_ratio) * (y3_wing - y2_wing) * (y3_wing + y2_wing))
-                   / (2. * (span - width_max)))
+        l1_wing = (
+            wing_area
+            - (y3_wing - y2_wing) * (y3_wing + y2_wing) * math.tan(sweep_25 / 180.0 * math.pi)
+        ) / (
+            (1.0 + taper_ratio) / 2.0 * (span - width_max)
+            + width_max
+            - (3.0 * (1.0 - taper_ratio) * (y3_wing - y2_wing) * (y3_wing + y2_wing))
+            / (2.0 * (span - width_max))
+        )
 
         l4_wing = l1_wing * taper_ratio
 
-        outputs['data:geometry:wing:root:virtual_chord'] = l1_wing
-        outputs['data:geometry:wing:tip:chord'] = l4_wing
+        outputs["data:geometry:wing:root:virtual_chord"] = l1_wing
+        outputs["data:geometry:wing:tip:chord"] = l4_wing

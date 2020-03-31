@@ -3,7 +3,7 @@
     Sellar discipline 1
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,9 +23,9 @@ class Disc1Base(ExplicitComponent):
     """ An OpenMDAO base component to encapsulate Disc1 discipline """
 
     def setup(self):
-        self.add_input('x', val=np.nan, desc='')  # NaN as default for testing connexion check
-        self.add_input('z', val=[5, 2], desc='', units='m**2')  # for testing non-None units
-        self.add_input('y2', val=1.0, desc='')
+        self.add_input("x", val=np.nan, desc="")  # NaN as default for testing connexion check
+        self.add_input("z", val=[5, 2], desc="", units="m**2")  # for testing non-None units
+        self.add_input("y2", val=1.0, desc="")
 
-        self.add_output('y1', val=1.0, desc='')
-        self.declare_partials('*', '*', method='fd')
+        self.add_output("y1", val=1.0, desc="")
+        self.declare_partials("*", "*", method="fd")

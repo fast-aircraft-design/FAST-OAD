@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -26,23 +26,35 @@ class ComputeHTClalpha(ExplicitComponent):
     """ Horizontal tail lift coefficient estimation """
 
     def setup(self):
-        self.add_input('data:geometry:horizontal_tail:aspect_ratio', val=np.nan)
-        self.add_input('data:TLAR:cruise_mach', val=np.nan)
-        self.add_input('data:geometry:horizontal_tail:sweep_25', val=np.nan, units='deg')
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:TLAR:cruise_mach", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
 
-        self.add_output('data:aerodynamics:horizontal_tail:cruise:CL_alpha')
+        self.add_output("data:aerodynamics:horizontal_tail:cruise:CL_alpha")
 
-        self.declare_partials('data:aerodynamics:horizontal_tail:cruise:CL_alpha', '*', method='fd')
+        self.declare_partials("data:aerodynamics:horizontal_tail:cruise:CL_alpha", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        cruise_mach = inputs['data:TLAR:cruise_mach']
-        lambda_ht = inputs['data:geometry:horizontal_tail:aspect_ratio']
-        sweep_25_ht = inputs['data:geometry:horizontal_tail:sweep_25']
+        cruise_mach = inputs["data:TLAR:cruise_mach"]
+        lambda_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
 
         beta = math.sqrt(1 - cruise_mach ** 2)
-        cl_alpha_ht = 0.8 * 2 * math.pi * lambda_ht / \
-                      (2 + math.sqrt(4 + lambda_ht ** 2 * beta ** 2 / 0.95 **
-                                     2 * (1 + (
-                          math.tan(sweep_25_ht / 180. * math.pi)) ** 2 / beta ** 2)))
+        cl_alpha_ht = (
+            0.8
+            * 2
+            * math.pi
+            * lambda_ht
+            / (
+                2
+                + math.sqrt(
+                    4
+                    + lambda_ht ** 2
+                    * beta ** 2
+                    / 0.95 ** 2
+                    * (1 + (math.tan(sweep_25_ht / 180.0 * math.pi)) ** 2 / beta ** 2)
+                )
+            )
+        )
 
-        outputs['data:aerodynamics:horizontal_tail:cruise:CL_alpha'] = cl_alpha_ht
+        outputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"] = cl_alpha_ht

@@ -3,7 +3,7 @@
     Sellar discipline 2
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,16 +21,15 @@ class Disc2(Disc2Base):
     """ An OpenMDAO component to encapsulate Disc2 discipline """
 
     # pylint: disable=invalid-name
-    def compute(self, inputs, outputs
-                , discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
         Evaluates the equation
         y2 = y1**(.5) + z1 + z2
         """
 
-        z1 = inputs['z'][0]
-        z2 = inputs['z'][1]
-        y1 = inputs['y1']
+        z1 = inputs["z"][0]
+        z2 = inputs["z"][1]
+        y1 = inputs["y1"]
 
         # Note: this may cause some issues. However, y1 is constrained to be
         # above 3.16, so lets just let it converge, and the optimizer will
@@ -38,4 +37,4 @@ class Disc2(Disc2Base):
         if y1.real < 0.0:
             y1 *= -1
 
-        outputs['y2'] = y1 ** .5 + z1 + z2
+        outputs["y2"] = y1 ** 0.5 + z1 + z2

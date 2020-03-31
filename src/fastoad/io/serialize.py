@@ -2,7 +2,7 @@
 Defines interfaces for reading and writing OpenMDAO variable values
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,11 +19,10 @@ from fnmatch import fnmatchcase
 from typing import TypeVar, IO, List, Sequence
 
 import openmdao.api as om
-
 from fastoad.openmdao.connections_utils import get_ivc_from_variables, get_variables_from_ivc
 from fastoad.openmdao.variables import VariableList
 
-OMFileIOSubclass = TypeVar('OMFileIOSubclass', bound='AbstractOMFileIO')
+OMFileIOSubclass = TypeVar("OMFileIOSubclass", bound="AbstractOMFileIO")
 
 
 class AbstractOMFileIO(ABC):
@@ -88,8 +87,9 @@ class AbstractOMFileIO(ABC):
        """
 
     @staticmethod
-    def _filter_variables(variables: VariableList, only: Sequence[str] = None,
-                          ignore: Sequence[str] = None) -> VariableList:
+    def _filter_variables(
+        variables: VariableList, only: Sequence[str] = None, ignore: Sequence[str] = None
+    ) -> VariableList:
         """
         filters the variables such that the ones in arg only are kept and the ones in
         arg ignore are removed.
@@ -116,14 +116,14 @@ class AbstractOMFileIO(ABC):
             used_var_names = set()
             for pattern in only:
                 used_var_names.update(
-                    [variable.name for variable in variables if
-                     fnmatchcase(variable.name, pattern)])
+                    [variable.name for variable in variables if fnmatchcase(variable.name, pattern)]
+                )
 
         if ignore is not None:
             for pattern in ignore:
                 used_var_names.difference_update(
-                    [variable.name for variable in variables if
-                     fnmatchcase(variable.name, pattern)])
+                    [variable.name for variable in variables if fnmatchcase(variable.name, pattern)]
+                )
 
         # It could be simpler, but I want to keep the order
         used_variables = VariableList()

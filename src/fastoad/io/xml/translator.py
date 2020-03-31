@@ -3,7 +3,7 @@ Conversion from OpenMDAO variables to XPath
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,9 +17,12 @@ Conversion from OpenMDAO variables to XPath
 from typing import Sequence, Union, IO, Set
 
 import numpy as np
-
-from fastoad.io.xml.exceptions import FastXpathTranslatorInconsistentLists, \
-    FastXpathTranslatorDuplicates, FastXpathTranslatorVariableError, FastXpathTranslatorXPathError
+from fastoad.io.xml.exceptions import (
+    FastXpathTranslatorInconsistentLists,
+    FastXpathTranslatorDuplicates,
+    FastXpathTranslatorVariableError,
+    FastXpathTranslatorXPathError,
+)
 
 
 class VarXpathTranslator:
@@ -31,8 +34,13 @@ class VarXpathTranslator:
      - translation file (see :meth:`read_translation_table`)
     """
 
-    def __init__(self, *, variable_names: Sequence[str] = None, xpaths: Sequence[str] = None,
-                 source: Union[str, IO] = None):
+    def __init__(
+        self,
+        *,
+        variable_names: Sequence[str] = None,
+        xpaths: Sequence[str] = None,
+        source: Union[str, IO] = None
+    ):
         if variable_names is not None and xpaths is not None:
             self.set(variable_names, xpaths)
 
@@ -49,23 +57,23 @@ class VarXpathTranslator:
         """
         if len(variable_names) != len(xpaths):
             raise FastXpathTranslatorInconsistentLists(
-                'lists var_names and xpaths have not the same length (%i and %i)' %
-                (len(variable_names), len(xpaths)))
+                "lists var_names and xpaths have not the same length (%i and %i)"
+                % (len(variable_names), len(xpaths))
+            )
 
         # check duplicate variable names
         dupe_vars = self._get_duplicates(variable_names)
         if dupe_vars:
             raise FastXpathTranslatorDuplicates(
-                'Following variable names are provided more than once: %s' % dupe_vars,
-                dupe_vars
+                "Following variable names are provided more than once: %s" % dupe_vars, dupe_vars
             )
 
         # check duplicate XPaths
         dupe_xpaths = self._get_duplicates(xpaths)
         if dupe_xpaths:
             raise FastXpathTranslatorDuplicates(
-                'Following variable names are provided more than once: %s' % dupe_xpaths,
-                dupe_xpaths
+                "Following variable names are provided more than once: %s" % dupe_xpaths,
+                dupe_xpaths,
             )
 
         self._variable_names = list(variable_names)
@@ -81,7 +89,7 @@ class VarXpathTranslator:
         :param source:
         """
 
-        arr = np.genfromtxt(source, dtype=str, delimiter=',', autostrip=True)
+        arr = np.genfromtxt(source, dtype=str, delimiter=",", autostrip=True)
         self.set(arr[:, 0], arr[:, 1])
 
     @property
