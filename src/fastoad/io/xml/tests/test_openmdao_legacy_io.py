@@ -2,7 +2,7 @@
 Test module for openmdao_legacy_io.py
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,28 +18,29 @@ import os.path as pth
 from shutil import rmtree
 
 import pytest
+from fastoad.openmdao.connections_utils import get_variables_from_ivc
 from numpy.testing import assert_allclose
 
-from fastoad.openmdao.connections_utils import get_variables_from_ivc
 from .. import OMXmlIO
 from ..openmdao_legacy_io import OMLegacy1XmlIO
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
-                               'results', pth.splitext(pth.basename(__file__))[0])
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+RESULTS_FOLDER_PATH = pth.join(
+    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
+)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 def test_legacy1(cleanup):
     """ Tests class OMLegacy1XmlIO """
-    result_folder = pth.join(RESULTS_FOLDER_PATH, 'legacy1_xml')
+    result_folder = pth.join(RESULTS_FOLDER_PATH, "legacy1_xml")
 
     # test read ---------------------------------------------------------------
-    filename = pth.join(DATA_FOLDER_PATH, 'CeRAS01_baseline.xml')
+    filename = pth.join(DATA_FOLDER_PATH, "CeRAS01_baseline.xml")
 
     xml_read = OMLegacy1XmlIO(filename)
     ivc = xml_read.read()
@@ -52,15 +53,15 @@ def test_legacy1(cleanup):
     assert entry_count > 400
 
     # Check some random fields
-    assert_allclose(var_list['data:geometry:wing:MAC:x'].value, 16.457)
-    assert var_list['data:geometry:wing:MAC:x'].units == 'm'
-    assert_allclose(var_list['data:TLAR:NPAX'].value, 150)
-    assert var_list['data:TLAR:NPAX'].units is None
-    assert_allclose(var_list['data:geometry:wing:wetted_area'].value, 200.607)
-    assert var_list['data:geometry:wing:wetted_area'].units == 'm**2'
+    assert_allclose(var_list["data:geometry:wing:MAC:x"].value, 16.457)
+    assert var_list["data:geometry:wing:MAC:x"].units == "m"
+    assert_allclose(var_list["data:TLAR:NPAX"].value, 150)
+    assert var_list["data:TLAR:NPAX"].units is None
+    assert_allclose(var_list["data:geometry:wing:wetted_area"].value, 200.607)
+    assert var_list["data:geometry:wing:wetted_area"].units == "m**2"
 
     # test write ---------------------------------------------------------------
-    new_filename = pth.join(result_folder, 'CeRAS01_baseline.xml')
+    new_filename = pth.join(result_folder, "CeRAS01_baseline.xml")
     xml_write = OMLegacy1XmlIO(new_filename)
     xml_write.write(ivc)
 

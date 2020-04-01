@@ -3,7 +3,7 @@
   Sellar functions
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -27,11 +27,11 @@ class Functions(FunctionsBase):
     def compute(self, inputs, outputs):
         """ Functions computation """
 
-        z2 = inputs['z'][1]
-        x1 = inputs['x']
-        y1 = inputs['y1']
-        y2 = inputs['y2']
+        z2 = inputs["z"][1]
+        x1 = inputs["x"]
+        y1 = inputs["y1"]
+        y2 = inputs["y2"]
 
-        outputs['f'] = x1 ** 2 + z2 + y1 + exp(-y2)
-        outputs['g1'] = 3.16 - y1
-        outputs['g2'] = y2 - 24.0
+        outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2)
+        outputs["g1"] = 3.16 - y1
+        outputs["g2"] = y2 - 24.0

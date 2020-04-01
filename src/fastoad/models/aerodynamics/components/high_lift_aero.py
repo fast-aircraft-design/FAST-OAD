@@ -2,7 +2,7 @@
 Computation of lift and drag increment due to high-lift devices
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,7 +21,7 @@ from scipy import interpolate
 
 from . import resources
 
-LIFT_EFFECTIVENESS_FILENAME = 'interpolation of lift effectiveness.txt'
+LIFT_EFFECTIVENESS_FILENAME = "interpolation of lift effectiveness.txt"
 
 
 class ComputeDeltaHighLift(om.ExplicitComponent):
@@ -30,49 +30,49 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
     """
 
     def initialize(self):
-        self.options.declare('landing_flag', default=False, types=bool)
+        self.options.declare("landing_flag", default=False, types=bool)
 
     def setup(self):
 
-        if self.options['landing_flag']:
-            self.add_input('data:mission:sizing:landing:flap_angle', val=np.nan, units='deg')
-            self.add_input('data:mission:sizing:landing:slat_angle', val=np.nan, units='deg')
-            self.add_output('data:aerodynamics:high_lift_devices:landing:CL')
+        if self.options["landing_flag"]:
+            self.add_input("data:mission:sizing:landing:flap_angle", val=np.nan, units="deg")
+            self.add_input("data:mission:sizing:landing:slat_angle", val=np.nan, units="deg")
+            self.add_output("data:aerodynamics:high_lift_devices:landing:CL")
         else:
-            self.add_input('data:mission:sizing:takeoff:flap_angle', val=np.nan, units='deg')
-            self.add_input('data:mission:sizing:takeoff:slat_angle', val=np.nan, units='deg')
-            self.add_output('delta_cl_takeoff')
-            self.add_output('delta_cd_takeoff')
+            self.add_input("data:mission:sizing:takeoff:flap_angle", val=np.nan, units="deg")
+            self.add_input("data:mission:sizing:takeoff:slat_angle", val=np.nan, units="deg")
+            self.add_output("delta_cl_takeoff")
+            self.add_output("delta_cd_takeoff")
 
-        self.add_input('data:geometry:wing:sweep_0', val=np.nan, units='rad')
-        self.add_input('data:geometry:wing:sweep_100_outer', val=np.nan, units='rad')
-        self.add_input('data:geometry:flap:chord_ratio', val=np.nan)
-        self.add_input('data:geometry:flap:span_ratio', val=np.nan)
-        self.add_input('data:geometry:slat:chord_ratio', val=np.nan)
-        self.add_input('data:geometry:slat:span_ratio', val=np.nan)
-        self.add_input('data:aerodynamics:aircraft:landing:mach', val=np.nan)
+        self.add_input("data:geometry:wing:sweep_0", val=np.nan, units="rad")
+        self.add_input("data:geometry:wing:sweep_100_outer", val=np.nan, units="rad")
+        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:flap:span_ratio", val=np.nan)
+        self.add_input("data:geometry:slat:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:slat:span_ratio", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:mach", val=np.nan)
 
-        self.declare_partials('*', '*', method='fd')
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        if self.options['landing_flag']:
-            flap_angle = inputs['data:mission:sizing:landing:flap_angle']
-            slat_angle = inputs['data:mission:sizing:landing:slat_angle']
+        if self.options["landing_flag"]:
+            flap_angle = inputs["data:mission:sizing:landing:flap_angle"]
+            slat_angle = inputs["data:mission:sizing:landing:slat_angle"]
         else:
-            flap_angle = inputs['data:mission:sizing:takeoff:flap_angle']
-            slat_angle = inputs['data:mission:sizing:takeoff:slat_angle']
+            flap_angle = inputs["data:mission:sizing:takeoff:flap_angle"]
+            slat_angle = inputs["data:mission:sizing:takeoff:slat_angle"]
 
-        mach = inputs['data:aerodynamics:aircraft:landing:mach']
-        le_sweep_angle = inputs['data:geometry:wing:sweep_0']
-        te_sweep_angle = inputs['data:geometry:wing:sweep_100_outer']
-        flap_chord_ratio = inputs['data:geometry:flap:chord_ratio']
-        flap_span_ratio = inputs['data:geometry:flap:span_ratio']
-        slat_chord_ratio = inputs['data:geometry:slat:chord_ratio']
-        slat_span_ratio = inputs['data:geometry:slat:span_ratio']
+        mach = inputs["data:aerodynamics:aircraft:landing:mach"]
+        le_sweep_angle = inputs["data:geometry:wing:sweep_0"]
+        te_sweep_angle = inputs["data:geometry:wing:sweep_100_outer"]
+        flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
+        flap_span_ratio = inputs["data:geometry:flap:span_ratio"]
+        slat_chord_ratio = inputs["data:geometry:slat:chord_ratio"]
+        slat_span_ratio = inputs["data:geometry:slat:span_ratio"]
 
-        if self.options['landing_flag']:
-            outputs['data:aerodynamics:high_lift_devices:landing:CL'] = self._get_delta_cl(
+        if self.options["landing_flag"]:
+            outputs["data:aerodynamics:high_lift_devices:landing:CL"] = self._get_delta_cl(
                 slat_angle,
                 flap_angle,
                 slat_span_ratio,
@@ -81,26 +81,36 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
                 flap_chord_ratio,
                 mach,
                 le_sweep_angle,
-                te_sweep_angle)
+                te_sweep_angle,
+            )
         else:
-            outputs['delta_cl_takeoff'] = self._get_delta_cl(slat_angle, flap_angle,
-                                                             slat_span_ratio, flap_span_ratio,
-                                                             slat_chord_ratio, flap_chord_ratio,
-                                                             mach, le_sweep_angle, te_sweep_angle)
-            outputs['delta_cd_takeoff'] = self._get_delta_cd(slat_angle, flap_angle,
-                                                             slat_span_ratio, flap_span_ratio)
+            outputs["delta_cl_takeoff"] = self._get_delta_cl(
+                slat_angle,
+                flap_angle,
+                slat_span_ratio,
+                flap_span_ratio,
+                slat_chord_ratio,
+                flap_chord_ratio,
+                mach,
+                le_sweep_angle,
+                te_sweep_angle,
+            )
+            outputs["delta_cd_takeoff"] = self._get_delta_cd(
+                slat_angle, flap_angle, slat_span_ratio, flap_span_ratio
+            )
 
-    def _get_delta_cl(self,
-                      slat_angle,
-                      flap_angle,
-                      slat_span_ratio,
-                      flap_span_ratio,
-                      slat_chord_ratio,
-                      flap_chord_ratio,
-                      mach,
-                      le_sweep_angle,
-                      te_sweep_angle
-                      ):
+    def _get_delta_cl(
+        self,
+        slat_angle,
+        flap_angle,
+        slat_span_ratio,
+        flap_span_ratio,
+        slat_chord_ratio,
+        flap_chord_ratio,
+        mach,
+        le_sweep_angle,
+        te_sweep_angle,
+    ):
         """
         Method based on Roskam book and Raymer book
 
@@ -120,31 +130,41 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         slat_angle = np.radians(slat_angle)
 
         #  ratio of chord with flap extended compared to clean chord
-        ratio_c_flap = (1. + flap_chord_ratio * np.cos(flap_angle))
+        ratio_c_flap = 1.0 + flap_chord_ratio * np.cos(flap_angle)
 
         alpha_flap = self._compute_alpha_flap(flap_angle * 57.3, flap_chord_ratio)
 
         # cl created by the flap in 2D
-        delta_cl_flap = 2. * np.pi / np.sqrt(1 - mach ** 2) * ratio_c_flap * alpha_flap * flap_angle
+        delta_cl_flap = (
+            2.0 * np.pi / np.sqrt(1 - mach ** 2) * ratio_c_flap * alpha_flap * flap_angle
+        )
 
         # ratio of chord with slat extended compared to clean chord
-        ratio_c_slat = (1. + slat_chord_ratio * np.cos(slat_angle))
+        ratio_c_slat = 1.0 + slat_chord_ratio * np.cos(slat_angle)
 
         # leading edge slat effectiveness
-        cl_delta = 5.05503E-7 + 0.00666 * slat_chord_ratio + 0.23758 * \
-                   slat_chord_ratio ** 2 - 4.3639 * slat_chord_ratio ** 3 + \
-                   51.16323 * slat_chord_ratio ** 4 - 320.10803 * \
-                   slat_chord_ratio ** 5 + 1142.23033 * slat_chord_ratio ** 6 - \
-                   2340.75209 * slat_chord_ratio ** 7 + 2570.35947 * \
-                   slat_chord_ratio ** 8 - 1173.73465 * slat_chord_ratio ** 9
+        cl_delta = (
+            5.05503e-7
+            + 0.00666 * slat_chord_ratio
+            + 0.23758 * slat_chord_ratio ** 2
+            - 4.3639 * slat_chord_ratio ** 3
+            + 51.16323 * slat_chord_ratio ** 4
+            - 320.10803 * slat_chord_ratio ** 5
+            + 1142.23033 * slat_chord_ratio ** 6
+            - 2340.75209 * slat_chord_ratio ** 7
+            + 2570.35947 * slat_chord_ratio ** 8
+            - 1173.73465 * slat_chord_ratio ** 9
+        )
 
         #  cl created by the slat in 2D
         delta_cl_slat = cl_delta * slat_angle * 57.3 * ratio_c_slat
 
         #  cl due to flap and slat including 3D
-        delta_cl_total = delta_cl_flap * flap_span_ratio * \
-                         np.cos(te_sweep_angle) + delta_cl_slat * slat_span_ratio * \
-                         np.cos(le_sweep_angle)  # this equation is from ref Raymer book
+        delta_cl_total = delta_cl_flap * flap_span_ratio * np.cos(
+            te_sweep_angle
+        ) + delta_cl_slat * slat_span_ratio * np.cos(
+            le_sweep_angle
+        )  # this equation is from ref Raymer book
 
         return delta_cl_total
 
@@ -158,15 +178,32 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         :return: increment of drag coefficient
         """
 
-        cd0_slat = (-0.00266 + 0.06065 * slat_angle - 0.03023 * slat_angle ** 2 +
-                    0.01055 * slat_angle ** 3 - 0.00176 * slat_angle ** 4 +
-                    1.77986E-4 * slat_angle ** 5 - 1.11754E-5 * slat_angle ** 6 +
-                    4.19082E-7 * slat_angle ** 7 - 8.53492E-9 * slat_angle ** 8 +
-                    7.24194E-11 * slat_angle ** 9) * \
-                   slat_span_ratio / 100
-        cd0_flap = (-0.01523 + 0.05145 * flap_angle - 9.53201E-4 * flap_angle ** 2 +
-                    7.5972E-5 * flap_angle ** 3) * \
-                   flap_span_ratio / 100
+        cd0_slat = (
+            (
+                -0.00266
+                + 0.06065 * slat_angle
+                - 0.03023 * slat_angle ** 2
+                + 0.01055 * slat_angle ** 3
+                - 0.00176 * slat_angle ** 4
+                + 1.77986e-4 * slat_angle ** 5
+                - 1.11754e-5 * slat_angle ** 6
+                + 4.19082e-7 * slat_angle ** 7
+                - 8.53492e-9 * slat_angle ** 8
+                + 7.24194e-11 * slat_angle ** 9
+            )
+            * slat_span_ratio
+            / 100
+        )
+        cd0_flap = (
+            (
+                -0.01523
+                + 0.05145 * flap_angle
+                - 9.53201e-4 * flap_angle ** 2
+                + 7.5972e-5 * flap_angle ** 3
+            )
+            * flap_span_ratio
+            / 100
+        )
         total_cd0 = cd0_flap + cd0_slat
 
         return total_cd0
@@ -175,7 +212,7 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         temp_array = []
         with open_text(resources, LIFT_EFFECTIVENESS_FILENAME) as fichier:
             for line in fichier:
-                temp_array.append([float(x) for x in line.split(',')])
+                temp_array.append([float(x) for x in line.split(",")])
         x1 = []
         y1 = []
         x2 = []

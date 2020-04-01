@@ -2,7 +2,7 @@
 Basic "Hello World" services using iPOPO decorators
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,30 +19,29 @@ Basic "Hello World" services using iPOPO decorators
 # pylint: disable=no-self-use
 # pylint: disable=too-few-public-methods
 
-from pelix.ipopo.decorators import ComponentFactory, Provides, Instantiate, \
-    Property
+from pelix.ipopo.decorators import ComponentFactory, Provides, Instantiate, Property
 
 # Define the component factory, with a given name
 
 
 # First, let's register 2 factories the iPOPO way
-@ComponentFactory('hello-world-factory')
-@Provides('hello.world')
-@Property('_Prop1', 'Prop1', 1)
-@Property('_Prop_2', 'Prop 2', 'Says.Hello')
-@Property('Instantiated', None, True)
-@Instantiate('provider')
+@ComponentFactory("hello-world-factory")
+@Provides("hello.world")
+@Property("_Prop1", "Prop1", 1)
+@Property("_Prop_2", "Prop 2", "Says.Hello")
+@Property("Instantiated", None, True)
+@Instantiate("provider")
 class Greetings1:
-    def hello(self, name='World'):
-        return 'Hello, {0}!'.format(name)
+    def hello(self, name="World"):
+        return "Hello, {0}!".format(name)
 
 
-@ComponentFactory('hello-world-factory2')
-@Provides('hello.world')
-@Property('_Prop1', 'Prop1', 2)
-@Property('_Prop_2', 'Prop 2', 'Says.Hi')
-@Property('Instantiated', None, True)
-@Instantiate('provider2')
+@ComponentFactory("hello-world-factory2")
+@Provides("hello.world")
+@Property("_Prop1", "Prop1", 2)
+@Property("_Prop_2", "Prop 2", "Says.Hi")
+@Property("Instantiated", None, True)
+@Instantiate("provider2")
 class Greetings2:
-    def hello(self, name='World'):
-        return 'Hi, {0}!'.format(name)
+    def hello(self, name="World"):
+        return "Hi, {0}!".format(name)

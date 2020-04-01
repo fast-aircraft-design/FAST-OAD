@@ -3,7 +3,7 @@ Main component for mass breakdown
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,17 +25,17 @@ class UpdateMLWandMZFW(ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input('data:weight:aircraft:OWE', val=np.nan, units='kg')
-        self.add_input('data:weight:aircraft:max_payload', val=np.nan, units='kg')
+        self.add_input("data:weight:aircraft:OWE", val=np.nan, units="kg")
+        self.add_input("data:weight:aircraft:max_payload", val=np.nan, units="kg")
 
-        self.add_output('data:weight:aircraft:MZFW', units='kg')
-        self.add_output('data:weight:aircraft:MLW', units='kg')
+        self.add_output("data:weight:aircraft:MZFW", units="kg")
+        self.add_output("data:weight:aircraft:MLW", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        owe = inputs['data:weight:aircraft:OWE'][0]
-        max_pl = inputs['data:weight:aircraft:max_payload'][0]
+        owe = inputs["data:weight:aircraft:OWE"][0]
+        max_pl = inputs["data:weight:aircraft:max_payload"][0]
         mzfw = owe + max_pl
         mlw = 1.06 * mzfw
 
-        outputs['data:weight:aircraft:MZFW'] = mzfw
-        outputs['data:weight:aircraft:MLW'] = mlw
+        outputs["data:weight:aircraft:MZFW"] = mzfw
+        outputs["data:weight:aircraft:MLW"] = mlw

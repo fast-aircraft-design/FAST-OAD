@@ -3,7 +3,7 @@ Estimation of engine weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,19 +23,18 @@ class EngineWeight(ExplicitComponent):
     """ Engine weight estimation (B1) """
 
     def setup(self):
-        self.add_input('data:propulsion:MTO_thrust', val=np.nan, units='N')
-        self.add_input('data:geometry:propulsion:engine:count', val=np.nan)
-        self.add_input('tuning:weight:propulsion:engine:mass:k', val=1.)
-        self.add_input('tuning:weight:propulsion:engine:mass:offset', val=0., units='kg')
+        self.add_input("data:propulsion:MTO_thrust", val=np.nan, units="N")
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("tuning:weight:propulsion:engine:mass:k", val=1.0)
+        self.add_input("tuning:weight:propulsion:engine:mass:offset", val=0.0, units="kg")
 
-        self.add_output('data:weight:propulsion:engine:mass', units='kg')
+        self.add_output("data:weight:propulsion:engine:mass", units="kg")
 
-    def compute(self, inputs, outputs
-                , discrete_inputs=None, discrete_outputs=None):
-        sea_level_thrust = inputs['data:propulsion:MTO_thrust']
-        n_engines = inputs['data:geometry:propulsion:engine:count']
-        k_b1 = inputs['tuning:weight:propulsion:engine:mass:k']
-        offset_b1 = inputs['tuning:weight:propulsion:engine:mass:offset']
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        sea_level_thrust = inputs["data:propulsion:MTO_thrust"]
+        n_engines = inputs["data:geometry:propulsion:engine:count"]
+        k_b1 = inputs["tuning:weight:propulsion:engine:mass:k"]
+        offset_b1 = inputs["tuning:weight:propulsion:engine:mass:offset"]
 
         if sea_level_thrust < 80000:
             temp_b1 = 22.2e-3 * sea_level_thrust
@@ -43,4 +42,4 @@ class EngineWeight(ExplicitComponent):
             temp_b1 = 14.1e-3 * sea_level_thrust + 648
 
         temp_b1 *= n_engines * 1.55
-        outputs['data:weight:propulsion:engine:mass'] = k_b1 * temp_b1 + offset_b1
+        outputs["data:weight:propulsion:engine:mass"] = k_b1 * temp_b1 + offset_b1

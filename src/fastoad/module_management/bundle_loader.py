@@ -2,7 +2,7 @@
 Basis for registering and retrieving services
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -83,24 +83,23 @@ class BundleLoader:
         :raise ValueError: Invalid path
         """
 
-        _LOGGER.info('Loading bundles from %s', folder_path)
+        _LOGGER.info("Loading bundles from %s", folder_path)
 
         bundles, failed = self.context.install_package(folder_path, True)
 
         for bundle in bundles:
-            _LOGGER.info('Installed bundle %s (ID %s )'
-                         , bundle.get_symbolic_name(), bundle.get_bundle_id())
+            _LOGGER.info(
+                "Installed bundle %s (ID %s )", bundle.get_symbolic_name(), bundle.get_bundle_id()
+            )
             bundle.start()
         for _f in failed:
-            _LOGGER.warning('Failed to import module %s', _f)
+            _LOGGER.warning("Failed to import module %s", _f)
 
         return bundles, failed
 
-    def get_services(self
-                     , service_name: str
-                     , properties: dict = None
-                     , case_sensitive: bool = False) \
-            -> Optional[list]:
+    def get_services(
+        self, service_name: str, properties: dict = None, case_sensitive: bool = False
+    ) -> Optional[list]:
         """
         Returns the services that match *service_name* and provided
         *properties* (if provided).
@@ -111,18 +110,20 @@ class BundleLoader:
                                ignored
         :return: the list of service instances
         """
-        references = self._get_service_references(service_name, properties
-                                                  , case_sensitive)
+        references = self._get_service_references(service_name, properties, case_sensitive)
         services = None
         if references is not None:
             services = [self.context.get_service(ref) for ref in references]
 
         return services
 
-    def register_factory(self, component_class: type,
-                         factory_name: str,
-                         service_names: Union[List[str], str],
-                         properties: dict = None) -> type:
+    def register_factory(
+        self,
+        component_class: type,
+        factory_name: str,
+        service_names: Union[List[str], str],
+        properties: dict = None,
+    ) -> type:
         """
         Registers provided class as iPOPO component factory.
 
@@ -140,7 +141,7 @@ class BundleLoader:
 
         if properties:
             for key, value in properties.items():
-                obj = Property(field='_' + self._fieldify(key), name=key, value=value)(obj)
+                obj = Property(field="_" + self._fieldify(key), name=key, value=value)(obj)
 
         factory = ComponentFactory(factory_name)(obj)
 
@@ -149,9 +150,9 @@ class BundleLoader:
 
         return factory
 
-    def get_factory_names(self, service_name: str = None
-                          , properties: dict = None
-                          , case_sensitive: bool = False) -> List[str]:
+    def get_factory_names(
+        self, service_name: str = None, properties: dict = None, case_sensitive: bool = False
+    ) -> List[str]:
         """
         Browses the available factory names to find what factories provide `service_name` (if
         provided) and match provided `properties` (if provided).
@@ -173,13 +174,14 @@ class BundleLoader:
             for name in all_names:
                 details = ipopo.get_factory_details(name)
                 to_be_kept = True
-                if service_name and service_name not in details['services'][0]:
+                if service_name and service_name not in details["services"][0]:
                     to_be_kept = False
                 elif properties:
-                    factory_properties: dict = details['properties']
+                    factory_properties: dict = details["properties"]
                     if case_sensitive:
-                        to_be_kept = all(item in factory_properties.items()
-                                         for item in properties.items())
+                        to_be_kept = all(
+                            item in factory_properties.items() for item in properties.items()
+                        )
                     else:
                         for prop_name, prop_value in properties.items():
                             if prop_name not in factory_properties.keys():
@@ -205,7 +207,7 @@ class BundleLoader:
 
         with use_ipopo(self.context) as ipopo:
             details = ipopo.get_factory_details(factory_name)
-            bundle: Bundle = details['bundle']
+            bundle: Bundle = details["bundle"]
             return bundle.get_location()
 
     def get_factory_properties(self, factory_name: str) -> dict:
@@ -217,7 +219,7 @@ class BundleLoader:
 
         with use_ipopo(self.context) as ipopo:
             details = ipopo.get_factory_details(factory_name)
-            properties = details['properties']
+            properties = details["properties"]
             return properties
 
     def get_factory_property(self, factory_name: str, property_name: str) -> Any:
@@ -240,13 +242,11 @@ class BundleLoader:
         """
 
         try:
-            return getattr(instance, '_' + self._fieldify(property_name))
+            return getattr(instance, "_" + self._fieldify(property_name))
         except AttributeError:
             return None
 
-    def instantiate_component(self, factory_name: str,
-                              properties: dict = None
-                              ) -> Any:
+    def instantiate_component(self, factory_name: str, properties: dict = None) -> Any:
         """
         Instantiates a component from given factory
 
@@ -255,9 +255,9 @@ class BundleLoader:
         :return: the component instance
         """
         with use_ipopo(self.context) as ipopo:
-            return ipopo.instantiate(factory_name,
-                                     self._get_instance_name(factory_name),
-                                     properties)
+            return ipopo.instantiate(
+                factory_name, self._get_instance_name(factory_name), properties
+            )
 
     def _get_instance_name(self, base_name: str):
         """
@@ -270,18 +270,16 @@ class BundleLoader:
             instances = ipopo.get_instances()
             instance_names = [i[0] for i in instances]
             i = 0
-            name = '%s_%i' % (base_name, i)
+            name = "%s_%i" % (base_name, i)
             while name in instance_names:
                 i = i + 1
-                name = '%s_%i' % (base_name, i)
+                name = "%s_%i" % (base_name, i)
 
             return name
 
-    def _get_service_references(self
-                                , service_name: str
-                                , properties: dict = None
-                                , case_sensitive: bool = False) \
-            -> Optional[List[ServiceReference]]:
+    def _get_service_references(
+        self, service_name: str, properties: dict = None, case_sensitive: bool = False
+    ) -> Optional[List[ServiceReference]]:
         """
         Returns the service references that match *service_name* and
         provided *properties* (if provided)
@@ -296,20 +294,26 @@ class BundleLoader:
         # Dev Note: simple wrapper for BundleContext.get_all_service_references()
 
         if case_sensitive:
-            operator = '='
+            operator = "="
         else:
-            operator = '~='
+            operator = "~="
 
         if not properties:
             ldap_filter = None
         else:
-            ldap_filter = '(&' + ''.join(
-                ['({0}{1}{2})'.format(key, operator, value)
-                 for key, value in properties.items()]) + ')'
+            ldap_filter = (
+                "(&"
+                + "".join(
+                    [
+                        "({0}{1}{2})".format(key, operator, value)
+                        for key, value in properties.items()
+                    ]
+                )
+                + ")"
+            )
             _LOGGER.debug(ldap_filter)
 
-        references = self.context.get_all_service_references(service_name
-                                                             , ldap_filter)
+        references = self.context.get_all_service_references(service_name, ldap_filter)
         return references
 
     @staticmethod
@@ -321,4 +325,4 @@ class BundleLoader:
         :param name: the string to fieldify
         :return: the field version of `name`
         """
-        return re.compile(r'[\W_]+').sub('_', name).strip('_')
+        return re.compile(r"[\W_]+").sub("_", name).strip("_")

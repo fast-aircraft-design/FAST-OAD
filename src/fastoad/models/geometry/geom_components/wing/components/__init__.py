@@ -2,7 +2,7 @@
 Estimation of wing geometry (components)
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -24,5 +24,6 @@ from .compute_toc_wing import ComputeToCWing
 from .compute_wet_area_wing import ComputeWetAreaWing
 from .compute_x_wing import ComputeXWing
 from .compute_y_wing import ComputeYWing
+
 # TODO: Determine wether wing drawing shall be included or not
 # from .wing_drawing import WingDrawing

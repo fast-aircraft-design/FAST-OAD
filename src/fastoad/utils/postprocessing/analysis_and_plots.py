@@ -2,7 +2,7 @@
 Defines the analysis and plotting functions for postprocessing
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,11 +14,10 @@ Defines the analysis and plotting functions for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import plotly
-
+import plotly.graph_objects as go
 from fastoad.io.xml import OMXmlIO
+from plotly.subplots import make_subplots
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
@@ -49,8 +48,18 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     y = np.concatenate((-y, y))
 
     # pylint: disable=invalid-name # that's a common naming
-    x = np.array([0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
-                  wing_root_chord, wing_root_chord, wing_root_chord, 0])
+    x = np.array(
+        [
+            0,
+            0,
+            wing_tip_leading_edge_x,
+            wing_tip_leading_edge_x + wing_tip_chord,
+            wing_root_chord,
+            wing_root_chord,
+            wing_root_chord,
+            0,
+        ]
+    )
     # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x, x))
 
@@ -96,8 +105,18 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
 
     y_wing = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
 
-    x_wing = np.array([0, 0, wing_tip_leading_edge_x, wing_tip_leading_edge_x + wing_tip_chord,
-                       wing_root_chord, wing_root_chord, wing_root_chord, 0])
+    x_wing = np.array(
+        [
+            0,
+            0,
+            wing_tip_leading_edge_x,
+            wing_tip_leading_edge_x + wing_tip_chord,
+            wing_root_chord,
+            wing_root_chord,
+            wing_root_chord,
+            0,
+        ]
+    )
 
     # Horizontal Tail parameters
     ht_root_chord = variables["data:geometry:horizontal_tail:root_chord"].value[0]
@@ -105,12 +124,13 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     ht_span = variables["data:geometry:horizontal_tail:span"].value[0]
     ht_sweep_0 = variables["data:geometry:horizontal_tail:sweep_0"].value[0]
 
-    ht_tip_leading_edge_x = ht_span / 2. * np.tan(ht_sweep_0 * np.pi / 180.)
+    ht_tip_leading_edge_x = ht_span / 2.0 * np.tan(ht_sweep_0 * np.pi / 180.0)
 
-    y_ht = np.array([0, ht_span / 2., ht_span / 2., 0., 0.])
+    y_ht = np.array([0, ht_span / 2.0, ht_span / 2.0, 0.0, 0.0])
 
-    x_ht = np.array([0, ht_tip_leading_edge_x, ht_tip_leading_edge_x + ht_tip_chord,
-                     ht_root_chord, 0])
+    x_ht = np.array(
+        [0, ht_tip_leading_edge_x, ht_tip_leading_edge_x + ht_tip_chord, ht_root_chord, 0]
+    )
 
     # Fuselage parameters
     fuselage_max_width = variables["data:geometry:fuselage:maximum_width"].value[0]
@@ -118,19 +138,27 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     fuselage_front_length = variables["data:geometry:fuselage:front_length"].value[0]
     fuselage_rear_length = variables["data:geometry:fuselage:rear_length"].value[0]
 
-    x_fuselage = np.array([0., 0.,
-                           fuselage_front_length,
-                           fuselage_length - fuselage_rear_length,
-                           fuselage_length,
-                           fuselage_length
-                           ])
+    x_fuselage = np.array(
+        [
+            0.0,
+            0.0,
+            fuselage_front_length,
+            fuselage_length - fuselage_rear_length,
+            fuselage_length,
+            fuselage_length,
+        ]
+    )
 
-    y_fuselage = np.array([0.,
-                           fuselage_max_width / 4.,
-                           fuselage_max_width / 2.,
-                           fuselage_max_width / 2.,
-                           fuselage_max_width / 4.,
-                           0.])
+    y_fuselage = np.array(
+        [
+            0.0,
+            fuselage_max_width / 4.0,
+            fuselage_max_width / 2.0,
+            fuselage_max_width / 2.0,
+            fuselage_max_width / 4.0,
+            0.0,
+        ]
+    )
 
     # CGs
     wing_mac_x = variables["data:geometry:wing:MAC:x"].value[0]
@@ -188,8 +216,8 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
     cl = np.asarray(variables["data:aerodynamics:aircraft:cruise:CL"].value)
 
     # TODO: remove filtering one models provide proper bounds
-    cd_short = cd[cd <= 2.]
-    cl_short = cl[cd <= 2.]
+    cd_short = cd[cd <= 2.0]
+    cl_short = cl[cd <= 2.0]
 
     if fig is None:
         fig = go.Figure()
@@ -239,27 +267,27 @@ def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fi
     fuel_mission = variables["data:mission:sizing:fuel"].value[0]
 
     if fig is None:
-        fig = make_subplots(rows=1, cols=2,
-                            subplot_titles=("Maximum Take-Off Weight Breakdown",
-                                            "Overall Weight Empty Breakdown"))
+        fig = make_subplots(
+            rows=1,
+            cols=2,
+            subplot_titles=("Maximum Take-Off Weight Breakdown", "Overall Weight Empty Breakdown"),
+        )
 
     # Same color for each aircraft configuration
     i = len(fig.data)
 
-    weight_labels = ['MTOW', 'OWE', 'Fuel - Mission', 'Payload']
+    weight_labels = ["MTOW", "OWE", "Fuel - Mission", "Payload"]
     weight_values = [MTOW, OWE, fuel_mission, payload]
     fig.add_trace(
-        go.Bar(name='', x=weight_labels, y=weight_values, marker_color=COLS[i], showlegend=False),
+        go.Bar(name="", x=weight_labels, y=weight_values, marker_color=COLS[i], showlegend=False),
         row=1,
         col=1,
     )
 
-    weight_labels = ['Airframe', 'Propulsion', 'Systems', 'Furniture', 'Crew']
+    weight_labels = ["Airframe", "Propulsion", "Systems", "Furniture", "Crew"]
     weight_values = [airframe, propulsion, systems, furniture, crew]
     fig.add_trace(
-        go.Bar(name=name, x=weight_labels, y=weight_values, marker_color=COLS[i]),
-        row=1,
-        col=2,
+        go.Bar(name=name, x=weight_labels, y=weight_values, marker_color=COLS[i]), row=1, col=2,
     )
 
     fig.update_layout(yaxis_title="[kg]")
@@ -332,7 +360,7 @@ def mass_breakdown_sun_plot(aircraft_xml: OMXmlIO):
     if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):
         MTOW = OWE + payload + fuel_mission
 
-    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]], )
+    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]],)
 
     fig.add_trace(
         go.Sunburst(
@@ -366,39 +394,39 @@ def mass_breakdown_sun_plot(aircraft_xml: OMXmlIO):
     )
 
     airframe_str = (
-            "airframe"
-            + "<br>"
-            + str(int(airframe))
-            + " [kg] ("
-            + str(round(airframe / OWE * 100, 1))
-            + "%)"
+        "airframe"
+        + "<br>"
+        + str(int(airframe))
+        + " [kg] ("
+        + str(round(airframe / OWE * 100, 1))
+        + "%)"
     )
     propulsion_str = (
-            "propulsion"
-            + "<br>"
-            + str(int(propulsion))
-            + " [kg] ("
-            + str(round(propulsion / MTOW * 100, 1))
-            + "%)"
+        "propulsion"
+        + "<br>"
+        + str(int(propulsion))
+        + " [kg] ("
+        + str(round(propulsion / MTOW * 100, 1))
+        + "%)"
     )
     systems_str = (
-            "systems"
-            + "<br>"
-            + str(int(systems))
-            + " [kg] ("
-            + str(round(systems / MTOW * 100, 1))
-            + "%)"
+        "systems"
+        + "<br>"
+        + str(int(systems))
+        + " [kg] ("
+        + str(round(systems / MTOW * 100, 1))
+        + "%)"
     )
     furniture_str = (
-            "furniture"
-            + "<br>"
-            + str(int(furniture))
-            + " [kg] ("
-            + str(round(furniture / MTOW * 100, 1))
-            + "%)"
+        "furniture"
+        + "<br>"
+        + str(int(furniture))
+        + " [kg] ("
+        + str(round(furniture / MTOW * 100, 1))
+        + "%)"
     )
     crew_str = (
-            "crew" + "<br>" + str(int(crew)) + " [kg] (" + str(round(crew / MTOW * 100, 1)) + "%)"
+        "crew" + "<br>" + str(int(crew)) + " [kg] (" + str(round(crew / MTOW * 100, 1)) + "%)"
     )
 
     fig.add_trace(

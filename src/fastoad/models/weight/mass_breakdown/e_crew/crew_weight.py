@@ -3,7 +3,7 @@ Estimation of crew weight
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,14 +23,13 @@ class CrewWeight(ExplicitComponent):
     """ crew weight estimation (E) """
 
     def setup(self):
-        self.add_input('data:geometry:cabin:crew_count:technical', val=np.nan)
-        self.add_input('data:geometry:cabin:crew_count:commercial', val=np.nan)
+        self.add_input("data:geometry:cabin:crew_count:technical", val=np.nan)
+        self.add_input("data:geometry:cabin:crew_count:commercial", val=np.nan)
 
-        self.add_output('data:weight:crew:mass', units='kg')
+        self.add_output("data:weight:crew:mass", units="kg")
 
-    def compute(self, inputs, outputs
-                , discrete_inputs=None, discrete_outputs=None):
-        cockpit_crew = inputs['data:geometry:cabin:crew_count:technical']
-        cabin_crew = inputs['data:geometry:cabin:crew_count:commercial']
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        cockpit_crew = inputs["data:geometry:cabin:crew_count:technical"]
+        cabin_crew = inputs["data:geometry:cabin:crew_count:commercial"]
 
-        outputs['data:weight:crew:mass'] = 85 * cockpit_crew + 75 * cabin_crew
+        outputs["data:weight:crew:mass"] = 85 * cockpit_crew + 75 * cabin_crew

@@ -1,5 +1,5 @@
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,14 +14,15 @@
 import os.path as pth
 
 import pytest
-
 from fastoad.io.xml import OMXmlIO
+
 from tests.testing_utilities import run_system
 from ..compute_aero_center import ComputeAeroCenter
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
-                               'results', pth.splitext(pth.basename(__file__))[0])
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+RESULTS_FOLDER_PATH = pth.join(
+    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
+)
 
 
 @pytest.fixture(scope="module")
@@ -37,22 +38,22 @@ def test_compute_aero_center(input_xml):
     """ Tests computation of aerodynamic center """
 
     input_list = [
-        'data:geometry:wing:root:leading_edge:x',
-        'data:geometry:wing:MAC:length',
-        'data:geometry:wing:root:virtual_chord',
-        'data:geometry:fuselage:maximum_width',
-        'data:geometry:fuselage:length',
-        'data:geometry:wing:MAC:x',
-        'data:geometry:wing:area',
-        'data:geometry:horizontal_tail:area',
-        'data:geometry:horizontal_tail:distance_from_wing',
-        'data:aerodynamics:aircraft:cruise:CL_alpha',
-        'data:aerodynamics:horizontal_tail:cruise:CL_alpha'
+        "data:geometry:wing:root:leading_edge:x",
+        "data:geometry:wing:MAC:length",
+        "data:geometry:wing:root:virtual_chord",
+        "data:geometry:fuselage:maximum_width",
+        "data:geometry:fuselage:length",
+        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:area",
+        "data:geometry:horizontal_tail:area",
+        "data:geometry:horizontal_tail:distance_from_wing",
+        "data:aerodynamics:aircraft:cruise:CL_alpha",
+        "data:aerodynamics:horizontal_tail:cruise:CL_alpha",
     ]
 
     input_vars = input_xml.read(only=input_list)
 
     problem = run_system(ComputeAeroCenter(), input_vars)
 
-    x_ac_ratio = problem['data:aerodynamics:cruise:neutral_point:x']
+    x_ac_ratio = problem["data:aerodynamics:cruise:neutral_point:x"]
     assert x_ac_ratio == pytest.approx(0.422638, abs=1e-6)

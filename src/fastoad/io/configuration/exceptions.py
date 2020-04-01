@@ -2,7 +2,7 @@
 Exceptions for package configuration
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2019  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -53,20 +53,23 @@ class FASTConfigurationBaseKeyBuildingError(FastError):
         self.original_exception = None
         """ the original error, when eval failed """
 
-        if hasattr(original_exception, 'key'):
-            self.key = '%s.%s' % (key, original_exception.key)
+        if hasattr(original_exception, "key"):
+            self.key = "%s.%s" % (key, original_exception.key)
         else:
             self.key = key
-        if hasattr(original_exception, 'value'):
-            self.value = '%s.%s' % (value, original_exception.value)
+        if hasattr(original_exception, "value"):
+            self.value = "%s.%s" % (value, original_exception.value)
         else:
             self.value = value
-        if hasattr(original_exception, 'original_exception'):
+        if hasattr(original_exception, "original_exception"):
             self.original_exception = original_exception.original_exception
         else:
             self.original_exception = original_exception
-        super().__init__(self, 'Attribute or value not recognized : %s = "%s"\nOriginal error: %s' %
-                         (self.key, self.value, self.original_exception))
+        super().__init__(
+            self,
+            'Attribute or value not recognized : %s = "%s"\nOriginal error: %s'
+            % (self.key, self.value, self.original_exception),
+        )
 
 
 class FASTConfigurationBadOpenMDAOInstructionError(FASTConfigurationBaseKeyBuildingError):

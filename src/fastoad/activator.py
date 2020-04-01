@@ -2,7 +2,7 @@
 Where initialization operations can be done
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,9 +14,8 @@ Where initialization operations can be done
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from pelix.constants import BundleActivator
-
 from fastoad.register import register_openmdao_systems
+from pelix.constants import BundleActivator
 
 
 @BundleActivator

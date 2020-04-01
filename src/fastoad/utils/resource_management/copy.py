@@ -2,7 +2,7 @@
 Helper module for copying resources
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -60,7 +60,7 @@ def copy_resource_folder(package: Package, destination_path: str, exclude: List[
     :param destination_path: file system path of destination
     :param exclude: list of item names that should not be copied
     """
-    exclusion_list = ['__pycache__']
+    exclusion_list = ["__pycache__"]
     if exclude:
         exclusion_list += exclude
 
@@ -71,6 +71,6 @@ def copy_resource_folder(package: Package, destination_path: str, exclude: List[
             destination_file_path = pth.join(destination_path, resource_name)
             copy_resource(package, resource_name, destination_file_path)
         else:
-            new_package_name = '.'.join([package, resource_name])
+            new_package_name = ".".join([package, resource_name])
             new_destination_path = pth.join(destination_path, resource_name)
             copy_resource_folder(new_package_name, new_destination_path)

@@ -4,7 +4,7 @@ column contains old OpenMDAO variable names and the new names.
 Replaces old names by new ones in all files of ./src and ./tests.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -22,18 +22,20 @@ import os.path as pth
 import re
 
 import numpy as np
-
 from fastoad.io.xml import OMCustomXmlIO, OMXmlIO
-from fastoad.io.xml.exceptions import FastXpathTranslatorXPathError, \
-    FastXpathTranslatorVariableError
+from fastoad.io.xml.exceptions import (
+    FastXpathTranslatorXPathError,
+    FastXpathTranslatorVariableError,
+)
 from fastoad.io.xml.openmdao_basic_io import BasicVarXpathTranslator
 from fastoad.io.xml.translator import VarXpathTranslator
+
 from tests import root_folder_path
 
-SRC_PATH = pth.join(root_folder_path, 'src')
-TEST_PATH = pth.join(root_folder_path, 'tests')
-NOTEBOOK_PATH = pth.join(root_folder_path, 'notebooks')
-VAR_NAME_FILE = pth.join(pth.dirname(__file__), 'rename_vars.txt')
+SRC_PATH = pth.join(root_folder_path, "src")
+TEST_PATH = pth.join(root_folder_path, "tests")
+NOTEBOOK_PATH = pth.join(root_folder_path, "notebooks")
+VAR_NAME_FILE = pth.join(pth.dirname(__file__), "rename_vars.txt")
 
 
 def build_translator(var_names_match: np.ndarray) -> VarXpathTranslator:
@@ -44,7 +46,7 @@ def build_translator(var_names_match: np.ndarray) -> VarXpathTranslator:
                             and new names in the second column
     :return: the VarXpathTranslator instance
     """
-    xpaths = ['/'.join(var_name.split(':')) for var_name in var_names_match[:, 0]]
+    xpaths = ["/".join(var_name.split(":")) for var_name in var_names_match[:, 0]]
     var_names = var_names_match[:, 1]
 
     translator = SemiBasicVarXpathTranslator()
@@ -80,15 +82,15 @@ def replace_var_names(file_path, var_names_match):
         for line in file:
             modified_line = line
             for old_name, new_name in var_names_match:
-                if ext == '.py':
+                if ext == ".py":
                     # Python file: replacement is done only between (double) quotes
-                    regex = r'''(?<=['"])\b%s\b(?=['"])''' % old_name
+                    regex = r"""(?<=['"])\b%s\b(?=['"])""" % old_name
                 else:
                     # other files: just ensuring it is not part of a larger variable name
                     # by avoiding having ':' before or after.
-                    regex = r'(?<!:)\b%s\b(?!:)' % old_name
+                    regex = r"(?<!:)\b%s\b(?!:)" % old_name
                 modified_line = re.sub(regex, new_name, modified_line)
-            print(modified_line, end='')
+            print(modified_line, end="")
 
 
 class SemiBasicVarXpathTranslator(VarXpathTranslator):
@@ -97,9 +99,9 @@ class SemiBasicVarXpathTranslator(VarXpathTranslator):
     in BasicVarXpathTranslator
     """
 
-    def __init__(self, path_separator=':'):
+    def __init__(self, path_separator=":"):
         super().__init__()
-        self.basic_translator = BasicVarXpathTranslator(':')
+        self.basic_translator = BasicVarXpathTranslator(":")
 
     def get_variable_name(self, xpath: str) -> str:
 
@@ -115,23 +117,23 @@ class SemiBasicVarXpathTranslator(VarXpathTranslator):
             return self.basic_translator.get_xpath(var_name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    old_new_names = np.genfromtxt(VAR_NAME_FILE, dtype=str, autostrip=True, deletechars='\n')
+    old_new_names = np.genfromtxt(VAR_NAME_FILE, dtype=str, autostrip=True, deletechars="\n")
 
     # process XML files
     old_new_translator = build_translator(old_new_names)
     file_list = [
-        'tests/unit_tests/modules/aerodynamics/data/aerodynamics_inputs.xml',
-        'tests/unit_tests/modules/geometry/data/geometry_inputs_full.xml',
-        'tests/unit_tests/modules/handling_qualities/data/hq_inputs.xml',
-        'tests/unit_tests/modules/weight/cg/data/cg_inputs.xml',
-        'tests/unit_tests/modules/weight/mass_breakdown/data/mass_breakdown_inputs.xml',
-        'tests/unit_tests/utils/postprocessing/data/problem_outputs.xml',
-        'src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml'
+        "tests/unit_tests/modules/aerodynamics/data/aerodynamics_inputs.xml",
+        "tests/unit_tests/modules/geometry/data/geometry_inputs_full.xml",
+        "tests/unit_tests/modules/handling_qualities/data/hq_inputs.xml",
+        "tests/unit_tests/modules/weight/cg/data/cg_inputs.xml",
+        "tests/unit_tests/modules/weight/mass_breakdown/data/mass_breakdown_inputs.xml",
+        "tests/unit_tests/utils/postprocessing/data/problem_outputs.xml",
+        "src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml",
     ]
     for xml_file_path in file_list:
-        print('processing %s' % xml_file_path)
+        print("processing %s" % xml_file_path)
         convert_xml(pth.join(root_folder_path, xml_file_path), old_new_translator)
 
     # replace var names
@@ -139,10 +141,10 @@ if __name__ == '__main__':
         for dir_path, dir_names, file_names in os.walk(root_path):
             for filename in file_names:
                 _, ext = pth.splitext(filename)
-                if ext not in ['.xml', '.pyc', '.exe', '.png']:  # avoid processing useless files
+                if ext not in [".xml", ".pyc", ".exe", ".png"]:  # avoid processing useless files
                     file_path = pth.join(dir_path, filename)
-                    print('processing %s' % file_path)
+                    print("processing %s" % file_path)
                     try:
                         replace_var_names(file_path, old_new_names)
                     except UnicodeDecodeError:
-                        print('SKIPPED %s' % file_path)
+                        print("SKIPPED %s" % file_path)

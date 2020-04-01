@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,18 +21,21 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeMaxClLanding(ExplicitComponent):
     def setup(self):
-        self.add_input('data:aerodynamics:aircraft:landing:CL_max_clean', val=np.nan)
-        self.add_input('data:aerodynamics:high_lift_devices:landing:CL', val=np.nan)
-        self.add_input('tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k',
-                       val=np.nan)
-        self.add_output('data:aerodynamics:aircraft:landing:CL_max')
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max_clean", val=np.nan)
+        self.add_input("data:aerodynamics:high_lift_devices:landing:CL", val=np.nan)
+        self.add_input(
+            "tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k", val=np.nan
+        )
+        self.add_output("data:aerodynamics:aircraft:landing:CL_max")
 
-        self.declare_partials('*', '*', method='fd')
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        cl_max_clean = inputs['data:aerodynamics:aircraft:landing:CL_max_clean']
-        cl_max_landing = cl_max_clean + inputs['data:aerodynamics:high_lift_devices:landing:CL']
-        cl_max_landing = cl_max_landing * inputs[
-            'tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k']
+        cl_max_clean = inputs["data:aerodynamics:aircraft:landing:CL_max_clean"]
+        cl_max_landing = cl_max_clean + inputs["data:aerodynamics:high_lift_devices:landing:CL"]
+        cl_max_landing = (
+            cl_max_landing
+            * inputs["tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k"]
+        )
 
-        outputs['data:aerodynamics:aircraft:landing:CL_max'] = cl_max_landing
+        outputs["data:aerodynamics:aircraft:landing:CL_max"] = cl_max_landing

@@ -7,7 +7,7 @@
     Learn more under: https://pyscaffold.org/
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,11 +25,11 @@ from pkg_resources import VersionConflict, require
 from setuptools import setup
 
 try:
-    require('setuptools>=38.3')
+    require("setuptools>=38.3")
 except VersionConflict:
     print("Error: version of setuptools is too old (<38.3)!")
     sys.exit(1)
 
 if __name__ == "__main__":
     # Using fallback_version helps not crashing when installing from tarball
-    setup(use_pyscaffold={'fallback_version': '0.0.0'})
+    setup(use_pyscaffold={"fallback_version": "0.0.0"})

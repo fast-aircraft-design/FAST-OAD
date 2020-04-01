@@ -1,7 +1,7 @@
 """ Exceptions for io.xml module """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -46,7 +46,7 @@ class FastXpathTranslatorVariableError(FastError):
     """
 
     def __init__(self, variable):
-        super().__init__('Unknown variable %s' % variable)
+        super().__init__("Unknown variable %s" % variable)
         self.variable = variable
 
 
@@ -56,7 +56,7 @@ class FastXpathTranslatorXPathError(FastError):
     """
 
     def __init__(self, xpath):
-        super().__init__('Unknown xpath %s' % xpath)
+        super().__init__("Unknown xpath %s" % xpath)
         self.xpath = xpath
 
 

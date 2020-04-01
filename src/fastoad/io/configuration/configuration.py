@@ -3,7 +3,7 @@ Module for building OpenMDAO problem from configuration file
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,28 +21,34 @@ from copy import deepcopy
 
 import openmdao.api as om
 import toml
-
-from fastoad.io.configuration.exceptions import FASTConfigurationBaseKeyBuildingError, \
-    FASTConfigurationBadOpenMDAOInstructionError, FASTConfigurationNoProblemDefined
+from fastoad.io.configuration.exceptions import (
+    FASTConfigurationBaseKeyBuildingError,
+    FASTConfigurationBadOpenMDAOInstructionError,
+    FASTConfigurationNoProblemDefined,
+)
 from fastoad.io.serialize import OMFileIOSubclass
 from fastoad.io.xml import OMXmlIO
 from fastoad.module_management import OpenMDAOSystemRegistry
-from fastoad.openmdao.connections_utils import get_unconnected_input_variables, \
-    get_variables_from_ivc, get_ivc_from_variables, get_variables_from_problem
+from fastoad.openmdao.connections_utils import (
+    get_unconnected_input_variables,
+    get_variables_from_ivc,
+    get_ivc_from_variables,
+    get_variables_from_problem,
+)
 
 # Logger for this module
-INPUT_SYSTEM_NAME = 'inputs'
+INPUT_SYSTEM_NAME = "inputs"
 _LOGGER = logging.getLogger(__name__)
 
-KEY_FOLDERS = 'module_folders'
-KEY_INPUT_FILE = 'input_file'
-KEY_OUTPUT_FILE = 'output_file'
-KEY_COMPONENT_ID = 'id'
-TABLE_MODEL = 'model'
-KEY_DRIVER = 'driver'
-TABLES_DESIGN_VAR = 'design_var'
-TABLES_OBJECTIVE = 'objective'
-TABLES_CONSTRAINT = 'constraint'
+KEY_FOLDERS = "module_folders"
+KEY_INPUT_FILE = "input_file"
+KEY_OUTPUT_FILE = "output_file"
+KEY_COMPONENT_ID = "id"
+TABLE_MODEL = "model"
+KEY_DRIVER = "driver"
+TABLES_DESIGN_VAR = "design_var"
+TABLES_OBJECTIVE = "objective"
+TABLES_CONSTRAINT = "constraint"
 
 
 class FASTOADProblem(om.Problem):
@@ -106,7 +112,7 @@ class FASTOADProblem(om.Problem):
         for folder_path in module_folder_paths:
             folder_path = pth.join(conf_dirname, folder_path)
             if not pth.exists(folder_path):
-                _LOGGER.warning('SKIPPED %s: it does not exist.')
+                _LOGGER.warning("SKIPPED %s: it does not exist.")
             else:
                 OpenMDAOSystemRegistry.explore_folder(folder_path)
 
@@ -116,7 +122,7 @@ class FASTOADProblem(om.Problem):
             raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_MODEL)
 
         # Define driver
-        driver = self._conf_dict.get(KEY_DRIVER, '')
+        driver = self._conf_dict.get(KEY_DRIVER, "")
         if driver:
             self.driver = _om_eval(driver)
 
@@ -165,7 +171,7 @@ class FASTOADProblem(om.Problem):
             tmp_prob.setup()
             previous_order = [system.name for system in tmp_prob.model.system_iter(recurse=False)]
 
-            self.model.add_subsystem(INPUT_SYSTEM_NAME, ivc, promotes=['*'])
+            self.model.add_subsystem(INPUT_SYSTEM_NAME, ivc, promotes=["*"])
             self.model.set_order([INPUT_SYSTEM_NAME] + previous_order)
 
             # Inputs are loaded, so we can add design variables
@@ -195,7 +201,7 @@ class FASTOADProblem(om.Problem):
                 # The defined model is only one system
                 system_id = self._model_definition[KEY_COMPONENT_ID]
                 sub_component = OpenMDAOSystemRegistry.get_system(system_id)
-                self.model.add_subsystem('system', sub_component, promotes=['*'])
+                self.model.add_subsystem("system", sub_component, promotes=["*"])
             else:
                 # The defined model is a group
                 self._parse_problem_table(self.model, self._model_definition)
@@ -224,10 +230,10 @@ class FASTOADProblem(om.Problem):
                     options = value.copy()
                     identifier = options.pop(KEY_COMPONENT_ID)
                     sub_component = OpenMDAOSystemRegistry.get_system(identifier, options=options)
-                    group.add_subsystem(key, sub_component, promotes=['*'])
+                    group.add_subsystem(key, sub_component, promotes=["*"])
                 else:
                     # It is a Group
-                    sub_component = group.add_subsystem(key, om.Group(), promotes=['*'])
+                    sub_component = group.add_subsystem(key, om.Group(), promotes=["*"])
                     try:
                         self._parse_problem_table(sub_component, value)
                     except FASTConfigurationBadOpenMDAOInstructionError as err:
@@ -270,6 +276,6 @@ def _om_eval(string_to_eval: str):
     :param string_to_eval:
     :return: result of eval()
     """
-    if '__' in string_to_eval:
-        raise ValueError('No double underscore allowed in evaluated string for security reasons')
-    return eval(string_to_eval, {'__builtins__': {}}, {'om': om})
+    if "__" in string_to_eval:
+        raise ValueError("No double underscore allowed in evaluated string for security reasons")
+    return eval(string_to_eval, {"__builtins__": {}}, {"om": om})

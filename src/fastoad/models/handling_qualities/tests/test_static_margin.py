@@ -1,5 +1,5 @@
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,14 +15,15 @@ import os.path as pth
 
 import openmdao.api as om
 import pytest
-
 from fastoad.io.xml import OMXmlIO
+
 from tests.testing_utilities import run_system
 from ..compute_static_margin import ComputeStaticMargin
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), 'data')
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__),
-                               'results', pth.splitext(pth.basename(__file__))[0])
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+RESULTS_FOLDER_PATH = pth.join(
+    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
+)
 
 
 @pytest.fixture(scope="module")
@@ -38,17 +39,17 @@ def test_compute_static_margin(input_xml):
     """ Tests computation of static margin """
 
     input_vars = om.IndepVarComp()
-    input_vars.add_output('data:weight:aircraft:CG:aft:MAC_position', 0.438971)
-    input_vars.add_output('data:aerodynamics:cruise:neutral_point:x', 0.537521)
+    input_vars.add_output("data:weight:aircraft:CG:aft:MAC_position", 0.438971)
+    input_vars.add_output("data:aerodynamics:cruise:neutral_point:x", 0.537521)
 
     problem = run_system(ComputeStaticMargin(), input_vars)
-    static_margin = problem['data:handling_qualities:static_margin']
+    static_margin = problem["data:handling_qualities:static_margin"]
     assert static_margin == pytest.approx(0.098550, abs=1e-6)
 
     problem = run_system(ComputeStaticMargin(target=0.05), input_vars)
-    static_margin = problem['data:handling_qualities:static_margin:to_target']
+    static_margin = problem["data:handling_qualities:static_margin:to_target"]
     assert static_margin == pytest.approx(4.8550 ** 2, abs=1e-6)
 
     problem = run_system(ComputeStaticMargin(target=0.15), input_vars)
-    static_margin = problem['data:handling_qualities:static_margin:to_target']
+    static_margin = problem["data:handling_qualities:static_margin:to_target"]
     assert static_margin == pytest.approx(5.1450 ** 2, abs=1e-6)

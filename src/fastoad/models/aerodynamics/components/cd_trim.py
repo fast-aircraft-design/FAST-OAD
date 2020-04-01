@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,33 +16,32 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
-
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class CdTrim(ExplicitComponent):
     def initialize(self):
-        self.options.declare('low_speed_aero', default=False, types=bool)
+        self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.low_speed_aero = self.options['low_speed_aero']
+        self.low_speed_aero = self.options["low_speed_aero"]
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
-            self.add_input('cl_low_speed', val=nans_array)
-            self.add_output('cd_trim_low_speed', shape=POLAR_POINT_COUNT)
+            self.add_input("cl_low_speed", val=nans_array)
+            self.add_output("cd_trim_low_speed", shape=POLAR_POINT_COUNT)
         else:
-            self.add_input('data:aerodynamics:aircraft:cruise:CL', val=nans_array)
-            self.add_output('data:aerodynamics:aircraft:cruise:CD:trim', shape=POLAR_POINT_COUNT)
+            self.add_input("data:aerodynamics:aircraft:cruise:CL", val=nans_array)
+            self.add_output("data:aerodynamics:aircraft:cruise:CD:trim", shape=POLAR_POINT_COUNT)
 
-        self.declare_partials('*', '*', method='fd')
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
         if self.low_speed_aero:
-            cl = inputs['cl_low_speed']
+            cl = inputs["cl_low_speed"]
         else:
-            cl = inputs['data:aerodynamics:aircraft:cruise:CL']
+            cl = inputs["data:aerodynamics:aircraft:cruise:CL"]
 
         cd_trim = []
 
@@ -50,6 +49,6 @@ class CdTrim(ExplicitComponent):
             cd_trim.append(5.89 * pow(10, -4) * cl_val)
 
         if self.low_speed_aero:
-            outputs['cd_trim_low_speed'] = cd_trim
+            outputs["cd_trim_low_speed"] = cd_trim
         else:
-            outputs['data:aerodynamics:aircraft:cruise:CD:trim'] = cd_trim
+            outputs["data:aerodynamics:aircraft:cruise:CD:trim"] = cd_trim
