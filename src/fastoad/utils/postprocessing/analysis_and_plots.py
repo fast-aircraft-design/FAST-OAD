@@ -171,15 +171,16 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     )
 
     # CGs
-    wing_mac_x = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
-    wing_root_x = variables["data:geometry:wing:MAC:leading_edge:x:local"].value[0]
-    ht_mac_x = variables["data:geometry:horizontal_tail:MAC:at25percent:x:local"].value[0]
+    wing_25mac_x = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
+    wing_mac_length = variables["data:geometry:wing:MAC:length"].value[0]
+    local_wing_mac_le_x = variables["data:geometry:wing:MAC:leading_edge:x:local"].value[0]
+    local_ht_25mac_x = variables["data:geometry:horizontal_tail:MAC:at25percent:x:local"].value[0]
     ht_distance_from_wing = variables[
         "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"
     ].value[0]
 
-    x_wing = x_wing + wing_mac_x - wing_root_x
-    x_ht = x_ht + wing_mac_x + ht_distance_from_wing - ht_mac_x
+    x_wing = x_wing + wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
+    x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
     # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x_fuselage, x_wing, x_ht))
