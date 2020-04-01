@@ -35,15 +35,19 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     """
     variables = aircraft_xml.read_variables()
 
+    wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
     wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x:local"].value[0]
     wing_root_y = variables["data:geometry:wing:root:y"].value[0]
     wing_kink_y = variables["data:geometry:wing:kink:y"].value[0]
     wing_tip_y = variables["data:geometry:wing:tip:y"].value[0]
     wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
+    wing_kink_chord = variables["data:geometry:wing:kink:chord"].value[0]
     wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
 
     # pylint: disable=invalid-name # that's a common naming
-    y = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
+    y = np.array(
+        [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
+    )
     # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((-y, y))
 
@@ -52,9 +56,10 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
         [
             0,
             0,
+            wing_kink_leading_edge_x,
             wing_tip_leading_edge_x,
             wing_tip_leading_edge_x + wing_tip_chord,
-            wing_root_chord,
+            wing_kink_leading_edge_x + wing_kink_chord,
             wing_root_chord,
             wing_root_chord,
             0,
@@ -96,22 +101,27 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     variables = aircraft_xml.read_variables()
 
     # Wing parameters
+    wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
     wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x:local"].value[0]
     wing_root_y = variables["data:geometry:wing:root:y"].value[0]
     wing_kink_y = variables["data:geometry:wing:kink:y"].value[0]
     wing_tip_y = variables["data:geometry:wing:tip:y"].value[0]
     wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
+    wing_kink_chord = variables["data:geometry:wing:kink:chord"].value[0]
     wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
 
-    y_wing = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
+    y_wing = np.array(
+        [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
+    )
 
     x_wing = np.array(
         [
             0,
             0,
+            wing_kink_leading_edge_x,
             wing_tip_leading_edge_x,
             wing_tip_leading_edge_x + wing_tip_chord,
-            wing_root_chord,
+            wing_kink_leading_edge_x + wing_kink_chord,
             wing_root_chord,
             wing_root_chord,
             0,
