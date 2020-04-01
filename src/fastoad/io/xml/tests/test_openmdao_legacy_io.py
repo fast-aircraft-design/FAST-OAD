@@ -53,8 +53,8 @@ def test_legacy1(cleanup):
     assert entry_count > 400
 
     # Check some random fields
-    assert_allclose(var_list["data:geometry:wing:MAC:x"].value, 16.457)
-    assert var_list["data:geometry:wing:MAC:x"].units == "m"
+    assert_allclose(var_list["data:geometry:wing:MAC:at25percent:x"].value, 16.457)
+    assert var_list["data:geometry:wing:MAC:at25percent:x"].units == "m"
     assert_allclose(var_list["data:TLAR:NPAX"].value, 150)
     assert var_list["data:TLAR:NPAX"].units is None
     assert_allclose(var_list["data:geometry:wing:wetted_area"].value, 200.607)

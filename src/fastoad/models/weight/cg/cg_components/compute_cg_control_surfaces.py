@@ -24,14 +24,14 @@ class ComputeControlSurfacesCG(ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:kink:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:kink:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
 
         self.add_output("data:weight:airframe:flight_controls:CG:x", units="m")
 
@@ -39,14 +39,14 @@ class ComputeControlSurfacesCG(ExplicitComponent):
 
     def compute(self, inputs, outputs):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        x0_wing = inputs["data:geometry:wing:root:leading_edge:x"]
+        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         y0_wing = inputs["data:geometry:wing:MAC:y"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l3_wing = inputs["data:geometry:wing:kink:chord"]
         y2_wing = inputs["data:geometry:wing:root:y"]
-        x3_wing = inputs["data:geometry:wing:kink:leading_edge:x"]
+        x3_wing = inputs["data:geometry:wing:kink:leading_edge:x:local"]
         y3_wing = inputs["data:geometry:wing:kink:y"]
-        fa_length = inputs["data:geometry:wing:MAC:x"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
 
         # TODO: build generic functions to estimate the chord, leading edge,
         # trailing edge with respect to span wise position

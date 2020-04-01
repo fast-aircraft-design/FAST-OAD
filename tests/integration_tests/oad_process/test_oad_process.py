@@ -218,7 +218,7 @@ def test_api(cleanup):
     )
 
     assert_allclose(problem["data:handling_qualities:static_margin"], -0.005519, atol=1e-3)
-    assert_allclose(problem["data:geometry:wing:MAC:x"], 16.5, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.5, atol=1e-2)
     assert_allclose(problem["data:weight:aircraft:MTOW"], 77069, atol=1)
     assert_allclose(problem["data:geometry:wing:area"], 130.29, atol=1e-2)
     assert_allclose(problem["data:geometry:vertical_tail:area"], 27.65, atol=1e-2)
@@ -252,7 +252,7 @@ def test_api(cleanup):
     )
 
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=2e-3)
-    assert_allclose(problem["data:geometry:wing:MAC:x"], 17.1, atol=1e-1)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.1, atol=1e-1)
     assert_allclose(problem["data:weight:aircraft:MTOW"], 77235, atol=5)
     assert_allclose(problem["data:geometry:wing:area"], 130.6, atol=1e-1)
     assert_allclose(problem["data:geometry:vertical_tail:area"], 28.2, atol=1e-1)

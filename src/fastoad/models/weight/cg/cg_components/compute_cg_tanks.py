@@ -40,16 +40,16 @@ class ComputeTanksCG(ExplicitComponent):
         self.add_input("data:geometry:wing:spar_ratio:rear:kink", val=np.nan)
         self.add_input("data:geometry:wing:spar_ratio:rear:tip", val=np.nan)
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:kink:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:kink:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
 
         self.add_output("data:weight:fuel_tank:CG:x", units="m")
@@ -72,16 +72,16 @@ class ComputeTanksCG(ExplicitComponent):
         rear_spar_ratio_kink = inputs["data:geometry:wing:spar_ratio:rear:kink"]
         rear_spar_ratio_tip = inputs["data:geometry:wing:spar_ratio:rear:tip"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        x0_wing = inputs["data:geometry:wing:root:leading_edge:x"]
+        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l3_wing = inputs["data:geometry:wing:kink:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         y2_wing = inputs["data:geometry:wing:root:y"]
-        x3_wing = inputs["data:geometry:wing:kink:leading_edge:x"]
+        x3_wing = inputs["data:geometry:wing:kink:leading_edge:x:local"]
         y3_wing = inputs["data:geometry:wing:kink:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
-        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x"]
-        fa_length = inputs["data:geometry:wing:MAC:x"]
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
 
         airfoil_file = open_text(resources, "airfoil_f_15_15.dat")

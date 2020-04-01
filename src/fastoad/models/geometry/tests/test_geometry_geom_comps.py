@@ -142,17 +142,17 @@ def test_compute_ht_cg(input_xml):
     """ Tests computation of the horizontal tail center of gravity """
 
     input_list = [
-        "data:geometry:horizontal_tail:root_chord",
-        "data:geometry:horizontal_tail:tip_chord",
-        "data:geometry:horizontal_tail:distance_from_wing",
+        "data:geometry:horizontal_tail:root:chord",
+        "data:geometry:horizontal_tail:tip:chord",
+        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
         "data:geometry:horizontal_tail:span",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:geometry:horizontal_tail:sweep_25",
         "data:geometry:horizontal_tail:MAC:length",
     ]
 
     input_vars = input_xml.read(only=input_list)
-    input_vars.add_output("data:geometry:horizontal_tail:MAC:x", 1.656, units="m")
+    input_vars.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:local", 1.656, units="m")
 
     problem = run_system(ComputeHTcg(), input_vars)
 
@@ -164,8 +164,8 @@ def test_compute_ht_mac(input_xml):
     """ Tests computation of the horizontal tail mac """
 
     input_list = [
-        "data:geometry:horizontal_tail:root_chord",
-        "data:geometry:horizontal_tail:tip_chord",
+        "data:geometry:horizontal_tail:root:chord",
+        "data:geometry:horizontal_tail:tip:chord",
         "data:geometry:horizontal_tail:span",
         "data:geometry:horizontal_tail:sweep_25",
     ]
@@ -176,7 +176,7 @@ def test_compute_ht_mac(input_xml):
 
     length = problem["data:geometry:horizontal_tail:MAC:length"]
     assert length == pytest.approx(3.141, abs=1e-3)
-    ht_x0 = problem["data:geometry:horizontal_tail:MAC:x"]
+    ht_x0 = problem["data:geometry:horizontal_tail:MAC:at25percent:x:local"]
     assert ht_x0 == pytest.approx(1.656, abs=1e-3)
     ht_y0 = problem["data:geometry:horizontal_tail:MAC:y"]
     assert ht_y0 == pytest.approx(2.519, abs=1e-3)
@@ -197,9 +197,9 @@ def test_compute_ht_chord(input_xml):
 
     span = problem["data:geometry:horizontal_tail:span"]
     assert span == pytest.approx(12.28, abs=1e-2)
-    root_chord = problem["data:geometry:horizontal_tail:root_chord"]
+    root_chord = problem["data:geometry:horizontal_tail:root:chord"]
     assert root_chord == pytest.approx(4.406, abs=1e-3)
-    tip_chord = problem["data:geometry:horizontal_tail:tip_chord"]
+    tip_chord = problem["data:geometry:horizontal_tail:tip:chord"]
     assert tip_chord == pytest.approx(1.322, abs=1e-3)
 
 
@@ -224,8 +224,8 @@ def test_compute_ht_sweep(input_xml):
     """ Tests computation of the horizontal tail sweep """
 
     input_list = [
-        "data:geometry:horizontal_tail:root_chord",
-        "data:geometry:horizontal_tail:tip_chord",
+        "data:geometry:horizontal_tail:root:chord",
+        "data:geometry:horizontal_tail:tip:chord",
         "data:geometry:horizontal_tail:span",
         "data:geometry:horizontal_tail:sweep_25",
     ]
@@ -267,18 +267,18 @@ def test_compute_vt_cg(input_xml):
     """ Tests computation of the vertical tail center of gravity """
 
     input_list = [
-        "data:geometry:vertical_tail:root_chord",
-        "data:geometry:vertical_tail:tip_chord",
-        "data:geometry:vertical_tail:distance_from_wing",
+        "data:geometry:vertical_tail:root:chord",
+        "data:geometry:vertical_tail:tip:chord",
+        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
         "data:geometry:vertical_tail:span",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:geometry:vertical_tail:sweep_25",
         "data:geometry:vertical_tail:MAC:length",
     ]
 
     input_vars = input_xml.read(only=input_list)
 
-    input_vars.add_output("data:geometry:vertical_tail:MAC:x", 2.321, units="m")
+    input_vars.add_output("data:geometry:vertical_tail:MAC:at25percent:x:local", 2.321, units="m")
 
     component = ComputeVTcg()
 
@@ -292,8 +292,8 @@ def test_compute_vt_mac(input_xml):
     """ Tests computation of the vertical tail mac """
 
     input_list = [
-        "data:geometry:vertical_tail:root_chord",
-        "data:geometry:vertical_tail:tip_chord",
+        "data:geometry:vertical_tail:root:chord",
+        "data:geometry:vertical_tail:tip:chord",
         "data:geometry:vertical_tail:span",
         "data:geometry:vertical_tail:sweep_25",
     ]
@@ -306,7 +306,7 @@ def test_compute_vt_mac(input_xml):
 
     length = problem["data:geometry:vertical_tail:MAC:length"]
     assert length == pytest.approx(4.161, abs=1e-3)
-    vt_x0 = problem["data:geometry:vertical_tail:MAC:x"]
+    vt_x0 = problem["data:geometry:vertical_tail:MAC:at25percent:x:local"]
     assert vt_x0 == pytest.approx(2.321, abs=1e-3)
     vt_z0 = problem["data:geometry:vertical_tail:MAC:z"]
     assert vt_z0 == pytest.approx(2.716, abs=1e-3)
@@ -329,9 +329,9 @@ def test_compute_vt_chords(input_xml):
 
     span = problem["data:geometry:vertical_tail:span"]
     assert span == pytest.approx(6.62, abs=1e-2)
-    root_chord = problem["data:geometry:vertical_tail:root_chord"]
+    root_chord = problem["data:geometry:vertical_tail:root:chord"]
     assert root_chord == pytest.approx(5.837, abs=1e-3)
-    tip_chord = problem["data:geometry:vertical_tail:tip_chord"]
+    tip_chord = problem["data:geometry:vertical_tail:tip:chord"]
     assert tip_chord == pytest.approx(1.751, abs=1e-3)
 
 
@@ -339,8 +339,8 @@ def test_compute_vt_sweep(input_xml):
     """ Tests computation of the vertical tail sweep """
 
     input_list = [
-        "data:geometry:vertical_tail:root_chord",
-        "data:geometry:vertical_tail:tip_chord",
+        "data:geometry:vertical_tail:root:chord",
+        "data:geometry:vertical_tail:tip:chord",
         "data:geometry:vertical_tail:span",
         "data:geometry:vertical_tail:sweep_25",
     ]
@@ -362,14 +362,14 @@ def test_compute_vt_distance(input_xml):
 
     input_list = [
         "data:geometry:fuselage:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:geometry:has_T_tail",
     ]
 
     input_vars = input_xml.read(only=input_list)
     problem = run_system(ComputeVTDistance(), input_vars)
 
-    lp_vt = problem["data:geometry:vertical_tail:distance_from_wing"]
+    lp_vt = problem["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
     assert lp_vt == pytest.approx(16.55, abs=1e-2)
 
 
@@ -394,7 +394,7 @@ def test_geometry_wing_b50(input_xml):
     """ Tests computation of the wing B50 """
 
     input_list = [
-        "data:geometry:wing:tip:leading_edge:x",
+        "data:geometry:wing:tip:leading_edge:x:local",
         "data:geometry:wing:root:y",
         "data:geometry:wing:tip:y",
         "data:geometry:wing:root:virtual_chord",
@@ -495,8 +495,8 @@ def test_geometry_wing_mac(input_xml):
 
     input_list = [
         "data:geometry:wing:area",
-        "data:geometry:wing:kink:leading_edge:x",
-        "data:geometry:wing:tip:leading_edge:x",
+        "data:geometry:wing:kink:leading_edge:x:local",
+        "data:geometry:wing:tip:leading_edge:x:local",
         "data:geometry:wing:root:y",
         "data:geometry:wing:kink:y",
         "data:geometry:wing:tip:y",
@@ -513,7 +513,7 @@ def test_geometry_wing_mac(input_xml):
 
     wing_l0 = problem["data:geometry:wing:MAC:length"]
     assert wing_l0 == pytest.approx(4.457, abs=1e-3)
-    wing_x0 = problem["data:geometry:wing:root:leading_edge:x"]
+    wing_x0 = problem["data:geometry:wing:MAC:leading_edge:x:local"]
     assert wing_x0 == pytest.approx(2.361, abs=1e-3)
     wing_y0 = problem["data:geometry:wing:MAC:y"]
     assert wing_y0 == pytest.approx(6.293, abs=1e-3)
@@ -543,8 +543,8 @@ def test_geometry_wing_sweep(input_xml):
     """ Tests computation of the wing sweeps """
 
     input_list = [
-        "data:geometry:wing:kink:leading_edge:x",
-        "data:geometry:wing:tip:leading_edge:x",
+        "data:geometry:wing:kink:leading_edge:x:local",
+        "data:geometry:wing:tip:leading_edge:x:local",
         "data:geometry:wing:root:y",
         "data:geometry:wing:kink:y",
         "data:geometry:wing:tip:y",
@@ -629,9 +629,9 @@ def test_geometry_wing_x(input_xml):
 
     problem = run_system(component, input_vars)
 
-    wing_x3 = problem["data:geometry:wing:kink:leading_edge:x"]
+    wing_x3 = problem["data:geometry:wing:kink:leading_edge:x:local"]
     assert wing_x3 == pytest.approx(2.275, abs=1e-3)
-    wing_x4 = problem["data:geometry:wing:tip:leading_edge:x"]
+    wing_x4 = problem["data:geometry:wing:tip:leading_edge:x:local"]
     assert wing_x4 == pytest.approx(7.222, abs=1e-3)
 
 
@@ -670,13 +670,13 @@ def test_geometry_nacelle_pylons(input_xml):
         "data:geometry:propulsion:layout",
         "data:geometry:wing:span",
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:root:leading_edge:x",
+        "data:geometry:wing:MAC:leading_edge:x:local",
         "data:geometry:wing:root:chord",
         "data:geometry:wing:root:y",
         "data:geometry:wing:kink:chord",
         "data:geometry:wing:kink:y",
-        "data:geometry:wing:kink:leading_edge:x",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:kink:leading_edge:x:local",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:geometry:fuselage:length",
         "data:geometry:fuselage:maximum_width",
     ]
@@ -735,7 +735,7 @@ def test_geometry_update_mlg(input_xml):
 
     input_list = [
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
     ]
 
     input_vars = input_xml.read(only=input_list)

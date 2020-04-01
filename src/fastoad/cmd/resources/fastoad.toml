@@ -40,7 +40,7 @@ driver = "om.ScipyOptimizeDriver()"
         id = "fastoad.loop.wing_area"
 
 [[design_var]]
-    name = "data:geometry:wing:MAC:x"
+    name = "data:geometry:wing:MAC:at25percent:x"
     lower = 10.0
     upper = 25.0
     ref = 15.0

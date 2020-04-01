@@ -40,7 +40,7 @@ class _UpdateMLG(om.ImplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
         self.add_input("data:weight:airframe:landing_gear:front:CG:x", units="m")
         self.add_input("settings:weight:airframe:landing_gear:front:weight_ratio", val=0.08)
@@ -53,7 +53,7 @@ class _UpdateMLG(om.ImplicitComponent):
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        fa_length = inputs["data:geometry:wing:MAC:x"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         cg_ratio = inputs["data:weight:aircraft:CG:aft:MAC_position"]
         cg_a51 = outputs["data:weight:airframe:landing_gear:main:CG:x"]
         cg_a52 = inputs["data:weight:airframe:landing_gear:front:CG:x"]
@@ -70,4 +70,6 @@ class _UpdateMLG(om.ImplicitComponent):
     def guess_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
-        outputs["data:weight:airframe:landing_gear:main:CG:x"] = inputs["data:geometry:wing:MAC:x"]
+        outputs["data:weight:airframe:landing_gear:main:CG:x"] = inputs[
+            "data:geometry:wing:MAC:at25percent:x"
+        ]

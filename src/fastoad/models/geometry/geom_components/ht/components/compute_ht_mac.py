@@ -26,25 +26,25 @@ class ComputeHTMAC(ExplicitComponent):
     """ Horizontal tail mean aerodynamic chord estimation """
 
     def setup(self):
-        self.add_input("data:geometry:horizontal_tail:root_chord", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:tip_chord", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
 
         self.add_output("data:geometry:horizontal_tail:MAC:length", units="m")
-        self.add_output("data:geometry:horizontal_tail:MAC:x", units="m")
+        self.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
         self.add_output("data:geometry:horizontal_tail:MAC:y", units="m")
 
         self.declare_partials(
             "data:geometry:horizontal_tail:MAC:length",
-            ["data:geometry:horizontal_tail:root_chord", "data:geometry:horizontal_tail:tip_chord"],
+            ["data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:tip:chord"],
             method="fd",
         )
         self.declare_partials(
-            "data:geometry:horizontal_tail:MAC:x",
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
             [
-                "data:geometry:horizontal_tail:root_chord",
-                "data:geometry:horizontal_tail:tip_chord",
+                "data:geometry:horizontal_tail:root:chord",
+                "data:geometry:horizontal_tail:tip:chord",
                 "data:geometry:horizontal_tail:sweep_25",
                 "data:geometry:horizontal_tail:span",
             ],
@@ -53,16 +53,16 @@ class ComputeHTMAC(ExplicitComponent):
         self.declare_partials(
             "data:geometry:horizontal_tail:MAC:y",
             [
-                "data:geometry:horizontal_tail:root_chord",
-                "data:geometry:horizontal_tail:tip_chord",
+                "data:geometry:horizontal_tail:root:chord",
+                "data:geometry:horizontal_tail:tip:chord",
                 "data:geometry:horizontal_tail:span",
             ],
             method="fd",
         )
 
     def compute(self, inputs, outputs):
-        root_chord = inputs["data:geometry:horizontal_tail:root_chord"]
-        tip_chord = inputs["data:geometry:horizontal_tail:tip_chord"]
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
+        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
@@ -80,5 +80,5 @@ class ComputeHTMAC(ExplicitComponent):
         y0_ht = (b_h * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
 
         outputs["data:geometry:horizontal_tail:MAC:length"] = mac_ht
-        outputs["data:geometry:horizontal_tail:MAC:x"] = x0_ht
+        outputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"] = x0_ht
         outputs["data:geometry:horizontal_tail:MAC:y"] = y0_ht

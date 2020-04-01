@@ -48,15 +48,15 @@ def test_compute_cg_control_surfaces(input_xml):
     """ Tests computation of control surfaces center of gravity """
 
     input_list = [
-        "data:geometry:wing:root:leading_edge:x",
+        "data:geometry:wing:MAC:leading_edge:x:local",
         "data:geometry:wing:MAC:length",
         "data:geometry:wing:MAC:y",
         "data:geometry:wing:root:chord",
         "data:geometry:wing:kink:chord",
         "data:geometry:wing:root:y",
-        "data:geometry:wing:kink:leading_edge:x",
+        "data:geometry:wing:kink:leading_edge:x:local",
         "data:geometry:wing:kink:y",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
     ]
 
     input_vars = input_xml.read(only=input_list)
@@ -72,7 +72,7 @@ def test_compute_cg_loadcase1(input_xml):
 
     input_list = [
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:weight:payload:PAX:CG:x",
         "data:weight:payload:rear_fret:CG:x",
         "data:weight:payload:front_fret:CG:x",
@@ -95,7 +95,7 @@ def test_compute_cg_loadcase2(input_xml):
 
     input_list = [
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:weight:payload:PAX:CG:x",
         "data:weight:payload:rear_fret:CG:x",
         "data:weight:payload:front_fret:CG:x",
@@ -120,7 +120,7 @@ def test_compute_cg_loadcase3(input_xml):
 
     input_list = [
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:weight:payload:PAX:CG:x",
         "data:weight:payload:rear_fret:CG:x",
         "data:weight:payload:front_fret:CG:x",
@@ -143,7 +143,7 @@ def test_compute_cg_loadcase4(input_xml):
 
     input_list = [
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:weight:payload:PAX:CG:x",
         "data:weight:payload:rear_fret:CG:x",
         "data:weight:payload:front_fret:CG:x",
@@ -165,11 +165,11 @@ def test_compute_cg_others(input_xml):
     """ Tests computation of other components center of gravity """
 
     input_list = [
-        "data:geometry:wing:root:leading_edge:x",
+        "data:geometry:wing:MAC:leading_edge:x:local",
         "data:geometry:wing:MAC:length",
         "data:geometry:wing:root:chord",
         "data:geometry:fuselage:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:geometry:fuselage:front_length",
         "data:geometry:fuselage:rear_length",
         "data:weight:propulsion:engine:CG:x",
@@ -308,7 +308,7 @@ def test_compute_cg_ratio_aft(input_xml):
         "data:weight:furniture:security_kit:mass",
         "data:weight:furniture:toilets:mass",
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
     ]
 
     input_vars = input_xml.read(only=input_list)
@@ -332,16 +332,16 @@ def test_compute_cg_tanks(input_xml):
         "data:geometry:wing:spar_ratio:rear:kink",
         "data:geometry:wing:spar_ratio:rear:tip",
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:root:leading_edge:x",
+        "data:geometry:wing:MAC:leading_edge:x:local",
         "data:geometry:wing:root:chord",
         "data:geometry:wing:kink:chord",
         "data:geometry:wing:tip:chord",
         "data:geometry:wing:root:y",
-        "data:geometry:wing:kink:leading_edge:x",
+        "data:geometry:wing:kink:leading_edge:x:local",
         "data:geometry:wing:kink:y",
         "data:geometry:wing:tip:y",
-        "data:geometry:wing:tip:leading_edge:x",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:tip:leading_edge:x:local",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:geometry:fuselage:maximum_width",
     ]
 
@@ -366,16 +366,16 @@ def test_compute_cg_wing(input_xml):
         "data:geometry:wing:spar_ratio:rear:tip",
         "data:geometry:wing:span",
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:root:leading_edge:x",
+        "data:geometry:wing:MAC:leading_edge:x:local",
         "data:geometry:wing:root:chord",
         "data:geometry:wing:kink:chord",
         "data:geometry:wing:tip:chord",
         "data:geometry:wing:root:y",
-        "data:geometry:wing:kink:leading_edge:x",
+        "data:geometry:wing:kink:leading_edge:x:local",
         "data:geometry:wing:kink:y",
         "data:geometry:wing:tip:y",
-        "data:geometry:wing:tip:leading_edge:x",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:tip:leading_edge:x:local",
+        "data:geometry:wing:MAC:at25percent:x",
     ]
 
     input_vars = input_xml.read(only=input_list)
@@ -391,7 +391,7 @@ def test_compute_global_cg(input_xml):
 
     input_list = [
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:weight:payload:PAX:CG:x",
         "data:weight:payload:rear_fret:CG:x",
         "data:weight:payload:front_fret:CG:x",
@@ -494,7 +494,7 @@ def test_compute_aircraft_cg(input_xml):
 
     input_list = [
         "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
     ]
 
     input_vars = input_xml.read(only=input_list)

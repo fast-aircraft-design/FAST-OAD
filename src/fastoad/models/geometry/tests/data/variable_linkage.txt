@@ -1,12 +1,12 @@
-data:geometry:wing:root:leading_edge:x, Aircraft/geometry/wing/x0_wing
+data:geometry:wing:MAC:leading_edge:x:local, Aircraft/geometry/wing/x0_wing
 data:geometry:wing:MAC:length, Aircraft/geometry/wing/l0_wing
 data:geometry:wing:root:virtual_chord, Aircraft/geometry/wing/l1_wing
 data:geometry:fuselage:maximum_width, Aircraft/geometry/fuselage/width_max
 data:geometry:fuselage:length, Aircraft/geometry/fuselage/fus_length
-data:geometry:wing:MAC:x, Aircraft/geometry/wing/fa_length
+data:geometry:wing:MAC:at25percent:x, Aircraft/geometry/wing/fa_length
 data:geometry:wing:area, Aircraft/geometry/wing/wing_area
 data:geometry:horizontal_tail:area, Aircraft/geometry/ht/area
-data:geometry:horizontal_tail:distance_from_wing, Aircraft/geometry/ht/lp
+data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25, Aircraft/geometry/ht/lp
 data:aerodynamics:aircraft:cruise:CL_alpha, Aircraft/aerodynamics/CL_alpha
 data:aerodynamics:horizontal_tail:cruise:CL_alpha, Aircraft/aerodynamics/CL_alpha_ht
 data:geometry:wing:MAC:y, Aircraft/geometry/wing/y0_wing
@@ -14,8 +14,8 @@ data:geometry:wing:root:chord, Aircraft/geometry/wing/l2_wing
 data:geometry:wing:kink:chord, Aircraft/geometry/wing/l3_wing
 data:geometry:wing:tip:chord, Aircraft/geometry/wing/l4_wing
 data:geometry:wing:root:y, Aircraft/geometry/wing/y2_wing
-data:geometry:wing:kink:leading_edge:x, Aircraft/geometry/wing/x3_wing
-data:geometry:wing:tip:leading_edge:x, Aircraft/geometry/wing/x4_wing
+data:geometry:wing:kink:leading_edge:x:local, Aircraft/geometry/wing/x3_wing
+data:geometry:wing:tip:leading_edge:x:local, Aircraft/geometry/wing/x4_wing
 data:geometry:wing:kink:y, Aircraft/geometry/wing/y3_wing
 data:geometry:wing:tip:y, Aircraft/geometry/wing/y4_wing
 data:weight:payload:PAX:CG:x, Aircraft/balance/PayLoad/CG_PAX

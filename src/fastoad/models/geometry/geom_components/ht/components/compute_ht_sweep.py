@@ -25,8 +25,8 @@ class ComputeHTSweep(ExplicitComponent):
     """ Horizontal tail sweeps estimation """
 
     def setup(self):
-        self.add_input("data:geometry:horizontal_tail:root_chord", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:tip_chord", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
 
@@ -38,8 +38,8 @@ class ComputeHTSweep(ExplicitComponent):
 
     def compute(self, inputs, outputs):
         b_h = inputs["data:geometry:horizontal_tail:span"]
-        root_chord = inputs["data:geometry:horizontal_tail:root_chord"]
-        tip_chord = inputs["data:geometry:horizontal_tail:tip_chord"]
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
+        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
 
         half_span = b_h / 2.0

@@ -26,33 +26,35 @@ class ComputeVTMAC(ExplicitComponent):
     """ Vertical tail mean aerodynamic chord estimation """
 
     def setup(self):
-        self.add_input("data:geometry:vertical_tail:root_chord", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:tip_chord", val=np.nan, units="m")
+        self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
 
         self.add_output("data:geometry:vertical_tail:MAC:length", units="m")
-        self.add_output("data:geometry:vertical_tail:MAC:x", units="m")
+        self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
         self.add_output("data:geometry:vertical_tail:MAC:z", units="m")
 
         self.declare_partials(
             "data:geometry:vertical_tail:MAC:length",
-            ["data:geometry:vertical_tail:root_chord", "data:geometry:vertical_tail:tip_chord"],
+            ["data:geometry:vertical_tail:root:chord", "data:geometry:vertical_tail:tip:chord"],
         )
-        self.declare_partials("data:geometry:vertical_tail:MAC:x", "*", method="fd")
+        self.declare_partials(
+            "data:geometry:vertical_tail:MAC:at25percent:x:local", "*", method="fd"
+        )
         self.declare_partials(
             "data:geometry:vertical_tail:MAC:z",
             [
-                "data:geometry:vertical_tail:root_chord",
-                "data:geometry:vertical_tail:tip_chord",
+                "data:geometry:vertical_tail:root:chord",
+                "data:geometry:vertical_tail:tip:chord",
                 "data:geometry:vertical_tail:span",
             ],
             method="fd",
         )
 
     def compute(self, inputs, outputs):
-        root_chord = inputs["data:geometry:vertical_tail:root_chord"]
-        tip_chord = inputs["data:geometry:vertical_tail:tip_chord"]
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 
@@ -68,5 +70,5 @@ class ComputeVTMAC(ExplicitComponent):
         z0_vt = (2 * b_v * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
 
         outputs["data:geometry:vertical_tail:MAC:length"] = mac_vt
-        outputs["data:geometry:vertical_tail:MAC:x"] = x0_vt
+        outputs["data:geometry:vertical_tail:MAC:at25percent:x:local"] = x0_vt
         outputs["data:geometry:vertical_tail:MAC:z"] = z0_vt

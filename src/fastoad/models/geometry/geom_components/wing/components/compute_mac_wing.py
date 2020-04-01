@@ -25,8 +25,8 @@ class ComputeMACWing(ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:kink:leading_edge:x", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:kink:leading_edge:x:local", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
@@ -35,7 +35,7 @@ class ComputeMACWing(ExplicitComponent):
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
 
         self.add_output("data:geometry:wing:MAC:length", units="m")
-        self.add_output("data:geometry:wing:root:leading_edge:x", units="m")
+        self.add_output("data:geometry:wing:MAC:leading_edge:x:local", units="m")
         self.add_output("data:geometry:wing:MAC:y", units="m")
 
         self.declare_partials(
@@ -52,10 +52,10 @@ class ComputeMACWing(ExplicitComponent):
             method="fd",
         )
         self.declare_partials(
-            "data:geometry:wing:root:leading_edge:x",
+            "data:geometry:wing:MAC:leading_edge:x:local",
             [
-                "data:geometry:wing:kink:leading_edge:x",
-                "data:geometry:wing:tip:leading_edge:x",
+                "data:geometry:wing:kink:leading_edge:x:local",
+                "data:geometry:wing:tip:leading_edge:x:local",
                 "data:geometry:wing:root:y",
                 "data:geometry:wing:kink:y",
                 "data:geometry:wing:tip:y",
@@ -82,8 +82,8 @@ class ComputeMACWing(ExplicitComponent):
 
     def compute(self, inputs, outputs):
         wing_area = inputs["data:geometry:wing:area"]
-        x3_wing = inputs["data:geometry:wing:kink:leading_edge:x"]
-        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x"]
+        x3_wing = inputs["data:geometry:wing:kink:leading_edge:x:local"]
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y2_wing = inputs["data:geometry:wing:root:y"]
         y3_wing = inputs["data:geometry:wing:kink:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
@@ -115,5 +115,5 @@ class ComputeMACWing(ExplicitComponent):
         ) / (3 * wing_area)
 
         outputs["data:geometry:wing:MAC:length"] = l0_wing
-        outputs["data:geometry:wing:root:leading_edge:x"] = x0_wing
+        outputs["data:geometry:wing:MAC:leading_edge:x:local"] = x0_wing
         outputs["data:geometry:wing:MAC:y"] = y0_wing

@@ -19,12 +19,14 @@
       <cruise_mach>0.78<!--top-level requirement: cruise Mach number--></cruise_mach>
     </TLAR>
     <geometry>
-      <has_T_tail>0</has_T_tail><!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail-->
+      <has_T_tail>0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
       <wing>
         <span>31.603<!--wing span--></span>
         <area>124.843<!--wing reference area--></area>
         <MAC>
-          <x>16.457<!--X-position of leading edge of mean aerodynamic chord of wing--></x>
+          <at25percent>
+            <x>16.457</x>
+          </at25percent>
           <length>4.457<!--length of mean aerodynamic chord of wing--></length>
         </MAC>
       </wing>
@@ -32,7 +34,13 @@
         <length>37.507<!--total fuselage length--></length>
       </fuselage>
       <vertical_tail>
-        <distance_from_wing>16.55<!--distance along X between 25% MAC of wing and 25% MAC of vertical tail--></distance_from_wing>
+        <MAC>
+          <at25percent>
+            <x>
+              <from_wingMAC25>16.55</from_wingMAC25>
+            </x>
+          </at25percent>
+        </MAC>
       </vertical_tail>
     </geometry>
     <aerodynamics>
@@ -68,7 +76,7 @@
     <weight>
       <aircraft>
         <CG>
-          <range>0.3</range>
+          <range>0.3<!--distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)--></range>
         </CG>
       </aircraft>
     </weight>
