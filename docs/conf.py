@@ -104,7 +104,7 @@ master_doc = "index"
 
 # General information about the project.
 project = u"FAST-OAD"
-copyright = u"2020, ONERA/ISAE"
+copyright = u"2020, ONERA & ISAE-SUPAERO"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
