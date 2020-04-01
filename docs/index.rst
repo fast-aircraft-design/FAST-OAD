@@ -22,6 +22,7 @@ Contents
    License <license>
    Authors <authors>
    Changelog <changelog>
+   General documentation <documentation/index>
    Module Reference <api/modules>
 
 

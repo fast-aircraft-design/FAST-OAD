@@ -1,21 +1,7 @@
-###############################################################
-FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design
-###############################################################
+.. _Installation-procedure:
 
-FAST-OAD is a framework for performing rapid Overall Aircraft Design.
-
-It proposes multi-disciplinary analysis and optimisation by relying on `OpenMDAO framework <https://openmdao.org/>`_.
-
-FAST-OAD allows easy switching between models for a same disciplin, and also adding/removing disciplins to match the
-need of your study.
-
-Currently, FAST-OAD is bundled with models for commercial transport aircraft of years 1990-2000.
-Other models will come and you may create your own models and use them instead of bundled ones.
-
-More details can be found in the `official documentation <https://fast-aircraft-design.github.io/FAST-OAD-doc/>`_.
-
-Install
-############
+Installation procedure
+######################
 **Prerequisite**:FAST-OAD needs at least **Python 3.6** (usage of **Python 3.8.*** is discouraged as Jupyter notebooks are still `not compatible with it <https://github.com/jupyterlab/jupyterlab/issues/6487>`_).
 
 It is recommended (but not required) to install FAST-OAD in a virtual environment (`conda <https://docs.conda.io/en/latest/>`_, `venv <https://docs.python.org/3.7/library/venv.html>`_...)
