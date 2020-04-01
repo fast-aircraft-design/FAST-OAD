@@ -56,7 +56,7 @@ class ComputeAircraftCG(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
-        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
 
         self.add_output("data:weight:aircraft:CG:aft:x", units="m")
@@ -66,7 +66,7 @@ class ComputeAircraftCG(om.ExplicitComponent):
     def compute(self, inputs, outputs):
         cg_ratio = inputs["data:weight:aircraft:CG:aft:MAC_position"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        mac_position = inputs["data:geometry:wing:MAC:x"]
+        mac_position = inputs["data:geometry:wing:MAC:at25percent:x"]
 
         outputs["data:weight:aircraft:CG:aft:x"] = (
             mac_position - 0.25 * l0_wing + cg_ratio * l0_wing

@@ -26,21 +26,21 @@ class ComputeVTDistance(om.ExplicitComponent):
     def setup(self):
 
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:has_T_tail", val=np.nan)
 
-        self.add_output("data:geometry:vertical_tail:distance_from_wing", units="m")
+        self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")
 
         self.declare_partials(
-            "data:geometry:vertical_tail:distance_from_wing",
-            ["data:geometry:fuselage:length", "data:geometry:wing:MAC:x"],
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+            ["data:geometry:fuselage:length", "data:geometry:wing:MAC:at25percent:x"],
             method="fd",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
         fus_length = inputs["data:geometry:fuselage:length"]
-        fa_length = inputs["data:geometry:wing:MAC:x"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
 
         if tail_type == 1:
             lp_vt = 0.93 * fus_length - fa_length
@@ -49,4 +49,4 @@ class ComputeVTDistance(om.ExplicitComponent):
         else:
             raise ValueError("Value of data:geometry:has_T_tail can only be 0 or 1")
 
-        outputs["data:geometry:vertical_tail:distance_from_wing"] = lp_vt
+        outputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"] = lp_vt

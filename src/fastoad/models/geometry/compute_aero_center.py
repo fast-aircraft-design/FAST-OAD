@@ -23,15 +23,17 @@ class ComputeAeroCenter(ExplicitComponent):
     """ Aerodynamic center estimation """
 
     def setup(self):
-        self.add_input("data:geometry:wing:root:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:distance_from_wing", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
         self.add_input("data:aerodynamics:aircraft:cruise:CL_alpha", val=np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan)
 
@@ -40,15 +42,15 @@ class ComputeAeroCenter(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        x0_wing = inputs["data:geometry:wing:root:leading_edge:x"]
+        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
-        fa_length = inputs["data:geometry:wing:MAC:x"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         fus_length = inputs["data:geometry:fuselage:length"]
         wing_area = inputs["data:geometry:wing:area"]
         s_h = inputs["data:geometry:horizontal_tail:area"]
-        lp_ht = inputs["data:geometry:horizontal_tail:distance_from_wing"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         cl_alpha_wing = inputs["data:aerodynamics:aircraft:cruise:CL_alpha"]
         cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"]
         # TODO: make variable name is computation sequence more english

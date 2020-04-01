@@ -35,15 +35,19 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     """
     variables = aircraft_xml.read_variables()
 
-    wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x"].value[0]
+    wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
+    wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x:local"].value[0]
     wing_root_y = variables["data:geometry:wing:root:y"].value[0]
     wing_kink_y = variables["data:geometry:wing:kink:y"].value[0]
     wing_tip_y = variables["data:geometry:wing:tip:y"].value[0]
     wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
+    wing_kink_chord = variables["data:geometry:wing:kink:chord"].value[0]
     wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
 
     # pylint: disable=invalid-name # that's a common naming
-    y = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
+    y = np.array(
+        [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
+    )
     # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((-y, y))
 
@@ -52,9 +56,10 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
         [
             0,
             0,
+            wing_kink_leading_edge_x,
             wing_tip_leading_edge_x,
             wing_tip_leading_edge_x + wing_tip_chord,
-            wing_root_chord,
+            wing_kink_leading_edge_x + wing_kink_chord,
             wing_root_chord,
             wing_root_chord,
             0,
@@ -96,22 +101,27 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     variables = aircraft_xml.read_variables()
 
     # Wing parameters
-    wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x"].value[0]
+    wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
+    wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x:local"].value[0]
     wing_root_y = variables["data:geometry:wing:root:y"].value[0]
     wing_kink_y = variables["data:geometry:wing:kink:y"].value[0]
     wing_tip_y = variables["data:geometry:wing:tip:y"].value[0]
     wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
+    wing_kink_chord = variables["data:geometry:wing:kink:chord"].value[0]
     wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
 
-    y_wing = np.array([0, wing_root_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0])
+    y_wing = np.array(
+        [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
+    )
 
     x_wing = np.array(
         [
             0,
             0,
+            wing_kink_leading_edge_x,
             wing_tip_leading_edge_x,
             wing_tip_leading_edge_x + wing_tip_chord,
-            wing_root_chord,
+            wing_kink_leading_edge_x + wing_kink_chord,
             wing_root_chord,
             wing_root_chord,
             0,
@@ -119,8 +129,8 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     )
 
     # Horizontal Tail parameters
-    ht_root_chord = variables["data:geometry:horizontal_tail:root_chord"].value[0]
-    ht_tip_chord = variables["data:geometry:horizontal_tail:tip_chord"].value[0]
+    ht_root_chord = variables["data:geometry:horizontal_tail:root:chord"].value[0]
+    ht_tip_chord = variables["data:geometry:horizontal_tail:tip:chord"].value[0]
     ht_span = variables["data:geometry:horizontal_tail:span"].value[0]
     ht_sweep_0 = variables["data:geometry:horizontal_tail:sweep_0"].value[0]
 
@@ -161,13 +171,16 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     )
 
     # CGs
-    wing_mac_x = variables["data:geometry:wing:MAC:x"].value[0]
-    wing_root_x = variables["data:geometry:wing:root:leading_edge:x"].value[0]
-    ht_mac_x = variables["data:geometry:horizontal_tail:MAC:x"].value[0]
-    ht_distance_from_wing = variables["data:geometry:horizontal_tail:distance_from_wing"].value[0]
+    wing_25mac_x = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
+    wing_mac_length = variables["data:geometry:wing:MAC:length"].value[0]
+    local_wing_mac_le_x = variables["data:geometry:wing:MAC:leading_edge:x:local"].value[0]
+    local_ht_25mac_x = variables["data:geometry:horizontal_tail:MAC:at25percent:x:local"].value[0]
+    ht_distance_from_wing = variables[
+        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"
+    ].value[0]
 
-    x_wing = x_wing + wing_mac_x - wing_root_x
-    x_ht = x_ht + wing_mac_x + ht_distance_from_wing - ht_mac_x
+    x_wing = x_wing + wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
+    x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
     # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x_fuselage, x_wing, x_ht))

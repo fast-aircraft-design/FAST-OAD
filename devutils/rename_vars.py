@@ -124,12 +124,12 @@ if __name__ == "__main__":
     # process XML files
     old_new_translator = build_translator(old_new_names)
     file_list = [
-        "tests/unit_tests/modules/aerodynamics/data/aerodynamics_inputs.xml",
-        "tests/unit_tests/modules/geometry/data/geometry_inputs_full.xml",
-        "tests/unit_tests/modules/handling_qualities/data/hq_inputs.xml",
-        "tests/unit_tests/modules/weight/cg/data/cg_inputs.xml",
-        "tests/unit_tests/modules/weight/mass_breakdown/data/mass_breakdown_inputs.xml",
-        "tests/unit_tests/utils/postprocessing/data/problem_outputs.xml",
+        "src/fastoad/models/aerodynamics/tests/data/aerodynamics_inputs.xml",
+        "src/fastoad/models/geometry/tests/data/geometry_inputs_full.xml",
+        "src/fastoad/models/handling_qualities/tests/data/hq_inputs.xml",
+        "src/fastoad/models/weight/cg/tests/data/cg_inputs.xml",
+        "src/fastoad/models/weight/mass_breakdown/tests/data/mass_breakdown_inputs.xml",
+        "src/fastoad/utils/postprocessing/tests/data/problem_outputs.xml",
         "src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml",
     ]
     for xml_file_path in file_list:
@@ -141,7 +141,13 @@ if __name__ == "__main__":
         for dir_path, dir_names, file_names in os.walk(root_path):
             for filename in file_names:
                 _, ext = pth.splitext(filename)
-                if ext not in [".xml", ".pyc", ".exe", ".png"]:  # avoid processing useless files
+                if ext not in [
+                    ".xml",
+                    ".pyc",
+                    ".exe",
+                    ".png",
+                    "",
+                ]:  # avoid processing useless files
                     file_path = pth.join(dir_path, filename)
                     print("processing %s" % file_path)
                     try:

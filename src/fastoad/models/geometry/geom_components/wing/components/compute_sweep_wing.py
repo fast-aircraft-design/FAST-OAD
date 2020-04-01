@@ -25,8 +25,8 @@ class ComputeSweepWing(ExplicitComponent):
     """ Wing sweeps estimation """
 
     def setup(self):
-        self.add_input("data:geometry:wing:kink:leading_edge:x", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:kink:leading_edge:x:local", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
@@ -41,7 +41,7 @@ class ComputeSweepWing(ExplicitComponent):
         self.declare_partials(
             "data:geometry:wing:sweep_0",
             [
-                "data:geometry:wing:kink:leading_edge:x",
+                "data:geometry:wing:kink:leading_edge:x:local",
                 "data:geometry:wing:root:y",
                 "data:geometry:wing:kink:y",
             ],
@@ -50,7 +50,7 @@ class ComputeSweepWing(ExplicitComponent):
         self.declare_partials(
             "data:geometry:wing:sweep_100_inner",
             [
-                "data:geometry:wing:kink:leading_edge:x",
+                "data:geometry:wing:kink:leading_edge:x:local",
                 "data:geometry:wing:root:chord",
                 "data:geometry:wing:root:y",
                 "data:geometry:wing:kink:y",
@@ -61,8 +61,8 @@ class ComputeSweepWing(ExplicitComponent):
         self.declare_partials(
             "data:geometry:wing:sweep_100_outer",
             [
-                "data:geometry:wing:kink:leading_edge:x",
-                "data:geometry:wing:tip:leading_edge:x",
+                "data:geometry:wing:kink:leading_edge:x:local",
+                "data:geometry:wing:tip:leading_edge:x:local",
                 "data:geometry:wing:kink:y",
                 "data:geometry:wing:tip:y",
                 "data:geometry:wing:kink:chord",
@@ -72,8 +72,8 @@ class ComputeSweepWing(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs):
-        x3_wing = inputs["data:geometry:wing:kink:leading_edge:x"]
-        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x"]
+        x3_wing = inputs["data:geometry:wing:kink:leading_edge:x:local"]
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y2_wing = inputs["data:geometry:wing:root:y"]
         y3_wing = inputs["data:geometry:wing:kink:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]

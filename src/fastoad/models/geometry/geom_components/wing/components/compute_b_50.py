@@ -25,7 +25,7 @@ class ComputeB50(ExplicitComponent):
     """ Wing B50 estimation """
 
     def setup(self):
-        self.add_input("data:geometry:wing:tip:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
@@ -37,7 +37,7 @@ class ComputeB50(ExplicitComponent):
         self.declare_partials("data:geometry:wing:b_50", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x"]
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l1_wing = inputs["data:geometry:wing:root:virtual_chord"]

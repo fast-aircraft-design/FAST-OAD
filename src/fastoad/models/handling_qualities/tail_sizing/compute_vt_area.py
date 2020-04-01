@@ -34,7 +34,9 @@ class ComputeVTArea(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:distance_from_wing", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
 
         self.add_output("data:geometry:vertical_tail:wetted_area", units="m**2", ref=100.0)
         self.add_output("data:geometry:vertical_tail:area", units="m**2", ref=50.0)
@@ -55,7 +57,7 @@ class ComputeVTArea(om.ExplicitComponent):
         cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
         cruise_mach = inputs["data:TLAR:cruise_mach"]
         # This one is the distance between the 25% MAC points
-        wing_htp_distance = inputs["data:geometry:vertical_tail:distance_from_wing"]
+        wing_htp_distance = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
 
         # Matches suggested goal by Raymer, Fig 16.20
         cn_beta_goal = 0.0569 - 0.01694 * cruise_mach + 0.15904 * cruise_mach ** 2

@@ -33,11 +33,11 @@ class ComputeXWing(ExplicitComponent):
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
 
-        self.add_output("data:geometry:wing:kink:leading_edge:x", units="m")
-        self.add_output("data:geometry:wing:tip:leading_edge:x", units="m")
+        self.add_output("data:geometry:wing:kink:leading_edge:x:local", units="m")
+        self.add_output("data:geometry:wing:tip:leading_edge:x:local", units="m")
 
         self.declare_partials(
-            "data:geometry:wing:kink:leading_edge:x",
+            "data:geometry:wing:kink:leading_edge:x:local",
             [
                 "data:geometry:wing:root:virtual_chord",
                 "data:geometry:wing:root:y",
@@ -48,7 +48,7 @@ class ComputeXWing(ExplicitComponent):
             method="fd",
         )
         self.declare_partials(
-            "data:geometry:wing:tip:leading_edge:x",
+            "data:geometry:wing:tip:leading_edge:x:local",
             [
                 "data:geometry:wing:root:virtual_chord",
                 "data:geometry:wing:root:y",
@@ -79,5 +79,5 @@ class ComputeXWing(ExplicitComponent):
             - 1.0 / 4.0 * l4_wing
         )
 
-        outputs["data:geometry:wing:kink:leading_edge:x"] = x3_wing
-        outputs["data:geometry:wing:tip:leading_edge:x"] = x4_wing
+        outputs["data:geometry:wing:kink:leading_edge:x:local"] = x3_wing
+        outputs["data:geometry:wing:tip:leading_edge:x:local"] = x4_wing

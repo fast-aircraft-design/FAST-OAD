@@ -30,16 +30,16 @@ class ComputeHTChord(ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
 
         self.add_output("data:geometry:horizontal_tail:span", units="m")
-        self.add_output("data:geometry:horizontal_tail:root_chord", units="m")
-        self.add_output("data:geometry:horizontal_tail:tip_chord", units="m")
+        self.add_output("data:geometry:horizontal_tail:root:chord", units="m")
+        self.add_output("data:geometry:horizontal_tail:tip:chord", units="m")
 
         self.declare_partials(
             "data:geometry:horizontal_tail:span",
             ["data:geometry:horizontal_tail:area", "data:geometry:horizontal_tail:aspect_ratio"],
             method="fd",
         )
-        self.declare_partials("data:geometry:horizontal_tail:root_chord", "*", method="fd")
-        self.declare_partials("data:geometry:horizontal_tail:tip_chord", "*", method="fd")
+        self.declare_partials("data:geometry:horizontal_tail:root:chord", "*", method="fd")
+        self.declare_partials("data:geometry:horizontal_tail:tip:chord", "*", method="fd")
 
     def compute(self, inputs, outputs):
         lambda_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
@@ -51,5 +51,5 @@ class ComputeHTChord(ExplicitComponent):
         tip_chord = root_chord * taper_ht
 
         outputs["data:geometry:horizontal_tail:span"] = b_h
-        outputs["data:geometry:horizontal_tail:root_chord"] = root_chord
-        outputs["data:geometry:horizontal_tail:tip_chord"] = tip_chord
+        outputs["data:geometry:horizontal_tail:root:chord"] = root_chord
+        outputs["data:geometry:horizontal_tail:tip:chord"] = tip_chord

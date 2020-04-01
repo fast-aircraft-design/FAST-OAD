@@ -23,11 +23,11 @@ class ComputeOthersCG(ExplicitComponent):
     """ Other components center of gravities estimation """
 
     def setup(self):
-        self.add_input("data:geometry:wing:root:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
         self.add_input("data:weight:propulsion:engine:CG:x", val=np.nan, units="m")
@@ -111,7 +111,7 @@ class ComputeOthersCG(ExplicitComponent):
         )
         self.declare_partials(
             "data:weight:systems:life_support:de-icing:CG:x",
-            ["data:geometry:wing:MAC:x", "data:geometry:wing:MAC:length"],
+            ["data:geometry:wing:MAC:at25percent:x", "data:geometry:wing:MAC:length"],
             method="fd",
         )
         self.declare_partials(
@@ -154,11 +154,11 @@ class ComputeOthersCG(ExplicitComponent):
             [
                 "data:geometry:fuselage:rear_length",
                 "data:geometry:wing:MAC:length",
-                "data:geometry:wing:root:leading_edge:x",
+                "data:geometry:wing:MAC:leading_edge:x:local",
                 "data:geometry:wing:root:chord",
                 "data:geometry:cabin:seats:economical:count_by_row",
                 "data:geometry:cabin:seats:economical:length",
-                "data:geometry:wing:MAC:x",
+                "data:geometry:wing:MAC:at25percent:x",
                 "data:geometry:fuselage:length",
             ],
             method="fd",
@@ -168,18 +168,18 @@ class ComputeOthersCG(ExplicitComponent):
             [
                 "data:geometry:fuselage:front_length",
                 "data:geometry:wing:MAC:length",
-                "data:geometry:wing:root:leading_edge:x",
-                "data:geometry:wing:MAC:x",
+                "data:geometry:wing:MAC:leading_edge:x:local",
+                "data:geometry:wing:MAC:at25percent:x",
             ],
             method="fd",
         )
 
     def compute(self, inputs, outputs):
-        x0_wing = inputs["data:geometry:wing:root:leading_edge:x"]
+        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
         fus_length = inputs["data:geometry:fuselage:length"]
-        fa_length = inputs["data:geometry:wing:MAC:x"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
         x_cg_b1 = inputs["data:weight:propulsion:engine:CG:x"]

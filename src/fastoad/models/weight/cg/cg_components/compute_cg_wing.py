@@ -32,16 +32,16 @@ class ComputeWingCG(ExplicitComponent):
         self.add_input("data:geometry:wing:spar_ratio:rear:kink", val=np.nan)
         self.add_input("data:geometry:wing:spar_ratio:rear:tip", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:kink:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:kink:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:leading_edge:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
 
         self.add_output("data:weight:airframe:wing:CG:x", units="m")
 
@@ -56,16 +56,16 @@ class ComputeWingCG(ExplicitComponent):
         rear_spar_ratio_middle = inputs["data:geometry:wing:spar_ratio:rear:kink"]
         rear_spar_ratio_tip = inputs["data:geometry:wing:spar_ratio:rear:tip"]
         span = inputs["data:geometry:wing:span"]
-        x0_wing = inputs["data:geometry:wing:root:leading_edge:x"]
+        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l3_wing = inputs["data:geometry:wing:kink:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         y2_wing = inputs["data:geometry:wing:root:y"]
-        x3_wing = inputs["data:geometry:wing:kink:leading_edge:x"]
+        x3_wing = inputs["data:geometry:wing:kink:leading_edge:x:local"]
         y3_wing = inputs["data:geometry:wing:kink:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
-        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x"]
-        fa_length = inputs["data:geometry:wing:MAC:x"]
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
 
         # TODO: make this constant an option
         if wing_break >= 0.35:

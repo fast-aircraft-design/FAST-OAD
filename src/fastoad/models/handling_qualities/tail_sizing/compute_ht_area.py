@@ -29,7 +29,7 @@ class ComputeHTArea(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:has_T_tail", val=np.nan)
@@ -45,14 +45,16 @@ class ComputeHTArea(om.ExplicitComponent):
             "horizontal tail divided by fuselage length",
         )
 
-        self.add_output("data:geometry:horizontal_tail:distance_from_wing", units="m", ref=30.0)
+        self.add_output(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m", ref=30.0
+        )
         self.add_output("data:geometry:horizontal_tail:wetted_area", units="m**2", ref=100.0)
         self.add_output("data:geometry:horizontal_tail:area", units="m**2", ref=50.0)
 
         self.declare_partials("*", "*", method="fd")
         self.declare_partials(
-            "data:geometry:horizontal_tail:distance_from_wing",
-            ["data:geometry:fuselage:length", "data:geometry:wing:MAC:x"],
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+            ["data:geometry:fuselage:length", "data:geometry:wing:MAC:at25percent:x"],
             method="fd",
         )
 
@@ -63,7 +65,7 @@ class ComputeHTArea(om.ExplicitComponent):
 
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
         fuselage_length = inputs["data:geometry:fuselage:length"]
-        x_wing_aero_center = inputs["data:geometry:wing:MAC:x"]
+        x_wing_aero_center = inputs["data:geometry:wing:MAC:at25percent:x"]
         x_main_lg = inputs["data:weight:airframe:landing_gear:main:CG:x"]
         x_front_lg = inputs["data:weight:airframe:landing_gear:front:CG:x"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -114,6 +116,8 @@ class ComputeHTArea(om.ExplicitComponent):
         htp_area = ht_volume_coeff / aero_centers_distance * wing_area * wing_mac
         wet_area_htp = wet_area_coeff * htp_area
 
-        outputs["data:geometry:horizontal_tail:distance_from_wing"] = aero_centers_distance
+        outputs[
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"
+        ] = aero_centers_distance
         outputs["data:geometry:horizontal_tail:wetted_area"] = wet_area_htp
         outputs["data:geometry:horizontal_tail:area"] = htp_area

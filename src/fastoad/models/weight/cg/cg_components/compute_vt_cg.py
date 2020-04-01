@@ -26,25 +26,27 @@ class ComputeVTcg(ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:vertical_tail:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:root_chord", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:tip_chord", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:distance_from_wing", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
+        self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
 
         self.add_output("data:weight:airframe:vertical_tail:CG:x", units="m")
 
         self.declare_partials("data:weight:airframe:vertical_tail:CG:x", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        root_chord = inputs["data:geometry:vertical_tail:root_chord"]
-        tip_chord = inputs["data:geometry:vertical_tail:tip_chord"]
-        lp_vt = inputs["data:geometry:vertical_tail:distance_from_wing"]
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
+        lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
         mac_vt = inputs["data:geometry:vertical_tail:MAC:length"]
-        fa_length = inputs["data:geometry:wing:MAC:x"]
-        x0_vt = inputs["data:geometry:vertical_tail:MAC:x"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
+        x0_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:local"]
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 

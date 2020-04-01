@@ -27,8 +27,8 @@ class ComputeVTSweep(ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:root_chord", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:tip_chord", val=np.nan, units="m")
+        self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
 
         self.add_output("data:geometry:vertical_tail:sweep_0", units="deg")
@@ -38,8 +38,8 @@ class ComputeVTSweep(ExplicitComponent):
         self.declare_partials("data:geometry:vertical_tail:sweep_100", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        root_chord = inputs["data:geometry:vertical_tail:root_chord"]
-        tip_chord = inputs["data:geometry:vertical_tail:tip_chord"]
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 

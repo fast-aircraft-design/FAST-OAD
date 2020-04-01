@@ -38,15 +38,15 @@ def test_compute_aero_center(input_xml):
     """ Tests computation of aerodynamic center """
 
     input_list = [
-        "data:geometry:wing:root:leading_edge:x",
+        "data:geometry:wing:MAC:leading_edge:x:local",
         "data:geometry:wing:MAC:length",
         "data:geometry:wing:root:virtual_chord",
         "data:geometry:fuselage:maximum_width",
         "data:geometry:fuselage:length",
-        "data:geometry:wing:MAC:x",
+        "data:geometry:wing:MAC:at25percent:x",
         "data:geometry:wing:area",
         "data:geometry:horizontal_tail:area",
-        "data:geometry:horizontal_tail:distance_from_wing",
+        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
         "data:aerodynamics:aircraft:cruise:CL_alpha",
         "data:aerodynamics:horizontal_tail:cruise:CL_alpha",
     ]
