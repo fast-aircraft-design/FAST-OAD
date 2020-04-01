@@ -26,18 +26,16 @@
     ipysheet = "*"
 
 [tool.poetry.dev-dependencies]
-    pytest = "^5.2"
     wheel = "*"
-    pipenv = "*"
+    pytest = "^5.2"
     pytest-cov = "*"
-    nbval = "*"
+    pre-commit = "*"
+    black = { version = "*", allow-prereleases = true }
     pylint = "*"
-    flake8 = "*"
+    nbval = "*"
     sphinx = "*"
     sphinx-rtd-theme = "*"
     sphinxcontrib-bibtex = "*"
-    pre-commit = "*"
-    black = { version = "*", allow-prereleases = true }
 
 [build-system]
     requires = ["poetry>=0.12"]
