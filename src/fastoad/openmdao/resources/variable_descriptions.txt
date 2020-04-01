@@ -1,4 +1,4 @@
-test:test_variable	for testing (do not remove)
+test:test_variable	for testing (do not remove, keep first)
 data:aerodynamics:aircraft:cruise:CD	drag coefficient in cruise conditions w.r.t. data:aerodynamics:aircraft:cruise:CL
 data:aerodynamics:aircraft:cruise:CD:compressibility	increment of drag coefficient due to compressibility effects (shock waves) w.r.t. data:aerodynamics:aircraft:cruise:CL
 data:aerodynamics:aircraft:cruise:CD:trim	increment of drag coefficient due to aircraft trim w.r.t. data:aerodynamics:aircraft:cruise:CL
@@ -58,9 +58,9 @@ data:geometry:fuselage:wetted_area	wetted area of fuselage
 data:geometry:has_T_tail	0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail
 data:geometry:horizontal_tail:area	horizontal tail area
 data:geometry:horizontal_tail:aspect_ratio	aspect ratio of horizontal tail
+data:geometry:horizontal_tail:MAC:x	X-position of the 25% of mean aerodynamic chord of horizontal tail w.r.t. leading edge of root chord
 data:geometry:horizontal_tail:distance_from_wing	distance along X between 25% MAC of wing and 25% MAC of horizontal tail
 data:geometry:horizontal_tail:MAC:length	mean aerodynamic chord length of horizontal tail
-data:geometry:horizontal_tail:MAC:x	X-position of leading edge of mean aerodynamic chord of horizontal tail (drives position of wing w.r.t. fuselage)
 data:geometry:horizontal_tail:MAC:y	Y-position of mean aerodynamic chord of horizontal tail
 data:geometry:horizontal_tail:root_chord	chord length at root of horizontal tail
 data:geometry:horizontal_tail:span	horizontal tail span
@@ -88,9 +88,9 @@ data:geometry:slat:chord_ratio	mean value of slat chord)/(section chord)
 data:geometry:slat:span_ratio	ratio (width of slats)/(total span)
 data:geometry:vertical_tail:area	vertical tail area
 data:geometry:vertical_tail:aspect_ratio	aspect ratio of vertical tail
+data:geometry:vertical_tail:MAC:x	X-position of the 25% of mean aerodynamic chord of vertical tail w.r.t. leading edge of root chord
 data:geometry:vertical_tail:distance_from_wing	distance along X between 25% MAC of wing and 25% MAC of vertical tail
 data:geometry:vertical_tail:MAC:length	mean aerodynamic chord length of vertical tail
-data:geometry:vertical_tail:MAC:x	X-position of leading edge of mean aerodynamic chord of vertical tail
 data:geometry:vertical_tail:MAC:z	Z-position of mean aerodynamic chord of vertical tail
 data:geometry:vertical_tail:root_chord	chord length at root of vertical tail
 data:geometry:vertical_tail:span	vertical tail span
@@ -106,16 +106,16 @@ data:geometry:wing:area	wing reference area
 data:geometry:wing:aspect_ratio	wing aspect ratio
 data:geometry:wing:b_50	actual length between root and tip along 50% of chord
 data:geometry:wing:kink:chord	chord length at wing kink
-data:geometry:wing:kink:leading_edge:x	X-position of leading edge at wing kink
+data:geometry:wing:kink:leading_edge:x	X-position of leading edge at wing kink w.r.t. leading edge of root chord
 data:geometry:wing:kink:span_ratio	ratio (Y-position of kink)/(semi-span)
 data:geometry:wing:kink:thickness_ratio	thickness ratio at wing kink
 data:geometry:wing:kink:y	Y-position of wing kink
+data:geometry:wing:MAC:x	X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)
+data:geometry:wing:root:leading_edge:x	X-position of leading edge of mean aerodynamic chord w.r.t. leading edge of root chord
 data:geometry:wing:MAC:length	length of mean aerodynamic chord of wing
-data:geometry:wing:MAC:x	X-position of leading edge of mean aerodynamic chord of wing
 data:geometry:wing:MAC:y	Y-position of mean aerodynamic chord of wing
 data:geometry:wing:outer_area	wing area outside of fuselage
 data:geometry:wing:root:chord	chord length at wing root
-data:geometry:wing:root:leading_edge:x	X-position of leading edge at wing root
 data:geometry:wing:root:thickness_ratio	thickness ratio at wing root
 data:geometry:wing:root:virtual_chord	virtual chord length at wing root if sweep angle of trailing edge of outer wing part was on the whole wing (no kink)
 data:geometry:wing:root:y	Y-position of wing root
@@ -133,7 +133,7 @@ data:geometry:wing:sweep_25	sweep angle at 25% chord of wing
 data:geometry:wing:taper_ratio	taper ratio of wing
 data:geometry:wing:thickness_ratio	mean thickness ratio of wing
 data:geometry:wing:tip:chord	chord length at wing tip
-data:geometry:wing:tip:leading_edge:x	X-position of leading edge at wing tip
+data:geometry:wing:tip:leading_edge:x	X-position of leading edge at wing tip w.r.t. leading edge of root chord
 data:geometry:wing:tip:thickness_ratio	thickness ratio at wing tip
 data:geometry:wing:tip:y	Y-position of wing tip
 data:geometry:wing:wetted_area	wetted area of wing
@@ -282,6 +282,8 @@ data:TLAR:cruise_mach	top-level requirement: cruise Mach number
 data:TLAR:max_TOFL	top-level requirement: maximum takeoff field length
 data:TLAR:NPAX	top-level requirement: number of passengers, assuming a classic eco/business class repartition
 data:TLAR:range	top-level requirement: design range
+data:weight:aircraft_empty:CG:x	X-position center of gravity of empty aircraft
+data:weight:aircraft_empty:mass	mass of empty aircraft (=OWE - mass of crew)
 data:weight:aircraft:additional_fuel_capacity	fuel mass capacity of wing that exceeds sizing mission requirement
 data:weight:aircraft:CG:aft:MAC_position	most aft X-position of center of gravity as ratio of mean aerodynamic chord
 data:weight:aircraft:CG:aft:x	most aft X-position of aircraft center of gravity
@@ -298,8 +300,6 @@ data:weight:aircraft:MTOW	maximum takeoff weight
 data:weight:aircraft:MZFW	maximum zero fuel weight
 data:weight:aircraft:OWE	operating weight - empty
 data:weight:aircraft:payload	payload weight
-data:weight:aircraft_empty:CG:x	X-position center of gravity of empty aircraft
-data:weight:aircraft_empty:mass	mass of empty aircraft (=OWE - mass of crew)
 data:weight:airframe:CG:x	airframe (A): X-position of center of gravity
 data:weight:airframe:flight_controls:CG:x	flight controls (A4): X-position of center of gravity
 data:weight:airframe:flight_controls:mass	flight controls (A4): total mass

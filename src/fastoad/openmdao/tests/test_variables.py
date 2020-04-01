@@ -26,7 +26,7 @@ def test_variables():
 
     # Test description overloading
     x = Variable("test:test_variable", value=500)
-    assert x.description == "for testing (do not remove)"
+    assert x.description == "for testing (do not remove, keep first)"
 
     # Initialization
     variables = VariableList()
