@@ -1,17 +1,19 @@
-.. _Usage:
+.. _usage:
 
+######
 Usage
-############
+######
 FAST-OAD uses a configuration file for defining your OAD problem. You can
 interact with this problem using command line or Python directly.
 
 You may also use some lower-level features of FAST-OAD to interact with
-OpenMDAO systems. This part is addressed in the
-:ref:`full developer documentation<fastoad>`.
+OpenMDAO systems. This part is addressed in the :ref:`API documentation<fastoad>`.
 
+.. contents::
 
+*******************************
 The FAST-OAD configuration file
-===============================
+*******************************
 FAST-OAD configuration files are in `TOML format <https://github.com/toml-lang/toml#toml>`_.
 
 .. code:: toml
@@ -65,15 +67,17 @@ FAST-OAD configuration files are in `TOML format <https://github.com/toml-lang/t
 
 Now in details:
 
-------
+Custom module path
+==================
 
 .. code:: toml
 
     module_folders = []
 
-Provides the path where user can have his custom OpenMDAO modules. See section :ref:`Add-modules`.
+Provides the path where user can have his custom OpenMDAO modules. See section :ref:`add-modules`.
 
-------
+Input and output files
+======================
 
 .. code:: toml
 
@@ -82,7 +86,8 @@ Provides the path where user can have his custom OpenMDAO modules. See section :
 
 Specifies the input and output files of the problem. They are defined in the configuration file and DO NOT APPEAR in the command line interface.
 
-------
+Problem driver
+==============
 
 .. code:: toml
 
@@ -91,9 +96,10 @@ Specifies the input and output files of the problem. They are defined in the con
 
 This belongs the domain of the OpenMDAO framework and its utilization. This setting is needed for optimization problems. It is defined as in Python when assuming the OpenMDAO convention :code:`import openmdao.api as om`.
 
-For more details, please see the OpenMDAO documentation on `drivers <http://openmdao.org/twodocs/versions/latest/tags/Optimizer.html?highlight=optimizer>`_.
+For more details, please see the OpenMDAO documentation on `drivers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/drivers/index.html>`_.
 
-------
+Solvers
+=======
 
 .. code:: toml
 
@@ -104,10 +110,11 @@ For more details, please see the OpenMDAO documentation on `drivers <http://open
 This is the starting point for defining the model of the problem. The model is a group of components.
 If the model involves cycles, which happens for instance when some outputs of A are inputs of B, and vice-versa, it is necessary to specify solvers as done above.
 
-For more details, please see the OpenMDAO documentation on `nonlinear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/nonlinear/index.html?highlight=solvers>`_ and `linear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/linear/index.html?highlight=solvers>`_.
+For more details, please see the OpenMDAO documentation on `nonlinear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/nonlinear/index.html>`_ and `linear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/linear/index.html>`_.
 
 
-------
+Problem definition
+==================
 
 .. code:: toml
 
@@ -125,9 +132,15 @@ For more details, please see the OpenMDAO documentation on `nonlinear solvers <h
 
 Components of the model can be systems, or sub-groups. They are defined with a section key like :code:`[model.<some_name>]`. Unlike "model", which is the root element, the name of sub-components can be defined freely by user.
 
-Here above are defined systems. A system is defined by its "id" key. See :ref:`Get-system-list`.
+Here above are defined systems. A system is defined by its "id" key. See :ref:`get-system-list`.
 
-------
+Optimization settings
+=====================
+This settings are used only when using optimization (see :ref:`run-problem-optim`). They are ignored when doing
+analysis (see :ref:`run-problem-eval`)
+
+Design variables
+----------------
 
 .. code:: toml
 
@@ -142,9 +155,10 @@ Keys of this section are named after parameters of the OpenMDAO `System.add_desi
 
 This section can be repeated several times to add as many design variables as necessary.
 
-Also, see :ref:`Get-variable-list`.
+Also, see :ref:`get-variable-list`.
 
-------
+Objective function
+------------------
 
 .. code:: toml
 
@@ -156,9 +170,10 @@ Also, see :ref:`Get-variable-list`.
 Here is defined the objective function (relevant only for optimization).
 Keys of this section are named after parameters of the OpenMDAO `System.add_objective() method <http://openmdao.org/twodocs/versions/latest/features/core_features/adding_desvars_objs_consts/adding_objectives.html?highlight=add_objective>`_
 
-Also, see :ref:`Get-variable-list`.
+Also, see :ref:`get-variable-list`.
 
-------
+Constraints
+-----------
 
 .. code:: toml
 
@@ -172,15 +187,14 @@ Keys of this section are named after parameters of the OpenMDAO `System.add_cons
 
 This section can be repeated several times to add as many constraint variables as necessary.
 
-Also, see :ref:`Get-variable-list`.
+Also, see :ref:`get-variable-list`.
 
------
-
+***********************************
 Using FAST-OAD through Command line
-===================================
+***********************************
 
 FAST-OAD can be used through shell command line or Python. This section deals with the shell command line, but
-if you prefer using Python, you can skip this part and go to :ref:`Python-usage`.
+if you prefer using Python, you can skip this part and go to :ref:`python-usage`.
 
 The FAST-OAD command is :code:`fastoad`. Inline help is available with:
 
@@ -196,10 +210,10 @@ inline help using
     $ fastoad <sub-command> -h
 
 
-.. _Generate-conf-file:
+.. _generate-conf-file:
 
 How to generate a configuration file
--------------------------------------
+====================================
 
 FAST-OAD can provide a ready-to use configuration file with:
 
@@ -210,10 +224,10 @@ FAST-OAD can provide a ready-to use configuration file with:
 This generates the file `my_conf.toml`
 
 
-.. _Get-system-list:
+.. _get-system-list:
 
 How to get list of registered systems
--------------------------------------
+=====================================
 
 If you want to change the list of components in the model in the configuration file,
 you need the list of available systems.
@@ -233,10 +247,10 @@ they can be listed along FAST-OAD systems with:
     $ fastoad list_systems my_conf.toml
 
 
-.. _Get-variable-list:
+.. _get-variable-list:
 
 How to get list of variables
-----------------------------
+============================
 
 Once your problem is defined in `my_conf.toml`, you can get a list of the variables of
 your problem with:
@@ -246,10 +260,10 @@ your problem with:
     $ fastoad list_variables my_conf.toml
 
 
-.. _Generate-input-file:
+.. _generate-input-file:
 
 How to generate an input file
------------------------------
+=============================
 
 The name of the input file is defined in your configuration file `my_conf.toml`.
 This input file can be generated with:
@@ -272,10 +286,15 @@ your new input files with:
 If you are using the configuration file provided by the gen_conf sub-command (see :ref`Generate conf file`), you may download our `CeRAS01_baseline.xml <https://github.com/fast-aircraft-design/FAST-OAD/raw/v0.1a/src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml>`_ and use it as source for generating your input file.
 
 
-.. _Run-problem:
+.. _run-problem:
 
 How to run the problem
-----------------------
+======================
+
+.. _run-problem-eval:
+
+Run Multi-Disciplinary Analysis
+-------------------------------
 
 Once your problem is defined in `my_conf.toml`, you can simply run it with:
 
@@ -286,6 +305,11 @@ Once your problem is defined in `my_conf.toml`, you can simply run it with:
 *Note: this is equivalent to OpenMDAO's run_model()*
 
 
+.. _run-problem-optim:
+
+Run Multi-Disciplinary Optimization
+-----------------------------------
+
 You can also run the defined optimization with:
 
 .. code:: bash
@@ -295,10 +319,11 @@ You can also run the defined optimization with:
 *Note: this is equivalent to OpenMDAO's run_driver()*
 
 
-.. _Python-usage:
+.. _python-usage:
 
+*****************************
 Using FAST-OAD through Python
-===================================
+*****************************
 The command line interface can generate Jupyter notebooks that show how to
 use the high-level interface of FAST-OAD.
 

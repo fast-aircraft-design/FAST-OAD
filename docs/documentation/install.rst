@@ -1,5 +1,6 @@
-.. _Installation-procedure:
+.. _installation-procedure:
 
+######################
 Installation procedure
 ######################
 **Prerequisite**:FAST-OAD needs at least **Python 3.6** (usage of **Python 3.8.*** is discouraged as Jupyter notebooks are still `not compatible with it <https://github.com/jupyterlab/jupyterlab/issues/6487>`_).
@@ -13,8 +14,9 @@ Once Python is installed, FAST-OAD can be installed using pip.
 Until FAST-OAD is publicly released, the installation process must rely on GitHub
 instead of PyPI. Therefore, you have 2 ways to install it:
 
+******************
 With Git installed
-==================
+******************
 You can install the latest version with this command:
 
 .. code:: bash
@@ -23,8 +25,9 @@ You can install the latest version with this command:
 
 At the prompt, enter your GitHub credentials.
 
+*********************
 Without Git installed
-=====================
+*********************
 Please download this tarball: `<https://github.com/fast-aircraft-design/FAST-OAD/archive/master.zip>`_
 
 Unzip it in the location of your choice, then do:
