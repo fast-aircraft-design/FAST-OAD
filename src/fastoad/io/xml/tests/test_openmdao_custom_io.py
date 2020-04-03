@@ -18,7 +18,7 @@ import os.path as pth
 from shutil import rmtree
 
 import pytest
-from fastoad.openmdao.connections_utils import get_variables_from_ivc
+from fastoad.openmdao.utils import get_variables_from_ivc
 from openmdao.core.indepvarcomp import IndepVarComp
 from pytest import approx
 

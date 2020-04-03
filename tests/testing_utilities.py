@@ -17,8 +17,8 @@ Convenience functions for helping tests
 import logging
 
 import openmdao.api as om
-from fastoad.openmdao.connections_utils import get_unconnected_input_names
 from fastoad.openmdao.types import SystemSubclass
+from fastoad.openmdao.utils import get_unconnected_input_names
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)

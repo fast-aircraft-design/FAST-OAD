@@ -19,7 +19,7 @@ from fnmatch import fnmatchcase
 from typing import TypeVar, IO, List, Sequence
 
 import openmdao.api as om
-from fastoad.openmdao.connections_utils import get_ivc_from_variables, get_variables_from_ivc
+from fastoad.openmdao.utils import get_ivc_from_variables, get_variables_from_ivc
 from fastoad.openmdao.variables import VariableList
 
 OMFileIOSubclass = TypeVar("OMFileIOSubclass", bound="AbstractOMFileIO")

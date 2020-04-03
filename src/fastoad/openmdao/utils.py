@@ -21,7 +21,6 @@ from typing import Tuple, List
 import numpy as np
 import openmdao.api as om
 import pandas as pd
-from fastoad.exceptions import NoSetupError
 from fastoad.openmdao.variables import Variable, VariableList
 
 
@@ -134,25 +133,21 @@ def get_variables_from_problem(
     :return: VariableList instance
     """
     variables = VariableList()
-    if problem._setup_status == 0:
-        # If setup() has not been done, we create a copy of the problem so we can work
-        # on the model without doing setup() out of user notice
-        tmp_problem = deepcopy(problem)
-        tmp_problem.setup()
-        problem = tmp_problem
 
-    system = problem.model
+    # Setup() is needed
+    problem = get_problem_after_setup(problem)
+    model = problem.model
 
     prom2abs = {}
     if use_inputs:
-        prom2abs.update(system._var_allprocs_prom2abs_list["input"])
+        prom2abs.update(model._var_allprocs_prom2abs_list["input"])
     if use_outputs:
-        prom2abs.update(system._var_allprocs_prom2abs_list["output"])
+        prom2abs.update(model._var_allprocs_prom2abs_list["output"])
 
     for prom_name, abs_names in prom2abs.items():
         # Pick the first
         abs_name = abs_names[0]
-        metadata = system._var_abs2meta[abs_name]
+        metadata = model._var_abs2meta[abs_name]
         variable = Variable(name=prom_name, **metadata)
         if not initial_values:
             try:
@@ -186,12 +181,8 @@ def get_unconnected_input_variables(
     """
     variables = VariableList()
 
-    if problem._setup_status == 0:
-        # If setup() has not been done, we create a copy of the problem so we can work
-        # on the model without doing setup() out of user notice
-        tmp_problem = deepcopy(problem)
-        tmp_problem.setup()
-        problem = tmp_problem
+    # Setup() is needed
+    problem = get_problem_after_setup(problem)
 
     mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
     model = problem.model
@@ -226,7 +217,6 @@ def get_unconnected_input_names(
 ) -> Tuple[List[str], List[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
-    Assumes problem.setup() has been run.
 
     Inputs that have numpy.nan as default value are considered as mandatory. Other ones are
     considered as optional.
@@ -239,10 +229,8 @@ def get_unconnected_input_names(
     :return: tuple(list of missing mandatory inputs, list of missing optional inputs)
     """
 
-    model = problem.model
-
-    if not model._var_allprocs_prom2abs_list:
-        raise NoSetupError("Analysis of unconnected inputs cannot be done without prior setup.")
+    # Setup() is needed
+    model = get_problem_after_setup(problem).model
 
     prom2abs: dict = model._var_allprocs_prom2abs_list["input"]
     connexions: dict = model._conn_global_abs_in2out
@@ -277,3 +265,23 @@ def get_unconnected_input_names(
                 logger.warning("    %s : %s", abs_name, value)
 
     return mandatory_unconnected, optional_unconnected
+
+
+def get_problem_after_setup(problem: om.Problem) -> om.Problem:
+    """
+    This method should be used when an operation is needed that requires setup() to be run, without
+    having the problem being actually setup.
+
+    :param problem:
+    :return: the problem itself it setup() has already been run, or a copy of the provided problem after setup()
+             has been run
+    """
+
+    if problem._setup_status == 0:
+        # If setup() has not been done, we create a copy of the problem so we can work
+        # on the model without doing setup() out of user notice
+        tmp_problem = deepcopy(problem)
+        tmp_problem.setup()
+        return tmp_problem
+    else:
+        return problem

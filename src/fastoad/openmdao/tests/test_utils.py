@@ -19,14 +19,12 @@ from typing import List
 
 import numpy as np
 import openmdao.api as om
-import pytest
-from fastoad.exceptions import NoSetupError
 
 from .sellar_example.disc1 import Disc1
 from .sellar_example.disc2 import Disc2
 from .sellar_example.functions import Functions
 from .sellar_example.sellar import Sellar
-from ..connections_utils import (
+from ..utils import (
     get_unconnected_input_names,
     get_ivc_from_variables,
     get_variables_from_ivc,
@@ -139,13 +137,6 @@ def _test_problem(
     problem, expected_missing_mandatory_variables, expected_missing_optional_variables
 ):
     """ Tests get_unconnected_inputs for provided problem """
-    # Check without setup  -> error
-    with pytest.raises(NoSetupError) as exc_info:
-        _, _ = get_unconnected_input_names(problem, logger=_LOGGER)
-    assert exc_info is not None
-
-    # Check after setup
-    problem.setup()
 
     # with logger provided
     mandatory, optional = get_unconnected_input_names(problem, logger=_LOGGER)

@@ -29,7 +29,7 @@ from fastoad.io.configuration.exceptions import (
 from fastoad.io.serialize import OMFileIOSubclass
 from fastoad.io.xml import OMXmlIO
 from fastoad.module_management import OpenMDAOSystemRegistry
-from fastoad.openmdao.connections_utils import (
+from fastoad.openmdao.utils import (
     get_unconnected_input_variables,
     get_variables_from_ivc,
     get_ivc_from_variables,

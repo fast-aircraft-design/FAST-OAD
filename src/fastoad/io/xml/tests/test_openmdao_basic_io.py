@@ -19,7 +19,7 @@ from shutil import rmtree
 
 import numpy as np
 import pytest
-from fastoad.openmdao.connections_utils import get_variables_from_ivc
+from fastoad.openmdao.utils import get_variables_from_ivc
 from lxml import etree
 from numpy.testing import assert_allclose
 from openmdao.core.indepvarcomp import IndepVarComp

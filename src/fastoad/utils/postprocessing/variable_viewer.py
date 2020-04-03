@@ -21,7 +21,7 @@ import ipywidgets as widgets
 import pandas as pd
 from IPython.display import display, clear_output
 from fastoad.io.serialize import AbstractOMFileIO
-from fastoad.openmdao.connections_utils import (
+from fastoad.openmdao.utils import (
     get_variables_from_ivc,
     get_variables_from_df,
     get_df_from_variables,

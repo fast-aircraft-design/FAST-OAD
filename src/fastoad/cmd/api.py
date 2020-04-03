@@ -27,7 +27,7 @@ from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management import OpenMDAOSystemRegistry
-from fastoad.openmdao.connections_utils import (
+from fastoad.openmdao.utils import (
     get_unconnected_input_variables,
     get_variables_from_problem,
 )
