@@ -13,7 +13,7 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP', tol=1e-8)"
 
 [model]
   [model.group]
-    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100, reraise_child_analysiserror=False)"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
     [model.group.disc1]
       id = "sellar.disc1"
     [model.group.disc2]

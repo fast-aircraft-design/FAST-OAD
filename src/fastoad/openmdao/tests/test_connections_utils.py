@@ -270,7 +270,7 @@ def test_get_variables_from_problem():
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
     group.add_subsystem("functions", Functions(), promotes=["*"])
-    group.nonlinear_solver = om.NonlinearBlockGS(reraise_child_analysiserror=False)
+    group.nonlinear_solver = om.NonlinearBlockGS()
     problem = om.Problem(group)
 
     expected_input_vars = [
@@ -315,7 +315,7 @@ def test_get_variables_from_problem():
     group.add_subsystem("disc2", Disc2())
     group.add_subsystem("disc1", Disc1())
     group.add_subsystem("functions", Functions())
-    group.nonlinear_solver = om.NonlinearBlockGS(reraise_child_analysiserror=False)
+    group.nonlinear_solver = om.NonlinearBlockGS()
     group.connect("indeps.x", "disc1.x")
     group.connect("indeps.x", "functions.x")
     group.connect("indeps.z", "disc1.z")
