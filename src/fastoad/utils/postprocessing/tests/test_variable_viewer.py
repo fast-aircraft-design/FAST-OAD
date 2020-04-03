@@ -18,7 +18,7 @@ import os.path as pth
 
 import pandas as pd
 from fastoad.io.xml import OMXmlIO
-from fastoad.utils.postprocessing.dataframe import VariableViewer
+from fastoad.utils.postprocessing import VariableViewer
 from pandas.util.testing import assert_frame_equal
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
