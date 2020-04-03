@@ -61,9 +61,6 @@ class XfoilPolar(ExternalCodeComp):
     _xfoil_output_names = ["alpha", "CL", "CD", "CDp", "CM", "Top_Xtr", "Bot_Xtr"]
     """Column names in XFOIL polar result"""
 
-    run_count = 0
-    """ class variable to keep track of the total count of XFOIL runs """
-
     def initialize(self):
         self.options.declare(OPTION_XFOIL_EXE_PATH, default="", types=str, allow_none=True)
         self.options.declare(OPTION_PROFILE_NAME, default="BACJ.txt", types=str)
@@ -86,7 +83,6 @@ class XfoilPolar(ExternalCodeComp):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        self.__class__.run_count += 1
 
         # Create result folder first (if it must fail, let it fail as soon as possible)
         result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
@@ -205,7 +201,6 @@ class XfoilPolar(ExternalCodeComp):
         :param lift_coeff: CL
         :return: max CL if enough alpha computed
         """
-        print(alpha[np.argmax(lift_coeff)])
         if max(alpha) >= 5.0:
             return max(lift_coeff)
 
