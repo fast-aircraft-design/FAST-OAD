@@ -4,9 +4,9 @@ FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design
 
 FAST-OAD is a framework for performing rapid Overall Aircraft Design.
 
-It proposes multi-disciplinary analysis and optimisation by relying on `OpenMDAO framework <https://openmdao.org/>`_.
+It proposes multi-disciplinary analysis and optimisation by relying on the `OpenMDAO framework <https://openmdao.org/>`_.
 
-FAST-OAD allows easy switching between models for a same disciplin, and also adding/removing disciplins to match the
+FAST-OAD allows easy switching between models for a same discipline, and also adding/removing disciplines to match the
 need of your study.
 
 Currently, FAST-OAD is bundled with models for commercial transport aircraft of years 1990-2000.
