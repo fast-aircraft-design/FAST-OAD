@@ -1,21 +1,8 @@
-###############################################################
-FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design
-###############################################################
+.. _installation-procedure:
 
-FAST-OAD is a framework for performing rapid Overall Aircraft Design.
-
-It proposes multi-disciplinary analysis and optimisation by relying on the `OpenMDAO framework <https://openmdao.org/>`_.
-
-FAST-OAD allows easy switching between models for a same discipline, and also adding/removing disciplines to match the
-need of your study.
-
-Currently, FAST-OAD is bundled with models for commercial transport aircraft of years 1990-2000.
-Other models will come and you may create your own models and use them instead of bundled ones.
-
-More details can be found in the `official documentation <https://fast-aircraft-design.github.io/FAST-OAD-doc/>`_.
-
-Install
-############
+######################
+Installation procedure
+######################
 **Prerequisite**:FAST-OAD needs at least **Python 3.6** (usage of **Python 3.8.*** is discouraged as Jupyter notebooks are still `not compatible with it <https://github.com/jupyterlab/jupyterlab/issues/6487>`_).
 
 It is recommended (but not required) to install FAST-OAD in a virtual environment (`conda <https://docs.conda.io/en/latest/>`_, `venv <https://docs.python.org/3.7/library/venv.html>`_...)
@@ -27,8 +14,9 @@ Once Python is installed, FAST-OAD can be installed using pip.
 Until FAST-OAD is publicly released, the installation process must rely on GitHub
 instead of PyPI. Therefore, you have 2 ways to install it:
 
+******************
 With Git installed
-==================
+******************
 You can install the latest version with this command:
 
 .. code:: bash
@@ -37,8 +25,9 @@ You can install the latest version with this command:
 
 At the prompt, enter your GitHub credentials.
 
+*********************
 Without Git installed
-=====================
+*********************
 Please download this tarball: `<https://github.com/fast-aircraft-design/FAST-OAD/archive/master.zip>`_
 
 Unzip it in the location of your choice, then do:

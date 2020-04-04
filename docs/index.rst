@@ -8,10 +8,10 @@ This is the documentation of **FAST-OAD**.
 
     Still a work in progress
 
-    You may go directly to the `OpenMDAO models <api/fastoad.modules.html>`_
+    You may go directly to the :ref:`OpenMDAO models<fastoad.models package>`
 
     To get an OpenMDAO problem that interacts with the FAST-OAD configuration file, please see
-    the `FASTOADProblem class <api/fastoad.io.configuration.configuration.html>`_
+    the :ref:`FASTOADProblem class<fastoad.io.configuration.configuration module>`
 
 Contents
 ========
@@ -22,6 +22,7 @@ Contents
    License <license>
    Authors <authors>
    Changelog <changelog>
+   General documentation <documentation/index>
    Module Reference <api/modules>
 
 
