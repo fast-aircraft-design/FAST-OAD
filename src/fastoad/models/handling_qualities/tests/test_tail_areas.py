@@ -14,7 +14,7 @@
 import os.path as pth
 
 import pytest
-from fastoad.io.xml import OMXmlIO
+from fastoad.io import VariableIO
 
 from tests.testing_utilities import run_system
 from ..tail_sizing.compute_ht_area import ComputeHTArea
@@ -25,12 +25,12 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
 @pytest.fixture(scope="module")
-def input_xml() -> OMXmlIO:
+def input_xml() -> VariableIO:
     """
     :return: access to the sample xml data
     """
     # TODO: have more consistency in input data (no need for the whole geometry_inputs_full.xml)
-    return OMXmlIO(pth.join(DATA_FOLDER_PATH, "hq_inputs.xml"))
+    return VariableIO(pth.join(DATA_FOLDER_PATH, "hq_inputs.xml"))
 
 
 def test_compute_ht_area(input_xml):

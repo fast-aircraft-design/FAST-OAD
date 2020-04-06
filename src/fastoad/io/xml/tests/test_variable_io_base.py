@@ -21,9 +21,9 @@ import pytest
 from fastoad.openmdao.variables import VariableList
 from pytest import approx
 
-from .. import OMCustomXmlIO
-from ..exceptions import FastMissingTranslatorError
+from .. import VariableXmlBaseFormatter
 from ..translator import VarXpathTranslator
+from ...variable_io import VariableIO
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(
@@ -77,56 +77,43 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
 
     # test read ---------------------------------------------------------------
 
-    # test without setting translation table
     filename = pth.join(DATA_FOLDER_PATH, "custom.xml")
-    xml_read = OMCustomXmlIO(filename)
-    with pytest.raises(FastMissingTranslatorError):
-        xml_read.read()
 
-    # test after setting translation table
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
-    xml_read.set_translator(translator)
+    xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
     vars = xml_read.read()
     _check_basic2_vars(vars)
 
-    # test with setting a non-exhaustive translation table (missing variable name in the translator)
+    # test with a non-exhaustive translation table (missing variable name in the translator)
     # we expect that the variable is not included in the ivc
     filename = pth.join(DATA_FOLDER_PATH, "custom_additional_var.xml")
-    xml_read = OMCustomXmlIO(filename)
-    xml_read.set_translator(VarXpathTranslator(variable_names=var_names, xpaths=xpaths))
+    xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
     vars = xml_read.read()
     _check_basic2_vars(vars)
 
-    # test with setting a bad translation with an additional var not present in the xml
-    # we expect that all goes on well
+    # test with setting a translation with an additional var not present in the xml
     filename = pth.join(DATA_FOLDER_PATH, "custom.xml")
-    xml_read = OMCustomXmlIO(filename)
-    xml_read.set_translator(
-        VarXpathTranslator(
-            variable_names=var_names + ["additional_var"], xpaths=xpaths + ["bad:xpath"]
-        )
+    xml_read = VariableIO(
+        filename,
+        formatter=VariableXmlBaseFormatter(
+            VarXpathTranslator(
+                variable_names=var_names + ["additional_var"], xpaths=xpaths + ["bad:xpath"]
+            )
+        ),
     )
     vars = xml_read.read()
     _check_basic2_vars(vars)
 
     # test write --------------------------------------------------------------
     new_filename = pth.join(result_folder, "custom.xml")
-    xml_write = OMCustomXmlIO(new_filename)
-
-    # test without setting translation table
-    with pytest.raises(FastMissingTranslatorError):
-        xml_write.write(vars)
-
-    # test after setting translation table
-    xml_write.set_translator(translator)
+    translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
+    xml_write = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
     xml_write.write(vars)
 
     # check written data
     assert pth.isfile(new_filename)
-    xml_check = OMCustomXmlIO(new_filename)
-
     translator.set(var_names, xpaths)
-    xml_check.set_translator(translator)
+    xml_check = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
     new_ivc = xml_check.read()
     _check_basic2_vars(new_ivc)
 
@@ -139,17 +126,15 @@ def test_custom_xml_read_and_write_with_translation_table(cleanup):
 
     # test read ---------------------------------------------------------------
     filename = pth.join(DATA_FOLDER_PATH, "custom.xml")
-    xml_read = OMCustomXmlIO(filename)
 
     # test after setting translation table
     translator = VarXpathTranslator(source=pth.join(DATA_FOLDER_PATH, "custom_translation.txt"))
-    xml_read.set_translator(translator)
+    xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
     vars = xml_read.read()
     _check_basic2_vars(vars)
 
     new_filename = pth.join(result_folder, "custom.xml")
-    xml_write = OMCustomXmlIO(new_filename)
-    xml_write.set_translator(translator)
+    xml_write = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
     xml_write.write(vars)
 
 
@@ -169,10 +154,9 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
 
     # test read ---------------------------------------------------------------
     filename = pth.join(DATA_FOLDER_PATH, "custom.xml")
-    xml_read = OMCustomXmlIO(filename)
 
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
-    xml_read.set_translator(translator)
+    xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
 
     # test with "only"
     outputs = xml_read.read(only=["geometry:wing:span"])

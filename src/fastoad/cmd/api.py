@@ -23,14 +23,15 @@ from typing import IO, Union
 
 import openmdao.api as om
 from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.io import VariableIO
 from fastoad.io.configuration import FASTOADProblem
-from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
+from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.module_management import BundleLoader
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.variables import VariableList
+from fastoad.utils.resource_management.copy import copy_resource
 
 from . import resources
-from ..utils.resource_management.copy import copy_resource
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -58,6 +59,10 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
     copy_resource(resources, SAMPLE_FILENAME, configuration_file_path)
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
+
+
+class VariableXmlIO(object):
+    pass
 
 
 def generate_inputs(
@@ -88,9 +93,9 @@ def generate_inputs(
 
     if source_path:
         if source_path_schema == "legacy":
-            source = OMLegacy1XmlIO(source_path)
+            source = VariableIO(source_path, formatter=VariableLegacy1XmlFormatter())
         else:
-            source = OMXmlIO(source_path)
+            source = VariableIO(source_path)
     else:
         source = None
 

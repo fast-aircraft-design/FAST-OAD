@@ -16,12 +16,6 @@
 from fastoad.exceptions import FastError
 
 
-class FastMissingTranslatorError(FastError):
-    """
-    Raised when the 'XPath<->OpenMDAO variable names' translator has not been set
-    """
-
-
 class FastXPathEvalError(FastError):
     """
     Raised when some xpath could not be resolved
@@ -60,13 +54,7 @@ class FastXpathTranslatorXPathError(FastError):
         self.xpath = xpath
 
 
-class FastOMXmlIOBadPathSeparatorError(FastError):
-    """
-    Raised when the defined path separator is incorrect
-    """
-
-
-class FastOMXmlIODuplicateVariableError(FastError):
+class FastXmlFormatterDuplicateVariableError(FastError):
     """
     Raised a variable is defined more than once in a XML file
     """

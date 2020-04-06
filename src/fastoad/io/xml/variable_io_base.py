@@ -13,20 +13,22 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import json
 import logging
 import os
 import os.path as pth
 import re
+import warnings
+from typing import IO, Union
 
 import numpy as np
-from fastoad.io.serialize import AbstractOMFileIO
+from fastoad.io.formatter import IVariableIOFormatter
 from fastoad.io.xml.exceptions import (
-    FastMissingTranslatorError,
     FastXPathEvalError,
     FastXpathTranslatorXPathError,
     FastXpathTranslatorVariableError,
-    FastOMXmlIODuplicateVariableError,
+    FastXmlFormatterDuplicateVariableError,
 )
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.variables import VariableList
@@ -38,16 +40,15 @@ from openmdao.vectors.vector import Vector
 
 from .constants import DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
 
-# Logger for this module
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-class OMCustomXmlIO(AbstractOMFileIO):
+class VariableXmlBaseFormatter(IVariableIOFormatter):
     """
-    Customizable serializer for OpenMDAO variables
+    Customizable formatter for variables
 
-    user must provide, using :meth:`set_translator`, a VarXpathTranslator instance that tells how
-    OpenMDAO variable names should be converted from/to XPath.
+    User must provide at instantiation a VarXpathTranslator instance that tells how
+    variable names should be converted from/to XPath.
 
     Note: XPath are always considered relatively to the root. Therefore, "foo/bar" should be
     provided to match following XML structure:
@@ -61,12 +62,12 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 </bar>
             </foo>
         </root>
+
+    :param translator: the VarXpathTranslator instance
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self._translator = None
+    def __init__(self, translator: VarXpathTranslator):
+        self._translator = translator
         self.xml_unit_attribute = DEFAULT_UNIT_ATTRIBUTE
         self.unit_translation = {
             "²": "**2",
@@ -88,17 +89,16 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         :param translator:
         """
+        warnings.warn("provide translator at instantiation", DeprecationWarning)
+
         self._translator = translator
 
-    def read_all_variables(self) -> VariableList:
-
-        if self._translator is None:
-            raise FastMissingTranslatorError("Missing translator instance")
+    def read_variables(self, data_source: Union[str, IO]) -> VariableList:
 
         variables = VariableList()
 
         parser = etree.XMLParser(remove_blank_text=True, remove_comments=True)
-        tree = etree.parse(self._data_source, parser)
+        tree = etree.parse(data_source, parser)
         root = tree.getroot()
         for elem in root.iter():
             units = elem.attrib.get(self.xml_unit_attribute, None)
@@ -129,17 +129,14 @@ class OMCustomXmlIO(AbstractOMFileIO):
                     # Add Variable
                     variables[name] = {"value": value, "units": units}
                 else:
-                    raise FastOMXmlIODuplicateVariableError(
+                    raise FastXmlFormatterDuplicateVariableError(
                         "Variable %s is defined in more than one place in file %s"
-                        % (name, self._data_source)
+                        % (name, data_source)
                     )
 
         return variables
 
-    def write_all_variables(self, variables: VariableList):
-
-        if self._translator is None:
-            raise FastMissingTranslatorError("Missing translator instance")
+    def write_variables(self, data_source: Union[str, IO], variables: VariableList):
 
         root = etree.Element(ROOT_TAG)
 
@@ -169,10 +166,10 @@ class OMCustomXmlIO(AbstractOMFileIO):
                 element.append(etree.Comment(variable.description))
         # Write
         tree = etree.ElementTree(root)
-        dirname = pth.abspath(pth.dirname(self._data_source))
+        dirname = pth.abspath(pth.dirname(data_source))
         if not pth.exists(dirname):
             os.makedirs(dirname)
-        tree.write(self._data_source, pretty_print=True)
+        tree.write(data_source, pretty_print=True)
 
     @staticmethod
     def _create_xpath(root: _Element, xpath: str) -> _Element:

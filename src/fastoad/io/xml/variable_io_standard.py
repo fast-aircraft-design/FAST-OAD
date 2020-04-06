@@ -13,20 +13,23 @@ Defines how OpenMDAO variables are serialized to XML
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import logging
+from typing import Union, IO
 
-from typing import Sequence, List
-
-from fastoad.io.xml.exceptions import FastXPathEvalError, FastOMXmlIOBadPathSeparatorError
-from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO
-from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.variables import VariableList
 
+from .exceptions import FastXPathEvalError
+from .translator import VarXpathTranslator
+from .variable_io_base import VariableXmlBaseFormatter
 
-class OMXmlIO(OMCustomXmlIO):
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
+
+
+class VariableXmlStandardFormatter(VariableXmlBaseFormatter):
     """
-    Basic serializer for OpenMDAO variables
+    Standard XML formatter for variables
 
-    Assuming self.path_separator is defined as ``:`` (default), an OpenMDAO variable named like
+    Assuming self.path_separator is defined as ``:`` (default), a variable named like
     ``foo:bar`` with units ``m/s`` will be read and written as:
 
     .. code:: xml
@@ -37,14 +40,14 @@ class OMXmlIO(OMCustomXmlIO):
             </foo>
         <aircraft>
 
-    When writing outputs of a model, OpenMDAO component hierarchy  may be used by defining
+    When writing outputs of a model, OpenMDAO component hierarchy may be used by defining
 
      .. code:: python
 
-        self.path_separator = '.'  # Not allowed for writing !
+        self.path_separator = '.'  # Discouraged for reading !
         self.use_promoted_names = False
 
-    This way an OpenMDAO variable like ``componentA.subcomponent2.my_var`` will be written as:
+    This way, a variable like ``componentA.subcomponent2.my_var`` will be written as:
 
     .. code:: xml
 
@@ -57,10 +60,8 @@ class OMXmlIO(OMCustomXmlIO):
         <aircraft>
     """
 
-    def __init__(self, *args, **kwargs):
-        super(OMXmlIO, self).__init__(*args, **kwargs)
-
-        self._translator: BasicVarXpathTranslator = BasicVarXpathTranslator(":")
+    def __init__(self):
+        super().__init__(BasicVarXpathTranslator(":"))
 
     @property
     def path_separator(self):
@@ -74,35 +75,22 @@ class OMXmlIO(OMCustomXmlIO):
     def path_separator(self, separator):
         self._translator.path_separator = separator
 
-    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> VariableList:
+    def read_variables(self, data_source: Union[str, IO]) -> VariableList:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == ".":
-            raise FastOMXmlIOBadPathSeparatorError('Cannot use dot "." in OpenMDAO variables.')
+            _LOGGER.warning(
+                "Usage of dot (.) is discouraged, because it won't be accepted by OpenMDAO."
+            )
+        return super().read_variables(data_source)
 
-        return super().read(only, ignore)
-
-    def write(self, variables: VariableList, only: List[str] = None, ignore: List[str] = None):
+    def write_variables(self, data_source: Union[str, IO], variables: VariableList):
         try:
-            super().write(variables, only, ignore)
+            super().write_variables(data_source, variables)
         except FastXPathEvalError as err:
             # Trying to help...
             raise FastXPathEvalError(
                 err.args[0] + ' : self.path_separator is "%s". It is correct?' % self.path_separator
             )
-
-    def _create_openmdao_code(self) -> str:  # pragma: no cover
-        """dev utility for generating code"""
-        variables = self.read_all_variables()
-        variables = list(variables.values())
-
-        lines = ["ivc = IndepVarComp()"]
-        for name, value, units in variables:
-            lines.append(
-                "ivc.add_output('%s', val=%s%s)"
-                % (name, value, ", units='%s'" % units if units else "")
-            )
-
-        return "\n".join(lines)
 
 
 class BasicVarXpathTranslator(VarXpathTranslator):

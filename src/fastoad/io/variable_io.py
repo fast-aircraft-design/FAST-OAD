@@ -1,6 +1,3 @@
-"""
-Defines interfaces for reading and writing OpenMDAO variable values
-"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,27 +11,29 @@ Defines interfaces for reading and writing OpenMDAO variable values
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from abc import abstractmethod, ABC
 from fnmatch import fnmatchcase
-from typing import TypeVar, IO, List, Sequence
+from typing import Union, IO, List, Sequence
 
 from fastoad.openmdao.variables import VariableList
 
-OMFileIOSubclass = TypeVar("OMFileIOSubclass", bound="AbstractOMFileIO")
+from . import IVariableIOFormatter
+from .xml import VariableXmlStandardFormatter
 
 
-class AbstractOMFileIO(ABC):
+class VariableIO:
     """
-    Base class for reading OpenMDAO variable values.
+    Class for reading and writing variable values from/to file.
 
-    Methods :meth:`read_all_variables` and :meth:`write_all_variables` have to be implemented
-    according to chosen file format.
+    The file format is defined by the class provided as `formatter` argument.
 
-    :param data_source: the I/O stream used for reading or writing data
+    :param data_source: the I/O stream, or a file path, used for reading or writing data
+    :param formatter: a class that determines the file format to be used. Defaults to a VariableBasicXmlFormatter
+                      instance
     """
 
-    def __init__(self, data_source: IO):
+    def __init__(self, data_source: Union[str, IO], formatter: IVariableIOFormatter = None):
         self._data_source = data_source
+        self.formatter: IVariableIOFormatter = formatter if formatter else VariableXmlStandardFormatter()
 
     def read(self, only: List[str] = None, ignore: List[str] = None) -> VariableList:
         """
@@ -48,7 +47,7 @@ class AbstractOMFileIO(ABC):
         :param ignore: List of variable names that should be ignored when reading.
         :return: an VariableList instance where outputs have been defined using provided source
         """
-        variables = self.read_all_variables()
+        variables = self.formatter.read_variables(self._data_source)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         return used_variables
 
@@ -65,23 +64,7 @@ class AbstractOMFileIO(ABC):
         :param ignore: List of variable names that should be ignored when writing
         """
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-        self.write_all_variables(used_variables)
-
-    @abstractmethod
-    def read_all_variables(self) -> VariableList:
-        """
-        Reads variables from provided data source file.
-
-        :return: a list of Variable instance
-        """
-
-    @abstractmethod
-    def write_all_variables(self, variables: VariableList):
-        """
-        Writes variables to defined data source file.
-
-        :param variables:
-       """
+        self.formatter.write_variables(self._data_source, used_variables)
 
     @staticmethod
     def _filter_variables(
@@ -101,7 +84,7 @@ class AbstractOMFileIO(ABC):
         :return: filtered variables
         """
 
-        # Dev not: We use sets, but sets of Variable instances do
+        # Dev note: We use sets, but sets of Variable instances do
         # not work. Do we work with variable names instead.
         # FIXME: Variable instances are now hashable, so set of Variable instances should now work
 

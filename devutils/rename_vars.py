@@ -27,8 +27,8 @@ from fastoad.io.xml.exceptions import (
     FastXpathTranslatorXPathError,
     FastXpathTranslatorVariableError,
 )
-from fastoad.io.xml.openmdao_basic_io import BasicVarXpathTranslator
 from fastoad.io.xml.translator import VarXpathTranslator
+from fastoad.io.xml.variable_io_standard import BasicVarXpathTranslator
 
 from tests import root_folder_path
 

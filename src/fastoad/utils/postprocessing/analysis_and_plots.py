@@ -16,13 +16,13 @@ Defines the analysis and plotting functions for postprocessing
 import numpy as np
 import plotly
 import plotly.graph_objects as go
-from fastoad.io.xml import OMXmlIO
+from fastoad.io import VariableIO
 from plotly.subplots import make_subplots
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
-def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
+def wing_geometry_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
     Different designs can be superposed by providing an existing fig.
@@ -87,7 +87,7 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
 
 
 # pylint: disable-msg=too-many-locals
-def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
+def aircraft_geometry_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
     Different designs can be superposed by providing an existing fig.
@@ -210,7 +210,7 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     return fig
 
 
-def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
+def drag_polar_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft drag polar.
     Different designs can be superposed by providing an existing fig.
@@ -249,7 +249,7 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
 
 
 # pylint: disable-msg=too-many-locals
-def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidget:
+def mass_breakdown_bar_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft mass breakdown using bar plots.
     Different designs can be superposed by providing an existing fig.
@@ -308,10 +308,7 @@ def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fi
     return fig
 
 
-# pylint: disable-msg=too-many-locals
-# pylint: disable-msg=too-many-statements
-# pylint: disable=invalid-name # that's a common naming
-def mass_breakdown_sun_plot(aircraft_xml: OMXmlIO):
+def mass_breakdown_sun_plot(aircraft_xml: VariableIO):
     """
     Returns a figure sunburst plot of the mass breakdown.
     On the left a MTOW sunburst and on the right a OWE sunburst.

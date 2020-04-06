@@ -14,7 +14,7 @@ Readers for legacy XML format
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.io.xml import OMCustomXmlIO
+from fastoad.io.xml import VariableXmlBaseFormatter
 from fastoad.io.xml.translator import VarXpathTranslator
 from importlib_resources import open_text
 
@@ -23,17 +23,15 @@ from . import resources
 CONVERSION_FILENAME_1 = "legacy1.txt"
 
 
-class OMLegacy1XmlIO(OMCustomXmlIO):
+class VariableLegacy1XmlFormatter(VariableXmlBaseFormatter):
     """
-    Reader for legacy XML format (version "1")
+    Formatter for legacy XML format (version "1")
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
         translator = VarXpathTranslator()
-
         with open_text(resources, CONVERSION_FILENAME_1) as translation_table:
             translator.read_translation_table(translation_table)
+        super().__init__(translator)
 
         self.xml_unit_attribute = "unit"
-        self.set_translator(translator)

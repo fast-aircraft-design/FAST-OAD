@@ -14,6 +14,6 @@ Package for handling XML files
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .openmdao_basic_io import OMXmlIO
-from .openmdao_custom_io import OMCustomXmlIO
-from .openmdao_legacy_io import OMLegacy1XmlIO
+from .variable_io_base import VariableXmlBaseFormatter
+from .variable_io_legacy import VariableLegacy1XmlFormatter
+from .variable_io_standard import VariableXmlStandardFormatter

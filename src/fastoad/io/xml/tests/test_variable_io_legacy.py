@@ -1,5 +1,5 @@
 """
-Test module for openmdao_legacy_io.py
+Test module for variable_io_legacy.py
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -20,8 +20,8 @@ from shutil import rmtree
 import pytest
 from numpy.testing import assert_allclose
 
-from .. import OMXmlIO
-from ..openmdao_legacy_io import OMLegacy1XmlIO
+from .. import VariableLegacy1XmlFormatter
+from ... import VariableIO
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(
@@ -41,7 +41,7 @@ def test_legacy1(cleanup):
     # test read ---------------------------------------------------------------
     filename = pth.join(DATA_FOLDER_PATH, "CeRAS01_baseline.xml")
 
-    xml_read = OMLegacy1XmlIO(filename)
+    xml_read = VariableIO(filename, formatter=VariableLegacy1XmlFormatter())
     var_list = xml_read.read()
 
     entry_count = len(var_list)
@@ -59,11 +59,11 @@ def test_legacy1(cleanup):
 
     # test write ---------------------------------------------------------------
     new_filename = pth.join(result_folder, "CeRAS01_baseline.xml")
-    xml_write = OMLegacy1XmlIO(new_filename)
+    xml_write = VariableIO(new_filename, formatter=VariableLegacy1XmlFormatter())
     xml_write.write(var_list)
 
     # check by reading without conversion table
     # -> this will give the actual number of entries in the file
-    xml_check = OMXmlIO(new_filename)
+    xml_check = VariableIO(new_filename)
     check_vars = xml_check.read()
     assert len(check_vars) == entry_count
