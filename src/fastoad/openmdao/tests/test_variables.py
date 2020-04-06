@@ -1,7 +1,6 @@
 """
 Module for testing VariableList.py
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,10 +14,15 @@ Module for testing VariableList.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import List
+
 import numpy as np
 import openmdao.api as om
 import pytest
 
+from .sellar_example.disc1 import Disc1
+from .sellar_example.disc2 import Disc2
+from .sellar_example.functions import Functions
 from ..variables import VariableList, Variable
 
 
@@ -134,3 +138,237 @@ def test_df_from_to_variables():
     assert vars.names() == new_vars.names()
     for var, new_var in zip(vars, new_vars):
         assert var == new_var
+
+
+def test_get_variables_from_problem():
+    def _test_and_check(
+        problem: om.Problem,
+        use_initial_values: bool,
+        use_inputs: bool,
+        use_outputs: bool,
+        expected_vars: List[Variable],
+    ):
+        vars = VariableList.from_problem(
+            problem, use_initial_values, use_inputs=use_inputs, use_outputs=use_outputs
+        )
+
+        # A comparison of sets will not work due to values not being stricly equal
+        # (not enough decimals in expected values), so we do not use this:
+        # assert set(vars) == set(expected_vars)
+
+        # So we do comparison as strings, after having removed tags from metadata, that
+        # depend on variable source
+        for var in vars + expected_vars:
+            var.metadata["tags"] = set()
+
+        assert set([str(i) for i in vars]) == set([str(i) for i in expected_vars])
+
+    # Check with an ExplicitComponent
+    problem = om.Problem(Disc1())
+    expected_input_vars = [
+        Variable(name="x", value=np.array([np.nan]), units=None),
+        Variable(name="y2", value=np.array([1.0]), units=None),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
+    ]
+    expected_output_vars = [Variable(name="y1", value=np.array([1.0]), units=None)]
+    _test_and_check(problem, False, True, False, expected_input_vars)
+    _test_and_check(problem, False, False, True, expected_output_vars)
+    _test_and_check(problem, False, True, True, expected_input_vars + expected_output_vars)
+
+    # Check with a Group
+    group = om.Group()
+    group.add_subsystem("disc1", Disc1(), promotes=["*"])
+    group.add_subsystem("disc2", Disc2(), promotes=["*"])
+    problem = om.Problem(group)
+
+    # All variables are inputs somewhere
+    expected_input_vars = [
+        Variable(name="x", value=np.array([np.nan]), units=None),
+        Variable(name="y1", value=np.array([1.0]), units=None),
+        Variable(name="y2", value=np.array([1.0]), units=None),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
+    ]
+    expected_output_vars = [
+        Variable(name="y1", value=np.array([1.0]), units=None),
+        Variable(name="y2", value=np.array([1.0]), units=None),
+    ]
+    _test_and_check(problem, False, True, False, expected_input_vars)
+    _test_and_check(problem, False, False, True, expected_output_vars)
+    _test_and_check(problem, False, True, True, expected_input_vars)
+
+    # Check with the whole Sellar problem, without computation.
+    group = om.Group()
+    indeps = group.add_subsystem("indeps", om.IndepVarComp(), promotes=["*"])
+    indeps.add_output("x", 1.0, units="Pa")  # This setting of units will prevail in our output
+    indeps.add_output("z", [5.0, 2.0], units="m**2")
+    group.add_subsystem("disc1", Disc1(), promotes=["*"])
+    group.add_subsystem("disc2", Disc2(), promotes=["*"])
+    group.add_subsystem("functions", Functions(), promotes=["*"])
+    group.nonlinear_solver = om.NonlinearBlockGS()
+    problem = om.Problem(group)
+
+    expected_input_vars = [
+        Variable(name="x", value=np.array([np.nan]), units=None),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="y1", value=np.array([1.0]), units=None),
+        Variable(name="y2", value=np.array([1.0]), units=None),
+    ]
+    expected_output_vars = [
+        Variable(name="x", value=np.array([1.0]), units="Pa"),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="y1", value=np.array([1.0]), units=None),
+        Variable(name="y2", value=np.array([1.0]), units=None),
+        Variable(name="g1", value=np.array([1.0]), units=None),
+        Variable(name="g2", value=np.array([1.0]), units=None),
+        Variable(name="f", value=np.array([1.0]), units=None),
+    ]
+    _test_and_check(problem, True, True, False, expected_input_vars)
+    _test_and_check(problem, True, False, True, expected_output_vars)
+
+    # Check with the whole Sellar problem, with computation.
+    expected_computed_output_vars = [
+        Variable(name="x", value=np.array([1.0]), units="Pa"),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="y1", value=np.array([25.58830237]), units=None),
+        Variable(name="y2", value=np.array([12.05848815]), units=None),
+        Variable(name="f", value=np.array([28.58830817]), units=None),
+        Variable(name="g1", value=np.array([-22.42830237]), units=None),
+        Variable(name="g2", value=np.array([-11.94151185]), units=None),
+    ]
+    problem.setup()
+    problem.run_model()
+    _test_and_check(problem, True, True, False, expected_input_vars)
+    _test_and_check(problem, True, False, True, expected_output_vars)
+    _test_and_check(problem, False, False, True, expected_computed_output_vars)
+
+    # Check with the whole Sellar problem without promotions, without computation.
+    group = om.Group()
+    indeps = group.add_subsystem("indeps", om.IndepVarComp())
+    indeps.add_output("x", 1.0, units="Pa")
+    indeps.add_output("z", [5.0, 2.0], units="m**2")
+    group.add_subsystem("disc2", Disc2())
+    group.add_subsystem("disc1", Disc1())
+    group.add_subsystem("functions", Functions())
+    group.nonlinear_solver = om.NonlinearBlockGS()
+    group.connect("indeps.x", "disc1.x")
+    group.connect("indeps.x", "functions.x")
+    group.connect("indeps.z", "disc1.z")
+    group.connect("indeps.z", "disc2.z")
+    group.connect("indeps.z", "functions.z")
+    group.connect("disc1.y1", "disc2.y1")
+    group.connect("disc1.y1", "functions.y1")
+    group.connect("disc2.y2", "disc1.y2")
+    group.connect("disc2.y2", "functions.y2")
+
+    problem = om.Problem(group)
+
+    expected_vars = [
+        Variable(name="indeps.x", value=np.array([1.0]), units="Pa"),
+        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="disc1.x", value=np.array([np.nan]), units=None),
+        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="disc1.y1", value=np.array([1.0]), units=None),
+        Variable(name="disc1.y2", value=np.array([1.0]), units=None),
+        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="disc2.y1", value=np.array([1.0]), units=None),
+        Variable(name="disc2.y2", value=np.array([1.0]), units=None),
+        Variable(name="functions.x", value=np.array([2]), units=None),
+        Variable(name="functions.z", value=np.array([np.nan, np.nan]), units="m**2"),
+        Variable(name="functions.y1", value=np.array([1.0]), units=None),
+        Variable(name="functions.y2", value=np.array([1.0]), units=None),
+        Variable(name="functions.g1", value=np.array([1.0]), units=None),
+        Variable(name="functions.g2", value=np.array([1.0]), units=None),
+        Variable(name="functions.f", value=np.array([1.0]), units=None),
+    ]
+    _test_and_check(problem, True, True, True, expected_vars)
+    expected_computed_vars = [  # Here links are done, even without computations
+        Variable(name="indeps.x", value=np.array([1.0]), units="Pa"),
+        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="disc1.x", value=np.array([1.0]), units=None),
+        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="disc1.y1", value=np.array([1.0]), units=None),
+        Variable(name="disc1.y2", value=np.array([1.0]), units=None),
+        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="disc2.y1", value=np.array([1.0]), units=None),
+        Variable(name="disc2.y2", value=np.array([1.0]), units=None),
+        Variable(name="functions.x", value=np.array([1.0]), units=None),
+        Variable(name="functions.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="functions.y1", value=np.array([1.0]), units=None),
+        Variable(name="functions.y2", value=np.array([1.0]), units=None),
+        Variable(name="functions.g1", value=np.array([1.0]), units=None),
+        Variable(name="functions.g2", value=np.array([1.0]), units=None),
+        Variable(name="functions.f", value=np.array([1.0]), units=None),
+    ]
+    _test_and_check(problem, False, True, True, expected_computed_vars)
+
+    # Check with the whole Sellar problem without promotions, with computation.
+    expected_computed_vars = [
+        Variable(name="indeps.x", value=np.array([1.0]), units="Pa"),
+        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="disc1.x", value=np.array([1.0]), units=None),
+        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="disc1.y1", value=np.array([25.58830237]), units=None),
+        Variable(name="disc1.y2", value=np.array([12.05848815]), units=None),
+        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="disc2.y1", value=np.array([25.58830237]), units=None),
+        Variable(name="disc2.y2", value=np.array([12.05848815]), units=None),
+        Variable(name="functions.x", value=np.array([1.0]), units=None),
+        Variable(name="functions.z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="functions.y1", value=np.array([25.58830237]), units=None),
+        Variable(name="functions.y2", value=np.array([12.05848815]), units=None),
+        Variable(name="functions.g1", value=np.array([-22.42830237]), units=None),
+        Variable(name="functions.g2", value=np.array([-11.94151185]), units=None),
+        Variable(name="functions.f", value=np.array([28.58830817]), units=None),
+    ]
+    problem.setup()
+    problem.run_model()
+    _test_and_check(problem, True, True, True, expected_vars)
+    _test_and_check(problem, False, True, True, expected_computed_vars)
+
+
+def test_variables_from_unconnected_inputs():
+    def _test_and_check(
+        problem: om.Problem,
+        expected_mandatory_vars: List[Variable],
+        expected_optional_vars: List[Variable],
+    ):
+        problem.setup()
+        vars = VariableList.from_unconnected_inputs(problem, with_optional_inputs=False)
+        assert vars == expected_mandatory_vars
+
+        vars = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
+        assert vars == expected_mandatory_vars + expected_optional_vars
+
+    # Check with an ExplicitComponent
+    problem = om.Problem(Disc1())
+    expected_mandatory_vars = [Variable(name="x", value=np.array([np.nan]), units=None)]
+    expected_optional_vars = [
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="y2", value=np.array([1.0]), units=None),
+    ]
+    _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
+
+    # Check with a Group
+    group = om.Group()
+    group.add_subsystem("disc1", Disc1(), promotes=["*"])
+    group.add_subsystem("disc2", Disc2(), promotes=["*"])
+    problem = om.Problem(group)
+
+    expected_mandatory_vars = [Variable(name="x", value=np.array([np.nan]), units=None)]
+    expected_optional_vars = [Variable(name="z", value=np.array([5.0, 2.0]), units="m**2")]
+    _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
+
+    # Check with the whole Sellar problem.
+    # 'z' variable should now be mandatory, because it is so in Functions
+    group = om.Group()
+    group.add_subsystem("disc1", Disc1(), promotes=["*"])
+    group.add_subsystem("disc2", Disc2(), promotes=["*"])
+    group.add_subsystem("functions", Functions(), promotes=["*"])
+    problem = om.Problem(group)
+
+    expected_mandatory_vars = [
+        Variable(name="x", value=np.array([np.nan]), units=None),
+        Variable(name="z", value=np.array([np.nan, np.nan]), units="m**2"),
+    ]
+    expected_optional_vars = []
+    _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)

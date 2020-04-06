@@ -13,162 +13,16 @@ Utility functions for OpenMDAO classes/instances
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import warnings
+
 from copy import deepcopy
 from logging import Logger
 from typing import Tuple, List
 
 import numpy as np
 import openmdao.api as om
-import pandas as pd
-from fastoad.openmdao.variables import Variable, VariableList
 
 
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
-
-
-def get_ivc_from_variables(variables: VariableList) -> om.IndepVarComp:
-    """
-    Creates an IndepVarComp instance from a VariableList instance
-
-    :param variables: a VariableList instance
-    :return: an IndepVarComp instance
-    """
-
-    warnings.warn("Use VariableList().to_ivc instead.", DeprecationWarning)
-    return variables.to_ivc()
-
-
-def get_variables_from_ivc(ivc: om.IndepVarComp) -> VariableList:
-    """
-    Creates a VariableList instance from an IndepVarComp instance
-
-    :param ivc: an IndepVarComp instance
-    :return: a VariableList instance
-    """
-    warnings.warn("Use VariableList().from_ivc instead.", DeprecationWarning)
-    return VariableList.from_ivc(ivc)
-
-
-def get_df_from_variables(variables: VariableList) -> pd.DataFrame:
-    """
-    Creates a DataFrame instance from a VariableList instance
-
-    :param variables: a VariableList instance
-    :return: a DataFrame instance
-    """
-    warnings.warn("Use VariableList().to_dataframe instead.", DeprecationWarning)
-    return variables.to_dataframe()
-
-
-def get_variables_from_df(df: pd.DataFrame) -> VariableList:
-    """
-    Creates a VariableList instance from a DataFrame instance
-
-    :param df: a DataFrame instance
-    :return: a VariableList instance
-    """
-    warnings.warn("Use VariableList().from_dataframe instead.", DeprecationWarning)
-    return VariableList.from_dataframe(df)
-
-
-def get_variables_from_problem(
-    problem: om.Problem,
-    initial_values: bool = False,
-    use_inputs: bool = True,
-    use_outputs: bool = True,
-) -> VariableList:
-    """
-    This function returns an VariableList instance containing
-    variables (inputs and/or outputs) of a an OpenMDAO Problem.
-
-    If variables are promoted, the promoted name will be used. Otherwise, the absolute name will be
-    used.
-
-    :param problem: OpenMDAO Problem instance to inspect
-    :param initial_values: if True, returned instance will contain values before computation
-    :param use_inputs: if True, returned instance will contain inputs of the problem
-    :param use_outputs: if True, returned instance will contain outputs of the problem
-    :return: VariableList instance
-    """
-    variables = VariableList()
-
-    # Setup() is needed
-    problem = get_problem_after_setup(problem)
-    model = problem.model
-
-    prom2abs = {}
-    if use_inputs:
-        prom2abs.update(model._var_allprocs_prom2abs_list["input"])
-    if use_outputs:
-        prom2abs.update(model._var_allprocs_prom2abs_list["output"])
-
-    for prom_name, abs_names in prom2abs.items():
-        # Pick the first
-        abs_name = abs_names[0]
-        metadata = model._var_abs2meta[abs_name]
-        variable = Variable(name=prom_name, **metadata)
-        if not initial_values:
-            try:
-                # Maybe useless, but we force units to ensure it is consistent
-                variable.value = problem.get_val(prom_name, units=variable.units)
-            except RuntimeError:
-                # In case problem is incompletely set, problem.get_val() will fail.
-                # In such case, falling back to the method for initial values
-                # should be enough.
-                pass
-        variables.append(variable)
-
-    return variables
-
-
-def get_unconnected_input_variables(
-    problem: om.Problem, with_optional_inputs: bool = False
-) -> VariableList:
-    """
-    This function returns an VariableList instance containing
-    all the unconnected inputs of a Problem.
-
-    If *optional_inputs* is False, only inputs that have numpy.nan as default value (hence
-    considered as mandatory) will be in returned instance. Otherwise, all unconnected inputs will
-    be in returned instance.
-
-    :param problem: OpenMDAO Problem instance to inspect
-    :param with_optional_inputs: If True, returned instance will contain all unconnected inputs.
-                            Otherwise, it will contain only mandatory ones.
-    :return: VariableList instance
-    """
-    variables = VariableList()
-
-    # Setup() is needed
-    problem = get_problem_after_setup(problem)
-
-    mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
-    model = problem.model
-
-    # processed_prom_names will store promoted names that have been already processed, so that
-    # it won't be stored twice.
-    # By processing mandatory variable first, a promoted variable that would be mandatory somewhere
-    # and optional elsewhere will be retained as mandatory (and associated value will be NaN),
-    # which is fine.
-    # For promoted names that link to several optional variables and no mandatory ones, associated
-    # value will be the first encountered one, and this is as good a choice as any other.
-    processed_prom_names = []
-
-    def _add_outputs(unconnected_names):
-        """ Fills ivc with data associated to each provided var"""
-        for abs_name in unconnected_names:
-            prom_name = model._var_abs2prom["input"][abs_name]
-            if prom_name not in processed_prom_names:
-                processed_prom_names.append(prom_name)
-                metadata = model._var_abs2meta[abs_name]
-                variables[prom_name] = metadata
-
-    _add_outputs(mandatory_unconnected)
-    if with_optional_inputs:
-        _add_outputs(optional_unconnected)
-
-    return variables
 
 
 def get_unconnected_input_names(

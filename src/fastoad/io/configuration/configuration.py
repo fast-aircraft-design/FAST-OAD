@@ -29,16 +29,12 @@ from fastoad.io.configuration.exceptions import (
 from fastoad.io.serialize import OMFileIOSubclass
 from fastoad.io.xml import OMXmlIO
 from fastoad.module_management import OpenMDAOSystemRegistry
-from fastoad.openmdao.utils import (
-    get_unconnected_input_variables,
-    get_variables_from_problem,
-)
-# Logger for this module
 from fastoad.openmdao.variables import VariableList
 
-INPUT_SYSTEM_NAME = "inputs"
+# Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
+INPUT_SYSTEM_NAME = "inputs"
 KEY_FOLDERS = "module_folders"
 KEY_INPUT_FILE = "input_file"
 KEY_OUTPUT_FILE = "output_file"
@@ -141,7 +137,7 @@ class FASTOADProblem(om.Problem):
         :param input_data: if provided, variable values will be read from it, if available.
         """
         if self.input_file_path:
-            variables = get_unconnected_input_variables(self, with_optional_inputs=True)
+            variables = VariableList.from_unconnected_inputs(self, with_optional_inputs=True)
             if input_data:
                 ref_ivc = input_data.read()
                 ref_vars = VariableList.from_ivc(ref_ivc)
@@ -182,7 +178,7 @@ class FASTOADProblem(om.Problem):
         """
         if self.output_file_path:
             writer = OMXmlIO(self.output_file_path)
-            variables = get_variables_from_problem(self)
+            variables = VariableList.from_problem(self)
             writer.write(variables.to_ivc())
 
     def build_model(self):
