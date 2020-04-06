@@ -51,7 +51,7 @@ def test_compute_aero_center(input_xml):
         "data:aerodynamics:horizontal_tail:cruise:CL_alpha",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeAeroCenter(), input_vars)
 

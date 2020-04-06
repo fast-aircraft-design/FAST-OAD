@@ -14,12 +14,12 @@ Defines how OpenMDAO variables are serialized to XML
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Sequence
+from typing import Sequence, List
 
-import openmdao.api as om
 from fastoad.io.xml.exceptions import FastXPathEvalError, FastOMXmlIOBadPathSeparatorError
 from fastoad.io.xml.openmdao_custom_io import OMCustomXmlIO
 from fastoad.io.xml.translator import VarXpathTranslator
+from fastoad.openmdao.variables import VariableList
 
 
 class OMXmlIO(OMCustomXmlIO):
@@ -74,16 +74,16 @@ class OMXmlIO(OMCustomXmlIO):
     def path_separator(self, separator):
         self._translator.path_separator = separator
 
-    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> om.IndepVarComp:
+    def read(self, only: Sequence[str] = None, ignore: Sequence[str] = None) -> VariableList:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == ".":
             raise FastOMXmlIOBadPathSeparatorError('Cannot use dot "." in OpenMDAO variables.')
 
         return super().read(only, ignore)
 
-    def write(self, ivc: om.IndepVarComp, only: Sequence[str] = None, ignore: Sequence[str] = None):
+    def write(self, variables: VariableList, only: List[str] = None, ignore: List[str] = None):
         try:
-            super().write(ivc, only, ignore)
+            super().write(variables, only, ignore)
         except FastXPathEvalError as err:
             # Trying to help...
             raise FastXPathEvalError(
@@ -92,7 +92,7 @@ class OMXmlIO(OMCustomXmlIO):
 
     def _create_openmdao_code(self) -> str:  # pragma: no cover
         """dev utility for generating code"""
-        variables = self.read_variables()
+        variables = self.read_all_variables()
         variables = list(variables.values())
 
         lines = ["ivc = IndepVarComp()"]

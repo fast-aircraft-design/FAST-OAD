@@ -59,7 +59,7 @@ def test_compute_cg_control_surfaces(input_xml):
         "data:geometry:wing:MAC:at25percent:x",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeControlSurfacesCG(), input_vars)
 
@@ -79,7 +79,7 @@ def test_compute_cg_loadcase1(input_xml):
         "data:TLAR:NPAX",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     input_vars.add_output("data:weight:aircraft_empty:CG:x", 699570.01 / 40979.11)
     input_vars.add_output("data:weight:aircraft_empty:mass", 40979.11)
@@ -104,7 +104,7 @@ def test_compute_cg_loadcase2(input_xml):
         "data:weight:fuel_tank:CG:x",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     input_vars.add_output("data:weight:aircraft_empty:CG:x", 699570.01 / 40979.11)
     input_vars.add_output("data:weight:aircraft_empty:mass", 40979.11)
@@ -127,7 +127,7 @@ def test_compute_cg_loadcase3(input_xml):
         "data:TLAR:NPAX",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     input_vars.add_output("data:weight:aircraft_empty:CG:x", 699570.01 / 40979.11)
     input_vars.add_output("data:weight:aircraft_empty:mass", 40979.11)
@@ -150,7 +150,7 @@ def test_compute_cg_loadcase4(input_xml):
         "data:TLAR:NPAX",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     input_vars.add_output("data:weight:aircraft_empty:CG:x", 699570.01 / 40979.11)
     input_vars.add_output("data:weight:aircraft_empty:mass", 40979.11)
@@ -180,7 +180,7 @@ def test_compute_cg_others(input_xml):
         "data:geometry:cabin:seats:economical:length",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeOthersCG(), input_vars)
 
@@ -311,7 +311,7 @@ def test_compute_cg_ratio_aft(input_xml):
         "data:geometry:wing:MAC:at25percent:x",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeCGRatioAft(), input_vars)
 
@@ -345,7 +345,7 @@ def test_compute_cg_tanks(input_xml):
         "data:geometry:fuselage:maximum_width",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeTanksCG(), input_vars)
 
@@ -378,7 +378,7 @@ def test_compute_cg_wing(input_xml):
         "data:geometry:wing:MAC:at25percent:x",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeWingCG(), input_vars)
 
@@ -462,7 +462,7 @@ def test_compute_global_cg(input_xml):
         "data:weight:furniture:toilets:mass",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeGlobalCG(), input_vars)
 
@@ -475,7 +475,7 @@ def test_compute_max_cg_ratio(input_xml):
 
     input_list = []
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     input_vars.add_output("data:weight:aircraft:empty:CG:MAC_position", 0.387846)
     input_vars.add_output("data:weight:aircraft:load_case_1:CG:MAC_position", 0.364924)
@@ -497,7 +497,7 @@ def test_compute_aircraft_cg(input_xml):
         "data:geometry:wing:MAC:at25percent:x",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
     input_vars.add_output("data:weight:aircraft:CG:aft:MAC_position", 0.388971)
 
     problem = run_system(ComputeAircraftCG(), input_vars)

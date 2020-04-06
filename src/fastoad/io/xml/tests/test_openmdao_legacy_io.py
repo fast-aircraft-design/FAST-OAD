@@ -18,7 +18,6 @@ import os.path as pth
 from shutil import rmtree
 
 import pytest
-from fastoad.openmdao.variables import VariableList
 from numpy.testing import assert_allclose
 
 from .. import OMXmlIO
@@ -43,11 +42,9 @@ def test_legacy1(cleanup):
     filename = pth.join(DATA_FOLDER_PATH, "CeRAS01_baseline.xml")
 
     xml_read = OMLegacy1XmlIO(filename)
-    ivc = xml_read.read()
-    var_list = VariableList.from_ivc(ivc)
-    inputs = ivc._indep_external  # pylint: disable=protected-access
+    var_list = xml_read.read()
 
-    entry_count = len(inputs)
+    entry_count = len(var_list)
     # Entry count may vary according to changes in translation table, but
     # we check that enough values are actually read.
     assert entry_count > 400
@@ -63,10 +60,10 @@ def test_legacy1(cleanup):
     # test write ---------------------------------------------------------------
     new_filename = pth.join(result_folder, "CeRAS01_baseline.xml")
     xml_write = OMLegacy1XmlIO(new_filename)
-    xml_write.write(ivc)
+    xml_write.write(var_list)
 
     # check by reading without conversion table
     # -> this will give the actual number of entries in the file
     xml_check = OMXmlIO(new_filename)
-    check_ivc = xml_check.read()
-    assert len(check_ivc._indep_external) == entry_count  # pylint: disable=protected-access
+    check_vars = xml_check.read()
+    assert len(check_vars) == entry_count

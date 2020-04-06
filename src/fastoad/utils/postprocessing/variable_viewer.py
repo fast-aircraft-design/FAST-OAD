@@ -105,15 +105,7 @@ class VariableViewer:
         :return the equivalent dataframe
         """
         # TODO: should we add a 'Type' field if we decide to add a type attribute to Variable ?
-        # Read the file
-        ivc = file.read()
-
-        # Extract the variables list
-        variables = VariableList.from_ivc(ivc)
-        # pylint: disable=invalid-name # that's a common naming
-        df = variables.to_dataframe()
-
-        return df
+        return file.read().to_dataframe()
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
@@ -126,8 +118,7 @@ class VariableViewer:
         """
         # Extract the variables list
         variables = VariableList.from_dataframe(df)
-        ivc = variables.to_ivc()
-        file.write(ivc)
+        file.write(variables)
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod

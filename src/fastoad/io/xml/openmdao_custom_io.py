@@ -90,7 +90,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
         """
         self._translator = translator
 
-    def read_variables(self) -> VariableList:
+    def read_all_variables(self) -> VariableList:
 
         if self._translator is None:
             raise FastMissingTranslatorError("Missing translator instance")
@@ -136,7 +136,7 @@ class OMCustomXmlIO(AbstractOMFileIO):
 
         return variables
 
-    def write_variables(self, variables: VariableList):
+    def write_all_variables(self, variables: VariableList):
 
         if self._translator is None:
             raise FastMissingTranslatorError("Missing translator instance")

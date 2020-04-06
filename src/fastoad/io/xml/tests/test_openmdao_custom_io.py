@@ -19,7 +19,6 @@ from shutil import rmtree
 
 import pytest
 from fastoad.openmdao.variables import VariableList
-from openmdao.core.indepvarcomp import IndepVarComp
 from pytest import approx
 
 from .. import OMCustomXmlIO
@@ -37,10 +36,8 @@ def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-def _check_basic2_ivc(ivc: IndepVarComp):
+def _check_basic2_vars(outputs: VariableList):
     """ Checks that provided IndepVarComp instance matches content of data/custom.xml file """
-
-    outputs = VariableList.from_ivc(ivc)
 
     assert len(outputs) == 5
 
@@ -89,16 +86,16 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
     # test after setting translation table
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
     xml_read.set_translator(translator)
-    ivc = xml_read.read()
-    _check_basic2_ivc(ivc)
+    vars = xml_read.read()
+    _check_basic2_vars(vars)
 
     # test with setting a non-exhaustive translation table (missing variable name in the translator)
     # we expect that the variable is not included in the ivc
     filename = pth.join(DATA_FOLDER_PATH, "custom_additional_var.xml")
     xml_read = OMCustomXmlIO(filename)
     xml_read.set_translator(VarXpathTranslator(variable_names=var_names, xpaths=xpaths))
-    ivc = xml_read.read()
-    _check_basic2_ivc(ivc)
+    vars = xml_read.read()
+    _check_basic2_vars(vars)
 
     # test with setting a bad translation with an additional var not present in the xml
     # we expect that all goes on well
@@ -109,8 +106,8 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
             variable_names=var_names + ["additional_var"], xpaths=xpaths + ["bad:xpath"]
         )
     )
-    ivc = xml_read.read()
-    _check_basic2_ivc(ivc)
+    vars = xml_read.read()
+    _check_basic2_vars(vars)
 
     # test write --------------------------------------------------------------
     new_filename = pth.join(result_folder, "custom.xml")
@@ -118,11 +115,11 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
 
     # test without setting translation table
     with pytest.raises(FastMissingTranslatorError):
-        xml_write.write(ivc)
+        xml_write.write(vars)
 
     # test after setting translation table
     xml_write.set_translator(translator)
-    xml_write.write(ivc)
+    xml_write.write(vars)
 
     # check written data
     assert pth.isfile(new_filename)
@@ -131,7 +128,7 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
     translator.set(var_names, xpaths)
     xml_check.set_translator(translator)
     new_ivc = xml_check.read()
-    _check_basic2_ivc(new_ivc)
+    _check_basic2_vars(new_ivc)
 
 
 def test_custom_xml_read_and_write_with_translation_table(cleanup):
@@ -147,13 +144,13 @@ def test_custom_xml_read_and_write_with_translation_table(cleanup):
     # test after setting translation table
     translator = VarXpathTranslator(source=pth.join(DATA_FOLDER_PATH, "custom_translation.txt"))
     xml_read.set_translator(translator)
-    ivc = xml_read.read()
-    _check_basic2_ivc(ivc)
+    vars = xml_read.read()
+    _check_basic2_vars(vars)
 
     new_filename = pth.join(result_folder, "custom.xml")
     xml_write = OMCustomXmlIO(new_filename)
     xml_write.set_translator(translator)
-    xml_write.write(ivc)
+    xml_write.write(vars)
 
 
 def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
@@ -178,26 +175,23 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
     xml_read.set_translator(translator)
 
     # test with "only"
-    ivc = xml_read.read(only=["geometry:wing:span"])
-    outputs = VariableList.from_ivc(ivc)
+    outputs = xml_read.read(only=["geometry:wing:span"])
     assert len(outputs) == 1
     assert outputs[0].name == "geometry:wing:span"
     assert outputs[0].value == approx([42])
     assert outputs[0].units == "m"
 
     # test with "ignore"
-    ivc = xml_read.read(
+    outputs = xml_read.read(
         ignore=["geometry:total_surface", "geometry:wing:aspect_ratio", "geometry:fuselage:length"]
     )
-    outputs = VariableList.from_ivc(ivc)
     assert len(outputs) == 1
     assert outputs[0].name == "geometry:wing:span"
     assert outputs[0].value == approx([42])
     assert outputs[0].units == "m"
 
     # test with patterns in "only"
-    ivc = xml_read.read(only=["*:wing:*"])
-    outputs = VariableList.from_ivc(ivc)
+    outputs = xml_read.read(only=["*:wing:*"])
     assert len(outputs) == 2
     assert outputs[0].name == "geometry:wing:span"
     assert outputs[0].value == approx([42])
@@ -207,8 +201,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
     assert outputs[1].units is None
 
     # test with patterns in "ignore"
-    ivc = xml_read.read(ignore=["geometry:*u*", "geometry:wing:aspect_ratio"])
-    outputs = VariableList.from_ivc(ivc)
+    outputs = xml_read.read(ignore=["geometry:*u*", "geometry:wing:aspect_ratio"])
     assert len(outputs) == 1
     assert outputs[0].name == "geometry:wing:span"
     assert outputs[0].value == approx([42])

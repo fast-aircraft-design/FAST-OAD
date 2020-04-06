@@ -142,9 +142,7 @@ def test_non_regression(cleanup):
         atol=1,
     )
 
-    ref_var_list = OMLegacy1XmlIO(
-        pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy_result.xml")
-    ).read_variables()
+    ref_var_list = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy_result.xml")).read()
 
     row_list = []
     for ref_var in ref_var_list:

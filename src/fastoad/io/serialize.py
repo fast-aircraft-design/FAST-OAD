@@ -18,7 +18,6 @@ from abc import abstractmethod, ABC
 from fnmatch import fnmatchcase
 from typing import TypeVar, IO, List, Sequence
 
-import openmdao.api as om
 from fastoad.openmdao.variables import VariableList
 
 OMFileIOSubclass = TypeVar("OMFileIOSubclass", bound="AbstractOMFileIO")
@@ -28,7 +27,7 @@ class AbstractOMFileIO(ABC):
     """
     Base class for reading OpenMDAO variable values.
 
-    Methods :meth:`read_variables` and :meth:`write_variables` have to be implemented
+    Methods :meth:`read_all_variables` and :meth:`write_all_variables` have to be implemented
     according to chosen file format.
 
     :param data_source: the I/O stream used for reading or writing data
@@ -37,40 +36,39 @@ class AbstractOMFileIO(ABC):
     def __init__(self, data_source: IO):
         self._data_source = data_source
 
-    def read(self, only: List[str] = None, ignore: List[str] = None) -> om.IndepVarComp:
+    def read(self, only: List[str] = None, ignore: List[str] = None) -> VariableList:
         """
         Reads variables from provided data source.
 
         Elements of `only` and `ignore` can be real variable names or Unix-shell-style patterns.
         In any case, comparison is case-sensitive.
 
-        :param only: List of OpenMDAO variable names that should be read. Other names will be
+        :param only: List of variable names that should be read. Other names will be
                      ignored. If None, all variables will be read.
-        :param ignore: List of OpenMDAO variable names that should be ignored when reading.
-        :return: an IndepVarComp() instance where outputs have been defined using provided source
+        :param ignore: List of variable names that should be ignored when reading.
+        :return: an VariableList instance where outputs have been defined using provided source
         """
-        variables = self.read_variables()
+        variables = self.read_all_variables()
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-        return used_variables.to_ivc()
+        return used_variables
 
-    def write(self, ivc: om.IndepVarComp, only: List[str] = None, ignore: List[str] = None):
+    def write(self, variables: VariableList, only: List[str] = None, ignore: List[str] = None):
         """
-        Writes output variables from provided IndepVarComp instance.
+        Writes variables from provided VariableList instance.
 
         Elements of `only` and `ignore` can be real variable names or Unix-shell-style patterns.
         In any case, comparison is case-sensitive.
 
-        :param ivc: the IndepVarComp instance
-        :param only: List of OpenMDAO variable names that should be written. Other names will be
+        :param variables: a VariableList instance
+        :param only: List of variable names that should be written. Other names will be
                      ignored. If None, all variables will be written.
-        :param ignore: List of OpenMDAO variable names that should be ignored when writing
+        :param ignore: List of variable names that should be ignored when writing
         """
-        variables = VariableList.from_ivc(ivc)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-        self.write_variables(used_variables)
+        self.write_all_variables(used_variables)
 
     @abstractmethod
-    def read_variables(self) -> VariableList:
+    def read_all_variables(self) -> VariableList:
         """
         Reads variables from provided data source file.
 
@@ -78,7 +76,7 @@ class AbstractOMFileIO(ABC):
         """
 
     @abstractmethod
-    def write_variables(self, variables: VariableList):
+    def write_all_variables(self, variables: VariableList):
         """
         Writes variables to defined data source file.
 

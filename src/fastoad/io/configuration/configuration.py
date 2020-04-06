@@ -139,11 +139,10 @@ class FASTOADProblem(om.Problem):
         if self.input_file_path:
             variables = VariableList.from_unconnected_inputs(self, with_optional_inputs=True)
             if input_data:
-                ref_ivc = input_data.read()
-                ref_vars = VariableList.from_ivc(ref_ivc)
+                ref_vars = input_data.read()
                 variables.update(ref_vars)
             writer = OMXmlIO(self.input_file_path)
-            writer.write(variables.to_ivc())
+            writer.write(variables)
 
     def read_inputs(self):
         """
@@ -154,7 +153,7 @@ class FASTOADProblem(om.Problem):
         if self.input_file_path:
             # Reads input file
             reader = OMXmlIO(self.input_file_path)
-            ivc = reader.read()
+            ivc = reader.read().to_ivc()
 
             # ivc will be added through add_subsystem, but we must use set_order() to
             # put it first.
@@ -179,7 +178,7 @@ class FASTOADProblem(om.Problem):
         if self.output_file_path:
             writer = OMXmlIO(self.output_file_path)
             variables = VariableList.from_problem(self)
-            writer.write(variables.to_ivc())
+            writer.write(variables)
 
     def build_model(self):
         """
