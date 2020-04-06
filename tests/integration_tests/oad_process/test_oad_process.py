@@ -24,8 +24,9 @@ import openmdao.api as om
 import pandas as pd
 import pytest
 from fastoad import api
+from fastoad.io import VariableIO
 from fastoad.io.configuration import FASTOADProblem
-from fastoad.io.xml import OMLegacy1XmlIO
+from fastoad.io.xml import VariableLegacy1XmlFormatter
 from numpy.testing import assert_allclose
 
 from tests import root_folder_path
@@ -50,7 +51,9 @@ def test_oad_process(cleanup):
     problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, "oad_process.toml"))
 
-    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, "CeRAS01_baseline.xml"))
+    ref_input_reader = VariableIO(
+        pth.join(DATA_FOLDER_PATH, "CeRAS01_baseline.xml"), formatter=VariableLegacy1XmlFormatter()
+    )
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
     problem.setup()
@@ -106,7 +109,9 @@ def test_non_regression(cleanup):
         problem.model.aerodynamics.landing._OPTIONS["xfoil_alpha_max"] = 22.0
 
     # Generation and reading of inputs ----------------------------------------
-    ref_input_reader = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml"))
+    ref_input_reader = VariableIO(
+        pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml"), formatter=VariableLegacy1XmlFormatter()
+    )
     problem.write_needed_inputs(ref_input_reader)
     problem.read_inputs()
     problem.setup()
@@ -142,7 +147,10 @@ def test_non_regression(cleanup):
         atol=1,
     )
 
-    ref_var_list = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy_result.xml")).read()
+    ref_var_list = VariableIO(
+        pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy_result.xml"),
+        formatter=VariableLegacy1XmlFormatter(),
+    ).read()
 
     row_list = []
     for ref_var in ref_var_list:

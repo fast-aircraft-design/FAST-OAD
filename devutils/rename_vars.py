@@ -22,13 +22,14 @@ import os.path as pth
 import re
 
 import numpy as np
-from fastoad.io.xml import OMCustomXmlIO, OMXmlIO
+from fastoad.io import VariableIO
+from fastoad.io.xml import VariableXmlBaseFormatter
 from fastoad.io.xml.exceptions import (
     FastXpathTranslatorXPathError,
     FastXpathTranslatorVariableError,
 )
-from fastoad.io.xml.openmdao_basic_io import BasicVarXpathTranslator
 from fastoad.io.xml.translator import VarXpathTranslator
+from fastoad.io.xml.variable_io_standard import BasicVarXpathTranslator
 
 from tests import root_folder_path
 
@@ -62,11 +63,9 @@ def convert_xml(file_path: str, translator: VarXpathTranslator):
     :param file_path:
     :param translator:
     """
-    reader = OMCustomXmlIO(file_path)
-    reader.set_translator(translator)
-    ivc = reader.read().to_ivc()
-
-    OMXmlIO(file_path).write(ivc)
+    reader = VariableIO(file_path, formatter=VariableXmlBaseFormatter(translator))
+    vars = reader.read()
+    VariableIO(file_path).write(vars)
 
 
 def replace_var_names(file_path, var_names_match):

@@ -20,7 +20,7 @@ import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
 from IPython.display import display, clear_output
-from fastoad.io.serialize import AbstractOMFileIO
+from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
 
 pd.set_option("display.max_rows", None)
@@ -65,7 +65,7 @@ class VariableViewer:
         # A tag used to select all submodules
         self.all_tag = "--ALL--"
 
-    def load(self, file: AbstractOMFileIO = None):
+    def load(self, file: VariableIO = None):
         """
         Loads the file file and stores it in a dataframe.
 
@@ -78,7 +78,7 @@ class VariableViewer:
         self.dataframe = self._file_to_df(file)
         self.dataframe = self.dataframe.reset_index(drop=True)
 
-    def save(self, file: AbstractOMFileIO = None):
+    def save(self, file: VariableIO = None):
         """
         Save the dataframe to the file file.
 
@@ -97,7 +97,7 @@ class VariableViewer:
         return self._render_sheet()
 
     @staticmethod
-    def _file_to_df(file: AbstractOMFileIO) -> pd.DataFrame:
+    def _file_to_df(file: VariableIO) -> pd.DataFrame:
         """
         Returns the equivalent pandas dataframe of the file.
 
@@ -109,7 +109,7 @@ class VariableViewer:
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
-    def _df_to_file(df: pd.DataFrame, file: AbstractOMFileIO):
+    def _df_to_file(df: pd.DataFrame, file: VariableIO):
         """
         Returns the equivalent file of the pandas dataframe .
 
