@@ -18,7 +18,7 @@ import os.path as pth
 from shutil import rmtree
 
 import pytest
-from fastoad.openmdao.utils import get_variables_from_ivc
+from fastoad.openmdao.variables import VariableList
 from numpy.testing import assert_allclose
 
 from .. import OMXmlIO
@@ -44,7 +44,7 @@ def test_legacy1(cleanup):
 
     xml_read = OMLegacy1XmlIO(filename)
     ivc = xml_read.read()
-    var_list = get_variables_from_ivc(ivc)
+    var_list = VariableList.from_ivc(ivc)
     inputs = ivc._indep_external  # pylint: disable=protected-access
 
     entry_count = len(inputs)

@@ -19,6 +19,7 @@ from typing import Dict, Hashable, List
 
 import numpy as np
 import openmdao.api as om
+import pandas as pd
 from importlib_resources import open_text
 
 from . import resources
@@ -231,6 +232,85 @@ class VariableList(list):
         for var in other_var_list:
             if add_variables or var.name in self.names():
                 self.append(var)
+
+    def to_ivc(self) -> om.IndepVarComp:
+        """
+        :return: an OpenMDAO IndepVarComp instance with all variables from current list
+        """
+        ivc = om.IndepVarComp()
+        for variable in self:
+            attributes = variable.metadata.copy()
+            value = attributes.pop("value")
+            ivc.add_output(variable.name, value, **attributes)
+
+        return ivc
+
+    def to_dataframe(self) -> pd.DataFrame:
+        """
+        Creates a DataFrame instance from a VariableList instance.
+
+        Series names are "Name", "Value", "Unit" and "Description".
+        Series "Name" is also the index of the DataFrame.
+        Values in series "Value" are floats or lists (numpy arrays are converted)
+
+        :return: a pandas DataFrame instance with all variables from current list
+        """
+        var_dict = {"Name": [], "Value": [], "Unit": [], "Description": []}
+
+        for variable in self:
+            value = variable.value
+            if np.shape(value) == (1,):
+                value = float(value[0])
+            elif np.shape(value) == ():
+                pass
+            else:
+                value = np.asarray(value).tolist()
+
+            var_dict["Name"].append(variable.name)
+            var_dict["Value"].append(value)
+            var_dict["Unit"].append(variable.units)
+            var_dict["Description"].append(variable.description)
+
+        df = pd.DataFrame.from_dict(var_dict)
+        df.set_index("Name", drop=False, inplace=True)
+
+        return df
+
+    @classmethod
+    def from_ivc(cls, ivc: om.IndepVarComp) -> "VariableList":
+        """
+        Creates a VariableList instance from an OpenMDAO IndepVarComp instance
+
+        :param ivc: an IndepVarComp instance
+        :return: a VariableList instance
+        """
+        variables = VariableList()
+
+        for (name, value, attributes) in ivc._indep + ivc._indep_external:
+            metadata = {"value": value}
+            metadata.update(attributes)
+            variables[name] = metadata
+
+        return variables
+
+    @classmethod
+    def from_dataframe(cls, df: pd.DataFrame) -> "VariableList":
+        """
+        Creates a VariableList instance from a pandas DataFrame instance
+
+        :param df: a DataFrame instance
+        :return: a VariableList instance
+        """
+        variables = VariableList()
+
+        for i, row in df.iterrows():
+            name = row["Name"]
+            metadata = {"value": row["Value"]}
+            metadata.update({"units": row["Unit"]})
+            metadata.update({"desc": row["Description"]})
+            variables[name] = metadata
+
+        return variables
 
     def __getitem__(self, key) -> Variable:
         if isinstance(key, str):

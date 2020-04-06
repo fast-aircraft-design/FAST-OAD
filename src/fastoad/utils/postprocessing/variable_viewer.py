@@ -21,12 +21,7 @@ import ipywidgets as widgets
 import pandas as pd
 from IPython.display import display, clear_output
 from fastoad.io.serialize import AbstractOMFileIO
-from fastoad.openmdao.utils import (
-    get_variables_from_ivc,
-    get_variables_from_df,
-    get_df_from_variables,
-    get_ivc_from_variables,
-)
+from fastoad.openmdao.variables import VariableList
 
 pd.set_option("display.max_rows", None)
 
@@ -114,9 +109,9 @@ class VariableViewer:
         ivc = file.read()
 
         # Extract the variables list
-        variables = get_variables_from_ivc(ivc)
+        variables = VariableList.from_ivc(ivc)
         # pylint: disable=invalid-name # that's a common naming
-        df = get_df_from_variables(variables)
+        df = variables.to_dataframe()
 
         return df
 
@@ -130,8 +125,8 @@ class VariableViewer:
         :param file: the resulting file
         """
         # Extract the variables list
-        variables = get_variables_from_df(df)
-        ivc = get_ivc_from_variables(variables)
+        variables = VariableList.from_dataframe(df)
+        ivc = variables.to_ivc()
         file.write(ivc)
 
     # pylint: disable=invalid-name # that's a common naming
@@ -153,7 +148,7 @@ class VariableViewer:
                     cell.read_only = True
                 else:
                     cell.type = "numeric"
-                    # TODO: make the number of decimals depnd on the module ?
+                    # TODO: make the number of decimals depend on the module ?
                     # or chosen in the ui by the user
                     cell.numeric_format = "0.000"
 

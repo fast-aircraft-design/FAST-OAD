@@ -19,7 +19,7 @@ from shutil import rmtree
 
 import numpy as np
 import pytest
-from fastoad.openmdao.utils import get_variables_from_ivc
+from fastoad.openmdao.variables import VariableList
 from lxml import etree
 from numpy.testing import assert_allclose
 from openmdao.core.indepvarcomp import IndepVarComp
@@ -41,7 +41,7 @@ def cleanup():
 def _check_basic_ivc(ivc: IndepVarComp):
     """ Checks that provided IndepVarComp instance matches content of data/basic.xml file """
 
-    outputs = get_variables_from_ivc(ivc)
+    outputs = VariableList.from_ivc(ivc)
 
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)

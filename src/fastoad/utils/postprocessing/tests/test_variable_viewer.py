@@ -75,6 +75,7 @@ def test_xml_to_from_df():
             }
         ]
     )[col_names]
+    ref_df.set_index("Name", drop=False, inplace=True)
 
     filename = pth.join(DATA_FOLDER_PATH, "light_data.xml")
 

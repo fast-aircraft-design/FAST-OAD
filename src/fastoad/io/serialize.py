@@ -19,7 +19,6 @@ from fnmatch import fnmatchcase
 from typing import TypeVar, IO, List, Sequence
 
 import openmdao.api as om
-from fastoad.openmdao.utils import get_ivc_from_variables, get_variables_from_ivc
 from fastoad.openmdao.variables import VariableList
 
 OMFileIOSubclass = TypeVar("OMFileIOSubclass", bound="AbstractOMFileIO")
@@ -52,7 +51,7 @@ class AbstractOMFileIO(ABC):
         """
         variables = self.read_variables()
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-        return get_ivc_from_variables(used_variables)
+        return used_variables.to_ivc()
 
     def write(self, ivc: om.IndepVarComp, only: List[str] = None, ignore: List[str] = None):
         """
@@ -66,7 +65,7 @@ class AbstractOMFileIO(ABC):
                      ignored. If None, all variables will be written.
         :param ignore: List of OpenMDAO variable names that should be ignored when writing
         """
-        variables = get_variables_from_ivc(ivc)
+        variables = VariableList.from_ivc(ivc)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         self.write_variables(used_variables)
 

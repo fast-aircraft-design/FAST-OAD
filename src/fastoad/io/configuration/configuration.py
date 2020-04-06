@@ -31,12 +31,11 @@ from fastoad.io.xml import OMXmlIO
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.utils import (
     get_unconnected_input_variables,
-    get_variables_from_ivc,
-    get_ivc_from_variables,
     get_variables_from_problem,
 )
-
 # Logger for this module
+from fastoad.openmdao.variables import VariableList
+
 INPUT_SYSTEM_NAME = "inputs"
 _LOGGER = logging.getLogger(__name__)
 
@@ -145,10 +144,10 @@ class FASTOADProblem(om.Problem):
             variables = get_unconnected_input_variables(self, with_optional_inputs=True)
             if input_data:
                 ref_ivc = input_data.read()
-                ref_vars = get_variables_from_ivc(ref_ivc)
+                ref_vars = VariableList.from_ivc(ref_ivc)
                 variables.update(ref_vars)
             writer = OMXmlIO(self.input_file_path)
-            writer.write(get_ivc_from_variables(variables))
+            writer.write(variables.to_ivc())
 
     def read_inputs(self):
         """
@@ -184,7 +183,7 @@ class FASTOADProblem(om.Problem):
         if self.output_file_path:
             writer = OMXmlIO(self.output_file_path)
             variables = get_variables_from_problem(self)
-            writer.write(get_ivc_from_variables(variables))
+            writer.write(variables.to_ivc())
 
     def build_model(self):
         """

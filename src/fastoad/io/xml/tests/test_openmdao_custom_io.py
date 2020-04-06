@@ -18,7 +18,7 @@ import os.path as pth
 from shutil import rmtree
 
 import pytest
-from fastoad.openmdao.utils import get_variables_from_ivc
+from fastoad.openmdao.variables import VariableList
 from openmdao.core.indepvarcomp import IndepVarComp
 from pytest import approx
 
@@ -40,7 +40,7 @@ def cleanup():
 def _check_basic2_ivc(ivc: IndepVarComp):
     """ Checks that provided IndepVarComp instance matches content of data/custom.xml file """
 
-    outputs = get_variables_from_ivc(ivc)
+    outputs = VariableList.from_ivc(ivc)
 
     assert len(outputs) == 5
 
@@ -179,7 +179,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
 
     # test with "only"
     ivc = xml_read.read(only=["geometry:wing:span"])
-    outputs = get_variables_from_ivc(ivc)
+    outputs = VariableList.from_ivc(ivc)
     assert len(outputs) == 1
     assert outputs[0].name == "geometry:wing:span"
     assert outputs[0].value == approx([42])
@@ -189,7 +189,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
     ivc = xml_read.read(
         ignore=["geometry:total_surface", "geometry:wing:aspect_ratio", "geometry:fuselage:length"]
     )
-    outputs = get_variables_from_ivc(ivc)
+    outputs = VariableList.from_ivc(ivc)
     assert len(outputs) == 1
     assert outputs[0].name == "geometry:wing:span"
     assert outputs[0].value == approx([42])
@@ -197,7 +197,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
 
     # test with patterns in "only"
     ivc = xml_read.read(only=["*:wing:*"])
-    outputs = get_variables_from_ivc(ivc)
+    outputs = VariableList.from_ivc(ivc)
     assert len(outputs) == 2
     assert outputs[0].name == "geometry:wing:span"
     assert outputs[0].value == approx([42])
@@ -208,7 +208,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
 
     # test with patterns in "ignore"
     ivc = xml_read.read(ignore=["geometry:*u*", "geometry:wing:aspect_ratio"])
-    outputs = get_variables_from_ivc(ivc)
+    outputs = VariableList.from_ivc(ivc)
     assert len(outputs) == 1
     assert outputs[0].name == "geometry:wing:span"
     assert outputs[0].value == approx([42])

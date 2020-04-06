@@ -13,7 +13,7 @@ Utility functions for OpenMDAO classes/instances
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import warnings
 from copy import deepcopy
 from logging import Logger
 from typing import Tuple, List
@@ -34,13 +34,9 @@ def get_ivc_from_variables(variables: VariableList) -> om.IndepVarComp:
     :param variables: a VariableList instance
     :return: an IndepVarComp instance
     """
-    ivc = om.IndepVarComp()
-    for variable in variables:
-        attributes = variable.metadata.copy()
-        value = attributes.pop("value")
-        ivc.add_output(variable.name, value, **attributes)
 
-    return ivc
+    warnings.warn("Use VariableList().to_ivc instead.", DeprecationWarning)
+    return variables.to_ivc()
 
 
 def get_variables_from_ivc(ivc: om.IndepVarComp) -> VariableList:
@@ -50,14 +46,8 @@ def get_variables_from_ivc(ivc: om.IndepVarComp) -> VariableList:
     :param ivc: an IndepVarComp instance
     :return: a VariableList instance
     """
-    variables = VariableList()
-
-    for (name, value, attributes) in ivc._indep + ivc._indep_external:
-        metadata = {"value": value}
-        metadata.update(attributes)
-        variables[name] = metadata
-
-    return variables
+    warnings.warn("Use VariableList().from_ivc instead.", DeprecationWarning)
+    return VariableList.from_ivc(ivc)
 
 
 def get_df_from_variables(variables: VariableList) -> pd.DataFrame:
@@ -67,31 +57,8 @@ def get_df_from_variables(variables: VariableList) -> pd.DataFrame:
     :param variables: a VariableList instance
     :return: a DataFrame instance
     """
-    df = pd.DataFrame()
-    col_names = ["Name", "Value", "Unit", "Description"]
-
-    for variable in variables:
-        attributes = variable.metadata.copy()
-        value = variable.value
-        if np.shape(value) == (1,):
-            value = float(value[0])
-        elif np.shape(value) == ():
-            pass
-        else:
-            value = [float(val) for val in value]
-
-        df = df.append(
-            [
-                {
-                    "Name": variable.name,
-                    "Value": value,
-                    "Unit": attributes["units"],
-                    "Description": attributes["desc"],
-                }
-            ]
-        )[col_names]
-
-    return df
+    warnings.warn("Use VariableList().to_dataframe instead.", DeprecationWarning)
+    return variables.to_dataframe()
 
 
 def get_variables_from_df(df: pd.DataFrame) -> VariableList:
@@ -101,16 +68,8 @@ def get_variables_from_df(df: pd.DataFrame) -> VariableList:
     :param df: a DataFrame instance
     :return: a VariableList instance
     """
-    variables = VariableList()
-
-    for i, row in df.iterrows():
-        name = row["Name"]
-        metadata = {"value": row["Value"]}
-        metadata.update({"units": row["Unit"]})
-        metadata.update({"desc": row["Description"]})
-        variables[name] = metadata
-
-    return variables
+    warnings.warn("Use VariableList().from_dataframe instead.", DeprecationWarning)
+    return VariableList.from_dataframe(df)
 
 
 def get_variables_from_problem(

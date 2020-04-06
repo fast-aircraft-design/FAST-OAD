@@ -16,9 +16,10 @@ Module for testing VariableList.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 import pytest
 
-from fastoad.openmdao.variables import VariableList, Variable
+from ..variables import VariableList, Variable
 
 
 def test_variables():
@@ -89,3 +90,47 @@ def test_variables():
     assert len(variables) == 3
     assert list(variables.names()) == ["a", "b", "n"]
     assert variables["a"].value == -10.0
+
+
+def test_ivc_from_to_variables():
+    """
+    Tests VariableList.to_ivc() and VariableList.from_ivc()
+    """
+    vars = VariableList()
+    vars["a"] = {"value": 5}
+    vars["b"] = {"value": 2.5, "units": "m"}
+    vars["c"] = {"value": -3.2, "units": "kg/s", "desc": "some test"}
+
+    ivc = vars.to_ivc()
+    problem = om.Problem(ivc)
+    problem.setup()
+    assert problem["a"] == 5
+    assert problem.get_val("b", units="cm") == 250
+    assert problem.get_val("c", units="kg/ms") == -0.0032
+
+    new_vars = VariableList.from_ivc(ivc)
+    assert vars.names() == new_vars.names()
+    for var, new_var in zip(vars, new_vars):
+        assert var == new_var
+
+
+def test_df_from_to_variables():
+    """
+    Tests VariableList.to_dataframe() and VariableList.from_dataframe()
+    """
+    vars = VariableList()
+    vars["a"] = {"value": 5}
+    vars["b"] = {"value": np.array([1.0, 2.0, 3.0]), "units": "m"}
+    vars["c"] = {"value": [1.0, 2.0, 3.0], "units": "kg/s", "desc": "some test"}
+
+    df = vars.to_dataframe()
+    assert np.all(df["Name"] == ["a", "b", "c"])
+    assert np.all(df["Value"] == [5, [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
+    assert np.all(df["Unit"].to_list() == [None, "m", "kg/s"])
+    assert np.all(df["Description"].to_list() == ["", "", "some test"])
+
+    new_vars = VariableList.from_dataframe(df)
+
+    assert vars.names() == new_vars.names()
+    for var, new_var in zip(vars, new_vars):
+        assert var == new_var
