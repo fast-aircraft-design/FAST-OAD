@@ -33,7 +33,7 @@ def wing_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureW
     :param fig: existing figure to which add the plot
     :return: wing plot figure
     """
-    variables = aircraft_xml.read_variables()
+    variables = aircraft_xml.read()
 
     wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
     wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x:local"].value[0]
@@ -98,7 +98,7 @@ def aircraft_geometry_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fig
     :param fig: existing figure to which add the plot
     :return: wing plot figure
     """
-    variables = aircraft_xml.read_variables()
+    variables = aircraft_xml.read()
 
     # Wing parameters
     wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
@@ -221,7 +221,7 @@ def drag_polar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.FigureWidg
     :param fig: existing figure to which add the plot
     :return: wing plot figure
     """
-    variables = aircraft_xml.read_variables()
+    variables = aircraft_xml.read()
 
     # pylint: disable=invalid-name # that's a common naming
     cd = np.asarray(variables["data:aerodynamics:aircraft:cruise:CD"].value)
@@ -260,7 +260,7 @@ def mass_breakdown_bar_plot(aircraft_xml: OMXmlIO, name=None, fig=None) -> go.Fi
     :param fig: existing figure to which add the plot
     :return: bar plot figure
     """
-    variables = aircraft_xml.read_variables()
+    variables = aircraft_xml.read()
 
     systems = variables["data:weight:systems:mass"].value[0]
 
@@ -321,7 +321,7 @@ def mass_breakdown_sun_plot(aircraft_xml: OMXmlIO):
     :param aircraft_xml: xml file reader instance
     :return: sunburst plot figure
     """
-    variables = aircraft_xml.read_variables()
+    variables = aircraft_xml.read()
 
     systems = variables["data:weight:systems:mass"].value[0]
     C11 = variables["data:weight:systems:power:auxiliary_power_unit:mass"].value[0]

@@ -18,85 +18,11 @@ import os.path as pth
 
 import pandas as pd
 from fastoad.io.xml import OMXmlIO
-from fastoad.utils.postprocessing.dataframe import VariableViewer
+from fastoad.utils.postprocessing import VariableViewer
 from pandas.util.testing import assert_frame_equal
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
-
-
-def test_xml_to_from_df():
-    """
-    Basic tests for testing the conversion of file to dataframe.
-    """
-    col_names = ["Name", "Value", "Unit", "Description"]
-    ref_df = pd.DataFrame()
-
-    ref_df = ref_df.append(
-        [
-            {
-                "Name": "data:geometry:cabin:seats:economical:width",
-                "Value": 0.46,
-                "Unit": "m",
-                "Description": "width of economical class seats",
-            }
-        ]
-    )[col_names]
-
-    ref_df = ref_df.append(
-        [
-            {
-                "Name": "data:geometry:cabin:seats:economical:length",
-                "Value": 0.86,
-                "Unit": "m",
-                "Description": "length of economical class seats",
-            }
-        ]
-    )[col_names]
-
-    ref_df = ref_df.append(
-        [
-            {
-                "Name": "data:geometry:cabin:aisle_width",
-                "Value": 0.48,
-                "Unit": "m",
-                "Description": "width of aisles",
-            }
-        ]
-    )[col_names]
-
-    ref_df = ref_df.append(
-        [
-            {
-                "Name": "data:geometry:propulsion:engine:count",
-                "Value": 2.0,
-                "Unit": None,
-                "Description": "number of engines",
-            }
-        ]
-    )[col_names]
-
-    filename = pth.join(DATA_FOLDER_PATH, "light_data.xml")
-
-    xml = OMXmlIO(filename)
-
-    # Testing file to df
-    resulting_df = VariableViewer.file_to_df(xml)
-
-    assert_frame_equal(ref_df, resulting_df)
-
-    new_filename = pth.join(RESULTS_FOLDER_PATH, "new_light_data.xml")
-    new_xml = OMXmlIO(new_filename)
-
-    # Testing df to file
-    VariableViewer.df_to_file(ref_df, new_xml)
-
-    # Reloading the generated file
-    del new_xml
-    new_xml = OMXmlIO(new_filename)
-    resulting_df = VariableViewer.file_to_df(new_xml)
-
-    assert_frame_equal(ref_df, resulting_df)
 
 
 def test_variable_reader_display():

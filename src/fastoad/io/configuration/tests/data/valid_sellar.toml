@@ -13,7 +13,7 @@ output_file = "../results/outputs.xml"
 driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 [model]
     [model.cycle]
-        nonlinear_solver = "om.NonlinearBlockGS(iprint=1, reraise_child_analysiserror=False)"
+        nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
         linear_solver = "om.ScipyKrylov()"
         [model.cycle.disc1]
             id = "sellar.disc1"

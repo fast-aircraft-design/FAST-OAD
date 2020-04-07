@@ -27,10 +27,7 @@ from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMXmlIO, OMLegacy1XmlIO
 from fastoad.module_management import BundleLoader
 from fastoad.module_management import OpenMDAOSystemRegistry
-from fastoad.openmdao.connections_utils import (
-    get_unconnected_input_variables,
-    get_variables_from_problem,
-)
+from fastoad.openmdao.variables import VariableList
 
 from . import resources
 from ..utils.resource_management.copy import copy_resource
@@ -117,8 +114,8 @@ def list_variables(
     problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
-    input_variables = get_unconnected_input_variables(problem, with_optional_inputs=True)
-    output_variables = get_variables_from_problem(problem, use_inputs=False)
+    input_variables = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
+    output_variables = VariableList.from_problem(problem, use_inputs=False)
 
     if isinstance(out, str):
         if not overwrite and pth.exists(out):

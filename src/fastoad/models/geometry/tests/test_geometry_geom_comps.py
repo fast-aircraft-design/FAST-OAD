@@ -79,7 +79,7 @@ def test_compute_fuselage_cabin_sizing(input_xml):
         "data:geometry:propulsion:engine:count",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeFuselageGeometryCabinSizing(), input_vars)
 
@@ -122,7 +122,7 @@ def test_compute_fuselage_basic(input_xml):
         "data:geometry:fuselage:PAX_length",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeFuselageGeometryBasic(), input_vars)
 
@@ -151,7 +151,7 @@ def test_compute_ht_cg(input_xml):
         "data:geometry:horizontal_tail:MAC:length",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
     input_vars.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:local", 1.656, units="m")
 
     problem = run_system(ComputeHTcg(), input_vars)
@@ -170,7 +170,7 @@ def test_compute_ht_mac(input_xml):
         "data:geometry:horizontal_tail:sweep_25",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeHTMAC(), input_vars)
 
@@ -191,7 +191,7 @@ def test_compute_ht_chord(input_xml):
         "data:geometry:horizontal_tail:taper_ratio",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeHTChord(), input_vars)
 
@@ -212,7 +212,7 @@ def test_compute_ht_cl(input_xml):
         "data:geometry:horizontal_tail:sweep_25",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeHTClalpha(), input_vars)
 
@@ -230,7 +230,7 @@ def test_compute_ht_sweep(input_xml):
         "data:geometry:horizontal_tail:sweep_25",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     problem = run_system(ComputeHTSweep(), input_vars)
 
@@ -253,7 +253,7 @@ def test_compute_fuselage_cnbeta(input_xml):
         "data:geometry:wing:span",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeCnBetaFuselage()
 
@@ -276,7 +276,7 @@ def test_compute_vt_cg(input_xml):
         "data:geometry:vertical_tail:MAC:length",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     input_vars.add_output("data:geometry:vertical_tail:MAC:at25percent:x:local", 2.321, units="m")
 
@@ -298,7 +298,7 @@ def test_compute_vt_mac(input_xml):
         "data:geometry:vertical_tail:sweep_25",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeVTMAC()
 
@@ -321,7 +321,7 @@ def test_compute_vt_chords(input_xml):
         "data:geometry:vertical_tail:taper_ratio",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeVTChords()
 
@@ -345,7 +345,7 @@ def test_compute_vt_sweep(input_xml):
         "data:geometry:vertical_tail:sweep_25",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeVTSweep()
 
@@ -366,7 +366,7 @@ def test_compute_vt_distance(input_xml):
         "data:geometry:has_T_tail",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
     problem = run_system(ComputeVTDistance(), input_vars)
 
     lp_vt = problem["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -383,7 +383,7 @@ def test_compute_vt_cl(input_xml):
         "data:geometry:has_T_tail",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
     problem = run_system(ComputeVTClalpha(), input_vars)
 
     cl_alpha = problem["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
@@ -402,7 +402,7 @@ def test_geometry_wing_b50(input_xml):
         "data:geometry:wing:span",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeB50()
 
@@ -428,7 +428,7 @@ def test_geometry_wing_cl_alpha(input_xml):
         "data:geometry:wing:span",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeCLalpha()
 
@@ -451,7 +451,7 @@ def test_geometry_wing_l1_l4(input_xml):
         "data:geometry:wing:sweep_25",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeL1AndL4Wing()
 
@@ -478,7 +478,7 @@ def test_geometry_wing_l2_l3(input_xml):
         "data:geometry:wing:tip:y",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeL2AndL3Wing()
 
@@ -505,7 +505,7 @@ def test_geometry_wing_mac(input_xml):
         "data:geometry:wing:tip:chord",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeMACWing()
 
@@ -529,7 +529,7 @@ def test_geometry_wing_mfw(input_xml):
         "data:geometry:wing:tip:thickness_ratio",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeMFW()
 
@@ -553,7 +553,7 @@ def test_geometry_wing_sweep(input_xml):
         "data:geometry:wing:tip:chord",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeSweepWing()
 
@@ -572,7 +572,7 @@ def test_geometry_wing_toc(input_xml):
 
     input_list = ["data:TLAR:cruise_mach", "data:geometry:wing:sweep_25"]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeToCWing()
 
@@ -598,7 +598,7 @@ def test_geometry_wing_wet_area(input_xml):
         "data:geometry:fuselage:maximum_width",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeWetAreaWing()
 
@@ -623,7 +623,7 @@ def test_geometry_wing_x(input_xml):
         "data:geometry:wing:sweep_25",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeXWing()
 
@@ -645,7 +645,7 @@ def test_geometry_wing_y(input_xml):
         "data:geometry:wing:kink:span_ratio",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeYWing()
 
@@ -681,7 +681,7 @@ def test_geometry_nacelle_pylons(input_xml):
         "data:geometry:fuselage:maximum_width",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeNacelleAndPylonsGeometry()
 
@@ -720,7 +720,7 @@ def test_geometry_total_area(input_xml):
         "data:geometry:propulsion:engine:count",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     component = ComputeTotalArea()
 
@@ -738,7 +738,7 @@ def test_geometry_update_mlg(input_xml):
         "data:geometry:wing:MAC:at25percent:x",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     input_vars.add_output("data:weight:aircraft:CG:aft:MAC_position", 0.364924)
     input_vars.add_output("data:weight:airframe:landing_gear:front:CG:x", 5.07)

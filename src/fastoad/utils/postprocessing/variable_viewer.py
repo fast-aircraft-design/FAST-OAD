@@ -13,6 +13,7 @@ Defines the data frame for postprocessing
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from typing import List
 
 import ipysheet as sh
@@ -20,12 +21,7 @@ import ipywidgets as widgets
 import pandas as pd
 from IPython.display import display, clear_output
 from fastoad.io.serialize import AbstractOMFileIO
-from fastoad.openmdao.connections_utils import (
-    get_variables_from_ivc,
-    get_variables_from_df,
-    get_df_from_variables,
-    get_ivc_from_variables,
-)
+from fastoad.openmdao.variables import VariableList
 
 pd.set_option("display.max_rows", None)
 
@@ -79,7 +75,7 @@ class VariableViewer:
             file = self.file
         else:
             self.file = file
-        self.dataframe = self.file_to_df(file)
+        self.dataframe = self._file_to_df(file)
         self.dataframe = self.dataframe.reset_index(drop=True)
 
     def save(self, file: AbstractOMFileIO = None):
@@ -90,7 +86,7 @@ class VariableViewer:
         """
         if file is None:
             file = self.file
-        self.df_to_file(self.dataframe, file)
+        self._df_to_file(self.dataframe, file)
 
     def display(self):
         """
@@ -101,7 +97,7 @@ class VariableViewer:
         return self._render_sheet()
 
     @staticmethod
-    def file_to_df(file: AbstractOMFileIO) -> pd.DataFrame:
+    def _file_to_df(file: AbstractOMFileIO) -> pd.DataFrame:
         """
         Returns the equivalent pandas dataframe of the file.
 
@@ -109,19 +105,11 @@ class VariableViewer:
         :return the equivalent dataframe
         """
         # TODO: should we add a 'Type' field if we decide to add a type attribute to Variable ?
-        # Read the file
-        ivc = file.read()
-
-        # Extract the variables list
-        variables = get_variables_from_ivc(ivc)
-        # pylint: disable=invalid-name # that's a common naming
-        df = get_df_from_variables(variables)
-
-        return df
+        return file.read().to_dataframe()
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
-    def df_to_file(df: pd.DataFrame, file: AbstractOMFileIO):
+    def _df_to_file(df: pd.DataFrame, file: AbstractOMFileIO):
         """
         Returns the equivalent file of the pandas dataframe .
 
@@ -129,13 +117,12 @@ class VariableViewer:
         :param file: the resulting file
         """
         # Extract the variables list
-        variables = get_variables_from_df(df)
-        ivc = get_ivc_from_variables(variables)
-        file.write(ivc)
+        variables = VariableList.from_dataframe(df)
+        file.write(variables)
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
-    def df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
+    def _df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
         """
         Transforms a pandas DataFrame into a ipysheet Sheet.
         The cells are set to read only except for the values.
@@ -152,7 +139,7 @@ class VariableViewer:
                     cell.read_only = True
                 else:
                     cell.type = "numeric"
-                    # TODO: make the number of decimals depnd on the module ?
+                    # TODO: make the number of decimals depend on the module ?
                     # or chosen in the ui by the user
                     cell.numeric_format = "0.000"
 
@@ -164,7 +151,7 @@ class VariableViewer:
         return sheet
 
     @staticmethod
-    def sheet_to_df(sheet: sh.Sheet) -> pd.DataFrame:
+    def _sheet_to_df(sheet: sh.Sheet) -> pd.DataFrame:
         """
         Transforms a ipysheet Sheet into a pandas DataFrame.
 
@@ -180,7 +167,7 @@ class VariableViewer:
         Updates the stored DataFrame with respect to the actual values of the Sheet.
         Then updates the file with respect to the stored DataFrame.
         """
-        df = self.sheet_to_df(self.sheet)
+        df = self._sheet_to_df(self.sheet)
         for i in df.index:
             self.dataframe.loc[int(i), :] = df.loc[i, :].values
 
@@ -190,7 +177,7 @@ class VariableViewer:
         Updates the variables values and attributes in the file with respect to the
         actual values of the stored DataFrame .
         """
-        self.df_to_file(self.dataframe, self.file)
+        self._df_to_file(self.dataframe, self.file)
 
     def _render_sheet(self) -> display:
         """
@@ -293,7 +280,7 @@ class VariableViewer:
 
         filtered_var = self._filter_variables(self.dataframe, modules, var_type=None)
 
-        self.sheet = self.df_to_sheet(filtered_var)
+        self.sheet = self._df_to_sheet(filtered_var)
 
         for cell in self.sheet.cells:
             cell.observe(self._update_df, "value")

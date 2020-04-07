@@ -67,6 +67,7 @@ def test_problem_definition(cleanup):
     problem.write_needed_inputs()
     problem.read_inputs()
 
+    problem.setup()
     assert isinstance(problem.model.cycle, om.Group)
     assert isinstance(problem.model.cycle.disc1, om.ExplicitComponent)
     assert isinstance(problem.model.cycle.disc2, om.ExplicitComponent)
@@ -75,7 +76,7 @@ def test_problem_definition(cleanup):
     assert isinstance(problem.driver, om.ScipyOptimizeDriver)
     assert problem.driver.options["optimizer"] == "SLSQP"
     assert isinstance(problem.model.cycle.nonlinear_solver, om.NonlinearBlockGS)
-    problem.setup()
+
     problem.run_driver()
 
     problem.run_model()

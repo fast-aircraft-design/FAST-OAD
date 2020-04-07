@@ -64,7 +64,7 @@ def convert_xml(file_path: str, translator: VarXpathTranslator):
     """
     reader = OMCustomXmlIO(file_path)
     reader.set_translator(translator)
-    ivc = reader.read()
+    ivc = reader.read().to_ivc()
 
     OMXmlIO(file_path).write(ivc)
 

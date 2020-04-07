@@ -85,7 +85,6 @@ class Sellar(Group):
         self.nonlinear_solver.options["rtol"] = 1.0e-10
         self.nonlinear_solver.options["maxiter"] = 10
         self.nonlinear_solver.options["err_on_non_converge"] = True
-        self.nonlinear_solver.options["reraise_child_analysiserror"] = False
         self.nonlinear_solver.options["iprint"] = 1
 
     def setup(self):

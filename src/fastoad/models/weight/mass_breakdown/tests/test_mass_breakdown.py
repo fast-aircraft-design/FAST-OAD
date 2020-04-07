@@ -57,7 +57,7 @@ def get_indep_var_comp(var_names):
     """ Reads required input data and returns an IndepVarcomp() instance"""
     reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ":"
-    ivc = reader.read(only=var_names)
+    ivc = reader.read(only=var_names).to_ivc()
     return ivc
 
 
@@ -589,7 +589,7 @@ def test_evaluate_oew():
     """
     reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ":"
-    input_vars = reader.read()
+    input_vars = reader.read().to_ivc()
 
     mass_computation = run_system(OperatingWeightEmpty(), input_vars, setup_mode="fwd")
 
@@ -610,7 +610,7 @@ def test_loop_compute_oew():
             "data:weight:aircraft:MZFW",
             "data:weight:aircraft:max_payload",
         ]
-    )
+    ).to_ivc()
     mass_computation = run_system(MassBreakdown(), input_vars)
     oew = mass_computation["data:weight:aircraft:OWE"]
     assert oew == pytest.approx(41591, abs=1)
@@ -618,7 +618,9 @@ def test_loop_compute_oew():
     # with payload as input
     reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ":"
-    input_vars = reader.read(ignore=["data:weight:aircraft:MLW", "data:weight:aircraft:MZFW",])
+    input_vars = reader.read(
+        ignore=["data:weight:aircraft:MLW", "data:weight:aircraft:MZFW",]
+    ).to_ivc()
     mass_computation = run_system(MassBreakdown(payload_from_npax=False), input_vars)
     oew = mass_computation["data:weight:aircraft:OWE"]
     assert oew == pytest.approx(42060, abs=1)

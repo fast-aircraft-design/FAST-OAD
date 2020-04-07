@@ -48,7 +48,7 @@ def test_compute_ht_area(input_xml):
         "settings:weight:aircraft:CG:range",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
     problem = run_system(ComputeHTArea(), input_vars)
 
     ht_lp = problem["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -72,7 +72,7 @@ def test_compute_vt_area(input_xml):
         "data:aerodynamics:vertical_tail:cruise:CL_alpha",
     ]
 
-    input_vars = input_xml.read(only=input_list)
+    input_vars = input_xml.read(only=input_list).to_ivc()
 
     input_vars.add_output("data:weight:aircraft:CG:aft:MAC_position", 0.364924)
     input_vars.add_output("data:aerodynamics:fuselage:cruise:CnBeta", -0.117901)

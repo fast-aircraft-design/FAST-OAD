@@ -26,7 +26,6 @@ import pytest
 from fastoad import api
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import OMLegacy1XmlIO
-from fastoad.models.aerodynamics.external.xfoil import XfoilPolar
 from numpy.testing import assert_allclose
 
 from tests import root_folder_path
@@ -143,9 +142,7 @@ def test_non_regression(cleanup):
         atol=1,
     )
 
-    ref_var_list = OMLegacy1XmlIO(
-        pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy_result.xml")
-    ).read_variables()
+    ref_var_list = OMLegacy1XmlIO(pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy_result.xml")).read()
 
     row_list = []
     for ref_var in ref_var_list:
@@ -173,8 +170,6 @@ def test_non_regression(cleanup):
     print(df.sort_values(by=["abs_rel_delta"]))
 
     assert np.all(df["abs_rel_delta"] < 0.005)
-
-    print("XFOIL runs:", XfoilPolar.run_count)
 
 
 def test_api(cleanup):

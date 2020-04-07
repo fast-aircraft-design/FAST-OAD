@@ -29,17 +29,12 @@ from fastoad.io.configuration.exceptions import (
 from fastoad.io.serialize import OMFileIOSubclass
 from fastoad.io.xml import OMXmlIO
 from fastoad.module_management import OpenMDAOSystemRegistry
-from fastoad.openmdao.connections_utils import (
-    get_unconnected_input_variables,
-    get_variables_from_ivc,
-    get_ivc_from_variables,
-    get_variables_from_problem,
-)
+from fastoad.openmdao.variables import VariableList
 
 # Logger for this module
-INPUT_SYSTEM_NAME = "inputs"
 _LOGGER = logging.getLogger(__name__)
 
+INPUT_SYSTEM_NAME = "inputs"
 KEY_FOLDERS = "module_folders"
 KEY_INPUT_FILE = "input_file"
 KEY_OUTPUT_FILE = "output_file"
@@ -142,13 +137,12 @@ class FASTOADProblem(om.Problem):
         :param input_data: if provided, variable values will be read from it, if available.
         """
         if self.input_file_path:
-            variables = get_unconnected_input_variables(self, with_optional_inputs=True)
+            variables = VariableList.from_unconnected_inputs(self, with_optional_inputs=True)
             if input_data:
-                ref_ivc = input_data.read()
-                ref_vars = get_variables_from_ivc(ref_ivc)
+                ref_vars = input_data.read()
                 variables.update(ref_vars)
             writer = OMXmlIO(self.input_file_path)
-            writer.write(get_ivc_from_variables(variables))
+            writer.write(variables)
 
     def read_inputs(self):
         """
@@ -159,7 +153,7 @@ class FASTOADProblem(om.Problem):
         if self.input_file_path:
             # Reads input file
             reader = OMXmlIO(self.input_file_path)
-            ivc = reader.read()
+            ivc = reader.read().to_ivc()
 
             # ivc will be added through add_subsystem, but we must use set_order() to
             # put it first.
@@ -183,8 +177,8 @@ class FASTOADProblem(om.Problem):
         """
         if self.output_file_path:
             writer = OMXmlIO(self.output_file_path)
-            variables = get_variables_from_problem(self)
-            writer.write(get_ivc_from_variables(variables))
+            variables = VariableList.from_problem(self)
+            writer.write(variables)
 
     def build_model(self):
         """

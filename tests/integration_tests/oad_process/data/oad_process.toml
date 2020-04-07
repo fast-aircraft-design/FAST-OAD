@@ -8,7 +8,7 @@ input_file = "../results/oad_process_inputs.xml"
 output_file = "../results/oad_process_outputs.xml"
 
 [model]
-    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100, reraise_child_analysiserror=False)"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
     linear_solver = "om.ScipyKrylov()"
     [model.geometry]
         id = "fastoad.geometry.legacy"
