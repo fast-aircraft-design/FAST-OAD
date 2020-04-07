@@ -75,7 +75,7 @@ class VariableViewer:
             file = self.file
         else:
             self.file = file
-        self.dataframe = self.file_to_df(file)
+        self.dataframe = self._file_to_df(file)
         self.dataframe = self.dataframe.reset_index(drop=True)
 
     def save(self, file: AbstractOMFileIO = None):
@@ -86,7 +86,7 @@ class VariableViewer:
         """
         if file is None:
             file = self.file
-        self.df_to_file(self.dataframe, file)
+        self._df_to_file(self.dataframe, file)
 
     def display(self):
         """
@@ -97,7 +97,7 @@ class VariableViewer:
         return self._render_sheet()
 
     @staticmethod
-    def file_to_df(file: AbstractOMFileIO) -> pd.DataFrame:
+    def _file_to_df(file: AbstractOMFileIO) -> pd.DataFrame:
         """
         Returns the equivalent pandas dataframe of the file.
 
@@ -109,7 +109,7 @@ class VariableViewer:
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
-    def df_to_file(df: pd.DataFrame, file: AbstractOMFileIO):
+    def _df_to_file(df: pd.DataFrame, file: AbstractOMFileIO):
         """
         Returns the equivalent file of the pandas dataframe .
 
@@ -122,7 +122,7 @@ class VariableViewer:
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
-    def df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
+    def _df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
         """
         Transforms a pandas DataFrame into a ipysheet Sheet.
         The cells are set to read only except for the values.
@@ -151,7 +151,7 @@ class VariableViewer:
         return sheet
 
     @staticmethod
-    def sheet_to_df(sheet: sh.Sheet) -> pd.DataFrame:
+    def _sheet_to_df(sheet: sh.Sheet) -> pd.DataFrame:
         """
         Transforms a ipysheet Sheet into a pandas DataFrame.
 
@@ -167,7 +167,7 @@ class VariableViewer:
         Updates the stored DataFrame with respect to the actual values of the Sheet.
         Then updates the file with respect to the stored DataFrame.
         """
-        df = self.sheet_to_df(self.sheet)
+        df = self._sheet_to_df(self.sheet)
         for i in df.index:
             self.dataframe.loc[int(i), :] = df.loc[i, :].values
 
@@ -177,7 +177,7 @@ class VariableViewer:
         Updates the variables values and attributes in the file with respect to the
         actual values of the stored DataFrame .
         """
-        self.df_to_file(self.dataframe, self.file)
+        self._df_to_file(self.dataframe, self.file)
 
     def _render_sheet(self) -> display:
         """
@@ -280,7 +280,7 @@ class VariableViewer:
 
         filtered_var = self._filter_variables(self.dataframe, modules, var_type=None)
 
-        self.sheet = self.df_to_sheet(filtered_var)
+        self.sheet = self._df_to_sheet(filtered_var)
 
         for cell in self.sheet.cells:
             cell.observe(self._update_df, "value")
