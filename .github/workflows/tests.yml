@@ -1,6 +1,6 @@
 name: Tests
 
-on: [push]
+on: [pull_request]
 
 jobs:
 
@@ -11,7 +11,7 @@ jobs:
       max-parallel: 20
       matrix:
         python-version: [3.6, 3.7, 3.8]
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest, ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v2
@@ -20,22 +20,20 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install poetry
-        run: |
-          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-          echo "::add-path::$HOME/.poetry/bin"
-        shell: bash
-
-      - name: venv cache
+      - name: Poetry cache
         uses: actions/cache@v1
         id: cache-venv
         with:
-          path: .venv
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-fastoad_venv-${{ hashFiles('**/poetry.lock') }}
+          path: ~/.poetry
+          key: ${{ runner.os }}-Python${{ matrix.python-version }}-poetry-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Create environment
+      - name: Install Poetry
         if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: python -m venv .venv
+        run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+        shell: bash
+
+      - name: Poetry path
+        run: echo "::add-path::$HOME/.poetry/bin"
         shell: bash
 
       - name: Activate environment and install dependencies
