@@ -117,6 +117,9 @@ def list_variables(
     input_variables = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
     output_variables = VariableList.from_problem(problem, use_inputs=False)
 
+    input_variables.sort(key=lambda var: var.name)
+    output_variables.sort(key=lambda var: var.name)
+
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
             raise FastFileExistsError(
