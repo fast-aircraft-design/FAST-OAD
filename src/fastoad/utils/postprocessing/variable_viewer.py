@@ -108,7 +108,16 @@ class VariableViewer:
         :return the equivalent dataframe
         """
         # TODO: should we add a 'Type' field if we decide to add a type attribute to Variable ?
-        return VariableIO(file_path, file_formatter).read().to_dataframe()
+
+        df = (
+            VariableIO(file_path, file_formatter)
+            .read()
+            .to_dataframe()
+            .rename(
+                columns={"name": "Name", "value": "Value", "units": "Unit", "desc": "Description"}
+            )
+        )[["Name", "Value", "Unit", "Description"]]
+        return df
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
@@ -121,7 +130,12 @@ class VariableViewer:
         :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
         """
         # Extract the variables list
-        variables = VariableList.from_dataframe(df)
+
+        variables = VariableList.from_dataframe(
+            df.rename(
+                columns={"Name": "name", "Value": "value", "Unit": "units", "Description": "desc"}
+            )
+        )
         VariableIO(file_path, file_formatter).write(variables)
 
     # pylint: disable=invalid-name # that's a common naming

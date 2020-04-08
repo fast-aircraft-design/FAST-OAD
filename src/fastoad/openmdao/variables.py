@@ -85,12 +85,12 @@ class Variable(Hashable):
             ivc = om.IndepVarComp()
             ivc.add_output(name="a")
             # get attributes (3rd element of the tuple) of first element
-            self._base_metadata = ivc._indep_external[0][2]
-            self._base_metadata["value"] = 1.0
-            self._base_metadata["tags"] = set()
+            self.__class__._base_metadata = ivc._indep_external[0][2]
+            self.__class__._base_metadata["value"] = 1.0
+            self.__class__._base_metadata["tags"] = set()
         # Done with class attributes ------------------------------------------
 
-        self.metadata = self._base_metadata.copy()
+        self.metadata = self.__class__._base_metadata.copy()
         # use kwargs only for keys already existent in self.metadata
         self.metadata.update((key, kwargs[key]) for key in kwargs.keys() & self.metadata.keys())
         self._set_default_shape()
@@ -105,6 +105,10 @@ class Variable(Hashable):
 
         :return: the authorized keys when creating a Variable instance
         """
+        # As _base_metadata is initialized at first instantiation, we create an instance to
+        # ensure it has been done
+        cls("dummy")
+
         return cls._base_metadata.keys()
 
     @property
@@ -217,7 +221,7 @@ class VariableList(list):
 
     def update(self, other_var_list: "VariableList", add_variables: bool = False):
         """
-        uses variables in other_var_list to update the current VariableList instance.
+        Uses variables in other_var_list to update the current VariableList instance.
 
         For each Variable instance in other_var_list:
             - if a Variable instance with same name exists, it is replaced by the one
@@ -249,13 +253,13 @@ class VariableList(list):
         """
         Creates a DataFrame instance from a VariableList instance.
 
-        Series names are "Name", "Value", "Unit" and "Description".
-        Series "Name" is also the index of the DataFrame.
-        Values in series "Value" are floats or lists (numpy arrays are converted)
+        Column names are "name" + the keys returned by :meth:`Variable.get_authorized_keys`.
+        Values in Series "value" are floats or lists (numpy arrays are converted).
 
         :return: a pandas DataFrame instance with all variables from current list
         """
-        var_dict = {"Name": [], "Value": [], "Unit": [], "Description": []}
+        var_dict = {"name": []}
+        var_dict.update({metadata_name: [] for metadata_name in Variable.get_authorized_keys()})
 
         for variable in self:
             value = variable.value
@@ -266,13 +270,14 @@ class VariableList(list):
             else:
                 value = np.asarray(value).tolist()
 
-            var_dict["Name"].append(variable.name)
-            var_dict["Value"].append(value)
-            var_dict["Unit"].append(variable.units)
-            var_dict["Description"].append(variable.description)
+            var_dict["name"].append(variable.name)
+            for metadata_name in Variable.get_authorized_keys():
+                if metadata_name == "value":
+                    var_dict["value"].append(value)
+                else:
+                    var_dict[metadata_name].append(variable.metadata[metadata_name])
 
         df = pd.DataFrame.from_dict(var_dict)
-        df.set_index("Name", drop=False, inplace=True)
 
         return df
 
@@ -296,21 +301,23 @@ class VariableList(list):
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "VariableList":
         """
-        Creates a VariableList instance from a pandas DataFrame instance
+        Creates a VariableList instance from a pandas DataFrame instance.
+
+        The DataFrame instance is expected to have column names "name" + some keys among the ones given by
+        :meth:`Variable.get_authorized_keys`.
 
         :param df: a DataFrame instance
         :return: a VariableList instance
         """
-        variables = VariableList()
+        column_names = [
+            name for name in df.columns if name in ["name"] + list(Variable.get_authorized_keys())
+        ]
 
-        for i, row in df.iterrows():
-            name = row["Name"]
-            metadata = {"value": row["Value"]}
-            metadata.update({"units": row["Unit"]})
-            metadata.update({"desc": row["Description"]})
-            variables[name] = metadata
+        def _get_variable(row):
+            var_as_dict = {key: val for key, val in zip(column_names, row)}
+            return Variable(**var_as_dict)
 
-        return variables
+        return VariableList([_get_variable(row) for row in df[column_names].values])
 
     @classmethod
     def from_problem(
@@ -369,7 +376,7 @@ class VariableList(list):
     ) -> "VariableList":
         """
         This function returns a VariableList instance containing
-        all the unconnected inputs of a Problem.
+        all the unconnected inputs of an OpenMDAO Problem.
 
         If *optional_inputs* is False, only inputs that have numpy.nan as default value (hence
         considered as mandatory) will be in returned instance. Otherwise, all unconnected inputs will
