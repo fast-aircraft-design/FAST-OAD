@@ -21,7 +21,9 @@ import sys
 from textwrap import indent, dedent
 from typing import IO, Union
 
+import numpy as np
 import openmdao.api as om
+import pandas as pd
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import VariableLegacy1XmlFormatter
@@ -130,26 +132,37 @@ def list_variables(
     else:
         out_file = out
 
-    # Inputs
-    out_file.writelines(
-        [
-            "-- INPUTS OF THE PROBLEM -------------------------------------------------------------\n",
-            "%-60s| %s\n" % ("VARIABLE", "DESCRIPTION"),
-        ]
-    )
-    out_file.writelines(["%-60s| %s\n" % (var.name, var.description) for var in input_variables])
-    out_file.write(
-        "--------------------------------------------------------------------------------------\n"
+    pd.set_option("display.max_colwidth", 1000)
+    max_name_length = np.max(
+        [len(name) for name in input_variables.names() + output_variables.names()]
     )
 
-    # Outputs
-    out_file.writelines(
-        [
-            "-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------\n",
-            "%-60s| %s\n" % ("VARIABLE", "DESCRIPTION"),
-        ]
+    def _write_variables(out_f, variables):
+        out_f.write(
+            variables.to_dataframe()
+            .rename(columns={"name": "NAME", "desc": "DESCRIPTION"})
+            .to_string(
+                index=False,
+                columns=["NAME", "DESCRIPTION"],
+                justify="left",
+                formatters={
+                    "NAME": ("{:%s}" % max_name_length).format,
+                    "DESCRIPTION": "{:500}".format,
+                },
+            )
+        )
+
+    # Inputs
+    out_file.write(
+        "-- INPUTS OF THE PROBLEM -------------------------------------------------------------\n"
     )
-    out_file.writelines(["%-60s| %s\n" % (var.name, var.description) for var in output_variables])
+    _write_variables(out_file, input_variables)
+
+    # Outputs
+    out_file.write(
+        "-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------\n",
+    )
+    _write_variables(out_file, output_variables)
     out_file.write(
         "--------------------------------------------------------------------------------------\n"
     )
