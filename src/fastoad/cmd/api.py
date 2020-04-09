@@ -18,7 +18,8 @@ import logging
 import os
 import os.path as pth
 import sys
-from textwrap import indent, dedent
+import textwrap as tw
+from shutil import get_terminal_size
 from typing import IO, Union
 
 import numpy as np
@@ -129,42 +130,60 @@ def list_variables(
                 "Use overwrite=True to bypass." % out
             )
         out_file = open(out, "w")
+        table_width = 200
     else:
         out_file = out
+        table_width = get_terminal_size().columns - 3
 
     pd.set_option("display.max_colwidth", 1000)
     max_name_length = np.max(
         [len(name) for name in input_variables.names() + output_variables.names()]
     )
+    description_text_width = table_width - max_name_length
 
     def _write_variables(out_f, variables):
+        """Writes variables and their description as a pandas DataFrame"""
+        df = variables.to_dataframe()
+
+        # Create a new Series where description are wrapped on several lines if needed.
+        # Each line becomes an element of the Series
+        df["desc"] = ["\n".join(tw.wrap(s, description_text_width)) for s in df["desc"]]
+        new_desc = df.desc.str.split("\n", expand=True).stack()
+
+        # Create a Series for name that will match new_desc Series. Variable name will be in front of
+        # first line of description. An empty string will be in front of other lines.
+        new_name = [df.name.loc[i] if j == 0 else "" for i, j in new_desc.index]
+
+        # Create the DataFrame that will be displayed
+        new_df = pd.DataFrame({"NAME": new_name, "DESCRIPTION": new_desc})
+
         out_f.write(
-            variables.to_dataframe()
-            .rename(columns={"name": "NAME", "desc": "DESCRIPTION"})
-            .to_string(
+            new_df.to_string(
                 index=False,
                 columns=["NAME", "DESCRIPTION"],
                 justify="left",
-                formatters={
+                formatters={  # Formatters are needed for enforcing left justification
                     "NAME": ("{:%s}" % max_name_length).format,
-                    "DESCRIPTION": "{:500}".format,
+                    "DESCRIPTION": ("{:%s}" % description_text_width).format,
                 },
             )
         )
+        out_file.write("\n")
 
     # Inputs
     out_file.write(
-        "-- INPUTS OF THE PROBLEM -------------------------------------------------------------\n"
+        "-- INPUTS OF THE PROBLEM ----------------------------------------------------------------------------------\n"
     )
     _write_variables(out_file, input_variables)
 
     # Outputs
+    out_file.write("\n")
     out_file.write(
-        "-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------\n",
+        "-- OUTPUTS OF THE PROBLEM ---------------------------------------------------------------------------------\n",
     )
     _write_variables(out_file, output_variables)
     out_file.write(
-        "--------------------------------------------------------------------------------------\n"
+        "-----------------------------------------------------------------------------------------------------------\n"
     )
 
     if isinstance(out, str):
@@ -209,7 +228,7 @@ def list_systems(
         out_file.write("  IDENTIFIER:   %s\n" % identifier)
         out_file.write("  PATH:         %s\n" % path)
         out_file.write("  DOMAIN:       %s\n" % domain.value)
-        out_file.write("  DESCRIPTION:  %s\n" % indent(dedent(description), "    "))
+        out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
         out_file.write("=" * 100 + "\n")
         out_file.write("-" * 100 + "\n")
 
