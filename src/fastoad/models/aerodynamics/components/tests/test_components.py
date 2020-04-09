@@ -18,7 +18,7 @@ test module for modules in aerodynamics/components
 import os.path as pth
 
 import numpy as np
-from fastoad.io.xml import OMXmlIO
+from fastoad.io import VariableIO
 from fastoad.utils.physics import Atmosphere
 from openmdao.core.group import Group
 from openmdao.core.indepvarcomp import IndepVarComp
@@ -37,7 +37,7 @@ from ..oswald import OswaldCoefficient
 
 def get_indep_var_comp(var_names):
     """ Reads required input data and returns an IndepVarcomp() instance"""
-    reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "aerodynamics_inputs.xml"))
+    reader = VariableIO(pth.join(pth.dirname(__file__), "data", "aerodynamics_inputs.xml"))
     reader.path_separator = ":"
     ivc = reader.read(only=var_names).to_ivc()
     return ivc

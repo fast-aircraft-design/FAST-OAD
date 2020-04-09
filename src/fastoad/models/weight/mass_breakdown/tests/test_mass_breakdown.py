@@ -19,7 +19,7 @@ import os.path as pth
 
 import openmdao.api as om
 import pytest
-from fastoad.io.xml.openmdao_basic_io import OMXmlIO
+from fastoad.io import VariableIO
 
 from tests.testing_utilities import run_system
 from ..a_airframe import (
@@ -55,7 +55,7 @@ from ..payload import ComputePayload
 
 def get_indep_var_comp(var_names):
     """ Reads required input data and returns an IndepVarcomp() instance"""
-    reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
+    reader = VariableIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ":"
     ivc = reader.read(only=var_names).to_ivc()
     return ivc
@@ -587,7 +587,7 @@ def test_evaluate_oew():
     """
     Tests a simple evaluation of Operating Empty Weight from sample XML data.
     """
-    reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
+    reader = VariableIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ":"
     input_vars = reader.read().to_ivc()
 
@@ -602,7 +602,7 @@ def test_loop_compute_oew():
     Tests a weight computation loop using matching the max payload criterion.
     """
     # With payload from npax
-    reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
+    reader = VariableIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ":"
     input_vars = reader.read(
         ignore=[
@@ -616,7 +616,7 @@ def test_loop_compute_oew():
     assert oew == pytest.approx(41591, abs=1)
 
     # with payload as input
-    reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
+    reader = VariableIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ":"
     input_vars = reader.read(
         ignore=["data:weight:aircraft:MLW", "data:weight:aircraft:MZFW",]

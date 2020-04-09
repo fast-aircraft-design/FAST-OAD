@@ -16,7 +16,7 @@ Tests for analysis and plots functions
 
 import os.path as pth
 
-from fastoad.io.xml import OMXmlIO
+from fastoad.io import VariableIO
 from fastoad.utils.postprocessing.analysis_and_plots import (
     wing_geometry_plot,
     drag_polar_plot,
@@ -35,7 +35,7 @@ def test_wing_geometry_plot():
 
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = OMXmlIO(filename)
+    xml = VariableIO(filename)
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -60,7 +60,7 @@ def test_aircraft_geometry_plot():
 
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = OMXmlIO(filename)
+    xml = VariableIO(filename)
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -85,7 +85,7 @@ def test_mass_breakdown_bar_plot():
 
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = OMXmlIO(filename)
+    xml = VariableIO(filename)
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -110,7 +110,7 @@ def test_drag_polar_plot():
 
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = OMXmlIO(filename)
+    xml = VariableIO(filename)
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -125,7 +125,7 @@ def test_mass_breakdown_sun_plot():
 
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = OMXmlIO(filename)
+    xml = VariableIO(filename)
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify

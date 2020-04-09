@@ -17,7 +17,7 @@ Test module for geometry functions of cg components
 import os.path as pth
 
 import pytest
-from fastoad.io.xml import OMXmlIO
+from fastoad.io import VariableIO
 
 from tests.testing_utilities import run_system
 from ..cg import ComputeAircraftCG
@@ -36,12 +36,12 @@ from ..cg_components import ComputeWingCG
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
 @pytest.fixture(scope="module")
-def input_xml() -> OMXmlIO:
+def input_xml() -> VariableIO:
     """
     :return: access to the sample xml data
     """
     # TODO: have more consistency in input data (no need for the whole geometry_inputs_full.xml)
-    return OMXmlIO(pth.join(pth.dirname(__file__), "data", "cg_inputs.xml"))
+    return VariableIO(pth.join(pth.dirname(__file__), "data", "cg_inputs.xml"))
 
 
 def test_compute_cg_control_surfaces(input_xml):

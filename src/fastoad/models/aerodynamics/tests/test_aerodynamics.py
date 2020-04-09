@@ -18,7 +18,7 @@ import os.path as pth
 from platform import system
 
 import pytest
-from fastoad.io.xml import OMXmlIO
+from fastoad.io import VariableIO
 from pytest import approx
 
 from tests.testing_utilities import run_system
@@ -32,7 +32,7 @@ xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 def get_indep_var_comp(var_names):
     """ Reads required input data and returns an IndepVarcomp() instance"""
-    reader = OMXmlIO(pth.join(pth.dirname(__file__), "data", "aerodynamics_inputs.xml"))
+    reader = VariableIO(pth.join(pth.dirname(__file__), "data", "aerodynamics_inputs.xml"))
     reader.path_separator = ":"
     ivc = reader.read(only=var_names).to_ivc()
     return ivc
