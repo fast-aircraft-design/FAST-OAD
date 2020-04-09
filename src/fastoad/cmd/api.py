@@ -221,7 +221,7 @@ def list_systems(
     else:
         out_file = out
     out_file.writelines(["-- AVAILABLE SYSTEM IDENTIFIERS " + "-" * 68 + "\n", "=" * 100 + "\n"])
-    for identifier in OpenMDAOSystemRegistry.get_system_ids():
+    for identifier in sorted(OpenMDAOSystemRegistry.get_system_ids()):
         path = BundleLoader().get_factory_path(identifier)
         domain = OpenMDAOSystemRegistry.get_system_domain(identifier)
         description = OpenMDAOSystemRegistry.get_system_description(identifier)
