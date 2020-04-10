@@ -20,7 +20,7 @@ import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
 from IPython.display import display, clear_output
-from fastoad.io import VariableIO
+from fastoad.io import VariableIO, IVariableIOFormatter
 from fastoad.openmdao.variables import VariableList
 
 pd.set_option("display.max_rows", None)
@@ -44,10 +44,10 @@ class VariableViewer:
 
     def __init__(self):
 
-        # The file file to be set
+        # The path of the data file that will be viewed/edited
         self.file = None
 
-        # The dataframe which is the mirror of the file file
+        # The dataframe which is the mirror of the self.file
         self.dataframe = pd.DataFrame()
 
         # The sheet which is the mirror of the dataframe
@@ -65,28 +65,30 @@ class VariableViewer:
         # A tag used to select all submodules
         self.all_tag = "--ALL--"
 
-    def load(self, file: VariableIO = None):
+    def load(self, file_path: str = None, file_formatter: IVariableIOFormatter = None):
         """
-        Loads the file file and stores it in a dataframe.
+        Loads the file and stores it in a dataframe.
 
-        :param file: the file file to interact with
+        :param file_path: the path of file to interact with
+        :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
         """
-        if file is None:
-            file = self.file
+        if file_path is None:
+            file_path = self.file
         else:
-            self.file = file
-        self.dataframe = self._file_to_df(file)
+            self.file = file_path
+        self.dataframe = self._file_to_df(file_path, file_formatter)
         self.dataframe = self.dataframe.reset_index(drop=True)
 
-    def save(self, file: VariableIO = None):
+    def save(self, file_path: str = None, file_formatter: IVariableIOFormatter = None):
         """
-        Save the dataframe to the file file.
+        Save the dataframe to the file.
 
-        :param file: the file file to save
-        """
-        if file is None:
-            file = self.file
-        self._df_to_file(self.dataframe, file)
+        :param file_path: the path of file to save
+        :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
+       """
+        if file_path is None:
+            file_path = self.file
+        self._df_to_file(self.dataframe, file_path)
 
     def display(self):
         """
@@ -97,28 +99,30 @@ class VariableViewer:
         return self._render_sheet()
 
     @staticmethod
-    def _file_to_df(file: VariableIO) -> pd.DataFrame:
+    def _file_to_df(file_path: str, file_formatter: IVariableIOFormatter = None) -> pd.DataFrame:
         """
         Returns the equivalent pandas dataframe of the file.
 
-        :param file: the file to convert
+        :param file_path: the path of file to convert
+        :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
         :return the equivalent dataframe
         """
         # TODO: should we add a 'Type' field if we decide to add a type attribute to Variable ?
-        return file.read().to_dataframe()
+        return VariableIO(file_path, file_formatter).read().to_dataframe()
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
-    def _df_to_file(df: pd.DataFrame, file: VariableIO):
+    def _df_to_file(df: pd.DataFrame, file_path: str, file_formatter: IVariableIOFormatter = None):
         """
         Returns the equivalent file of the pandas dataframe .
 
         :param df: the dataframe to convert
-        :param file: the resulting file
+        :param file_path: the path of resulting file
+        :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
         """
         # Extract the variables list
         variables = VariableList.from_dataframe(df)
-        file.write(variables)
+        VariableIO(file_path, file_formatter).write(variables)
 
     # pylint: disable=invalid-name # that's a common naming
     @staticmethod
