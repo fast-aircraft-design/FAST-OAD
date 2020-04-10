@@ -21,6 +21,7 @@ from copy import deepcopy
 
 import openmdao.api as om
 import toml
+from fastoad.io import IVariableIOFormatter
 from fastoad.io.variable_io import VariableIO
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.variables import VariableList
@@ -123,7 +124,9 @@ class FASTOADProblem(om.Problem):
 
         self.build_model()
 
-    def write_needed_inputs(self, input_data: VariableIO = None):
+    def write_needed_inputs(
+        self, input_file_path: str = None, input_formatter: IVariableIOFormatter = None
+    ):
         """
         Writes the input file of the problem with unconnected inputs of the configured problem.
 
@@ -134,12 +137,14 @@ class FASTOADProblem(om.Problem):
         WARNING: if inputs have already been read, they won't be needed any more and won't be
         in written file. To clear read data, use first :meth:`build_problem`.
 
-        :param input_data: if provided, variable values will be read from it, if available.
+        :param input_file_path: if provided, variable values will be read from it
+        :param input_formatter: the class that defines format of input file. if not provided, expected format will be
+                                the default one.
         """
         if self.input_file_path:
             variables = VariableList.from_unconnected_inputs(self, with_optional_inputs=True)
-            if input_data:
-                ref_vars = input_data.read()
+            if input_file_path:
+                ref_vars = VariableIO(input_file_path, input_formatter).read()
                 variables.update(ref_vars)
             writer = VariableIO(self.input_file_path)
             writer.write(variables)

@@ -51,10 +51,8 @@ def test_oad_process(cleanup):
     problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, "oad_process.toml"))
 
-    ref_input_reader = VariableIO(
-        pth.join(DATA_FOLDER_PATH, "CeRAS01_baseline.xml"), formatter=VariableLegacy1XmlFormatter()
-    )
-    problem.write_needed_inputs(ref_input_reader)
+    ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_baseline.xml")
+    problem.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
     problem.read_inputs()
     problem.setup()
     problem.run_model()
@@ -109,10 +107,8 @@ def test_non_regression(cleanup):
         problem.model.aerodynamics.landing._OPTIONS["xfoil_alpha_max"] = 22.0
 
     # Generation and reading of inputs ----------------------------------------
-    ref_input_reader = VariableIO(
-        pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml"), formatter=VariableLegacy1XmlFormatter()
-    )
-    problem.write_needed_inputs(ref_input_reader)
+    ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
+    problem.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
     problem.read_inputs()
     problem.setup()
 
