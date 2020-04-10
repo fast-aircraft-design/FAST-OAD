@@ -22,18 +22,22 @@ from plotly.subplots import make_subplots
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
-def wing_geometry_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.FigureWidget:
+def wing_geometry_plot(
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
     Different designs can be superposed by providing an existing fig.
     Each design can be provided a name.
 
-    :param aircraft_xml: xml file reader instance
+    :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
+                           be assumed.
     :return: wing plot figure
     """
-    variables = aircraft_xml.read()
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
     wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x:local"].value[0]
@@ -87,18 +91,22 @@ def wing_geometry_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.Figu
 
 
 # pylint: disable-msg=too-many-locals
-def aircraft_geometry_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.FigureWidget:
+def aircraft_geometry_plot(
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
     Different designs can be superposed by providing an existing fig.
     Each design can be provided a name.
 
-    :param aircraft_xml: xml file reader instance
+    :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
+                           be assumed.
     :return: wing plot figure
     """
-    variables = aircraft_xml.read()
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     # Wing parameters
     wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
@@ -210,18 +218,22 @@ def aircraft_geometry_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.
     return fig
 
 
-def drag_polar_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.FigureWidget:
+def drag_polar_plot(
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft drag polar.
     Different designs can be superposed by providing an existing fig.
     Each design can be provided a name.
 
-    :param aircraft_xml: xml file reader instance
+    :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
+                           be assumed.
     :return: wing plot figure
     """
-    variables = aircraft_xml.read()
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     # pylint: disable=invalid-name # that's a common naming
     cd = np.asarray(variables["data:aerodynamics:aircraft:cruise:CD"].value)
@@ -248,19 +260,22 @@ def drag_polar_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.FigureW
     return fig
 
 
-# pylint: disable-msg=too-many-locals
-def mass_breakdown_bar_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go.FigureWidget:
+def mass_breakdown_bar_plot(
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft mass breakdown using bar plots.
     Different designs can be superposed by providing an existing fig.
     Each design can be provided a name.
 
-    :param aircraft_xml: xml file reader instance
+    :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
+                           be assumed.
     :return: bar plot figure
     """
-    variables = aircraft_xml.read()
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     systems = variables["data:weight:systems:mass"].value[0]
 
@@ -308,17 +323,19 @@ def mass_breakdown_bar_plot(aircraft_xml: VariableIO, name=None, fig=None) -> go
     return fig
 
 
-def mass_breakdown_sun_plot(aircraft_xml: VariableIO):
+def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     """
     Returns a figure sunburst plot of the mass breakdown.
     On the left a MTOW sunburst and on the right a OWE sunburst.
     Different designs can be superposed by providing an existing fig.
     Each design can be provided a name.
 
-    :param aircraft_xml: xml file reader instance
+    :param aircraft_file_path: path of data file
+    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
+                           be assumed.
     :return: sunburst plot figure
     """
-    variables = aircraft_xml.read()
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     systems = variables["data:weight:systems:mass"].value[0]
     C11 = variables["data:weight:systems:power:auxiliary_power_unit:mass"].value[0]
