@@ -15,7 +15,7 @@ Module for managing OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import Dict, Hashable, List
+from typing import Dict, Hashable, List, Union
 
 import numpy as np
 import openmdao.api as om
@@ -100,10 +100,10 @@ class Variable(Hashable):
             self.description = self._variable_descriptions[self.name]
 
     @classmethod
-    def get_authorized_keys(cls):
+    def get_openmdao_keys(cls):
         """
 
-        :return: the authorized keys when creating a Variable instance
+        :return: the keys that are used in OpenMDAO variables
         """
         # As _base_metadata is initialized at first instantiation, we create an instance to
         # ensure it has been done
@@ -206,6 +206,15 @@ class VariableList(list):
         """
         return [var.name for var in self]
 
+    def metadata_keys(self) -> List[str]:
+        """
+        :return: the metadata keys that are common to all variables in the list
+        """
+        keys = list(self[0].metadata.keys())
+        for var in self:
+            keys = [key for key in var.metadata.keys() if key in keys]
+        return keys
+
     def append(self, var: Variable) -> None:
         """
         Append var to the end of the list, unless its name is already used. In that case, var
@@ -259,7 +268,7 @@ class VariableList(list):
         :return: a pandas DataFrame instance with all variables from current list
         """
         var_dict = {"name": []}
-        var_dict.update({metadata_name: [] for metadata_name in Variable.get_authorized_keys()})
+        var_dict.update({metadata_name: [] for metadata_name in self.metadata_keys()})
 
         for variable in self:
             value = variable.value
@@ -271,7 +280,7 @@ class VariableList(list):
                 value = np.asarray(value).tolist()
 
             var_dict["name"].append(variable.name)
-            for metadata_name in Variable.get_authorized_keys():
+            for metadata_name in self.metadata_keys():
                 if metadata_name == "value":
                     var_dict["value"].append(value)
                 else:
@@ -310,7 +319,7 @@ class VariableList(list):
         :return: a VariableList instance
         """
         column_names = [
-            name for name in df.columns if name in ["name"] + list(Variable.get_authorized_keys())
+            name for name in df.columns if name in ["name"] + list(Variable.get_openmdao_keys())
         ]
 
         def _get_variable(row):
@@ -447,3 +456,9 @@ class VariableList(list):
             del self[self.names().index(key)]
         else:
             super().__delitem__(key)
+
+    def __add__(self, other) -> Union[List, "VariableList"]:
+        if isinstance(other, VariableList):
+            return VariableList(super().__add__(other))
+        else:
+            return super().__add__(other)
