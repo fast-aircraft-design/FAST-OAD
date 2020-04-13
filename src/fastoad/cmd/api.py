@@ -25,6 +25,8 @@ from typing import IO, Union
 import numpy as np
 import openmdao.api as om
 import pandas as pd
+from IPython import InteractiveShell
+from IPython.display import display, HTML
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import VariableLegacy1XmlFormatter
@@ -102,17 +104,27 @@ def generate_inputs(
 
 
 def list_variables(
-    configuration_file_path: str, out: Union[IO, str] = sys.stdout, overwrite: bool = False
+    configuration_file_path: str,
+    out: Union[IO, str] = sys.stdout,
+    overwrite: bool = False,
+    force_text_output: bool = False,
 ):
     """
-    Writes list of system outputs for the :class:`FASTOADProblem` specified in
-    configuration_file_path.
+    Writes list of system outputs for the :class:`FASTOADProblem` specified in configuration_file_path.
+
+    List is generally written as text. It can be displayed as a scrollable table view if:
+    - function is used in an interactive IPython shell
+    - out == sys.stdout
+    - force_text_output == False
 
     :param configuration_file_path:
     :param out: the output stream or a path for the output file
-    :param overwrite: if True and out is a file path, the file will be written even if one already
+    :param overwrite: if True and out parameter is a file path, the file will be written even if one already
                       exists
-    :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
+    :param force_text_output: if True, list will be written as text, even if command is used in an interactive IPython
+                              shell (Jupyter notebook). Has no effect in other shells or if out parameter is not
+                              sys.stdout
+    :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file exists
     """
     problem = FASTOADProblem()
     problem.configure(configuration_file_path)
@@ -132,6 +144,20 @@ def list_variables(
         out_file = open(out, "w")
         table_width = 200
     else:
+        if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
+            for var in input_variables:
+                var.metadata["I/O"] = "IN"
+            for var in output_variables:
+                var.metadata["I/O"] = "OUT"
+
+            df = (
+                (input_variables + output_variables)
+                .to_dataframe()[["I/O", "name", "desc"]]
+                .rename(columns={"name": "Name", "desc": "Description"})
+            )
+            display(HTML(df.to_html()))
+            return
+
         out_file = out
         table_width = get_terminal_size().columns - 3
 
