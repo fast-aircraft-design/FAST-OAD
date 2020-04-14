@@ -43,7 +43,7 @@ KEY_OUTPUT_FILE = "output_file"
 KEY_COMPONENT_ID = "id"
 TABLE_MODEL = "model"
 KEY_DRIVER = "driver"
-TABLES_OPTIMIZATION = "optimization"
+TABLE_OPTIMIZATION = "optimization"
 TABLES_DESIGN_VAR = "design_var"
 TABLES_CONSTRAINT = "constraint"
 TABLES_OBJECTIVE = "objective"
@@ -80,6 +80,7 @@ class FASTOADProblem(om.Problem):
         self.input_file_path = None
         self.output_file_path = None
         self._model_definition = None
+        self._optimization_definition = None
 
     def run_model(self, case_prefix=None, reset_iter_counts=True):
         super().run_model()
@@ -126,6 +127,9 @@ class FASTOADProblem(om.Problem):
         self._model_definition = self._conf_dict.get(TABLE_MODEL)
         if not self._model_definition:
             raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_MODEL)
+
+        # Read optimization problem definition
+        self._optimization_definition = self._conf_dict.get(TABLE_OPTIMIZATION)
 
         # Define driver
         driver = self._conf_dict.get(KEY_DRIVER, "")
@@ -183,8 +187,9 @@ class FASTOADProblem(om.Problem):
             self.model.add_subsystem(INPUT_SYSTEM_NAME, ivc, promotes=["*"])
             self.model.set_order([INPUT_SYSTEM_NAME] + previous_order)
 
-            # Inputs are loaded, so we can add design variables
-            self._add_design_vars()
+            if self._optimization_definition:
+                # Inputs are loaded, so we can add design variables
+                self._add_design_vars()
 
     def write_outputs(self):
         """
@@ -220,8 +225,9 @@ class FASTOADProblem(om.Problem):
             _LOGGER.error(log_err)
             raise log_err
 
-        self._add_constraints()
-        self._add_objectives()
+        if self._optimization_definition:
+            self._add_constraints()
+            self._add_objectives()
 
     def _parse_problem_table(self, group: om.Group, table: dict):
         """
@@ -259,19 +265,19 @@ class FASTOADProblem(om.Problem):
     def _add_constraints(self):
         """  Adds constraints as instructed in configuration file """
         # Constraints
-        constraint_tables = self._conf_dict.get(TABLES_CONSTRAINT, [])
+        constraint_tables = self._optimization_definition.get(TABLES_CONSTRAINT, [])
         for constraint_table in constraint_tables:
             self.model.add_constraint(**constraint_table)
 
     def _add_objectives(self):
         """  Adds objectives as instructed in configuration file """
-        objective_tables = self._conf_dict.get(TABLES_OBJECTIVE, [])
+        objective_tables = self._optimization_definition.get(TABLES_OBJECTIVE, [])
         for objective_table in objective_tables:
             self.model.add_objective(**objective_table)
 
     def _add_design_vars(self):
         """ Adds design variables as instructed in configuration file """
-        design_var_tables = self._conf_dict.get(TABLES_DESIGN_VAR, [])
+        design_var_tables = self._optimization_definition.get(TABLES_DESIGN_VAR, [])
         for design_var_table in design_var_tables:
             self.model.add_design_var(**design_var_table)
 
