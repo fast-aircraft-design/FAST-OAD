@@ -43,9 +43,10 @@ KEY_OUTPUT_FILE = "output_file"
 KEY_COMPONENT_ID = "id"
 TABLE_MODEL = "model"
 KEY_DRIVER = "driver"
+TABLES_OPTIMIZATION = "optimization"
 TABLES_DESIGN_VAR = "design_var"
-TABLES_OBJECTIVE = "objective"
 TABLES_CONSTRAINT = "constraint"
+TABLES_OBJECTIVE = "objective"
 
 
 class FASTOADProblem(om.Problem):
@@ -219,8 +220,8 @@ class FASTOADProblem(om.Problem):
             _LOGGER.error(log_err)
             raise log_err
 
-        self._add_objectives()
         self._add_constraints()
+        self._add_objectives()
 
     def _parse_problem_table(self, group: om.Group, table: dict):
         """
