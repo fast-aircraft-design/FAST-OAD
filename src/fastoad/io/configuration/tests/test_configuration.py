@@ -15,11 +15,12 @@ Test module for configuration.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-from shutil import rmtree
+from shutil import rmtree, copy
 
 import numpy as np
 import openmdao.api as om
 import pytest
+import toml
 
 from .. import (
     FASTOADProblem,
@@ -127,3 +128,36 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
     problem.run_driver()
     assert problem["f"] == pytest.approx(3.18339395, abs=1e-6)
+
+
+def test_write_optimization_definition(cleanup):
+    """
+    Tests the modification of the optimization definition in the .toml
+    configuration file
+    """
+    reference_file = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
+    editable_file = pth.join(RESULTS_FOLDER_PATH, "editable_valid_sellar.toml")
+
+    copy(reference_file, editable_file)
+
+    problem = FASTOADProblem()
+    problem.configure(editable_file)
+
+    optimization_def = {
+        "design_var": [
+            {"name": "x", "lower": 0, "upper": 20},
+            {"name": "z", "lower": 0, "upper": 10},
+        ],
+        "constraint": [{"name": "g1", "upper": 10}, {"name": "g2", "upper": 0}],
+        "objective": [{"name": "f"}],
+    }
+    conf_dict = toml.load(editable_file)
+    conf_dict_opt = conf_dict["optimization"]
+    # Should be different
+    assert optimization_def != conf_dict_opt
+
+    problem._write_optimization_definition(optimization_def)
+    conf_dict = toml.load(editable_file)
+    conf_dict_opt = conf_dict["optimization"]
+    # Should be equal
+    assert optimization_def == conf_dict_opt
