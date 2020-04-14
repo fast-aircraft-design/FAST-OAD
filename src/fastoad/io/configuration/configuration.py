@@ -76,6 +76,7 @@ class FASTOADProblem(om.Problem):
         self.optim_failed = False
         """ Tells if last optimization (run_driver) failed """
 
+        self._conf_file = None
         self._conf_dict = {}
         self.input_file_path = None
         self.output_file_path = None
@@ -96,9 +97,11 @@ class FASTOADProblem(om.Problem):
 
         :param conf_file: Path to the file to open or a file descriptor
         """
+
+        self._conf_file = conf_file
+
         # Dev note: toml.load would also accept an array of files as input, but
         # it does not look useful for us, so it is not mentioned in docstring.
-
         conf_dirname = pth.dirname(pth.abspath(conf_file))  # for resolving relative paths
         self._conf_dict = toml.load(conf_file)
 
@@ -128,8 +131,8 @@ class FASTOADProblem(om.Problem):
         if not self._model_definition:
             raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_MODEL)
 
-        # Read optimization problem definition
-        self._optimization_definition = self._conf_dict.get(TABLE_OPTIMIZATION)
+        # Read optimization definition
+        self._read_optimization_definition()
 
         # Define driver
         driver = self._conf_dict.get(KEY_DRIVER, "")
@@ -280,6 +283,19 @@ class FASTOADProblem(om.Problem):
         design_var_tables = self._optimization_definition.get(TABLES_DESIGN_VAR, [])
         for design_var_table in design_var_tables:
             self.model.add_design_var(**design_var_table)
+
+    def _read_optimization_definition(self):
+        self._optimization_definition = self._conf_dict.get(TABLE_OPTIMIZATION)
+
+    def _write_optimization_definition(self, optimization_definition: dict):
+        subpart = {"optimization": optimization_definition}
+        self._edit_conf_file(subpart)
+
+    def _edit_conf_file(self, subpart: dict):
+        for (key, value) in subpart.items():
+            self._conf_dict[key] = value
+        with open(self._conf_file, "w") as file:
+            toml.dump(self._conf_dict, file)
 
 
 def _om_eval(string_to_eval: str):
