@@ -23,7 +23,6 @@ from typing import IO, Union
 
 import openmdao.api as om
 from fastoad.cmd.exceptions import FastFileExistsError
-from fastoad.io import VariableIO
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.module_management import BundleLoader
@@ -91,15 +90,11 @@ def generate_inputs(
             inputs_path,
         )
 
-    if source_path:
-        if source_path_schema == "legacy":
-            source = VariableIO(source_path, formatter=VariableLegacy1XmlFormatter())
-        else:
-            source = VariableIO(source_path)
+    if source_path_schema == "legacy":
+        problem.write_needed_inputs(source_path, VariableLegacy1XmlFormatter())
     else:
-        source = None
+        problem.write_needed_inputs(source_path)
 
-    problem.write_needed_inputs(source)
     _LOGGER.info("Problem inputs written in %s", inputs_path)
 
 

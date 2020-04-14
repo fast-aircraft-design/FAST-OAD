@@ -16,7 +16,6 @@ Tests for analysis and plots functions
 
 import os.path as pth
 
-from fastoad.io import VariableIO
 from fastoad.utils.postprocessing.analysis_and_plots import (
     wing_geometry_plot,
     drag_polar_plot,
@@ -35,22 +34,20 @@ def test_wing_geometry_plot():
 
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = VariableIO(filename)
-
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = wing_geometry_plot(xml)
+    fig = wing_geometry_plot(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = wing_geometry_plot(xml, name="First plot")
+    fig = wing_geometry_plot(filename, name="First plot")
 
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = wing_geometry_plot(xml, name="Second plot", fig=fig)
+    fig = wing_geometry_plot(filename, name="Second plot", fig=fig)
 
 
 def test_aircraft_geometry_plot():
@@ -60,22 +57,20 @@ def test_aircraft_geometry_plot():
 
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = VariableIO(filename)
-
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = aircraft_geometry_plot(xml)
+    fig = aircraft_geometry_plot(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = aircraft_geometry_plot(xml, name="First plot")
+    fig = aircraft_geometry_plot(filename, name="First plot")
 
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = aircraft_geometry_plot(xml, name="Second plot", fig=fig)
+    fig = aircraft_geometry_plot(filename, name="Second plot", fig=fig)
 
 
 def test_mass_breakdown_bar_plot():
@@ -85,22 +80,20 @@ def test_mass_breakdown_bar_plot():
 
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = VariableIO(filename)
-
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = mass_breakdown_bar_plot(xml)
+    fig = mass_breakdown_bar_plot(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = mass_breakdown_bar_plot(xml, name="First plot")
+    fig = mass_breakdown_bar_plot(filename, name="First plot")
 
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    _ = mass_breakdown_bar_plot(xml, name="Second plot", fig=fig)
+    _ = mass_breakdown_bar_plot(filename, name="Second plot", fig=fig)
 
 
 def test_drag_polar_plot():
@@ -110,12 +103,10 @@ def test_drag_polar_plot():
 
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = VariableIO(filename)
-
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    _ = drag_polar_plot(xml)
+    _ = drag_polar_plot(filename)
 
 
 def test_mass_breakdown_sun_plot():
@@ -125,9 +116,7 @@ def test_mass_breakdown_sun_plot():
 
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = VariableIO(filename)
-
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    _ = mass_breakdown_sun_plot(xml)
+    _ = mass_breakdown_sun_plot(filename)

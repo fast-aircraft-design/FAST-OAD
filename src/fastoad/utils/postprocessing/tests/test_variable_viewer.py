@@ -17,7 +17,6 @@ Tests for FAST-OAD dataframe
 import os.path as pth
 
 import pandas as pd
-from fastoad.io import VariableIO
 from pandas.util.testing import assert_frame_equal
 
 from .. import VariableViewer
@@ -32,11 +31,9 @@ def test_variable_reader_display():
     """
     filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
 
-    xml = VariableIO(filename)
-
     # pylint: disable=invalid-name # that's a common naming
     df = VariableViewer()
-    df.load(xml)
+    df.load(filename)
 
     # This is a rudimentary test as ui are difficult to verify
     # The test will fail if an error is raised by the following line
@@ -98,11 +95,9 @@ def test_variable_reader_load():
 
     filename = pth.join(DATA_FOLDER_PATH, "light_data.xml")
 
-    xml = VariableIO(filename)
-
     # Testing file to df
     variable_viewer = VariableViewer()
-    variable_viewer.load(xml)
+    variable_viewer.load(filename)
 
     assert_frame_equal(ref_df, variable_viewer.dataframe)
 
@@ -162,14 +157,12 @@ def test_variable_reader_save():
 
     filename = pth.join(RESULTS_FOLDER_PATH, "light_data.xml")
 
-    xml = VariableIO(filename)
-
     # Testing file to df
     variable_viewer = VariableViewer()
     variable_viewer.dataframe = ref_df
-    variable_viewer.save(xml)
+    variable_viewer.save(filename)
 
     # Loading the generated file
-    variable_viewer.load(xml)
+    variable_viewer.load(filename)
 
     assert_frame_equal(ref_df, variable_viewer.dataframe)

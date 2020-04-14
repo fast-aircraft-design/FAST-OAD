@@ -20,7 +20,6 @@ from shutil import rmtree
 import numpy as np
 import openmdao.api as om
 import pytest
-from fastoad.io import VariableIO
 
 from .. import (
     FASTOADProblem,
@@ -88,12 +87,11 @@ def test_problem_definition_with_xml_ref(cleanup):
     problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
 
-    input_data = VariableIO(pth.join(DATA_FOLDER_PATH, "ref_inputs.xml"))
-
+    input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
     problem.write_needed_inputs(input_data)
     problem.read_inputs()
 
-    # runs evaluation without oprimzation loop to check that inputs are taken into account
+    # runs evaluation without optimization loop to check that inputs are taken into account
     problem.setup()
     problem.run_model()
 
@@ -109,8 +107,7 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     problem = FASTOADProblem()
     problem.configure(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
 
-    input_data = VariableIO(pth.join(DATA_FOLDER_PATH, "ref_inputs.xml"))
-
+    input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
     problem.write_needed_inputs(input_data)
 
     # Runs optimization problem with semi-analytic FD
