@@ -18,6 +18,7 @@ Module for building OpenMDAO problem from configuration file
 import logging
 import os.path as pth
 from copy import deepcopy
+from typing import Dict
 
 import openmdao.api as om
 import toml
@@ -155,8 +156,8 @@ class FASTOADProblem(om.Problem):
         in written file. To clear read data, use first :meth:`build_problem`.
 
         :param input_file_path: if provided, variable values will be read from it
-        :param input_formatter: the class that defines format of input file. if not provided, expected format will be
-                                the default one.
+        :param input_formatter: the class that defines format of input file. if not provided,
+                                expected format will be the default one.
         """
         if self.input_file_path:
             variables = VariableList.from_unconnected_inputs(self, with_optional_inputs=True)
@@ -285,13 +286,30 @@ class FASTOADProblem(om.Problem):
             self.model.add_design_var(**design_var_table)
 
     def _read_optimization_definition(self):
+        """
+        Reads the config file and stores information related to the optimization problem:
+            - Design Variables
+            - Constraints
+            - Objectives
+        """
         self._optimization_definition = self._conf_dict.get(TABLE_OPTIMIZATION)
 
-    def _write_optimization_definition(self, optimization_definition: dict):
+    def _write_optimization_definition(self, optimization_definition: Dict):
+        """
+        Writes to the .toml config file the list of design variables, constraints, objectives
+        contained in the optimization_definition dictionary.
+        Keys of the dictionary are: "design_var", "constraint", "objective".
+        :param optimization_definition: dict containing the optimization problem definition
+        """
         subpart = {"optimization": optimization_definition}
         self._edit_conf_file(subpart)
 
-    def _edit_conf_file(self, subpart: dict):
+    def _edit_conf_file(self, subpart: Dict):
+        """
+        Writes to the .toml config file with respect to modification brought to the conf_dict
+        by subpart dictionary.
+        :param subpart: dict containing the updates for conf_dict
+        """
         for (key, value) in subpart.items():
             self._conf_dict[key] = value
         with open(self._conf_file, "w") as file:
