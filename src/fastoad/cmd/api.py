@@ -41,6 +41,7 @@ from . import resources
 _LOGGER = logging.getLogger(__name__)
 
 SAMPLE_FILENAME = "fastoad.toml"
+MAX_TABLE_WIDTH = 200  # For variable list text output
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
@@ -63,10 +64,6 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
     copy_resource(resources, SAMPLE_FILENAME, configuration_file_path)
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
-
-
-class VariableXmlIO(object):
-    pass
 
 
 def generate_inputs(
@@ -142,9 +139,10 @@ def list_variables(
                 "Use overwrite=True to bypass." % out
             )
         out_file = open(out, "w")
-        table_width = 200
+        table_width = MAX_TABLE_WIDTH
     else:
         if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
+            # Here we display the variable list as VariableViewer in a notebook
             for var in input_variables:
                 var.metadata["I/O"] = "IN"
             for var in output_variables:
@@ -158,14 +156,15 @@ def list_variables(
             display(HTML(df.to_html()))
             return
 
+        # Here we continue with text output
         out_file = out
-        table_width = get_terminal_size().columns - 3
+        table_width = min(get_terminal_size().columns, MAX_TABLE_WIDTH) - 1
 
     pd.set_option("display.max_colwidth", 1000)
     max_name_length = np.max(
         [len(name) for name in input_variables.names() + output_variables.names()]
     )
-    description_text_width = table_width - max_name_length
+    description_text_width = table_width - max_name_length - 2
 
     def _write_variables(out_f, variables):
         """Writes variables and their description as a pandas DataFrame"""
@@ -187,7 +186,7 @@ def list_variables(
             new_df.to_string(
                 index=False,
                 columns=["NAME", "DESCRIPTION"],
-                justify="left",
+                justify="center",
                 formatters={  # Formatters are needed for enforcing left justification
                     "NAME": ("{:%s}" % max_name_length).format,
                     "DESCRIPTION": ("{:%s}" % description_text_width).format,
@@ -196,21 +195,19 @@ def list_variables(
         )
         out_file.write("\n")
 
+    def _write_text_with_line(txt: str, line_length: int):
+        """ Writes a line of given length with provided text inside """
+        out_file.write("-" + txt + "-" * (line_length - 1 - len(txt)) + "\n")
+
     # Inputs
-    out_file.write(
-        "-- INPUTS OF THE PROBLEM ----------------------------------------------------------------------------------\n"
-    )
+    _write_text_with_line(" INPUTS OF THE PROBLEM ", table_width)
     _write_variables(out_file, input_variables)
 
     # Outputs
     out_file.write("\n")
-    out_file.write(
-        "-- OUTPUTS OF THE PROBLEM ---------------------------------------------------------------------------------\n",
-    )
+    _write_text_with_line(" OUTPUTS OF THE PROBLEM ", table_width)
     _write_variables(out_file, output_variables)
-    out_file.write(
-        "-----------------------------------------------------------------------------------------------------------\n"
-    )
+    _write_text_with_line("", table_width)
 
     if isinstance(out, str):
         out_file.close()
