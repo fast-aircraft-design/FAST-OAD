@@ -99,7 +99,10 @@ def test_variable_reader_load():
     variable_viewer = VariableViewer()
     variable_viewer.load(filename)
 
-    assert_frame_equal(ref_df, variable_viewer.dataframe)
+    assert_frame_equal(
+        ref_df.sort_values("Name").reset_index(drop=True),
+        variable_viewer.dataframe.sort_values("Name").reset_index(drop=True),
+    )
 
 
 def test_variable_reader_save():
@@ -165,4 +168,7 @@ def test_variable_reader_save():
     # Loading the generated file
     variable_viewer.load(filename)
 
-    assert_frame_equal(ref_df, variable_viewer.dataframe)
+    assert_frame_equal(
+        ref_df.sort_values("Name").reset_index(drop=True),
+        variable_viewer.dataframe.sort_values("Name").reset_index(drop=True),
+    )

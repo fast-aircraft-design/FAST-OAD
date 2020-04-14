@@ -64,6 +64,11 @@ class VariableIO:
         :param ignore: List of variable names that should be ignored when writing
         """
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
+
+        # Before writing, variables are sorted to have short paths first. With equal path length
+        # alphanumeric order will be used.
+        used_variables.sort(key=lambda var: "%02i_%s" % (len(var.name.split(":")), var.name))
+
         self.formatter.write_variables(self._data_source, used_variables)
 
     @staticmethod

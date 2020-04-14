@@ -18,10 +18,15 @@ import logging
 import os
 import os.path as pth
 import sys
-from textwrap import indent, dedent
+import textwrap as tw
+from shutil import get_terminal_size
 from typing import IO, Union
 
+import numpy as np
 import openmdao.api as om
+import pandas as pd
+from IPython import InteractiveShell
+from IPython.display import display, HTML
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.xml import VariableLegacy1XmlFormatter
@@ -36,6 +41,7 @@ from . import resources
 _LOGGER = logging.getLogger(__name__)
 
 SAMPLE_FILENAME = "fastoad.toml"
+MAX_TABLE_WIDTH = 200  # For variable list text output
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
@@ -58,10 +64,6 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
     copy_resource(resources, SAMPLE_FILENAME, configuration_file_path)
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
-
-
-class VariableXmlIO(object):
-    pass
 
 
 def generate_inputs(
@@ -99,23 +101,36 @@ def generate_inputs(
 
 
 def list_variables(
-    configuration_file_path: str, out: Union[IO, str] = sys.stdout, overwrite: bool = False
+    configuration_file_path: str,
+    out: Union[IO, str] = sys.stdout,
+    overwrite: bool = False,
+    force_text_output: bool = False,
 ):
     """
-    Writes list of system outputs for the :class:`FASTOADProblem` specified in
-    configuration_file_path.
+    Writes list of system outputs for the :class:`FASTOADProblem` specified in configuration_file_path.
+
+    List is generally written as text. It can be displayed as a scrollable table view if:
+    - function is used in an interactive IPython shell
+    - out == sys.stdout
+    - force_text_output == False
 
     :param configuration_file_path:
     :param out: the output stream or a path for the output file
-    :param overwrite: if True and out is a file path, the file will be written even if one already
+    :param overwrite: if True and out parameter is a file path, the file will be written even if one already
                       exists
-    :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
+    :param force_text_output: if True, list will be written as text, even if command is used in an interactive IPython
+                              shell (Jupyter notebook). Has no effect in other shells or if out parameter is not
+                              sys.stdout
+    :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file exists
     """
     problem = FASTOADProblem()
     problem.configure(configuration_file_path)
 
     input_variables = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
     output_variables = VariableList.from_problem(problem, use_inputs=False)
+
+    input_variables.sort(key=lambda var: var.name)
+    output_variables.sort(key=lambda var: var.name)
 
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
@@ -124,32 +139,75 @@ def list_variables(
                 "Use overwrite=True to bypass." % out
             )
         out_file = open(out, "w")
+        table_width = MAX_TABLE_WIDTH
     else:
+        if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
+            # Here we display the variable list as VariableViewer in a notebook
+            for var in input_variables:
+                var.metadata["I/O"] = "IN"
+            for var in output_variables:
+                var.metadata["I/O"] = "OUT"
+
+            df = (
+                (input_variables + output_variables)
+                .to_dataframe()[["I/O", "name", "desc"]]
+                .rename(columns={"name": "Name", "desc": "Description"})
+            )
+            display(HTML(df.to_html()))
+            return
+
+        # Here we continue with text output
         out_file = out
+        table_width = min(get_terminal_size().columns, MAX_TABLE_WIDTH) - 1
+
+    pd.set_option("display.max_colwidth", 1000)
+    max_name_length = np.max(
+        [len(name) for name in input_variables.names() + output_variables.names()]
+    )
+    description_text_width = table_width - max_name_length - 2
+
+    def _write_variables(out_f, variables):
+        """Writes variables and their description as a pandas DataFrame"""
+        df = variables.to_dataframe()
+
+        # Create a new Series where description are wrapped on several lines if needed.
+        # Each line becomes an element of the Series
+        df["desc"] = ["\n".join(tw.wrap(s, description_text_width)) for s in df["desc"]]
+        new_desc = df.desc.str.split("\n", expand=True).stack()
+
+        # Create a Series for name that will match new_desc Series. Variable name will be in front of
+        # first line of description. An empty string will be in front of other lines.
+        new_name = [df.name.loc[i] if j == 0 else "" for i, j in new_desc.index]
+
+        # Create the DataFrame that will be displayed
+        new_df = pd.DataFrame({"NAME": new_name, "DESCRIPTION": new_desc})
+
+        out_f.write(
+            new_df.to_string(
+                index=False,
+                columns=["NAME", "DESCRIPTION"],
+                justify="center",
+                formatters={  # Formatters are needed for enforcing left justification
+                    "NAME": ("{:%s}" % max_name_length).format,
+                    "DESCRIPTION": ("{:%s}" % description_text_width).format,
+                },
+            )
+        )
+        out_file.write("\n")
+
+    def _write_text_with_line(txt: str, line_length: int):
+        """ Writes a line of given length with provided text inside """
+        out_file.write("-" + txt + "-" * (line_length - 1 - len(txt)) + "\n")
 
     # Inputs
-    out_file.writelines(
-        [
-            "-- INPUTS OF THE PROBLEM -------------------------------------------------------------\n",
-            "%-60s| %s\n" % ("VARIABLE", "DESCRIPTION"),
-        ]
-    )
-    out_file.writelines(["%-60s| %s\n" % (var.name, var.description) for var in input_variables])
-    out_file.write(
-        "--------------------------------------------------------------------------------------\n"
-    )
+    _write_text_with_line(" INPUTS OF THE PROBLEM ", table_width)
+    _write_variables(out_file, input_variables)
 
     # Outputs
-    out_file.writelines(
-        [
-            "-- OUTPUTS OF THE PROBLEM ------------------------------------------------------------\n",
-            "%-60s| %s\n" % ("VARIABLE", "DESCRIPTION"),
-        ]
-    )
-    out_file.writelines(["%-60s| %s\n" % (var.name, var.description) for var in output_variables])
-    out_file.write(
-        "--------------------------------------------------------------------------------------\n"
-    )
+    out_file.write("\n")
+    _write_text_with_line(" OUTPUTS OF THE PROBLEM ", table_width)
+    _write_variables(out_file, output_variables)
+    _write_text_with_line("", table_width)
 
     if isinstance(out, str):
         out_file.close()
@@ -186,14 +244,14 @@ def list_systems(
     else:
         out_file = out
     out_file.writelines(["-- AVAILABLE SYSTEM IDENTIFIERS " + "-" * 68 + "\n", "=" * 100 + "\n"])
-    for identifier in OpenMDAOSystemRegistry.get_system_ids():
+    for identifier in sorted(OpenMDAOSystemRegistry.get_system_ids()):
         path = BundleLoader().get_factory_path(identifier)
         domain = OpenMDAOSystemRegistry.get_system_domain(identifier)
         description = OpenMDAOSystemRegistry.get_system_description(identifier)
         out_file.write("  IDENTIFIER:   %s\n" % identifier)
         out_file.write("  PATH:         %s\n" % path)
         out_file.write("  DOMAIN:       %s\n" % domain.value)
-        out_file.write("  DESCRIPTION:  %s\n" % indent(dedent(description), "    "))
+        out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
         out_file.write("=" * 100 + "\n")
         out_file.write("-" * 100 + "\n")
 

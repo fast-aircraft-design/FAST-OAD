@@ -128,10 +128,10 @@ def test_df_from_to_variables():
     vars["c"] = {"value": [1.0, 2.0, 3.0], "units": "kg/s", "desc": "some test"}
 
     df = vars.to_dataframe()
-    assert np.all(df["Name"] == ["a", "b", "c"])
-    assert np.all(df["Value"] == [5, [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
-    assert np.all(df["Unit"].to_list() == [None, "m", "kg/s"])
-    assert np.all(df["Description"].to_list() == ["", "", "some test"])
+    assert np.all(df["name"] == ["a", "b", "c"])
+    assert np.all(df["value"] == [5, [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
+    assert np.all(df["units"].to_list() == [None, "m", "kg/s"])
+    assert np.all(df["desc"].to_list() == ["", "", "some test"])
 
     new_vars = VariableList.from_dataframe(df)
 

@@ -14,7 +14,7 @@ Defines the data frame for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List
+from typing import List, Set, Dict
 
 import ipysheet as sh
 import ipywidgets as widgets
@@ -42,6 +42,15 @@ class VariableViewer:
         df.display()  # renders a ui for reading/modifying the file
     """
 
+    # When getting a dataframe from a VariableList, the dictionary keys tell what columns are kept and
+    # the values tell what name will be displayed.
+    _DEFAULT_COLUMN_RENAMING = {
+        "name": "Name",
+        "value": "Value",
+        "units": "Unit",
+        "desc": "Description",
+    }
+
     def __init__(self):
 
         # The path of the data file that will be viewed/edited
@@ -51,44 +60,44 @@ class VariableViewer:
         self.dataframe = pd.DataFrame()
 
         # The sheet which is the mirror of the dataframe
-        self.sheet = None
+        self._sheet = None
 
         # The list of stored widgets
-        self.filter_widgets = None
+        self._filter_widgets = None
 
         # The ui containing save and load buttons
-        self.save_load_buttons = None
+        self._save_load_buttons = None
 
         # The ui containing all the dropdown menus
-        self.variable_selector = None
+        self._variable_selector = None
 
         # A tag used to select all submodules
-        self.all_tag = "--ALL--"
+        self._all_tag = "--ALL--"
 
-    def load(self, file_path: str = None, file_formatter: IVariableIOFormatter = None):
+    def load(self, file_path: str, file_formatter: IVariableIOFormatter = None):
         """
-        Loads the file and stores it in a dataframe.
+        Loads the file and stores its data.
 
         :param file_path: the path of file to interact with
         :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
         """
-        if file_path is None:
-            file_path = self.file
-        else:
-            self.file = file_path
-        self.dataframe = self._file_to_df(file_path, file_formatter)
-        self.dataframe = self.dataframe.reset_index(drop=True)
+
+        self.file = file_path
+        self.load_variables(VariableIO(file_path, file_formatter).read())
 
     def save(self, file_path: str = None, file_formatter: IVariableIOFormatter = None):
         """
         Save the dataframe to the file.
 
-        :param file_path: the path of file to save
+        :param file_path: the path of file to save. If not given, the initially read file will be overwritten.
         :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
        """
         if file_path is None:
             file_path = self.file
-        self._df_to_file(self.dataframe, file_path)
+
+        variables = self.get_variables()
+
+        VariableIO(file_path, file_formatter).write(variables)
 
     def display(self):
         """
@@ -98,33 +107,42 @@ class VariableViewer:
         self._create_save_load_buttons()
         return self._render_sheet()
 
-    @staticmethod
-    def _file_to_df(file_path: str, file_formatter: IVariableIOFormatter = None) -> pd.DataFrame:
+    def load_variables(self, variables: VariableList, attribute_to_column: Dict[str, str] = None):
         """
-        Returns the equivalent pandas dataframe of the file.
+        Loads provided variable list and replace current data set.
 
-        :param file_path: the path of file to convert
-        :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
-        :return the equivalent dataframe
+        :param variables: the variables to load
+        :param attribute_to_column: dictionary keys tell what variable attributes are kept and the values tell what
+                                     name will be displayed. If not provided, default translation will apply.
         """
-        # TODO: should we add a 'Type' field if we decide to add a type attribute to Variable ?
-        return VariableIO(file_path, file_formatter).read().to_dataframe()
 
-    # pylint: disable=invalid-name # that's a common naming
-    @staticmethod
-    def _df_to_file(df: pd.DataFrame, file_path: str, file_formatter: IVariableIOFormatter = None):
+        if not attribute_to_column:
+            attribute_to_column = self._DEFAULT_COLUMN_RENAMING
+
+        self.dataframe = (
+            variables.to_dataframe()
+            .rename(columns=attribute_to_column)[attribute_to_column.values()]
+            .reset_index(drop=True)
+        )
+
+    def get_variables(self, column_to_attribute: Dict[str, str] = None) -> VariableList:
         """
-        Returns the equivalent file of the pandas dataframe .
 
-        :param df: the dataframe to convert
-        :param file_path: the path of resulting file
-        :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
+        :param column_to_attribute: dictionary keys tell what columns are kept and the values tell what
+                                     variable attribute it corresponds to. If not provided, default translation
+                                     will apply.
+        :return: a variable list from current data set
         """
-        # Extract the variables list
-        variables = VariableList.from_dataframe(df)
-        VariableIO(file_path, file_formatter).write(variables)
+        if not column_to_attribute:
+            column_to_attribute = {
+                value: key for key, value in self._DEFAULT_COLUMN_RENAMING.items()
+            }
 
-    # pylint: disable=invalid-name # that's a common naming
+        return VariableList.from_dataframe(
+            self.dataframe[column_to_attribute.keys()].rename(columns=column_to_attribute)
+        )
+
+    # pylint: disable=invalid-name # df is a common naming for dataframes
     @staticmethod
     def _df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
         """
@@ -171,17 +189,9 @@ class VariableViewer:
         Updates the stored DataFrame with respect to the actual values of the Sheet.
         Then updates the file with respect to the stored DataFrame.
         """
-        df = self._sheet_to_df(self.sheet)
+        df = self._sheet_to_df(self._sheet)
         for i in df.index:
             self.dataframe.loc[int(i), :] = df.loc[i, :].values
-
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def _update_file(self, change=None):
-        """
-        Updates the variables values and attributes in the file with respect to the
-        actual values of the stored DataFrame .
-        """
-        self._df_to_file(self.dataframe, self.file)
 
     def _render_sheet(self) -> display:
         """
@@ -189,11 +199,11 @@ class VariableViewer:
 
         :return display of the user interface
         """
-        self.filter_widgets = []
+        self._filter_widgets = []
         modules_item = sorted(self._find_submodules(self.dataframe))
         if modules_item:
             w = widgets.Dropdown(options=modules_item)
-            self.filter_widgets.append(w)
+            self._filter_widgets.append(w)
         return self._render_ui()
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
@@ -204,27 +214,27 @@ class VariableViewer:
         # 20 will never be reached
         for i in range(20):
             if i == 0:
-                self.filter_widgets[0].observe(self._update_items, "value")
-                self.filter_widgets[0].observe(self._update_variable_selector, "value")
-            elif i <= len(self.filter_widgets):
-                modules = [item.value for item in self.filter_widgets[0:i]]
+                self._filter_widgets[0].observe(self._update_items, "value")
+                self._filter_widgets[0].observe(self._update_variable_selector, "value")
+            elif i <= len(self._filter_widgets):
+                modules = [item.value for item in self._filter_widgets[0:i]]
                 modules_item = sorted(self._find_submodules(self.dataframe, modules))
                 if modules_item:
                     # Check if the item exists already
-                    if i == len(self.filter_widgets):
+                    if i == len(self._filter_widgets):
                         if len(modules_item) > 1:
-                            modules_item.insert(0, self.all_tag)
+                            modules_item.insert(0, self._all_tag)
                         widget = widgets.Dropdown(options=modules_item)
                         widget.observe(self._update_items, "value")
                         widget.observe(self._update_variable_selector, "value")
-                        self.filter_widgets.append(widget)
+                        self._filter_widgets.append(widget)
                     else:
-                        if (self.all_tag not in modules_item) and (len(modules_item) > 1):
-                            modules_item.insert(0, self.all_tag)
-                        self.filter_widgets[i].options = modules_item
+                        if (self._all_tag not in modules_item) and (len(modules_item) > 1):
+                            modules_item.insert(0, self._all_tag)
+                        self._filter_widgets[i].options = modules_item
                 else:
-                    if i < len(self.filter_widgets):
-                        self.filter_widgets.pop(i)
+                    if i < len(self._filter_widgets):
+                        self._filter_widgets.pop(i)
             else:
                 break
 
@@ -234,9 +244,9 @@ class VariableViewer:
         Updates the variable selector with respect to the
         actual filter_widgets stored.
         """
-        items_box = widgets.HBox(self.filter_widgets)
+        items_box = widgets.HBox(self._filter_widgets)
         items_box = widgets.VBox([widgets.Label(value="Variable name"), items_box])
-        self.variable_selector = items_box
+        self._variable_selector = items_box
 
     def _create_save_load_buttons(self):
         """
@@ -266,27 +276,27 @@ class VariableViewer:
         )
 
         def on_load_button_clicked(b):
-            self.load()
+            self.load(self.file)
             self._render_sheet()
 
         load_button.on_click(on_load_button_clicked)
 
         items_box = widgets.HBox([save_button, load_button])
 
-        self.save_load_buttons = items_box
+        self._save_load_buttons = items_box
 
     def _update_sheet(self):
         """
         Updates the sheet after filtering the dataframe with respect to
         the actual values of the variable dropdown menus.
         """
-        modules = [item.value for item in self.filter_widgets]
+        modules = [item.value for item in self._filter_widgets]
 
         filtered_var = self._filter_variables(self.dataframe, modules, var_type=None)
 
-        self.sheet = self._df_to_sheet(filtered_var)
+        self._sheet = self._df_to_sheet(filtered_var)
 
-        for cell in self.sheet.cells:
+        for cell in self._sheet.cells:
             cell.observe(self._update_df, "value")
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
@@ -301,14 +311,14 @@ class VariableViewer:
         self._update_items()
         self._update_variable_selector()
         self._update_sheet()
-        for item in self.filter_widgets:
+        for item in self._filter_widgets:
             item.observe(self._render_ui, "value")
-        self.sheet.layout.height = "400px"
-        ui = widgets.VBox([self.save_load_buttons, self.variable_selector, self.sheet])
+        self._sheet.layout.height = "400px"
+        ui = widgets.VBox([self._save_load_buttons, self._variable_selector, self._sheet])
         return display(ui)
 
     @staticmethod
-    def _find_submodules(df: pd.DataFrame, modules: List[str] = None) -> List[str]:
+    def _find_submodules(df: pd.DataFrame, modules: List[str] = None) -> Set[str]:
         """
         Search for submodules at root or provided modules.
 
@@ -352,10 +362,10 @@ class VariableViewer:
         :return the filtered dataframe
         """
         if var_type is None:
-            var_type = self.all_tag
+            var_type = self._all_tag
         path = ""
         for _ in modules:
-            if modules[-1] == self.all_tag:
+            if modules[-1] == self._all_tag:
                 path = ":".join(modules[:-1])
             else:
                 path = ":".join(modules)
@@ -366,7 +376,7 @@ class VariableViewer:
 
         for var_name in var_names:
             if path in var_name:
-                if var_type == self.all_tag:
+                if var_type == self._all_tag:
                     element = df[df["Name"] == var_name]
                     filtered_df = filtered_df.append(element)
                 else:
