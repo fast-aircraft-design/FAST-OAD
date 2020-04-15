@@ -1,5 +1,5 @@
 """
-Defines the data frame for postprocessing
+Defines the variable viewer for postprocessing
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -28,8 +28,8 @@ pd.set_option("display.max_rows", None)
 
 class VariableViewer:
     """
-    A class for interacting with FAST-OAD file files.
-    The file file data is stored in a pandas DataFrame. The class built so that a modification
+    A class for interacting with FAST-OAD files.
+    The file data is stored in a pandas DataFrame. The class built so that a modification
     of the DataFrame is instantly replicated on the file file.
     The interaction is achieved using a user interface built with widgets from ipywidgets and
     Sheets from ipysheet.
