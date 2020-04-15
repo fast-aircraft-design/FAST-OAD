@@ -53,20 +53,17 @@ class OptimizationViewer:
         # The dataframe which is the mirror of the self.file
         self.dataframe = pd.DataFrame()
 
-        # The sheet which is the mirror of the dataframe
-        self._sheet = None
+        # The sheet which is the mirror of the design var sheet
+        self._design_var_sheet = None
 
-        # The list of stored widgets
-        self._filter_widgets = None
+        # The sheet which is the mirror of the constraint sheet
+        self._constraint_sheet = None
+
+        # The sheet which is the mirror of the objective sheet
+        self._objective_sheet = None
 
         # The ui containing save and load buttons
         self._save_load_buttons = None
-
-        # The ui containing all the dropdown menus
-        self._variable_selector = None
-
-        # A tag used to select all submodules
-        self._all_tag = "--ALL--"
 
     def load(self, problem: FASTOADProblem, file_formatter: IVariableIOFormatter = None):
         """
@@ -82,64 +79,67 @@ class OptimizationViewer:
         optimization_variables = VariableList()
         opt_def = problem._optimization_definition
         # Design Variables
-        for design_var in opt_def["design_var"].items():
-            name = design_var["name"]
-            initial_value = input_variables[name].value
-            # TODO: check that lower is provided
-            lower = design_var["lower"]
-            value = output_variables[name].value
-            # TODO: check that upper is provided
-            upper = design_var["upper"]
-            units = output_variables[name].units
-            desc = output_variables[name].description
-            metadata = {
-                "type": "design_var",
-                "initial_value": initial_value,
-                "lower": lower,
-                "value": value,
-                "upper": upper,
-                "units": units,
-                "desc": desc,
-            }
-            optimization_variables["name"] = metadata
+        if "design_var" in opt_def:
+            for design_var in opt_def["design_var"]:
+                name = design_var["name"]
+                initial_value = input_variables[name].value
+                # TODO: check that lower is provided
+                lower = design_var["lower"]
+                value = output_variables[name].value
+                # TODO: check that upper is provided
+                upper = design_var["upper"]
+                units = output_variables[name].units
+                desc = output_variables[name].description
+                metadata = {
+                    "type": "design_var",
+                    "initial_value": initial_value,
+                    "lower": lower,
+                    "value": value,
+                    "upper": upper,
+                    "units": units,
+                    "desc": desc,
+                }
+                optimization_variables[name] = metadata
 
         # Constraints
-        for constr in opt_def["constraint"].items():
-            name = constr["name"]
-            # TODO: check that lower is provided
-            lower = constr["lower"]
-            value = output_variables[name].value
-            # TODO: check that upper is provided
-            upper = constr["upper"]
-            units = output_variables[name].units
-            desc = output_variables[name].description
-            metadata = {
-                "type": "constraint",
-                "initial_value": "",
-                "lower": lower,
-                "value": value,
-                "upper": upper,
-                "units": units,
-                "desc": desc,
-            }
-            optimization_variables["name"] = metadata
+        if "constraint" in opt_def:
+            for constr in opt_def["constraint"]:
+                name = constr["name"]
+                # TODO: check that lower is provided
+                lower = constr["lower"]
+                value = output_variables[name].value
+                # TODO: check that upper is provided
+                upper = constr["upper"]
+                units = output_variables[name].units
+                desc = output_variables[name].description
+                metadata = {
+                    "type": "constraint",
+                    "initial_value": "",
+                    "lower": lower,
+                    "value": value,
+                    "upper": upper,
+                    "units": units,
+                    "desc": desc,
+                }
+                optimization_variables[name] = metadata
 
         # Objectives
-        for obj in opt_def["objective"].items():
-            name = obj["name"]
-            value = output_variables[name].value
-            units = output_variables[name].units
-            desc = output_variables[name].description
-            metadata = {
-                "type": "objective",
-                "initial_value": "",
-                "lower": "",
-                "value": value,
-                "upper": "",
-                "units": units,
-                "desc": desc,
-            }
-            optimization_variables["name"] = metadata
+        if "objective" in opt_def:
+            for obj in opt_def["objective"]:
+                name = obj["name"]
+                value = output_variables[name].value
+                units = output_variables[name].units
+                desc = output_variables[name].description
+                metadata = {
+                    "type": "objective",
+                    "initial_value": "",
+                    "lower": "",
+                    "value": value,
+                    "upper": "",
+                    "units": units,
+                    "desc": desc,
+                }
+                optimization_variables[name] = metadata
 
         self.load_variables(optimization_variables)
 
@@ -176,7 +176,7 @@ class OptimizationViewer:
 
         if not attribute_to_column:
             attribute_to_column = self._DEFAULT_COLUMN_RENAMING
-
+        print(variables)
         self.dataframe = (
             variables.to_dataframe()
             .rename(columns=attribute_to_column)[attribute_to_column.values()]
@@ -212,19 +212,22 @@ class OptimizationViewer:
         """
         if not df.empty:
             sheet = sh.from_dataframe(df)
-            column = df.columns.get_loc("Value")
+            name_column = df.columns.get_loc("Name")
+            units_column = df.columns.get_loc("Unit")
+            desc_column = df.columns.get_loc("Description")
 
             for cell in sheet.cells:
-                if column not in (cell.column_start, cell.column_end):
+                if units_column in (cell.column_start, cell.column_end):
+                    cell.read_only = True
+                elif desc_column in (cell.column_start, cell.column_end):
+                    cell.read_only = True
+                elif name_column in (cell.column_start, cell.column_end):
                     cell.read_only = True
                 else:
                     cell.type = "numeric"
                     # TODO: make the number of decimals depend on the module ?
                     # or chosen in the ui by the user
                     cell.numeric_format = "0.000"
-
-            # Name, Value, Unit, Description
-            sheet.column_width = [150, 50, 20, 150]
 
         else:
             sheet = sh.sheet()
@@ -247,7 +250,12 @@ class OptimizationViewer:
         Updates the stored DataFrame with respect to the actual values of the Sheet.
         Then updates the file with respect to the stored DataFrame.
         """
-        df = self._sheet_to_df(self._sheet)
+        frames = [
+            self._sheet_to_df(self._design_var_sheet),
+            self._sheet_to_df(self._constraint_sheet),
+            self._sheet_to_df(self._objective_sheet),
+        ]
+        df = pd.concat(frames)
         for i in df.index:
             self.dataframe.loc[int(i), :] = df.loc[i, :].values
 
@@ -257,54 +265,7 @@ class OptimizationViewer:
 
         :return display of the user interface
         """
-        self._filter_widgets = []
-        modules_item = sorted(self._find_submodules(self.dataframe))
-        if modules_item:
-            w = widgets.Dropdown(options=modules_item)
-            self._filter_widgets.append(w)
         return self._render_ui()
-
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def _update_items(self, change=None):
-        """
-        Updates the filter_widgets with respect to higher level filter_widgets values.
-        """
-        # 20 will never be reached
-        for i in range(20):
-            if i == 0:
-                self._filter_widgets[0].observe(self._update_items, "value")
-                self._filter_widgets[0].observe(self._update_variable_selector, "value")
-            elif i <= len(self._filter_widgets):
-                modules = [item.value for item in self._filter_widgets[0:i]]
-                modules_item = sorted(self._find_submodules(self.dataframe, modules))
-                if modules_item:
-                    # Check if the item exists already
-                    if i == len(self._filter_widgets):
-                        if len(modules_item) > 1:
-                            modules_item.insert(0, self._all_tag)
-                        widget = widgets.Dropdown(options=modules_item)
-                        widget.observe(self._update_items, "value")
-                        widget.observe(self._update_variable_selector, "value")
-                        self._filter_widgets.append(widget)
-                    else:
-                        if (self._all_tag not in modules_item) and (len(modules_item) > 1):
-                            modules_item.insert(0, self._all_tag)
-                        self._filter_widgets[i].options = modules_item
-                else:
-                    if i < len(self._filter_widgets):
-                        self._filter_widgets.pop(i)
-            else:
-                break
-
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def _update_variable_selector(self, change=None):
-        """
-        Updates the variable selector with respect to the
-        actual filter_widgets stored.
-        """
-        items_box = widgets.HBox(self._filter_widgets)
-        items_box = widgets.VBox([widgets.Label(value="Variable name"), items_box])
-        self._variable_selector = items_box
 
     def _create_save_load_buttons(self):
         """
@@ -348,13 +309,23 @@ class OptimizationViewer:
         Updates the sheet after filtering the dataframe with respect to
         the actual values of the variable dropdown menus.
         """
-        modules = [item.value for item in self._filter_widgets]
+        design_var_df = self.dataframe[self.dataframe["Type"] == "design_var"]
+        design_var_df = design_var_df.drop(columns=["Type"])
+        self._design_var_sheet = self._df_to_sheet(design_var_df)
+        constraint_df = self.dataframe[self.dataframe["Type"] == "constraint"]
+        constraint_df = constraint_df.drop(columns=["Type", "Initial Value"])
+        self._constraint_sheet = self._df_to_sheet(constraint_df)
+        objective_df = self.dataframe[self.dataframe["Type"] == "objective"]
+        objective_df = objective_df.drop(columns=["Type", "Initial Value", "Lower", "Upper"])
+        self._objective_sheet = self._df_to_sheet(objective_df)
 
-        filtered_var = self._filter_variables(self.dataframe, modules, var_type=None)
+        for cell in self._design_var_sheet.cells:
+            cell.observe(self._update_df, "value")
 
-        self._sheet = self._df_to_sheet(filtered_var)
+        for cell in self._constraint_sheet.cells:
+            cell.observe(self._update_df, "value")
 
-        for cell in self._sheet.cells:
+        for cell in self._objective_sheet.cells:
             cell.observe(self._update_df, "value")
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
@@ -366,79 +337,23 @@ class OptimizationViewer:
         :return the display object
         """
         clear_output(wait=True)
-        self._update_items()
-        self._update_variable_selector()
         self._update_sheet()
-        for item in self._filter_widgets:
-            item.observe(self._render_ui, "value")
-        self._sheet.layout.height = "400px"
-        ui = widgets.VBox([self._save_load_buttons, self._variable_selector, self._sheet])
+        # self._sheet.layout.height = "400px"
+        ui = widgets.VBox(
+            [
+                self._save_load_buttons,
+                self._design_var_ui(),
+                self._constraint_ui(),
+                self._objective_ui(),
+            ]
+        )
         return display(ui)
 
-    @staticmethod
-    def _find_submodules(df: pd.DataFrame, modules: List[str] = None) -> Set[str]:
-        """
-        Search for submodules at root or provided modules.
+    def _design_var_ui(self):
+        return widgets.VBox([widgets.Label(value="Design Variables"), self._design_var_sheet])
 
-        To find the submodules the method analyzes the name of the variables.
-        If the kwarg 'modules' is not None, the submodules search will be applied to
-        the variables that are part of these modules.
+    def _constraint_ui(self):
+        return widgets.VBox([widgets.Label(value="Constraints"), self._constraint_sheet])
 
-        :param df: the pandas dataframe containing the variables
-        :param modules: the list of modules to which the variables belong
-        :return the submodules list
-        """
-        var_names = df.filter(items=["Name"])
-
-        if not modules:
-            modules = []
-
-        def get_next_module(path):
-            submodules = path.split(":")
-            if len(modules) >= len(submodules) or submodules[: len(modules)] != modules:
-                return ""
-            else:
-                return submodules[len(modules)]
-
-        submodules = var_names.applymap(get_next_module)
-        submodules = submodules[submodules.Name != ""]
-
-        return set(submodules["Name"].tolist())
-
-    def _filter_variables(
-        self, df: pd.DataFrame, modules: List[str], var_type: str = None
-    ) -> pd.DataFrame:
-        """
-        Returns a filtered dataframe with respect to a set of modules and variable type.
-
-        The variables kept must be part of the modules list provided and the variable type
-        'INPUT' or 'OUTPUT (if provided).
-
-        :param df: the pandas dataframe containing the variables
-        :param modules: the list of modules to which the variables belong
-        :param var_type: the type of variables to keep
-        :return the filtered dataframe
-        """
-        if var_type is None:
-            var_type = self._all_tag
-        path = ""
-        for _ in modules:
-            if modules[-1] == self._all_tag:
-                path = ":".join(modules[:-1])
-            else:
-                path = ":".join(modules)
-
-        var_names = df["Name"].unique().tolist()
-
-        filtered_df = pd.DataFrame()
-
-        for var_name in var_names:
-            if path in var_name:
-                if var_type == self._all_tag:
-                    element = df[df["Name"] == var_name]
-                    filtered_df = filtered_df.append(element)
-                else:
-                    element = df[(df["Name"] == var_name) & (df["Type"] == var_type)]
-                    filtered_df = filtered_df.append(element)
-
-        return filtered_df
+    def _objective_ui(self):
+        return widgets.VBox([widgets.Label(value="Objectives"), self._objective_sheet])
