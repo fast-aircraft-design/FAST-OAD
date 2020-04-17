@@ -114,7 +114,7 @@ class OptimizationViewer:
                 desc = output_variables[name].description
                 metadata = {
                     "type": "constraint",
-                    "initial_value": "",
+                    "initial_value": None,
                     "lower": lower,
                     "value": value,
                     "upper": upper,
@@ -132,10 +132,10 @@ class OptimizationViewer:
                 desc = output_variables[name].description
                 metadata = {
                     "type": "objective",
-                    "initial_value": "",
-                    "lower": "",
+                    "initial_value": None,
+                    "lower": None,
                     "value": value,
-                    "upper": "",
+                    "upper": None,
                     "units": units,
                     "desc": desc,
                 }
@@ -176,12 +176,14 @@ class OptimizationViewer:
 
         if not attribute_to_column:
             attribute_to_column = self._DEFAULT_COLUMN_RENAMING
-        print(variables)
+
         self.dataframe = (
             variables.to_dataframe()
             .rename(columns=attribute_to_column)[attribute_to_column.values()]
             .reset_index(drop=True)
         )
+        # Apply coloring
+        self.dataframe = self._bound_activity_coloring(self.dataframe)
 
     def get_variables(self, column_to_attribute: Dict[str, str] = None) -> VariableList:
         """
@@ -258,6 +260,9 @@ class OptimizationViewer:
         df = pd.concat(frames)
         for i in df.index:
             self.dataframe.loc[int(i), :] = df.loc[i, :].values
+
+        # Apply coloring
+        # self.dataframe = self._bound_activity_coloring(self.dataframe)
 
     def _render_sheet(self) -> display:
         """
@@ -357,3 +362,38 @@ class OptimizationViewer:
 
     def _objective_ui(self):
         return widgets.VBox([widgets.Label(value="Objectives"), self._objective_sheet])
+
+    @staticmethod
+    def _bound_activity_coloring(df):
+        def highlight_active_bounds(s, threshold):
+            is_active = pd.Series(data=False, index=s.index)
+            is_violated = pd.Series(data=False, index=s.index)
+
+            # Constraints might only have a upper bound
+            if s.loc["Lower"] is not None:
+                if s.loc["Lower"] + threshold >= s.loc["Value"] >= s.loc["Lower"] - threshold:
+                    is_active["Lower"] = True
+                    is_active["Value"] = True
+                elif s.loc["Value"] < s.loc["Lower"] - threshold:
+                    is_violated["Lower"] = True
+                    is_violated["Value"] = True
+                else:
+                    pass
+
+            # Constraints might only have a lower bound
+            if s.loc["Upper"] is not None:
+                if s.loc["Upper"] + threshold >= s.loc["Value"] >= s.loc["Upper"] - threshold:
+                    is_active["Upper"] = True
+                    is_active["Value"] = True
+                elif s.loc["Value"] > s.loc["Upper"] + threshold:
+                    is_violated["Upper"] = True
+                    is_violated["Value"] = True
+                else:
+                    pass
+            yellow = ["background-color: yellow" if v else "" for v in is_active]
+            red = ["background-color: red" if v else "" for v in is_violated]
+            style = [yellow[i] or red[i] for i in range(len(yellow))]
+            return style
+
+        df = df.style.apply(highlight_active_bounds, threshold=10.0, axis=1)
+        return df
