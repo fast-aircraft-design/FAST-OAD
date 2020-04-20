@@ -19,6 +19,7 @@ from typing import List, Set, Dict
 import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
+import numpy as np
 from IPython.display import display, clear_output
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io import VariableIO, IVariableIOFormatter
@@ -213,10 +214,10 @@ class OptimizationViewer:
         :return the equivalent ipysheet Sheet
         """
         if not df.empty:
-            sheet = sh.from_dataframe(df)
-            name_column = df.columns.get_loc("Name")
-            units_column = df.columns.get_loc("Unit")
-            desc_column = df.columns.get_loc("Description")
+            # Adapted from_dataframe() method of ipysheet
+            columns = df.columns.tolist()
+            rows = df.index.tolist()
+            cells = []
 
             for cell in sheet.cells:
                 if units_column in (cell.column_start, cell.column_end):
