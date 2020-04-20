@@ -183,8 +183,6 @@ class OptimizationViewer:
             .rename(columns=attribute_to_column)[attribute_to_column.values()]
             .reset_index(drop=True)
         )
-        # Apply coloring
-        self.dataframe = self._bound_activity_coloring(self.dataframe)
 
     def get_variables(self, column_to_attribute: Dict[str, str] = None) -> VariableList:
         """
@@ -204,8 +202,7 @@ class OptimizationViewer:
         )
 
     # pylint: disable=invalid-name # df is a common naming for dataframes
-    @staticmethod
-    def _df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
+    def _df_to_sheet(self, df: pd.DataFrame) -> sh.Sheet:
         """
         Transforms a pandas DataFrame into a ipysheet Sheet.
         The cells are set to read only except for the values.
@@ -219,21 +216,47 @@ class OptimizationViewer:
             rows = df.index.tolist()
             cells = []
 
-            for cell in sheet.cells:
-                if units_column in (cell.column_start, cell.column_end):
-                    cell.read_only = True
-                elif desc_column in (cell.column_start, cell.column_end):
-                    cell.read_only = True
-                elif name_column in (cell.column_start, cell.column_end):
-                    cell.read_only = True
-                else:
-                    cell.type = "numeric"
-                    # TODO: make the number of decimals depend on the module ?
-                    # or chosen in the ui by the user
-                    cell.numeric_format = "0.000"
+            read_only_cells = ["Name", "Unit", "Description"]
+
+            style = self._cell_styling(df)
+            row_idx = 0
+            for r in rows:
+                col_idx = 0
+                for c in columns:
+                    value = df.loc[r, c]
+                    if c in read_only_cells:
+                        read_only = True
+                        numeric_format = None
+                    else:
+                        read_only = False
+                        # TODO: make the number of decimals depend on the module ?
+                        # or chosen in the ui by the user
+                        numeric_format = "0.000"
+                    cells.append(
+                        sh.Cell(
+                            value=value,
+                            row_start=row_idx,
+                            row_end=row_idx,
+                            column_start=col_idx,
+                            column_end=col_idx,
+                            numeric_format=numeric_format,
+                            read_only=read_only,
+                            style=style[(r, c)],
+                        )
+                    )
+                    col_idx += 1
+                row_idx += 1
+            sheet = sh.Sheet(
+                rows=len(rows),
+                columns=len(columns),
+                cells=cells,
+                row_headers=[str(header) for header in rows],
+                column_headers=[str(header) for header in columns],
+            )
 
         else:
             sheet = sh.sheet()
+
         return sheet
 
     @staticmethod
@@ -261,9 +284,6 @@ class OptimizationViewer:
         df = pd.concat(frames)
         for i in df.index:
             self.dataframe.loc[int(i), :] = df.loc[i, :].values
-
-        # Apply coloring
-        # self.dataframe = self._bound_activity_coloring(self.dataframe)
 
     def _render_sheet(self) -> display:
         """
@@ -365,36 +385,62 @@ class OptimizationViewer:
         return widgets.VBox([widgets.Label(value="Objectives"), self._objective_sheet])
 
     @staticmethod
-    def _bound_activity_coloring(df):
-        def highlight_active_bounds(s, threshold):
-            is_active = pd.Series(data=False, index=s.index)
-            is_violated = pd.Series(data=False, index=s.index)
+    def _cell_styling(df):
+        def highlight_active_bounds(df, threshold=1e-6):
+            rows = df.index.tolist()
+            columns = df.columns.tolist()
 
-            # Constraints might only have a upper bound
-            if s.loc["Lower"] is not None:
-                if s.loc["Lower"] + threshold >= s.loc["Value"] >= s.loc["Lower"] - threshold:
-                    is_active["Lower"] = True
-                    is_active["Value"] = True
-                elif s.loc["Value"] < s.loc["Lower"] - threshold:
-                    is_violated["Lower"] = True
-                    is_violated["Value"] = True
-                else:
-                    pass
+            style = {}
+            for r in rows:
+                s = df.loc[r]
+                is_active = pd.Series(data=False, index=s.index)
+                is_violated = pd.Series(data=False, index=s.index)
+                if "Lower" in s:
+                    # Constraints might only have a upper bound
+                    if s.loc["Lower"] is not None:
+                        if (
+                            s.loc["Lower"] + threshold
+                            >= s.loc["Value"]
+                            >= s.loc["Lower"] - threshold
+                        ):
+                            is_active["Lower"] = True
+                            is_active["Value"] = True
+                        elif s.loc["Value"] < s.loc["Lower"] - threshold:
+                            is_violated["Lower"] = True
+                            is_violated["Value"] = True
+                        else:
+                            pass
 
-            # Constraints might only have a lower bound
-            if s.loc["Upper"] is not None:
-                if s.loc["Upper"] + threshold >= s.loc["Value"] >= s.loc["Upper"] - threshold:
-                    is_active["Upper"] = True
-                    is_active["Value"] = True
-                elif s.loc["Value"] > s.loc["Upper"] + threshold:
-                    is_violated["Upper"] = True
-                    is_violated["Value"] = True
-                else:
-                    pass
-            yellow = ["background-color: yellow" if v else "" for v in is_active]
-            red = ["background-color: red" if v else "" for v in is_violated]
-            style = [yellow[i] or red[i] for i in range(len(yellow))]
-            return style
+                if "Upper" in s:
+                    # Constraints might only have a lower bound
+                    if s.loc["Upper"] is not None:
+                        if (
+                            s.loc["Upper"] + threshold
+                            >= s.loc["Value"]
+                            >= s.loc["Upper"] - threshold
+                        ):
+                            is_active["Upper"] = True
+                            is_active["Value"] = True
+                        elif s.loc["Value"] > s.loc["Upper"] + threshold:
+                            is_violated["Upper"] = True
+                            is_violated["Value"] = True
+                        else:
+                            pass
+                yellow = [
+                    {"backgroundColor": "yellow"} if v else {"backgroundColor": None}
+                    for v in is_active
+                ]
+                red = [
+                    {"backgroundColor": "red"} if v else {"backgroundColor": None}
+                    for v in is_violated
+                ]
+                column_style = [yellow[i] or red[i] for i in range(len(yellow))]
+                # TODO: is this optimal ?
+                for i in range(len(column_style)):
+                    style[(r, columns[i])] = column_style[i]
+                return style
 
-        df = df.style.apply(highlight_active_bounds, threshold=10.0, axis=1)
-        return df
+        style = highlight_active_bounds(df, threshold=10.0)
+        # style.update(another_styling_method())
+
+        return style
