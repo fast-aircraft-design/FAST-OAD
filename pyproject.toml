@@ -10,10 +10,10 @@
         { include = "fastoad", from = "src" },
     ]
 [tool.poetry.dependencies]
-    python = "^3.6"
+    python = "^3.6.1"
     numpy = "*"
     scipy = "*"
-    pandas = "*"
+    pandas = "^1"
     openmdao="^3"
     lxml = "*"
     ipopo = "^1"
