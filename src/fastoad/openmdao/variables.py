@@ -66,6 +66,7 @@ class Variable(Hashable):
     # Default metadata
     _base_metadata = {}
 
+    # TODO: should this be kept ?
     # openmdao meta data to ignore
     _metadata_to_be_ignored = ["size", "src_indices", "flat_src_indices", "distributed"]
 
@@ -96,11 +97,10 @@ class Variable(Hashable):
         # Done with class attributes ------------------------------------------
 
         self.metadata = self.__class__._base_metadata.copy()
-        # use kwargs only for keys already existent in self.metadata
-        # TODO : discuss with christophe about adding non openmdao metadata
+
         for key in self._metadata_to_be_ignored:
             kwargs.pop(key, None)
-        self.metadata.update((key, kwargs[key]) for key in kwargs.keys())
+        self.metadata.update((key, value) for key, value in kwargs.items())
         self._set_default_shape()
 
         # If no description, add one from DESCRIPTION_FILE_PATH, if available
