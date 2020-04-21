@@ -278,21 +278,29 @@ class VariableList(list):
         var_dict = {"name": []}
         var_dict.update({metadata_name: [] for metadata_name in self.metadata_keys()})
 
-        for variable in self:
-            value = variable.value
+        # To be able to edit floats and integer
+        def _check_shape(value):
             if np.shape(value) == (1,):
                 value = float(value[0])
             elif np.shape(value) == ():
                 pass
             else:
                 value = np.asarray(value).tolist()
+            return value
 
+        for variable in self:
+            value = _check_shape(variable.value)
             var_dict["name"].append(variable.name)
             for metadata_name in self.metadata_keys():
                 if metadata_name == "value":
                     var_dict["value"].append(value)
                 else:
-                    var_dict[metadata_name].append(variable.metadata[metadata_name])
+                    # TODO: make this more generic
+                    if metadata_name is ["value", "initial_value", "lower", "upper"]:
+                        metadata = _check_shape(variable.metadata[metadata_name])
+                    else:
+                        metadata = variable.metadata[metadata_name]
+                    var_dict[metadata_name].append(metadata)
 
         df = pd.DataFrame.from_dict(var_dict)
 
@@ -309,6 +317,13 @@ class VariableList(list):
         variables = VariableList()
 
         for (name, value, attributes) in ivc._indep + ivc._indep_external:
+            print(type(value))
+            if np.shape(value) == (1,):
+                value = float(value[0])
+            elif np.shape(value) == ():
+                pass
+            else:
+                value = np.asarray(value)
             metadata = {"value": value}
             metadata.update(attributes)
             variables[name] = metadata
