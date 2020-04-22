@@ -24,7 +24,7 @@ class Loads(ExplicitComponent):
     Computes gust load cases
 
     Load case 1: with wings with almost no fuel
-    Load case 2: at maximum take-off width
+    Load case 2: at maximum take-off weight
 
     Based on formulas in :cite:`supaero:2014`, §6.3
 
