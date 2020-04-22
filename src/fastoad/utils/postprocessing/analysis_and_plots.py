@@ -84,7 +84,7 @@ def wing_geometry_plot(
     fig = go.FigureWidget(fig)
 
     fig.update_layout(
-        title_text="Wing Geometry", title_x=0.5, xaxis_title="x", yaxis_title="y",
+        title_text="Wing Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x",
     )
 
     return fig
@@ -212,7 +212,7 @@ def aircraft_geometry_plot(
     fig = go.FigureWidget(fig)
 
     fig.update_layout(
-        title_text="Aircraft Geometry", title_x=0.5, xaxis_title="x", yaxis_title="y",
+        title_text="Aircraft Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x",
     )
 
     return fig
