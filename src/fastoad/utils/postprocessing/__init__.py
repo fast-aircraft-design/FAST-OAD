@@ -12,3 +12,4 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .variable_viewer import VariableViewer
+from .optimization_viewer import OptimizationViewer
