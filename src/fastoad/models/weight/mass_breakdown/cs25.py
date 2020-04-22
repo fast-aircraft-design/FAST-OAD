@@ -1,7 +1,6 @@
 """
-Load case computation
+Computation of load cases
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,18 +13,21 @@ Load case computation
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
 from fastoad.utils.physics.atmosphere import Atmosphere
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class Loads(ExplicitComponent):
-    # TODO: Document equations. Cite sources
     """
     Computes gust load cases
 
     Load case 1: with wings with almost no fuel
-    Load case 2: at maximum take-off width
+    Load case 2: at maximum take-off weight
+
+    Based on formulas in :cite:`supaero:2014`, §6.3
+
     """
 
     def setup(self):
@@ -37,7 +39,7 @@ class Loads(ExplicitComponent):
         self.add_input("data:aerodynamics:aircraft:cruise:CL_alpha", val=np.nan)
         self.add_input("data:load_case:lc1:U_gust", val=np.nan, units="m/s")
         self.add_input("data:load_case:lc1:altitude", val=np.nan, units="ft")
-        self.add_input("data:load_case:lc1:Vc_EAS", val=np.nan, units="kn")
+        self.add_input("data:load_case:lc1:Vc_EAS", val=np.nan, units="m/s")
         self.add_input("data:load_case:lc2:U_gust", val=np.nan, units="m/s")
         self.add_input("data:load_case:lc2:altitude", val=np.nan, units="ft")
         self.add_input("data:load_case:lc2:Vc_EAS", val=np.nan, units="kn")
@@ -45,10 +47,12 @@ class Loads(ExplicitComponent):
         self.add_output("data:mission:sizing:cs25:sizing_load_1", units="kg")
         self.add_output("data:mission:sizing:cs25:sizing_load_2", units="kg")
 
+        self.declare_partials("*", "*", method="fd")
+
     # pylint: disable=too-many-locals
     # pylint: disable=invalid-name
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        sea_level_density = 1.225
+        sea_level_density = Atmosphere(0).density
         wing_area = inputs["data:geometry:wing:area"]
         span = inputs["data:geometry:wing:span"]
         mzfw = inputs["data:weight:aircraft:MZFW"]
@@ -100,8 +104,8 @@ class Loads(ExplicitComponent):
 
     @staticmethod
     def __n_gust(mass, wing_area, rho, sea_level_density, chord_geom, vc_eas, cl_alpha, u_gust):
-        # TODO: better docstring, maybe refactor this function
         """
+        Computes a reference gust load.
 
         :param mass:
         :param wing_area:
@@ -116,7 +120,7 @@ class Loads(ExplicitComponent):
         mu_g = 2 * mass / rho / wing_area / chord_geom / cl_alpha
         k_g = 0.88 * mu_g / (5.3 + mu_g)  # attenuation factor
         n_gust = 1 + (sea_level_density / 2 / 9.81) * k_g * u_gust * (
-            vc_eas * 0.514444 * cl_alpha / mass / wing_area
+            vc_eas * cl_alpha / mass / wing_area
         )
 
         return n_gust

@@ -1,7 +1,6 @@
 """
 Estimation of pylons weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,13 +13,17 @@ Estimation of pylons weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class PylonsWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Pylons weight estimation (A6) """
+class PylonsWeight(om.ExplicitComponent):
+    """
+    Weight estimation for pylons
+
+    Based on formula in :cite:`supaero:2014`, mass contribution A6
+    """
 
     def setup(self):
         self.add_input("data:geometry:propulsion:pylon:wetted_area", val=np.nan, units="m**2")
@@ -31,6 +34,8 @@ class PylonsWeight(ExplicitComponent):
         self.add_input("tuning:weight:airframe:pylon:mass:offset", val=0.0, units="kg")
 
         self.add_output("data:weight:airframe:pylon:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wet_area_pylon = inputs["data:geometry:propulsion:pylon:wetted_area"]

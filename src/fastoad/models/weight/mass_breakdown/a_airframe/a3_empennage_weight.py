@@ -19,8 +19,11 @@ import openmdao.api as om
 
 
 class EmpennageWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Wing weight estimation (A3) """
+    """
+    Weight estimation for tail planes
+
+    Based on formulas in :cite:`supaero:2014`, mass contribution A3
+    """
 
     def setup(self):
         self.add_input("data:geometry:has_T_tail", val=np.nan)
@@ -34,6 +37,8 @@ class EmpennageWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="kg")
         self.add_output("data:weight:airframe:vertical_tail:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     # pylint: disable=too-many-locals
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

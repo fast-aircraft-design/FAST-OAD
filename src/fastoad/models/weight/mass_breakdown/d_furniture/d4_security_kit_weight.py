@@ -19,7 +19,12 @@ import openmdao.api as om
 
 
 class SecurityKitWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
+    """
+    Weight estimation for security kit
+
+    Based on :cite:`supaero:2014`, mass contribution D4
+    """
+
     """ Passenger security kit weight estimation (D4) """
 
     def setup(self):

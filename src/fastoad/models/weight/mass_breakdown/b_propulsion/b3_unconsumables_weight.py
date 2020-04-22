@@ -1,7 +1,6 @@
 """
 Estimation of fuel lines weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,13 +13,17 @@ Estimation of fuel lines weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class UnconsumablesWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ unconsumables weight estimation (B2) """
+    """
+    Weight estimation for oil and unusable fuel
+
+    Based on formula in :cite:`supaero:2014`, mass contribution B3
+    """
 
     def setup(self):
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
@@ -29,6 +32,8 @@ class UnconsumablesWeight(ExplicitComponent):
         self.add_input("tuning:weight:propulsion:unconsumables:mass:offset", val=0.0, units="kg")
 
         self.add_output("data:weight:propulsion:unconsumables:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         n_engines = inputs["data:geometry:propulsion:engine:count"]

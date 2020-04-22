@@ -1,7 +1,6 @@
 """
 Estimation of flight controls weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,13 +13,17 @@ Estimation of flight controls weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class FlightControlsWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Flight controls weight estimation (A4) """
+class FlightControlsWeight(om.ExplicitComponent):
+    """
+    Flight controls weight estimation
+
+    Based on formulas in :cite:`supaero:2014`, mass contribution A4
+    """
 
     def setup(self):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
@@ -28,12 +31,14 @@ class FlightControlsWeight(ExplicitComponent):
         self.add_input("data:mission:sizing:cs25:sizing_load_1", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:cs25:sizing_load_2", val=np.nan, units="kg")
         self.add_input(
-            "settings:weight:airframe:flight_controls:mass:k_fc", val=np.nan
-        )  # FIXME: this is a coeff of the model
+            "settings:weight:airframe:flight_controls:mass:k_fc", val=0.85
+        )  # FIXME: this one should depend on a boolan electric/not-electric flight_controls
         self.add_input("tuning:weight:airframe:flight_controls:mass:k", val=1.0)
         self.add_input("tuning:weight:airframe:flight_controls:mass:offset", val=0.0, units="kg")
 
         self.add_output("data:weight:airframe:flight_controls:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fus_length = inputs["data:geometry:fuselage:length"]

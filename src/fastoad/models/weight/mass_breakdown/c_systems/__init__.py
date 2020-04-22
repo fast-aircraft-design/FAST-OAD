@@ -1,5 +1,5 @@
 """
-Estimation of systems weight
+Estimation of weight of all-mission systems
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

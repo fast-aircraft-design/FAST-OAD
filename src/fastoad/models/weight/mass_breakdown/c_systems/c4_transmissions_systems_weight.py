@@ -21,8 +21,11 @@ from fastoad.constants import RangeCategory
 
 
 class TransmissionSystemsWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Transmissions systems weight estimation (C4) """
+    """
+    Weight estimation for transmission systems
+
+    Based on figures in :cite:`supaero:2014`, mass contribution C4
+    """
 
     def setup(self):
         self.add_input("data:TLAR:range", val=np.nan, units="NM")

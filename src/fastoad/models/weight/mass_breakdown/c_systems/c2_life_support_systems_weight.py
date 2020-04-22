@@ -20,15 +20,28 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class LifeSupportSystemsWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Life support systems weight estimation (C2) """
+    """
+    Weight estimation for life support systems
+
+    This includes:
+    
+    - insulation
+    - air conditioning / pressurization
+    - de-icing
+    - internal lighting system
+    - seats and installation of crew
+    - fixed oxygen
+    - permanent security kits
+
+    Based on formulas in :cite:`supaero:2014`, mass contribution C2
+    """
 
     def setup(self):
         self.add_input("data:TLAR:range", val=np.nan, units="NM")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:sweep_0", val=np.nan, units="deg")  # TODO : as radians ?
+        self.add_input("data:geometry:wing:sweep_0", val=np.nan, units="rad")
         self.add_input("data:geometry:propulsion:nacelle:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:cabin:NPAX1", val=np.nan)
@@ -141,7 +154,7 @@ class LifeSupportSystemsWeight(ExplicitComponent):
         temp_c23 = (
             53
             + 9.5 * nacelle_diameter * n_engines
-            + 1.9 * (span - width_max) / np.cos(np.radians(sweep_leading_edge))
+            + 1.9 * (span - width_max) / np.cos(sweep_leading_edge)
         )
         outputs["data:weight:systems:life_support:de-icing:mass"] = k_c23 * temp_c23 + offset_c23
 

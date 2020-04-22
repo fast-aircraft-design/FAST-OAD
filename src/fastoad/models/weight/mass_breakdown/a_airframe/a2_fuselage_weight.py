@@ -13,13 +13,17 @@ Estimation of fuselage weight
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class FuselageWeight(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Fuselage weight estimation (A2) """
+class FuselageWeight(om.ExplicitComponent):
+    """
+    Fuselage weight estimation
+
+    Based on a statistical analysis. See :cite:`supaero:2014`, mass contribution A2
+    """
 
     def setup(self):
         self.add_input("data:geometry:fuselage:wetted_area", val=np.nan, units="m**2")
@@ -32,6 +36,8 @@ class FuselageWeight(ExplicitComponent):
         self.add_input("settings:weight:airframe:fuselage:mass:k_fus", val=1.0)
 
         self.add_output("data:weight:airframe:fuselage:mass", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fuselage_wet_area = inputs["data:geometry:fuselage:wetted_area"]

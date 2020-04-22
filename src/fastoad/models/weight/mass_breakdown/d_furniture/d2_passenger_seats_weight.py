@@ -21,8 +21,11 @@ from fastoad.constants import RangeCategory
 
 
 class PassengerSeatsWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Passenger seats weight estimation (D2) """
+    """
+    Weight estimation for passenger seats
+
+    Based on :cite:`supaero:2014`, mass contribution D2
+    """
 
     def setup(self):
         self.add_input("data:TLAR:range", val=np.nan, units="NM")

@@ -21,8 +21,11 @@ from fastoad.constants import RangeCategory
 
 
 class FlightKitWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Flight kit weight estimation (C6) """
+    """
+    Weight estimation for flight kit (tools that are always on board)
+
+    Based on figures in :cite:`supaero:2014`, mass contribution C6
+    """
 
     def setup(self):
         self.add_input("data:TLAR:range", val=np.nan, units="NM")
