@@ -281,7 +281,7 @@ class VariableViewer:
 
         load_button.on_click(on_load_button_clicked)
 
-        items_box = widgets.HBox([save_button, load_button])
+        items_box = widgets.HBox([load_button, save_button])
 
         self._save_load_buttons = items_box
 
