@@ -317,7 +317,6 @@ class VariableList(list):
         variables = VariableList()
 
         for (name, value, attributes) in ivc._indep + ivc._indep_external:
-            print(type(value))
             if np.shape(value) == (1,):
                 value = float(value[0])
             elif np.shape(value) == ():
