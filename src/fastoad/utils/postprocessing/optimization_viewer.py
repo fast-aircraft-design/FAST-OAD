@@ -84,11 +84,15 @@ class OptimizationViewer:
             for design_var in opt_def["design_var"]:
                 name = design_var["name"]
                 initial_value = input_variables[name].value
-                # TODO: check that lower is provided
-                lower = design_var["lower"]
+                if "lower" in design_var:
+                    lower = design_var["lower"]
+                else:
+                    lower = None
                 value = output_variables[name].value
-                # TODO: check that upper is provided
-                upper = design_var["upper"]
+                if "upper" in design_var:
+                    upper = design_var["upper"]
+                else:
+                    upper = None
                 units = output_variables[name].units
                 desc = output_variables[name].description
                 metadata = {
@@ -106,11 +110,15 @@ class OptimizationViewer:
         if "constraint" in opt_def:
             for constr in opt_def["constraint"]:
                 name = constr["name"]
-                # TODO: check that lower is provided
-                lower = constr["lower"]
+                if "lower" in constr:
+                    lower = constr["lower"]
+                else:
+                    lower = None
                 value = output_variables[name].value
-                # TODO: check that upper is provided
-                upper = constr["upper"]
+                if "upper" in constr:
+                    upper = constr["upper"]
+                else:
+                    upper = None
                 units = output_variables[name].units
                 desc = output_variables[name].description
                 metadata = {
