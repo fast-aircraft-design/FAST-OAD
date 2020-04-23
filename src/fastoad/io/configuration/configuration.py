@@ -269,20 +269,20 @@ class FASTOADProblem(om.Problem):
     def _add_constraints(self):
         """  Adds constraints as instructed in configuration file """
         # Constraints
-        constraint_tables = self._optimization_definition.get(TABLES_CONSTRAINT, [])
-        for constraint_table in constraint_tables:
+        constraint_tables = self._optimization_definition.get(TABLES_CONSTRAINT, {})
+        for _, constraint_table in constraint_tables.items():
             self.model.add_constraint(**constraint_table)
 
     def _add_objectives(self):
         """  Adds objectives as instructed in configuration file """
-        objective_tables = self._optimization_definition.get(TABLES_OBJECTIVE, [])
-        for objective_table in objective_tables:
+        objective_tables = self._optimization_definition.get(TABLES_OBJECTIVE, {})
+        for _, objective_table in objective_tables.items():
             self.model.add_objective(**objective_table)
 
     def _add_design_vars(self):
         """ Adds design variables as instructed in configuration file """
-        design_var_tables = self._optimization_definition.get(TABLES_DESIGN_VAR, [])
-        for design_var_table in design_var_tables:
+        design_var_tables = self._optimization_definition.get(TABLES_DESIGN_VAR, {})
+        for _, design_var_table in design_var_tables.items():
             self.model.add_design_var(**design_var_table)
 
     def _read_optimization_definition(self):
@@ -292,7 +292,12 @@ class FASTOADProblem(om.Problem):
             - Constraints
             - Objectives
         """
-        self._optimization_definition = self._conf_dict.get(TABLE_OPTIMIZATION)
+
+        self._optimization_definition = {}
+        conf_dict = self._conf_dict.get(TABLE_OPTIMIZATION)
+        if conf_dict:
+            for sec, elements in conf_dict.items():
+                self._optimization_definition[sec] = {elem["name"]: elem for elem in elements}
 
     def _write_optimization_definition(self, optimization_definition: Dict):
         """
@@ -301,7 +306,10 @@ class FASTOADProblem(om.Problem):
         Keys of the dictionary are: "design_var", "constraint", "objective".
         :param optimization_definition: dict containing the optimization problem definition
         """
-        subpart = {"optimization": optimization_definition}
+        subpart = {}
+        for key, value in optimization_definition.items():
+            subpart[key] = [value for _, value in optimization_definition[key].items()]
+        subpart = {"optimization": subpart}
         self._edit_conf_file(subpart)
 
     def _edit_conf_file(self, subpart: Dict):

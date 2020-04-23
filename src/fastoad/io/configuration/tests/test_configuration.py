@@ -144,6 +144,15 @@ def test_write_optimization_definition(cleanup):
     problem.configure(editable_file)
 
     optimization_def = {
+        "design_var": {
+            "x": {"name": "x", "lower": 0, "upper": 20},
+            "z": {"name": "z", "lower": 0, "upper": 10},
+        },
+        "constraint": {"g1": {"name": "g1", "upper": 10}, "g2": {"name": "g2", "upper": 0},},
+        "objective": {"f": {"name": "f"}},
+    }
+
+    optimization_conf = {
         "design_var": [
             {"name": "x", "lower": 0, "upper": 20},
             {"name": "z", "lower": 0, "upper": 10},
@@ -151,13 +160,14 @@ def test_write_optimization_definition(cleanup):
         "constraint": [{"name": "g1", "upper": 10}, {"name": "g2", "upper": 0}],
         "objective": [{"name": "f"}],
     }
+
     conf_dict = toml.load(editable_file)
     conf_dict_opt = conf_dict["optimization"]
     # Should be different
-    assert optimization_def != conf_dict_opt
+    assert optimization_conf != conf_dict_opt
 
     problem._write_optimization_definition(optimization_def)
     conf_dict = toml.load(editable_file)
     conf_dict_opt = conf_dict["optimization"]
     # Should be equal
-    assert optimization_def == conf_dict_opt
+    assert optimization_conf == conf_dict_opt
