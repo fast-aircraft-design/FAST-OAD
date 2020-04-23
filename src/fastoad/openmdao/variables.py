@@ -296,7 +296,7 @@ class VariableList(list):
                     var_dict["value"].append(value)
                 else:
                     # TODO: make this more generic
-                    if metadata_name is ["value", "initial_value", "lower", "upper"]:
+                    if metadata_name in ["value", "initial_value", "lower", "upper"]:
                         metadata = _check_shape(variable.metadata[metadata_name])
                     else:
                         metadata = variable.metadata[metadata_name]
@@ -340,12 +340,26 @@ class VariableList(list):
         :param df: a DataFrame instance
         :return: a VariableList instance
         """
-        column_names = [
-            name for name in df.columns if name in ["name"] + list(Variable.get_openmdao_keys())
-        ]
+        column_names = [name for name in df.columns]
+
+        # To be able to edit floats and integer
+        def _check_shape(value):
+            if np.shape(value) == (1,):
+                value = float(value[0])
+            elif np.shape(value) == ():
+                pass
+            else:
+                value = np.asarray(value).tolist()
+            return value
 
         def _get_variable(row):
             var_as_dict = {key: val for key, val in zip(column_names, row)}
+            # TODO: make this more generic
+            for key, val in var_as_dict.items():
+                if key in ["value", "initial_value", "lower", "upper"]:
+                    var_as_dict[key] = _check_shape(val)
+                else:
+                    pass
             return Variable(**var_as_dict)
 
         return VariableList([_get_variable(row) for row in df[column_names].values])
