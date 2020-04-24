@@ -347,7 +347,11 @@ class VariableList(list):
             if np.shape(value) == (1,):
                 value = float(value[0])
             elif np.shape(value) == ():
-                pass
+                if type(value) == str:
+                    value = float(value)
+                else:
+                    # Integer
+                    pass
             else:
                 value = np.asarray(value).tolist()
             return value

@@ -81,8 +81,7 @@ class OptimizationViewer:
         opt_def = problem._optimization_definition
         # Design Variables
         if "design_var" in opt_def:
-            for design_var in opt_def["design_var"]:
-                name = design_var["name"]
+            for name, design_var in opt_def["design_var"].items():
                 initial_value = input_variables[name].value
                 if "lower" in design_var:
                     lower = design_var["lower"]
@@ -108,8 +107,7 @@ class OptimizationViewer:
 
         # Constraints
         if "constraint" in opt_def:
-            for constr in opt_def["constraint"]:
-                name = constr["name"]
+            for name, constr in opt_def["constraint"].items():
                 if "lower" in constr:
                     lower = constr["lower"]
                 else:
@@ -134,8 +132,7 @@ class OptimizationViewer:
 
         # Objectives
         if "objective" in opt_def:
-            for obj in opt_def["objective"]:
-                name = obj["name"]
+            for name, obj in opt_def["objective"].items():
                 value = output_variables[name].value
                 units = output_variables[name].units
                 desc = output_variables[name].description
@@ -152,19 +149,72 @@ class OptimizationViewer:
 
         self.load_variables(optimization_variables)
 
-    def save(self, file_path: str = None, file_formatter: IVariableIOFormatter = None):
+    def save(self):
         """
-        Save the dataframe to the file.
+        Save the optimization to the files.
+        Possible files modified are:
+            - the .toml configuration file
+            - the input fle (initial values)
+            - the output file (values)
 
         :param file_path: the path of file to save. If not given, the initially read file will be overwritten.
         :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
        """
-        if file_path is None:
-            file_path = self.file
+        problem = self.problem
+        input_variables = VariableIO(self.problem.input_file_path, None).read()
+        output_variables = VariableIO(self.problem.output_file_path, None).read()
+        opt_def = problem._optimization_definition
 
         variables = self.get_variables()
+        for variable in variables:
+            name = variable.name
+            value = variable.value
+            meta = variable.metadata
+            for input_var in input_variables:
+                if input_var.name == name:
+                    input_var.value = meta["initial_value"]
+            for output_var in output_variables:
+                if output_var.name == name:
+                    output_var.value = meta["value"]
+            if meta["type"] == "design_var":
+                # TODO: later it will be possible to add/remove design variables in the ui
+                if "design_var" not in opt_def:
+                    opt_def["design_var"] = {}
+                if name not in opt_def["design_var"]:
+                    opt_def["design_var"][name] = {}
+                if meta["lower"]:
+                    opt_def["design_var"][name].update({"lower": meta["lower"]})
+                else:
+                    opt_def["design_var"][name].pop("lower", None)
+                if meta["upper"]:
+                    opt_def["design_var"][name].update({"upper": meta["upper"]})
+                else:
+                    opt_def["design_var"][name].pop("upper", None)
+            elif meta["type"] == "constraint":
+                # TODO: later it will be possible to add/remove constraints in the ui
+                if "constraint" not in opt_def:
+                    opt_def["constraint"] = {}
+                if name not in opt_def["constraint"]:
+                    opt_def["constraint"][name] = {}
+                if meta["lower"]:
+                    opt_def["constraint"][name].update({"lower": meta["lower"]})
+                else:
+                    opt_def["constraint"][name].pop("lower", None)
+                if meta["upper"]:
+                    opt_def["constraint"][name].update({"upper": meta["upper"]})
+                else:
+                    opt_def["constraint"][name].pop("upper", None)
+            else:
+                pass
 
-        VariableIO(file_path, file_formatter).write(variables)
+        # Saving modifications
+        # Initial values
+        VariableIO(self.problem.input_file_path, None).write(input_variables)
+        # Values
+        VariableIO(self.problem.output_file_path, None).write(output_variables)
+        # Optimization definition
+        problem._optimization_definition = opt_def
+        problem._write_optimization_definition(opt_def)
 
     def display(self):
         """
@@ -263,7 +313,10 @@ class OptimizationViewer:
             )
 
         else:
-            sheet = sh.sheet()
+            # columns = self._DEFAULT_COLUMN_RENAMING
+            # columns.pop("type")
+            # columns = list(columns.values())
+            sheet = sh.sheet(rows=0, columns=0)
 
         return sheet
 
@@ -289,9 +342,12 @@ class OptimizationViewer:
             self._sheet_to_df(self._constraint_sheet),
             self._sheet_to_df(self._objective_sheet),
         ]
-        df = pd.concat(frames)
-        for i in df.index:
-            self.dataframe.loc[int(i), :] = df.loc[i, :].values
+        df = pd.concat(frames, sort=True)
+        rows = df.index.tolist()
+        columns = df.columns.tolist()
+        for r in rows:
+            for c in columns:
+                self.dataframe.loc[int(r), c] = df.loc[r, c]
 
     def _render_sheet(self) -> display:
         """
@@ -370,7 +426,7 @@ class OptimizationViewer:
 
         :return the display object
         """
-        clear_output(wait=True)
+        # clear_output(wait=True)
         self._update_sheet()
         # self._sheet.layout.height = "400px"
         ui = widgets.VBox(
