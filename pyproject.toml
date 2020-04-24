@@ -47,6 +47,7 @@
     ipywidgets = "*"
     importlib_resources = "*"
     ipysheet = "*"
+    tomlkit = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
     wheel = "*"

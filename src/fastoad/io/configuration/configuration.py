@@ -21,7 +21,7 @@ from copy import deepcopy
 from typing import Dict
 
 import openmdao.api as om
-import toml
+import tomlkit as toml
 from fastoad.io import IVariableIOFormatter
 from fastoad.io.variable_io import VariableIO
 from fastoad.module_management import OpenMDAOSystemRegistry
@@ -104,7 +104,9 @@ class FASTOADProblem(om.Problem):
         # Dev note: toml.load would also accept an array of files as input, but
         # it does not look useful for us, so it is not mentioned in docstring.
         conf_dirname = pth.dirname(pth.abspath(conf_file))  # for resolving relative paths
-        self._conf_dict = toml.load(conf_file)
+        with open(conf_file, "r") as file:
+            d = file.read()
+            self._conf_dict = toml.loads(d)
 
         # FIXME: Structure of configuration file will have to be checked more thoroughly, like
         #        producing errors if missing definition of data I/O files
@@ -321,7 +323,8 @@ class FASTOADProblem(om.Problem):
         for (key, value) in subpart.items():
             self._conf_dict[key] = value
         with open(self._conf_file, "w") as file:
-            toml.dump(self._conf_dict, file)
+            d = toml.dumps(self._conf_dict)
+            file.write(d)
 
 
 def _om_eval(string_to_eval: str):
