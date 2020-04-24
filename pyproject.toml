@@ -40,7 +40,6 @@
     openmdao="^3"
     lxml = "*"
     ipopo = "^1"
-    toml = "*"
     jupyterlab = "*"
     matplotlib = "*"
     plotly = "*"
