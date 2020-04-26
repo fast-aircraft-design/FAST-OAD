@@ -16,10 +16,33 @@ OpenMDAO wrapping of RubberEngine
 
 import numpy as np
 from fastoad.models.propulsion import OMIEngine, IEngineSubclass
+from fastoad.openmdao.validity_checker import ValidityDomainChecker
 
 from .rubber_engine import RubberEngine
 
 
+@ValidityDomainChecker(
+    {
+        "data:propulsion:altitude": (None, 20000.0),
+        "data:propulsion:mach": (0.75, 0.85),  # limitation of SFC ratio model
+        "data:propulsion:rubber_engine:overall_pressure_ratio": (20.0, 40.0),
+        "data:propulsion:rubber_engine:bypass_ratio": (3.0, 6.0),
+        "data:propulsion:thrust_rate": (0.5, 1.0),  # limitation of SFC ratio model
+        "data:propulsion:rubber_engine:turbine_inlet_temperature": (
+            1400.0,
+            1600.0,
+        ),  # limitation of max thrust model
+        "data:propulsion:rubber_engine:delta_t4_climb": (
+            -100.0,
+            0.0,
+        ),  # limitation of max thrust model
+        "data:propulsion:rubber_engine:delta_t4_cruise": (
+            -100.0,
+            0.0,
+        ),  # limitation of max thrust model
+    },
+    __name__,
+)
 class OMRubberEngine(OMIEngine):
     """
     Parametric engine model as OpenMDAO component
