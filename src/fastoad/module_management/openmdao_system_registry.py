@@ -211,10 +211,10 @@ def _option_decorator(instance: SystemSubclass) -> SystemSubclass:
                 self.options[name] = value
 
         # Call the original setup method
-        self.original_setup()
+        self.__setup_before_option_decorator()
 
-    # Move the (already bound) method "setup" to "original_setup"
-    setattr(instance, "original_setup", instance.setup)
+    # Move the (already bound) method "setup" to "__setup_before_option_decorator"
+    setattr(instance, "__setup_before_option_decorator", instance.setup)
 
     # Create and bind the new "setup" method
     setup_method = MethodType(setup, instance)

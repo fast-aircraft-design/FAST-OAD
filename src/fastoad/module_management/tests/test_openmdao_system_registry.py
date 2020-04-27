@@ -1,5 +1,5 @@
 """
-Test module for openmdao_system_factory.py
+Test module for openmdao_system_registry.py
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
