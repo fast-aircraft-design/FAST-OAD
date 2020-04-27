@@ -461,14 +461,12 @@ class OptimizationViewer:
                 if "Lower" in s:
                     # Constraints might only have a upper bound
                     if s.loc["Lower"] is not None:
-                        if (
-                            s.loc["Lower"] + threshold
-                            >= s.loc["Value"]
-                            >= s.loc["Lower"] - threshold
+                        if np.all(s.loc["Lower"] + threshold >= s.loc["Value"]) & np.all(
+                            s.loc["Value"] >= s.loc["Lower"] - threshold
                         ):
                             is_active["Lower"] = True
                             is_active["Value"] = True
-                        elif s.loc["Value"] < s.loc["Lower"] - threshold:
+                        elif np.all(s.loc["Value"] < s.loc["Lower"] - threshold):
                             is_violated["Lower"] = True
                             is_violated["Value"] = True
                         else:
@@ -477,14 +475,12 @@ class OptimizationViewer:
                 if "Upper" in s:
                     # Constraints might only have a lower bound
                     if s.loc["Upper"] is not None:
-                        if (
-                            s.loc["Upper"] + threshold
-                            >= s.loc["Value"]
-                            >= s.loc["Upper"] - threshold
+                        if np.all(s.loc["Upper"] + threshold >= s.loc["Value"]) & np.all(
+                            s.loc["Value"] >= s.loc["Upper"] - threshold
                         ):
                             is_active["Upper"] = True
                             is_active["Value"] = True
-                        elif s.loc["Value"] > s.loc["Upper"] + threshold:
+                        elif np.all(s.loc["Value"] > s.loc["Upper"] + threshold):
                             is_violated["Upper"] = True
                             is_violated["Value"] = True
                         else:
