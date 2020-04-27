@@ -453,7 +453,6 @@ class OptimizationViewer:
         def highlight_active_bounds(df, threshold=1e-6):
             rows = df.index.tolist()
             columns = df.columns.tolist()
-
             style = {}
             for r in rows:
                 s = df.loc[r]
@@ -502,7 +501,7 @@ class OptimizationViewer:
                 # TODO: is this optimal ?
                 for i in range(len(column_style)):
                     style[(r, columns[i])] = column_style[i]
-                return style
+            return style
 
         style = highlight_active_bounds(df, threshold=10.0)
         # style.update(another_styling_method())
