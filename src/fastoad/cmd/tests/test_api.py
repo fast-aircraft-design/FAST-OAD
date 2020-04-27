@@ -127,3 +127,17 @@ def test_optimize_problem(cleanup):
     problem = api.optimize_problem(CONFIGURATION_FILE_PATH, True)
 
     assert problem["f"] == pytest.approx(3.18339395, abs=1e-8)
+
+
+def test_optimization_viewer(cleanup):
+    api.generate_inputs(
+        CONFIGURATION_FILE_PATH, pth.join(DATA_FOLDER_PATH, "inputs.xml"), overwrite=True
+    )
+
+    # Before a run
+    api.optimization_viewer(CONFIGURATION_FILE_PATH)
+
+    api.optimize_problem(CONFIGURATION_FILE_PATH, True)
+
+    # After a run
+    api.optimization_viewer(CONFIGURATION_FILE_PATH)
