@@ -100,7 +100,7 @@ class Variable(Hashable):
 
         for key in self._metadata_to_be_ignored:
             kwargs.pop(key, None)
-        self.metadata.update((key, value) for key, value in kwargs.items())
+        self.metadata.update(kwargs)
         self._set_default_shape()
 
         # If no description, add one from DESCRIPTION_FILE_PATH, if available
