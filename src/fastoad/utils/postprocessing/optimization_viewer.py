@@ -512,7 +512,7 @@ class OptimizationViewer:
                     style[(r, columns[i])] = column_style[i]
             return style
 
-        style = highlight_active_bounds(df, threshold=10.0)
+        style = highlight_active_bounds(df, threshold=0.1)
         # style.update(another_styling_method())
 
         return style
