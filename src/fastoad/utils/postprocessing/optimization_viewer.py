@@ -14,6 +14,7 @@ Defines the variable viewer for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os.path as pth
 from typing import Dict
 
 import ipysheet as sh
@@ -24,6 +25,7 @@ from IPython.display import display
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io import VariableIO, IVariableIOFormatter
 from fastoad.openmdao.variables import VariableList
+from .exceptions import FastMissingFile
 
 pd.set_option("display.max_rows", None)
 
@@ -75,8 +77,18 @@ class OptimizationViewer:
         """
 
         self.problem = problem
-        input_variables = VariableIO(self.problem.input_file_path, file_formatter).read()
-        output_variables = VariableIO(self.problem.output_file_path, file_formatter).read()
+        if pth.isfile(self.problem.input_file_path):
+            input_variables = VariableIO(self.problem.input_file_path, file_formatter).read()
+        else:
+            # TODO: generate the input file by default ?
+            raise FastMissingFile("Please generate input file before using the optimization viewer")
+
+        if pth.isfile(self.problem.output_file_path):
+            output_variables = VariableIO(self.problem.output_file_path, file_formatter).read()
+        else:
+            self.problem.write_outputs()
+            output_variables = VariableIO(self.problem.output_file_path, file_formatter).read()
+
         optimization_variables = VariableList()
         opt_def = problem._optimization_definition
         # Design Variables
@@ -92,8 +104,8 @@ class OptimizationViewer:
                     upper = design_var["upper"]
                 else:
                     upper = None
-                units = output_variables[name].units
-                desc = output_variables[name].description
+                units = input_variables[name].units
+                desc = input_variables[name].description
                 metadata = {
                     "type": "design_var",
                     "initial_value": initial_value,
