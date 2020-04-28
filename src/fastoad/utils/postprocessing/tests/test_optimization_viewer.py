@@ -88,3 +88,21 @@ def test_optimization_viewer_save(cleanup):
     optim_viewer.load(problem)
     optim_viewer.save()
     optim_viewer.load(problem)
+
+
+def test_optimization_viewer_display(cleanup):
+    """
+    Basic tests for testing the OptimizationViewer load method.
+    """
+    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
+
+    # The problem has not yet been ran
+    problem = FASTOADProblem()
+    problem.configure(filename)
+
+    optim_viewer = OptimizationViewer()
+
+    api.generate_inputs(filename, pth.join(DATA_FOLDER_PATH, "inputs.xml"), overwrite=True)
+
+    optim_viewer.load(problem)
+    optim_viewer.display()

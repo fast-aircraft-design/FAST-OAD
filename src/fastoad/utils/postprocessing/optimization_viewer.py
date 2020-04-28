@@ -230,7 +230,8 @@ class OptimizationViewer:
 
     def display(self):
         """
-        Displays the datasheet
+        Displays the datasheet.
+        load() must be ran before.
         :return display of the user interface:
         """
         self._create_save_load_buttons()
