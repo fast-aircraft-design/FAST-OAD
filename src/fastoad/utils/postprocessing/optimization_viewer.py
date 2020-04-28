@@ -29,14 +29,16 @@ from .exceptions import FastMissingFile
 
 pd.set_option("display.max_rows", None)
 
+# pylint: disable=protected-access #  needed for FASTOADProblem and OpenMDAO introspection
+
 
 class OptimizationViewer:
     """
     A class for interacting with FAST-OAD Problem optimization information.
     """
 
-    # When getting a dataframe from a VariableList, the dictionary keys tell what columns are kept and
-    # the values tell what name will be displayed.
+    # When getting a dataframe from a VariableList, the dictionary keys tell what columns
+    #  are kept and values tell what name will be displayed.
     _DEFAULT_COLUMN_RENAMING = {
         "type": "Type",
         "name": "Name",
@@ -73,7 +75,8 @@ class OptimizationViewer:
         Loads the FAST-OAD problem and stores its data.
 
         :param problem: the FASTOADProblem instance.
-        :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
+        :param file_formatter: the formatter that defines file format. If not provided,
+               default format will be assumed.
         """
 
         self.problem = problem
@@ -169,8 +172,10 @@ class OptimizationViewer:
             - the input fle (initial values)
             - the output file (values)
 
-        :param file_path: the path of file to save. If not given, the initially read file will be overwritten.
-        :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
+        :param file_path: the path of file to save. If not given, the initially
+               read file will be overwritten.
+        :param file_formatter: the formatter that defines file format. If not provided,
+               default format will be assumed.
        """
         problem = self.problem
         input_variables = VariableIO(self.problem.input_file_path, None).read()
@@ -180,7 +185,6 @@ class OptimizationViewer:
         variables = self.get_variables()
         for variable in variables:
             name = variable.name
-            value = variable.value
             meta = variable.metadata
             for input_var in input_variables:
                 if input_var.name == name:
@@ -242,8 +246,9 @@ class OptimizationViewer:
         Loads provided variable list and replace current data set.
 
         :param variables: the variables to load
-        :param attribute_to_column: dictionary keys tell what variable attributes are kept and the values tell what
-                                     name will be displayed. If not provided, default translation will apply.
+        :param attribute_to_column: dictionary keys tell what variable attributes are
+               kept and the values tell what name will be displayed. If not provided,
+               default translation will apply.
         """
 
         if not attribute_to_column:
@@ -258,9 +263,9 @@ class OptimizationViewer:
     def get_variables(self, column_to_attribute: Dict[str, str] = None) -> VariableList:
         """
 
-        :param column_to_attribute: dictionary keys tell what columns are kept and the values tell what
-                                     variable attribute it corresponds to. If not provided, default translation
-                                     will apply.
+        :param column_to_attribute: dictionary keys tell what columns are kept and the values
+                                    tell whatvariable attribute it corresponds to. If not
+                                    provided, default translation will apply.
         :return: a variable list from current data set
         """
         if not column_to_attribute:
@@ -395,7 +400,7 @@ class OptimizationViewer:
         )
 
         def on_load_button_clicked(b):
-            self.load(self.file)
+            self.load(self.problem)
             self._render_sheet()
 
         load_button.on_click(on_load_button_clicked)
@@ -501,9 +506,9 @@ class OptimizationViewer:
                     {"backgroundColor": "red"} if v else {"backgroundColor": None}
                     for v in is_violated
                 ]
-                column_style = [yellow[i] or red[i] for i in range(len(yellow))]
+                column_style = [yellow[i] or red[i] for i, _ in enumerate(yellow)]
                 # TODO: is this optimal ?
-                for i in range(len(column_style)):
+                for i, _ in enumerate(column_style):
                     style[(r, columns[i])] = column_style[i]
             return style
 
