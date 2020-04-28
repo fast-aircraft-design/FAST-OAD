@@ -15,11 +15,46 @@ Tests for FAST-OAD optimization viewer
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
+import pytest
+from shutil import rmtree
 
-import pandas as pd
-from pandas.util.testing import assert_frame_equal
-
+from fastoad.io.configuration import FASTOADProblem
 from .. import OptimizationViewer
+from ..exceptions import FastMissingFile
+from fastoad.cmd import api
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+
+
+@pytest.fixture(scope="module")
+def cleanup():
+    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+
+
+def test_optimization_viewer_load(cleanup):
+    """
+    Basic tests for testing the OptimizationViewer load method.
+    """
+    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
+
+    # The problem has not yet been ran
+    problem = FASTOADProblem()
+    problem.configure(filename)
+
+    optim_viewer = OptimizationViewer()
+
+    # No input file exists
+    with pytest.raises(FastMissingFile):
+        optim_viewer.load(problem)
+
+    api.generate_inputs(filename)
+
+    # Input file exist
+    optim_viewer.load(problem)
+
+    # We run the problem
+    api.optimize_problem(filename, overwrite=True)
+
+    # Load the results
+    optim_viewer.load(problem)
