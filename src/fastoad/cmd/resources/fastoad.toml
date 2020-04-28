@@ -46,5 +46,14 @@ driver = "om.ScipyOptimizeDriver()"
         upper = 25.0
         ref = 15.0
 
+    [[optimization.design_var]]
+        name = "data:geometry:wing:aspect_ratio"
+        lower = 6.0
+        upper = 12.0
+
+    [[optimization.constraint]]
+        name = "data:geometry:wing:span"
+        upper = 35.0
+
     [[optimization.objective]]
         name = "data:handling_qualities:static_margin:to_target"
