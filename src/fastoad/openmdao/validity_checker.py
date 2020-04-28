@@ -92,10 +92,32 @@ class ValidityDomainChecker:
     _limit_definitions: Dict[UUID, Dict[str, _LimitDefinition]] = {}
 
     def __init__(self, limits: Dict[str, tuple], logger_name: str = None):
+        self._id = uuid.uuid4()
         self._source_file = self._get_caller_info()
         self._register_checks(limits, logger_name)
 
     def __call__(self, om_class: type):
+
+        # We need to do things when setup() is called. Inheritance or decorator
+        # pattern would do maybe, but it is safer to return the original (modified)
+        # input class (at least for interactions with iPOPO).
+        # Therefore, original setup() is renamed and another setup() method is
+        # added, that will call the original setup() and do what we need.
+
+        # original setup will be renamed with a name that will be unique
+        setup_new_name = "setup_before_validity_domain_checker_%i" % int(self._id)
+
+        # Copy the original method "setup" to "__setup_before_option_decorator_<uuid>"
+        setattr(om_class, setup_new_name, om_class.setup)
+
+        # Set the new "setup" method
+        def setup(self):
+            """ Will replace the original setup() method"""
+            getattr(self, setup_new_name)()  # run original setup
+            print("This is where things will happen...")
+
+        om_class.setup = setup
+
         return om_class
 
     @classmethod
@@ -188,8 +210,7 @@ class ValidityDomainChecker:
                 lower, upper, self._source_file, logger_name
             )
 
-        checker_id = uuid.uuid4()
-        self.__class__._limit_definitions[checker_id] = limit_definitions
+        self.__class__._limit_definitions[self._id] = limit_definitions
 
     @staticmethod
     def _get_caller_info():
