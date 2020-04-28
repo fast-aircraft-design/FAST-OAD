@@ -14,13 +14,13 @@ Defines the variable viewer for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List, Set, Dict
+from typing import Dict
 
 import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
 import numpy as np
-from IPython.display import display, clear_output
+from IPython.display import display
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io import VariableIO, IVariableIOFormatter
 from fastoad.openmdao.variables import VariableList
@@ -313,9 +313,6 @@ class OptimizationViewer:
             )
 
         else:
-            # columns = self._DEFAULT_COLUMN_RENAMING
-            # columns.pop("type")
-            # columns = list(columns.values())
             sheet = sh.sheet(rows=0, columns=0)
 
         return sheet
@@ -426,9 +423,7 @@ class OptimizationViewer:
 
         :return the display object
         """
-        # clear_output(wait=True)
         self._update_sheet()
-        # self._sheet.layout.height = "400px"
         ui = widgets.VBox(
             [
                 self._save_load_buttons,
