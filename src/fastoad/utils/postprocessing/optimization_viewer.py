@@ -16,6 +16,7 @@ Defines the variable viewer for postprocessing
 
 import os.path as pth
 from typing import Dict
+from math import isnan
 
 import ipysheet as sh
 import ipywidgets as widgets
@@ -198,11 +199,11 @@ class OptimizationViewer:
                     opt_def["design_var"] = {}
                 if name not in opt_def["design_var"]:
                     opt_def["design_var"][name] = {}
-                if meta["lower"]:
+                if meta["lower"] and not isnan(meta["lower"]):
                     opt_def["design_var"][name].update({"lower": meta["lower"]})
                 else:
                     opt_def["design_var"][name].pop("lower", None)
-                if meta["upper"]:
+                if meta["upper"] and not isnan(meta["upper"]):
                     opt_def["design_var"][name].update({"upper": meta["upper"]})
                 else:
                     opt_def["design_var"][name].pop("upper", None)
@@ -212,11 +213,11 @@ class OptimizationViewer:
                     opt_def["constraint"] = {}
                 if name not in opt_def["constraint"]:
                     opt_def["constraint"][name] = {}
-                if meta["lower"]:
+                if meta["lower"] and not isnan(meta["lower"]):
                     opt_def["constraint"][name].update({"lower": meta["lower"]})
                 else:
                     opt_def["constraint"][name].pop("lower", None)
-                if meta["upper"]:
+                if meta["upper"] and not isnan(meta["upper"]):
                     opt_def["constraint"][name].update({"upper": meta["upper"]})
                 else:
                     opt_def["constraint"][name].pop("upper", None)
