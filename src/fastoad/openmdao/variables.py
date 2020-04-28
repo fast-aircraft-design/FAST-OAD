@@ -15,12 +15,14 @@ Module for managing OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from copy import deepcopy
 from typing import Dict, Hashable, List, Union
 
 import numpy as np
 import openmdao.api as om
 import pandas as pd
 from importlib_resources import open_text
+from openmdao.core.system import System
 
 from . import resources
 from .utils import get_problem_after_setup, get_unconnected_input_names
@@ -327,6 +329,31 @@ class VariableList(list):
             return Variable(**var_as_dict)
 
         return VariableList([_get_variable(row) for row in df[column_names].values])
+
+    @classmethod
+    def from_system(
+        cls, system: System, use_inputs: bool = True, use_outputs: bool = True,
+    ) -> "VariableList":
+        """
+        Creates a VariableList instance containing variables (inputs and/or
+        outputs) variables (inputs and/or outputs) of any OpenMDAO System.
+
+        Warning: setup() must NOT have been called.
+
+        In the case of a group, if variables are promoted, the promoted name
+        will be used. Otherwise, the absolute name will be used.
+
+        :param system: OpenMDAO Component instance to inspect
+        :param use_inputs: if True, returned instance will contain inputs of the problem
+        :param use_outputs: if True, returned instance will contain outputs of the problem
+        :return: VariableList instance
+        """
+
+        problem = om.Problem(deepcopy(system))
+        problem.setup()
+        return VariableList.from_problem(
+            problem, use_initial_values=True, use_inputs=use_inputs, use_outputs=use_outputs
+        )
 
     @classmethod
     def from_problem(
