@@ -17,6 +17,7 @@ from logging import FileHandler
 from os import mkdir
 from shutil import rmtree
 
+import openmdao.api as om
 import pytest
 from fastoad.openmdao.validity_checker import ValidityDomainChecker, ValidityStatus
 from fastoad.openmdao.variables import VariableList, Variable
@@ -44,7 +45,7 @@ def set_logger_file(log_file_path):
     logger.addHandler(handler)
 
 
-def test_register_checks(cleanup):
+def test_register_checks_instantiation(cleanup):
     ValidityDomainChecker(
         {
             "var_with_upper_and_lower": (-1.0, 10.0),
@@ -67,7 +68,7 @@ def test_register_checks(cleanup):
     set_logger_file(log_file_path)
     variables = VariableList(
         [
-            Variable("var_with_upper_and_lower", value=-2.0),  # too low for logger1
+            Variable("var_with_upper_and_lower", value=-2.0, units="m"),  # too low for logger1
             Variable("var_with_lower", value=-1.0),  # too low for logger2
             Variable("var_with_upper", value=10.0),  # too high, only for logger1
             Variable("other_var", value=1.1),  # too high, only for logger1 (second registering)
@@ -170,3 +171,59 @@ def test_register_checks(cleanup):
     ValidityDomainChecker.log_records(records)
     with open(log_file_path) as log_file:
         assert len(log_file.readlines()) == 0
+
+
+def test_register_checks_as_decorator(cleanup):
+    log_file_path = pth.join(RESULTS_FOLDER_PATH, "log4.txt")
+    set_logger_file(log_file_path)
+
+    @ValidityDomainChecker({"input1": (1.0, 5.0), "output2": (300.0, 500.0)}, "main.dec")
+    class Comp1(om.ExplicitComponent):
+        def setup(self):
+            self.add_input("input1", 0.5, units="km")
+            self.add_output("output1", 150.0, units="km/h", upper=130.0)
+            self.add_output("output2", 200.0, units="K", lower=0.0)
+            self.add_output("output3", 1000.0, units="kg", lower=0.0, upper=5000.0)
+
+    comp = Comp1()
+
+    # Just checking there is no side effect. VariableList.from_system() uses
+    # setup(), even if it is made to have no effect, and ValidityDomainChecker
+    # modifies setup(), so is is worth checking.
+    variables = VariableList.from_system(comp)
+    assert len(variables) == 4
+
+    # Now for the real test
+    # We test that upper and lower bounds are retrieved from OpenMDAO component,
+    # overwritten when required and that units are correctly taken into account.
+    comp.setup()
+
+    variables = VariableList(
+        [
+            Variable("input1", value=3.0, units="m"),
+            Variable("output1", value=40.0, units="m/s"),
+            Variable("output2", value=310.0, units="degC"),
+            Variable("output3", value=6.0, units="t"),
+        ]
+    )
+    records = ValidityDomainChecker.check_variables(variables)
+    assert [
+        (
+            rec.variable_name,
+            rec.status,
+            rec.limit_value,
+            rec.value,
+            rec.source_file,
+            rec.logger_name,
+        )
+        for rec in records
+    ] == [
+        ("input1", ValidityStatus.TOO_LOW, 1.0, 3.0, __file__, "main.dec"),
+        ("output1", ValidityStatus.TOO_HIGH, 130.0, 40.0, __file__, "main.dec"),
+        ("output2", ValidityStatus.TOO_HIGH, 500.0, 310.0, __file__, "main.dec"),
+        ("output3", ValidityStatus.TOO_HIGH, 5000.0, 6.0, __file__, "main.dec"),
+    ]
+
+    ValidityDomainChecker.log_records(records)
+    with open(log_file_path) as log_file:
+        assert len(log_file.readlines()) == 4

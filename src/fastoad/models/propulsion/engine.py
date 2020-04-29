@@ -78,11 +78,7 @@ class IEngine(ABC):
 
 
 @ValidityDomainChecker(
-    {
-        "data:propulsion:required_thrust_rate": (0.0, 1.0),
-        "data:propulsion:thrust_rate": (0.0, 1.0),
-    },
-    __name__,
+    {"data:propulsion:required_thrust_rate": (0.0, 1.0)}, __name__,
 )
 class OMIEngine(om.ExplicitComponent, ABC):
     """
