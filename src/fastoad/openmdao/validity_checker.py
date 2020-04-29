@@ -56,16 +56,31 @@ class ValidityStatus(IntEnum):
     TOO_HIGH = 1
 
 
+class _LimitDefinitions(dict):
+    """
+    Definition of validity check for one variable
+    """
+
+    def __init__(self, source_file, logger_name):
+        super().__init__()
+        # Where the limit definition has been set
+        self.source_file = source_file
+
+        # The chosen logger name
+        self.logger_name = logger_name
+
+
 class _LimitDefinition:
     """
     Definition of validity check for one variable
     """
 
-    def __init__(self, lower, upper, source_file, logger_name, units=None):
+    # namedtuple would not work, as we need the possibility to set values (especially
+    # units) after instantiation.
+    # TODO: If we drop Python3.6 support, use a dataclass
+    def __init__(self, lower, upper, units=None):
         self.lower = lower
         self.upper = upper
-        self.origin_file = source_file
-        self.logger_name = logger_name
         self.units = units
 
 
@@ -84,7 +99,7 @@ class ValidityDomainChecker:
 
     .. code-block::
 
-        @DomainValidityChecker
+        @ValidityDomainChecker
         class MyComponent(om.explicitComponent):
             ...
 
@@ -96,7 +111,7 @@ class ValidityDomainChecker:
 
     .. code-block::
 
-        @DomainValidityChecker(
+        @ValidityDomainChecker(
             {
                 "a:variable:with:two:bounds": (-10.0, 1.0),
                 "a:variable:with:lower:bound:only": (0.0, None),
@@ -106,9 +121,9 @@ class ValidityDomainChecker:
         class MyComponent(om.explicitComponent):
             ...
 
-    The defined domain limits supercedes lower and upper bounds from
-    OpenMDAO output definitions, but only in the frame of DomainValidityChecker.
-    In any case, OpenMDAO process is not affected by usage of DomainValidityChecker.
+    The defined domain limits supersedes lower and upper bounds from
+    OpenMDAO output definitions, but only in the frame of ValidityDomainChecker.
+    In any case, OpenMDAO process is not affected by usage of ValidityDomainChecker.
 
     Validity status can be obtained through log messages from Python logging module
     after problem has been run with:
@@ -117,7 +132,12 @@ class ValidityDomainChecker:
 
         ...
         problem.run_model()
-        DomainValidityChecker.check_problem_variables(problem)
+        ValidityDomainChecker.check_problem_variables(problem)
+
+    **Warnings**:
+    - Units of limit values defined in ValidityDomainChecker are assumed to be the
+      same as in add_input() and add_output() statements of decorated class
+    - Validity check currently only applies to scalar values
 
     :param limits: a dictionary where keys are variable names and values are two-values tuples
                    that give lower and upper bound. One bound can be set to None.
@@ -125,22 +145,31 @@ class ValidityDomainChecker:
                         current module (i.e. "__name__"") will be used.
     """
 
-    _limit_definitions: Dict[UUID, Dict[str, _LimitDefinition]] = {}
+    _limit_definitions: Dict[UUID, _LimitDefinitions] = {}
 
     def __init__(self, limits: Dict[str, tuple] = None, logger_name: str = None):
-        self._id = uuid.uuid4()
-        self._source_file = self._get_caller_filename()
-        self._logger_name = logger_name
-        self._register_checks(limits, logger_name)
+        self._uuid = uuid.uuid4()
+
+        # use given logger name for now. If it is None, it will be replaced by
+        # calling module name in __call__ (because I could not find a way to get
+        # this module name here with inspect, though it is very easy when we
+        # have the decorated class)
+        limit_definitions = _LimitDefinitions(self._get_caller_filename(), logger_name)
+        for var_name, bounds in limits.items():
+            lower = bounds[0] if bounds[0] is not None else -np.inf
+            upper = bounds[1] if bounds[1] is not None else np.inf
+            limit_definitions[var_name] = _LimitDefinition(lower, upper)
+
+        self.__class__._limit_definitions[self._uuid] = limit_definitions
 
     def __call__(self, om_class: type):
 
-        # update logger name if needed
-        if not self._logger_name:
-            self._logger_name = om_class.__module__
-            for limit_def in self._limit_definitions[self._id].values():
-                limit_def.logger_name = self._logger_name
+        # update logger name if needed: if it was not given, module name of
+        # decorated class is used.
+        if not self._limit_definitions[self._uuid].logger_name:
+            self._limit_definitions[self._uuid].logger_name = om_class.__module__
 
+        # "Ok kid, this is were it gets complicated"
         # We need to do things when setup() is called. Inheritance or decorator
         # pattern would do maybe, but it is safer to return the original (modified)
         # input class (at least for interactions with iPOPO).
@@ -148,41 +177,53 @@ class ValidityDomainChecker:
         # added, that will call the original setup() and do what we need.
 
         # original setup will be renamed with a name that will be unique
-        setup_new_name = "setup_before_validity_domain_checker_%i" % int(self._id)
+        setup_new_name = "setup_before_validity_domain_checker_%i" % int(self._uuid)
 
         # Copy the original method "setup" to "__setup_before_option_decorator_<uuid>"
         setattr(om_class, setup_new_name, om_class.setup)
 
         # Set the new "setup" method
-        checker_id = self._id
-        logger_name = self._logger_name
-        source_file = self._source_file
+        checker_id = self._uuid
 
         def setup(self):
             """ Will replace the original setup() method"""
+
+            # Ok kid, this is where it gets maybe too complicated...
+            # We need to get variables of the current OpenMDAO instance.
+            # This is done with VariableList.from_system() which we know does
+            # setup() on a copy of given instance (not much choice to be sure
+            # from_system() will work also for Group instances)
+            # But by doing this, it will call this setup() and be stuck in an
+            # infinite recursion.
+            # So we create a copy of current instance where we put back the
+            # original setup so we can safely use VariableList.from_system()
             original_self = deepcopy(self)
             setattr(original_self, "setup", getattr(original_self, setup_new_name))
             variables = VariableList.from_system(original_self)
 
+            # Now update limit definition
             limit_definitions = ValidityDomainChecker._limit_definitions[checker_id]
             for var in variables:
                 if var.name in limit_definitions:
+                    # Get units for already defined limits
                     limit_def = limit_definitions[var.name]
                     if limit_def.units is None and var.units is not None:
                         limit_def.units = var.units
                 elif "lower" in var.metadata or "upper" in var.metadata:
+                    # Get bounds if defined in add_output.
                     lower = var.metadata.get("lower")
+                    # lower can be None if it is not found OR if it defined and set to None
                     if lower is None:
                         lower = -np.inf
                     upper = var.metadata.get("upper")
+                    # upper can be None if it is not found OR if it defined and set to None
                     if upper is None:
                         upper = np.inf
                     units = var.metadata.get("units")
-                    limit_definitions[var.name] = _LimitDefinition(
-                        lower, upper, source_file, logger_name, units
-                    )
+                    if lower > -np.inf or upper < np.inf:
+                        limit_definitions[var.name] = _LimitDefinition(lower, upper, units)
 
-            # Now run original setup
+            # Now run original setup that has been moved to setup_new_name
             getattr(self, setup_new_name)()
 
         om_class.setup = setup
@@ -235,8 +276,8 @@ class ValidityDomainChecker:
                             limit_def.units,
                             var.value,
                             var.units,
-                            limit_def.origin_file,
-                            limit_def.logger_name,
+                            limit_definitions.source_file,
+                            limit_definitions.logger_name,
                         )
                     )
         return records
@@ -264,26 +305,6 @@ class ValidityDomainChecker:
                     " " + record.limit_units if record.limit_units else "",
                     record.source_file,
                 )
-
-    def _register_checks(self, limits: Dict[str, tuple], logger_name: str = None):
-        """
-        :param limits: a dictionary where keys are variable names and values are two-values tuples
-                       that give lower and upper bound. One bound can be set to None.
-        :param logger_name: if provided, the matching logger will be used. "__name__" is advised.
-        """
-        if not logger_name:
-            logger_name = __name__
-
-        limit_definitions = {}
-        for var_name, bounds in limits.items():
-            lower = bounds[0] if bounds[0] is not None else -np.inf
-            upper = bounds[1] if bounds[1] is not None else np.inf
-
-            limit_definitions[var_name] = _LimitDefinition(
-                lower, upper, self._source_file, logger_name
-            )
-
-        self.__class__._limit_definitions[self._id] = limit_definitions
 
     @staticmethod
     def _get_caller_filename():
