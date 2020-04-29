@@ -73,6 +73,53 @@ that the loop that will allow to solve it needs usage of the `NewtonSolver <http
 A good way to ensure it is to build a Group class that will solve the ImplicitComponent with NewtonSolver. This Group
 should be the system you will register in FAST-OAD.
 
+
+Checking validity domains
+=========================
+Generally, models are valid only when variable values are in given ranges.
+
+OpenMDAO provides a way to specify lower and upper bounds of an output variable and to enforce them
+when using a Newton solver by using `backtracking line searches <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/backtracking/index.html>`_.
+
+FAST-OAD proposes a way to set lower and upper bounds for input and output variables, but only
+for checking and giving feedback of variables that would be out of bounds.
+
+If you want your OpenMDAO class to do this checking, simply use the decorator ValidityDomainChecker:
+
+.. code-block:: python
+
+    @ValidityDomainChecker
+    class MyComponent(om.ExplicitComponent):
+        def setup(self):
+            self.add_input("length", 1., units="km" )
+            self.add_input("time", 1., units="h" )
+            self.add_output("speed", 1., units="km/h", lower=0., upper=130.)
+
+The above code make that FAST-OAD will issue a warning if at the end of the computation,
+"speed" variable is not between lower and upper bound.
+
+But it is possible to set your own bounds outside of OpenMDAO by following this example:
+
+.. code-block:: python
+
+    @ValidityDomainChecker(
+        {
+            "length": (0.1, None),  # Defines only a lower bound
+            "time": (0., 1.),  # Defines lower and upper bounds
+            "speed": (None, 150.0),  # Ignores original bounds and sets only upper bound
+        }
+    )
+    class MyComponent(om.ExplicitComponent):
+        def setup(self):
+            self.add_input("length", 1., units="km" )
+            self.add_input("time", 1., units="h" )
+            # Bounds that are set here will still apply if backtracking line search is used, but
+            # will not be used for validity domain checking because it has been replaced above
+            self.add_output("speed", 1., units="km/h", lower=0., upper=130.)
+
+
+
+
 .. _add-modules-register-systems:
 
 ***********************
@@ -89,6 +136,8 @@ lines:
     from fastoad.module_management import OpenMDAOSystemRegistry
 
     OpenMDAOSystemRegistry.register_system(MyOMClass, "my.custom.name")
+
+
 
 .. _add-modules-set-configuration-files:
 
