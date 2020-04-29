@@ -21,7 +21,6 @@ from typing import Union, Sequence, Optional, Tuple, TypeVar
 import numpy as np
 import openmdao.api as om
 from fastoad.constants import FlightPhase
-from fastoad.openmdao.validity_checker import ValidityDomainChecker
 
 IEngineSubclass = TypeVar("IEngineSubclass", bound="IEngine")
 
@@ -77,9 +76,6 @@ class IEngine(ABC):
         """
 
 
-@ValidityDomainChecker(
-    {"data:propulsion:required_thrust_rate": (0.0, 1.0)}, __name__,
-)
 class OMIEngine(om.ExplicitComponent, ABC):
     """
     Base class for OpenMDAO wrapping of subclasses of :class`IEngine`.

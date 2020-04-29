@@ -84,16 +84,31 @@ class ValidityDomainChecker:
 
     .. code-block::
 
+        @DomainValidityChecker
+        class MyComponent(om.explicitComponent):
+            ...
+
+    The above code will check values against lower and upper bounds that have
+    been defined when adding OpenMDAO outputs.
+
+    Next code shows how to define lower and upper bounds, for inputs and/or
+    outputs.
+
+    .. code-block::
+
         @DomainValidityChecker(
             {
                 "a:variable:with:two:bounds": (-10.0, 1.0),
                 "a:variable:with:lower:bound:only": (0.0, None),
                 "a:variable:with:upper:bound:only": (None, 4.2),
             },
-            __name__,
         )
         class MyComponent(om.explicitComponent):
             ...
+
+    The defined domain limits supercedes lower and upper bounds from
+    OpenMDAO output definitions, but only in the frame of DomainValidityChecker.
+    In any case, OpenMDAO process is not affected by usage of DomainValidityChecker.
 
     Validity status can be obtained through log messages from Python logging module
     after problem has been run with:
@@ -106,18 +121,25 @@ class ValidityDomainChecker:
 
     :param limits: a dictionary where keys are variable names and values are two-values tuples
                    that give lower and upper bound. One bound can be set to None.
-    :param logger_name: if provided, the matching logger will be used. "__name__" is advised.
+    :param logger_name: The named of the logger that will be used. If not provided, name of
+                        current module (i.e. "__name__"") will be used.
     """
 
     _limit_definitions: Dict[UUID, Dict[str, _LimitDefinition]] = {}
 
-    def __init__(self, limits: Dict[str, tuple], logger_name: str = None):
+    def __init__(self, limits: Dict[str, tuple] = None, logger_name: str = None):
         self._id = uuid.uuid4()
-        self._source_file = self._get_caller_info()
+        self._source_file = self._get_caller_filename()
         self._logger_name = logger_name
         self._register_checks(limits, logger_name)
 
     def __call__(self, om_class: type):
+
+        # update logger name if needed
+        if not self._logger_name:
+            self._logger_name = om_class.__module__
+            for limit_def in self._limit_definitions[self._id].values():
+                limit_def.logger_name = self._logger_name
 
         # We need to do things when setup() is called. Inheritance or decorator
         # pattern would do maybe, but it is safer to return the original (modified)
@@ -264,13 +286,13 @@ class ValidityDomainChecker:
         self.__class__._limit_definitions[self._id] = limit_definitions
 
     @staticmethod
-    def _get_caller_info():
+    def _get_caller_filename():
         current_frame = inspect.currentframe()
         try:
-            frame_info = inspect.getouterframes(current_frame)[2]
-            filename = frame_info[1]
+            frame = inspect.getouterframes(current_frame)[2]
+            filename = frame[1]
         finally:
             del current_frame
-            del frame_info
+            del frame
 
         return filename

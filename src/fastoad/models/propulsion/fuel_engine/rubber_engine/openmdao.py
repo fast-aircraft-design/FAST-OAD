@@ -40,8 +40,7 @@ from .rubber_engine import RubberEngine
             -100.0,
             0.0,
         ),  # limitation of max thrust model
-    },
-    __name__,
+    }
 )
 class OMRubberEngine(OMIEngine):
     """
