@@ -140,6 +140,55 @@ def test_df_from_to_variables():
         assert var == new_var
 
 
+def test_get_variables_from_system():
+    def _test_and_check(
+        component, use_inputs: bool, use_outputs: bool, expected_vars: List[Variable],
+    ):
+        vars = VariableList.from_system(component, use_inputs=use_inputs, use_outputs=use_outputs)
+
+        # A comparison of sets will not work due to values not being stricly equal
+        # (not enough decimals in expected values), so we do not use this:
+        # assert set(vars) == set(expected_vars)
+
+        # So we do comparison as strings, after having removed tags from metadata, that
+        # depend on variable source
+        for var in vars + expected_vars:
+            var.metadata["tags"] = set()
+
+        assert set([str(i) for i in vars]) == set([str(i) for i in expected_vars])
+
+    # test Component -----------------------------------------------------------
+    comp = Disc1()
+    expected_input_vars = [
+        Variable(name="x", value=np.array([np.nan]), units=None),
+        Variable(name="y2", value=np.array([1.0]), units=None),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
+    ]
+    expected_output_vars = [Variable(name="y1", value=np.array([1.0]), units=None)]
+    _test_and_check(comp, True, False, expected_input_vars)
+    _test_and_check(comp, False, True, expected_output_vars)
+    _test_and_check(comp, True, True, expected_input_vars + expected_output_vars)
+
+    # test Group ---------------------------------------------------------------
+    group = om.Group()
+    group.add_subsystem("disc1", Disc1(), promotes=["*"])
+    group.add_subsystem("disc2", Disc2(), promotes=["*"])
+
+    expected_input_vars = [
+        Variable(name="x", value=np.array([np.nan]), units=None),
+        Variable(name="y1", value=np.array([1.0]), units=None),
+        Variable(name="y2", value=np.array([1.0]), units=None),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
+    ]
+    expected_output_vars = [
+        Variable(name="y1", value=np.array([1.0]), units=None),
+        Variable(name="y2", value=np.array([1.0]), units=None),
+    ]
+    _test_and_check(group, True, False, expected_input_vars)
+    _test_and_check(group, False, True, expected_output_vars)
+    _test_and_check(group, True, True, expected_input_vars)
+
+
 def test_get_variables_from_problem():
     def _test_and_check(
         problem: om.Problem,
@@ -163,7 +212,7 @@ def test_get_variables_from_problem():
 
         assert set([str(i) for i in vars]) == set([str(i) for i in expected_vars])
 
-    # Check with an ExplicitComponent
+    # Check with an ExplicitComponent ------------------------------------------
     problem = om.Problem(Disc1())
     expected_input_vars = [
         Variable(name="x", value=np.array([np.nan]), units=None),
@@ -175,7 +224,7 @@ def test_get_variables_from_problem():
     _test_and_check(problem, False, False, True, expected_output_vars)
     _test_and_check(problem, False, True, True, expected_input_vars + expected_output_vars)
 
-    # Check with a Group
+    # Check with a Group -------------------------------------------------------
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
@@ -196,7 +245,8 @@ def test_get_variables_from_problem():
     _test_and_check(problem, False, False, True, expected_output_vars)
     _test_and_check(problem, False, True, True, expected_input_vars)
 
-    # Check with the whole Sellar problem, without computation.
+    # Check with the whole Sellar problem --------------------------------------
+    # WITH promotions, WITHOUT computation
     group = om.Group()
     indeps = group.add_subsystem("indeps", om.IndepVarComp(), promotes=["*"])
     indeps.add_output("x", 1.0, units="Pa")  # This setting of units will prevail in our output
@@ -225,7 +275,8 @@ def test_get_variables_from_problem():
     _test_and_check(problem, True, True, False, expected_input_vars)
     _test_and_check(problem, True, False, True, expected_output_vars)
 
-    # Check with the whole Sellar problem, with computation.
+    # Check with the whole Sellar problem --------------------------------------
+    # WITH promotions, WITH computation
     expected_computed_output_vars = [
         Variable(name="x", value=np.array([1.0]), units="Pa"),
         Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
@@ -241,7 +292,8 @@ def test_get_variables_from_problem():
     _test_and_check(problem, True, False, True, expected_output_vars)
     _test_and_check(problem, False, False, True, expected_computed_output_vars)
 
-    # Check with the whole Sellar problem without promotions, without computation.
+    # Check with the whole Sellar problem --------------------------------------
+    # WITHOUT promotions, WITHOUT computation
     group = om.Group()
     indeps = group.add_subsystem("indeps", om.IndepVarComp())
     indeps.add_output("x", 1.0, units="Pa")
@@ -301,7 +353,8 @@ def test_get_variables_from_problem():
     ]
     _test_and_check(problem, False, True, True, expected_computed_vars)
 
-    # Check with the whole Sellar problem without promotions, with computation.
+    # Check with the whole Sellar problem --------------------------------------
+    # WITHOUT promotions, WITH computation
     expected_computed_vars = [
         Variable(name="indeps.x", value=np.array([1.0]), units="Pa"),
         Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2"),
@@ -339,7 +392,7 @@ def test_variables_from_unconnected_inputs():
         vars = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
         assert vars == expected_mandatory_vars + expected_optional_vars
 
-    # Check with an ExplicitComponent
+    # Check with an ExplicitComponent ------------------------------------------
     problem = om.Problem(Disc1())
     expected_mandatory_vars = [Variable(name="x", value=np.array([np.nan]), units=None)]
     expected_optional_vars = [
@@ -348,7 +401,7 @@ def test_variables_from_unconnected_inputs():
     ]
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
-    # Check with a Group
+    # Check with a Group -------------------------------------------------------
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
@@ -358,7 +411,7 @@ def test_variables_from_unconnected_inputs():
     expected_optional_vars = [Variable(name="z", value=np.array([5.0, 2.0]), units="m**2")]
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
-    # Check with the whole Sellar problem.
+    # Check with the whole Sellar problem --------------------------------------
     # 'z' variable should now be mandatory, because it is so in Functions
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])

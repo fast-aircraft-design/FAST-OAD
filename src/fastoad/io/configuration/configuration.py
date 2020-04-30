@@ -24,6 +24,7 @@ import toml
 from fastoad.io import IVariableIOFormatter
 from fastoad.io.variable_io import VariableIO
 from fastoad.module_management import OpenMDAOSystemRegistry
+from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import VariableList
 
 from .exceptions import (
@@ -78,6 +79,14 @@ class FASTOADProblem(om.Problem):
         self.input_file_path = None
         self.output_file_path = None
         self._model_definition = None
+
+    def run_model(self, case_prefix=None, reset_iter_counts=True):
+        super().run_model()
+        ValidityDomainChecker.check_problem_variables(self)
+
+    def run_driver(self, case_prefix=None, reset_iter_counts=True):
+        super().run_driver()
+        ValidityDomainChecker.check_problem_variables(self)
 
     def configure(self, conf_file):
         """

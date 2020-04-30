@@ -261,16 +261,6 @@ class RubberEngine(IEngine):
         altitude = atmosphere.get_altitude(False)
         mach = np.asarray(mach)
 
-        self._check_definition_domain(
-            "SFC at MAX THRUST computation",
-            {
-                "altitude": (altitude, None, 20000),
-                "Mach number": (mach, 0.05, 1.0),
-                "overall pressure ratio": (self.overall_pressure_ratio, 20.0, 40.0),
-                "bypass ratio": (self.bypass_ratio, 3.0, None),
-            },
-        )
-
         # Following coefficients are constant for alt<=0 and alt >=11000m.
         # We use numpy to implement that so we are safe if altitude is a sequence.
         bound_altitude = np.minimum(11000, np.maximum(0, altitude))
@@ -315,15 +305,6 @@ class RubberEngine(IEngine):
         altitude = np.asarray(altitude)
         thrust_rate = np.asarray(thrust_rate)
         mach = np.asarray(mach)
-
-        self._check_definition_domain(
-            "SFC RATIO computation",
-            {
-                "altitude": (altitude, None, 20000),
-                "Mach number": (mach, 0.75, 0.85),
-                "thrust rate": (thrust_rate, 0.5, 1.0),
-            },
-        )
 
         delta_h = altitude - self.design_alt
         thrust_ratio_at_min_sfc_ratio = -9.6e-5 * delta_h + 0.85  # =Fi in model
@@ -370,18 +351,6 @@ class RubberEngine(IEngine):
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
         mach = np.asarray(mach)
         delta_t4 = np.asarray(delta_t4)
-
-        self._check_definition_domain(
-            "MAX THRUST computation",
-            {
-                "altitude": (altitude, None, 20000),
-                "Mach number": (mach, 0.05, 1.0),
-                "overall pressure ratio": (self.overall_pressure_ratio, 20.0, 40.0),
-                "bypass ratio": (self.bypass_ratio, 3.0, 6.0),
-                "T4": (self.t_4, 1400.0, 1600.0),
-                "Delta_T4": (delta_t4, -100.0, 0.0),
-            },
-        )
 
         def _mach_effect():
             """ Computation of Mach effect """
@@ -560,37 +529,3 @@ class RubberEngine(IEngine):
             delta_t4[phase_array == phase_value] = dt4_value
 
         return delta_t4
-
-    @staticmethod
-    def _check_definition_domain(operation_name: str, arrays: dict):
-        """
-        Checks that provided arrays have values inside limits.
-        Logs a warning for each array that does not respect a limit.
-
-        The *arrays* dictionary is expected to have following structure:
-            - key : name of the variable as it should appear in logger message
-            - value = tuple with 3 members:
-                - the actual variable (numpy array, sequence or scalar)
-                - the lower limit of the domain definition
-                - the upper limit of the domain definition
-
-        :param operation_name: for logging
-        :param arrays: see description above
-        :return: True if all bounds are respected. False otherwise
-        """
-
-        msg_lower_limit = operation_name + " for %s below %s may be unreliable."
-        msg_upper_limit = operation_name + " for %s above %s may be unreliable."
-
-        status = True
-
-        for identifier, (values, low_limit, high_limit) in arrays.items():
-            # Check bounds
-            if low_limit is not None and np.any(values < low_limit):
-                _LOGGER.warning(msg_lower_limit, identifier, low_limit)
-                status = False
-            if high_limit is not None and np.any(values > high_limit):
-                _LOGGER.warning(msg_upper_limit, identifier, high_limit)
-                status = False
-
-        return status
