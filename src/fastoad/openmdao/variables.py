@@ -31,6 +31,7 @@ from .utils import get_problem_after_setup, get_unconnected_input_names
 _LOGGER = logging.getLogger(__name__)
 
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
+METADATA_TO_IGNORE_FOR_EQUALITY = ["tags", "size", "src_indices", "flat_src_indices", "distributed"]
 
 
 class Variable(Hashable):
@@ -66,10 +67,6 @@ class Variable(Hashable):
     # Default metadata
     _base_metadata = {}
 
-    # TODO: should this be kept ?
-    # openmdao meta data to ignore
-    _metadata_to_be_ignored = ["size", "src_indices", "flat_src_indices", "distributed"]
-
     def __init__(self, name, **kwargs: Dict):
         super().__init__()
 
@@ -97,9 +94,6 @@ class Variable(Hashable):
         # Done with class attributes ------------------------------------------
 
         self.metadata = self.__class__._base_metadata.copy()
-
-        for key in self._metadata_to_be_ignored:
-            kwargs.pop(key, None)
         self.metadata.update(kwargs)
         self._set_default_shape()
 
@@ -162,9 +156,12 @@ class Variable(Hashable):
         my_value = np.asarray(my_metadata.pop("value"))
         other_value = np.asarray(other_metadata.pop("value"))
 
-        # Let's also ignore tags
-        del my_metadata["tags"]
-        del other_metadata["tags"]
+        # Let's also ignore unimportant keys
+        for key in METADATA_TO_IGNORE_FOR_EQUALITY:
+            if key in my_metadata:
+                del my_metadata[key]
+            if key in other_metadata:
+                del other_metadata[key]
 
         return (
             isinstance(other, Variable)

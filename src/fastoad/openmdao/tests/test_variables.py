@@ -19,6 +19,7 @@ from typing import List
 import numpy as np
 import openmdao.api as om
 import pytest
+from numpy.testing import assert_allclose
 
 from .sellar_example.disc1 import Disc1
 from .sellar_example.disc2 import Disc2
@@ -146,16 +147,17 @@ def test_get_variables_from_system():
     ):
         vars = VariableList.from_system(component, use_inputs=use_inputs, use_outputs=use_outputs)
 
-        # A comparison of sets will not work due to values not being stricly equal
+        # A comparison of sets will not work due to values not being strictly equal
         # (not enough decimals in expected values), so we do not use this:
         # assert set(vars) == set(expected_vars)
-
-        # So we do comparison as strings, after having removed tags from metadata, that
-        # depend on variable source
-        for var in vars + expected_vars:
-            var.metadata["tags"] = set()
-
-        assert set([str(i) for i in vars]) == set([str(i) for i in expected_vars])
+        # Simply comparing variable name, units and approximate value will do for here.
+        sort_key = lambda v: v.name
+        vars.sort(key=sort_key)
+        expected_vars.sort(key=sort_key)
+        for var, expected_var in zip(vars, expected_vars):
+            assert var.name == expected_var.name
+            assert_allclose(var.value, expected_var.value)
+            assert var.units == expected_var.units
 
     # test Component -----------------------------------------------------------
     comp = Disc1()
@@ -201,16 +203,17 @@ def test_get_variables_from_problem():
             problem, use_initial_values, use_inputs=use_inputs, use_outputs=use_outputs
         )
 
-        # A comparison of sets will not work due to values not being stricly equal
+        # A comparison of sets will not work due to values not being strictly equal
         # (not enough decimals in expected values), so we do not use this:
         # assert set(vars) == set(expected_vars)
-
-        # So we do comparison as strings, after having removed tags from metadata, that
-        # depend on variable source
-        for var in vars + expected_vars:
-            var.metadata["tags"] = set()
-
-        assert set([str(i) for i in vars]) == set([str(i) for i in expected_vars])
+        # Simply comparing variable name, units and approximate value will do for here.
+        sort_key = lambda v: v.name
+        vars.sort(key=sort_key)
+        expected_vars.sort(key=sort_key)
+        for var, expected_var in zip(vars, expected_vars):
+            assert var.name == expected_var.name
+            assert_allclose(var.value, expected_var.value)
+            assert var.units == expected_var.units
 
     # Check with an ExplicitComponent ------------------------------------------
     problem = om.Problem(Disc1())
