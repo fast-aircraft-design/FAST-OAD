@@ -170,13 +170,8 @@ class OptimizationViewer:
         Save the optimization to the files.
         Possible files modified are:
             - the .toml configuration file
-            - the input fle (initial values)
+            - the input file (initial values)
             - the output file (values)
-
-        :param file_path: the path of file to save. If not given, the initially
-               read file will be overwritten.
-        :param file_formatter: the formatter that defines file format. If not provided,
-               default format will be assumed.
        """
         problem = self.problem
         input_variables = VariableIO(self.problem.input_file_path, None).read()

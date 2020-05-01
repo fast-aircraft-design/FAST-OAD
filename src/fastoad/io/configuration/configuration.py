@@ -101,8 +101,6 @@ class FASTOADProblem(om.Problem):
 
         self._conf_file = conf_file
 
-        # Dev note: toml.load would also accept an array of files as input, but
-        # it does not look useful for us, so it is not mentioned in docstring.
         conf_dirname = pth.dirname(pth.abspath(conf_file))  # for resolving relative paths
         with open(conf_file, "r") as file:
             d = file.read()
