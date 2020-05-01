@@ -20,7 +20,7 @@ from shutil import rmtree, copy
 import numpy as np
 import openmdao.api as om
 import pytest
-import tomlkit as toml
+import tomlkit
 
 from .. import (
     FASTOADProblem,
@@ -163,7 +163,7 @@ def test_write_optimization_definition(cleanup):
 
     with open(editable_file, "r") as file:
         d = file.read()
-        conf_dict = toml.loads(d)
+        conf_dict = tomlkit.loads(d)
     conf_dict_opt = conf_dict["optimization"]
     # Should be different
     assert optimization_conf != conf_dict_opt
@@ -171,7 +171,7 @@ def test_write_optimization_definition(cleanup):
     problem._write_optimization_definition(optimization_def)
     with open(editable_file, "r") as file:
         d = file.read()
-        conf_dict = toml.loads(d)
+        conf_dict = tomlkit.loads(d)
     conf_dict_opt = conf_dict["optimization"]
     # Should be equal
     assert optimization_conf == conf_dict_opt
