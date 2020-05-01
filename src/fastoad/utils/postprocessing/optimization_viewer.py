@@ -22,7 +22,7 @@ import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
 import numpy as np
-from IPython.display import display
+from IPython.display import display, clear_output
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io import VariableIO, IVariableIOFormatter
 from fastoad.openmdao.variables import VariableList
@@ -442,6 +442,7 @@ class OptimizationViewer:
 
         :return the display object
         """
+        clear_output(wait=True)
         self._update_sheet()
         ui = widgets.VBox(
             [
