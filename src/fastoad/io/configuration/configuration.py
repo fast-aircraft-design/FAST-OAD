@@ -133,7 +133,7 @@ class FASTOADProblem(om.Problem):
             raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_MODEL)
 
         # Read optimization definition
-        self._read_optimization_definition()
+        self.get_optimization_definition()
 
         # Define driver
         driver = self._conf_dict.get(KEY_DRIVER, "")
@@ -285,7 +285,7 @@ class FASTOADProblem(om.Problem):
         for _, design_var_table in design_var_tables.items():
             self.model.add_design_var(**design_var_table)
 
-    def _read_optimization_definition(self):
+    def get_optimization_definition(self):
         """
         Reads the config file and stores information related to the optimization problem:
             - Design Variables
@@ -299,7 +299,7 @@ class FASTOADProblem(om.Problem):
             for sec, elements in conf_dict.items():
                 self._optimization_definition[sec] = {elem["name"]: elem for elem in elements}
 
-    def _write_optimization_definition(self, optimization_definition: Dict):
+    def set_optimization_definition(self, optimization_definition: Dict):
         """
         Writes to the .toml config file the list of design variables, constraints, objectives
         contained in the optimization_definition dictionary.

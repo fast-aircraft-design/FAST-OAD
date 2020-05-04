@@ -30,8 +30,6 @@ from .exceptions import FastMissingFile
 
 pd.set_option("display.max_rows", None)
 
-# pylint: disable=protected-access #  needed for FASTOADProblem and OpenMDAO introspection
-
 
 class OptimizationViewer:
     """
@@ -226,7 +224,7 @@ class OptimizationViewer:
         VariableIO(self.problem.output_file_path, None).write(output_variables)
         # Optimization definition
         problem._optimization_definition = opt_def
-        problem._write_optimization_definition(opt_def)
+        problem.set_optimization_definition(opt_def)
 
     def display(self):
         """

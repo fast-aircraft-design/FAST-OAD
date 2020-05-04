@@ -168,7 +168,7 @@ def test_write_optimization_definition(cleanup):
     # Should be different
     assert optimization_conf != conf_dict_opt
 
-    problem._write_optimization_definition(optimization_def)
+    problem.set_optimization_definition(optimization_def)
     with open(editable_file, "r") as file:
         d = file.read()
         conf_dict = tomlkit.loads(d)
