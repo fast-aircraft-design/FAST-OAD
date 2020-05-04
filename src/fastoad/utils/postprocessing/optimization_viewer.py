@@ -22,7 +22,7 @@ import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
 import numpy as np
-from IPython.display import display, clear_output
+from IPython.display import display, clear_output, Markdown
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io import VariableIO, IVariableIOFormatter
 from fastoad.openmdao.variables import VariableList
@@ -350,9 +350,27 @@ class OptimizationViewer:
             self._sheet_to_df(self._constraint_sheet),
             self._sheet_to_df(self._objective_sheet),
         ]
+
         df = pd.concat(frames, sort=True)
+        columns = {}
+        columns.update(self._DEFAULT_COLUMN_RENAMING)
+        columns.pop("type")
+
+        column_to_attribute = {value: key for key, value in columns.items()}
+
+        variables = VariableList.from_dataframe(
+            df[column_to_attribute.keys()].rename(columns=column_to_attribute)
+        )
+
+        attribute_to_column = columns
+        df = (
+            variables.to_dataframe()
+            .rename(columns=attribute_to_column)[attribute_to_column.values()]
+            .reset_index(drop=True)
+        )
         rows = df.index.tolist()
         columns = df.columns.tolist()
+
         for r in rows:
             for c in columns:
                 self.dataframe.loc[int(r), c] = df.loc[r, c]
@@ -411,12 +429,15 @@ class OptimizationViewer:
 
         for cell in self._design_var_sheet.cells:
             cell.observe(self._update_df, "value")
+            cell.observe(self._update_style, "value")
 
         for cell in self._constraint_sheet.cells:
             cell.observe(self._update_df, "value")
+            cell.observe(self._update_style, "value")
 
         for cell in self._objective_sheet.cells:
             cell.observe(self._update_df, "value")
+            cell.observe(self._update_style, "value")
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _render_ui(self, change=None) -> display:
@@ -448,7 +469,12 @@ class OptimizationViewer:
         return widgets.VBox([widgets.Label(value="Objectives"), self._objective_sheet])
 
     @staticmethod
-    def _cell_styling(df):
+    def _cell_styling(df) -> Dict:
+        """
+        Returns bound activities in the form of cell style dictionary.
+        return: dict containing the style
+        """
+
         def highlight_active_bounds(df, threshold=1e-6):
             rows = df.index.tolist()
             columns = df.columns.tolist()
@@ -500,3 +526,41 @@ class OptimizationViewer:
         # style.update(another_styling_method())
 
         return style
+
+    def _update_style(self, change=None):
+        """
+        Updates the style of the sheet cells with respect to bound activities
+        of the actual self.dataframe.
+        """
+        # Design variables
+        design_var_df = self.dataframe[self.dataframe["Type"] == "design_var"]
+        design_var_df = design_var_df.drop(columns=["Type"])
+        design_var_df = design_var_df.reset_index(drop=True)
+        style = self._cell_styling(design_var_df)
+
+        for cell in self._design_var_sheet.cells:
+            i, j = cell.row_start, cell.column_start
+            r, c = (design_var_df.index.to_list()[i], design_var_df.columns.to_list()[j])
+            cell.style = style[(r, c)]
+
+        #  Constraints
+        constraint_df = self.dataframe[self.dataframe["Type"] == "constraint"]
+        constraint_df = constraint_df.drop(columns=["Type", "Initial Value"])
+        constraint_df = constraint_df.reset_index(drop=True)
+        style = self._cell_styling(constraint_df)
+
+        for cell in self._constraint_sheet.cells:
+            i, j = cell.row_start, cell.column_start
+            r, c = (constraint_df.index.to_list()[i], constraint_df.columns.to_list()[j])
+            cell.style = style[(r, c)]
+
+        # Objectives
+        objective_df = self.dataframe[self.dataframe["Type"] == "objective"]
+        objective_df = objective_df.drop(columns=["Type", "Initial Value", "Lower", "Upper"])
+        objective_df = objective_df.reset_index(drop=True)
+        style = self._cell_styling(objective_df)
+
+        for cell in self._objective_sheet.cells:
+            i, j = cell.row_start, cell.column_start
+            r, c = (objective_df.index.to_list()[i], objective_df.columns.to_list()[j])
+            cell.style = style[(r, c)]
