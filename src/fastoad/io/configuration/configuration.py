@@ -81,8 +81,6 @@ class FASTOADProblem(om.Problem):
         self._conf_dict = {}
         self.input_file_path = None
         self.output_file_path = None
-        self._model_definition = None
-        self._optimization_definition = None
 
     def run_model(self, case_prefix=None, reset_iter_counts=True):
         super().run_model()
@@ -128,12 +126,9 @@ class FASTOADProblem(om.Problem):
                 OpenMDAOSystemRegistry.explore_folder(folder_path)
 
         # Read problem definition
-        self._model_definition = self._conf_dict.get(TABLE_MODEL)
-        if not self._model_definition:
+        model_definition = self._conf_dict.get(TABLE_MODEL)
+        if not model_definition:
             raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_MODEL)
-
-        # Read optimization definition
-        self.get_optimization_definition()
 
         # Define driver
         driver = self._conf_dict.get(KEY_DRIVER, "")
@@ -191,7 +186,7 @@ class FASTOADProblem(om.Problem):
             self.model.add_subsystem(INPUT_SYSTEM_NAME, ivc, promotes=["*"])
             self.model.set_order([INPUT_SYSTEM_NAME] + previous_order)
 
-            if self._optimization_definition:
+            if self.get_optimization_definition():
                 # Inputs are loaded, so we can add design variables
                 self._add_design_vars()
 
@@ -213,23 +208,23 @@ class FASTOADProblem(om.Problem):
         """
 
         self.model = om.Group()
-
+        model_definition = self._conf_dict.get(TABLE_MODEL)
         try:
-            if KEY_COMPONENT_ID in self._model_definition:
+            if KEY_COMPONENT_ID in model_definition:
                 # The defined model is only one system
-                system_id = self._model_definition[KEY_COMPONENT_ID]
+                system_id = model_definition[KEY_COMPONENT_ID]
                 sub_component = OpenMDAOSystemRegistry.get_system(system_id)
                 self.model.add_subsystem("system", sub_component, promotes=["*"])
             else:
                 # The defined model is a group
-                self._parse_problem_table(self.model, self._model_definition)
+                self._parse_problem_table(self.model, model_definition)
 
         except FASTConfigurationBaseKeyBuildingError as err:
             log_err = err.__class__(err, TABLE_MODEL)
             _LOGGER.error(log_err)
             raise log_err
 
-        if self._optimization_definition:
+        if self.get_optimization_definition():
             self._add_constraints()
             self._add_objectives()
 
@@ -268,36 +263,41 @@ class FASTOADProblem(om.Problem):
 
     def _add_constraints(self):
         """  Adds constraints as instructed in configuration file """
+        optimization_definition = self.get_optimization_definition()
         # Constraints
-        constraint_tables = self._optimization_definition.get(TABLES_CONSTRAINT, {})
+        constraint_tables = optimization_definition.get(TABLES_CONSTRAINT, {})
         for _, constraint_table in constraint_tables.items():
             self.model.add_constraint(**constraint_table)
 
     def _add_objectives(self):
         """  Adds objectives as instructed in configuration file """
-        objective_tables = self._optimization_definition.get(TABLES_OBJECTIVE, {})
+        optimization_definition = self.get_optimization_definition()
+        objective_tables = optimization_definition.get(TABLES_OBJECTIVE, {})
         for _, objective_table in objective_tables.items():
             self.model.add_objective(**objective_table)
 
     def _add_design_vars(self):
         """ Adds design variables as instructed in configuration file """
-        design_var_tables = self._optimization_definition.get(TABLES_DESIGN_VAR, {})
+        optimization_definition = self.get_optimization_definition()
+        design_var_tables = optimization_definition.get(TABLES_DESIGN_VAR, {})
         for _, design_var_table in design_var_tables.items():
             self.model.add_design_var(**design_var_table)
 
-    def get_optimization_definition(self):
+    def get_optimization_definition(self) -> Dict:
         """
-        Reads the config file and stores information related to the optimization problem:
+        Reads the config file and returns information related to the optimization problem:
             - Design Variables
             - Constraints
             - Objectives
+        :return subpart of self._conf_dict concerning optimization
         """
 
-        self._optimization_definition = {}
+        optimization_definition = {}
         conf_dict = self._conf_dict.get(TABLE_OPTIMIZATION)
         if conf_dict:
             for sec, elements in conf_dict.items():
-                self._optimization_definition[sec] = {elem["name"]: elem for elem in elements}
+                optimization_definition[sec] = {elem["name"]: elem for elem in elements}
+        return optimization_definition
 
     def set_optimization_definition(self, optimization_definition: Dict):
         """

@@ -92,7 +92,7 @@ class OptimizationViewer:
             output_variables = VariableIO(self.problem.output_file_path, file_formatter).read()
 
         optimization_variables = VariableList()
-        opt_def = problem._optimization_definition
+        opt_def = problem.get_optimization_definition()
         # Design Variables
         if "design_var" in opt_def:
             for name, design_var in opt_def["design_var"].items():
@@ -174,7 +174,7 @@ class OptimizationViewer:
         problem = self.problem
         input_variables = VariableIO(self.problem.input_file_path, None).read()
         output_variables = VariableIO(self.problem.output_file_path, None).read()
-        opt_def = problem._optimization_definition
+        opt_def = problem.get_optimization_definition()
 
         variables = self.get_variables()
         for variable in variables:
@@ -223,7 +223,6 @@ class OptimizationViewer:
         # Values
         VariableIO(self.problem.output_file_path, None).write(output_variables)
         # Optimization definition
-        problem._optimization_definition = opt_def
         problem.set_optimization_definition(opt_def)
 
     def display(self):
