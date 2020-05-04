@@ -310,17 +310,19 @@ class FASTOADProblem(om.Problem):
         for key, value in optimization_definition.items():
             subpart[key] = [value for _, value in optimization_definition[key].items()]
         subpart = {"optimization": subpart}
-        self._edit_conf_file(subpart)
+        self._conf_dict.update(subpart)
+        self.save_configuration()
 
-    def _edit_conf_file(self, subpart: Dict):
+    def save_configuration(self, filename: str = None):
         """
-        Writes to the .toml config file with respect to modification brought to the conf_dict
-        by subpart dictionary.
-        :param subpart: dict containing the updates for conf_dict
+        Writes to the .toml config file with respect to self._conf_dict.
+        If no filename is provided, the self._conf_file is used.
+        :param filename: file where to save self._conf_dict
         """
-        for (key, value) in subpart.items():
-            self._conf_dict[key] = value
-        with open(self._conf_file, "w") as file:
+        if not filename:
+            filename = self._conf_file
+
+        with open(filename, "w") as file:
             d = tomlkit.dumps(self._conf_dict)
             file.write(d)
 
