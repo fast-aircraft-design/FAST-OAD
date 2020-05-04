@@ -235,7 +235,7 @@ class OptimizationViewer:
         :return display of the user interface:
         """
         self._create_save_load_buttons()
-        return self._render_sheet()
+        return self._render_ui()
 
     def load_variables(self, variables: VariableList, attribute_to_column: Dict[str, str] = None):
         """
@@ -360,14 +360,6 @@ class OptimizationViewer:
             for c in columns:
                 self.dataframe.loc[int(r), c] = df.loc[r, c]
 
-    def _render_sheet(self) -> display:
-        """
-        Renders an interactive pysheet with dropdown menus of the stored dataframe.
-
-        :return display of the user interface
-        """
-        return self._render_ui()
-
     def _create_save_load_buttons(self):
         """
         The save button saves the present state of the dataframe to the xml.
@@ -397,7 +389,7 @@ class OptimizationViewer:
 
         def on_load_button_clicked(b):
             self.load(self.problem)
-            self._render_sheet()
+            self._render_ui()
 
         load_button.on_click(on_load_button_clicked)
 
