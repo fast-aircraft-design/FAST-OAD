@@ -487,18 +487,16 @@ class OptimizationViewer:
                             is_violated["Value"] = True
                         else:
                             pass
-                yellow = [
-                    {"backgroundColor": "yellow"} if v else {"backgroundColor": None}
-                    for v in is_active
+
+                yellow = ["yellow" if v else None for v in is_active]
+                red = ["red" if v else None for v in is_violated]
+                column_styles = [
+                    {"backgroundColor": y_style or r_style} for y_style, r_style in zip(yellow, red)
                 ]
-                red = [
-                    {"backgroundColor": "red"} if v else {"backgroundColor": None}
-                    for v in is_violated
-                ]
-                column_style = [yellow[i] or red[i] for i, _ in enumerate(yellow)]
-                # TODO: is this optimal ?
-                for i, _ in enumerate(column_style):
-                    style[(r, columns[i])] = column_style[i]
+
+                for column, column_style in zip(columns, column_styles):
+                    style[(r, column)] = column_style
+
             return style
 
         style = highlight_active_bounds(df, threshold=0.1)
