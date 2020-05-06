@@ -290,7 +290,7 @@ class FASTOADProblem(om.Problem):
             - Constraints
             - Objectives
 
-        :return: subpart of self._conf_dict concerning optimization
+        :return: dict containing optimization settings for current problem
         """
 
         optimization_definition = {}
@@ -302,7 +302,7 @@ class FASTOADProblem(om.Problem):
 
     def set_optimization_definition(self, optimization_definition: Dict):
         """
-        Writes to the .toml config file the list of design variables, constraints, objectives
+        Updates configuration with the list of design variables, constraints, objectives
         contained in the optimization_definition dictionary.
         Keys of the dictionary are: "design_var", "constraint", "objective".
 
@@ -317,10 +317,10 @@ class FASTOADProblem(om.Problem):
 
     def save_configuration(self, filename: str = None):
         """
-        Writes to the .toml config file with respect to self._conf_dict.
-        If no filename is provided, the self._conf_file is used.
+        Writes to the .toml config file the current configuration.
+        If no filename is provided, the initially read file is used.
 
-        :param filename: file where to save self._conf_dict
+        :param filename: file where to save configuration
         """
         if not filename:
             filename = self._conf_file
