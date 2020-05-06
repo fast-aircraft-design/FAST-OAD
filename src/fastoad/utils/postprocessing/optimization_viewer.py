@@ -15,17 +15,18 @@ Defines the variable viewer for postprocessing
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-from typing import Dict
 from math import isnan
+from typing import Dict
 
 import ipysheet as sh
 import ipywidgets as widgets
-import pandas as pd
 import numpy as np
-from IPython.display import display, clear_output, Markdown
-from fastoad.io.configuration import FASTOADProblem
+import pandas as pd
+from IPython.display import display, clear_output
 from fastoad.io import VariableIO, IVariableIOFormatter
+from fastoad.io.configuration import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
+
 from .exceptions import FastMissingFile
 
 pd.set_option("display.max_rows", None)
@@ -229,7 +230,8 @@ class OptimizationViewer:
         """
         Displays the datasheet.
         load() must be ran before.
-        :return display of the user interface:
+
+        :return: display of the user interface:
         """
         self._create_save_load_buttons()
         return self._render_ui()
@@ -277,7 +279,7 @@ class OptimizationViewer:
         The cells are set to read only except for the values.
 
         :param df: the pandas DataFrame to be converted
-        :return the equivalent ipysheet Sheet
+        :return: the equivalent ipysheet Sheet
         """
         if not df.empty:
             # Adapted from_dataframe() method of ipysheet
@@ -334,7 +336,7 @@ class OptimizationViewer:
         Transforms a ipysheet Sheet into a pandas DataFrame.
 
         :param sheet: the ipysheet Sheet to be converted
-        :return the equivalent pandas DataFrame
+        :return: the equivalent pandas DataFrame
         """
         df = sh.to_dataframe(sheet)
         return df
@@ -445,7 +447,7 @@ class OptimizationViewer:
         Renders the dropdown menus for the variable selector and the corresponding
         ipysheet Sheet containing the variable infos.
 
-        :return the display object
+        :return: the display object
         """
         clear_output(wait=True)
         self._update_sheet()
@@ -472,7 +474,8 @@ class OptimizationViewer:
     def _cell_styling(df) -> Dict:
         """
         Returns bound activities in the form of cell style dictionary.
-        return: dict containing the style
+
+        :return: dict containing the style
         """
 
         def highlight_active_bounds(df, threshold=1e-6):
