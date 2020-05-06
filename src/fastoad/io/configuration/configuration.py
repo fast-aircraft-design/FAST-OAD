@@ -289,7 +289,8 @@ class FASTOADProblem(om.Problem):
             - Design Variables
             - Constraints
             - Objectives
-        :return subpart of self._conf_dict concerning optimization
+
+        :return: subpart of self._conf_dict concerning optimization
         """
 
         optimization_definition = {}
@@ -304,6 +305,7 @@ class FASTOADProblem(om.Problem):
         Writes to the .toml config file the list of design variables, constraints, objectives
         contained in the optimization_definition dictionary.
         Keys of the dictionary are: "design_var", "constraint", "objective".
+
         :param optimization_definition: dict containing the optimization problem definition
         """
         subpart = {}
@@ -317,6 +319,7 @@ class FASTOADProblem(om.Problem):
         """
         Writes to the .toml config file with respect to self._conf_dict.
         If no filename is provided, the self._conf_file is used.
+
         :param filename: file where to save self._conf_dict
         """
         if not filename:
