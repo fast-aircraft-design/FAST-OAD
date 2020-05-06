@@ -34,6 +34,7 @@ from fastoad.module_management import BundleLoader
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.variables import VariableList
 from fastoad.utils.resource_management.copy import copy_resource
+from fastoad.utils.postprocessing import OptimizationViewer
 
 from . import resources
 
@@ -352,3 +353,18 @@ def optimize_problem(configuration_file_path: str, overwrite: bool = False) -> F
     :return: the OpenMDAO problem after run
     """
     return _run_problem(configuration_file_path, overwrite, "run_driver")
+
+
+def optimization_viewer(configuration_file_path: str):
+    """
+    Displays optimization information and enables its editing
+
+    :param configuration_file_path: problem definition
+    :return: display of the OptimizationViewer
+    """
+    problem = FASTOADProblem()
+    problem.configure(configuration_file_path)
+    viewer = OptimizationViewer()
+    viewer.load(problem)
+
+    return viewer.display()

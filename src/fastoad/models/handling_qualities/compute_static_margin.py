@@ -54,6 +54,8 @@ class ComputeStaticMargin(om.ExplicitComponent):
         outputs["data:handling_qualities:static_margin"] = ac_ratio - cg_ratio
 
         if self.options["target"]:
+            static_margin = 100 * outputs["data:handling_qualities:static_margin"]
+            target = 100 * self.options["target"]
             outputs["data:handling_qualities:static_margin:to_target"] = (
-                100 * (self.options["target"] - outputs["data:handling_qualities:static_margin"])
+                target - static_margin
             ) ** 2

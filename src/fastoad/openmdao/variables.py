@@ -31,6 +31,7 @@ from .utils import get_problem_after_setup, get_unconnected_input_names
 _LOGGER = logging.getLogger(__name__)
 
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
+METADATA_TO_IGNORE_FOR_EQUALITY = ["tags", "size", "src_indices", "flat_src_indices", "distributed"]
 
 
 class Variable(Hashable):
@@ -93,8 +94,7 @@ class Variable(Hashable):
         # Done with class attributes ------------------------------------------
 
         self.metadata = self.__class__._base_metadata.copy()
-        # use kwargs only for keys already existent in self.metadata
-        self.metadata.update((key, kwargs[key]) for key in kwargs.keys() & self.metadata.keys())
+        self.metadata.update(kwargs)
         self._set_default_shape()
 
         # If no description, add one from DESCRIPTION_FILE_PATH, if available
@@ -156,9 +156,12 @@ class Variable(Hashable):
         my_value = np.asarray(my_metadata.pop("value"))
         other_value = np.asarray(other_metadata.pop("value"))
 
-        # Let's also ignore tags
-        del my_metadata["tags"]
-        del other_metadata["tags"]
+        # Let's also ignore unimportant keys
+        for key in METADATA_TO_IGNORE_FOR_EQUALITY:
+            if key in my_metadata:
+                del my_metadata[key]
+            if key in other_metadata:
+                del other_metadata[key]
 
         return (
             isinstance(other, Variable)
@@ -272,21 +275,29 @@ class VariableList(list):
         var_dict = {"name": []}
         var_dict.update({metadata_name: [] for metadata_name in self.metadata_keys()})
 
-        for variable in self:
-            value = variable.value
+        # To be able to edit floats and integer
+        def _check_shape(value):
             if np.shape(value) == (1,):
                 value = float(value[0])
             elif np.shape(value) == ():
                 pass
             else:
                 value = np.asarray(value).tolist()
+            return value
 
+        for variable in self:
+            value = _check_shape(variable.value)
             var_dict["name"].append(variable.name)
             for metadata_name in self.metadata_keys():
                 if metadata_name == "value":
                     var_dict["value"].append(value)
                 else:
-                    var_dict[metadata_name].append(variable.metadata[metadata_name])
+                    # TODO: make this more generic
+                    if metadata_name in ["value", "initial_value", "lower", "upper"]:
+                        metadata = _check_shape(variable.metadata[metadata_name])
+                    else:
+                        metadata = variable.metadata[metadata_name]
+                    var_dict[metadata_name].append(metadata)
 
         df = pd.DataFrame.from_dict(var_dict)
 
@@ -303,6 +314,12 @@ class VariableList(list):
         variables = VariableList()
 
         for (name, value, attributes) in ivc._indep + ivc._indep_external:
+            if np.shape(value) == (1,):
+                value = float(value[0])
+            elif np.shape(value) == ():
+                pass
+            else:
+                value = np.asarray(value)
             metadata = {"value": value}
             metadata.update(attributes)
             variables[name] = metadata
@@ -320,12 +337,30 @@ class VariableList(list):
         :param df: a DataFrame instance
         :return: a VariableList instance
         """
-        column_names = [
-            name for name in df.columns if name in ["name"] + list(Variable.get_openmdao_keys())
-        ]
+        column_names = [name for name in df.columns]
+
+        # To be able to edit floats and integer
+        def _check_shape(value):
+            if np.shape(value) == (1,):
+                value = float(value[0])
+            elif np.shape(value) == ():
+                if type(value) == str:
+                    value = float(value)
+                else:
+                    # Integer
+                    pass
+            else:
+                value = np.asarray(value).tolist()
+            return value
 
         def _get_variable(row):
             var_as_dict = {key: val for key, val in zip(column_names, row)}
+            # TODO: make this more generic
+            for key, val in var_as_dict.items():
+                if key in ["value", "initial_value", "lower", "upper"]:
+                    var_as_dict[key] = _check_shape(val)
+                else:
+                    pass
             return Variable(**var_as_dict)
 
         return VariableList([_get_variable(row) for row in df[column_names].values])

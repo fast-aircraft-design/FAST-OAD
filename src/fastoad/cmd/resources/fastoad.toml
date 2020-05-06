@@ -39,11 +39,21 @@ driver = "om.ScipyOptimizeDriver()"
     [model.loop]
         id = "fastoad.loop.wing_area"
 
-[[design_var]]
-    name = "data:geometry:wing:MAC:at25percent:x"
-    lower = 10.0
-    upper = 25.0
-    ref = 15.0
+[optimization]
+    [[optimization.design_var]]
+        name = "data:geometry:wing:MAC:at25percent:x"
+        lower = 10.0
+        upper = 25.0
+        ref = 15.0
 
-[[objective]]
-    name = "data:handling_qualities:static_margin:to_target"
+    [[optimization.design_var]]
+        name = "data:geometry:wing:aspect_ratio"
+        lower = 6.0
+        upper = 12.0
+
+    [[optimization.constraint]]
+        name = "data:geometry:wing:span"
+        upper = 35.0
+
+    [[optimization.objective]]
+        name = "data:handling_qualities:static_margin:to_target"

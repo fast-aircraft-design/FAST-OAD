@@ -1,3 +1,6 @@
+"""
+Exception for postprocessing
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,5 +14,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .variable_viewer import VariableViewer
-from .optimization_viewer import OptimizationViewer
+from fastoad.exceptions import FastError
+
+
+class FastMissingFile(FastError):
+    """Raised when a file does not exist"""

@@ -40,13 +40,13 @@
     openmdao="^3"
     lxml = "*"
     ipopo = "^1"
-    toml = "*"
     jupyterlab = "*"
     matplotlib = "*"
     plotly = "*"
     ipywidgets = "*"
     importlib_resources = "*"
     ipysheet = "*"
+    tomlkit = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
     wheel = "*"
