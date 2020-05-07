@@ -44,6 +44,7 @@ class BreguetFromMTOW(om.Group):
         self.add_subsystem("distances", _Distances(), promotes=["*"])
         self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
         self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
+        self.add_subsystem("consumption", _Consumption(), promotes=["*"])
 
 
 class BreguetFromOWE(om.Group):
@@ -63,12 +64,34 @@ class BreguetFromOWE(om.Group):
         self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
         self.add_subsystem("mtow", _MTOWFromOWE(), promotes=["*"])
         self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
+        self.add_subsystem("consumption", _Consumption(), promotes=["*"])
 
         self.nonlinear_solver = om.NewtonSolver()
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["solve_subsystems"] = False
         self.nonlinear_solver.linesearch = om.BoundsEnforceLS()
         self.linear_solver = om.DirectSolver()
+
+
+class _Consumption(om.ExplicitComponent):
+    """
+    Adds a variable for consumption/passenger/km
+    """
+
+    def setup(self):
+        self.add_input("data:mission:sizing:fuel", np.nan, units="kg")
+        self.add_input("data:TLAR:range", np.nan, units="km")
+        self.add_input("data:TLAR:NPAX", np.nan)
+
+        self.add_output("data:mission:sizing:fuel:unitary", units="kg/km")
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        fuel = inputs["data:mission:sizing:fuel"]
+        npax = inputs["data:TLAR:NPAX"]
+        distance = inputs["data:TLAR:range"]
+
+        outputs["data:mission:sizing:fuel:unitary"] = fuel / npax / distance
 
 
 class _BreguetPropulsion(om.ExplicitComponent):

@@ -156,7 +156,7 @@ class Main:
         print("")
         print("Notebooks have been created in %s" % target_path)
         print("You may now run Jupyter with:")
-        print("   jupyter notebook %s" % target_path)
+        print('   jupyter notebook "%s"' % target_path)
 
     # UTILITIES ====================================================================================
 
