@@ -25,6 +25,7 @@ def test_breguet_from_mtow():
     ivc.add_output("data:mission:sizing:cruise:altitude", 35000, units="ft")
     ivc.add_output("data:TLAR:cruise_mach", 0.78)
     ivc.add_output("data:TLAR:range", 500, units="NM")
+    ivc.add_output("data:TLAR:NPAX", 150)
     ivc.add_output("data:aerodynamics:aircraft:cruise:L_D_max", 16.0)
     ivc.add_output("data:propulsion:SFC", 1e-5, units="kg/N/s")
     ivc.add_output("data:weight:aircraft:MTOW", 74000, units="kg")
@@ -33,12 +34,14 @@ def test_breguet_from_mtow():
 
     assert_allclose(problem["data:mission:sizing:ZFW"], 65617.0, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:fuel"], 8382.0, rtol=1e-3)
+    assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0604, rtol=1e-3)
 
     # test 2
     ivc = om.IndepVarComp()
     ivc.add_output("data:mission:sizing:cruise:altitude", 35000, units="ft")
     ivc.add_output("data:TLAR:cruise_mach", 0.78)
     ivc.add_output("data:TLAR:range", 1500, units="NM")
+    ivc.add_output("data:TLAR:NPAX", 120)
     ivc.add_output("data:aerodynamics:aircraft:cruise:L_D_max", 16.0)
     ivc.add_output("data:propulsion:SFC", 1e-5, units="kg/N/s")
     ivc.add_output("data:weight:aircraft:MTOW", 74000, units="kg")
@@ -47,6 +50,7 @@ def test_breguet_from_mtow():
 
     assert_allclose(problem["data:mission:sizing:ZFW"], 62473.0, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:fuel"], 11526.0, rtol=1e-3)
+    assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0346, rtol=1e-3)
 
     # Check consistency of other outputs
     assert_allclose(
@@ -68,6 +72,7 @@ def test_breguet_from_mtow_with_rubber_engine():
     ivc.add_output("data:mission:sizing:cruise:altitude", 35000, units="ft")
     ivc.add_output("data:TLAR:cruise_mach", 0.78)
     ivc.add_output("data:TLAR:range", 500, units="NM")
+    ivc.add_output("data:TLAR:NPAX", 150)
     ivc.add_output("data:aerodynamics:aircraft:cruise:L_D_max", 16.0)
     ivc.add_output("data:weight:aircraft:MTOW", 74000, units="kg")
 
@@ -86,6 +91,7 @@ def test_breguet_from_mtow_with_rubber_engine():
 
     assert_allclose(problem["data:mission:sizing:ZFW"], 65076.0, atol=1)
     assert_allclose(problem["data:mission:sizing:fuel"], 8924.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0642, rtol=1e-3)
 
 
 def test_breguet_from_owe():
@@ -93,6 +99,7 @@ def test_breguet_from_owe():
     ivc.add_output("data:mission:sizing:cruise:altitude", 35000, units="ft")
     ivc.add_output("data:TLAR:cruise_mach", 0.78)
     ivc.add_output("data:TLAR:range", 500, units="NM")
+    ivc.add_output("data:TLAR:NPAX", 150)
     ivc.add_output("data:aerodynamics:aircraft:cruise:L_D_max", 16.0)
     ivc.add_output("data:propulsion:SFC", 1e-5, units="kg/N/s")
     ivc.add_output("data:weight:aircraft:OWE", 50000, units="kg")
@@ -103,6 +110,7 @@ def test_breguet_from_owe():
     assert_allclose(problem["data:weight:aircraft:MTOW"], 74000.0, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:ZFW"], 65617.0, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:fuel"], 8382.0, rtol=1e-3)
+    assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0604, rtol=1e-3)
 
 
 def test_breguet_from_owe_with_rubber_engine():
@@ -110,6 +118,7 @@ def test_breguet_from_owe_with_rubber_engine():
     ivc.add_output("data:mission:sizing:cruise:altitude", 35000, units="ft")
     ivc.add_output("data:TLAR:cruise_mach", 0.78)
     ivc.add_output("data:TLAR:range", 500, units="NM")
+    ivc.add_output("data:TLAR:NPAX", 150)
     ivc.add_output("data:aerodynamics:aircraft:cruise:L_D_max", 16.0)
     ivc.add_output("data:weight:aircraft:payload", 15076, units="kg")
     ivc.add_output("data:weight:aircraft:OWE", 50000, units="kg")
@@ -131,3 +140,4 @@ def test_breguet_from_owe_with_rubber_engine():
     assert_allclose(problem["data:weight:aircraft:MTOW"], 74000.0, atol=10)
     assert_allclose(problem["data:mission:sizing:ZFW"], 65076.0, atol=1)
     assert_allclose(problem["data:mission:sizing:fuel"], 8924.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0642, rtol=1e-3)
