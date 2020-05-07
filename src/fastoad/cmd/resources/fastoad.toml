@@ -41,19 +41,53 @@ driver = "om.ScipyOptimizeDriver()"
 
 [optimization]
     [[optimization.design_var]]
-        name = "data:geometry:wing:MAC:at25percent:x"
-        lower = 10.0
-        upper = 25.0
-        ref = 15.0
+            name = "data:geometry:wing:MAC:at25percent:x"
+            lower = 10.0
+            upper = 25.0
 
     [[optimization.design_var]]
-        name = "data:geometry:wing:aspect_ratio"
-        lower = 6.0
-        upper = 12.0
+            name = "data:geometry:wing:aspect_ratio"
+            lower = 6.0
+            upper = 12.0
+
+    [[optimization.design_var]]
+            name = "data:geometry:wing:sweep_25"
+            lower = 20.0
+            upper = 40.0
+
+    [[optimization.design_var]]
+            name = "data:geometry:wing:taper_ratio"
+            lower = 0.25
+            upper = 0.75
+
+    [[optimization.design_var]]
+            name = "data:geometry:horizontal_tail:aspect_ratio"
+            lower = 3.0
+            upper = 5.0
+
+    [[optimization.design_var]]
+            name = "data:geometry:horizontal_tail:sweep_25"
+            lower = 20.0
+            upper = 30.0
+
+    [[optimization.design_var]]
+            name = "data:geometry:vertical_tail:aspect_ratio"
+            lower = 1.0
+            upper = 2.0
+
+    [[optimization.design_var]]
+            name = "data:geometry:vertical_tail:sweep_25"
+            lower = 30.0
+            upper = 45.0
 
     [[optimization.constraint]]
-        name = "data:geometry:wing:span"
-        upper = 35.0
+            name = "data:geometry:wing:span"
+            upper = 36.0
+
+    [[optimization.constraint]]
+            name = "data:handling_qualities:static_margin"
+            lower = 0.05
+            upper = 0.1
 
     [[optimization.objective]]
-        name = "data:handling_qualities:static_margin:to_target"
+            name = "data:mission:sizing:fuel"
