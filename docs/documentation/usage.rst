@@ -312,6 +312,52 @@ your new input files with:
 If you are using the configuration file provided by the gen_conf sub-command (see :ref`Generate conf file`), you may download our `CeRAS01_baseline.xml <https://github.com/fast-aircraft-design/FAST-OAD/raw/v0.1a/src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml>`_ and use it as source for generating your input file.
 
 
+.. _view-problem:
+
+How to view the problem process
+===============================
+
+FAST-OAD proposes two graphical ways to look at the problem defined in configuration
+file.
+This is especially useful to see how models and variables are connected.
+
+.. _n2_diagram:
+
+N2 diagram
+----------
+
+FAST-OAD can use OpenMDAO to create a `N2 diagram <http://openmdao.org/twodocs/versions/latest/features/model_visualization/n2_basics.html>`_.
+It provides in-depth information about the whole process.
+
+You can create a :code:`n2.html` file with:
+
+.. code:: bash
+
+    $ fastoad n2 my_conf.toml
+
+.. _xdsm_diagram:
+
+XDSM
+----
+
+Using `WhatsOpt <https://github.com/OneraHub/WhatsOpt>`_ as web service, FAST-OAD
+can provide a `XDSM <http://mdolab.engin.umich.edu/content/xdsm-overview>`_.
+
+XDSM offers a more synthetic view than N2 diagram.
+
+As it uses a web service, see `WhatsOpt documentation <https://github.com/OneraHub/WhatsOpt-Doc>`_
+for how to gain access to the online WhatsOpt server,
+or see `WhatsOpt developer documentation <https://whatsopt.readthedocs.io/en/latest/install/>`_ to
+run your own server.
+
+You can create a :code:`xdsm.html` file with:
+
+.. code:: bash
+
+    $ fastoad xdsm my_conf.toml
+
+*Note: it may take a couple of minutes*
+
 .. _run-problem:
 
 How to run the problem
