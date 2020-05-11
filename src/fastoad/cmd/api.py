@@ -284,7 +284,6 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
             "Use overwrite=True to bypass." % n2_file_path
         )
 
-    print(n2_file_path)
     if not pth.exists(pth.dirname(n2_file_path)):
         os.makedirs(pth.dirname(n2_file_path))
 
