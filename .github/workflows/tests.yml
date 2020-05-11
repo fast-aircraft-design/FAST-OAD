@@ -16,25 +16,28 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Poetry cache
-        uses: actions/cache@v1
-        id: cache-venv
-        with:
-          path: ~/.poetry
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-poetry-${{ hashFiles('**/poetry.lock') }}
-
       - name: Install Poetry
-        if: steps.cache-venv.outputs.cache-hit != 'true'
         run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
         shell: bash
 
       - name: Poetry path
         run: echo "::add-path::$HOME/.poetry/bin"
         shell: bash
+
+      - name: Poetry settings
+        run: poetry config virtualenvs.in-project true
+        shell: bash
+
+      - name: Venv cache
+        uses: actions/cache@v1
+        id: cache-venv
+        with:
+          path: .venv
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-poetry_venv-${{ hashFiles('**/poetry.lock') }}
 
       - name: Activate environment and install dependencies
         run: poetry install
@@ -71,25 +74,28 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Poetry cache
-        uses: actions/cache@v1
-        id: cache-venv
-        with:
-          path: ~/.poetry
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-poetry-${{ hashFiles('**/poetry.lock') }}
-
       - name: Install Poetry
-        if: steps.cache-venv.outputs.cache-hit != 'true'
         run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
         shell: bash
 
       - name: Poetry path
         run: echo "::add-path::$HOME/.poetry/bin"
         shell: bash
+
+      - name: Poetry settings
+        run: poetry config virtualenvs.in-project true
+        shell: bash
+
+      - name: Venv cache
+        uses: actions/cache@v1
+        id: cache-venv
+        with:
+          path: .venv
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-poetry_venv-${{ hashFiles('**/poetry.lock') }}
 
       - name: Activate environment and install dependencies
         run: poetry install
