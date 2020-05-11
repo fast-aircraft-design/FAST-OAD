@@ -36,34 +36,47 @@ FAST-OAD configuration files are in `TOML format <https://github.com/toml-lang/t
         nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
         linear_solver = "om.DirectSolver()"
 
-        # Though "model" is a mandatory name for the top level of the model, sublevels can be freely named by user
+        # Although "model" is a mandatory name for the top level of the model, its sub-components can be freely named by user
         [model.geometry]
             # An OpenMDAO component is identified by its "id"
             id = "fastoad.geometry.legacy"
-        [model.weights]
-            id = "fastoad.weights.legacy"
-        [model.aerodynamics]
+        [model.weight]
+            id = "fastoad.weight.legacy"
+        [model.aerodynamics.highspeed]
             id = "fastoad.aerodynamics.highspeed.legacy"
+        [model.aerodynamics.landing]
+            id = "fastoad.aerodynamics.landing.legacy"
+            use_xfoil = false
         [model.performance]
-            id = "fastoad.performances.breguet.from_owe"
+            id = "fastoad.performances.breguet"
         [model.propulsion]
             id = "fastoad.propulsion.rubber_engine"
+        [model.hq.tail_sizing]
+            id = "fastoad.handling_qualities.tail_sizing"
+        [model.hq.static_margin]
+            id = "fastoad.handling_qualities.static_margin"
+            target = 0.05
+        [model.loop]
+            id = "fastoad.loop.wing_area"
 
-    [[design_var]]
-        name = "propulsion:MTO_thrust"
-        lower = 0
-        ref = 1.5e5
-        ref0 = 50000
+    [optimization]
+        [[optimization.design_var]]
+            name = "data:geometry:wing:MAC:at25percent:x"
+            lower = 10.0
+            upper = 25.0
+            ref = 15.0
 
-    [[objective]]
-        name = "weight:aircraft:MTOW"
-        ref = 90000
-        ref0 = 60000
+        [[optimization.design_var]]
+            name = "data:geometry:wing:aspect_ratio"
+            lower = 6.0
+            upper = 12.0
 
-    [[constraint]]
-        name = "propulsion:thrust_rate"
-        lower = 0
-        upper = 1
+        [[optimization.constraint]]
+            name = "data:geometry:wing:span"
+            upper = 35.0
+
+        [[optimization.objective]]
+            name = "data:handling_qualities:static_margin:to_target"
 
 Now in details:
 
@@ -121,18 +134,31 @@ Problem definition
         [model.geometry]
             # An OpenMDAO component is identified by its "id"
             id = "fastoad.geometry.legacy"
-        [model.weights]
-            id = "fastoad.weights.legacy"
-        [model.aerodynamics]
+        [model.weight]
+            id = "fastoad.weight.legacy"
+        [model.aerodynamics.highspeed]
             id = "fastoad.aerodynamics.highspeed.legacy"
+        [model.aerodynamics.landing]
+            id = "fastoad.aerodynamics.landing.legacy"
+            use_xfoil = false
         [model.performance]
-            id = "fastoad.performances.breguet.from_owe"
+            id = "fastoad.performances.breguet"
         [model.propulsion]
             id = "fastoad.propulsion.rubber_engine"
+        [model.hq.tail_sizing]
+            id = "fastoad.handling_qualities.tail_sizing"
+        [model.hq.static_margin]
+            id = "fastoad.handling_qualities.static_margin"
+            target = 0.05
+        [model.loop]
+            id = "fastoad.loop.wing_area"
 
-Components of the model can be systems, or sub-groups. They are defined with a section key like :code:`[model.<some_name>]`. Unlike "model", which is the root element, the name of sub-components can be defined freely by user.
+Components of the model can be systems, or sub-groups. They are defined with a
+section key like :code:`[model.<some_name>]`. Unlike "model", which is the root
+element, the name of sub-components can be defined freely by user.
 
-Here above are defined systems. A system is defined by its "id" key. See :ref:`get-system-list`.
+Here above are defined systems. A system is defined by its "id" key. See
+:ref:`get-system-list`.
 
 Optimization settings
 =====================
@@ -144,7 +170,7 @@ Design variables
 
 .. code:: toml
 
-    [[design_var]]
+    [[optimization.design_var]]
         name = "propulsion:MTO_thrust"
         lower = 0
         ref = 1.5e5
@@ -162,7 +188,7 @@ Objective function
 
 .. code:: toml
 
-    [[objective]]
+    [[optimization.objective]]
         name = "weight:aircraft:MTOW"
         ref = 90000
         ref0 = 60000
@@ -177,7 +203,7 @@ Constraints
 
 .. code:: toml
 
-    [[constraint]]
+    [[optimization.constraint]]
         name = "propulsion:thrust_rate"
         lower = 0
         upper = 1
@@ -285,6 +311,52 @@ your new input files with:
 
 If you are using the configuration file provided by the gen_conf sub-command (see :ref`Generate conf file`), you may download our `CeRAS01_baseline.xml <https://github.com/fast-aircraft-design/FAST-OAD/raw/v0.1a/src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml>`_ and use it as source for generating your input file.
 
+
+.. _view-problem:
+
+How to view the problem process
+===============================
+
+FAST-OAD proposes two graphical ways to look at the problem defined in configuration
+file.
+This is especially useful to see how models and variables are connected.
+
+.. _n2_diagram:
+
+N2 diagram
+----------
+
+FAST-OAD can use OpenMDAO to create a `N2 diagram <http://openmdao.org/twodocs/versions/latest/features/model_visualization/n2_basics.html>`_.
+It provides in-depth information about the whole process.
+
+You can create a :code:`n2.html` file with:
+
+.. code:: bash
+
+    $ fastoad n2 my_conf.toml
+
+.. _xdsm_diagram:
+
+XDSM
+----
+
+Using `WhatsOpt <https://github.com/OneraHub/WhatsOpt>`_ as web service, FAST-OAD
+can provide a `XDSM <http://mdolab.engin.umich.edu/content/xdsm-overview>`_.
+
+XDSM offers a more synthetic view than N2 diagram.
+
+As it uses a web service, see `WhatsOpt documentation <https://github.com/OneraHub/WhatsOpt-Doc>`_
+for how to gain access to the online WhatsOpt server,
+or see `WhatsOpt developer documentation <https://whatsopt.readthedocs.io/en/latest/install/>`_ to
+run your own server.
+
+You can create a :code:`xdsm.html` file with:
+
+.. code:: bash
+
+    $ fastoad xdsm my_conf.toml
+
+*Note: it may take a couple of minutes*
 
 .. _run-problem:
 

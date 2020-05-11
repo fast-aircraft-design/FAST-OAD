@@ -97,7 +97,7 @@ class Main:
     @staticmethod
     def _write_n2(args):
         """
-        Prints list of system outputs
+        Creates N2 html file
         """
         try:
             api.write_n2(args.conf_file, args.n2_file, args.force)
@@ -106,6 +106,21 @@ class Main:
                 'N2 file "%s" already exists. Do you want to overwrite it?' % args.n2_file
             ):
                 api.write_n2(args.conf_file, args.n2_file, True)
+            else:
+                print("No file written.")
+
+    @staticmethod
+    def _write_xdsm(args):
+        """
+        Creates XDSM html file
+        """
+        try:
+            api.write_xdsm(args.conf_file, args.xdsm_file, args.force, args.wop_server)
+        except FastFileExistsError:
+            if _query_yes_no(
+                'XDSM file "%s" already exists. Do you want to overwrite it?' % args.xdsm_file
+            ):
+                api.write_xdsm(args.conf_file, args.xdsm_file, True, args.wop_server)
             else:
                 print("No file written.")
 
@@ -267,6 +282,27 @@ class Main:
             "n2_file", nargs="?", default="n2.html", help="path of file to be written"
         )
         parser_n2.set_defaults(func=self._write_n2)
+
+        # sub-command for writing XDSM diagram -------------------------------------------------------
+        parser_xdsm = subparsers.add_parser(
+            "xdsm",
+            formatter_class=ArgumentDefaultsHelpFormatter,
+            help="Writes the XDSM diagram of the problem",
+            description="Writes an HTML file that shows the XDSM diagram of the problem",
+        )
+        self._add_conf_file_argument(parser_xdsm)
+        self._add_overwrite_argument(parser_xdsm)
+        parser_xdsm.add_argument(
+            "xdsm_file", nargs="?", default="xdsm.html", help="path of file to be written"
+        )
+        parser_xdsm.add_argument(
+            "--server",
+            nargs="?",
+            default=None,
+            dest="wop_server",
+            help="WhatsOpt server URL. Needed only at first call",
+        )
+        parser_xdsm.set_defaults(func=self._write_xdsm)
 
         # sub-command for running the model --------------------------------------------------------
         parser_run_model = subparsers.add_parser(

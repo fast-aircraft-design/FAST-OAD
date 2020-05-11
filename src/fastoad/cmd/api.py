@@ -25,6 +25,7 @@ from typing import IO, Union
 import numpy as np
 import openmdao.api as om
 import pandas as pd
+import requests
 from IPython import InteractiveShell
 from IPython.display import display, HTML
 from fastoad.cmd.exceptions import FastFileExistsError
@@ -33,12 +34,15 @@ from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.module_management import BundleLoader
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.variables import VariableList
-from fastoad.utils.resource_management.copy import copy_resource
 from fastoad.utils.postprocessing import OptimizationViewer
+from fastoad.utils.resource_management.copy import copy_resource
+from whatsopt.show_utils import generate_xdsm_html
+from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
 
 from . import resources
 
 # Logger for this module
+DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
 
 SAMPLE_FILENAME = "fastoad.toml"
@@ -272,7 +276,7 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
 
     if not n2_file_path:
         n2_file_path = pth.join(pth.dirname(configuration_file_path), "n2.html")
-    n2_file_path = pth.normpath(n2_file_path)
+    n2_file_path = pth.abspath(n2_file_path)
 
     if not overwrite and pth.exists(n2_file_path):
         raise FastFileExistsError(
@@ -290,6 +294,68 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
 
     om.n2(problem, outfile=n2_file_path, show_browser=False)
     _LOGGER.info("N2 diagram written in %s", n2_file_path)
+
+
+def write_xdsm(
+    configuration_file_path: str,
+    xdsm_file_path: str = None,
+    overwrite: bool = False,
+    wop_server_url=None,
+    api_key=None,
+):
+    """
+    
+    :param configuration_file_path:
+    :param xdsm_file_path:
+    :param overwrite:
+    :param wop_server_url:
+    :param api_key:
+    :return:
+    """
+    if not xdsm_file_path:
+        xdsm_file_path = pth.join(pth.dirname(configuration_file_path), "xdsm.html")
+    xdsm_file_path = pth.abspath(xdsm_file_path)
+
+    if not overwrite and pth.exists(xdsm_file_path):
+        raise FastFileExistsError(
+            "XDSM-diagram file %s not written because it already exists. "
+            "Use overwrite=True to bypass." % xdsm_file_path
+        )
+
+    if not pth.exists(pth.dirname(xdsm_file_path)):
+        os.makedirs(pth.dirname(xdsm_file_path))
+
+    problem = FASTOADProblem()
+    problem.configure(configuration_file_path)
+    problem.setup()
+    problem.final_setup()
+
+    wop = WhatsOpt(url=wop_server_url, login=False)
+
+    try:
+        ok = wop.login(api_key=api_key, echo=False)
+    except requests.exceptions.ConnectionError:
+
+        if not wop_server_url and wop.url == PROD_URL:
+            used_url = wop.url
+            # If connection failed while attempting to reach the wop default URL,
+            # that is the internal ONERA server, try with the external server
+            try:
+                wop = WhatsOpt(url=DEFAULT_WOP_URL)
+                ok = wop.login(api_key=api_key, echo=False)
+            except requests.exceptions.ConnectionError:
+                _LOGGER.warning("Failed to connect to %s and %s", used_url, DEFAULT_WOP_URL)
+                return
+        else:
+            _LOGGER.warning("Failed to connect to %s", wop.url)
+            return
+
+    if ok:
+        xdsm = wop.push_mda(problem, {"--xdsm": True, "--name": None, "--dry-run": False})
+        generate_xdsm_html(xdsm, xdsm_file_path)
+    else:
+        wop.logout()
+        _LOGGER.warning("Could not login to %s", wop.url)
 
 
 def _run_problem(
