@@ -73,7 +73,7 @@ driver = "om.ScipyOptimizeDriver()"
     [[optimization.design_var]]
             name = "data:geometry:vertical_tail:sweep_25"
             lower = 30.0
-            upper = 45.0
+            upper = 40.0
 
     [[optimization.constraint]]
             name = "data:geometry:wing:span"
@@ -86,3 +86,4 @@ driver = "om.ScipyOptimizeDriver()"
 
     [[optimization.objective]]
             name = "data:mission:sizing:fuel"
+            ref = 1e4
