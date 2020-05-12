@@ -56,11 +56,6 @@ driver = "om.ScipyOptimizeDriver()"
             upper = 40.0
 
     [[optimization.design_var]]
-            name = "data:geometry:wing:taper_ratio"
-            lower = 0.25
-            upper = 0.75
-
-    [[optimization.design_var]]
             name = "data:geometry:horizontal_tail:aspect_ratio"
             lower = 3.0
             upper = 5.0
