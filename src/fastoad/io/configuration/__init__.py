@@ -16,6 +16,6 @@ Package for building OpenMDAO problem from configuration file
 
 from .configuration import FASTOADProblem
 from .exceptions import (
-    FASTConfigurationNoProblemDefined,
+    FASTConfigurationError,
     FASTConfigurationBadOpenMDAOInstructionError,
 )

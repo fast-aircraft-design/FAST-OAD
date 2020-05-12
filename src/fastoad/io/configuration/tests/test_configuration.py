@@ -15,16 +15,21 @@ Test module for configuration.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-from shutil import rmtree, copy
+from shutil import rmtree
 
 import numpy as np
 import openmdao.api as om
 import pytest
 import tomlkit
+from fastoad.io.configuration.configuration import (
+    FASTOADProblemConfigurator,
+    KEY_INPUT_FILE,
+    KEY_OUTPUT_FILE,
+    TABLE_MODEL,
+)
 
 from .. import (
-    FASTOADProblem,
-    FASTConfigurationNoProblemDefined,
+    FASTConfigurationError,
     FASTConfigurationBadOpenMDAOInstructionError,
 )
 
@@ -38,34 +43,47 @@ def cleanup():
 
 
 def test_problem_definition(cleanup):
-    """ Test problem definition from configuration files """
-    # Missing problem
-    problem = FASTOADProblem()
-    with pytest.raises(FASTConfigurationNoProblemDefined) as exc_info:
-        problem.configure(pth.join(pth.dirname(__file__), "data", "missing_problem.toml"))
-    assert exc_info is not None
+    """ Test conf definition from configuration files """
+
+    # no input file
+    conf = FASTOADProblemConfigurator()
+    with pytest.raises(FASTConfigurationError) as exc_info:
+        conf.load(pth.join(pth.dirname(__file__), "data", "missing_input_file.toml"))
+    assert exc_info.value.missing_key == KEY_INPUT_FILE
+
+    # no output file
+    conf = FASTOADProblemConfigurator()
+    with pytest.raises(FASTConfigurationError) as exc_info:
+        conf.load(pth.join(pth.dirname(__file__), "data", "missing_output_file.toml"))
+    assert exc_info.value.missing_key == KEY_OUTPUT_FILE
+
+    # Missing model definition
+    conf = FASTOADProblemConfigurator()
+    with pytest.raises(FASTConfigurationError) as exc_info:
+        conf.load(pth.join(pth.dirname(__file__), "data", "missing_model.toml"))
+    assert exc_info.value.missing_section == TABLE_MODEL
 
     # Incorrect attribute
-    problem = FASTOADProblem()
+    conf = FASTOADProblemConfigurator()
+    conf.load(pth.join(pth.dirname(__file__), "data", "invalid_attribute.toml"))
     with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
-        problem.configure(pth.join(pth.dirname(__file__), "data", "invalid_attribute.toml"))
-    problem.read_inputs()
-    assert exc_info is not None
+        problem = conf.get_problem(read_inputs=False)
     assert exc_info.value.key == "model.cycle.other_group.nonlinear_solver"
 
-    # Reading of a minimal problem (model = explicitcomponent)
-    problem = FASTOADProblem()
-    problem.configure(pth.join(pth.dirname(__file__), "data", "disc1.toml"))
+    # Reading of a minimal conf (model = explicitcomponent)
+    conf = FASTOADProblemConfigurator()
+    conf.load(pth.join(pth.dirname(__file__), "data", "disc1.toml"))
+    problem = conf.get_problem(read_inputs=False)
     assert isinstance(problem.model.system, om.ExplicitComponent)
 
-    # Reading of correct problem definition
-    problem = FASTOADProblem()
-    problem.configure(pth.join(pth.dirname(__file__), "data", "valid_sellar.toml"))
+    # Reading of correct conf definition
+    conf = FASTOADProblemConfigurator()
+    conf.load(pth.join(pth.dirname(__file__), "data", "valid_sellar.toml"))
 
     # Just running these methods to check there is no crash. As simple assemblies of
     # other methods, their results should already be unit-tested.
-    problem.write_needed_inputs()
-    problem.read_inputs()
+    conf.write_needed_inputs()
+    problem = conf.get_problem(read_inputs=True)
 
     problem.setup()
     assert isinstance(problem.model.cycle, om.Group)
@@ -85,13 +103,12 @@ def test_problem_definition(cleanup):
 
 def test_problem_definition_with_xml_ref(cleanup):
     """ Tests what happens when writing inputs using data from existing XML file"""
-    problem = FASTOADProblem()
-    problem.configure(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
+    conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
 
     input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
-    problem.write_needed_inputs(input_data)
-    problem.read_inputs()
+    conf.write_needed_inputs(input_data)
 
+    problem = conf.get_problem(read_inputs=True)
     # runs evaluation without optimization loop to check that inputs are taken into account
     problem.setup()
     problem.run_model()
@@ -105,32 +122,30 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     Tests what happens when writing inputs using data from existing XML file
     and running an optimization problem
     """
-    problem = FASTOADProblem()
-    problem.configure(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
+    conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
 
     input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
-    problem.write_needed_inputs(input_data)
+    conf.write_needed_inputs(input_data)
 
     # Runs optimization problem with semi-analytic FD
-    problem.read_inputs()
-    problem.setup()
-    problem.run_model()
-    assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
-    problem.run_driver()
-    assert problem["f"] == pytest.approx(3.18339395, abs=1e-6)
+    problem1 = conf.get_problem(read_inputs=True)
+    problem1.setup()
+    problem1.run_model()
+    assert problem1["f"] == pytest.approx(28.58830817, abs=1e-6)
+    problem1.run_driver()
+    assert problem1["f"] == pytest.approx(3.18339395, abs=1e-6)
 
     # Runs optimization problem with monolithic FD
-    problem.build_model()
-    problem.read_inputs()  # resets the problem
-    problem.model.approx_totals()
-    problem.setup()
-    problem.run_model()  # checks problem has been reset
-    assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
-    problem.run_driver()
-    assert problem["f"] == pytest.approx(3.18339395, abs=1e-6)
+    problem2 = conf.get_problem(read_inputs=True)
+    problem2.model.approx_totals()
+    problem2.setup()
+    problem2.run_model()  # checks problem has been reset
+    assert problem2["f"] == pytest.approx(28.58830817, abs=1e-6)
+    problem2.run_driver()
+    assert problem2["f"] == pytest.approx(3.18339395, abs=1e-6)
 
 
-def test_write_optimization_definition(cleanup):
+def test_set_optimization_definition(cleanup):
     """
     Tests the modification of the optimization definition in the .toml
     configuration file
@@ -138,10 +153,9 @@ def test_write_optimization_definition(cleanup):
     reference_file = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
     editable_file = pth.join(RESULTS_FOLDER_PATH, "editable_valid_sellar.toml")
 
-    copy(reference_file, editable_file)
+    # copy(reference_file, editable_file)
 
-    problem = FASTOADProblem()
-    problem.configure(editable_file)
+    conf = FASTOADProblemConfigurator(reference_file)
 
     optimization_def = {
         "design_var": {
@@ -161,14 +175,15 @@ def test_write_optimization_definition(cleanup):
         "objective": [{"name": "f"}],
     }
 
-    with open(editable_file, "r") as file:
+    with open(reference_file, "r") as file:
         d = file.read()
         conf_dict = tomlkit.loads(d)
     conf_dict_opt = conf_dict["optimization"]
     # Should be different
     assert optimization_conf != conf_dict_opt
 
-    problem.set_optimization_definition(optimization_def)
+    conf.set_optimization_definition(optimization_def)
+    conf.save(editable_file)
     with open(editable_file, "r") as file:
         d = file.read()
         conf_dict = tomlkit.loads(d)

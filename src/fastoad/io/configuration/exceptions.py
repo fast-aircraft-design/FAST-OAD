@@ -76,5 +76,18 @@ class FASTConfigurationBadOpenMDAOInstructionError(FASTConfigurationBaseKeyBuild
     """ Class for managing errors that result from trying to set an attribute by eval."""
 
 
-class FASTConfigurationNoProblemDefined(FastError):
-    """Raised if no problem definition found in configuration file"""
+class FASTConfigurationError(FastError):
+    """Raised if incorrect definition found in configuration file"""
+
+    def __init__(self, missing_key=None, missing_section=None):
+        self.missing_key = missing_key
+        self.missing_section = missing_section
+
+        if self.missing_key:
+            msg = "Key [%s] is missing" % self.missing_key
+        elif self.missing_section:
+            msg = "Section [%s] is missing" % self.missing_section
+        else:
+            msg = "Undefined"
+
+        super().__init__(self, msg)
