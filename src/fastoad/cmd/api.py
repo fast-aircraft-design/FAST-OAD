@@ -15,7 +15,6 @@ API
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
 import os.path as pth
 import sys
 import textwrap as tw
@@ -35,6 +34,7 @@ from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.module_management import BundleLoader
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.variables import VariableList
+from fastoad.utils.files import make_parent_dir
 from fastoad.utils.postprocessing import OptimizationViewer
 from fastoad.utils.resource_management.copy import copy_resource
 from whatsopt.show_utils import generate_xdsm_html
@@ -65,9 +65,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
             configuration_file_path,
         )
 
-    dirname = pth.abspath(pth.dirname(configuration_file_path))
-    if not pth.exists(dirname):
-        os.makedirs(dirname)
+    make_parent_dir(configuration_file_path)
 
     copy_resource(resources, SAMPLE_FILENAME, configuration_file_path)
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
@@ -145,9 +143,7 @@ def list_variables(
                 "Use overwrite=True to bypass." % out,
                 out,
             )
-        dirname = pth.abspath(pth.dirname(out))
-        if not pth.exists(dirname):
-            os.makedirs(dirname)
+        make_parent_dir(out)
         out_file = open(out, "w")
         table_width = MAX_TABLE_WIDTH
     else:
@@ -252,10 +248,7 @@ def list_systems(
                 out,
             )
 
-        dirname = pth.abspath(pth.dirname(out))
-        if not pth.exists(dirname):
-            os.makedirs(dirname)
-
+        make_parent_dir(out)
         out_file = open(out, "w")
     else:
         out_file = out
@@ -296,9 +289,7 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
             n2_file_path,
         )
 
-    if not pth.exists(pth.dirname(n2_file_path)):
-        os.makedirs(pth.dirname(n2_file_path))
-
+    make_parent_dir(n2_file_path)
     problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
     problem.setup()
     problem.final_setup()
@@ -334,11 +325,9 @@ def write_xdsm(
             xdsm_file_path,
         )
 
-    if not pth.exists(pth.dirname(xdsm_file_path)):
-        os.makedirs(pth.dirname(xdsm_file_path))
+    make_parent_dir(xdsm_file_path)
 
-    problem = FASTOADProblem()
-    problem.configure(configuration_file_path)
+    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
     problem.setup()
     problem.final_setup()
 

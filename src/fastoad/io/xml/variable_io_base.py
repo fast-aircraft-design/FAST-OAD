@@ -16,8 +16,6 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 
 import json
 import logging
-import os
-import os.path as pth
 import re
 import warnings
 from typing import IO, Union
@@ -32,6 +30,7 @@ from fastoad.io.xml.exceptions import (
 )
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.variables import VariableList
+from fastoad.utils.files import make_parent_dir
 from fastoad.utils.strings import get_float_list_from_string
 from lxml import etree
 from lxml.etree import XPathEvalError
@@ -166,9 +165,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                 element.append(etree.Comment(variable.description))
         # Write
         tree = etree.ElementTree(root)
-        dirname = pth.abspath(pth.dirname(data_source))
-        if not pth.exists(dirname):
-            os.makedirs(dirname)
+        make_parent_dir(data_source)
         tree.write(data_source, pretty_print=True)
 
     @staticmethod

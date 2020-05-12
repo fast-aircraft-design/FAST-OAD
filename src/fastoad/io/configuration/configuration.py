@@ -16,7 +16,6 @@ Module for building OpenMDAO problem from configuration file
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
 import os.path as pth
 from typing import Dict
 
@@ -25,6 +24,7 @@ import tomlkit
 from fastoad.io import IVariableIOFormatter
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.problem import FASTOADProblem
+from fastoad.utils.files import make_parent_dir
 
 from .exceptions import (
     FASTConfigurationBaseKeyBuildingError,
@@ -162,10 +162,7 @@ class FASTOADProblemConfigurator:
         if not filename:
             filename = self._conf_file
 
-        dirname = pth.abspath(pth.dirname(filename))
-        if not pth.exists(dirname):
-            os.makedirs(dirname)
-
+        make_parent_dir(filename)
         with open(filename, "w") as file:
             d = tomlkit.dumps(self._conf_dict)
             file.write(d)
