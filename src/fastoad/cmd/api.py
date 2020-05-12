@@ -364,7 +364,10 @@ def write_xdsm(
 
 
 def _run_problem(
-    configuration_file_path: str, overwrite: bool = False, mode="run_model"
+    configuration_file_path: str,
+    overwrite: bool = False,
+    mode="run_model",
+    auto_scaling: bool = False,
 ) -> FASTOADProblem:
     """
     Runs problem according to provided file
@@ -372,11 +375,12 @@ def _run_problem(
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
     :param mode: 'run_model' or 'run_driver'
+    :param auto_scaling: if True, automatic scaling is performed for design variables and constraints
     :return: the OpenMDAO problem after run
     """
 
     problem = FASTOADProblem()
-    problem.configure(configuration_file_path)
+    problem.configure(configuration_file_path, auto_scaling=auto_scaling)
 
     outputs_path = pth.normpath(problem.output_file_path)
     if not overwrite and pth.exists(outputs_path):
@@ -416,15 +420,18 @@ def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> F
     return _run_problem(configuration_file_path, overwrite, "run_model")
 
 
-def optimize_problem(configuration_file_path: str, overwrite: bool = False) -> FASTOADProblem:
+def optimize_problem(
+    configuration_file_path: str, overwrite: bool = False, auto_scaling: bool = False
+) -> FASTOADProblem:
     """
     Runs driver according to provided problem file
 
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
+    :param auto_scaling: if True, automatic scaling is performed for design variables and constraints
     :return: the OpenMDAO problem after run
     """
-    return _run_problem(configuration_file_path, overwrite, "run_driver")
+    return _run_problem(configuration_file_path, overwrite, "run_driver", auto_scaling=auto_scaling)
 
 
 def optimization_viewer(configuration_file_path: str):
