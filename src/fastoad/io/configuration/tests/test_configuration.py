@@ -28,7 +28,7 @@ from fastoad.io.configuration.configuration import (
     TABLE_MODEL,
 )
 
-from .. import (
+from ..exceptions import (
     FASTConfigurationError,
     FASTConfigurationBadOpenMDAOInstructionError,
 )

@@ -18,16 +18,13 @@ Module for building OpenMDAO problem from configuration file
 import logging
 import os
 import os.path as pth
-from copy import deepcopy
 from typing import Dict
 
 import openmdao.api as om
 import tomlkit
 from fastoad.io import IVariableIOFormatter
-from fastoad.io.variable_io import VariableIO
 from fastoad.module_management import OpenMDAOSystemRegistry
-from fastoad.openmdao.validity_checker import ValidityDomainChecker
-from fastoad.openmdao.variables import VariableList
+from fastoad.openmdao.problem import FASTOADProblem
 
 from .exceptions import (
     FASTConfigurationBaseKeyBuildingError,
@@ -38,7 +35,6 @@ from .exceptions import (
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
-INPUT_SYSTEM_NAME = "inputs"
 KEY_FOLDERS = "module_folders"
 KEY_INPUT_FILE = "input_file"
 KEY_OUTPUT_FILE = "output_file"
@@ -49,101 +45,6 @@ TABLE_OPTIMIZATION = "optimization"
 TABLES_DESIGN_VAR = "design_var"
 TABLES_CONSTRAINT = "constraint"
 TABLES_OBJECTIVE = "objective"
-
-
-class FASTOADProblem(om.Problem):
-    """
-    Vanilla OpenMDAO Problem except that its definition can be loaded from
-    a TOML file.
-
-    A classical usage of this class will be::
-
-        problem = FASTOADProblem()  # instantiation
-        problem.configure('my_problem.toml')  # reads problem definition
-        problem.write_needed_inputs()  # writes the input file (defined in problem definition) with
-                                       # needed variables so user can fill it with proper values
-        # or
-        problem.write_needed_inputs('previous.xml')  # writes the input file with needed variables
-                                                     # and values taken from provided file when
-                                                     # available
-        problem.read_inputs()    # reads the input file
-        problem.run_driver()     # runs the OpenMDAO problem
-        problem.write_outputs()  # writes the output file (defined in problem definition)
-
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.input_file_path = None
-        self.output_file_path = None
-
-    def run_model(self, case_prefix=None, reset_iter_counts=True):
-        status = super().run_model(case_prefix, reset_iter_counts)
-        ValidityDomainChecker.check_problem_variables(self)
-        return status
-
-    def run_driver(self, case_prefix=None, reset_iter_counts=True):
-        status = super().run_driver(case_prefix, reset_iter_counts)
-        ValidityDomainChecker.check_problem_variables(self)
-        return status
-
-    def write_needed_inputs(
-        self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None,
-    ):
-        """
-        Writes the input file of the problem with unconnected inputs of the configured problem.
-
-        Written value of each variable will be taken:
-        1. from input_data if it contains the variable
-        2. from defined default values in component definitions
-
-        WARNING: if inputs have already been read, they won't be needed any more and won't be
-        in written file. To clear read data, use first :meth:`build_problem`.
-
-        :param input_file_path: path of file where inputs will be written
-        :param source_file_path: if provided, variable values will be read from it
-        :param source_formatter: the class that defines format of input file. if not provided,
-                                expected format will be the default one.
-        """
-        variables = VariableList.from_unconnected_inputs(self, with_optional_inputs=True)
-        if source_file_path:
-            ref_vars = VariableIO(source_file_path, source_formatter).read()
-            variables.update(ref_vars)
-        writer = VariableIO(self.input_file_path)
-        writer.write(variables)
-
-    def read_inputs(self):
-        """
-        Reads inputs from the configured input file.
-
-        Must be done once problem is configured, before self.setup() is called.
-        """
-        if self.input_file_path:
-            # Reads input file
-            reader = VariableIO(self.input_file_path)
-            ivc = reader.read().to_ivc()
-
-            # ivc will be added through add_subsystem, but we must use set_order() to
-            # put it first.
-            # So we need order of existing subsystem to provide the full order list to set_order()
-            # To get order of systems, we use system_iter() that can be used only after setup().
-            # But we will not be allowed to use add_subsystem() after setup().
-            # So we use setup() on a copy of current instance, and get order from this copy
-            tmp_prob = deepcopy(self)
-            tmp_prob.setup()
-            previous_order = [system.name for system in tmp_prob.model.system_iter(recurse=False)]
-
-            self.model.add_subsystem(INPUT_SYSTEM_NAME, ivc, promotes=["*"])
-            self.model.set_order([INPUT_SYSTEM_NAME] + previous_order)
-
-    def write_outputs(self):
-        """
-        Once problem is run, writes all outputs in the configured output file.
-        """
-        if self.output_file_path:
-            writer = VariableIO(self.output_file_path)
-            variables = VariableList.from_problem(self)
-            writer.write(variables)
 
 
 class FASTOADProblemConfigurator:
