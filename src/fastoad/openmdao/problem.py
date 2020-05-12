@@ -22,14 +22,20 @@ INPUT_SYSTEM_NAME = "inputs"
 
 class FASTOADProblem(om.Problem):
     """
-    Vanilla OpenMDAO Problem except that its definition can be loaded from
-    a TOML file.
+    Vanilla OpenMDAO Problem except that it can read and write its variables from/to files.
 
-    A classical usage of this class will be::
+    It also runs :class:`~fastoad.openmdao.validity_checker.ValidityDomainChecker`
+    after each :meth:`run_model` or :meth:`run_driver`
+    (but it does nothing if no check has been registered)
+
+    A classical usage of this class would be::
 
         problem = FASTOADProblem()  # instantiation
-        problem.configure('my_problem.toml')  # reads problem definition
-        problem.write_needed_inputs()  # writes the input file (defined in problem definition) with
+        [... configuration as for any OpenMDAO problem ...]
+
+        problem.input_file_path = "inputs.xml"
+        problem.output_file_path = "outputs.xml"
+        problem.write_needed_inputs()  # writes the input file (defined above) with
                                        # needed variables so user can fill it with proper values
         # or
         problem.write_needed_inputs('previous.xml')  # writes the input file with needed variables
@@ -37,8 +43,7 @@ class FASTOADProblem(om.Problem):
                                                      # available
         problem.read_inputs()    # reads the input file
         problem.run_driver()     # runs the OpenMDAO problem
-        problem.write_outputs()  # writes the output file (defined in problem definition)
-
+        problem.write_outputs()  # writes the output file
     """
 
     def __init__(self, *args, **kwargs):
@@ -60,16 +65,15 @@ class FASTOADProblem(om.Problem):
         self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None,
     ):
         """
-        Writes the input file of the problem with unconnected inputs of the configured problem.
+        Writes the input file of the problem with unconnected inputs of the problem.
 
         Written value of each variable will be taken:
         1. from input_data if it contains the variable
         2. from defined default values in component definitions
 
-        WARNING: if inputs have already been read, they won't be needed any more and won't be
-        in written file. To clear read data, use first :meth:`build_problem`.
+        WARNING: if inputs have already been read, they won't be needed any more
+        and won't be in written file.
 
-        :param input_file_path: path of file where inputs will be written
         :param source_file_path: if provided, variable values will be read from it
         :param source_formatter: the class that defines format of input file. if not provided,
                                 expected format will be the default one.
@@ -84,8 +88,6 @@ class FASTOADProblem(om.Problem):
     def read_inputs(self):
         """
         Reads inputs from the configured input file.
-
-        Must be done once problem is configured, before self.setup() is called.
         """
         if self.input_file_path:
             # Reads input file
@@ -107,7 +109,7 @@ class FASTOADProblem(om.Problem):
 
     def write_outputs(self):
         """
-        Once problem is run, writes all outputs in the configured output file.
+        Writes all outputs in the configured output file.
         """
         if self.output_file_path:
             writer = VariableIO(self.output_file_path)

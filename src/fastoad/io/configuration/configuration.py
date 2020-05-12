@@ -48,6 +48,14 @@ TABLES_OBJECTIVE = "objective"
 
 
 class FASTOADProblemConfigurator:
+    """
+    class for configuring an OpenMDAO problem from a configuration file
+
+    See :ref:`description of configuration file <configuration-file>`.
+
+    :param conf_file_path: if provided, configuration will be read directly from it
+    """
+
     def __init__(self, conf_file_path=None, auto_scaling: bool = False):
         self._conf_file = None
         self._conf_dict = {}
@@ -58,6 +66,7 @@ class FASTOADProblemConfigurator:
 
     @property
     def input_file_path(self):
+        """ path of file with input variables of the problem """
         path = self._conf_dict[KEY_INPUT_FILE]
         if not pth.isabs(path):
             path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
@@ -69,6 +78,7 @@ class FASTOADProblemConfigurator:
 
     @property
     def output_file_path(self):
+        """ path of file where output variables will be written """
         path = self._conf_dict[KEY_OUTPUT_FILE]
         if not pth.isabs(path):
             path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
@@ -78,9 +88,39 @@ class FASTOADProblemConfigurator:
     def output_file_path(self, file_path: str):
         self._conf_dict[KEY_OUTPUT_FILE] = file_path
 
+    def get_problem(self, read_inputs: bool = False) -> FASTOADProblem:
+        """
+        Builds the OpenMDAO problem from current configuration.
+
+        :param read_inputs: if True, the created problem will already be fed
+                            with variables from the input file
+        :return: the problem instance
+        """
+        if not self._conf_dict:
+            raise RuntimeError("read configuration file first")
+
+        problem = FASTOADProblem(self._build_model())
+
+        problem.input_file_path = self.input_file_path
+        problem.output_file_path = self.output_file_path
+
+        driver = self._conf_dict.get(KEY_DRIVER, "")
+        if driver:
+            problem.driver = _om_eval(driver)
+
+        if self.get_optimization_definition():
+            self._add_constraints(problem.model)
+            self._add_objectives(problem.model)
+
+        if read_inputs:
+            problem.read_inputs()
+            self._add_design_vars(problem.model)
+
+        return problem
+
     def load(self, conf_file, auto_scaling: bool = False):
         """
-        Reads definition of the current problem in given file.
+        Reads the problem definition
 
         :param conf_file: Path to the file to open or a file descriptor
         :param auto_scaling: if True, automatic scaling is performed for design
@@ -114,7 +154,7 @@ class FASTOADProblemConfigurator:
 
     def save(self, filename: str = None):
         """
-        Writes to the .toml config file the current configuration.
+        Saves the current configuration
         If no filename is provided, the initially read file is used.
 
         :param filename: file where to save configuration
@@ -134,45 +174,24 @@ class FASTOADProblemConfigurator:
         self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None,
     ):
         """
-        Writes the input file of the problem with unconnected inputs of the configured problem.
+        Writes the input file of the problem with unconnected inputs of the
+        configured problem.
 
         Written value of each variable will be taken:
-        1. from input_data if it contains the variable
-        2. from defined default values in component definitions
+
+            1. from input_data if it contains the variable
+            2. from defined default values in component definitions
 
         :param source_file_path: if provided, variable values will be read from it
-        :param source_formatter: the class that defines format of input file. if not provided,
-                                expected format will be the default one.
+        :param source_formatter: the class that defines format of input file. if
+                                 not provided, expected format will be the default one.
         """
         problem = self.get_problem(read_inputs=False)
         problem.write_needed_inputs(source_file_path, source_formatter)
 
-    def get_problem(self, read_inputs: bool = False) -> FASTOADProblem:
-        if not self._conf_dict:
-            raise RuntimeError("read configuration file first")
-
-        problem = FASTOADProblem(self._build_model())
-
-        problem.input_file_path = self.input_file_path
-        problem.output_file_path = self.output_file_path
-
-        driver = self._conf_dict.get(KEY_DRIVER, "")
-        if driver:
-            problem.driver = _om_eval(driver)
-
-        if self.get_optimization_definition():
-            self._add_constraints(problem.model)
-            self._add_objectives(problem.model)
-
-        if read_inputs:
-            problem.read_inputs()
-            self._add_design_vars(problem.model)
-
-        return problem
-
     def get_optimization_definition(self) -> Dict:
         """
-        Reads the config file and returns information related to the optimization problem:
+        Returns information related to the optimization problem:
             - Design Variables
             - Constraints
             - Objectives
@@ -191,7 +210,10 @@ class FASTOADProblemConfigurator:
         """
         Updates configuration with the list of design variables, constraints, objectives
         contained in the optimization_definition dictionary.
+
         Keys of the dictionary are: "design_var", "constraint", "objective".
+
+        Configuration file will not be modified until :meth:`write` is used.
 
         :param optimization_definition: dict containing the optimization problem definition
         """
@@ -203,10 +225,12 @@ class FASTOADProblemConfigurator:
 
     def _build_model(self) -> om.Group:
         """
-        Builds (or rebuilds) the problem as defined in the configuration file.
+        Builds the model as defined in the configuration file.
 
-        self.model is initialized as a new group and populated subsystems indicated in
-        configuration file.
+        The model is initialized as a new group and populated with subsystems
+        indicated in configuration file.
+
+        :return: the built model
         """
 
         model = om.Group()

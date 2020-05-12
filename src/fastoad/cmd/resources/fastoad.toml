@@ -16,7 +16,8 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
     nonlinear_solver = "om.NonlinearBlockGS(maxiter=200)"
     linear_solver = "om.DirectSolver()"
 
-    # AlThough "model" is a mandatory name for the top level of the model, its sub-components can be freely named by user
+    # Although "model" is a mandatory name for the top level of the model, its
+    # sub-components can be freely named by user
     [model.geometry]
         # An OpenMDAO component is identified by its "id"
         id = "fastoad.geometry.legacy"
@@ -39,7 +40,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
     [model.loop]
         id = "fastoad.loop.wing_area"
 
-[optimization]
+[optimization]  # This section is needed only if optimization process is run
     [[optimization.design_var]]
             name = "data:geometry:wing:MAC:at25percent:x"
             lower = 16.0
