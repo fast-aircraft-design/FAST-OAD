@@ -251,8 +251,8 @@ def test_api(cleanup):
     )
 
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.04999, atol=1e-3)
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.46, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 77028, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 126.92, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.19, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 76723, atol=1e2)
+    assert_allclose(problem["data:geometry:wing:area"], 128.99, atol=1e-2)
     assert_allclose(problem["data:geometry:vertical_tail:area"], 24.2, atol=2e-1)
     assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.5, atol=2e-1)
