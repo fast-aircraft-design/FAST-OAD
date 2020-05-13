@@ -1,56 +1,69 @@
 .. _usage:
 
-################
-Process overview
-################
+#################
+FAST-OAD overview
+#################
+
+FAST-OAD is a framework for performing rapid Overall Aircraft Design.
+
+It proposes multi-disciplinary analysis and optimisation by relying on the
+`OpenMDAO framework <https://openmdao.org/>`_.
+
+FAST-OAD allows easy switching between models for a same discipline, and also adding/removing
+disciplines to match the need of your study.
+
+Currently, FAST-OAD is bundled with models for commercial transport aircraft of years 1990-2000.
+Other models will come and you may create your own models and use them instead of bundled ones.
+
+************
+How it works
+************
+
+A FAST-OAD run wraps up an OpenMDAO problem, which is, in a nutshell, the assembly of components
+that each have input and output variables. Of course, the outputs of some component can be the
+inputs of some other ones, so that the whole system can be solved.
+
+FAST-OAD allows to define the problem to solve (or to optimize) through a configuration file that
+makes easy to add/remove/replace any component. By doing that, the input data of the problem can
+be very different from one problem to the other, but FAST-OAD comes with facilities to build the
+needed input data files.
+
+A FAST-OAD problem can be fully run from :ref:`command line interface<usage-cli>`
+or from the Python API.
+
+Usage of Python API, including pre-processing and post-processing utilities are
+currently provided through :ref:`Python notebooks<python-usage>`.
+
+**************************
+Overview of FAST-OAD files
+**************************
+A typical run of FAST-OAD uses two types of user files:
+
+configuration file (**.toml**)
+==============================
+
+This file defines the OpenMDAO problem by defining :
+
+    - what components will be in the problem
+    - the files for input and output data
+    - the problem settings
+    - the definition of the optimization problem if needed
+
+A detailed description of this file can be found :ref:`here<configuration-file>`.
 
 
-The FAST-OAD environment mainly uses two types of user files:
+The input and output data files (**.xml**)
+==========================================
 
--  Configuration files (**.toml**):
+These files contain the information of the variables involved in the
+system model:
 
-   FASTOADProblem instances require a configuration file at
-   initialization. The usage of this type of file is described in the
-   `README <https://github.com/fast-aircraft-design/FAST-OAD>`__ of the
-   repository.
+#. The input file contains the global inputs values
+   required to run all the model. The user is free to modify the values
+   of the variables in order that these new values are considered during
+   a model run.
+#. The output file contains all the variables (inputs +
+   outputs) values obtained after a model run.
 
--  System variables files (**.xml**):
-
-   These files regroup the information of the variables involved in the
-   system model. There are two types of system variables files:
-
-       1. INPUT_FILE: The input file contains the global inputs values
-       required to run all the model. The user is free to modify the values
-       of the variables in order that these new values are considered during
-       a model run.
-
-       2. ,OUTPUT_FILE: The output file contains all the variables (inputs +
-       outputs) values obtained after a model run.
-
-The following figure shows an overview of the user files: |User Files|
-
-The user defines the CONFIGURATION_FILE that the FASTOADProblem instance
-will read. The user can read and write this file, and thus modify the
-problem, the input and output file names etc. The FASTOADProblem then
-knows which is the structure of the model and what are the modules used.
-Thus, it is capable of determining which are the global inputs required
-for running the model.
-
-Executing the ``generate_inputs()`` function with the
-``configuration_file_path`` as the first argument will generate the
-INPUT_FILE.xml file that contains all the global inputs. If a second
-argument ``source_path`` (SOURCE_PATH.xml) is provided then the instance
-will use the values found in this file for the same variables of the
-INPUT_FILE. If the SOURCE_PATh file uses a different schema, a
-translation file ``source_path_schema`` can be provided as a third
-argument to the function.
-
-Once the variables of the INPUT_FILE have a correct value (by default
-values are NaN) the problem can be executed. For that the user can
-perform either a Multidisciplinary Design Analysis (MDA) using
-``evaluate_problem()`` or a Multidisciplinary Design Optimization (MDO)
-using ``optimize_problem()``. Both of these function generate the
-OUTPUT_FILE.xml containing all the variables of the system and their
-values resulting from the computation.
-
-.. |User Files| image:: ../img/user_files_arch.svg
+The content of these files and the way variables are named and serialized is
+described :ref:`here<variables>`.
