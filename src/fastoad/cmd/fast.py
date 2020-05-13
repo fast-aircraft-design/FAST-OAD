@@ -131,9 +131,9 @@ class Main:
         """
         try:
             api.evaluate_problem(args.conf_file, args.force)
-        except FastFileExistsError:
+        except FastFileExistsError as exc:
             if _query_yes_no(
-                'Output file "%s" already exists. Do you want to overwrite it?' % args.conf_file
+                'Output file "%s" already exists. Do you want to overwrite it?' % exc.args[1]
             ):
                 api.evaluate_problem(args.conf_file, True)
             else:
@@ -146,9 +146,9 @@ class Main:
         """
         try:
             api.optimize_problem(args.conf_file, args.force)
-        except FastFileExistsError:
+        except FastFileExistsError as exc:
             if _query_yes_no(
-                'Output file "%s" already exists. Do you want to overwrite it?' % args.conf_file
+                'Output file "%s" already exists. Do you want to overwrite it?' % exc.args[1]
             ):
                 api.optimize_problem(args.conf_file, True)
             else:

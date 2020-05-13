@@ -60,7 +60,8 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     if not overwrite and pth.exists(configuration_file_path):
         raise FastFileExistsError(
             "Configuration file %s not written because it already exists. "
-            "Use overwrite=True to bypass." % configuration_file_path
+            "Use overwrite=True to bypass." % configuration_file_path,
+            configuration_file_path,
         )
 
     dirname = pth.abspath(pth.dirname(configuration_file_path))
@@ -141,7 +142,8 @@ def list_variables(
         if not overwrite and pth.exists(out):
             raise FastFileExistsError(
                 "File %s not written because it already exists. "
-                "Use overwrite=True to bypass." % out
+                "Use overwrite=True to bypass." % out,
+                out,
             )
         out_file = open(out, "w")
         table_width = MAX_TABLE_WIDTH
@@ -243,7 +245,8 @@ def list_systems(
         if not overwrite and pth.exists(out):
             raise FastFileExistsError(
                 "File %s not written because it already exists. "
-                "Use overwrite=True to bypass." % out
+                "Use overwrite=True to bypass." % out,
+                out,
             )
         out_file = open(out, "w")
     else:
@@ -281,7 +284,8 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     if not overwrite and pth.exists(n2_file_path):
         raise FastFileExistsError(
             "N2-diagram file %s not written because it already exists. "
-            "Use overwrite=True to bypass." % n2_file_path
+            "Use overwrite=True to bypass." % n2_file_path,
+            n2_file_path,
         )
 
     if not pth.exists(pth.dirname(n2_file_path)):
@@ -319,7 +323,8 @@ def write_xdsm(
     if not overwrite and pth.exists(xdsm_file_path):
         raise FastFileExistsError(
             "XDSM-diagram file %s not written because it already exists. "
-            "Use overwrite=True to bypass." % xdsm_file_path
+            "Use overwrite=True to bypass." % xdsm_file_path,
+            xdsm_file_path,
         )
 
     if not pth.exists(pth.dirname(xdsm_file_path)):
@@ -377,7 +382,8 @@ def _run_problem(
     if not overwrite and pth.exists(outputs_path):
         raise FastFileExistsError(
             "Problem not run because output file %s already exists. "
-            "Use overwrite=True to bypass." % outputs_path
+            "Use overwrite=True to bypass." % outputs_path,
+            outputs_path,
         )
 
     problem.read_inputs()

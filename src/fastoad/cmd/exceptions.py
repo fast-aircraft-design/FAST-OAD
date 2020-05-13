@@ -19,3 +19,7 @@ from fastoad.exceptions import FastError
 
 class FastFileExistsError(FastError):
     """Raised when asked for writing a file that already exists"""
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.file_path = args[1]
