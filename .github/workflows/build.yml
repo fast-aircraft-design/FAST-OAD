@@ -43,3 +43,13 @@ jobs:
         with:
           name: source
           path: dist/*.gz
+
+      - name: publish to test.PyPI
+        if: github.event.release.prerelease
+        env:
+          TOKEN: ${{ secrets.testPyPI }} # do not use the secret directly in run command, it would
+                                         # write it plainly in the log
+        run: |
+          poetry config repositories.testPyPI https://test.pypi.org/simple/
+          poetry config pypi-token.testPyPI "$TOKEN"
+          poetry publish --repository testPyPI
