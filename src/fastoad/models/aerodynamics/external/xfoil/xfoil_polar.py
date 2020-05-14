@@ -39,6 +39,7 @@ OPTION_XFOIL_EXE_PATH = "xfoil_exe_path"
 OPTION_ALPHA_START = "alpha_start"
 OPTION_ALPHA_END = "alpha_end"
 OPTION_ITER_LIMIT = "iter_limit"
+DEFAULT_2D_CL_MAX = 1.9
 
 _INPUT_FILE_NAME = "polar_session.txt"
 _STDOUT_FILE_NAME = "polar_calc.log"
@@ -55,7 +56,7 @@ _XFOIL_PATH_LIMIT = 64
 
 class XfoilPolar(ExternalCodeComp):
     """
-    Runs a polar computation with XFOIL and returns the max lift coefficient
+    Runs a polar computation with XFOIL and returns the 2D max lift coefficient
     """
 
     _xfoil_output_names = ["alpha", "CL", "CD", "CDp", "CM", "Top_Xtr", "Bot_Xtr"]
@@ -68,17 +69,15 @@ class XfoilPolar(ExternalCodeComp):
         self.options.declare(OPTION_RESULT_POLAR_FILENAME, default="polar_result.txt", types=str)
         self.options.declare(OPTION_ALPHA_START, default=0.0, types=float)
         self.options.declare(OPTION_ALPHA_END, default=30.0, types=float)
-        self.options.declare(OPTION_ITER_LIMIT, default=40, types=int)
+        self.options.declare(OPTION_ITER_LIMIT, default=500, types=int)
 
     def setup(self):
 
         self.add_input("xfoil:reynolds", val=np.nan)
         self.add_input("xfoil:mach", val=np.nan)
-        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
 
-        self.add_output("xfoil:Cl_max_2D")
-        self.add_output("xfoil:CL_max_clean")
+        self.add_output("xfoil:CL_max_2D")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -92,7 +91,6 @@ class XfoilPolar(ExternalCodeComp):
         # Get inputs
         reynolds = inputs["xfoil:reynolds"]
         mach = inputs["xfoil:mach"]
-        sweep_25 = inputs["data:geometry:wing:sweep_25"]
         thickness_ratio = inputs["data:geometry:wing:thickness_ratio"]
 
         # Pre-processing (populating temp directory) -----------------------------------------------
@@ -153,13 +151,7 @@ class XfoilPolar(ExternalCodeComp):
 
         # Post-processing --------------------------------------------------------------------------
         result_array = self._read_polar(tmp_result_file_path)
-        if result_array is not None:
-            cl_max_2d = self._get_max_cl(result_array["alpha"], result_array["CL"])
-        else:
-            cl_max_2d = 1.9
-
-        outputs["xfoil:Cl_max_2D"] = cl_max_2d
-        outputs["xfoil:CL_max_clean"] = cl_max_2d * 0.9 * np.cos(np.radians(sweep_25))
+        outputs["xfoil:CL_max_2D"] = self._get_max_cl(result_array["alpha"], result_array["CL"])
 
         # Getting output files if needed
         if self.options[OPTION_RESULT_FOLDER_PATH] != "":
@@ -191,7 +183,7 @@ class XfoilPolar(ExternalCodeComp):
             return result_array
 
         _LOGGER.error("XFOIL results file not found")
-        return None
+        return np.array([])
 
     @staticmethod
     def _get_max_cl(alpha: np.ndarray, lift_coeff: np.ndarray) -> float:
@@ -199,13 +191,13 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: max CL if enough alpha computed
+        :return: max CL if enough alpha computed, or default value otherwise
         """
-        if max(alpha) >= 5.0:
+        if len(alpha) > 0 and max(alpha) >= 5.0:
             return max(lift_coeff)
 
-        _LOGGER.error("CL max not found!")
-        return 1.9
+        _LOGGER.warning("2D CL max not found. Using default value (%s)", DEFAULT_2D_CL_MAX)
+        return DEFAULT_2D_CL_MAX
 
     @staticmethod
     def _create_tmp_directory() -> TemporaryDirectory:

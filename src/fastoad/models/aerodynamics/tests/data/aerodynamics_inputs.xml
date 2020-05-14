@@ -111,7 +111,7 @@
     <aerodynamics>
       <aircraft>
         <landing>
-          <CL_max_clean>1.55<!--maximum lift coefficient in landing conditions without high-lift devices--></CL_max_clean>
+          <CL_max_clean_2D>1.9<!--maximum lift coefficient in landing conditions without high-lift devices--></CL_max_clean_2D>
         </landing>
       </aircraft>
     </aerodynamics>

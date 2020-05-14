@@ -25,7 +25,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 
 from tests.testing_utilities import run_system
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
-from .. import XfoilPolar
+from ..xfoil_polar import XfoilPolar, DEFAULT_2D_CL_MAX
 
 XFOIL_RESULTS = pth.join(pth.dirname(__file__), "results")
 
@@ -44,26 +44,34 @@ def test_compute():
     ivc = IndepVarComp()
     ivc.add_output("xfoil:reynolds", 18000000)
     ivc.add_output("xfoil:mach", 0.20)
-    ivc.add_output("data:geometry:wing:sweep_25", 25.0)
     ivc.add_output("data:geometry:wing:thickness_ratio", 0.1284)
 
-    xfoil_comp = XfoilPolar(alpha_start=15.0, alpha_end=25.0, xfoil_exe_path=xfoil_path)
+    xfoil_comp = XfoilPolar(
+        alpha_start=15.0, alpha_end=25.0, iter_limit=20, xfoil_exe_path=xfoil_path
+    )
     problem = run_system(xfoil_comp, ivc)
-    assert problem["xfoil:Cl_max_2D"] == pytest.approx(1.94, 1e-2)
-    assert problem["xfoil:CL_max_clean"] == pytest.approx(1.58, 1e-2)
+    assert problem["xfoil:CL_max_2D"] == pytest.approx(1.94, 1e-2)
     assert not pth.exists(XFOIL_RESULTS)
 
     xfoil_comp = XfoilPolar(
-        alpha_start=12.0, alpha_end=20.0, xfoil_exe_path=xfoil_path
+        alpha_start=12.0, alpha_end=20.0, iter_limit=20, xfoil_exe_path=xfoil_path
     )  # will stop before real max CL
     problem = run_system(xfoil_comp, ivc)
-    assert problem["xfoil:Cl_max_2D"] == pytest.approx(1.92, 1e-2)
+    assert problem["xfoil:CL_max_2D"] == pytest.approx(1.92, 1e-2)
     assert not pth.exists(XFOIL_RESULTS)
 
-    xfoil_comp = XfoilPolar(result_folder_path=XFOIL_RESULTS, xfoil_exe_path=xfoil_path)
+    xfoil_comp = XfoilPolar(
+        alpha_start=50.0, alpha_end=55.0, iter_limit=2, xfoil_exe_path=xfoil_path
+    )  # will not converge
     problem = run_system(xfoil_comp, ivc)
-    assert problem["xfoil:Cl_max_2D"] == pytest.approx(1.94, 1e-2)
-    assert problem["xfoil:CL_max_clean"] == pytest.approx(1.58, 1e-2)
+    assert problem["xfoil:CL_max_2D"] == pytest.approx(DEFAULT_2D_CL_MAX, 1e-2)
+    assert not pth.exists(XFOIL_RESULTS)
+
+    xfoil_comp = XfoilPolar(
+        iter_limit=20, result_folder_path=XFOIL_RESULTS, xfoil_exe_path=xfoil_path
+    )
+    problem = run_system(xfoil_comp, ivc)
+    assert problem["xfoil:CL_max_2D"] == pytest.approx(1.94, 1e-2)
     assert pth.exists(XFOIL_RESULTS)
     assert pth.exists(pth.join(XFOIL_RESULTS, "polar_result.txt"))
 
@@ -76,10 +84,9 @@ def test_compute_with_provided_path():
     ivc = IndepVarComp()
     ivc.add_output("xfoil:reynolds", 18000000)
     ivc.add_output("xfoil:mach", 0.20)
-    ivc.add_output("data:geometry:wing:sweep_25", 25.0)
     ivc.add_output("data:geometry:wing:thickness_ratio", 0.1284)
 
-    xfoil_comp = XfoilPolar(alpha_start=18.0, alpha_end=21.0)
+    xfoil_comp = XfoilPolar(alpha_start=18.0, alpha_end=21.0, iter_limit=20)
     xfoil_comp.options["xfoil_exe_path"] = "Dummy"  # bad name
     with pytest.raises(ValueError):
         problem = run_system(xfoil_comp, ivc)
@@ -90,5 +97,4 @@ def test_compute_with_provided_path():
         else pth.join(pth.dirname(__file__), pth.pardir, "xfoil699", "xfoil.exe")
     )
     problem = run_system(xfoil_comp, ivc)
-    assert problem["xfoil:Cl_max_2D"] == pytest.approx(1.94, 1e-2)
-    assert problem["xfoil:CL_max_clean"] == pytest.approx(1.58, 1e-2)
+    assert problem["xfoil:CL_max_2D"] == pytest.approx(1.94, 1e-2)

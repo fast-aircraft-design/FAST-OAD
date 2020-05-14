@@ -548,6 +548,7 @@
         <landing>
           <mach>0.19455259748464468<!--considered Mach number for landing phase--></mach>
           <CL_max_clean>1.586002<!--maximum lift coefficient in landing conditions without high-lift devices--></CL_max_clean>
+          <CL_max_clean_2D>1.94</CL_max_clean_2D>
           <CL_max>2.8040043507055152<!--maximum lift coefficient in landing conditions--></CL_max>
           <reynolds>18158331.910758447<!--considered Reynolds number for landing phase--></reynolds>
           <additional_CL_capacity>0.12868945907293527<!--at landing, is equal to (maximum lift coefficient)-(maximum required lift coefficient)--></additional_CL_capacity>
