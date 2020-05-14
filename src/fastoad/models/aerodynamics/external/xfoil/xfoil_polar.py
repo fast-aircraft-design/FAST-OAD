@@ -68,7 +68,7 @@ class XfoilPolar(ExternalCodeComp):
         self.options.declare(OPTION_RESULT_POLAR_FILENAME, default="polar_result.txt", types=str)
         self.options.declare(OPTION_ALPHA_START, default=0.0, types=float)
         self.options.declare(OPTION_ALPHA_END, default=30.0, types=float)
-        self.options.declare(OPTION_ITER_LIMIT, default=40, types=int)
+        self.options.declare(OPTION_ITER_LIMIT, default=500, types=int)
 
     def setup(self):
 

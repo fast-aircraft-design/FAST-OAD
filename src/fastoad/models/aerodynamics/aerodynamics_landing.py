@@ -49,9 +49,9 @@ class AerodynamicsLanding(OpenMdaoOptionDispatcherGroup):
 
     def initialize(self):
         self.options.declare("use_xfoil", default=True, types=bool)
-        self.options.declare("xfoil_alpha_min", default=15.0, types=float)
-        self.options.declare("xfoil_alpha_max", default=25.0, types=float)
-        self.options.declare("xfoil_iter_limit", default=20, types=int)
+        self.options.declare("xfoil_alpha_min", default=0.0, types=float)
+        self.options.declare("xfoil_alpha_max", default=30.0, types=float)
+        self.options.declare("xfoil_iter_limit", default=500, types=int)
         self.options.declare(OPTION_XFOIL_EXE_PATH, default="", types=str, allow_none=True)
 
     def setup(self):
