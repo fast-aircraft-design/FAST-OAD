@@ -28,21 +28,6 @@ jobs:
         run: echo "::add-path::$HOME/.poetry/bin"
         shell: bash
 
-      - name: Poetry settings
-        run: poetry config virtualenvs.in-project true
-        shell: bash
-
-      - name: Venv cache
-        uses: actions/cache@v1
-        id: cache-venv
-        with:
-          path: .venv
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-poetry_venv-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Activate environment and install dependencies
-        run: poetry install
-        shell: bash
-
       - name: Set version and build
         run: |
           poetry version $( echo ${{ github.ref }} | sed 's%refs/tags/%%' )
