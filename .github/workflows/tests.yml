@@ -1,75 +1,16 @@
 name: Tests
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
 
-  tests_on_push:
-    if: github.event_name == 'push'
+  tests:
 
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
-        os: [ubuntu-latest, windows-latest]
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install Poetry
-        run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-        shell: bash
-
-      - name: Poetry path
-        run: echo "::add-path::$HOME/.poetry/bin"
-        shell: bash
-
-      - name: Poetry settings
-        run: poetry config virtualenvs.in-project true
-        shell: bash
-
-      - name: Venv cache
-        uses: actions/cache@v1
-        id: cache-venv
-        with:
-          path: .venv
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-poetry_venv-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Activate environment and install dependencies
-        run: poetry install
-        shell: bash
-
-      - name: Check with Black
-        run: |
-          # Fails if Black format is not respected
-          poetry run black --check .
-        shell: bash
-
-      - name: Unit tests
-        run: poetry run pytest --no-cov src
-        shell: bash
-
-      - name: Integration tests
-        run: poetry run pytest --no-cov tests/integration_tests
-        shell: bash
-
-      - name: Notebook tests
-        run: poetry run pytest --no-cov --nbval-lax -p no:python src
-        shell: bash
-
-
-  test_on_pull_request:
-    if: github.event_name == 'pull_request'
-
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        python-version: [3.6, 3.7, 3.8]
-        os: [macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v2
