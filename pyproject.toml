@@ -64,6 +64,7 @@
     sphinx = "*"
     sphinx-rtd-theme = "*"
     sphinxcontrib-bibtex = "*"
+    setuptools_scm = "*"
 
 [tool.poetry.scripts]
     fastoad = "fastoad.cmd.fast:main"
