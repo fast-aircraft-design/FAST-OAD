@@ -85,15 +85,13 @@ def test_aerodynamics_landing_without_xfoil():
         "data:geometry:slat:span_ratio",
         "xfoil:mach",
         "tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k",
+        "data:aerodynamics:aircraft:landing:CL_max_clean_2D",
     ]
 
-    xfoil_path = None if system() == "Windows" else get_xfoil_path()
-
-    input_list.append("data:aerodynamics:aircraft:landing:CL_max_clean")
     ivc = get_indep_var_comp(input_list)
     problem = run_system(AerodynamicsLanding(use_xfoil=False), ivc)
-    assert problem["data:aerodynamics:aircraft:landing:CL_max_clean"] == approx(1.55, abs=1e-5)
-    assert problem["data:aerodynamics:aircraft:landing:CL_max"] == approx(2.77819, abs=1e-5)
+    assert problem["data:aerodynamics:aircraft:landing:CL_max_clean"] == approx(1.54978, abs=1e-5)
+    assert problem["data:aerodynamics:aircraft:landing:CL_max"] == approx(2.77798, abs=1e-5)
 
 
 def test_aerodynamics_high_speed():
