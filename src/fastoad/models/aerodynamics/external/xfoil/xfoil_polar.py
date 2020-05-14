@@ -39,6 +39,7 @@ OPTION_XFOIL_EXE_PATH = "xfoil_exe_path"
 OPTION_ALPHA_START = "alpha_start"
 OPTION_ALPHA_END = "alpha_end"
 OPTION_ITER_LIMIT = "iter_limit"
+DEFAULT_2D_CL_MAX = 1.9
 
 _INPUT_FILE_NAME = "polar_session.txt"
 _STDOUT_FILE_NAME = "polar_calc.log"
@@ -191,7 +192,7 @@ class XfoilPolar(ExternalCodeComp):
             return result_array
 
         _LOGGER.error("XFOIL results file not found")
-        return None
+        return np.array([])
 
     @staticmethod
     def _get_max_cl(alpha: np.ndarray, lift_coeff: np.ndarray) -> float:
@@ -199,13 +200,13 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: max CL if enough alpha computed
+        :return: max CL if enough alpha computed, or default value otherwise
         """
-        if max(alpha) >= 5.0:
+        if len(alpha) > 0 and max(alpha) >= 5.0:
             return max(lift_coeff)
 
-        _LOGGER.error("CL max not found!")
-        return 1.9
+        _LOGGER.warning("2D CL max not found. Using default value (%s)", DEFAULT_2D_CL_MAX)
+        return DEFAULT_2D_CL_MAX
 
     @staticmethod
     def _create_tmp_directory() -> TemporaryDirectory:
