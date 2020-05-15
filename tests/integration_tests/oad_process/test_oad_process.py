@@ -251,10 +251,18 @@ def test_api(cleanup):
         atol=1,
     )
 
-    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-3)
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.80, atol=2e-1)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 76990, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 127.20, atol=1e-2)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.2, atol=2e-1)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.6, atol=2e-1)
-    assert_allclose(problem["data:mission:sizing:fuel"], 20344, atol=1)
+    # Design variables
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.80, atol=5e-1)
+    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 10.1, atol=5e-1)
+    assert_allclose(problem["data:geometry:wing:sweep_25"], 27.3, atol=2.0)
+    assert_allclose(problem["data:geometry:horizontal_tail:aspect_ratio"], 4.5, atol=5e-1)
+    assert_allclose(problem["data:geometry:horizontal_tail:sweep_25"], 27.6, atol=2.0)
+    assert_allclose(problem["data:geometry:vertical_tail:aspect_ratio"], 1.8, atol=5e-1)
+    assert_allclose(problem["data:geometry:vertical_tail:sweep_25"], 35.0, atol=2.0)
+
+    # Constraints
+    assert_allclose(problem["data:geometry:wing:span"], 36.0, atol=1e-1)
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
+
+    # Objective
+    assert_allclose(problem["data:mission:sizing:fuel"], 20352, atol=500)
