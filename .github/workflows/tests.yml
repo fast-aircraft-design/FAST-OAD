@@ -49,8 +49,17 @@ jobs:
         shell: bash
 
       - name: Unit tests
-        run: poetry run pytest --no-cov src
+        run: |
+          poetry run pytest src
+          poetry run coverage xml  # for Codacy coverage
         shell: bash
+
+      - name: Run codacy-coverage-reporter
+        uses: codacy/codacy-coverage-reporter-action@master
+        if: runner.os == 'Linux'
+        with:
+          project-token: ${{ secrets.codacy }}
+          coverage-reports: coverage.xml
 
       - name: Integration tests
         run: poetry run pytest --no-cov tests/integration_tests
