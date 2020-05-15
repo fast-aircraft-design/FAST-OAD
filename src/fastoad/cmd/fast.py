@@ -22,6 +22,7 @@ import textwrap
 from argparse import ArgumentParser, RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter
 from distutils.util import strtobool
 
+import fastoad
 from fastoad.cmd import api
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.utils.resource_management.copy import copy_resource_folder
@@ -194,6 +195,15 @@ class Main:
         """ Main function """
 
         subparsers = self.parser.add_subparsers(title="sub-commands")
+
+        # option for version -----------------------------------------------------------------------
+        self.parser.add_argument(
+            "-v",
+            "--version",
+            action="version",
+            version="FAST-OAD " + fastoad.__version__,
+            help="shows version number",
+        )
 
         # sub-command for generating sample configuration file -------------------------------------
         parser_gen_conf = subparsers.add_parser(
