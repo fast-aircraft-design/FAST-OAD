@@ -1,3 +1,6 @@
+.. figure:: https://github.com/fast-aircraft-design/FAST-OAD/workflows/Tests/badge.svg
+   :alt: Tests
+
 ###############################################################
 FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design
 ###############################################################
