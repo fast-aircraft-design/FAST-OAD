@@ -420,6 +420,7 @@
             <CL_alpha_ht>3.46981756498</CL_alpha_ht>
             <CL_alpha_vt>2.54615644328</CL_alpha_vt>
             <CZ_max_clean>1.586002</CZ_max_clean>
+            <CZ_max_clean_2D>1.94</CZ_max_clean_2D>
             <CZ_max_landing>2.8022927874308396</CZ_max_landing>
             <Cz_0_AOA>0.02228</Cz_0_AOA>
             <Cz_alpha_low>4.58079757207</Cz_alpha_low>
