@@ -397,18 +397,20 @@ class VariableList(list):
         use_initial_values: bool = False,
         use_inputs: bool = True,
         use_outputs: bool = True,
+        promoted_only=True,
     ) -> "VariableList":
         """
         Creates a VariableList instance containing
         variables (inputs and/or outputs) of a an OpenMDAO Problem.
 
-        If variables are promoted, the promoted name will be used. Otherwise, the absolute name will be
-        used.
+        If variables are promoted, the promoted name will be used. Otherwise ( and if
+        promoted_only is False), the absolute name will be used.
 
         :param problem: OpenMDAO Problem instance to inspect
         :param use_initial_values: if True, returned instance will contain values before computation
         :param use_inputs: if True, returned instance will contain inputs of the problem
         :param use_outputs: if True, returned instance will contain outputs of the problem
+        :param promoted_only: if True, non-promoted variables will be excluded
         :return: VariableList instance
         """
         variables = VariableList()
@@ -424,20 +426,21 @@ class VariableList(list):
             prom2abs.update(model._var_allprocs_prom2abs_list["output"])
 
         for prom_name, abs_names in prom2abs.items():
-            # Pick the first
-            abs_name = abs_names[0]
-            metadata = model._var_abs2meta[abs_name]
-            variable = Variable(name=prom_name, **metadata)
-            if not use_initial_values:
-                try:
-                    # Maybe useless, but we force units to ensure it is consistent
-                    variable.value = problem.get_val(prom_name, units=variable.units)
-                except RuntimeError:
-                    # In case problem is incompletely set, problem.get_val() will fail.
-                    # In such case, falling back to the method for initial values
-                    # should be enough.
-                    pass
-            variables.append(variable)
+            if not promoted_only or "." not in prom_name:
+                # Pick the first
+                abs_name = abs_names[0]
+                metadata = model._var_abs2meta[abs_name]
+                variable = Variable(name=prom_name, **metadata)
+                if not use_initial_values:
+                    try:
+                        # Maybe useless, but we force units to ensure it is consistent
+                        variable.value = problem.get_val(prom_name, units=variable.units)
+                    except RuntimeError:
+                        # In case problem is incompletely set, problem.get_val() will fail.
+                        # In such case, falling back to the method for initial values
+                        # should be enough.
+                        pass
+                variables.append(variable)
 
         return variables
 
