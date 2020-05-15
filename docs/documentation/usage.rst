@@ -11,6 +11,8 @@ OpenMDAO systems. This part is addressed in the :ref:`API documentation<fastoad>
 
 .. contents::
 
+.. _configuration-file:
+
 *******************************
 The FAST-OAD configuration file
 *******************************
@@ -214,6 +216,9 @@ Keys of this section are named after parameters of the OpenMDAO `System.add_cons
 This section can be repeated several times to add as many constraint variables as necessary.
 
 Also, see :ref:`get-variable-list`.
+
+
+.. _usage-cli:
 
 ***********************************
 Using FAST-OAD through Command line
