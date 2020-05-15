@@ -418,6 +418,7 @@ data:geometry:propulsion:fan:length, Aircraft/geometry/propulsion/fan_length
 data:geometry:propulsion:nacelle:y, Aircraft/geometry/propulsion/y_nacell
 data:geometry:landing_gear:height, Aircraft/geometry/LG/LG_height
 data:aerodynamics:aircraft:landing:CL_max_clean, Aircraft/aerodynamics/CZ_max_clean
+data:aerodynamics:aircraft:landing:CL_max_clean_2D, Aircraft/aerodynamics/CZ_max_clean_2D
 data:aerodynamics:aircraft:landing:CL_max, Aircraft/aerodynamics/CZ_max_landing
 data:aerodynamics:aircraft:takeoff:CL0_clean, Aircraft/aerodynamics/Cz_0_AOA
 data:aerodynamics:aircraft:takeoff:CL_alpha, Aircraft/aerodynamics/Cz_alpha_low
