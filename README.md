@@ -1,3 +1,6 @@
+![Tests](https://github.com/fast-aircraft-design/FAST-OAD/workflows/Tests/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/fast-oad/badge/?version=latest)](https://fast-oad.readthedocs.io/en/latest/?badge=latest)
+
 FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design
 ===============================================================
 
