@@ -56,14 +56,14 @@ jobs:
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.python-version == '3.7'
         with:
           project-token: ${{ secrets.codacy }}
           coverage-reports: coverage.xml
 
       - uses: codecov/codecov-action@v1
+        if: runner.os == 'Windows' && matrix.python-version == '3.7'
         with:
-          token: ${{ secrets.codecov }} # not required for public repos
           flags: unittests # optional
           name: codecov-FAST-OAD # optional
           fail_ci_if_error: true # optional (default = false)
