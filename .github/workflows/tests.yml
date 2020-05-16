@@ -61,6 +61,13 @@ jobs:
           project-token: ${{ secrets.codacy }}
           coverage-reports: coverage.xml
 
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.codecov }} # not required for public repos
+          flags: unittests # optional
+          name: codecov-FAST-OAD # optional
+          fail_ci_if_error: true # optional (default = false)
+
       - name: Integration tests
         run: poetry run pytest --no-cov tests/integration_tests
         shell: bash
