@@ -51,33 +51,14 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6)"
             upper = 12.0
 
     [[optimization.design_var]]
-            name = "data:geometry:wing:sweep_25"
-            lower = 20.0
-            upper = 40.0
-
-    [[optimization.design_var]]
             name = "data:geometry:horizontal_tail:aspect_ratio"
             lower = 3.0
             upper = 5.0
 
     [[optimization.design_var]]
-            name = "data:geometry:horizontal_tail:sweep_25"
-            lower = 20.0
-            upper = 30.0
-
-    [[optimization.design_var]]
             name = "data:geometry:vertical_tail:aspect_ratio"
             lower = 1.0
             upper = 2.0
-
-    [[optimization.design_var]]
-            name = "data:geometry:vertical_tail:sweep_25"
-            lower = 30.0
-            upper = 40.0
-
-    [[optimization.constraint]]
-            name = "data:geometry:wing:span"
-            upper = 36.0
 
     [[optimization.constraint]]
             name = "data:handling_qualities:static_margin"
@@ -86,4 +67,4 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6)"
 
     [[optimization.objective]]
             name = "data:mission:sizing:fuel"
-            ref=1e4
+            ref = 1e5
