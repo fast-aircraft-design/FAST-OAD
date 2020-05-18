@@ -252,7 +252,7 @@ def test_api(cleanup):
     )
 
     # Design variables
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.80, atol=2e-1)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.80, atol=5e-1)
     assert_allclose(problem["data:geometry:wing:aspect_ratio"], 10.1, atol=5e-1)
     assert_allclose(problem["data:geometry:wing:sweep_25"], 27.3, atol=2.0)
     assert_allclose(problem["data:geometry:horizontal_tail:aspect_ratio"], 4.5, atol=5e-1)
