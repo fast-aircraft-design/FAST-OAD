@@ -84,12 +84,14 @@ class FASTOADProblem(om.Problem):
         self._auto_scaling = False
 
     def run_model(self, case_prefix=None, reset_iter_counts=True):
-        super().run_model()
+        status = super().run_model(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
+        return status
 
     def run_driver(self, case_prefix=None, reset_iter_counts=True):
-        super().run_driver()
+        status = super().run_driver(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
+        return status
 
     def configure(self, conf_file, auto_scaling: bool = False):
         """
