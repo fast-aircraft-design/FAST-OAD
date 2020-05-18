@@ -19,7 +19,7 @@ aircraft of years 1990-2000. Other models will come and you may create
 your own models and use them instead of bundled ones.
 
 More details can be found in the [official
-documentation](https://fast-aircraft-design.github.io/FAST-OAD-doc/).
+documentation](https://fast-oad.readthedocs.io/).
 
 Install
 -------
