@@ -251,14 +251,11 @@ def test_api(cleanup):
         atol=1,
     )
 
-    # Design variables
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.44, atol=1e-1)
-    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 11.74, atol=1e-1)
-    assert_allclose(problem["data:geometry:horizontal_tail:aspect_ratio"], 3.31, atol=1e-1)
-    assert_allclose(problem["data:geometry:vertical_tail:aspect_ratio"], 1.97, atol=1e-1)
+    # Design Variable
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.06, atol=1e-1)
 
-    # Constraints
+    # Constraint
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:fuel"], 20008, atol=50)
+    assert_allclose(problem["data:mission:sizing:fuel"], 20565, atol=50)
