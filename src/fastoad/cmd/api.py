@@ -375,9 +375,9 @@ def _run_problem(
     :return: the OpenMDAO problem after run
     """
 
-    problem = FASTOADProblemConfigurator(
-        configuration_file_path, auto_scaling=auto_scaling
-    ).get_problem(read_inputs=True)
+    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem(
+        read_inputs=True, auto_scaling=auto_scaling
+    )
 
     outputs_path = pth.normpath(problem.output_file_path)
     if not overwrite and pth.exists(outputs_path):

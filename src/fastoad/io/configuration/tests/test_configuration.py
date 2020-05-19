@@ -70,7 +70,7 @@ def test_problem_definition(cleanup):
         problem = conf.get_problem(read_inputs=False)
     assert exc_info.value.key == "model.cycle.other_group.nonlinear_solver"
 
-    # Reading of a minimal conf (model = explicitcomponent)
+    # Reading of a minimal conf (model = ExplicitComponent)
     conf = FASTOADProblemConfigurator()
     conf.load(pth.join(pth.dirname(__file__), "data", "disc1.toml"))
     problem = conf.get_problem(read_inputs=False)
@@ -79,6 +79,8 @@ def test_problem_definition(cleanup):
     # Reading of correct conf definition
     conf = FASTOADProblemConfigurator()
     conf.load(pth.join(pth.dirname(__file__), "data", "valid_sellar.toml"))
+    assert conf.input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
+    assert conf.output_file_path == pth.join(RESULTS_FOLDER_PATH, "outputs.xml")
 
     # Just running these methods to check there is no crash. As simple assemblies of
     # other methods, their results should already be unit-tested.
@@ -108,7 +110,7 @@ def test_problem_definition_with_xml_ref(cleanup):
     input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
     conf.write_needed_inputs(input_data)
 
-    problem = conf.get_problem(read_inputs=True)
+    problem = conf.get_problem(read_inputs=True, auto_scaling=True)
     # runs evaluation without optimization loop to check that inputs are taken into account
     problem.setup()
     problem.run_model()

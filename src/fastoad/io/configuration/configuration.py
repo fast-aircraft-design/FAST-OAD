@@ -56,13 +56,12 @@ class FASTOADProblemConfigurator:
     :param conf_file_path: if provided, configuration will be read directly from it
     """
 
-    def __init__(self, conf_file_path=None, auto_scaling: bool = False):
+    def __init__(self, conf_file_path=None):
         self._conf_file = None
         self._conf_dict = {}
-        self._auto_scaling = False
 
         if conf_file_path:
-            self.load(conf_file_path, auto_scaling)
+            self.load(conf_file_path)
 
     @property
     def input_file_path(self):
@@ -88,12 +87,14 @@ class FASTOADProblemConfigurator:
     def output_file_path(self, file_path: str):
         self._conf_dict[KEY_OUTPUT_FILE] = file_path
 
-    def get_problem(self, read_inputs: bool = False) -> FASTOADProblem:
+    def get_problem(self, read_inputs: bool = False, auto_scaling: bool = False) -> FASTOADProblem:
         """
         Builds the OpenMDAO problem from current configuration.
 
         :param read_inputs: if True, the created problem will already be fed
                             with variables from the input file
+        :param auto_scaling: if True, automatic scaling is performed for design
+                             variables and constraints
         :return: the problem instance
         """
         if not self._conf_dict:
@@ -109,26 +110,23 @@ class FASTOADProblemConfigurator:
             problem.driver = _om_eval(driver)
 
         if self.get_optimization_definition():
-            self._add_constraints(problem.model)
+            self._add_constraints(problem.model, auto_scaling)
             self._add_objectives(problem.model)
 
         if read_inputs:
             problem.read_inputs()
-            self._add_design_vars(problem.model)
+            self._add_design_vars(problem.model, auto_scaling)
 
         return problem
 
-    def load(self, conf_file, auto_scaling: bool = False):
+    def load(self, conf_file):
         """
         Reads the problem definition
 
         :param conf_file: Path to the file to open or a file descriptor
-        :param auto_scaling: if True, automatic scaling is performed for design
-                             variables and constraints
         """
 
-        self._conf_file = conf_file
-        self._auto_scaling = auto_scaling
+        self._conf_file = pth.abspath(conf_file)
 
         conf_dirname = pth.dirname(pth.abspath(conf_file))  # for resolving relative paths
         with open(conf_file, "r") as file:
@@ -283,36 +281,66 @@ class FASTOADProblemConfigurator:
                 except Exception as err:
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
-    def _add_constraints(self, model):
-        """  Adds constraints as instructed in configuration file """
+    def _add_constraints(self, model, auto_scaling):
+        """
+        Adds constraints to provided model as instructed in current configuration
+
+        :param model:
+        :param auto_scaling:
+        :return:
+        """
+        """   """
         optimization_definition = self.get_optimization_definition()
         # Constraints
         constraint_tables = optimization_definition.get(TABLES_CONSTRAINT, {})
-        for _, constraint_table in constraint_tables.items():
-            if self._auto_scaling:
-                if "lower" in constraint_table:
-                    constraint_table["ref0"] = constraint_table["lower"]
-                if "upper" in constraint_table:
-                    constraint_table["ref"] = constraint_table["upper"]
+        for constraint_table in constraint_tables.values():
+            if (
+                auto_scaling
+                and "lower" in constraint_table
+                and "upper" in constraint_table
+                and constraint_table.get("ref0") is not None
+                and constraint_table.get("ref") is not None
+                and constraint_table["lower"] != constraint_table["upper"]
+            ):
+                constraint_table["ref0"] = constraint_table["lower"]
+                constraint_table["ref"] = constraint_table["upper"]
             model.add_constraint(**constraint_table)
 
     def _add_objectives(self, model):
+        """
+        Adds objectives to provided model as instructed in current configuration
+
+        :param model:
+        :return:
+        """
         """  Adds objectives as instructed in configuration file """
         optimization_definition = self.get_optimization_definition()
         objective_tables = optimization_definition.get(TABLES_OBJECTIVE, {})
-        for _, objective_table in objective_tables.items():
+        for objective_table in objective_tables.values():
             model.add_objective(**objective_table)
 
-    def _add_design_vars(self, model):
+    def _add_design_vars(self, model, auto_scaling):
+        """
+        Adds design variables to provided model as instructed in current configuration
+
+        :param model:
+        :param auto_scaling:
+        :return:
+        """
         """ Adds design variables as instructed in configuration file """
         optimization_definition = self.get_optimization_definition()
         design_var_tables = optimization_definition.get(TABLES_DESIGN_VAR, {})
-        for _, design_var_table in design_var_tables.items():
-            if self._auto_scaling:
-                if "lower" in design_var_table:
-                    design_var_table["ref0"] = design_var_table["lower"]
-                if "upper" in design_var_table:
-                    design_var_table["ref"] = design_var_table["upper"]
+        for design_var_table in design_var_tables.values():
+            if (
+                auto_scaling
+                and "lower" in design_var_table
+                and "upper" in design_var_table
+                and design_var_table.get("ref0") is not None
+                and design_var_table.get("ref") is not None
+                and design_var_table["lower"] != design_var_table["upper"]
+            ):
+                design_var_table["ref0"] = design_var_table["lower"]
+                design_var_table["ref"] = design_var_table["upper"]
             model.add_design_var(**design_var_table)
 
 
