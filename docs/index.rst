@@ -6,12 +6,18 @@ This is the documentation of **FAST-OAD**.
 
 .. note::
 
-    Still a work in progress
+    For a quick overview of the way FAST-OAD works, please go :ref:`here<overview>`.
 
-    You may go directly to the :ref:`OpenMDAO models<fastoad.models package>`
+    For a detailed description of the input files and the command line interface,
+    check out the :ref:`usage section<usage>`.
 
-    To get an OpenMDAO problem that interacts with the FAST-OAD configuration file, please see
-    the :ref:`FASTOADProblem class<fastoad.io.configuration.configuration module>`
+    If you prefer to work with Python notebooks, you may go directly to the section 
+    :ref:`python-usage`.
+
+    For a description of models used in FAST-OAD, you may see the
+    :ref:`model documentations<fastoad.models package>` (still a work in progress).
+
+    To see how you can add your own models, go :ref:`here<add-modules>`.
 
 Contents
 ========
