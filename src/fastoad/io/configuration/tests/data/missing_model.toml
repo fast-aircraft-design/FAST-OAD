@@ -6,6 +6,9 @@ module_folders = [
   "sellar_example"
 ]
 
+input_file = "dummy/path"
+output_file = "other/dummy/path"
+
 driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 [Model]  # As TOML is case sensitive, this section won't be recognized
     [Model.cycle]

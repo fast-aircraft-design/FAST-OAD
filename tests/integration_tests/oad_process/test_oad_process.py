@@ -25,7 +25,7 @@ import pandas as pd
 import pytest
 from fastoad import api
 from fastoad.io import VariableIO
-from fastoad.io.configuration import FASTOADProblem
+from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
 from numpy.testing import assert_allclose
 
@@ -48,8 +48,9 @@ def test_oad_process(cleanup):
     Test for the overall aircraft design process.
     """
 
-    problem = FASTOADProblem()
-    problem.configure(pth.join(DATA_FOLDER_PATH, "oad_process.toml"))
+    problem = FASTOADProblemConfigurator(
+        pth.join(DATA_FOLDER_PATH, "oad_process.toml")
+    ).get_problem()
 
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_baseline.xml")
     problem.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
@@ -95,8 +96,8 @@ def test_non_regression(cleanup):
 
     # Generation of configuration file  and problem instance ------------------
     api.generate_configuration_file(configuration_file_path, True)
-    problem = FASTOADProblem()
-    problem.configure(configuration_file_path)
+    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
+
     # Next trick is needed for overloading option setting from TOML file
     if system() == "Windows" or xfoil_path:
         problem.model.aerodynamics.landing._OPTIONS["use_xfoil"] = True

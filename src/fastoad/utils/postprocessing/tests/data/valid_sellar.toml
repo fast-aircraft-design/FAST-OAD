@@ -23,22 +23,20 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
         id = "sellar.functions"
 
 [optimization]
-    [[optimization.design_var]]
-      name = "x"
-      lower = 0
-      upper = 10
-    [[optimization.design_var]]
-      name = "z"
-      lower = 0
-      upper = 10
-
-    [[optimization.constraint]]
+[[optimization.constraint]]
       name = "g1"
-      upper = 0
-    [[optimization.constraint]]
-      name = "g2"
-      upper = 0
 
-    [[optimization.objective]]
+[[optimization.constraint]]
+      name = "g2"
+
+[[optimization.design_var]]
+      name = "x"
+      upper = 10.0
+
+[[optimization.design_var]]
+      name = "z"
+      upper = 10.0
+
+[[optimization.objective]]
       name = "f"
 

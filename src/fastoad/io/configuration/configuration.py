@@ -17,27 +17,24 @@ Module for building OpenMDAO problem from configuration file
 
 import logging
 import os.path as pth
-from copy import deepcopy
 from typing import Dict
 
 import openmdao.api as om
 import tomlkit
 from fastoad.io import IVariableIOFormatter
-from fastoad.io.variable_io import VariableIO
 from fastoad.module_management import OpenMDAOSystemRegistry
-from fastoad.openmdao.validity_checker import ValidityDomainChecker
-from fastoad.openmdao.variables import VariableList
+from fastoad.openmdao.problem import FASTOADProblem
+from fastoad.utils.files import make_parent_dir
 
 from .exceptions import (
     FASTConfigurationBaseKeyBuildingError,
     FASTConfigurationBadOpenMDAOInstructionError,
-    FASTConfigurationNoProblemDefined,
+    FASTConfigurationError,
 )
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
-INPUT_SYSTEM_NAME = "inputs"
 KEY_FOLDERS = "module_folders"
 KEY_INPUT_FILE = "input_file"
 KEY_OUTPUT_FILE = "output_file"
@@ -50,76 +47,99 @@ TABLES_CONSTRAINT = "constraint"
 TABLES_OBJECTIVE = "objective"
 
 
-class FASTOADProblem(om.Problem):
+class FASTOADProblemConfigurator:
     """
-    Vanilla OpenMDAO Problem except that its definition can be loaded from
-    a TOML file.
+    class for configuring an OpenMDAO problem from a configuration file
 
-    A classical usage of this class will be::
+    See :ref:`description of configuration file <configuration-file>`.
 
-        problem = FASTOADProblem()  # instantiation
-        problem.configure('my_problem.toml')  # reads problem definition
-        problem.write_needed_inputs()  # writes the input file (defined in problem definition) with
-                                       # needed variables so user can fill it with proper values
-        # or
-        problem.write_needed_inputs('previous.xml')  # writes the input file with needed variables
-                                                     # and values taken from provided file when
-                                                     # available
-        problem.read_inputs()    # reads the input file
-        problem.run_driver()     # runs the OpenMDAO problem
-        problem.write_outputs()  # writes the output file (defined in problem definition)
-
+    :param conf_file_path: if provided, configuration will be read directly from it
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.optim_failed = False
-        """ Tells if last optimization (run_driver) failed """
-
+    def __init__(self, conf_file_path=None):
         self._conf_file = None
         self._conf_dict = {}
-        self.input_file_path = None
-        self.output_file_path = None
-        self._auto_scaling = False
 
-    def run_model(self, case_prefix=None, reset_iter_counts=True):
-        status = super().run_model(case_prefix, reset_iter_counts)
-        ValidityDomainChecker.check_problem_variables(self)
-        return status
+        if conf_file_path:
+            self.load(conf_file_path)
 
-    def run_driver(self, case_prefix=None, reset_iter_counts=True):
-        status = super().run_driver(case_prefix, reset_iter_counts)
-        ValidityDomainChecker.check_problem_variables(self)
-        return status
+    @property
+    def input_file_path(self):
+        """path of file with input variables of the problem"""
+        path = self._conf_dict[KEY_INPUT_FILE]
+        if not pth.isabs(path):
+            path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
+        return path
 
-    def configure(self, conf_file, auto_scaling: bool = False):
+    @input_file_path.setter
+    def input_file_path(self, file_path: str):
+        self._conf_dict[KEY_INPUT_FILE] = file_path
+
+    @property
+    def output_file_path(self):
+        """path of file where output variables will be written"""
+        path = self._conf_dict[KEY_OUTPUT_FILE]
+        if not pth.isabs(path):
+            path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
+        return path
+
+    @output_file_path.setter
+    def output_file_path(self, file_path: str):
+        self._conf_dict[KEY_OUTPUT_FILE] = file_path
+
+    def get_problem(self, read_inputs: bool = False, auto_scaling: bool = False) -> FASTOADProblem:
         """
-        Reads definition of the current problem in given file.
+        Builds the OpenMDAO problem from current configuration.
+
+        :param read_inputs: if True, the created problem will already be fed
+                            with variables from the input file
+        :param auto_scaling: if True, automatic scaling is performed for design
+                             variables and constraints
+        :return: the problem instance
+        """
+        if not self._conf_dict:
+            raise RuntimeError("read configuration file first")
+
+        problem = FASTOADProblem(self._build_model())
+
+        problem.input_file_path = self.input_file_path
+        problem.output_file_path = self.output_file_path
+
+        driver = self._conf_dict.get(KEY_DRIVER, "")
+        if driver:
+            problem.driver = _om_eval(driver)
+
+        if self.get_optimization_definition():
+            self._add_constraints(problem.model, auto_scaling)
+            self._add_objectives(problem.model)
+
+        if read_inputs:
+            problem.read_inputs()
+            self._add_design_vars(problem.model, auto_scaling)
+
+        return problem
+
+    def load(self, conf_file):
+        """
+        Reads the problem definition
 
         :param conf_file: Path to the file to open or a file descriptor
-        :param auto_scaling: if True, automatic scaling is performed for design variables and constraints
         """
 
-        self._conf_file = conf_file
-        self._auto_scaling = auto_scaling
+        self._conf_file = pth.abspath(conf_file)
 
         conf_dirname = pth.dirname(pth.abspath(conf_file))  # for resolving relative paths
         with open(conf_file, "r") as file:
             d = file.read()
             self._conf_dict = tomlkit.loads(d)
 
-        # FIXME: Structure of configuration file will have to be checked more thoroughly, like
-        #        producing errors if missing definition of data I/O files
+        # FIXME: Could structure of configuration file be checked more thoroughly ?
+        for key in [KEY_INPUT_FILE, KEY_OUTPUT_FILE]:
+            if key not in self._conf_dict:
+                raise FASTConfigurationError(missing_key=key)
 
-        # I/O files
-        input_file = self._conf_dict.get(KEY_INPUT_FILE)
-        if input_file:
-            self.input_file_path = pth.join(conf_dirname, input_file)
-
-        output_file = self._conf_dict.get(KEY_OUTPUT_FILE)
-        if output_file:
-            self.output_file_path = pth.join(conf_dirname, output_file)
+        if not isinstance(self._conf_dict.get(TABLE_MODEL), dict):
+            raise FASTConfigurationError(missing_section=TABLE_MODEL)
 
         # Looking for modules to register
         module_folder_paths = self._conf_dict.get(KEY_FOLDERS, [])
@@ -130,108 +150,103 @@ class FASTOADProblem(om.Problem):
             else:
                 OpenMDAOSystemRegistry.explore_folder(folder_path)
 
-        # Read problem definition
-        model_definition = self._conf_dict.get(TABLE_MODEL)
-        if not model_definition:
-            raise FASTConfigurationNoProblemDefined("Section [%s] is missing" % TABLE_MODEL)
+    def save(self, filename: str = None):
+        """
+        Saves the current configuration
+        If no filename is provided, the initially read file is used.
 
-        # Define driver
-        driver = self._conf_dict.get(KEY_DRIVER, "")
-        if driver:
-            self.driver = _om_eval(driver)
+        :param filename: file where to save configuration
+        """
+        if not filename:
+            filename = self._conf_file
 
-        self.build_model()
+        make_parent_dir(filename)
+        with open(filename, "w") as file:
+            d = tomlkit.dumps(self._conf_dict)
+            file.write(d)
 
     def write_needed_inputs(
-        self, input_file_path: str = None, input_formatter: IVariableIOFormatter = None
+        self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None,
     ):
         """
-        Writes the input file of the problem with unconnected inputs of the configured problem.
+        Writes the input file of the problem with unconnected inputs of the
+        configured problem.
 
         Written value of each variable will be taken:
-        1. from input_data if it contains the variable
-        2. from defined default values in component definitions
 
-        WARNING: if inputs have already been read, they won't be needed any more and won't be
-        in written file. To clear read data, use first :meth:`build_problem`.
+            1. from input_data if it contains the variable
+            2. from defined default values in component definitions
 
-        :param input_file_path: if provided, variable values will be read from it
-        :param input_formatter: the class that defines format of input file. if not provided,
-                                expected format will be the default one.
+        :param source_file_path: if provided, variable values will be read from it
+        :param source_formatter: the class that defines format of input file. if
+                                 not provided, expected format will be the default one.
         """
-        if self.input_file_path:
-            variables = VariableList.from_unconnected_inputs(self, with_optional_inputs=True)
-            if input_file_path:
-                ref_vars = VariableIO(input_file_path, input_formatter).read()
-                variables.update(ref_vars)
-            writer = VariableIO(self.input_file_path)
-            writer.write(variables)
+        problem = self.get_problem(read_inputs=False)
+        problem.write_needed_inputs(source_file_path, source_formatter)
 
-    def read_inputs(self):
+    def get_optimization_definition(self) -> Dict:
         """
-        Reads inputs from the configured input file.
+        Returns information related to the optimization problem:
+            - Design Variables
+            - Constraints
+            - Objectives
 
-        Must be done once problem is configured, before self.setup() is called.
-        """
-        if self.input_file_path:
-            # Reads input file
-            reader = VariableIO(self.input_file_path)
-            ivc = reader.read().to_ivc()
-
-            # ivc will be added through add_subsystem, but we must use set_order() to
-            # put it first.
-            # So we need order of existing subsystem to provide the full order list to set_order()
-            # To get order of systems, we use system_iter() that can be used only after setup().
-            # But we will not be allowed to use add_subsystem() after setup().
-            # So we use setup() on a copy of current instance, and get order from this copy
-            tmp_prob = deepcopy(self)
-            tmp_prob.setup()
-            previous_order = [system.name for system in tmp_prob.model.system_iter(recurse=False)]
-
-            self.model.add_subsystem(INPUT_SYSTEM_NAME, ivc, promotes=["*"])
-            self.model.set_order([INPUT_SYSTEM_NAME] + previous_order)
-
-            if self.get_optimization_definition():
-                # Inputs are loaded, so we can add design variables
-                self._add_design_vars()
-
-    def write_outputs(self):
-        """
-        Once problem is run, writes all outputs in the configured output file.
-        """
-        if self.output_file_path:
-            writer = VariableIO(self.output_file_path)
-            variables = VariableList.from_problem(self)
-            writer.write(variables)
-
-    def build_model(self):
-        """
-        Builds (or rebuilds) the problem as defined in the configuration file.
-
-        self.model is initialized as a new group and populated subsystems indicated in
-        configuration file.
+        :return: dict containing optimization settings for current problem
         """
 
-        self.model = om.Group()
+        optimization_definition = {}
+        conf_dict = self._conf_dict.get(TABLE_OPTIMIZATION)
+        if conf_dict:
+            for sec, elements in conf_dict.items():
+                optimization_definition[sec] = {elem["name"]: elem for elem in elements}
+        return optimization_definition
+
+    def set_optimization_definition(self, optimization_definition: Dict):
+        """
+        Updates configuration with the list of design variables, constraints, objectives
+        contained in the optimization_definition dictionary.
+
+        Keys of the dictionary are: "design_var", "constraint", "objective".
+
+        Configuration file will not be modified until :meth:`write` is used.
+
+        :param optimization_definition: dict containing the optimization problem definition
+        """
+        subpart = {}
+        for key, value in optimization_definition.items():
+            subpart[key] = [value for _, value in optimization_definition[key].items()]
+        subpart = {"optimization": subpart}
+        self._conf_dict.update(subpart)
+
+    def _build_model(self) -> om.Group:
+        """
+        Builds the model as defined in the configuration file.
+
+        The model is initialized as a new group and populated with subsystems
+        indicated in configuration file.
+
+        :return: the built model
+        """
+
+        model = om.Group()
         model_definition = self._conf_dict.get(TABLE_MODEL)
+
         try:
             if KEY_COMPONENT_ID in model_definition:
                 # The defined model is only one system
                 system_id = model_definition[KEY_COMPONENT_ID]
                 sub_component = OpenMDAOSystemRegistry.get_system(system_id)
-                self.model.add_subsystem("system", sub_component, promotes=["*"])
+                model.add_subsystem("system", sub_component, promotes=["*"])
             else:
                 # The defined model is a group
-                self._parse_problem_table(self.model, model_definition)
+                self._parse_problem_table(model, model_definition)
 
         except FASTConfigurationBaseKeyBuildingError as err:
             log_err = err.__class__(err, TABLE_MODEL)
             _LOGGER.error(log_err)
             raise log_err
 
-        if self.get_optimization_definition():
-            self._add_constraints()
-            self._add_objectives()
+        return model
 
     def _parse_problem_table(self, group: om.Group, table: dict):
         """
@@ -266,83 +281,64 @@ class FASTOADProblem(om.Problem):
                 except Exception as err:
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
-    def _add_constraints(self):
-        """  Adds constraints as instructed in configuration file """
+    def _add_constraints(self, model, auto_scaling):
+        """
+        Adds constraints to provided model as instructed in current configuration
+
+        :param model:
+        :param auto_scaling:
+        :return:
+        """
         optimization_definition = self.get_optimization_definition()
         # Constraints
         constraint_tables = optimization_definition.get(TABLES_CONSTRAINT, {})
-        for _, constraint_table in constraint_tables.items():
-            if self._auto_scaling:
-                if "lower" in constraint_table:
-                    constraint_table["ref0"] = constraint_table["lower"]
-                if "upper" in constraint_table:
-                    constraint_table["ref"] = constraint_table["upper"]
-            self.model.add_constraint(**constraint_table)
+        for constraint_table in constraint_tables.values():
+            if (
+                auto_scaling
+                and "lower" in constraint_table
+                and "upper" in constraint_table
+                and constraint_table.get("ref0") is not None
+                and constraint_table.get("ref") is not None
+                and constraint_table["lower"] != constraint_table["upper"]
+            ):
+                constraint_table["ref0"] = constraint_table["lower"]
+                constraint_table["ref"] = constraint_table["upper"]
+            model.add_constraint(**constraint_table)
 
-    def _add_objectives(self):
-        """  Adds objectives as instructed in configuration file """
+    def _add_objectives(self, model):
+        """
+        Adds objectives to provided model as instructed in current configuration
+
+        :param model:
+        :return:
+        """
         optimization_definition = self.get_optimization_definition()
         objective_tables = optimization_definition.get(TABLES_OBJECTIVE, {})
-        for _, objective_table in objective_tables.items():
-            self.model.add_objective(**objective_table)
+        for objective_table in objective_tables.values():
+            model.add_objective(**objective_table)
 
-    def _add_design_vars(self):
-        """ Adds design variables as instructed in configuration file """
+    def _add_design_vars(self, model, auto_scaling):
+        """
+        Adds design variables to provided model as instructed in current configuration
+
+        :param model:
+        :param auto_scaling:
+        :return:
+        """
         optimization_definition = self.get_optimization_definition()
         design_var_tables = optimization_definition.get(TABLES_DESIGN_VAR, {})
-        for _, design_var_table in design_var_tables.items():
-            if self._auto_scaling:
-                if "lower" in design_var_table:
-                    design_var_table["ref0"] = design_var_table["lower"]
-                if "upper" in design_var_table:
-                    design_var_table["ref"] = design_var_table["upper"]
-            self.model.add_design_var(**design_var_table)
-
-    def get_optimization_definition(self) -> Dict:
-        """
-        Reads the config file and returns information related to the optimization problem:
-            - Design Variables
-            - Constraints
-            - Objectives
-
-        :return: dict containing optimization settings for current problem
-        """
-
-        optimization_definition = {}
-        conf_dict = self._conf_dict.get(TABLE_OPTIMIZATION)
-        if conf_dict:
-            for sec, elements in conf_dict.items():
-                optimization_definition[sec] = {elem["name"]: elem for elem in elements}
-        return optimization_definition
-
-    def set_optimization_definition(self, optimization_definition: Dict):
-        """
-        Updates configuration with the list of design variables, constraints, objectives
-        contained in the optimization_definition dictionary.
-        Keys of the dictionary are: "design_var", "constraint", "objective".
-
-        :param optimization_definition: dict containing the optimization problem definition
-        """
-        subpart = {}
-        for key, value in optimization_definition.items():
-            subpart[key] = [value for _, value in optimization_definition[key].items()]
-        subpart = {"optimization": subpart}
-        self._conf_dict.update(subpart)
-        self.save_configuration()
-
-    def save_configuration(self, filename: str = None):
-        """
-        Writes to the .toml config file the current configuration.
-        If no filename is provided, the initially read file is used.
-
-        :param filename: file where to save configuration
-        """
-        if not filename:
-            filename = self._conf_file
-
-        with open(filename, "w") as file:
-            d = tomlkit.dumps(self._conf_dict)
-            file.write(d)
+        for design_var_table in design_var_tables.values():
+            if (
+                auto_scaling
+                and "lower" in design_var_table
+                and "upper" in design_var_table
+                and design_var_table.get("ref0") is not None
+                and design_var_table.get("ref") is not None
+                and design_var_table["lower"] != design_var_table["upper"]
+            ):
+                design_var_table["ref0"] = design_var_table["lower"]
+                design_var_table["ref"] = design_var_table["upper"]
+            model.add_design_var(**design_var_table)
 
 
 def _om_eval(string_to_eval: str):

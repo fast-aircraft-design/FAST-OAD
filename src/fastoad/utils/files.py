@@ -1,6 +1,7 @@
 """
-Package for building OpenMDAO problem from configuration file
+Convenience functions for file and directories
 """
+
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,8 +15,12 @@ Package for building OpenMDAO problem from configuration file
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .configuration import FASTOADProblem
-from .exceptions import (
-    FASTConfigurationError,
-    FASTConfigurationBadOpenMDAOInstructionError,
-)
+import os
+import os.path as pth
+
+
+def make_parent_dir(path: str):
+    """Ensures parent directory of provided path exists or is created"""
+    dirname = pth.abspath(pth.dirname(path))
+    if not pth.exists(dirname):
+        os.makedirs(dirname)

@@ -29,7 +29,7 @@ class UpdateMLG(om.Group):
         self.nonlinear_solver = om.NewtonSolver()
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["solve_subsystems"] = False
-        self.nonlinear_solver.linesearch = om.BoundsEnforceLS()
+        self.nonlinear_solver.linesearch = None  # Avoids a warning
         self.linear_solver = om.DirectSolver()
 
 

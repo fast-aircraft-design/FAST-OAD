@@ -14,12 +14,12 @@ Helper module for copying resources
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
 import os.path as pth
 import shutil
 from typing import List
 
 # TODO: When Python 3.6 is abandoned, use importlib.resources instead
+from fastoad.utils.files import make_parent_dir
 from importlib_resources import Package, contents, is_resource
 from importlib_resources import path
 
@@ -35,9 +35,7 @@ def copy_resource(package: Package, resource: str, target_path):
     :param resource: resource as in importlib.resources.read_binary()
     :param target_path: file system path
     """
-    parent_name = pth.dirname(target_path)
-    if parent_name and not pth.exists(parent_name):
-        os.makedirs(parent_name)
+    make_parent_dir(target_path)
 
     if pth.isdir(target_path):
         target_path = pth.join(target_path, resource)

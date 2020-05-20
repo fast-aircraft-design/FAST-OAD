@@ -15,7 +15,6 @@ API
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
 import os.path as pth
 import sys
 import textwrap as tw
@@ -30,10 +29,12 @@ from IPython import InteractiveShell
 from IPython.display import display, HTML
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import FASTOADProblem
+from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.module_management import BundleLoader
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.variables import VariableList
+from fastoad.utils.files import make_parent_dir
 from fastoad.utils.postprocessing import OptimizationViewer
 from fastoad.utils.resource_management.copy import copy_resource
 from whatsopt.show_utils import generate_xdsm_html
@@ -64,9 +65,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
             configuration_file_path,
         )
 
-    dirname = pth.abspath(pth.dirname(configuration_file_path))
-    if not pth.exists(dirname):
-        os.makedirs(dirname)
+    make_parent_dir(configuration_file_path)
 
     copy_resource(resources, SAMPLE_FILENAME, configuration_file_path)
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
@@ -87,23 +86,22 @@ def generate_inputs(
     :param overwrite: if True, file will be written even if one already exists
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
     """
-    problem = FASTOADProblem()
-    problem.configure(configuration_file_path)
+    conf = FASTOADProblemConfigurator(configuration_file_path)
 
-    inputs_path = pth.normpath(problem.input_file_path)
-    if not overwrite and pth.exists(inputs_path):
+    input_file_path = conf.input_file_path
+    if not overwrite and pth.exists(conf.input_file_path):
         raise FastFileExistsError(
             "Input file %s not written because it already exists. "
-            "Use overwrite=True to bypass." % inputs_path,
-            inputs_path,
+            "Use overwrite=True to bypass." % input_file_path,
+            input_file_path,
         )
 
     if source_path_schema == "legacy":
-        problem.write_needed_inputs(source_path, VariableLegacy1XmlFormatter())
+        conf.write_needed_inputs(source_path, VariableLegacy1XmlFormatter())
     else:
-        problem.write_needed_inputs(source_path)
+        conf.write_needed_inputs(source_path)
 
-    _LOGGER.info("Problem inputs written in %s", inputs_path)
+    _LOGGER.info("Problem inputs written in %s", input_file_path)
 
 
 def list_variables(
@@ -129,8 +127,8 @@ def list_variables(
                               sys.stdout
     :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file exists
     """
-    problem = FASTOADProblem()
-    problem.configure(configuration_file_path)
+    conf = FASTOADProblemConfigurator(configuration_file_path)
+    problem = conf.get_problem()
 
     input_variables = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
     output_variables = VariableList.from_problem(problem, use_inputs=False)
@@ -145,6 +143,7 @@ def list_variables(
                 "Use overwrite=True to bypass." % out,
                 out,
             )
+        make_parent_dir(out)
         out_file = open(out, "w")
         table_width = MAX_TABLE_WIDTH
     else:
@@ -237,8 +236,8 @@ def list_systems(
     """
 
     if configuration_file_path:
-        problem = FASTOADProblem()
-        problem.configure(configuration_file_path)
+        conf = FASTOADProblemConfigurator(configuration_file_path)
+        conf.load(configuration_file_path)
     # As the problem has been configured, BundleLoader now knows additional registered systems
 
     if isinstance(out, str):
@@ -248,6 +247,8 @@ def list_systems(
                 "Use overwrite=True to bypass." % out,
                 out,
             )
+
+        make_parent_dir(out)
         out_file = open(out, "w")
     else:
         out_file = out
@@ -288,11 +289,8 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
             n2_file_path,
         )
 
-    if not pth.exists(pth.dirname(n2_file_path)):
-        os.makedirs(pth.dirname(n2_file_path))
-
-    problem = FASTOADProblem()
-    problem.configure(configuration_file_path)
+    make_parent_dir(n2_file_path)
+    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
     problem.setup()
     problem.final_setup()
 
@@ -327,11 +325,9 @@ def write_xdsm(
             xdsm_file_path,
         )
 
-    if not pth.exists(pth.dirname(xdsm_file_path)):
-        os.makedirs(pth.dirname(xdsm_file_path))
+    make_parent_dir(xdsm_file_path)
 
-    problem = FASTOADProblem()
-    problem.configure(configuration_file_path)
+    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
     problem.setup()
     problem.final_setup()
 
@@ -379,8 +375,9 @@ def _run_problem(
     :return: the OpenMDAO problem after run
     """
 
-    problem = FASTOADProblem()
-    problem.configure(configuration_file_path, auto_scaling=auto_scaling)
+    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem(
+        read_inputs=True, auto_scaling=auto_scaling
+    )
 
     outputs_path = pth.normpath(problem.output_file_path)
     if not overwrite and pth.exists(outputs_path):
@@ -390,7 +387,6 @@ def _run_problem(
             outputs_path,
         )
 
-    problem.read_inputs()
     problem.setup()
     if mode == "run_model":
         problem.run_model()
@@ -441,9 +437,8 @@ def optimization_viewer(configuration_file_path: str):
     :param configuration_file_path: problem definition
     :return: display of the OptimizationViewer
     """
-    problem = FASTOADProblem()
-    problem.configure(configuration_file_path)
+    problem_configuration = FASTOADProblemConfigurator(configuration_file_path)
     viewer = OptimizationViewer()
-    viewer.load(problem)
+    viewer.load(problem_configuration)
 
     return viewer.display()

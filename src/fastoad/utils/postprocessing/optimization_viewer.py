@@ -23,8 +23,8 @@ import ipywidgets as widgets
 import numpy as np
 import pandas as pd
 from IPython.display import display, clear_output
-from fastoad.io import VariableIO, IVariableIOFormatter
-from fastoad.io.configuration import FASTOADProblem
+from fastoad.io import VariableIO
+from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.openmdao.variables import VariableList
 
 from .exceptions import FastMissingFile
@@ -52,8 +52,8 @@ class OptimizationViewer:
 
     def __init__(self):
 
-        # Instance of the FAST-OAD problem
-        self.problem = None
+        # Instance of the FAST-OAD problem configuration
+        self.problem_configuration: FASTOADProblemConfigurator = None
 
         # The dataframe which is the mirror of the self.file
         self.dataframe = pd.DataFrame()
@@ -70,30 +70,32 @@ class OptimizationViewer:
         # The ui containing save and load buttons
         self._save_load_buttons = None
 
-    def load(self, problem: FASTOADProblem, file_formatter: IVariableIOFormatter = None):
+    def load(
+        self, problem_configuration: FASTOADProblemConfigurator,
+    ):
         """
         Loads the FAST-OAD problem and stores its data.
 
-        :param problem: the FASTOADProblem instance.
+        :param problem_configuration: the FASTOADProblem instance.
         :param file_formatter: the formatter that defines file format. If not provided,
                default format will be assumed.
         """
 
-        self.problem = problem
-        if pth.isfile(self.problem.input_file_path):
-            input_variables = VariableIO(self.problem.input_file_path, file_formatter).read()
+        self.problem_configuration = problem_configuration
+        problem = self.problem_configuration.get_problem()
+        if pth.isfile(problem.input_file_path):
+            input_variables = VariableIO(problem.input_file_path).read()
         else:
             # TODO: generate the input file by default ?
             raise FastMissingFile("Please generate input file before using the optimization viewer")
 
-        if pth.isfile(self.problem.output_file_path):
-            output_variables = VariableIO(self.problem.output_file_path, file_formatter).read()
+        if pth.isfile(problem.output_file_path):
+            output_variables = VariableIO(problem.output_file_path).read()
         else:
-            self.problem.write_outputs()
-            output_variables = VariableIO(self.problem.output_file_path, file_formatter).read()
+            output_variables = VariableList.from_problem(problem)
 
         optimization_variables = VariableList()
-        opt_def = problem.get_optimization_definition()
+        opt_def = problem_configuration.get_optimization_definition()
         # Design Variables
         if "design_var" in opt_def:
             for name, design_var in opt_def["design_var"].items():
@@ -172,10 +174,10 @@ class OptimizationViewer:
             - the input file (initial values)
             - the output file (values)
        """
-        problem = self.problem
-        input_variables = VariableIO(self.problem.input_file_path, None).read()
-        output_variables = VariableIO(self.problem.output_file_path, None).read()
-        opt_def = problem.get_optimization_definition()
+        conf = self.problem_configuration
+        input_variables = VariableIO(self.problem_configuration.input_file_path, None).read()
+        output_variables = VariableIO(self.problem_configuration.output_file_path, None).read()
+        opt_def = conf.get_optimization_definition()
 
         variables = self.get_variables()
         for variable in variables:
@@ -220,11 +222,12 @@ class OptimizationViewer:
 
         # Saving modifications
         # Initial values
-        VariableIO(self.problem.input_file_path, None).write(input_variables)
+        VariableIO(self.problem_configuration.input_file_path, None).write(input_variables)
         # Values
-        VariableIO(self.problem.output_file_path, None).write(output_variables)
+        VariableIO(self.problem_configuration.output_file_path, None).write(output_variables)
         # Optimization definition
-        problem.set_optimization_definition(opt_def)
+        conf.set_optimization_definition(opt_def)
+        conf.save()
 
     def display(self):
         """
@@ -405,7 +408,7 @@ class OptimizationViewer:
         )
 
         def on_load_button_clicked(b):
-            self.load(self.problem)
+            self.load(self.problem_configuration)
             self._render_ui()
 
         load_button.on_click(on_load_button_clicked)

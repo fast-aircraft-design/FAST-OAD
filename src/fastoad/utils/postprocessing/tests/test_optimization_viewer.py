@@ -15,15 +15,14 @@ Tests for FAST-OAD optimization viewer
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-import pytest
 from shutil import rmtree, copyfile
 
-from pandas.util.testing import assert_frame_equal
+import pytest
+from fastoad.cmd import api
+from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 
-from fastoad.io.configuration import FASTOADProblem
 from .. import OptimizationViewer
 from ..exceptions import FastMissingFile
-from fastoad.cmd import api
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -40,26 +39,25 @@ def test_optimization_viewer_load(cleanup):
     """
     filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
 
-    # The problem has not yet been ran
-    problem = FASTOADProblem()
-    problem.configure(filename)
+    # The problem has not yet been run
+    problem_configuration = FASTOADProblemConfigurator(filename)
 
     optim_viewer = OptimizationViewer()
 
     # No input file exists
     with pytest.raises(FastMissingFile):
-        optim_viewer.load(problem)
+        optim_viewer.load(problem_configuration)
 
     api.generate_inputs(filename, pth.join(DATA_FOLDER_PATH, "inputs.xml"), overwrite=True)
 
     # Input file exist
-    optim_viewer.load(problem)
+    optim_viewer.load(problem_configuration)
 
     # We run the problem
     api.optimize_problem(filename, overwrite=True)
 
     # Load the results
-    optim_viewer.load(problem)
+    optim_viewer.load(problem_configuration)
 
 
 def test_optimization_viewer_save(cleanup):
@@ -71,23 +69,22 @@ def test_optimization_viewer_save(cleanup):
     copyfile(filename, new_filename)
 
     # Loading new file
-    problem = FASTOADProblem()
-    problem.configure(new_filename)
+    problem_configuration = FASTOADProblemConfigurator(filename)
 
     optim_viewer = OptimizationViewer()
 
     api.generate_inputs(new_filename, pth.join(DATA_FOLDER_PATH, "inputs.xml"), overwrite=True)
 
     # Load new file
-    optim_viewer.load(problem)
+    optim_viewer.load(problem_configuration)
     optim_viewer.save()
-    optim_viewer.load(problem)
+    optim_viewer.load(problem_configuration)
 
     # We run the problem
     api.optimize_problem(new_filename, overwrite=True)
-    optim_viewer.load(problem)
+    optim_viewer.load(problem_configuration)
     optim_viewer.save()
-    optim_viewer.load(problem)
+    optim_viewer.load(problem_configuration)
 
 
 def test_optimization_viewer_display(cleanup):
@@ -97,12 +94,11 @@ def test_optimization_viewer_display(cleanup):
     filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
 
     # The problem has not yet been ran
-    problem = FASTOADProblem()
-    problem.configure(filename)
+    problem_configuration = FASTOADProblemConfigurator(filename)
 
     optim_viewer = OptimizationViewer()
 
     api.generate_inputs(filename, pth.join(DATA_FOLDER_PATH, "inputs.xml"), overwrite=True)
 
-    optim_viewer.load(problem)
+    optim_viewer.load(problem_configuration)
     optim_viewer.display()
