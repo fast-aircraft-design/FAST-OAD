@@ -81,23 +81,28 @@ class FASTOADProblem(om.Problem):
         self._conf_dict = {}
         self.input_file_path = None
         self.output_file_path = None
+        self._auto_scaling = False
 
     def run_model(self, case_prefix=None, reset_iter_counts=True):
-        super().run_model()
+        status = super().run_model(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
+        return status
 
     def run_driver(self, case_prefix=None, reset_iter_counts=True):
-        super().run_driver()
+        status = super().run_driver(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
+        return status
 
-    def configure(self, conf_file):
+    def configure(self, conf_file, auto_scaling: bool = False):
         """
         Reads definition of the current problem in given file.
 
         :param conf_file: Path to the file to open or a file descriptor
+        :param auto_scaling: if True, automatic scaling is performed for design variables and constraints
         """
 
         self._conf_file = conf_file
+        self._auto_scaling = auto_scaling
 
         conf_dirname = pth.dirname(pth.abspath(conf_file))  # for resolving relative paths
         with open(conf_file, "r") as file:
@@ -267,6 +272,11 @@ class FASTOADProblem(om.Problem):
         # Constraints
         constraint_tables = optimization_definition.get(TABLES_CONSTRAINT, {})
         for _, constraint_table in constraint_tables.items():
+            if self._auto_scaling:
+                if "lower" in constraint_table:
+                    constraint_table["ref0"] = constraint_table["lower"]
+                if "upper" in constraint_table:
+                    constraint_table["ref"] = constraint_table["upper"]
             self.model.add_constraint(**constraint_table)
 
     def _add_objectives(self):
@@ -281,6 +291,11 @@ class FASTOADProblem(om.Problem):
         optimization_definition = self.get_optimization_definition()
         design_var_tables = optimization_definition.get(TABLES_DESIGN_VAR, {})
         for _, design_var_table in design_var_tables.items():
+            if self._auto_scaling:
+                if "lower" in design_var_table:
+                    design_var_table["ref0"] = design_var_table["lower"]
+                if "upper" in design_var_table:
+                    design_var_table["ref"] = design_var_table["upper"]
             self.model.add_design_var(**design_var_table)
 
     def get_optimization_definition(self) -> Dict:

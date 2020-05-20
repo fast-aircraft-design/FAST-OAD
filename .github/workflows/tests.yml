@@ -36,7 +36,7 @@ jobs:
         id: cache-venv
         with:
           path: .venv
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-poetry_venv-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-venv-${{ hashFiles('**/poetry.lock') }}
 
       - name: Activate environment and install dependencies
         run: poetry install
