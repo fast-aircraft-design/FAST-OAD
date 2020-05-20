@@ -1,4 +1,4 @@
-.. _usage:
+.. _overview:
 
 #################
 FAST-OAD overview

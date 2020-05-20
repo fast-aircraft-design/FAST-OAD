@@ -25,7 +25,9 @@ Install
 -------
 
 **Prerequisite**:FAST-OAD needs at least **Python 3.6.1** (usage of
-**Python 3.8.**\* is discouraged as Jupyter notebooks are still [not
+**Python 3.8.**\* is discouraged on Windows: some additional features of
+ FAST-OAD require Jupyter notebooks, which are for now
+ [not
 compatible with
 it](https://github.com/jupyterlab/jupyterlab/issues/6487)).
 
