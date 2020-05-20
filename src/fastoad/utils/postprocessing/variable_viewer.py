@@ -218,6 +218,7 @@ class VariableViewer:
                 self._filter_widgets[0].observe(self._update_variable_selector, "value")
             elif i <= len(self._filter_widgets):
                 modules = [item.value for item in self._filter_widgets[0:i]]
+                var_name = ":".join(modules)
                 modules_item = sorted(self._find_submodules(self.dataframe, modules))
                 if modules_item:
                     # Check if the item exists already
@@ -229,7 +230,9 @@ class VariableViewer:
                         widget.observe(self._update_variable_selector, "value")
                         self._filter_widgets.append(widget)
                     else:
-                        if (self._all_tag not in modules_item) and (len(modules_item) > 1):
+                        if (self._all_tag not in modules_item) and (
+                            len(modules_item) > 1 or var_name in self.dataframe["Name"].values
+                        ):
                             modules_item.insert(0, self._all_tag)
                         self._filter_widgets[i].options = modules_item
                 else:
