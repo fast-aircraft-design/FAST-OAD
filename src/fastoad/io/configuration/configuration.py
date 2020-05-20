@@ -65,7 +65,7 @@ class FASTOADProblemConfigurator:
 
     @property
     def input_file_path(self):
-        """ path of file with input variables of the problem """
+        """path of file with input variables of the problem"""
         path = self._conf_dict[KEY_INPUT_FILE]
         if not pth.isabs(path):
             path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
@@ -77,7 +77,7 @@ class FASTOADProblemConfigurator:
 
     @property
     def output_file_path(self):
-        """ path of file where output variables will be written """
+        """path of file where output variables will be written"""
         path = self._conf_dict[KEY_OUTPUT_FILE]
         if not pth.isabs(path):
             path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
@@ -289,7 +289,6 @@ class FASTOADProblemConfigurator:
         :param auto_scaling:
         :return:
         """
-        """   """
         optimization_definition = self.get_optimization_definition()
         # Constraints
         constraint_tables = optimization_definition.get(TABLES_CONSTRAINT, {})
@@ -313,7 +312,6 @@ class FASTOADProblemConfigurator:
         :param model:
         :return:
         """
-        """  Adds objectives as instructed in configuration file """
         optimization_definition = self.get_optimization_definition()
         objective_tables = optimization_definition.get(TABLES_OBJECTIVE, {})
         for objective_table in objective_tables.values():
@@ -327,7 +325,6 @@ class FASTOADProblemConfigurator:
         :param auto_scaling:
         :return:
         """
-        """ Adds design variables as instructed in configuration file """
         optimization_definition = self.get_optimization_definition()
         design_var_tables = optimization_definition.get(TABLES_DESIGN_VAR, {})
         for design_var_table in design_var_tables.values():

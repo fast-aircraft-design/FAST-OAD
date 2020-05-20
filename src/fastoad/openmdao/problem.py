@@ -21,8 +21,7 @@ INPUT_SYSTEM_NAME = "inputs"
 
 
 class FASTOADProblem(om.Problem):
-    """
-    Vanilla OpenMDAO Problem except that it can read and write its variables from/to files.
+    """Vanilla OpenMDAO Problem except that it can read and write its variables from/to files.
 
     It also runs :class:`~fastoad.openmdao.validity_checker.ValidityDomainChecker`
     after each :meth:`run_model` or :meth:`run_driver`

@@ -20,7 +20,7 @@ import os.path as pth
 
 
 def make_parent_dir(path: str):
-    """ Ensures parent directory of provided path exists or is created """
+    """Ensures parent directory of provided path exists or is created"""
     dirname = pth.abspath(pth.dirname(path))
     if not pth.exists(dirname):
         os.makedirs(dirname)
