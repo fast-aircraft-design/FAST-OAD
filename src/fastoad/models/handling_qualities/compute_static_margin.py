@@ -23,10 +23,6 @@ class ComputeStaticMargin(om.ExplicitComponent):
     """
     Computation of static margin i.e. difference between CG ratio and neutral
     point.
-
-    If option 'target' is provided, this module will provide the output
-    `data:handling_qualities:static_margin:to_target` that can be used as
-    objective function in an optimization problem.
     """
 
     def initialize(self):
@@ -37,13 +33,6 @@ class ComputeStaticMargin(om.ExplicitComponent):
         self.add_input("data:aerodynamics:cruise:neutral_point:x", val=np.nan)
 
         self.add_output("data:handling_qualities:static_margin")
-        if self.options["target"]:
-            self.add_output(
-                "data:handling_qualities:static_margin:to_target",
-                desc="objective function to minimize to 0. for getting "
-                "static margin close to fixed target (equal to the "
-                "square of 100 times the difference to target)",
-            )
 
         self.declare_partials("*", "*", method="fd")
 
@@ -52,10 +41,3 @@ class ComputeStaticMargin(om.ExplicitComponent):
         ac_ratio = inputs["data:aerodynamics:cruise:neutral_point:x"]
 
         outputs["data:handling_qualities:static_margin"] = ac_ratio - cg_ratio
-
-        if self.options["target"]:
-            static_margin = 100 * outputs["data:handling_qualities:static_margin"]
-            target = 100 * self.options["target"]
-            outputs["data:handling_qualities:static_margin:to_target"] = (
-                target - static_margin
-            ) ** 2
