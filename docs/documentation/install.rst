@@ -14,8 +14,8 @@ Once Python is installed, FAST-OAD can be installed using pip.
 
     **Note**: If your network uses a proxy, you may have to do `some settings <https://pip.pypa.io/en/stable/user_guide/#using-a-proxy-server>`_ for pip to work correctly
 
-IpYou can install the latest version with this command:
+You can install the latest version with this command:
 
 .. code:: bash
 
-    $ pip install --upgrade FAST-OAD
+    $ pip install --upgrade fast-oad

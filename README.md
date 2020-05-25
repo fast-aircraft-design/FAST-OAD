@@ -44,5 +44,5 @@ Once Python is installed, FAST-OAD can be installed using pip.
 You can install the latest version with this command:
 
 ``` {.bash}
-$ pip install --upgrade FAST-OAD
+$ pip install --upgrade fast-oad
 ```
