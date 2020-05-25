@@ -31,25 +31,25 @@ jobs:
         if: startsWith(runner.os, 'Linux')
         with:
           path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pypoetry-
+            ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-
 
       - uses: actions/cache@v1
         if: startsWith(runner.os, 'macOS')
         with:
           path: ~/Library/Caches/pypoetry
-          key: ${{ runner.os }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pypoetry-
+            ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-
 
       - uses: actions/cache@v1
         if: startsWith(runner.os, 'Windows')
         with:
           path: ~\AppData\Local\pypoetry\Cache
-          key: ${{ runner.os }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pypoetry-
+            ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-
 
       - name: Activate environment and install dependencies
         run: poetry install
