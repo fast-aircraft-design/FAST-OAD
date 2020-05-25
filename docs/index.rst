@@ -1,8 +1,6 @@
-========
-FAST-OAD
-========
-
-This is the documentation of **FAST-OAD**.
+===================
+Welcome to FAST-OAD
+===================
 
 .. note::
 
@@ -17,7 +15,7 @@ This is the documentation of **FAST-OAD**.
     For a description of models used in FAST-OAD, you may see the
     :ref:`model documentations<fastoad.models package>` (still a work in progress).
 
-    To see how you can add your own models, go :ref:`here<add-modules>`.
+    If you want to add your own models, please check out :ref:`add-modules`.
 
 Contents
 ========
