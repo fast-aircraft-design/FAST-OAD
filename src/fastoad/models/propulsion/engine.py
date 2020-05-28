@@ -16,13 +16,12 @@ Base module for engine models
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from typing import Union, Sequence, Optional, Tuple, TypeVar
+from typing import Union, Sequence, Optional, Tuple
 
 import numpy as np
 import openmdao.api as om
 from fastoad.constants import FlightPhase
-
-IEngineSubclass = TypeVar("IEngineSubclass", bound="IEngine")
+from numpy import linspace
 
 
 class IEngine(ABC):
@@ -120,7 +119,113 @@ class OMIEngine(om.ExplicitComponent, ABC):
 
     @staticmethod
     @abstractmethod
-    def get_engine(inputs) -> IEngineSubclass:
+    def get_engine(inputs) -> IEngine:
+        """
+
+        :param inputs: input parameters that define the engine
+        :return: a :class`IEngineSubclass` instance
+        """
+
+
+class EngineTable(om.ExplicitComponent, ABC):
+    """
+    This class computes engine tables, that is to say 2 4D tables:
+
+        Specific Fuel Consumption = f(Mach, altitude, thrust rate, flight phase)
+        thrust = f(Mach, altitude, thrust rate, flight phase)
+    """
+
+    def setup(self):
+        self.options.declare(
+            "mach_min", default=0.0, types=float, desc="Minimum value Mach number ",
+        )
+        self.options.declare(
+            "mach_max", default=1.0, types=float, desc="Maximum value for Mach number ",
+        )
+        self.options.declare(
+            "mach_step_count", default=100, types=int, desc="Step count for Mach number",
+        )
+        self.options.declare(
+            "altitude_min", default=0.0, types=float, desc="Minimum value for altitude in meters",
+        )
+        self.options.declare(
+            "altitude_max",
+            default=13500.0,
+            types=float,
+            desc="Maximum value for altitude in meters",
+        )
+        self.options.declare(
+            "altitude_step_count", default=100, types=int, desc="Step count for thrust rate",
+        )
+
+        self.options.declare(
+            "thrust_rate_min", default=0.0, types=float, desc="Minimum value for thrust rate",
+        )
+        self.options.declare(
+            "thrust_rate_max", default=1.0, types=float, desc="Maximum value for thrust rate",
+        )
+        self.options.declare(
+            "thrust_rate_step_count", default=20, types=int, desc="Step count for thrust rate",
+        )
+
+        self.options.declare("flight_phases", default=[phase for phase in FlightPhase], types=list)
+
+        shape = self._get_shape()
+        self.add_output("private:propulsion:table:mach", shape=shape[0])
+        self.add_output("private:propulsion:table:altitude", shape=shape[1], units="m")
+        self.add_output("private:propulsion:table:thrust_rate", shape=shape[2])
+        self.add_output("private:propulsion:table:flight_phase", shape=shape[3])
+        self.add_output("private:propulsion:table:SFC", shape=shape, units="kg/s/N")
+        self.add_output("private:propulsion:table:thrust", shape=shape, units="N")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        for var in ["mach", "altitude", "thrust_rate"]:
+            outputs["private:propulsion:table:%s" % var] = linspace(
+                self.options["%s_min" % var],
+                self.options["%s_max" % var],
+                self.options["%s_step_count" % var] + 1,
+            )
+
+        outputs["private:propulsion:table:flight_phase"] = [
+            int(phase) for phase in self.options["flight_phases"]
+        ]
+
+        mach = outputs["private:propulsion:table:mach"][:, None, None, None]
+        altitude = outputs["private:propulsion:table:altitude"][None, :, None, None]
+        thrust_rate = outputs["private:propulsion:table:thrust_rate"][None, None, :, None]
+        phase = outputs["private:propulsion:table:flight_phase"][None, None, None, :]
+
+        shape = self._get_shape()
+
+        mach = np.tile(mach, (1, *shape[1:]))
+        altitude = np.tile(altitude, (shape[0], 1, *shape[2:]))
+        thrust_rate = np.tile(thrust_rate, (*shape[:2], 1, shape[3]))
+        phase = np.tile(phase, (*shape[:3], 1))
+
+        SFC, _, thrust = self.get_engine(inputs).compute_flight_points(
+            mach, altitude, phase, thrust_rate=thrust_rate,
+        )
+
+        outputs["private:propulsion:table:SFC"] = SFC
+        outputs["private:propulsion:table:thrust"] = thrust
+
+    def _get_shape(self):
+        nb_mach_values = self.options["mach_step_count"] + 1
+        nb_altitude_values = self.options["altitude_step_count"] + 1
+        nb_thrust_rate_values = self.options["thrust_rate_step_count"] + 1
+        nb_flight_phases = len(self.options["flight_phases"])
+
+        return (
+            nb_mach_values,
+            nb_altitude_values,
+            nb_thrust_rate_values,
+            nb_flight_phases,
+        )
+
+    @staticmethod
+    @abstractmethod
+    def get_engine(inputs) -> IEngine:
         """
 
         :param inputs: input parameters that define the engine

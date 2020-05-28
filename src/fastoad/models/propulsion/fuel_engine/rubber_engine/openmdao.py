@@ -15,7 +15,7 @@ OpenMDAO wrapping of RubberEngine
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.models.propulsion import OMIEngine, IEngineSubclass
+from fastoad.models.propulsion import OMIEngine, IEngine
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 
 from .rubber_engine import RubberEngine
@@ -71,7 +71,7 @@ class OMRubberEngine(OMIEngine):
         )
 
     @staticmethod
-    def get_engine(inputs) -> IEngineSubclass:
+    def get_engine(inputs) -> IEngine:
         """
 
         :param inputs: input parameters that define the engine

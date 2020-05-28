@@ -25,12 +25,16 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def run_system(
-    component: SystemSubclass, input_vars: om.IndepVarComp, setup_mode="auto", add_solvers=False
+    component: SystemSubclass,
+    input_vars: om.IndepVarComp = None,
+    setup_mode="auto",
+    add_solvers=False,
 ):
     """ Runs and returns an OpenMDAO problem with provided component and data"""
     problem = om.Problem()
     model = problem.model
-    model.add_subsystem("inputs", input_vars, promotes=["*"])
+    if input_vars:
+        model.add_subsystem("inputs", input_vars, promotes=["*"])
     model.add_subsystem("component", component, promotes=["*"])
     if add_solvers:
         model.nonlinear_solver = om.NewtonSolver()
