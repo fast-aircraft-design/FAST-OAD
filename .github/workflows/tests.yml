@@ -27,7 +27,7 @@ jobs:
         run: echo "::add-path::$HOME/.poetry/bin"
         shell: bash
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         if: startsWith(runner.os, 'Linux')
         with:
           path: ~/.cache/pypoetry
@@ -35,7 +35,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         if: startsWith(runner.os, 'macOS')
         with:
           path: ~/Library/Caches/pypoetry
@@ -43,7 +43,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         if: startsWith(runner.os, 'Windows')
         with:
           path: ~\AppData\Local\pypoetry\Cache
