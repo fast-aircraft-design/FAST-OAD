@@ -111,18 +111,6 @@ class RubberEngine(IEngine):
         thrust: Optional[Union[float, Sequence]] = None,
     ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
         # pylint: disable=too-many-arguments  # they define the trajectory
-        """
-        see :meth:`fastoad.modules.propulsion.engine.IEngine.compute_flight_points` for more info
-
-
-        :param mach: Mach number
-        :param altitude: (unit=m) altitude w.r.t. to sea level
-        :param phase: flight phase
-        :param use_thrust_rate: tells if thrust_rate or thrust should be used (works element-wise)
-        :param thrust_rate: thrust rate (unit=none)
-        :param thrust: required thrust (unit=N)
-        :return: SFC (in kg/s/N), thrust rate, thrust (in N)
-        """
         return self.compute_flight_points_from_dt4(
             mach, altitude, self._get_delta_t4(phase), use_thrust_rate, thrust_rate, thrust
         )
