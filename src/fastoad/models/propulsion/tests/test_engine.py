@@ -15,6 +15,8 @@ from typing import Union, Sequence, Optional, Tuple
 
 import numpy as np
 from fastoad.constants import FlightPhase
+from fastoad.models.propulsion.fuel_engine.rubber_engine import RubberEngine
+from numpy.testing import assert_allclose
 
 from tests.testing_utilities import run_system
 from ..engine import EngineTable
@@ -108,3 +110,32 @@ def test_EngineTable_DummyEngine():
                         == problem["private:propulsion:table:flight_phase"][l]
                         + problem["private:propulsion:table:thrust_rate"][k]
                     )
+
+
+def test_EngineTable_RubberEngine_interpolate():
+    class RubberEngineTable(EngineTable):
+        @staticmethod
+        def get_engine(inputs) -> IEngine:
+            return RubberEngine(5, 30, 1500, 1e5, 0.95, 10000)
+
+    table = RubberEngineTable()
+    problem = run_system(table, None)
+
+    flight_points = [
+        [0, 0, 0.8, FlightPhase.TAKEOFF],
+        [0.3, 0, 0.5, FlightPhase.TAKEOFF],
+        [0.3, 0, 0.5, FlightPhase.CLIMB],
+        [0.8, 10000, 0.4, FlightPhase.IDLE],
+        [0.8, 13000, 0.7, FlightPhase.CRUISE],
+    ]
+
+    assert_allclose(
+        EngineTable.interpolate_SFC(problem, flight_points),
+        [0.99210e-5, 1.3496e-5, 1.3496e-5, 1.8386e-5, 1.5957e-5],
+        rtol=1e-3,
+    )
+    assert_allclose(
+        EngineTable.interpolate_thrust(problem, flight_points),
+        [95530 * 0.8, 38851, 35677, 9680, 11273],
+        rtol=1e-3,
+    )
