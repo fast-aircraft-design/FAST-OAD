@@ -49,57 +49,24 @@ def test_EngineTable_DummyEngine():
     table = DummyTable()
     problem = run_system(table, None)
 
-    assert problem["private:propulsion:table:mach"].shape == (101,)
-    assert problem["private:propulsion:table:altitude"].shape == (101,)
-    assert problem["private:propulsion:table:thrust_rate"].shape == (21,)
-    assert problem["private:propulsion:table:flight_phase"].shape == (4,)
-    assert problem["private:propulsion:table:SFC"].shape == (101, 101, 21, 4)
-    assert problem["private:propulsion:table:thrust"].shape == (101, 101, 21, 4)
-
-    # now with custom table shape
-    nb_mach_step = 20
-    nb_altitude_step = 15
-    nb_thrust_rate_step = 42
-    flight_phases = [FlightPhase.CRUISE, FlightPhase.CLIMB]
-    min_mach, max_mach = 0.2, 0.8
-    min_altitude, max_altitude = 1000.0, 10000.0
-    min_thrust_rate, max_thrust_rate = 0.3, 0.9
-
-    table = DummyTable(
-        mach_step_count=nb_mach_step,
-        altitude_step_count=nb_altitude_step,
-        thrust_rate_step_count=nb_thrust_rate_step,
-        flight_phases=flight_phases,
-        mach_min=min_mach,
-        mach_max=max_mach,
-        altitude_min=min_altitude,
-        altitude_max=max_altitude,
-        thrust_rate_min=min_thrust_rate,
-        thrust_rate_max=max_thrust_rate,
+    expected_shape = (
+        EngineTable.MACH_STEP_COUNT + 1,
+        EngineTable.ALTITUDE_STEP_COUNT + 1,
+        EngineTable.THRUST_RATE_STEP_COUNT + 1,
+        len(EngineTable.FLIGHT_PHASES),
     )
-    problem = run_system(table, None)
+    assert problem["private:propulsion:table:mach"].shape == (expected_shape[0],)
+    assert problem["private:propulsion:table:altitude"].shape == (expected_shape[1],)
+    assert problem["private:propulsion:table:thrust_rate"].shape == (expected_shape[2],)
+    assert problem["private:propulsion:table:flight_phase"].shape == (expected_shape[3],)
+    assert problem["private:propulsion:table:SFC"].shape == expected_shape
+    assert problem["private:propulsion:table:thrust"].shape == expected_shape
 
-    assert problem["private:propulsion:table:mach"].shape == (nb_mach_step + 1,)
-    assert problem["private:propulsion:table:altitude"].shape == (nb_altitude_step + 1,)
-    assert problem["private:propulsion:table:thrust_rate"].shape == (nb_thrust_rate_step + 1,)
-    assert problem["private:propulsion:table:flight_phase"].shape == (2,)
-    assert problem["private:propulsion:table:SFC"].shape == (
-        nb_mach_step + 1,
-        nb_altitude_step + 1,
-        nb_thrust_rate_step + 1,
-        2,
-    )
-    assert problem["private:propulsion:table:thrust"].shape == (
-        nb_mach_step + 1,
-        nb_altitude_step + 1,
-        nb_thrust_rate_step + 1,
-        2,
-    )
-
-    for i in range(nb_mach_step + 1):
-        for j in range(nb_altitude_step + 1):
-            for k in range(nb_thrust_rate_step + 1):
-                for l in range(2):
+    # Simple iterative check. Some elements are skipped for speeding up the test.
+    for i in range(0, expected_shape[0], 5):
+        for j in range(0, expected_shape[1], 5):
+            for k in range(0, expected_shape[2], 2):
+                for l in range(expected_shape[3]):
                     assert (
                         problem["private:propulsion:table:SFC"][i, j, k, l]
                         == problem["private:propulsion:table:altitude"][j]

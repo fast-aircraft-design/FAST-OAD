@@ -1,5 +1,5 @@
 """
-Base module for engine models
+Base module for engine models.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -22,6 +22,7 @@ import numpy as np
 import openmdao.api as om
 from fastoad.constants import FlightPhase
 from numpy import linspace
+from openmdao.core.component import Component
 from scipy.interpolate import RegularGridInterpolator
 
 
@@ -136,39 +137,16 @@ class EngineTable(om.ExplicitComponent, ABC):
         thrust = f(Mach, altitude, thrust rate, flight phase)
     """
 
-    def initialize(self):
-        self.options.declare(
-            "mach_min", default=0.0, types=float, desc="Minimum value Mach number "
-        )
-        self.options.declare(
-            "mach_max", default=1.0, types=float, desc="Maximum value for Mach number "
-        )
-        self.options.declare(
-            "mach_step_count", default=100, types=int, desc="Step count for Mach number"
-        )
-        self.options.declare(
-            "altitude_min", default=0.0, types=float, desc="Minimum value for altitude in meters"
-        )
-        self.options.declare(
-            "altitude_max",
-            default=13500.0,
-            types=float,
-            desc="Maximum value for altitude in meters",
-        )
-        self.options.declare(
-            "altitude_step_count", default=100, types=int, desc="Step count for thrust rate"
-        )
-
-        self.options.declare(
-            "thrust_rate_min", default=0.0, types=float, desc="Minimum value for thrust rate"
-        )
-        self.options.declare(
-            "thrust_rate_max", default=1.0, types=float, desc="Maximum value for thrust rate"
-        )
-        self.options.declare(
-            "thrust_rate_step_count", default=20, types=int, desc="Step count for thrust rate"
-        )
-        self.options.declare("flight_phases", default=[phase for phase in FlightPhase], types=list)
+    MACH_MIN = 0.0
+    MACH_MAX = 1.0
+    MACH_STEP_COUNT = 100
+    ALTITUDE_MIN = 0.0
+    ALTITUDE_MAX = 13500.0
+    ALTITUDE_STEP_COUNT = 100
+    THRUST_RATE_MIN = 0.0
+    THRUST_RATE_MAX = 1.0
+    THRUST_RATE_STEP_COUNT = 20
+    FLIGHT_PHASES = FlightPhase  # The enum class acts as a list of its values
 
     def setup(self):
         shape = self._get_shape()
@@ -181,15 +159,17 @@ class EngineTable(om.ExplicitComponent, ABC):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        for var in ["mach", "altitude", "thrust_rate"]:
-            outputs["private:propulsion:table:%s" % var] = linspace(
-                self.options["%s_min" % var],
-                self.options["%s_max" % var],
-                self.options["%s_step_count" % var] + 1,
-            )
-
+        outputs["private:propulsion:table:mach"] = linspace(
+            self.MACH_MIN, self.MACH_MAX, self.MACH_STEP_COUNT + 1
+        )
+        outputs["private:propulsion:table:altitude"] = linspace(
+            self.ALTITUDE_MIN, self.ALTITUDE_MAX, self.ALTITUDE_STEP_COUNT + 1
+        )
+        outputs["private:propulsion:table:thrust_rate"] = linspace(
+            self.THRUST_RATE_MIN, self.THRUST_RATE_MAX, self.THRUST_RATE_STEP_COUNT + 1
+        )
         outputs["private:propulsion:table:flight_phase"] = [
-            int(phase) for phase in self.options["flight_phases"]
+            int(phase) for phase in self.FLIGHT_PHASES
         ]
 
         mach = outputs["private:propulsion:table:mach"][:, None, None, None]
@@ -211,17 +191,13 @@ class EngineTable(om.ExplicitComponent, ABC):
         outputs["private:propulsion:table:SFC"] = SFC
         outputs["private:propulsion:table:thrust"] = thrust
 
-    def _get_shape(self):
-        nb_mach_values = self.options["mach_step_count"] + 1
-        nb_altitude_values = self.options["altitude_step_count"] + 1
-        nb_thrust_rate_values = self.options["thrust_rate_step_count"] + 1
-        nb_flight_phases = len(self.options["flight_phases"])
-
+    @classmethod
+    def _get_shape(cls):
         return (
-            nb_mach_values,
-            nb_altitude_values,
-            nb_thrust_rate_values,
-            nb_flight_phases,
+            cls.MACH_STEP_COUNT + 1,
+            cls.ALTITUDE_STEP_COUNT + 1,
+            cls.THRUST_RATE_STEP_COUNT + 1,
+            len(cls.FLIGHT_PHASES),
         )
 
     @staticmethod
@@ -290,3 +266,23 @@ class EngineTable(om.ExplicitComponent, ABC):
             ).squeeze()
 
         return values
+
+    @classmethod
+    def add_inputs(cls, me: Component):
+        """
+        Convenience method for easily adding inputs in setup() method
+
+        To be used in the setup() method of an OpenMDAO component that will use
+        the engine table.
+        It only use the needed add_inputs(). Partial derivatives are not handled
+        here.
+
+        :param me: an OpenMDAO Component instance
+        """
+        shape = cls._get_shape()
+        me.add_input("private:propulsion:table:mach", np.nan, shape=shape[0])
+        me.add_input("private:propulsion:table:altitude", np.nan, shape=shape[1], units="m")
+        me.add_input("private:propulsion:table:thrust_rate", np.nan, shape=shape[2])
+        me.add_input("private:propulsion:table:flight_phase", np.nan, shape=shape[3])
+        me.add_input("private:propulsion:table:SFC", np.nan, shape=shape, units="kg/s/N")
+        me.add_input("private:propulsion:table:thrust", np.nan, shape=shape, units="N")
