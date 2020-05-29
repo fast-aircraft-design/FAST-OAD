@@ -135,18 +135,18 @@ class EngineTable(om.ExplicitComponent, ABC):
         thrust = f(Mach, altitude, thrust rate, flight phase)
     """
 
-    def setup(self):
+    def initialize(self):
         self.options.declare(
-            "mach_min", default=0.0, types=float, desc="Minimum value Mach number ",
+            "mach_min", default=0.0, types=float, desc="Minimum value Mach number "
         )
         self.options.declare(
-            "mach_max", default=1.0, types=float, desc="Maximum value for Mach number ",
+            "mach_max", default=1.0, types=float, desc="Maximum value for Mach number "
         )
         self.options.declare(
-            "mach_step_count", default=100, types=int, desc="Step count for Mach number",
+            "mach_step_count", default=100, types=int, desc="Step count for Mach number"
         )
         self.options.declare(
-            "altitude_min", default=0.0, types=float, desc="Minimum value for altitude in meters",
+            "altitude_min", default=0.0, types=float, desc="Minimum value for altitude in meters"
         )
         self.options.declare(
             "altitude_max",
@@ -155,21 +155,21 @@ class EngineTable(om.ExplicitComponent, ABC):
             desc="Maximum value for altitude in meters",
         )
         self.options.declare(
-            "altitude_step_count", default=100, types=int, desc="Step count for thrust rate",
+            "altitude_step_count", default=100, types=int, desc="Step count for thrust rate"
         )
 
         self.options.declare(
-            "thrust_rate_min", default=0.0, types=float, desc="Minimum value for thrust rate",
+            "thrust_rate_min", default=0.0, types=float, desc="Minimum value for thrust rate"
         )
         self.options.declare(
-            "thrust_rate_max", default=1.0, types=float, desc="Maximum value for thrust rate",
+            "thrust_rate_max", default=1.0, types=float, desc="Maximum value for thrust rate"
         )
         self.options.declare(
-            "thrust_rate_step_count", default=20, types=int, desc="Step count for thrust rate",
+            "thrust_rate_step_count", default=20, types=int, desc="Step count for thrust rate"
         )
-
         self.options.declare("flight_phases", default=[phase for phase in FlightPhase], types=list)
 
+    def setup(self):
         shape = self._get_shape()
         self.add_output("private:propulsion:table:mach", shape=shape[0])
         self.add_output("private:propulsion:table:altitude", shape=shape[1], units="m")
