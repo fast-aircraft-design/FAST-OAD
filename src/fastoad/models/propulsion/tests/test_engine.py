@@ -80,29 +80,40 @@ def test_EngineTable_DummyEngine():
 
 
 def test_EngineTable_RubberEngine_interpolate():
+
+    engine = RubberEngine(5, 30, 1500, 1e5, 0.95, 10000)
+
     class RubberEngineTable(EngineTable):
         @staticmethod
         def get_engine(inputs) -> IEngine:
-            return RubberEngine(5, 30, 1500, 1e5, 0.95, 10000)
+            return engine
 
     table = RubberEngineTable()
     problem = run_system(table, None)
 
-    flight_points = [
-        [0, 0, 0.8, FlightPhase.TAKEOFF],
-        [0.3, 0, 0.5, FlightPhase.TAKEOFF],
-        [0.3, 0, 0.5, FlightPhase.CLIMB],
-        [0.8, 10000, 0.4, FlightPhase.IDLE],
-        [0.8, 13000, 0.7, FlightPhase.CRUISE],
+    machs = np.array([0, 0.3, 0.3, 0.8, 0.8])
+    altitudes = [0, 0, 0, 10000, 13000]
+    thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
+    phases = [
+        FlightPhase.TAKEOFF,
+        FlightPhase.TAKEOFF,
+        FlightPhase.CLIMB,
+        FlightPhase.IDLE,
+        FlightPhase.CRUISE,
     ]
 
+    # Let's compare the interpolation to a direct call to the RubberEngine instance
+    ref_sfc, _, ref_thrust_rate = engine.compute_flight_points(
+        machs, altitudes, phases, thrust_rate=thrust_rates
+    )
+
     assert_allclose(
-        EngineTable.interpolate_SFC(problem, flight_points),
-        [0.99210e-5, 1.3496e-5, 1.3496e-5, 1.8386e-5, 1.5957e-5],
+        EngineTable.interpolate_SFC(problem, machs, altitudes, thrust_rates, phases),
+        ref_sfc,
         rtol=1e-3,
     )
     assert_allclose(
-        EngineTable.interpolate_thrust(problem, flight_points),
-        [95530 * 0.8, 38851, 35677, 9680, 11273],
+        EngineTable.interpolate_thrust(problem, machs, altitudes, thrust_rates, phases),
+        ref_thrust_rate,
         rtol=1e-3,
     )

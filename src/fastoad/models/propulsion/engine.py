@@ -16,7 +16,7 @@ Base module for engine models.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from typing import Union, Sequence, Optional, Tuple
+from typing import Union, Sequence, Optional, Tuple, Mapping
 
 import numpy as np
 import openmdao.api as om
@@ -32,7 +32,6 @@ class IEngine(ABC):
     """
 
     # pylint: disable=too-few-public-methods  # that is the needed interface
-
     # pylint: disable=too-many-arguments  # they define the trajectory
     @abstractmethod
     def compute_flight_points(
@@ -210,59 +209,99 @@ class EngineTable(om.ExplicitComponent, ABC):
         """
 
     @classmethod
-    def interpolate_SFC(cls, inputs, flight_points):
+    def interpolate_SFC(
+        cls,
+        inputs: Mapping,
+        mach: Union[float, Sequence[float]],
+        altitude: Union[float, Sequence[float]],
+        thrust_rate: Union[float, Sequence[float]],
+        flight_phase: Union[FlightPhase, Sequence[FlightPhase]],
+    ):
         """
         Convenience method for interpolating SFC from SFC table as provided by :meth:`compute`
 
+        Note: `mach`, `altitude`, `thrust_rate` and `flight_phase` must have the same size.
+
         :param inputs: a dict-like that provides OpenMDAO outputs from self.compute()
-        :param flight_points: a (N,4) array-like with columns (mach, altitude, thrust_rate,
-                              flight_phase)
+        :param mach: Mach number
+        :param altitude: (unit=m) altitude w.r.t. to sea level
+        :param thrust_rate: thrust rate (unit=none)
+        :param flight_phase: flight phase
         :return: a (N,) array with SFC values
         """
-        return cls._interpolate_table(inputs, flight_points, "private:propulsion:table:SFC")
+        return cls._interpolate_table(
+            inputs, "private:propulsion:table:SFC", mach, altitude, thrust_rate, flight_phase
+        )
 
     @classmethod
-    def interpolate_thrust(cls, inputs, flight_points):
+    def interpolate_thrust(
+        cls,
+        inputs: Mapping,
+        mach: Union[float, Sequence[float]],
+        altitude: Union[float, Sequence[float]],
+        thrust_rate: Union[float, Sequence[float]],
+        flight_phase: Union[FlightPhase, Sequence[FlightPhase]],
+    ):
         """
         Convenience method for interpolating thrust from thrust table as provided by :meth:`compute`
 
+        Note: `mach`, `altitude`, `thrust_rate` and `flight_phase` must have the same size.
+
         :param inputs: a dict-like that provides OpenMDAO outputs from self.compute()
-        :param flight_points: a (N,4) array-like with columns (mach, altitude, thrust_rate,
-                              flight_phase)
+        :param mach: Mach number
+        :param altitude: (unit=m) altitude w.r.t. to sea level
+        :param thrust_rate: thrust rate (unit=none)
+        :param flight_phase: flight phase
         :return: a (N,) array with thrust values
         """
-        return cls._interpolate_table(inputs, flight_points, "private:propulsion:table:thrust")
+        return cls._interpolate_table(
+            inputs, "private:propulsion:table:thrust", mach, altitude, thrust_rate, flight_phase
+        )
 
     @staticmethod
-    def _interpolate_table(inputs, flight_points, table_var_name):
+    def _interpolate_table(
+        inputs,
+        table_var_name,
+        mach: Union[float, Sequence[float]],
+        altitude: Union[float, Sequence[float]],
+        thrust_rate: Union[float, Sequence[float]],
+        flight_phase: Union[FlightPhase, Sequence[FlightPhase]],
+    ):
         """
         Convenience method for interpolating values from table as provided by :meth:`compute`
 
+        Note: `mach`, `altitude`, `thrust_rate` and `flight_phase` must have the same size.
+
         :param inputs: a dict-like that provides OpenMDAO outputs from self.compute()
-        :param flight_points: a (N,4) array-like with columns (mach, altitude, thrust_rate,
-                              flight_phase)
         :param table_var_name: the variable name for table where to interpolate
+        :param mach: Mach number
+        :param altitude: (unit=m) altitude w.r.t. to sea level
+        :param thrust_rate: thrust rate (unit=none)
+        :param flight_phase: flight phase
         :return: a (N,) array with values
         """
 
-        mach = inputs["private:propulsion:table:mach"]
-        altitude = inputs["private:propulsion:table:altitude"]
-        thrust_rate = inputs["private:propulsion:table:thrust_rate"]
-        flight_phases = inputs["private:propulsion:table:flight_phase"]
-        sfc_table = inputs[table_var_name]
+        mach_vector = inputs["private:propulsion:table:mach"]
+        altitude_vector = inputs["private:propulsion:table:altitude"]
+        thrust_rate_vector = inputs["private:propulsion:table:thrust_rate"]
+        flight_phase_vector = inputs["private:propulsion:table:flight_phase"]
+        table = inputs[table_var_name]
 
-        flight_points = np.asarray(flight_points)
+        flight_points = np.column_stack((mach, altitude, thrust_rate, flight_phase))
 
         interpolators = {}
-        for phase in flight_phases:
+        for phase in flight_phase_vector:
             interpolators[phase] = RegularGridInterpolator(
-                (mach, altitude, thrust_rate), sfc_table[:, :, :, flight_phases == phase]
+                (mach_vector, altitude_vector, thrust_rate_vector),
+                table[:, :, :, flight_phase_vector == phase],
             )
 
         values = np.empty((flight_points.shape[0],), np.float)
-        for phase in flight_phases:
-            values[flight_points[:, 3] == phase] = interpolators[phase](
-                flight_points[:, :3][flight_points[:, 3] == phase]
+        for phase in flight_phase_vector:
+            phase_column = flight_points[:, 3]
+            other_columns = flight_points[:, :3]
+            values[phase_column == phase] = interpolators[phase](
+                other_columns[phase_column == phase]
             ).squeeze()
 
         return values
