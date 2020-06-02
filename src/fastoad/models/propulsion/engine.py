@@ -1,6 +1,4 @@
-"""
-Base module for engine models.
-"""
+"""Base module for engine models."""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -28,11 +26,9 @@ from scipy.interpolate import RegularGridInterpolator
 
 class IEngine(ABC):
     """
-    Interface for Engine models
+    Interface that should be implemented by engine models.
     """
 
-    # pylint: disable=too-few-public-methods  # that is the needed interface
-    # pylint: disable=too-many-arguments  # they define the trajectory
     @abstractmethod
     def compute_flight_points(
         self,
@@ -122,15 +118,18 @@ class OMIEngine(om.ExplicitComponent, ABC):
     @abstractmethod
     def get_engine(inputs) -> IEngine:
         """
+        This method defines the IEngine-derived instance used by the OpenMDAO component.
 
         :param inputs: input parameters that define the engine
-        :return: a :class`IEngineSubclass` instance
+        :return: the engine instance
         """
 
 
 class EngineTable(om.ExplicitComponent, ABC):
     """
-    This class computes engine tables, that is to say 2 4D tables:
+    This class computes engine tables.
+
+    Engine tables are two 4D tables:
 
         Specific Fuel Consumption = f(Mach, altitude, thrust rate, flight phase)
         thrust = f(Mach, altitude, thrust rate, flight phase)
@@ -203,6 +202,7 @@ class EngineTable(om.ExplicitComponent, ABC):
     @abstractmethod
     def get_engine(inputs) -> IEngine:
         """
+        This method defines the engine instance used for generating the table.
 
         :param inputs: input parameters that define the engine
         :return: a :class`IEngineSubclass` instance
@@ -218,7 +218,7 @@ class EngineTable(om.ExplicitComponent, ABC):
         flight_phase: Union[FlightPhase, Sequence[FlightPhase]],
     ):
         """
-        Convenience method for interpolating SFC from SFC table as provided by :meth:`compute`
+        Convenience method for interpolating in SFC table provided by :meth:`compute`.
 
         Note: `mach`, `altitude`, `thrust_rate` and `flight_phase` must have the same size.
 
@@ -243,7 +243,7 @@ class EngineTable(om.ExplicitComponent, ABC):
         flight_phase: Union[FlightPhase, Sequence[FlightPhase]],
     ):
         """
-        Convenience method for interpolating thrust from thrust table as provided by :meth:`compute`
+        Convenience method for interpolating in thrust table provided by :meth:`compute`.
 
         Note: `mach`, `altitude`, `thrust_rate` and `flight_phase` must have the same size.
 
@@ -268,7 +268,7 @@ class EngineTable(om.ExplicitComponent, ABC):
         flight_phase: Union[FlightPhase, Sequence[FlightPhase]],
     ):
         """
-        Convenience method for interpolating values from table as provided by :meth:`compute`
+        Convenience method for interpolating values from tables provided by :meth:`compute`.
 
         Note: `mach`, `altitude`, `thrust_rate` and `flight_phase` must have the same size.
 
@@ -309,7 +309,7 @@ class EngineTable(om.ExplicitComponent, ABC):
     @classmethod
     def add_inputs(cls, me: Component):
         """
-        Convenience method for easily adding inputs in setup() method
+        Convenience method for easily adding inputs in setup() method.
 
         To be used in the setup() method of an OpenMDAO component that will use
         the engine table.
