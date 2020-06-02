@@ -1,5 +1,5 @@
 """
-Base module for engine models
+Base module for engine models.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -27,12 +27,9 @@ IEngineSubclass = TypeVar("IEngineSubclass", bound="IEngine")
 
 class IEngine(ABC):
     """
-    Interface for Engine models
+    Interface that should be implemented by engine models.
     """
 
-    # pylint: disable=too-few-public-methods  # that is the needed interface
-
-    # pylint: disable=too-many-arguments  # they define the trajectory
     @abstractmethod
     def compute_flight_points(
         self,
@@ -122,6 +119,7 @@ class OMIEngine(om.ExplicitComponent, ABC):
     @abstractmethod
     def get_engine(inputs) -> IEngineSubclass:
         """
+        This method defines the engine instance used for generating the table.
 
         :param inputs: input parameters that define the engine
         :return: a :class`IEngineSubclass` instance

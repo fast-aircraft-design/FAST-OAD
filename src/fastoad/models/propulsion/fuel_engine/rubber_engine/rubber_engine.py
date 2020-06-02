@@ -21,6 +21,7 @@ from typing import Union, Sequence, Tuple, Optional
 
 import numpy as np
 from fastoad.constants import FlightPhase
+from fastoad.exceptions import FastUnknownFlightPhaseError
 from fastoad.models.propulsion import IEngine
 from fastoad.models.propulsion.fuel_engine.rubber_engine.exceptions import (
     FastRubberEngineInconsistentInputParametersError,
@@ -99,7 +100,9 @@ class RubberEngine(IEngine):
         }
 
         # ... so check that all FlightPhase values are in dict
-        assert any([key in self.dt4_values.keys() for key in FlightPhase])
+        unknown_keys = [key for key in FlightPhase if key not in self.dt4_values.keys()]
+        if unknown_keys:
+            raise FastUnknownFlightPhaseError("Unknown flight phases: %s", unknown_keys)
 
     def compute_flight_points(
         self,
