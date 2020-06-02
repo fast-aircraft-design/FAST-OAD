@@ -79,7 +79,7 @@ def test_EngineTable_DummyEngine():
                     )
 
 
-def test_EngineTable_RubberEngine_interpolate():
+def test_EngineTable_RubberEngine_interpolate_from_thrust_rate():
 
     engine = RubberEngine(5, 30, 1500, 1e5, 0.95, 10000)
 
@@ -103,17 +103,57 @@ def test_EngineTable_RubberEngine_interpolate():
     ]
 
     # Let's compare the interpolation to a direct call to the RubberEngine instance
-    ref_sfc, _, ref_thrust_rate = engine.compute_flight_points(
+    ref_sfc, _, ref_thrust = engine.compute_flight_points(
         machs, altitudes, phases, thrust_rate=thrust_rates
     )
 
+    sfc, thrust = EngineTable.interpolate_from_thrust_rate(
+        problem, machs, altitudes, thrust_rates, phases
+    )
+
     assert_allclose(
-        EngineTable.interpolate_SFC(problem, machs, altitudes, thrust_rates, phases),
-        ref_sfc,
-        rtol=1e-3,
+        sfc, ref_sfc, rtol=1e-3,
     )
     assert_allclose(
-        EngineTable.interpolate_thrust(problem, machs, altitudes, thrust_rates, phases),
-        ref_thrust_rate,
-        rtol=1e-3,
+        thrust, ref_thrust, rtol=1e-3,
+    )
+
+
+def test_EngineTable_RubberEngine_interpolate_from_thrust():
+
+    engine = RubberEngine(5, 30, 1500, 1e5, 0.95, 10000)
+
+    class RubberEngineTable(EngineTable):
+        @staticmethod
+        def get_engine(inputs) -> IEngine:
+            return engine
+
+    table = RubberEngineTable()
+    problem = run_system(table, None)
+
+    machs = np.array([0, 0.3, 0.3, 0.8, 0.8])
+    altitudes = [0, 0, 0, 10000, 13000]
+    thrusts = [9553 * 0.8, 38851, 35677, 9680, 11273]
+    phases = [
+        FlightPhase.TAKEOFF,
+        FlightPhase.TAKEOFF,
+        FlightPhase.CLIMB,
+        FlightPhase.IDLE,
+        FlightPhase.CRUISE,
+    ]
+
+    # Let's compare the interpolation to a direct call to the RubberEngine instance
+    ref_sfc, ref_thrust_rate, _ = engine.compute_flight_points(
+        machs, altitudes, phases, thrust=thrusts
+    )
+
+    sfc, thrust_rate = EngineTable.interpolate_from_thrust(
+        problem, machs, altitudes, thrusts, phases
+    )
+
+    assert_allclose(
+        sfc, ref_sfc, rtol=1e-3,
+    )
+    assert_allclose(
+        thrust_rate, ref_thrust_rate, rtol=1e-3,
     )

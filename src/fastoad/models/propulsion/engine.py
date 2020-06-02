@@ -21,7 +21,7 @@ import openmdao.api as om
 from fastoad.constants import FlightPhase
 from numpy import linspace
 from openmdao.core.component import Component
-from scipy.interpolate import RegularGridInterpolator
+from scipy.interpolate import RegularGridInterpolator, interp1d
 
 
 class IEngine(ABC):
@@ -209,7 +209,7 @@ class EngineTable(om.ExplicitComponent, ABC):
         """
 
     @classmethod
-    def interpolate_SFC(
+    def interpolate_from_thrust_rate(
         cls,
         inputs: Mapping,
         mach: Union[float, Sequence[float]],
@@ -220,46 +220,93 @@ class EngineTable(om.ExplicitComponent, ABC):
         """
         Convenience method for interpolating in SFC table provided by :meth:`compute`.
 
-        Note: `mach`, `altitude`, `thrust_rate` and `flight_phase` must have the same size.
+        Note: `mach`, `altitude`, `thrust_rate` and `flight_phase` must have the same (N,) size.
 
         :param inputs: a dict-like that provides OpenMDAO outputs from self.compute()
         :param mach: Mach number
         :param altitude: (unit=m) altitude w.r.t. to sea level
         :param thrust_rate: thrust rate (unit=none)
         :param flight_phase: flight phase
-        :return: a (N,) array with SFC values
+        :return: a tuple of two (N,) arrays with SFC (kg/N/s) and thrust values (N)
         """
-        return cls._interpolate_table(
-            inputs, "private:propulsion:table:SFC", mach, altitude, thrust_rate, flight_phase
+        return (
+            cls._interpolate_table(
+                inputs, "private:propulsion:table:SFC", mach, altitude, thrust_rate, flight_phase,
+            ),
+            cls._interpolate_table(
+                inputs,
+                "private:propulsion:table:thrust",
+                mach,
+                altitude,
+                thrust_rate,
+                flight_phase,
+            ),
         )
 
     @classmethod
-    def interpolate_thrust(
+    def interpolate_from_thrust(
         cls,
         inputs: Mapping,
         mach: Union[float, Sequence[float]],
         altitude: Union[float, Sequence[float]],
-        thrust_rate: Union[float, Sequence[float]],
+        thrust: Union[float, Sequence[float]],
         flight_phase: Union[FlightPhase, Sequence[FlightPhase]],
     ):
         """
-        Convenience method for interpolating in thrust table provided by :meth:`compute`.
+        Convenience method for interpolating in SFC table provided by :meth:`compute`.
 
-        Note: `mach`, `altitude`, `thrust_rate` and `flight_phase` must have the same size.
+        Note: `mach`, `altitude`, `thrust_rate` and `flight_phase` must have the same (N,) size.
 
         :param inputs: a dict-like that provides OpenMDAO outputs from self.compute()
         :param mach: Mach number
         :param altitude: (unit=m) altitude w.r.t. to sea level
-        :param thrust_rate: thrust rate (unit=none)
+        :param thrust: thrust (unit=N)
         :param flight_phase: flight phase
-        :return: a (N,) array with thrust values
+        :return: a tuple of two (N,) arrays with SFC (kg/N/s) and thrust rate values
         """
-        return cls._interpolate_table(
-            inputs, "private:propulsion:table:thrust", mach, altitude, thrust_rate, flight_phase
+
+        # We have tables thrust = f(thrust_rate, ...) and SFC = f(thrust_rate, ...)
+        # We use first one to have thrust_rate = f(thrust) for each flight point.
+        # Once we have thrust_rate, we use the existing interpolation in SFC table
+
+        interpolators = cls._get_interpolators(inputs, "private:propulsion:table:thrust")
+        thrust_rate_vector = inputs["private:propulsion:table:thrust_rate"]
+        thrust_rate = []
+        for mach_value, altitude_value, thrust_value, phase_value in zip(
+            mach, altitude, thrust, flight_phase
+        ):
+            # For each flight point
+
+            # Get the interpolator for the current flight phase
+            interpolator = interpolators[phase_value]
+
+            # Build pseudo flight-points with current mach and altitude, but for
+            # all thrust rate values
+            thrust_rate_range = np.column_stack(
+                (
+                    [mach_value] * len(thrust_rate_vector),
+                    [altitude_value] * len(thrust_rate_vector),
+                    thrust_rate_vector,
+                )
+            )
+
+            # Get thrust for each pseudo-flight point, so we get thrust = f(thrust_rate)
+            thrust_vector = interpolator(thrust_rate_range).squeeze()
+
+            # Interpolate thrust_rate from reverse function thrust_rate=f(thrust) (bijection
+            # should apply, as they are normally monotonous (increasing) functions)
+            thrust_rate.append(interp1d(thrust_vector, thrust_rate_vector)(thrust_value))
+
+        return (
+            cls._interpolate_table(
+                inputs, "private:propulsion:table:SFC", mach, altitude, thrust_rate, flight_phase,
+            ),
+            np.asarray(thrust_rate),
         )
 
-    @staticmethod
+    @classmethod
     def _interpolate_table(
+        cls,
         inputs,
         table_var_name,
         mach: Union[float, Sequence[float]],
@@ -281,23 +328,12 @@ class EngineTable(om.ExplicitComponent, ABC):
         :return: a (N,) array with values
         """
 
-        mach_vector = inputs["private:propulsion:table:mach"]
-        altitude_vector = inputs["private:propulsion:table:altitude"]
-        thrust_rate_vector = inputs["private:propulsion:table:thrust_rate"]
-        flight_phase_vector = inputs["private:propulsion:table:flight_phase"]
-        table = inputs[table_var_name]
-
         flight_points = np.column_stack((mach, altitude, thrust_rate, flight_phase))
 
-        interpolators = {}
-        for phase in flight_phase_vector:
-            interpolators[phase] = RegularGridInterpolator(
-                (mach_vector, altitude_vector, thrust_rate_vector),
-                table[:, :, :, flight_phase_vector == phase],
-            )
+        interpolators = cls._get_interpolators(inputs, table_var_name)
 
         values = np.empty((flight_points.shape[0],), np.float)
-        for phase in flight_phase_vector:
+        for phase in interpolators.keys():
             phase_column = flight_points[:, 3]
             other_columns = flight_points[:, :3]
             values[phase_column == phase] = interpolators[phase](
@@ -325,3 +361,21 @@ class EngineTable(om.ExplicitComponent, ABC):
         me.add_input("private:propulsion:table:flight_phase", np.nan, shape=shape[3])
         me.add_input("private:propulsion:table:SFC", np.nan, shape=shape, units="kg/s/N")
         me.add_input("private:propulsion:table:thrust", np.nan, shape=shape, units="N")
+
+    @classmethod
+    def _get_interpolators(cls, inputs, table_var_name):
+        """Returns a RegularGridInterpolator instance for each flight phase."""
+        mach_vector = inputs["private:propulsion:table:mach"]
+        altitude_vector = inputs["private:propulsion:table:altitude"]
+        thrust_rate_vector = inputs["private:propulsion:table:thrust_rate"]
+        flight_phase_vector = inputs["private:propulsion:table:flight_phase"]
+        table = inputs[table_var_name]
+
+        interpolators = {}
+        for phase in flight_phase_vector:
+            interpolators[phase] = RegularGridInterpolator(
+                (mach_vector, altitude_vector, thrust_rate_vector),
+                table[:, :, :, flight_phase_vector == phase],
+            )
+
+        return interpolators
