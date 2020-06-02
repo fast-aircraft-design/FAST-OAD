@@ -295,7 +295,11 @@ class EngineTable(om.ExplicitComponent, ABC):
 
             # Interpolate thrust_rate from reverse function thrust_rate=f(thrust) (bijection
             # should apply, as they are normally monotonous (increasing) functions)
-            thrust_rate.append(interp1d(thrust_vector, thrust_rate_vector)(thrust_value))
+            thrust_rate.append(
+                interp1d(thrust_vector, thrust_rate_vector, bounds_error=False, fill_value=np.nan)(
+                    thrust_value
+                )
+            )
 
         return (
             cls._interpolate_table(
@@ -376,6 +380,8 @@ class EngineTable(om.ExplicitComponent, ABC):
             interpolators[phase] = RegularGridInterpolator(
                 (mach_vector, altitude_vector, thrust_rate_vector),
                 table[:, :, :, flight_phase_vector == phase],
+                bounds_error=False,
+                fill_value=np.nan,
             )
 
         return interpolators

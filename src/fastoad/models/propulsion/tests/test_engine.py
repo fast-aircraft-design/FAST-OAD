@@ -33,7 +33,6 @@ class DummyEngine(IEngine):
         thrust_rate: Optional[Union[float, Sequence]] = None,
         thrust: Optional[Union[float, Sequence]] = None,
     ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
-
         sfc = altitude + mach
         thrust = phase.astype(np.float) + thrust_rate
 
@@ -80,7 +79,6 @@ def test_EngineTable_DummyEngine():
 
 
 def test_EngineTable_RubberEngine_interpolate_from_thrust_rate():
-
     engine = RubberEngine(5, 30, 1500, 1e5, 0.95, 10000)
 
     class RubberEngineTable(EngineTable):
@@ -91,16 +89,21 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust_rate():
     table = RubberEngineTable()
     problem = run_system(table, None)
 
-    machs = np.array([0, 0.3, 0.3, 0.8, 0.8])
-    altitudes = [0, 0, 0, 10000, 13000]
-    thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    phases = [
-        FlightPhase.TAKEOFF,
+    mach_values = [0, 0.3, 0.5, 0.7, 0.8, 0.9]
+    altitude_values = [0.0, 3000.0, 6000.0, 10000.0]
+    thrust_rate_values = [0.05, 0.3, 0.8, 1.0]
+    phase_values = [
         FlightPhase.TAKEOFF,
         FlightPhase.CLIMB,
         FlightPhase.IDLE,
         FlightPhase.CRUISE,
     ]
+
+    machs, altitudes, thrust_rates, phases = (
+        np.array(np.meshgrid(mach_values, altitude_values, thrust_rate_values, phase_values))
+        .T.reshape(-1, 4)
+        .T.tolist()
+    )
 
     # Let's compare the interpolation to a direct call to the RubberEngine instance
     ref_sfc, _, ref_thrust = engine.compute_flight_points(
@@ -112,7 +115,7 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust_rate():
     )
 
     assert_allclose(
-        sfc, ref_sfc, rtol=1e-3,
+        sfc, ref_sfc, rtol=2e-3,
     )
     assert_allclose(
         thrust, ref_thrust, rtol=1e-3,
@@ -120,7 +123,6 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust_rate():
 
 
 def test_EngineTable_RubberEngine_interpolate_from_thrust():
-
     engine = RubberEngine(5, 30, 1500, 1e5, 0.95, 10000)
 
     class RubberEngineTable(EngineTable):
@@ -131,16 +133,21 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust():
     table = RubberEngineTable()
     problem = run_system(table, None)
 
-    machs = np.array([0, 0.3, 0.3, 0.8, 0.8])
-    altitudes = [0, 0, 0, 10000, 13000]
-    thrusts = [9553 * 0.8, 38851, 35677, 9680, 11273]
-    phases = [
-        FlightPhase.TAKEOFF,
+    mach_values = [0, 0.3, 0.5, 0.7, 0.8, 0.9]
+    altitude_values = [0.0, 3000.0, 6000.0, 10000.0]
+    thrust_values = [1.0, 20000.0, 60000.0, 100000.0]
+    phase_values = [
         FlightPhase.TAKEOFF,
         FlightPhase.CLIMB,
         FlightPhase.IDLE,
         FlightPhase.CRUISE,
     ]
+
+    machs, altitudes, thrusts, phases = (
+        np.array(np.meshgrid(mach_values, altitude_values, thrust_values, phase_values))
+        .T.reshape(-1, 4)
+        .T.tolist()
+    )
 
     # Let's compare the interpolation to a direct call to the RubberEngine instance
     ref_sfc, ref_thrust_rate, _ = engine.compute_flight_points(
@@ -151,9 +158,14 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust():
         problem, machs, altitudes, thrusts, phases
     )
 
+    # We remove points where thrust rate is out of bounds, because they produce
+    # NaN value in interpolation but not when using the engine model.
+    idx_thrust_rate_ok = (ref_thrust_rate >= 0.0) & (ref_thrust_rate <= 1.0)
+    assert np.all(idx_thrust_rate_ok == np.isfinite(sfc))
+
     assert_allclose(
-        sfc, ref_sfc, rtol=1e-3,
+        sfc[idx_thrust_rate_ok], ref_sfc[idx_thrust_rate_ok], rtol=2e-3,
     )
     assert_allclose(
-        thrust_rate, ref_thrust_rate, rtol=1e-3,
+        thrust_rate[idx_thrust_rate_ok], ref_thrust_rate[idx_thrust_rate_ok], rtol=1e-3,
     )
