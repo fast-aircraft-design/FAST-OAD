@@ -89,9 +89,10 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust_rate():
     table = RubberEngineTable()
     problem = run_system(table, None)
 
-    mach_values = [0, 0.3, 0.5, 0.7, 0.8, 0.9]
-    altitude_values = [0.0, 3000.0, 6000.0, 10000.0]
-    thrust_rate_values = [0.05, 0.3, 0.8, 1.0]
+    # Using values that should not be exact points in the table
+    mach_values = [0.002, 0.323, 0.589, 0.745, 0.872, 0.911]
+    altitude_values = [12.5, 3023.0, 6537.0, 10112.0]
+    thrust_rate_values = [0.051, 0.334, 0.813, 0.998]
     phase_values = [
         FlightPhase.TAKEOFF,
         FlightPhase.CLIMB,
@@ -99,6 +100,7 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust_rate():
         FlightPhase.CRUISE,
     ]
 
+    # We do all combinations of the four parameters
     machs, altitudes, thrust_rates, phases = (
         np.array(np.meshgrid(mach_values, altitude_values, thrust_rate_values, phase_values))
         .T.reshape(-1, 4)
@@ -115,7 +117,7 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust_rate():
     )
 
     assert_allclose(
-        sfc, ref_sfc, rtol=2e-3,
+        sfc, ref_sfc, rtol=1e-3,
     )
     assert_allclose(
         thrust, ref_thrust, rtol=1e-3,
@@ -133,8 +135,9 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust():
     table = RubberEngineTable()
     problem = run_system(table, None)
 
-    mach_values = [0, 0.3, 0.5, 0.7, 0.8, 0.9]
-    altitude_values = [0.0, 3000.0, 6000.0, 10000.0]
+    # Using values that should not be exact points in the table
+    mach_values = [0.002, 0.313, 0.573, 0.785, 0.822, 0.951]
+    altitude_values = [12.5, 3023.0, 6537.0, 10112.0]
     thrust_values = [1.0, 20000.0, 60000.0, 100000.0]
     phase_values = [
         FlightPhase.TAKEOFF,
@@ -143,6 +146,7 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust():
         FlightPhase.CRUISE,
     ]
 
+    # We do all combinations of the four parameters
     machs, altitudes, thrusts, phases = (
         np.array(np.meshgrid(mach_values, altitude_values, thrust_values, phase_values))
         .T.reshape(-1, 4)
@@ -164,7 +168,7 @@ def test_EngineTable_RubberEngine_interpolate_from_thrust():
     assert np.all(idx_thrust_rate_ok == np.isfinite(sfc))
 
     assert_allclose(
-        sfc[idx_thrust_rate_ok], ref_sfc[idx_thrust_rate_ok], rtol=2e-3,
+        sfc[idx_thrust_rate_ok], ref_sfc[idx_thrust_rate_ok], rtol=1e-3,
     )
     assert_allclose(
         thrust_rate[idx_thrust_rate_ok], ref_thrust_rate[idx_thrust_rate_ok], rtol=1e-3,
