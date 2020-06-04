@@ -32,6 +32,7 @@ def run_system(
 ):
     """ Runs and returns an OpenMDAO problem with provided component and data"""
     problem = om.Problem()
+    problem.driver = om.ScipyOptimizeDriver(tol=1e-6, optimizer="COBYLA")
     model = problem.model
     if input_vars:
         model.add_subsystem("inputs", input_vars, promotes=["*"])

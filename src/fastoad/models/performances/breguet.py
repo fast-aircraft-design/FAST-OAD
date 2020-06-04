@@ -17,6 +17,7 @@ Simple module for performances
 import numpy as np
 import openmdao.api as om
 from fastoad.constants import FlightPhase
+from fastoad.models.propulsion.engine import EngineTable
 from fastoad.utils.physics import Atmosphere
 from scipy.constants import g
 
@@ -37,17 +38,24 @@ class BreguetFromMTOW(om.Group):
     This model does not ensure consistency with OWE (Operating Empty Weight)
     """
 
+    def initialize(self):
+        self.options.declare("use_tables", default=False, types=bool)
+
     # TODO: in a more general case, this module will link the starting mass to
     #   the ending mass. Could we make the module more generic ?
     def setup(self):
-        self.add_subsystem("propulsion", _BreguetPropulsion(), promotes=["*"])
+        if self.options["use_tables"]:
+            self.add_subsystem("propulsion", _BreguetPropulsionTable(), promotes=["*"])
+        else:
+            self.add_subsystem("propulsion", _BreguetPropulsion(), promotes=["*"])
+
         self.add_subsystem("distances", _Distances(), promotes=["*"])
         self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
         self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
         self.add_subsystem("consumption", _Consumption(), promotes=["*"])
 
 
-class BreguetFromOWE(om.Group):
+class BreguetFromOWE(BreguetFromMTOW):
     """
     Estimation of fuel consumption through Breguet formula with a rough estimate
     of climb and descent phases.
@@ -59,12 +67,8 @@ class BreguetFromOWE(om.Group):
     """
 
     def setup(self):
-        self.add_subsystem("propulsion", _BreguetPropulsion(), promotes=["*"])
-        self.add_subsystem("distances", _Distances(), promotes=["*"])
-        self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
+        super().setup()
         self.add_subsystem("mtow", _MTOWFromOWE(), promotes=["*"])
-        self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
-        self.add_subsystem("consumption", _Consumption(), promotes=["*"])
 
         self.nonlinear_solver = om.NewtonSolver()
         self.nonlinear_solver.options["iprint"] = 0
@@ -98,6 +102,8 @@ class _BreguetPropulsion(om.ExplicitComponent):
     """
     Link with engine computation
     """
+
+    counter = 0
 
     def setup(self):
         self.add_input("data:mission:sizing:cruise:altitude", np.nan, units="m")
@@ -135,6 +141,53 @@ class _BreguetPropulsion(om.ExplicitComponent):
         outputs["data:propulsion:required_thrust"] = (
             initial_cruise_mass / ld_ratio * g / engine_count
         )
+        self.__class__.counter += 1
+        print(self.__class__.counter)
+
+
+class _BreguetPropulsionTable(om.ExplicitComponent):
+    """
+    Link with interpolation in engine table
+    """
+
+    counter = 0
+
+    def setup(self):
+        self.add_input("data:mission:sizing:cruise:altitude", np.nan, units="m")
+        self.add_input("data:TLAR:cruise_mach", np.nan)
+        self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
+        self.add_input("data:aerodynamics:aircraft:cruise:L_D_max", np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", 2)
+
+        EngineTable.add_inputs(self)
+
+        self.add_output("data:propulsion:phase", FlightPhase.CRUISE)
+        self.add_output("data:propulsion:required_thrust_rate", 0.0, lower=0.0, upper=1.0)
+        self.add_output("data:propulsion:required_thrust", units="N", ref=1e5)
+        self.add_output("data:propulsion:SFC", units="kg/N/s")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        engine_count = inputs["data:geometry:propulsion:engine:count"]
+        ld_ratio = inputs["data:aerodynamics:aircraft:cruise:L_D_max"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        initial_cruise_mass = mtow * CLIMB_MASS_RATIO
+
+        outputs["data:propulsion:required_thrust"] = (
+            initial_cruise_mass / ld_ratio * g / engine_count
+        )
+
+        values = EngineTable.interpolate_from_thrust(
+            inputs,
+            inputs["data:TLAR:cruise_mach"],
+            inputs["data:mission:sizing:cruise:altitude"],
+            outputs["data:propulsion:required_thrust"],
+            [FlightPhase.CRUISE],
+        )
+        outputs["data:propulsion:SFC"], outputs["data:propulsion:required_thrust_rate"] = values
+        self.__class__.counter += 1
+        print(self.__class__.counter)
 
 
 class _FuelWeightFromMTOW(om.ExplicitComponent):
