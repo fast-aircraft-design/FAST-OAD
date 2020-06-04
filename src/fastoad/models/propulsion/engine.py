@@ -16,13 +16,12 @@ Base module for engine models.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from typing import Union, Sequence, Optional, Tuple, TypeVar
+from typing import Union, Sequence, Optional, Tuple
 
 import numpy as np
 import openmdao.api as om
 from fastoad.constants import FlightPhase
-
-IEngineSubclass = TypeVar("IEngineSubclass", bound="IEngine")
+from openmdao.core.component import Component
 
 
 class IEngine(ABC):
@@ -73,7 +72,7 @@ class IEngine(ABC):
         """
 
 
-class OMIEngine(om.ExplicitComponent, ABC):
+class DirectEngine:
     """
     Base class for OpenMDAO wrapping of subclasses of :class`IEngine`.
 
@@ -81,27 +80,27 @@ class OMIEngine(om.ExplicitComponent, ABC):
     and implement :meth:`get_engine`.
     """
 
-    def initialize(self):
-        self.options.declare("flight_point_count", 1, types=(int, tuple))
+    def initialize(self, comp: Component):
+        comp.options.declare("flight_point_count", 1, types=(int, tuple))
 
-    def setup(self):
-        shape = self.options["flight_point_count"]
-        self.add_input("data:propulsion:mach", np.nan, shape=shape)
-        self.add_input("data:propulsion:altitude", np.nan, shape=shape, units="m")
-        self.add_input("data:propulsion:phase", np.nan, shape=shape)
-        self.add_input("data:propulsion:use_thrust_rate", np.nan, shape=shape)
-        self.add_input("data:propulsion:required_thrust_rate", np.nan, shape=shape)
-        self.add_input("data:propulsion:required_thrust", np.nan, shape=shape, units="N")
+    def setup(self, comp: Component):
+        shape = comp.options["flight_point_count"]
+        comp.add_input("data:propulsion:mach", np.nan, shape=shape)
+        comp.add_input("data:propulsion:altitude", np.nan, shape=shape, units="m")
+        comp.add_input("data:propulsion:phase", np.nan, shape=shape)
+        comp.add_input("data:propulsion:use_thrust_rate", np.nan, shape=shape)
+        comp.add_input("data:propulsion:required_thrust_rate", np.nan, shape=shape)
+        comp.add_input("data:propulsion:required_thrust", np.nan, shape=shape, units="N")
 
-        self.add_output("data:propulsion:SFC", shape=shape, units="kg/s/N", ref=1e-4)
-        self.add_output("data:propulsion:thrust_rate", shape=shape, lower=0.0, upper=1.0)
-        self.add_output("data:propulsion:thrust", shape=shape, units="N", ref=1e5)
+        comp.add_output("data:propulsion:SFC", shape=shape, units="kg/s/N", ref=1e-4)
+        comp.add_output("data:propulsion:thrust_rate", shape=shape, lower=0.0, upper=1.0)
+        comp.add_output("data:propulsion:thrust", shape=shape, units="N", ref=1e5)
 
-        self.declare_partials("data:propulsion:SFC", "*", method="fd")
-        self.declare_partials("data:propulsion:thrust_rate", "*", method="fd")
-        self.declare_partials("data:propulsion:thrust", "*", method="fd")
+        comp.declare_partials("data:propulsion:SFC", "*", method="fd")
+        comp.declare_partials("data:propulsion:thrust_rate", "*", method="fd")
+        comp.declare_partials("data:propulsion:thrust", "*", method="fd")
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs):
         engine = self.get_engine(inputs)
         sfc, thrust_rate, thrust = engine.compute_flight_points(
             inputs["data:propulsion:mach"],
@@ -117,10 +116,30 @@ class OMIEngine(om.ExplicitComponent, ABC):
 
     @staticmethod
     @abstractmethod
-    def get_engine(inputs) -> IEngineSubclass:
+    def get_engine(inputs) -> IEngine:
         """
         This method defines the engine instance used for generating the table.
 
         :param inputs: input parameters that define the engine
         :return: a :class`IEngineSubclass` instance
+        """
+
+
+class OMIEngine(om.ExplicitComponent, ABC):
+    def initialize(self):
+        self.get_engine().initialize(self)
+
+    def setup(self):
+        self.get_engine().setup(self)
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        self.get_engine().compute(inputs, outputs)
+
+    @staticmethod
+    @abstractmethod
+    def get_engine() -> DirectEngine:
+        """
+        This method defines the engine instance used for generating the table.
+
+        :return: a :class`DirectEngine` instance
         """

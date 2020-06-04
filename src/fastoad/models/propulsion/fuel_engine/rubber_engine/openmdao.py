@@ -15,10 +15,59 @@ OpenMDAO wrapping of RubberEngine
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.models.propulsion import OMIEngine, IEngineSubclass
+from fastoad.models.propulsion import OMIEngine
+from fastoad.models.propulsion.engine import DirectEngine, IEngine
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
+from openmdao.core.component import Component
 
 from .rubber_engine import RubberEngine
+
+
+class DirectRubberEngine(DirectEngine):
+    def setup(self, comp: Component):
+        super().setup(comp)
+        comp.add_input("data:propulsion:rubber_engine:bypass_ratio", np.nan)
+        comp.add_input("data:propulsion:rubber_engine:overall_pressure_ratio", np.nan)
+        comp.add_input("data:propulsion:rubber_engine:turbine_inlet_temperature", np.nan, units="K")
+        comp.add_input("data:propulsion:MTO_thrust", np.nan, units="N")
+        comp.add_input("data:propulsion:rubber_engine:maximum_mach", np.nan)
+        comp.add_input("data:propulsion:rubber_engine:design_altitude", np.nan, units="m")
+        comp.add_input(
+            "data:propulsion:rubber_engine:delta_t4_climb",
+            -50,
+            desc="As it is a delta, unit is K or °C, but is not "
+            "specified to avoid OpenMDAO making unwanted conversion",
+        )
+        comp.add_input(
+            "data:propulsion:rubber_engine:delta_t4_cruise",
+            -100,
+            desc="As it is a delta, unit is K or °C, but is not "
+            "specified to avoid OpenMDAO making unwanted conversion",
+        )
+
+    @staticmethod
+    def get_engine(inputs) -> IEngine:
+        """
+
+        :param inputs: input parameters that define the engine
+        :return: an :class:`RubberEngine` instance
+        """
+        engine_params = {
+            "bypass_ratio": inputs["data:propulsion:rubber_engine:bypass_ratio"],
+            "overall_pressure_ratio": inputs[
+                "data:propulsion:rubber_engine:overall_pressure_ratio"
+            ],
+            "turbine_inlet_temperature": inputs[
+                "data:propulsion:rubber_engine:turbine_inlet_temperature"
+            ],
+            "maximum_mach": inputs["data:propulsion:rubber_engine:maximum_mach"],
+            "design_altitude": inputs["data:propulsion:rubber_engine:design_altitude"],
+            "delta_t4_climb": inputs["data:propulsion:rubber_engine:delta_t4_climb"],
+            "delta_t4_cruise": inputs["data:propulsion:rubber_engine:delta_t4_cruise"],
+            "mto_thrust": inputs["data:propulsion:MTO_thrust"],
+        }
+
+        return RubberEngine(**engine_params)
 
 
 @ValidityDomainChecker(
@@ -49,47 +98,6 @@ class OMRubberEngine(OMIEngine):
     See :class:`RubberEngine` for more information.
     """
 
-    def setup(self):
-        super().setup()
-        self.add_input("data:propulsion:rubber_engine:bypass_ratio", np.nan)
-        self.add_input("data:propulsion:rubber_engine:overall_pressure_ratio", np.nan)
-        self.add_input("data:propulsion:rubber_engine:turbine_inlet_temperature", np.nan, units="K")
-        self.add_input("data:propulsion:MTO_thrust", np.nan, units="N")
-        self.add_input("data:propulsion:rubber_engine:maximum_mach", np.nan)
-        self.add_input("data:propulsion:rubber_engine:design_altitude", np.nan, units="m")
-        self.add_input(
-            "data:propulsion:rubber_engine:delta_t4_climb",
-            -50,
-            desc="As it is a delta, unit is K or °C, but is not "
-            "specified to avoid OpenMDAO making unwanted conversion",
-        )
-        self.add_input(
-            "data:propulsion:rubber_engine:delta_t4_cruise",
-            -100,
-            desc="As it is a delta, unit is K or °C, but is not "
-            "specified to avoid OpenMDAO making unwanted conversion",
-        )
-
     @staticmethod
-    def get_engine(inputs) -> IEngineSubclass:
-        """
-
-        :param inputs: input parameters that define the engine
-        :return: an :class:`RubberEngine` instance
-        """
-        engine_params = {
-            "bypass_ratio": inputs["data:propulsion:rubber_engine:bypass_ratio"],
-            "overall_pressure_ratio": inputs[
-                "data:propulsion:rubber_engine:overall_pressure_ratio"
-            ],
-            "turbine_inlet_temperature": inputs[
-                "data:propulsion:rubber_engine:turbine_inlet_temperature"
-            ],
-            "maximum_mach": inputs["data:propulsion:rubber_engine:maximum_mach"],
-            "design_altitude": inputs["data:propulsion:rubber_engine:design_altitude"],
-            "delta_t4_climb": inputs["data:propulsion:rubber_engine:delta_t4_climb"],
-            "delta_t4_cruise": inputs["data:propulsion:rubber_engine:delta_t4_cruise"],
-            "mto_thrust": inputs["data:propulsion:MTO_thrust"],
-        }
-
-        return RubberEngine(**engine_params)
+    def get_engine() -> DirectEngine:
+        return DirectRubberEngine()
