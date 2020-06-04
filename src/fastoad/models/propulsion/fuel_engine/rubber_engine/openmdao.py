@@ -15,29 +15,30 @@ OpenMDAO wrapping of RubberEngine
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.models.propulsion import OMIEngine
-from fastoad.models.propulsion.engine import DirectEngine, IEngine
+from fastoad.models.propulsion import IOMEngineWrapper, IEngine, BaseOMEngineComponent
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from openmdao.core.component import Component
 
 from .rubber_engine import RubberEngine
 
 
-class DirectRubberEngine(DirectEngine):
-    def setup(self, comp: Component):
-        comp.add_input("data:propulsion:rubber_engine:bypass_ratio", np.nan)
-        comp.add_input("data:propulsion:rubber_engine:overall_pressure_ratio", np.nan)
-        comp.add_input("data:propulsion:rubber_engine:turbine_inlet_temperature", np.nan, units="K")
-        comp.add_input("data:propulsion:MTO_thrust", np.nan, units="N")
-        comp.add_input("data:propulsion:rubber_engine:maximum_mach", np.nan)
-        comp.add_input("data:propulsion:rubber_engine:design_altitude", np.nan, units="m")
-        comp.add_input(
+class OMRubberEngineWrapper(IOMEngineWrapper):
+    def setup(self, component: Component):
+        component.add_input("data:propulsion:rubber_engine:bypass_ratio", np.nan)
+        component.add_input("data:propulsion:rubber_engine:overall_pressure_ratio", np.nan)
+        component.add_input(
+            "data:propulsion:rubber_engine:turbine_inlet_temperature", np.nan, units="K"
+        )
+        component.add_input("data:propulsion:MTO_thrust", np.nan, units="N")
+        component.add_input("data:propulsion:rubber_engine:maximum_mach", np.nan)
+        component.add_input("data:propulsion:rubber_engine:design_altitude", np.nan, units="m")
+        component.add_input(
             "data:propulsion:rubber_engine:delta_t4_climb",
             -50,
             desc="As it is a delta, unit is K or °C, but is not "
             "specified to avoid OpenMDAO making unwanted conversion",
         )
-        comp.add_input(
+        component.add_input(
             "data:propulsion:rubber_engine:delta_t4_cruise",
             -100,
             desc="As it is a delta, unit is K or °C, but is not "
@@ -90,7 +91,7 @@ class DirectRubberEngine(DirectEngine):
         ),  # limitation of max thrust model
     }
 )
-class OMRubberEngine(OMIEngine):
+class OMRubberEngineComponent(BaseOMEngineComponent):
     """
     Parametric engine model as OpenMDAO component
 
@@ -102,5 +103,5 @@ class OMRubberEngine(OMIEngine):
         self.get_engine().setup(self)
 
     @staticmethod
-    def get_engine() -> DirectEngine:
-        return DirectRubberEngine()
+    def get_engine() -> OMRubberEngineWrapper:
+        return OMRubberEngineWrapper()

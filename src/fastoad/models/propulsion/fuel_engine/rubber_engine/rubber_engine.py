@@ -1,7 +1,6 @@
 """
 Parametric turbofan engine
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -190,8 +189,32 @@ class RubberEngine(IEngine):
         return sfc, out_thrust_rate, out_thrust
 
     @staticmethod
-    def _check_thrust_inputs(use_thrust_rate, thrust_rate, thrust):
-        """ Checks that inputs are consistent and return them in proper shape """
+    def _check_thrust_inputs(
+        use_thrust_rate: Optional[Union[float, Sequence]],
+        thrust_rate: Optional[Union[float, Sequence]],
+        thrust: Optional[Union[float, Sequence]],
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Checks that inputs are consistent and return them in proper shape.
+
+        Some of the inputs can be None, but outputs will be proper numpy arrays.
+
+        :param use_thrust_rate:
+        :param thrust_rate:
+        :param thrust:
+        :return: the inputs, but transformed in numpy arrays.
+        """
+        # Ensure they are numpy array
+        if use_thrust_rate is not None:
+            # As OpenMDAO may provide floats that could be slightly different
+            # from 0. or 1., a rounding operation is needed before converting
+            # to booleans
+            use_thrust_rate = np.asarray(np.round(use_thrust_rate, 0), dtype=bool)
+        if thrust_rate is not None:
+            thrust_rate = np.asarray(thrust_rate)
+        if thrust is not None:
+            thrust = np.asarray(thrust)
+
         # Check inputs: if use_thrust_rate is None, we will use the provided input between
         # thrust_rate and thrust
         if use_thrust_rate is None:
@@ -240,7 +263,9 @@ class RubberEngine(IEngine):
 
         return use_thrust_rate, thrust_rate, thrust
 
-    def sfc_at_max_thrust(self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]):
+    def sfc_at_max_thrust(
+        self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]
+    ) -> np.ndarray:
         """
         Computation of Specific Fuel Consumption at maximum thrust
 
@@ -280,7 +305,7 @@ class RubberEngine(IEngine):
         altitude: Union[float, Sequence[float]],
         thrust_rate: Union[float, Sequence[float]],
         mach: Union[float, Sequence[float]] = 0.8,
-    ) -> Union[float, Sequence[float]]:
+    ) -> np.ndarray:
         """
         Computation of ratio :math:`\\frac{SFC(F)}{SFC(Fmax)}`, given altitude
         and thrust_rate :math:`\\frac{F}{Fmax}`.
@@ -328,7 +353,7 @@ class RubberEngine(IEngine):
         atmosphere: Atmosphere,
         mach: Union[float, Sequence[float]],
         delta_t4: Union[float, Sequence[float]],
-    ) -> Union[float, Sequence[float]]:
+    ) -> np.ndarray:
         """
         Computation of maximum thrust
 
@@ -476,7 +501,7 @@ class RubberEngine(IEngine):
 
         return installed_weight
 
-    def length(self):
+    def length(self) -> float:
         # TODO: update model reference with last edition of Raymer
         """
         Computes engine length from MTO thrust and maximum Mach
@@ -489,7 +514,7 @@ class RubberEngine(IEngine):
 
         return length
 
-    def nacelle_diameter(self):
+    def nacelle_diameter(self) -> float:
         # TODO: update model reference with last edition of Raymer
         """
         Computes nacelle diameter from MTO thrust and bypass ratio

@@ -19,7 +19,7 @@ from scipy.constants import foot
 
 from tests.testing_utilities import run_system
 from ..breguet import BreguetFromMTOW, BreguetFromOWE
-from ...propulsion.fuel_engine.rubber_engine import OMRubberEngine
+from ...propulsion.fuel_engine.rubber_engine import OMRubberEngineComponent
 
 
 def test_breguet_from_mtow():
@@ -89,7 +89,7 @@ def test_breguet_from_mtow_with_rubber_engine():
     # With rubber engine OM component
     group = om.Group()
     group.add_subsystem("breguet", BreguetFromMTOW(), promotes=["*"])
-    group.add_subsystem("engine", OMRubberEngine(), promotes=["*"])
+    group.add_subsystem("engine", OMRubberEngineComponent(), promotes=["*"])
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = run_system(group, ivc)
 
@@ -144,7 +144,7 @@ def test_breguet_from_owe_with_rubber_engine():
     # With rubber engine OM component
     group = om.Group()
 
-    group.add_subsystem("engine", OMRubberEngine(), promotes=["*"])
+    group.add_subsystem("engine", OMRubberEngineComponent(), promotes=["*"])
     group.add_subsystem("breguet", BreguetFromOWE(), promotes=["*"])
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = run_system(group, ivc)

@@ -72,34 +72,47 @@ class IEngine(ABC):
         """
 
 
-class DirectEngine:
+class IOMEngineWrapper:
     """
-    Base class for OpenMDAO wrapping of subclasses of :class`IEngine`.
+    Interface for wrapping a :class:`IEngine` subclass in OpenMDAO
 
-    Classes that implements this interface should add their own inputs in setup()
-    and implement :meth:`get_engine`.
+    The implementation class defines the needed input variables for instantiating the
+    :class:`IEngine` subclass in :meth:`setup` and use them for instantiation in
+    :meth:`get_engine`
+
+    see :class:`~fastoad.models.propulsion.fuel_engine.rubber_engine.OMRubberEngineWrapper` for
+    an example of implementation.
     """
 
     @abstractmethod
-    def setup(self, comp: Component):
+    def setup(self, component: Component):
         """
+        Defines the needed OpenMDAO inputs for engine instantiation as done in :meth:`get_engine`
 
-        :param comp:
-        :return:
+        Use `add_inputs` and `declare_partials` methods of the provided `component`
+
+        :param component:
         """
 
     @staticmethod
     @abstractmethod
     def get_engine(inputs) -> IEngine:
         """
-        This method defines the engine instance used for generating the table.
+        This method defines the used IEngine subclass instance.
 
-        :param inputs: input parameters that define the engine
-        :return: a :class`IEngineSubclass` instance
+        :param inputs: OpenMDAO input vector where parameters that define the engine are
+        :return: a :class:`IEngineSubclass` instance
         """
 
 
-class OMIEngine(om.ExplicitComponent, ABC):
+class BaseOMEngineComponent(om.ExplicitComponent, ABC):
+    """
+    Base class for OpenMDAO wrapping of subclasses of :class:`IEngineForOpenMDAO`.
+
+    Classes that implements this interface should add their own inputs in setup()
+    and implement :meth:`get_engine`.
+    """
+
     def initialize(self):
         self.options.declare("flight_point_count", 1, types=(int, tuple))
 
@@ -134,9 +147,9 @@ class OMIEngine(om.ExplicitComponent, ABC):
 
     @staticmethod
     @abstractmethod
-    def get_engine() -> DirectEngine:
+    def get_engine() -> IOMEngineWrapper:
         """
-        This method defines the engine instance used for generating the table.
+        This method defines the used :class:`IEngineForOpenMDAO` instance.
 
-        :return: a :class`DirectEngine` instance
+        :return: a :class:`IOMEngineWrapper` instance
         """

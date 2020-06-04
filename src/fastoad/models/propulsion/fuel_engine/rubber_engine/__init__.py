@@ -18,5 +18,5 @@ This module provides a parametric model for turbofan:
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .openmdao import OMRubberEngine
+from .openmdao import OMRubberEngineComponent, OMRubberEngineWrapper
 from .rubber_engine import RubberEngine

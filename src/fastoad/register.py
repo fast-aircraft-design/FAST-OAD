@@ -22,7 +22,7 @@ from fastoad.models.handling_qualities.compute_static_margin import ComputeStati
 from fastoad.models.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from fastoad.models.loops.compute_wing_area import ComputeWingArea
 from fastoad.models.performances import BreguetFromOWE
-from fastoad.models.propulsion.fuel_engine.rubber_engine import OMRubberEngine
+from fastoad.models.propulsion.fuel_engine.rubber_engine import OMRubberEngineComponent
 from fastoad.models.weight.weight import Weight
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.module_management.constants import ModelDomain
@@ -85,7 +85,7 @@ def register_openmdao_systems():
     """
 
     OpenMDAOSystemRegistry.register_system(
-        OMRubberEngine,
+        OMRubberEngineComponent,
         "fastoad.propulsion.rubber_engine",
         domain=ModelDomain.PROPULSION,
         desc=rubber_engine_description,

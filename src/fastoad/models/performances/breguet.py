@@ -17,7 +17,7 @@ Simple module for performances
 import numpy as np
 import openmdao.api as om
 from fastoad.constants import FlightPhase
-from fastoad.models.propulsion.fuel_engine.rubber_engine.openmdao import DirectRubberEngine
+from fastoad.models.propulsion.fuel_engine.rubber_engine.openmdao import OMRubberEngineWrapper
 from fastoad.utils.physics import Atmosphere
 from scipy.constants import g
 
@@ -99,7 +99,7 @@ class _Consumption(om.ExplicitComponent):
 
 class _BreguetEngine(om.ExplicitComponent):
     def initialize(self):
-        self._engine = DirectRubberEngine()
+        self._engine = OMRubberEngineWrapper()
 
     def setup(self):
         self._engine.setup(self)
