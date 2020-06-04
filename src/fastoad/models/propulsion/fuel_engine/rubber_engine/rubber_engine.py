@@ -82,7 +82,6 @@ class RubberEngine(IEngine):
         delta_t4_cruise: float = -100,
     ):
         # pylint: disable=too-many-arguments  # they define the engine
-        """ constructor """
 
         self.bypass_ratio = bypass_ratio
         self.overall_pressure_ratio = overall_pressure_ratio
@@ -145,11 +144,14 @@ class RubberEngine(IEngine):
         altitude = np.asarray(altitude)
         delta_t4 = np.asarray(delta_t4)
 
+        if use_thrust_rate is not None:
+            use_thrust_rate = np.asarray(np.round(use_thrust_rate, 0), dtype=bool)
+
         use_thrust_rate, thrust_rate, thrust = self._check_thrust_inputs(
             use_thrust_rate, thrust_rate, thrust
         )
 
-        use_thrust_rate = np.asarray(use_thrust_rate, dtype=bool)
+        use_thrust_rate = np.asarray(np.round(use_thrust_rate, 0), dtype=bool)
         thrust_rate = np.asarray(thrust_rate)
         thrust = np.asarray(thrust)
 

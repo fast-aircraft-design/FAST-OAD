@@ -80,39 +80,13 @@ class DirectEngine:
     and implement :meth:`get_engine`.
     """
 
-    def initialize(self, comp: Component):
-        comp.options.declare("flight_point_count", 1, types=(int, tuple))
-
+    @abstractmethod
     def setup(self, comp: Component):
-        shape = comp.options["flight_point_count"]
-        comp.add_input("data:propulsion:mach", np.nan, shape=shape)
-        comp.add_input("data:propulsion:altitude", np.nan, shape=shape, units="m")
-        comp.add_input("data:propulsion:phase", np.nan, shape=shape)
-        comp.add_input("data:propulsion:use_thrust_rate", np.nan, shape=shape)
-        comp.add_input("data:propulsion:required_thrust_rate", np.nan, shape=shape)
-        comp.add_input("data:propulsion:required_thrust", np.nan, shape=shape, units="N")
+        """
 
-        comp.add_output("data:propulsion:SFC", shape=shape, units="kg/s/N", ref=1e-4)
-        comp.add_output("data:propulsion:thrust_rate", shape=shape, lower=0.0, upper=1.0)
-        comp.add_output("data:propulsion:thrust", shape=shape, units="N", ref=1e5)
-
-        comp.declare_partials("data:propulsion:SFC", "*", method="fd")
-        comp.declare_partials("data:propulsion:thrust_rate", "*", method="fd")
-        comp.declare_partials("data:propulsion:thrust", "*", method="fd")
-
-    def compute(self, inputs, outputs):
-        engine = self.get_engine(inputs)
-        sfc, thrust_rate, thrust = engine.compute_flight_points(
-            inputs["data:propulsion:mach"],
-            inputs["data:propulsion:altitude"],
-            inputs["data:propulsion:phase"],
-            inputs["data:propulsion:use_thrust_rate"],
-            inputs["data:propulsion:required_thrust_rate"],
-            inputs["data:propulsion:required_thrust"],
-        )
-        outputs["data:propulsion:SFC"] = sfc
-        outputs["data:propulsion:thrust_rate"] = thrust_rate
-        outputs["data:propulsion:thrust"] = thrust
+        :param comp:
+        :return:
+        """
 
     @staticmethod
     @abstractmethod
@@ -127,13 +101,36 @@ class DirectEngine:
 
 class OMIEngine(om.ExplicitComponent, ABC):
     def initialize(self):
-        self.get_engine().initialize(self)
+        self.options.declare("flight_point_count", 1, types=(int, tuple))
 
     def setup(self):
-        self.get_engine().setup(self)
+        shape = self.options["flight_point_count"]
+        self.add_input("data:propulsion:mach", np.nan, shape=shape)
+        self.add_input("data:propulsion:altitude", np.nan, shape=shape, units="m")
+        self.add_input("data:propulsion:phase", np.nan, shape=shape)
+        self.add_input("data:propulsion:use_thrust_rate", np.nan, shape=shape)
+        self.add_input("data:propulsion:required_thrust_rate", np.nan, shape=shape)
+        self.add_input("data:propulsion:required_thrust", np.nan, shape=shape, units="N")
+
+        self.add_output("data:propulsion:SFC", shape=shape, units="kg/s/N", ref=1e-4)
+        self.add_output("data:propulsion:thrust_rate", shape=shape, lower=0.0, upper=1.0)
+        self.add_output("data:propulsion:thrust", shape=shape, units="N", ref=1e5)
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        self.get_engine().compute(inputs, outputs)
+        engine = self.get_engine().get_engine(inputs)
+        sfc, thrust_rate, thrust = engine.compute_flight_points(
+            inputs["data:propulsion:mach"],
+            inputs["data:propulsion:altitude"],
+            inputs["data:propulsion:phase"],
+            inputs["data:propulsion:use_thrust_rate"],
+            inputs["data:propulsion:required_thrust_rate"],
+            inputs["data:propulsion:required_thrust"],
+        )
+        outputs["data:propulsion:SFC"] = sfc
+        outputs["data:propulsion:thrust_rate"] = thrust_rate
+        outputs["data:propulsion:thrust"] = thrust
 
     @staticmethod
     @abstractmethod

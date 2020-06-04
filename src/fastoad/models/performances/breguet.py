@@ -17,6 +17,7 @@ Simple module for performances
 import numpy as np
 import openmdao.api as om
 from fastoad.constants import FlightPhase
+from fastoad.models.propulsion.fuel_engine.rubber_engine.openmdao import DirectRubberEngine
 from fastoad.utils.physics import Atmosphere
 from scipy.constants import g
 
@@ -37,10 +38,16 @@ class BreguetFromMTOW(om.Group):
     This model does not ensure consistency with OWE (Operating Empty Weight)
     """
 
+    def initialize(self):
+        self.options.declare("embed_propulsion", default=False, types=bool)
+
     # TODO: in a more general case, this module will link the starting mass to
     #   the ending mass. Could we make the module more generic ?
     def setup(self):
-        self.add_subsystem("propulsion", _BreguetPropulsion(), promotes=["*"])
+        if self.options["embed_propulsion"]:
+            self.add_subsystem("propulsion", _BreguetEngine(), promotes=["*"])
+        else:
+            self.add_subsystem("propulsion_link", _BreguetPropulsion(), promotes=["*"])
         self.add_subsystem("distances", _Distances(), promotes=["*"])
         self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
         self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
@@ -90,6 +97,44 @@ class _Consumption(om.ExplicitComponent):
         outputs["data:mission:sizing:fuel:unitary"] = fuel / npax / distance
 
 
+class _BreguetEngine(om.ExplicitComponent):
+    def initialize(self):
+        self._engine = DirectRubberEngine()
+
+    def setup(self):
+        self._engine.setup(self)
+        self.add_input("data:mission:sizing:cruise:altitude", np.nan, units="m")
+        self.add_input("data:TLAR:cruise_mach", np.nan)
+        self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
+        self.add_input("data:aerodynamics:aircraft:cruise:L_D_max", np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", 2)
+
+        self.add_output("data:propulsion:SFC", units="kg/s/N", ref=1e-4)
+        self.add_output("data:propulsion:thrust_rate", lower=0.0, upper=1.0)
+        self.add_output("data:propulsion:thrust", units="N", ref=1e5)
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        engine_count = inputs["data:geometry:propulsion:engine:count"]
+        ld_ratio = inputs["data:aerodynamics:aircraft:cruise:L_D_max"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        initial_cruise_mass = mtow * CLIMB_MASS_RATIO
+
+        thrust = initial_cruise_mass / ld_ratio * g / engine_count
+        sfc, thrust_rate, _ = self._engine.get_engine(inputs).compute_flight_points(
+            inputs["data:TLAR:cruise_mach"],
+            inputs["data:mission:sizing:cruise:altitude"],
+            FlightPhase.CRUISE,
+            False,
+            thrust=thrust,
+        )
+        outputs["data:propulsion:thrust"] = thrust
+        outputs["data:propulsion:SFC"] = sfc
+        outputs["data:propulsion:thrust_rate"] = thrust_rate
+
+
 class _BreguetPropulsion(om.ExplicitComponent):
     """
     Link with engine computation
@@ -109,8 +154,6 @@ class _BreguetPropulsion(om.ExplicitComponent):
         self.add_output("data:propulsion:altitude", units="m", ref=1e4)
         self.add_output("data:propulsion:mach")
 
-        self.declare_partials("data:propulsion:phase", "*", method="fd")
-        self.declare_partials("data:propulsion:use_thrust_rate", "*", method="fd")
         self.declare_partials("data:propulsion:required_thrust_rate", "*", method="fd")
         self.declare_partials("data:propulsion:required_thrust", "*", method="fd")
         self.declare_partials(
@@ -198,7 +241,7 @@ class _MTOWFromOWE(om.ImplicitComponent):
         self.add_input("data:weight:aircraft:OWE", np.nan, units="kg")
         self.add_input("data:weight:aircraft:payload", np.nan, units="kg")
 
-        self.add_output("data:weight:aircraft:MTOW", units="kg", ref=1e5)
+        self.add_output("data:weight:aircraft:MTOW", units="kg", ref=1e5, upper=1e6)
 
         self.declare_partials("data:weight:aircraft:MTOW", "*", method="fd")
 
@@ -254,7 +297,7 @@ class _CruiseMassRatio(om.ExplicitComponent):
         self.add_input("data:mission:sizing:cruise:altitude", np.nan, units="m")
         self.add_input("data:mission:sizing:cruise:distance", np.nan, units="m")
 
-        self.add_output("data:mission:sizing:cruise:mass_ratio")
+        self.add_output("data:mission:sizing:cruise:mass_ratio", lower=0.5, upper=1.0)
 
         self.declare_partials("data:mission:sizing:cruise:mass_ratio", "*", method="fd")
 
@@ -273,6 +316,6 @@ class _CruiseMassRatio(om.ExplicitComponent):
         # resulting in null or too small cruise_mass_ratio.
         # Forcing cruise_mass_ratio to a minimum of 0.3 avoids problems and should not
         # harm (no airplane loses 70% of its weight from fuel consumption)
-        cruise_mass_ratio = np.maximum(0.3, 1.0 / np.exp(cruise_distance / range_factor))
+        cruise_mass_ratio = np.maximum(0.5, 1.0 / np.exp(cruise_distance / range_factor))
 
         outputs["data:mission:sizing:cruise:mass_ratio"] = cruise_mass_ratio

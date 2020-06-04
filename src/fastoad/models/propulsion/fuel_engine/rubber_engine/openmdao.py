@@ -25,7 +25,6 @@ from .rubber_engine import RubberEngine
 
 class DirectRubberEngine(DirectEngine):
     def setup(self, comp: Component):
-        super().setup(comp)
         comp.add_input("data:propulsion:rubber_engine:bypass_ratio", np.nan)
         comp.add_input("data:propulsion:rubber_engine:overall_pressure_ratio", np.nan)
         comp.add_input("data:propulsion:rubber_engine:turbine_inlet_temperature", np.nan, units="K")
@@ -97,6 +96,10 @@ class OMRubberEngine(OMIEngine):
 
     See :class:`RubberEngine` for more information.
     """
+
+    def setup(self):
+        super().setup()
+        self.get_engine().setup(self)
 
     @staticmethod
     def get_engine() -> DirectEngine:
