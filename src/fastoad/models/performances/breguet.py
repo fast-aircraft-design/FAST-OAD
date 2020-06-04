@@ -47,7 +47,7 @@ class BreguetFromMTOW(om.Group):
         self.add_subsystem("consumption", _Consumption(), promotes=["*"])
 
 
-class BreguetFromOWE(om.Group):
+class BreguetFromOWE(BreguetFromMTOW):
     """
     Estimation of fuel consumption through Breguet formula with a rough estimate
     of climb and descent phases.
@@ -59,12 +59,8 @@ class BreguetFromOWE(om.Group):
     """
 
     def setup(self):
-        self.add_subsystem("propulsion", _BreguetPropulsion(), promotes=["*"])
-        self.add_subsystem("distances", _Distances(), promotes=["*"])
-        self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
+        super().setup()
         self.add_subsystem("mtow", _MTOWFromOWE(), promotes=["*"])
-        self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
-        self.add_subsystem("consumption", _Consumption(), promotes=["*"])
 
         self.nonlinear_solver = om.NewtonSolver()
         self.nonlinear_solver.options["iprint"] = 0
