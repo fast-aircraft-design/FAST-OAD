@@ -137,14 +137,21 @@ class EngineTable(om.ExplicitComponent, ABC):
 
     MACH_MIN = 0.0
     MACH_MAX = 1.0
-    MACH_STEP_COUNT = 100
+    MACH_STEP_COUNT = 10
     ALTITUDE_MIN = 0.0
     ALTITUDE_MAX = 13500.0
-    ALTITUDE_STEP_COUNT = 200
+    ALTITUDE_STEP_COUNT = 20
     THRUST_RATE_MIN = 0.0
-    THRUST_RATE_MAX = 1.0
-    THRUST_RATE_STEP_COUNT = 20
+    THRUST_RATE_MAX = 1.5
+    THRUST_RATE_STEP_COUNT = 5
     FLIGHT_PHASES = FlightPhase  # The enum class acts as a list of its values
+
+    mach_vector = None
+    altitude_vector = None
+    thrust_rate_vector = None
+    phase_vector = None
+    sfc_table = None
+    thrust_table = None
 
     def setup(self):
         shape = self._get_shape()
@@ -157,37 +164,48 @@ class EngineTable(om.ExplicitComponent, ABC):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        outputs["private:propulsion:table:mach"] = linspace(
-            self.MACH_MIN, self.MACH_MAX, self.MACH_STEP_COUNT + 1
-        )
-        outputs["private:propulsion:table:altitude"] = linspace(
-            self.ALTITUDE_MIN, self.ALTITUDE_MAX, self.ALTITUDE_STEP_COUNT + 1
-        )
-        outputs["private:propulsion:table:thrust_rate"] = linspace(
-            self.THRUST_RATE_MIN, self.THRUST_RATE_MAX, self.THRUST_RATE_STEP_COUNT + 1
-        )
-        outputs["private:propulsion:table:flight_phase"] = [
-            int(phase) for phase in self.FLIGHT_PHASES
-        ]
+        if self.__class__.sfc_table is not None:
+            outputs["private:propulsion:table:mach"] = self.__class__.mach_vector
+            outputs["private:propulsion:table:altitude"] = self.__class__.altitude_vector
+            outputs["private:propulsion:table:thrust_rate"] = self.__class__.thrust_rate_vector
+            outputs["private:propulsion:table:flight_phase"] = self.__class__.phase_vector
+            outputs["private:propulsion:table:SFC"] = self.__class__.sfc_table
+            outputs["private:propulsion:table:thrust"] = self.__class__.thrust_table
+        else:
 
-        mach = outputs["private:propulsion:table:mach"][:, None, None, None]
-        altitude = outputs["private:propulsion:table:altitude"][None, :, None, None]
-        thrust_rate = outputs["private:propulsion:table:thrust_rate"][None, None, :, None]
-        phase = outputs["private:propulsion:table:flight_phase"][None, None, None, :]
+            self.__class__.mach_vector = outputs["private:propulsion:table:mach"] = linspace(
+                self.MACH_MIN, self.MACH_MAX, self.MACH_STEP_COUNT + 1
+            )
+            self.__class__.altitude_vector = outputs[
+                "private:propulsion:table:altitude"
+            ] = linspace(self.ALTITUDE_MIN, self.ALTITUDE_MAX, self.ALTITUDE_STEP_COUNT + 1)
+            self.__class__.thrust_rate_vector = outputs[
+                "private:propulsion:table:thrust_rate"
+            ] = linspace(
+                self.THRUST_RATE_MIN, self.THRUST_RATE_MAX, self.THRUST_RATE_STEP_COUNT + 1
+            )
+            self.__class__.phase_vector = outputs["private:propulsion:table:flight_phase"] = [
+                int(phase) for phase in self.FLIGHT_PHASES
+            ]
 
-        shape = self._get_shape()
+            mach = outputs["private:propulsion:table:mach"][:, None, None, None]
+            altitude = outputs["private:propulsion:table:altitude"][None, :, None, None]
+            thrust_rate = outputs["private:propulsion:table:thrust_rate"][None, None, :, None]
+            phase = outputs["private:propulsion:table:flight_phase"][None, None, None, :]
 
-        mach = np.tile(mach, (1, *shape[1:]))
-        altitude = np.tile(altitude, (shape[0], 1, *shape[2:]))
-        thrust_rate = np.tile(thrust_rate, (*shape[:2], 1, shape[3]))
-        phase = np.tile(phase, (*shape[:3], 1))
+            shape = self._get_shape()
 
-        SFC, _, thrust = self.get_engine(inputs).compute_flight_points(
-            mach, altitude, phase, thrust_rate=thrust_rate,
-        )
+            mach = np.tile(mach, (1, *shape[1:]))
+            altitude = np.tile(altitude, (shape[0], 1, *shape[2:]))
+            thrust_rate = np.tile(thrust_rate, (*shape[:2], 1, shape[3]))
+            phase = np.tile(phase, (*shape[:3], 1))
 
-        outputs["private:propulsion:table:SFC"] = SFC
-        outputs["private:propulsion:table:thrust"] = thrust
+            SFC, _, thrust = self.get_engine(inputs).compute_flight_points(
+                mach, altitude, phase, thrust_rate=thrust_rate,
+            )
+
+            self.__class__.sfc_table = outputs["private:propulsion:table:SFC"] = SFC
+            self.__class__.thrust_table = outputs["private:propulsion:table:thrust"] = thrust
 
     @classmethod
     def _get_shape(cls):
