@@ -1,6 +1,4 @@
-"""
-The place for module-level constants
-"""
+"""The place for module-level constants."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -27,7 +25,9 @@ DOMAIN_PROPERTY_NAME = "DOMAIN"
 
 # Definition of model domains
 class ModelDomain(Enum):
-    """ Enumeration of model domains """
+    """
+    Enumeration of model domains.
+    """
 
     GEOMETRY = "Geometry"
     AERODYNAMICS = "Aerodynamics"

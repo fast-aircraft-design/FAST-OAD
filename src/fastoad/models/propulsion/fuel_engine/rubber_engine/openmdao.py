@@ -1,6 +1,4 @@
-"""
-OpenMDAO wrapping of RubberEngine
-"""
+"""OpenMDAO wrapping of RubberEngine."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -29,8 +27,10 @@ from .rubber_engine import RubberEngine
 @RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine")
 class OMRubberEngineWrapper(IOMEngineWrapper):
     """
-    Wrapper class for allowing direct call of :class:`~.rubber_engine.RubberEngine` in an
-    OpenMDAO component.
+    Wrapper class of for rubber engine model.
+
+    It is made to allow a direct call to :class:`~.rubber_engine.RubberEngine` in an OpenMDAO
+    component.
 
     Example of usage of this class::
 

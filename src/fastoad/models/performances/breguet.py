@@ -1,6 +1,4 @@
-"""
-Simple module for performances
-"""
+"""Simple module for performances."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -29,13 +27,14 @@ CLIMB_DESCENT_DISTANCE = 500  # in km, distance of climb + descent
 
 class BreguetFromMTOW(om.Group):
     """
-    Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases.
+    Estimation of fuel consumption through Breguet formula.
+
+    It uses a rough estimate of climb and descent phases.
 
     MTOW (Max TakeOff Weight) being an input, the model computes the ZFW (Zero Fuel
     Weight) considering that all fuel but the reserve has been consumed during the
     mission.
-    This model does not ensure consistency with OWE (Operating Empty Weight)
+    This model does not ensure consistency with OWE (Operating Empty Weight).
     """
 
     def initialize(self):
@@ -60,8 +59,9 @@ class BreguetFromMTOW(om.Group):
 
 class BreguetFromOWE(BreguetFromMTOW):
     """
-    Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases.
+    Estimation of fuel consumption through Breguet formula.
+
+    It uses a rough estimate of climb and descent phases.
 
     For the sizing mission, the Breguet formula links MTOW (Max TakeOff Weight) to
     ZFW (Zero Fuel Weight).
@@ -110,6 +110,9 @@ class _Consumption(om.ExplicitComponent):
 
 class _BreguetEngine(om.ExplicitComponent):
     def __init__(self, **kwargs):
+        """
+        Computes thrust, SFC and thrust rate by direct call to engine model.
+        """
         super().__init__(**kwargs)
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
 
@@ -151,7 +154,7 @@ class _BreguetEngine(om.ExplicitComponent):
 
 class _BreguetPropulsion(om.ExplicitComponent):
     """
-    Link with engine computation
+    Link with engine computation.
     """
 
     def setup(self):
@@ -193,7 +196,7 @@ class _BreguetPropulsion(om.ExplicitComponent):
 class _FuelWeightFromMTOW(om.ExplicitComponent):
     """
     Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases
+    of climb and descent phases.
     """
 
     def setup(self):
@@ -246,7 +249,7 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
 class _MTOWFromOWE(om.ImplicitComponent):
     """
     Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases
+    of climb and descent phases.
     """
 
     def setup(self):
@@ -281,7 +284,9 @@ class _MTOWFromOWE(om.ImplicitComponent):
 
 
 class _Distances(om.ExplicitComponent):
-    """ Rough estimation of distances for each flight phase"""
+    """
+    Rough estimation of distances for each flight phase.
+    """
 
     def setup(self):
         self.add_input("data:TLAR:range", np.nan, units="m")
@@ -302,7 +307,7 @@ class _Distances(om.ExplicitComponent):
 
 class _CruiseMassRatio(om.ExplicitComponent):
     """
-    Estimation of fuel consumption through Breguet formula for a given cruise distance
+    Estimation of fuel consumption through Breguet formula for a given cruise distance.
     """
 
     def setup(self):

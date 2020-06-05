@@ -1,5 +1,5 @@
 """
-This module provides a parametric model for turbofan:
+Provides a parametric model for turbofan:
 
 - as a pure Python
 - as OpenMDAO modules

@@ -1,6 +1,4 @@
-"""
-Parametric turbofan engine
-"""
+"""Parametric turbofan engine."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -50,25 +48,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class RubberEngine(IEngine):
-    """
-    Parametric turbofan engine
-
-    Computes engine characteristics using analytical model from following sources:
-
-    .. bibliography:: ../refs.bib
-       :filter: docname in docnames
-
-    :param bypass_ratio:
-    :param overall_pressure_ratio:
-    :param turbine_inlet_temperature: (unit=K) also noted T4
-    :param mto_thrust: (unit=N) Maximum TakeOff thrust, i.e. maximum thrust
-                       on ground at speed 0, also noted F0
-    :param maximum_mach:
-    :param design_altitude: (unit=m)
-    :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4
-    :param delta_t4_cruise: (unit=K) difference between T4 during cruise and design T4
-    """
-
     def __init__(
         self,
         bypass_ratio: float,
@@ -80,6 +59,25 @@ class RubberEngine(IEngine):
         delta_t4_climb: float = -50,
         delta_t4_cruise: float = -100,
     ):
+        """
+        Parametric turbofan engine.
+
+        It computes engine characteristics using analytical model from following
+        sources:
+
+        .. bibliography:: ../refs.bib
+           :filter: docname in docnames
+
+        :param bypass_ratio:
+        :param overall_pressure_ratio:
+        :param turbine_inlet_temperature: (unit=K) also noted T4
+        :param mto_thrust: (unit=N) Maximum TakeOff thrust, i.e. maximum thrust
+                           on ground at speed 0, also noted F0
+        :param maximum_mach:
+        :param design_altitude: (unit=m)
+        :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4
+        :param delta_t4_cruise: (unit=K) difference between T4 during cruise and design T4
+        """
         # pylint: disable=too-many-arguments  # they define the engine
 
         self.bypass_ratio = bypass_ratio
@@ -267,7 +265,7 @@ class RubberEngine(IEngine):
         self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]
     ) -> np.ndarray:
         """
-        Computation of Specific Fuel Consumption at maximum thrust
+        Computation of Specific Fuel Consumption at maximum thrust.
 
         Uses model described in :cite:`roux:2005`, p.41.
 
@@ -355,7 +353,7 @@ class RubberEngine(IEngine):
         delta_t4: Union[float, Sequence[float]],
     ) -> np.ndarray:
         """
-        Computation of maximum thrust
+        Computation of maximum thrust.
 
         Uses model described in :cite:`roux:2005`, p.57-58
 
@@ -371,7 +369,7 @@ class RubberEngine(IEngine):
         delta_t4 = np.asarray(delta_t4)
 
         def _mach_effect():
-            """ Computation of Mach effect """
+            """Computation of Mach effect."""
             vect = [
                 (self.overall_pressure_ratio - 30) ** 2,
                 (self.overall_pressure_ratio - 30),
@@ -429,7 +427,7 @@ class RubberEngine(IEngine):
             return alpha_mach_effect * (mach - m_s) ** 2 + f_m
 
         def _altitude_effect():
-            """ Computation of altitude effect """
+            """Computation of altitude effect."""
             # pylint: disable=invalid-name  # coefficients are named after model
             k = 1 + 1.2e-3 * delta_t4
             nf = 0.98 + 8e-4 * delta_t4
@@ -471,7 +469,7 @@ class RubberEngine(IEngine):
             return h
 
         def _residuals():
-            """ Computation of residuals """
+            """Computation of residuals."""
             return (
                 -4.51e-3 * self.bypass_ratio
                 + 2.19e-5 * self.t_4
@@ -483,7 +481,7 @@ class RubberEngine(IEngine):
 
     def installed_weight(self) -> float:
         """
-        Computes weight of installed engine, depending on MTO thrust (F0)
+        Computes weight of installed engine, depending on MTO thrust (F0).
 
         Uses model described in :cite:`roux:2005`, p.74
 
@@ -504,7 +502,7 @@ class RubberEngine(IEngine):
     def length(self) -> float:
         # TODO: update model reference with last edition of Raymer
         """
-        Computes engine length from MTO thrust and maximum Mach
+        Computes engine length from MTO thrust and maximum Mach.
 
         Model from :cite:`raymer:1999`, p.74
 
@@ -517,7 +515,7 @@ class RubberEngine(IEngine):
     def nacelle_diameter(self) -> float:
         # TODO: update model reference with last edition of Raymer
         """
-        Computes nacelle diameter from MTO thrust and bypass ratio
+        Computes nacelle diameter from MTO thrust and bypass ratio.
 
         Model of engine diameter from :cite:`raymer:1999`, p.235.
         Nacelle diameter is considered 10% greater (:cite:`kroo:2001`)
