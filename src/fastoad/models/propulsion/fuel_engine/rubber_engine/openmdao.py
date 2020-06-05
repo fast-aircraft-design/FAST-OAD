@@ -28,6 +28,48 @@ from .rubber_engine import RubberEngine
 # as an OpenMDAO component with OpenMDAOSystemRegistry.register_system() in fastoad.register
 @RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine")
 class OMRubberEngineWrapper(IOMEngineWrapper):
+    """
+    Wrapper class for allowing direct call of :class:`~.rubber_engine.RubberEngine` in an
+    OpenMDAO component.
+
+    Example of usage of this class::
+
+        import openmdao.api as om
+
+        class MyComponent(om.ExplicitComponent):
+            def initialize():
+                self._engine_wrapper = OMRubberEngineWrapper()
+
+            def setup():
+                # Adds OpenMDAO variables that define the engine
+                self._engine_wrapper.setup(self)
+
+                # Do the normal setup
+                self.add_input("my_input")
+                [finish the setup...]
+
+            def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+                [do something]
+
+                # Get the engine instance, with parameters defined from OpenMDAO inputs
+                engine = self._engine_wrapper.get_engine(inputs)
+
+                # Run the engine model. This is a pure Python call. You have to define
+                # its inputs before, and to use its outputs according to your needs
+                sfc, thrust_rate, thrust = engine.compute_flight_points(
+                    mach,
+                    altitude,
+                    flight_phase,
+                    use_thrust_rate,
+                    thrust_rate,
+                    thrust
+                    )
+
+                [do something else]
+
+        )
+    """
+
     def setup(self, component: Component):
         component.add_input("data:propulsion:rubber_engine:bypass_ratio", np.nan)
         component.add_input("data:propulsion:rubber_engine:overall_pressure_ratio", np.nan)

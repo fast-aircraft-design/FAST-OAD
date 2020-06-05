@@ -142,7 +142,6 @@ class _BreguetEngine(om.ExplicitComponent):
             inputs["data:TLAR:cruise_mach"],
             inputs["data:mission:sizing:cruise:altitude"],
             FlightPhase.CRUISE,
-            False,
             thrust=thrust,
         )
         outputs["data:propulsion:thrust"] = thrust
