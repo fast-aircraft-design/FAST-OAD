@@ -72,7 +72,6 @@ class BreguetFromOWE(BreguetFromMTOW):
         self.nonlinear_solver = om.NewtonSolver()
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["solve_subsystems"] = False
-        self.nonlinear_solver.linesearch = om.BoundsEnforceLS()
         self.linear_solver = om.DirectSolver()
 
 
@@ -241,7 +240,8 @@ class _MTOWFromOWE(om.ImplicitComponent):
         self.add_input("data:weight:aircraft:OWE", np.nan, units="kg")
         self.add_input("data:weight:aircraft:payload", np.nan, units="kg")
 
-        self.add_output("data:weight:aircraft:MTOW", units="kg", ref=1e5, upper=1e6)
+        # The upper bound helps for convergence
+        self.add_output("data:weight:aircraft:MTOW", units="kg", ref=1e5, lower=0.0, upper=1e6)
 
         self.declare_partials("data:weight:aircraft:MTOW", "*", method="fd")
 
@@ -297,6 +297,7 @@ class _CruiseMassRatio(om.ExplicitComponent):
         self.add_input("data:mission:sizing:cruise:altitude", np.nan, units="m")
         self.add_input("data:mission:sizing:cruise:distance", np.nan, units="m")
 
+        # The lower bound helps a lot for convergence
         self.add_output("data:mission:sizing:cruise:mass_ratio", lower=0.5, upper=1.0)
 
         self.declare_partials("data:mission:sizing:cruise:mass_ratio", "*", method="fd")
@@ -316,6 +317,6 @@ class _CruiseMassRatio(om.ExplicitComponent):
         # resulting in null or too small cruise_mass_ratio.
         # Forcing cruise_mass_ratio to a minimum of 0.3 avoids problems and should not
         # harm (no airplane loses 70% of its weight from fuel consumption)
-        cruise_mass_ratio = np.maximum(0.5, 1.0 / np.exp(cruise_distance / range_factor))
+        cruise_mass_ratio = np.maximum(0.3, 1.0 / np.exp(cruise_distance / range_factor))
 
         outputs["data:mission:sizing:cruise:mass_ratio"] = cruise_mass_ratio
