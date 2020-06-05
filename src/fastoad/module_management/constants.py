@@ -17,7 +17,7 @@ from enum import Enum
 
 # Services
 SERVICE_OPENMDAO_SYSTEM = "fast.openmdao.system"
-SERVICE_RESULT_FOLDER_PROVIDER = "fast.result.folder"
+SERVICE_PROPULSION_WRAPPER = "fastoad.wrapper.propulsion"
 
 # Properties for OpenMDAOSystemRegistry
 OPTION_PROPERTY_NAME = "OPTIONS"

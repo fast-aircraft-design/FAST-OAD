@@ -71,3 +71,19 @@ class FastBadSystemOptionError(FastError):
         )
         self.identifier = identifier
         self.option_names = option_names
+
+
+class FastIncompatibleServiceClass(FastError):
+    """
+    Raised when trying to register as service a class that does not implement the specified
+    interface.
+    """
+
+    def __init__(self, registered_class: type, service_id: str, base_class: type):
+        super().__init__(
+            'Trying to register %s as service "%s" but it does not inherit from %s'
+            % (str(registered_class), service_id, str(base_class))
+        )
+        self.registered_class = registered_class
+        self.service_id = service_id
+        self.base_class = base_class
