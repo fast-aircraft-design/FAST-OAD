@@ -98,7 +98,9 @@ def test_breguet_from_mtow_with_rubber_engine():
     assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0642, rtol=1e-3)
 
     # With direct call to rubber engine
-    problem2 = run_system(BreguetFromMTOW(embed_propulsion=True), ivc)
+    problem2 = run_system(
+        BreguetFromMTOW(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc
+    )
 
     assert_allclose(problem2["data:mission:sizing:ZFW"], 65076.0, atol=1)
     assert_allclose(problem2["data:mission:sizing:fuel"], 8924.0, atol=1)
@@ -169,7 +171,9 @@ def test_breguet_from_owe_with_rubber_engine():
     assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0642, rtol=1e-3)
 
     # With direct call to rubber engine
-    problem2 = run_system(BreguetFromOWE(embed_propulsion=True), ivc)
+    problem2 = run_system(
+        BreguetFromOWE(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc
+    )
 
     print(problem2["data:propulsion:SFC"])
     print(problem2["data:propulsion:thrust"])

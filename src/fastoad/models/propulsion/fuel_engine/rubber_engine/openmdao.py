@@ -18,10 +18,13 @@ import numpy as np
 from fastoad.models.propulsion import IOMEngineWrapper, IEngine, BaseOMEngineComponent
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from openmdao.core.component import Component
+from pelix.ipopo.decorators import ComponentFactory, Provides
 
 from .rubber_engine import RubberEngine
 
 
+@ComponentFactory("fastoad.wrapper.propulsion.rubber_engine")
+@Provides("fastoad.wrapper.propulsion")
 class OMRubberEngineWrapper(IOMEngineWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:rubber_engine:bypass_ratio", np.nan)

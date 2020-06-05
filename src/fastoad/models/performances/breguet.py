@@ -16,8 +16,8 @@ Simple module for performances
 
 import numpy as np
 import openmdao.api as om
+from fastoad import BundleLoader
 from fastoad.constants import FlightPhase
-from fastoad.models.propulsion.fuel_engine.rubber_engine.openmdao import OMRubberEngineWrapper
 from fastoad.utils.physics import Atmosphere
 from scipy.constants import g
 
@@ -39,15 +39,19 @@ class BreguetFromMTOW(om.Group):
     """
 
     def initialize(self):
-        self.options.declare("embed_propulsion", default=False, types=bool)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     # TODO: in a more general case, this module will link the starting mass to
     #   the ending mass. Could we make the module more generic ?
     def setup(self):
-        if self.options["embed_propulsion"]:
-            self.add_subsystem("propulsion", _BreguetEngine(), promotes=["*"])
-        else:
+        if self.options["propulsion_id"] is None:
             self.add_subsystem("propulsion_link", _BreguetPropulsion(), promotes=["*"])
+        else:
+            self.add_subsystem(
+                "propulsion",
+                _BreguetEngine(propulsion_id=self.options["propulsion_id"]),
+                promotes=["*"],
+            )
         self.add_subsystem("distances", _Distances(), promotes=["*"])
         self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
         self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
@@ -63,6 +67,14 @@ class BreguetFromOWE(BreguetFromMTOW):
     ZFW (Zero Fuel Weight).
     OWE (Operating Weight Empty) being linked to ZFW and MTOW, a cycle is implemented
     to have consistency between these 3 values.
+
+    Options:
+      - propulsion_id:
+        - if not provided, the propulsion model is expected to be an outside OpenMDAO
+          component
+        - if provided, the propulsion model matching the provided identifier will be
+          called directly in the performance process
+
     """
 
     def setup(self):
@@ -97,11 +109,15 @@ class _Consumption(om.ExplicitComponent):
 
 
 class _BreguetEngine(om.ExplicitComponent):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
+
     def initialize(self):
-        self._engine = OMRubberEngineWrapper()
+        self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-        self._engine.setup(self)
+        self._engine_wrapper.setup(self)
         self.add_input("data:mission:sizing:cruise:altitude", np.nan, units="m")
         self.add_input("data:TLAR:cruise_mach", np.nan)
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
@@ -122,7 +138,7 @@ class _BreguetEngine(om.ExplicitComponent):
         initial_cruise_mass = mtow * CLIMB_MASS_RATIO
 
         thrust = initial_cruise_mass / ld_ratio * g / engine_count
-        sfc, thrust_rate, _ = self._engine.get_engine(inputs).compute_flight_points(
+        sfc, thrust_rate, _ = self._engine_wrapper.get_engine(inputs).compute_flight_points(
             inputs["data:TLAR:cruise_mach"],
             inputs["data:mission:sizing:cruise:altitude"],
             FlightPhase.CRUISE,

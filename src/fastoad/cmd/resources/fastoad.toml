@@ -30,7 +30,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
         use_xfoil = false
     [model.performance]
         id = "fastoad.performances.breguet"
-        embed_propulsion = true
+        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
     [model.hq.tail_sizing]
         id = "fastoad.handling_qualities.tail_sizing"
     [model.hq.static_margin]
