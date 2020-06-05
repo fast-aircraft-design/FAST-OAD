@@ -177,7 +177,7 @@ class ValidityDomainChecker:
         # added, that will call the original setup() and do what we need.
 
         # original setup will be renamed with a name that will be unique
-        setup_new_name = "setup_before_validity_domain_checker_%i" % int(self._uuid)
+        setup_new_name = "__setup_before_validity_domain_checker_%i" % int(self._uuid)
 
         # Copy the original method "setup" to "__setup_before_option_decorator_<uuid>"
         setattr(om_class, setup_new_name, om_class.setup)

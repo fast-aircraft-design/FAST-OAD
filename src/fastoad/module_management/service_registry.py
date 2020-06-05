@@ -33,7 +33,6 @@ class RegisterService:
         :param service_id: the identifier of the service
         :param base_class: the class that should be parent to the registered class
         """
-
         self._id = provider_id
         self._service_id = service_id
         self._base_class = base_class
