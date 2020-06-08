@@ -51,7 +51,7 @@
     importlib_resources = "*"
     ipysheet = "*"
     tomlkit = "^0.6.0"
-    wop = "^1.8.0"
+    wop = "^1.9.0"
 
 [tool.poetry.dev-dependencies]
     wheel = "*"

@@ -302,6 +302,7 @@ def write_xdsm(
     configuration_file_path: str,
     xdsm_file_path: str = None,
     overwrite: bool = False,
+    depth: int = 1,
     wop_server_url=None,
     api_key=None,
 ):
@@ -310,6 +311,7 @@ def write_xdsm(
     :param configuration_file_path:
     :param xdsm_file_path:
     :param overwrite:
+    :param depth:
     :param wop_server_url:
     :param api_key:
     :return:
@@ -352,7 +354,9 @@ def write_xdsm(
             return
 
     if ok:
-        xdsm = wop.push_mda(problem, {"--xdsm": True, "--name": None, "--dry-run": False})
+        xdsm = wop.push_mda(
+            problem, {"--xdsm": True, "--name": None, "--dry-run": False, "--depth": depth}
+        )
         generate_xdsm_html(xdsm, xdsm_file_path)
     else:
         wop.logout()
