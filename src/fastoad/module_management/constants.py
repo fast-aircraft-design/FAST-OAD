@@ -1,6 +1,4 @@
-"""
-The place for module-level constants
-"""
+"""The place for module-level constants."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,7 +15,7 @@ from enum import Enum
 
 # Services
 SERVICE_OPENMDAO_SYSTEM = "fast.openmdao.system"
-SERVICE_RESULT_FOLDER_PROVIDER = "fast.result.folder"
+SERVICE_PROPULSION_WRAPPER = "fastoad.wrapper.propulsion"
 
 # Properties for OpenMDAOSystemRegistry
 OPTION_PROPERTY_NAME = "OPTIONS"
@@ -27,7 +25,9 @@ DOMAIN_PROPERTY_NAME = "DOMAIN"
 
 # Definition of model domains
 class ModelDomain(Enum):
-    """ Enumeration of model domains """
+    """
+    Enumeration of model domains.
+    """
 
     GEOMETRY = "Geometry"
     AERODYNAMICS = "Aerodynamics"

@@ -19,13 +19,13 @@ import openmdao.api as om
 from fastoad.constants import FlightPhase
 
 from tests.testing_utilities import run_system
-from ..openmdao import OMRubberEngine
+from ..openmdao import OMRubberEngineComponent
 
 
-def test_OMRubberEngine():
+def test_OMRubberEngineComponent():
     """ Tests ManualRubberEngine component """
     # Same test as in test_rubber_engine.test_compute_flight_points
-    engine = OMRubberEngine(flight_point_count=(2, 5))
+    engine = OMRubberEngineComponent(flight_point_count=(2, 5))
 
     machs = [0, 0.3, 0.3, 0.8, 0.8]
     altitudes = [0, 0, 0, 10000, 13000]

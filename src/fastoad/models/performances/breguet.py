@@ -1,6 +1,4 @@
-"""
-Simple module for performances
-"""
+"""Simple module for performances."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,6 +14,7 @@ Simple module for performances
 
 import numpy as np
 import openmdao.api as om
+from fastoad import BundleLoader
 from fastoad.constants import FlightPhase
 from fastoad.utils.physics import Atmosphere
 from scipy.constants import g
@@ -28,48 +27,63 @@ CLIMB_DESCENT_DISTANCE = 500  # in km, distance of climb + descent
 
 class BreguetFromMTOW(om.Group):
     """
-    Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases.
+    Estimation of fuel consumption through Breguet formula.
+
+    It uses a rough estimate of climb and descent phases.
 
     MTOW (Max TakeOff Weight) being an input, the model computes the ZFW (Zero Fuel
     Weight) considering that all fuel but the reserve has been consumed during the
     mission.
-    This model does not ensure consistency with OWE (Operating Empty Weight)
+    This model does not ensure consistency with OWE (Operating Empty Weight).
     """
+
+    def initialize(self):
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     # TODO: in a more general case, this module will link the starting mass to
     #   the ending mass. Could we make the module more generic ?
     def setup(self):
-        self.add_subsystem("propulsion", _BreguetPropulsion(), promotes=["*"])
+        if self.options["propulsion_id"] is None:
+            self.add_subsystem("propulsion_link", _BreguetPropulsion(), promotes=["*"])
+        else:
+            self.add_subsystem(
+                "propulsion",
+                _BreguetEngine(propulsion_id=self.options["propulsion_id"]),
+                promotes=["*"],
+            )
         self.add_subsystem("distances", _Distances(), promotes=["*"])
         self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
         self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
         self.add_subsystem("consumption", _Consumption(), promotes=["*"])
 
 
-class BreguetFromOWE(om.Group):
+class BreguetFromOWE(BreguetFromMTOW):
     """
-    Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases.
+    Estimation of fuel consumption through Breguet formula.
+
+    It uses a rough estimate of climb and descent phases.
 
     For the sizing mission, the Breguet formula links MTOW (Max TakeOff Weight) to
     ZFW (Zero Fuel Weight).
     OWE (Operating Weight Empty) being linked to ZFW and MTOW, a cycle is implemented
     to have consistency between these 3 values.
+
+    Options:
+      - propulsion_id:
+        - if not provided, the propulsion model is expected to be an outside OpenMDAO
+          component
+        - if provided, the propulsion model matching the provided identifier will be
+          called directly in the performance process
+
     """
 
     def setup(self):
-        self.add_subsystem("propulsion", _BreguetPropulsion(), promotes=["*"])
-        self.add_subsystem("distances", _Distances(), promotes=["*"])
-        self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
+        super().setup()
         self.add_subsystem("mtow", _MTOWFromOWE(), promotes=["*"])
-        self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
-        self.add_subsystem("consumption", _Consumption(), promotes=["*"])
 
         self.nonlinear_solver = om.NewtonSolver()
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["solve_subsystems"] = False
-        self.nonlinear_solver.linesearch = om.BoundsEnforceLS()
         self.linear_solver = om.DirectSolver()
 
 
@@ -94,9 +108,53 @@ class _Consumption(om.ExplicitComponent):
         outputs["data:mission:sizing:fuel:unitary"] = fuel / npax / distance
 
 
+class _BreguetEngine(om.ExplicitComponent):
+    def __init__(self, **kwargs):
+        """
+        Computes thrust, SFC and thrust rate by direct call to engine model.
+        """
+        super().__init__(**kwargs)
+        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
+
+    def initialize(self):
+        self.options.declare("propulsion_id", default="", types=str)
+
+    def setup(self):
+        self._engine_wrapper.setup(self)
+        self.add_input("data:mission:sizing:cruise:altitude", np.nan, units="m")
+        self.add_input("data:TLAR:cruise_mach", np.nan)
+        self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
+        self.add_input("data:aerodynamics:aircraft:cruise:L_D_max", np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", 2)
+
+        self.add_output("data:propulsion:SFC", units="kg/s/N", ref=1e-4)
+        self.add_output("data:propulsion:thrust_rate", lower=0.0, upper=1.0)
+        self.add_output("data:propulsion:thrust", units="N", ref=1e5)
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        engine_count = inputs["data:geometry:propulsion:engine:count"]
+        ld_ratio = inputs["data:aerodynamics:aircraft:cruise:L_D_max"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        initial_cruise_mass = mtow * CLIMB_MASS_RATIO
+
+        thrust = initial_cruise_mass / ld_ratio * g / engine_count
+        sfc, thrust_rate, _ = self._engine_wrapper.get_engine(inputs).compute_flight_points(
+            inputs["data:TLAR:cruise_mach"],
+            inputs["data:mission:sizing:cruise:altitude"],
+            FlightPhase.CRUISE,
+            thrust=thrust,
+        )
+        outputs["data:propulsion:thrust"] = thrust
+        outputs["data:propulsion:SFC"] = sfc
+        outputs["data:propulsion:thrust_rate"] = thrust_rate
+
+
 class _BreguetPropulsion(om.ExplicitComponent):
     """
-    Link with engine computation
+    Link with engine computation.
     """
 
     def setup(self):
@@ -113,8 +171,6 @@ class _BreguetPropulsion(om.ExplicitComponent):
         self.add_output("data:propulsion:altitude", units="m", ref=1e4)
         self.add_output("data:propulsion:mach")
 
-        self.declare_partials("data:propulsion:phase", "*", method="fd")
-        self.declare_partials("data:propulsion:use_thrust_rate", "*", method="fd")
         self.declare_partials("data:propulsion:required_thrust_rate", "*", method="fd")
         self.declare_partials("data:propulsion:required_thrust", "*", method="fd")
         self.declare_partials(
@@ -140,7 +196,7 @@ class _BreguetPropulsion(om.ExplicitComponent):
 class _FuelWeightFromMTOW(om.ExplicitComponent):
     """
     Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases
+    of climb and descent phases.
     """
 
     def setup(self):
@@ -193,7 +249,7 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
 class _MTOWFromOWE(om.ImplicitComponent):
     """
     Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases
+    of climb and descent phases.
     """
 
     def setup(self):
@@ -202,7 +258,8 @@ class _MTOWFromOWE(om.ImplicitComponent):
         self.add_input("data:weight:aircraft:OWE", np.nan, units="kg")
         self.add_input("data:weight:aircraft:payload", np.nan, units="kg")
 
-        self.add_output("data:weight:aircraft:MTOW", units="kg", ref=1e5)
+        # The upper bound helps for convergence
+        self.add_output("data:weight:aircraft:MTOW", units="kg", ref=1e5, lower=0.0, upper=1e6)
 
         self.declare_partials("data:weight:aircraft:MTOW", "*", method="fd")
 
@@ -227,7 +284,9 @@ class _MTOWFromOWE(om.ImplicitComponent):
 
 
 class _Distances(om.ExplicitComponent):
-    """ Rough estimation of distances for each flight phase"""
+    """
+    Rough estimation of distances for each flight phase.
+    """
 
     def setup(self):
         self.add_input("data:TLAR:range", np.nan, units="m")
@@ -248,7 +307,7 @@ class _Distances(om.ExplicitComponent):
 
 class _CruiseMassRatio(om.ExplicitComponent):
     """
-    Estimation of fuel consumption through Breguet formula for a given cruise distance
+    Estimation of fuel consumption through Breguet formula for a given cruise distance.
     """
 
     def setup(self):
@@ -258,7 +317,8 @@ class _CruiseMassRatio(om.ExplicitComponent):
         self.add_input("data:mission:sizing:cruise:altitude", np.nan, units="m")
         self.add_input("data:mission:sizing:cruise:distance", np.nan, units="m")
 
-        self.add_output("data:mission:sizing:cruise:mass_ratio")
+        # The lower bound helps a lot for convergence
+        self.add_output("data:mission:sizing:cruise:mass_ratio", lower=0.5, upper=1.0)
 
         self.declare_partials("data:mission:sizing:cruise:mass_ratio", "*", method="fd")
 

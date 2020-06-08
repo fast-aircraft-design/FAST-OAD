@@ -1,7 +1,4 @@
-"""
-Parametric turbofan engine
-"""
-
+"""Parametric turbofan engine."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,6 +18,7 @@ from typing import Union, Sequence, Tuple, Optional
 
 import numpy as np
 from fastoad.constants import FlightPhase
+from fastoad.exceptions import FastUnknownFlightPhaseError
 from fastoad.models.propulsion import IEngine
 from fastoad.models.propulsion.fuel_engine.rubber_engine.exceptions import (
     FastRubberEngineInconsistentInputParametersError,
@@ -50,25 +48,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class RubberEngine(IEngine):
-    """
-    Parametric turbofan engine
-
-    Computes engine characteristics using analytical model from following sources:
-
-    .. bibliography:: ../refs.bib
-       :filter: docname in docnames
-
-    :param bypass_ratio:
-    :param overall_pressure_ratio:
-    :param turbine_inlet_temperature: (unit=K) also noted T4
-    :param mto_thrust: (unit=N) Maximum TakeOff thrust, i.e. maximum thrust
-                       on ground at speed 0, also noted F0
-    :param maximum_mach:
-    :param design_altitude: (unit=m)
-    :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4
-    :param delta_t4_cruise: (unit=K) difference between T4 during cruise and design T4
-    """
-
     def __init__(
         self,
         bypass_ratio: float,
@@ -80,8 +59,26 @@ class RubberEngine(IEngine):
         delta_t4_climb: float = -50,
         delta_t4_cruise: float = -100,
     ):
+        """
+        Parametric turbofan engine.
+
+        It computes engine characteristics using analytical model from following
+        sources:
+
+        .. bibliography:: ../refs.bib
+           :filter: docname in docnames
+
+        :param bypass_ratio:
+        :param overall_pressure_ratio:
+        :param turbine_inlet_temperature: (unit=K) also noted T4
+        :param mto_thrust: (unit=N) Maximum TakeOff thrust, i.e. maximum thrust
+                           on ground at speed 0, also noted F0
+        :param maximum_mach:
+        :param design_altitude: (unit=m)
+        :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4
+        :param delta_t4_cruise: (unit=K) difference between T4 during cruise and design T4
+        """
         # pylint: disable=too-many-arguments  # they define the engine
-        """ constructor """
 
         self.bypass_ratio = bypass_ratio
         self.overall_pressure_ratio = overall_pressure_ratio
@@ -99,7 +96,9 @@ class RubberEngine(IEngine):
         }
 
         # ... so check that all FlightPhase values are in dict
-        assert any([key in self.dt4_values.keys() for key in FlightPhase])
+        unknown_keys = [key for key in FlightPhase if key not in self.dt4_values.keys()]
+        if unknown_keys:
+            raise FastUnknownFlightPhaseError("Unknown flight phases: %s", unknown_keys)
 
     def compute_flight_points(
         self,
@@ -111,18 +110,6 @@ class RubberEngine(IEngine):
         thrust: Optional[Union[float, Sequence]] = None,
     ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
         # pylint: disable=too-many-arguments  # they define the trajectory
-        """
-        see :meth:`fastoad.modules.propulsion.engine.IEngine.compute_flight_points` for more info
-
-
-        :param mach: Mach number
-        :param altitude: (unit=m) altitude w.r.t. to sea level
-        :param phase: flight phase
-        :param use_thrust_rate: tells if thrust_rate or thrust should be used (works element-wise)
-        :param thrust_rate: thrust rate (unit=none)
-        :param thrust: required thrust (unit=N)
-        :return: SFC (in kg/s/N), thrust rate, thrust (in N)
-        """
         return self.compute_flight_points_from_dt4(
             mach, altitude, self._get_delta_t4(phase), use_thrust_rate, thrust_rate, thrust
         )
@@ -154,11 +141,14 @@ class RubberEngine(IEngine):
         altitude = np.asarray(altitude)
         delta_t4 = np.asarray(delta_t4)
 
+        if use_thrust_rate is not None:
+            use_thrust_rate = np.asarray(np.round(use_thrust_rate, 0), dtype=bool)
+
         use_thrust_rate, thrust_rate, thrust = self._check_thrust_inputs(
             use_thrust_rate, thrust_rate, thrust
         )
 
-        use_thrust_rate = np.asarray(use_thrust_rate, dtype=bool)
+        use_thrust_rate = np.asarray(np.round(use_thrust_rate, 0), dtype=bool)
         thrust_rate = np.asarray(thrust_rate)
         thrust = np.asarray(thrust)
 
@@ -197,8 +187,32 @@ class RubberEngine(IEngine):
         return sfc, out_thrust_rate, out_thrust
 
     @staticmethod
-    def _check_thrust_inputs(use_thrust_rate, thrust_rate, thrust):
-        """ Checks that inputs are consistent and return them in proper shape """
+    def _check_thrust_inputs(
+        use_thrust_rate: Optional[Union[float, Sequence]],
+        thrust_rate: Optional[Union[float, Sequence]],
+        thrust: Optional[Union[float, Sequence]],
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Checks that inputs are consistent and return them in proper shape.
+
+        Some of the inputs can be None, but outputs will be proper numpy arrays.
+
+        :param use_thrust_rate:
+        :param thrust_rate:
+        :param thrust:
+        :return: the inputs, but transformed in numpy arrays.
+        """
+        # Ensure they are numpy array
+        if use_thrust_rate is not None:
+            # As OpenMDAO may provide floats that could be slightly different
+            # from 0. or 1., a rounding operation is needed before converting
+            # to booleans
+            use_thrust_rate = np.asarray(np.round(use_thrust_rate, 0), dtype=bool)
+        if thrust_rate is not None:
+            thrust_rate = np.asarray(thrust_rate)
+        if thrust is not None:
+            thrust = np.asarray(thrust)
+
         # Check inputs: if use_thrust_rate is None, we will use the provided input between
         # thrust_rate and thrust
         if use_thrust_rate is None:
@@ -247,9 +261,11 @@ class RubberEngine(IEngine):
 
         return use_thrust_rate, thrust_rate, thrust
 
-    def sfc_at_max_thrust(self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]):
+    def sfc_at_max_thrust(
+        self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]
+    ) -> np.ndarray:
         """
-        Computation of Specific Fuel Consumption at maximum thrust
+        Computation of Specific Fuel Consumption at maximum thrust.
 
         Uses model described in :cite:`roux:2005`, p.41.
 
@@ -287,7 +303,7 @@ class RubberEngine(IEngine):
         altitude: Union[float, Sequence[float]],
         thrust_rate: Union[float, Sequence[float]],
         mach: Union[float, Sequence[float]] = 0.8,
-    ) -> Union[float, Sequence[float]]:
+    ) -> np.ndarray:
         """
         Computation of ratio :math:`\\frac{SFC(F)}{SFC(Fmax)}`, given altitude
         and thrust_rate :math:`\\frac{F}{Fmax}`.
@@ -335,9 +351,9 @@ class RubberEngine(IEngine):
         atmosphere: Atmosphere,
         mach: Union[float, Sequence[float]],
         delta_t4: Union[float, Sequence[float]],
-    ) -> Union[float, Sequence[float]]:
+    ) -> np.ndarray:
         """
-        Computation of maximum thrust
+        Computation of maximum thrust.
 
         Uses model described in :cite:`roux:2005`, p.57-58
 
@@ -353,7 +369,7 @@ class RubberEngine(IEngine):
         delta_t4 = np.asarray(delta_t4)
 
         def _mach_effect():
-            """ Computation of Mach effect """
+            """Computation of Mach effect."""
             vect = [
                 (self.overall_pressure_ratio - 30) ** 2,
                 (self.overall_pressure_ratio - 30),
@@ -411,7 +427,7 @@ class RubberEngine(IEngine):
             return alpha_mach_effect * (mach - m_s) ** 2 + f_m
 
         def _altitude_effect():
-            """ Computation of altitude effect """
+            """Computation of altitude effect."""
             # pylint: disable=invalid-name  # coefficients are named after model
             k = 1 + 1.2e-3 * delta_t4
             nf = 0.98 + 8e-4 * delta_t4
@@ -453,7 +469,7 @@ class RubberEngine(IEngine):
             return h
 
         def _residuals():
-            """ Computation of residuals """
+            """Computation of residuals."""
             return (
                 -4.51e-3 * self.bypass_ratio
                 + 2.19e-5 * self.t_4
@@ -465,7 +481,7 @@ class RubberEngine(IEngine):
 
     def installed_weight(self) -> float:
         """
-        Computes weight of installed engine, depending on MTO thrust (F0)
+        Computes weight of installed engine, depending on MTO thrust (F0).
 
         Uses model described in :cite:`roux:2005`, p.74
 
@@ -483,10 +499,10 @@ class RubberEngine(IEngine):
 
         return installed_weight
 
-    def length(self):
+    def length(self) -> float:
         # TODO: update model reference with last edition of Raymer
         """
-        Computes engine length from MTO thrust and maximum Mach
+        Computes engine length from MTO thrust and maximum Mach.
 
         Model from :cite:`raymer:1999`, p.74
 
@@ -496,10 +512,10 @@ class RubberEngine(IEngine):
 
         return length
 
-    def nacelle_diameter(self):
+    def nacelle_diameter(self) -> float:
         # TODO: update model reference with last edition of Raymer
         """
-        Computes nacelle diameter from MTO thrust and bypass ratio
+        Computes nacelle diameter from MTO thrust and bypass ratio.
 
         Model of engine diameter from :cite:`raymer:1999`, p.235.
         Nacelle diameter is considered 10% greater (:cite:`kroo:2001`)

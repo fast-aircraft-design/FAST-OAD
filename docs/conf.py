@@ -153,6 +153,8 @@ pygments_style = "sphinx"
 # If true, keep warnings as "system message" paragraphs in the built documents.
 # keep_warnings = False
 
+# Use docstring from class and __init__
+autoclass_content = "both"
 
 # -- Options for HTML output ---------------------------------------------------
 

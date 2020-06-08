@@ -1,6 +1,4 @@
-"""
-For checking validity domain of OpenMDAO variables
-"""
+"""For checking validity domain of OpenMDAO variables."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -48,7 +46,7 @@ A namedtuple that contains result of one variable check
 
 class ValidityStatus(IntEnum):
     """
-    Simple enumeration for validity status
+    Simple enumeration for validity status.
     """
 
     OK = 0
@@ -138,16 +136,17 @@ class ValidityDomainChecker:
     - Units of limit values defined in ValidityDomainChecker are assumed to be the
       same as in add_input() and add_output() statements of decorated class
     - Validity check currently only applies to scalar values
-
-    :param limits: a dictionary where keys are variable names and values are two-values tuples
-                   that give lower and upper bound. One bound can be set to None.
-    :param logger_name: The named of the logger that will be used. If not provided, name of
-                        current module (i.e. "__name__"") will be used.
     """
 
     _limit_definitions: Dict[UUID, _LimitDefinitions] = {}
 
     def __init__(self, limits: Dict[str, tuple] = None, logger_name: str = None):
+        """
+        :param limits: a dictionary where keys are variable names and values are two-values tuples
+                   that give lower and upper bound. One bound can be set to None.
+        :param logger_name: The named of the logger that will be used. If not provided, name of
+                        current module (i.e. "__name__"") will be used.
+        """
         self._uuid = uuid.uuid4()
 
         # use given logger name for now. If it is None, it will be replaced by
@@ -177,7 +176,7 @@ class ValidityDomainChecker:
         # added, that will call the original setup() and do what we need.
 
         # original setup will be renamed with a name that will be unique
-        setup_new_name = "setup_before_validity_domain_checker_%i" % int(self._uuid)
+        setup_new_name = "__setup_before_validity_domain_checker_%i" % int(self._uuid)
 
         # Copy the original method "setup" to "__setup_before_option_decorator_<uuid>"
         setattr(om_class, setup_new_name, om_class.setup)
@@ -186,8 +185,7 @@ class ValidityDomainChecker:
         checker_id = self._uuid
 
         def setup(self):
-            """ Will replace the original setup() method"""
-
+            """Will replace the original setup method."""
             # Ok kid, this is where it gets maybe too complicated...
             # We need to get variables of the current OpenMDAO instance.
             # This is done with VariableList.from_system() which we know does

@@ -38,3 +38,9 @@ class XMLReadError(FastError):
 
     This exception indicates that an error occurred when reading an xml file.
     """
+
+
+class FastUnknownFlightPhaseError(FastError):
+    """
+    Raised when an unknown flight phase code has been encountered
+    """

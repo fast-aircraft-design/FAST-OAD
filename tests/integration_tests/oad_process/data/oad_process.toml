@@ -9,7 +9,7 @@ output_file = "../results/oad_process_outputs.xml"
 
 [model]
     nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
-    linear_solver = "om.ScipyKrylov()"
+    linear_solver = "om.DirectSolver()"
     [model.geometry]
         id = "fastoad.geometry.legacy"
     [model.weight]

@@ -1,6 +1,4 @@
-"""
-Exceptions for rubber_engine package
-"""
+"""Exceptions for rubber_engine package."""
 
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -18,4 +16,6 @@ Exceptions for rubber_engine package
 
 
 class FastRubberEngineInconsistentInputParametersError(Exception):
-    """ Raised when provied parameter combination is incorrect """
+    """
+    Raised when provided parameter combination is incorrect.
+    """

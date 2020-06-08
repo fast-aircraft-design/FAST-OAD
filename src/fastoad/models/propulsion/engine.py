@@ -1,5 +1,5 @@
 """
-Base module for engine models
+Base module for engine models.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -16,23 +16,19 @@ Base module for engine models
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from typing import Union, Sequence, Optional, Tuple, TypeVar
+from typing import Union, Sequence, Optional, Tuple
 
 import numpy as np
 import openmdao.api as om
 from fastoad.constants import FlightPhase
-
-IEngineSubclass = TypeVar("IEngineSubclass", bound="IEngine")
+from openmdao.core.component import Component
 
 
 class IEngine(ABC):
     """
-    Interface for Engine models
+    Interface that should be implemented by engine models.
     """
 
-    # pylint: disable=too-few-public-methods  # that is the needed interface
-
-    # pylint: disable=too-many-arguments  # they define the trajectory
     @abstractmethod
     def compute_flight_points(
         self,
@@ -76,9 +72,42 @@ class IEngine(ABC):
         """
 
 
-class OMIEngine(om.ExplicitComponent, ABC):
+class IOMEngineWrapper:
     """
-    Base class for OpenMDAO wrapping of subclasses of :class`IEngine`.
+    Interface for wrapping a :class:`IEngine` subclass in OpenMDAO
+
+    The implementation class defines the needed input variables for instantiating the
+    :class:`IEngine` subclass in :meth:`setup` and use them for instantiation in
+    :meth:`get_engine`
+
+    see :class:`~fastoad.models.propulsion.fuel_engine.rubber_engine.OMRubberEngineWrapper` for
+    an example of implementation.
+    """
+
+    @abstractmethod
+    def setup(self, component: Component):
+        """
+        Defines the needed OpenMDAO inputs for engine instantiation as done in :meth:`get_engine`
+
+        Use `add_inputs` and `declare_partials` methods of the provided `component`
+
+        :param component:
+        """
+
+    @staticmethod
+    @abstractmethod
+    def get_engine(inputs) -> IEngine:
+        """
+        This method defines the used IEngine subclass instance.
+
+        :param inputs: OpenMDAO input vector where parameters that define the engine are
+        :return: a :class:`IEngineSubclass` instance
+        """
+
+
+class BaseOMEngineComponent(om.ExplicitComponent, ABC):
+    """
+    Base class for OpenMDAO wrapping of subclasses of :class:`IEngineForOpenMDAO`.
 
     Classes that implements this interface should add their own inputs in setup()
     and implement :meth:`get_engine`.
@@ -100,12 +129,10 @@ class OMIEngine(om.ExplicitComponent, ABC):
         self.add_output("data:propulsion:thrust_rate", shape=shape, lower=0.0, upper=1.0)
         self.add_output("data:propulsion:thrust", shape=shape, units="N", ref=1e5)
 
-        self.declare_partials("data:propulsion:SFC", "*", method="fd")
-        self.declare_partials("data:propulsion:thrust_rate", "*", method="fd")
-        self.declare_partials("data:propulsion:thrust", "*", method="fd")
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        engine = self.get_engine(inputs)
+        engine = self.get_engine().get_engine(inputs)
         sfc, thrust_rate, thrust = engine.compute_flight_points(
             inputs["data:propulsion:mach"],
             inputs["data:propulsion:altitude"],
@@ -120,9 +147,9 @@ class OMIEngine(om.ExplicitComponent, ABC):
 
     @staticmethod
     @abstractmethod
-    def get_engine(inputs) -> IEngineSubclass:
+    def get_engine() -> IOMEngineWrapper:
         """
+        This method defines the used :class:`IEngineForOpenMDAO` instance.
 
-        :param inputs: input parameters that define the engine
-        :return: a :class`IEngineSubclass` instance
+        :return: a :class:`IOMEngineWrapper` instance
         """
