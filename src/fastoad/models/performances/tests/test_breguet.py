@@ -150,9 +150,6 @@ def test_breguet_from_owe_with_rubber_engine():
     group.add_subsystem("breguet", BreguetFromOWE(), promotes=["*"])
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = run_system(group, ivc)
-    print(problem["data:propulsion:SFC"])
-    print(problem["data:propulsion:required_thrust"])
-    print(problem["data:mission:sizing:cruise:mass_ratio"])
 
     engine = RubberEngine(5, 30, 1500, 100000, 0.95, 35000 * foot, -50)
     assert_allclose(
@@ -175,12 +172,6 @@ def test_breguet_from_owe_with_rubber_engine():
         BreguetFromOWE(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc
     )
 
-    print(problem2["data:propulsion:SFC"])
-    print(problem2["data:propulsion:thrust"])
-    print(problem2["data:mission:sizing:cruise:mass_ratio"])
-    print(problem2["data:weight:aircraft:MTOW"])
-    print(problem2["data:mission:sizing:ZFW"])
-    print(problem2["data:mission:sizing:fuel"])
     assert_allclose(
         engine.compute_flight_points(
             0.78, 35000 * foot, FlightPhase.CRUISE, thrust=problem2["data:propulsion:thrust"],
