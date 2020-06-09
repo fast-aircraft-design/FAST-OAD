@@ -44,10 +44,10 @@ jobs:
           name: source
           path: dist/*.gz
 
-      - name: publish to test.PyPI
+      - name: publish to PyPI
         env:
-          TOKEN: ${{ secrets.testPyPI }} # do not use the secret directly in run command, it would
-                                         # write it plainly in the log
+          TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would
+                                     # write it plainly in the log
         run: |
-          poetry config pypi-token.PyPI "$TOKEN"
+          poetry config pypi-token.pypi "$TOKEN"
           poetry publish
