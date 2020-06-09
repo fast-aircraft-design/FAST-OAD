@@ -1,6 +1,4 @@
-"""
-main
-"""
+"""Command Line Interface."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -51,9 +49,7 @@ class Main:
     # ACTIONS ======================================================================================
     @staticmethod
     def _generate_conf_file(args):
-        """
-        Generates a sample TOML file
-        """
+        """Generates a sample TOML file."""
         try:
             api.generate_configuration_file(args.conf_file, args.force)
         except FastFileExistsError:
@@ -67,9 +63,7 @@ class Main:
 
     @staticmethod
     def _generate_inputs(args):
-        """
-        Generates input file according to command line arguments
-        """
+        """Generates input file according to command line arguments."""
         schema = "legacy" if args.legacy else "native"
         try:
             api.generate_inputs(args.conf_file, args.source, schema, args.force)
@@ -83,23 +77,17 @@ class Main:
 
     @staticmethod
     def _list_systems(args):
-        """
-        Prints list of system identifiers
-        """
+        """Prints list of system identifiers."""
         api.list_systems(args.conf_file)
 
     @staticmethod
     def _list_variables(args):
-        """
-        Prints list of system outputs
-        """
+        """Prints list of system outputs."""
         api.list_variables(args.conf_file)
 
     @staticmethod
     def _write_n2(args):
-        """
-        Creates N2 html file
-        """
+        """Creates N2 html file."""
         try:
             api.write_n2(args.conf_file, args.n2_file, args.force)
         except FastFileExistsError:
@@ -112,24 +100,30 @@ class Main:
 
     @staticmethod
     def _write_xdsm(args):
-        """
-        Creates XDSM html file
-        """
+        """Creates XDSM html file."""
+
+        def _write(overwrite):
+            api.write_xdsm(
+                args.conf_file,
+                args.xdsm_file,
+                overwrite=overwrite,
+                wop_server_url=args.wop_server,
+                depth=args.depth,
+            )
+
         try:
-            api.write_xdsm(args.conf_file, args.xdsm_file, args.force, args.wop_server)
+            _write(args.force)
         except FastFileExistsError:
             if _query_yes_no(
                 'XDSM file "%s" already exists. Do you want to overwrite it?' % args.xdsm_file
             ):
-                api.write_xdsm(args.conf_file, args.xdsm_file, True, args.wop_server)
+                _write(True)
             else:
                 print("No file written.")
 
     @staticmethod
     def _evaluate(args):
-        """
-        Runs model according to provided problem file
-        """
+        """Runs model according to provided problem file."""
         try:
             api.evaluate_problem(args.conf_file, args.force)
         except FastFileExistsError as exc:
@@ -142,9 +136,7 @@ class Main:
 
     @staticmethod
     def _optimize(args):
-        """
-        Runs driver according to provided problem file
-        """
+        """Runs driver according to provided problem file."""
         try:
             api.optimize_problem(args.conf_file, args.force)
         except FastFileExistsError as exc:
@@ -157,10 +149,7 @@ class Main:
 
     @staticmethod
     def _notebooks(args):
-        """
-        Copies the notebook folder in user-selected destination
-        """
-
+        """Copies the notebook folder in user-selected destination."""
         # Create and copy folder
         target_path = pth.abspath(pth.join(args.path, NOTEBOOK_FOLDER_NAME))
         if pth.exists(target_path):
@@ -192,8 +181,7 @@ class Main:
 
     # ENTRY POINT ==================================================================================
     def run(self):
-        """ Main function """
-
+        """Main function."""
         subparsers = self.parser.add_subparsers(title="sub-commands")
 
         # option for version -----------------------------------------------------------------------
@@ -311,6 +299,9 @@ class Main:
             default=None,
             dest="wop_server",
             help="WhatsOpt server URL. Needed only at first call",
+        )
+        parser_xdsm.add_argument(
+            "--depth", nargs="?", default=2, help="Depth of analysis", type=int,
         )
         parser_xdsm.set_defaults(func=self._write_xdsm)
 

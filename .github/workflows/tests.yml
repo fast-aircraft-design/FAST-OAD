@@ -64,22 +64,22 @@ jobs:
       - name: Unit tests
         run: |
           poetry run pytest src
-          poetry run coverage xml  # for Codacy coverage
+          poetry run coverage xml  # for sending coverage report
         shell: bash
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
+        if: runner.os == 'Linux' && matrix.python-version == '3.7'  # This action runs only on Linux
         with:
           project-token: ${{ secrets.codacy }}
           coverage-reports: coverage.xml
 
       - uses: codecov/codecov-action@v1
-        if: runner.os == 'Windows' && matrix.python-version == '3.7'
+        if: runner.os == 'Windows' && matrix.python-version == '3.7'  # Using Windows for covering XFOIL calls
         with:
-          flags: unittests # optional
-          name: codecov-FAST-OAD # optional
-          fail_ci_if_error: true # optional (default = false)
+#          flags: unittests  # optional
+          name: codecov-FAST-OAD  # optional
+          fail_ci_if_error: false  # optional (default = false)
 
       - name: Integration tests
         run: poetry run pytest --no-cov tests/integration_tests
