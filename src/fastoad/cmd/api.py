@@ -302,7 +302,7 @@ def write_xdsm(
     configuration_file_path: str,
     xdsm_file_path: str = None,
     overwrite: bool = False,
-    depth: int = 1,
+    depth: int = 2,
     wop_server_url=None,
     api_key=None,
 ):
