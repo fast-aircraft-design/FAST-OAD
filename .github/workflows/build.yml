@@ -50,6 +50,5 @@ jobs:
           TOKEN: ${{ secrets.testPyPI }} # do not use the secret directly in run command, it would
                                          # write it plainly in the log
         run: |
-          poetry config repositories.testPyPI https://test.pypi.org/legacy/
-          poetry config pypi-token.testPyPI "$TOKEN"
-          poetry publish --repository testPyPI
+          poetry config pypi-token.PyPI "$TOKEN"
+          poetry publish
