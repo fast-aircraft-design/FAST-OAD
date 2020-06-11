@@ -32,6 +32,8 @@ _LOGGER = logging.getLogger(__name__)
 
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
 METADATA_TO_IGNORE_FOR_EQUALITY = ["tags", "size", "src_indices", "flat_src_indices", "distributed"]
+INPUT = "IN"
+OUTPUT = "OUT"
 
 
 class Variable(Hashable):
@@ -140,6 +142,15 @@ class Variable(Hashable):
     @description.setter
     def description(self, value):
         self.metadata["desc"] = value
+
+    @property
+    def io(self):
+        """ type of variable (in or out) (or None if not found) """
+        return self.metadata.get("io")
+
+    @io.setter
+    def io(self, value):
+        self.metadata["io"] = value
 
     def _set_default_shape(self):
         """ Automatically sets shape if not set"""
@@ -259,6 +270,8 @@ class VariableList(list):
         for variable in self:
             attributes = variable.metadata.copy()
             value = attributes.pop("value")
+            if "io" in attributes:
+                attributes.pop("io")
             ivc.add_output(variable.name, value, **attributes)
 
         return ivc
@@ -419,17 +432,34 @@ class VariableList(list):
         problem = get_problem_after_setup(problem)
         model = problem.model
 
+        set_type = False
+        # Determining global inputs
+        global_inputs = []
+        for subsystem in model._subsystems_allprocs:
+            if isinstance(subsystem, om.IndepVarComp):
+                input_variables = cls.from_ivc(subsystem)
+                for var in input_variables:
+                    global_inputs.append(var.name)
+                set_type = True
+
         prom2abs = {}
         if use_inputs:
             prom2abs.update(model._var_allprocs_prom2abs_list["input"])
         if use_outputs:
             prom2abs.update(model._var_allprocs_prom2abs_list["output"])
-
         for prom_name, abs_names in prom2abs.items():
             if not promoted_only or "." not in prom_name:
                 # Pick the first
                 abs_name = abs_names[0]
                 metadata = model._var_abs2meta[abs_name]
+
+                if set_type:
+                    # Setting type (IN or OUT)
+                    if prom_name in global_inputs:
+                        metadata.update({"io": INPUT})
+                    else:
+                        metadata.update({"io": OUTPUT})
+
                 variable = Variable(name=prom_name, **metadata)
                 if not use_initial_values:
                     try:
@@ -485,6 +515,7 @@ class VariableList(list):
                 if prom_name not in processed_prom_names:
                     processed_prom_names.append(prom_name)
                     metadata = model._var_abs2meta[abs_name]
+                    metadata.update({"io": INPUT})
                     variables[prom_name] = metadata
 
         _add_outputs(mandatory_unconnected)

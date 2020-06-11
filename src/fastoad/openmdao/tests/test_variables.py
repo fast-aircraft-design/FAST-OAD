@@ -214,6 +214,7 @@ def test_get_variables_from_problem():
             assert var.name == expected_var.name
             assert_allclose(var.value, expected_var.value)
             assert var.units == expected_var.units
+            assert var.io == expected_var.io
 
     # Check with an ExplicitComponent ------------------------------------------
     problem = om.Problem(Disc1())
@@ -261,19 +262,19 @@ def test_get_variables_from_problem():
     problem = om.Problem(group)
 
     expected_input_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
-        Variable(name="y1", value=np.array([1.0]), units=None),
-        Variable(name="y2", value=np.array([1.0]), units=None),
+        Variable(name="x", value=np.array([np.nan]), units=None, io="IN"),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", io="IN"),
+        Variable(name="y1", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="y2", value=np.array([1.0]), units=None, io="OUT"),
     ]
     expected_output_vars = [
-        Variable(name="x", value=np.array([1.0]), units="Pa"),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
-        Variable(name="y1", value=np.array([1.0]), units=None),
-        Variable(name="y2", value=np.array([1.0]), units=None),
-        Variable(name="g1", value=np.array([1.0]), units=None),
-        Variable(name="g2", value=np.array([1.0]), units=None),
-        Variable(name="f", value=np.array([1.0]), units=None),
+        Variable(name="x", value=np.array([1.0]), units="Pa", io="IN"),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", io="IN"),
+        Variable(name="y1", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="y2", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="g1", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="g2", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="f", value=np.array([1.0]), units=None, io="OUT"),
     ]
     _test_and_check(problem, True, True, False, expected_input_vars)
     _test_and_check(problem, True, False, True, expected_output_vars)
@@ -281,13 +282,13 @@ def test_get_variables_from_problem():
     # Check with the whole Sellar problem --------------------------------------
     # WITH promotions, WITH computation
     expected_computed_output_vars = [
-        Variable(name="x", value=np.array([1.0]), units="Pa"),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
-        Variable(name="y1", value=np.array([25.58830237]), units=None),
-        Variable(name="y2", value=np.array([12.05848815]), units=None),
-        Variable(name="f", value=np.array([28.58830817]), units=None),
-        Variable(name="g1", value=np.array([-22.42830237]), units=None),
-        Variable(name="g2", value=np.array([-11.94151185]), units=None),
+        Variable(name="x", value=np.array([1.0]), units="Pa", io="IN"),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", io="IN"),
+        Variable(name="y1", value=np.array([25.58830237]), units=None, io="OUT"),
+        Variable(name="y2", value=np.array([12.05848815]), units=None, io="OUT"),
+        Variable(name="f", value=np.array([28.58830817]), units=None, io="OUT"),
+        Variable(name="g1", value=np.array([-22.42830237]), units=None, io="OUT"),
+        Variable(name="g2", value=np.array([-11.94151185]), units=None, io="OUT"),
     ]
     problem.setup()
     problem.run_model()
@@ -318,22 +319,22 @@ def test_get_variables_from_problem():
     problem = om.Problem(group)
 
     expected_vars = [
-        Variable(name="indeps.x", value=np.array([1.0]), units="Pa"),
-        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2"),
-        Variable(name="disc1.x", value=np.array([np.nan]), units=None),
-        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2"),
-        Variable(name="disc1.y1", value=np.array([1.0]), units=None),
-        Variable(name="disc1.y2", value=np.array([1.0]), units=None),
-        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2"),
-        Variable(name="disc2.y1", value=np.array([1.0]), units=None),
-        Variable(name="disc2.y2", value=np.array([1.0]), units=None),
-        Variable(name="functions.x", value=np.array([2]), units=None),
-        Variable(name="functions.z", value=np.array([np.nan, np.nan]), units="m**2"),
-        Variable(name="functions.y1", value=np.array([1.0]), units=None),
-        Variable(name="functions.y2", value=np.array([1.0]), units=None),
-        Variable(name="functions.g1", value=np.array([1.0]), units=None),
-        Variable(name="functions.g2", value=np.array([1.0]), units=None),
-        Variable(name="functions.f", value=np.array([1.0]), units=None),
+        Variable(name="indeps.x", value=np.array([1.0]), units="Pa", io="IN"),
+        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", io="IN"),
+        Variable(name="disc1.x", value=np.array([np.nan]), units=None, io="IN"),
+        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2", io="IN"),
+        Variable(name="disc1.y1", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="disc1.y2", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", io="OUT"),
+        Variable(name="disc2.y1", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="disc2.y2", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="functions.x", value=np.array([2]), units=None, io="IN"),
+        Variable(name="functions.z", value=np.array([np.nan, np.nan]), units="m**2", io="IN"),
+        Variable(name="functions.y1", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="functions.y2", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="functions.g1", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="functions.g2", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="functions.f", value=np.array([1.0]), units=None, io="OUT"),
     ]
     _test_and_check(problem, True, True, True, expected_vars)
     expected_computed_vars = [  # Here links are done, even without computations
@@ -397,10 +398,10 @@ def test_variables_from_unconnected_inputs():
 
     # Check with an ExplicitComponent ------------------------------------------
     problem = om.Problem(Disc1())
-    expected_mandatory_vars = [Variable(name="x", value=np.array([np.nan]), units=None)]
+    expected_mandatory_vars = [Variable(name="x", value=np.array([np.nan]), units=None, io="IN")]
     expected_optional_vars = [
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
-        Variable(name="y2", value=np.array([1.0]), units=None),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", io="IN"),
+        Variable(name="y2", value=np.array([1.0]), units=None, io="IN"),
     ]
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
@@ -410,8 +411,8 @@ def test_variables_from_unconnected_inputs():
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
     problem = om.Problem(group)
 
-    expected_mandatory_vars = [Variable(name="x", value=np.array([np.nan]), units=None)]
-    expected_optional_vars = [Variable(name="z", value=np.array([5.0, 2.0]), units="m**2")]
+    expected_mandatory_vars = [Variable(name="x", value=np.array([np.nan]), units=None, io="IN")]
+    expected_optional_vars = [Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", io="IN")]
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
     # Check with the whole Sellar problem --------------------------------------
@@ -423,8 +424,8 @@ def test_variables_from_unconnected_inputs():
     problem = om.Problem(group)
 
     expected_mandatory_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None),
-        Variable(name="z", value=np.array([np.nan, np.nan]), units="m**2"),
+        Variable(name="x", value=np.array([np.nan]), units=None, io="IN"),
+        Variable(name="z", value=np.array([np.nan, np.nan]), units="m**2", io="IN"),
     ]
     expected_optional_vars = []
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
