@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.models.propulsion import IOMEngineWrapper
+from fastoad.models.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.constants import SERVICE_PROPULSION_WRAPPER
 from fastoad.module_management.exceptions import FastIncompatibleServiceClass
 from pelix.ipopo.decorators import ComponentFactory, Provides
@@ -52,4 +52,4 @@ class RegisterPropulsion(RegisterService):
 
         :param model_id: the identifier of the propulsion model
         """
-        super().__init__(model_id, SERVICE_PROPULSION_WRAPPER, IOMEngineWrapper)
+        super().__init__(model_id, SERVICE_PROPULSION_WRAPPER, IOMPropulsionWrapper)

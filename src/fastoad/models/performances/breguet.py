@@ -141,7 +141,7 @@ class _BreguetEngine(om.ExplicitComponent):
         initial_cruise_mass = mtow * CLIMB_MASS_RATIO
 
         thrust = initial_cruise_mass / ld_ratio * g / engine_count
-        sfc, thrust_rate, _ = self._engine_wrapper.get_engine(inputs).compute_flight_points(
+        sfc, thrust_rate, _ = self._engine_wrapper.get_model(inputs).compute_flight_points(
             inputs["data:TLAR:cruise_mach"],
             inputs["data:mission:sizing:cruise:altitude"],
             FlightPhase.CRUISE,

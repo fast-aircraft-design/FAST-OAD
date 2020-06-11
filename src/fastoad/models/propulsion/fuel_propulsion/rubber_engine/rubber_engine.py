@@ -19,8 +19,8 @@ from typing import Union, Sequence, Tuple, Optional
 import numpy as np
 from fastoad.constants import FlightPhase
 from fastoad.exceptions import FastUnknownFlightPhaseError
-from fastoad.models.propulsion import IEngine
-from fastoad.models.propulsion.fuel_engine.rubber_engine.exceptions import (
+from fastoad.models.propulsion import IPropulsion
+from fastoad.models.propulsion.fuel_propulsion.rubber_engine.exceptions import (
     FastRubberEngineInconsistentInputParametersError,
 )
 from fastoad.utils.physics import Atmosphere
@@ -47,7 +47,7 @@ from .constants import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class RubberEngine(IEngine):
+class RubberEngine(IPropulsion):
     def __init__(
         self,
         bypass_ratio: float,
