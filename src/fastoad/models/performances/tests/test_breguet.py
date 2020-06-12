@@ -13,13 +13,13 @@
 
 import openmdao.api as om
 from fastoad.constants import FlightPhase
-from fastoad.models.propulsion.fuel_engine.rubber_engine import RubberEngine
+from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 from numpy.testing import assert_allclose
 from scipy.constants import foot
 
 from tests.testing_utilities import run_system
 from ..breguet import BreguetFromMTOW, BreguetFromOWE
-from ...propulsion.fuel_engine.rubber_engine import OMRubberEngineComponent
+from ...propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
 
 
 def test_breguet_from_mtow():

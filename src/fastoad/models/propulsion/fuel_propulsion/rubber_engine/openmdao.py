@@ -13,7 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.models.propulsion import IOMEngineWrapper, IEngine, BaseOMEngineComponent
+from fastoad.models.propulsion import IOMPropulsionWrapper, IPropulsion, BaseOMPropulsionComponent
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from openmdao.core.component import Component
@@ -25,7 +25,7 @@ from .rubber_engine import RubberEngine
 # which is automatically done because OMRubberEngineComponent is currently registered
 # as an OpenMDAO component with OpenMDAOSystemRegistry.register_system() in fastoad.register
 @RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine")
-class OMRubberEngineWrapper(IOMEngineWrapper):
+class OMRubberEngineWrapper(IOMPropulsionWrapper):
     """
     Wrapper class of for rubber engine model.
 
@@ -52,7 +52,7 @@ class OMRubberEngineWrapper(IOMEngineWrapper):
                 [do something]
 
                 # Get the engine instance, with parameters defined from OpenMDAO inputs
-                engine = self._engine_wrapper.get_engine(inputs)
+                engine = self._engine_wrapper.get_model(inputs)
 
                 # Run the engine model. This is a pure Python call. You have to define
                 # its inputs before, and to use its outputs according to your needs
@@ -93,7 +93,7 @@ class OMRubberEngineWrapper(IOMEngineWrapper):
         )
 
     @staticmethod
-    def get_engine(inputs) -> IEngine:
+    def get_model(inputs) -> IPropulsion:
         """
 
         :param inputs: input parameters that define the engine
@@ -138,7 +138,7 @@ class OMRubberEngineWrapper(IOMEngineWrapper):
         ),  # limitation of max thrust model
     }
 )
-class OMRubberEngineComponent(BaseOMEngineComponent):
+class OMRubberEngineComponent(BaseOMPropulsionComponent):
     """
     Parametric engine model as OpenMDAO component
 
@@ -147,8 +147,8 @@ class OMRubberEngineComponent(BaseOMEngineComponent):
 
     def setup(self):
         super().setup()
-        self.get_engine().setup(self)
+        self.get_wrapper().setup(self)
 
     @staticmethod
-    def get_engine() -> OMRubberEngineWrapper:
+    def get_wrapper() -> OMRubberEngineWrapper:
         return OMRubberEngineWrapper()

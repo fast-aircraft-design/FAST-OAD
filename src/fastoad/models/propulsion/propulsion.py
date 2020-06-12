@@ -1,7 +1,4 @@
-"""
-Base module for engine models.
-"""
-
+"""Base module for propulsion models."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -24,9 +21,9 @@ from fastoad.constants import FlightPhase
 from openmdao.core.component import Component
 
 
-class IEngine(ABC):
+class IPropulsion(ABC):
     """
-    Interface that should be implemented by engine models.
+    Interface that should be implemented by propulsion models.
     """
 
     @abstractmethod
@@ -72,22 +69,54 @@ class IEngine(ABC):
         """
 
 
-class IOMEngineWrapper:
+class EngineSet(IPropulsion):
+    def __init__(self, engine: IPropulsion, engine_count):
+        """
+        Class for modelling an assembly of identical engines.
+
+        Thrust is supposed equally distributed among them.
+
+        :param engine: the engine model
+        :param engine_count:
+        """
+        self.engine = engine
+        self.engine_count = engine_count
+
+    def compute_flight_points(
+        self,
+        mach: Union[float, Sequence],
+        altitude: Union[float, Sequence],
+        phase: Union[FlightPhase, Sequence],
+        use_thrust_rate: Optional[Union[bool, Sequence]] = None,
+        thrust_rate: Optional[Union[float, Sequence]] = None,
+        thrust: Optional[Union[float, Sequence]] = None,
+    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
+
+        if thrust is not None:
+            thrust = thrust / self.engine_count
+
+        sfc, thrust_rate, thrust = self.engine.compute_flight_points(
+            mach, altitude, phase, use_thrust_rate, thrust_rate, thrust
+        )
+        return sfc, thrust_rate, thrust * self.engine_count
+
+
+class IOMPropulsionWrapper:
     """
-    Interface for wrapping a :class:`IEngine` subclass in OpenMDAO
+    Interface for wrapping a :class:`IPropulsion` subclass in OpenMDAO.
 
     The implementation class defines the needed input variables for instantiating the
-    :class:`IEngine` subclass in :meth:`setup` and use them for instantiation in
-    :meth:`get_engine`
+    :class:`IPropulsion` subclass in :meth:`setup` and use them for instantiation in
+    :meth:`get_model`
 
-    see :class:`~fastoad.models.propulsion.fuel_engine.rubber_engine.OMRubberEngineWrapper` for
+    see :class:`~fastoad.models.propulsion.fuel_propulsion.rubber_engine.OMRubberEngineWrapper` for
     an example of implementation.
     """
 
     @abstractmethod
     def setup(self, component: Component):
         """
-        Defines the needed OpenMDAO inputs for engine instantiation as done in :meth:`get_engine`
+        Defines the needed OpenMDAO inputs for propulsion instantiation as done in :meth:`get_model`
 
         Use `add_inputs` and `declare_partials` methods of the provided `component`
 
@@ -96,21 +125,22 @@ class IOMEngineWrapper:
 
     @staticmethod
     @abstractmethod
-    def get_engine(inputs) -> IEngine:
+    def get_model(inputs) -> IPropulsion:
         """
-        This method defines the used IEngine subclass instance.
+        This method defines the used :class:`IPropulsion` subclass instance.
 
-        :param inputs: OpenMDAO input vector where parameters that define the engine are
-        :return: a :class:`IEngineSubclass` instance
+        :param inputs: OpenMDAO input vector where the parameters that define the
+                       propulsion model are
+        :return: the propulsion model instance
         """
 
 
-class BaseOMEngineComponent(om.ExplicitComponent, ABC):
+class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
     """
     Base class for OpenMDAO wrapping of subclasses of :class:`IEngineForOpenMDAO`.
 
     Classes that implements this interface should add their own inputs in setup()
-    and implement :meth:`get_engine`.
+    and implement :meth:`get_wrapper`.
     """
 
     def initialize(self):
@@ -132,8 +162,8 @@ class BaseOMEngineComponent(om.ExplicitComponent, ABC):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        engine = self.get_engine().get_engine(inputs)
-        sfc, thrust_rate, thrust = engine.compute_flight_points(
+        wrapper = self.get_wrapper().get_model(inputs)
+        sfc, thrust_rate, thrust = wrapper.compute_flight_points(
             inputs["data:propulsion:mach"],
             inputs["data:propulsion:altitude"],
             inputs["data:propulsion:phase"],
@@ -147,9 +177,9 @@ class BaseOMEngineComponent(om.ExplicitComponent, ABC):
 
     @staticmethod
     @abstractmethod
-    def get_engine() -> IOMEngineWrapper:
+    def get_wrapper() -> IOMPropulsionWrapper:
         """
-        This method defines the used :class:`IEngineForOpenMDAO` instance.
+        This method defines the used :class:`IOMPropulsionWrapper` instance.
 
-        :return: a :class:`IOMEngineWrapper` instance
+        :return: an instance of OpenMDAO wrapper for propulsion model
         """
