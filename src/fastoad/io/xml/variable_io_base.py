@@ -37,7 +37,7 @@ from lxml.etree import XPathEvalError
 from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.vectors.vector import Vector
 
-from .constants import DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
+from .constants import DEFAULT_UNIT_ATTRIBUTE, DEFAULT_IO_ATTRIBUTE, ROOT_TAG
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -68,6 +68,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
     def __init__(self, translator: VarXpathTranslator):
         self._translator = translator
         self.xml_unit_attribute = DEFAULT_UNIT_ATTRIBUTE
+        self.xml_io_attribute = DEFAULT_IO_ATTRIBUTE
         self.unit_translation = {
             "²": "**2",
             "³": "**3",
@@ -101,6 +102,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         root = tree.getroot()
         for elem in root.iter():
             units = elem.attrib.get(self.xml_unit_attribute, None)
+            io = elem.attrib.get(self.xml_io_attribute, None)
             if units:
                 # Ensures compatibility with OpenMDAO units
                 for legacy_chars, om_chars in self.unit_translation.items():
@@ -126,7 +128,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
 
                 if name not in variables.names():
                     # Add Variable
-                    variables[name] = {"value": value, "units": units}
+                    variables[name] = {"value": value, "units": units, "io": io}
                 else:
                     raise FastXmlFormatterDuplicateVariableError(
                         "Variable %s is defined in more than one place in file %s"
@@ -148,9 +150,12 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                 continue
             element = self._create_xpath(root, xpath)
 
-            # Set value and units
+            # Set value, units and io
             if variable.units:
                 element.attrib[self.xml_unit_attribute] = variable.units
+
+            if variable.io:
+                element.attrib[self.xml_io_attribute] = variable.io
 
             # Filling value for already created element
             element.text = str(variable.value)
