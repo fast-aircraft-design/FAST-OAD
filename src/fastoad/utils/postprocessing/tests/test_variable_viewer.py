@@ -44,7 +44,7 @@ def test_variable_reader_load():
     """
     Basic tests for testing the VariableReader load method.
     """
-    col_names = ["Name", "Value", "Unit", "Description"]
+    col_names = ["Name", "Value", "Unit", "Description", "I/O"]
     ref_df = pd.DataFrame()
 
     ref_df = ref_df.append(
@@ -54,6 +54,7 @@ def test_variable_reader_load():
                 "Value": 0.46,
                 "Unit": "m",
                 "Description": "width of economical class seats",
+                "I/O": "IN",
             }
         ]
     )[col_names]
@@ -65,6 +66,7 @@ def test_variable_reader_load():
                 "Value": 0.86,
                 "Unit": "m",
                 "Description": "length of economical class seats",
+                "I/O": "IN",
             }
         ]
     )[col_names]
@@ -76,6 +78,7 @@ def test_variable_reader_load():
                 "Value": 0.48,
                 "Unit": "m",
                 "Description": "width of aisles",
+                "I/O": "IN",
             }
         ]
     )[col_names]
@@ -87,6 +90,7 @@ def test_variable_reader_load():
                 "Value": 2.0,
                 "Unit": None,
                 "Description": "number of engines",
+                "I/O": "IN",
             }
         ]
     )[col_names]
@@ -109,7 +113,7 @@ def test_variable_reader_save():
     """
     Basic tests for testing the VariableReader save method.
     """
-    col_names = ["Name", "Value", "Unit", "Description"]
+    col_names = ["Name", "Value", "Unit", "Description", "I/O"]
     ref_df = pd.DataFrame()
 
     ref_df = ref_df.append(
@@ -119,6 +123,7 @@ def test_variable_reader_save():
                 "Value": 0.46,
                 "Unit": "m",
                 "Description": "width of economical class seats",
+                "I/O": "IN",
             }
         ]
     )[col_names]
@@ -130,6 +135,7 @@ def test_variable_reader_save():
                 "Value": 0.86,
                 "Unit": "m",
                 "Description": "length of economical class seats",
+                "I/O": "IN",
             }
         ]
     )[col_names]
@@ -141,6 +147,7 @@ def test_variable_reader_save():
                 "Value": 0.48,
                 "Unit": "m",
                 "Description": "width of aisles",
+                "I/O": "IN",
             }
         ]
     )[col_names]
@@ -152,6 +159,7 @@ def test_variable_reader_save():
                 "Value": 2.0,
                 "Unit": None,
                 "Description": "number of engines",
+                "I/O": "IN",
             }
         ]
     )[col_names]

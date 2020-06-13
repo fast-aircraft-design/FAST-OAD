@@ -49,6 +49,7 @@ class VariableViewer:
         "value": "Value",
         "units": "Unit",
         "desc": "Description",
+        "io": "I/O",
     }
 
     def __init__(self):
@@ -70,6 +71,9 @@ class VariableViewer:
 
         # The ui containing all the dropdown menus
         self._variable_selector = None
+
+        # The ui containing all the input/output selector
+        self._io_selector = None
 
         # A tag used to select all submodules
         self._all_tag = "--ALL--"
@@ -105,6 +109,7 @@ class VariableViewer:
         :return display of the user interface:
         """
         self._create_save_load_buttons()
+        self._create_io_selector()
         return self._render_sheet()
 
     def load_variables(self, variables: VariableList, attribute_to_column: Dict[str, str] = None):
@@ -251,6 +256,17 @@ class VariableViewer:
         items_box = widgets.VBox([widgets.Label(value="Variable name"), items_box])
         self._variable_selector = items_box
 
+    def _create_io_selector(self):
+        """
+        The dropdown menu enables to selector only inputs, only outputs or all variables.
+        """
+        io_selector = widgets.Dropdown(
+            options=[self._all_tag, "Inputs", "Outputs"], layout=widgets.Layout(width="auto")
+        )
+        io_selector.observe(self._render_ui, "value")
+
+        self._io_selector = widgets.VBox([widgets.Label(value="I/O"), io_selector])
+
     def _create_save_load_buttons(self):
         """
         The save button saves the present state of the dataframe to the xml.
@@ -294,8 +310,15 @@ class VariableViewer:
         the actual values of the variable dropdown menus.
         """
         modules = [item.value for item in self._filter_widgets]
+        io_value = self._io_selector.children[1].value
+        if io_value == "Inputs":
+            var_type = "IN"
+        elif io_value == "Outputs":
+            var_type = "OUT"
+        else:
+            var_type = self._all_tag
 
-        filtered_var = self._filter_variables(self.dataframe, modules, var_type=None)
+        filtered_var = self._filter_variables(self.dataframe, modules, var_type=var_type)
 
         self._sheet = self._df_to_sheet(filtered_var)
 
@@ -317,7 +340,8 @@ class VariableViewer:
         for item in self._filter_widgets:
             item.observe(self._render_ui, "value")
         self._sheet.layout.height = "400px"
-        ui = widgets.VBox([self._save_load_buttons, self._variable_selector, self._sheet])
+        selectors = widgets.HBox([self._io_selector, self._variable_selector])
+        ui = widgets.VBox([self._save_load_buttons, selectors, self._sheet])
         return display(ui)
 
     @staticmethod
@@ -357,7 +381,7 @@ class VariableViewer:
         Returns a filtered dataframe with respect to a set of modules and variable type.
 
         The variables kept must be part of the modules list provided and the variable type
-        'INPUT' or 'OUTPUT (if provided).
+        'IN' or 'OUT'(if provided).
 
         :param df: the pandas dataframe containing the variables
         :param modules: the list of modules to which the variables belong
@@ -383,7 +407,7 @@ class VariableViewer:
                     element = df[df["Name"] == var_name]
                     filtered_df = filtered_df.append(element)
                 else:
-                    element = df[(df["Name"] == var_name) & (df["Type"] == var_type)]
+                    element = df[(df["Name"] == var_name) & (df["I/O"] == var_type)]
                     filtered_df = filtered_df.append(element)
 
         return filtered_df
