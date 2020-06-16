@@ -102,7 +102,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         root = tree.getroot()
         for elem in root.iter():
             units = elem.attrib.get(self.xml_unit_attribute, None)
-            io = elem.attrib.get(self.xml_io_attribute, None)
+            is_input = elem.attrib.get(self.xml_io_attribute, None)
             if units:
                 # Ensures compatibility with OpenMDAO units
                 for legacy_chars, om_chars in self.unit_translation.items():
@@ -128,7 +128,10 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
 
                 if name not in variables.names():
                     # Add Variable
-                    variables[name] = {"value": value, "units": units, "io": io}
+                    if is_input is not None:
+                        is_input = is_input == "True"
+
+                    variables[name] = {"value": value, "units": units, "is_input": is_input}
                 else:
                     raise FastXmlFormatterDuplicateVariableError(
                         "Variable %s is defined in more than one place in file %s"
@@ -153,9 +156,8 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             # Set value, units and io
             if variable.units:
                 element.attrib[self.xml_unit_attribute] = variable.units
-
-            if variable.io:
-                element.attrib[self.xml_io_attribute] = variable.io
+            if variable.is_input is not None:
+                element.attrib[self.xml_io_attribute] = str(variable.is_input)
 
             # Filling value for already created element
             element.text = str(variable.value)

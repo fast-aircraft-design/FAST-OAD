@@ -32,8 +32,6 @@ _LOGGER = logging.getLogger(__name__)
 
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
 METADATA_TO_IGNORE_FOR_EQUALITY = ["tags", "size", "src_indices", "flat_src_indices", "distributed"]
-INPUT = "IN"
-OUTPUT = "OUT"
 
 
 class Variable(Hashable):
@@ -144,13 +142,13 @@ class Variable(Hashable):
         self.metadata["desc"] = value
 
     @property
-    def io(self):
-        """ type of variable (in or out) (or None if not found) """
-        return self.metadata.get("io")
+    def is_input(self):
+        """ type of variable True if an input (or None if not found) """
+        return self.metadata.get("is_input")
 
-    @io.setter
-    def io(self, value):
-        self.metadata["io"] = value
+    @is_input.setter
+    def is_input(self, value):
+        self.metadata["is_input"] = value
 
     def _set_default_shape(self):
         """ Automatically sets shape if not set"""
@@ -270,8 +268,8 @@ class VariableList(list):
         for variable in self:
             attributes = variable.metadata.copy()
             value = attributes.pop("value")
-            if "io" in attributes:
-                attributes.pop("io")
+            if "is_input" in attributes:
+                attributes.pop("is_input")
             ivc.add_output(variable.name, value, **attributes)
 
         return ivc
@@ -433,7 +431,6 @@ class VariableList(list):
         model = problem.model
 
         # Determining global inputs
-        global_inputs = []
 
         # from unconnected inputs
         mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
@@ -462,9 +459,9 @@ class VariableList(list):
 
                 # Setting type (IN or OUT)
                 if prom_name in global_inputs:
-                    metadata.update({"io": INPUT})
+                    metadata.update({"is_input": True})
                 else:
-                    metadata.update({"io": OUTPUT})
+                    metadata.update({"is_input": False})
 
                 variable = Variable(name=prom_name, **metadata)
                 if not use_initial_values:
@@ -521,7 +518,7 @@ class VariableList(list):
                 if prom_name not in processed_prom_names:
                     processed_prom_names.append(prom_name)
                     metadata = model._var_abs2meta[abs_name]
-                    metadata.update({"io": INPUT})
+                    metadata.update({"is_input": True})
                     variables[prom_name] = metadata
 
         _add_outputs(mandatory_unconnected)

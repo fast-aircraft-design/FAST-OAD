@@ -24,6 +24,9 @@ from fastoad.io import VariableIO, IVariableIOFormatter
 from fastoad.openmdao.variables import VariableList
 
 pd.set_option("display.max_rows", None)
+INPUT = "IN"
+OUTPUT = "OUT"
+NA = "N/A"
 
 
 class VariableViewer:
@@ -49,7 +52,7 @@ class VariableViewer:
         "value": "Value",
         "units": "Unit",
         "desc": "Description",
-        "io": "I/O",
+        "is_input": "is_input",
     }
 
     def __init__(self):
@@ -130,6 +133,11 @@ class VariableViewer:
             .reset_index(drop=True)
         )
 
+        self.dataframe["I/O"] = NA
+        self.dataframe.loc[self.dataframe["is_input"] == True, "I/O"] = INPUT
+        self.dataframe.loc[self.dataframe["is_input"] == False, "I/O"] = OUTPUT
+        self.dataframe.drop(columns=["is_input"], inplace=True)
+
     def get_variables(self, column_to_attribute: Dict[str, str] = None) -> VariableList:
         """
 
@@ -143,9 +151,16 @@ class VariableViewer:
                 value: key for key, value in self._DEFAULT_COLUMN_RENAMING.items()
             }
 
-        return VariableList.from_dataframe(
-            self.dataframe[column_to_attribute.keys()].rename(columns=column_to_attribute)
+        df = self.dataframe.copy()
+
+        df["is_input"] = None
+        df.loc[df["I/O"] == INPUT, "is_input"] = True
+        df.loc[df["I/O"] == OUTPUT, "is_input"] = False
+        df.drop(columns=["I/O"], inplace=True)
+        variables = VariableList.from_dataframe(
+            df[column_to_attribute.keys()].rename(columns=column_to_attribute)
         )
+        return variables
 
     # pylint: disable=invalid-name # df is a common naming for dataframes
     @staticmethod
@@ -312,9 +327,9 @@ class VariableViewer:
         modules = [item.value for item in self._filter_widgets]
         io_value = self._io_selector.children[1].value
         if io_value == "Inputs":
-            var_io_type = "IN"
+            var_io_type = INPUT
         elif io_value == "Outputs":
-            var_io_type = "OUT"
+            var_io_type = OUTPUT
         else:
             var_io_type = self._all_tag
 
