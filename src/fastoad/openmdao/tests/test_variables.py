@@ -219,11 +219,11 @@ def test_get_variables_from_problem():
     # Check with an ExplicitComponent ------------------------------------------
     problem = om.Problem(Disc1())
     expected_input_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None),
-        Variable(name="y2", value=np.array([1.0]), units=None),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="x", value=np.array([np.nan]), units=None, io="IN"),
+        Variable(name="y2", value=np.array([1.0]), units=None, io="IN"),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", io="IN"),
     ]
-    expected_output_vars = [Variable(name="y1", value=np.array([1.0]), units=None)]
+    expected_output_vars = [Variable(name="y1", value=np.array([1.0]), units=None, io="OUT")]
     _test_and_check(problem, False, True, False, expected_input_vars)
     _test_and_check(problem, False, False, True, expected_output_vars)
     _test_and_check(problem, False, True, True, expected_input_vars + expected_output_vars)
@@ -236,14 +236,14 @@ def test_get_variables_from_problem():
 
     # All variables are inputs somewhere
     expected_input_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None),
-        Variable(name="y1", value=np.array([1.0]), units=None),
-        Variable(name="y2", value=np.array([1.0]), units=None),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2"),
+        Variable(name="x", value=np.array([np.nan]), units=None, io="OUT"),
+        Variable(name="y1", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="y2", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", io="OUT"),
     ]
     expected_output_vars = [
-        Variable(name="y1", value=np.array([1.0]), units=None),
-        Variable(name="y2", value=np.array([1.0]), units=None),
+        Variable(name="y1", value=np.array([1.0]), units=None, io="OUT"),
+        Variable(name="y2", value=np.array([1.0]), units=None, io="OUT"),
     ]
     _test_and_check(problem, False, True, False, expected_input_vars)
     _test_and_check(problem, False, False, True, expected_output_vars)

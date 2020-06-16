@@ -432,15 +432,22 @@ class VariableList(list):
         problem = get_problem_after_setup(problem)
         model = problem.model
 
-        set_type = False
         # Determining global inputs
         global_inputs = []
+
+        # from unconnected inputs
+        mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
+        unconnected_inputs = mandatory_unconnected + optional_unconnected
+
+        # from ivc outputs
+        ivc_inputs = []
         for subsystem in model._subsystems_allprocs:
             if isinstance(subsystem, om.IndepVarComp):
                 input_variables = cls.from_ivc(subsystem)
                 for var in input_variables:
-                    global_inputs.append(var.name)
-                set_type = True
+                    ivc_inputs.append(var.name)
+
+        global_inputs = unconnected_inputs + ivc_inputs
 
         prom2abs = {}
         if use_inputs:
@@ -453,12 +460,11 @@ class VariableList(list):
                 abs_name = abs_names[0]
                 metadata = model._var_abs2meta[abs_name]
 
-                if set_type:
-                    # Setting type (IN or OUT)
-                    if prom_name in global_inputs:
-                        metadata.update({"io": INPUT})
-                    else:
-                        metadata.update({"io": OUTPUT})
+                # Setting type (IN or OUT)
+                if prom_name in global_inputs:
+                    metadata.update({"io": INPUT})
+                else:
+                    metadata.update({"io": OUTPUT})
 
                 variable = Variable(name=prom_name, **metadata)
                 if not use_initial_values:
