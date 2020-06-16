@@ -312,13 +312,13 @@ class VariableViewer:
         modules = [item.value for item in self._filter_widgets]
         io_value = self._io_selector.children[1].value
         if io_value == "Inputs":
-            var_type = "IN"
+            var_io_type = "IN"
         elif io_value == "Outputs":
-            var_type = "OUT"
+            var_io_type = "OUT"
         else:
-            var_type = self._all_tag
+            var_io_type = self._all_tag
 
-        filtered_var = self._filter_variables(self.dataframe, modules, var_type=var_type)
+        filtered_var = self._filter_variables(self.dataframe, modules, var_io_type=var_io_type)
 
         self._sheet = self._df_to_sheet(filtered_var)
 
@@ -375,7 +375,7 @@ class VariableViewer:
         return set(submodules["Name"].tolist())
 
     def _filter_variables(
-        self, df: pd.DataFrame, modules: List[str], var_type: str = None
+        self, df: pd.DataFrame, modules: List[str], var_io_type: str = None
     ) -> pd.DataFrame:
         """
         Returns a filtered dataframe with respect to a set of modules and variable type.
@@ -385,11 +385,11 @@ class VariableViewer:
 
         :param df: the pandas dataframe containing the variables
         :param modules: the list of modules to which the variables belong
-        :param var_type: the type of variables to keep
+        :param var_io_type: the type of variables to keep
         :return the filtered dataframe
         """
-        if var_type is None:
-            var_type = self._all_tag
+        if var_io_type is None:
+            var_io_type = self._all_tag
         path = ""
         for _ in modules:
             if modules[-1] == self._all_tag:
@@ -403,11 +403,11 @@ class VariableViewer:
 
         for var_name in var_names:
             if path in var_name:
-                if var_type == self._all_tag:
+                if var_io_type == self._all_tag:
                     element = df[df["Name"] == var_name]
                     filtered_df = filtered_df.append(element)
                 else:
-                    element = df[(df["Name"] == var_name) & (df["I/O"] == var_type)]
+                    element = df[(df["Name"] == var_name) & (df["I/O"] == var_io_type)]
                     filtered_df = filtered_df.append(element)
 
         return filtered_df
