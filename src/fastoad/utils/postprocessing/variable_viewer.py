@@ -397,17 +397,9 @@ class VariableViewer:
             else:
                 path = ":".join(modules)
 
-        var_names = df["Name"].unique().tolist()
+        path_filter = [True] * len(df) if path == "" else df.Name.str.startswith(path)
+        io_filter = [True] * len(df) if var_io_type == self._all_tag else df["I/O"] == var_io_type
 
-        filtered_df = pd.DataFrame()
-
-        for var_name in var_names:
-            if path in var_name:
-                if var_io_type == self._all_tag:
-                    element = df[df["Name"] == var_name]
-                    filtered_df = filtered_df.append(element)
-                else:
-                    element = df[(df["Name"] == var_name) & (df["I/O"] == var_io_type)]
-                    filtered_df = filtered_df.append(element)
+        filtered_df = df[path_filter & io_filter]
 
         return filtered_df
