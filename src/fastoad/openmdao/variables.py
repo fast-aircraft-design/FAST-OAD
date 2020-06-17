@@ -143,7 +143,7 @@ class Variable(Hashable):
 
     @property
     def is_input(self):
-        """ type of variable True if an input (or None if not found) """
+        """ True if variable is a problem input, False if it is an output (None if information not found) """
         return self.metadata.get("is_input")
 
     @is_input.setter
@@ -377,12 +377,12 @@ class VariableList(list):
         return VariableList([_get_variable(row) for row in df[column_names].values])
 
     @classmethod
-    def from_system(
-        cls, system: System, use_inputs: bool = True, use_outputs: bool = True,
-    ) -> "VariableList":
+    def from_system(cls, system: System,) -> "VariableList":
         """
-        Creates a VariableList instance containing variables (inputs and/or
-        outputs) variables (inputs and/or outputs) of any OpenMDAO System.
+        Creates a VariableList instance containing variables (inputs and outputs)
+        of a an OpenMDAO System.
+        The inputs (is_input=True) correspond to the variables of IndepVarComp
+        components and all the unconnected variables.
 
         Warning: setup() must NOT have been called.
 
@@ -390,8 +390,6 @@ class VariableList(list):
         will be used. Otherwise, the absolute name will be used.
 
         :param system: OpenMDAO Component instance to inspect
-        :param use_inputs: if True, returned instance will contain inputs of the problem
-        :param use_outputs: if True, returned instance will contain outputs of the problem
         :return: VariableList instance
         """
 

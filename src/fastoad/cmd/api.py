@@ -132,17 +132,9 @@ def list_variables(
 
     # Extracting inputs and outputs
     variables = VariableList.from_problem(problem, promoted_only=False)
-    input_variables = VariableList()
-    output_variables = VariableList()
-
-    for var in variables:
-        if var.is_input:
-            input_variables.append(var)
-        else:
-            output_variables.append(var)
-
-    input_variables.sort(key=lambda var: var.name)
-    output_variables.sort(key=lambda var: var.name)
+    variables.sort(key=lambda var: var.name)
+    input_variables = VariableList([var for var in variables if var.is_input])
+    output_variables = VariableList([var for var in variables if not var.is_input])
 
     if isinstance(out, str):
         if not overwrite and pth.exists(out):

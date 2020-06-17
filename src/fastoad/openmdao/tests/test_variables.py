@@ -219,7 +219,6 @@ def test_get_variables_from_problem():
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
     problem = om.Problem(group)
 
-    # All variables are inputs somewhere
     expected_vars = [
         Variable(name="x", value=np.array([np.nan]), units=None, is_input=True),
         Variable(name="y1", value=np.array([1.0]), units=None, is_input=False),
