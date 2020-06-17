@@ -434,7 +434,11 @@ class VariableList(list):
 
         # from unconnected inputs
         mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
-        unconnected_inputs = mandatory_unconnected + optional_unconnected
+        unconnected_abs_names = mandatory_unconnected + optional_unconnected
+
+        unconnected_inputs = []
+        for abs_name in unconnected_abs_names:
+            unconnected_inputs.append(model._var_abs2prom["input"][abs_name])
 
         # from ivc outputs
         ivc_inputs = []

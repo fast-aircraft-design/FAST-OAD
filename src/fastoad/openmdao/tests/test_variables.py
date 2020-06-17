@@ -236,10 +236,10 @@ def test_get_variables_from_problem():
 
     # All variables are inputs somewhere
     expected_input_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=False),
+        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True),
         Variable(name="y1", value=np.array([1.0]), units=None, is_input=False),
         Variable(name="y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=False),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
     ]
     expected_output_vars = [
         Variable(name="y1", value=np.array([1.0]), units=None, is_input=False),

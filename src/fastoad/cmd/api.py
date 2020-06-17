@@ -130,8 +130,16 @@ def list_variables(
     conf = FASTOADProblemConfigurator(configuration_file_path)
     problem = conf.get_problem()
 
-    input_variables = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
-    output_variables = VariableList.from_problem(problem, use_inputs=False)
+    # Extracting inputs and outputs
+    variables = VariableList.from_problem(problem, promoted_only=False)
+    input_variables = VariableList()
+    output_variables = VariableList()
+
+    for var in variables:
+        if var.is_input:
+            input_variables.append(var)
+        else:
+            output_variables.append(var)
 
     input_variables.sort(key=lambda var: var.name)
     output_variables.sort(key=lambda var: var.name)
