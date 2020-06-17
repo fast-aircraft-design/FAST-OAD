@@ -397,30 +397,23 @@ class VariableList(list):
 
         problem = om.Problem(deepcopy(system))
         problem.setup()
-        return VariableList.from_problem(
-            problem, use_initial_values=True, use_inputs=use_inputs, use_outputs=use_outputs
-        )
+        return VariableList.from_problem(problem, use_initial_values=True)
 
     @classmethod
     def from_problem(
-        cls,
-        problem: om.Problem,
-        use_initial_values: bool = False,
-        use_inputs: bool = True,
-        use_outputs: bool = True,
-        promoted_only=True,
+        cls, problem: om.Problem, use_initial_values: bool = False, promoted_only=True,
     ) -> "VariableList":
         """
         Creates a VariableList instance containing
-        variables (inputs and/or outputs) of a an OpenMDAO Problem.
+        variables (inputs and outputs) of a an OpenMDAO Problem.
+        The inputs (is_input=True) correspond to the variables of IndepVarComp
+        components and all the unconnected variables.
 
         If variables are promoted, the promoted name will be used. Otherwise ( and if
         promoted_only is False), the absolute name will be used.
 
         :param problem: OpenMDAO Problem instance to inspect
         :param use_initial_values: if True, returned instance will contain values before computation
-        :param use_inputs: if True, returned instance will contain inputs of the problem
-        :param use_outputs: if True, returned instance will contain outputs of the problem
         :param promoted_only: if True, non-promoted variables will be excluded
         :return: VariableList instance
         """
@@ -451,10 +444,9 @@ class VariableList(list):
         global_inputs = unconnected_inputs + ivc_inputs
 
         prom2abs = {}
-        if use_inputs:
-            prom2abs.update(model._var_allprocs_prom2abs_list["input"])
-        if use_outputs:
-            prom2abs.update(model._var_allprocs_prom2abs_list["output"])
+        prom2abs.update(model._var_allprocs_prom2abs_list["input"])
+        prom2abs.update(model._var_allprocs_prom2abs_list["output"])
+
         for prom_name, abs_names in prom2abs.items():
             if not promoted_only or "." not in prom_name:
                 # Pick the first
