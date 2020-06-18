@@ -41,7 +41,7 @@
     numpy = "*"
     scipy = "*"
     pandas = "^1"
-    openmdao="^3"
+    openmdao="^3, <3.1.1"
     lxml = "*"
     ipopo = "^1"
     jupyterlab = "*"
