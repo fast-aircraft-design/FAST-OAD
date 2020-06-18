@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 0.3.0-beta
+==================
+
+- In Jupyter notebooks, VariableViewer now has a column for input/output type.
+- Changed base OAD process so that propulsion model can now be directly called
+  by the performance module instead of being a separate OpenMDAO component (which
+  is still possible, though). It prepares the import of FAST legacy
+  mission-based performance model.
+
 Version 0.2.2-beta
 ==================
 
