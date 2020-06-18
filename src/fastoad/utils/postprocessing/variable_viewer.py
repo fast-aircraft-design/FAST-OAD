@@ -24,6 +24,9 @@ from fastoad.io import VariableIO, IVariableIOFormatter
 from fastoad.openmdao.variables import VariableList
 
 pd.set_option("display.max_rows", None)
+INPUT = "IN"
+OUTPUT = "OUT"
+NA = "N/A"
 
 
 class VariableViewer:
@@ -49,6 +52,7 @@ class VariableViewer:
         "value": "Value",
         "units": "Unit",
         "desc": "Description",
+        "is_input": "is_input",
     }
 
     def __init__(self):
@@ -70,6 +74,9 @@ class VariableViewer:
 
         # The ui containing all the dropdown menus
         self._variable_selector = None
+
+        # The ui containing all the input/output selector
+        self._io_selector = None
 
         # A tag used to select all submodules
         self._all_tag = "--ALL--"
@@ -105,6 +112,7 @@ class VariableViewer:
         :return display of the user interface:
         """
         self._create_save_load_buttons()
+        self._create_io_selector()
         return self._render_sheet()
 
     def load_variables(self, variables: VariableList, attribute_to_column: Dict[str, str] = None):
@@ -125,6 +133,11 @@ class VariableViewer:
             .reset_index(drop=True)
         )
 
+        self.dataframe["I/O"] = NA
+        self.dataframe.loc[self.dataframe["is_input"] == True, "I/O"] = INPUT
+        self.dataframe.loc[self.dataframe["is_input"] == False, "I/O"] = OUTPUT
+        self.dataframe.drop(columns=["is_input"], inplace=True)
+
     def get_variables(self, column_to_attribute: Dict[str, str] = None) -> VariableList:
         """
 
@@ -138,9 +151,16 @@ class VariableViewer:
                 value: key for key, value in self._DEFAULT_COLUMN_RENAMING.items()
             }
 
-        return VariableList.from_dataframe(
-            self.dataframe[column_to_attribute.keys()].rename(columns=column_to_attribute)
+        df = self.dataframe.copy()
+
+        df["is_input"] = None
+        df.loc[df["I/O"] == INPUT, "is_input"] = True
+        df.loc[df["I/O"] == OUTPUT, "is_input"] = False
+        df.drop(columns=["I/O"], inplace=True)
+        variables = VariableList.from_dataframe(
+            df[column_to_attribute.keys()].rename(columns=column_to_attribute)
         )
+        return variables
 
     # pylint: disable=invalid-name # df is a common naming for dataframes
     @staticmethod
@@ -251,6 +271,17 @@ class VariableViewer:
         items_box = widgets.VBox([widgets.Label(value="Variable name"), items_box])
         self._variable_selector = items_box
 
+    def _create_io_selector(self):
+        """
+        The dropdown menu enables to selector only inputs, only outputs or all variables.
+        """
+        io_selector = widgets.Dropdown(
+            options=[self._all_tag, "Inputs", "Outputs"], layout=widgets.Layout(width="auto")
+        )
+        io_selector.observe(self._render_ui, "value")
+
+        self._io_selector = widgets.VBox([widgets.Label(value="I/O"), io_selector])
+
     def _create_save_load_buttons(self):
         """
         The save button saves the present state of the dataframe to the xml.
@@ -294,8 +325,15 @@ class VariableViewer:
         the actual values of the variable dropdown menus.
         """
         modules = [item.value for item in self._filter_widgets]
+        io_value = self._io_selector.children[1].value
+        if io_value == "Inputs":
+            var_io_type = INPUT
+        elif io_value == "Outputs":
+            var_io_type = OUTPUT
+        else:
+            var_io_type = self._all_tag
 
-        filtered_var = self._filter_variables(self.dataframe, modules, var_type=None)
+        filtered_var = self._filter_variables(self.dataframe, modules, var_io_type=var_io_type)
 
         self._sheet = self._df_to_sheet(filtered_var)
 
@@ -317,7 +355,8 @@ class VariableViewer:
         for item in self._filter_widgets:
             item.observe(self._render_ui, "value")
         self._sheet.layout.height = "400px"
-        ui = widgets.VBox([self._save_load_buttons, self._variable_selector, self._sheet])
+        selectors = widgets.HBox([self._io_selector, self._variable_selector])
+        ui = widgets.VBox([self._save_load_buttons, selectors, self._sheet])
         return display(ui)
 
     @staticmethod
@@ -351,21 +390,21 @@ class VariableViewer:
         return set(submodules["Name"].tolist())
 
     def _filter_variables(
-        self, df: pd.DataFrame, modules: List[str], var_type: str = None
+        self, df: pd.DataFrame, modules: List[str], var_io_type: str = None
     ) -> pd.DataFrame:
         """
         Returns a filtered dataframe with respect to a set of modules and variable type.
 
         The variables kept must be part of the modules list provided and the variable type
-        'INPUT' or 'OUTPUT (if provided).
+        'IN' or 'OUT'(if provided).
 
         :param df: the pandas dataframe containing the variables
         :param modules: the list of modules to which the variables belong
-        :param var_type: the type of variables to keep
+        :param var_io_type: the type of variables to keep
         :return the filtered dataframe
         """
-        if var_type is None:
-            var_type = self._all_tag
+        if var_io_type is None:
+            var_io_type = self._all_tag
         path = ""
         for _ in modules:
             if modules[-1] == self._all_tag:
@@ -373,17 +412,9 @@ class VariableViewer:
             else:
                 path = ":".join(modules)
 
-        var_names = df["Name"].unique().tolist()
+        path_filter = [True] * len(df) if path == "" else df.Name.str.startswith(path)
+        io_filter = [True] * len(df) if var_io_type == self._all_tag else df["I/O"] == var_io_type
 
-        filtered_df = pd.DataFrame()
-
-        for var_name in var_names:
-            if path in var_name:
-                if var_type == self._all_tag:
-                    element = df[df["Name"] == var_name]
-                    filtered_df = filtered_df.append(element)
-                else:
-                    element = df[(df["Name"] == var_name) & (df["Type"] == var_type)]
-                    filtered_df = filtered_df.append(element)
+        filtered_df = df[path_filter & io_filter]
 
         return filtered_df

@@ -81,6 +81,8 @@ class FASTOADProblem(om.Problem):
         if source_file_path:
             ref_vars = VariableIO(source_file_path, source_formatter).read()
             variables.update(ref_vars)
+            for var in variables:
+                var.is_input = True
         writer = VariableIO(self.input_file_path)
         writer.write(variables)
 

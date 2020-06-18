@@ -141,6 +141,15 @@ class Variable(Hashable):
     def description(self, value):
         self.metadata["desc"] = value
 
+    @property
+    def is_input(self):
+        """ True if variable is a problem input, False if it is an output (None if information not found) """
+        return self.metadata.get("is_input")
+
+    @is_input.setter
+    def is_input(self, value):
+        self.metadata["is_input"] = value
+
     def _set_default_shape(self):
         """ Automatically sets shape if not set"""
         if self.metadata["shape"] is None:
@@ -259,6 +268,8 @@ class VariableList(list):
         for variable in self:
             attributes = variable.metadata.copy()
             value = attributes.pop("value")
+            if "is_input" in attributes:
+                attributes.pop("is_input")
             ivc.add_output(variable.name, value, **attributes)
 
         return ivc
@@ -366,12 +377,12 @@ class VariableList(list):
         return VariableList([_get_variable(row) for row in df[column_names].values])
 
     @classmethod
-    def from_system(
-        cls, system: System, use_inputs: bool = True, use_outputs: bool = True,
-    ) -> "VariableList":
+    def from_system(cls, system: System,) -> "VariableList":
         """
-        Creates a VariableList instance containing variables (inputs and/or
-        outputs) variables (inputs and/or outputs) of any OpenMDAO System.
+        Creates a VariableList instance containing variables (inputs and outputs)
+        of a an OpenMDAO System.
+        The inputs (is_input=True) correspond to the variables of IndepVarComp
+        components and all the unconnected variables.
 
         Warning: setup() must NOT have been called.
 
@@ -379,37 +390,28 @@ class VariableList(list):
         will be used. Otherwise, the absolute name will be used.
 
         :param system: OpenMDAO Component instance to inspect
-        :param use_inputs: if True, returned instance will contain inputs of the problem
-        :param use_outputs: if True, returned instance will contain outputs of the problem
         :return: VariableList instance
         """
 
         problem = om.Problem(deepcopy(system))
         problem.setup()
-        return VariableList.from_problem(
-            problem, use_initial_values=True, use_inputs=use_inputs, use_outputs=use_outputs
-        )
+        return VariableList.from_problem(problem, use_initial_values=True)
 
     @classmethod
     def from_problem(
-        cls,
-        problem: om.Problem,
-        use_initial_values: bool = False,
-        use_inputs: bool = True,
-        use_outputs: bool = True,
-        promoted_only=True,
+        cls, problem: om.Problem, use_initial_values: bool = False, promoted_only=True,
     ) -> "VariableList":
         """
         Creates a VariableList instance containing
-        variables (inputs and/or outputs) of a an OpenMDAO Problem.
+        variables (inputs and outputs) of a an OpenMDAO Problem.
+        The inputs (is_input=True) correspond to the variables of IndepVarComp
+        components and all the unconnected variables.
 
         If variables are promoted, the promoted name will be used. Otherwise ( and if
         promoted_only is False), the absolute name will be used.
 
         :param problem: OpenMDAO Problem instance to inspect
         :param use_initial_values: if True, returned instance will contain values before computation
-        :param use_inputs: if True, returned instance will contain inputs of the problem
-        :param use_outputs: if True, returned instance will contain outputs of the problem
         :param promoted_only: if True, non-promoted variables will be excluded
         :return: VariableList instance
         """
@@ -419,17 +421,42 @@ class VariableList(list):
         problem = get_problem_after_setup(problem)
         model = problem.model
 
+        # Determining global inputs
+
+        # from unconnected inputs
+        mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
+        unconnected_abs_names = mandatory_unconnected + optional_unconnected
+
+        unconnected_inputs = []
+        for abs_name in unconnected_abs_names:
+            unconnected_inputs.append(model._var_abs2prom["input"][abs_name])
+
+        # from ivc outputs
+        ivc_inputs = []
+        for subsystem in model._subsystems_allprocs:
+            if isinstance(subsystem, om.IndepVarComp):
+                input_variables = cls.from_ivc(subsystem)
+                for var in input_variables:
+                    ivc_inputs.append(var.name)
+
+        global_inputs = unconnected_inputs + ivc_inputs
+
         prom2abs = {}
-        if use_inputs:
-            prom2abs.update(model._var_allprocs_prom2abs_list["input"])
-        if use_outputs:
-            prom2abs.update(model._var_allprocs_prom2abs_list["output"])
+        prom2abs.update(model._var_allprocs_prom2abs_list["input"])
+        prom2abs.update(model._var_allprocs_prom2abs_list["output"])
 
         for prom_name, abs_names in prom2abs.items():
             if not promoted_only or "." not in prom_name:
                 # Pick the first
                 abs_name = abs_names[0]
                 metadata = model._var_abs2meta[abs_name]
+
+                # Setting type (IN or OUT)
+                if prom_name in global_inputs:
+                    metadata.update({"is_input": True})
+                else:
+                    metadata.update({"is_input": False})
+
                 variable = Variable(name=prom_name, **metadata)
                 if not use_initial_values:
                     try:
@@ -485,6 +512,7 @@ class VariableList(list):
                 if prom_name not in processed_prom_names:
                     processed_prom_names.append(prom_name)
                     metadata = model._var_abs2meta[abs_name]
+                    metadata.update({"is_input": True})
                     variables[prom_name] = metadata
 
         _add_outputs(mandatory_unconnected)
