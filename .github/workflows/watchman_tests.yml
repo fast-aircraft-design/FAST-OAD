@@ -34,25 +34,25 @@ jobs:
         if: startsWith(runner.os, 'Linux')
         with:
           path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-watchman
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-watchman-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-Py${{ matrix.python-version }}-watchman
+            ${{ runner.os }}-Py${{ matrix.python-version }}-watchman-
 
       - uses: actions/cache@v2
         if: startsWith(runner.os, 'macOS')
         with:
           path: /Users/runner/Library/Caches/pypoetry
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-watchman
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-watchman-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-Py${{ matrix.python-version }}-watchman
+            ${{ runner.os }}-Py${{ matrix.python-version }}-watchman-
 
       - uses: actions/cache@v2
         if: startsWith(runner.os, 'Windows')
         with:
           path: ~\AppData\Local\pypoetry\Cache
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-watchman
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-watchman-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-Py${{ matrix.python-version }}-watchman
+            ${{ runner.os }}-Py${{ matrix.python-version }}-watchman-
 
       - name: Update production dependencies
         run: poetry update --no-dev
