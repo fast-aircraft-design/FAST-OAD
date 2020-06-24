@@ -129,98 +129,101 @@ class OperatingWeightEmpty(om.Group):
         self.add_subsystem("crew_weight", CrewWeight(), promotes=["*"])
 
         # Make additions
+        sum = om.AddSubtractComp()
+        sum.add_equation(
+            "data:weight:airframe:mass",
+            [
+                "data:weight:airframe:wing:mass",
+                "data:weight:airframe:fuselage:mass",
+                "data:weight:airframe:horizontal_tail:mass",
+                "data:weight:airframe:vertical_tail:mass",
+                "data:weight:airframe:flight_controls:mass",
+                "data:weight:airframe:landing_gear:main:mass",
+                "data:weight:airframe:landing_gear:front:mass",
+                "data:weight:airframe:pylon:mass",
+                "data:weight:airframe:paint:mass",
+            ],
+            units="kg",
+            desc="Mass of airframe",
+        )
+
         self.add_subsystem(
-            "airframe_weight_sum",
-            om.AddSubtractComp(
+            "airframe_weight_sum", sum, promotes=["*"],
+        )
+
+        sum = om.AddSubtractComp()
+        sum.add_equation(
+            "data:weight:propulsion:mass",
+            [
+                "data:weight:propulsion:engine:mass",
+                "data:weight:propulsion:fuel_lines:mass",
+                "data:weight:propulsion:unconsumables:mass",
+            ],
+            units="kg",
+            desc="Mass of the propulsion system",
+        )
+
+        self.add_subsystem(
+            "propulsion_weight_sum", sum, promotes=["*"],
+        )
+
+        sum = om.AddSubtractComp()
+        sum.add_equation(
+            "data:weight:systems:mass",
+            [
+                "data:weight:systems:power:auxiliary_power_unit:mass",
+                "data:weight:systems:power:electric_systems:mass",
+                "data:weight:systems:power:hydraulic_systems:mass",
+                "data:weight:systems:life_support:insulation:mass",
+                "data:weight:systems:life_support:air_conditioning:mass",
+                "data:weight:systems:life_support:de-icing:mass",
+                "data:weight:systems:life_support:cabin_lighting:mass",
+                "data:weight:systems:life_support:seats_crew_accommodation:mass",
+                "data:weight:systems:life_support:oxygen:mass",
+                "data:weight:systems:life_support:safety_equipment:mass",
+                "data:weight:systems:navigation:mass",
+                "data:weight:systems:transmission:mass",
+                "data:weight:systems:operational:radar:mass",
+                "data:weight:systems:operational:cargo_hold:mass",
+                "data:weight:systems:flight_kit:mass",
+            ],
+            units="kg",
+            desc="Mass of aircraft systems",
+        )
+
+        self.add_subsystem(
+            "systems_weight_sum", sum, promotes=["*"],
+        )
+
+        sum = om.AddSubtractComp()
+        sum.add_equation(
+            "data:weight:furniture:mass",
+            [
+                "data:weight:furniture:passenger_seats:mass",
+                "data:weight:furniture:food_water:mass",
+                "data:weight:furniture:security_kit:mass",
+                "data:weight:furniture:toilets:mass",
+            ],
+            units="kg",
+            desc="Mass of aircraft furniture",
+        )
+
+        self.add_subsystem(
+            "furniture_weight_sum", sum, promotes=["*"],
+        )
+
+        sum = om.AddSubtractComp()
+        sum.add_equation(
+            "data:weight:aircraft:OWE",
+            [
                 "data:weight:airframe:mass",
-                [
-                    "data:weight:airframe:wing:mass",
-                    "data:weight:airframe:fuselage:mass",
-                    "data:weight:airframe:horizontal_tail:mass",
-                    "data:weight:airframe:vertical_tail:mass",
-                    "data:weight:airframe:flight_controls:mass",
-                    "data:weight:airframe:landing_gear:main:mass",
-                    "data:weight:airframe:landing_gear:front:mass",
-                    "data:weight:airframe:pylon:mass",
-                    "data:weight:airframe:paint:mass",
-                ],
-                units="kg",
-                desc="Mass of airframe",
-            ),
-            promotes=["*"],
-        )
-
-        self.add_subsystem(
-            "propulsion_weight_sum",
-            om.AddSubtractComp(
                 "data:weight:propulsion:mass",
-                [
-                    "data:weight:propulsion:engine:mass",
-                    "data:weight:propulsion:fuel_lines:mass",
-                    "data:weight:propulsion:unconsumables:mass",
-                ],
-                units="kg",
-                desc="Mass of the propulsion system",
-            ),
-            promotes=["*"],
-        )
-
-        self.add_subsystem(
-            "systems_weight_sum",
-            om.AddSubtractComp(
                 "data:weight:systems:mass",
-                [
-                    "data:weight:systems:power:auxiliary_power_unit:mass",
-                    "data:weight:systems:power:electric_systems:mass",
-                    "data:weight:systems:power:hydraulic_systems:mass",
-                    "data:weight:systems:life_support:insulation:mass",
-                    "data:weight:systems:life_support:air_conditioning:mass",
-                    "data:weight:systems:life_support:de-icing:mass",
-                    "data:weight:systems:life_support:cabin_lighting:mass",
-                    "data:weight:systems:life_support:seats_crew_accommodation:mass",
-                    "data:weight:systems:life_support:oxygen:mass",
-                    "data:weight:systems:life_support:safety_equipment:mass",
-                    "data:weight:systems:navigation:mass",
-                    "data:weight:systems:transmission:mass",
-                    "data:weight:systems:operational:radar:mass",
-                    "data:weight:systems:operational:cargo_hold:mass",
-                    "data:weight:systems:flight_kit:mass",
-                ],
-                units="kg",
-                desc="Mass of aircraft systems",
-            ),
-            promotes=["*"],
-        )
-
-        self.add_subsystem(
-            "furniture_weight_sum",
-            om.AddSubtractComp(
                 "data:weight:furniture:mass",
-                [
-                    "data:weight:furniture:passenger_seats:mass",
-                    "data:weight:furniture:food_water:mass",
-                    "data:weight:furniture:security_kit:mass",
-                    "data:weight:furniture:toilets:mass",
-                ],
-                units="kg",
-                desc="Mass of aircraft furniture",
-            ),
-            promotes=["*"],
+                "data:weight:crew:mass",
+            ],
+            units="kg",
+            desc="Mass of crew",
         )
 
-        self.add_subsystem(
-            "OWE_sum",
-            om.AddSubtractComp(
-                "data:weight:aircraft:OWE",
-                [
-                    "data:weight:airframe:mass",
-                    "data:weight:propulsion:mass",
-                    "data:weight:systems:mass",
-                    "data:weight:furniture:mass",
-                    "data:weight:crew:mass",
-                ],
-                units="kg",
-                desc="Mass of crew",
-            ),
-            promotes=["*"],
-        )
+        self.add_subsystem("OWE_sum", sum, promotes=["*"])

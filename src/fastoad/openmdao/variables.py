@@ -31,7 +31,9 @@ from .utils import get_problem_after_setup, get_unconnected_input_names
 _LOGGER = logging.getLogger(__name__)
 
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
-METADATA_TO_IGNORE_FOR_EQUALITY = ["tags", "size", "src_indices", "flat_src_indices", "distributed"]
+# Metadata that will be ignore when checking variable equality and when adding variable
+# to an OpenMDAO component
+METADATA_TO_IGNORE = ["is_input", "tags", "size", "src_indices", "flat_src_indices", "distributed"]
 
 
 class Variable(Hashable):
@@ -84,13 +86,15 @@ class Variable(Hashable):
             self.__class__._variable_descriptions.update(vars_descs)
 
         if not self._base_metadata:
-            # Get variable base metadata from an IndepVarComp
-            ivc = om.IndepVarComp()
-            ivc.add_output(name="a")
-            # get attributes (3rd element of the tuple) of first element
-            self.__class__._base_metadata = ivc._indep_external[0][2]
+            # Get variable base metadata from an ExplicitComponent
+            comp = om.ExplicitComponent()
+            # get attributes
+            metadata = comp.add_output(name="a")
+
+            self.__class__._base_metadata = metadata
             self.__class__._base_metadata["value"] = 1.0
             self.__class__._base_metadata["tags"] = set()
+            self.__class__._base_metadata["shape"] = None
         # Done with class attributes ------------------------------------------
 
         self.metadata = self.__class__._base_metadata.copy()
@@ -166,7 +170,7 @@ class Variable(Hashable):
         other_value = np.asarray(other_metadata.pop("value"))
 
         # Let's also ignore unimportant keys
-        for key in METADATA_TO_IGNORE_FOR_EQUALITY:
+        for key in METADATA_TO_IGNORE:
             if key in my_metadata:
                 del my_metadata[key]
             if key in other_metadata:
@@ -268,8 +272,10 @@ class VariableList(list):
         for variable in self:
             attributes = variable.metadata.copy()
             value = attributes.pop("value")
-            if "is_input" in attributes:
-                attributes.pop("is_input")
+            # Some attributes are not compatible with add_output
+            for attr in METADATA_TO_IGNORE:
+                if attr in attributes:
+                    del attributes[attr]
             ivc.add_output(variable.name, value, **attributes)
 
         return ivc
@@ -324,15 +330,23 @@ class VariableList(list):
         """
         variables = VariableList()
 
-        for (name, value, attributes) in ivc._indep + ivc._indep_external:
+        if ivc._static_mode:
+            var_rel2meta = ivc._static_var_rel2meta
+            var_rel_names = ivc._static_var_rel_names
+        else:
+            var_rel2meta = ivc._var_rel2meta
+            var_rel_names = ivc._var_rel_names
+
+        for name in var_rel_names["output"]:
+            metadata = var_rel2meta[name]
+            value = metadata.pop("value")
             if np.shape(value) == (1,):
                 value = float(value[0])
             elif np.shape(value) == ():
                 pass
             else:
                 value = np.asarray(value)
-            metadata = {"value": value}
-            metadata.update(attributes)
+            metadata.update({"value": value})
             variables[name] = metadata
 
         return variables
