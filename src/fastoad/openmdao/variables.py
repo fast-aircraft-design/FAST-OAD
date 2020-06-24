@@ -31,8 +31,9 @@ from .utils import get_problem_after_setup, get_unconnected_input_names
 _LOGGER = logging.getLogger(__name__)
 
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
-METADATA_TO_IGNORE_FOR_EQUALITY = ["tags", "size", "src_indices", "flat_src_indices", "distributed"]
-ATTRIBUTES_TO_IGNORE_FOR_ADDING_OUTPUTS = ["is_input", "size", "distributed"]
+# Metadata that will be ignore when checking variable equality and when adding variable
+# to an OpenMDAO component
+METADATA_TO_IGNORE = ["is_input", "tags", "size", "src_indices", "flat_src_indices", "distributed"]
 
 
 class Variable(Hashable):
@@ -169,7 +170,7 @@ class Variable(Hashable):
         other_value = np.asarray(other_metadata.pop("value"))
 
         # Let's also ignore unimportant keys
-        for key in METADATA_TO_IGNORE_FOR_EQUALITY:
+        for key in METADATA_TO_IGNORE:
             if key in my_metadata:
                 del my_metadata[key]
             if key in other_metadata:
@@ -272,9 +273,9 @@ class VariableList(list):
             attributes = variable.metadata.copy()
             value = attributes.pop("value")
             # Some attributes are not compatible with add_output
-            for attr in ATTRIBUTES_TO_IGNORE_FOR_ADDING_OUTPUTS:
+            for attr in METADATA_TO_IGNORE:
                 if attr in attributes:
-                    attributes.pop(attr)
+                    del attributes[attr]
             ivc.add_output(variable.name, value, **attributes)
 
         return ivc
