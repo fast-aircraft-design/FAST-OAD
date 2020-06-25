@@ -166,12 +166,12 @@ def test_ClimbSegment(polar):
     segment.time_step = 2.0
 
     flight_points = segment.compute(
-        FlightPoint(altitude=10000.0, speed=200.0, mass=70000.0), 5000.0
-    )
+        FlightPoint(altitude=10000.0, speed=200.0, mass=70000.0, time=2000.0), 5000.0
+    )  # And we define a start time
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
-    assert_allclose(last_point.time, 1370.4, rtol=1e-2)
+    assert_allclose(last_point.time, 3370.4, rtol=1e-2)
     assert_allclose(last_point.altitude, 5000.0)
     assert_allclose(last_point.speed, 200.0)
     assert_allclose(last_point.mass, 69849.0, rtol=1e-4)
@@ -221,16 +221,18 @@ def test_Cruise(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = OptimalCruiseSegment(propulsion, polar, 120.0, cruise_mach=0.78, time_step=60.0)
-    flight_points = segment.compute({"mass": 70000.0}, 5.0e5)
+    flight_points = segment.compute(
+        FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5), 5.0e5
+    )
 
     first_point = flight_points.iloc[1]
-    last_point = flight_points.iloc[-1]
+    last_point = FlightPoint(flight_points.iloc[-1])
     # Note: reference values are obtained by running the process with 0.05s as time step
     assert_allclose(first_point.altitude, 9156.0, atol=1.0)
     assert_allclose(first_point.speed, 236.4, atol=0.1)
 
     assert_allclose(last_point.altitude, 9196.0, atol=1.0)
-    assert_allclose(last_point.time, 2115.0, rtol=1e-2)
+    assert_allclose(last_point.time, 3115.0, rtol=1e-2)
     assert_allclose(last_point.speed, 236.3, atol=0.1)
     assert_allclose(last_point.mass, 69577.0, rtol=1e-4)
-    assert_allclose(last_point.ground_distance, 500000.0)
+    assert_allclose(last_point.ground_distance, 600000.0)
