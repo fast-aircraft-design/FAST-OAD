@@ -204,8 +204,10 @@ class AbstractSegment(ABC):
         :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
         """
         start = FlightPoint(start)
-        start.time = 0.0
-        start.ground_distance = 0.0
+        if start.time is None:
+            start.time = 0.0
+        if start.ground_distance is None:
+            start.ground_distance = 0.0
         self._complete_flight_point(start)
 
         target = FlightPoint(target)
@@ -317,11 +319,12 @@ class OptimalCruiseSegment(AbstractSegment):
         :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
         """
         target = FlightPoint()
-        target.ground_distance = target_ground_distance
+        target.ground_distance = target_ground_distance + start.ground_distance
         return super().compute(start, target)
 
     def target_is_attained(self, flight_points: List[FlightPoint], target: FlightPoint) -> bool:
-        return np.abs(flight_points[-1].ground_distance - target.ground_distance) <= 1.0
+        current = flight_points[-1]
+        return np.abs(current.ground_distance - target.ground_distance) <= 1.0
 
     def _complete_flight_point(self, flight_point: FlightPoint):
         """
