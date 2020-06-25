@@ -145,6 +145,18 @@ class FlightPoint(dict):
             if key not in self.labels:
                 raise KeyError('"%s" is not a valid key for FlightPoint constructor.' % key)
 
+        # When going from FlightPoint to DataFrame, None values become NaN.
+        # But in the other side, NaN values will stay NaN, so, if some fields are
+        # not set, we would not have:
+        # >>> flight_point == FlightPoint(pd.DataFrame([flight_point]).iloc[0])
+        # So we remove NaN values to ensure the equality above in any case.
+        for key in self.labels:
+            try:
+                if key in self and np.isnan(self[key]):
+                    del self[key]
+            except TypeError:
+                pass  # if there has been a type error, then self[key] is not NaN
+
     def __getattr__(self, name):
         if name in self.labels:
             return self.get(name)

@@ -85,16 +85,16 @@ def polar() -> Polar:
 def test_FlightPoint():
 
     # Init with kwargs, with one attribute initialized #########################
-    fp = FlightPoint(mass=50000.0)
-    assert fp.mass == 50000.0
-    assert fp.mass == fp["mass"]
-    fp.mass = 70000.0
-    assert fp["mass"] == 70000.0
+    fp1 = FlightPoint(mass=50000.0)
+    assert fp1.mass == 50000.0
+    assert fp1.mass == fp1["mass"]
+    fp1.mass = 70000.0
+    assert fp1["mass"] == 70000.0
 
     # Non initialized but known attributes are initialized to None
     for label in FlightPoint.labels:
         if label != "mass":
-            assert getattr(fp, label) is None
+            assert getattr(fp1, label) is None
 
     # Init with dictionary, with all attributes initialized ####################
     test_values = {
@@ -108,14 +108,25 @@ def test_FlightPoint():
         setattr(fp2, label, new_value)
         assert fp2[label] == new_value
 
-    # Init with unknown attribute
+    # Init with unknown attribute ##############################################
     with pytest.raises(KeyError):
         _ = FlightPoint(unknown=0)
 
     with pytest.raises(KeyError):
         _ = FlightPoint({"unknown": 0})
 
-    fp2.update({"foo": 5})
+    # FlightPoint to/from pandas DataFrame #####################################
+    assert fp1 == FlightPoint(pd.DataFrame([fp1]).iloc[0])
+
+    df = pd.DataFrame([fp1, fp2])
+    for label in FlightPoint.labels:
+        assert_allclose(df[label], [fp1.get(label, np.nan), fp2.get(label, np.nan)])
+
+    fp2bis = FlightPoint(df.iloc[-1])
+    assert fp2 == fp2bis
+
+    fp1bis = FlightPoint(df.iloc[0])
+    assert fp1 == fp1bis
 
 
 def test_ClimbSegment(polar):
