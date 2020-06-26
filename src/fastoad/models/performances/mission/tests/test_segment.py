@@ -84,7 +84,7 @@ def polar() -> Polar:
 
 def test_FlightPoint():
 
-    # Init with kwargs, with one attribute initialized #########################
+    # Init with kwargs, with one attribute initialized #############################################
     fp1 = FlightPoint(mass=50000.0)
     assert fp1.mass == 50000.0
     assert fp1.mass == fp1["mass"]
@@ -96,7 +96,7 @@ def test_FlightPoint():
         if label != "mass":
             assert getattr(fp1, label) is None
 
-    # Init with dictionary, with all attributes initialized ####################
+    # Init with dictionary, with all attributes initialized ########################################
     test_values = {
         key: value for key, value in zip(FlightPoint.labels, range(len(FlightPoint.labels)))
     }
@@ -108,14 +108,14 @@ def test_FlightPoint():
         setattr(fp2, label, new_value)
         assert fp2[label] == new_value
 
-    # Init with unknown attribute ##############################################
+    # Init with unknown attribute ##################################################################
     with pytest.raises(KeyError):
         _ = FlightPoint(unknown=0)
 
     with pytest.raises(KeyError):
         _ = FlightPoint({"unknown": 0})
 
-    # FlightPoint to/from pandas DataFrame #####################################
+    # FlightPoint to/from pandas DataFrame #########################################################
     assert fp1 == FlightPoint(pd.DataFrame([fp1]).iloc[0])
 
     df = pd.DataFrame([fp1, fp2])
@@ -138,53 +138,92 @@ def test_ClimbSegment(polar):
     segment.thrust_rate = 1.0
     segment.time_step = 2.0
 
-    # Climb computation with fixed altitude target #############################
+    # Climb computation with fixed altitude target, fixed true airspeed ############################
     flight_points = segment.compute(
-        FlightPoint(altitude=5000.0, speed=150.0, mass=70000.0), 10000.0
-    )
+        {"altitude": 5000.0, "mass": 70000.0,}, {"altitude": 10000.0, "true_airspeed": 150.0}
+    )  # Test init with dict
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
     assert_allclose(last_point.time, 143.5, rtol=1e-2)
     assert_allclose(last_point.altitude, 10000.0)
-    assert_allclose(last_point.speed, 150.0)
+    assert_allclose(last_point.true_airspeed, 150.0)
     assert_allclose(last_point.mass, 69713.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20943.0, rtol=1e-3)
 
-    # Climb computation to optimal altitude ####################################
+    # Climb computation with fixed altitude target, fixed equivalent airspeed ######################
+    flight_points = segment.compute(
+        FlightPoint(altitude=5000.0, mass=70000.0),
+        FlightPoint(altitude=10000.0, equivalent_airspeed=100.0),
+    )  # Test init with dict
+    print_dataframe(flight_points)
+
+    first_point = flight_points.iloc[0]
+    last_point = flight_points.iloc[-1]
+    # Note: reference values are obtained by running the process with 0.01s as time step
+    assert_allclose(last_point.time, 145.2, rtol=1e-2)
+    assert_allclose(last_point.altitude, 10000.0)
+    assert_allclose(first_point.true_airspeed, 129.0, atol=0.1)
+    assert_allclose(last_point.true_airspeed, 172.3, atol=0.1)
+    assert_allclose(last_point.mass, 69710.0, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 20915.0, rtol=1e-3)
+
+    # Climb computation to optimal altitude ########################################################
+    segment.keep_airspeed = "true"
     segment.time_step = 2.0
     flight_points = segment.compute(
-        FlightPoint(altitude=5000.0, speed=250.0, mass=70000.0), ClimbSegment.OPTIMAL_ALTITUDE
+        FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),
+        FlightPoint(altitude=ClimbSegment.OPTIMAL_ALTITUDE),
     )
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
     assert_allclose(last_point.altitude, 10085.0, atol=0.1)
     assert_allclose(last_point.time, 84.1, rtol=1e-2)
-    assert_allclose(last_point.speed, 250.0)
+    assert_allclose(last_point.true_airspeed, 250.0)
+    assert_allclose(last_point.mach, 0.8359, rtol=1e-4)
     assert_allclose(last_point.mass, 69832.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20401.0, rtol=1e-3)
 
-    # Climb computation with too low thrust rate should fail ###################
+    # Climb computation to optimal altitude with capped Mach number ################################
+    segment.time_step = 2.0
+    segment.cruise_mach = 0.80
+    flight_points = segment.compute(
+        FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),
+        FlightPoint(altitude=ClimbSegment.OPTIMAL_ALTITUDE),
+    )
+
+    last_point = flight_points.iloc[-1]
+    # Note: reference values are obtained by running the process with 0.01s as time step
+    assert_allclose(last_point.altitude, 9507.2, atol=0.1)
+    assert_allclose(last_point.time, 75.4, rtol=1e-2)
+    assert_allclose(last_point.true_airspeed, 241.3, atol=0.1)
+    assert_allclose(last_point.mach, 0.80, rtol=1e-4)
+    assert_allclose(last_point.mass, 69849.0, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 18112.0, rtol=1e-3)
+
+    # Climb computation with too low thrust rate should fail #######################################
     segment = ClimbSegment(propulsion, polar, 100.0, thrust_rate=0.1)
     with pytest.raises(ValueError):
         segment.time_step = 5.0  # Let's fail quickly
         flight_points = segment.compute(
-            FlightPoint(altitude=5000.0, speed=150.0, mass=70000.0), 10000.0
+            FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),
+            FlightPoint(altitude=10000.0),
         )
 
-    # Descent computation ######################################################
+    # Descent computation ##########################################################################
     segment.time_step = 2.0
 
     flight_points = segment.compute(
-        FlightPoint(altitude=10000.0, speed=200.0, mass=70000.0, time=2000.0), 5000.0
+        FlightPoint(altitude=10000.0, true_airspeed=200.0, mass=70000.0, time=2000.0),
+        FlightPoint(altitude=5000.0),
     )  # And we define a start time
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
     assert_allclose(last_point.time, 3370.4, rtol=1e-2)
     assert_allclose(last_point.altitude, 5000.0)
-    assert_allclose(last_point.speed, 200.0)
+    assert_allclose(last_point.true_airspeed, 200.0)
     assert_allclose(last_point.mass, 69849.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 274043.0, rtol=1e-3)
 
@@ -195,35 +234,40 @@ def test_AccelerationSegment(polar):
     # initialisation using kwarg
     segment = AccelerationSegment(propulsion, polar, 120.0, thrust_rate=1.0, time_step=0.2)
 
-    # Acceleration computation #################################################
-    flight_points = segment.compute({"altitude": 5000.0, "speed": 150.0, "mass": 70000.0}, 250.0)
+    # Acceleration computation #####################################################################
+    flight_points = segment.compute(
+        {"altitude": 5000.0, "true_airspeed": 150.0, "mass": 70000.0}, {"true_airspeed": 250.0}
+    )  # Test init with dict
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
     assert_allclose(last_point.time, 103.3, rtol=1e-2)
     assert_allclose(last_point.altitude, 5000.0)
-    assert_allclose(last_point.speed, 250.0)
+    assert_allclose(last_point.true_airspeed, 250.0)
     assert_allclose(last_point.mass, 69896.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20697.0, rtol=1e-3)
 
-    # Acceleration computation with too low thrust rate should fail ############
+    # Acceleration computation with too low thrust rate should fail ################################
     segment.thrust_rate = 0.1
     with pytest.raises(ValueError):
         segment.time_step = 5.0  # Let's fail quickly
         flight_points = segment.compute(
-            {"altitude": 5000.0, "speed": 150.0, "mass": 70000.0}, 250.0
+            FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),
+            FlightPoint(true_airspeed=250.0),
         )
 
-    # Deceleration computation #################################################
+    # Deceleration computation #####################################################################
     segment.time_step = 1.0
-    flight_points = segment.compute({"altitude": 5000.0, "speed": 250.0, "mass": 70000.0}, 150.0)
-    print_dataframe(flight_points)
+    flight_points = segment.compute(
+        FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),
+        FlightPoint(true_airspeed=150.0),
+    )
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
     assert_allclose(last_point.time, 315.8, rtol=1e-2)
     assert_allclose(last_point.altitude, 5000.0)
-    assert_allclose(last_point.speed, 150.0)
+    assert_allclose(last_point.true_airspeed, 150.0)
     assert_allclose(last_point.mass, 69982.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 62804.0, rtol=1e-3)
 
@@ -233,17 +277,18 @@ def test_Cruise(polar):
 
     segment = OptimalCruiseSegment(propulsion, polar, 120.0, cruise_mach=0.78, time_step=60.0)
     flight_points = segment.compute(
-        FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5), 5.0e5
+        FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5),
+        FlightPoint(ground_distance=5.0e5),
     )
 
-    first_point = flight_points.iloc[1]
+    first_point = flight_points.iloc[0]
     last_point = FlightPoint(flight_points.iloc[-1])
     # Note: reference values are obtained by running the process with 0.05s as time step
     assert_allclose(first_point.altitude, 9156.0, atol=1.0)
-    assert_allclose(first_point.speed, 236.4, atol=0.1)
+    assert_allclose(first_point.true_airspeed, 236.4, atol=0.1)
 
     assert_allclose(last_point.altitude, 9196.0, atol=1.0)
     assert_allclose(last_point.time, 3115.0, rtol=1e-2)
-    assert_allclose(last_point.speed, 236.3, atol=0.1)
+    assert_allclose(last_point.true_airspeed, 236.3, atol=0.1)
     assert_allclose(last_point.mass, 69577.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 600000.0)

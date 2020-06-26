@@ -50,7 +50,7 @@ class Polar:
         self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
 
         def _negated_lift_drag_ratio(lift_coeff):
-            """returns -CL/CD"""
+            """returns -CL/CD."""
             return -lift_coeff / self.cd(lift_coeff)
 
         self._optimal_CL = fmin(_negated_lift_drag_ratio, cl[0])
@@ -120,7 +120,8 @@ class FlightPoint(dict):
     labels = [
         "time",  # in seconds
         "altitude",  # in meters
-        "speed",  # in m/s
+        "true_airspeed",  # in m/s
+        "equivalent_airspeed",  # in m/s
         "mass",  # in kg
         "ground_distance",  # in m.
         "CL",
@@ -183,7 +184,7 @@ class AbstractSegment(ABC):
                         used in the propulsion model.
     :ivar altitude_bounds: minimum and maximum authorized altitude values. Process will be
                            stopped if computed altitude gets beyond these limits.
-    :ivar speed_bounds: minimum and maximum authorized speed values. Process will be
+    :ivar speed_bounds: minimum and maximum authorized true_airspeed values. Process will be
                         stopped if computed altitude gets beyond these limits.
     """
 
@@ -211,7 +212,7 @@ class AbstractSegment(ABC):
         """
         Computes the flight path segment from provided start point to provide target point.
 
-        :param start: the initial flight point, defined for speed, altitude and mass
+        :param start: the initial flight point, defined for true_airspeed, altitude and mass
         :param target: the target flight point, defined for any relevant parameter
         :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
         """
@@ -230,8 +231,8 @@ class AbstractSegment(ABC):
             current = flight_points[-1]
             new = self._compute_next_flight_point(current, target)
             self._complete_flight_point(new)
-            if not self.speed_bounds[0] <= new.speed <= self.speed_bounds[1]:
-                raise ValueError("Speed value %f.1m/s is out of bound. Process stopped.")
+            if not self.speed_bounds[0] <= new.true_airspeed <= self.speed_bounds[1]:
+                raise ValueError("true_airspeed value %f.1m/s is out of bound. Process stopped.")
             if not self.altitude_bounds[0] <= new.altitude <= self.altitude_bounds[1]:
                 raise ValueError("Altitude value %.0fm is out of bound. Process stopped.")
 
@@ -267,9 +268,12 @@ class AbstractSegment(ABC):
 
         def distance_to_optimum(altitude):
             atm = Atmosphere(altitude, altitude_in_feet=False)
-            speed = mach * atm.speed_of_sound
+            true_airspeed = mach * atm.speed_of_sound
             optimal_air_density = (
-                2.0 * mass * g / (self.reference_surface * speed ** 2 * self.polar.optimal_cl)
+                2.0
+                * mass
+                * g
+                / (self.reference_surface * true_airspeed ** 2 * self.polar.optimal_cl)
             )
             return (atm.density - optimal_air_density) * 100.0
 
@@ -280,26 +284,24 @@ class AbstractSegment(ABC):
         return optimal_altitude
 
     @abstractmethod
-    def _complete_flight_point(self, flight_point: FlightPoint):
-        """
-        Computes data for provided flight point.
-
-        Assumes that it is already defined for time, altitude, speed and mass.
-
-        :param flight_point: the flight point that will be completed in-place
-        """
-        pass
-
-    @abstractmethod
     def _compute_next_flight_point(self, previous: FlightPoint, target: FlightPoint) -> FlightPoint:
         """
-        Computes time, altitude, speed, mass and ground distance of next flight point.
+        Computes time, altitude, true airspeed, mass and ground distance of next flight point.
 
         :param previous: previous flight point
         :param target: target of the flight segment
         :return: the computed next flight point
         """
-        pass
+
+    @abstractmethod
+    def _complete_flight_point(self, flight_point: FlightPoint):
+        """
+        Computes data for provided flight point.
+
+        Assumes that it is already defined for time, altitude, true airspeed and mass.
+
+        :param flight_point: the flight point that will be completed in-place
+        """
 
 
 class OptimalCruiseSegment(AbstractSegment):
@@ -313,30 +315,38 @@ class OptimalCruiseSegment(AbstractSegment):
     def __init__(self, *args, **kwargs):
         """
 
-        :ivar cruise_mach: used thrust rate. Can be set at instantiation using a
-                           keyword argument.
+        :ivar cruise_mach: cruise Mach number. Mandatory before running :meth:`compute`.
+                           Can be set at instantiation using a keyword argument.
         """
 
-        if "cruise_mach" in kwargs:
-            self.cruise_mach = kwargs.pop("cruise_mach")
+        self._keyword_args["cruise_mach"] = None
 
         super().__init__(*args, **kwargs)
 
-    def compute(self, start: FlightPoint, target_ground_distance: float) -> pd.DataFrame:
-        """
-        Computes the flight path segment from provided start point to provided ground distance.
-
-        :param start: the initial flight point, defined for speed, altitude and mass
-        :param target_ground_distance: the target ground distance to cover
-        :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
-        """
-        target = FlightPoint()
-        target.ground_distance = target_ground_distance + start.ground_distance
+    def compute(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        target = FlightPoint(target)
+        target.ground_distance = target.ground_distance + start.ground_distance
         return super().compute(start, target)
 
     def target_is_attained(self, flight_points: List[FlightPoint], target: FlightPoint) -> bool:
         current = flight_points[-1]
         return np.abs(current.ground_distance - target.ground_distance) <= 1.0
+
+    def _compute_next_flight_point(self, previous: FlightPoint, target: FlightPoint) -> FlightPoint:
+        next_point = FlightPoint()
+
+        time_step = (target.ground_distance - previous.ground_distance) / previous.true_airspeed
+        time_step = min(self.time_step, time_step)
+
+        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
+        next_point.mach = self.cruise_mach
+        next_point.altitude = (
+            previous.altitude
+        )  # will provide an initial guess for computing optimal altitude
+
+        next_point.time = previous.time + time_step
+        next_point.ground_distance = previous.ground_distance + previous.true_airspeed * time_step
+        return next_point
 
     def _complete_flight_point(self, flight_point: FlightPoint):
         """
@@ -352,11 +362,13 @@ class OptimalCruiseSegment(AbstractSegment):
         )
         atm = Atmosphere(flight_point.altitude, altitude_in_feet=False)
         flight_point.mach = self.cruise_mach
-        flight_point.speed = atm.speed_of_sound * flight_point.mach
+        flight_point.true_airspeed = atm.speed_of_sound * flight_point.mach
 
         flight_point.flight_phase = self.flight_phase
 
-        reference_force = 0.5 * atm.density * flight_point.speed ** 2 * self.reference_surface
+        reference_force = (
+            0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_surface
+        )
         flight_point.CL = flight_point.mass * g / reference_force
         flight_point.CD = self.polar.cd(flight_point.CL)
         drag = flight_point.CD * reference_force
@@ -370,22 +382,6 @@ class OptimalCruiseSegment(AbstractSegment):
         )
         flight_point.slope_angle, flight_point.acceleration = 0.0, 0.0
 
-    def _compute_next_flight_point(self, previous: FlightPoint, target: FlightPoint) -> FlightPoint:
-        next_point = FlightPoint()
-
-        time_step = (target.ground_distance - previous.ground_distance) / previous.speed
-        time_step = min(self.time_step, time_step)
-
-        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
-        next_point.mach = self.cruise_mach
-        next_point.altitude = (
-            previous.altitude
-        )  # will provide an initial guess for computing optimal altitude
-
-        next_point.time = previous.time + time_step
-        next_point.ground_distance = previous.ground_distance + previous.speed * time_step
-        return next_point
-
 
 class ManualThrustSegment(AbstractSegment, ABC):
     """
@@ -396,17 +392,79 @@ class ManualThrustSegment(AbstractSegment, ABC):
         """
 
         :ivar thrust_rate: used thrust rate. Can be set at instantiation using a keyword argument.
+        :ivar maximum_mach: maximum Mach number. Can be set at instantiation using a
+                           keyword argument.
         """
+
         self._keyword_args["thrust_rate"] = 1.0
+        self._keyword_args["cruise_mach"] = 100.0  # i.e. no limit if not set
 
         super().__init__(*args, **kwargs)
 
-    def _complete_flight_point(self, flight_point: FlightPoint):
-        atm = Atmosphere(flight_point.altitude, altitude_in_feet=False)
-        reference_force = 0.5 * atm.density * flight_point.speed ** 2 * self.reference_surface
+    def _compute_next_flight_point(self, previous: FlightPoint, target: FlightPoint) -> FlightPoint:
+        next_point = self._initialize_next_flight_point(target)
 
+        # Time step evaluation
+        # It will be the minimum value between the estimated time to reach the target and
+        # and the default time step.
+        # Checks are done against negative time step that could occur if thrust rate
+        # creates acceleration when deceleration is needed, and so on...
+        # They just create warning, in the (unlikely?) case it is isolated. If we keep
+        # getting negative values, the global test about altitude and speed bounds will eventually
+        # raise an Exception.
+        speed_time_step = altitude_time_step = self.time_step
+        if previous.acceleration != 0.0:
+            speed_time_step = (
+                target.true_airspeed - previous.true_airspeed
+            ) / previous.acceleration
+            if speed_time_step < 0.0:
+                _LOGGER.warning(
+                    "Incorrect acceleration (%.2f) at %s" % (previous.acceleration, previous)
+                )
+                speed_time_step = self.time_step
+        if previous.slope_angle != 0.0:
+            altitude_time_step = (
+                (target.altitude - previous.altitude)
+                / previous.true_airspeed
+                / np.sin(previous.slope_angle)
+            )
+
+            if altitude_time_step < 0.0:
+                _LOGGER.warning(
+                    "Incorrect slope (%.2f°) at %s" % (np.degrees(previous.slope_angle), previous)
+                )
+                altitude_time_step = self.time_step
+        time_step = min(self.time_step, speed_time_step, altitude_time_step)
+
+        next_point.altitude = previous.altitude + time_step * previous.true_airspeed * np.sin(
+            previous.slope_angle
+        )
+
+        if target.equivalent_airspeed:
+            next_point.true_airspeed = self.get_true_airspeed(
+                target.equivalent_airspeed, next_point.altitude
+            )
+        else:
+            next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
+        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
+        next_point.time = previous.time + time_step
+        next_point.ground_distance = (
+            previous.ground_distance
+            + previous.true_airspeed * time_step * np.cos(previous.slope_angle)
+        )
+        return next_point
+
+    def _complete_flight_point(self, flight_point: FlightPoint):
+
+        atm = Atmosphere(flight_point.altitude, altitude_in_feet=False)
+        reference_force = (
+            0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_surface
+        )
         flight_point.flight_phase = self.flight_phase
-        flight_point.mach = flight_point.speed / atm.speed_of_sound
+        flight_point.mach = flight_point.true_airspeed / atm.speed_of_sound
+        flight_point.equivalent_airspeed = self.get_equivalent_airspeed(
+            flight_point.true_airspeed, flight_point.altitude
+        )
         (
             flight_point.sfc,
             flight_point.thrust_rate,
@@ -424,38 +482,13 @@ class ManualThrustSegment(AbstractSegment, ABC):
             flight_point.mass, drag, flight_point.thrust
         )
 
-    def _compute_next_flight_point(self, previous: FlightPoint, target: FlightPoint) -> FlightPoint:
-        next_point = FlightPoint()
-        speed_time_step = altitude_time_step = self.time_step
-        if previous.acceleration != 0.0:
-            speed_time_step = (target.speed - previous.speed) / previous.acceleration
-            if speed_time_step < 0.0:
-                _LOGGER.warning(
-                    "Incorrect acceleration (%.2f) at %s" % (previous.acceleration, previous)
-                )
-                speed_time_step = self.time_step
-        if previous.slope_angle != 0.0:
-            altitude_time_step = (
-                (target.altitude - previous.altitude)
-                / previous.speed
-                / np.sin(previous.slope_angle)
-            )
+    def _initialize_next_flight_point(self, target: FlightPoint) -> FlightPoint:
+        """
 
-            if altitude_time_step < 0.0:
-                _LOGGER.warning(
-                    "Incorrect slope (%.2f°) at %s" % (np.degrees(previous.slope_angle), previous)
-                )
-                altitude_time_step = self.time_step
-        time_step = min(self.time_step, speed_time_step, altitude_time_step)
-        next_point.altitude = previous.altitude + time_step * previous.speed * np.sin(
-            previous.slope_angle
-        )
-        next_point.speed = previous.speed + time_step * previous.acceleration
-        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
-        next_point.time = previous.time + time_step
-        next_point.ground_distance = previous.ground_distance + previous.speed * time_step * np.cos(
-            previous.slope_angle
-        )
+        :param target:
+        :return:
+        """
+        next_point = FlightPoint()
         return next_point
 
     @abstractmethod
@@ -469,24 +502,23 @@ class ManualThrustSegment(AbstractSegment, ABC):
         :return: slope angle in radians and acceleration in m**2/s
         """
 
+    @staticmethod
+    def get_equivalent_airspeed(true_airspeed, altitude):
+        atm0 = Atmosphere(0)
+        atm = Atmosphere(altitude, altitude_in_feet=False)
+        return true_airspeed * np.sqrt(atm.density / atm0.density)
+
+    @staticmethod
+    def get_true_airspeed(equivalent_airspeed, altitude):
+        atm0 = Atmosphere(0)
+        atm = Atmosphere(altitude, altitude_in_feet=False)
+        return equivalent_airspeed * np.sqrt(atm0.density / atm.density)
+
 
 class AccelerationSegment(ManualThrustSegment):
     """
-    Computes a flight path segment where speed is modified with no change in altitude.
+    Computes a flight path segment where true airspeed is modified with no change in altitude.
     """
-
-    def compute(self, start: FlightPoint, target_speed: float) -> pd.DataFrame:
-        """
-        Computes the flight path segment from provided start point to provides target speed.
-
-
-        :param start: the initial flight point, defined for speed, altitude and mass
-        :param target_speed: the target speed
-        :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
-        """
-        target = FlightPoint()
-        target.speed = target_speed
-        return super().compute(start, target)
 
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         acceleration = (thrust - drag) / mass
@@ -494,33 +526,43 @@ class AccelerationSegment(ManualThrustSegment):
 
     def target_is_attained(self, flight_points: List[FlightPoint], target: FlightPoint) -> bool:
         tol = 1.0e-7  # Such accuracy is not needed, but ensures reproducibility of results.
-        return np.abs(flight_points[-1].speed - target.speed) <= tol
+        return np.abs(flight_points[-1].true_airspeed - target.true_airspeed) <= tol
 
 
 class ClimbSegment(ManualThrustSegment):
     """
-    Computes a flight path segment where altitude is modified with no change in speed.
+    Computes a flight path segment where altitude is modified with constant speed.
+
+    Constant speed may be:
+
+        - constant true airspeed
+        - constant calibrated airspeed
+
+    The speed will be constrained according to definition of target in :meth:`compute`.
+    Speed value from starting point will be ignored.
+
+    Additionally, if :attr:`cruise_mach` attribute is set, speed will always be limited
+    so that Mach number keeps lower or equal to this value.
     """
 
     #: Using this value will tell tell to target the altitude with max lift/drag ratio.
     OPTIMAL_ALTITUDE = -10000.0
 
-    def compute(self, start: FlightPoint, target_altitude: float) -> pd.DataFrame:
-        """
-        Computes the flight path segment from provided start point to provides target altitude.
+    def __init__(self, *args, **kwargs):
 
-        If :attr:`OPTIMAL_ALTITUDE` is given as target, segment will stop when
-        maximum lift/drag ratio is attained.
+        self._keyword_args["keep_true_airspeed"] = True
+        super().__init__(*args, **kwargs)
 
-        :param start: the initial flight point, defined for speed, altitude and mass
-        :param target_altitude: the target altitude
-        :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
-        """
-        target = FlightPoint()
-        if target_altitude == self.OPTIMAL_ALTITUDE:
+    def compute(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        start = FlightPoint(start)
+        target = FlightPoint(target)
+        if target.altitude == self.OPTIMAL_ALTITUDE:
             target.CL = "optimal"
-        else:
-            target.altitude = target_altitude
+
+        if target.true_airspeed:
+            start.true_airspeed = target.true_airspeed
+        elif target.equivalent_airspeed:
+            start.true_airspeed = self.get_true_airspeed(target.equivalent_airspeed, start.altitude)
 
         return super().compute(start, target)
 
@@ -537,3 +579,21 @@ class ClimbSegment(ManualThrustSegment):
 
         tol = 1.0e-7  # Such accuracy is not needed, but ensures reproducibility of results.
         return np.abs(current.altitude - target.altitude) <= tol
+
+    def _compute_next_flight_point(self, previous: FlightPoint, target: FlightPoint) -> FlightPoint:
+        next_point = super()._compute_next_flight_point(previous, target)
+
+        if target.true_airspeed:
+            next_point.true_airspeed = target.true_airspeed
+        elif target.equivalent_airspeed:
+            next_point.true_airspeed = self.get_true_airspeed(
+                target.equivalent_airspeed, next_point.altitude
+            )
+
+        # Mach number is capped by self.cruise_mach
+        atm = Atmosphere(next_point.altitude, altitude_in_feet=False)
+        mach = next_point.true_airspeed / atm.speed_of_sound
+        if mach > self.cruise_mach:
+            next_point.true_airspeed = self.cruise_mach * atm.speed_of_sound
+
+        return next_point
