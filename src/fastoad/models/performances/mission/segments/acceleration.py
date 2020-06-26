@@ -20,6 +20,7 @@ from fastoad.models.performances.mission.segments.base import ManualThrustSegmen
 
 
 class AccelerationSegment(ManualThrustSegment):
+
     """
     Computes a flight path segment where true airspeed is modified with no change in altitude.
     """

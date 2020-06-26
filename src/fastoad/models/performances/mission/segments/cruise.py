@@ -23,6 +23,7 @@ from scipy.constants import g
 
 
 class OptimalCruiseSegment(AbstractSegment):
+
     """
     Class for computing flight segment at maximum lift/drag ratio.
 

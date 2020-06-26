@@ -16,6 +16,7 @@ import numpy as np
 
 
 class FlightPoint(dict):
+
     """
     Class for storing data for one flight point.
 

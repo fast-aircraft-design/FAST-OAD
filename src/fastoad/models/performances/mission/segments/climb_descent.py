@@ -23,6 +23,7 @@ from scipy.constants import g
 
 
 class ClimbDescentSegment(ManualThrustSegment):
+
     """
     Computes a flight path segment where altitude is modified with constant speed.
 
