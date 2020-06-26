@@ -82,7 +82,7 @@ class OptimalCruiseSegment(AbstractSegment):
         flight_point.mach = self.cruise_mach
         flight_point.true_airspeed = atm.speed_of_sound * flight_point.mach
 
-        flight_point.flight_phase = self.flight_phase
+        flight_point.engine_setting = self.engine_setting
 
         reference_force = (
             0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_surface
@@ -96,6 +96,6 @@ class OptimalCruiseSegment(AbstractSegment):
             flight_point.thrust_rate,
             flight_point.thrust,
         ) = self.propulsion.compute_flight_points(
-            flight_point.mach, flight_point.altitude, flight_point.flight_phase, thrust=drag
+            flight_point.mach, flight_point.altitude, flight_point.engine_setting, thrust=drag
         )
         flight_point.slope_angle, flight_point.acceleration = 0.0, 0.0

@@ -59,7 +59,7 @@ class OMRubberEngineWrapper(IOMPropulsionWrapper):
                 sfc, thrust_rate, thrust = engine.compute_flight_points(
                     mach,
                     altitude,
-                    flight_phase,
+                    engine_setting,
                     use_thrust_rate,
                     thrust_rate,
                     thrust

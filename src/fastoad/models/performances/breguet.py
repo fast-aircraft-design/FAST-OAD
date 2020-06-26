@@ -15,7 +15,7 @@
 import numpy as np
 import openmdao.api as om
 from fastoad import BundleLoader
-from fastoad.constants import FlightPhase
+from fastoad.constants import EngineSetting
 from fastoad.utils.physics import Atmosphere
 from scipy.constants import g
 
@@ -110,7 +110,7 @@ class _BreguetEngine(om.ExplicitComponent):
         sfc, thrust_rate, _ = self._engine_wrapper.get_model(inputs).compute_flight_points(
             inputs["data:TLAR:cruise_mach"],
             inputs["data:mission:sizing:cruise:altitude"],
-            FlightPhase.CRUISE,
+            EngineSetting.CRUISE,
             thrust=thrust,
         )
         outputs["data:propulsion:thrust"] = thrust
@@ -131,7 +131,7 @@ class _BreguetPropulsion(om.ExplicitComponent):
         self.add_input("data:geometry:propulsion:engine:count", 2)
         self.add_input("settings:mission:sizing:breguet:climb:mass_ratio", 0.97)
 
-        self.add_output("data:propulsion:phase", FlightPhase.CRUISE)
+        self.add_output("data:propulsion:engine_setting", EngineSetting.CRUISE)
         self.add_output("data:propulsion:use_thrust_rate", False)
         self.add_output("data:propulsion:required_thrust_rate", 0.0, lower=0.0, upper=1.0)
         self.add_output("data:propulsion:required_thrust", units="N", ref=1e5)
@@ -215,7 +215,7 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
 
 class _Distances(om.ExplicitComponent):
     """
-    Rough estimation of distances for each flight phase.
+    Rough estimation of distances for each flight engine_setting.
     """
 
     def setup(self):

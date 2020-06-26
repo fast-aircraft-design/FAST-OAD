@@ -16,7 +16,7 @@ Test module for OpenMDAO versions of RubberEngine
 
 import numpy as np
 import openmdao.api as om
-from fastoad.constants import FlightPhase
+from fastoad.constants import EngineSetting
 
 from tests.testing_utilities import run_system
 from ..openmdao import OMRubberEngineComponent
@@ -32,12 +32,12 @@ def test_OMRubberEngineComponent():
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
     thrusts = [0.955 * 0.8, 0.389, 0.357, 0.0967, 0.113]
     phases = [
-        FlightPhase.TAKEOFF,
-        FlightPhase.TAKEOFF,
-        FlightPhase.CLIMB,
-        FlightPhase.IDLE,
-        FlightPhase.CRUISE.value,
-    ]  # mix FlightPhase with integers
+        EngineSetting.TAKEOFF,
+        EngineSetting.TAKEOFF,
+        EngineSetting.CLIMB,
+        EngineSetting.IDLE,
+        EngineSetting.CRUISE.value,
+    ]  # mix EngineSetting with integers
     expected_sfc = [0.993e-5, 1.35e-5, 1.35e-5, 1.84e-5, 1.60e-5]
 
     ivc = om.IndepVarComp()
@@ -50,7 +50,7 @@ def test_OMRubberEngineComponent():
 
     ivc.add_output("data:propulsion:mach", [machs, machs])
     ivc.add_output("data:propulsion:altitude", [altitudes, altitudes], units="m")
-    ivc.add_output("data:propulsion:phase", [phases, phases])
+    ivc.add_output("data:propulsion:engine_setting", [phases, phases])
     ivc.add_output("data:propulsion:use_thrust_rate", [[True] * 5, [False] * 5])
     ivc.add_output("data:propulsion:required_thrust_rate", [thrust_rates, [0] * 5])
     ivc.add_output("data:propulsion:required_thrust", [[0] * 5, thrusts], units="N")

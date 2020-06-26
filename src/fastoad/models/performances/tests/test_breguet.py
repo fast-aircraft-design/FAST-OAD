@@ -12,7 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-from fastoad.constants import FlightPhase
+from fastoad.constants import EngineSetting
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import (
     OMRubberEngineComponent,
     RubberEngine,
@@ -114,7 +114,7 @@ def test_breguet_with_rubber_engine():
         engine.compute_flight_points(
             0.78,
             35000 * foot,
-            FlightPhase.CRUISE,
+            EngineSetting.CRUISE,
             thrust=problem["data:propulsion:required_thrust"],
         )[0],
         problem["data:propulsion:SFC"],

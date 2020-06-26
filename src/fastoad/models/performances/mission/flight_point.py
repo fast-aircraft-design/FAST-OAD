@@ -66,7 +66,7 @@ class FlightPoint(dict):
         "ground_distance",  # in m.
         "CL",
         "CD",
-        "flight_phase",  # FlightPhase value
+        "engine_setting",  # EngineSetting value
         "mach",
         "thrust",  # in Newtons
         "thrust_rate",

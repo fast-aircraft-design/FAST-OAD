@@ -18,7 +18,7 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
-from fastoad.constants import FlightPhase
+from fastoad.constants import EngineSetting
 from fastoad.models.performances.mission.flight_point import FlightPoint
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.propulsion import IPropulsion
@@ -40,7 +40,7 @@ class AbstractSegment(ABC):
 
     :ivar time_step: used time step for computation (actual time step can be lower at
                      some particular times of the flight path).
-    :ivar flight_phase: the :class:`FlightPhase` value associated to the segment. Can be
+    :ivar engine_setting: the :class:`EngineSetting` value associated to the segment. Can be
                         used in the propulsion model.
     :ivar altitude_bounds: minimum and maximum authorized altitude values. Process will be
                            stopped if computed altitude gets beyond these limits.
@@ -50,7 +50,7 @@ class AbstractSegment(ABC):
 
     _keyword_args = {
         "time_step": DEFAULT_TIME_STEP,
-        "flight_phase": FlightPhase.CLIMB,
+        "engine_setting": EngineSetting.CLIMB,
         "altitude_bounds": (-100.0, 40000.0),
         "speed_bounds": (0.0, 1000.0),
     }
@@ -241,7 +241,7 @@ class ManualThrustSegment(AbstractSegment, ABC):
         reference_force = (
             0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_surface
         )
-        flight_point.flight_phase = self.flight_phase
+        flight_point.engine_setting = self.engine_setting
         flight_point.mach = flight_point.true_airspeed / atm.speed_of_sound
         flight_point.equivalent_airspeed = self.get_equivalent_airspeed(
             flight_point.true_airspeed, flight_point.altitude
@@ -253,7 +253,7 @@ class ManualThrustSegment(AbstractSegment, ABC):
         ) = self.propulsion.compute_flight_points(
             flight_point.mach,
             flight_point.altitude,
-            flight_point.flight_phase,
+            flight_point.engine_setting,
             thrust_rate=self.thrust_rate,
         )
         flight_point.CL = flight_point.mass * g / reference_force

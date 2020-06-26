@@ -14,7 +14,7 @@
 from typing import Union, Sequence, Optional, Tuple
 
 import numpy as np
-from fastoad.constants import FlightPhase
+from fastoad.constants import EngineSetting
 from numpy.testing import assert_allclose
 
 from ..propulsion import EngineSet
@@ -39,7 +39,7 @@ class DummyEngine(IPropulsion):
         self,
         mach: Union[float, Sequence],
         altitude: Union[float, Sequence],
-        phase: Union[FlightPhase, Sequence],
+        engine_setting: Union[EngineSetting, Sequence],
         use_thrust_rate: Optional[Union[bool, Sequence]] = None,
         thrust_rate: Optional[Union[float, Sequence]] = None,
         thrust: Optional[Union[float, Sequence]] = None,
