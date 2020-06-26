@@ -17,16 +17,14 @@ import numpy as np
 import pandas as pd
 import pytest
 from fastoad.constants import FlightPhase
-from fastoad.models.performances.mission.segment import OptimalCruiseSegment
+from fastoad.models.performances.mission.segments.cruise import OptimalCruiseSegment
 from fastoad.models.propulsion import EngineSet, IPropulsion
 from numpy.testing import assert_allclose
 
-from ..segment import (
-    Polar,
-    ClimbSegment,
-    AccelerationSegment,
-    FlightPoint,
-)
+from ..acceleration import AccelerationSegment
+from ..climb_descent import ClimbDescentSegment
+from ...flight_point import FlightPoint
+from ...polar import Polar
 
 
 def print_dataframe(df):
@@ -82,59 +80,12 @@ def polar() -> Polar:
     return Polar(cl, cd)
 
 
-def test_FlightPoint():
-
-    # Init with kwargs, with one attribute initialized #############################################
-    fp1 = FlightPoint(mass=50000.0)
-    assert fp1.mass == 50000.0
-    assert fp1.mass == fp1["mass"]
-    fp1.mass = 70000.0
-    assert fp1["mass"] == 70000.0
-
-    # Non initialized but known attributes are initialized to None
-    for label in FlightPoint.labels:
-        if label != "mass":
-            assert getattr(fp1, label) is None
-
-    # Init with dictionary, with all attributes initialized ########################################
-    test_values = {
-        key: value for key, value in zip(FlightPoint.labels, range(len(FlightPoint.labels)))
-    }
-    fp2 = FlightPoint(test_values)
-    for label in FlightPoint.labels:
-        assert getattr(fp2, label) == test_values[label]
-        assert getattr(fp2, label) == fp2[label]
-        new_value = test_values[label] * 100
-        setattr(fp2, label, new_value)
-        assert fp2[label] == new_value
-
-    # Init with unknown attribute ##################################################################
-    with pytest.raises(KeyError):
-        _ = FlightPoint(unknown=0)
-
-    with pytest.raises(KeyError):
-        _ = FlightPoint({"unknown": 0})
-
-    # FlightPoint to/from pandas DataFrame #########################################################
-    assert fp1 == FlightPoint(pd.DataFrame([fp1]).iloc[0])
-
-    df = pd.DataFrame([fp1, fp2])
-    for label in FlightPoint.labels:
-        assert_allclose(df[label], [fp1.get(label, np.nan), fp2.get(label, np.nan)])
-
-    fp2bis = FlightPoint(df.iloc[-1])
-    assert fp2 == fp2bis
-
-    fp1bis = FlightPoint(df.iloc[0])
-    assert fp1 == fp1bis
-
-
 def test_ClimbSegment(polar):
 
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     # initialisation then change instance attributes
-    segment = ClimbSegment(propulsion, polar, 120.0)
+    segment = ClimbDescentSegment(propulsion, polar, 120.0)
     segment.thrust_rate = 1.0
     segment.time_step = 2.0
 
@@ -173,7 +124,7 @@ def test_ClimbSegment(polar):
     segment.time_step = 2.0
     flight_points = segment.compute(
         FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),
-        FlightPoint(altitude=ClimbSegment.OPTIMAL_ALTITUDE),
+        FlightPoint(altitude=ClimbDescentSegment.OPTIMAL_ALTITUDE),
     )
 
     last_point = flight_points.iloc[-1]
@@ -190,7 +141,7 @@ def test_ClimbSegment(polar):
     segment.cruise_mach = 0.80
     flight_points = segment.compute(
         FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),
-        FlightPoint(altitude=ClimbSegment.OPTIMAL_ALTITUDE),
+        FlightPoint(altitude=ClimbDescentSegment.OPTIMAL_ALTITUDE),
     )
 
     last_point = flight_points.iloc[-1]
@@ -203,7 +154,7 @@ def test_ClimbSegment(polar):
     assert_allclose(last_point.ground_distance, 18112.0, rtol=1e-3)
 
     # Climb computation with too low thrust rate should fail #######################################
-    segment = ClimbSegment(propulsion, polar, 100.0, thrust_rate=0.1)
+    segment = ClimbDescentSegment(propulsion, polar, 100.0, thrust_rate=0.1)
     with pytest.raises(ValueError):
         segment.time_step = 5.0  # Let's fail quickly
         flight_points = segment.compute(
