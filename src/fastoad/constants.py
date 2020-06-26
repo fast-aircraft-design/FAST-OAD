@@ -16,6 +16,7 @@ from enum import IntEnum, Enum
 
 
 class EngineSetting(IntEnum):
+
     """Enumeration of engine settings."""
 
     TAKEOFF = 1
@@ -25,6 +26,7 @@ class EngineSetting(IntEnum):
 
 
 class RangeCategory(Enum):
+
     """
     Definition of lower and upper limits of aircraft range categories, in Nautical Miles.
 

@@ -1,4 +1,4 @@
-"""Base classes for simulating flight segments"""
+"""Base classes for simulating flight segments."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -32,6 +32,7 @@ DEFAULT_TIME_STEP = 0.5
 
 
 class AbstractSegment(ABC):
+
     """
     Base class for flight path segment.
 
@@ -165,6 +166,7 @@ class AbstractSegment(ABC):
 
 
 class ManualThrustSegment(AbstractSegment, ABC):
+
     """
     Base class for computing flight segment where thrust rate is imposed.
     """

@@ -21,6 +21,7 @@ class Polar:
     def __init__(
         self, cl: ndarray, cd: ndarray,
     ):
+
         """
         Class for managing aerodynamic polar data.
 
@@ -36,7 +37,7 @@ class Polar:
         self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
 
         def _negated_lift_drag_ratio(lift_coeff):
-            """returns -CL/CD."""
+            """Returns -CL/CD."""
             return -lift_coeff / self.cd(lift_coeff)
 
         self._optimal_CL = fmin(_negated_lift_drag_ratio, cl[0])
