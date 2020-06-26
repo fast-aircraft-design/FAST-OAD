@@ -1,6 +1,4 @@
-"""
-Definition of globally used constants
-"""
+"""Definition of globally used constants."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,8 +15,8 @@ Definition of globally used constants
 from enum import IntEnum, Enum
 
 
-class FlightPhase(IntEnum):
-    """ Enumeration of flight phases """
+class EngineSetting(IntEnum):
+    """Enumeration of engine settings."""
 
     TAKEOFF = 1
     CLIMB = 2
@@ -28,7 +26,7 @@ class FlightPhase(IntEnum):
 
 class RangeCategory(Enum):
     """
-    Definition of lower and upper limits of aircraft range categories, in Nautical Miles
+    Definition of lower and upper limits of aircraft range categories, in Nautical Miles.
 
     can be used like::
         >>> range_value in RangeCategory.SHORT

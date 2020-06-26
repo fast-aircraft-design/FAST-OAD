@@ -16,7 +16,7 @@ from typing import Union, Sequence, Optional, Tuple
 import numpy as np
 import pandas as pd
 import pytest
-from fastoad.constants import FlightPhase
+from fastoad.constants import EngineSetting
 from fastoad.models.performances.mission.segments.cruise import OptimalCruiseSegment
 from fastoad.models.propulsion import EngineSet, IPropulsion
 from numpy.testing import assert_allclose
@@ -56,7 +56,7 @@ class DummyEngine(IPropulsion):
         self,
         mach: Union[float, Sequence],
         altitude: Union[float, Sequence],
-        phase: Union[FlightPhase, Sequence],
+        engine_setting: Union[EngineSetting, Sequence],
         use_thrust_rate: Optional[Union[bool, Sequence]] = None,
         thrust_rate: Optional[Union[float, Sequence]] = None,
         thrust: Optional[Union[float, Sequence]] = None,

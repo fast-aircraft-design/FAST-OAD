@@ -17,8 +17,8 @@ import math
 from typing import Union, Sequence, Tuple, Optional
 
 import numpy as np
-from fastoad.constants import FlightPhase
-from fastoad.exceptions import FastUnknownFlightPhaseError
+from fastoad.constants import EngineSetting
+from fastoad.exceptions import FastUnknownEngineSettingError
 from fastoad.models.propulsion import IPropulsion
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine.exceptions import (
     FastRubberEngineInconsistentInputParametersError,
@@ -87,31 +87,31 @@ class RubberEngine(IPropulsion):
         self.mach_max = maximum_mach
         self.design_alt = design_altitude
 
-        # This dictionary is expected to have a dT4 value for all FlightPhase values
+        # This dictionary is expected to have a dT4 value for all EngineSetting values
         self.dt4_values = {
-            FlightPhase.TAKEOFF: 0.0,
-            FlightPhase.CLIMB: delta_t4_climb,
-            FlightPhase.CRUISE: delta_t4_cruise,
-            FlightPhase.IDLE: delta_t4_cruise,
+            EngineSetting.TAKEOFF: 0.0,
+            EngineSetting.CLIMB: delta_t4_climb,
+            EngineSetting.CRUISE: delta_t4_cruise,
+            EngineSetting.IDLE: delta_t4_cruise,
         }
 
-        # ... so check that all FlightPhase values are in dict
-        unknown_keys = [key for key in FlightPhase if key not in self.dt4_values.keys()]
+        # ... so check that all EngineSetting values are in dict
+        unknown_keys = [key for key in EngineSetting if key not in self.dt4_values.keys()]
         if unknown_keys:
-            raise FastUnknownFlightPhaseError("Unknown flight phases: %s", unknown_keys)
+            raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
 
     def compute_flight_points(
         self,
         mach: Union[float, Sequence],
         altitude: Union[float, Sequence],
-        phase: Union[FlightPhase, Sequence],
+        engine_setting: Union[EngineSetting, Sequence],
         use_thrust_rate: Optional[Union[bool, Sequence]] = None,
         thrust_rate: Optional[Union[float, Sequence]] = None,
         thrust: Optional[Union[float, Sequence]] = None,
     ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
         # pylint: disable=too-many-arguments  # they define the trajectory
         return self.compute_flight_points_from_dt4(
-            mach, altitude, self._get_delta_t4(phase), use_thrust_rate, thrust_rate, thrust
+            mach, altitude, self._get_delta_t4(engine_setting), use_thrust_rate, thrust_rate, thrust
         )
 
     def compute_flight_points_from_dt4(
@@ -126,7 +126,7 @@ class RubberEngine(IPropulsion):
         # pylint: disable=too-many-arguments  # they define the trajectory
         """
         Same as :meth:`compute_flight_points` except that delta_t4 is used directly
-        instead of specifying flight phase.
+        instead of specifying flight engine_setting.
 
         :param mach: Mach number
         :param altitude: (unit=m) altitude w.r.t. to sea level
@@ -527,17 +527,17 @@ class RubberEngine(IPropulsion):
         return nacelle_diameter
 
     def _get_delta_t4(
-        self, phase: Union[FlightPhase, Sequence[FlightPhase]]
+        self, phase: Union[EngineSetting, Sequence[EngineSetting]]
     ) -> Union[float, Sequence[float]]:
         """
         :param phase:
-        :return: DeltaT4 according to phase
+        :return: DeltaT4 according to engine_setting
         """
 
-        if np.shape(phase) == ():  # phase is a scalar
+        if np.shape(phase) == ():  # engine_setting is a scalar
             return self.dt4_values[phase]
 
-        # Here phase is a sequence. Ensure now it is a numpy array
+        # Here engine_setting is a sequence. Ensure now it is a numpy array
         phase_array = np.asarray(phase)
 
         delta_t4 = np.empty(phase_array.shape)

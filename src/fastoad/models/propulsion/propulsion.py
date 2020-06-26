@@ -17,7 +17,7 @@ from typing import Union, Sequence, Optional, Tuple
 
 import numpy as np
 import openmdao.api as om
-from fastoad.constants import FlightPhase
+from fastoad.constants import EngineSetting
 from openmdao.core.component import Component
 
 
@@ -31,7 +31,7 @@ class IPropulsion(ABC):
         self,
         mach: Union[float, Sequence],
         altitude: Union[float, Sequence],
-        phase: Union[FlightPhase, Sequence],
+        engine_setting: Union[EngineSetting, Sequence],
         use_thrust_rate: Optional[Union[bool, Sequence]] = None,
         thrust_rate: Optional[Union[float, Sequence]] = None,
         thrust: Optional[Union[float, Sequence]] = None,
@@ -61,7 +61,7 @@ class IPropulsion(ABC):
 
         :param mach: Mach number
         :param altitude: (unit=m) altitude w.r.t. to sea level
-        :param phase: flight phase
+        :param engine_setting: engine setting
         :param use_thrust_rate: tells if thrust_rate or thrust should be used (works element-wise)
         :param thrust_rate: thrust rate (unit=none)
         :param thrust: required thrust (unit=N)
@@ -86,7 +86,7 @@ class EngineSet(IPropulsion):
         self,
         mach: Union[float, Sequence],
         altitude: Union[float, Sequence],
-        phase: Union[FlightPhase, Sequence],
+        engine_setting: Union[EngineSetting, Sequence],
         use_thrust_rate: Optional[Union[bool, Sequence]] = None,
         thrust_rate: Optional[Union[float, Sequence]] = None,
         thrust: Optional[Union[float, Sequence]] = None,
@@ -96,7 +96,7 @@ class EngineSet(IPropulsion):
             thrust = thrust / self.engine_count
 
         sfc, thrust_rate, thrust = self.engine.compute_flight_points(
-            mach, altitude, phase, use_thrust_rate, thrust_rate, thrust
+            mach, altitude, engine_setting, use_thrust_rate, thrust_rate, thrust
         )
         return sfc, thrust_rate, thrust * self.engine_count
 
@@ -150,7 +150,7 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
         shape = self.options["flight_point_count"]
         self.add_input("data:propulsion:mach", np.nan, shape=shape)
         self.add_input("data:propulsion:altitude", np.nan, shape=shape, units="m")
-        self.add_input("data:propulsion:phase", np.nan, shape=shape)
+        self.add_input("data:propulsion:engine_setting", np.nan, shape=shape)
         self.add_input("data:propulsion:use_thrust_rate", np.nan, shape=shape)
         self.add_input("data:propulsion:required_thrust_rate", np.nan, shape=shape)
         self.add_input("data:propulsion:required_thrust", np.nan, shape=shape, units="N")
@@ -166,7 +166,7 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
         sfc, thrust_rate, thrust = wrapper.compute_flight_points(
             inputs["data:propulsion:mach"],
             inputs["data:propulsion:altitude"],
-            inputs["data:propulsion:phase"],
+            inputs["data:propulsion:engine_setting"],
             inputs["data:propulsion:use_thrust_rate"],
             inputs["data:propulsion:required_thrust_rate"],
             inputs["data:propulsion:required_thrust"],

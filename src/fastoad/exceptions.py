@@ -40,7 +40,7 @@ class XMLReadError(FastError):
     """
 
 
-class FastUnknownFlightPhaseError(FastError):
+class FastUnknownEngineSettingError(FastError):
     """
-    Raised when an unknown flight phase code has been encountered
+    Raised when an unknown engine setting code has been encountered
     """
