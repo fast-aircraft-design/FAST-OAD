@@ -42,21 +42,24 @@ class IPropulsion(ABC):
         Each input can be a float, a list or an array.
         Inputs that are not floats must all have the same shape (numpy speaking).
 
-        About use_thrust_rate, thrust_rate and thrust
-        ---------------------------------------------
+        .. note:: **About use_thrust_rate, thrust_rate and thrust**
 
-            *use_thrust_rate* tells if a flight point should be computed using *thrust_rate*
-            or *thrust* as input.
+            :code:`use_thrust_rate` tells if a flight point should be computed using
+            :code:`thrust_rate` or :code:`thrust` as input. This way, the method can be used
+            in a vectorized mode, where each point can be set to respect a **thrust** order or a
+            **thrust rate** order.
 
-            - if *use_thrust_rate* is None, the considered input will be the provided one
-            between *thrust_rate* and *thrust* (if both are provided, *thrust_rate* will be used)
+            - if :code:`use_thrust_rate` is :code:`None`, the considered input will be the
+              provided one between :code:`thrust_rate` and :code:`thrust` (if both are provided,
+              :code:`thrust_rate` will be used)
 
-            - if *use_thrust_rate* is True or False (i.e., not a sequence), the considered input
-            will be taken accordingly, and should of course not be None.
+            - if :code:`use_thrust_rate` is :code:`True` or :code:`False` (i.e., not a sequence),
+              the considered input will be taken accordingly, and should of course not be None.
 
-            - if *use_thrust_rate* is a sequence or array, *thrust_rate* and *thrust* should be
-            provided and have the same shape as *use_thrust_rate*. The method will consider for
-            each element which input will be used according to *use_thrust_rate*
+            - if :code:`use_thrust_rate` is a sequence or array, :code:`thrust_rate` and
+              :code:`thrust` should be provided and have the same shape as
+              :code:`use_thrust_rate:code:`. The method will consider for each element which input
+              will be used according to :code:`use_thrust_rate`.
 
 
         :param mach: Mach number
