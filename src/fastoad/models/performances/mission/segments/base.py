@@ -56,11 +56,11 @@ class AbstractSegment(ABC):
         "speed_bounds": (0.0, 1000.0),
     }
 
-    def __init__(self, propulsion: IPropulsion, polar: Polar, reference_surface: float, **kwargs):
+    def __init__(self, propulsion: IPropulsion, reference_surface: float, polar: Polar, **kwargs):
         """
         :param propulsion: the propulsion model
-        :param polar: the aerodynamic polar
         :param reference_surface: the reference surface for aerodynamic forces
+        :param polar: the aerodynamic polar
         """
         self.propulsion = propulsion
         self.polar = polar
