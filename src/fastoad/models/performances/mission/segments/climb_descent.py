@@ -44,44 +44,44 @@ class ClimbDescentSegment(ManualThrustSegment):
 
     def __init__(self, *args, **kwargs):
 
-        self._keyword_args["keep_true_airspeed"] = True
         super().__init__(*args, **kwargs)
 
-    def compute(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+    def compute(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
-        target = FlightPoint(target)
-        if target.altitude == self.OPTIMAL_ALTITUDE:
-            target.CL = "optimal"
+        if self.target.altitude == self.OPTIMAL_ALTITUDE:
+            self.target.CL = "optimal"
 
-        if target.true_airspeed:
-            start.true_airspeed = target.true_airspeed
-        elif target.equivalent_airspeed:
-            start.true_airspeed = self.get_true_airspeed(target.equivalent_airspeed, start.altitude)
+        if self.target.true_airspeed:
+            start.true_airspeed = self.target.true_airspeed
+        elif self.target.equivalent_airspeed:
+            start.true_airspeed = self.get_true_airspeed(
+                self.target.equivalent_airspeed, start.altitude
+            )
 
-        return super().compute(start, target)
+        return super().compute(start)
 
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         gamma = (thrust - drag) / mass / g
         return gamma, 0.0
 
-    def target_is_attained(self, flight_points: List[FlightPoint], target: FlightPoint) -> bool:
+    def target_is_attained(self, flight_points: List[FlightPoint]) -> bool:
         current = flight_points[-1]
-        if target.CL == "optimal":
-            target.altitude = self._get_optimal_altitude(
+        if self.target.CL == "optimal":
+            self.target.altitude = self._get_optimal_altitude(
                 current.mass, current.mach, current.altitude
             )
 
         tol = 1.0e-7  # Such accuracy is not needed, but ensures reproducibility of results.
-        return np.abs(current.altitude - target.altitude) <= tol
+        return np.abs(current.altitude - self.target.altitude) <= tol
 
-    def _compute_next_flight_point(self, previous: FlightPoint, target: FlightPoint) -> FlightPoint:
-        next_point = super()._compute_next_flight_point(previous, target)
+    def _compute_next_flight_point(self, previous: FlightPoint) -> FlightPoint:
+        next_point = super()._compute_next_flight_point(previous)
 
-        if target.true_airspeed:
-            next_point.true_airspeed = target.true_airspeed
-        elif target.equivalent_airspeed:
+        if self.target.true_airspeed:
+            next_point.true_airspeed = self.target.true_airspeed
+        elif self.target.equivalent_airspeed:
             next_point.true_airspeed = self.get_true_airspeed(
-                target.equivalent_airspeed, next_point.altitude
+                self.target.equivalent_airspeed, next_point.altitude
             )
 
         # Mach number is capped by self.cruise_mach
