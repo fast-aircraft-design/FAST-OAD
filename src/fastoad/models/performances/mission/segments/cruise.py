@@ -51,7 +51,8 @@ class OptimalCruiseSegment(AbstractSegment):
         current = flight_points[-1]
         return np.abs(current.ground_distance - self.target.ground_distance) <= 1.0
 
-    def _compute_next_flight_point(self, previous: FlightPoint) -> FlightPoint:
+    def _compute_next_flight_point(self, flight_points: List[FlightPoint]) -> FlightPoint:
+        previous = flight_points[-1]
         next_point = FlightPoint()
 
         time_step = (

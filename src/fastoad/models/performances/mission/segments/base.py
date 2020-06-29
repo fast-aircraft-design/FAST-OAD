@@ -96,7 +96,7 @@ class AbstractSegment(ABC):
 
         while not self.target_is_attained(flight_points):
             current = flight_points[-1]
-            new = self._compute_next_flight_point(current)
+            new = self._compute_next_flight_point(flight_points)
             self._complete_flight_point(new)
             if not self.speed_bounds[0] <= new.true_airspeed <= self.speed_bounds[1]:
                 raise ValueError("true_airspeed value %f.1m/s is out of bound. Process stopped.")
@@ -150,11 +150,11 @@ class AbstractSegment(ABC):
         return optimal_altitude
 
     @abstractmethod
-    def _compute_next_flight_point(self, previous: FlightPoint) -> FlightPoint:
+    def _compute_next_flight_point(self, flight_points: List[FlightPoint]) -> FlightPoint:
         """
         Computes time, altitude, true airspeed, mass and ground distance of next flight point.
 
-        :param previous: previous flight point
+        :param flight_points: previous flight points
         :return: the computed next flight point
         """
 
@@ -188,7 +188,8 @@ class ManualThrustSegment(AbstractSegment, ABC):
 
         super().__init__(*args, **kwargs)
 
-    def _compute_next_flight_point(self, previous: FlightPoint) -> FlightPoint:
+    def _compute_next_flight_point(self, flight_points: List[FlightPoint]) -> FlightPoint:
+        previous = flight_points[-1]
         next_point = FlightPoint()
 
         # Time step evaluation
@@ -200,6 +201,7 @@ class ManualThrustSegment(AbstractSegment, ABC):
         # getting negative values, the global test about altitude and speed bounds will eventually
         # raise an Exception.
         speed_time_step = altitude_time_step = self.time_step
+
         if previous.acceleration != 0.0:
             speed_time_step = (
                 self.target.true_airspeed - previous.true_airspeed

@@ -94,22 +94,34 @@ class ClimbDescentSegment(ManualThrustSegment):
             )
 
         tol = 1.0e-7  # Such accuracy is not needed, but ensures reproducibility of results.
-        return np.abs(current.altitude - self.target.altitude) <= tol
-
-    def _compute_next_flight_point(self, previous: FlightPoint) -> FlightPoint:
-        next_point = super()._compute_next_flight_point(previous)
-
-        if self.target.true_airspeed:
-            next_point.true_airspeed = self.target.true_airspeed
+        if self.target.altitude:
+            return np.abs(current.altitude - self.target.altitude) <= tol
+        elif self.target.true_airspeed:
+            return np.abs(current.true_airspeed - self.target.true_airspeed) <= tol
         elif self.target.equivalent_airspeed:
-            next_point.true_airspeed = self.get_true_airspeed(
-                self.target.equivalent_airspeed, next_point.altitude
-            )
+            return np.abs(current.equivalent_airspeed - self.target.equivalent_airspeed) <= tol
+        elif self.target.mach:
+            return np.abs(current.mach - self.target.mach) <= tol
 
-        # Mach number is capped by self.cruise_mach
+    def _compute_next_flight_point(self, flight_points: List[FlightPoint]) -> FlightPoint:
+        start = flight_points[0]
+        next_point = super()._compute_next_flight_point(flight_points)
+
         atm = Atmosphere(next_point.altitude, altitude_in_feet=False)
-        mach = next_point.true_airspeed / atm.speed_of_sound
-        if mach > self.cruise_mach:
-            next_point.true_airspeed = self.cruise_mach * atm.speed_of_sound
+
+        if self.target.true_airspeed == "constant":
+            next_point.true_airspeed = start.true_airspeed
+        elif self.target.equivalent_airspeed == "constant":
+            next_point.true_airspeed = self.get_true_airspeed(
+                start.equivalent_airspeed, next_point.altitude
+            )
+        elif self.target.mach == "constant":
+            next_point.true_airspeed = start.mach * atm.speed_of_sound
+
+        if self.target.mach != "constant":
+            # Mach number is capped by self.cruise_mach
+            mach = next_point.true_airspeed / atm.speed_of_sound
+            if mach > self.cruise_mach:
+                next_point.true_airspeed = self.cruise_mach * atm.speed_of_sound
 
         return next_point
