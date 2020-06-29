@@ -81,11 +81,9 @@ def polar() -> Polar:
     return Polar(cl, cd)
 
 
-def test_ClimbSegment(polar):
-
+def test_climb_fixed_altitude_fixed_TAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
-    # Climb computation with fixed altitude target, fixed true airspeed ############################
     # initialisation then change instance attributes
     segment = ClimbDescentSegment(
         {"altitude": 10000.0, "true_airspeed": 150.0}, propulsion, 120.0, polar,
@@ -102,7 +100,22 @@ def test_ClimbSegment(polar):
     assert_allclose(last_point.mass, 69713.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20943.0, rtol=1e-3)
 
-    # Climb computation with fixed altitude target, fixed equivalent airspeed ######################
+    # Doing the same by setting the speed "constant" from start point ------------------------------
+    segment = ClimbDescentSegment(
+        {"altitude": 10000.0, "true_airspeed": "constant"},
+        propulsion,
+        120.0,
+        polar,
+        thrust_rate=1.0,
+        time_step=2.0,
+    )
+    flight_points_2 = segment.compute({"altitude": 5000.0, "mass": 70000.0, "true_airspeed": 150.0})
+    pd.testing.assert_frame_equal(flight_points_2, flight_points, check_like=True)
+
+
+def test_climb_fixed_altitude_fixed_EAS(polar):
+    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+
     flight_points = ClimbDescentSegment(
         FlightPoint(altitude=10000.0, equivalent_airspeed=100.0),
         propulsion,
@@ -110,7 +123,7 @@ def test_ClimbSegment(polar):
         polar,
         thrust_rate=1.0,
         time_step=2.0,
-    ).compute(FlightPoint(altitude=5000.0, mass=70000.0))
+    ).compute(FlightPoint(altitude=5000.0, mass=70000.0,))
 
     first_point = flight_points.iloc[0]
     last_point = flight_points.iloc[-1]
@@ -122,7 +135,21 @@ def test_ClimbSegment(polar):
     assert_allclose(last_point.mass, 69710.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20915.0, rtol=1e-3)
 
-    # Climb computation to optimal altitude ########################################################
+    # Doing the same by setting the speed "constant" from start point ------------------------------
+    flight_points_2 = ClimbDescentSegment(
+        FlightPoint(altitude=10000.0, equivalent_airspeed="constant"),
+        propulsion,
+        120.0,
+        polar,
+        thrust_rate=1.0,
+        time_step=2.0,
+    ).compute(FlightPoint(altitude=5000.0, mass=70000.0, equivalent_airspeed=100.0))
+    pd.testing.assert_frame_equal(flight_points_2, flight_points, check_like=True)
+
+
+def test_climb_optimal_altitude(polar):
+    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+
     flight_points = ClimbDescentSegment(
         FlightPoint(altitude=ClimbDescentSegment.OPTIMAL_ALTITUDE),
         propulsion,
@@ -142,7 +169,10 @@ def test_ClimbSegment(polar):
     assert_allclose(last_point.mass, 69832.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20401.0, rtol=1e-3)
 
-    # Climb computation to optimal altitude with capped Mach number ################################
+
+def test_climb_optimal_altitude_capped_mach(polar):
+    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+
     flight_points = ClimbDescentSegment(
         FlightPoint(altitude=ClimbDescentSegment.OPTIMAL_ALTITUDE),
         propulsion,
@@ -162,7 +192,10 @@ def test_ClimbSegment(polar):
     assert_allclose(last_point.mass, 69849.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 18112.0, rtol=1e-3)
 
-    # Climb computation with too low thrust rate should fail #######################################
+
+def test_climb_not_enough_thrust(polar):
+    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+
     segment = ClimbDescentSegment(
         FlightPoint(altitude=10000.0), propulsion, 120.0, polar, thrust_rate=0.1,
     )
@@ -172,8 +205,9 @@ def test_ClimbSegment(polar):
             FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),
         )
 
-    # Descent computation ##########################################################################
-    segment.time_step = 2.0
+
+def test_descent(polar):
+    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = ClimbDescentSegment(
         FlightPoint(altitude=5000.0), propulsion, 100.0, polar, thrust_rate=0.1, time_step=2.0,
@@ -190,15 +224,13 @@ def test_ClimbSegment(polar):
     assert_allclose(last_point.ground_distance, 274043.0, rtol=1e-3)
 
 
-def test_AccelerationSegment(polar):
+def test_acceleration(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     # initialisation using kwarg, using default time step (0.2)
     segment = AccelerationSegment(
         {"true_airspeed": 250.0}, propulsion, 120.0, polar, thrust_rate=1.0,
     )
-
-    # Acceleration computation #####################################################################
     flight_points = segment.compute(
         {"altitude": 5000.0, "true_airspeed": 150.0, "mass": 70000.0}
     )  # Test with dict
@@ -211,7 +243,10 @@ def test_AccelerationSegment(polar):
     assert_allclose(last_point.mass, 69896.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20697.0, rtol=1e-3)
 
-    # Acceleration computation with too low thrust rate should fail ################################
+
+def test_acceleration_not_enough_thrust(polar):
+    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
     segment = AccelerationSegment(
         FlightPoint(true_airspeed=250.0), propulsion, 120.0, polar, thrust_rate=0.1,
     )
@@ -221,7 +256,10 @@ def test_AccelerationSegment(polar):
             FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),
         )
 
-    # Deceleration computation #####################################################################
+
+def test_deceleration_not_enough_thrust(polar):
+    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
     segment = AccelerationSegment(
         FlightPoint(true_airspeed=150.0), propulsion, 120.0, polar, thrust_rate=0.1, time_step=1.0
     )
@@ -239,7 +277,7 @@ def test_AccelerationSegment(polar):
     assert_allclose(last_point.ground_distance, 62804.0, rtol=1e-3)
 
 
-def test_OptimalCruiseSegment(polar):
+def test_optimal_cruise(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = OptimalCruiseSegment(
@@ -265,7 +303,7 @@ def test_OptimalCruiseSegment(polar):
     assert_allclose(last_point.ground_distance, 600000.0)
 
 
-def test_Taxi():
+def test_taxi():
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = TaxiSegment(FlightPoint(time=500.0), propulsion, 120.0, None, thrust_rate=0.1)
