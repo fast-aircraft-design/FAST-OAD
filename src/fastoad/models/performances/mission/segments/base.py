@@ -28,7 +28,7 @@ from scipy.optimize import root_scalar
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
-DEFAULT_TIME_STEP = 0.5
+DEFAULT_TIME_STEP = 0.2
 
 
 class AbstractSegment(ABC):
@@ -65,6 +65,7 @@ class AbstractSegment(ABC):
         self.propulsion = propulsion
         self.polar = polar
         self.reference_surface = reference_surface
+        # self.time_step = DEFAULT_TIME_STEP
 
         for attr_name, default_value in self._keyword_args.items():
             setattr(self, attr_name, kwargs.get(attr_name, default_value))
@@ -185,7 +186,7 @@ class ManualThrustSegment(AbstractSegment, ABC):
         super().__init__(*args, **kwargs)
 
     def _compute_next_flight_point(self, previous: FlightPoint, target: FlightPoint) -> FlightPoint:
-        next_point = self._initialize_next_flight_point(target)
+        next_point = FlightPoint()
 
         # Time step evaluation
         # It will be the minimum value between the estimated time to reach the target and
@@ -258,21 +259,15 @@ class ManualThrustSegment(AbstractSegment, ABC):
             flight_point.engine_setting,
             thrust_rate=self.thrust_rate,
         )
-        flight_point.CL = flight_point.mass * g / reference_force
-        flight_point.CD = self.polar.cd(flight_point.CL)
+        if self.polar:
+            flight_point.CL = flight_point.mass * g / reference_force
+            flight_point.CD = self.polar.cd(flight_point.CL)
+        else:
+            flight_point.CL = flight_point.CD = 0.0
         drag = flight_point.CD * reference_force
         flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
             flight_point.mass, drag, flight_point.thrust
         )
-
-    def _initialize_next_flight_point(self, target: FlightPoint) -> FlightPoint:
-        """
-
-        :param target:
-        :return:
-        """
-        next_point = FlightPoint()
-        return next_point
 
     @abstractmethod
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:

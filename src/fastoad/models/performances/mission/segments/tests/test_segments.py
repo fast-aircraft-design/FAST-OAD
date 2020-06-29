@@ -23,6 +23,7 @@ from numpy.testing import assert_allclose
 
 from ..acceleration import AccelerationSegment
 from ..climb_descent import ClimbDescentSegment
+from ..taxi import TaxiSegment
 from ...flight_point import FlightPoint
 from ...polar import Polar
 
@@ -182,8 +183,8 @@ def test_ClimbSegment(polar):
 def test_AccelerationSegment(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    # initialisation using kwarg
-    segment = AccelerationSegment(propulsion, polar, 120.0, thrust_rate=1.0, time_step=0.2)
+    # initialisation using kwarg, using default time step (0.2)
+    segment = AccelerationSegment(propulsion, polar, 120.0, thrust_rate=1.0)
 
     # Acceleration computation #####################################################################
     flight_points = segment.compute(
@@ -223,7 +224,7 @@ def test_AccelerationSegment(polar):
     assert_allclose(last_point.ground_distance, 62804.0, rtol=1e-3)
 
 
-def test_Cruise(polar):
+def test_OptimalCruiseSegment(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = OptimalCruiseSegment(propulsion, polar, 120.0, cruise_mach=0.78, time_step=60.0)
@@ -243,3 +244,21 @@ def test_Cruise(polar):
     assert_allclose(last_point.true_airspeed, 236.3, atol=0.1)
     assert_allclose(last_point.mass, 69577.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 600000.0)
+
+
+def test_Taxi():
+    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    segment = TaxiSegment(propulsion, None, 120.0, thrust_rate=0.1)
+    flight_points = segment.compute(
+        FlightPoint(altitude=10.0, true_airspeed=10.0, mass=50000.0, time=10000.0),
+        FlightPoint(time=500.0),
+    )
+    print_dataframe(flight_points)
+
+    last_point = FlightPoint(flight_points.iloc[-1])
+    assert_allclose(last_point.altitude, 10.0, atol=1.0)
+    assert_allclose(last_point.time, 10500.0, rtol=1e-2)
+    assert_allclose(last_point.true_airspeed, 10.0, atol=0.1)
+    assert_allclose(last_point.mass, 49972.5, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 5000.0)

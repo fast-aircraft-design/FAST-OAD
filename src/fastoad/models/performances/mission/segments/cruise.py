@@ -43,6 +43,7 @@ class OptimalCruiseSegment(AbstractSegment):
         super().__init__(*args, **kwargs)
 
     def compute(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        start = FlightPoint(start)
         target = FlightPoint(target)
         target.ground_distance = target.ground_distance + start.ground_distance
         return super().compute(start, target)
