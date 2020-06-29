@@ -30,7 +30,7 @@ class ClimbDescentSegment(ManualThrustSegment):
     Constant speed may be:
 
         - constant true airspeed
-        - constant calibrated airspeed
+        - constant equivalent airspeed
 
     The speed will be constrained according to definition of target in :meth:`compute`.
     Speed value from starting point will be ignored.
