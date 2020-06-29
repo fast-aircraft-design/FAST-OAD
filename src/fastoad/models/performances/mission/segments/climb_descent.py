@@ -27,19 +27,36 @@ class ClimbDescentSegment(ManualThrustSegment):
     """
     Computes a flight path segment where altitude is modified with constant speed.
 
-    Constant speed may be:
+    .. note:: **Setting target altitude**
+
+        Target altitude can be a float value (in **meters**), or can be set to
+        :attr:`OPTIMAL_ALTITUDE`. In that case, the target altitude will be the altitude where
+        maximum lift/drag ratio is achieved, depending on current mass and speed.
+
+    .. note:: **Setting speed**
+
+        Constant speed may be:
 
         - constant true airspeed
         - constant equivalent airspeed
 
-    The speed will be constrained according to definition of target in :meth:`compute`.
-    Speed value from starting point will be ignored.
+        Definition of target decides the chosen constant speed:
 
-    Additionally, if :attr:`cruise_mach` attribute is set, speed will always be limited
-    so that Mach number keeps lower or equal to this value.
+        - if target has a numerical value for defined for :code:`true_airspeed` or
+          :code:`equivalent_airspeed`, speed values of start flight points will be ignored and all
+          computed flight points will have the target speed.
+
+        - if target has :code:`"constant"` as definition for :code:`true_airspeed` of
+          :code:`equivalent_airspeed`, all computed flight points will have the start speed.
+
+    .. warning::
+
+        Whatever the above setting, if :attr:`cruise_mach` attribute is set, speed will always be
+        limited so that Mach number keeps lower or equal to this value.
+
     """
 
-    #: Using this value will tell tell to target the altitude with max lift/drag ratio.
+    #: Using this value will tell to target the altitude with max lift/drag ratio.
     OPTIMAL_ALTITUDE = -10000.0
 
     def __init__(self, *args, **kwargs):
@@ -52,8 +69,13 @@ class ClimbDescentSegment(ManualThrustSegment):
             self.target.CL = "optimal"
 
         if self.target.true_airspeed:
-            start.true_airspeed = self.target.true_airspeed
+            if self.target.true_airspeed == "constant":
+                self.target.true_airspeed = start.true_airspeed
+            else:
+                start.true_airspeed = self.target.true_airspeed
         elif self.target.equivalent_airspeed:
+            if self.target.equivalent_airspeed == "constant":
+                self.target.equivalent_airspeed = start.equivalent_airspeed
             start.true_airspeed = self.get_true_airspeed(
                 self.target.equivalent_airspeed, start.altitude
             )
