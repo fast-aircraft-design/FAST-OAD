@@ -224,7 +224,7 @@ def test_descent(polar):
     assert_allclose(last_point.ground_distance, 274043.0, rtol=1e-3)
 
 
-def test_acceleration(polar):
+def test_acceleration_to_TAS(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     # initialisation using kwarg, using default time step (0.2)
@@ -242,6 +242,27 @@ def test_acceleration(polar):
     assert_allclose(last_point.true_airspeed, 250.0)
     assert_allclose(last_point.mass, 69896.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20697.0, rtol=1e-3)
+
+
+def test_acceleration_to_EAS(polar):
+    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    # initialisation using kwarg, using default time step (0.2)
+    segment = AccelerationSegment(
+        {"equivalent_airspeed": 250.0}, propulsion, 120.0, polar, thrust_rate=1.0
+    )
+    flight_points = segment.compute(
+        {"altitude": 1000.0, "true_airspeed": 150.0, "mass": 70000.0}
+    )  # Test with dict
+    print_dataframe(flight_points)
+
+    last_point = flight_points.iloc[-1]
+    # Note: reference values are obtained by running the process with 0.01s as time step
+    assert_allclose(last_point.time, 128.2, rtol=1e-2)
+    assert_allclose(last_point.altitude, 1000.0)
+    assert_allclose(last_point.true_airspeed, 262.4, atol=1e-1)
+    assert_allclose(last_point.mass, 69872.0, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 26868.0, rtol=1e-3)
 
 
 def test_acceleration_not_enough_thrust(polar):
