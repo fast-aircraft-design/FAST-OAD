@@ -29,6 +29,6 @@ class AccelerationSegment(ManualThrustSegment):
         acceleration = (thrust - drag) / mass
         return 0.0, acceleration
 
-    def target_is_attained(self, flight_points: List[FlightPoint], target: FlightPoint) -> bool:
+    def target_is_attained(self, flight_points: List[FlightPoint]) -> bool:
         tol = 1.0e-7  # Such accuracy is not needed, but ensures reproducibility of results.
-        return np.abs(flight_points[-1].true_airspeed - target.true_airspeed) <= tol
+        return np.abs(flight_points[-1].true_airspeed - self.target.true_airspeed) <= tol

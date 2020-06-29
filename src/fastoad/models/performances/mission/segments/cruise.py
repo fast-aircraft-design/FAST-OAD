@@ -42,20 +42,21 @@ class OptimalCruiseSegment(AbstractSegment):
 
         super().__init__(*args, **kwargs)
 
-    def compute(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+    def compute(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
-        target = FlightPoint(target)
-        target.ground_distance = target.ground_distance + start.ground_distance
-        return super().compute(start, target)
+        self.target.ground_distance = self.target.ground_distance + start.ground_distance
+        return super().compute(start)
 
-    def target_is_attained(self, flight_points: List[FlightPoint], target: FlightPoint) -> bool:
+    def target_is_attained(self, flight_points: List[FlightPoint]) -> bool:
         current = flight_points[-1]
-        return np.abs(current.ground_distance - target.ground_distance) <= 1.0
+        return np.abs(current.ground_distance - self.target.ground_distance) <= 1.0
 
-    def _compute_next_flight_point(self, previous: FlightPoint, target: FlightPoint) -> FlightPoint:
+    def _compute_next_flight_point(self, previous: FlightPoint) -> FlightPoint:
         next_point = FlightPoint()
 
-        time_step = (target.ground_distance - previous.ground_distance) / previous.true_airspeed
+        time_step = (
+            self.target.ground_distance - previous.ground_distance
+        ) / previous.true_airspeed
         time_step = min(self.time_step, time_step)
 
         next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
