@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from fastoad.constants import FlightPhase
-from fastoad.models.performances.mission.flight import Flight
+from fastoad.models.performances.mission.flight import Flight, RangedFlight
 from fastoad.models.performances.mission.flight_point import FlightPoint
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.propulsion import EngineSet
@@ -71,5 +71,38 @@ def test_flight(low_speed_polar, high_speed_polar):
 
     print_dataframe(flight_points)
 
-    plt.plot(flight_points.time, flight_points.altitude)
-    plt.show()
+    plt.figure()
+    plt.plot(flight_points.ground_distance, flight_points.altitude)
+    plt.savefig("altitude_vs_distance_flight.png")
+    plt.close()
+    plt.figure()
+    plt.plot(flight_points.time / 60.0, flight_points.altitude)
+    plt.savefig("altitude_vs_time.png")
+    plt.close()
+
+
+def test_ranged_flight(low_speed_polar, high_speed_polar):
+
+    engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
+    propulsion = EngineSet(engine, 2)
+
+    flight_calculator = RangedFlight(
+        propulsion=propulsion,
+        reference_surface=120.0,
+        low_speed_polar=low_speed_polar,
+        high_speed_polar=high_speed_polar,
+        cruise_mach=0.78,
+        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.4},
+        range=0.8e6,
+    )
+
+    flight_points = flight_calculator.compute(
+        FlightPoint(true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0),
+    )
+
+    print_dataframe(flight_points)
+
+    plt.figure()
+    plt.plot(flight_points.ground_distance, flight_points.altitude)
+    plt.savefig("altitude_ranged_flight.png")
+    plt.close()
