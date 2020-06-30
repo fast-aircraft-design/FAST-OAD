@@ -224,41 +224,7 @@ class ManualThrustSegment(AbstractSegment, ABC):
         return next_point
 
     def _get_next_time_step(self, flight_points: List[FlightPoint]) -> float:
-        previous = flight_points[-1]
-        # Time step evaluation
-        # It will be the minimum value between the estimated time to reach the target and
-        # and the default time step.
-        # Checks are done against negative time step that could occur if thrust rate
-        # creates acceleration when deceleration is needed, and so on...
-        # They just create warning, in the (unlikely?) case it is isolated. If we keep
-        # getting negative values, the global test about altitude and speed bounds will eventually
-        # raise an Exception.
-
-        speed_time_step = altitude_time_step = self.time_step
-        if previous.acceleration != 0.0:
-            speed_time_step = (
-                self.target.true_airspeed - previous.true_airspeed
-            ) / previous.acceleration
-            if speed_time_step < 0.0:
-                _LOGGER.warning(
-                    "Incorrect acceleration (%.2f) at %s" % (previous.acceleration, previous)
-                )
-                speed_time_step = self.time_step
-        if previous.slope_angle != 0.0:
-            altitude_time_step = (
-                (self.target.altitude - previous.altitude)
-                / previous.true_airspeed
-                / np.sin(previous.slope_angle)
-            )
-
-            if altitude_time_step < 0.0:
-                _LOGGER.warning(
-                    "Incorrect slope (%.2f°) at %s" % (np.degrees(previous.slope_angle), previous)
-                )
-                altitude_time_step = self.time_step
-
-        time_step = min(self.time_step, speed_time_step, altitude_time_step)
-        return time_step
+        return self.time_step
 
     def _complete_flight_point(self, flight_point: FlightPoint):
 
