@@ -19,12 +19,13 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 from fastoad.constants import EngineSetting
-from fastoad.models.performances.mission.flight_point import FlightPoint
-from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.propulsion import IPropulsion
-from fastoad.utils.physics import Atmosphere
+from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g
 from scipy.optimize import root_scalar
+
+from ..flight_point import FlightPoint
+from ..polar import Polar
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -32,7 +33,6 @@ DEFAULT_TIME_STEP = 0.2
 
 
 class AbstractSegment(ABC):
-
     """
     Base class for flight path segment.
 
@@ -80,9 +80,10 @@ class AbstractSegment(ABC):
 
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         """
-        Computes the flight path segment from provided start point to provide target point.
+        Computes the flight path segment from provided start point.
 
-        :param start: the initial flight point, defined for true_airspeed, altitude and mass
+        :param start: the initial flight point, defined for altitude and mass and any relevant
+                      parameter.
         :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
         """
         start = FlightPoint(start)
@@ -137,7 +138,7 @@ class AbstractSegment(ABC):
             altitude_guess = 10000.0
 
         def distance_to_optimum(altitude):
-            atm = Atmosphere(altitude, altitude_in_feet=False)
+            atm = AtmosphereSI(altitude)
             true_airspeed = mach * atm.speed_of_sound
             optimal_air_density = (
                 2.0
@@ -174,7 +175,6 @@ class AbstractSegment(ABC):
 
 
 class ManualThrustSegment(AbstractSegment, ABC):
-
     """
     Base class for computing flight segment where thrust rate is imposed.
     """
@@ -203,14 +203,12 @@ class ManualThrustSegment(AbstractSegment, ABC):
             previous.slope_angle
         )
 
+        atm = AtmosphereSI(next_point.altitude)
         if self.target.true_airspeed == "constant":
             next_point.true_airspeed = previous.true_airspeed
         elif self.target.equivalent_airspeed == "constant":
-            next_point.true_airspeed = self.get_true_airspeed(
-                start.equivalent_airspeed, next_point.altitude
-            )
+            next_point.true_airspeed = atm.get_true_airspeed(start.equivalent_airspeed)
         elif self.target.mach == "constant":
-            atm = Atmosphere(next_point.altitude, altitude_in_feet=False)
             next_point.true_airspeed = start.mach * atm.speed_of_sound
         else:
             next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
@@ -228,15 +226,14 @@ class ManualThrustSegment(AbstractSegment, ABC):
 
     def _complete_flight_point(self, flight_point: FlightPoint):
 
-        atm = Atmosphere(flight_point.altitude, altitude_in_feet=False)
+        atm = AtmosphereSI(flight_point.altitude)
         reference_force = (
             0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_surface
         )
         flight_point.engine_setting = self.engine_setting
         flight_point.mach = flight_point.true_airspeed / atm.speed_of_sound
-        flight_point.equivalent_airspeed = self.get_equivalent_airspeed(
-            flight_point.true_airspeed, flight_point.altitude
-        )
+        flight_point.equivalent_airspeed = atm.get_equivalent_airspeed(flight_point.true_airspeed)
+
         (
             flight_point.sfc,
             flight_point.thrust_rate,
@@ -267,13 +264,3 @@ class ManualThrustSegment(AbstractSegment, ABC):
         :param thrust: in N
         :return: slope angle in radians and acceleration in m**2/s
         """
-
-    def get_equivalent_airspeed(self, true_airspeed, altitude):
-        atm0 = Atmosphere(0)
-        atm = Atmosphere(altitude, altitude_in_feet=False)
-        return true_airspeed * np.sqrt(atm.density / atm0.density)
-
-    def get_true_airspeed(self, equivalent_airspeed, altitude):
-        atm0 = Atmosphere(0)
-        atm = Atmosphere(altitude, altitude_in_feet=False)
-        return equivalent_airspeed * np.sqrt(atm0.density / atm.density)

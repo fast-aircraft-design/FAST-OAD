@@ -16,14 +16,15 @@ import logging
 from typing import Tuple, List
 
 import numpy as np
-from fastoad.models.performances.mission.flight_point import FlightPoint
-from fastoad.models.performances.mission.segments.base import ManualThrustSegment
+from fastoad.utils.physics import AtmosphereSI
+
+from .base import ManualThrustSegment
+from ..flight_point import FlightPoint
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 class AccelerationSegment(ManualThrustSegment):
-
     """
     Computes a flight path segment where true airspeed is modified with no change in altitude.
     """
@@ -64,12 +65,9 @@ class AccelerationSegment(ManualThrustSegment):
                     self.target.true_airspeed - previous.true_airspeed
                 ) / previous.acceleration
             elif self.target.equivalent_airspeed:
-                target_true_air_speed = self.get_true_airspeed(
-                    self.target.equivalent_airspeed, previous.altitude
-                )
-                previous_true_air_speed = self.get_true_airspeed(
-                    previous.equivalent_airspeed, previous.altitude
-                )
+                atm = AtmosphereSI(previous.altitude)
+                target_true_air_speed = atm.get_true_airspeed(self.target.equivalent_airspeed)
+                previous_true_air_speed = atm.get_true_airspeed(previous.equivalent_airspeed)
                 speed_time_step = (
                     target_true_air_speed - previous_true_air_speed
                 ) / previous.acceleration

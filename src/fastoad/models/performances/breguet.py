@@ -16,7 +16,7 @@ import numpy as np
 import openmdao.api as om
 from fastoad import BundleLoader
 from fastoad.constants import EngineSetting
-from fastoad.utils.physics import Atmosphere
+from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g
 
 
@@ -253,9 +253,7 @@ class _CruiseMassRatio(om.ExplicitComponent):
         self.declare_partials("data:mission:sizing:cruise:mass_ratio", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        atmosphere = Atmosphere(
-            inputs["data:mission:sizing:cruise:altitude"], altitude_in_feet=False
-        )
+        atmosphere = AtmosphereSI(inputs["data:mission:sizing:cruise:altitude"])
         cruise_speed = atmosphere.speed_of_sound * inputs["data:TLAR:cruise_mach"]
 
         cruise_distance = inputs["data:mission:sizing:cruise:distance"]

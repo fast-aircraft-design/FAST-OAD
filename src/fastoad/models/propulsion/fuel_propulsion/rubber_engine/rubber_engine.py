@@ -19,10 +19,6 @@ from typing import Union, Sequence, Tuple, Optional
 import numpy as np
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
-from fastoad.models.propulsion import IPropulsion
-from fastoad.models.propulsion.fuel_propulsion.rubber_engine.exceptions import (
-    FastRubberEngineInconsistentInputParametersError,
-)
 from fastoad.utils.physics import Atmosphere
 
 from .constants import (
@@ -42,6 +38,8 @@ from .constants import (
     ATM_SEA_LEVEL,
     ATM_TROPOPAUSE,
 )
+from .exceptions import FastRubberEngineInconsistentInputParametersError
+from ...propulsion import IPropulsion
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)

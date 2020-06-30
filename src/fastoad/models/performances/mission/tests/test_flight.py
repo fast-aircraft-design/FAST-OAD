@@ -61,7 +61,7 @@ def test_flight(low_speed_polar, high_speed_polar):
         low_speed_polar=low_speed_polar,
         high_speed_polar=high_speed_polar,
         cruise_mach=0.78,
-        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.4},
+        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.45},
         cruise_distance=3.0e5,
     )
 
