@@ -17,16 +17,16 @@ from typing import Tuple, List
 
 import numpy as np
 import pandas as pd
-from fastoad.models.performances.mission.flight_point import FlightPoint
-from fastoad.models.performances.mission.segments.base import ManualThrustSegment
-from fastoad.utils.physics import Atmosphere
+from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g
+
+from .base import ManualThrustSegment
+from ..flight_point import FlightPoint
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 class ClimbDescentSegment(ManualThrustSegment):
-
     """
     Computes a flight path segment where altitude is modified with constant speed.
 
@@ -71,10 +71,10 @@ class ClimbDescentSegment(ManualThrustSegment):
         if self.target.altitude == self.OPTIMAL_ALTITUDE:
             self.target.CL = "optimal"
 
+        atm = AtmosphereSI(start.altitude)
         if self.target.equivalent_airspeed == "constant":
-            start.true_airspeed = self.get_true_airspeed(start.equivalent_airspeed, start.altitude)
+            start.true_airspeed = atm.get_true_airspeed(start.equivalent_airspeed)
         elif self.target.mach == "constant":
-            atm = Atmosphere(start.altitude, altitude_in_feet=False)
             start.true_airspeed = start.mach * atm.speed_of_sound
 
         return super().compute(start)
@@ -114,16 +114,14 @@ class ClimbDescentSegment(ManualThrustSegment):
                     previous.altitude
                     + self.time_step * previous.true_airspeed * np.sin(previous.slope_angle)
                 )
+                atm = AtmosphereSI(next_altitude)
                 if self.target.mach == "constant":
-                    atm = Atmosphere(next_altitude, altitude_in_feet=False)
                     next_true_airspeed = start.mach * atm.speed_of_sound
                 else:
                     next_true_airspeed = start.true_airspeed
 
                 if self.target.equivalent_airspeed:
-                    next_equivalent_airspeed = self.get_equivalent_airspeed(
-                        next_true_airspeed, next_altitude
-                    )
+                    next_equivalent_airspeed = atm.get_equivalent_airspeed(next_true_airspeed)
                     previous_to_target = (
                         self.target.equivalent_airspeed - previous.equivalent_airspeed
                     )
@@ -166,14 +164,12 @@ class ClimbDescentSegment(ManualThrustSegment):
         start = flight_points[0]
         next_point = super()._compute_next_flight_point(flight_points)
 
-        atm = Atmosphere(next_point.altitude, altitude_in_feet=False)
+        atm = AtmosphereSI(next_point.altitude)
 
         if self.target.true_airspeed == "constant":
             next_point.true_airspeed = start.true_airspeed
         elif self.target.equivalent_airspeed == "constant":
-            next_point.true_airspeed = self.get_true_airspeed(
-                start.equivalent_airspeed, next_point.altitude
-            )
+            next_point.true_airspeed = atm.get_true_airspeed(start.equivalent_airspeed)
         elif self.target.mach == "constant":
             next_point.true_airspeed = start.mach * atm.speed_of_sound
 

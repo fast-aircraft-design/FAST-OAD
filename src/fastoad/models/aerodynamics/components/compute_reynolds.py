@@ -17,7 +17,7 @@
 
 
 import numpy as np
-from fastoad.utils.physics import Atmosphere
+from fastoad.utils.physics import AtmosphereSI
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -46,7 +46,7 @@ class ComputeReynolds(ExplicitComponent):
             mach = inputs["data:TLAR:cruise_mach"]
             altitude = inputs["data:mission:sizing:cruise:altitude"]
 
-        reynolds = Atmosphere(altitude, altitude_in_feet=False).get_unitary_reynolds(mach)
+        reynolds = AtmosphereSI(altitude).get_unitary_reynolds(mach)
 
         if self.low_speed_aero:
             outputs["reynolds_low_speed"] = reynolds

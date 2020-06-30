@@ -16,14 +16,14 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-from fastoad.models.performances.mission.flight_point import FlightPoint
-from fastoad.models.performances.mission.segments.base import AbstractSegment
-from fastoad.utils.physics import Atmosphere
+from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g
+
+from .base import AbstractSegment
+from ..flight_point import FlightPoint
 
 
 class OptimalCruiseSegment(AbstractSegment):
-
     """
     Class for computing flight segment at maximum lift/drag ratio.
 
@@ -82,7 +82,7 @@ class OptimalCruiseSegment(AbstractSegment):
         flight_point.altitude = self._get_optimal_altitude(
             flight_point.mass, self.cruise_mach, flight_point.altitude
         )
-        atm = Atmosphere(flight_point.altitude, altitude_in_feet=False)
+        atm = AtmosphereSI(flight_point.altitude)
         flight_point.mach = self.cruise_mach
         flight_point.true_airspeed = atm.speed_of_sound * flight_point.mach
 

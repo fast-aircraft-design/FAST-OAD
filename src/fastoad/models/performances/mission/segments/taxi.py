@@ -16,8 +16,9 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
-from fastoad.models.performances.mission.flight_point import FlightPoint
-from fastoad.models.performances.mission.segments.base import ManualThrustSegment
+
+from .base import ManualThrustSegment
+from ..flight_point import FlightPoint
 
 
 class TaxiSegment(ManualThrustSegment):
