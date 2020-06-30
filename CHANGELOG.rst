@@ -5,8 +5,7 @@ Changelog
 Version 0.3.1-beta
 ==================
 
-- Changed dependency requirement to have latest OpenMDAO version.
-- Adapted the FAST-OAD code to handle this latest version.
+- Adapted the FAST-OAD code to handle OpenMDAO version 3.1.1.
 
 Version 0.3.0-beta
 ==================
