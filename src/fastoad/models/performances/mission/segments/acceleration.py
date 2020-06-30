@@ -32,6 +32,23 @@ class AccelerationSegment(ManualThrustSegment):
         previous = flight_points[-1]
         next_point = FlightPoint()
 
+        time_step = self._get_next_time_step(flight_points)
+
+        next_point.altitude = previous.altitude + time_step * previous.true_airspeed * np.sin(
+            previous.slope_angle
+        )
+        next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
+        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
+        next_point.time = previous.time + time_step
+        next_point.ground_distance = (
+            previous.ground_distance
+            + previous.true_airspeed * time_step * np.cos(previous.slope_angle)
+        )
+        return next_point
+
+    def _get_next_time_step(self, flight_points: List[FlightPoint]) -> float:
+        previous = flight_points[-1]
+
         # Time step evaluation
         # It will be the minimum value between the estimated time to reach the target and
         # and the default time step.
@@ -64,18 +81,7 @@ class AccelerationSegment(ManualThrustSegment):
                 speed_time_step = self.time_step
 
         time_step = min(self.time_step, speed_time_step)
-
-        next_point.altitude = previous.altitude + time_step * previous.true_airspeed * np.sin(
-            previous.slope_angle
-        )
-        next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
-        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
-        next_point.time = previous.time + time_step
-        next_point.ground_distance = (
-            previous.ground_distance
-            + previous.true_airspeed * time_step * np.cos(previous.slope_angle)
-        )
-        return next_point
+        return time_step
 
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         acceleration = (thrust - drag) / mass

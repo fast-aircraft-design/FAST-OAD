@@ -193,9 +193,38 @@ class ManualThrustSegment(AbstractSegment, ABC):
         super().__init__(*args, **kwargs)
 
     def _compute_next_flight_point(self, flight_points: List[FlightPoint]) -> FlightPoint:
+        start = flight_points[0]
         previous = flight_points[-1]
         next_point = FlightPoint()
 
+        time_step = self._get_next_time_step(flight_points)
+
+        next_point.altitude = previous.altitude + time_step * previous.true_airspeed * np.sin(
+            previous.slope_angle
+        )
+
+        if self.target.true_airspeed == "constant":
+            next_point.true_airspeed = previous.true_airspeed
+        elif self.target.equivalent_airspeed == "constant":
+            next_point.true_airspeed = self.get_true_airspeed(
+                start.equivalent_airspeed, next_point.altitude
+            )
+        elif self.target.mach == "constant":
+            atm = Atmosphere(next_point.altitude, altitude_in_feet=False)
+            next_point.true_airspeed = start.mach * atm.speed_of_sound
+        else:
+            next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
+
+        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
+        next_point.time = previous.time + time_step
+        next_point.ground_distance = (
+            previous.ground_distance
+            + previous.true_airspeed * time_step * np.cos(previous.slope_angle)
+        )
+        return next_point
+
+    def _get_next_time_step(self, flight_points: List[FlightPoint]) -> float:
+        previous = flight_points[-1]
         # Time step evaluation
         # It will be the minimum value between the estimated time to reach the target and
         # and the default time step.
@@ -204,8 +233,8 @@ class ManualThrustSegment(AbstractSegment, ABC):
         # They just create warning, in the (unlikely?) case it is isolated. If we keep
         # getting negative values, the global test about altitude and speed bounds will eventually
         # raise an Exception.
-        speed_time_step = altitude_time_step = self.time_step
 
+        speed_time_step = altitude_time_step = self.time_step
         if previous.acceleration != 0.0:
             speed_time_step = (
                 self.target.true_airspeed - previous.true_airspeed
@@ -227,25 +256,9 @@ class ManualThrustSegment(AbstractSegment, ABC):
                     "Incorrect slope (%.2f°) at %s" % (np.degrees(previous.slope_angle), previous)
                 )
                 altitude_time_step = self.time_step
+
         time_step = min(self.time_step, speed_time_step, altitude_time_step)
-
-        next_point.altitude = previous.altitude + time_step * previous.true_airspeed * np.sin(
-            previous.slope_angle
-        )
-
-        if self.target.equivalent_airspeed:
-            next_point.true_airspeed = self.get_true_airspeed(
-                self.target.equivalent_airspeed, next_point.altitude
-            )
-        else:
-            next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
-        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
-        next_point.time = previous.time + time_step
-        next_point.ground_distance = (
-            previous.ground_distance
-            + previous.true_airspeed * time_step * np.cos(previous.slope_angle)
-        )
-        return next_point
+        return time_step
 
     def _complete_flight_point(self, flight_point: FlightPoint):
 

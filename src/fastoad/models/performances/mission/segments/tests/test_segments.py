@@ -86,11 +86,13 @@ def test_climb_fixed_altitude_fixed_TAS(polar):
 
     # initialisation then change instance attributes
     segment = ClimbDescentSegment(
-        {"altitude": 10000.0, "true_airspeed": 150.0}, propulsion, 120.0, polar,
+        {"altitude": 10000.0, "true_airspeed": "constant"}, propulsion, 120.0, polar,
     )
     segment.thrust_rate = 1.0
     segment.time_step = 2.0
-    flight_points = segment.compute({"altitude": 5000.0, "mass": 70000.0,})  # Test with dict
+    flight_points = segment.compute(
+        {"altitude": 5000.0, "mass": 70000.0, "true_airspeed": 150.0}
+    )  # Test with dict
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
@@ -100,30 +102,18 @@ def test_climb_fixed_altitude_fixed_TAS(polar):
     assert_allclose(last_point.mass, 69713.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20943.0, rtol=1e-3)
 
-    # Doing the same by setting the speed "constant" from start point ------------------------------
-    segment = ClimbDescentSegment(
-        {"altitude": 10000.0, "true_airspeed": "constant"},
-        propulsion,
-        120.0,
-        polar,
-        thrust_rate=1.0,
-        time_step=2.0,
-    )
-    flight_points_2 = segment.compute({"altitude": 5000.0, "mass": 70000.0, "true_airspeed": 150.0})
-    pd.testing.assert_frame_equal(flight_points_2, flight_points, check_like=True)
-
 
 def test_climb_fixed_altitude_fixed_EAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = ClimbDescentSegment(
-        FlightPoint(altitude=10000.0, equivalent_airspeed=100.0),
+        FlightPoint(altitude=10000.0, equivalent_airspeed="constant"),
         propulsion,
         120.0,
         polar,
         thrust_rate=1.0,
         time_step=2.0,
-    ).compute(FlightPoint(altitude=5000.0, mass=70000.0,))
+    ).compute(FlightPoint(altitude=5000.0, mass=70000.0, equivalent_airspeed=100.0))
 
     first_point = flight_points.iloc[0]
     last_point = flight_points.iloc[-1]
@@ -134,17 +124,6 @@ def test_climb_fixed_altitude_fixed_EAS(polar):
     assert_allclose(last_point.true_airspeed, 172.3, atol=0.1)
     assert_allclose(last_point.mass, 69710.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20915.0, rtol=1e-3)
-
-    # Doing the same by setting the speed "constant" from start point ------------------------------
-    flight_points_2 = ClimbDescentSegment(
-        FlightPoint(altitude=10000.0, equivalent_airspeed="constant"),
-        propulsion,
-        120.0,
-        polar,
-        thrust_rate=1.0,
-        time_step=2.0,
-    ).compute(FlightPoint(altitude=5000.0, mass=70000.0, equivalent_airspeed=100.0))
-    pd.testing.assert_frame_equal(flight_points_2, flight_points, check_like=True)
 
 
 def test_climb_optimal_altitude(polar):
@@ -206,7 +185,7 @@ def test_climb_not_enough_thrust(polar):
         )
 
 
-def test_descent(polar):
+def test_descent_to_fixed_altitude(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = ClimbDescentSegment(
@@ -222,6 +201,30 @@ def test_descent(polar):
     assert_allclose(last_point.true_airspeed, 200.0)
     assert_allclose(last_point.mass, 69849.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 274043.0, rtol=1e-3)
+
+
+def test_descent_to_fixed_EAS(polar):
+    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+
+    flight_points = ClimbDescentSegment(
+        FlightPoint(equivalent_airspeed=150.0, mach="constant"),
+        propulsion,
+        100.0,
+        polar,
+        thrust_rate=0.1,
+        time_step=1.0,
+    ).compute(FlightPoint(altitude=10000.0, mass=70000.0, mach=0.78),)
+
+    print_dataframe(flight_points)
+
+    last_point = flight_points.iloc[-1]
+    # Note: reference values are obtained by running the process with 0.01s as time step
+    assert_allclose(last_point.equivalent_airspeed, 150.0)
+    # assert_allclose(last_point.time, 3370.4, rtol=1e-2)
+    # assert_allclose(last_point.altitude, 5000.0)
+    # assert_allclose(last_point.true_airspeed, 200.0)
+    # assert_allclose(last_point.mass, 69849.0, rtol=1e-4)
+    # assert_allclose(last_point.ground_distance, 274043.0, rtol=1e-3)
 
 
 def test_acceleration_to_TAS(polar):
