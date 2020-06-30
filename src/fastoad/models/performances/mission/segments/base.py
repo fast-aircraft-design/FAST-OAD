@@ -95,13 +95,17 @@ class AbstractSegment(ABC):
         flight_points = [start]
 
         while not self.target_is_attained(flight_points):
-            current = flight_points[-1]
             new = self._compute_next_flight_point(flight_points)
             self._complete_flight_point(new)
             if not self.speed_bounds[0] <= new.true_airspeed <= self.speed_bounds[1]:
-                raise ValueError("true_airspeed value %f.1m/s is out of bound. Process stopped.")
+                raise ValueError(
+                    "true_airspeed value %f.1m/s is out of bound. Process stopped."
+                    % new.true_airspeed
+                )
             if not self.altitude_bounds[0] <= new.altitude <= self.altitude_bounds[1]:
-                raise ValueError("Altitude value %.0fm is out of bound. Process stopped.")
+                raise ValueError(
+                    "Altitude value %.0fm is out of bound. Process stopped." % new.altitude
+                )
 
             flight_points.append(new)
 
