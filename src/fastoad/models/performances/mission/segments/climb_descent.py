@@ -12,6 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from typing import Tuple, List
 
 import numpy as np
@@ -20,6 +21,8 @@ from fastoad.models.performances.mission.flight_point import FlightPoint
 from fastoad.models.performances.mission.segments.base import ManualThrustSegment
 from fastoad.utils.physics import Atmosphere
 from scipy.constants import g
+
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 class ClimbDescentSegment(ManualThrustSegment):
@@ -68,19 +71,75 @@ class ClimbDescentSegment(ManualThrustSegment):
         if self.target.altitude == self.OPTIMAL_ALTITUDE:
             self.target.CL = "optimal"
 
-        if self.target.true_airspeed:
-            if self.target.true_airspeed == "constant":
-                self.target.true_airspeed = start.true_airspeed
-            else:
-                start.true_airspeed = self.target.true_airspeed
-        elif self.target.equivalent_airspeed:
-            if self.target.equivalent_airspeed == "constant":
-                self.target.equivalent_airspeed = start.equivalent_airspeed
-            start.true_airspeed = self.get_true_airspeed(
-                self.target.equivalent_airspeed, start.altitude
-            )
+        if self.target.equivalent_airspeed == "constant":
+            start.true_airspeed = self.get_true_airspeed(start.equivalent_airspeed, start.altitude)
+        elif self.target.mach == "constant":
+            atm = Atmosphere(start.altitude, altitude_in_feet=False)
+            start.true_airspeed = start.mach * atm.speed_of_sound
 
         return super().compute(start)
+
+    def _get_next_time_step(self, flight_points: List[FlightPoint]) -> float:
+        start = flight_points[0]
+        previous = flight_points[-1]
+        # Time step evaluation
+        # It will be the minimum value between the estimated time to reach the target and
+        # and the default time step.
+        # Checks are done against negative time step that could occur if thrust rate
+        # creates acceleration when deceleration is needed, and so on...
+        # They just create warning, in the (unlikely?) case it is isolated. If we keep
+        # getting negative values, the global test about altitude and speed bounds will eventually
+        # raise an Exception.
+
+        speed_time_step = altitude_time_step = self.time_step
+        if previous.slope_angle != 0.0:
+            if self.target.altitude:
+                altitude_time_step = (
+                    (self.target.altitude - previous.altitude)
+                    / previous.true_airspeed
+                    / np.sin(previous.slope_angle)
+                )
+
+                if altitude_time_step < 0.0:
+                    _LOGGER.warning(
+                        "Incorrect slope (%.2f°) at %s"
+                        % (np.degrees(previous.slope_angle), previous)
+                    )
+                    altitude_time_step = self.time_step
+            else:
+                # Target is speed. Direct evaluation of time step is a bit tricky, so
+                # we evaluate the new speed with standard time step and reduce it
+                # if target has been exceeded.
+                next_altitude = (
+                    previous.altitude
+                    + self.time_step * previous.true_airspeed * np.sin(previous.slope_angle)
+                )
+                if self.target.mach == "constant":
+                    atm = Atmosphere(next_altitude, altitude_in_feet=False)
+                    next_true_airspeed = start.mach * atm.speed_of_sound
+                else:
+                    next_true_airspeed = start.true_airspeed
+
+                if self.target.equivalent_airspeed:
+                    next_equivalent_airspeed = self.get_equivalent_airspeed(
+                        next_true_airspeed, next_altitude
+                    )
+                    previous_to_target = (
+                        self.target.equivalent_airspeed - previous.equivalent_airspeed
+                    )
+                    next_to_target = self.target.equivalent_airspeed - next_equivalent_airspeed
+                else:  # target is true_airspeed
+                    previous_to_target = self.target.true_airspeed - previous.true_airspeed
+                    next_to_target = self.target.true_airspeed - next_true_airspeed
+
+                if previous_to_target * next_to_target < 0:
+                    # target has been exceeded, time step need to be reduced.
+                    speed_time_step = (
+                        self.time_step * previous_to_target / (previous_to_target - next_to_target)
+                    )
+
+        time_step = min(self.time_step, speed_time_step, altitude_time_step)
+        return time_step
 
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         gamma = (thrust - drag) / mass / g
