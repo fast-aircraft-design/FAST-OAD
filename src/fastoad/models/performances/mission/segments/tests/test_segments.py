@@ -212,7 +212,7 @@ def test_descent_to_fixed_EAS(polar):
         100.0,
         polar,
         thrust_rate=0.1,
-        time_step=1.0,
+        # time_step=5.0, # we use default time step
     ).compute(FlightPoint(altitude=10000.0, mass=70000.0, mach=0.78),)
 
     print_dataframe(flight_points)
@@ -230,9 +230,8 @@ def test_descent_to_fixed_EAS(polar):
 def test_acceleration_to_TAS(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    # initialisation using kwarg, using default time step (0.2)
     segment = AccelerationSegment(
-        {"true_airspeed": 250.0}, propulsion, 120.0, polar, thrust_rate=1.0,
+        {"true_airspeed": 250.0}, propulsion, 120.0, polar, thrust_rate=1.0, time_step=0.2
     )
     flight_points = segment.compute(
         {"altitude": 5000.0, "true_airspeed": 150.0, "mass": 70000.0}
@@ -250,14 +249,14 @@ def test_acceleration_to_TAS(polar):
 def test_acceleration_to_EAS(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    # initialisation using kwarg, using default time step (0.2)
-    segment = AccelerationSegment(
-        {"equivalent_airspeed": 250.0}, propulsion, 120.0, polar, thrust_rate=1.0
-    )
-    flight_points = segment.compute(
-        {"altitude": 1000.0, "true_airspeed": 150.0, "mass": 70000.0}
-    )  # Test with dict
-    print_dataframe(flight_points)
+    flight_points = AccelerationSegment(
+        FlightPoint(equivalent_airspeed=250.0),
+        propulsion,
+        120.0,
+        polar,
+        thrust_rate=1.0,
+        time_step=0.2,
+    ).compute(FlightPoint(altitude=1000.0, true_airspeed=150.0, mass=70000.0))
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step

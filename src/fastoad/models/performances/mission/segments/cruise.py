@@ -39,7 +39,7 @@ class OptimalCruiseSegment(AbstractSegment):
         """
 
         self._keyword_args["cruise_mach"] = None
-
+        self._keyword_args["time_step"] = 60.0
         super().__init__(*args, **kwargs)
 
     def compute(self, start: FlightPoint) -> pd.DataFrame:

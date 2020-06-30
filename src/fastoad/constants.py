@@ -15,6 +15,19 @@
 from enum import IntEnum, Enum
 
 
+class FlightPhase(IntEnum):
+
+    """Enumeration of flight phases."""
+
+    TAXI_IN = 0
+    TAKEOFF = 1
+    CLIMB = 2
+    CRUISE = 3
+    DESCENT = 5
+    LANDING = 6
+    TAXI_OUT = 7
+
+
 class EngineSetting(IntEnum):
 
     """Enumeration of engine settings."""
