@@ -14,7 +14,6 @@
 
 from typing import List, Tuple
 
-import numpy as np
 import pandas as pd
 
 from .base import ManualThrustSegment
@@ -22,16 +21,15 @@ from ..flight_point import FlightPoint
 
 
 class TaxiSegment(ManualThrustSegment):
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+        current = flight_points[-1]
+        return current.time - self.target.time
+
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
         self.time_step = self.target.time  # This computation needs only one time step
-
         self.target.time = self.target.time + start.time
         return super().compute(start)
 
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         return 0.0, 0.0
-
-    def target_is_attained(self, flight_points: List[FlightPoint]) -> bool:
-        current = flight_points[-1]
-        return np.abs(current.time - self.target.time) <= 1.0e-7

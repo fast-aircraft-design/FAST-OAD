@@ -82,7 +82,7 @@ class AbstractSegment(ABC):
         """
         Computes the flight path segment from provided start point.
 
-        :param start: the initial flight point, defined for altitude and mass and any relevant
+        :param start: the initial flight point, defined for altitude, mass and any relevant
                       parameter.
         :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
         """
@@ -95,32 +95,56 @@ class AbstractSegment(ABC):
 
         flight_points = [start]
 
-        while not self.target_is_attained(flight_points):
-            new = self._compute_next_flight_point(flight_points)
-            self._complete_flight_point(new)
-            if not self.speed_bounds[0] <= new.true_airspeed <= self.speed_bounds[1]:
+        previous_point_to_target = self.get_distance_to_target(flight_points)
+        tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
+        while np.abs(previous_point_to_target) > tol:
+            self.add_new_flight_point(flight_points, self.time_step)
+            last_point_to_target = self.get_distance_to_target(flight_points)
+
+            if last_point_to_target * previous_point_to_target < 0.0:
+                # Target has been exceeded. Let's look for a smaller time step
+
+                def replace_last_point(time_step):
+                    del flight_points[-1]
+                    self.add_new_flight_point(flight_points, time_step)
+                    return self.get_distance_to_target(flight_points)
+
+                root_scalar(
+                    replace_last_point, x0=self.time_step, x1=self.time_step / 2.0, rtol=tol
+                )
+                last_point_to_target = self.get_distance_to_target(flight_points)
+
+            new_point = flight_points[-1]
+            if not self.speed_bounds[0] <= new_point.true_airspeed <= self.speed_bounds[1]:
                 raise ValueError(
                     "true_airspeed value %f.1m/s is out of bound. Process stopped."
-                    % new.true_airspeed
+                    % new_point.true_airspeed
                 )
-            if not self.altitude_bounds[0] <= new.altitude <= self.altitude_bounds[1]:
+            if not self.altitude_bounds[0] <= new_point.altitude <= self.altitude_bounds[1]:
                 raise ValueError(
-                    "Altitude value %.0fm is out of bound. Process stopped." % new.altitude
+                    "Altitude value %.0fm is out of bound. Process stopped." % new_point.altitude
                 )
 
-            flight_points.append(new)
+            previous_point_to_target = last_point_to_target
+            flight_points.append(new_point)
 
         flight_points_df = pd.DataFrame(flight_points)
 
         return flight_points_df
 
+    def add_new_flight_point(self, flight_points: List[FlightPoint], time_step):
+        new_point = self._compute_next_flight_point(flight_points, time_step)
+        self._complete_flight_point(new_point)
+        flight_points.append(new_point)
+
     @abstractmethod
-    def target_is_attained(self, flight_points: List[FlightPoint]) -> bool:
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         """
-        Tells if computation should continue or be halted
+        Computes a "distance" from last flight point to target.
 
         :param flight_points: list of all currently computed flight_points
-        :return: True if computation should be halted. False otherwise
+        :return: a positive value if target is ahead, a negative value
+                 if target has been exceeded, and O. if target is attained.
         """
 
     def _get_optimal_altitude(
@@ -155,11 +179,14 @@ class AbstractSegment(ABC):
         return optimal_altitude
 
     @abstractmethod
-    def _compute_next_flight_point(self, flight_points: List[FlightPoint]) -> FlightPoint:
+    def _compute_next_flight_point(
+        self, flight_points: List[FlightPoint], time_step: float
+    ) -> FlightPoint:
         """
         Computes time, altitude, true airspeed, mass and ground distance of next flight point.
 
         :param flight_points: previous flight points
+        :param time_step: time step for computing next point
         :return: the computed next flight point
         """
 
@@ -168,7 +195,8 @@ class AbstractSegment(ABC):
         """
         Computes data for provided flight point.
 
-        Assumes that it is already defined for time, altitude, true airspeed and mass.
+        Assumes that it is already defined for time, altitude, true airspeed, mass and
+        ground distance.
 
         :param flight_point: the flight point that will be completed in-place
         """
@@ -192,12 +220,12 @@ class ManualThrustSegment(AbstractSegment, ABC):
 
         super().__init__(*args, **kwargs)
 
-    def _compute_next_flight_point(self, flight_points: List[FlightPoint]) -> FlightPoint:
+    def _compute_next_flight_point(
+        self, flight_points: List[FlightPoint], time_step: float
+    ) -> FlightPoint:
         start = flight_points[0]
         previous = flight_points[-1]
         next_point = FlightPoint()
-
-        time_step = self._get_next_time_step(flight_points)
 
         next_point.altitude = previous.altitude + time_step * previous.true_airspeed * np.sin(
             previous.slope_angle
@@ -225,7 +253,6 @@ class ManualThrustSegment(AbstractSegment, ABC):
         return self.time_step
 
     def _complete_flight_point(self, flight_point: FlightPoint):
-
         atm = AtmosphereSI(flight_point.altitude)
         reference_force = (
             0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_surface
