@@ -28,12 +28,6 @@ class AccelerationSegment(ManualThrustSegment):
     Computes a flight path segment where true airspeed is modified with no change in altitude.
     """
 
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
-        if self.target.true_airspeed:
-            return flight_points[-1].true_airspeed - self.target.true_airspeed
-        elif self.target.equivalent_airspeed:
-            return flight_points[-1].equivalent_airspeed - self.target.equivalent_airspeed
-
     def _compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
     ) -> FlightPoint:
@@ -52,42 +46,11 @@ class AccelerationSegment(ManualThrustSegment):
         )
         return next_point
 
-    # def _get_next_time_step(self, flight_points: List[FlightPoint]) -> float:
-    #     previous = flight_points[-1]
-    #
-    #     # Time step evaluation
-    #     # It will be the minimum value between the estimated time to reach the target and
-    #     # and the default time step.
-    #     # Checks are done against negative time step that could occur if thrust rate
-    #     # creates acceleration when deceleration is needed, and so on...
-    #     # They just create warning, in the (unlikely?) case it is isolated. If we keep
-    #     # getting negative values, the global test about altitude and speed bounds will eventually
-    #     # raise an Exception.
-    #     speed_time_step = self.time_step
-    #     if previous.acceleration != 0.0:
-    #         if self.target.true_airspeed:
-    #             speed_time_step = (
-    #                 self.target.true_airspeed - previous.true_airspeed
-    #             ) / previous.acceleration
-    #         elif self.target.equivalent_airspeed:
-    #             atm = AtmosphereSI(previous.altitude)
-    #             target_true_air_speed = atm.get_true_airspeed(self.target.equivalent_airspeed)
-    #             previous_true_air_speed = atm.get_true_airspeed(previous.equivalent_airspeed)
-    #             speed_time_step = (
-    #                 target_true_air_speed - previous_true_air_speed
-    #             ) / previous.acceleration
-    #
-    #         if speed_time_step < 0.0:
-    #             raise ValueError(
-    #                 "Incorrect acceleration (%.2f) at %s" % (previous.acceleration, previous)
-    #             )
-    #             #     _LOGGER.warning(
-    #             #     "Incorrect acceleration (%.2f) at %s" % (previous.acceleration, previous)
-    #             # )
-    #             speed_time_step = self.time_step
-    #
-    #     time_step = min(self.time_step, speed_time_step)
-    #     return time_step
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+        if self.target.true_airspeed:
+            return flight_points[-1].true_airspeed - self.target.true_airspeed
+        elif self.target.equivalent_airspeed:
+            return flight_points[-1].equivalent_airspeed - self.target.equivalent_airspeed
 
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         acceleration = (thrust - drag) / mass

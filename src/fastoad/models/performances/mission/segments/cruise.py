@@ -12,11 +12,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List
+from typing import List, Tuple
 
 import pandas as pd
 from fastoad.utils.physics import AtmosphereSI
-from scipy.constants import g
 
 from .base import AbstractSegment
 from ..flight_point import FlightPoint
@@ -30,9 +29,17 @@ class OptimalCruiseSegment(AbstractSegment):
     to current mass.
     """
 
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
-        current = flight_points[-1]
-        return current.ground_distance - self.target.ground_distance
+    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+        return 0.0, 0.0
+
+    def _compute_propulsion(self, flight_point: FlightPoint, drag: float):
+        (
+            flight_point.sfc,
+            flight_point.thrust_rate,
+            flight_point.thrust,
+        ) = self.propulsion.compute_flight_points(
+            flight_point.mach, flight_point.altitude, flight_point.engine_setting, thrust=drag,
+        )
 
     def __init__(self, *args, **kwargs):
         """
@@ -48,6 +55,8 @@ class OptimalCruiseSegment(AbstractSegment):
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
         self.target.ground_distance = self.target.ground_distance + start.ground_distance
+        start.altitude = self._get_optimal_altitude(start.mass, self.cruise_mach)
+        start.mach = self.cruise_mach
         return super().compute(start)
 
     def _compute_next_flight_point(
@@ -56,46 +65,17 @@ class OptimalCruiseSegment(AbstractSegment):
         previous = flight_points[-1]
         next_point = FlightPoint()
 
-        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
-        next_point.mach = self.cruise_mach
-        next_point.altitude = (
-            previous.altitude
-        )  # will provide an initial guess for computing optimal altitude
-
         next_point.time = previous.time + time_step
+        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
         next_point.ground_distance = previous.ground_distance + previous.true_airspeed * time_step
+        next_point.altitude = self._get_optimal_altitude(
+            next_point.mass, self.cruise_mach, altitude_guess=previous.altitude
+        )
+        atm = AtmosphereSI(next_point.altitude)
+        next_point.true_airspeed = self.cruise_mach * atm.speed_of_sound
+
         return next_point
 
-    def _complete_flight_point(self, flight_point: FlightPoint):
-        """
-        Computes data for provided flight point.
-
-        Assumes that it is already defined for time and mass.
-
-        :param flight_point: the flight point that will be completed in-place
-        """
-
-        flight_point.altitude = self._get_optimal_altitude(
-            flight_point.mass, self.cruise_mach, flight_point.altitude
-        )
-        atm = AtmosphereSI(flight_point.altitude)
-        flight_point.mach = self.cruise_mach
-        flight_point.true_airspeed = atm.speed_of_sound * flight_point.mach
-
-        flight_point.engine_setting = self.engine_setting
-
-        reference_force = (
-            0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_surface
-        )
-        flight_point.CL = flight_point.mass * g / reference_force
-        flight_point.CD = self.polar.cd(flight_point.CL)
-        drag = flight_point.CD * reference_force
-
-        (
-            flight_point.sfc,
-            flight_point.thrust_rate,
-            flight_point.thrust,
-        ) = self.propulsion.compute_flight_points(
-            flight_point.mach, flight_point.altitude, flight_point.engine_setting, thrust=drag
-        )
-        flight_point.slope_angle, flight_point.acceleration = 0.0, 0.0
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+        current = flight_points[-1]
+        return current.ground_distance - self.target.ground_distance
