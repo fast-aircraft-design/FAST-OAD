@@ -21,7 +21,7 @@ from ..flight_point import FlightPoint
 
 
 class TaxiSegment(ManualThrustSegment):
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         current = flight_points[-1]
         return current.time - self.target.time
 

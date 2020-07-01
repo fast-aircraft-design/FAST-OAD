@@ -91,29 +91,37 @@ class AbstractSegment(ABC):
             start.time = 0.0
         if start.ground_distance is None:
             start.ground_distance = 0.0
+
         self._complete_flight_point(start)
 
         flight_points = [start]
 
-        previous_point_to_target = self.get_distance_to_target(flight_points)
+        previous_point_to_target = self._get_distance_to_target(flight_points)
         tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
         while np.abs(previous_point_to_target) > tol:
-            self.add_new_flight_point(flight_points, self.time_step)
-            last_point_to_target = self.get_distance_to_target(flight_points)
+            self._add_new_flight_point(flight_points, self.time_step)
+            last_point_to_target = self._get_distance_to_target(flight_points)
 
             if last_point_to_target * previous_point_to_target < 0.0:
-                # Target has been exceeded. Let's look for a smaller time step
+                # Target has been exceeded. Let's look for the exact time step using root_scalar.
 
                 def replace_last_point(time_step):
+                    """
+                    Replaces last point of flight_points.
+
+                    :param time_step: time step for new point
+                    :return: new distance to target
+                    """
                     del flight_points[-1]
-                    self.add_new_flight_point(flight_points, time_step)
-                    return self.get_distance_to_target(flight_points)
+                    self._add_new_flight_point(flight_points, time_step)
+                    return self._get_distance_to_target(flight_points)
 
                 root_scalar(
                     replace_last_point, x0=self.time_step, x1=self.time_step / 2.0, rtol=tol
                 )
-                last_point_to_target = self.get_distance_to_target(flight_points)
+                last_point_to_target = self._get_distance_to_target(flight_points)
 
+            # Check altitude and speed bounds.
             new_point = flight_points[-1]
             if not self.speed_bounds[0] <= new_point.true_airspeed <= self.speed_bounds[1]:
                 raise ValueError(
@@ -132,20 +140,110 @@ class AbstractSegment(ABC):
 
         return flight_points_df
 
-    def add_new_flight_point(self, flight_points: List[FlightPoint], time_step):
+    @abstractmethod
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+        """
+        Computes a "distance" from last flight point to target.
+
+        Computed does not need to have a real meaning.
+        The important point is that it must be signed so that algorithm knows on
+        which "side" of the target we are.
+        And of course, it should be 0. if flight point is on target.
+
+        :param flight_points: list of all currently computed flight_points
+        :return: O. if target is attained, a non-null value otherwise
+        """
+
+    @abstractmethod
+    def _compute_next_flight_point(
+        self, flight_points: List[FlightPoint], time_step: float
+    ) -> FlightPoint:
+        """
+        Computes time, altitude, true airspeed, mass and ground distance of next flight point.
+
+        :param flight_points: previous flight points
+        :param time_step: time step for computing next point
+        :return: the computed next flight point
+        """
+
+    @abstractmethod
+    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+        """
+        Computes slope angle (gamma) and acceleration.
+
+        :param mass: in kg
+        :param drag: in N
+        :param thrust: in N
+        :return: slope angle in radians and acceleration in m**2/s
+        """
+
+    def _add_new_flight_point(self, flight_points: List[FlightPoint], time_step):
+        """
+        Appends a new flight point to provided flight point list.
+
+        :param flight_points: list of previous flight points, modified in place.
+        :param time_step: time step for new computed flight point.
+        """
         new_point = self._compute_next_flight_point(flight_points, time_step)
         self._complete_flight_point(new_point)
         flight_points.append(new_point)
 
-    @abstractmethod
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+    def _complete_flight_point(self, flight_point: FlightPoint):
         """
-        Computes a "distance" from last flight point to target.
+        Computes data for provided flight point.
 
-        :param flight_points: list of all currently computed flight_points
-        :return: a positive value if target is ahead, a negative value
-                 if target has been exceeded, and O. if target is attained.
+        Assumes that it is already defined for time, altitude, true airspeed, mass and
+        ground distance.
+
+        :param flight_point: the flight point that will be completed in-place
         """
+        self._complete_speed_values(flight_point)
+
+        atm = AtmosphereSI(flight_point.altitude)
+        reference_force = (
+            0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_surface
+        )
+        flight_point.engine_setting = self.engine_setting
+
+        if self.polar:
+            flight_point.CL = flight_point.mass * g / reference_force
+            flight_point.CD = self.polar.cd(flight_point.CL)
+        else:
+            flight_point.CL = flight_point.CD = 0.0
+        drag = flight_point.CD * reference_force
+        self._compute_propulsion(flight_point, drag)
+        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
+            flight_point.mass, drag, flight_point.thrust
+        )
+
+    @abstractmethod
+    def _compute_propulsion(self, flight_point: FlightPoint, drag: float):
+        """
+
+        :param flight_point:
+        :return:
+        """
+
+    @staticmethod
+    def _complete_speed_values(flight_point: FlightPoint):
+        atm = AtmosphereSI(flight_point.altitude)
+        if flight_point.true_airspeed is None:
+            if flight_point.mach:
+                flight_point.true_airspeed = flight_point.mach * atm.speed_of_sound
+            elif flight_point.equivalent_airspeed:
+                flight_point.true_airspeed = atm.get_true_airspeed(flight_point.equivalent_airspeed)
+            else:
+                raise ValueError(
+                    "Flight point should be defined for true_airspeed, "
+                    "equivalent_airspeed, or mach."
+                )
+        if flight_point.mach is None:
+            flight_point.mach = flight_point.true_airspeed / atm.speed_of_sound
+
+        if flight_point.equivalent_airspeed is None:
+            flight_point.equivalent_airspeed = atm.get_equivalent_airspeed(
+                flight_point.true_airspeed
+            )
 
     def _get_optimal_altitude(
         self, mass: float, mach: float, altitude_guess: float = None
@@ -178,34 +276,23 @@ class AbstractSegment(ABC):
 
         return optimal_altitude
 
-    @abstractmethod
-    def _compute_next_flight_point(
-        self, flight_points: List[FlightPoint], time_step: float
-    ) -> FlightPoint:
-        """
-        Computes time, altitude, true airspeed, mass and ground distance of next flight point.
-
-        :param flight_points: previous flight points
-        :param time_step: time step for computing next point
-        :return: the computed next flight point
-        """
-
-    @abstractmethod
-    def _complete_flight_point(self, flight_point: FlightPoint):
-        """
-        Computes data for provided flight point.
-
-        Assumes that it is already defined for time, altitude, true airspeed, mass and
-        ground distance.
-
-        :param flight_point: the flight point that will be completed in-place
-        """
-
 
 class ManualThrustSegment(AbstractSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is imposed.
     """
+
+    def _compute_propulsion(self, flight_point: FlightPoint, drag: float):
+        (
+            flight_point.sfc,
+            flight_point.thrust_rate,
+            flight_point.thrust,
+        ) = self.propulsion.compute_flight_points(
+            flight_point.mach,
+            flight_point.altitude,
+            flight_point.engine_setting,
+            thrust_rate=self.thrust_rate,
+        )
 
     def __init__(self, *args, **kwargs):
         """
@@ -248,46 +335,3 @@ class ManualThrustSegment(AbstractSegment, ABC):
             + previous.true_airspeed * time_step * np.cos(previous.slope_angle)
         )
         return next_point
-
-    def _get_next_time_step(self, flight_points: List[FlightPoint]) -> float:
-        return self.time_step
-
-    def _complete_flight_point(self, flight_point: FlightPoint):
-        atm = AtmosphereSI(flight_point.altitude)
-        reference_force = (
-            0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_surface
-        )
-        flight_point.engine_setting = self.engine_setting
-        flight_point.mach = flight_point.true_airspeed / atm.speed_of_sound
-        flight_point.equivalent_airspeed = atm.get_equivalent_airspeed(flight_point.true_airspeed)
-
-        (
-            flight_point.sfc,
-            flight_point.thrust_rate,
-            flight_point.thrust,
-        ) = self.propulsion.compute_flight_points(
-            flight_point.mach,
-            flight_point.altitude,
-            flight_point.engine_setting,
-            thrust_rate=self.thrust_rate,
-        )
-        if self.polar:
-            flight_point.CL = flight_point.mass * g / reference_force
-            flight_point.CD = self.polar.cd(flight_point.CL)
-        else:
-            flight_point.CL = flight_point.CD = 0.0
-        drag = flight_point.CD * reference_force
-        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
-            flight_point.mass, drag, flight_point.thrust
-        )
-
-    @abstractmethod
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
-        """
-        Computes slope angle (gamma) and acceleration.
-
-        :param mass: in kg
-        :param drag: in N
-        :param thrust: in N
-        :return: slope angle in radians and acceleration in m**2/s
-        """
