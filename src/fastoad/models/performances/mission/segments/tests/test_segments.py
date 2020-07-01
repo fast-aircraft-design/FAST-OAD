@@ -21,8 +21,8 @@ from fastoad.models.performances.mission.segments.cruise import OptimalCruiseSeg
 from fastoad.models.propulsion import EngineSet, IPropulsion
 from numpy.testing import assert_allclose
 
-from ..acceleration import AccelerationSegment
-from ..climb_descent import ClimbDescentSegment
+from ..acceleration import SpeedChangeSegment
+from ..climb_descent import AltitudeChangeSegment
 from ..taxi import TaxiSegment
 from ...flight_point import FlightPoint
 from ...polar import Polar
@@ -85,7 +85,7 @@ def test_climb_fixed_altitude_fixed_TAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     # initialisation then change instance attributes
-    segment = ClimbDescentSegment(
+    segment = AltitudeChangeSegment(
         {"altitude": 10000.0, "true_airspeed": "constant"}, propulsion, 120.0, polar,
     )
     segment.thrust_rate = 1.0
@@ -106,7 +106,7 @@ def test_climb_fixed_altitude_fixed_TAS(polar):
 def test_climb_fixed_altitude_fixed_EAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
-    flight_points = ClimbDescentSegment(
+    flight_points = AltitudeChangeSegment(
         FlightPoint(altitude=10000.0, equivalent_airspeed="constant"),
         propulsion,
         120.0,
@@ -129,8 +129,8 @@ def test_climb_fixed_altitude_fixed_EAS(polar):
 def test_climb_optimal_altitude(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
-    flight_points = ClimbDescentSegment(
-        FlightPoint(altitude=ClimbDescentSegment.OPTIMAL_ALTITUDE),
+    flight_points = AltitudeChangeSegment(
+        FlightPoint(altitude=AltitudeChangeSegment.OPTIMAL_ALTITUDE),
         propulsion,
         120.0,
         polar,
@@ -152,8 +152,8 @@ def test_climb_optimal_altitude(polar):
 def test_climb_optimal_altitude_capped_mach(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
-    flight_points = ClimbDescentSegment(
-        FlightPoint(altitude=ClimbDescentSegment.OPTIMAL_ALTITUDE),
+    flight_points = AltitudeChangeSegment(
+        FlightPoint(altitude=AltitudeChangeSegment.OPTIMAL_ALTITUDE),
         propulsion,
         120.0,
         polar,
@@ -175,7 +175,7 @@ def test_climb_optimal_altitude_capped_mach(polar):
 def test_climb_not_enough_thrust(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
-    segment = ClimbDescentSegment(
+    segment = AltitudeChangeSegment(
         FlightPoint(altitude=10000.0), propulsion, 120.0, polar, thrust_rate=0.1,
     )
     with pytest.raises(ValueError):
@@ -188,7 +188,7 @@ def test_climb_not_enough_thrust(polar):
 def test_descent_to_fixed_altitude(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
-    flight_points = ClimbDescentSegment(
+    flight_points = AltitudeChangeSegment(
         FlightPoint(altitude=5000.0), propulsion, 100.0, polar, thrust_rate=0.1, time_step=2.0,
     ).compute(
         FlightPoint(altitude=10000.0, true_airspeed=200.0, mass=70000.0, time=2000.0),
@@ -206,7 +206,7 @@ def test_descent_to_fixed_altitude(polar):
 def test_descent_to_fixed_EAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
-    flight_points = ClimbDescentSegment(
+    flight_points = AltitudeChangeSegment(
         FlightPoint(equivalent_airspeed=150.0, mach="constant"),
         propulsion,
         100.0,
@@ -230,7 +230,7 @@ def test_descent_to_fixed_EAS(polar):
 def test_acceleration_to_TAS(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    segment = AccelerationSegment(
+    segment = SpeedChangeSegment(
         {"true_airspeed": 250.0}, propulsion, 120.0, polar, thrust_rate=1.0, time_step=0.2
     )
     flight_points = segment.compute(
@@ -249,7 +249,7 @@ def test_acceleration_to_TAS(polar):
 def test_acceleration_to_EAS(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    flight_points = AccelerationSegment(
+    flight_points = SpeedChangeSegment(
         FlightPoint(equivalent_airspeed=250.0),
         propulsion,
         120.0,
@@ -270,7 +270,7 @@ def test_acceleration_to_EAS(polar):
 def test_acceleration_not_enough_thrust(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    segment = AccelerationSegment(
+    segment = SpeedChangeSegment(
         FlightPoint(true_airspeed=250.0), propulsion, 120.0, polar, thrust_rate=0.1,
     )
     with pytest.raises(ValueError):
@@ -283,7 +283,7 @@ def test_acceleration_not_enough_thrust(polar):
 def test_deceleration_not_enough_thrust(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    segment = AccelerationSegment(
+    segment = SpeedChangeSegment(
         FlightPoint(true_airspeed=150.0), propulsion, 120.0, polar, thrust_rate=0.1, time_step=1.0
     )
     segment.time_step = 1.0

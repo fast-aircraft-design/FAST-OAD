@@ -16,15 +16,15 @@ from typing import Dict
 
 import pandas as pd
 from fastoad.constants import FlightPhase, EngineSetting
-from fastoad.models.performances.mission.segments.acceleration import AccelerationSegment
-from fastoad.models.performances.mission.segments.cruise import OptimalCruiseSegment
 from fastoad.models.propulsion import IPropulsion
 from scipy.constants import foot, knot
 from scipy.optimize import root_scalar
 
-from ..mission.flight_point import FlightPoint
-from ..mission.polar import Polar
-from ..mission.segments.climb_descent import ClimbDescentSegment
+from .flight_point import FlightPoint
+from .polar import Polar
+from .segments.acceleration import AccelerationSegment, DecelerationSegment
+from .segments.climb_descent import ClimbSegment, DescentSegment
+from .segments.cruise import OptimalCruiseSegment
 
 
 class Flight:
@@ -53,7 +53,7 @@ class Flight:
     def get_flight_sequence(self):
         return [
             # Initial climb ====================================================
-            ClimbDescentSegment(
+            ClimbSegment(
                 FlightPoint(true_airspeed="constant", altitude=400.0 * foot),
                 *self.segment_low_speed_args,
                 thrust_rate=1.0,
@@ -65,14 +65,14 @@ class Flight:
                 thrust_rate=1.0,
                 engine_setting=EngineSetting.TAKEOFF,
             ),
-            ClimbDescentSegment(
+            ClimbSegment(
                 FlightPoint(equivalent_airspeed="constant", altitude=1500.0 * foot),
                 *self.segment_low_speed_args,
                 thrust_rate=1.0,
                 engine_setting=EngineSetting.TAKEOFF,
             ),
             # Climb ============================================================
-            ClimbDescentSegment(
+            ClimbSegment(
                 FlightPoint(equivalent_airspeed="constant", altitude=10000.0 * foot),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.CLIMB],
@@ -84,10 +84,8 @@ class Flight:
                 thrust_rate=self.thrust_rates[FlightPhase.CLIMB],
                 engine_setting=EngineSetting.CLIMB,
             ),
-            ClimbDescentSegment(
-                FlightPoint(
-                    equivalent_airspeed="constant", altitude=ClimbDescentSegment.OPTIMAL_ALTITUDE
-                ),
+            ClimbSegment(
+                FlightPoint(equivalent_airspeed="constant", altitude=ClimbSegment.OPTIMAL_ALTITUDE),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.CLIMB],
                 cruise_mach=self.cruise_mach,
@@ -101,25 +99,25 @@ class Flight:
                 engine_setting=EngineSetting.CRUISE,
             ),
             # Descent ==========================================================
-            ClimbDescentSegment(
+            DescentSegment(
                 FlightPoint(equivalent_airspeed=300.0 * knot, mach="constant"),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
                 engine_setting=EngineSetting.IDLE,
             ),
-            # ClimbDescentSegment(
+            # DescentSegment(
             #     FlightPoint(altitude=10000.0 * foot, equivalent_airspeed="constant"),
             #     *self.segment_high_speed_args,
             #     thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
             #     engine_setting=EngineSetting.IDLE,
             # ),
-            AccelerationSegment(
+            DecelerationSegment(
                 FlightPoint(equivalent_airspeed=250.0 * knot),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
                 engine_setting=EngineSetting.IDLE,
             ),
-            ClimbDescentSegment(
+            DescentSegment(
                 FlightPoint(altitude=1500.0 * foot, equivalent_airspeed="constant"),
                 *self.segment_low_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.DESCENT],

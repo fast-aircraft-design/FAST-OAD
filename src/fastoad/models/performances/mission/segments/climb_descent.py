@@ -25,7 +25,7 @@ from ..flight_point import FlightPoint
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-class ClimbDescentSegment(ManualThrustSegment):
+class AltitudeChangeSegment(ManualThrustSegment):
     """
     Computes a flight path segment where altitude is modified with constant speed.
 
@@ -118,3 +118,19 @@ class ClimbDescentSegment(ManualThrustSegment):
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         gamma = (thrust - drag) / mass / g
         return gamma, 0.0
+
+
+class ClimbSegment(AltitudeChangeSegment):
+    """
+    
+    """
+
+    pass
+
+
+class DescentSegment(AltitudeChangeSegment):
+    """
+
+    """
+
+    pass
