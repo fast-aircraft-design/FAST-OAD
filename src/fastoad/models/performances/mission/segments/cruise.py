@@ -14,7 +14,6 @@
 
 from typing import List
 
-import numpy as np
 import pandas as pd
 from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g
@@ -30,6 +29,10 @@ class OptimalCruiseSegment(AbstractSegment):
     Mach is considered constant. Altitude is set to get the optimum CL according
     to current mass.
     """
+
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+        current = flight_points[-1]
+        return current.ground_distance - self.target.ground_distance
 
     def __init__(self, *args, **kwargs):
         """
@@ -47,18 +50,11 @@ class OptimalCruiseSegment(AbstractSegment):
         self.target.ground_distance = self.target.ground_distance + start.ground_distance
         return super().compute(start)
 
-    def target_is_attained(self, flight_points: List[FlightPoint]) -> bool:
-        current = flight_points[-1]
-        return np.abs(current.ground_distance - self.target.ground_distance) <= 1.0
-
-    def _compute_next_flight_point(self, flight_points: List[FlightPoint]) -> FlightPoint:
+    def _compute_next_flight_point(
+        self, flight_points: List[FlightPoint], time_step: float
+    ) -> FlightPoint:
         previous = flight_points[-1]
         next_point = FlightPoint()
-
-        time_step = (
-            self.target.ground_distance - previous.ground_distance
-        ) / previous.true_airspeed
-        time_step = min(self.time_step, time_step)
 
         next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
         next_point.mach = self.cruise_mach
