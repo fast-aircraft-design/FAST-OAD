@@ -138,6 +138,8 @@ class AbstractSegment(ABC):
                 raise ValueError(
                     "Altitude value %.0fm is out of bound. Process stopped." % new_point.altitude
                 )
+            if new_point.mass <= 0.0:
+                raise ValueError("Negative mass value. Process stopped.")
 
             previous_point_to_target = last_point_to_target
             flight_points.append(new_point)
