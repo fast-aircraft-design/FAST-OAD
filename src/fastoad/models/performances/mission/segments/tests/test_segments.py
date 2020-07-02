@@ -21,8 +21,8 @@ from fastoad.models.performances.mission.segments.cruise import OptimalCruiseSeg
 from fastoad.models.propulsion import EngineSet, IPropulsion
 from numpy.testing import assert_allclose
 
-from ..acceleration import SpeedChangeSegment
-from ..climb_descent import AltitudeChangeSegment
+from ..altitude_change import AltitudeChangeSegment
+from ..speed_change import SpeedChangeSegment
 from ..taxi import TaxiSegment
 from ...flight_point import FlightPoint
 from ...polar import Polar
