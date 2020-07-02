@@ -75,6 +75,12 @@ class AbstractSegment(ABC):
         self.polar = polar
         self.target = FlightPoint(target)
 
+        # Unexpected keyword arguments raise Exception
+        for kw in kwargs:
+            if kw not in self._keyword_args:
+                raise KeyError("Unexpected keyword argument: %s" % kw)
+
+        # Initialize instance attributes from keyword arguments.
         for attr_name, default_value in self._keyword_args.items():
             setattr(self, attr_name, kwargs.get(attr_name, default_value))
 
