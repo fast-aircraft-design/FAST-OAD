@@ -12,10 +12,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Dict
+from abc import abstractmethod, ABC
+from typing import Dict, List
 
 import pandas as pd
 from fastoad.constants import FlightPhase, EngineSetting
+from fastoad.models.performances.mission.segments.base import AbstractSegment
 from fastoad.models.propulsion import IPropulsion
 from scipy.constants import foot, knot
 from scipy.optimize import root_scalar
@@ -27,9 +29,9 @@ from .segments.cruise import OptimalCruiseSegment
 from .segments.speed_change import SpeedChangeSegment
 
 
-class StandardFlight:
+class AbstractFlight(ABC):
     """
-    
+    Defines and computes a flight mission.
     """
 
     def __init__(
@@ -43,6 +45,17 @@ class StandardFlight:
         cruise_distance: float,
         time_step=None,
     ):
+        """
+
+        :param propulsion:
+        :param reference_surface:
+        :param low_speed_polar:
+        :param high_speed_polar:
+        :param cruise_mach:
+        :param thrust_rates:
+        :param cruise_distance: in meters
+        :param time_step: if provided, this time step will be applied for all segments.
+        """
 
         self.segment_low_speed_args = propulsion, reference_surface, low_speed_polar
         self.segment_high_speed_args = propulsion, reference_surface, high_speed_polar
@@ -51,7 +64,43 @@ class StandardFlight:
         self.cruise_distance = cruise_distance
         self.time_step = time_step
 
-    def get_flight_sequence(self):
+    @abstractmethod
+    def get_flight_sequence(self) -> List[AbstractSegment]:
+        """
+        Defines the mission before calling :meth:`compute`
+
+        :return: the list of flight segments for the mission.
+        """
+
+    def compute(self, start: FlightPoint) -> pd.DataFrame:
+        """
+        Computes the flight mission from provided start point.
+
+        :param start: the initial flight point, defined for altitude, mass and any relevant
+                      parameter.
+        :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
+        """
+        flight_sequence = self.get_flight_sequence()
+        segments = [pd.DataFrame([start])]
+        for segment_calculator in flight_sequence:
+            segment_start = FlightPoint(segments[-1].iloc[-1])
+            flight_points = segment_calculator.compute(segment_start)
+            if len(flight_points) > 1:
+                segments.append(flight_points.iloc[1:])
+
+        return pd.concat(segments)
+
+
+class StandardFlight(AbstractFlight):
+    """
+    Defines and computes a standard flight mission, from after takeoff to before landing.
+    """
+
+    def get_flight_sequence(self) -> List[AbstractSegment]:
+        """
+
+        :return: the list of flight segments for the mission.
+        """
         return [
             # Initial climb ====================================================
             AltitudeChangeSegment(
@@ -106,6 +155,7 @@ class StandardFlight:
                 *self.segment_high_speed_args,
                 cruise_mach=self.cruise_mach,
                 engine_setting=EngineSetting.CRUISE,
+                time_step=self.time_step,
             ),
             # Descent ==========================================================
             AltitudeChangeSegment(
@@ -138,39 +188,23 @@ class StandardFlight:
             ),
         ]
 
-    def compute(self, start: FlightPoint) -> pd.DataFrame:
-        flight_sequence = self.get_flight_sequence()
-        segment_start = start
-        segments = []
-        for segment_calculator in flight_sequence:
-            segments.append(segment_calculator.compute(segment_start))
-            segment_start = FlightPoint(segments[-1].iloc[-1])
 
-        return pd.concat(segments)
+class RangedFlight:
+    """
+    Computes a standard flight mission, from after takeoff to before landing.
+    """
 
-
-class RangedFlight(StandardFlight):
     def __init__(
-        self,
-        propulsion: IPropulsion,
-        reference_surface: float,
-        low_speed_polar: Polar,
-        high_speed_polar: Polar,
-        cruise_mach: float,
-        thrust_rates: Dict[FlightPhase, float],
-        range: float,
+        self, flight_definition: AbstractFlight, range: float,
     ):
+        """
+        Computes the flight and adjust the cruise distance to achieve the provided range
+
+        :param flight_definition:
+        :param range: in meters
+        """
         self.range = range
-        self.flight = StandardFlight(
-            propulsion,
-            reference_surface,
-            low_speed_polar,
-            high_speed_polar,
-            cruise_mach,
-            thrust_rates,
-            range,
-            time_step=None,
-        )
+        self.flight = flight_definition
         self.flight_points = None
 
     def compute(self, start: FlightPoint) -> pd.DataFrame:
@@ -183,5 +217,4 @@ class RangedFlight(StandardFlight):
         needed_cruise_range = root_scalar(
             compute_flight, x0=self.range * 0.5, x1=self.range * 0.25, xtol=0.5e3, method="secant"
         ).root
-        print(needed_cruise_range)
         return self.flight_points
