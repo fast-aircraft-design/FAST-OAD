@@ -15,8 +15,6 @@
 import logging
 from typing import Tuple, List
 
-import numpy as np
-
 from .base import ManualThrustSegment
 from ..flight_point import FlightPoint
 
@@ -28,30 +26,12 @@ class SpeedChangeSegment(ManualThrustSegment):
     Computes a flight path segment where speed is modified with no change in altitude.
     """
 
-    def _compute_next_flight_point(
-        self, flight_points: List[FlightPoint], time_step: float
-    ) -> FlightPoint:
-        previous = flight_points[-1]
-        next_point = FlightPoint()
-
-        next_point.altitude = previous.altitude + time_step * previous.true_airspeed * np.sin(
-            previous.slope_angle
-        )
-        next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
-        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
-        next_point.time = previous.time + time_step
-        next_point.ground_distance = (
-            previous.ground_distance
-            + previous.true_airspeed * time_step * np.cos(previous.slope_angle)
-        )
-        return next_point
-
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         if self.target.true_airspeed:
             return self.target.true_airspeed - flight_points[-1].true_airspeed
         elif self.target.equivalent_airspeed:
             return self.target.equivalent_airspeed - flight_points[-1].equivalent_airspeed
 
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         acceleration = (thrust - drag) / mass
         return 0.0, acceleration

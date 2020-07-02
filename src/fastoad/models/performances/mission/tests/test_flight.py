@@ -127,13 +127,19 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     propulsion = EngineSet(engine, 2)
 
     flight_calculator = RangedFlight(
-        propulsion=propulsion,
-        reference_surface=120.0,
-        low_speed_polar=low_speed_polar,
-        high_speed_polar=high_speed_polar,
-        cruise_mach=0.78,
-        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.3},
-        range=2.0e6,
+        StandardFlight(
+            propulsion=propulsion,
+            reference_surface=120.0,
+            low_speed_polar=low_speed_polar,
+            high_speed_polar=high_speed_polar,
+            cruise_mach=0.78,
+            thrust_rates={
+                FlightPhase.TAKEOFF: 1.0,
+                FlightPhase.CLIMB: 0.93,
+                FlightPhase.DESCENT: 0.3,
+            },
+        ),
+        flight_distance=2.0e6,
     )
 
     flight_points = flight_calculator.compute(

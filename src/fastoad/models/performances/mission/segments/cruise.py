@@ -47,7 +47,7 @@ class OptimalCruiseSegment(AbstractSegment):
         start.mach = self.cruise_mach
         return super().compute(start)
 
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         return 0.0, 0.0
 
     def _compute_propulsion(self, flight_point: FlightPoint, drag: float):

@@ -42,7 +42,7 @@ class AbstractFlight(ABC):
         high_speed_polar: Polar,
         cruise_mach: float,
         thrust_rates: Dict[FlightPhase, float],
-        cruise_distance: float,
+        cruise_distance: float = 0.0,
         time_step=None,
     ):
         """
@@ -195,15 +195,15 @@ class RangedFlight:
     """
 
     def __init__(
-        self, flight_definition: AbstractFlight, range: float,
+        self, flight_definition: AbstractFlight, flight_distance: float,
     ):
         """
-        Computes the flight and adjust the cruise distance to achieve the provided range
+        Computes the flight and adjust the cruise distance to achieve the provided flight distance.
 
         :param flight_definition:
-        :param range: in meters
+        :param flight_distance: in meters
         """
-        self.range = range
+        self.flight_distance = flight_distance
         self.flight = flight_definition
         self.flight_points = None
 
@@ -212,9 +212,13 @@ class RangedFlight:
             self.flight.cruise_distance = cruise_distance
             self.flight_points = self.flight.compute(start)
             obtained_range = self.flight_points.iloc[-1].ground_distance
-            return self.range - obtained_range
+            return self.flight_distance - obtained_range
 
-        needed_cruise_range = root_scalar(
-            compute_flight, x0=self.range * 0.5, x1=self.range * 0.25, xtol=0.5e3, method="secant"
-        ).root
+        root_scalar(
+            compute_flight,
+            x0=self.flight_distance * 0.5,
+            x1=self.flight_distance * 0.25,
+            xtol=0.5e3,
+            method="secant",
+        )
         return self.flight_points
