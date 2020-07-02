@@ -334,6 +334,11 @@ class ManualThrustSegment(AbstractSegment, ABC):
         else:
             next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
 
+        # Mach number is capped by self.cruise_mach
+        mach = next_point.true_airspeed / atm.speed_of_sound
+        if mach > self.cruise_mach:
+            next_point.true_airspeed = self.cruise_mach * atm.speed_of_sound
+
         next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
         next_point.time = previous.time + time_step
         next_point.ground_distance = (

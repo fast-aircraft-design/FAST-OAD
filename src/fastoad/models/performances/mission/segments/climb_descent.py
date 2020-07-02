@@ -37,10 +37,12 @@ class AltitudeChangeSegment(ManualThrustSegment):
         - constant equivalent airspeed (EAS)
         - constant Mach number
 
-        Target must have :code:`"constant"` as definition for one parameter among
+        Target should have :code:`"constant"` as definition for one parameter among
         :code:`true_airspeed`, :code:`equivalent_airspeed` or :code:`mach`.
         All computed flight points will use the corresponding **start** value.
         The two other speed values will be computed accordingly.
+
+        If not "constant" parameter is set, constant TAS is assumed.
 
     .. note:: **Setting target**
 
@@ -81,21 +83,6 @@ class AltitudeChangeSegment(ManualThrustSegment):
     ) -> FlightPoint:
         start = flight_points[0]
         next_point = super()._compute_next_flight_point(flight_points, time_step)
-
-        atm = AtmosphereSI(next_point.altitude)
-
-        # Forces one speed value
-        if self.target.true_airspeed == "constant":
-            next_point.true_airspeed = start.true_airspeed
-        elif self.target.equivalent_airspeed == "constant":
-            next_point.true_airspeed = atm.get_true_airspeed(start.equivalent_airspeed)
-        elif self.target.mach == "constant":
-            next_point.true_airspeed = start.mach * atm.speed_of_sound
-
-        # Mach number is capped by self.cruise_mach
-        mach = next_point.true_airspeed / atm.speed_of_sound
-        if mach > self.cruise_mach:
-            next_point.true_airspeed = self.cruise_mach * atm.speed_of_sound
 
         return next_point
 
