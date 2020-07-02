@@ -31,5 +31,5 @@ class TaxiSegment(ManualThrustSegment):
         self.target.time = self.target.time + start.time
         return super().compute(start)
 
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         return 0.0, 0.0

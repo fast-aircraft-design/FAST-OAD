@@ -83,13 +83,6 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
         return super().compute(start)
 
-    def _compute_next_flight_point(
-        self, flight_points: List[FlightPoint], time_step: float
-    ) -> FlightPoint:
-        next_point = super()._compute_next_flight_point(flight_points, time_step)
-
-        return next_point
-
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         current = flight_points[-1]
         if self.target.CL == "optimal":
@@ -106,6 +99,6 @@ class AltitudeChangeSegment(ManualThrustSegment):
         elif self.target.mach:
             return self.target.mach - current.mach
 
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         gamma = (thrust - drag) / mass / g
         return gamma, 0.0

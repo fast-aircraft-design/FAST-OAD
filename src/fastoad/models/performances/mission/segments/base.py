@@ -223,7 +223,7 @@ class AbstractSegment(ABC):
             flight_point.CL = flight_point.CD = 0.0
         drag = flight_point.CD * reference_force
         self._compute_propulsion(flight_point, drag)
-        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
+        flight_point.slope_angle, flight_point.acceleration = self._get_gamma_and_acceleration(
             flight_point.mass, drag, flight_point.thrust
         )
 
@@ -307,7 +307,7 @@ class AbstractSegment(ABC):
         """
 
     @abstractmethod
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         """
         Computes slope angle (gamma) and acceleration.
 
