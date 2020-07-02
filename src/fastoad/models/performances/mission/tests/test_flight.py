@@ -11,6 +11,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os.path as pth
+from os import mkdir
+from shutil import rmtree
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -22,6 +26,14 @@ from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.propulsion import EngineSet
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 from scipy.constants import knot, foot
+
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+
+
+@pytest.fixture(scope="module")
+def cleanup():
+    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    mkdir(RESULTS_FOLDER_PATH)
 
 
 def print_dataframe(df):
@@ -75,18 +87,18 @@ def plot_flight(flight_points, fig_filename):
 
     plt.twinx(ax2)
     lines += plt.plot(
-        flight_points.ground_distance / 1000.0, flight_points.mach, "r.", label="Mach"
+        flight_points.ground_distance / 1000.0, flight_points.mach, "r.-", label="Mach"
     )
     plt.ylabel("Mach")
 
     labels = [l.get_label() for l in lines]
     plt.legend(lines, labels, loc=0)
 
-    plt.savefig(fig_filename)
+    plt.savefig(pth.join(RESULTS_FOLDER_PATH, fig_filename))
     plt.close()
 
 
-def test_flight(low_speed_polar, high_speed_polar):
+def test_flight(low_speed_polar, high_speed_polar, cleanup):
 
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
     propulsion = EngineSet(engine, 2)
@@ -97,20 +109,19 @@ def test_flight(low_speed_polar, high_speed_polar):
         low_speed_polar=low_speed_polar,
         high_speed_polar=high_speed_polar,
         cruise_mach=0.78,
-        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.4},
-        cruise_distance=3.0e5,
+        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.3},
+        cruise_distance=4.0e6,
+        time_step=None,
     )
 
     flight_points = flight_calculator.compute(
         FlightPoint(true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0),
     )
 
-    print_dataframe(flight_points)
-
     plot_flight(flight_points, "test_flight.png")
 
 
-def test_ranged_flight(low_speed_polar, high_speed_polar):
+def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
 
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
     propulsion = EngineSet(engine, 2)
@@ -121,14 +132,12 @@ def test_ranged_flight(low_speed_polar, high_speed_polar):
         low_speed_polar=low_speed_polar,
         high_speed_polar=high_speed_polar,
         cruise_mach=0.78,
-        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.4},
-        range=2.8e6,
+        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.3},
+        range=2.0e6,
     )
 
     flight_points = flight_calculator.compute(
         FlightPoint(true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0),
     )
-
-    print_dataframe(flight_points)
 
     plot_flight(flight_points, "test_ranged_flight.png")

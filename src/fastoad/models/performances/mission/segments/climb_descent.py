@@ -86,7 +86,6 @@ class AltitudeChangeSegment(ManualThrustSegment):
     def _compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
     ) -> FlightPoint:
-        start = flight_points[0]
         next_point = super()._compute_next_flight_point(flight_points, time_step)
 
         return next_point
@@ -99,31 +98,14 @@ class AltitudeChangeSegment(ManualThrustSegment):
             )
 
         if self.target.altitude:
-            return current.altitude - self.target.altitude
+            return self.target.altitude - current.altitude
         elif self.target.true_airspeed:
-            return current.true_airspeed - self.target.true_airspeed
+            return self.target.true_airspeed - current.true_airspeed
         elif self.target.equivalent_airspeed:
-            return current.equivalent_airspeed - self.target.equivalent_airspeed
+            return self.target.equivalent_airspeed - current.equivalent_airspeed
         elif self.target.mach:
-            return current.mach - self.target.mach
+            return self.target.mach - current.mach
 
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         gamma = (thrust - drag) / mass / g
         return gamma, 0.0
-
-
-class ClimbSegment(AltitudeChangeSegment):
-    """
-    
-    """
-
-    pass
-
-
-class DescentSegment(AltitudeChangeSegment):
-    """
-
-    """
-
-    def compute(self, start: FlightPoint) -> pd.DataFrame:
-        return super().compute(start)

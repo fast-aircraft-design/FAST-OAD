@@ -117,6 +117,11 @@ class AbstractSegment(ABC):
         """
         Computes the flight path segment from provided start point.
 
+        Computation stops when target is attained, or if the computation stops getting
+        closer to target.
+        For instance, a climb computation with too low thrust will only return one
+        flight point, that is the provided start point.
+
         :param start: the initial flight point, defined for altitude, mass and any relevant
                       parameter.
         :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
@@ -138,8 +143,8 @@ class AbstractSegment(ABC):
             last_point_to_target = self._get_distance_to_target(flight_points)
 
             if last_point_to_target * previous_point_to_target < 0.0:
-                # Target has been exceeded. Let's look for the exact time step using root_scalar.
 
+                # Target has been exceeded. Let's look for the exact time step using root_scalar.
                 def replace_last_point(time_step):
                     """
                     Replaces last point of flight_points.
@@ -155,64 +160,33 @@ class AbstractSegment(ABC):
                     replace_last_point, x0=self.time_step, x1=self.time_step / 2.0, rtol=tol
                 )
                 last_point_to_target = self._get_distance_to_target(flight_points)
+            elif np.abs(last_point_to_target) > np.abs(previous_point_to_target):
+                # We get further from target. Let's stop without this point.
+                del flight_points[-1]
+                break
 
-            # Check altitude and speed bounds.
-            new_point = flight_points[-1]
-            if not self.speed_bounds[0] <= new_point.true_airspeed <= self.speed_bounds[1]:
-                raise ValueError(
-                    "true_airspeed value %f.1m/s is out of bound. Process stopped."
-                    % new_point.true_airspeed
-                )
-            if not self.altitude_bounds[0] <= new_point.altitude <= self.altitude_bounds[1]:
-                raise ValueError(
-                    "Altitude value %.0fm is out of bound. Process stopped." % new_point.altitude
-                )
-            if new_point.mass <= 0.0:
-                raise ValueError("Negative mass value. Process stopped.")
-
+            msg = self._check_values(flight_points[-1])
+            if msg:
+                raise ValueError(msg + " .Process stopped.")
             previous_point_to_target = last_point_to_target
-            flight_points.append(new_point)
 
         flight_points_df = pd.DataFrame(flight_points)
 
         return flight_points_df
 
-    @abstractmethod
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
-        """
-        Computes a "distance" from last flight point to target.
+    def _check_values(self, flight_point: FlightPoint):
+        """Checks that computed values are consistent.
 
-        Computed does not need to have a real meaning.
-        The important point is that it must be signed so that algorithm knows on
-        which "side" of the target we are.
-        And of course, it should be 0. if flight point is on target.
-
-        :param flight_points: list of all currently computed flight_points
-        :return: O. if target is attained, a non-null value otherwise
+        :param flight_point:
+        :return: None if Ok, or an error message otherwise
         """
 
-    @abstractmethod
-    def _compute_next_flight_point(
-        self, flight_points: List[FlightPoint], time_step: float
-    ) -> FlightPoint:
-        """
-        Computes time, altitude, true airspeed, mass and ground distance of next flight point.
-
-        :param flight_points: previous flight points
-        :param time_step: time step for computing next point
-        :return: the computed next flight point
-        """
-
-    @abstractmethod
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
-        """
-        Computes slope angle (gamma) and acceleration.
-
-        :param mass: in kg
-        :param drag: in N
-        :param thrust: in N
-        :return: slope angle in radians and acceleration in m**2/s
-        """
+        if not self.speed_bounds[0] <= flight_point.true_airspeed <= self.speed_bounds[1]:
+            return "true_airspeed value %f.1m/s is out of bound." % flight_point.true_airspeed
+        if not self.altitude_bounds[0] <= flight_point.altitude <= self.altitude_bounds[1]:
+            return "Altitude value %.0fm is out of bound." % flight_point.altitude
+        if flight_point.mass <= 0.0:
+            return "Negative mass value."
 
     def _add_new_flight_point(self, flight_points: List[FlightPoint], time_step):
         """
@@ -253,38 +227,9 @@ class AbstractSegment(ABC):
             flight_point.mass, drag, flight_point.thrust
         )
 
-    @abstractmethod
-    def _compute_propulsion(self, flight_point: FlightPoint, drag: float):
-        """
-
-        :param flight_point:
-        :return:
-        """
-
-    @staticmethod
-    def _complete_speed_values(flight_point: FlightPoint):
-        atm = AtmosphereSI(flight_point.altitude)
-        if flight_point.true_airspeed is None:
-            if flight_point.mach:
-                flight_point.true_airspeed = flight_point.mach * atm.speed_of_sound
-            elif flight_point.equivalent_airspeed:
-                flight_point.true_airspeed = atm.get_true_airspeed(flight_point.equivalent_airspeed)
-            else:
-                raise ValueError(
-                    "Flight point should be defined for true_airspeed, "
-                    "equivalent_airspeed, or mach."
-                )
-        if flight_point.mach is None:
-            flight_point.mach = flight_point.true_airspeed / atm.speed_of_sound
-
-        if flight_point.equivalent_airspeed is None:
-            flight_point.equivalent_airspeed = atm.get_equivalent_airspeed(
-                flight_point.true_airspeed
-            )
-
     def _get_optimal_altitude(
         self, mass: float, mach: float, altitude_guess: float = None
-    ) -> Tuple[float, float]:
+    ) -> float:
         """
         Computes optimal altitude for provided mass and Mach number.
 
@@ -312,6 +257,73 @@ class AbstractSegment(ABC):
         ).root
 
         return optimal_altitude
+
+    @staticmethod
+    def _complete_speed_values(flight_point: FlightPoint):
+        """Computes consistent values between TAS, EAS and Mach, assuming one of them is defined."""
+        atm = AtmosphereSI(flight_point.altitude)
+        if flight_point.true_airspeed is None:
+            if flight_point.mach:
+                flight_point.true_airspeed = flight_point.mach * atm.speed_of_sound
+            elif flight_point.equivalent_airspeed:
+                flight_point.true_airspeed = atm.get_true_airspeed(flight_point.equivalent_airspeed)
+            else:
+                raise ValueError(
+                    "Flight point should be defined for true_airspeed, "
+                    "equivalent_airspeed, or mach."
+                )
+        if flight_point.mach is None:
+            flight_point.mach = flight_point.true_airspeed / atm.speed_of_sound
+
+        if flight_point.equivalent_airspeed is None:
+            flight_point.equivalent_airspeed = atm.get_equivalent_airspeed(
+                flight_point.true_airspeed
+            )
+
+    @abstractmethod
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+        """
+        Computes a "distance" from last flight point to target.
+
+        Computed does not need to have a real meaning.
+        The important point is that it must be signed so that algorithm knows on
+        which "side" of the target we are.
+        And of course, it should be 0. if flight point is on target.
+
+        :param flight_points: list of all currently computed flight_points
+        :return: O. if target is attained, a non-null value otherwise
+        """
+
+    @abstractmethod
+    def _compute_next_flight_point(
+        self, flight_points: List[FlightPoint], time_step: float
+    ) -> FlightPoint:
+        """
+        Computes time, altitude, true airspeed, mass and ground distance of next flight point.
+
+        :param flight_points: previous flight points
+        :param time_step: time step for computing next point
+        :return: the computed next flight point
+        """
+
+    @abstractmethod
+    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+        """
+        Computes slope angle (gamma) and acceleration.
+
+        :param mass: in kg
+        :param drag: in N
+        :param thrust: in N
+        :return: slope angle in radians and acceleration in m**2/s
+        """
+
+    @abstractmethod
+    def _compute_propulsion(self, flight_point: FlightPoint, drag: float):
+        """
+
+        :param flight_point:
+        :return:
+        """
 
 
 class ManualThrustSegment(AbstractSegment, ABC):
