@@ -105,12 +105,12 @@ class Flight:
                 thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
                 engine_setting=EngineSetting.IDLE,
             ),
-            # DescentSegment(
-            #     FlightPoint(altitude=10000.0 * foot, equivalent_airspeed="constant"),
-            #     *self.segment_high_speed_args,
-            #     thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
-            #     engine_setting=EngineSetting.IDLE,
-            # ),
+            DescentSegment(
+                FlightPoint(altitude=10000.0 * foot, equivalent_airspeed="constant"),
+                *self.segment_high_speed_args,
+                thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
+                engine_setting=EngineSetting.IDLE,
+            ),
             DecelerationSegment(
                 FlightPoint(equivalent_airspeed=250.0 * knot),
                 *self.segment_high_speed_args,
