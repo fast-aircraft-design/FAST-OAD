@@ -50,6 +50,42 @@ def low_speed_polar() -> Polar:
     return Polar(cl, cd)
 
 
+def plot_flight(flight_points, fig_filename):
+    plt.figure(figsize=(12, 12))
+    ax1 = plt.subplot(2, 1, 1)
+    plt.plot(flight_points.ground_distance / 1000.0, flight_points.altitude / foot, "o-")
+    plt.xlabel("distance [km]")
+    plt.ylabel("altitude [ft]")
+    plt.grid()
+
+    ax2 = plt.subplot(2, 1, 2)
+    lines = []
+    lines += plt.plot(
+        flight_points.ground_distance / 1000.0, flight_points.true_airspeed, "b-", label="TAS [m/s]"
+    )
+    lines += plt.plot(
+        flight_points.ground_distance / 1000.0,
+        flight_points.equivalent_airspeed / knot,
+        "g--",
+        label="EAS [kt]",
+    )
+    plt.xlabel("distance [km]")
+    plt.ylabel("speed")
+    plt.grid()
+
+    plt.twinx(ax2)
+    lines += plt.plot(
+        flight_points.ground_distance / 1000.0, flight_points.mach, "r.", label="Mach"
+    )
+    plt.ylabel("Mach")
+
+    labels = [l.get_label() for l in lines]
+    plt.legend(lines, labels, loc=0)
+
+    plt.savefig(fig_filename)
+    plt.close()
+
+
 def test_flight(low_speed_polar, high_speed_polar):
 
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
@@ -61,7 +97,7 @@ def test_flight(low_speed_polar, high_speed_polar):
         low_speed_polar=low_speed_polar,
         high_speed_polar=high_speed_polar,
         cruise_mach=0.78,
-        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.45},
+        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.4},
         cruise_distance=3.0e5,
     )
 
@@ -71,14 +107,7 @@ def test_flight(low_speed_polar, high_speed_polar):
 
     print_dataframe(flight_points)
 
-    plt.figure()
-    plt.plot(flight_points.ground_distance, flight_points.altitude)
-    plt.savefig("altitude_vs_distance_flight.png")
-    plt.close()
-    plt.figure()
-    plt.plot(flight_points.time / 60.0, flight_points.altitude)
-    plt.savefig("altitude_vs_time.png")
-    plt.close()
+    plot_flight(flight_points, "test_flight.png")
 
 
 def test_ranged_flight(low_speed_polar, high_speed_polar):
@@ -93,7 +122,7 @@ def test_ranged_flight(low_speed_polar, high_speed_polar):
         high_speed_polar=high_speed_polar,
         cruise_mach=0.78,
         thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.4},
-        range=0.8e6,
+        range=2.8e6,
     )
 
     flight_points = flight_calculator.compute(
@@ -102,7 +131,4 @@ def test_ranged_flight(low_speed_polar, high_speed_polar):
 
     print_dataframe(flight_points)
 
-    plt.figure()
-    plt.plot(flight_points.ground_distance, flight_points.altitude)
-    plt.savefig("altitude_ranged_flight.png")
-    plt.close()
+    plot_flight(flight_points, "test_ranged_flight.png")
