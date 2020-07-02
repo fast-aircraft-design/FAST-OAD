@@ -81,7 +81,7 @@ def polar() -> Polar:
     return Polar(cl, cd)
 
 
-def test_climb_fixed_altitude_fixed_TAS(polar):
+def test_climb_fixed_altitude_at_constant_TAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     # initialisation then change instance attributes
@@ -103,7 +103,7 @@ def test_climb_fixed_altitude_fixed_TAS(polar):
     assert_allclose(last_point.ground_distance, 20943.0, rtol=1e-3)
 
 
-def test_climb_fixed_altitude_fixed_EAS(polar):
+def test_climb_fixed_altitude_at_constant_EAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
@@ -136,7 +136,6 @@ def test_climb_optimal_altitude(polar):
         polar,
         thrust_rate=1.0,
         time_step=2.0,
-        keep_airspeed="true",
     ).compute(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),)
 
     last_point = flight_points.iloc[-1]
@@ -185,11 +184,16 @@ def test_climb_not_enough_thrust(polar):
         )
 
 
-def test_descent_to_fixed_altitude(polar):
+def test_descent_to_fixed_altitude_at_constant_TAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
-        FlightPoint(altitude=5000.0), propulsion, 100.0, polar, thrust_rate=0.1, time_step=2.0,
+        FlightPoint(altitude=5000.0, true_airspeed="constant"),
+        propulsion,
+        100.0,
+        polar,
+        thrust_rate=0.1,
+        time_step=2.0,
     ).compute(
         FlightPoint(altitude=10000.0, true_airspeed=200.0, mass=70000.0, time=2000.0),
     )  # And we define a start time
