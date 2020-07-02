@@ -23,7 +23,7 @@ from ..flight_point import FlightPoint
 class TaxiSegment(ManualThrustSegment):
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         current = flight_points[-1]
-        return current.time - self.target.time
+        return self.target.time - current.time
 
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)

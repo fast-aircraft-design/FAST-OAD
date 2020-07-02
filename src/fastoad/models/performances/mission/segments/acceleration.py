@@ -25,7 +25,7 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 class SpeedChangeSegment(ManualThrustSegment):
     """
-    Computes a flight path segment where true airspeed is modified with no change in altitude.
+    Computes a flight path segment where speed is modified with no change in altitude.
     """
 
     def _compute_next_flight_point(
@@ -48,26 +48,10 @@ class SpeedChangeSegment(ManualThrustSegment):
 
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         if self.target.true_airspeed:
-            return flight_points[-1].true_airspeed - self.target.true_airspeed
+            return self.target.true_airspeed - flight_points[-1].true_airspeed
         elif self.target.equivalent_airspeed:
-            return flight_points[-1].equivalent_airspeed - self.target.equivalent_airspeed
+            return self.target.equivalent_airspeed - flight_points[-1].equivalent_airspeed
 
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         acceleration = (thrust - drag) / mass
         return 0.0, acceleration
-
-
-class AccelerationSegment(SpeedChangeSegment):
-    """
-
-    """
-
-    pass
-
-
-class DecelerationSegment(SpeedChangeSegment):
-    """
-
-    """
-
-    pass

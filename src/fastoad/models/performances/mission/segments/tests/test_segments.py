@@ -182,11 +182,9 @@ def test_climb_not_enough_thrust(polar):
         polar,
         thrust_rate=0.1,
     )
-    with pytest.raises(ValueError):
-        segment.time_step = 5.0  # Let's fail quickly
-        flight_points = segment.compute(
-            FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),
-        )
+    assert (
+        len(segment.compute(FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),)) == 1
+    )
 
 
 def test_descent_to_fixed_altitude_at_constant_TAS(polar):
@@ -302,11 +300,7 @@ def test_acceleration_not_enough_thrust(polar):
     segment = SpeedChangeSegment(
         FlightPoint(true_airspeed=250.0), propulsion, 120.0, polar, thrust_rate=0.1,
     )
-    with pytest.raises(ValueError):
-        segment.time_step = 5.0  # Let's fail quickly
-        flight_points = segment.compute(
-            FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),
-        )
+    assert len(segment.compute(FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),))
 
 
 def test_deceleration_not_enough_thrust(polar):

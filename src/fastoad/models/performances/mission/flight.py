@@ -22,8 +22,8 @@ from scipy.optimize import root_scalar
 
 from .flight_point import FlightPoint
 from .polar import Polar
-from .segments.acceleration import AccelerationSegment, DecelerationSegment
-from .segments.climb_descent import ClimbSegment, DescentSegment
+from .segments.acceleration import SpeedChangeSegment
+from .segments.climb_descent import AltitudeChangeSegment
 from .segments.cruise import OptimalCruiseSegment
 
 
@@ -42,6 +42,7 @@ class Flight:
         cruise_mach: float,
         thrust_rates: Dict[FlightPhase, float],
         cruise_distance: float,
+        time_step=None,
     ):
 
         self.segment_low_speed_args = propulsion, reference_surface, low_speed_polar
@@ -49,47 +50,56 @@ class Flight:
         self.cruise_mach = cruise_mach
         self.thrust_rates = thrust_rates
         self.cruise_distance = cruise_distance
+        self.time_step = time_step
 
     def get_flight_sequence(self):
         return [
             # Initial climb ====================================================
-            ClimbSegment(
+            AltitudeChangeSegment(
                 FlightPoint(true_airspeed="constant", altitude=400.0 * foot),
                 *self.segment_low_speed_args,
                 thrust_rate=1.0,
                 engine_setting=EngineSetting.TAKEOFF,
+                time_step=self.time_step,
             ),
-            AccelerationSegment(
+            SpeedChangeSegment(
                 FlightPoint(equivalent_airspeed=250.0 * knot),
                 *self.segment_low_speed_args,
                 thrust_rate=1.0,
                 engine_setting=EngineSetting.TAKEOFF,
+                time_step=self.time_step,
             ),
-            ClimbSegment(
+            AltitudeChangeSegment(
                 FlightPoint(equivalent_airspeed="constant", altitude=1500.0 * foot),
                 *self.segment_low_speed_args,
                 thrust_rate=1.0,
                 engine_setting=EngineSetting.TAKEOFF,
+                time_step=self.time_step,
             ),
             # Climb ============================================================
-            ClimbSegment(
+            AltitudeChangeSegment(
                 FlightPoint(equivalent_airspeed="constant", altitude=10000.0 * foot),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.CLIMB],
                 engine_setting=EngineSetting.CLIMB,
+                time_step=self.time_step,
             ),
-            AccelerationSegment(
+            SpeedChangeSegment(
                 FlightPoint(equivalent_airspeed=300.0 * knot),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.CLIMB],
                 engine_setting=EngineSetting.CLIMB,
+                time_step=self.time_step,
             ),
-            ClimbSegment(
-                FlightPoint(equivalent_airspeed="constant", altitude=ClimbSegment.OPTIMAL_ALTITUDE),
+            AltitudeChangeSegment(
+                FlightPoint(
+                    equivalent_airspeed="constant", altitude=AltitudeChangeSegment.OPTIMAL_ALTITUDE
+                ),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.CLIMB],
                 cruise_mach=self.cruise_mach,
                 engine_setting=EngineSetting.CLIMB,
+                time_step=self.time_step,
             ),
             # Cruise ===========================================================
             OptimalCruiseSegment(
@@ -99,29 +109,33 @@ class Flight:
                 engine_setting=EngineSetting.CRUISE,
             ),
             # Descent ==========================================================
-            DescentSegment(
+            AltitudeChangeSegment(
                 FlightPoint(equivalent_airspeed=300.0 * knot, mach="constant"),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
                 engine_setting=EngineSetting.IDLE,
+                time_step=self.time_step,
             ),
-            DescentSegment(
+            AltitudeChangeSegment(
                 FlightPoint(altitude=10000.0 * foot, equivalent_airspeed="constant"),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
                 engine_setting=EngineSetting.IDLE,
+                time_step=self.time_step,
             ),
-            DecelerationSegment(
+            SpeedChangeSegment(
                 FlightPoint(equivalent_airspeed=250.0 * knot),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
                 engine_setting=EngineSetting.IDLE,
+                time_step=self.time_step,
             ),
-            DescentSegment(
+            AltitudeChangeSegment(
                 FlightPoint(altitude=1500.0 * foot, equivalent_airspeed="constant"),
                 *self.segment_low_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
                 engine_setting=EngineSetting.IDLE,
+                time_step=self.time_step,
             ),
         ]
 
@@ -130,10 +144,8 @@ class Flight:
         segment_start = start
         segments = []
         for segment_calculator in flight_sequence:
-            print(segment_calculator)
             segments.append(segment_calculator.compute(segment_start))
             segment_start = FlightPoint(segments[-1].iloc[-1])
-            print(segment_start)
 
         return pd.concat(segments)
 
@@ -158,6 +170,7 @@ class RangedFlight(Flight):
             cruise_mach,
             thrust_rates,
             range,
+            time_step=None,
         )
         self.flight_points = None
 
@@ -168,6 +181,8 @@ class RangedFlight(Flight):
             obtained_range = self.flight_points.iloc[-1].ground_distance
             return self.range - obtained_range
 
-        needed_cruise_range = root_scalar(compute_flight, x0=self.range, x1=self.range * 0.5).root
+        needed_cruise_range = root_scalar(
+            compute_flight, x0=self.range * 0.5, x1=self.range * 0.25, xtol=0.5e3, method="secant"
+        ).root
         print(needed_cruise_range)
         return self.flight_points

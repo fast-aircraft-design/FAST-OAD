@@ -78,4 +78,4 @@ class OptimalCruiseSegment(AbstractSegment):
 
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         current = flight_points[-1]
-        return current.ground_distance - self.target.ground_distance
+        return self.target.ground_distance - current.ground_distance
