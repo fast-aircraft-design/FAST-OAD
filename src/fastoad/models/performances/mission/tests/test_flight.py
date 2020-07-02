@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from fastoad.constants import FlightPhase
-from fastoad.models.performances.mission.flight import Flight, RangedFlight
+from fastoad.models.performances.mission.flight import StandardFlight, RangedFlight
 from fastoad.models.performances.mission.flight_point import FlightPoint
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.propulsion import EngineSet
@@ -103,7 +103,7 @@ def test_flight(low_speed_polar, high_speed_polar, cleanup):
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
     propulsion = EngineSet(engine, 2)
 
-    flight_calculator = Flight(
+    flight_calculator = StandardFlight(
         propulsion=propulsion,
         reference_surface=120.0,
         low_speed_polar=low_speed_polar,

@@ -22,13 +22,12 @@ from scipy.optimize import root_scalar
 
 from .flight_point import FlightPoint
 from .polar import Polar
-from .segments.acceleration import SpeedChangeSegment
-from .segments.climb_descent import AltitudeChangeSegment
+from .segments.altitude_change import AltitudeChangeSegment
 from .segments.cruise import OptimalCruiseSegment
+from .segments.speed_change import SpeedChangeSegment
 
 
-class Flight:
-
+class StandardFlight:
     """
     
     """
@@ -150,7 +149,7 @@ class Flight:
         return pd.concat(segments)
 
 
-class RangedFlight(Flight):
+class RangedFlight(StandardFlight):
     def __init__(
         self,
         propulsion: IPropulsion,
@@ -162,7 +161,7 @@ class RangedFlight(Flight):
         range: float,
     ):
         self.range = range
-        self.flight = Flight(
+        self.flight = StandardFlight(
             propulsion,
             reference_surface,
             low_speed_polar,
