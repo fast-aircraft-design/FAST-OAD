@@ -29,6 +29,26 @@ class OptimalCruiseSegment(AbstractSegment):
     to current mass.
     """
 
+    def __init__(self, *args, **kwargs):
+        """
+
+        :ivar cruise_mach: cruise Mach number. Mandatory before running :meth:`compute`.
+                           Can be set at instantiation using a keyword argument.
+        """
+
+        self._keyword_args["cruise_mach"] = None
+
+        if "time_step" not in kwargs:
+            kwargs["time_step"] = 60.0
+        super().__init__(*args, **kwargs)
+
+    def compute(self, start: FlightPoint) -> pd.DataFrame:
+        start = FlightPoint(start)
+        self.target.ground_distance = self.target.ground_distance + start.ground_distance
+        start.altitude = self._get_optimal_altitude(start.mass, self.cruise_mach)
+        start.mach = self.cruise_mach
+        return super().compute(start)
+
     def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         return 0.0, 0.0
 
@@ -40,24 +60,6 @@ class OptimalCruiseSegment(AbstractSegment):
         ) = self.propulsion.compute_flight_points(
             flight_point.mach, flight_point.altitude, flight_point.engine_setting, thrust=drag,
         )
-
-    def __init__(self, *args, **kwargs):
-        """
-
-        :ivar cruise_mach: cruise Mach number. Mandatory before running :meth:`compute`.
-                           Can be set at instantiation using a keyword argument.
-        """
-
-        self._keyword_args["cruise_mach"] = None
-        self._keyword_args["time_step"] = 60.0
-        super().__init__(*args, **kwargs)
-
-    def compute(self, start: FlightPoint) -> pd.DataFrame:
-        start = FlightPoint(start)
-        self.target.ground_distance = self.target.ground_distance + start.ground_distance
-        start.altitude = self._get_optimal_altitude(start.mass, self.cruise_mach)
-        start.mach = self.cruise_mach
-        return super().compute(start)
 
     def _compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
