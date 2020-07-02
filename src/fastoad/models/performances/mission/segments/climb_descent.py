@@ -65,6 +65,11 @@ class AltitudeChangeSegment(ManualThrustSegment):
     #: Using this value will tell to target the altitude with max lift/drag ratio.
     OPTIMAL_ALTITUDE = -10000.0
 
+    def __init__(self, *args, **kwargs):
+
+        self._set_attribute_default("time_step", 2.0)
+        super().__init__(*args, **kwargs)
+
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
         if self.target.altitude == self.OPTIMAL_ALTITUDE:
@@ -120,4 +125,5 @@ class DescentSegment(AltitudeChangeSegment):
 
     """
 
-    pass
+    def compute(self, start: FlightPoint) -> pd.DataFrame:
+        return super().compute(start)
