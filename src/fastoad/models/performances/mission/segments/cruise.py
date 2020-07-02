@@ -36,10 +36,8 @@ class OptimalCruiseSegment(AbstractSegment):
                            Can be set at instantiation using a keyword argument.
         """
 
-        self._keyword_args["cruise_mach"] = None
-
-        if "time_step" not in kwargs:
-            kwargs["time_step"] = 60.0
+        self._set_attribute_default("cruise_mach", None)
+        self._set_attribute_default("time_step", 60.0)
         super().__init__(*args, **kwargs)
 
     def compute(self, start: FlightPoint) -> pd.DataFrame:

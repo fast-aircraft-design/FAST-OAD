@@ -31,6 +31,13 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 DEFAULT_TIME_STEP = 0.2
 
+SEGMENT_KEYWORD_ARGUMENTS = {
+    "time_step": DEFAULT_TIME_STEP,
+    "engine_setting": EngineSetting.CLIMB,
+    "altitude_bounds": (-100.0, 40000.0),
+    "speed_bounds": (0.0, 1000.0),
+}
+
 
 class AbstractSegment(ABC):
     """
@@ -48,13 +55,6 @@ class AbstractSegment(ABC):
     :ivar speed_bounds: minimum and maximum authorized true_airspeed values. Process will be
                         stopped if computed altitude gets beyond these limits.
     """
-
-    _keyword_args = {
-        "time_step": DEFAULT_TIME_STEP,
-        "engine_setting": EngineSetting.CLIMB,
-        "altitude_bounds": (-100.0, 40000.0),
-        "speed_bounds": (0.0, 1000.0),
-    }
 
     def __init__(
         self,
@@ -76,13 +76,42 @@ class AbstractSegment(ABC):
         self.target = FlightPoint(target)
 
         # Unexpected keyword arguments raise Exception
+        # Initialize instance attributes from keyword arguments.
+        for attr_name, default_value in SEGMENT_KEYWORD_ARGUMENTS.items():
+            self._set_attribute_default(attr_name, default_value)
+
         for kw in kwargs:
             if kw not in self._keyword_args:
                 raise KeyError("Unexpected keyword argument: %s" % kw)
 
         # Initialize instance attributes from keyword arguments.
         for attr_name, default_value in self._keyword_args.items():
-            setattr(self, attr_name, kwargs.get(attr_name, default_value))
+            value = kwargs.get(attr_name)
+            if not value:
+                # value not provided or is None
+                value = default_value
+            setattr(self, attr_name, value)
+
+    def _set_attribute_default(self, attr_name, default_value):
+        """
+        Sets default for keyword arguments at class instantiation.
+
+        This method is intended for being used in __init__ of subclasses before
+        calling the __init__ of the superclass.
+
+        Important note: if a default value has been already set, it won't be
+        overwritten. This way, the definition in last subclass will prevail.
+
+        :param attr_name:
+        :param default_value:
+        """
+        try:
+            self._keyword_args
+        except AttributeError:
+            self._keyword_args = {}
+
+        if attr_name not in self._keyword_args:
+            self._keyword_args[attr_name] = default_value
 
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         """
@@ -290,6 +319,18 @@ class ManualThrustSegment(AbstractSegment, ABC):
     Base class for computing flight segment where thrust rate is imposed.
     """
 
+    def __init__(self, *args, **kwargs):
+        """
+
+        :ivar thrust_rate: used thrust rate. Can be set at instantiation using a keyword argument.
+        :ivar maximum_mach: maximum Mach number. Can be set at instantiation using a
+                           keyword argument.
+        """
+
+        self._set_attribute_default("thrust_rate", 1.0)
+        self._set_attribute_default("cruise_mach", 100.0)  # i.e. no limit if not set
+        super().__init__(*args, **kwargs)
+
     def _compute_propulsion(self, flight_point: FlightPoint, drag: float):
         (
             flight_point.sfc,
@@ -301,19 +342,6 @@ class ManualThrustSegment(AbstractSegment, ABC):
             flight_point.engine_setting,
             thrust_rate=self.thrust_rate,
         )
-
-    def __init__(self, *args, **kwargs):
-        """
-
-        :ivar thrust_rate: used thrust rate. Can be set at instantiation using a keyword argument.
-        :ivar maximum_mach: maximum Mach number. Can be set at instantiation using a
-                           keyword argument.
-        """
-
-        self._keyword_args["thrust_rate"] = 1.0
-        self._keyword_args["cruise_mach"] = 100.0  # i.e. no limit if not set
-
-        super().__init__(*args, **kwargs)
 
     def _compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
