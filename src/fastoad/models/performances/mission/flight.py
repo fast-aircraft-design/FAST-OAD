@@ -145,7 +145,7 @@ class StandardFlight(AbstractFlight):
                 ),
                 *self.segment_high_speed_args,
                 thrust_rate=self.thrust_rates[FlightPhase.CLIMB],
-                cruise_mach=self.cruise_mach,
+                maximum_mach=self.cruise_mach,
                 engine_setting=EngineSetting.CLIMB,
                 time_step=self.time_step,
             ),
@@ -153,7 +153,6 @@ class StandardFlight(AbstractFlight):
             OptimalCruiseSegment(
                 FlightPoint(ground_distance=self.cruise_distance),
                 *self.segment_high_speed_args,
-                cruise_mach=self.cruise_mach,
                 engine_setting=EngineSetting.CRUISE,
                 time_step=self.time_step,
             ),
@@ -211,8 +210,8 @@ class RangedFlight:
         def compute_flight(cruise_distance):
             self.flight.cruise_distance = cruise_distance
             self.flight_points = self.flight.compute(start)
-            obtained_range = self.flight_points.iloc[-1].ground_distance
-            return self.flight_distance - obtained_range
+            obtained_distance = self.flight_points.iloc[-1].ground_distance
+            return self.flight_distance - obtained_distance
 
         root_scalar(
             compute_flight,
