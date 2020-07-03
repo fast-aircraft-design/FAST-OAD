@@ -24,6 +24,10 @@ from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
+from ..exceptions import (
+    FastFlightSegmentUnexpectedKeywordArgument,
+    FastFlightSegmentIncompleteFlightPoint,
+)
 from ..flight_point import FlightPoint
 from ..polar import Polar
 
@@ -34,8 +38,8 @@ DEFAULT_TIME_STEP = 0.2
 SEGMENT_KEYWORD_ARGUMENTS = {
     "time_step": DEFAULT_TIME_STEP,
     "engine_setting": EngineSetting.CLIMB,
-    "altitude_bounds": (-100.0, 40000.0),
-    "speed_bounds": (0.0, 1000.0),
+    "altitude_bounds": (-500.0, 40000.0),  # large limits for stopping bad computation
+    "mach_bounds": (0.0, 5.0),  # large limits for stopping bad computation
     "maximum_mach": 100.0,  # not limited by default
 }
 
@@ -51,10 +55,12 @@ class AbstractSegment(ABC):
                      some particular times of the flight path).
     :ivar engine_setting: the :class:`EngineSetting` value associated to the segment. Can be
                         used in the propulsion model.
-    :ivar altitude_bounds: minimum and maximum authorized altitude values. Process will be
-                           stopped if computed altitude gets beyond these limits.
-    :ivar speed_bounds: minimum and maximum authorized true_airspeed values. Process will be
-                        stopped if computed altitude gets beyond these limits.
+    :ivar altitude_bounds: minimum and maximum authorized altitude values. If computed altitude
+                           gets beyond these limits, computation will be interrupted and a warning
+                           message will be issued in logger.
+    :ivar mach_bounds: minimum and maximum authorized mach values. If computed Mach
+                       gets beyond these limits, computation will be interrupted and a warning
+                       message will be issued in logger.
     :ivar maximum_mach: if defined, this maximum Mach number will be enforced at each time
                         step, whatever the speed specifications.
     """
@@ -86,7 +92,7 @@ class AbstractSegment(ABC):
         # Unexpected keyword arguments raise Exception
         for kw in kwargs:
             if kw not in self.__keyword_args:
-                raise KeyError("Unexpected keyword argument: %s" % kw)
+                raise FastFlightSegmentUnexpectedKeywordArgument(kw)
 
         # Initialize instance attributes from keyword arguments.
         for attr_name, default_value in self.__keyword_args.items():
@@ -121,7 +127,7 @@ class AbstractSegment(ABC):
         """
         Computes the flight path segment from provided start point.
 
-        Computation stops when target is attained, or if the computation stops getting
+        Computation ends when target is attained, or if the computation stops getting
         closer to target.
         For instance, a climb computation with too low thrust will only return one
         flight point, that is the provided start point.
@@ -167,20 +173,24 @@ class AbstractSegment(ABC):
                 last_point_to_target = self._get_distance_to_target(flight_points)
             elif np.abs(last_point_to_target) > np.abs(previous_point_to_target):
                 # We get further from target. Let's stop without this point.
+                _LOGGER.warning("Target cannot be reached. Segment computation interrupted.")
                 del flight_points[-1]
                 break
 
             msg = self._check_values(flight_points[-1])
             if msg:
-                raise ValueError(msg + " .Process stopped.")
+                _LOGGER.warning(msg + " Segment computation interrupted.")
+                break
+
             previous_point_to_target = last_point_to_target
 
         flight_points_df = pd.DataFrame(flight_points)
 
         return flight_points_df
 
-    def _check_values(self, flight_point: FlightPoint):
-        """Checks that computed values are consistent.
+    def _check_values(self, flight_point: FlightPoint) -> str:
+        """
+        Checks that computed values are consistent.
 
         May be overloaded for doing specific additional checks at each time step.
 
@@ -188,7 +198,7 @@ class AbstractSegment(ABC):
         :return: None if Ok, or an error message otherwise
         """
 
-        if not self.speed_bounds[0] <= flight_point.true_airspeed <= self.speed_bounds[1]:
+        if not self.mach_bounds[0] <= flight_point.mach <= self.mach_bounds[1]:
             return "true_airspeed value %f.1m/s is out of bound." % flight_point.true_airspeed
         if not self.altitude_bounds[0] <= flight_point.altitude <= self.altitude_bounds[1]:
             return "Altitude value %.0fm is out of bound." % flight_point.altitude
@@ -287,7 +297,7 @@ class AbstractSegment(ABC):
             elif flight_point.equivalent_airspeed:
                 flight_point.true_airspeed = atm.get_true_airspeed(flight_point.equivalent_airspeed)
             else:
-                raise ValueError(
+                raise FastFlightSegmentIncompleteFlightPoint(
                     "Flight point should be defined for true_airspeed, "
                     "equivalent_airspeed, or mach."
                 )

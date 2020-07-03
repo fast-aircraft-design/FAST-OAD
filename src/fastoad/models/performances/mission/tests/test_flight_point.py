@@ -14,8 +14,10 @@
 import numpy as np
 import pandas as pd
 import pytest
-from fastoad.models.performances.mission.flight_point import FlightPoint
 from numpy.testing import assert_allclose
+
+from ..exceptions import FastFlightPointUnexpectedKeywordArgument
+from ..flight_point import FlightPoint
 
 
 def test_FlightPoint():
@@ -45,10 +47,10 @@ def test_FlightPoint():
         assert fp2[label] == new_value
 
     # Init with unknown attribute ##################################################################
-    with pytest.raises(KeyError):
+    with pytest.raises(FastFlightPointUnexpectedKeywordArgument):
         _ = FlightPoint(unknown=0)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(FastFlightPointUnexpectedKeywordArgument):
         _ = FlightPoint({"unknown": 0})
 
     # FlightPoint to/from pandas DataFrame #########################################################
