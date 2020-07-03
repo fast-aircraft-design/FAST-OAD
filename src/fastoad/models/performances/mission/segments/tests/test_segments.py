@@ -17,11 +17,11 @@ import numpy as np
 import pandas as pd
 import pytest
 from fastoad.constants import EngineSetting
-from fastoad.models.performances.mission.segments.cruise import OptimalCruiseSegment
 from fastoad.models.propulsion import EngineSet, IPropulsion
 from numpy.testing import assert_allclose
 
 from ..altitude_change import AltitudeChangeSegment
+from ..cruise import OptimalCruiseSegment, CruiseSegment
 from ..speed_change import SpeedChangeSegment
 from ..taxi import TaxiSegment
 from ...flight_point import FlightPoint
@@ -44,7 +44,7 @@ class DummyEngine(IPropulsion):
         Dummy engine model.
 
         Max thrust does not depend on flight conditions.
-        SFC varies linearly with thrus_rate, from max_sfc/2. at thrust rate is 0.,
+        SFC varies linearly with thrust_rate, from max_sfc/2. at thrust rate is 0.,
         to max_sfc when thrust_rate is 1.0
 
         :param max_thrust: thrust when thrust rate = 1.0
@@ -324,12 +324,31 @@ def test_deceleration_not_enough_thrust(polar):
     assert_allclose(last_point.ground_distance, 62804.0, rtol=1e-3)
 
 
+def test_cruise_at_constant_altitude(polar):
+    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    segment = CruiseSegment(FlightPoint(ground_distance=5.0e5), propulsion, 120.0, polar)
+    flight_points = segment.compute(FlightPoint(mass=70000.0, altitude=10000.0, mach=0.78))
+
+    print_dataframe(flight_points)
+
+    first_point = flight_points.iloc[0]
+    last_point = FlightPoint(flight_points.iloc[-1])
+    # Note: reference values are obtained by running the process with 0.05s as time step
+    assert_allclose(first_point.altitude, 10000.0)
+    assert_allclose(first_point.true_airspeed, 233.6, atol=0.1)
+
+    assert_allclose(last_point.ground_distance, 500000.0)
+    assert_allclose(last_point.altitude, 10000.0)
+    assert_allclose(last_point.time, 2141.0, rtol=1e-2)
+    assert_allclose(last_point.true_airspeed, 233.6, atol=0.1)
+    assert_allclose(last_point.mass, 69568.0, rtol=1e-4)
+
+
 def test_optimal_cruise(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    segment = OptimalCruiseSegment(
-        FlightPoint(ground_distance=5.0e5), propulsion, 120.0, polar, time_step=60.0,
-    )
+    segment = OptimalCruiseSegment(FlightPoint(ground_distance=5.0e5), propulsion, 120.0, polar,)
     flight_points = segment.compute(
         FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78),
     )
@@ -341,12 +360,12 @@ def test_optimal_cruise(polar):
     assert_allclose(first_point.true_airspeed, 236.4, atol=0.1)
     assert_allclose(first_point.CL, polar.optimal_cl)
 
+    assert_allclose(last_point.ground_distance, 600000.0)
     assert_allclose(last_point.CL, polar.optimal_cl)
     assert_allclose(last_point.altitude, 9196.0, atol=1.0)
     assert_allclose(last_point.time, 3115.0, rtol=1e-2)
     assert_allclose(last_point.true_airspeed, 236.3, atol=0.1)
     assert_allclose(last_point.mass, 69577.0, rtol=1e-4)
-    assert_allclose(last_point.ground_distance, 600000.0)
 
 
 def test_taxi():
