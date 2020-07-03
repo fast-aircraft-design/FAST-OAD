@@ -14,6 +14,8 @@
 
 import numpy as np
 
+from .exceptions import FastFlightPointUnexpectedKeywordArgument
+
 
 class FlightPoint(dict):
     """
@@ -85,7 +87,9 @@ class FlightPoint(dict):
         super().__init__(*args, **kwargs)
         for key in self:
             if key not in self.labels:
-                raise KeyError('"%s" is not a valid key for FlightPoint constructor.' % key)
+                raise FastFlightPointUnexpectedKeywordArgument(
+                    '"%s" is not a valid key for FlightPoint constructor.' % key
+                )
 
         # When going from FlightPoint to DataFrame, None values become NaN.
         # But in the other side, NaN values will stay NaN, so, if some fields are

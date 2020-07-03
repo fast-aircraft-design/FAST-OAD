@@ -17,7 +17,6 @@ from typing import Dict, List
 
 import pandas as pd
 from fastoad.constants import FlightPhase, EngineSetting
-from fastoad.models.performances.mission.segments.base import AbstractSegment
 from fastoad.models.propulsion import IPropulsion
 from scipy.constants import foot, knot
 from scipy.optimize import root_scalar
@@ -25,6 +24,7 @@ from scipy.optimize import root_scalar
 from .flight_point import FlightPoint
 from .polar import Polar
 from .segments.altitude_change import AltitudeChangeSegment
+from .segments.base import AbstractSegment
 from .segments.cruise import OptimalCruiseSegment
 from .segments.speed_change import SpeedChangeSegment
 
