@@ -13,9 +13,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
 from fastoad.models.options import PAYLOAD_FROM_NPAX
-from fastoad.models.weight.mass_breakdown.a_airframe import (
+
+from .a_airframe import (
     WingWeight,
     FuselageWeight,
     EmpennageWeight,
@@ -24,12 +24,12 @@ from fastoad.models.weight.mass_breakdown.a_airframe import (
     PylonsWeight,
     PaintWeight,
 )
-from fastoad.models.weight.mass_breakdown.b_propulsion import (
+from .b_propulsion import (
     EngineWeight,
     FuelLinesWeight,
     UnconsumablesWeight,
 )
-from fastoad.models.weight.mass_breakdown.c_systems import (
+from .c_systems import (
     PowerSystemsWeight,
     LifeSupportSystemsWeight,
     NavigationSystemsWeight,
@@ -37,16 +37,33 @@ from fastoad.models.weight.mass_breakdown.c_systems import (
     FixedOperationalSystemsWeight,
     FlightKitWeight,
 )
-from fastoad.models.weight.mass_breakdown.cs25 import Loads
-from fastoad.models.weight.mass_breakdown.d_furniture import (
+from .cs25 import Loads
+from .d_furniture import (
     PassengerSeatsWeight,
     FoodWaterWeight,
     SecurityKitWeight,
     ToiletsWeight,
 )
-from fastoad.models.weight.mass_breakdown.e_crew import CrewWeight
-from fastoad.models.weight.mass_breakdown.payload import ComputePayload
-from fastoad.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
+from .e_crew import CrewWeight
+from .payload import ComputePayload
+from .update_mlw_and_mzfw import UpdateMLWandMZFW
+
+
+class MTOWComputation(om.AddSubtractComp):
+    """
+    Computes MTOW from OWE, design payload and consumed fuel in sizing mission.
+    """
+
+    def setup(self):
+        self.add_equation(
+            "data:weight:aircraft:MTOW",
+            [
+                "data:weight:aircraft:OWE",
+                "data:weight:aircraft:payload",
+                "data:mission:sizing:fuel",
+            ],
+            units="kg",
+        )
 
 
 class MassBreakdown(om.Group):
@@ -58,8 +75,6 @@ class MassBreakdown(om.Group):
     MTOW (Max TakeOff Weight), which depend on OWE.
 
     This model cycles for having consistent OWE, MZFW and MLW.
-    Consistency with MTOW can be achieved by cycling with a model that computes MTOW from OWE,
-    which should come from a mission computation that will assess needed block fuel.
 
     Options:
     - payload_from_npax: If True (default), payload masses will be computed from NPAX, if False

@@ -300,7 +300,7 @@ data:weight:aircraft:MLW	maximum landing weight
 data:weight:aircraft:MTOW	maximum takeoff weight
 data:weight:aircraft:MZFW	maximum zero fuel weight
 data:weight:aircraft:OWE	operating weight - empty
-data:weight:aircraft:payload	payload weight
+data:weight:aircraft:payload	design payload weight
 data:weight:airframe:CG:x	airframe (A): X-position of center of gravity
 data:weight:airframe:flight_controls:CG:x	flight controls (A4): X-position of center of gravity
 data:weight:airframe:flight_controls:mass	flight controls (A4): total mass

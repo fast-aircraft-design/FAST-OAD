@@ -21,8 +21,9 @@ from fastoad.models.geometry import Geometry
 from fastoad.models.handling_qualities.compute_static_margin import ComputeStaticMargin
 from fastoad.models.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from fastoad.models.loops.compute_wing_area import ComputeWingArea
-from fastoad.models.performances import BreguetFromOWE
+from fastoad.models.performances import Breguet
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
+from fastoad.models.weight.mass_breakdown.mass_breakdown import MTOWComputation
 from fastoad.models.weight.weight import Weight
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.module_management.constants import ModelDomain
@@ -67,13 +68,17 @@ def register_openmdao_systems():
         ComputeWingArea, "fastoad.loop.wing_area", domain=ModelDomain.OTHER
     )
 
+    OpenMDAOSystemRegistry.register_system(
+        MTOWComputation, "fastoad.loop.mtow", domain=ModelDomain.WEIGHT
+    )
+
     # Weight ######################################################################
     OpenMDAOSystemRegistry.register_system(
         Weight, "fastoad.weight.legacy", domain=ModelDomain.WEIGHT
     )
     # Performance #################################################################
     OpenMDAOSystemRegistry.register_system(
-        BreguetFromOWE, "fastoad.performances.breguet", domain=ModelDomain.PERFORMANCE
+        Breguet, "fastoad.performances.breguet", domain=ModelDomain.PERFORMANCE
     )
 
     # Propulsion ##################################################################

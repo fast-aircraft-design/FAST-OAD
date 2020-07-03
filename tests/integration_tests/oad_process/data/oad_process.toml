@@ -14,6 +14,8 @@ output_file = "../results/oad_process_outputs.xml"
         id = "fastoad.geometry.legacy"
     [model.weight]
         id = "fastoad.weight.legacy"
+    [model.mtow]
+        id = "fastoad.loop.mtow"
     [model.aerodynamics]
         id = "fastoad.aerodynamics.highspeed.legacy"
     [model.aerodynamics_landing]
@@ -27,5 +29,5 @@ output_file = "../results/oad_process_outputs.xml"
         id = "fastoad.handling_qualities.tail_sizing"
     [model.hq.static_margin]
         id = "fastoad.handling_qualities.static_margin"
-    [model.loop]
+    [model.wing_area]
         id = "fastoad.loop.wing_area"

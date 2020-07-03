@@ -23,6 +23,8 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
         id = "fastoad.geometry.legacy"
     [model.weight]
         id = "fastoad.weight.legacy"
+    [model.mtow]
+        id = "fastoad.loop.mtow"
     [model.aerodynamics.highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
     [model.aerodynamics.landing]
@@ -36,7 +38,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
         id = "fastoad.handling_qualities.tail_sizing"
     [model.hq.static_margin]
         id = "fastoad.handling_qualities.static_margin"
-    [model.loop]
+    [model.wing_area]
         id = "fastoad.loop.wing_area"
 
 [optimization]  # This section is needed only if optimization process is run
