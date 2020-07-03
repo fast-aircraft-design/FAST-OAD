@@ -60,14 +60,15 @@ class FlightPoint(dict):
     labels = [
         "time",  # in seconds
         "altitude",  # in meters
+        "ground_distance",  # in m.
+        "mass",  # in kg
         "true_airspeed",  # in m/s
         "equivalent_airspeed",  # in m/s
-        "mass",  # in kg
-        "ground_distance",  # in m.
+        "mach",
+        "engine_setting",  # EngineSetting value
         "CL",
         "CD",
-        "engine_setting",  # EngineSetting value
-        "mach",
+        "drag",  # in Newtons
         "thrust",  # in Newtons
         "thrust_rate",
         "sfc",  # in kg/N/s
