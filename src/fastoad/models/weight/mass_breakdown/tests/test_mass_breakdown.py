@@ -591,7 +591,7 @@ def test_evaluate_oew():
     reader.path_separator = ":"
     input_vars = reader.read().to_ivc()
 
-    mass_computation = run_system(OperatingWeightEmpty(), input_vars, setup_mode="fwd")
+    mass_computation = run_system(OperatingWeightEmpty(), input_vars)
 
     oew = mass_computation["data:weight:aircraft:OWE"]
     assert oew == pytest.approx(41591, abs=1)
@@ -599,7 +599,7 @@ def test_evaluate_oew():
 
 def test_loop_compute_oew():
     """
-    Tests a weight computation loop using matching the max payload criterion.
+    Tests a weight computation loop matching the max payload criterion.
     """
     # With payload from npax
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
