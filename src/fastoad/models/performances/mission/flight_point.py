@@ -76,6 +76,7 @@ class FlightPoint(dict):
         "sfc",  # in kg/N/s
         "slope_angle",  # in radians
         "acceleration",  # in m/s**2
+        "tag",
     ]
 
     def __init__(self, *args, **kwargs):
