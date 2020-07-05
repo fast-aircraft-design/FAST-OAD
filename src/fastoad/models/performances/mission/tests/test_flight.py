@@ -105,8 +105,9 @@ def test_flight(low_speed_polar, high_speed_polar, cleanup):
 
     flight_calculator = StandardFlight(
         propulsion=propulsion,
-        reference_surface=120.0,
-        low_speed_polar=low_speed_polar,
+        reference_area=120.0,
+        low_speed_climb_polar=low_speed_polar,
+        low_speed_descent_polar=low_speed_polar,
         high_speed_polar=high_speed_polar,
         cruise_mach=0.78,
         thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.3},
@@ -117,8 +118,24 @@ def test_flight(low_speed_polar, high_speed_polar, cleanup):
     flight_points = flight_calculator.compute(
         FlightPoint(true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0),
     )
-
+    print_dataframe(flight_points)
     plot_flight(flight_points, "test_flight.png")
+
+    end_of_initial_climb = FlightPoint(
+        flight_points.loc[flight_points.tag == "End of initial climb"].iloc[0]
+    )
+    end_of_climb = FlightPoint(flight_points.loc[flight_points.tag == "End of climb"].iloc[0])
+    end_of_cruise = FlightPoint(flight_points.loc[flight_points.tag == "End of cruise"].iloc[0])
+    end_of_descent = FlightPoint(flight_points.loc[flight_points.tag == "End of descent"].iloc[0])
+
+    assert_allclose(end_of_initial_climb.altitude, 1500 * foot)
+    assert_allclose(end_of_initial_climb.equivalent_airspeed, 250 * knot)
+    assert_allclose(end_of_climb.mach, 0.78)
+    assert end_of_climb.equivalent_airspeed <= 300 * knot
+    assert_allclose(end_of_cruise.ground_distance - end_of_climb.ground_distance, 4.0e6)
+    assert_allclose(end_of_cruise.mach, 0.78)
+    assert_allclose(end_of_descent.altitude, 1500 * foot)
+    assert_allclose(end_of_descent.equivalent_airspeed, 250 * knot)
 
 
 def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
@@ -129,8 +146,9 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     flight_calculator = RangedFlight(
         StandardFlight(
             propulsion=propulsion,
-            reference_surface=120.0,
-            low_speed_polar=low_speed_polar,
+            reference_area=120.0,
+            low_speed_climb_polar=low_speed_polar,
+            low_speed_descent_polar=low_speed_polar,
             high_speed_polar=high_speed_polar,
             cruise_mach=0.78,
             thrust_rates={
