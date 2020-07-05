@@ -37,8 +37,9 @@ class AbstractFlight(ABC):
     def __init__(
         self,
         propulsion: IPropulsion,
-        reference_surface: float,
-        low_speed_polar: Polar,
+        reference_area: float,
+        low_speed_climb_polar: Polar,
+        low_speed_descent_polar: Polar,
         high_speed_polar: Polar,
         cruise_mach: float,
         thrust_rates: Dict[FlightPhase, float],
@@ -48,7 +49,7 @@ class AbstractFlight(ABC):
         """
 
         :param propulsion:
-        :param reference_surface:
+        :param reference_area:
         :param low_speed_polar:
         :param high_speed_polar:
         :param cruise_mach:
@@ -57,8 +58,9 @@ class AbstractFlight(ABC):
         :param time_step: if provided, this time step will be applied for all segments.
         """
 
-        self.segment_low_speed_args = propulsion, reference_surface, low_speed_polar
-        self.segment_high_speed_args = propulsion, reference_surface, high_speed_polar
+        self.segment_low_speed_climb_args = propulsion, reference_area, low_speed_climb_polar
+        self.segment_low_speed_descent_args = propulsion, reference_area, low_speed_descent_polar
+        self.segment_high_speed_args = propulsion, reference_area, high_speed_polar
         self.cruise_mach = cruise_mach
         self.thrust_rates = thrust_rates
         self.cruise_distance = cruise_distance
@@ -75,10 +77,12 @@ class AbstractFlight(ABC):
         flight_sequence = self.get_flight_sequence()
         segments = [pd.DataFrame([start])]
         for segment_calculator in flight_sequence:
-            segment_start = FlightPoint(segments[-1].iloc[-1])
+            previous_segment = segments[-1]
             if isinstance(segment_calculator, str):
-                segment_start.tag = segment_calculator
+                previous_segment["tag"] = ""
+                previous_segment["tag"].iloc[-1] = segment_calculator
             else:
+                segment_start = FlightPoint(previous_segment.iloc[-1])
                 flight_points = segment_calculator.compute(segment_start)
                 if len(flight_points) > 1:
                     segments.append(flight_points.iloc[1:])
@@ -108,21 +112,21 @@ class StandardFlight(AbstractFlight):
             # Initial climb ====================================================
             AltitudeChangeSegment(
                 FlightPoint(true_airspeed="constant", altitude=400.0 * foot),
-                *self.segment_low_speed_args,
+                *self.segment_low_speed_climb_args,
                 thrust_rate=1.0,
                 engine_setting=EngineSetting.TAKEOFF,
                 time_step=self.time_step,
             ),
             SpeedChangeSegment(
                 FlightPoint(equivalent_airspeed=250.0 * knot),
-                *self.segment_low_speed_args,
+                *self.segment_low_speed_climb_args,
                 thrust_rate=1.0,
                 engine_setting=EngineSetting.TAKEOFF,
                 time_step=self.time_step,
             ),
             AltitudeChangeSegment(
                 FlightPoint(equivalent_airspeed="constant", altitude=1500.0 * foot),
-                *self.segment_low_speed_args,
+                *self.segment_low_speed_climb_args,
                 thrust_rate=1.0,
                 engine_setting=EngineSetting.TAKEOFF,
                 time_step=self.time_step,
@@ -186,7 +190,7 @@ class StandardFlight(AbstractFlight):
             ),
             AltitudeChangeSegment(
                 FlightPoint(altitude=1500.0 * foot, equivalent_airspeed="constant"),
-                *self.segment_low_speed_args,
+                *self.segment_low_speed_descent_args,
                 thrust_rate=self.thrust_rates[FlightPhase.DESCENT],
                 engine_setting=EngineSetting.IDLE,
                 time_step=self.time_step,

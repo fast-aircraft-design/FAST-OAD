@@ -69,18 +69,18 @@ class AbstractSegment(ABC):
         self,
         target: FlightPoint,
         propulsion: IPropulsion,
-        reference_surface: float,
+        reference_area: float,
         polar: Polar,
         **kwargs
     ):
         """
         :param target: the target flight point, defined for any relevant parameter
         :param propulsion: the propulsion model
-        :param reference_surface: the reference surface for aerodynamic forces
+        :param reference_area: the reference area for aerodynamic forces
         :param polar: the aerodynamic polar
         """
         self.propulsion = propulsion
-        self.reference_surface = reference_surface
+        self.reference_area = reference_area
         self.polar = polar
         self.target = FlightPoint(target)
 
@@ -268,9 +268,7 @@ class AbstractSegment(ABC):
             self._complete_speed_values(flight_point)
 
         atm = AtmosphereSI(flight_point.altitude)
-        reference_force = (
-            0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_surface
-        )
+        reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
 
         if self.polar:
             flight_point.CL = flight_point.mass * g / reference_force
@@ -335,10 +333,7 @@ class AbstractSegment(ABC):
             atm = AtmosphereSI(altitude)
             true_airspeed = mach * atm.speed_of_sound
             optimal_air_density = (
-                2.0
-                * mass
-                * g
-                / (self.reference_surface * true_airspeed ** 2 * self.polar.optimal_cl)
+                2.0 * mass * g / (self.reference_area * true_airspeed ** 2 * self.polar.optimal_cl)
             )
             return (atm.density - optimal_air_density) * 100.0
 
