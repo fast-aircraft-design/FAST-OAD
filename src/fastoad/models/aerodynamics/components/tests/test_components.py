@@ -59,17 +59,24 @@ def test_high_lift_aero():
         if landing_flag:
             ivc.add_output("data:mission:sizing:landing:slat_angle", slat_angle, units="deg")
             ivc.add_output("data:mission:sizing:landing:flap_angle", flap_angle, units="deg")
+            ivc.add_output("data:aerodynamics:aircraft:landing:mach", mach)
         else:
             ivc.add_output("data:mission:sizing:takeoff:slat_angle", slat_angle, units="deg")
             ivc.add_output("data:mission:sizing:takeoff:flap_angle", flap_angle, units="deg")
-        ivc.add_output("data:aerodynamics:aircraft:landing:mach", mach)
+            ivc.add_output("data:aerodynamics:aircraft:takeoff:mach", mach)
         component = ComputeDeltaHighLift()
         component.options["landing_flag"] = landing_flag
         problem = run_system(component, ivc)
         if landing_flag:
-            return problem["data:aerodynamics:high_lift_devices:landing:CL"]
+            return (
+                problem["data:aerodynamics:high_lift_devices:landing:CL"],
+                problem["data:aerodynamics:high_lift_devices:landing:CD"],
+            )
 
-        return problem["delta_cl_takeoff"], problem["delta_cd_takeoff"]
+        return (
+            problem["data:aerodynamics:high_lift_devices:takeoff:CL"],
+            problem["data:aerodynamics:high_lift_devices:takeoff:CD"],
+        )
 
     cl, cd = get_cl_cd(18, 10, 0.2, False)
     assert cl == approx(0.516, abs=1e-3)
@@ -79,8 +86,9 @@ def test_high_lift_aero():
     assert cl == approx(1.431, abs=1e-3)
     assert cd == approx(0.04644, abs=1e-5)
 
-    cl = get_cl_cd(22, 20, 0.2, True)[0]
+    cl, cd = get_cl_cd(22, 20, 0.2, True)
     assert cl == approx(0.935, abs=1e-3)
+    assert cd == approx(0.02220, abs=1e-5)
 
 
 def test_oswald():

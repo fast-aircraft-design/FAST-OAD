@@ -17,6 +17,7 @@ available through OpenMDAOSystemRegistry
 
 from fastoad.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastoad.models.aerodynamics.aerodynamics_landing import AerodynamicsLanding
+from fastoad.models.aerodynamics.aerodynamics_takeoff import AerodynamicsTakeoff
 from fastoad.models.geometry import Geometry
 from fastoad.models.handling_qualities.compute_static_margin import ComputeStaticMargin
 from fastoad.models.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
@@ -37,6 +38,9 @@ def register_openmdao_systems():
     is a started bundle for iPOPO
     """
     # Aerodynamics ################################################################
+    OpenMDAOSystemRegistry.register_system(
+        AerodynamicsTakeoff, "fastoad.aerodynamics.takeoff.legacy", domain=ModelDomain.AERODYNAMICS
+    )
     OpenMDAOSystemRegistry.register_system(
         AerodynamicsLanding, "fastoad.aerodynamics.landing.legacy", domain=ModelDomain.AERODYNAMICS
     )
