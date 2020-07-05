@@ -143,7 +143,7 @@ class AbstractSegment(ABC):
         if start.ground_distance is None:
             start.ground_distance = 0.0
 
-        self._complete_flight_point(start)
+        self.complete_flight_point(start)
 
         flight_points = [start]
 
@@ -212,11 +212,11 @@ class AbstractSegment(ABC):
         :param flight_points: list of previous flight points, modified in place.
         :param time_step: time step for new computed flight point.
         """
-        new_point = self._compute_next_flight_point(flight_points, time_step)
-        self._complete_flight_point(new_point)
+        new_point = self.compute_next_flight_point(flight_points, time_step)
+        self.complete_flight_point(new_point)
         flight_points.append(new_point)
 
-    def _compute_next_flight_point(
+    def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
     ) -> FlightPoint:
         """
@@ -249,7 +249,7 @@ class AbstractSegment(ABC):
 
         return next_point
 
-    def _complete_flight_point(self, flight_point: FlightPoint):
+    def complete_flight_point(self, flight_point: FlightPoint):
         """
         Computes data for provided flight point.
 
