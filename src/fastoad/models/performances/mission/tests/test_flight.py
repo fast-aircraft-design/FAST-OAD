@@ -1,3 +1,12 @@
+"""
+Tests module for flight.py
+
+These tests use the segment classes and the RubberEngine model, so they are
+more integration tests than unit tests.
+Therefore, obtained numerical results depend mainly on other classes, so this is
+why almost no numerical check is done here(such checks will be done in the
+non-regression tests).
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -25,6 +34,7 @@ from fastoad.models.performances.mission.flight_point import FlightPoint
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.propulsion import EngineSet
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
+from numpy.testing import assert_allclose
 from scipy.constants import knot, foot
 
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -140,9 +150,12 @@ def test_flight(low_speed_polar, high_speed_polar, cleanup):
 
 def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
 
+    # Not really good to use the RubberEngine model in this test, but I
+    # could not have a meaningful flight with a dummy engine model...
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
     propulsion = EngineSet(engine, 2)
 
+    total_distance = 2.0e6
     flight_calculator = RangedFlight(
         StandardFlight(
             propulsion=propulsion,
@@ -157,7 +170,7 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
                 FlightPhase.DESCENT: 0.3,
             },
         ),
-        flight_distance=2.0e6,
+        flight_distance=total_distance,
     )
 
     flight_points = flight_calculator.compute(
@@ -165,3 +178,9 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     )
 
     plot_flight(flight_points, "test_ranged_flight.png")
+
+    assert_allclose(
+        flight_points.iloc[-1].ground_distance,
+        total_distance,
+        atol=flight_calculator.distance_accuracy,
+    )

@@ -75,6 +75,10 @@ class AbstractFlight(ABC):
         :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
         """
         flight_sequence = self.get_flight_sequence()
+
+        # Complete start flight point using first defined flight segment
+        flight_sequence[0].complete_flight_point(start)
+
         segments = [pd.DataFrame([start])]
         for segment_calculator in flight_sequence:
             previous_segment = segments[-1]
@@ -93,6 +97,12 @@ class AbstractFlight(ABC):
     def get_flight_sequence(self) -> List[AbstractSegment]:
         """
         Defines the mission before calling :meth:`compute`
+
+        It returns a list of AbstractSegment instances and strings. Any string
+        is used as a tag for the last point of previous calculated segment.
+
+        A string should not be put as the first element of the list, or behind
+        another string element.
 
         :return: the list of flight segments for the mission.
         """
@@ -216,6 +226,7 @@ class RangedFlight:
         self.flight_distance = flight_distance
         self.flight = flight_definition
         self.flight_points = None
+        self.distance_accuracy = 0.5e3
 
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         def compute_flight(cruise_distance):
