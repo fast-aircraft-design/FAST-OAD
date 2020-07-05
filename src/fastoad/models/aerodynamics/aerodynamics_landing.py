@@ -16,18 +16,21 @@ Aero computation for landing phase
 
 import numpy as np
 import openmdao.api as om
-
-from fastoad.models.aerodynamics.components.compute_max_cl_landing import ComputeMaxClLanding
-from fastoad.models.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
-from fastoad.models.aerodynamics.external.xfoil import XfoilPolar
-from fastoad.models.aerodynamics.external.xfoil.xfoil_polar import OPTION_XFOIL_EXE_PATH
 from fastoad.models.options import OpenMdaoOptionDispatcherGroup
 from fastoad.utils.physics import Atmosphere
+
+from .components.compute_max_cl_landing import ComputeMaxClLanding
+from .components.high_lift_aero import ComputeDeltaHighLift
+from .external.xfoil import XfoilPolar
+from .external.xfoil.xfoil_polar import OPTION_XFOIL_EXE_PATH
 
 
 class AerodynamicsLanding(OpenMdaoOptionDispatcherGroup):
     """
-    Computes maximum CL of the aircraft in landing conditions.
+    Computes aerodynamic characteristics at landing.
+
+    - Computes CL and CD increments due to high-lift devices at landing.
+    - Computes maximum CL of the aircraft in landing conditions.
 
     Maximum 2D CL without high-lift is computed using XFoil (or provided as input if option
     use_xfoil is set to False). 3D CL is deduced using sweep angle.

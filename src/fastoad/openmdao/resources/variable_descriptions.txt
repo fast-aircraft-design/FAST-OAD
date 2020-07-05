@@ -20,6 +20,9 @@ data:aerodynamics:cruise:neutral_point:x	X-position of neutral point  - X-positi
 data:aerodynamics:fuselage:cruise:CD0	profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL
 data:aerodynamics:fuselage:cruise:CnBeta	derivative of yawing moment against sideslip angle for fuselage in cruise conditions
 data:aerodynamics:high_lift_devices:landing:CL	increment of CL due to high-lift devices for landing phase
+data:aerodynamics:high_lift_devices:landing:CD	increment of CD due to high-lift devices for landing phase
+data:aerodynamics:high_lift_devices:takeoff:CL	increment of CL due to high-lift devices for takeoff phase
+data:aerodynamics:high_lift_devices:takeoff:CD	increment of CD due to high-lift devices for takeoff phase
 data:aerodynamics:horizontal_tail:cruise:CD0	profile drag coefficient for horizontal tail
 data:aerodynamics:horizontal_tail:cruise:CL_alpha	derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions
 data:aerodynamics:nacelles:cruise:CD0	profile drag coefficient for nacelles
