@@ -64,14 +64,6 @@ class AbstractFlight(ABC):
         self.cruise_distance = cruise_distance
         self.time_step = time_step
 
-    @abstractmethod
-    def get_flight_sequence(self) -> List[AbstractSegment]:
-        """
-        Defines the mission before calling :meth:`compute`
-
-        :return: the list of flight segments for the mission.
-        """
-
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         """
         Computes the flight mission from provided start point.
@@ -84,11 +76,22 @@ class AbstractFlight(ABC):
         segments = [pd.DataFrame([start])]
         for segment_calculator in flight_sequence:
             segment_start = FlightPoint(segments[-1].iloc[-1])
-            flight_points = segment_calculator.compute(segment_start)
-            if len(flight_points) > 1:
-                segments.append(flight_points.iloc[1:])
+            if isinstance(segment_calculator, str):
+                segment_start.tag = segment_calculator
+            else:
+                flight_points = segment_calculator.compute(segment_start)
+                if len(flight_points) > 1:
+                    segments.append(flight_points.iloc[1:])
 
         return pd.concat(segments)
+
+    @abstractmethod
+    def get_flight_sequence(self) -> List[AbstractSegment]:
+        """
+        Defines the mission before calling :meth:`compute`
+
+        :return: the list of flight segments for the mission.
+        """
 
 
 class StandardFlight(AbstractFlight):
@@ -124,6 +127,7 @@ class StandardFlight(AbstractFlight):
                 engine_setting=EngineSetting.TAKEOFF,
                 time_step=self.time_step,
             ),
+            "End of initial climb",
             # Climb ============================================================
             AltitudeChangeSegment(
                 FlightPoint(equivalent_airspeed="constant", altitude=10000.0 * foot),
@@ -149,6 +153,7 @@ class StandardFlight(AbstractFlight):
                 engine_setting=EngineSetting.CLIMB,
                 time_step=self.time_step,
             ),
+            "End of climb",
             # Cruise ===========================================================
             OptimalCruiseSegment(
                 FlightPoint(ground_distance=self.cruise_distance),
@@ -156,6 +161,7 @@ class StandardFlight(AbstractFlight):
                 engine_setting=EngineSetting.CRUISE,
                 time_step=self.time_step,
             ),
+            "End of cruise",
             # Descent ==========================================================
             AltitudeChangeSegment(
                 FlightPoint(equivalent_airspeed=300.0 * knot, mach="constant"),
@@ -185,6 +191,7 @@ class StandardFlight(AbstractFlight):
                 engine_setting=EngineSetting.IDLE,
                 time_step=self.time_step,
             ),
+            "End of descent",
         ]
 
 
