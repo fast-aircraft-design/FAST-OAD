@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 0.4.0-beta
+==================
+
+Some changes in mass and performances components:
+    - The Breguet performance model can now be adjusted through input variables
+      in the "settings" section.
+    - The mass-performance loop is now done through the "fastoad.loop.mtow"
+      component.
+
 Version 0.3.1-beta
 ==================
 
