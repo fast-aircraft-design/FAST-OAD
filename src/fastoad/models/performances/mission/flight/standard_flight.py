@@ -34,10 +34,6 @@ class InitialClimbPhase(AbstractManualThrustFlightPhase):
 
     @property
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:
-        """
-
-        :return: the list of flight segments for the mission.
-        """
         self.segment_kwargs["engine_setting"] = EngineSetting.CLIMB
         return [
             AltitudeChangeSegment(
@@ -69,10 +65,6 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
 
     @property
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:
-        """
-
-        :return: the list of flight segments for the mission.
-        """
         self.segment_kwargs["engine_setting"] = EngineSetting.CLIMB
         last_climb = AltitudeChangeSegment(
             FlightPoint(
@@ -102,10 +94,6 @@ class DescentPhase(AbstractManualThrustFlightPhase):
 
     @property
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:
-        """
-
-        :return: the list of flight segments for the mission.
-        """
         self.segment_kwargs["engine_setting"] = EngineSetting.IDLE
         return [
             AltitudeChangeSegment(

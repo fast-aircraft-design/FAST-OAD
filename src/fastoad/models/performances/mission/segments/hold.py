@@ -1,4 +1,4 @@
-"""Classes for Taxi sequences."""
+"""Class for simulating hold segment."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,25 +12,31 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List, Tuple
+from typing import Tuple, List
 
 import pandas as pd
 
-from .base import ManualThrustSegment
+from .base import RegulatedThrustSegment
 from ..flight_point import FlightPoint
 
 
-class TaxiSegment(ManualThrustSegment):
+class HoldSegment(RegulatedThrustSegment):
     """
-    Class for computing Taxi phases.
+    Class for computing hold flight segment.
 
-    Taxi phase has a target duration (target.time should be provided) and is at
-    constant altitude, speed and thrust rate.
+    Mach is considered constant, equal to Mach at starting point.
+    Altitude is constant.
+    Target is a specified time. The target definition indicates
+    the time duration of the segment, independently of the initial time value.
     """
+
+    def __init__(self, *args, **kwargs):
+        self._set_attribute_default("time_step", 60.0)
+        super().__init__(*args, **kwargs)
+        self.target.mach = "constant"
 
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
-        self.time_step = self.target.time  # This computation needs only one time step
         if start.time:
             self.target.time = self.target.time + start.time
         return super().compute(start)

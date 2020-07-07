@@ -24,7 +24,11 @@ class CruiseSegment(RegulatedThrustSegment):
     """
     Class for computing cruise flight segment at constant altitude.
 
-    Mach is considered constant, equal to Mach at starting point. Altitude is constant.
+    Mach is considered constant, equal to Mach at starting point.
+    Altitude is constant.
+    Target is a specified ground_distance. The target definition indicates
+    the ground_distance to be covered during the segment, independently of
+    the initial value.
     """
 
     def __init__(self, *args, **kwargs):
