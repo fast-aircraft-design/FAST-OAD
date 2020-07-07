@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from fastoad.constants import EngineSetting
+from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.propulsion import EngineSet, IPropulsion
 from numpy.testing import assert_allclose
 
@@ -380,5 +381,23 @@ def test_taxi():
     assert_allclose(last_point.altitude, 10.0, atol=1.0)
     assert_allclose(last_point.time, 10500.0, rtol=1e-2)
     assert_allclose(last_point.true_airspeed, 10.0, atol=0.1)
-    assert_allclose(last_point.mass, 49972.5, rtol=1e-4)
+    assert_allclose(last_point.mass, 49973.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 5000.0)
+
+
+def test_hold(polar):
+    propulsion = EngineSet(DummyEngine(0.5e5, 2.0e-5), 2)
+
+    segment = HoldSegment(FlightPoint(time=3000.0), propulsion, 120.0, polar)
+    flight_points = segment.compute(
+        FlightPoint(altitude=500.0, equivalent_airspeed=250.0, mass=60000.0),
+    )
+
+    print_dataframe(flight_points)
+
+    last_point = FlightPoint(flight_points.iloc[-1])
+    assert_allclose(last_point.time, 3000.0)
+    assert_allclose(last_point.altitude, 500.0)
+    assert_allclose(last_point.equivalent_airspeed, 250.0, atol=0.1)
+    assert_allclose(last_point.mass, 57776.0, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 768323.0, rtol=1.0e-3)

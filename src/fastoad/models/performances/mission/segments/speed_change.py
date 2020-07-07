@@ -24,6 +24,9 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 class SpeedChangeSegment(ManualThrustSegment):
     """
     Computes a flight path segment where speed is modified with no change in altitude.
+
+    The target must define a speed value among true_airspeed, equivalent_airspeed
+    and mach.
     """
 
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
