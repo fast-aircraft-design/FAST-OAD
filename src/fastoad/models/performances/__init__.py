@@ -14,5 +14,4 @@ Package for performance modules
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .breguet import BreguetFromMTOW
-from .breguet import BreguetFromOWE
+from .breguet import Breguet

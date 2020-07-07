@@ -25,7 +25,7 @@ RESERVE_MASS_RATIO = 0.06  # = (weight of fuel reserve)/ZFW
 CLIMB_DESCENT_DISTANCE = 500  # in km, distance of climb + descent
 
 
-class BreguetFromMTOW(om.Group):
+class Breguet(om.Group):
     """
     Estimation of fuel consumption through Breguet formula.
 
@@ -55,36 +55,6 @@ class BreguetFromMTOW(om.Group):
         self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
         self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
         self.add_subsystem("consumption", _Consumption(), promotes=["*"])
-
-
-class BreguetFromOWE(BreguetFromMTOW):
-    """
-    Estimation of fuel consumption through Breguet formula.
-
-    It uses a rough estimate of climb and descent phases.
-
-    For the sizing mission, the Breguet formula links MTOW (Max TakeOff Weight) to
-    ZFW (Zero Fuel Weight).
-    OWE (Operating Weight Empty) being linked to ZFW and MTOW, a cycle is implemented
-    to have consistency between these 3 values.
-
-    Options:
-      - propulsion_id:
-        - if not provided, the propulsion model is expected to be an outside OpenMDAO
-          component
-        - if provided, the propulsion model matching the provided identifier will be
-          called directly in the performance process
-
-    """
-
-    def setup(self):
-        super().setup()
-        self.add_subsystem("mtow", _MTOWFromOWE(), promotes=["*"])
-
-        self.nonlinear_solver = om.NewtonSolver()
-        self.nonlinear_solver.options["iprint"] = 0
-        self.nonlinear_solver.options["solve_subsystems"] = False
-        self.linear_solver = om.DirectSolver()
 
 
 class _Consumption(om.ExplicitComponent):
@@ -244,43 +214,6 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
             mtow * CLIMB_MASS_RATIO * cruise_mass_ratio * (1.0 - DESCENT_MASS_RATIO)
         )
         outputs["data:mission:sizing:fuel_reserve"] = zfw * RESERVE_MASS_RATIO
-
-
-class _MTOWFromOWE(om.ImplicitComponent):
-    """
-    Estimation of fuel consumption through Breguet formula with a rough estimate
-    of climb and descent phases.
-    """
-
-    def setup(self):
-        self.add_input("data:mission:sizing:cruise:mass_ratio", np.nan)
-        self.add_input("data:TLAR:range", np.nan, units="m")
-        self.add_input("data:weight:aircraft:OWE", np.nan, units="kg")
-        self.add_input("data:weight:aircraft:payload", np.nan, units="kg")
-
-        # The upper bound helps for convergence
-        self.add_output("data:weight:aircraft:MTOW", units="kg", ref=1e5, lower=0.0, upper=1e6)
-
-        self.declare_partials("data:weight:aircraft:MTOW", "*", method="fd")
-
-    def apply_nonlinear(self, inputs, outputs, residuals):
-        owe = inputs["data:weight:aircraft:OWE"]
-        payload_weight = inputs["data:weight:aircraft:payload"]
-        cruise_mass_ratio = inputs["data:mission:sizing:cruise:mass_ratio"]
-
-        mtow = outputs["data:weight:aircraft:MTOW"]
-
-        flight_mass_ratio = cruise_mass_ratio * CLIMB_MASS_RATIO * DESCENT_MASS_RATIO
-        zfw = mtow * flight_mass_ratio / (1.0 + RESERVE_MASS_RATIO)
-        mission_owe = zfw - payload_weight
-
-        residuals["data:weight:aircraft:MTOW"] = owe - mission_owe
-
-    def guess_nonlinear(
-        self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
-    ):
-        # pylint: disable=too-many-arguments # It's OpenMDAO's fault :)
-        outputs["data:weight:aircraft:MTOW"] = inputs["data:weight:aircraft:OWE"] * 1.5
 
 
 class _Distances(om.ExplicitComponent):
