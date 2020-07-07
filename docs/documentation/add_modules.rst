@@ -130,12 +130,16 @@ Once your OpenMDAO system is ready, you have to register it to make it discovera
 class is named `MyOMClass` in `my_module.py`, you can create, in the same folder, the file `register.py` with following
 lines:
 
-  .. code-block:: python
+.. code-block:: python
 
     from my_module import MyOMClass
     from fastoad.module_management import OpenMDAOSystemRegistry
 
     OpenMDAOSystemRegistry.register_system(MyOMClass, "my.custom.name")
+
+
+.. Note::
+
 
 
 

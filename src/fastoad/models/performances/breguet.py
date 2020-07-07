@@ -19,11 +19,6 @@ from fastoad.constants import FlightPhase
 from fastoad.utils.physics import Atmosphere
 from scipy.constants import g
 
-CLIMB_MASS_RATIO = 0.97  # = mass at end of climb / mass at start of climb
-DESCENT_MASS_RATIO = 0.98  # = mass at end of descent / mass at start of descent
-RESERVE_MASS_RATIO = 0.06  # = (weight of fuel reserve)/ZFW
-CLIMB_DESCENT_DISTANCE = 500  # in km, distance of climb + descent
-
 
 class Breguet(om.Group):
     """
@@ -96,6 +91,7 @@ class _BreguetEngine(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:aerodynamics:aircraft:cruise:L_D_max", np.nan)
         self.add_input("data:geometry:propulsion:engine:count", 2)
+        self.add_input("settings:mission:sizing:breguet:climb:mass_ratio", 0.97)
 
         self.add_output("data:propulsion:SFC", units="kg/s/N", ref=1e-4)
         self.add_output("data:propulsion:thrust_rate", lower=0.0, upper=1.0)
@@ -108,7 +104,7 @@ class _BreguetEngine(om.ExplicitComponent):
         engine_count = inputs["data:geometry:propulsion:engine:count"]
         ld_ratio = inputs["data:aerodynamics:aircraft:cruise:L_D_max"]
         mtow = inputs["data:weight:aircraft:MTOW"]
-        initial_cruise_mass = mtow * CLIMB_MASS_RATIO
+        initial_cruise_mass = mtow * inputs["settings:mission:sizing:breguet:climb:mass_ratio"]
 
         thrust = initial_cruise_mass / ld_ratio * g / engine_count
         sfc, thrust_rate, _ = self._engine_wrapper.get_model(inputs).compute_flight_points(
@@ -133,6 +129,7 @@ class _BreguetPropulsion(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:aerodynamics:aircraft:cruise:L_D_max", np.nan)
         self.add_input("data:geometry:propulsion:engine:count", 2)
+        self.add_input("settings:mission:sizing:breguet:climb:mass_ratio", 0.97)
 
         self.add_output("data:propulsion:phase", FlightPhase.CRUISE)
         self.add_output("data:propulsion:use_thrust_rate", False)
@@ -152,7 +149,7 @@ class _BreguetPropulsion(om.ExplicitComponent):
         engine_count = inputs["data:geometry:propulsion:engine:count"]
         ld_ratio = inputs["data:aerodynamics:aircraft:cruise:L_D_max"]
         mtow = inputs["data:weight:aircraft:MTOW"]
-        initial_cruise_mass = mtow * CLIMB_MASS_RATIO
+        initial_cruise_mass = mtow * inputs["settings:mission:sizing:breguet:climb:mass_ratio"]
 
         # Variables for propulsion
         outputs["data:propulsion:altitude"] = inputs["data:mission:sizing:cruise:altitude"]
@@ -177,6 +174,9 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:cruise:mass_ratio", np.nan)
         self.add_input("data:mission:sizing:cruise:altitude", np.nan, units="m")
+        self.add_input("settings:mission:sizing:breguet:climb:mass_ratio", 0.97)
+        self.add_input("settings:mission:sizing:breguet:descent:mass_ratio", 0.98)
+        self.add_input("settings:mission:sizing:breguet:reserve:mass_ratio", 0.06)
 
         self.add_output("data:mission:sizing:ZFW", units="kg", ref=1e4)
         self.add_output("data:mission:sizing:fuel", units="kg", ref=1e4)
@@ -186,34 +186,31 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
         self.add_output("data:mission:sizing:descent:fuel", units="kg", ref=1e4)
         self.add_output("data:mission:sizing:fuel_reserve", units="kg", ref=1e4)
 
-        self.declare_partials("data:mission:sizing:ZFW", "*", method="fd")
-        self.declare_partials("data:mission:sizing:fuel", "*", method="fd")
-        self.declare_partials("data:mission:sizing:trip:fuel", "*", method="fd")
-        self.declare_partials("data:mission:sizing:climb:fuel", "*", method="fd")
-        self.declare_partials("data:mission:sizing:cruise:fuel", "*", method="fd")
-        self.declare_partials("data:mission:sizing:descent:fuel", "*", method="fd")
-        self.declare_partials("data:mission:sizing:fuel_reserve", "*", method="fd")
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         cruise_mass_ratio = inputs["data:mission:sizing:cruise:mass_ratio"]
+        climb_mass_ratio = inputs["settings:mission:sizing:breguet:climb:mass_ratio"]
+        descent_mass_ratio = inputs["settings:mission:sizing:breguet:descent:mass_ratio"]
+        reserve_mass_ratio = inputs["settings:mission:sizing:breguet:reserve:mass_ratio"]
 
-        flight_mass_ratio = cruise_mass_ratio * CLIMB_MASS_RATIO * DESCENT_MASS_RATIO
-        zfw = mtow * flight_mass_ratio / (1.0 + RESERVE_MASS_RATIO)
+        flight_mass_ratio = cruise_mass_ratio * climb_mass_ratio * descent_mass_ratio
+        zfw = mtow * flight_mass_ratio / (1.0 + reserve_mass_ratio)
         mission_fuel = mtow - zfw
 
         outputs["data:mission:sizing:ZFW"] = zfw
 
         outputs["data:mission:sizing:fuel"] = mission_fuel
         outputs["data:mission:sizing:trip:fuel"] = mtow * (1.0 - flight_mass_ratio)
-        outputs["data:mission:sizing:climb:fuel"] = mtow * (1.0 - CLIMB_MASS_RATIO)
+        outputs["data:mission:sizing:climb:fuel"] = mtow * (1.0 - climb_mass_ratio)
         outputs["data:mission:sizing:cruise:fuel"] = (
-            mtow * CLIMB_MASS_RATIO * (1.0 - cruise_mass_ratio)
+            mtow * climb_mass_ratio * (1.0 - cruise_mass_ratio)
         )
         outputs["data:mission:sizing:descent:fuel"] = (
-            mtow * CLIMB_MASS_RATIO * cruise_mass_ratio * (1.0 - DESCENT_MASS_RATIO)
+            mtow * climb_mass_ratio * cruise_mass_ratio * (1.0 - descent_mass_ratio)
         )
-        outputs["data:mission:sizing:fuel_reserve"] = zfw * RESERVE_MASS_RATIO
+        outputs["data:mission:sizing:fuel_reserve"] = zfw * reserve_mass_ratio
 
 
 class _Distances(om.ExplicitComponent):
@@ -223,6 +220,7 @@ class _Distances(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:TLAR:range", np.nan, units="m")
+        self.add_input("settings:mission:sizing:breguet:climb_descent_distance", 5.0e5, units="m")
 
         self.add_output("data:mission:sizing:climb:distance", units="m", ref=1e3)
         self.add_output("data:mission:sizing:cruise:distance", units="m", ref=1e3)
@@ -230,12 +228,11 @@ class _Distances(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         flight_range = inputs["data:TLAR:range"]
+        climb_descent_distance = inputs["settings:mission:sizing:breguet:climb_descent_distance"]
 
-        outputs["data:mission:sizing:cruise:distance"] = (
-            flight_range - CLIMB_DESCENT_DISTANCE * 1000.0
-        )
-        outputs["data:mission:sizing:climb:distance"] = CLIMB_DESCENT_DISTANCE * 500.0
-        outputs["data:mission:sizing:descent:distance"] = CLIMB_DESCENT_DISTANCE * 500.0
+        outputs["data:mission:sizing:cruise:distance"] = flight_range - climb_descent_distance
+        outputs["data:mission:sizing:climb:distance"] = climb_descent_distance * 500.0
+        outputs["data:mission:sizing:descent:distance"] = climb_descent_distance * 500.0
 
 
 class _CruiseMassRatio(om.ExplicitComponent):

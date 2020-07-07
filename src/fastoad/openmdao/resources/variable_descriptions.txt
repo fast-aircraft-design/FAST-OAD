@@ -379,6 +379,10 @@ data:weight:systems:power:hydraulic_systems:CG:x	power (C1): X-position of cente
 data:weight:systems:power:hydraulic_systems:mass	power (C1): mass
 data:weight:systems:transmission:CG:x	transmission (C4): X-position of center of gravity
 data:weight:systems:transmission:mass	transmission (C4): mass
+settings:mission:sizing:breguet:climb:mass_ratio	For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)
+settings:mission:sizing:breguet:descent:mass_ratio	For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)
+settings:mission:sizing:breguet:reserve:mass_ratio	For Breguet performance computation: (weight of fuel reserve)/ZFW
+settings:mission:sizing:breguet:climb_descent_distance	For Breguet performance computation: assumption of ground distance covered during climb + descent
 settings:weight:aircraft:CG:range	distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)
 settings:weight:airframe:flight_controls:mass:k_fc	flight controls (A4): 0.85e-4 if electrical, 1.35e-4 if conventional
 settings:weight:airframe:fuselage:mass:k_fus	correction coefficient: 1.00 if all engines under wing / 1.02 with 2 engines at rear / 1.03 if 3 engines at rear / 1.05 if 1 engine in vertical tail (with or without 2 engines under wing)
