@@ -24,6 +24,7 @@ from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
+from ..base import IFlightPart
 from ..exceptions import (
     FastFlightSegmentUnexpectedKeywordArgument,
     FastFlightSegmentIncompleteFlightPoint,
@@ -44,7 +45,7 @@ SEGMENT_KEYWORD_ARGUMENTS = {
 }
 
 
-class AbstractSegment(ABC):
+class AbstractSegment(IFlightPart):
     """
     Base class for flight path segment.
 

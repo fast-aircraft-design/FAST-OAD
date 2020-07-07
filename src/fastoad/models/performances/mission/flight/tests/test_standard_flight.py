@@ -1,10 +1,10 @@
 """
-Tests module for flight.py
+Tests module for standard_flight.py
 
 These tests use the segment classes and the RubberEngine model, so they are
 more integration tests than unit tests.
 Therefore, obtained numerical results depend mainly on other classes, so this is
-why almost no numerical check is done here(such checks will be done in the
+why almost no numerical check is done here (such checks will be done in the
 non-regression tests).
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -29,13 +29,15 @@ import numpy as np
 import pandas as pd
 import pytest
 from fastoad.constants import FlightPhase
-from fastoad.models.performances.mission.flight import StandardFlight, RangedFlight
-from fastoad.models.performances.mission.flight_point import FlightPoint
-from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.propulsion import EngineSet
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 from numpy.testing import assert_allclose
 from scipy.constants import knot, foot
+
+from ..standard_flight import StandardFlight
+from ...flight.base import RangedFlight
+from ...flight_point import FlightPoint
+from ...polar import Polar
 
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 
@@ -117,10 +119,9 @@ def test_flight(low_speed_polar, high_speed_polar, cleanup):
         propulsion=propulsion,
         reference_area=120.0,
         low_speed_climb_polar=low_speed_polar,
-        low_speed_descent_polar=low_speed_polar,
         high_speed_polar=high_speed_polar,
         cruise_mach=0.78,
-        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.3},
+        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.2},
         cruise_distance=4.0e6,
         time_step=None,
     )
@@ -150,24 +151,22 @@ def test_flight(low_speed_polar, high_speed_polar, cleanup):
 
 def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
 
-    # Not really good to use the RubberEngine model in this test, but I
-    # could not have a meaningful flight with a dummy engine model...
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
     propulsion = EngineSet(engine, 2)
 
     total_distance = 2.0e6
     flight_calculator = RangedFlight(
         StandardFlight(
+            0.0,
             propulsion=propulsion,
             reference_area=120.0,
             low_speed_climb_polar=low_speed_polar,
-            low_speed_descent_polar=low_speed_polar,
             high_speed_polar=high_speed_polar,
             cruise_mach=0.78,
             thrust_rates={
                 FlightPhase.TAKEOFF: 1.0,
                 FlightPhase.CLIMB: 0.93,
-                FlightPhase.DESCENT: 0.3,
+                FlightPhase.DESCENT: 0.2,
             },
         ),
         flight_distance=total_distance,
