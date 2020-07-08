@@ -33,13 +33,14 @@ class ComputePolar(ExplicitComponent):
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
-            self.add_input("cl_low_speed", val=nans_array)
-            self.add_input("cd0_total_low_speed", val=nans_array)
-            self.add_input("cd_trim_low_speed", val=nans_array)
-            self.add_input("cd_comp_low_speed", val=nans_array)
-            self.add_input("oswald_coeff_low_speed", val=np.nan)
+            self.add_input("data:aerodynamics:aircraft:low_speed:CL", val=nans_array)
+            self.add_input("data:aerodynamics:aircraft:low_speed:CD0", val=nans_array)
+            self.add_input("data:aerodynamics:aircraft:low_speed:CD:trim", val=nans_array)
+            self.add_input(
+                "data:aerodynamics:aircraft:low_speed:induced_drag_coefficient", val=np.nan
+            )
 
-            self.add_output("aerodynamics:Cd_low_speed", shape=POLAR_POINT_COUNT)
+            self.add_output("data:aerodynamics:aircraft:low_speed:CD", shape=POLAR_POINT_COUNT)
         else:
             self.add_input("data:aerodynamics:aircraft:cruise:CL", val=nans_array)
             self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=nans_array)
@@ -60,11 +61,11 @@ class ComputePolar(ExplicitComponent):
         k_winglet_cd = inputs["tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k"]
         offset_winglet_cd = inputs["tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:offset"]
         if self.low_speed_aero:
-            cl = inputs["cl_low_speed"]
-            cd0 = inputs["cd0_total_low_speed"]
-            cd_trim = inputs["cd_trim_low_speed"]
-            cd_c = inputs["cd_comp_low_speed"]
-            coef_k = inputs["oswald_coeff_low_speed"]
+            cl = inputs["data:aerodynamics:aircraft:low_speed:CL"]
+            cd0 = inputs["data:aerodynamics:aircraft:low_speed:CD0"]
+            cd_trim = inputs["data:aerodynamics:aircraft:low_speed:CD:trim"]
+            cd_c = 0.0
+            coef_k = inputs["data:aerodynamics:aircraft:low_speed:induced_drag_coefficient"]
         else:
             cl = inputs["data:aerodynamics:aircraft:cruise:CL"]
             cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
@@ -77,7 +78,7 @@ class ComputePolar(ExplicitComponent):
         ) * k_cd + offset_cd
 
         if self.low_speed_aero:
-            outputs["aerodynamics:Cd_low_speed"] = cd
+            outputs["data:aerodynamics:aircraft:low_speed:CD"] = cd
         else:
             outputs["data:aerodynamics:aircraft:cruise:CD"] = cd
 

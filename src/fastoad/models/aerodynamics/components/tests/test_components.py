@@ -143,20 +143,30 @@ def test_cd0():
         "data:geometry:wing:wetted_area",
     ]
 
-    def get_cd0(alt, mach, cl):
+    def get_cd0(alt, mach, cl, low_speed_aero):
         reynolds = Atmosphere(alt).get_unitary_reynolds(mach)
 
         ivc = get_indep_var_comp(input_list)
-        ivc.add_output("data:TLAR:cruise_mach", mach)
-        ivc.add_output("data:aerodynamics:wing:cruise:reynolds", reynolds)
-        ivc.add_output(
-            "data:aerodynamics:aircraft:cruise:CL", 150 * [cl]
-        )  # needed because size of input array is fixed
-        problem = run_system(CD0(), ivc)
-        return problem["data:aerodynamics:aircraft:cruise:CD0"][0]
+        if low_speed_aero:
+            ivc.add_output("data:aerodynamics:aircraft:takeoff:mach", mach)
+            ivc.add_output("data:aerodynamics:wing:low_speed:reynolds", reynolds)
+            ivc.add_output(
+                "data:aerodynamics:aircraft:low_speed:CL", 150 * [cl]
+            )  # needed because size of input array is fixed
+        else:
+            ivc.add_output("data:TLAR:cruise_mach", mach)
+            ivc.add_output("data:aerodynamics:wing:cruise:reynolds", reynolds)
+            ivc.add_output(
+                "data:aerodynamics:aircraft:cruise:CL", 150 * [cl]
+            )  # needed because size of input array is fixed
+        problem = run_system(CD0(low_speed_aero=low_speed_aero), ivc)
+        if low_speed_aero:
+            return problem["data:aerodynamics:aircraft:low_speed:CD0"][0]
+        else:
+            return problem["data:aerodynamics:aircraft:cruise:CD0"][0]
 
-    assert get_cd0(35000, 0.78, 0.5) == approx(0.01975, abs=1e-5)
-    assert get_cd0(0, 0.2, 0.9) == approx(0.02727, abs=1e-5)
+    assert get_cd0(35000, 0.78, 0.5, False) == approx(0.01975, abs=1e-5)
+    assert get_cd0(0, 0.2, 0.9, True) == approx(0.02727, abs=1e-5)
 
 
 def test_cd_compressibility():

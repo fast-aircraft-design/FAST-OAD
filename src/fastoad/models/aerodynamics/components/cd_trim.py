@@ -29,8 +29,8 @@ class CdTrim(ExplicitComponent):
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
-            self.add_input("cl_low_speed", val=nans_array)
-            self.add_output("cd_trim_low_speed", shape=POLAR_POINT_COUNT)
+            self.add_input("data:aerodynamics:aircraft:low_speed:CL", val=nans_array)
+            self.add_output("data:aerodynamics:aircraft:low_speed:CD:trim", shape=POLAR_POINT_COUNT)
         else:
             self.add_input("data:aerodynamics:aircraft:cruise:CL", val=nans_array)
             self.add_output("data:aerodynamics:aircraft:cruise:CD:trim", shape=POLAR_POINT_COUNT)
@@ -39,7 +39,7 @@ class CdTrim(ExplicitComponent):
 
     def compute(self, inputs, outputs):
         if self.low_speed_aero:
-            cl = inputs["cl_low_speed"]
+            cl = inputs["data:aerodynamics:aircraft:low_speed:CL"]
         else:
             cl = inputs["data:aerodynamics:aircraft:cruise:CL"]
 
@@ -49,6 +49,6 @@ class CdTrim(ExplicitComponent):
             cd_trim.append(5.89 * pow(10, -4) * cl_val)
 
         if self.low_speed_aero:
-            outputs["cd_trim_low_speed"] = cd_trim
+            outputs["data:aerodynamics:aircraft:low_speed:CD:trim"] = cd_trim
         else:
             outputs["data:aerodynamics:aircraft:cruise:CD:trim"] = cd_trim

@@ -10,20 +10,43 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from fastoad.models.aerodynamics.components.cd0_fuselage import Cd0Fuselage
-from fastoad.models.aerodynamics.components.cd0_ht import Cd0HorizontalTail
-from fastoad.models.aerodynamics.components.cd0_nacelle_pylons import Cd0NacelleAndPylons
-from fastoad.models.aerodynamics.components.cd0_total import Cd0Total
-from fastoad.models.aerodynamics.components.cd0_vt import Cd0VerticalTail
-from fastoad.models.aerodynamics.components.cd0_wing import Cd0Wing
-from openmdao.core.group import Group
+
+import openmdao.api as om
+
+from .cd0_fuselage import Cd0Fuselage
+from .cd0_ht import Cd0HorizontalTail
+from .cd0_nacelle_pylons import Cd0NacelleAndPylons
+from .cd0_total import Cd0Total
+from .cd0_vt import Cd0VerticalTail
+from .cd0_wing import Cd0Wing
 
 
-class CD0(Group):
+class CD0(om.Group):
+    def initialize(self):
+        self.options.declare("low_speed_aero", default=False, types=bool)
+
     def setup(self):
-        self.add_subsystem("cd0_wing", Cd0Wing(), promotes=["*"])
-        self.add_subsystem("cd0_fuselage", Cd0Fuselage(), promotes=["*"])
-        self.add_subsystem("cd0_ht", Cd0HorizontalTail(), promotes=["*"])
-        self.add_subsystem("cd0_vt", Cd0VerticalTail(), promotes=["*"])
-        self.add_subsystem("cd0_nac_pylons", Cd0NacelleAndPylons(), promotes=["*"])
-        self.add_subsystem("cd0_total", Cd0Total(), promotes=["*"])
+        self.add_subsystem(
+            "cd0_wing", Cd0Wing(low_speed_aero=self.options["low_speed_aero"]), promotes=["*"]
+        )
+        self.add_subsystem(
+            "cd0_fuselage",
+            Cd0Fuselage(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cd0_ht",
+            Cd0HorizontalTail(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cd0_vt", Cd0VerticalTail(low_speed_aero=self.options["low_speed_aero"]), promotes=["*"]
+        )
+        self.add_subsystem(
+            "cd0_nac_pylons",
+            Cd0NacelleAndPylons(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cd0_total", Cd0Total(low_speed_aero=self.options["low_speed_aero"]), promotes=["*"]
+        )

@@ -215,8 +215,8 @@ def test_aerodynamics_low_speed():
     ivc = get_indep_var_comp(input_list)
     problem = run_system(AerodynamicsLowSpeed(), ivc)
 
-    cd = problem["aerodynamics:Cd_low_speed"]
-    cl = problem["cl_low_speed"]
+    cd = problem["data:aerodynamics:aircraft:low_speed:CD"]
+    cl = problem["data:aerodynamics:aircraft:low_speed:CL"]
 
     assert cd[cl == 0.0] == approx(0.02173, abs=1e-5)
     assert cd[cl == 0.2] == approx(0.02339, abs=1e-5)
