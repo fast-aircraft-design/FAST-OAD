@@ -108,8 +108,19 @@ class DescentPhase(AbstractManualThrustFlightPhase):
     - Descends down to EAS = 300kt at constant Mach
     - Descends down to 10000ft at constant EAS
     - Decelerates to EAS = 250kt
-    - Descends down to 1500ft at constant EAS
+    - Descends down to target altitude at constant EAS
     """
+
+    def __init__(self, **kwargs):
+        """
+        Uses keyword arguments as for :meth:`AbstractManualThrustFlightPhase` with
+        this additional keyword:
+
+        :param target_altitude: target altitude in meters
+        """
+
+        self.target_altitude = kwargs.pop("target_altitude")
+        super().__init__(**kwargs)
 
     @property
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:
@@ -127,7 +138,7 @@ class DescentPhase(AbstractManualThrustFlightPhase):
                 FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs,
             ),
             AltitudeChangeSegment(
-                FlightPoint(altitude=1500.0 * foot, equivalent_airspeed="constant"),
+                FlightPoint(altitude=self.target_altitude, equivalent_airspeed="constant"),
                 **self.segment_kwargs,
             ),
             "End of descent",
@@ -155,6 +166,7 @@ class StandardFlight(AbstractSimpleFlight):
         thrust_rates: Dict[FlightPhase, float],
         cruise_distance: float = 0.0,
         climb_target_altitude: float = AltitudeChangeSegment.OPTIMAL_ALTITUDE,
+        descent_target_altitude: float = 1500.0 * foot,
         time_step=None,
     ):
         """
@@ -166,15 +178,15 @@ class StandardFlight(AbstractSimpleFlight):
         :param cruise_mach:
         :param thrust_rates:
         :param cruise_distance:
-        :param climb_target_altitude: altitude where cruise will begin. If
-                                      AltitudeChangeSegment.OPTIMAL_ALTITUDE, climb
-                                      will stop when maximum lift/drag ratio is
-                                      achieved. Cruise will go on at the same
-                                      atitude
+        :param climb_target_altitude: (in m) altitude where cruise will begin. If value is
+                                      AltitudeChangeSegment.OPTIMAL_ALTITUDE (default), climb will
+                                      stop when maximum lift/drag ratio is achieved. Cruise will go
+                                      on at the same altitude.
+        :param descent_target_altitude: (in m) altitude where descent will end in meters
+                                        Default is 457.2m (1500ft)
         :param time_step: if provided, this time step will be applied for all segments.
         """
 
-        self.climb_target_altitude = climb_target_altitude
         self.flight_phase_kwargs = {
             "propulsion": propulsion,
             "reference_area": reference_area,
@@ -185,6 +197,8 @@ class StandardFlight(AbstractSimpleFlight):
         self.high_speed_polar = high_speed_polar
         self.cruise_mach = cruise_mach
         self.thrust_rates = thrust_rates
+        self.climb_target_altitude = climb_target_altitude
+        self.descent_target_altitude = descent_target_altitude
         self.time_step = time_step
 
         kwargs = {
@@ -208,7 +222,10 @@ class StandardFlight(AbstractSimpleFlight):
             engine_setting=EngineSetting.CRUISE,
         )
         descent = DescentPhase(
-            **kwargs, polar=high_speed_polar, thrust_rate=thrust_rates[FlightPhase.DESCENT]
+            **kwargs,
+            polar=high_speed_polar,
+            thrust_rate=thrust_rates[FlightPhase.DESCENT],
+            target_altitude=self.descent_target_altitude,
         )
         super().__init__(
             cruise_distance, [initial_climb, climb], cruise, [descent],
