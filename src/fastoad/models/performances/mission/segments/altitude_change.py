@@ -72,6 +72,8 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
+        self.complete_flight_point(start)  # needed to ensure all speed values are computed.
+
         if self.target.altitude == self.OPTIMAL_ALTITUDE:
             self.target.CL = "optimal"
 

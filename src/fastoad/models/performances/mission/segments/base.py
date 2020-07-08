@@ -260,6 +260,7 @@ class AbstractSegment(IFlightPart):
         :param flight_point: the flight point that will be completed in-place
         """
         flight_point.engine_setting = self.engine_setting
+        flight_point.tag = ""
 
         self._complete_speed_values(flight_point)
         # Mach number is capped by self.maximum_mach
