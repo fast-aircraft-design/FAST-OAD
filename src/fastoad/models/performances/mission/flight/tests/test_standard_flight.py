@@ -31,6 +31,7 @@ import pytest
 from fastoad.constants import FlightPhase
 from fastoad.models.propulsion import EngineSet
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
+from matplotlib.ticker import MultipleLocator
 from numpy.testing import assert_allclose
 from scipy.constants import knot, foot
 
@@ -80,7 +81,10 @@ def plot_flight(flight_points, fig_filename):
     plt.plot(flight_points.ground_distance / 1000.0, flight_points.altitude / foot, "o-")
     plt.xlabel("distance [km]")
     plt.ylabel("altitude [ft]")
-    plt.grid()
+    ax1.xaxis.set_minor_locator(MultipleLocator(50))
+    ax1.yaxis.set_minor_locator(MultipleLocator(500))
+    plt.grid(which="major", color="k")
+    plt.grid(which="minor")
 
     ax2 = plt.subplot(2, 1, 2)
     lines = []
@@ -95,7 +99,10 @@ def plot_flight(flight_points, fig_filename):
     )
     plt.xlabel("distance [km]")
     plt.ylabel("speed")
-    plt.grid()
+    ax2.xaxis.set_minor_locator(MultipleLocator(50))
+    ax2.yaxis.set_minor_locator(MultipleLocator(5))
+    plt.grid(which="major", color="k")
+    plt.grid(which="minor")
 
     plt.twinx(ax2)
     lines += plt.plot(
@@ -139,20 +146,21 @@ def test_standard_flight_optimal_altitude(low_speed_polar, high_speed_polar, cle
     end_of_cruise = FlightPoint(flight_points.loc[flight_points.tag == "End of cruise"].iloc[0])
     end_of_descent = FlightPoint(flight_points.loc[flight_points.tag == "End of descent"].iloc[0])
 
-    assert_allclose(end_of_initial_climb.altitude, 1500 * foot)
-    assert_allclose(end_of_initial_climb.equivalent_airspeed, 250 * knot)
+    assert_allclose(end_of_initial_climb.altitude, 1500.0 * foot)
+    assert_allclose(end_of_initial_climb.equivalent_airspeed, 250.0 * knot)
     assert_allclose(end_of_climb.mach, 0.78)
-    assert end_of_climb.equivalent_airspeed <= 300 * knot
+    assert end_of_climb.equivalent_airspeed <= 300.0 * knot
     assert_allclose(end_of_cruise.ground_distance - end_of_climb.ground_distance, 4.0e6)
     assert_allclose(end_of_cruise.mach, 0.78)
-    assert_allclose(end_of_descent.altitude, 1500 * foot)
-    assert_allclose(end_of_descent.equivalent_airspeed, 250 * knot)
+    assert_allclose(end_of_descent.altitude, 1500.0 * foot)
+    assert_allclose(end_of_descent.equivalent_airspeed, 250.0 * knot)
 
 
 def test_standard_flight_fixed_altitude(low_speed_polar, high_speed_polar, cleanup):
     # Wild version of an additional flight phase.
     # Start altitude is high enough to skip initial climb and first segment of climb.
     # Cruise altitude is low so that first segment of descent will also be skipped.
+
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
     propulsion = EngineSet(engine, 2)
 
@@ -165,6 +173,7 @@ def test_standard_flight_fixed_altitude(low_speed_polar, high_speed_polar, clean
         thrust_rates={FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.2},
         cruise_distance=4.0e6,
         climb_target_altitude=20000.0 * foot,
+        descent_target_altitude=1000.0 * foot,
         time_step=None,
     )
 
@@ -179,11 +188,11 @@ def test_standard_flight_fixed_altitude(low_speed_polar, high_speed_polar, clean
     end_of_descent = FlightPoint(flight_points.loc[flight_points.tag == "End of descent"].iloc[0])
 
     assert end_of_climb.mach < 0.78
-    assert_allclose(end_of_climb.equivalent_airspeed, 300 * knot)
+    assert_allclose(end_of_climb.equivalent_airspeed, 300.0 * knot)
     assert_allclose(end_of_climb.altitude, 20000.0 * foot)
     assert_allclose(end_of_cruise.ground_distance - end_of_climb.ground_distance, 4.0e6)
-    assert_allclose(end_of_descent.altitude, 1500 * foot)
-    assert_allclose(end_of_descent.equivalent_airspeed, 250 * knot)
+    assert_allclose(end_of_descent.altitude, 1000.0 * foot)
+    assert_allclose(end_of_descent.equivalent_airspeed, 250.0 * knot)
 
 
 def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
