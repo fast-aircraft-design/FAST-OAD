@@ -30,7 +30,7 @@ class IFlightPart(ABC):
         :param start: the initial flight point, defined for `altitude`, `mass` and speed
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
-        :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
+        :return: a pandas DataFrame where columns names match :attr:`FlightPoint.labels`
         """
 
 
@@ -40,33 +40,35 @@ class AbstractFlightSequence(IFlightPart):
     """
 
     def compute(self, start: FlightPoint) -> pd.DataFrame:
-        """
-        Computes the flight sequence from provided start point.
-
-        :param start: the initial flight point, defined for altitude, mass and any relevant
-                      parameter.
-        :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
-        """
         segments = []
         segment_start = start
         for segment_calculator in self.flight_sequence:
             if len(segments) > 0:
                 previous_segment = segments[-1]
                 segment_start = FlightPoint(previous_segment.iloc[-1])
+                if (
+                    isinstance(segment_calculator, str)
+                    # Tags behind a tag are ignored
+                    and not isinstance(previous_segment, str)
+                    # Tag is ignored if there is only the start points in 'segments'
+                    # (can happen if some segments are skipped)
+                    and not (len(segments) == 1 and len(previous_segment) == 1)
+                ):
+                    previous_segment.tag.iloc[-1] = segment_calculator
 
-                if isinstance(segment_calculator, str):
-                    previous_segment["tag"] = ""
-                    previous_segment["tag"].iloc[-1] = segment_calculator
-                    continue
+            if isinstance(segment_calculator, IFlightPart):
+                flight_points = segment_calculator.compute(segment_start)
+                if len(segments) > 0:
+                    # First point of the segment is omitted, as it is the
+                    # last of previous segment.
+                    if len(flight_points) > 1:
+                        segments.append(flight_points.iloc[1:])
+                else:
+                    # But it is kept if the computed segment is the first one.
+                    segments.append(flight_points)
 
-            flight_points = segment_calculator.compute(segment_start)
-            if len(flight_points) > 1 or len(segments) == 0:
-                # First point of the segment is omitted, as it is the last of
-                # previous segment.
-                # But it is kept if the computed segment is the first one.
-                segments.append(flight_points.iloc[1:])
-
-        return pd.concat(segments)
+        if segments:
+            return pd.concat(segments).reset_index(drop=True)
 
     @property
     @abstractmethod
@@ -74,11 +76,11 @@ class AbstractFlightSequence(IFlightPart):
         """
         Defines the sequence as used in :meth:`compute`.
 
-        It returns a list of IFlightPart instances and strings. Any string
-        is used as a tag for the last point of previous calculated segment.
-
-        A string should not be put as the first element of the list, or behind
-        another string element.
+        It returns a list of IFlightPart instances and strings.
+        Each string is used as a tag for the last point of previous calculated
+        segment.
+        Any string that is put as the first element of the list, or behind
+        another string element, will be ignored
 
         :return: the list of flight parts for the mission.
         """
@@ -91,6 +93,7 @@ class AbstractManualThrustFlightPhase(AbstractFlightSequence, ABC):
 
     def __init__(
         self,
+        *,
         propulsion: IPropulsion,
         reference_area: float,
         polar: Polar,
@@ -98,6 +101,7 @@ class AbstractManualThrustFlightPhase(AbstractFlightSequence, ABC):
         time_step=None,
     ):
         """
+        Initialization is done only with keyword arguments.
 
         :param propulsion:
         :param reference_area:

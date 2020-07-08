@@ -30,6 +30,10 @@ from ..segments.speed_change import SpeedChangeSegment
 class InitialClimbPhase(AbstractManualThrustFlightPhase):
     """
     Preset for initial climb phase.
+
+    - Climbs up to 400ft at constant EAS
+    - Accelerates to EAS = 250kt at constant altitude
+    - Climbs up to 1500ft at constant EAS
     """
 
     @property
@@ -37,7 +41,8 @@ class InitialClimbPhase(AbstractManualThrustFlightPhase):
         self.segment_kwargs["engine_setting"] = EngineSetting.CLIMB
         return [
             AltitudeChangeSegment(
-                FlightPoint(true_airspeed="constant", altitude=400.0 * foot), **self.segment_kwargs,
+                FlightPoint(equivalent_airspeed="constant", altitude=400.0 * foot),
+                **self.segment_kwargs,
             ),
             SpeedChangeSegment(
                 FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs,
@@ -53,26 +58,31 @@ class InitialClimbPhase(AbstractManualThrustFlightPhase):
 class ClimbPhase(AbstractManualThrustFlightPhase):
     """
     Preset for climb phase.
+
+    - Climbs up to 10000ft at constant EAS
+    - Accelerates to EAS = 300kt at constant altitude
+    - Climbs up to target altitude at constant EAS
     """
 
-    @property
-    def maximum_mach(self):
-        return self._cruise_mach
+    def __init__(self, **kwargs):
+        """
+        Uses keyword arguments as for :meth:`AbstractManualThrustFlightPhase` with
+        these additional keywords:
 
-    @maximum_mach.setter
-    def maximum_mach(self, value):
-        self._cruise_mach = value
+        :param maximum_mach: Mach number that won't be exceeded during climb
+        :param target_altitude: target altitude in meters, can be a float or
+                                AltitudeChangeSegment.OPTIMAL_ALTITUDE to target
+                                altitude with maximum lift/drag ratio
+        """
+
+        if "maximum_mach" in kwargs:
+            self.maximum_mach = kwargs.pop("maximum_mach")
+        self.target_altitude = kwargs.pop("target_altitude")
+        super().__init__(**kwargs)
 
     @property
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:
         self.segment_kwargs["engine_setting"] = EngineSetting.CLIMB
-        last_climb = AltitudeChangeSegment(
-            FlightPoint(
-                equivalent_airspeed="constant", altitude=AltitudeChangeSegment.OPTIMAL_ALTITUDE
-            ),
-            **self.segment_kwargs,
-            maximum_mach=self.maximum_mach,
-        )
 
         return [
             AltitudeChangeSegment(
@@ -82,7 +92,11 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
             SpeedChangeSegment(
                 FlightPoint(equivalent_airspeed=300.0 * knot), **self.segment_kwargs,
             ),
-            last_climb,
+            AltitudeChangeSegment(
+                FlightPoint(equivalent_airspeed="constant", altitude=self.target_altitude),
+                **self.segment_kwargs,
+                maximum_mach=self.maximum_mach,
+            ),
             "End of climb",
         ]
 
@@ -90,6 +104,11 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
 class DescentPhase(AbstractManualThrustFlightPhase):
     """
     Preset for descent phase.
+
+    - Descends down to EAS = 300kt at constant Mach
+    - Descends down to 10000ft at constant EAS
+    - Decelerates to EAS = 250kt
+    - Descends down to 1500ft at constant EAS
     """
 
     @property
@@ -117,18 +136,25 @@ class DescentPhase(AbstractManualThrustFlightPhase):
 
 class StandardFlight(AbstractSimpleFlight):
     """
-    Defines and computes a standard flight mission, from after takeoff to before landing.
+    Defines and computes a standard flight mission.
+
+    The flight sequence is:
+    - initial climb
+    - climb
+    - cruise at constant altitude
+    - descent
     """
 
     def __init__(
         self,
-        cruise_distance: float,
         propulsion: IPropulsion,
         reference_area: float,
         low_speed_climb_polar: Polar,
         high_speed_polar: Polar,
         cruise_mach: float,
         thrust_rates: Dict[FlightPhase, float],
+        cruise_distance: float = 0.0,
+        climb_target_altitude: float = AltitudeChangeSegment.OPTIMAL_ALTITUDE,
         time_step=None,
     ):
         """
@@ -139,10 +165,16 @@ class StandardFlight(AbstractSimpleFlight):
         :param high_speed_polar:
         :param cruise_mach:
         :param thrust_rates:
-        :param cruise_distance: in meters
+        :param cruise_distance:
+        :param climb_target_altitude: altitude where cruise will begin. If
+                                      AltitudeChangeSegment.OPTIMAL_ALTITUDE, climb
+                                      will stop when maximum lift/drag ratio is
+                                      achieved. Cruise will go on at the same
+                                      atitude
         :param time_step: if provided, this time step will be applied for all segments.
         """
 
+        self.climb_target_altitude = climb_target_altitude
         self.flight_phase_kwargs = {
             "propulsion": propulsion,
             "reference_area": reference_area,
@@ -163,9 +195,12 @@ class StandardFlight(AbstractSimpleFlight):
 
         initial_climb = InitialClimbPhase(**kwargs, polar=low_speed_climb_polar, thrust_rate=1.0)
         climb = ClimbPhase(
-            **kwargs, polar=high_speed_polar, thrust_rate=thrust_rates[FlightPhase.CLIMB],
+            **kwargs,
+            polar=high_speed_polar,
+            thrust_rate=thrust_rates[FlightPhase.CLIMB],
+            target_altitude=self.climb_target_altitude,
+            maximum_mach=self.cruise_mach,
         )
-        climb.maximum_mach = self.cruise_mach
         cruise = CruiseSegment(
             **kwargs,
             target=FlightPoint(),

@@ -48,11 +48,11 @@ def cleanup():
     mkdir(RESULTS_FOLDER_PATH)
 
 
-def print_dataframe(df):
+def print_dataframe(df, max_rows=20):
     """Utility for correctly printing results"""
     # Not used if all goes all well. Please keep it for future test setting/debugging.
     with pd.option_context(
-        "display.max_rows", 20, "display.max_columns", None, "display.width", None
+        "display.max_rows", max_rows, "display.max_columns", None, "display.width", None
     ):
         print()
         print(df)
@@ -110,7 +110,7 @@ def plot_flight(flight_points, fig_filename):
     plt.close()
 
 
-def test_flight(low_speed_polar, high_speed_polar, cleanup):
+def test_standard_flight_optimal_altitude(low_speed_polar, high_speed_polar, cleanup):
 
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
     propulsion = EngineSet(engine, 2)
@@ -121,7 +121,7 @@ def test_flight(low_speed_polar, high_speed_polar, cleanup):
         low_speed_climb_polar=low_speed_polar,
         high_speed_polar=high_speed_polar,
         cruise_mach=0.78,
-        thrust_rates={FlightPhase.TAKEOFF: 1.0, FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.2},
+        thrust_rates={FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.2},
         cruise_distance=4.0e6,
         time_step=None,
     )
@@ -130,7 +130,7 @@ def test_flight(low_speed_polar, high_speed_polar, cleanup):
         FlightPoint(true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0),
     )
     print_dataframe(flight_points)
-    plot_flight(flight_points, "test_flight.png")
+    plot_flight(flight_points, "test_standard_flight_max_finesse.png")
 
     end_of_initial_climb = FlightPoint(
         flight_points.loc[flight_points.tag == "End of initial climb"].iloc[0]
@@ -149,6 +149,43 @@ def test_flight(low_speed_polar, high_speed_polar, cleanup):
     assert_allclose(end_of_descent.equivalent_airspeed, 250 * knot)
 
 
+def test_standard_flight_fixed_altitude(low_speed_polar, high_speed_polar, cleanup):
+    # Wild version of an additional flight phase.
+    # Start altitude is high enough to skip initial climb and first segment of climb.
+    # Cruise altitude is low so that first segment of descent will also be skipped.
+    engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
+    propulsion = EngineSet(engine, 2)
+
+    flight_calculator = StandardFlight(
+        propulsion=propulsion,
+        reference_area=120.0,
+        low_speed_climb_polar=low_speed_polar,
+        high_speed_polar=high_speed_polar,
+        cruise_mach=0.78,
+        thrust_rates={FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.2},
+        cruise_distance=4.0e6,
+        climb_target_altitude=20000.0 * foot,
+        time_step=None,
+    )
+
+    flight_points = flight_calculator.compute(
+        FlightPoint(equivalent_airspeed=260.0 * knot, altitude=11000.0 * foot, mass=60000.0),
+    )
+    plot_flight(flight_points, "test_standard_flight_fixed_altitude.png")
+
+    assert not any(flight_points.tag == "End of initial climb")
+    end_of_climb = FlightPoint(flight_points.loc[flight_points.tag == "End of climb"].iloc[0])
+    end_of_cruise = FlightPoint(flight_points.loc[flight_points.tag == "End of cruise"].iloc[0])
+    end_of_descent = FlightPoint(flight_points.loc[flight_points.tag == "End of descent"].iloc[0])
+
+    assert end_of_climb.mach < 0.78
+    assert_allclose(end_of_climb.equivalent_airspeed, 300 * knot)
+    assert_allclose(end_of_climb.altitude, 20000.0 * foot)
+    assert_allclose(end_of_cruise.ground_distance - end_of_climb.ground_distance, 4.0e6)
+    assert_allclose(end_of_descent.altitude, 1500 * foot)
+    assert_allclose(end_of_descent.equivalent_airspeed, 250 * knot)
+
+
 def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
 
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
@@ -157,17 +194,12 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     total_distance = 2.0e6
     flight_calculator = RangedFlight(
         StandardFlight(
-            0.0,
             propulsion=propulsion,
             reference_area=120.0,
             low_speed_climb_polar=low_speed_polar,
             high_speed_polar=high_speed_polar,
             cruise_mach=0.78,
-            thrust_rates={
-                FlightPhase.TAKEOFF: 1.0,
-                FlightPhase.CLIMB: 0.93,
-                FlightPhase.DESCENT: 0.2,
-            },
+            thrust_rates={FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.2,},
         ),
         flight_distance=total_distance,
     )
