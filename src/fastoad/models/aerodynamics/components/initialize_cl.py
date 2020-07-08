@@ -34,7 +34,7 @@ class InitializeClPolar(ExplicitComponent):
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
-            self.add_output("cl_low_speed", shape=POLAR_POINT_COUNT)
+            self.add_output("data:aerodynamics:aircraft:low_speed:CL", shape=POLAR_POINT_COUNT)
         else:
             self.add_output("data:aerodynamics:aircraft:cruise:CL", shape=POLAR_POINT_COUNT)
 
@@ -50,6 +50,6 @@ class InitializeClPolar(ExplicitComponent):
         cl = np.arange(0.0, 1.5, 0.01) * k_cl * k_winglet_cl + offset_cl + offset_winglet_cl
 
         if self.low_speed_aero:
-            outputs["cl_low_speed"] = cl
+            outputs["data:aerodynamics:aircraft:low_speed:CL"] = cl
         else:
             outputs["data:aerodynamics:aircraft:cruise:CL"] = cl

@@ -30,10 +30,10 @@ class Cd0Fuselage(ExplicitComponent):
         self.low_speed_aero = self.options["low_speed_aero"]
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
-            self.add_input("reynolds_low_speed", val=np.nan)
-            self.add_input("cl_low_speed", val=nans_array)
-            self.add_input("Mach_low_speed", val=np.nan)
-            self.add_output("cd0_fuselage_low_speed", shape=POLAR_POINT_COUNT)
+            self.add_input("data:aerodynamics:wing:low_speed:reynolds", val=np.nan)
+            self.add_input("data:aerodynamics:aircraft:low_speed:CL", val=nans_array)
+            self.add_input("data:aerodynamics:aircraft:takeoff:mach", val=np.nan)
+            self.add_output("data:aerodynamics:fuselage:low_speed:CD0", shape=POLAR_POINT_COUNT)
         else:
             self.add_input("data:aerodynamics:wing:cruise:reynolds", val=np.nan)
             self.add_input("data:aerodynamics:aircraft:cruise:CL", val=nans_array)
@@ -55,32 +55,32 @@ class Cd0Fuselage(ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
         fus_length = inputs["data:geometry:fuselage:length"]
         if self.low_speed_aero:
-            cl = inputs["cl_low_speed"]
-            mach = inputs["Mach_low_speed"]
-            re_hs = inputs["reynolds_low_speed"]
+            cl = inputs["data:aerodynamics:aircraft:low_speed:CL"]
+            mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
+            reynolds = inputs["data:aerodynamics:wing:low_speed:reynolds"]
         else:
             cl = inputs["data:aerodynamics:aircraft:cruise:CL"]
             mach = inputs["data:TLAR:cruise_mach"]
-            re_hs = inputs["data:aerodynamics:wing:cruise:reynolds"]
+            reynolds = inputs["data:aerodynamics:wing:cruise:reynolds"]
 
-        cf_fus_hs = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(re_hs * fus_length)) ** 2.58
+        cf_fus = 0.455 / (
+            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds * fus_length)) ** 2.58
         )
 
-        cd0_friction_fus_hs = (
+        cd0_friction_fus = (
             (0.98 + 0.745 * math.sqrt(height_max * width_max) / fus_length)
-            * cf_fus_hs
+            * cf_fus
             * wet_area_fus
             / wing_area
         )
-        cd0_upsweep_fus_hs = (
+        cd0_upsweep_fus = (
             (0.0029 * cl ** 2 - 0.0066 * cl + 0.0043)
             * (0.67 * 3.6 * height_max * width_max)
             / wing_area
         )
-        cd0_fus = cd0_friction_fus_hs + cd0_upsweep_fus_hs
+        cd0_fus = cd0_friction_fus + cd0_upsweep_fus
 
         if self.low_speed_aero:
-            outputs["cd0_fuselage_low_speed"] = cd0_fus
+            outputs["data:aerodynamics:fuselage:low_speed:CD0"] = cd0_fus
         else:
             outputs["data:aerodynamics:fuselage:cruise:CD0"] = cd0_fus

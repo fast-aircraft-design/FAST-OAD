@@ -31,13 +31,12 @@ class Cd0NacelleAndPylons(ExplicitComponent):
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
-            self.add_input("reynolds_low_speed", val=np.nan)
-            self.add_input("Mach_low_speed", val=np.nan)
-            self.add_output("cd0_nacelle_low_speed")
-            self.add_output("cd0_pylon_low_speed")
+            self.add_input("data:aerodynamics:wing:low_speed:reynolds", val=np.nan)
+            self.add_input("data:aerodynamics:aircraft:takeoff:mach", val=np.nan)
+            self.add_output("data:aerodynamics:nacelles:low_speed:CD0")
+            self.add_output("data:aerodynamics:pylons:low_speed:CD0")
         else:
             self.add_input("data:aerodynamics:wing:cruise:reynolds", val=np.nan)
-            self.add_input("data:aerodynamics:aircraft:cruise:CL", val=nans_array)
             self.add_input("data:TLAR:cruise_mach", val=np.nan)
             self.add_output("data:aerodynamics:nacelles:cruise:CD0")
             self.add_output("data:aerodynamics:pylons:cruise:CD0")
@@ -61,33 +60,33 @@ class Cd0NacelleAndPylons(ExplicitComponent):
         fan_length = inputs["data:geometry:propulsion:fan:length"]
         wing_area = inputs["data:geometry:wing:area"]
         if self.low_speed_aero:
-            mach = inputs["Mach_low_speed"]
-            re_hs = inputs["reynolds_low_speed"]
+            mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
+            reynolds = inputs["data:aerodynamics:wing:low_speed:reynolds"]
         else:
             mach = inputs["data:TLAR:cruise_mach"]
-            re_hs = inputs["data:aerodynamics:wing:cruise:reynolds"]
+            reynolds = inputs["data:aerodynamics:wing:cruise:reynolds"]
 
-        cf_pylon_hs = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(re_hs * pylon_length)) ** 2.58
+        cf_pylon = 0.455 / (
+            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds * pylon_length)) ** 2.58
         )
-        cf_nac_hs = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(re_hs * nac_length)) ** 2.58
+        cf_nac = 0.455 / (
+            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds * nac_length)) ** 2.58
         )
 
         # cd0 Pylon
         el_pylon = 0.06
         ke_cd0_pylon = 4.688 * el_pylon ** 2 + 3.146 * el_pylon
-        cd0_pylon_hs = n_engines * (1 + ke_cd0_pylon) * cf_pylon_hs * wet_area_pylon / wing_area
+        cd0_pylon = n_engines * (1 + ke_cd0_pylon) * cf_pylon * wet_area_pylon / wing_area
 
         # cd0 Nacelles
         e_fan = 0.22
         kn_cd0_nac = 1 + 0.05 + 5.8 * e_fan / fan_length
         cd0_int_nac = 0.0002
-        cd0_nac_hs = n_engines * (kn_cd0_nac * cf_nac_hs * wet_area_nac / wing_area + cd0_int_nac)
+        cd0_nac = n_engines * (kn_cd0_nac * cf_nac * wet_area_nac / wing_area + cd0_int_nac)
 
         if self.low_speed_aero:
-            outputs["cd0_pylon_low_speed"] = cd0_pylon_hs
-            outputs["cd0_nacelle_low_speed"] = cd0_nac_hs
+            outputs["data:aerodynamics:pylons:low_speed:CD0"] = cd0_pylon
+            outputs["data:aerodynamics:nacelles:low_speed:CD0"] = cd0_nac
         else:
-            outputs["data:aerodynamics:pylons:cruise:CD0"] = cd0_pylon_hs
-            outputs["data:aerodynamics:nacelles:cruise:CD0"] = cd0_nac_hs
+            outputs["data:aerodynamics:pylons:cruise:CD0"] = cd0_pylon
+            outputs["data:aerodynamics:nacelles:cruise:CD0"] = cd0_nac
