@@ -3,7 +3,7 @@ This module is for registering all internal OpenMDAO modules that we want
 available through OpenMDAOSystemRegistry
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,7 @@ available through OpenMDAOSystemRegistry
 
 from fastoad.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastoad.models.aerodynamics.aerodynamics_landing import AerodynamicsLanding
+from fastoad.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from fastoad.models.aerodynamics.aerodynamics_takeoff import AerodynamicsTakeoff
 from fastoad.models.geometry import Geometry
 from fastoad.models.handling_qualities.compute_static_margin import ComputeStaticMargin
@@ -47,6 +48,11 @@ def register_openmdao_systems():
     OpenMDAOSystemRegistry.register_system(
         AerodynamicsHighSpeed,
         "fastoad.aerodynamics.highspeed.legacy",
+        domain=ModelDomain.AERODYNAMICS,
+    )
+    OpenMDAOSystemRegistry.register_system(
+        AerodynamicsLowSpeed,
+        "fastoad.aerodynamics.lowspeed.legacy",
         domain=ModelDomain.AERODYNAMICS,
     )
 
