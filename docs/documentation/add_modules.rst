@@ -126,9 +126,9 @@ But it is possible to set your own bounds outside of OpenMDAO by following this 
 Register your system(s)
 ***********************
 
-Once your OpenMDAO system is ready, you have to register it to make it discoverable by FAST-OAD. Assuming your OpenMDAO
-class is named `MyOMClass` in `my_module.py`, you can create, in the same folder, the file `register.py` with following
-lines:
+Once your OpenMDAO system is ready, you have to register it to make it discoverable by FAST-OAD.
+Assuming your OpenMDAO class is named `MyOMClass` in `my_module.py`, you can create, in the same
+folder, the file `register.py` (name is not mandatory) with following lines:
 
 .. code-block:: python
 
@@ -138,10 +138,10 @@ lines:
     OpenMDAOSystemRegistry.register_system(MyOMClass, "my.custom.name")
 
 
-.. Note::
+.. note::
 
-
-
+    If you work with Jupyter notebook, remember that any change in your Python files
+    will require the kernel to be restarted.
 
 .. _add-modules-set-configuration-files:
 
@@ -149,7 +149,7 @@ lines:
 Modify the configuration file
 *****************************
 
-The folder that contains these Python files must be listed in :code:`module_folders`
+The folders that contain your Python files must be listed in :code:`module_folders`
 in the configuration file:
 
 .. code-block:: TOML
@@ -157,7 +157,7 @@ in the configuration file:
     title = "OAD Process with custom component"
 
     # List of folder paths where user added custom registered OpenMDAO components
-    module_folders = ["/path/to/my/custom/module/folder"]
+    module_folders = ["/path/to/my/custom/module/folder", "/another/path/"]
 
 Once this is done, (assuming your configuration file is named `my_custom_conf.toml`)
 your custom, registered, system should appear in the list provided by the command:
@@ -179,3 +179,10 @@ Then your component can be used like any other using the id you have given.
             id = "my.custom.name"
 
         [ ... ]
+
+.. Note::
+
+    FAST-OAD will inspect all sub-folders in a specified module folder,
+    **as long as they are Python packages**, i.e. if they contain a
+    :code:`__init__.py` file.
+
