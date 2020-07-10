@@ -126,6 +126,7 @@ if __name__ == "__main__":
         "src/fastoad/models/aerodynamics/tests/data/aerodynamics_inputs.xml",
         "src/fastoad/models/geometry/tests/data/geometry_inputs_full.xml",
         "src/fastoad/models/handling_qualities/tests/data/hq_inputs.xml",
+        "src/fastoad/models/performances/mission/openmdao/tests/data/flight_inputs.xml",
         "src/fastoad/models/weight/cg/tests/data/cg_inputs.xml",
         "src/fastoad/models/weight/mass_breakdown/tests/data/mass_breakdown_inputs.xml",
         "src/fastoad/utils/postprocessing/tests/data/problem_outputs.xml",
