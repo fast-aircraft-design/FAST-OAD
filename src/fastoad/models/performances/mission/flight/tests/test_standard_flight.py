@@ -213,14 +213,15 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
         flight_distance=total_distance,
     )
 
-    flight_points = flight_calculator.compute(
-        FlightPoint(true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0),
+    start = FlightPoint(
+        true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0, ground_distance=100000.0,
     )
+    flight_points = flight_calculator.compute(start)
 
     plot_flight(flight_points, "test_ranged_flight.png")
 
     assert_allclose(
         flight_points.iloc[-1].ground_distance,
-        total_distance,
+        total_distance + start.ground_distance,
         atol=flight_calculator.distance_accuracy,
     )
