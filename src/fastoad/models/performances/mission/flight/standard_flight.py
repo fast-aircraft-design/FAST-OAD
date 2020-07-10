@@ -165,7 +165,7 @@ class StandardFlight(AbstractSimpleFlight):
         cruise_mach: float,
         thrust_rates: Dict[FlightPhase, float],
         cruise_distance: float = 0.0,
-        climb_target_altitude: float = AltitudeChangeSegment.OPTIMAL_ALTITUDE,
+        climb_target_altitude: float = AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL,
         descent_target_altitude: float = 1500.0 * foot,
         time_step=None,
     ):

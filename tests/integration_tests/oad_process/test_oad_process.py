@@ -13,9 +13,10 @@ Test module for Overall Aircraft Design process
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import locale
 import os
 import os.path as pth
+import shutil
 from platform import system
 from shutil import rmtree
 
@@ -23,12 +24,12 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 import pytest
-from numpy.testing import assert_allclose
-
 from fastoad import api
 from fastoad.io import VariableIO
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
+from numpy.testing import assert_allclose
+
 from tests import root_folder_path
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
@@ -90,16 +91,29 @@ def test_oad_process(cleanup):
     )
 
 
-def test_non_regression(cleanup):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "non_regression")
-    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
+def test_non_regression_breguet(cleanup):
+    run_non_regression_test(
+        "oad_process_breguet.toml", "CeRAS01_legacy_breguet_result.xml", "non_regression_breguet"
+    )
 
-    # Generation of configuration file  and problem instance ------------------
-    api.generate_configuration_file(configuration_file_path, True)
+
+def test_non_regression_mission(cleanup):
+    run_non_regression_test(
+        "oad_process_mission.toml", "CeRAS01_legacy_mission_result.xml", "non_regression_mission"
+    )
+
+
+def run_non_regression_test(conf_file, legacy_result_file, result_dir):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, result_dir)
+    configuration_file_path = pth.join(results_folder_path, conf_file)
+
+    # Copy of configuration file and generation of problem instance ------------------
+    api.generate_configuration_file(configuration_file_path)  # just ensure folders are created...
+    shutil.copy(pth.join(DATA_FOLDER_PATH, conf_file), configuration_file_path)
     problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
 
     # Next trick is needed for overloading option setting from TOML file
-    if system() == "Windows" or xfoil_path:
+    if system() == "Windows":  # or xfoil_path:
         problem.model.aerodynamics.landing._OPTIONS["use_xfoil"] = True
         if system() != "Windows":
             problem.model.aerodynamics.landing._OPTIONS["xfoil_exe_path"] = xfoil_path
@@ -108,7 +122,7 @@ def test_non_regression(cleanup):
         problem.model.aerodynamics.landing._OPTIONS["xfoil_alpha_max"] = 22.0
 
     # Generation and reading of inputs ----------------------------------------
-    ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
+    ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
     problem.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
     problem.read_inputs()
     problem.setup()
@@ -117,6 +131,14 @@ def test_non_regression(cleanup):
     problem.run_model()
     problem.write_outputs()
 
+    try:
+        problem.model.performance.flight_points.applymap(
+            lambda x: np.asscalar(np.asarray(x))
+        ).to_csv(
+            pth.join(results_folder_path, "flight_points.csv"), sep="\t", decimal=",",
+        )
+    except AttributeError:
+        pass
     om.view_connections(
         problem, outfile=pth.join(results_folder_path, "connections.html"), show_browser=False
     )
@@ -136,17 +158,16 @@ def test_non_regression(cleanup):
         problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
         atol=1,
     )
-    assert_allclose(
-        problem["data:weight:aircraft:MTOW"],
-        problem["data:weight:aircraft:OWE"]
-        + problem["data:weight:aircraft:payload"]
-        + problem["data:mission:sizing:fuel"],
-        atol=1,
-    )
+    # assert_allclose(
+    #     problem["data:weight:aircraft:MTOW"],
+    #     problem["data:weight:aircraft:OWE"]
+    #     + problem["data:weight:aircraft:payload"]
+    #     + problem["data:mission:sizing:fuel"],
+    #     atol=1,
+    # )
 
     ref_var_list = VariableIO(
-        pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy_breguet_result.xml"),
-        formatter=VariableLegacy1XmlFormatter(),
+        pth.join(DATA_FOLDER_PATH, legacy_result_file), formatter=VariableLegacy1XmlFormatter(),
     ).read()
 
     row_list = []
@@ -172,6 +193,7 @@ def test_non_regression(cleanup):
     pd.set_option("display.max_rows", None)
     pd.set_option("display.max_columns", None)
     pd.set_option("display.width", 1000)
+    pd.set_option("display.max_colwidth", 120)
     print(df.sort_values(by=["abs_rel_delta"]))
 
     assert np.all(df["abs_rel_delta"] < 0.005)

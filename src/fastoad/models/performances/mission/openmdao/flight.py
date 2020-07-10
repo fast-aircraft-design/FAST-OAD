@@ -29,19 +29,23 @@ from ..polar import Polar
 
 
 class SizingFlight(om.ExplicitComponent):
+    """
+    Simulates a complete flight mission with diversion.
+    """
+
     def __init__(self, **kwargs):
         """
         Computes thrust, SFC and thrust rate by direct call to engine model.
         """
         super().__init__(**kwargs)
-        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self.flight_points = None
+        self._engine_wrapper = None
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-
+        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
         self.add_input("data:geometry:propulsion:engine:count", 2)
@@ -66,8 +70,10 @@ class SizingFlight(om.ExplicitComponent):
         self.add_input("data:mission:sizing:takeoff:V2", np.nan, units="m/s")
         self.add_input("data:mission:sizing:takeoff:altitude", np.nan, units="m")
         self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
+        self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
 
         self.add_output("data:mission:sizing:ZFW", units="kg")
+        self.add_output("data:mission:sizing:fuel", units="kg")
         self.add_output("data:mission:sizing:initial_climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:cruise:fuel", units="kg")
@@ -224,6 +230,10 @@ class SizingFlight(om.ExplicitComponent):
         # Final ================================================================
         fuel_route = inputs["data:weight:aircraft:MTOW"] - end_of_descent.mass
         outputs["data:mission:sizing:ZFW"] = end_of_taxi_in.mass - 0.03 * fuel_route
+        outputs["data:mission:sizing:fuel"] = (
+            inputs["data:weight:aircraft:MTOW"] - outputs["data:mission:sizing:ZFW"]
+        )
+
         self.flight_points = pd.concat(
             [flight_points, diversion_flight_points, holding_flight_points, taxi_in_flight_points]
         ).reset_index(drop=True)

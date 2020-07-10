@@ -75,17 +75,11 @@ class _Consumption(om.ExplicitComponent):
 
 
 class _BreguetEngine(om.ExplicitComponent):
-    def __init__(self, **kwargs):
-        """
-        Computes thrust, SFC and thrust rate by direct call to engine model.
-        """
-        super().__init__(**kwargs)
-        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
-
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
+        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
         self.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
         self.add_input("data:TLAR:cruise_mach", np.nan)
