@@ -36,11 +36,11 @@ class CruiseSegment(RegulatedThrustSegment):
         super().__init__(*args, **kwargs)
         self.target.mach = "constant"
 
-    def compute(self, start: FlightPoint) -> pd.DataFrame:
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
         if start.ground_distance:
             self.target.ground_distance = self.target.ground_distance + start.ground_distance
-        return super().compute(start)
+        return super().compute_from(start)
 
     def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         return 0.0, 0.0
@@ -58,10 +58,10 @@ class OptimalCruiseSegment(CruiseSegment):
     point** to get the optimum CL according to current mass.
     """
 
-    def compute(self, start: FlightPoint) -> pd.DataFrame:
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
         start.altitude = self._get_optimal_altitude(start.mass, start.mach)
-        return super().compute(start)
+        return super().compute_from(start)
 
     def _compute_next_altitude(self, next_point, previous_point):
         next_point.altitude = self._get_optimal_altitude(

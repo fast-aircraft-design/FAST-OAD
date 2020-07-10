@@ -70,7 +70,7 @@ class AltitudeChangeSegment(ManualThrustSegment):
         self._set_attribute_default("time_step", 2.0)
         super().__init__(**kwargs)
 
-    def compute(self, start: FlightPoint) -> pd.DataFrame:
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
         self.complete_flight_point(start)  # needed to ensure all speed values are computed.
 
@@ -83,7 +83,7 @@ class AltitudeChangeSegment(ManualThrustSegment):
         elif self.target.mach == "constant":
             start.true_airspeed = start.mach * atm.speed_of_sound
 
-        return super().compute(start)
+        return super().compute_from(start)
 
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         current = flight_points[-1]

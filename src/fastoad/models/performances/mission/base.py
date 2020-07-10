@@ -23,7 +23,7 @@ from .flight_point import FlightPoint
 
 
 class IFlightPart(ABC):
-    def compute(self, start: FlightPoint) -> pd.DataFrame:
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
         Computes a flight sequence from provided start point.
 
@@ -39,7 +39,7 @@ class AbstractFlightSequence(IFlightPart):
     Defines and computes a flight sequence.
     """
 
-    def compute(self, start: FlightPoint) -> pd.DataFrame:
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         segments = []
         segment_start = start
         for segment_calculator in self.flight_sequence:
@@ -57,7 +57,7 @@ class AbstractFlightSequence(IFlightPart):
                     previous_segment.tag.iloc[-1] = segment_calculator
 
             if isinstance(segment_calculator, IFlightPart):
-                flight_points = segment_calculator.compute(segment_start)
+                flight_points = segment_calculator.compute_from(segment_start)
                 if len(segments) > 0:
                     # First point of the segment is omitted, as it is the
                     # last of previous segment.
@@ -74,7 +74,7 @@ class AbstractFlightSequence(IFlightPart):
     @abstractmethod
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:
         """
-        Defines the sequence as used in :meth:`compute`.
+        Defines the sequence as used in :meth:`compute_from`.
 
         It returns a list of IFlightPart instances and strings.
         Each string is used as a tag for the last point of previous calculated

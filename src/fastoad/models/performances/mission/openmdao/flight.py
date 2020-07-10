@@ -121,7 +121,7 @@ class SizingFlight(om.ExplicitComponent):
             ground_distance=0.0,
         )
 
-        flight_points = base_flight_calculator.compute(end_of_takeoff)
+        flight_points = base_flight_calculator.compute_from(end_of_takeoff)
 
         end_of_takeoff = FlightPoint(flight_points.iloc[0])  # now updated for every parameter
         end_of_initial_climb = FlightPoint(
@@ -159,7 +159,7 @@ class SizingFlight(om.ExplicitComponent):
             ),
             alternate_distance,
         )
-        alternate_flight_points = alternate_flight_calculator.compute(end_of_descent)
+        alternate_flight_points = alternate_flight_calculator.compute_from(end_of_descent)
 
         end_of_alternate_climb = FlightPoint(
             alternate_flight_points.loc[alternate_flight_points.tag == "End of climb"].iloc[0]
@@ -192,7 +192,7 @@ class SizingFlight(om.ExplicitComponent):
             polar=high_speed_polar,
         )
 
-        holding_flight_points = holding_calculator.compute(end_of_alternate_descent)
+        holding_flight_points = holding_calculator.compute_from(end_of_alternate_descent)
         holding_flight_points.tag.iloc[-1] = "End of holding"
 
         end_of_holding = FlightPoint(holding_flight_points.iloc[-1])
@@ -209,7 +209,7 @@ class SizingFlight(om.ExplicitComponent):
             propulsion=engine_model,
             thrust_rate=taxi_in_thrust_rate,
         )
-        taxi_in_flight_points = taxi_in_calculator.compute(end_of_holding)
+        taxi_in_flight_points = taxi_in_calculator.compute_from(end_of_holding)
         taxi_in_flight_points.tag.iloc[-1] = "End of taxi-in"
 
         end_of_taxi_in = FlightPoint(taxi_in_flight_points.iloc[-1])

@@ -84,10 +84,10 @@ class RangedFlight(IFlightPart):
         self.flight_points = None
         self.distance_accuracy = 0.5e3
 
-    def compute(self, start: FlightPoint) -> pd.DataFrame:
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         def compute_flight(cruise_distance):
             self.flight.cruise_distance = cruise_distance
-            self.flight_points = self.flight.compute(start)
+            self.flight_points = self.flight.compute_from(start)
             obtained_distance = (
                 self.flight_points.iloc[-1].ground_distance
                 - self.flight_points.iloc[0].ground_distance
