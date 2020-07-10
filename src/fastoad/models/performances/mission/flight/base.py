@@ -88,7 +88,10 @@ class RangedFlight(IFlightPart):
         def compute_flight(cruise_distance):
             self.flight.cruise_distance = cruise_distance
             self.flight_points = self.flight.compute(start)
-            obtained_distance = self.flight_points.iloc[-1].ground_distance
+            obtained_distance = (
+                self.flight_points.iloc[-1].ground_distance
+                - self.flight_points.iloc[0].ground_distance
+            )
             return self.flight_distance - obtained_distance
 
         root_scalar(
