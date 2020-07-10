@@ -41,14 +41,14 @@ class InitialClimbPhase(AbstractManualThrustFlightPhase):
         self.segment_kwargs["engine_setting"] = EngineSetting.CLIMB
         return [
             AltitudeChangeSegment(
-                FlightPoint(equivalent_airspeed="constant", altitude=400.0 * foot),
+                target=FlightPoint(equivalent_airspeed="constant", altitude=400.0 * foot),
                 **self.segment_kwargs,
             ),
             SpeedChangeSegment(
-                FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs,
+                target=FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs,
             ),
             AltitudeChangeSegment(
-                FlightPoint(equivalent_airspeed="constant", altitude=1500.0 * foot),
+                target=FlightPoint(equivalent_airspeed="constant", altitude=1500.0 * foot),
                 **self.segment_kwargs,
             ),
             "End of initial climb",
@@ -86,14 +86,14 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
 
         return [
             AltitudeChangeSegment(
-                FlightPoint(equivalent_airspeed="constant", altitude=10000.0 * foot),
+                target=FlightPoint(equivalent_airspeed="constant", altitude=10000.0 * foot),
                 **self.segment_kwargs,
             ),
             SpeedChangeSegment(
-                FlightPoint(equivalent_airspeed=300.0 * knot), **self.segment_kwargs,
+                target=FlightPoint(equivalent_airspeed=300.0 * knot), **self.segment_kwargs,
             ),
             AltitudeChangeSegment(
-                FlightPoint(equivalent_airspeed="constant", altitude=self.target_altitude),
+                target=FlightPoint(equivalent_airspeed="constant", altitude=self.target_altitude),
                 **self.segment_kwargs,
                 maximum_mach=self.maximum_mach,
             ),
@@ -127,18 +127,18 @@ class DescentPhase(AbstractManualThrustFlightPhase):
         self.segment_kwargs["engine_setting"] = EngineSetting.IDLE
         return [
             AltitudeChangeSegment(
-                FlightPoint(equivalent_airspeed=300.0 * knot, mach="constant"),
+                target=FlightPoint(equivalent_airspeed=300.0 * knot, mach="constant"),
                 **self.segment_kwargs,
             ),
             AltitudeChangeSegment(
-                FlightPoint(altitude=10000.0 * foot, equivalent_airspeed="constant"),
+                target=FlightPoint(altitude=10000.0 * foot, equivalent_airspeed="constant"),
                 **self.segment_kwargs,
             ),
             SpeedChangeSegment(
-                FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs,
+                target=FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs,
             ),
             AltitudeChangeSegment(
-                FlightPoint(altitude=self.target_altitude, equivalent_airspeed="constant"),
+                target=FlightPoint(altitude=self.target_altitude, equivalent_airspeed="constant"),
                 **self.segment_kwargs,
             ),
             "End of descent",

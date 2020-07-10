@@ -68,6 +68,7 @@ class AbstractSegment(IFlightPart):
 
     def __init__(
         self,
+        *,
         target: FlightPoint,
         propulsion: IPropulsion,
         reference_area: float,
@@ -75,6 +76,8 @@ class AbstractSegment(IFlightPart):
         **kwargs
     ):
         """
+        Only keyword arguments are accepted.
+
         :param target: the target flight point, defined for any relevant parameter
         :param propulsion: the propulsion model
         :param reference_area: the reference area for aerodynamic forces
@@ -389,14 +392,14 @@ class ManualThrustSegment(AbstractSegment, ABC):
     Base class for computing flight segment where thrust rate is imposed.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
 
         :ivar thrust_rate: used thrust rate. Can be set at instantiation using a keyword argument.
         """
 
         self._set_attribute_default("thrust_rate", 1.0)
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
 
     def _compute_propulsion(self, flight_point: FlightPoint):
         (
