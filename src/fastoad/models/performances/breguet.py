@@ -16,6 +16,7 @@ import numpy as np
 import openmdao.api as om
 from fastoad import BundleLoader
 from fastoad.constants import EngineSetting
+from fastoad.models.propulsion import EngineSet
 from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g
 
@@ -101,13 +102,15 @@ class _BreguetEngine(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        engine_count = inputs["data:geometry:propulsion:engine:count"]
+        engine_model = EngineSet(
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
+        )
         ld_ratio = inputs["data:aerodynamics:aircraft:cruise:L_D_max"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         initial_cruise_mass = mtow * inputs["settings:mission:sizing:breguet:climb:mass_ratio"]
 
-        thrust = initial_cruise_mass / ld_ratio * g / engine_count
-        sfc, thrust_rate, _ = self._engine_wrapper.get_model(inputs).compute_flight_points(
+        thrust = initial_cruise_mass / ld_ratio * g
+        sfc, thrust_rate, _ = engine_model.compute_flight_points(
             inputs["data:TLAR:cruise_mach"],
             inputs["data:mission:sizing:cruise:altitude"],
             EngineSetting.CRUISE,
