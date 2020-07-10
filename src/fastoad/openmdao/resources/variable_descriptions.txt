@@ -26,7 +26,7 @@ data:aerodynamics:aircraft:low_speed:CL_alpha	derivative of lift coefficient wit
 data:aerodynamics:aircraft:low_speed:induced_drag_coefficient	multiply squared lift coefficient by this coefficient to get induced drag coefficient
 data:aerodynamics:aircraft:takeoff:CL0_clean	value of lift coefficient at angle of attack 0 in clean configuration at takeoff
 data:aerodynamics:aircraft:takeoff:CL_alpha	derivative of lift coefficient with respect to angle of attack in takeoff conditions
-data:aerodynamics:cruise:neutral_point:x	X-position of neutral point  - X-position of aircraft nose
+data:aerodynamics:cruise:neutral_point:x	X-position of neutral point - X-position of aircraft nose
 data:aerodynamics:fuselage:cruise:CD0	profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL
 data:aerodynamics:fuselage:cruise:CnBeta	derivative of yawing moment against sideslip angle for fuselage in cruise conditions
 data:aerodynamics:aircraft:takeoff:mach	considered Mach number for takeoff phase
@@ -152,7 +152,7 @@ data:geometry:wing:tip:leading_edge:x:local	X-position of leading edge at wing t
 data:geometry:wing:tip:thickness_ratio	thickness ratio at wing tip
 data:geometry:wing:tip:y	Y-position of wing tip
 data:geometry:wing:wetted_area	wetted area of wing
-data:handling_qualities:static_margin	(X-position of neutral point  - X-position of center of gravity ) / (mean aerodynamic chord)
+data:handling_qualities:static_margin	(X-position of neutral point - X-position of center of gravity ) / (mean aerodynamic chord)
 data:load_case:lc1:U_gust	gust vertical speed for sizing load case 1 (gust with minimum aircraft mass)
 data:load_case:lc1:Vc_EAS	equivalent air speed for sizing load case 1 (gust with minimum aircraft mass)
 data:load_case:lc1:altitude	altitude for sizing load case 1 (gust with minimum aircraft mass)
@@ -162,21 +162,21 @@ data:load_case:lc2:altitude	altitude for sizing load case 2 (gust with maximum a
 data:mission:operational:alternate_climb:duration	duration of alternate climb phase in operational mission
 data:mission:operational:alternate_climb:fuel	mass of consumed fuel during alternate climb phase in operational mission
 data:mission:operational:alternate_cruise:distance	travelled distance during alternate cruise phase in operational mission
-data:mission:operational:alternate_cruise:duration	duration of alternate alternate cruise phase in operational mission
-data:mission:operational:alternate_cruise:fuel	mass of consumed fuel during alternate alternate cruise phase in operational mission
+data:mission:operational:alternate_cruise:duration	duration of alternate cruise phase in operational mission
+data:mission:operational:alternate_cruise:fuel	mass of consumed fuel during alternate cruise phase in operational mission
 data:mission:operational:alternate_descent:duration	duration of alternate descent phase in operational mission
 data:mission:operational:alternate_descent:fuel	mass of consumed fuel during alternate descent phase in operational mission
 data:mission:operational:climb:duration	duration of climb phase in operational mission
 data:mission:operational:climb:fuel	mass of consumed fuel during climb phase in operational mission
 data:mission:operational:climb:max_climb_rate	maximum climb rate in operational mission
-data:mission:operational:climb:thrust_rate	thrust rate (between 0.0 and 1.0) during climb phase  in operational mission
+data:mission:operational:climb:thrust_rate	thrust rate (between 0.0 and 1.0) during climb phase in operational mission
 data:mission:operational:cruise:altitude	altitude during cruise phase in operational mission
 data:mission:operational:cruise:duration	duration of cruise phase in operational mission
 data:mission:operational:cruise:fuel	mass of consumed fuel during cruise phase in operational mission
 data:mission:operational:cruise:mach	Mach number during cruise phase in operational mission
 data:mission:operational:descent:duration	duration of descent phase in operational mission
 data:mission:operational:descent:fuel	mass of consumed fuel during descent phase in operational mission
-data:mission:operational:descent:thrust_rate	thrust rate (between 0.0 and 1.0) during descent phase  in operational mission
+data:mission:operational:descent:thrust_rate	thrust rate (between 0.0 and 1.0) during descent phase in operational mission
 data:mission:operational:flight:duration	total flight time in operational mission
 data:mission:operational:flight:fuel	mass of total fuel consumed during flight in operational mission
 data:mission:operational:flight:range	total travelled distance during flight in operational mission
@@ -226,7 +226,7 @@ data:mission:sizing:climb:distance	covered ground distance during climb phase
 data:mission:sizing:climb:duration	duration of climb phase in sizing mission
 data:mission:sizing:climb:fuel	mass of consumed fuel during climb phase in sizing mission
 data:mission:sizing:climb:max_climb_rate	maximum climb rate in sizing mission
-data:mission:sizing:climb:thrust_rate	thrust rate (between 0.0 and 1.0) during climb phase  in sizing mission
+data:mission:sizing:climb:thrust_rate	thrust rate (between 0.0 and 1.0) during climb phase in sizing mission
 data:mission:sizing:cruise:altitude	altitude during cruise phase in sizing mission
 data:mission:sizing:cruise:distance	covered ground distance during cruise phase
 data:mission:sizing:cruise:duration	duration of cruise phase in sizing mission
@@ -237,7 +237,7 @@ data:mission:sizing:cs25:sizing_load_2	sizing load during gust with maximum airc
 data:mission:sizing:descent:distance	covered ground distance during descent phase
 data:mission:sizing:descent:duration	duration of descent phase in sizing mission
 data:mission:sizing:descent:fuel	mass of consumed fuel during descent phase in sizing mission
-data:mission:sizing:descent:thrust_rate	thrust rate (between 0.0 and 1.0) during descent phase  in sizing mission
+data:mission:sizing:descent:thrust_rate	thrust rate (between 0.0 and 1.0) during descent phase in sizing mission
 data:mission:sizing:flight:duration	total flight time in sizing mission
 data:mission:sizing:flight:fuel	mass of consumed fuel during flight in sizing mission
 data:mission:sizing:fuel	consumed fuel mass during whole mission
