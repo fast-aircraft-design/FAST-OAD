@@ -145,15 +145,15 @@ class SizingFlight(om.ExplicitComponent):
             end_of_cruise.mass - end_of_descent.mass
         )
 
-        # Alternate flight =====================================================
-        alternate_distance = inputs["data:mission:sizing:diversion:cruise:distance"]
-        if alternate_distance <= 200 * nautical_mile:
-            alternate_cruise_altitude = 22000 * foot
+        # Diversion flight =====================================================
+        diversion_distance = inputs["data:mission:sizing:diversion:cruise:distance"]
+        if diversion_distance <= 200 * nautical_mile:
+            diversion_cruise_altitude = 22000 * foot
 
         else:
-            alternate_cruise_altitude = 31000 * foot
+            diversion_cruise_altitude = 31000 * foot
 
-        alternate_flight_calculator = RangedFlight(
+        diversion_flight_calculator = RangedFlight(
             StandardFlight(
                 propulsion=engine_model,
                 reference_area=reference_area,
@@ -161,30 +161,30 @@ class SizingFlight(om.ExplicitComponent):
                 high_speed_polar=high_speed_polar,
                 cruise_mach=cruise_mach,
                 thrust_rates=thrust_rates,
-                climb_target_altitude=alternate_cruise_altitude,
+                climb_target_altitude=diversion_cruise_altitude,
             ),
-            alternate_distance,
+            diversion_distance,
         )
-        alternate_flight_points = alternate_flight_calculator.compute_from(end_of_descent)
+        diversion_flight_points = diversion_flight_calculator.compute_from(end_of_descent)
 
-        end_of_alternate_climb = FlightPoint(
-            alternate_flight_points.loc[alternate_flight_points.tag == "End of climb"].iloc[0]
+        end_of_diversion_climb = FlightPoint(
+            diversion_flight_points.loc[diversion_flight_points.tag == "End of climb"].iloc[0]
         )
-        end_of_alternate_cruise = FlightPoint(
-            alternate_flight_points.loc[alternate_flight_points.tag == "End of cruise"].iloc[0]
+        end_of_diversion_cruise = FlightPoint(
+            diversion_flight_points.loc[diversion_flight_points.tag == "End of cruise"].iloc[0]
         )
-        end_of_alternate_descent = FlightPoint(
-            alternate_flight_points.loc[alternate_flight_points.tag == "End of descent"].iloc[0]
+        end_of_diversion_descent = FlightPoint(
+            diversion_flight_points.loc[diversion_flight_points.tag == "End of descent"].iloc[0]
         )
 
         outputs["data:mission:sizing:diversion:climb:fuel"] = (
-            end_of_descent.mass - end_of_alternate_climb.mass
+            end_of_descent.mass - end_of_diversion_climb.mass
         )
         outputs["data:mission:sizing:diversion:cruise:fuel"] = (
-            end_of_alternate_climb.mass - end_of_alternate_cruise.mass
+            end_of_diversion_climb.mass - end_of_diversion_cruise.mass
         )
         outputs["data:mission:sizing:diversion:descent:fuel"] = (
-            end_of_alternate_cruise.mass - end_of_alternate_descent.mass
+            end_of_diversion_cruise.mass - end_of_diversion_descent.mass
         )
 
         # Holding ==============================================================
@@ -198,12 +198,12 @@ class SizingFlight(om.ExplicitComponent):
             polar=high_speed_polar,
         )
 
-        holding_flight_points = holding_calculator.compute_from(end_of_alternate_descent)
+        holding_flight_points = holding_calculator.compute_from(end_of_diversion_descent)
         holding_flight_points.tag.iloc[-1] = "End of holding"
 
         end_of_holding = FlightPoint(holding_flight_points.iloc[-1])
         outputs["data:mission:sizing:holding:fuel"] = (
-            end_of_alternate_descent.mass - end_of_holding.mass
+            end_of_diversion_descent.mass - end_of_holding.mass
         )
 
         # Taxi-in ==============================================================
@@ -225,5 +225,5 @@ class SizingFlight(om.ExplicitComponent):
         fuel_route = inputs["data:weight:aircraft:MTOW"] - end_of_descent.mass
         outputs["data:mission:sizing:ZFW"] = end_of_taxi_in.mass - 0.03 * fuel_route
         self.flight_points = pd.concat(
-            [flight_points, alternate_flight_points, holding_flight_points, taxi_in_flight_points]
+            [flight_points, diversion_flight_points, holding_flight_points, taxi_in_flight_points]
         ).reset_index(drop=True)
