@@ -87,7 +87,7 @@ def test_climb_fixed_altitude_at_constant_TAS(polar):
 
     # initialisation then change instance attributes
     segment = AltitudeChangeSegment(
-        {"altitude": 10000.0}, propulsion, 120.0, polar,
+        target={"altitude": 10000.0}, propulsion=propulsion, reference_area=120.0, polar=polar,
     )  # not constant TAS order, as it is the default
     segment.thrust_rate = 1.0
     segment.time_step = 2.0
@@ -108,10 +108,10 @@ def test_climb_fixed_altitude_at_constant_EAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
-        FlightPoint(altitude=10000.0, equivalent_airspeed="constant"),
-        propulsion,
-        120.0,
-        polar,
+        target=FlightPoint(altitude=10000.0, equivalent_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
         thrust_rate=1.0,
         time_step=2.0,
     ).compute(FlightPoint(altitude=5000.0, mass=70000.0, equivalent_airspeed=100.0))
@@ -132,10 +132,12 @@ def test_climb_optimal_altitude_at_fixed_TAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
-        FlightPoint(altitude=AltitudeChangeSegment.OPTIMAL_ALTITUDE, true_airspeed="constant"),
-        propulsion,
-        120.0,
-        polar,
+        target=FlightPoint(
+            altitude=AltitudeChangeSegment.OPTIMAL_ALTITUDE, true_airspeed="constant"
+        ),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
         thrust_rate=1.0,
         time_step=2.0,
     ).compute(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),)
@@ -154,10 +156,12 @@ def test_climb_optimal_altitude_at_fixed_TAS_with_capped_mach(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
-        FlightPoint(altitude=AltitudeChangeSegment.OPTIMAL_ALTITUDE, true_airspeed="constant"),
-        propulsion,
-        120.0,
-        polar,
+        target=FlightPoint(
+            altitude=AltitudeChangeSegment.OPTIMAL_ALTITUDE, true_airspeed="constant"
+        ),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
         thrust_rate=1.0,
         time_step=2.0,
         maximum_mach=0.80,
@@ -178,10 +182,10 @@ def test_climb_not_enough_thrust(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     segment = AltitudeChangeSegment(
-        FlightPoint(altitude=10000.0, true_airspeed="constant"),
-        propulsion,
-        120.0,
-        polar,
+        target=FlightPoint(altitude=10000.0, true_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
         thrust_rate=0.1,
     )
     assert (
@@ -193,10 +197,10 @@ def test_descent_to_fixed_altitude_at_constant_TAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
-        FlightPoint(altitude=5000.0, true_airspeed="constant"),
-        propulsion,
-        100.0,
-        polar,
+        target=FlightPoint(altitude=5000.0, true_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=100.0,
+        polar=polar,
         thrust_rate=0.1,
         time_step=2.0,
     ).compute(
@@ -216,10 +220,10 @@ def test_descent_to_fixed_altitude_at_constant_EAS(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
-        FlightPoint(altitude=5000.0, equivalent_airspeed="constant"),
-        propulsion,
-        100.0,
-        polar,
+        target=FlightPoint(altitude=5000.0, equivalent_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=100.0,
+        polar=polar,
         thrust_rate=0.1,
         time_step=2.0,
     ).compute(FlightPoint(altitude=10000.0, equivalent_airspeed=200.0, mass=70000.0),)
@@ -237,10 +241,10 @@ def test_descent_to_fixed_EAS_at_constant_mach(polar):
     propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
-        FlightPoint(equivalent_airspeed=150.0, mach="constant"),
-        propulsion,
-        100.0,
-        polar,
+        target=FlightPoint(equivalent_airspeed=150.0, mach="constant"),
+        propulsion=propulsion,
+        reference_area=100.0,
+        polar=polar,
         thrust_rate=0.1,
         # time_step=5.0, # we use default time step
     ).compute(FlightPoint(altitude=10000.0, mass=70000.0, mach=0.78),)
@@ -260,7 +264,12 @@ def test_acceleration_to_TAS(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = SpeedChangeSegment(
-        {"true_airspeed": 250.0}, propulsion, 120.0, polar, thrust_rate=1.0, time_step=0.2
+        target={"true_airspeed": 250.0},
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=1.0,
+        time_step=0.2,
     )
     flight_points = segment.compute(
         {"altitude": 5000.0, "true_airspeed": 150.0, "mass": 70000.0}
@@ -279,10 +288,10 @@ def test_acceleration_to_EAS(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     flight_points = SpeedChangeSegment(
-        FlightPoint(equivalent_airspeed=250.0),
-        propulsion,
-        120.0,
-        polar,
+        target=FlightPoint(equivalent_airspeed=250.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
         thrust_rate=1.0,
         time_step=0.2,
     ).compute(FlightPoint(altitude=1000.0, true_airspeed=150.0, mass=70000.0))
@@ -300,7 +309,11 @@ def test_acceleration_not_enough_thrust(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = SpeedChangeSegment(
-        FlightPoint(true_airspeed=250.0), propulsion, 120.0, polar, thrust_rate=0.1,
+        target=FlightPoint(true_airspeed=250.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=0.1,
     )
     assert len(segment.compute(FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),))
 
@@ -309,7 +322,12 @@ def test_deceleration_not_enough_thrust(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = SpeedChangeSegment(
-        FlightPoint(true_airspeed=150.0), propulsion, 120.0, polar, thrust_rate=0.1, time_step=1.0
+        target=FlightPoint(true_airspeed=150.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=0.1,
+        time_step=1.0,
     )
     segment.time_step = 1.0
     flight_points = segment.compute(
@@ -328,7 +346,12 @@ def test_deceleration_not_enough_thrust(polar):
 def test_cruise_at_constant_altitude(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    segment = CruiseSegment(FlightPoint(ground_distance=5.0e5), propulsion, 120.0, polar)
+    segment = CruiseSegment(
+        target=FlightPoint(ground_distance=5.0e5),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+    )
     flight_points = segment.compute(FlightPoint(mass=70000.0, altitude=10000.0, mach=0.78))
 
     print_dataframe(flight_points)
@@ -349,7 +372,12 @@ def test_cruise_at_constant_altitude(polar):
 def test_optimal_cruise(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    segment = OptimalCruiseSegment(FlightPoint(ground_distance=5.0e5), propulsion, 120.0, polar,)
+    segment = OptimalCruiseSegment(
+        target=FlightPoint(ground_distance=5.0e5),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+    )
     flight_points = segment.compute(
         FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78),
     )
@@ -372,7 +400,7 @@ def test_optimal_cruise(polar):
 def test_taxi():
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    segment = TaxiSegment(FlightPoint(time=500.0), propulsion, 120.0, None, thrust_rate=0.1)
+    segment = TaxiSegment(target=FlightPoint(time=500.0), propulsion=propulsion, thrust_rate=0.1)
     flight_points = segment.compute(
         FlightPoint(altitude=10.0, true_airspeed=10.0, mass=50000.0, time=10000.0),
     )
@@ -388,7 +416,9 @@ def test_taxi():
 def test_hold(polar):
     propulsion = EngineSet(DummyEngine(0.5e5, 2.0e-5), 2)
 
-    segment = HoldSegment(FlightPoint(time=3000.0), propulsion, 120.0, polar)
+    segment = HoldSegment(
+        target=FlightPoint(time=3000.0), propulsion=propulsion, reference_area=120.0, polar=polar
+    )
     flight_points = segment.compute(
         FlightPoint(altitude=500.0, equivalent_airspeed=250.0, mass=60000.0),
     )

@@ -28,6 +28,12 @@ class TaxiSegment(ManualThrustSegment):
     constant altitude, speed and thrust rate.
     """
 
+    def __init__(self, **kwargs):
+
+        kwargs["polar"] = None
+        kwargs["reference_area"] = 1.0
+        super().__init__(**kwargs)
+
     def compute(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
         self.time_step = self.target.time  # This computation needs only one time step
