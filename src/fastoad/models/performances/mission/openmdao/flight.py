@@ -17,8 +17,10 @@ import pandas as pd
 from fastoad import BundleLoader
 from fastoad.constants import FlightPhase
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
+from fastoad.models.performances.mission.segments.hold import HoldSegment
+from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 from fastoad.models.propulsion import EngineSet
-from scipy.constants import foot
+from scipy.constants import foot, nautical_mile
 
 from ..flight.base import RangedFlight
 from ..flight.standard_flight import StandardFlight
@@ -57,6 +59,9 @@ class SizingFlight(om.ExplicitComponent):
         self.add_input("data:aerodynamics:high_lift_devices:takeoff:CL", np.nan)
         self.add_input("data:aerodynamics:high_lift_devices:takeoff:CD", np.nan)
 
+        self.add_input("data:mission:sizing:holding:duration", np.nan, units="s")
+        self.add_input("data:mission:sizing:taxi_in:duration", np.nan, units="s")
+        self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan, units="s")
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:takeoff:V2", np.nan, units="m/s")
         self.add_input("data:mission:sizing:takeoff:altitude", np.nan, units="m")
@@ -67,6 +72,11 @@ class SizingFlight(om.ExplicitComponent):
         self.add_output("data:mission:sizing:climb:fuel", units="kg")
         self.add_output("data:mission:sizing:cruise:fuel", units="kg")
         self.add_output("data:mission:sizing:descent:fuel", units="kg")
+        self.add_output("data:mission:sizing:alternate_climb:fuel", units="kg")
+        self.add_output("data:mission:sizing:alternate_cruise:fuel", units="kg")
+        self.add_output("data:mission:sizing:alternate_descent:fuel", units="kg")
+        self.add_output("data:mission:sizing:holding:fuel", units="kg")
+        self.add_output("data:mission:sizing:taxi_in:fuel", units="kg")
 
         self.declare_partials(["*"], ["*"])
 
@@ -129,88 +139,85 @@ class SizingFlight(om.ExplicitComponent):
         outputs["data:mission:sizing:cruise:fuel"] = end_of_climb.mass - end_of_cruise.mass
         outputs["data:mission:sizing:descent:fuel"] = end_of_cruise.mass - end_of_descent.mass
 
-        # # Alternate flight =====================================================
-        # alternate_distance = inputs["data:mission:sizing:alternate_cruise:distance"]
-        # if alternate_distance <= 200 * nautical_mile:
-        #     alternate_cruise_altitude = 22000 * foot
-        #
-        # else:
-        #     alternate_cruise_altitude = 31000 * foot
-        #
-        # alternate_flight_calculator = RangedFlight(
-        #     StandardFlight(
-        #         propulsion=engine_model,
-        #         reference_area=reference_area,
-        #         low_speed_climb_polar=low_speed_climb_polar,
-        #         high_speed_polar=high_speed_polar,
-        #         cruise_mach=cruise_mach,
-        #         thrust_rates=thrust_rates,
-        #         climb_target_altitude=alternate_cruise_altitude,
-        #     ),
-        #     flight_distance,
-        # )
-        # alternate_flight_points = alternate_flight_calculator.compute(end_of_descent)
-        #
-        # end_of_alternate_climb = FlightPoint(
-        #     alternate_flight_points.loc[alternate_flight_points.tag == "End of climb"].iloc[0]
-        # )
-        # end_of_alternate_cruise = FlightPoint(
-        #     alternate_flight_points.loc[alternate_flight_points.tag == "End of cruise"].iloc[0]
-        # )
-        # end_of_alternate_descent = FlightPoint(
-        #     alternate_flight_points.loc[alternate_flight_points.tag == "End of descent"].iloc[0]
-        # )
-        #
-        # outputs["data:mission:sizing:alternate_climb:fuel"] = (
-        #     end_of_descent.mass - end_of_alternate_climb.mass
-        # )
-        # outputs["data:mission:sizing:alternate_cruise:fuel"] = (
-        #     end_of_alternate_climb.mass - end_of_alternate_cruise.mass
-        # )
-        # outputs["data:mission:sizing:alternate_descent:fuel"] = (
-        #     end_of_alternate_cruise.mass - end_of_alternate_descent.mass
-        # )
-        #
-        # # Holding ==============================================================
-        #
-        # holding_duration = outputs["data:mission:sizing:holding:duration"]
-        #
-        # holding_calculator = HoldSegment(
-        #     target=FlightPoint(time=holding_duration),
-        #     propulsion=engine_model,
-        #     reference_area=reference_area,
-        #     polar=high_speed_polar,
-        # )
-        #
-        # holding_flight_points = holding_calculator.compute(end_of_alternate_descent)
-        # holding_flight_points.tag.iloc[-1] = "End of holding"
-        #
-        # end_of_holding = FlightPoint(holding_flight_points.iloc[-1])
-        # outputs["data:mission:sizing:holding:fuel"] = (
-        #     end_of_alternate_descent.mass - end_of_holding.mass
-        # )
-        #
-        # # Taxi-in ==============================================================
-        # taxi_in_duration = outputs["data:mission:sizing:taxi_in:duration"]
-        # taxi_in_thrust_rate = outputs["data:mission:sizing:taxi_in:thrust_rate"]
-        #
-        # taxi_in_calculator = TaxiSegment(
-        #     target=FlightPoint(time=taxi_in_duration),
-        #     propulsion=engine_model,
-        #     thrust_rate=taxi_in_thrust_rate,
-        # )
-        # taxi_in_flight_points = taxi_in_calculator.compute(end_of_holding)
-        # taxi_in_flight_points.tag.iloc[-1] = "End of taxi-in"
-        #
-        # end_of_taxi_in = FlightPoint(taxi_in_flight_points.iloc[-1])
-        # outputs["data:mission:sizing:taxi_in:fuel"] = end_of_holding.mass - end_of_taxi_in.mass
+        # Alternate flight =====================================================
+        alternate_distance = inputs["data:mission:sizing:alternate_cruise:distance"]
+        if alternate_distance <= 200 * nautical_mile:
+            alternate_cruise_altitude = 22000 * foot
+
+        else:
+            alternate_cruise_altitude = 31000 * foot
+
+        alternate_flight_calculator = RangedFlight(
+            StandardFlight(
+                propulsion=engine_model,
+                reference_area=reference_area,
+                low_speed_climb_polar=low_speed_climb_polar,
+                high_speed_polar=high_speed_polar,
+                cruise_mach=cruise_mach,
+                thrust_rates=thrust_rates,
+                climb_target_altitude=alternate_cruise_altitude,
+            ),
+            alternate_distance,
+        )
+        alternate_flight_points = alternate_flight_calculator.compute(end_of_descent)
+
+        end_of_alternate_climb = FlightPoint(
+            alternate_flight_points.loc[alternate_flight_points.tag == "End of climb"].iloc[0]
+        )
+        end_of_alternate_cruise = FlightPoint(
+            alternate_flight_points.loc[alternate_flight_points.tag == "End of cruise"].iloc[0]
+        )
+        end_of_alternate_descent = FlightPoint(
+            alternate_flight_points.loc[alternate_flight_points.tag == "End of descent"].iloc[0]
+        )
+
+        outputs["data:mission:sizing:alternate_climb:fuel"] = (
+            end_of_descent.mass - end_of_alternate_climb.mass
+        )
+        outputs["data:mission:sizing:alternate_cruise:fuel"] = (
+            end_of_alternate_climb.mass - end_of_alternate_cruise.mass
+        )
+        outputs["data:mission:sizing:alternate_descent:fuel"] = (
+            end_of_alternate_cruise.mass - end_of_alternate_descent.mass
+        )
+
+        # Holding ==============================================================
+
+        holding_duration = inputs["data:mission:sizing:holding:duration"]
+
+        holding_calculator = HoldSegment(
+            target=FlightPoint(time=holding_duration),
+            propulsion=engine_model,
+            reference_area=reference_area,
+            polar=high_speed_polar,
+        )
+
+        holding_flight_points = holding_calculator.compute(end_of_alternate_descent)
+        holding_flight_points.tag.iloc[-1] = "End of holding"
+
+        end_of_holding = FlightPoint(holding_flight_points.iloc[-1])
+        outputs["data:mission:sizing:holding:fuel"] = (
+            end_of_alternate_descent.mass - end_of_holding.mass
+        )
+
+        # Taxi-in ==============================================================
+        taxi_in_duration = inputs["data:mission:sizing:taxi_in:duration"]
+        taxi_in_thrust_rate = inputs["data:mission:sizing:taxi_in:thrust_rate"]
+
+        taxi_in_calculator = TaxiSegment(
+            target=FlightPoint(time=taxi_in_duration),
+            propulsion=engine_model,
+            thrust_rate=taxi_in_thrust_rate,
+        )
+        taxi_in_flight_points = taxi_in_calculator.compute(end_of_holding)
+        taxi_in_flight_points.tag.iloc[-1] = "End of taxi-in"
+
+        end_of_taxi_in = FlightPoint(taxi_in_flight_points.iloc[-1])
+        outputs["data:mission:sizing:taxi_in:fuel"] = end_of_holding.mass - end_of_taxi_in.mass
 
         # Final ================================================================
         fuel_route = inputs["data:weight:aircraft:MTOW"] - end_of_descent.mass
-        # outputs["data:mission:sizing:ZFW"] = end_of_taxi_in.mass - 0.03 * fuel_route
+        outputs["data:mission:sizing:ZFW"] = end_of_taxi_in.mass - 0.03 * fuel_route
         self.flight_points = pd.concat(
-            [
-                flight_points,
-                # alternate_flight_points, holding_flight_points, taxi_in_flight_points
-            ]
+            [flight_points, alternate_flight_points, holding_flight_points, taxi_in_flight_points]
         ).reset_index(drop=True)

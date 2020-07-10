@@ -219,7 +219,7 @@
                 </climb>
                 <descent>
                     <thrust_rate is_input="True">
-                        0.2<!--thrust rate (between 0.0 and 1.0) during descent phase  in sizing mission--></thrust_rate>
+                        0.1<!--thrust rate (between 0.0 and 1.0) during descent phase  in sizing mission--></thrust_rate>
                 </descent>
                 <takeoff>
                     <V2 units="m/s" is_input="True">
@@ -231,6 +231,13 @@
                 <alternate_cruise>
                     <distance units="NM">200.0</distance>
                 </alternate_cruise>
+                <holding>
+                    <duration units="min">45.</duration>
+                </holding>
+                <taxi_in>
+                    <duration units="min">5.</duration>
+                    <thrust_rate>0.3</thrust_rate>
+                </taxi_in>
             </sizing>
         </mission>
     </data>
