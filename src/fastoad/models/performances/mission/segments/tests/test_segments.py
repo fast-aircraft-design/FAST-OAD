@@ -91,7 +91,7 @@ def test_climb_fixed_altitude_at_constant_TAS(polar):
     )  # not constant TAS order, as it is the default
     segment.thrust_rate = 1.0
     segment.time_step = 2.0
-    flight_points = segment.compute(
+    flight_points = segment.compute_from(
         {"altitude": 5000.0, "mass": 70000.0, "true_airspeed": 150.0}
     )  # Test with dict
 
@@ -114,7 +114,7 @@ def test_climb_fixed_altitude_at_constant_EAS(polar):
         polar=polar,
         thrust_rate=1.0,
         time_step=2.0,
-    ).compute(FlightPoint(altitude=5000.0, mass=70000.0, equivalent_airspeed=100.0))
+    ).compute_from(FlightPoint(altitude=5000.0, mass=70000.0, equivalent_airspeed=100.0))
 
     first_point = flight_points.iloc[0]
     last_point = flight_points.iloc[-1]
@@ -140,7 +140,7 @@ def test_climb_optimal_altitude_at_fixed_TAS(polar):
         polar=polar,
         thrust_rate=1.0,
         time_step=2.0,
-    ).compute(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),)
+    ).compute_from(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),)
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
@@ -165,7 +165,7 @@ def test_climb_optimal_altitude_at_fixed_TAS_with_capped_mach(polar):
         thrust_rate=1.0,
         time_step=2.0,
         maximum_mach=0.80,
-    ).compute(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),)
+    ).compute_from(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),)
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
@@ -189,7 +189,8 @@ def test_climb_not_enough_thrust(polar):
         thrust_rate=0.1,
     )
     assert (
-        len(segment.compute(FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),)) == 1
+        len(segment.compute_from(FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),))
+        == 1
     )
 
 
@@ -203,7 +204,7 @@ def test_descent_to_fixed_altitude_at_constant_TAS(polar):
         polar=polar,
         thrust_rate=0.1,
         time_step=2.0,
-    ).compute(
+    ).compute_from(
         FlightPoint(altitude=10000.0, true_airspeed=200.0, mass=70000.0, time=2000.0),
     )  # And we define a non-null start time
 
@@ -226,7 +227,7 @@ def test_descent_to_fixed_altitude_at_constant_EAS(polar):
         polar=polar,
         thrust_rate=0.1,
         time_step=2.0,
-    ).compute(FlightPoint(altitude=10000.0, equivalent_airspeed=200.0, mass=70000.0),)
+    ).compute_from(FlightPoint(altitude=10000.0, equivalent_airspeed=200.0, mass=70000.0),)
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
@@ -247,7 +248,7 @@ def test_descent_to_fixed_EAS_at_constant_mach(polar):
         polar=polar,
         thrust_rate=0.1,
         # time_step=5.0, # we use default time step
-    ).compute(FlightPoint(altitude=10000.0, mass=70000.0, mach=0.78),)
+    ).compute_from(FlightPoint(altitude=10000.0, mass=70000.0, mach=0.78),)
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
@@ -271,7 +272,7 @@ def test_acceleration_to_TAS(polar):
         thrust_rate=1.0,
         time_step=0.2,
     )
-    flight_points = segment.compute(
+    flight_points = segment.compute_from(
         {"altitude": 5000.0, "true_airspeed": 150.0, "mass": 70000.0}
     )  # Test with dict
 
@@ -294,7 +295,7 @@ def test_acceleration_to_EAS(polar):
         polar=polar,
         thrust_rate=1.0,
         time_step=0.2,
-    ).compute(FlightPoint(altitude=1000.0, true_airspeed=150.0, mass=70000.0))
+    ).compute_from(FlightPoint(altitude=1000.0, true_airspeed=150.0, mass=70000.0))
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
@@ -315,7 +316,9 @@ def test_acceleration_not_enough_thrust(polar):
         polar=polar,
         thrust_rate=0.1,
     )
-    assert len(segment.compute(FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),))
+    assert len(
+        segment.compute_from(FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0),)
+    )
 
 
 def test_deceleration_not_enough_thrust(polar):
@@ -330,7 +333,7 @@ def test_deceleration_not_enough_thrust(polar):
         time_step=1.0,
     )
     segment.time_step = 1.0
-    flight_points = segment.compute(
+    flight_points = segment.compute_from(
         FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),
     )
 
@@ -352,7 +355,7 @@ def test_cruise_at_constant_altitude(polar):
         reference_area=120.0,
         polar=polar,
     )
-    flight_points = segment.compute(FlightPoint(mass=70000.0, altitude=10000.0, mach=0.78))
+    flight_points = segment.compute_from(FlightPoint(mass=70000.0, altitude=10000.0, mach=0.78))
 
     print_dataframe(flight_points)
 
@@ -378,7 +381,7 @@ def test_optimal_cruise(polar):
         reference_area=120.0,
         polar=polar,
     )
-    flight_points = segment.compute(
+    flight_points = segment.compute_from(
         FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78),
     )
 
@@ -401,7 +404,7 @@ def test_taxi():
     propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = TaxiSegment(target=FlightPoint(time=500.0), propulsion=propulsion, thrust_rate=0.1)
-    flight_points = segment.compute(
+    flight_points = segment.compute_from(
         FlightPoint(altitude=10.0, true_airspeed=10.0, mass=50000.0, time=10000.0),
     )
 
@@ -419,7 +422,7 @@ def test_hold(polar):
     segment = HoldSegment(
         target=FlightPoint(time=3000.0), propulsion=propulsion, reference_area=120.0, polar=polar
     )
-    flight_points = segment.compute(
+    flight_points = segment.compute_from(
         FlightPoint(altitude=500.0, equivalent_airspeed=250.0, mass=60000.0),
     )
 

@@ -133,7 +133,7 @@ def test_standard_flight_optimal_altitude(low_speed_polar, high_speed_polar, cle
         time_step=None,
     )
 
-    flight_points = flight_calculator.compute(
+    flight_points = flight_calculator.compute_from(
         FlightPoint(true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0),
     )
     print_dataframe(flight_points)
@@ -177,7 +177,7 @@ def test_standard_flight_fixed_altitude(low_speed_polar, high_speed_polar, clean
         time_step=None,
     )
 
-    flight_points = flight_calculator.compute(
+    flight_points = flight_calculator.compute_from(
         FlightPoint(equivalent_airspeed=260.0 * knot, altitude=11000.0 * foot, mass=60000.0),
     )
     plot_flight(flight_points, "test_standard_flight_fixed_altitude.png")
@@ -216,7 +216,7 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     start = FlightPoint(
         true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0, ground_distance=100000.0,
     )
-    flight_points = flight_calculator.compute(start)
+    flight_points = flight_calculator.compute_from(start)
 
     plot_flight(flight_points, "test_ranged_flight.png")
 

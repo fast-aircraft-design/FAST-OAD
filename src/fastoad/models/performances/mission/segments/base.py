@@ -127,7 +127,7 @@ class AbstractSegment(IFlightPart):
         if attr_name not in self.__keyword_args:
             self.__keyword_args[attr_name] = default_value
 
-    def compute(self, start: FlightPoint) -> pd.DataFrame:
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
         Computes the flight path segment from provided start point.
 
