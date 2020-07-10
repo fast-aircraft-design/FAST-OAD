@@ -24,6 +24,7 @@ from fastoad.models.handling_qualities.compute_static_margin import ComputeStati
 from fastoad.models.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from fastoad.models.loops.compute_wing_area import ComputeWingArea
 from fastoad.models.performances import Breguet
+from fastoad.models.performances.mission.openmdao.flight import SizingFlight
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
 from fastoad.models.weight.mass_breakdown.mass_breakdown import MTOWComputation
 from fastoad.models.weight.weight import Weight
@@ -89,6 +90,10 @@ def register_openmdao_systems():
     # Performance #################################################################
     OpenMDAOSystemRegistry.register_system(
         Breguet, "fastoad.performances.breguet", domain=ModelDomain.PERFORMANCE
+    )
+
+    OpenMDAOSystemRegistry.register_system(
+        SizingFlight, "fastoad.performances.sizing_flight", domain=ModelDomain.PERFORMANCE
     )
 
     # Propulsion ##################################################################
