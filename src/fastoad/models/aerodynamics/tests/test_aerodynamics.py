@@ -139,7 +139,7 @@ def test_aerodynamics_high_speed():
         "tuning:aerodynamics:aircraft:cruise:CL:offset",
         "tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:offset",
         "tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:offset",
-        "data:mission:sizing:cruise:altitude",
+        "data:mission:sizing:main_route:cruise:altitude",
         "data:mission:sizing:landing:flap_angle",
         "data:mission:sizing:landing:slat_angle",
         "data:TLAR:cruise_mach",

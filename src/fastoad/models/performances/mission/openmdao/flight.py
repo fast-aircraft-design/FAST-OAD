@@ -48,7 +48,7 @@ class SizingFlight(om.ExplicitComponent):
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
         self.add_input("data:TLAR:cruise_mach", np.nan)
         self.add_input("data:TLAR:range", np.nan, units="m")
-        self.add_input("data:mission:sizing:alternate_cruise:distance", np.nan, units="m")
+        self.add_input("data:mission:sizing:diversion:cruise:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:climb:thrust_rate", np.nan)
         self.add_input("data:mission:sizing:descent:thrust_rate", np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CL", np.nan, shape=POLAR_POINT_COUNT)
@@ -69,12 +69,12 @@ class SizingFlight(om.ExplicitComponent):
 
         self.add_output("data:mission:sizing:ZFW", units="kg")
         self.add_output("data:mission:sizing:initial_climb:fuel", units="kg")
-        self.add_output("data:mission:sizing:climb:fuel", units="kg")
-        self.add_output("data:mission:sizing:cruise:fuel", units="kg")
-        self.add_output("data:mission:sizing:descent:fuel", units="kg")
-        self.add_output("data:mission:sizing:alternate_climb:fuel", units="kg")
-        self.add_output("data:mission:sizing:alternate_cruise:fuel", units="kg")
-        self.add_output("data:mission:sizing:alternate_descent:fuel", units="kg")
+        self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
+        self.add_output("data:mission:sizing:main_route:cruise:fuel", units="kg")
+        self.add_output("data:mission:sizing:main_route:descent:fuel", units="kg")
+        self.add_output("data:mission:sizing:diversion:climb:fuel", units="kg")
+        self.add_output("data:mission:sizing:diversion:cruise:fuel", units="kg")
+        self.add_output("data:mission:sizing:diversion:descent:fuel", units="kg")
         self.add_output("data:mission:sizing:holding:fuel", units="kg")
         self.add_output("data:mission:sizing:taxi_in:fuel", units="kg")
 
@@ -135,12 +135,18 @@ class SizingFlight(om.ExplicitComponent):
         outputs["data:mission:sizing:initial_climb:fuel"] = (
             end_of_takeoff.mass - end_of_initial_climb.mass
         )
-        outputs["data:mission:sizing:climb:fuel"] = end_of_initial_climb.mass - end_of_climb.mass
-        outputs["data:mission:sizing:cruise:fuel"] = end_of_climb.mass - end_of_cruise.mass
-        outputs["data:mission:sizing:descent:fuel"] = end_of_cruise.mass - end_of_descent.mass
+        outputs["data:mission:sizing:main_route:climb:fuel"] = (
+            end_of_initial_climb.mass - end_of_climb.mass
+        )
+        outputs["data:mission:sizing:main_route:cruise:fuel"] = (
+            end_of_climb.mass - end_of_cruise.mass
+        )
+        outputs["data:mission:sizing:main_route:descent:fuel"] = (
+            end_of_cruise.mass - end_of_descent.mass
+        )
 
         # Alternate flight =====================================================
-        alternate_distance = inputs["data:mission:sizing:alternate_cruise:distance"]
+        alternate_distance = inputs["data:mission:sizing:diversion:cruise:distance"]
         if alternate_distance <= 200 * nautical_mile:
             alternate_cruise_altitude = 22000 * foot
 
@@ -171,13 +177,13 @@ class SizingFlight(om.ExplicitComponent):
             alternate_flight_points.loc[alternate_flight_points.tag == "End of descent"].iloc[0]
         )
 
-        outputs["data:mission:sizing:alternate_climb:fuel"] = (
+        outputs["data:mission:sizing:diversion:climb:fuel"] = (
             end_of_descent.mass - end_of_alternate_climb.mass
         )
-        outputs["data:mission:sizing:alternate_cruise:fuel"] = (
+        outputs["data:mission:sizing:diversion:cruise:fuel"] = (
             end_of_alternate_climb.mass - end_of_alternate_cruise.mass
         )
-        outputs["data:mission:sizing:alternate_descent:fuel"] = (
+        outputs["data:mission:sizing:diversion:descent:fuel"] = (
             end_of_alternate_cruise.mass - end_of_alternate_descent.mass
         )
 

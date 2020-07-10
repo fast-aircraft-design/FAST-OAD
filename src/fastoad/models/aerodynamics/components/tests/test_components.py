@@ -245,7 +245,7 @@ def test_polar():
         "data:geometry:wing:root:chord",
         "data:geometry:wing:tip:chord",
         "data:TLAR:cruise_mach",
-        "data:mission:sizing:cruise:altitude",
+        "data:mission:sizing:main_route:cruise:altitude",
     ]
     group = Group()
     group.add_subsystem("reynolds", ComputeReynolds(), promotes=["*"])

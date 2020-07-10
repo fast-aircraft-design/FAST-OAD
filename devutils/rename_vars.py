@@ -124,6 +124,7 @@ if __name__ == "__main__":
     old_new_translator = build_translator(old_new_names)
     file_list = [
         "src/fastoad/models/aerodynamics/tests/data/aerodynamics_inputs.xml",
+        "src/fastoad/models/aerodynamics/components/tests/data/aerodynamics_inputs.xml",
         "src/fastoad/models/geometry/tests/data/geometry_inputs_full.xml",
         "src/fastoad/models/handling_qualities/tests/data/hq_inputs.xml",
         "src/fastoad/models/performances/mission/openmdao/tests/data/flight_inputs.xml",

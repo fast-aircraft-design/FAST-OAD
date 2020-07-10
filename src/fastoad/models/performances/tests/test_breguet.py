@@ -27,7 +27,7 @@ from ..breguet import Breguet
 def test_breguet():
     # test 1
     ivc = om.IndepVarComp()
-    ivc.add_output("data:mission:sizing:cruise:altitude", 35000, units="ft")
+    ivc.add_output("data:mission:sizing:main_route:cruise:altitude", 35000, units="ft")
     ivc.add_output("data:TLAR:cruise_mach", 0.78)
     ivc.add_output("data:TLAR:range", 500, units="NM")
     ivc.add_output("data:TLAR:NPAX", 150)
@@ -46,7 +46,7 @@ def test_breguet():
     assert_allclose(problem.get_val("data:mission:sizing:cruise:distance", units="km"), 426.0)
     # test 2
     ivc = om.IndepVarComp()
-    ivc.add_output("data:mission:sizing:cruise:altitude", 35000, units="ft")
+    ivc.add_output("data:mission:sizing:main_route:cruise:altitude", 35000, units="ft")
     ivc.add_output("data:TLAR:cruise_mach", 0.78)
     ivc.add_output("data:TLAR:range", 1500, units="NM")
     ivc.add_output("data:TLAR:NPAX", 120)
@@ -63,21 +63,22 @@ def test_breguet():
     # Check consistency of other outputs
     assert_allclose(
         problem["data:mission:sizing:fuel"],
-        problem["data:mission:sizing:trip:fuel"] + problem["data:mission:sizing:fuel_reserve"],
+        problem["data:mission:sizing:main_route:fuel"]
+        + problem["data:mission:sizing:fuel_reserve"],
         rtol=1e-3,
     )
     assert_allclose(
-        problem["data:mission:sizing:trip:fuel"],
-        problem["data:mission:sizing:climb:fuel"]
-        + problem["data:mission:sizing:cruise:fuel"]
-        + problem["data:mission:sizing:descent:fuel"],
+        problem["data:mission:sizing:main_route:fuel"],
+        problem["data:mission:sizing:main_route:climb:fuel"]
+        + problem["data:mission:sizing:main_route:cruise:fuel"]
+        + problem["data:mission:sizing:main_route:descent:fuel"],
         rtol=1e-3,
     )
 
 
 def test_breguet_with_rubber_engine():
     ivc = om.IndepVarComp()
-    ivc.add_output("data:mission:sizing:cruise:altitude", 35000, units="ft")
+    ivc.add_output("data:mission:sizing:main_route:cruise:altitude", 35000, units="ft")
     ivc.add_output("data:TLAR:cruise_mach", 0.78)
     ivc.add_output("data:TLAR:range", 500, units="NM")
     ivc.add_output("data:TLAR:NPAX", 150)
