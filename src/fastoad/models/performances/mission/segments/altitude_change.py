@@ -50,7 +50,7 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
         Target altitude can be a float value (in **meters**), or can be set to
         :attr:`OPTIMAL_ALTITUDE`. In that last case, the target altitude will be the altitude where
-        maximum lift/drag ratio is achieved, depending on current mass and speed.
+        maximum lift/drag ratio is achieved for target speed, depending on current mass.
 
         For a speed target, as explained above, one value  TAS, EAS or Mach must be
         :code:`"constant"`. One of the two other ones can be set as target.
@@ -88,8 +88,30 @@ class AltitudeChangeSegment(ManualThrustSegment):
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         current = flight_points[-1]
         if self.target.CL == "optimal":
+            # Optimal altitude is based on a target Mach number, though target speed
+            # may be specified as TAS or EAS. If so, Mach number has to be computed
+            # for target altitude and speed.
+
+            # First, as target speed is expected to be set to "constant" for one
+            # parameter. Let's get the real value from start point.
+            target_speed = FlightPoint(self.target)
+            for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
+                if isinstance(target_speed.get(speed_param), str):
+                    target_speed[speed_param] = flight_points[0][speed_param]
+
+            # Now, let's compute target Mach number
+            atm = AtmosphereSI(max(self.target.altitude, current.altitude))
+            if target_speed.equivalent_airspeed:
+                target_speed.true_airspeed = atm.get_true_airspeed(target_speed.equivalent_airspeed)
+            if target_speed.true_airspeed:
+                target_speed.mach = target_speed.true_airspeed / atm.speed_of_sound
+
+            # Mach number has to be capped by self.maximum_mach
+            target_mach = min(target_speed.mach, self.maximum_mach)
+
+            # Now we compute target altitude
             self.target.altitude = self._get_optimal_altitude(
-                current.mass, current.mach, current.altitude
+                current.mass, target_mach, current.altitude
             )
 
         if self.target.altitude:

@@ -172,7 +172,10 @@ class AbstractSegment(IFlightPart):
                     replace_last_point, x0=self.time_step, x1=self.time_step / 2.0, rtol=tol
                 )
                 last_point_to_target = self._get_distance_to_target(flight_points)
-            elif np.abs(last_point_to_target) > np.abs(previous_point_to_target):
+            elif (
+                np.abs(last_point_to_target) > np.abs(previous_point_to_target)
+                and self.target.CL != "optimal"  # In this case, target altitude can move.
+            ):
                 # We get further from target. Let's stop without this point.
                 _LOGGER.warning("Target cannot be reached. Segment computation interrupted.")
                 del flight_points[-1]
