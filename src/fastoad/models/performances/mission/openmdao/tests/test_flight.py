@@ -13,19 +13,71 @@
 
 
 import os.path as pth
+from os import mkdir
+from shutil import rmtree
 
-import openmdao.api as om
-from numpy.testing import assert_allclose
-
+import matplotlib.pyplot as plt
+import pytest
 from fastoad.io import VariableIO
 from fastoad.models.performances.mission.openmdao.flight import SizingFlight
+from matplotlib.ticker import MultipleLocator
+from scipy.constants import foot, knot
+
 from tests.testing_utilities import run_system
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 
 
-def test_sizing_flight():
-    return
+@pytest.fixture(scope="module")
+def cleanup():
+    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    mkdir(RESULTS_FOLDER_PATH)
+
+
+def plot_flight(flight_points, fig_filename):
+    plt.figure(figsize=(12, 12))
+    ax1 = plt.subplot(2, 1, 1)
+    plt.plot(flight_points.ground_distance / 1000.0, flight_points.altitude / foot, "o-")
+    plt.xlabel("distance [km]")
+    plt.ylabel("altitude [ft]")
+    ax1.xaxis.set_minor_locator(MultipleLocator(50))
+    ax1.yaxis.set_minor_locator(MultipleLocator(500))
+    plt.grid(which="major", color="k")
+    plt.grid(which="minor")
+
+    ax2 = plt.subplot(2, 1, 2)
+    lines = []
+    lines += plt.plot(
+        flight_points.ground_distance / 1000.0, flight_points.true_airspeed, "b-", label="TAS [m/s]"
+    )
+    lines += plt.plot(
+        flight_points.ground_distance / 1000.0,
+        flight_points.equivalent_airspeed / knot,
+        "g--",
+        label="EAS [kt]",
+    )
+    plt.xlabel("distance [km]")
+    plt.ylabel("speed")
+    ax2.xaxis.set_minor_locator(MultipleLocator(50))
+    ax2.yaxis.set_minor_locator(MultipleLocator(5))
+    plt.grid(which="major", color="k")
+    plt.grid(which="minor")
+
+    plt.twinx(ax2)
+    lines += plt.plot(
+        flight_points.ground_distance / 1000.0, flight_points.mach, "r.-", label="Mach"
+    )
+    plt.ylabel("Mach")
+
+    labels = [l.get_label() for l in lines]
+    plt.legend(lines, labels, loc=0)
+
+    plt.savefig(pth.join(RESULTS_FOLDER_PATH, fig_filename))
+    plt.close()
+
+
+def test_sizing_flight(cleanup):
     # problem = FASTOADProblem()
     # problem.model = SizingFlight(propulsion_id="fastoad.wrapper.propulsion.rubber_engine")
     # problem.input_file_path = pth.join(DATA_FOLDER_PATH, "flight_inputs.xml")
@@ -39,8 +91,7 @@ def test_sizing_flight():
     problem = run_system(
         SizingFlight(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc
     )
+    plot_flight(problem.model.component.flight_points, "flight.png")
 
-    assert_allclose(problem["data:mission:sizing:ZFW"], 65076.0, atol=1)
+    # assert_allclose(problem["data:mission:sizing:ZFW"], 65076.0, atol=1)
     # assert_allclose(problem["data:mission:sizing:fuel"], 8924.0, atol=1)
-
-    om.convert_units()
