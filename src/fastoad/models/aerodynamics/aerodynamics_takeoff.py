@@ -12,6 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
+from fastoad.models.aerodynamics.components.compute_polar import ComputePolar, PolarType
 
 from .components.high_lift_aero import ComputeDeltaHighLift
 
@@ -25,3 +26,4 @@ class AerodynamicsTakeoff(om.Group):
 
     def setup(self):
         self.add_subsystem("delta_cl_cd", ComputeDeltaHighLift(landing_flag=False), promotes=["*"])
+        self.add_subsystem("polar", ComputePolar(type=PolarType.TAKEOFF), promotes=["*"])

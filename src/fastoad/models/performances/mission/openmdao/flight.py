@@ -60,8 +60,8 @@ class SizingFlight(om.ExplicitComponent):
         self.add_input("data:aerodynamics:aircraft:low_speed:CL", np.nan, shape=POLAR_POINT_COUNT)
         self.add_input("data:aerodynamics:aircraft:low_speed:CD", np.nan, shape=POLAR_POINT_COUNT)
 
-        self.add_input("data:aerodynamics:high_lift_devices:takeoff:CL", np.nan)
-        self.add_input("data:aerodynamics:high_lift_devices:takeoff:CD", np.nan)
+        self.add_input("data:aerodynamics:aircraft:takeoff:CL", np.nan, shape=POLAR_POINT_COUNT)
+        self.add_input("data:aerodynamics:aircraft:takeoff:CD", np.nan, shape=POLAR_POINT_COUNT)
 
         self.add_input("data:mission:sizing:holding:duration", np.nan, units="s")
         self.add_input("data:mission:sizing:taxi_in:duration", np.nan, units="s")
@@ -102,10 +102,8 @@ class SizingFlight(om.ExplicitComponent):
             inputs["data:aerodynamics:aircraft:cruise:CD"],
         )
         low_speed_climb_polar = Polar(
-            inputs["data:aerodynamics:aircraft:low_speed:CL"]
-            + inputs["data:aerodynamics:high_lift_devices:takeoff:CL"],
-            inputs["data:aerodynamics:aircraft:low_speed:CD"]
-            + inputs["data:aerodynamics:high_lift_devices:takeoff:CD"],
+            inputs["data:aerodynamics:aircraft:takeoff:CL"],
+            inputs["data:aerodynamics:aircraft:takeoff:CD"],
         )
 
         base_flight_calculator = RangedFlight(

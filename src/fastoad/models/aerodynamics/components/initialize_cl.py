@@ -32,7 +32,6 @@ class InitializeClPolar(ExplicitComponent):
         self.add_input("tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:k", val=np.nan)
         self.add_input("tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:offset", val=np.nan)
 
-        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
             self.add_output("data:aerodynamics:aircraft:low_speed:CL", shape=POLAR_POINT_COUNT)
         else:
