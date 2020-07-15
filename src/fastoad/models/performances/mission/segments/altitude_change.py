@@ -1,6 +1,6 @@
 """Classes for climb/descent segments."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,10 +15,11 @@
 import logging
 from typing import Tuple, List
 
+import numpy as np
 import pandas as pd
-from fastoad.utils.physics import AtmosphereSI
-from scipy.constants import g
+from scipy.constants import g, foot
 
+from fastoad.utils.physics import AtmosphereSI
 from .base import ManualThrustSegment
 from ..flight_point import FlightPoint
 
@@ -48,9 +49,12 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
         Target can be an altitude, or a speed.
 
-        Target altitude can be a float value (in **meters**), or can be set to
-        :attr:`OPTIMAL_ALTITUDE`. In that last case, the target altitude will be the altitude where
-        maximum lift/drag ratio is achieved for target speed, depending on current mass.
+        Target altitude can be a float value (in **meters**), or can be set to:
+        - :attr:`OPTIMAL_ALTITUDE`: in that case, the target altitude will be the altitude
+          where maximum lift/drag ratio is achieved for target speed, depending on current mass.
+        - :attr:`OPTIMAL_FLIGHT_LEVEL`: same as above, except that altitude will be rounded to
+          the nearest flight level (multiple of 1000 feet).
+
 
         For a speed target, as explained above, one value  TAS, EAS or Mach must be
         :code:`"constant"`. One of the two other ones can be set as target.
@@ -65,6 +69,10 @@ class AltitudeChangeSegment(ManualThrustSegment):
     #: Using this value will tell to target the altitude with max lift/drag ratio.
     OPTIMAL_ALTITUDE = -10000.0
 
+    #: Using this value will tell to target the nearest flight level to altitude
+    # with max lift/drag ratio.
+    OPTIMAL_FLIGHT_LEVEL = -20000.0
+
     def __init__(self, **kwargs):
 
         self._set_attribute_default("time_step", 2.0)
@@ -74,8 +82,11 @@ class AltitudeChangeSegment(ManualThrustSegment):
         start = FlightPoint(start)
         self.complete_flight_point(start)  # needed to ensure all speed values are computed.
 
-        if self.target.altitude == self.OPTIMAL_ALTITUDE:
-            self.target.CL = "optimal"
+        if self.target.altitude and self.target.altitude < 0.0:
+            # Target altitude will be modified along the process, so we keep track
+            # of the original order in target CL, that is not used otherwise.
+            self.target.CL = self.target.altitude
+            self.interrupt_if_getting_further_from_target = False
 
         atm = AtmosphereSI(start.altitude)
         if self.target.equivalent_airspeed == "constant":
@@ -87,7 +98,7 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         current = flight_points[-1]
-        if self.target.CL == "optimal":
+        if self.target.CL:
             # Optimal altitude is based on a target Mach number, though target speed
             # may be specified as TAS or EAS. If so, Mach number has to be computed
             # for target altitude and speed.
@@ -109,10 +120,15 @@ class AltitudeChangeSegment(ManualThrustSegment):
             # Mach number has to be capped by self.maximum_mach
             target_mach = min(target_speed.mach, self.maximum_mach)
 
-            # Now we compute target altitude
-            self.target.altitude = self._get_optimal_altitude(
+            # Now we compute optimal altitude
+            optimal_altitude = self._get_optimal_altitude(
                 current.mass, target_mach, current.altitude
             )
+            if self.target.CL == self.OPTIMAL_ALTITUDE:
+                self.target.altitude = optimal_altitude
+            else:  # self.target.CL == self.OPTIMAL_FLIGHT_LEVEL:
+                flight_level = 1000 * foot
+                self.target.altitude = flight_level * np.floor(optimal_altitude / flight_level)
 
         if self.target.altitude:
             return self.target.altitude - current.altitude

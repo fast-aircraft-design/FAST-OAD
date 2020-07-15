@@ -88,6 +88,10 @@ class AbstractSegment(IFlightPart):
         self.polar = polar
         self.target = FlightPoint(target)
 
+        # If true, computation will stop if a flight point is further from target
+        # than previous one.
+        self.interrupt_if_getting_further_from_target = True
+
         # Initialize self.__keyword_args from SEGMENT_KEYWORD_ARGUMENTS,
         # provided it can have already been defined in a subclass.
         for attr_name, default_value in SEGMENT_KEYWORD_ARGUMENTS.items():
@@ -177,7 +181,9 @@ class AbstractSegment(IFlightPart):
                 last_point_to_target = self._get_distance_to_target(flight_points)
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
-                and self.target.CL != "optimal"  # In this case, target altitude can move.
+                # If self.target.CL is defined, it means that we look for an optimal altitude and
+                # that target altitude can move, so it would be normal to get further from target.
+                and self.interrupt_if_getting_further_from_target
             ):
                 # We get further from target. Let's stop without this point.
                 _LOGGER.warning("Target cannot be reached. Segment computation interrupted.")
