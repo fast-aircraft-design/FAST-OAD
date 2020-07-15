@@ -205,7 +205,7 @@ def test_cd_trim():
     assert get_cd_trim(0.9) == approx(0.0005301, abs=1e-6)
 
 
-def test_polar():
+def test_polar_high_speed():
     """ Tests ComputePolar """
 
     # Need to plug Cd modules, Reynolds and Oswald

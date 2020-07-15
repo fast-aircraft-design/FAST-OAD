@@ -25,7 +25,7 @@ from fastoad.models.aerodynamics.components.cd_trim import CdTrim
 from fastoad.models.aerodynamics.components.compute_low_speed_aero import (
     ComputeAerodynamicsLowSpeed,
 )
-from fastoad.models.aerodynamics.components.compute_polar import ComputePolar
+from fastoad.models.aerodynamics.components.compute_polar import ComputePolar, PolarType
 from fastoad.models.aerodynamics.components.compute_reynolds import ComputeReynolds
 from fastoad.models.aerodynamics.components.initialize_cl import InitializeClPolar
 from fastoad.models.aerodynamics.components.oswald import OswaldCoefficient
@@ -56,4 +56,4 @@ class AerodynamicsLowSpeed(Group):
         )
         self.add_subsystem("cd0_total", Cd0Total(low_speed_aero=True), promotes=["*"])
         self.add_subsystem("cd_trim", CdTrim(low_speed_aero=True), promotes=["*"])
-        self.add_subsystem("get_polar", ComputePolar(low_speed_aero=True), promotes=["*"])
+        self.add_subsystem("get_polar", ComputePolar(type=PolarType.LOW_SPEED), promotes=["*"])

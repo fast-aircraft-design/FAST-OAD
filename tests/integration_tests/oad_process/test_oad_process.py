@@ -13,7 +13,6 @@ Test module for Overall Aircraft Design process
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import locale
 import os
 import os.path as pth
 import shutil
@@ -24,12 +23,12 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 import pytest
+from numpy.testing import assert_allclose
+
 from fastoad import api
 from fastoad.io import VariableIO
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
-from numpy.testing import assert_allclose
-
 from tests import root_folder_path
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
@@ -93,17 +92,23 @@ def test_oad_process(cleanup):
 
 def test_non_regression_breguet(cleanup):
     run_non_regression_test(
-        "oad_process_breguet.toml", "CeRAS01_legacy_breguet_result.xml", "non_regression_breguet"
+        "oad_process_breguet.toml",
+        "CeRAS01_legacy_breguet_result.xml",
+        "non_regression_breguet",
+        False,
     )
 
 
 def test_non_regression_mission(cleanup):
     run_non_regression_test(
-        "oad_process_mission.toml", "CeRAS01_legacy_mission_result.xml", "non_regression_mission"
+        "oad_process_mission.toml",
+        "CeRAS01_legacy_mission_result.xml",
+        "non_regression_mission",
+        False,
     )
 
 
-def run_non_regression_test(conf_file, legacy_result_file, result_dir):
+def run_non_regression_test(conf_file, legacy_result_file, result_dir, use_xfoil=False):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, result_dir)
     configuration_file_path = pth.join(results_folder_path, conf_file)
 
@@ -113,13 +118,13 @@ def run_non_regression_test(conf_file, legacy_result_file, result_dir):
     problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
 
     # Next trick is needed for overloading option setting from TOML file
-    if system() == "Windows":  # or xfoil_path:
-        problem.model.aerodynamics.landing._OPTIONS["use_xfoil"] = True
+    if use_xfoil and (system() == "Windows" or xfoil_path):
+        problem.model.aerodynamics_landing._OPTIONS["use_xfoil"] = True
         if system() != "Windows":
-            problem.model.aerodynamics.landing._OPTIONS["xfoil_exe_path"] = xfoil_path
+            problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = xfoil_path
         # BTW we narrow computed alpha range for sake of CPU time
-        problem.model.aerodynamics.landing._OPTIONS["xfoil_alpha_min"] = 20.0
-        problem.model.aerodynamics.landing._OPTIONS["xfoil_alpha_max"] = 22.0
+        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 20.0
+        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_max"] = 22.0
 
     # Generation and reading of inputs ----------------------------------------
     ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
