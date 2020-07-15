@@ -1,5 +1,5 @@
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +16,12 @@ from typing import Union, Sequence, Optional, Tuple
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_allclose
+from scipy.constants import foot
+
 from fastoad.constants import EngineSetting
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.propulsion import EngineSet, IPropulsion
-from numpy.testing import assert_allclose
-
 from ..altitude_change import AltitudeChangeSegment
 from ..cruise import OptimalCruiseSegment, CruiseSegment
 from ..speed_change import SpeedChangeSegment
@@ -150,6 +151,31 @@ def test_climb_optimal_altitude_at_fixed_TAS(polar):
     assert_allclose(last_point.mach, 0.8359, rtol=1e-4)
     assert_allclose(last_point.mass, 69832.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20401.0, rtol=1e-3)
+
+
+def test_climb_optimal_flight_level_at_fixed_TAS(polar):
+    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+
+    flight_points = AltitudeChangeSegment(
+        target=FlightPoint(
+            altitude=AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL, true_airspeed="constant"
+        ),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=1.0,
+        time_step=2.0,
+    ).compute_from(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),)
+    print_dataframe(flight_points)
+
+    last_point = flight_points.iloc[-1]
+    # Note: reference values are obtained by running the process with 0.01s as time step
+    assert_allclose(last_point.altitude / foot, 32000.0, atol=0.1)
+    assert_allclose(last_point.true_airspeed, 250.0)
+    assert_allclose(last_point.time, 78.7, rtol=1e-2)
+    assert_allclose(last_point.mach, 0.8318, rtol=1e-4)
+    assert_allclose(last_point.mass, 69843.0, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 19091.0, rtol=1e-3)
 
 
 def test_climb_optimal_altitude_at_fixed_TAS_with_capped_mach(polar):
