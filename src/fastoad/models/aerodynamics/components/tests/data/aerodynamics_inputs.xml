@@ -1,3 +1,18 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA/ISAE
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
 <FASTOAD_model>
   <geometry>
     <useless>0.9</useless>
@@ -80,10 +95,19 @@
     </geometry>
     <aerodynamics>
       <aircraft>
+        <takeoff>
+          <mach>0.2</mach>
+        </takeoff>
         <landing>
           <CL_max_clean>1.55<!--maximum lift coefficient in landing conditions without high-lift devices--></CL_max_clean>
         </landing>
       </aircraft>
+      <high_lift_devices>
+        <takeoff>
+          <CL>0.516</CL>
+          <CD>0.01430</CD>
+        </takeoff>
+      </high_lift_devices>
     </aerodynamics>
     <mission>
       <sizing>
