@@ -21,7 +21,7 @@ from numpy.testing import assert_allclose
 from scipy.constants import foot
 
 from tests.testing_utilities import run_system
-from ..breguet import Breguet
+from ..openmdao import OMBreguet
 
 
 def test_breguet():
@@ -35,7 +35,7 @@ def test_breguet():
     ivc.add_output("data:propulsion:SFC", 1e-5, units="kg/N/s")
     ivc.add_output("data:weight:aircraft:MTOW", 74000, units="kg")
 
-    problem = run_system(Breguet(), ivc)
+    problem = run_system(OMBreguet(), ivc)
 
     assert_allclose(problem["data:mission:sizing:ZFW"], 65617.0, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:fuel"], 8382.0, rtol=1e-3)
@@ -54,7 +54,7 @@ def test_breguet():
     ivc.add_output("data:propulsion:SFC", 1e-5, units="kg/N/s")
     ivc.add_output("data:weight:aircraft:MTOW", 74000, units="kg")
 
-    problem = run_system(Breguet(), ivc)
+    problem = run_system(OMBreguet(), ivc)
 
     assert_allclose(problem["data:mission:sizing:ZFW"], 62473.0, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:fuel"], 11526.0, rtol=1e-3)
@@ -94,7 +94,7 @@ def test_breguet_with_rubber_engine():
 
     # With rubber engine OM component
     group = om.Group()
-    group.add_subsystem("breguet", Breguet(), promotes=["*"])
+    group.add_subsystem("breguet", OMBreguet(), promotes=["*"])
     group.add_subsystem("engine", OMRubberEngineComponent(), promotes=["*"])
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = run_system(group, ivc)
@@ -104,7 +104,7 @@ def test_breguet_with_rubber_engine():
     assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0642, rtol=1e-3)
 
     # With direct call to rubber engine
-    problem2 = run_system(Breguet(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc)
+    problem2 = run_system(OMBreguet(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc)
 
     assert_allclose(problem2["data:mission:sizing:ZFW"], 65076.0, atol=1)
     assert_allclose(problem2["data:mission:sizing:fuel"], 8924.0, atol=1)
