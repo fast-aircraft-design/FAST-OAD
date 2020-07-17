@@ -514,16 +514,16 @@
                 <weight_E unit="kg">470.0</weight_E>
             </crew>
             <sizing_cases>
-                <SizingCase id="149">
+                <SizingCase1>
                     <U_gust unit="m/s">15.25</U_gust>
                     <altitude unit="m">20000.0</altitude>
                     <Vc_EAS unit="m/s">375.0</Vc_EAS>
-                </SizingCase>
-                <SizingCase id="150">
+                </SizingCase1>
+                <SizingCase2>
                     <U_gust unit="m/s">15.25</U_gust>
                     <altitude unit="m">20000.0</altitude>
                     <Vc_EAS unit="m/s">375.0</Vc_EAS>
-                </SizingCase>
+                </SizingCase2>
             </sizing_cases>
             <k_factors id="174">
                 <Wing_A1 id="196">
