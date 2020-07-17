@@ -20,8 +20,10 @@ from fastoad.models.propulsion import EngineSet
 from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g
 
+from . import Breguet
 
-class Breguet(om.Group):
+
+class OMBreguet(om.Group):
     """
     Estimation of fuel consumption through Breguet formula.
 
@@ -41,16 +43,83 @@ class Breguet(om.Group):
     def setup(self):
         if self.options["propulsion_id"] is None:
             self.add_subsystem("propulsion_link", _BreguetPropulsion(), promotes=["*"])
+            self.add_subsystem("distances", _Distances(), promotes=["*"])
+            self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
+            self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
         else:
             self.add_subsystem(
                 "propulsion",
-                _BreguetEngine(propulsion_id=self.options["propulsion_id"]),
+                BreguetWithPropulsion(propulsion_id=self.options["propulsion_id"]),
                 promotes=["*"],
             )
-        self.add_subsystem("distances", _Distances(), promotes=["*"])
-        self.add_subsystem("cruise_mass_ratio", _CruiseMassRatio(), promotes=["*"])
-        self.add_subsystem("fuel_weights", _FuelWeightFromMTOW(), promotes=["*"])
         self.add_subsystem("consumption", _Consumption(), promotes=["*"])
+
+
+class BreguetWithPropulsion(om.ExplicitComponent):
+    def initialize(self):
+        self.options.declare("propulsion_id", default="", types=str)
+
+    def setup(self):
+        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
+        self._engine_wrapper.setup(self)
+
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
+        self.add_input("data:TLAR:cruise_mach", np.nan)
+        self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
+        self.add_input("data:aerodynamics:aircraft:cruise:L_D_max", np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", 2)
+        self.add_input("settings:mission:sizing:breguet:climb:mass_ratio", 0.97)
+        self.add_input("settings:mission:sizing:breguet:descent:mass_ratio", 0.98)
+        self.add_input("settings:mission:sizing:breguet:reserve:mass_ratio", 0.06)
+        self.add_input("data:TLAR:range", np.nan, units="m")
+        self.add_input("settings:mission:sizing:breguet:climb_descent_distance", 500.0e3, units="m")
+
+        self.add_output("data:mission:sizing:main_route:climb:distance", units="m", ref=1e3)
+        self.add_output("data:mission:sizing:main_route:cruise:distance", units="m", ref=1e3)
+        self.add_output("data:mission:sizing:main_route:descent:distance", units="m", ref=1e3)
+        self.add_output("data:mission:sizing:ZFW", units="kg", ref=1e4)
+        self.add_output("data:mission:sizing:fuel", units="kg", ref=1e4)
+        self.add_output("data:mission:sizing:main_route:fuel", units="kg", ref=1e4)
+        self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg", ref=1e4)
+        self.add_output("data:mission:sizing:main_route:cruise:fuel", units="kg", ref=1e4)
+        self.add_output("data:mission:sizing:main_route:descent:fuel", units="kg", ref=1e4)
+        self.add_output("data:mission:sizing:fuel_reserve", units="kg", ref=1e4)
+
+        self.add_output("data:propulsion:SFC", units="kg/s/N", ref=1e-4)
+        self.add_output("data:propulsion:thrust_rate", lower=0.0, upper=1.0)
+        self.add_output("data:propulsion:thrust", units="N", ref=1e5)
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        propulsion_model = EngineSet(
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
+        )
+
+        breguet = Breguet(
+            propulsion_model,
+            inputs["data:aerodynamics:aircraft:cruise:L_D_max"],
+            inputs["data:TLAR:cruise_mach"],
+            inputs["data:mission:sizing:main_route:cruise:altitude"],
+            inputs["settings:mission:sizing:breguet:climb:mass_ratio"],
+            inputs["settings:mission:sizing:breguet:descent:mass_ratio"],
+            inputs["settings:mission:sizing:breguet:reserve:mass_ratio"],
+            inputs["settings:mission:sizing:breguet:climb_descent_distance"],
+        )
+        breguet.compute(
+            inputs["data:weight:aircraft:MTOW"], inputs["data:TLAR:range"],
+        )
+
+        outputs["data:propulsion:SFC"] = breguet.sfc
+        outputs["data:propulsion:thrust_rate"] = breguet.thrust_rate
+        outputs["data:propulsion:thrust"] = breguet.thrust
+        outputs["data:mission:sizing:ZFW"] = breguet.zfw
+        outputs["data:mission:sizing:fuel"] = breguet.mission_fuel
+        outputs["data:mission:sizing:main_route:fuel"] = breguet.flight_fuel
+        outputs["data:mission:sizing:main_route:climb:fuel"] = breguet.climb_fuel
+        outputs["data:mission:sizing:main_route:cruise:fuel"] = breguet.cruise_fuel
+        outputs["data:mission:sizing:main_route:descent:fuel"] = breguet.descent_fuel
+        outputs["data:mission:sizing:fuel_reserve"] = breguet.reserve_fuel
 
 
 class _Consumption(om.ExplicitComponent):
@@ -72,47 +141,6 @@ class _Consumption(om.ExplicitComponent):
         distance = inputs["data:TLAR:range"]
 
         outputs["data:mission:sizing:fuel:unitary"] = fuel / npax / distance
-
-
-class _BreguetEngine(om.ExplicitComponent):
-    def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
-
-    def setup(self):
-        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
-        self._engine_wrapper.setup(self)
-        self.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
-        self.add_input("data:TLAR:cruise_mach", np.nan)
-        self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
-        self.add_input("data:aerodynamics:aircraft:cruise:L_D_max", np.nan)
-        self.add_input("data:geometry:propulsion:engine:count", 2)
-        self.add_input("settings:mission:sizing:breguet:climb:mass_ratio", 0.97)
-
-        self.add_output("data:propulsion:SFC", units="kg/s/N", ref=1e-4)
-        self.add_output("data:propulsion:thrust_rate", lower=0.0, upper=1.0)
-        self.add_output("data:propulsion:thrust", units="N", ref=1e5)
-
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        engine_model = EngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
-        ld_ratio = inputs["data:aerodynamics:aircraft:cruise:L_D_max"]
-        mtow = inputs["data:weight:aircraft:MTOW"]
-        initial_cruise_mass = mtow * inputs["settings:mission:sizing:breguet:climb:mass_ratio"]
-
-        thrust = initial_cruise_mass / ld_ratio * g
-        sfc, thrust_rate, _ = engine_model.compute_flight_points(
-            inputs["data:TLAR:cruise_mach"],
-            inputs["data:mission:sizing:main_route:cruise:altitude"],
-            EngineSetting.CRUISE,
-            thrust=thrust,
-        )
-        outputs["data:propulsion:thrust"] = thrust
-        outputs["data:propulsion:SFC"] = sfc
-        outputs["data:propulsion:thrust_rate"] = thrust_rate
 
 
 class _BreguetPropulsion(om.ExplicitComponent):
