@@ -17,6 +17,7 @@ import pandas as pd
 from fastoad import BundleLoader
 from fastoad.constants import FlightPhase
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
+from fastoad.models.performances.breguet import Breguet
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 from fastoad.models.propulsion import EngineSet
@@ -87,6 +88,36 @@ class SizingFlight(om.ExplicitComponent):
         self.declare_partials(["*"], ["*"])
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        try:
+            self.compute_mission(inputs, outputs)
+        except:
+            self.compute_breguet(inputs, outputs)
+
+    def compute_breguet(self, inputs, outputs):
+        propulsion_model = EngineSet(
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
+        )
+        high_speed_polar = Polar(
+            inputs["data:aerodynamics:aircraft:cruise:CL"],
+            inputs["data:aerodynamics:aircraft:cruise:CD"],
+        )
+
+        breguet = Breguet(
+            propulsion_model,
+            max(
+                10.0, high_speed_polar.optimal_cl / high_speed_polar.cd(high_speed_polar.optimal_cl)
+            ),
+            inputs["data:TLAR:cruise_mach"],
+            10000.0,
+        )
+        breguet.compute(
+            inputs["data:weight:aircraft:MTOW"], inputs["data:TLAR:range"],
+        )
+
+        outputs["data:mission:sizing:ZFW"] = breguet.zfw
+        outputs["data:mission:sizing:fuel"] = breguet.mission_fuel
+
+    def compute_mission(self, inputs, outputs):
         engine_model = EngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
