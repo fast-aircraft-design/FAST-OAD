@@ -38,17 +38,20 @@ class InitialClimbPhase(AbstractManualThrustFlightPhase):
 
     @property
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:
-        self.segment_kwargs["engine_setting"] = EngineSetting.CLIMB
         return [
             AltitudeChangeSegment(
                 target=FlightPoint(equivalent_airspeed="constant", altitude=400.0 * foot),
+                engine_setting=EngineSetting.TAKEOFF,
                 **self.segment_kwargs,
             ),
             SpeedChangeSegment(
-                target=FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs,
+                target=FlightPoint(equivalent_airspeed=250.0 * knot),
+                engine_setting=EngineSetting.TAKEOFF,
+                **self.segment_kwargs,
             ),
             AltitudeChangeSegment(
                 target=FlightPoint(equivalent_airspeed="constant", altitude=1500.0 * foot),
+                engine_setting=EngineSetting.TAKEOFF,
                 **self.segment_kwargs,
             ),
             "End of initial climb",
