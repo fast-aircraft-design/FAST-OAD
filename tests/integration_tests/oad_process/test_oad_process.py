@@ -138,9 +138,7 @@ def run_non_regression_test(conf_file, legacy_result_file, result_dir, use_xfoil
     problem.write_outputs()
 
     try:
-        problem.model.performance.flight_points.applymap(
-            lambda x: np.asscalar(np.asarray(x))
-        ).to_csv(
+        problem.model.performance.flight_points.to_csv(
             pth.join(results_folder_path, "flight_points.csv"), sep="\t", decimal=",",
         )
     except AttributeError:

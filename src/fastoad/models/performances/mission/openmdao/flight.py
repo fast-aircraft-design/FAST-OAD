@@ -53,7 +53,7 @@ class SizingFlight(om.ExplicitComponent):
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
         self.add_input("data:TLAR:cruise_mach", np.nan)
         self.add_input("data:TLAR:range", np.nan, units="m")
-        self.add_input("data:mission:sizing:diversion:cruise:distance", np.nan, units="m")
+        self.add_input("data:mission:sizing:diversion:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:climb:thrust_rate", np.nan)
         self.add_input("data:mission:sizing:descent:thrust_rate", np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CL", np.nan, shape=POLAR_POINT_COUNT)
@@ -75,13 +75,34 @@ class SizingFlight(om.ExplicitComponent):
 
         self.add_output("data:mission:sizing:ZFW", units="kg")
         self.add_output("data:mission:sizing:fuel", units="kg")
+
         self.add_output("data:mission:sizing:initial_climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:cruise:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:descent:fuel", units="kg")
+
+        self.add_output("data:mission:sizing:initial_climb:distance", units="m")
+        self.add_output("data:mission:sizing:main_route:climb:distance", units="m")
+        self.add_output("data:mission:sizing:main_route:cruise:distance", units="m")
+        self.add_output("data:mission:sizing:main_route:descent:distance", units="m")
+
+        self.add_output("data:mission:sizing:initial_climb:duration", units="s")
+        self.add_output("data:mission:sizing:main_route:climb:duration", units="s")
+        self.add_output("data:mission:sizing:main_route:cruise:duration", units="s")
+        self.add_output("data:mission:sizing:main_route:descent:duration", units="s")
+
         self.add_output("data:mission:sizing:diversion:climb:fuel", units="kg")
         self.add_output("data:mission:sizing:diversion:cruise:fuel", units="kg")
         self.add_output("data:mission:sizing:diversion:descent:fuel", units="kg")
+
+        self.add_output("data:mission:sizing:diversion:climb:distance", units="m")
+        self.add_output("data:mission:sizing:diversion:cruise:distance", units="m")
+        self.add_output("data:mission:sizing:diversion:descent:distance", units="m")
+
+        self.add_output("data:mission:sizing:diversion:climb:duration", units="s")
+        self.add_output("data:mission:sizing:diversion:cruise:duration", units="s")
+        self.add_output("data:mission:sizing:diversion:descent:duration", units="s")
+
         self.add_output("data:mission:sizing:holding:fuel", units="kg")
         self.add_output("data:mission:sizing:taxi_in:fuel", units="kg")
 
@@ -179,9 +200,33 @@ class SizingFlight(om.ExplicitComponent):
         outputs["data:mission:sizing:main_route:descent:fuel"] = (
             end_of_cruise.mass - end_of_descent.mass
         )
+        outputs["data:mission:sizing:initial_climb:distance"] = (
+            end_of_initial_climb.ground_distance - end_of_takeoff.ground_distance
+        )
+        outputs["data:mission:sizing:main_route:climb:distance"] = (
+            end_of_climb.ground_distance - end_of_initial_climb.ground_distance
+        )
+        outputs["data:mission:sizing:main_route:cruise:distance"] = (
+            end_of_cruise.ground_distance - end_of_climb.ground_distance
+        )
+        outputs["data:mission:sizing:main_route:descent:distance"] = (
+            end_of_descent.ground_distance - end_of_cruise.ground_distance
+        )
+        outputs["data:mission:sizing:initial_climb:duration"] = (
+            end_of_initial_climb.time - end_of_takeoff.time
+        )
+        outputs["data:mission:sizing:main_route:climb:duration"] = (
+            end_of_climb.time - end_of_initial_climb.time
+        )
+        outputs["data:mission:sizing:main_route:cruise:duration"] = (
+            end_of_cruise.time - end_of_climb.time
+        )
+        outputs["data:mission:sizing:main_route:descent:duration"] = (
+            end_of_descent.time - end_of_cruise.time
+        )
 
         # Diversion flight =====================================================
-        diversion_distance = inputs["data:mission:sizing:diversion:cruise:distance"]
+        diversion_distance = inputs["data:mission:sizing:diversion:distance"]
         if diversion_distance <= 200 * nautical_mile:
             diversion_cruise_altitude = 22000 * foot
 
@@ -220,6 +265,24 @@ class SizingFlight(om.ExplicitComponent):
         )
         outputs["data:mission:sizing:diversion:descent:fuel"] = (
             end_of_diversion_cruise.mass - end_of_diversion_descent.mass
+        )
+        outputs["data:mission:sizing:diversion:climb:distance"] = (
+            end_of_diversion_climb.ground_distance - end_of_descent.ground_distance
+        )
+        outputs["data:mission:sizing:diversion:cruise:distance"] = (
+            end_of_diversion_cruise.ground_distance - end_of_diversion_climb.ground_distance
+        )
+        outputs["data:mission:sizing:diversion:descent:distance"] = (
+            end_of_diversion_descent.ground_distance - end_of_diversion_cruise.ground_distance
+        )
+        outputs["data:mission:sizing:diversion:climb:duration"] = (
+            end_of_diversion_climb.time - end_of_descent.time
+        )
+        outputs["data:mission:sizing:diversion:cruise:duration"] = (
+            end_of_diversion_cruise.time - end_of_diversion_climb.time
+        )
+        outputs["data:mission:sizing:diversion:descent:duration"] = (
+            end_of_diversion_descent.time - end_of_diversion_cruise.time
         )
 
         # Holding ==============================================================

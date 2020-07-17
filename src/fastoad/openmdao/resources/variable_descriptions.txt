@@ -225,6 +225,7 @@ data:mission:sizing:diversion:cruise:duration	duration of diversion cruise phase
 data:mission:sizing:diversion:cruise:fuel	mass of consumed fuel during diversion cruise phase in sizing mission
 data:mission:sizing:diversion:descent:duration	duration of diversion descent phase in sizing mission
 data:mission:sizing:diversion:descent:fuel	mass of consumed fuel during diversion descent phase in sizing mission
+data:mission:sizing:diversion:distance	distance to travel during diversion in sizing mission
 data:mission:sizing:flight:duration	total flight time in sizing mission
 data:mission:sizing:flight:fuel	mass of consumed fuel during flight in sizing mission
 data:mission:sizing:fuel	consumed fuel mass during whole mission

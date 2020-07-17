@@ -86,9 +86,7 @@
           <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
         </taxi_in>
         <diversion>
-          <cruise>
-            <distance units="NM">200.0</distance>
-          </cruise>
+          <distance units="NM">200.0</distance>
         </diversion>
       </sizing>
     </mission>
