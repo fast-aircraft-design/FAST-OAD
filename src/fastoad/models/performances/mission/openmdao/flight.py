@@ -44,6 +44,7 @@ class SizingFlight(om.ExplicitComponent):
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("out_file", default="", types=str)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
@@ -326,6 +327,18 @@ class SizingFlight(om.ExplicitComponent):
             inputs["data:weight:aircraft:MTOW"] - outputs["data:mission:sizing:ZFW"]
         )
 
-        self.flight_points = pd.concat(
-            [flight_points, diversion_flight_points, holding_flight_points, taxi_in_flight_points]
-        ).reset_index(drop=True)
+        self.flight_points = (
+            pd.concat(
+                [
+                    flight_points,
+                    diversion_flight_points,
+                    holding_flight_points,
+                    taxi_in_flight_points,
+                ]
+            )
+            .reset_index(drop=True)
+            .applymap(lambda x: np.asscalar(np.asarray(x)))
+        )
+
+        if self.options["out_file"]:
+            self.flight_points.to_csv(self.options["out_file"])
