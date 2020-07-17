@@ -23,12 +23,12 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 import pytest
-from numpy.testing import assert_allclose
-
 from fastoad import api
 from fastoad.io import VariableIO
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
+from numpy.testing import assert_allclose
+
 from tests import root_folder_path
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
@@ -95,7 +95,7 @@ def test_non_regression_breguet(cleanup):
         "oad_process_breguet.toml",
         "CeRAS01_legacy_breguet_result.xml",
         "non_regression_breguet",
-        False,
+        True,
     )
 
 
@@ -123,7 +123,7 @@ def run_non_regression_test(conf_file, legacy_result_file, result_dir, use_xfoil
         if system() != "Windows":
             problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = xfoil_path
         # BTW we narrow computed alpha range for sake of CPU time
-        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 20.0
+        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 18.0
         problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_max"] = 22.0
 
     # Generation and reading of inputs ----------------------------------------
