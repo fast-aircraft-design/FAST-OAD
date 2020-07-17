@@ -298,7 +298,7 @@ data:mission:sizing:descent:thrust_rate, Aircraft/mission/sizing/descent/descent
 data:mission:sizing:diversion:climb:fuel, Aircraft/mission/sizing/alternate_climb/fuel_al_climb
 data:mission:sizing:diversion:climb:duration, Aircraft/mission/sizing/alternate_climb/time_al_climb
 mission:sizing:alternate_climb:hr, Aircraft/mission/sizing/alternate_climb/hr_al_climb
-data:mission:sizing:diversion:cruise:distance, Aircraft/mission/sizing/alternate_cruise/al_distance
+data:mission:sizing:diversion:distance, Aircraft/mission/sizing/alternate_cruise/al_distance
 data:mission:sizing:diversion:cruise:fuel, Aircraft/mission/sizing/alternate_cruise/fuel_al_cruise
 data:mission:sizing:diversion:cruise:duration, Aircraft/mission/sizing/alternate_cruise/time_al_cruise
 mission:sizing:alternate_cruise:hr, Aircraft/mission/sizing/alternate_cruise/hr_al_cruise

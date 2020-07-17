@@ -247,6 +247,10 @@
           <flap_angle units="deg">30.0<!--flap angle during landing phase in sizing mission--></flap_angle>
           <slat_angle units="deg">20.0<!--slat angle during landing phase in sizing mission--></slat_angle>
         </landing>
+        <takeoff>
+          <flap_angle units="deg">10.0<!--flap angle during landing phase in sizing mission--></flap_angle>
+          <slat_angle units="deg">18.0<!--slat angle during landing phase in sizing mission--></slat_angle>
+        </takeoff>
         <main_route>
           <fuel units="kg">17091.436894637212</fuel>
           <climb>
