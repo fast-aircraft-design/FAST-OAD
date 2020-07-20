@@ -50,6 +50,7 @@ class SizingFlight(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
+        # Inputs -----------------------------------------------------------------------------------
         self.add_input("data:geometry:propulsion:engine:count", 2)
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
         self.add_input("data:TLAR:cruise_mach", np.nan)
@@ -65,17 +66,22 @@ class SizingFlight(om.ExplicitComponent):
         self.add_input("data:aerodynamics:aircraft:takeoff:CL", np.nan, shape=POLAR_POINT_COUNT)
         self.add_input("data:aerodynamics:aircraft:takeoff:CD", np.nan, shape=POLAR_POINT_COUNT)
 
-        self.add_input("data:mission:sizing:holding:duration", np.nan, units="s")
-        self.add_input("data:mission:sizing:taxi_in:duration", np.nan, units="s")
-        self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan, units="s")
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
+
         self.add_input("data:mission:sizing:takeoff:V2", np.nan, units="m/s")
-        self.add_input("data:mission:sizing:takeoff:altitude", np.nan, units="m")
-        self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
+
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
 
-        self.add_output("data:mission:sizing:ZFW", units="kg")
-        self.add_output("data:mission:sizing:fuel", units="kg")
+        self.add_input("data:mission:sizing:takeoff:altitude", np.nan, units="m")
+        self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
+
+        self.add_input("data:mission:sizing:holding:duration", np.nan, units="s")
+
+        self.add_input("data:mission:sizing:taxi_in:duration", np.nan, units="s")
+        self.add_input("data:mission:sizing:taxi_in:speed", np.nan, units="m/s")
+        self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan)
+
+        # Outputs ----------------------------------------------------------------------------------
 
         self.add_output("data:mission:sizing:initial_climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
@@ -107,12 +113,15 @@ class SizingFlight(om.ExplicitComponent):
         self.add_output("data:mission:sizing:holding:fuel", units="kg")
         self.add_output("data:mission:sizing:taxi_in:fuel", units="kg")
 
+        self.add_output("data:mission:sizing:ZFW", units="kg")
+        self.add_output("data:mission:sizing:fuel", units="kg")
+
         self.declare_partials(["*"], ["*"])
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         try:
             self.compute_mission(inputs, outputs)
-        except:
+        except IndexError:
             self.compute_breguet(inputs, outputs)
 
     def compute_breguet(self, inputs, outputs):
@@ -314,6 +323,8 @@ class SizingFlight(om.ExplicitComponent):
             propulsion=engine_model,
             thrust_rate=taxi_in_thrust_rate,
         )
+        start_of_taxi_in = FlightPoint(end_of_holding)
+        start_of_taxi_in.true_airspeed = inputs["data:mission:sizing:taxi_in:speed"]
         taxi_in_flight_points = taxi_in_calculator.compute_from(end_of_holding)
         taxi_in_flight_points.tag.iloc[-1] = "End of taxi-in"
 
