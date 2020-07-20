@@ -51,30 +51,31 @@ class SizingFlight(om.ExplicitComponent):
         self._engine_wrapper.setup(self)
 
         # Inputs -----------------------------------------------------------------------------------
-        self.add_input("data:geometry:propulsion:engine:count", 2)
-        self.add_input("data:geometry:wing:area", np.nan, units="m**2")
         self.add_input("data:TLAR:cruise_mach", np.nan)
         self.add_input("data:TLAR:range", np.nan, units="m")
-        self.add_input("data:mission:sizing:diversion:distance", np.nan, units="m")
-        self.add_input("data:mission:sizing:climb:thrust_rate", np.nan)
-        self.add_input("data:mission:sizing:descent:thrust_rate", np.nan)
+
+        self.add_input("data:geometry:propulsion:engine:count", 2)
+        self.add_input("data:geometry:wing:area", np.nan, units="m**2")
+
         self.add_input("data:aerodynamics:aircraft:cruise:CL", np.nan, shape=POLAR_POINT_COUNT)
         self.add_input("data:aerodynamics:aircraft:cruise:CD", np.nan, shape=POLAR_POINT_COUNT)
-        self.add_input("data:aerodynamics:aircraft:low_speed:CL", np.nan, shape=POLAR_POINT_COUNT)
-        self.add_input("data:aerodynamics:aircraft:low_speed:CD", np.nan, shape=POLAR_POINT_COUNT)
 
         self.add_input("data:aerodynamics:aircraft:takeoff:CL", np.nan, shape=POLAR_POINT_COUNT)
         self.add_input("data:aerodynamics:aircraft:takeoff:CD", np.nan, shape=POLAR_POINT_COUNT)
 
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
 
-        self.add_input("data:mission:sizing:takeoff:V2", np.nan, units="m/s")
-
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
+
+        self.add_input("data:mission:sizing:takeoff:V2", np.nan, units="m/s")
 
         self.add_input("data:mission:sizing:takeoff:altitude", np.nan, units="m")
         self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
 
+        self.add_input("data:mission:sizing:climb:thrust_rate", np.nan)
+        self.add_input("data:mission:sizing:descent:thrust_rate", np.nan)
+
+        self.add_input("data:mission:sizing:diversion:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:holding:duration", np.nan, units="s")
 
         self.add_input("data:mission:sizing:taxi_in:duration", np.nan, units="s")
@@ -82,7 +83,6 @@ class SizingFlight(om.ExplicitComponent):
         self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan)
 
         # Outputs ----------------------------------------------------------------------------------
-
         self.add_output("data:mission:sizing:initial_climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:cruise:fuel", units="kg")
