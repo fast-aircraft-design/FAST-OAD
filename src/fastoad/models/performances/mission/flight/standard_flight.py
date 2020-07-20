@@ -54,7 +54,6 @@ class InitialClimbPhase(AbstractManualThrustFlightPhase):
                 engine_setting=EngineSetting.TAKEOFF,
                 **self.segment_kwargs,
             ),
-            "End of initial climb",
         ]
 
 
@@ -100,7 +99,6 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
                 **self.segment_kwargs,
                 maximum_mach=self.maximum_mach,
             ),
-            "End of climb",
         ]
 
 
@@ -144,7 +142,6 @@ class DescentPhase(AbstractManualThrustFlightPhase):
                 target=FlightPoint(altitude=self.target_altitude, equivalent_airspeed="constant"),
                 **self.segment_kwargs,
             ),
-            "End of descent",
         ]
 
 
@@ -210,25 +207,30 @@ class StandardFlight(AbstractSimpleFlight):
             "time_step": time_step,
         }
 
-        initial_climb = InitialClimbPhase(**kwargs, polar=low_speed_climb_polar, thrust_rate=1.0)
+        initial_climb = InitialClimbPhase(
+            **kwargs, polar=low_speed_climb_polar, thrust_rate=1.0, name="initial climb"
+        )
         climb = ClimbPhase(
             **kwargs,
             polar=high_speed_polar,
             thrust_rate=thrust_rates[FlightPhase.CLIMB],
             target_altitude=self.climb_target_altitude,
             maximum_mach=self.cruise_mach,
+            name="climb",
         )
         cruise = CruiseSegment(
             **kwargs,
             target=FlightPoint(),
             polar=high_speed_polar,
             engine_setting=EngineSetting.CRUISE,
+            name="cruise",
         )
         descent = DescentPhase(
             **kwargs,
             polar=high_speed_polar,
             thrust_rate=thrust_rates[FlightPhase.DESCENT],
             target_altitude=self.descent_target_altitude,
+            name="descent",
         )
         super().__init__(
             cruise_distance, [initial_climb, climb], cruise, [descent],

@@ -140,11 +140,11 @@ def test_standard_flight_optimal_altitude(low_speed_polar, high_speed_polar, cle
     plot_flight(flight_points, "test_standard_flight_max_finesse.png")
 
     end_of_initial_climb = FlightPoint(
-        flight_points.loc[flight_points.tag == "End of initial climb"].iloc[0]
+        flight_points.loc[flight_points.name == "initial climb"].iloc[-1]
     )
-    end_of_climb = FlightPoint(flight_points.loc[flight_points.tag == "End of climb"].iloc[0])
-    end_of_cruise = FlightPoint(flight_points.loc[flight_points.tag == "End of cruise"].iloc[0])
-    end_of_descent = FlightPoint(flight_points.loc[flight_points.tag == "End of descent"].iloc[0])
+    end_of_climb = FlightPoint(flight_points.loc[flight_points.name == "climb"].iloc[-1])
+    end_of_cruise = FlightPoint(flight_points.loc[flight_points.name == "cruise"].iloc[-1])
+    end_of_descent = FlightPoint(flight_points.loc[flight_points.name == "descent"].iloc[-1])
 
     assert_allclose(end_of_initial_climb.altitude, 1500.0 * foot)
     assert_allclose(end_of_initial_climb.equivalent_airspeed, 250.0 * knot)
@@ -182,10 +182,10 @@ def test_standard_flight_fixed_altitude(low_speed_polar, high_speed_polar, clean
     )
     plot_flight(flight_points, "test_standard_flight_fixed_altitude.png")
 
-    assert not any(flight_points.tag == "End of initial climb")
-    end_of_climb = FlightPoint(flight_points.loc[flight_points.tag == "End of climb"].iloc[0])
-    end_of_cruise = FlightPoint(flight_points.loc[flight_points.tag == "End of cruise"].iloc[0])
-    end_of_descent = FlightPoint(flight_points.loc[flight_points.tag == "End of descent"].iloc[0])
+    assert not any(flight_points.name == "initial climb")
+    end_of_climb = FlightPoint(flight_points.loc[flight_points.name == "climb"].iloc[-1])
+    end_of_cruise = FlightPoint(flight_points.loc[flight_points.name == "cruise"].iloc[-1])
+    end_of_descent = FlightPoint(flight_points.loc[flight_points.name == "descent"].iloc[-1])
 
     assert end_of_climb.mach < 0.78
     assert_allclose(end_of_climb.equivalent_airspeed, 300.0 * knot)

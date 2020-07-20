@@ -189,15 +189,18 @@ class SizingFlight(om.ExplicitComponent):
 
         flight_points = base_flight_calculator.compute_from(end_of_takeoff)
 
-        end_of_takeoff = FlightPoint(flight_points.iloc[0])  # now updated for every parameter
+        # updated start flight point for every parameters
+        end_of_takeoff = FlightPoint(flight_points.iloc[0])
+
+        # Get flight points for each end of phase
         end_of_initial_climb = FlightPoint(
-            flight_points.loc[flight_points.tag == "End of initial climb"].iloc[0]
+            flight_points.loc[flight_points.name == "initial climb"].iloc[-1]
         )
-        end_of_climb = FlightPoint(flight_points.loc[flight_points.tag == "End of climb"].iloc[0])
-        end_of_cruise = FlightPoint(flight_points.loc[flight_points.tag == "End of cruise"].iloc[0])
-        end_of_descent = FlightPoint(
-            flight_points.loc[flight_points.tag == "End of descent"].iloc[0]
-        )
+        end_of_climb = FlightPoint(flight_points.loc[flight_points.name == "climb"].iloc[-1])
+        end_of_cruise = FlightPoint(flight_points.loc[flight_points.name == "cruise"].iloc[-1])
+        end_of_descent = FlightPoint(flight_points.loc[flight_points.name == "descent"].iloc[-1])
+
+        # Set OpenMDAO outputs
         outputs["data:mission:sizing:initial_climb:fuel"] = (
             end_of_takeoff.mass - end_of_initial_climb.mass
         )
@@ -257,16 +260,29 @@ class SizingFlight(om.ExplicitComponent):
         )
         diversion_flight_points = diversion_flight_calculator.compute_from(end_of_descent)
 
+        # Get flight points for each end of phase
         end_of_diversion_climb = FlightPoint(
-            diversion_flight_points.loc[diversion_flight_points.tag == "End of climb"].iloc[0]
+            diversion_flight_points.loc[diversion_flight_points.name == "climb"].iloc[-1]
         )
         end_of_diversion_cruise = FlightPoint(
-            diversion_flight_points.loc[diversion_flight_points.tag == "End of cruise"].iloc[0]
+            diversion_flight_points.loc[diversion_flight_points.name == "cruise"].iloc[-1]
         )
         end_of_diversion_descent = FlightPoint(
-            diversion_flight_points.loc[diversion_flight_points.tag == "End of descent"].iloc[0]
+            diversion_flight_points.loc[diversion_flight_points.name == "descent"].iloc[-1]
         )
 
+        # rename phases because all flight points will be concatenated later.
+        diversion_flight_points.loc[
+            diversion_flight_points.name == "climb"
+        ].name = "diversion climb"
+        diversion_flight_points.loc[
+            diversion_flight_points.name == "cruise"
+        ].name = "diversion cruise"
+        diversion_flight_points.loc[
+            diversion_flight_points.name == "descent"
+        ].name = "diversion descent"
+
+        # Set OpenMDAO outputs
         outputs["data:mission:sizing:diversion:climb:fuel"] = (
             end_of_descent.mass - end_of_diversion_climb.mass
         )
@@ -304,10 +320,10 @@ class SizingFlight(om.ExplicitComponent):
             propulsion=engine_model,
             reference_area=reference_area,
             polar=high_speed_polar,
+            name="holding",
         )
 
         holding_flight_points = holding_calculator.compute_from(end_of_diversion_descent)
-        holding_flight_points.tag.iloc[-1] = "End of holding"
 
         end_of_holding = FlightPoint(holding_flight_points.iloc[-1])
         outputs["data:mission:sizing:holding:fuel"] = (
@@ -322,11 +338,11 @@ class SizingFlight(om.ExplicitComponent):
             target=FlightPoint(time=taxi_in_duration),
             propulsion=engine_model,
             thrust_rate=taxi_in_thrust_rate,
+            name="taxi-in",
         )
         start_of_taxi_in = FlightPoint(end_of_holding)
         start_of_taxi_in.true_airspeed = inputs["data:mission:sizing:taxi_in:speed"]
         taxi_in_flight_points = taxi_in_calculator.compute_from(end_of_holding)
-        taxi_in_flight_points.tag.iloc[-1] = "End of taxi-in"
 
         end_of_taxi_in = FlightPoint(taxi_in_flight_points.iloc[-1])
         outputs["data:mission:sizing:taxi_in:fuel"] = end_of_holding.mass - end_of_taxi_in.mass
