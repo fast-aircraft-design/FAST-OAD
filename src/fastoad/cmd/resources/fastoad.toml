@@ -40,6 +40,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
 #    [model.performance]
 #        id = "fastoad.performances.sizing_flight"
 #        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
+#        out_file = "D:/complete/path/flight_points.csv"
     [model.hq_tail_sizing]
         id = "fastoad.handling_qualities.tail_sizing"
     [model.hq_static_margin]
@@ -49,14 +50,14 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
 
 [optimization]  # This section is needed only if optimization process is run
     [[optimization.design_var]]
-            name = "data:geometry:wing:MAC:at25percent:x"
-            lower = 16.0
-            upper = 18.0
+        name = "data:geometry:wing:MAC:at25percent:x"
+        lower = 16.0
+        upper = 18.0
 
     [[optimization.constraint]]
-            name = "data:handling_qualities:static_margin"
-            lower = 0.05
-            upper = 0.1
+        name = "data:handling_qualities:static_margin"
+        lower = 0.05
+        upper = 0.1
 
-[[optimization.objective]]
-            name = "data:mission:sizing:fuel"
+    [[optimization.objective]]
+        name = "data:mission:sizing:fuel"
