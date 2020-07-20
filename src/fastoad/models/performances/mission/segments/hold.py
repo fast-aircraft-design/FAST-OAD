@@ -31,7 +31,7 @@ class HoldSegment(RegulatedThrustSegment):
     """
 
     def __init__(self, *args, **kwargs):
-        self._set_attribute_default("time_step", 60.0)
+        self._set_attribute_defaults({"time_step": 60.0})
         super().__init__(*args, **kwargs)
         self.target.mach = "constant"
 
