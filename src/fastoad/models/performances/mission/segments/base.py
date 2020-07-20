@@ -18,6 +18,7 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
+from fastoad.base.dict import DynamicAttributeDict
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion import IPropulsion
 from fastoad.utils.physics import AtmosphereSI
@@ -25,10 +26,7 @@ from scipy.constants import g
 from scipy.optimize import root_scalar
 
 from ..base import IFlightPart
-from ..exceptions import (
-    FastFlightSegmentUnexpectedKeywordArgument,
-    FastFlightSegmentIncompleteFlightPoint,
-)
+from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..flight_point import FlightPoint
 from ..polar import Polar
 
@@ -45,7 +43,7 @@ SEGMENT_KEYWORD_ARGUMENTS = {
 }
 
 
-class AbstractSegment(IFlightPart):
+class AbstractSegment(IFlightPart, DynamicAttributeDict):
     """
     Base class for flight path segment.
 
@@ -92,44 +90,8 @@ class AbstractSegment(IFlightPart):
         # than previous one.
         self.interrupt_if_getting_further_from_target = True
 
-        # Initialize self.__keyword_args from SEGMENT_KEYWORD_ARGUMENTS,
-        # provided it can have already been defined in a subclass.
-        for attr_name, default_value in SEGMENT_KEYWORD_ARGUMENTS.items():
-            self._set_attribute_default(attr_name, default_value)
-
-        # Unexpected keyword arguments raise Exception
-        for kw in kwargs:
-            if kw not in self.__keyword_args:
-                raise FastFlightSegmentUnexpectedKeywordArgument(kw)
-
-        # Initialize instance attributes from keyword arguments.
-        for attr_name, default_value in self.__keyword_args.items():
-            value = kwargs.get(attr_name)
-            if not value:
-                # value not provided or is None
-                value = default_value
-            setattr(self, attr_name, value)
-
-    def _set_attribute_default(self, attr_name, default_value):
-        """
-        Sets default for keyword arguments at class instantiation.
-
-        This method is intended for being used in __init__ of subclasses before
-        calling the __init__ of the superclass.
-
-        Important note: if a default value has been already set, it won't be
-        overwritten. This way, the definition in last subclass will prevail.
-
-        :param attr_name:
-        :param default_value:
-        """
-        try:
-            self.__keyword_args
-        except AttributeError:
-            self.__keyword_args = {}
-
-        if attr_name not in self.__keyword_args:
-            self.__keyword_args[attr_name] = default_value
+        self._set_attribute_defaults(SEGMENT_KEYWORD_ARGUMENTS)
+        super().__init__(**kwargs)
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
@@ -404,7 +366,7 @@ class ManualThrustSegment(AbstractSegment, ABC):
         :ivar thrust_rate: used thrust rate. Can be set at instantiation using a keyword argument.
         """
 
-        self._set_attribute_default("thrust_rate", 1.0)
+        self._set_attribute_defaults({"thrust_rate": 1.0})
         super().__init__(**kwargs)
 
     def _compute_propulsion(self, flight_point: FlightPoint):

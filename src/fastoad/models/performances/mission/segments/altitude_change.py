@@ -17,9 +17,9 @@ from typing import Tuple, List
 
 import numpy as np
 import pandas as pd
+from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g, foot
 
-from fastoad.utils.physics import AtmosphereSI
 from .base import ManualThrustSegment
 from ..flight_point import FlightPoint
 
@@ -75,7 +75,7 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
     def __init__(self, **kwargs):
 
-        self._set_attribute_default("time_step", 2.0)
+        self._set_attribute_defaults({"time_step": 2.0})
         super().__init__(**kwargs)
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:

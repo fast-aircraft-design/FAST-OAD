@@ -1,4 +1,3 @@
-"""Exceptions for mission package."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,23 +10,3 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from fastoad.exceptions import FastError, FastUnexpectedKeywordArgument
-
-
-class FastFlightSegmentUnexpectedKeywordArgument(FastUnexpectedKeywordArgument):
-    """
-    Raised when a segment is instantiated with an incorrect keyword argument.
-    """
-
-
-class FastFlightPointUnexpectedKeywordArgument(FastUnexpectedKeywordArgument):
-    """
-    Raised when a FlightPoint is instantiated with an incorrect keyword argument.
-    """
-
-
-class FastFlightSegmentIncompleteFlightPoint(FastError):
-    """
-    Raised when a segment computation encounters a FlightPoint instance without needed parameters.
-    """
