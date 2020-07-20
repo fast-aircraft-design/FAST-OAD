@@ -62,7 +62,7 @@ class AbstractSimpleFlight(AbstractFlightSequence):
 
     @property
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:
-        return self.climb_phases + [self.cruise_segment, "End of cruise"] + self.descent_phases
+        return self.climb_phases + [self.cruise_segment] + self.descent_phases
 
 
 class RangedFlight(IFlightPart):

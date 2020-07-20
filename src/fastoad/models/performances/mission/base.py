@@ -43,29 +43,17 @@ class AbstractFlightSequence(IFlightPart):
         segments = []
         segment_start = start
         for segment_calculator in self.flight_sequence:
+            flight_points = segment_calculator.compute_from(segment_start)
             if len(segments) > 0:
-                previous_segment = segments[-1]
-                segment_start = FlightPoint(previous_segment.iloc[-1])
-                if (
-                    isinstance(segment_calculator, str)
-                    # Tags behind a tag are ignored
-                    and not isinstance(previous_segment, str)
-                    # Tag is ignored if there is only the start points in 'segments'
-                    # (can happen if some segments are skipped)
-                    and not (len(segments) == 1 and len(previous_segment) == 1)
-                ):
-                    previous_segment.tag.iloc[-1] = segment_calculator
+                # First point of the segment is omitted, as it is the
+                # last of previous segment.
+                if len(flight_points) > 1:
+                    segments.append(flight_points.iloc[1:])
+            else:
+                # But it is kept if the computed segment is the first one.
+                segments.append(flight_points)
 
-            if isinstance(segment_calculator, IFlightPart):
-                flight_points = segment_calculator.compute_from(segment_start)
-                if len(segments) > 0:
-                    # First point of the segment is omitted, as it is the
-                    # last of previous segment.
-                    if len(flight_points) > 1:
-                        segments.append(flight_points.iloc[1:])
-                else:
-                    # But it is kept if the computed segment is the first one.
-                    segments.append(flight_points)
+            segment_start = FlightPoint(flight_points.iloc[-1])
 
         if segments:
             return pd.concat(segments).reset_index(drop=True)
@@ -76,13 +64,7 @@ class AbstractFlightSequence(IFlightPart):
         """
         Defines the sequence as used in :meth:`compute_from`.
 
-        It returns a list of IFlightPart instances and strings.
-        Each string is used as a tag for the last point of previous calculated
-        segment.
-        Any string that is put as the first element of the list, or behind
-        another string element, will be ignored
-
-        :return: the list of flight parts for the mission.
+        :return: the list of IFlightPart instances for the mission.
         """
 
 
@@ -98,6 +80,7 @@ class AbstractManualThrustFlightPhase(AbstractFlightSequence, ABC):
         reference_area: float,
         polar: Polar,
         thrust_rate: float = 1.0,
+        name="",
         time_step=None,
     ):
         """
@@ -115,5 +98,6 @@ class AbstractManualThrustFlightPhase(AbstractFlightSequence, ABC):
             "reference_area": reference_area,
             "polar": polar,
             "thrust_rate": thrust_rate,
+            "name": name,
             "time_step": time_step,
         }

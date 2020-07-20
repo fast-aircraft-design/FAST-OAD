@@ -40,6 +40,7 @@ SEGMENT_KEYWORD_ARGUMENTS = {
     "altitude_bounds": (-500.0, 40000.0),  # large limits for stopping bad computation
     "mach_bounds": (0.0, 5.0),  # large limits for stopping bad computation
     "maximum_mach": 100.0,  # not limited by default
+    "name": "",
 }
 
 
@@ -222,6 +223,8 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         else:
             next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
 
+        # The naming is not done in complete_flight_point for not naming the start point
+        next_point.name = self.name
         return next_point
 
     def complete_flight_point(self, flight_point: FlightPoint):
@@ -234,7 +237,6 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         :param flight_point: the flight point that will be completed in-place
         """
         flight_point.engine_setting = self.engine_setting
-        flight_point.tag = ""
 
         self._complete_speed_values(flight_point)
         # Mach number is capped by self.maximum_mach

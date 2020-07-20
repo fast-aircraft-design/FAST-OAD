@@ -74,7 +74,7 @@ class FlightPoint(DynamicAttributeDict):
         "sfc",  # in kg/N/s
         "slope_angle",  # in radians
         "acceleration",  # in m/s**2
-        "tag",
+        "name",
     ]
 
     def __init__(self, *args, **kwargs):
