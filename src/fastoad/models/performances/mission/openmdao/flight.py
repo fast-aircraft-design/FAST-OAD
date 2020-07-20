@@ -37,6 +37,12 @@ class SizingFlight(om.ExplicitComponent):
     def __init__(self, **kwargs):
         """
         Computes thrust, SFC and thrust rate by direct call to engine model.
+
+        Options:
+          - propulsion_id: (mandatory) the identifier of the propulsion wrapper.
+          - out_file: if provided, a csv file will be written at provided path with all computed
+                      flight points. If path is relative, it will be resolved from working
+                      directory
         """
         super().__init__(**kwargs)
         self.flight_points = None
@@ -149,9 +155,10 @@ class SizingFlight(om.ExplicitComponent):
         outputs["data:mission:sizing:fuel"] = breguet.mission_fuel
 
     def compute_mission(self, inputs, outputs):
-        engine_model = EngineSet(
+        propulsion_model = EngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
+
         reference_area = inputs["data:geometry:wing:area"]
         cruise_mach = inputs["data:TLAR:cruise_mach"]
         flight_distance = inputs["data:TLAR:range"]
@@ -170,7 +177,7 @@ class SizingFlight(om.ExplicitComponent):
 
         base_flight_calculator = RangedFlight(
             StandardFlight(
-                propulsion=engine_model,
+                propulsion=propulsion_model,
                 reference_area=reference_area,
                 low_speed_climb_polar=low_speed_climb_polar,
                 high_speed_polar=high_speed_polar,
@@ -248,7 +255,7 @@ class SizingFlight(om.ExplicitComponent):
 
         diversion_flight_calculator = RangedFlight(
             StandardFlight(
-                propulsion=engine_model,
+                propulsion=propulsion_model,
                 reference_area=reference_area,
                 low_speed_climb_polar=low_speed_climb_polar,
                 high_speed_polar=high_speed_polar,
@@ -317,7 +324,7 @@ class SizingFlight(om.ExplicitComponent):
 
         holding_calculator = HoldSegment(
             target=FlightPoint(time=holding_duration),
-            propulsion=engine_model,
+            propulsion=propulsion_model,
             reference_area=reference_area,
             polar=high_speed_polar,
             name="holding",
@@ -336,7 +343,7 @@ class SizingFlight(om.ExplicitComponent):
 
         taxi_in_calculator = TaxiSegment(
             target=FlightPoint(time=taxi_in_duration),
-            propulsion=engine_model,
+            propulsion=propulsion_model,
             thrust_rate=taxi_in_thrust_rate,
             name="taxi-in",
         )
