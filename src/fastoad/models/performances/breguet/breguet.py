@@ -56,6 +56,7 @@ class Breguet:
         self.descent_mass_ratio = descent_mass_ratio
         self.reserve_mass_ratio = reserve_mass_ratio
         self.climb_descent_distance = climb_descent_distance
+        self.climb_distance = self.descent_distance = climb_descent_distance / 2.0
 
         self.thrust = None
         self.thrust_rate = None
@@ -67,6 +68,7 @@ class Breguet:
         self.cruise_fuel = None
         self.descent_fuel = None
         self.reserve_fuel = None
+        self.cruise_distance = None
 
     def compute(self, takeoff_weight, flight_range):
         """
@@ -78,8 +80,9 @@ class Breguet:
         :param flight_range:
         """
         initial_cruise_mass = takeoff_weight * self.climb_mass_ratio
+        self.cruise_distance = flight_range - self.climb_descent_distance
         cruise_mass_ratio = self.compute_cruise_mass_ratio(
-            initial_cruise_mass, flight_range - self.climb_descent_distance
+            initial_cruise_mass, self.cruise_distance
         )
         flight_mass_ratio = cruise_mass_ratio * self.climb_mass_ratio * self.descent_mass_ratio
 

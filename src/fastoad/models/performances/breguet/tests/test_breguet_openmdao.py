@@ -41,9 +41,15 @@ def test_breguet():
     assert_allclose(problem["data:mission:sizing:fuel"], 8382.0, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0604, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0604, rtol=1e-3)
-    assert_allclose(problem.get_val("data:mission:sizing:climb:distance", units="km"), 250.0)
-    assert_allclose(problem.get_val("data:mission:sizing:descent:distance", units="km"), 250.0)
-    assert_allclose(problem.get_val("data:mission:sizing:cruise:distance", units="km"), 426.0)
+    assert_allclose(
+        problem.get_val("data:mission:sizing:main_route:climb:distance", units="km"), 250.0
+    )
+    assert_allclose(
+        problem.get_val("data:mission:sizing:main_route:descent:distance", units="km"), 250.0
+    )
+    assert_allclose(
+        problem.get_val("data:mission:sizing:main_route:cruise:distance", units="km"), 426.0
+    )
     # test 2
     ivc = om.IndepVarComp()
     ivc.add_output("data:mission:sizing:main_route:cruise:altitude", 35000, units="ft")

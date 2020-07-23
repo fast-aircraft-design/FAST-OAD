@@ -119,6 +119,9 @@ class BreguetWithPropulsion(om.ExplicitComponent):
         outputs["data:mission:sizing:main_route:climb:fuel"] = breguet.climb_fuel
         outputs["data:mission:sizing:main_route:cruise:fuel"] = breguet.cruise_fuel
         outputs["data:mission:sizing:main_route:descent:fuel"] = breguet.descent_fuel
+        outputs["data:mission:sizing:main_route:climb:distance"] = breguet.climb_distance
+        outputs["data:mission:sizing:main_route:cruise:distance"] = breguet.cruise_distance
+        outputs["data:mission:sizing:main_route:descent:distance"] = breguet.descent_distance
         outputs["data:mission:sizing:fuel_reserve"] = breguet.reserve_fuel
 
 
@@ -249,7 +252,7 @@ class _Distances(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:TLAR:range", np.nan, units="m")
-        self.add_input("settings:mission:sizing:breguet:climb_descent_distance", 5.0e5, units="m")
+        self.add_input("settings:mission:sizing:breguet:climb_descent_distance", 500.0e3, units="m")
 
         self.add_output("data:mission:sizing:main_route:climb:distance", units="m", ref=1e3)
         self.add_output("data:mission:sizing:main_route:cruise:distance", units="m", ref=1e3)
@@ -262,8 +265,8 @@ class _Distances(om.ExplicitComponent):
         outputs["data:mission:sizing:main_route:cruise:distance"] = (
             flight_range - climb_descent_distance
         )
-        outputs["data:mission:sizing:main_route:climb:distance"] = climb_descent_distance * 0.5
-        outputs["data:mission:sizing:main_route:descent:distance"] = climb_descent_distance * 0.5
+        outputs["data:mission:sizing:main_route:climb:distance"] = climb_descent_distance / 2.0
+        outputs["data:mission:sizing:main_route:descent:distance"] = climb_descent_distance / 2.0
 
 
 class _CruiseMassRatio(om.ExplicitComponent):
