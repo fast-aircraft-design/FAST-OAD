@@ -12,15 +12,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Tuple, List
-
-import pandas as pd
-
-from .base import RegulatedThrustSegment
-from ..flight_point import FlightPoint
+from .base import RegulatedThrustSegment, FixedDurationSegment
 
 
-class HoldSegment(RegulatedThrustSegment):
+class HoldSegment(RegulatedThrustSegment, FixedDurationSegment):
     """
     Class for computing hold flight segment.
 
@@ -29,21 +24,3 @@ class HoldSegment(RegulatedThrustSegment):
     Target is a specified time. The target definition indicates
     the time duration of the segment, independently of the initial time value.
     """
-
-    def __init__(self, *args, **kwargs):
-        self._set_attribute_defaults({"time_step": 60.0})
-        super().__init__(*args, **kwargs)
-        self.target.mach = "constant"
-
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        start = FlightPoint(start)
-        if start.time:
-            self.target.time = self.target.time + start.time
-        return super().compute_from(start)
-
-    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
-        return 0.0, 0.0
-
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
-        current = flight_points[-1]
-        return self.target.time - current.time

@@ -12,15 +12,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List, Tuple
+from typing import Tuple
 
-import pandas as pd
+from fastoad.models.performances.mission.segments.base import FixedDurationSegment
 
 from .base import ManualThrustSegment
-from ..flight_point import FlightPoint
 
 
-class TaxiSegment(ManualThrustSegment):
+class TaxiSegment(ManualThrustSegment, FixedDurationSegment):
     """
     Class for computing Taxi phases.
 
@@ -34,16 +33,5 @@ class TaxiSegment(ManualThrustSegment):
         kwargs["reference_area"] = 1.0
         super().__init__(**kwargs)
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        start = FlightPoint(start)
-        self.time_step = self.target.time  # This computation needs only one time step
-        if start.time:
-            self.target.time = self.target.time + start.time
-        return super().compute_from(start)
-
     def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         return 0.0, 0.0
-
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
-        current = flight_points[-1]
-        return self.target.time - current.time

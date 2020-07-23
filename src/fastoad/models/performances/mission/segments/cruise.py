@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List, Tuple
+from typing import List
 
 import pandas as pd
 
@@ -31,19 +31,11 @@ class CruiseSegment(RegulatedThrustSegment):
     the initial value.
     """
 
-    def __init__(self, *args, **kwargs):
-        self._set_attribute_defaults({"time_step": 60.0})
-        super().__init__(*args, **kwargs)
-        self.target.mach = "constant"
-
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)
         if start.ground_distance:
             self.target.ground_distance = self.target.ground_distance + start.ground_distance
         return super().compute_from(start)
-
-    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
-        return 0.0, 0.0
 
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
         current = flight_points[-1]

@@ -389,6 +389,11 @@ class RegulatedThrustSegment(AbstractSegment, ABC):
     Base class for computing flight segment where thrust rate is adjusted on drag.
     """
 
+    def __init__(self, *args, **kwargs):
+        self._set_attribute_defaults({"time_step": 60.0})
+        super().__init__(*args, **kwargs)
+        self.target.mach = "constant"
+
     def _compute_propulsion(self, flight_point: FlightPoint):
         (
             flight_point.sfc,
@@ -400,3 +405,26 @@ class RegulatedThrustSegment(AbstractSegment, ABC):
             flight_point.engine_setting,
             thrust=flight_point.drag,
         )
+
+    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+        return 0.0, 0.0
+
+
+class FixedDurationSegment(AbstractSegment, ABC):
+    """
+    Class for computing phases where duration is fixed.
+
+    Target duration is provide as target.time.
+    When using :meth:`compute_from`, if start.time is not 0, end time will be
+    start.time + target.time.
+    """
+
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        start = FlightPoint(start)
+        if start.time:
+            self.target.time = self.target.time + start.time
+        return super().compute_from(start)
+
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+        current = flight_points[-1]
+        return self.target.time - current.time
