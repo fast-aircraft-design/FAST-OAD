@@ -28,9 +28,9 @@ output_file = "./oad_process_mission_outputs.xml"
     [model.performance]
         id = "fastoad.performances.sizing_flight"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
-    [model.hq.tail_sizing]
-        id = "fastoad.handling_qualities.tail_sizing"
-    [model.hq.static_margin]
-        id = "fastoad.handling_qualities.static_margin"
-    [model.wing_area]
-        id = "fastoad.loop.wing_area"
+#    [model.hq.tail_sizing]
+#        id = "fastoad.handling_qualities.tail_sizing"
+#    [model.hq.static_margin]
+#        id = "fastoad.handling_qualities.static_margin"
+#    [model.wing_area]
+#        id = "fastoad.loop.wing_area"

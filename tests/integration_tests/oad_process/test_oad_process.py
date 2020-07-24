@@ -95,21 +95,29 @@ def test_non_regression_breguet(cleanup):
         "oad_process_breguet.toml",
         "CeRAS01_legacy_breguet_result.xml",
         "non_regression_breguet",
-        True,
+        use_xfoil=True,
     )
 
 
-@pytest.mark.skip("This test does not work yet")
 def test_non_regression_mission(cleanup):
     run_non_regression_test(
         "oad_process_mission.toml",
         "CeRAS01_legacy_mission_result.xml",
         "non_regression_mission",
-        False,
+        use_xfoil=False,
+        check_only_mtow=True,
+        tolerance=1.0e-2,
     )
 
 
-def run_non_regression_test(conf_file, legacy_result_file, result_dir, use_xfoil=False):
+def run_non_regression_test(
+    conf_file,
+    legacy_result_file,
+    result_dir,
+    use_xfoil=False,
+    check_only_mtow=False,
+    tolerance=5.0e-3,
+):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, result_dir)
     configuration_file_path = pth.join(results_folder_path, conf_file)
 
@@ -190,9 +198,9 @@ def run_non_regression_test(conf_file, legacy_result_file, result_dir, use_xfoil
         )
 
     df = pd.DataFrame(row_list)
-    df["rel_delta"] = (df["value"] - df["ref_value"]) / df["ref_value"]
-    df["rel_delta"][(df["ref_value"] == 0) & (abs(df["value"]) <= 1e-10)] = 0.0
-    df["abs_rel_delta"] = np.abs(df["rel_delta"])
+    df["rel_delta"] = (df.value - df.ref_value) / df.ref_value
+    df["rel_delta"][(df.ref_value == 0) & (abs(df.value) <= 1e-10)] = 0.0
+    df["abs_rel_delta"] = np.abs(df.rel_delta)
 
     pd.set_option("display.max_rows", None)
     pd.set_option("display.max_columns", None)
@@ -200,7 +208,10 @@ def run_non_regression_test(conf_file, legacy_result_file, result_dir, use_xfoil
     pd.set_option("display.max_colwidth", 120)
     print(df.sort_values(by=["abs_rel_delta"]))
 
-    assert np.all(df["abs_rel_delta"] < 0.005)
+    if check_only_mtow:
+        assert np.all(df.abs_rel_delta.loc[df.name == "data:weight:aircraft:MTOW"] < tolerance)
+    else:
+        assert np.all(df.abs_rel_delta < tolerance)
 
 
 def test_api(cleanup):
