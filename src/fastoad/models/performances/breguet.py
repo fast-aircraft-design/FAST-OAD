@@ -231,8 +231,8 @@ class _Distances(om.ExplicitComponent):
         climb_descent_distance = inputs["settings:mission:sizing:breguet:climb_descent_distance"]
 
         outputs["data:mission:sizing:cruise:distance"] = flight_range - climb_descent_distance
-        outputs["data:mission:sizing:climb:distance"] = climb_descent_distance * 500.0
-        outputs["data:mission:sizing:descent:distance"] = climb_descent_distance * 500.0
+        outputs["data:mission:sizing:climb:distance"] = climb_descent_distance * 0.5
+        outputs["data:mission:sizing:descent:distance"] = climb_descent_distance * 0.5
 
 
 class _CruiseMassRatio(om.ExplicitComponent):

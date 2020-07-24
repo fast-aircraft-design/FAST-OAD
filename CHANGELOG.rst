@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 0.4.1-beta
+==================
+
+- Prevents installation of OpenMDAO 3.2 and above for incompatibility reasons.
+- In Breguet module, output values for climb and descent distances were 1000 times
+  too large (computation was correct, though).
+
 Version 0.4.0-beta
 ==================
 
