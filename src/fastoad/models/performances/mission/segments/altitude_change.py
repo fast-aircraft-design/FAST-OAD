@@ -17,6 +17,7 @@ from typing import Tuple, List
 
 import numpy as np
 import pandas as pd
+from fastoad.base.dict import DynamicAttributesDictDecorator
 from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g, foot
 
@@ -26,6 +27,7 @@ from ..flight_point import FlightPoint
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
+@DynamicAttributesDictDecorator({"time_step": 2.0})
 class AltitudeChangeSegment(ManualThrustSegment):
     """
     Computes a flight path segment where altitude is modified with constant speed.
@@ -72,11 +74,6 @@ class AltitudeChangeSegment(ManualThrustSegment):
     #: Using this value will tell to target the nearest flight level to altitude
     # with max lift/drag ratio.
     OPTIMAL_FLIGHT_LEVEL = -20000.0
-
-    def __init__(self, **kwargs):
-
-        self._set_attribute_defaults({"time_step": 2.0})
-        super().__init__(**kwargs)
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         start = FlightPoint(start)

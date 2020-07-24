@@ -18,7 +18,7 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
-from fastoad.base.dict import DynamicAttributeDict
+from fastoad.base.dict import DynamicAttributeDict, DynamicAttributesDictDecorator
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion import IPropulsion
 from fastoad.utils.physics import AtmosphereSI
@@ -44,6 +44,7 @@ SEGMENT_KEYWORD_ARGUMENTS = {
 }
 
 
+@DynamicAttributesDictDecorator(SEGMENT_KEYWORD_ARGUMENTS)
 class AbstractSegment(IFlightPart, DynamicAttributeDict):
     """
     Base class for flight path segment.
@@ -90,8 +91,6 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         # If true, computation will stop if a flight point is further from target
         # than previous one.
         self.interrupt_if_getting_further_from_target = True
-
-        self._set_attribute_defaults(SEGMENT_KEYWORD_ARGUMENTS)
         super().__init__(**kwargs)
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
@@ -361,19 +360,13 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         """
 
 
+@DynamicAttributesDictDecorator({"thrust_rate": 1.0})
 class ManualThrustSegment(AbstractSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is imposed.
+
+    :ivar thrust_rate: used thrust rate. Can be set at instantiation using a keyword argument.
     """
-
-    def __init__(self, **kwargs):
-        """
-
-        :ivar thrust_rate: used thrust rate. Can be set at instantiation using a keyword argument.
-        """
-
-        self._set_attribute_defaults({"thrust_rate": 1.0})
-        super().__init__(**kwargs)
 
     def _compute_propulsion(self, flight_point: FlightPoint):
         (
@@ -388,13 +381,13 @@ class ManualThrustSegment(AbstractSegment, ABC):
         )
 
 
+@DynamicAttributesDictDecorator({"time_step": 60.0})
 class RegulatedThrustSegment(AbstractSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is adjusted on drag.
     """
 
     def __init__(self, *args, **kwargs):
-        self._set_attribute_defaults({"time_step": 60.0})
         super().__init__(*args, **kwargs)
         self.target.mach = "constant"
 

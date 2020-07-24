@@ -37,6 +37,10 @@ junit.xml
 coverage.xml
 .pytest_cache/
 
+# Profiling
+prof/
+*.prof
+
 # test results
 results/
 

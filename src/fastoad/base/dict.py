@@ -11,6 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from collections import Sequence
+from typing import Union
+
 import numpy as np
 from fastoad.exceptions import FastUnexpectedKeywordArgument
 
@@ -18,77 +21,112 @@ from fastoad.exceptions import FastUnexpectedKeywordArgument
 class DynamicAttributeDict(dict):
     def __init__(self, *args, **kwargs):
         """
-        A dictionary class where keys are also used as attribute names.
+        A dictionary class where keys can also be used as attributes.
 
-        Each subclass can define its own attributes with their default values
+        The keys that can be used as attributes are defined using decorators
+        :class:`DynamicAttributeDictDecorator` or  :class:`DynamicAttributesDictDecorator`.
 
-        :param args: a dict-like object where all keys are contained in :attr:`labels`
-        :param kwargs: must be name contained in :attr:`labels`
+        They can also be used as keyword arguments when instantiating this class.
+
+        :param args: a dict-like object where all keys are contained in :attr:`attribute_keys`
+        :param kwargs: must be name contained in :attr:`attribute_keys`
         """
 
-        # Initialize defaults (in case no subclass did it)
-        self._set_attribute_defaults({})
+        if hasattr(self, "attribute_keys"):
+            for key in kwargs:
+                if key not in self.attribute_keys:
+                    raise FastUnexpectedKeywordArgument(key)
+        elif kwargs:
+            # No defined dynamic attribute, any keyword argument is illegal
+            raise FastUnexpectedKeywordArgument(list(kwargs.keys())[0])
 
         super().__init__(*args, **kwargs)
-        for key, value in self.items():
-            if key not in self._keyword_args:
-                raise FastUnexpectedKeywordArgument(key)
 
-        # Apply defaults for non-defined keys
-        for key, value in self._keyword_args.items():
-            if key in self and self[key] is None:
-                # Setting the argument value to None is like not providing it.
-                del self[key]
-
-            if value and key not in self:
-                # If an attribute as not be set, use default value if any
-                self[key] = value
-
-            # When going from DynamicAttributeDict to DataFrame, None values become NaN.
-            # But in the other side, NaN values will stay NaN, so, if some fields are
-            # not set, we would not have:
-            # >>> flight_point == DynamicAttributeDict(pd.DataFrame([flight_point]).iloc[0])
-            # So we remove NaN values to ensure the equality above in any case.
-            try:
-                if key in self and np.all(np.isnan(self[key])):
+        if hasattr(self, "attribute_keys"):
+            # Keys with None or Nan as value will be deleted so their default value
+            # will be returned (see property definition in DynamicAttributeDictDecorator).
+            # We apply this behaviour even when instantiating from *args (i.e. with
+            # a dict-like object)
+            for key in self.attribute_keys:
+                if key in self and (self[key] is None or _is_nan(self[key])):
                     del self[key]
-            except TypeError:
-                pass  # if there has been a type error, then self[key] is not NaN
 
-    def __getattribute__(self, name):
-        if name == "_keyword_args":
-            try:
-                return super(DynamicAttributeDict, self).__getattribute__(name)
-            except AttributeError:
-                super(DynamicAttributeDict, self).__setattr__("_keyword_args", {})
-                return super(DynamicAttributeDict, self).__getattribute__(name)
-        else:
-            if name in self._keyword_args:
-                return self.get(name)
+
+class DynamicAttributeDictDecorator:
+    def __init__(self, attr_name, default_value):
+        """
+        A decorator for a dict class that adds a property for accessing the matching dict item.
+
+        The getter and the setter of the property are defined.
+        Setting None or np.nan when setting the property will delete the dict key, so that
+        next calls to the getter will return default_value.
+
+        The "attribute_keys" property is created in decorated class for returning the list
+        of attributes that have been defined by DynamicAttributeDictDecorator or by
+        :class:`DynamicAttributesDictDecorator`.
+
+        :param attr_name: the dict key that will be paired to a property
+        :param default_value: the default value that will be returned if dict has not
+                              the attr_name as key
+        """
+        self.attr_name = attr_name
+        self.default_value = default_value
+
+    def __call__(self, decorated_dict: type):
+        # Adds the property for defined key
+        def _getter(self_):
+            """The property getter"""
+            return self_.get(self.attr_name, self.default_value)
+
+        def _setter(self_, value):
+            """The property setter"""
+            if self.attr_name in self_ and (value is None or _is_nan(value)):
+                # None or NaN means the default value, so we delete the dict key
+                del self_[self.attr_name]
             else:
-                return super(DynamicAttributeDict, self).__getattribute__(name)
+                self_[self.attr_name] = value
 
-    def __setattr__(self, name, value):
-        if name not in self._keyword_args:
-            super(DynamicAttributeDict, self).__setattr__(name, value)
+        prop = property(_getter, _setter)
+        setattr(decorated_dict, self.attr_name, prop)
+
+        # Adds the property for getting the list of keys paired to attributes
+        try:
+            decorated_dict._attribute_keys.append(self.attr_name)
+        except AttributeError:
+            decorated_dict._attribute_keys = [self.attr_name]
+
+        decorated_dict.attribute_keys = property(lambda self_: self_.__class__._attribute_keys)
+
+        return decorated_dict
+
+
+class DynamicAttributesDictDecorator:
+    def __init__(self, attribute_definition: Union[dict, Sequence]):
+        """
+        A decorator for a dict class that adds properties for accessing the matching dict item.
+
+        This class simply does several call of :class:`DynamicAttributeDictDecorator`.
+
+        :param attribute_definition: the list of keys that will be attributes. If it is
+                                     a dictionary, the values are the associated default values.
+                                     If it is a sequence, default values will be None.
+        """
+        if isinstance(attribute_definition, dict):
+            self.attribute_definition = attribute_definition
         else:
-            self[name] = value
+            self.attribute_definition = {attr_name: None for attr_name in attribute_definition}
 
-    def _set_attribute_defaults(self, default_dict):
-        """
-        Sets defaults for keyword arguments at class instantiation.
+    def __call__(self, decorated_dict: type):
 
-        This method is intended for being used in __init__ of subclasses before
-        calling the __init__ of the superclass.
+        for attr_name, default_value in self.attribute_definition.items():
+            decorated_dict = DynamicAttributeDictDecorator(attr_name, default_value)(decorated_dict)
 
-        Set None as default value for authorizing the keyword argument without
-        setting a default value.
+        return decorated_dict
 
-        Important note: if a default value has been already set, it won't be
-        overwritten. This way, the definition in last subclass will prevail.
 
-        :param default_dict: a dict with attribute names and their default value.
-        """
-        for attr_name, default_value in default_dict.items():
-            if attr_name not in self._keyword_args:
-                self._keyword_args[attr_name] = default_value
+def _is_nan(value):
+    """Tells if value is numpy.nan in a robust way."""
+    try:
+        return np.all(np.isnan(value))
+    except TypeError:
+        return False  # if there has been a type error, then it is not NaN

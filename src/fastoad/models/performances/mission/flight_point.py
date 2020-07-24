@@ -12,9 +12,32 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.base.dict import DynamicAttributeDict
+from fastoad.base.dict import DynamicAttributeDict, DynamicAttributesDictDecorator
 
 
+# Set of dictionary keys that are mapped to instance attributes.
+LABELS = {
+    "time",  # in seconds
+    "altitude",  # in meters
+    "ground_distance",  # in m.
+    "mass",  # in kg
+    "true_airspeed",  # in m/s
+    "equivalent_airspeed",  # in m/s
+    "mach",
+    "engine_setting",  # EngineSetting value
+    "CL",
+    "CD",
+    "drag",  # in Newtons
+    "thrust",  # in Newtons
+    "thrust_rate",
+    "sfc",  # in kg/N/s
+    "slope_angle",  # in radians
+    "acceleration",  # in m/s**2
+    "name",
+}
+
+
+@DynamicAttributesDictDecorator(LABELS)
 class FlightPoint(DynamicAttributeDict):
     """
     Class for storing data for one flight point.
@@ -53,39 +76,11 @@ class FlightPoint(DynamicAttributeDict):
     instances.
 
     The set of dictionary keys that are mapped to instance attributes is given by
-    the :attr:`labels` class attribute. Though it looks useful to limit the
+    the :meth:`labels` class attribute. Though it looks useful to limit the
     authorized fields to avoid bugs from typos, you may modify this class
     attribute to suit your needs.
     """
 
-    # Set of dictionary keys that are mapped to instance attributes.
-    labels = {
-        "time",  # in seconds
-        "altitude",  # in meters
-        "ground_distance",  # in m.
-        "mass",  # in kg
-        "true_airspeed",  # in m/s
-        "equivalent_airspeed",  # in m/s
-        "mach",
-        "engine_setting",  # EngineSetting value
-        "CL",
-        "CD",
-        "drag",  # in Newtons
-        "thrust",  # in Newtons
-        "thrust_rate",
-        "sfc",  # in kg/N/s
-        "slope_angle",  # in radians
-        "acceleration",  # in m/s**2
-        "name",
-    }
-
-    def __init__(self, *args, **kwargs):
-        """
-
-        :param args: a dict-like object where all keys are contained in :attr:`labels`
-        :param kwargs: must be name contained in :attr:`labels`
-        """
-
-        self._set_attribute_defaults({name: None for name in self.labels})
-
-        super().__init__(*args, **kwargs)
+    @classmethod
+    def labels(cls):
+        return cls._attribute_keys
