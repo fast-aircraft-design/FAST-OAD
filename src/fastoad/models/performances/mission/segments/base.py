@@ -149,13 +149,17 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
                 and self.interrupt_if_getting_further_from_target
             ):
                 # We get further from target. Let's stop without this point.
-                _LOGGER.warning("Target cannot be reached. Segment computation interrupted.")
+                _LOGGER.warning(
+                    'Target cannot be reached in "%s". Segment computation interrupted.'
+                    "Please review the segment settings, especially thrust_rate.",
+                    self.name,
+                )
                 del flight_points[-1]
                 break
 
             msg = self._check_values(flight_points[-1])
             if msg:
-                _LOGGER.warning(msg + " Segment computation interrupted.")
+                _LOGGER.warning(msg + ' Segment computation interrupted in "%s".', self.name)
                 break
 
             previous_point_to_target = last_point_to_target

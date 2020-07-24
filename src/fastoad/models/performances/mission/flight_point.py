@@ -52,12 +52,14 @@ class FlightPoint(DynamicAttributeDict):
     DataFrame can be generated from a list of dict... or a list of FlightPoint
     instances.
 
-    List of dictionary keys that are mapped to instance attributes is given by
-    the :attr:`labels` class attribute.
+    The set of dictionary keys that are mapped to instance attributes is given by
+    the :attr:`labels` class attribute. Though it looks useful to limit the
+    authorized fields to avoid bugs from typos, you may modify this class
+    attribute to suit your needs.
     """
 
-    # List of dictionary keys that are mapped to instance attributes.
-    labels = [
+    # Set of dictionary keys that are mapped to instance attributes.
+    labels = {
         "time",  # in seconds
         "altitude",  # in meters
         "ground_distance",  # in m.
@@ -75,7 +77,7 @@ class FlightPoint(DynamicAttributeDict):
         "slope_angle",  # in radians
         "acceleration",  # in m/s**2
         "name",
-    ]
+    }
 
     def __init__(self, *args, **kwargs):
         """
