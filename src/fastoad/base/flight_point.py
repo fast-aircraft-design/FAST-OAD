@@ -30,6 +30,7 @@ LABELS = {
     "drag",  # in Newtons
     "thrust",  # in Newtons
     "thrust_rate",
+    "thrust_is_regulated",  # boolean
     "sfc",  # in kg/N/s
     "slope_angle",  # in radians
     "acceleration",  # in m/s**2
@@ -58,9 +59,9 @@ class FlightPoint(DynamicAttributeDict):
         >>> fp["mass"]
         50000.0
 
-    Note: constructor will forbid usage of unknown keys, but other methods will
-    allow them, while not making the matching between dict keys and attributes,
-    hence::
+    Note: constructor will forbid usage of unknown keys as keyword argument, but
+    other methods will allow them, while not making the matching between dict
+    keys and attributes, hence::
 
         >>> fp["foo"] = 42  # Ok
         >>> bar = fp.foo  # raises exception !!!!

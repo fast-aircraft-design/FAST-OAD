@@ -15,8 +15,9 @@
 import logging
 from typing import Tuple, List
 
+from fastoad.base.flight_point import FlightPoint
+
 from .base import ManualThrustSegment
-from ..flight_point import FlightPoint
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 

@@ -8,7 +8,7 @@ why almost no numerical check is done here (such checks will be done in the
 non-regression tests).
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -32,12 +32,12 @@ from matplotlib.ticker import MultipleLocator
 from numpy.testing import assert_allclose
 from scipy.constants import knot, foot
 
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase
 from fastoad.models.propulsion import EngineSet
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 from ..standard_flight import StandardFlight
 from ...flight.base import RangedFlight
-from ...flight_point import FlightPoint
 from ...polar import Polar
 
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")

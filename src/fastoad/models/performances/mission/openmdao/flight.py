@@ -17,6 +17,7 @@ import pandas as pd
 from scipy.constants import foot, nautical_mile
 
 from fastoad import BundleLoader
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from fastoad.models.performances.breguet import Breguet
@@ -25,7 +26,6 @@ from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 from fastoad.models.propulsion import EngineSet
 from ..flight.base import RangedFlight
 from ..flight.standard_flight import StandardFlight
-from ..flight_point import FlightPoint
 from ..polar import Polar
 
 

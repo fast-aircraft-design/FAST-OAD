@@ -16,17 +16,17 @@ from typing import Union, Sequence, Optional, Tuple
 import numpy as np
 import pandas as pd
 import pytest
-from numpy.testing import assert_allclose
-from scipy.constants import foot
-
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.propulsion import EngineSet, IPropulsion
+from numpy.testing import assert_allclose
+from scipy.constants import foot
+
 from ..altitude_change import AltitudeChangeSegment
 from ..cruise import OptimalCruiseSegment, CruiseSegment
 from ..speed_change import SpeedChangeSegment
 from ..taxi import TaxiSegment
-from ...flight_point import FlightPoint
 from ...polar import Polar
 
 

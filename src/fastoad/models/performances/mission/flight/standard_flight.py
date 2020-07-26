@@ -1,6 +1,6 @@
 """Definition of the standard flight missions."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +16,11 @@ from typing import Dict, List, Union
 
 from scipy.constants import foot, knot
 
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase, EngineSetting
 from fastoad.models.propulsion import IPropulsion
 from .base import AbstractSimpleFlight
 from ..base import IFlightPart, AbstractManualThrustFlightPhase
-from ..flight_point import FlightPoint
 from ..polar import Polar
 from ..segments.altitude_change import AltitudeChangeSegment
 from ..segments.cruise import CruiseSegment
