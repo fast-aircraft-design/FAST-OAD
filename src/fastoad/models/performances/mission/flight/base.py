@@ -15,10 +15,10 @@
 from typing import List, Union
 
 import pandas as pd
+from fastoad.base.flight_point import FlightPoint
 from scipy.optimize import root_scalar
 
 from ..base import AbstractFlightSequence, IFlightPart
-from ..flight_point import FlightPoint
 from ..segments.cruise import CruiseSegment
 
 

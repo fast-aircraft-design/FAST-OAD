@@ -19,6 +19,7 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 from fastoad.base.dict import DynamicAttributeDict, AddKeyAttributes
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion import IPropulsion
 from fastoad.utils.physics import AtmosphereSI
@@ -27,7 +28,6 @@ from scipy.optimize import root_scalar
 
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
-from ..flight_point import FlightPoint
 from ..polar import Polar
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -354,7 +354,7 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         """
         Computes propulsion data.
 
-        Provided fligh point is modified in place.
+        Provided flight point is modified in place.
 
         :param flight_point:
         """

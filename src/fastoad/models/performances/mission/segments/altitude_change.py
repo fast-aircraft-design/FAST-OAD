@@ -18,11 +18,11 @@ from typing import Tuple, List
 import numpy as np
 import pandas as pd
 from fastoad.base.dict import AddKeyAttributes
+from fastoad.base.flight_point import FlightPoint
 from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g, foot
 
 from .base import ManualThrustSegment
-from ..flight_point import FlightPoint
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 

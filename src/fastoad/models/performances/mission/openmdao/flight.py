@@ -15,6 +15,7 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 from fastoad import BundleLoader
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from fastoad.models.performances.breguet import Breguet
@@ -25,7 +26,6 @@ from scipy.constants import foot, nautical_mile
 
 from ..flight.base import RangedFlight
 from ..flight.standard_flight import StandardFlight
-from ..flight_point import FlightPoint
 from ..polar import Polar
 
 

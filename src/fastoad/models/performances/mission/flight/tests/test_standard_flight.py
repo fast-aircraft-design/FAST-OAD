@@ -28,6 +28,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase
 from fastoad.models.propulsion import EngineSet
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
@@ -37,7 +38,6 @@ from scipy.constants import knot, foot
 
 from ..standard_flight import StandardFlight
 from ...flight.base import RangedFlight
-from ...flight_point import FlightPoint
 from ...polar import Polar
 
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")

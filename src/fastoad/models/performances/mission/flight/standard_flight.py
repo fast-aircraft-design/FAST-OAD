@@ -14,13 +14,13 @@
 
 from typing import Dict, List, Union
 
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase, EngineSetting
 from fastoad.models.propulsion import IPropulsion
 from scipy.constants import foot, knot
 
 from .base import AbstractSimpleFlight
 from ..base import IFlightPart, AbstractManualThrustFlightPhase
-from ..flight_point import FlightPoint
 from ..polar import Polar
 from ..segments.altitude_change import AltitudeChangeSegment
 from ..segments.cruise import CruiseSegment
