@@ -13,6 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion import IPropulsion
 from fastoad.utils.physics import AtmosphereSI
@@ -105,9 +106,16 @@ class Breguet:
         :return: (mass at end of cruise) / (mass at start of cruise)
         """
         self.thrust = initial_cruise_mass / self.lift_drag_ratio * g
-        self.sfc, self.thrust_rate, _ = self.propulsion.compute_flight_points(
-            self.cruise_mach, self.cruise_altitude, EngineSetting.CRUISE, thrust=self.thrust,
+        flight_point = FlightPoint(
+            mach=self.cruise_mach,
+            altitude=self.cruise_altitude,
+            engine_setting=EngineSetting.CRUISE,
+            thrust=self.thrust,
         )
+        self.propulsion.compute_flight_points(flight_point)
+        self.sfc = flight_point.sfc
+        self.thrust_rate = flight_point.thrust_rate
+
         atmosphere = AtmosphereSI(self.cruise_altitude)
         cruise_speed = atmosphere.speed_of_sound * self.cruise_mach
         range_factor = cruise_speed * self.lift_drag_ratio / g / self.sfc

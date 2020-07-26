@@ -16,7 +16,9 @@ Test module for rubber_engine.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import pandas as pd
 import pytest
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.utils.physics import Atmosphere
 
@@ -27,17 +29,19 @@ def test_compute_flight_points():
     engine = RubberEngine(5, 30, 1500, 1, 0.95, 10000)  # f0=1 so that output is simply fc/f0
 
     # Test with scalars
-    sfc, thrust_rate, thrust = engine.compute_flight_points(
-        0, 0, EngineSetting.TAKEOFF, thrust_rate=0.8
+    flight_point = FlightPoint(
+        mach=0, altitude=0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=0.8
     )  # with engine_setting as EngineSetting
-    np.testing.assert_allclose(thrust, 0.9553 * 0.8, rtol=1e-4)
-    np.testing.assert_allclose(sfc, 0.99210e-5, rtol=1e-4)
+    engine.compute_flight_points(flight_point)
+    np.testing.assert_allclose(flight_point.thrust, 0.9553 * 0.8, rtol=1e-4)
+    np.testing.assert_allclose(flight_point.sfc, 0.99210e-5, rtol=1e-4)
 
-    sfc, thrust_rate, thrust = engine.compute_flight_points(
-        0.3, 0, EngineSetting.CLIMB.value, thrust=0.35677
+    flight_point = FlightPoint(
+        mach=0.3, altitude=0, engine_setting=EngineSetting.CLIMB.value, thrust=0.35677
     )  # with engine_setting as int
-    np.testing.assert_allclose(thrust_rate, 0.5, rtol=1e-4)
-    np.testing.assert_allclose(sfc, 1.3496e-5, rtol=1e-4)
+    engine.compute_flight_points(flight_point)
+    np.testing.assert_allclose(flight_point.thrust_rate, 0.5, rtol=1e-4)
+    np.testing.assert_allclose(flight_point.sfc, 1.3496e-5, rtol=1e-4)
 
     # Test full arrays
     # 2D arrays are used, where first line is for thrust rates, and second line
@@ -48,7 +52,7 @@ def test_compute_flight_points():
     altitudes = [0, 0, 0, 10000, 13000]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
     thrusts = [0.9553 * 0.8, 0.38851, 0.35677, 0.09680, 0.11273]
-    phases = [
+    engine_settings = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
         EngineSetting.CLIMB,
@@ -57,45 +61,17 @@ def test_compute_flight_points():
     ]  # mix EngineSetting with integers
     expected_sfc = [0.99210e-5, 1.3496e-5, 1.3496e-5, 1.8386e-5, 1.5957e-5]
 
-    sfc, thrust_rate, thrust = engine.compute_flight_points(
-        [machs, machs],
-        [altitudes, altitudes],
-        [phases, phases],
-        [[True] * 5, [False] * 5],
-        [thrust_rates, [0] * 5],
-        [[0] * 5, thrusts],
-    )
-    np.testing.assert_allclose(sfc, [expected_sfc, expected_sfc], rtol=1e-4)
-    np.testing.assert_allclose(thrust_rate, [thrust_rates, thrust_rates], rtol=1e-4)
-    np.testing.assert_allclose(thrust, [thrusts, thrusts], rtol=1e-4)
-
-    # Test scalars + arrays 1
-    machs = [
-        0,
-        0.3,
-    ]
-    thrust_rates = [0.8, 0.5]
-    expected_thrust = [0.9553 * 0.8, 0.38851]
-    expected_sfc = [0.99210e-5, 1.3496e-5]
-
-    sfc, _, thrust = engine.compute_flight_points(
-        machs, 0, EngineSetting.TAKEOFF, thrust_rate=thrust_rates
-    )
-    np.testing.assert_allclose(thrust, expected_thrust, rtol=1e-4)
-    np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-4)
-
-    # Test scalars + arrays 2
-    altitudes = [0, 0]
-    phases = [
-        EngineSetting.TAKEOFF.value,
-        EngineSetting.CLIMB.value,
-    ]
-    expected_thrust = [0.38851, 0.35677]
-    expected_sfc = [1.3496e-5, 1.3496e-5]
-
-    sfc, _, thrust = engine.compute_flight_points(0.3, altitudes, phases, thrust_rate=0.5)
-    np.testing.assert_allclose(thrust, expected_thrust, rtol=1e-4)
-    np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-4)
+    flight_points = pd.DataFrame()
+    flight_points["mach"] = machs + machs
+    flight_points["altitude"] = altitudes + altitudes
+    flight_points["engine_setting"] = engine_settings + engine_settings
+    flight_points["thrust_is_regulated"] = [False] * 5 + [True] * 5
+    flight_points["thrust_rate"] = thrust_rates + [0.0] * 5
+    flight_points["thrust"] = [0.0] * 5 + thrusts
+    engine.compute_flight_points(flight_points)
+    np.testing.assert_allclose(flight_points.sfc, expected_sfc + expected_sfc, rtol=1e-4)
+    np.testing.assert_allclose(flight_points.thrust_rate, thrust_rates + thrust_rates, rtol=1e-4)
+    np.testing.assert_allclose(flight_points.thrust, thrusts + thrusts, rtol=1e-4)
 
 
 def test_installed_weight():

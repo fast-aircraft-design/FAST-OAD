@@ -11,10 +11,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Union, Sequence, Optional, Tuple
+from typing import Union
 
 import numpy as np
-from fastoad.constants import EngineSetting
+import pandas as pd
+from fastoad.base.flight_point import FlightPoint
 from numpy.testing import assert_allclose
 
 from ..propulsion import EngineSet
@@ -35,24 +36,13 @@ class DummyEngine(IPropulsion):
         self.max_thrust = max_thrust
         self.max_sfc = max_sfc
 
-    def compute_flight_points(
-        self,
-        mach: Union[float, Sequence],
-        altitude: Union[float, Sequence],
-        engine_setting: Union[EngineSetting, Sequence],
-        use_thrust_rate: Optional[Union[bool, Sequence]] = None,
-        thrust_rate: Optional[Union[float, Sequence]] = None,
-        thrust: Optional[Union[float, Sequence]] = None,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
-
-        if use_thrust_rate or thrust is None:
-            thrust = self.max_thrust * thrust_rate
+    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+        if flight_points.thrust_is_regulated or flight_points.thrust is None:
+            flight_points.thrust = self.max_thrust * flight_points.thrust_rate
         else:
-            thrust_rate = thrust / self.max_thrust
+            flight_points.thrust_rate = flight_points.thrust / self.max_thrust
 
-        sfc = self.max_sfc * thrust_rate
-
-        return sfc, thrust_rate, thrust
+        flight_points.sfc = self.max_sfc * flight_points.thrust_rate
 
 
 def test_EngineSet():
@@ -63,14 +53,18 @@ def test_EngineSet():
     thrust_rate = np.linspace(0.0, 1.0, 20)
     for engine_count in [1, 2, 3, 4]:
         engine_set = EngineSet(engine, engine_count)
-        sfc, _, thrust = engine_set.compute_flight_points(0.0, 0.0, 1, thrust_rate=thrust_rate)
-        assert_allclose(sfc, engine.max_sfc * thrust_rate)
-        assert_allclose(thrust, engine.max_thrust * engine_count * thrust_rate)
+        flight_point = FlightPoint(
+            mach=0.0, altitude=0.0, engine_setting=1, thrust_rate=thrust_rate
+        )
+        engine_set.compute_flight_points(flight_point)
+        assert_allclose(flight_point.sfc, engine.max_sfc * thrust_rate)
+        assert_allclose(flight_point.thrust, engine.max_thrust * engine_count * thrust_rate)
 
     # input = thrust
     thrust = np.linspace(0.0, engine.max_thrust, 30)
     for engine_count in [1, 2, 3, 4]:
         engine_set = EngineSet(engine, engine_count)
-        sfc, thrust_rate, _ = engine_set.compute_flight_points(0.0, 0.0, 1, thrust=thrust)
-        assert_allclose(thrust_rate, thrust / engine_count / engine.max_thrust)
-        assert_allclose(sfc, engine.max_sfc * thrust_rate)
+        flight_point = FlightPoint(mach=0.0, altitude=0.0, engine_setting=1, thrust=thrust)
+        engine_set.compute_flight_points(flight_point)
+        assert_allclose(flight_point.thrust_rate, thrust / engine_count / engine.max_thrust)
+        assert_allclose(flight_point.sfc, engine.max_sfc * flight_point.thrust_rate)

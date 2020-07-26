@@ -370,16 +370,9 @@ class ManualThrustSegment(AbstractSegment, ABC):
     """
 
     def _compute_propulsion(self, flight_point: FlightPoint):
-        (
-            flight_point.sfc,
-            flight_point.thrust_rate,
-            flight_point.thrust,
-        ) = self.propulsion.compute_flight_points(
-            flight_point.mach,
-            flight_point.altitude,
-            flight_point.engine_setting,
-            thrust_rate=self.thrust_rate,
-        )
+        flight_point.thrust_rate = self.thrust_rate
+        flight_point.thrust_is_regulated = False
+        self.propulsion.compute_flight_points(flight_point)
 
 
 @AddKeyAttributes({"time_step": 60.0})
@@ -393,16 +386,9 @@ class RegulatedThrustSegment(AbstractSegment, ABC):
         self.target.mach = "constant"
 
     def _compute_propulsion(self, flight_point: FlightPoint):
-        (
-            flight_point.sfc,
-            flight_point.thrust_rate,
-            flight_point.thrust,
-        ) = self.propulsion.compute_flight_points(
-            flight_point.mach,
-            flight_point.altitude,
-            flight_point.engine_setting,
-            thrust=flight_point.drag,
-        )
+        flight_point.thrust = flight_point.drag
+        flight_point.thrust_is_regulated = True
+        self.propulsion.compute_flight_points(flight_point)
 
     def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         return 0.0, 0.0

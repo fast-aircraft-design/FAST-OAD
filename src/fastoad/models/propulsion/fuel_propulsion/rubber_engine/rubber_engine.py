@@ -17,6 +17,8 @@ import math
 from typing import Union, Sequence, Tuple, Optional
 
 import numpy as np
+import pandas as pd
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
 from fastoad.utils.physics import Atmosphere
@@ -98,26 +100,26 @@ class RubberEngine(IPropulsion):
         if unknown_keys:
             raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
 
-    def compute_flight_points(
-        self,
-        mach: Union[float, Sequence],
-        altitude: Union[float, Sequence],
-        engine_setting: Union[EngineSetting, Sequence],
-        use_thrust_rate: Optional[Union[bool, Sequence]] = None,
-        thrust_rate: Optional[Union[float, Sequence]] = None,
-        thrust: Optional[Union[float, Sequence]] = None,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
+    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
         # pylint: disable=too-many-arguments  # they define the trajectory
-        return self.compute_flight_points_from_dt4(
-            mach, altitude, self._get_delta_t4(engine_setting), use_thrust_rate, thrust_rate, thrust
+        sfc, thrust_rate, thrust = self.compute_flight_points_from_dt4(
+            flight_points.mach,
+            flight_points.altitude,
+            self._get_delta_t4(flight_points.engine_setting),
+            flight_points.thrust_is_regulated,
+            flight_points.thrust_rate,
+            flight_points.thrust,
         )
+        flight_points.sfc = sfc
+        flight_points.thrust_rate = thrust_rate
+        flight_points.thrust = thrust
 
     def compute_flight_points_from_dt4(
         self,
         mach: Union[float, Sequence],
         altitude: Union[float, Sequence],
         delta_t4: Union[float, Sequence],
-        use_thrust_rate: Optional[Union[bool, Sequence]] = None,
+        thrust_is_regulated: Optional[Union[bool, Sequence]] = None,
         thrust_rate: Optional[Union[float, Sequence]] = None,
         thrust: Optional[Union[float, Sequence]] = None,
     ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
@@ -130,7 +132,7 @@ class RubberEngine(IPropulsion):
         :param altitude: (unit=m) altitude w.r.t. to sea level
         :param delta_t4: (unit=K) difference between operational and design values of
                          turbine inlet temperature in K
-        :param use_thrust_rate: tells if thrust_rate or thrust should be used (works element-wise)
+        :param thrust_is_regulated: tells if thrust_rate or thrust should be used (works element-wise)
         :param thrust_rate: thrust rate (unit=none)
         :param thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
@@ -139,14 +141,14 @@ class RubberEngine(IPropulsion):
         altitude = np.asarray(altitude)
         delta_t4 = np.asarray(delta_t4)
 
-        if use_thrust_rate is not None:
-            use_thrust_rate = np.asarray(np.round(use_thrust_rate, 0), dtype=bool)
+        if thrust_is_regulated is not None:
+            thrust_is_regulated = np.asarray(np.round(thrust_is_regulated, 0), dtype=bool)
 
-        use_thrust_rate, thrust_rate, thrust = self._check_thrust_inputs(
-            use_thrust_rate, thrust_rate, thrust
+        thrust_is_regulated, thrust_rate, thrust = self._check_thrust_inputs(
+            thrust_is_regulated, thrust_rate, thrust
         )
 
-        use_thrust_rate = np.asarray(np.round(use_thrust_rate, 0), dtype=bool)
+        thrust_is_regulated = np.asarray(np.round(thrust_is_regulated, 0), dtype=bool)
         thrust_rate = np.asarray(thrust_rate)
         thrust = np.asarray(thrust)
 
@@ -155,7 +157,7 @@ class RubberEngine(IPropulsion):
         max_thrust = self.max_thrust(atmosphere, mach, delta_t4)
 
         # We compute thrust values from thrust rates when needed
-        idx = use_thrust_rate
+        idx = np.logical_not(thrust_is_regulated)
         if np.size(max_thrust) == 1:
             maximum_thrust = max_thrust
             out_thrust_rate = thrust_rate
@@ -172,7 +174,8 @@ class RubberEngine(IPropulsion):
 
             maximum_thrust = max_thrust[idx]
 
-        out_thrust[idx] = out_thrust_rate[idx] * maximum_thrust
+        if np.any(idx):
+            out_thrust[idx] = out_thrust_rate[idx] * maximum_thrust
 
         # thrust_rate is obtained from entire thrust vector (could be optimized if needed,
         # as some thrust rates that are computed may have been provided as input)
@@ -186,7 +189,7 @@ class RubberEngine(IPropulsion):
 
     @staticmethod
     def _check_thrust_inputs(
-        use_thrust_rate: Optional[Union[float, Sequence]],
+        thrust_is_regulated: Optional[Union[float, Sequence]],
         thrust_rate: Optional[Union[float, Sequence]],
         thrust: Optional[Union[float, Sequence]],
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -195,17 +198,17 @@ class RubberEngine(IPropulsion):
 
         Some of the inputs can be None, but outputs will be proper numpy arrays.
 
-        :param use_thrust_rate:
+        :param thrust_is_regulated:
         :param thrust_rate:
         :param thrust:
         :return: the inputs, but transformed in numpy arrays.
         """
         # Ensure they are numpy array
-        if use_thrust_rate is not None:
+        if thrust_is_regulated is not None:
             # As OpenMDAO may provide floats that could be slightly different
             # from 0. or 1., a rounding operation is needed before converting
             # to booleans
-            use_thrust_rate = np.asarray(np.round(use_thrust_rate, 0), dtype=bool)
+            thrust_is_regulated = np.asarray(np.round(thrust_is_regulated, 0), dtype=bool)
         if thrust_rate is not None:
             thrust_rate = np.asarray(thrust_rate)
         if thrust is not None:
@@ -213,51 +216,51 @@ class RubberEngine(IPropulsion):
 
         # Check inputs: if use_thrust_rate is None, we will use the provided input between
         # thrust_rate and thrust
-        if use_thrust_rate is None:
+        if thrust_is_regulated is None:
             if thrust_rate is not None:
-                use_thrust_rate = True
+                thrust_is_regulated = False
                 thrust = np.empty_like(thrust_rate)
             elif thrust is not None:
-                use_thrust_rate = False
+                thrust_is_regulated = True
                 thrust_rate = np.empty_like(thrust)
             else:
                 raise FastRubberEngineInconsistentInputParametersError(
                     "When use_thrust_rate is None, either thrust_rate or thrust should be provided."
                 )
 
-        elif np.size(use_thrust_rate) == 1:
+        elif np.size(thrust_is_regulated) == 1:
             # Check inputs: if use_thrust_rate is a scalar, the matching input(thrust_rate or
             # thrust) must be provided.
-            if use_thrust_rate:
-                if thrust_rate is None:
-                    raise FastRubberEngineInconsistentInputParametersError(
-                        "When use_thrust_rate is True, thrust_rate should be provided."
-                    )
-                thrust = np.empty_like(thrust_rate)
-            else:
+            if thrust_is_regulated:
                 if thrust is None:
                     raise FastRubberEngineInconsistentInputParametersError(
-                        "When use_thrust_rate is False, thrust should be provided."
+                        "When thrust_is_regulated is True, thrust should be provided."
                     )
                 thrust_rate = np.empty_like(thrust)
+            else:
+                if thrust_rate is None:
+                    raise FastRubberEngineInconsistentInputParametersError(
+                        "When thrust_is_regulated is False, thrust_rate should be provided."
+                    )
+                thrust = np.empty_like(thrust_rate)
 
         else:
             # Check inputs: if use_thrust_rate is not a scalar, both thrust_rate and thrust must be
             # provided and have the same shape as use_thrust_rate
             if thrust_rate is None or thrust is None:
                 raise FastRubberEngineInconsistentInputParametersError(
-                    "When use_thrust_rate is a sequence, both thrust_rate and thrust should be "
+                    "When thrust_is_regulated is a sequence, both thrust_rate and thrust should be "
                     "provided."
                 )
-            if np.shape(thrust_rate) != np.shape(use_thrust_rate) or np.shape(thrust) != np.shape(
-                use_thrust_rate
-            ):
+            if np.shape(thrust_rate) != np.shape(thrust_is_regulated) or np.shape(
+                thrust
+            ) != np.shape(thrust_is_regulated):
                 raise FastRubberEngineInconsistentInputParametersError(
                     "When use_thrust_rate is a sequence, both thrust_rate and thrust should have "
                     "same shape as use_thrust_rate"
                 )
 
-        return use_thrust_rate, thrust_rate, thrust
+        return thrust_is_regulated, thrust_rate, thrust
 
     def sfc_at_max_thrust(
         self, atmosphere: Atmosphere, mach: Union[float, Sequence[float]]
