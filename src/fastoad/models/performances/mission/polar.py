@@ -40,7 +40,7 @@ class Polar:
             """Returns -CL/CD."""
             return -lift_coeff / self.cd(lift_coeff)
 
-        self._optimal_CL = fmin(_negated_lift_drag_ratio, cl[0])
+        self._optimal_CL = fmin(_negated_lift_drag_ratio, cl[0], disp=0)
 
     @property
     def definition_cl(self):
