@@ -11,13 +11,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Union, Sequence, Optional, Tuple
-
 import numpy as np
 import pandas as pd
 import pytest
 from fastoad.base.flight_point import FlightPoint
-from fastoad.constants import EngineSetting
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.propulsion import EngineSet, IPropulsion
 from numpy.testing import assert_allclose
@@ -55,24 +52,14 @@ class DummyEngine(IPropulsion):
         self.max_thrust = max_thrust
         self.max_sfc = max_sfc
 
-    def compute_flight_points(
-        self,
-        mach: Union[float, Sequence],
-        altitude: Union[float, Sequence],
-        engine_setting: Union[EngineSetting, Sequence],
-        use_thrust_rate: Optional[Union[bool, Sequence]] = None,
-        thrust_rate: Optional[Union[float, Sequence]] = None,
-        thrust: Optional[Union[float, Sequence]] = None,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
+    def compute_flight_points(self, flight_point: FlightPoint):
 
-        if use_thrust_rate or thrust is None:
-            thrust = self.max_thrust * thrust_rate
+        if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
+            flight_point.thrust_rate = flight_point.thrust / self.max_thrust
         else:
-            thrust_rate = thrust / self.max_thrust
+            flight_point.thrust = self.max_thrust * flight_point.thrust_rate
 
-        sfc = self.max_sfc * (1.0 + thrust_rate) / 2.0
-
-        return sfc, thrust_rate, thrust
+        flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0
 
 
 @pytest.fixture
