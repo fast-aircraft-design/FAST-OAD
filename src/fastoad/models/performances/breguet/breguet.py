@@ -1,6 +1,4 @@
-"""
-Implementation of the Breguet Formula
-"""
+"""Implementation of the Breguet Formula."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
