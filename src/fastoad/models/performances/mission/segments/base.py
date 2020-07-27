@@ -209,7 +209,7 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         previous = flight_points[-1]
         next_point = FlightPoint()
 
-        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
+        next_point.mass = previous.mass - self.propulsion.get_consumed_mass(previous, time_step)
         next_point.time = previous.time + time_step
         next_point.ground_distance = (
             previous.ground_distance

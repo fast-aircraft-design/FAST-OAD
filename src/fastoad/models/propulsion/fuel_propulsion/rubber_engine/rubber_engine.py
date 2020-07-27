@@ -41,13 +41,13 @@ from .constants import (
     ATM_TROPOPAUSE,
 )
 from .exceptions import FastRubberEngineInconsistentInputParametersError
-from ...propulsion import IPropulsion
+from ...propulsion import FuelPropulsion
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
 
-class RubberEngine(IPropulsion):
+class RubberEngine(FuelPropulsion):
     def __init__(
         self,
         bypass_ratio: float,

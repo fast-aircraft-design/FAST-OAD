@@ -16,13 +16,13 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from fastoad.base.flight_point import FlightPoint
+from fastoad.models.propulsion.propulsion import FuelPropulsion
 from numpy.testing import assert_allclose
 
 from ..propulsion import EngineSet
-from ..propulsion import IPropulsion
 
 
-class DummyEngine(IPropulsion):
+class DummyEngine(FuelPropulsion):
     def __init__(self, max_thrust, max_sfc):
         """
         Dummy engine model.

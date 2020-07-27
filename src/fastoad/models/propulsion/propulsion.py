@@ -38,18 +38,18 @@ class IPropulsion(ABC):
         .. note:: **About use_thrust_rate, thrust_rate and thrust**
 
             :code:`thrust_is_regulated` tells if a flight point should be computed using
-            :code:`thrust_rate` or :code:`thrust` as input. This way, the method can be used
-            in a vectorized mode, where each point can be set to respect a **thrust** order or a
-            **thrust rate** order.
+            :code:`thrust_rate` (when False) or :code:`thrust` (when True) as input. This way,
+            the method can be used in a vectorized mode, where each point can be set to respect
+            a **thrust** order or a **thrust rate** order.
 
-            - if :code:`thrust_is_regulated` is :code:`None`, the considered input will be the
-              provided one between :code:`thrust_rate` and :code:`thrust` (if both are provided,
+            - if :code:`thrust_is_regulated` is not defined, the considered input will be the
+              defined one between :code:`thrust_rate` and :code:`thrust` (if both are provided,
               :code:`thrust_rate` will be used)
 
             - if :code:`thrust_is_regulated` is :code:`True` or :code:`False` (i.e., not a sequence),
-              the considered input will be taken accordingly, and should of course not be None.
+              the considered input will be taken accordingly, and should of course be defined.
 
-            - if :code:`thrust_is_regulated` is a sequence or array, :code:`thrust_rate` and
+            - if there are several flight points, :code:`thrust_is_regulated` is a sequence or array, :code:`thrust_rate` and
               :code:`thrust` should be provided and have the same shape as
               :code:`thrust_is_regulated:code:`. The method will consider for each element which input
               will be used according to :code:`thrust_is_regulated`.
@@ -59,11 +59,25 @@ class IPropulsion(ABC):
         :return: None (inputs are updated in-place)
         """
 
+    @abstractmethod
+    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
+        """
 
-class EngineSet(IPropulsion):
+        :param flight_point:
+        :param time_step:
+        :return:
+        """
+
+
+class FuelPropulsion(IPropulsion, ABC):
+    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
+        return time_step * flight_point.sfc * flight_point.thrust
+
+
+class EngineSet(FuelPropulsion):
     def __init__(self, engine: IPropulsion, engine_count):
         """
-        Class for modelling an assembly of identical engines.
+        Class for modelling an assembly of identical fuel engines.
 
         Thrust is supposed equally distributed among them.
 
