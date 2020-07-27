@@ -16,7 +16,8 @@ import pandas as pd
 import pytest
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.performances.mission.segments.hold import HoldSegment
-from fastoad.models.propulsion import EngineSet, IPropulsion
+from fastoad.models.propulsion import EngineSet
+from fastoad.models.propulsion.propulsion import FuelPropulsion
 from numpy.testing import assert_allclose
 from scipy.constants import foot
 
@@ -37,7 +38,7 @@ def print_dataframe(df):
         print(df)
 
 
-class DummyEngine(IPropulsion):
+class DummyEngine(FuelPropulsion):
     def __init__(self, max_thrust, max_sfc):
         """
         Dummy engine model.
