@@ -64,9 +64,9 @@ class DynamicAttributeDict(dict):
         :param kwargs: argument keywords must be names contained in :attr:`attribute_keys`
         """
 
-        if hasattr(self, "attribute_keys"):
+        if hasattr(self, "get_attribute_keys"):
             for key in kwargs:
-                if key not in self.attribute_keys:
+                if key not in self.get_attribute_keys():
                     raise FastUnexpectedKeywordArgument(key)
         elif kwargs:
             # No defined dynamic attribute, any keyword argument is illegal
@@ -74,12 +74,12 @@ class DynamicAttributeDict(dict):
 
         super().__init__(*args, **kwargs)
 
-        if hasattr(self, "attribute_keys"):
+        if hasattr(self, "get_attribute_keys"):
             # Keys with None or Nan as value will be deleted so their default value
             # will be returned (see property definition in AddKeyAttribute).
             # We apply this behaviour even when instantiating from *args (i.e. with
             # a dict-like object)
-            for key in self.attribute_keys:
+            for key in self.get_attribute_keys():
                 if key in self and (self[key] is None or _is_nan(self[key])):
                     del self[key]
 
@@ -109,11 +109,9 @@ class AddKeyAttribute:
     def __call__(self, decorated_dict: type):
         # Adds the property for defined key
         def _getter(self_):
-            """The property getter"""
             return self_.get(self.attr_name, self.default_value)
 
         def _setter(self_, value):
-            """The property setter"""
             if self.attr_name in self_ and (value is None or _is_nan(value)):
                 # None or NaN means the default value, so we delete the dict key
                 if self.default_value is None:
@@ -132,7 +130,7 @@ class AddKeyAttribute:
         except AttributeError:
             decorated_dict._attribute_keys = {self.attr_name}
 
-        decorated_dict.attribute_keys = property(lambda self_: self_.__class__._attribute_keys)
+        decorated_dict.get_attribute_keys = classmethod(lambda cls_: cls_._attribute_keys)
 
         return decorated_dict
 
