@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.base.dict import DynamicAttributeDict, DynamicAttributesDictDecorator
+from fastoad.base.dict import DynamicAttributeDict, AddKeyAttributes
 
 
 # Set of dictionary keys that are mapped to instance attributes.
@@ -37,7 +37,7 @@ LABELS = {
 }
 
 
-@DynamicAttributesDictDecorator(LABELS)
+@AddKeyAttributes(LABELS)
 class FlightPoint(DynamicAttributeDict):
     """
     Class for storing data for one flight point.

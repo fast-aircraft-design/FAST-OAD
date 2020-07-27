@@ -17,7 +17,7 @@ from typing import Tuple, List
 
 import numpy as np
 import pandas as pd
-from fastoad.base.dict import DynamicAttributesDictDecorator
+from fastoad.base.dict import AddKeyAttributes
 from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g, foot
 
@@ -27,7 +27,7 @@ from ..flight_point import FlightPoint
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-@DynamicAttributesDictDecorator({"time_step": 2.0})
+@AddKeyAttributes({"time_step": 2.0})
 class AltitudeChangeSegment(ManualThrustSegment):
     """
     Computes a flight path segment where altitude is modified with constant speed.

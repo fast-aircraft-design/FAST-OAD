@@ -18,7 +18,7 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
-from fastoad.base.dict import DynamicAttributeDict, DynamicAttributesDictDecorator
+from fastoad.base.dict import DynamicAttributeDict, AddKeyAttributes
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion import IPropulsion
 from fastoad.utils.physics import AtmosphereSI
@@ -44,7 +44,7 @@ SEGMENT_KEYWORD_ARGUMENTS = {
 }
 
 
-@DynamicAttributesDictDecorator(SEGMENT_KEYWORD_ARGUMENTS)
+@AddKeyAttributes(SEGMENT_KEYWORD_ARGUMENTS)
 class AbstractSegment(IFlightPart, DynamicAttributeDict):
     """
     Base class for flight path segment.
@@ -360,7 +360,7 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         """
 
 
-@DynamicAttributesDictDecorator({"thrust_rate": 1.0})
+@AddKeyAttributes({"thrust_rate": 1.0})
 class ManualThrustSegment(AbstractSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is imposed.
@@ -381,7 +381,7 @@ class ManualThrustSegment(AbstractSegment, ABC):
         )
 
 
-@DynamicAttributesDictDecorator({"time_step": 60.0})
+@AddKeyAttributes({"time_step": 60.0})
 class RegulatedThrustSegment(AbstractSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is adjusted on drag.
