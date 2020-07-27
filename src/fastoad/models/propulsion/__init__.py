@@ -14,4 +14,4 @@ Package for propulsion modules
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .propulsion import IPropulsion, IOMPropulsionWrapper, BaseOMPropulsionComponent, EngineSet
+from .propulsion import IPropulsion, IOMPropulsionWrapper, BaseOMPropulsionComponent

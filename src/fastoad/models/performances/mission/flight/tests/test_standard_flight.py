@@ -28,14 +28,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from fastoad.base.flight_point import FlightPoint
-from fastoad.constants import FlightPhase
-from fastoad.models.propulsion import EngineSet
-from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 from matplotlib.ticker import MultipleLocator
 from numpy.testing import assert_allclose
 from scipy.constants import knot, foot
 
+from fastoad.base.flight_point import FlightPoint
+from fastoad.constants import FlightPhase
+from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 from ..standard_flight import StandardFlight
 from ...flight.base import RangedFlight
 from ...polar import Polar
@@ -120,7 +120,7 @@ def plot_flight(flight_points, fig_filename):
 def test_standard_flight_optimal_altitude(low_speed_polar, high_speed_polar, cleanup):
 
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
-    propulsion = EngineSet(engine, 2)
+    propulsion = FuelEngineSet(engine, 2)
 
     flight_calculator = StandardFlight(
         propulsion=propulsion,
@@ -162,7 +162,7 @@ def test_standard_flight_fixed_altitude(low_speed_polar, high_speed_polar, clean
     # Cruise altitude is low so that first segment of descent will also be skipped.
 
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
-    propulsion = EngineSet(engine, 2)
+    propulsion = FuelEngineSet(engine, 2)
 
     flight_calculator = StandardFlight(
         propulsion=propulsion,
@@ -198,7 +198,7 @@ def test_standard_flight_fixed_altitude(low_speed_polar, high_speed_polar, clean
 def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
 
     engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
-    propulsion = EngineSet(engine, 2)
+    propulsion = FuelEngineSet(engine, 2)
 
     total_distance = 2.0e6
     flight_calculator = RangedFlight(

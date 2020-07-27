@@ -18,11 +18,12 @@ from typing import Union, Sequence, Tuple, Optional
 
 import numpy as np
 import pandas as pd
+
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
+from fastoad.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastoad.utils.physics import Atmosphere
-
 from .constants import (
     ALPHA,
     BETA,
@@ -41,13 +42,12 @@ from .constants import (
     ATM_TROPOPAUSE,
 )
 from .exceptions import FastRubberEngineInconsistentInputParametersError
-from ...propulsion import FuelPropulsion
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
 
-class RubberEngine(FuelPropulsion):
+class RubberEngine(AbstractFuelPropulsion):
     def __init__(
         self,
         bypass_ratio: float,

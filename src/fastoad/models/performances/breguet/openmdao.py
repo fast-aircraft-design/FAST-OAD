@@ -14,12 +14,12 @@
 
 import numpy as np
 import openmdao.api as om
-from fastoad import BundleLoader
-from fastoad.constants import EngineSetting
-from fastoad.models.propulsion import EngineSet
-from fastoad.utils.physics import AtmosphereSI
 from scipy.constants import g
 
+from fastoad import BundleLoader
+from fastoad.constants import EngineSetting
+from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastoad.utils.physics import AtmosphereSI
 from . import Breguet
 
 
@@ -92,7 +92,7 @@ class BreguetWithPropulsion(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        propulsion_model = EngineSet(
+        propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
 

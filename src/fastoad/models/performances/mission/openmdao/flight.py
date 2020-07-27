@@ -14,6 +14,8 @@
 import numpy as np
 import openmdao.api as om
 import pandas as pd
+from scipy.constants import foot, nautical_mile
+
 from fastoad import BundleLoader
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase
@@ -21,9 +23,7 @@ from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from fastoad.models.performances.breguet import Breguet
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
-from fastoad.models.propulsion import EngineSet
-from scipy.constants import foot, nautical_mile
-
+from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from ..flight.base import RangedFlight
 from ..flight.standard_flight import StandardFlight
 from ..polar import Polar
@@ -131,7 +131,7 @@ class SizingFlight(om.ExplicitComponent):
             self.compute_breguet(inputs, outputs)
 
     def compute_breguet(self, inputs, outputs):
-        propulsion_model = EngineSet(
+        propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
         high_speed_polar = Polar(
@@ -155,7 +155,7 @@ class SizingFlight(om.ExplicitComponent):
         outputs["data:mission:sizing:fuel"] = breguet.mission_fuel
 
     def compute_mission(self, inputs, outputs):
-        propulsion_model = EngineSet(
+        propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
 
