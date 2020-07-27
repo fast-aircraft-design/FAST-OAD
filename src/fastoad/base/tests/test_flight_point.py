@@ -14,9 +14,9 @@
 import numpy as np
 import pandas as pd
 import pytest
-from fastoad.exceptions import FastUnexpectedKeywordArgument
 from numpy.testing import assert_allclose
 
+from fastoad.exceptions import FastUnexpectedKeywordArgument
 from ..flight_point import FlightPoint
 
 
@@ -30,16 +30,19 @@ def test_FlightPoint():
     assert fp1["mass"] == 70000.0
 
     # Non initialized but known attributes are initialized to None
-    for label in FlightPoint.labels():
+    for label in FlightPoint.get_attribute_keys():
         if label != "mass":
             assert getattr(fp1, label) is None
 
     # Init with dictionary, with all attributes initialized ########################################
     test_values = {
-        key: value for key, value in zip(FlightPoint.labels(), range(len(FlightPoint.labels())))
+        key: value
+        for key, value in zip(
+            FlightPoint.get_attribute_keys(), range(len(FlightPoint.get_attribute_keys()))
+        )
     }
     fp2 = FlightPoint(test_values)
-    for label in FlightPoint.labels():
+    for label in FlightPoint.get_attribute_keys():
         assert getattr(fp2, label) == test_values[label]
         assert getattr(fp2, label) == fp2[label]
         new_value = test_values[label] * 100
@@ -57,7 +60,7 @@ def test_FlightPoint():
     assert fp1 == FlightPoint(pd.DataFrame([fp1]).iloc[0])
 
     df = pd.DataFrame([fp1, fp2])
-    for label in FlightPoint.labels():
+    for label in FlightPoint.get_attribute_keys():
         assert_allclose(df[label], [fp1.get(label, np.nan), fp2.get(label, np.nan)])
 
     fp2bis = FlightPoint(df.iloc[-1])

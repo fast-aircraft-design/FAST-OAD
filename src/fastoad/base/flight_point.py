@@ -77,11 +77,5 @@ class FlightPoint(DynamicAttributeDict):
     instances.
 
     The set of dictionary keys that are mapped to instance attributes is given by
-    the :meth:`labels` class attribute. Though it looks useful to limit the
-    authorized fields to avoid bugs from typos, you may modify this class
-    attribute to suit your needs.
+    the :meth:`get_attribute_keys`.
     """
-
-    @classmethod
-    def labels(cls):
-        return cls._attribute_keys
