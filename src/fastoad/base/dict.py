@@ -11,10 +11,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from collections import Sequence
-from typing import Union
+from typing import Union, Iterable
 
 import numpy as np
+
 from fastoad.exceptions import FastUnexpectedKeywordArgument
 
 
@@ -138,7 +138,7 @@ class AddKeyAttribute:
 
 
 class AddKeyAttributes:
-    def __init__(self, attribute_definition: Union[dict, Sequence]):
+    def __init__(self, attribute_definition: Union[dict, Iterable[str]]):
         """
         A decorator for a dict class that adds properties for accessing the matching dict item.
 
@@ -146,7 +146,7 @@ class AddKeyAttributes:
 
         :param attribute_definition: the list of keys that will be attributes. If it is
                                      a dictionary, the values are the associated default values.
-                                     If it is a sequence, default values will be None.
+                                     If it is a list or a set, default values will be None.
         """
         if isinstance(attribute_definition, dict):
             self.attribute_definition = attribute_definition
