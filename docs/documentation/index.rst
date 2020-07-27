@@ -11,4 +11,4 @@ Here you will find the first things to know about FAST-OAD.
    Process overview <overview>
    Usage <usage>
    Process variables <variables>
-   How to add your modules <add_modules>
+   Custom modules <custom_modules/index>
