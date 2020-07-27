@@ -15,14 +15,13 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from fastoad.base.flight_point import FlightPoint
-from fastoad.models.propulsion.propulsion import FuelPropulsion
 from numpy.testing import assert_allclose
 
-from ..propulsion import EngineSet
+from fastoad.base.flight_point import FlightPoint
+from ..base import AbstractFuelPropulsion, FuelEngineSet
 
 
-class DummyEngine(FuelPropulsion):
+class DummyEngine(AbstractFuelPropulsion):
     def __init__(self, max_thrust, max_sfc):
         """
         Dummy engine model.
@@ -46,13 +45,13 @@ class DummyEngine(FuelPropulsion):
 
 
 def test_EngineSet():
-    """Tests behaviour of EngineSet"""
+    """Tests behaviour of FuelEngineSet"""
     engine = DummyEngine(1.2e5, 1.0e-5)
 
     # input = thrust rate
     thrust_rate = np.linspace(0.0, 1.0, 20)
     for engine_count in [1, 2, 3, 4]:
-        engine_set = EngineSet(engine, engine_count)
+        engine_set = FuelEngineSet(engine, engine_count)
         flight_point = FlightPoint(
             mach=0.0, altitude=0.0, engine_setting=1, thrust_rate=thrust_rate
         )
@@ -63,7 +62,7 @@ def test_EngineSet():
     # input = thrust
     thrust = np.linspace(0.0, engine.max_thrust, 30)
     for engine_count in [1, 2, 3, 4]:
-        engine_set = EngineSet(engine, engine_count)
+        engine_set = FuelEngineSet(engine, engine_count)
         flight_point = FlightPoint(mach=0.0, altitude=0.0, engine_setting=1, thrust=thrust)
         engine_set.compute_flight_points(flight_point)
         assert_allclose(flight_point.thrust_rate, thrust / engine_count / engine.max_thrust)
