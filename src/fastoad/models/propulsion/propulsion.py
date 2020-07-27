@@ -20,12 +20,35 @@ import openmdao.api as om
 import pandas as pd
 from openmdao.core.component import Component
 
+from fastoad.base.dict import AddKeyAttributes
 from fastoad.base.flight_point import FlightPoint
 
 
 class IPropulsion(ABC):
     """
     Interface that should be implemented by propulsion models.
+
+    Using this class allows to delegate to the propulsion model the management of
+    propulsion-related data when computing performances.
+
+    The performance model calls :meth:`compute_flight_points` by providing one or
+    several flight points. The method will feed these flight points with results
+    of the model (e.g. thrust, SFC, ..).
+
+    The performance model will then be able to call :meth:`get_consumed_mass` to
+    know the mass consumption for each flight point.
+
+    Note::
+
+        If the propulsion model needs fields that are not among defined fields
+        of the :class`FlightPoint class`, these fields can be made authorized by
+        :class`FlightPoint class` by putting such command before defining the
+        class::
+
+            >>> # Simply adds the fields:
+            >>> AddKeyAttributes(["ion_drive_power", "distortion"])(FlightPoint)
+            >>> # Adds the fields with associated default values:
+            >>> AddKeyAttributes({"ion_drive_power":110., "distorsion":9.0})(FlightPoint)
     """
 
     @abstractmethod
