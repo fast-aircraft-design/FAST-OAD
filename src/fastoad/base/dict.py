@@ -1,5 +1,5 @@
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +28,7 @@ class DynamicAttributeDict(dict):
 
         They can also be used as keyword arguments when instantiating this class.
 
-        Note::
+        .. Note::
 
             Using this class as a dict is useful when instantiating another
             dict or a pandas DataFrame, or instantiating from them. Direct interaction
