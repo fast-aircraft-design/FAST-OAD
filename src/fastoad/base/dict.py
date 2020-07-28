@@ -85,7 +85,7 @@ class DynamicAttributeDict(dict):
 
 
 class AddKeyAttribute:
-    def __init__(self, attr_name, default_value):
+    def __init__(self, attr_name, default_value=None, doc=None):
         """
         A decorator for a dict class that adds a property for accessing the matching dict item.
 
@@ -105,6 +105,7 @@ class AddKeyAttribute:
         """
         self.attr_name = attr_name
         self.default_value = default_value
+        self.doc = doc
 
     def __call__(self, decorated_dict: type):
         # Adds the property for defined key
@@ -121,16 +122,20 @@ class AddKeyAttribute:
             else:
                 self_[self.attr_name] = value
 
-        prop = property(_getter, _setter)
+        prop = property(_getter, _setter, doc=self.doc)
         setattr(decorated_dict, self.attr_name, prop)
 
-        # Adds the property for getting the list of keys paired to attributes
+        # Adds the method for getting the list of keys paired to attributes
         try:
             decorated_dict._attribute_keys.add(self.attr_name)
         except AttributeError:
             decorated_dict._attribute_keys = {self.attr_name}
 
-        decorated_dict.get_attribute_keys = classmethod(lambda cls_: cls_._attribute_keys)
+        def get_attribute_keys(cls):
+            """:return: list of attributes paired to dict key."""
+            return cls._attribute_keys
+
+        decorated_dict.get_attribute_keys = classmethod(get_attribute_keys)
 
         return decorated_dict
 
@@ -153,8 +158,14 @@ class AddKeyAttributes:
 
     def __call__(self, decorated_dict: type):
 
-        for attr_name, default_value in self.attribute_definition.items():
-            decorated_dict = AddKeyAttribute(attr_name, default_value)(decorated_dict)
+        for attr_name, definition in self.attribute_definition.items():
+            if isinstance(definition, dict):
+                default_value = definition.get("default")
+                doc = definition.get("doc")
+            else:
+                default_value = definition
+                doc = None
+            decorated_dict = AddKeyAttribute(attr_name, default_value, doc)(decorated_dict)
 
         return decorated_dict
 

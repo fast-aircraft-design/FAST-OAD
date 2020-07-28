@@ -1,6 +1,6 @@
 """Structure for managing flight point data."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,24 +17,27 @@ from fastoad.base.dict import DynamicAttributeDict, AddKeyAttributes
 
 # Set of dictionary keys that are mapped to instance attributes.
 LABELS = {
-    "time",  # in seconds
-    "altitude",  # in meters
-    "ground_distance",  # in m.
-    "mass",  # in kg
-    "true_airspeed",  # in m/s
-    "equivalent_airspeed",  # in m/s
-    "mach",
-    "engine_setting",  # EngineSetting value
-    "CL",
-    "CD",
-    "drag",  # in Newtons
-    "thrust",  # in Newtons
-    "thrust_rate",
-    "thrust_is_regulated",  # boolean
-    "sfc",  # in kg/N/s
-    "slope_angle",  # in radians
-    "acceleration",  # in m/s**2
-    "name",
+    "time": dict(doc="Time in seconds."),
+    "altitude": dict(doc="Altitude in meters."),
+    "ground_distance": dict(doc="Covered ground distance in meters."),
+    "mass": dict(doc="Mass in kg."),  # in kg
+    "true_airspeed": dict(doc="True airspeed (TAS) in m/s."),
+    "equivalent_airspeed": dict(doc="Equivalent airspeed (EAS) in m/s."),
+    "mach": dict(doc="Mach number."),
+    "engine_setting": dict(doc="Engine setting (see :class:`~fastoad.constants.EngineSetting`)."),
+    "CL": dict(doc="Lift coeffient."),
+    "CD": dict(doc="Drag coeffient."),
+    "drag": dict(doc="Aircraft drag in Newtons."),
+    "thrust": dict(doc="Thrust in Newtons."),
+    "thrust_rate": dict(doc="Thrust rate (between 0. and 1.)"),
+    "thrust_is_regulated": dict(
+        doc="Boolean. If True, propulsion should match the thrust value. "
+        "If False, propulsion should match thrust rate."
+    ),
+    "sfc": dict(doc="Specific Fuel Consumption in kg/N/s."),
+    "slope_angle": dict(doc="Slope angle in radians."),
+    "acceleration": dict(doc="Acceleration value in m/s**2."),
+    "name": dict(doc="Name of current phase."),
 }
 
 
