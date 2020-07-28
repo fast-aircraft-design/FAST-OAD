@@ -37,6 +37,11 @@
     ]
 
 [tool.poetry.dependencies]
+# IMPORTANT: when modifying this list, update docs/requirements.txt for
+# ReadTheDocs to be able to compile the documentation.
+# TIP: After `poetry install`, you may copy src/fast_oad.egg-info/requires.txt
+# into docs/requirements.txt, but you'll have to add manually the needed sphinx
+# extensions (listed in dev-dependencies).
     python = "^3.6.1"
     numpy = "*"
     scipy = "*"

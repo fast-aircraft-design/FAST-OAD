@@ -1,1 +1,15 @@
 sphinxcontrib-bibtex
+importlib_resources
+ipopo<2,>=1
+ipysheet
+ipywidgets
+jupyterlab
+lxml
+matplotlib
+numpy
+openmdao<3.2,>=3
+pandas<2,>=1
+plotly
+scipy
+tomlkit<0.7.0,>=0.6.0
+wop<2.0.0,>=1.9.0
