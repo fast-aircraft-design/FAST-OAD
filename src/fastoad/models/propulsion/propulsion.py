@@ -1,6 +1,6 @@
 """Base module for propulsion models."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -46,9 +46,9 @@ class IPropulsion(ABC):
         class::
 
             >>> # Simply adds the fields:
-            >>> AddKeyAttributes(["ion_drive_power", "distortion"])(FlightPoint)
+            >>> AddKeyAttributes(["ion_drive_power", "warp"])(FlightPoint)
             >>> # Adds the fields with associated default values:
-            >>> AddKeyAttributes({"ion_drive_power":110., "distorsion":9.0})(FlightPoint)
+            >>> AddKeyAttributes({"ion_drive_power":110., "warp":9.0})(FlightPoint)
     """
 
     @abstractmethod
