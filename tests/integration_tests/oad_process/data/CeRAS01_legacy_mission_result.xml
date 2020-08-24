@@ -45,9 +45,9 @@
                     <hr_taxi_out>0</hr_taxi_out>
                 </taxi_out>
                 <takeoff id="229">
-                    <fuel_to unit="kg">93.636228729</fuel_to>
-                    <time_to unit="min">0.668333333333</time_to>
-                    <TOFL unit="m">1951.37981132</TOFL>
+                    <fuel_to unit="kg">93.6891205669</fuel_to>
+                    <time_to unit="min">0.668666666667</time_to>
+                    <TOFL unit="m">1948.98234934</TOFL>
                     <Take_off_altitude unit="m">0.0</Take_off_altitude>
                     <Take_off_delta_ISA unit="°C">15.0</Take_off_delta_ISA>
                     <Take_off_derate_ratio>1</Take_off_derate_ratio>
@@ -57,59 +57,59 @@
                     <hr_to>0</hr_to>
                     <speeds id="267">
                         <V_MCA unit="m/s">60.8566</V_MCA>
-                        <V2 unit="m/s">86.7</V2>
-                        <V_rotate unit="m/s">76.39943</V_rotate>
-                        <V_liftoff unit="m/s">78.1556568417</V_liftoff>
+                        <V2 unit="m/s">86.1</V2>
+                        <V_rotate unit="m/s">76.29943</V_rotate>
+                        <V_liftoff unit="m/s">78.049400727</V_liftoff>
                     </speeds>
                 </takeoff>
                 <climb id="232">
-                    <fuel_initial_climb unit="kg">118.326267931</fuel_initial_climb>
-                    <fuel_climb unit="kg">1402.89036371</fuel_climb>
-                    <time_climb unit="min">15.99</time_climb>
+                    <fuel_initial_climb unit="kg">119.268551118</fuel_initial_climb>
+                    <fuel_climb unit="kg">1404.39671822</fuel_climb>
+                    <time_climb unit="min">16.08</time_climb>
                     <climb_thrust_setting>0.93</climb_thrust_setting>
                     <max_climb_rate>2.4</max_climb_rate>
                     <hr_climb>0</hr_climb>
                 </climb>
                 <cruise id="248">
-                    <fuel_cruise unit="kg">14330.7698424</fuel_cruise>
+                    <fuel_cruise unit="kg">14349.3924533</fuel_cruise>
                     <time_cruise unit="h">5.6</time_cruise>
                     <cruise_altitude unit="ft">35000.0</cruise_altitude>
                     <hr_cruise>0</hr_cruise>
                 </cruise>
                 <descent id="201">
-                    <fuel_descent unit="kg">323.806747586</fuel_descent>
-                    <time_descent unit="min">21.6666666667</time_descent>
+                    <fuel_descent unit="kg">322.343481623</fuel_descent>
+                    <time_descent unit="min">21.5833333333</time_descent>
                     <descent_thrust_setting>0.12</descent_thrust_setting>
                     <hr_descent>0</hr_descent>
                 </descent>
                 <alternate_climb id="208">
-                    <fuel_al_climb unit="kg">581.933727697</fuel_al_climb>
+                    <fuel_al_climb unit="kg">582.30289937</fuel_al_climb>
                     <time_al_climb unit="min">5.33333333333</time_al_climb>
                     <hr_al_climb>0</hr_al_climb>
                 </alternate_climb>
                 <alternate_cruise id="214">
                     <al_distance unit="NM">200.0</al_distance>
-                    <fuel_al_cruise unit="kg">462.438923582</fuel_al_cruise>
+                    <fuel_al_cruise unit="kg">553.265205469</fuel_al_cruise>
                     <time_al_cruise unit="h">0.205555555556</time_al_cruise>
                     <hr_al_cruise>0</hr_al_cruise>
                 </alternate_cruise>
                 <alternate_descent id="219">
-                    <fuel_al_descent unit="kg">255.120061738</fuel_al_descent>
+                    <fuel_al_descent unit="kg">255.133221908</fuel_al_descent>
                     <time_al_descent unit="min">16.8333333333</time_al_descent>
                     <hr_al_descent>0</hr_al_descent>
                 </alternate_descent>
                 <holding id="226">
-                    <fuel_holding unit="kg">1319.94063368</fuel_holding>
+                    <fuel_holding unit="kg">1320.23863907</fuel_holding>
                     <altitude_holding unit="ft">1500.0</altitude_holding>
                     <cas_holding unit="m/s">230.0</cas_holding>
                     <time_holding unit="s">2700.0</time_holding>
                     <hr_holding>0</hr_holding>
                 </holding>
                 <landing id="231">
-                    <fuel unit="kg">0.185497847148</fuel>
-                    <time unit="min">2.41323488911</time>
+                    <fuel unit="kg">0.18557651089</fuel>
+                    <time unit="min">2.41256102145</time>
                     <thrust_rate>0.1</thrust_rate>
-                    <length unit="m">56.7137490986</length>
+                    <length unit="m">56.656629028</length>
                     <Friction_coefficient_brake>0.3</Friction_coefficient_brake>
                     <flap_angle unit="deg">30.0</flap_angle>
                     <slat_angle unit="deg">20.0</slat_angle>
@@ -122,12 +122,12 @@
                     <taxi_in_speed unit="kt">30.0</taxi_in_speed>
                     <hr_taxi_in>0</hr_taxi_in>
                 </taxi_in>
-                <fuel_mission unit="kg">20147.1895374</fuel_mission>
-                <fuel_block unit="kg">16836.9775554</fuel_block>
-                <fuel_reserve unit="kg">3310.211982</fuel_reserve>
-                <fuel_trip unit="kg">16269.4294503</fuel_trip>
-                <time_block unit="min">389.325</time_block>
-                <flight_time unit="min">374.325</flight_time>
+                <fuel_mission unit="kg">20258.9468572</fuel_mission>
+                <fuel_block unit="kg">16856.6384298</fuel_block>
+                <fuel_reserve unit="kg">3402.30842736</fuel_reserve>
+                <fuel_trip unit="kg">16289.0903248</fuel_trip>
+                <time_block unit="min">389.332</time_block>
+                <flight_time unit="min">374.332</flight_time>
             </sizing>
             <operational id="172" xsi:type="Operational">
                 <taxi_out id="188">
@@ -244,27 +244,27 @@
             <pallet_number>10</pallet_number>
         </cabin>
         <geometry id="153">
-            <S_total unit="m²">795.037470696</S_total>
+            <S_total unit="m²">796.43798266</S_total>
             <wing id="185">
-                <wet_area_wing unit="m²">207.389964817</wet_area_wing>
-                <span unit="m">34.7995698002</span>
+                <wet_area_wing unit="m²">208.283494947</wet_area_wing>
+                <span unit="m">34.867607579</span>
                 <aspect_ratio>9.48</aspect_ratio>
-                <wing_area unit="m²">127.743677034</wing_area>
+                <wing_area unit="m²">128.243677034</wing_area>
                 <wing_break>0.4</wing_break>
                 <eps1>0.38</eps1>
-                <fa_length unit="m">16.576796</fa_length>
-                <x0_wing unit="m">2.56164909109</x0_wing>
-                <y0_wing unit="m">6.7859129266</y0_wing>
-                <l0_wing unit="m">4.23155492396</l0_wing>
-                <l1_wing unit="m">4.47781897301</l1_wing>
-                <l2_wing unit="m">6.1350588858</l2_wing>
+                <fa_length unit="m">16.586796</fa_length>
+                <x0_wing unit="m">2.56808429138</x0_wing>
+                <y0_wing unit="m">6.79890453046</y0_wing>
+                <l0_wing unit="m">4.24002500612</l0_wing>
+                <l1_wing unit="m">4.4867483935</l1_wing>
+                <l2_wing unit="m">6.14863964211</l2_wing>
                 <y2_wing unit="m">1.95994</y2_wing>
-                <l3_wing unit="m">3.5787706592</l3_wing>
-                <x3_wing unit="m">2.5562882266</x3_wing>
-                <y3_wing unit="m">6.95991396004</y3_wing>
-                <l4_wing unit="m">1.70157120975</l4_wing>
-                <x4_wing unit="m">7.89377985846</x4_wing>
-                <y4_wing unit="m">17.3997849001</y4_wing>
+                <l3_wing unit="m">3.58544145084</l3_wing>
+                <x3_wing unit="m">2.56319819126</x3_wing>
+                <y3_wing unit="m">6.97352151579</y3_wing>
+                <l4_wing unit="m">1.70496438953</l4_wing>
+                <x4_wing unit="m">7.91102718727</x4_wing>
+                <y4_wing unit="m">17.4338037895</y4_wing>
                 <toc id="239">
                     <root>0.159214026924</root>
                     <kink>0.120694504281</kink>
@@ -272,9 +272,9 @@
                 </toc>
                 <el_aero>0.12839840881</el_aero>
                 <sweep_25 unit="deg">25.0</sweep_25>
-                <sweep_0 unit="deg">27.0788575917</sweep_0>
+                <sweep_0 unit="deg">27.0784314235</sweep_0>
                 <sweep_100_1 unit="deg">0.0</sweep_100_1>
-                <sweep_100_2 unit="deg">18.3377626322</sweep_100_2>
+                <sweep_100_2 unit="deg">18.3392156723</sweep_100_2>
                 <front id="218">
                     <root>0.11</root>
                     <middle>0.15</middle>
@@ -285,8 +285,8 @@
                     <middle>0.66</middle>
                     <tip>0.56</tip>
                 </rear>
-                <S_pf unit="m²">103.694982409</S_pf>
-                <b_50 unit="m">37.7625851363</b_50>
+                <S_pf unit="m²">104.141747473</S_pf>
+                <b_50 unit="m">37.8365430291</b_50>
                 <etaw unit="deg">3.5</etaw>
                 <twist1 unit="deg">0.0</twist1>
                 <twist2 unit="deg">-0.2</twist2>
@@ -311,38 +311,38 @@
                 <LAR unit="m">14.615568</LAR>
             </fuselage>
             <ht id="166">
-                <lp unit="m">17.55490524</lp>
+                <lp unit="m">17.54490524</lp>
                 <aspect>4.28778048454</aspect>
-                <wet_area unit="m²">69.9533247487</wet_area>
+                <wet_area unit="m²">70.2407790629</wet_area>
                 <sweep_25 unit="deg">28.0</sweep_25>
                 <sweep_0 unit="deg">33.3165149655</sweep_0>
                 <sweep_100 unit="deg">8.80894178428</sweep_100>
                 <taper>0.3</taper>
                 <el>0.1</el>
-                <span unit="m">12.2463157865</span>
-                <length unit="m">3.13212973851</length>
-                <MAC_location unit="m">2.51206477672</MAC_location>
-                <root_chord unit="m">4.39399495691</root_chord>
-                <tip_chord unit="m">1.31819848707</tip_chord>
-                <vol_co>1.1358930942</vol_co>
-                <area unit="m²">34.9766623743</area>
+                <span unit="m">12.2714514562</span>
+                <length unit="m">3.13855846206</length>
+                <MAC_location unit="m">2.51722081153</MAC_location>
+                <root_chord unit="m">4.40301366979</root_chord>
+                <tip_chord unit="m">1.32090410094</tip_chord>
+                <vol_co>1.13319844907</vol_co>
+                <area unit="m²">35.1203895315</area>
             </ht>
             <vt id="157">
-                <lp unit="m">16.42968432</lp>
+                <lp unit="m">16.41968432</lp>
                 <aspect>1.74462618632</aspect>
-                <wet_area unit="m²">57.3800073957</wet_area>
+                <wet_area unit="m²">57.5995990253</wet_area>
                 <sweep_25 unit="deg">35.0</sweep_25>
                 <sweep_0 unit="deg">40.514801766</sweep_0>
                 <sweep_100 unit="deg">13.3465197854</sweep_100>
                 <taper>0.3</taper>
                 <el>0.1</el>
-                <span unit="m">6.90433485207</span>
-                <length unit="m">4.33996564247</length>
-                <MAC_location unit="m">2.83254763162</MAC_location>
-                <root_chord unit="m">6.08844100922</root_chord>
-                <tip_chord unit="m">1.82653230277</tip_chord>
-                <vol_co>0.101013600022</vol_co>
-                <area unit="m²">27.3238130456</area>
+                <span unit="m">6.91753358128</span>
+                <length unit="m">4.34826217393</length>
+                <MAC_location unit="m">2.83796249489</MAC_location>
+                <root_chord unit="m">6.10008002817</root_chord>
+                <tip_chord unit="m">1.83002400845</tip_chord>
+                <vol_co>0.100746395551</vol_co>
+                <area unit="m²">27.4283804882</area>
             </vt>
             <propulsion id="161">
                 <engine_sizing>1.0</engine_sizing>
@@ -354,7 +354,7 @@
                 <fan_length unit="m">3.12688962389</fan_length>
                 <nacelle_dia unit="m">2.17224386458</nacelle_dia>
                 <y_ratio_engine>0.34</y_ratio_engine>
-                <y_nacell unit="m">5.91592686604</y_nacell>
+                <y_nacell unit="m">5.92749328842</y_nacell>
             </propulsion>
             <LG id="176">
                 <LG_height unit="m">3.04114141042</LG_height>
@@ -417,15 +417,15 @@
             </hybrid_dep>
         </propulsion>
         <aerodynamics id="145">
-            <CL_alpha>6.41803558804</CL_alpha>
+            <CL_alpha>6.41798064378</CL_alpha>
             <CL_alpha_ht>3.46981756498</CL_alpha_ht>
             <CL_alpha_vt>2.54615644328</CL_alpha_vt>
-            <CZ_max_clean>1.58469729179</CZ_max_clean>
+            <CZ_max_clean>1.58494199489</CZ_max_clean>
             <CZ_max_clean_2D>1.94</CZ_max_clean_2D>
             <CZ_max_landing>2.80229278743</CZ_max_landing>
             <Cz_0_AOA>0.2</Cz_0_AOA>
             <Cz_alpha_low>4.949271</Cz_alpha_low>
-            <L_D_max>16.2886505626</L_D_max>
+            <L_D_max>16.306202106</L_D_max>
             <k_factors id="181">
                 <Cl id="224">
                     <k>1</k>
@@ -454,52 +454,52 @@
             </k_factors>
         </aerodynamics>
         <weight id="151">
-            <MTOW unit="kg">76272.511249</MTOW>
+            <MTOW unit="kg">76438.4445137</MTOW>
             <PL unit="kg">13608.0</PL>
             <Max_PL unit="kg">19608.0</Max_PL>
-            <OWE unit="kg">42736.0249349</OWE>
-            <LW unit="kg">59638.2294454</LW>
-            <MLW unit="kg">66084.6665579</MLW>
-            <MZFW unit="kg">62344.0250546</MZFW>
-            <MFW unit="kg">19944.7881186</MFW>
+            <OWE unit="kg">42785.5172889</OWE>
+            <LW unit="kg">59784.5018357</LW>
+            <MLW unit="kg">66137.1284531</MLW>
+            <MZFW unit="kg">62393.5174085</MZFW>
+            <MFW unit="kg">20052.7744216</MFW>
             <airframe id="182">
-                <weight_A unit="kg">23534.0161917</weight_A>
-                <weight_A1 unit="kg">8692.28116555</weight_A1>
-                <weight_A2 unit="kg">8865.18048683</weight_A2>
-                <weight_A31 unit="kg">748.748674122</weight_A31>
-                <weight_A32 unit="kg">572.964244943</weight_A32>
-                <weight_A4 unit="kg">761.52477312</weight_A4>
-                <weight_A51 unit="kg">2157.51786304</weight_A51>
-                <weight_A52 unit="kg">380.808444065</weight_A52>
+                <weight_A unit="kg">23579.8137352</weight_A>
+                <weight_A1 unit="kg">8722.40764193</weight_A1>
+                <weight_A2 unit="kg">8866.76830345</weight_A2>
+                <weight_A31 unit="kg">752.670448758</weight_A31>
+                <weight_A32 unit="kg">575.736321897</weight_A32>
+                <weight_A4 unit="kg">763.149507597</weight_A4>
+                <weight_A51 unit="kg">2162.33499105</weight_A51>
+                <weight_A52 unit="kg">381.50388833</weight_A52>
                 <weight_A6 unit="kg">1211.88379531</weight_A6>
-                <weight_A7 unit="kg">143.106744725</weight_A7>
+                <weight_A7 unit="kg">143.358836879</weight_A7>
             </airframe>
             <propulsion id="184">
-                <weight_B unit="kg">7740.85925694</weight_B>
+                <weight_B unit="kg">7742.24540452</weight_B>
                 <weight_B1 unit="kg">7161.3348</weight_B1>
-                <weight_B2 unit="kg">459.717698527</weight_B2>
-                <weight_B3 unit="kg">119.806758415</weight_B3>
+                <weight_B2 unit="kg">460.725894048</weight_B2>
+                <weight_B3 unit="kg">120.184710475</weight_B3>
                 <weight_B4 unit="kg">0.0</weight_B4>
                 <weight_B5 unit="kg">0.0</weight_B5>
                 <weight_B6 unit="kg">0.0</weight_B6>
                 <weight_B7 unit="kg">0.0</weight_B7>
             </propulsion>
             <systems id="163">
-                <weight_C unit="kg">7878.64948624</weight_C>
+                <weight_C unit="kg">7880.95814918</weight_C>
                 <weight_C11 unit="kg">287.378465205</weight_C11>
-                <weight_C12 unit="kg">1333.08389593</weight_C12>
-                <weight_C13 unit="kg">767.574712618</weight_C13>
+                <weight_C12 unit="kg">1334.55997378</weight_C12>
+                <weight_C13 unit="kg">768.42505267</weight_C13>
                 <weight_C21 unit="kg">2254.27809458</weight_C21>
                 <weight_C22 unit="kg">942.401081032</weight_C22>
-                <weight_C23 unit="kg">160.167369523</weight_C23>
+                <weight_C23 unit="kg">160.312305454</weight_C23>
                 <weight_C24 unit="kg">169.676845829</weight_C24>
                 <weight_C25 unit="kg">126.0</weight_C25>
                 <weight_C26 unit="kg">284.1</weight_C26>
                 <weight_C27 unit="kg">432.713348</weight_C27>
-                <weight_C3 unit="kg">496.740375868</weight_C3>
+                <weight_C3 unit="kg">496.831916733</weight_C3>
                 <weight_C4 unit="kg">200.0</weight_C4>
                 <weight_C51 unit="kg">100.0</weight_C51>
-                <weight_C52 unit="kg">279.535297658</weight_C52>
+                <weight_C52 unit="kg">279.2810659</weight_C52>
                 <weight_C6 unit="kg">45.0</weight_C6>
             </systems>
             <furniture id="169">
@@ -718,22 +718,22 @@
         </weight>
         <balance id="152">
             <required_cg_range>0.3</required_cg_range>
-            <cg unit="m">17.3506186967</cg>
+            <cg unit="m">17.3577818098</cg>
             <airframe id="159">
-                <CG_A1 unit="m">16.6793419574</CG_A1>
+                <CG_A1 unit="m">16.68955691</CG_A1>
                 <CG_A2 unit="m">16.8783138</CG_A2>
-                <CG_A31 unit="m">34.5814769013</CG_A31>
-                <CG_A32 unit="m">34.3186126439</CG_A32>
-                <CG_A4 unit="m">19.0923170637</CG_A4>
-                <CG_A51 unit="m">18.4101247076</CG_A51>
+                <CG_A31 unit="m">34.5824000697</CG_A31>
+                <CG_A32 unit="m">34.3211209926</CG_A32>
+                <CG_A4 unit="m">19.1073450992</CG_A4>
+                <CG_A51 unit="m">18.4179046907</CG_A51>
                 <CG_A52 unit="m">5.176347</CG_A52>
-                <CG_A6 unit="m">13.7318747089</CG_A6>
+                <CG_A6 unit="m">13.7388129899</CG_A6>
                 <CG_A7 unit="m">0.0</CG_A7>
             </airframe>
             <propulsion id="171">
-                <CG_B1 unit="m">13.7318747089</CG_B1>
-                <CG_B2 unit="m">13.7318747089</CG_B2>
-                <CG_B3 unit="m">13.7318747089</CG_B3>
+                <CG_B1 unit="m">13.7388129899</CG_B1>
+                <CG_B2 unit="m">13.7388129899</CG_B2>
+                <CG_B3 unit="m">13.7388129899</CG_B3>
                 <CG_B4 unit="m">0.0</CG_B4>
                 <CG_B5 unit="m">0.0</CG_B5>
                 <CG_B6 unit="m">0.0</CG_B6>
@@ -745,11 +745,11 @@
                 <CG_C13 unit="m">18.753682</CG_C13>
                 <CG_C21 unit="m">16.8783138</CG_C21>
                 <CG_C22 unit="m">16.616796</CG_C22>
-                <CG_C23 unit="m">15.9420627614</CG_C23>
+                <CG_C23 unit="m">15.9507922491</CG_C23>
                 <CG_C24 unit="m">16.8783138</CG_C24>
                 <CG_C25 unit="m">16.616796</CG_C25>
                 <CG_C26 unit="m">16.616796</CG_C26>
-                <CG_C27 unit="m">16.1393462672</CG_C27>
+                <CG_C27 unit="m">16.1404945413</CG_C27>
                 <CG_C3 unit="m">5.5214368</CG_C3>
                 <CG_C4 unit="m">18.753682</CG_C4>
                 <CG_C51 unit="m">0.75014728</CG_C51>
@@ -767,11 +767,11 @@
                 <CG_E unit="m">0.0</CG_E>
             </crew>
             <tank id="165">
-                <CG_tank unit="m">16.0233484759</CG_tank>
+                <CG_tank unit="m">16.0320803371</CG_tank>
             </tank>
             <PayLoad id="177">
-                <CG_rear_fret unit="m">20.8085506433</CG_rear_fret>
-                <CG_front_fret unit="m">9.92952708896</CG_front_fret>
+                <CG_rear_fret unit="m">20.8147065854</CG_rear_fret>
+                <CG_front_fret unit="m">9.93025072854</CG_front_fret>
                 <CG_PAX unit="m">16.616796</CG_PAX>
             </PayLoad>
         </balance>
