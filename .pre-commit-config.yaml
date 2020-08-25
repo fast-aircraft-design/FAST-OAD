@@ -4,3 +4,11 @@ repos:
     hooks:
       - id: black
         language_version: python3.7
+  - repo: local
+    hooks:
+      - id: sync_doc_requirements
+        name: sync_doc_requirements
+        entry: poetry export --dev -o docs/requirements.txt -f requirements.txt
+        language: python
+        pass_filenames: false
+        files: 'poetry.lock'
