@@ -43,10 +43,6 @@ jobs:
           poetry run pytest src
         shell: bash
 
-      - name: Integration tests
-        run: poetry run pytest --no-cov tests/integration_tests
-        shell: bash
-
       - name: Notebook tests
         run: poetry run pytest --no-cov --nbval-lax -p no:python src
         shell: bash

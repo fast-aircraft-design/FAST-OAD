@@ -40,7 +40,16 @@ class XMLReadError(FastError):
     """
 
 
-class FastUnknownFlightPhaseError(FastError):
+class FastUnknownEngineSettingError(FastError):
     """
-    Raised when an unknown flight phase code has been encountered
+    Raised when an unknown engine setting code has been encountered
     """
+
+
+class FastUnexpectedKeywordArgument(FastError):
+    """
+    Raised when an instantiation is done with an incorrect keyword argument.
+    """
+
+    def __init__(self, bad_keyword):
+        super().__init__("Unexpected keyword argument: %s" % bad_keyword)

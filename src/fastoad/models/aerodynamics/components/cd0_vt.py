@@ -34,9 +34,9 @@ class Cd0VerticalTail(ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:wetted_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         if self.low_speed_aero:
-            self.add_input("reynolds_low_speed", val=np.nan)
-            self.add_input("Mach_low_speed", val=np.nan)
-            self.add_output("cd0_vt_low_speed")
+            self.add_input("data:aerodynamics:wing:low_speed:reynolds", val=np.nan)
+            self.add_input("data:aerodynamics:aircraft:takeoff:mach", val=np.nan)
+            self.add_output("data:aerodynamics:vertical_tail:low_speed:CD0")
         else:
             self.add_input("data:aerodynamics:wing:cruise:reynolds", val=np.nan)
             self.add_input("data:TLAR:cruise_mach", val=np.nan)
@@ -51,24 +51,22 @@ class Cd0VerticalTail(ExplicitComponent):
         wet_area_vt = inputs["data:geometry:vertical_tail:wetted_area"]
         wing_area = inputs["data:geometry:wing:area"]
         if self.low_speed_aero:
-            mach = inputs["Mach_low_speed"]
-            re_hs = inputs["reynolds_low_speed"]
+            mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
+            reynolds = inputs["data:aerodynamics:wing:low_speed:reynolds"]
         else:
             mach = inputs["data:TLAR:cruise_mach"]
-            re_hs = inputs["data:aerodynamics:wing:cruise:reynolds"]
+            reynolds = inputs["data:aerodynamics:wing:cruise:reynolds"]
 
         ki_arrow_cd0 = 0.04
 
-        cf_vt_hs = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(re_hs * vt_length)) ** 2.58
+        cf_vt = 0.455 / (
+            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds * vt_length)) ** 2.58
         )
         ke_cd0_vt = 4.688 * el_vt ** 2 + 3.146 * el_vt
         k_phi_cd0_vt = 1 - 0.000178 * sweep_25_vt ** 2 - 0.0065 * sweep_25_vt
-        cd0_vt_hs = (
-            (ke_cd0_vt * k_phi_cd0_vt + ki_arrow_cd0 / 8 + 1) * cf_vt_hs * wet_area_vt / wing_area
-        )
+        cd0_vt = (ke_cd0_vt * k_phi_cd0_vt + ki_arrow_cd0 / 8 + 1) * cf_vt * wet_area_vt / wing_area
 
         if self.low_speed_aero:
-            outputs["cd0_vt_low_speed"] = cd0_vt_hs
+            outputs["data:aerodynamics:vertical_tail:low_speed:CD0"] = cd0_vt
         else:
-            outputs["data:aerodynamics:vertical_tail:cruise:CD0"] = cd0_vt_hs
+            outputs["data:aerodynamics:vertical_tail:cruise:CD0"] = cd0_vt

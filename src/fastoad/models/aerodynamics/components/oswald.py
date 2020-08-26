@@ -39,8 +39,8 @@ class OswaldCoefficient(ExplicitComponent):
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
 
         if self.options["low_speed_aero"]:
-            self.add_input("Mach_low_speed", val=np.nan)
-            self.add_output("oswald_coeff_low_speed")
+            self.add_input("data:aerodynamics:aircraft:takeoff:mach", val=np.nan)
+            self.add_output("data:aerodynamics:aircraft:low_speed:induced_drag_coefficient")
         else:
             self.add_input("data:TLAR:cruise_mach", val=np.nan)
             self.add_output("data:aerodynamics:aircraft:cruise:induced_drag_coefficient")
@@ -56,7 +56,7 @@ class OswaldCoefficient(ExplicitComponent):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         if self.options["low_speed_aero"]:
-            mach = inputs["Mach_low_speed"]
+            mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
         else:
             mach = inputs["data:TLAR:cruise_mach"]
 
@@ -80,6 +80,6 @@ class OswaldCoefficient(ExplicitComponent):
         coef_k = 1.0 / (math.pi * aspect_ratio * coef_e)
 
         if self.options["low_speed_aero"]:
-            outputs["oswald_coeff_low_speed"] = coef_k
+            outputs["data:aerodynamics:aircraft:low_speed:induced_drag_coefficient"] = coef_k
         else:
             outputs["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"] = coef_k

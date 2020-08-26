@@ -17,7 +17,7 @@ Test module for rubber_engine.py
 
 import numpy as np
 import pytest
-from fastoad.constants import FlightPhase
+from fastoad.constants import EngineSetting
 from fastoad.utils.physics import Atmosphere
 
 from ..rubber_engine import RubberEngine
@@ -28,14 +28,14 @@ def test_compute_flight_points():
 
     # Test with scalars
     sfc, thrust_rate, thrust = engine.compute_flight_points(
-        0, 0, FlightPhase.TAKEOFF, thrust_rate=0.8
-    )  # with phase as FlightPhase
+        0, 0, EngineSetting.TAKEOFF, thrust_rate=0.8
+    )  # with engine_setting as EngineSetting
     np.testing.assert_allclose(thrust, 0.9553 * 0.8, rtol=1e-4)
     np.testing.assert_allclose(sfc, 0.99210e-5, rtol=1e-4)
 
     sfc, thrust_rate, thrust = engine.compute_flight_points(
-        0.3, 0, FlightPhase.CLIMB.value, thrust=0.35677
-    )  # with phase as int
+        0.3, 0, EngineSetting.CLIMB.value, thrust=0.35677
+    )  # with engine_setting as int
     np.testing.assert_allclose(thrust_rate, 0.5, rtol=1e-4)
     np.testing.assert_allclose(sfc, 1.3496e-5, rtol=1e-4)
 
@@ -49,12 +49,12 @@ def test_compute_flight_points():
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
     thrusts = [0.9553 * 0.8, 0.38851, 0.35677, 0.09680, 0.11273]
     phases = [
-        FlightPhase.TAKEOFF,
-        FlightPhase.TAKEOFF,
-        FlightPhase.CLIMB,
-        FlightPhase.IDLE,
-        FlightPhase.CRUISE.value,
-    ]  # mix FlightPhase with integers
+        EngineSetting.TAKEOFF,
+        EngineSetting.TAKEOFF,
+        EngineSetting.CLIMB,
+        EngineSetting.IDLE,
+        EngineSetting.CRUISE.value,
+    ]  # mix EngineSetting with integers
     expected_sfc = [0.99210e-5, 1.3496e-5, 1.3496e-5, 1.8386e-5, 1.5957e-5]
 
     sfc, thrust_rate, thrust = engine.compute_flight_points(
@@ -79,7 +79,7 @@ def test_compute_flight_points():
     expected_sfc = [0.99210e-5, 1.3496e-5]
 
     sfc, _, thrust = engine.compute_flight_points(
-        machs, 0, FlightPhase.TAKEOFF, thrust_rate=thrust_rates
+        machs, 0, EngineSetting.TAKEOFF, thrust_rate=thrust_rates
     )
     np.testing.assert_allclose(thrust, expected_thrust, rtol=1e-4)
     np.testing.assert_allclose(sfc, expected_sfc, rtol=1e-4)
@@ -87,8 +87,8 @@ def test_compute_flight_points():
     # Test scalars + arrays 2
     altitudes = [0, 0]
     phases = [
-        FlightPhase.TAKEOFF.value,
-        FlightPhase.CLIMB.value,
+        EngineSetting.TAKEOFF.value,
+        EngineSetting.CLIMB.value,
     ]
     expected_thrust = [0.38851, 0.35677]
     expected_sfc = [1.3496e-5, 1.3496e-5]

@@ -14,32 +14,54 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from enum import Enum
+
 import numpy as np
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
+class PolarType(Enum):
+    HIGH_SPEED = "high_speed"
+    LOW_SPEED = "low_speed"
+    TAKEOFF = "takeoff"
+    LANDING = "landing"
+
+
 class ComputePolar(ExplicitComponent):
     def initialize(self):
-        self.options.declare("low_speed_aero", default=False, types=bool)
+        self.options.declare("type", default=PolarType.HIGH_SPEED, types=PolarType)
 
     def setup(self):
-        self.low_speed_aero = self.options["low_speed_aero"]
-
         self.add_input("tuning:aerodynamics:aircraft:cruise:CD:k", val=np.nan)
         self.add_input("tuning:aerodynamics:aircraft:cruise:CD:offset", val=np.nan)
         self.add_input("tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k", val=np.nan)
         self.add_input("tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:offset", val=np.nan)
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
-        if self.low_speed_aero:
-            self.add_input("cl_low_speed", val=nans_array)
-            self.add_input("cd0_total_low_speed", val=nans_array)
-            self.add_input("cd_trim_low_speed", val=nans_array)
-            self.add_input("cd_comp_low_speed", val=nans_array)
-            self.add_input("oswald_coeff_low_speed", val=np.nan)
+        if self.options["type"] != PolarType.HIGH_SPEED:
+            self.add_input("data:aerodynamics:aircraft:low_speed:CL", val=nans_array)
+            self.add_input("data:aerodynamics:aircraft:low_speed:CD0", val=nans_array)
+            self.add_input("data:aerodynamics:aircraft:low_speed:CD:trim", val=nans_array)
+            self.add_input(
+                "data:aerodynamics:aircraft:low_speed:induced_drag_coefficient", val=np.nan
+            )
 
-            self.add_output("aerodynamics:Cd_low_speed", shape=POLAR_POINT_COUNT)
+            if self.options["type"] == PolarType.TAKEOFF:
+                self.add_input("data:aerodynamics:high_lift_devices:takeoff:CL", val=np.nan)
+                self.add_input("data:aerodynamics:high_lift_devices:takeoff:CD", val=np.nan)
+                self.add_output("data:aerodynamics:aircraft:takeoff:CL", shape=POLAR_POINT_COUNT)
+                self.add_output("data:aerodynamics:aircraft:takeoff:CD", shape=POLAR_POINT_COUNT)
+
+            elif self.options["type"] == PolarType.LANDING:
+                self.add_input("data:aerodynamics:high_lift_devices:landing:CL", val=np.nan)
+                self.add_input("data:aerodynamics:high_lift_devices:landing:CD", val=np.nan)
+                self.add_output("data:aerodynamics:landing:CL", val=np.nan)
+                self.add_output("data:aerodynamics:aircraft:landing:CL", shape=POLAR_POINT_COUNT)
+                self.add_output("data:aerodynamics:aircraft:landing:CD", shape=POLAR_POINT_COUNT)
+            else:
+                self.add_output("data:aerodynamics:aircraft:low_speed:CD", shape=POLAR_POINT_COUNT)
+
         else:
             self.add_input("data:aerodynamics:aircraft:cruise:CL", val=nans_array)
             self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=nans_array)
@@ -59,25 +81,44 @@ class ComputePolar(ExplicitComponent):
         offset_cd = inputs["tuning:aerodynamics:aircraft:cruise:CD:offset"]
         k_winglet_cd = inputs["tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k"]
         offset_winglet_cd = inputs["tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:offset"]
-        if self.low_speed_aero:
-            cl = inputs["cl_low_speed"]
-            cd0 = inputs["cd0_total_low_speed"]
-            cd_trim = inputs["cd_trim_low_speed"]
-            cd_c = inputs["cd_comp_low_speed"]
-            coef_k = inputs["oswald_coeff_low_speed"]
+        if self.options["type"] != PolarType.HIGH_SPEED:
+            cl = inputs["data:aerodynamics:aircraft:low_speed:CL"]
+            cd0 = inputs["data:aerodynamics:aircraft:low_speed:CD0"]
+            cd_trim = inputs["data:aerodynamics:aircraft:low_speed:CD:trim"]
+            cd_c = 0.0
+            coef_k = inputs["data:aerodynamics:aircraft:low_speed:induced_drag_coefficient"]
+            if self.options["type"] == PolarType.TAKEOFF:
+                delta_cl_hl = inputs["data:aerodynamics:high_lift_devices:takeoff:CL"]
+                delta_cd_hl = inputs["data:aerodynamics:high_lift_devices:takeoff:CD"]
+            elif self.options["type"] == PolarType.LANDING:
+                delta_cl_hl = inputs["data:aerodynamics:high_lift_devices:landing:CL"]
+                delta_cd_hl = inputs["data:aerodynamics:high_lift_devices:landing:CD"]
+            else:
+                delta_cl_hl = 0.0
+                delta_cd_hl = 0.0
+
         else:
             cl = inputs["data:aerodynamics:aircraft:cruise:CL"]
             cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
             cd_trim = inputs["data:aerodynamics:aircraft:cruise:CD:trim"]
             cd_c = inputs["data:aerodynamics:aircraft:cruise:CD:compressibility"]
             coef_k = inputs["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"]
+            delta_cl_hl = 0.0
+            delta_cd_hl = 0.0
 
+        cl = cl + delta_cl_hl
         cd = (
-            cd0 + cd_c + cd_trim + coef_k * cl ** 2 * k_winglet_cd + offset_winglet_cd
+            cd0 + cd_c + cd_trim + coef_k * cl ** 2 * k_winglet_cd + offset_winglet_cd + delta_cd_hl
         ) * k_cd + offset_cd
 
-        if self.low_speed_aero:
-            outputs["aerodynamics:Cd_low_speed"] = cd
+        if self.options["type"] == PolarType.LOW_SPEED:
+            outputs["data:aerodynamics:aircraft:low_speed:CD"] = cd
+        elif self.options["type"] == PolarType.TAKEOFF:
+            outputs["data:aerodynamics:aircraft:takeoff:CL"] = cl
+            outputs["data:aerodynamics:aircraft:takeoff:CD"] = cd
+        elif self.options["type"] == PolarType.LANDING:
+            outputs["data:aerodynamics:aircraft:landing:CL"] = cl
+            outputs["data:aerodynamics:aircraft:landing:CD"] = cd
         else:
             outputs["data:aerodynamics:aircraft:cruise:CD"] = cd
 

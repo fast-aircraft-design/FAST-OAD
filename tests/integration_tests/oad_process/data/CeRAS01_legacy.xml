@@ -15,13 +15,14 @@
   ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<fastDataModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="fastDataModel.xsd">
+<fastDataModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="fastDataModel.xsd">
     <Aircraft id="143">
         <TLAR id="147">
             <AC_family>1</AC_family>
             <AC_type>2</AC_type>
             <NPAX>150</NPAX>
-            <v_approach unit="kn">132.0</v_approach>
+            <v_approach unit="kt">132.0</v_approach>
             <Range unit="NM">2750.0</Range>
             <cruise_Mach>0.78</cruise_Mach>
             <max_TOFL unit="m">0.0</max_TOFL>
@@ -40,7 +41,7 @@
                     <fuel_taxi_out unit="kg">282.704265919</fuel_taxi_out>
                     <taxi_out_duration unit="s">540.0</taxi_out_duration>
                     <taxi_out_thrust_setting>0.3</taxi_out_thrust_setting>
-                    <taxi_out_speed unit="kn">30.0</taxi_out_speed>
+                    <taxi_out_speed unit="kt">30.0</taxi_out_speed>
                     <hr_taxi_out>0</hr_taxi_out>
                 </taxi_out>
                 <takeoff id="229">
@@ -78,7 +79,7 @@
                 <descent id="201">
                     <fuel_descent unit="kg">389.467741572</fuel_descent>
                     <time_descent unit="min">21.0</time_descent>
-                    <descent_thrust_setting>0.55</descent_thrust_setting>
+                    <descent_thrust_setting>0.12</descent_thrust_setting>
                     <hr_descent>0</hr_descent>
                 </descent>
                 <alternate_climb id="208">
@@ -118,7 +119,7 @@
                     <fuel_taxi_in unit="kg">157.06</fuel_taxi_in>
                     <taxi_in_duration unit="s">300.0</taxi_in_duration>
                     <taxi_in_thrust_setting>0.3</taxi_in_thrust_setting>
-                    <taxi_in_speed unit="kn">30.0</taxi_in_speed>
+                    <taxi_in_speed unit="kt">30.0</taxi_in_speed>
                     <hr_taxi_in>0</hr_taxi_in>
                 </taxi_in>
                 <fuel_mission unit="kg">19232.2393453</fuel_mission>
@@ -133,7 +134,7 @@
                     <fuel_taxi_out unit="kg">282.7</fuel_taxi_out>
                     <taxi_out_duration unit="s">540.0</taxi_out_duration>
                     <taxi_out_thrust_setting>0.3</taxi_out_thrust_setting>
-                    <taxi_out_speed unit="kn">30.0</taxi_out_speed>
+                    <taxi_out_speed unit="kt">30.0</taxi_out_speed>
                     <hr_taxi_out>0</hr_taxi_out>
                 </taxi_out>
                 <takeoff id="241">
@@ -211,7 +212,7 @@
                     <fuel_taxi_in unit="kg">157.06</fuel_taxi_in>
                     <taxi_in_duration unit="s">300.0</taxi_in_duration>
                     <taxi_in_thrust_setting>0.3</taxi_in_thrust_setting>
-                    <taxi_in_speed unit="kn">30.0</taxi_in_speed>
+                    <taxi_in_speed unit="kt">30.0</taxi_in_speed>
                     <hr_taxi_in>0</hr_taxi_in>
                 </taxi_in>
                 <cruise_Mach>0.78</cruise_Mach>

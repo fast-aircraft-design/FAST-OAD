@@ -1,6 +1,4 @@
-"""
-Tests for atmosphere.py
-"""
+"""Tests for Atmosphere class"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,13 +16,14 @@ from numbers import Number
 
 import numpy as np
 import pytest
+from numpy.testing import assert_allclose
 from scipy.constants import foot
 
 from ..atmosphere import Atmosphere
 
 
 def test_atmosphere():
-    """ Tests properties of Atmosphere class """
+    """Tests properties of Atmosphere class."""
     # Altitudes in meters Values at disa=0 from "Advanced Aircraft Design (
     # Egbert TORENBEEK, Oxford, UK: John Wiley & Sons Ltd, 2013) Appendix B,
     # p.397-398" Values at disa=10 from
@@ -135,12 +134,24 @@ def test_atmosphere():
 
 
 def test_reynolds():
-    """ Tests computation of Reynolds number """
+    """Tests computation of Reynolds number."""
     atm = Atmosphere([[0, 35000], [0, 35000]])
     mach = [[0.2, 0.2], [0.8, 0.8]]
 
     # source:  http://www.aerospaceweb.org/design/scripts/atmosphere/
     expected_reynolds = [[4.6593e6, 1.5738e6], [1.8637e7, 6.2952e6]]
 
-    for result, expected_values in zip(atm.get_unitary_reynolds(mach), expected_reynolds):
-        assert result == pytest.approx(expected_values, 5e-3)
+    assert_allclose(atm.get_unitary_reynolds(mach), expected_reynolds, rtol=3e-3)
+
+
+def test_speed_conversions():
+    """Tests for speed conversions."""
+    atm = Atmosphere([[0.0, 1000.0, 35000.0], [0.0, 1000.0, 35000.0]])
+    TAS = [[100.0, 100.0, 100.0], [200.0, 200.0, 200.0]]
+
+    # source:  http://www.aerospaceweb.org/design/scripts/atmosphere/
+    expected_EAS = [[100.0, 98.5427, 55.7293], [200.0, 197.0853, 111.4586]]
+
+    assert_allclose(atm.get_equivalent_airspeed(TAS), expected_EAS, rtol=3e-3)
+
+    assert_allclose(atm.get_true_airspeed(expected_EAS), TAS, rtol=3e-3)

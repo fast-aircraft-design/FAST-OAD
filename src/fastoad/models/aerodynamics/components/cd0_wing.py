@@ -29,10 +29,10 @@ class Cd0Wing(ExplicitComponent):
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
-            self.add_input("reynolds_low_speed", val=np.nan)
-            self.add_input("cl_low_speed", val=nans_array)
-            self.add_input("Mach_low_speed", val=np.nan)
-            self.add_output("cd0_wing_low_speed", shape=POLAR_POINT_COUNT)
+            self.add_input("data:aerodynamics:wing:low_speed:reynolds", val=np.nan)
+            self.add_input("data:aerodynamics:aircraft:low_speed:CL", val=nans_array)
+            self.add_input("data:aerodynamics:aircraft:takeoff:mach", val=np.nan)
+            self.add_output("data:aerodynamics:wing:low_speed:CD0", shape=POLAR_POINT_COUNT)
         else:
             self.add_input("data:aerodynamics:wing:cruise:reynolds", val=np.nan)
             self.add_input("data:aerodynamics:aircraft:cruise:CL", val=nans_array)
@@ -54,17 +54,17 @@ class Cd0Wing(ExplicitComponent):
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         if self.low_speed_aero:
-            cl = inputs["cl_low_speed"]
-            mach = inputs["Mach_low_speed"]
-            re_hs = inputs["reynolds_low_speed"]
+            cl = inputs["data:aerodynamics:aircraft:low_speed:CL"]
+            mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
+            reynolds = inputs["data:aerodynamics:wing:low_speed:reynolds"]
         else:
             cl = inputs["data:aerodynamics:aircraft:cruise:CL"]
             mach = inputs["data:TLAR:cruise_mach"]
-            re_hs = inputs["data:aerodynamics:wing:cruise:reynolds"]
+            reynolds = inputs["data:aerodynamics:wing:cruise:reynolds"]
 
         ki_arrow_cd0 = 0.04
         # Friction coefficients
-        cf_wing_hs = 0.455 / ((1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(re_hs * l0_wing)) ** 2.58)
+        cf_wing = 0.455 / ((1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds * l0_wing)) ** 2.58)
 
         # cd0 wing
         # factor of relative thickness
@@ -80,12 +80,12 @@ class Cd0Wing(ExplicitComponent):
 
         cd0_wing = (
             ((ke_cd0_wing + kc_cd0_wing) * k_phi_cd0_wing + ki_arrow_cd0 + 1)
-            * cf_wing_hs
+            * cf_wing
             * wet_area_wing
             / wing_area
         )
 
         if self.low_speed_aero:
-            outputs["cd0_wing_low_speed"] = cd0_wing
+            outputs["data:aerodynamics:wing:low_speed:CD0"] = cd0_wing
         else:
             outputs["data:aerodynamics:wing:cruise:CD0"] = cd0_wing

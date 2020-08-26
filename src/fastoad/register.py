@@ -3,7 +3,7 @@ This module is for registering all internal OpenMDAO modules that we want
 available through OpenMDAOSystemRegistry
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,11 +17,14 @@ available through OpenMDAOSystemRegistry
 
 from fastoad.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastoad.models.aerodynamics.aerodynamics_landing import AerodynamicsLanding
+from fastoad.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
+from fastoad.models.aerodynamics.aerodynamics_takeoff import AerodynamicsTakeoff
 from fastoad.models.geometry import Geometry
 from fastoad.models.handling_qualities.compute_static_margin import ComputeStaticMargin
 from fastoad.models.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from fastoad.models.loops.compute_wing_area import ComputeWingArea
-from fastoad.models.performances import Breguet
+from fastoad.models.performances.breguet import OMBreguet
+from fastoad.models.performances.mission.openmdao.flight import SizingFlight
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
 from fastoad.models.weight.mass_breakdown.mass_breakdown import MTOWComputation
 from fastoad.models.weight.weight import Weight
@@ -38,11 +41,19 @@ def register_openmdao_systems():
     """
     # Aerodynamics ################################################################
     OpenMDAOSystemRegistry.register_system(
+        AerodynamicsTakeoff, "fastoad.aerodynamics.takeoff.legacy", domain=ModelDomain.AERODYNAMICS
+    )
+    OpenMDAOSystemRegistry.register_system(
         AerodynamicsLanding, "fastoad.aerodynamics.landing.legacy", domain=ModelDomain.AERODYNAMICS
     )
     OpenMDAOSystemRegistry.register_system(
         AerodynamicsHighSpeed,
         "fastoad.aerodynamics.highspeed.legacy",
+        domain=ModelDomain.AERODYNAMICS,
+    )
+    OpenMDAOSystemRegistry.register_system(
+        AerodynamicsLowSpeed,
+        "fastoad.aerodynamics.lowspeed.legacy",
         domain=ModelDomain.AERODYNAMICS,
     )
 
@@ -78,7 +89,11 @@ def register_openmdao_systems():
     )
     # Performance #################################################################
     OpenMDAOSystemRegistry.register_system(
-        Breguet, "fastoad.performances.breguet", domain=ModelDomain.PERFORMANCE
+        OMBreguet, "fastoad.performances.breguet", domain=ModelDomain.PERFORMANCE
+    )
+
+    OpenMDAOSystemRegistry.register_system(
+        SizingFlight, "fastoad.performances.sizing_flight", domain=ModelDomain.PERFORMANCE
     )
 
     # Propulsion ##################################################################

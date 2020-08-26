@@ -1,5 +1,5 @@
 """
-Simple implementation of International Standard Atmosphere
+Simple implementation of International Standard Atmosphere.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -52,11 +52,6 @@ class Atmosphere:
         >>> atm = Atmosphere(np.arange(0,10001,1000, 15)) # init for alt. 0 to 10,000, dISA = 15K
         >>> temperatures = atm.pressure # pressures for all defined altitudes
         >>> viscosities = atm.kinematic_viscosity # viscosities for all defined altitudes
-
-    :param altitude: altitude (units decided by altitude_in_feet)
-    :param delta_t: temperature increment applied to whole temperature profile
-    :param altitude_in_feet: if True, altitude should be provided in feet. Otherwise,
-                             it should be provided in meters
     """
 
     # pylint: disable=too-many-instance-attributes  # Needed for avoiding redoing computations
@@ -67,7 +62,10 @@ class Atmosphere:
         altitude_in_feet: bool = True,
     ):
         """
-        Builds an atmosphere instance that will provide atmosphere values
+        :param altitude: altitude (units decided by altitude_in_feet)
+        :param delta_t: temperature increment (°C) applied to whole temperature profile
+        :param altitude_in_feet: if True, altitude should be provided in feet. Otherwise,
+                                 it should be provided in meters.
         """
 
         self._delta_t = delta_t
@@ -164,6 +162,26 @@ class Atmosphere:
         """
         return mach * self.speed_of_sound / self.kinematic_viscosity
 
+    def get_true_airspeed(self, equivalent_airspeed):
+        """
+        Computes true airspeed (TAS) from equivalent airspeed (EAS).
+
+        :param equivalent_airspeed: in m/s
+        :return: true airspeed in m/s
+        """
+        sea_level = Atmosphere(0)
+        return self._return_value(equivalent_airspeed * np.sqrt(sea_level.density / self.density))
+
+    def get_equivalent_airspeed(self, true_airspeed):
+        """
+        Computes equivalent airspeed (EAS) from true airspeed (TAS).
+
+        :param true_airspeed: in m/s
+        :return: equivalent airspeed in m/s
+        """
+        sea_level = Atmosphere(0)
+        return self._return_value(true_airspeed / np.sqrt(sea_level.density / self.density))
+
     def _return_value(self, value):
         """
         :returns: a float when needed. Otherwise, returns the value itself.
@@ -172,3 +190,20 @@ class Atmosphere:
             return float(value)
 
         return value
+
+
+class AtmosphereSI(Atmosphere):
+    """Same as :class:`Atmosphere` except that altitudes are always in meters."""
+
+    def __init__(
+        self, altitude: Union[float, Sequence[float]], delta_t: float = 0.0,
+    ):
+        """
+        :param altitude: altitude in meters
+        :param delta_t: temperature increment (°C) applied to whole temperature profile
+        """
+        super().__init__(altitude, delta_t, altitude_in_feet=False)
+
+    @property
+    def altitude(self):
+        return self.get_altitude(altitude_in_feet=False)

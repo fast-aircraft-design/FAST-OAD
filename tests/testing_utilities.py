@@ -2,7 +2,7 @@
 Convenience functions for helping tests
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,10 +17,12 @@ Convenience functions for helping tests
 import logging
 
 import openmdao.api as om
+
 from fastoad.openmdao.types import SystemSubclass
-from fastoad.openmdao.utils import get_unconnected_input_names
 
 # Logger for this module
+from fastoad.openmdao.variables import VariableList
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -37,8 +39,9 @@ def run_system(
         model.linear_solver = om.DirectSolver()
 
     problem.setup(mode=setup_mode)
-    missing, _ = get_unconnected_input_names(problem, _LOGGER)
-    assert not missing, "These inputs are not provided: %s" % missing
+    vars = VariableList.from_unconnected_inputs(problem)
+    # missing, _ = get_unconnected_input_names(problem, _LOGGER)
+    assert not vars, "These inputs are not provided: %s" % vars.names()
 
     problem.run_model()
 

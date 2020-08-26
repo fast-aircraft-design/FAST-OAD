@@ -21,12 +21,11 @@ from fastoad.models.aerodynamics.components.cd0_nacelle_pylons import Cd0Nacelle
 from fastoad.models.aerodynamics.components.cd0_total import Cd0Total
 from fastoad.models.aerodynamics.components.cd0_vt import Cd0VerticalTail
 from fastoad.models.aerodynamics.components.cd0_wing import Cd0Wing
-from fastoad.models.aerodynamics.components.cd_compressibility import CdCompressibility
 from fastoad.models.aerodynamics.components.cd_trim import CdTrim
 from fastoad.models.aerodynamics.components.compute_low_speed_aero import (
     ComputeAerodynamicsLowSpeed,
 )
-from fastoad.models.aerodynamics.components.compute_polar import ComputePolar
+from fastoad.models.aerodynamics.components.compute_polar import ComputePolar, PolarType
 from fastoad.models.aerodynamics.components.compute_reynolds import ComputeReynolds
 from fastoad.models.aerodynamics.components.initialize_cl import InitializeClPolar
 from fastoad.models.aerodynamics.components.oswald import OswaldCoefficient
@@ -41,7 +40,7 @@ class AerodynamicsLowSpeed(Group):
 
     def setup(self):
         self.add_subsystem("compute_low_speed_aero", ComputeAerodynamicsLowSpeed(), promotes=["*"])
-        ivc = IndepVarComp("Mach_low_speed", val=0.2)
+        ivc = IndepVarComp("data:aerodynamics:aircraft:takeoff:mach", val=0.2)
         self.add_subsystem("mach_low_speed", ivc, promotes=["*"])
         self.add_subsystem(
             "compute_oswald_coeff", OswaldCoefficient(low_speed_aero=True), promotes=["*"]
@@ -56,6 +55,5 @@ class AerodynamicsLowSpeed(Group):
             "cd0_nac_pylons", Cd0NacelleAndPylons(low_speed_aero=True), promotes=["*"]
         )
         self.add_subsystem("cd0_total", Cd0Total(low_speed_aero=True), promotes=["*"])
-        self.add_subsystem("cd_comp", CdCompressibility(low_speed_aero=True), promotes=["*"])
         self.add_subsystem("cd_trim", CdTrim(low_speed_aero=True), promotes=["*"])
-        self.add_subsystem("get_polar", ComputePolar(low_speed_aero=True), promotes=["*"])
+        self.add_subsystem("get_polar", ComputePolar(type=PolarType.LOW_SPEED), promotes=["*"])
