@@ -1,5 +1,5 @@
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,6 +14,8 @@
 import numpy as np
 import openmdao.api as om
 import pandas as pd
+from scipy.constants import foot, nautical_mile
+
 from fastoad import BundleLoader
 from fastoad.constants import FlightPhase
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
@@ -21,8 +23,6 @@ from fastoad.models.performances.breguet import Breguet
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 from fastoad.models.propulsion import EngineSet
-from scipy.constants import foot, nautical_mile
-
 from ..flight.base import RangedFlight
 from ..flight.standard_flight import StandardFlight
 from ..flight_point import FlightPoint
@@ -196,7 +196,7 @@ class SizingFlight(om.ExplicitComponent):
 
         flight_points = base_flight_calculator.compute_from(end_of_takeoff)
 
-        # updated start flight point for every parameters
+        # Update start flight point with computed (non initialized) parameters
         end_of_takeoff = FlightPoint(flight_points.iloc[0])
 
         # Get flight points for each end of phase
