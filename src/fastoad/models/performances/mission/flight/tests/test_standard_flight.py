@@ -8,7 +8,7 @@ why almost no numerical check is done here (such checks will be done in the
 non-regression tests).
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -28,13 +28,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from fastoad.constants import FlightPhase
-from fastoad.models.propulsion import EngineSet
-from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 from matplotlib.ticker import MultipleLocator
 from numpy.testing import assert_allclose
 from scipy.constants import knot, foot
 
+from fastoad.constants import FlightPhase
+from fastoad.models.propulsion import EngineSet
+from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 from ..standard_flight import StandardFlight
 from ...flight.base import RangedFlight
 from ...flight_point import FlightPoint
@@ -140,11 +140,17 @@ def test_standard_flight_optimal_altitude(low_speed_polar, high_speed_polar, cle
     plot_flight(flight_points, "test_standard_flight_max_finesse.png")
 
     end_of_initial_climb = FlightPoint(
-        flight_points.loc[flight_points.name == "initial climb"].iloc[-1]
+        flight_points.loc[flight_points.name == FlightPhase.INITIAL_CLIMB.value].iloc[-1]
     )
-    end_of_climb = FlightPoint(flight_points.loc[flight_points.name == "climb"].iloc[-1])
-    end_of_cruise = FlightPoint(flight_points.loc[flight_points.name == "cruise"].iloc[-1])
-    end_of_descent = FlightPoint(flight_points.loc[flight_points.name == "descent"].iloc[-1])
+    end_of_climb = FlightPoint(
+        flight_points.loc[flight_points.name == FlightPhase.CLIMB.value].iloc[-1]
+    )
+    end_of_cruise = FlightPoint(
+        flight_points.loc[flight_points.name == FlightPhase.CRUISE.value].iloc[-1]
+    )
+    end_of_descent = FlightPoint(
+        flight_points.loc[flight_points.name == FlightPhase.DESCENT.value].iloc[-1]
+    )
 
     assert_allclose(end_of_initial_climb.altitude, 1500.0 * foot)
     assert_allclose(end_of_initial_climb.equivalent_airspeed, 250.0 * knot)
@@ -182,10 +188,16 @@ def test_standard_flight_fixed_altitude(low_speed_polar, high_speed_polar, clean
     )
     plot_flight(flight_points, "test_standard_flight_fixed_altitude.png")
 
-    assert not any(flight_points.name == "initial climb")
-    end_of_climb = FlightPoint(flight_points.loc[flight_points.name == "climb"].iloc[-1])
-    end_of_cruise = FlightPoint(flight_points.loc[flight_points.name == "cruise"].iloc[-1])
-    end_of_descent = FlightPoint(flight_points.loc[flight_points.name == "descent"].iloc[-1])
+    assert not any(flight_points.name == FlightPhase.INITIAL_CLIMB.value)
+    end_of_climb = FlightPoint(
+        flight_points.loc[flight_points.name == FlightPhase.CLIMB.value].iloc[-1]
+    )
+    end_of_cruise = FlightPoint(
+        flight_points.loc[flight_points.name == FlightPhase.CRUISE.value].iloc[-1]
+    )
+    end_of_descent = FlightPoint(
+        flight_points.loc[flight_points.name == FlightPhase.DESCENT.value].iloc[-1]
+    )
 
     assert end_of_climb.mach < 0.78
     assert_allclose(end_of_climb.equivalent_airspeed, 300.0 * knot)
@@ -208,7 +220,7 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
             low_speed_climb_polar=low_speed_polar,
             high_speed_polar=high_speed_polar,
             cruise_mach=0.78,
-            thrust_rates={FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.2,},
+            thrust_rates={FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.2},
         ),
         flight_distance=total_distance,
     )

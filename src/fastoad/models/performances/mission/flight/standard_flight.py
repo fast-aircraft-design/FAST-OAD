@@ -1,6 +1,6 @@
 """Definition of the standard flight missions."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,10 +14,10 @@
 
 from typing import Dict, List, Union
 
-from fastoad.constants import FlightPhase, EngineSetting
-from fastoad.models.propulsion import IPropulsion
 from scipy.constants import foot, knot
 
+from fastoad.constants import FlightPhase, EngineSetting
+from fastoad.models.propulsion import IPropulsion
 from .base import AbstractSimpleFlight
 from ..base import IFlightPart, AbstractManualThrustFlightPhase
 from ..flight_point import FlightPoint
@@ -208,7 +208,10 @@ class StandardFlight(AbstractSimpleFlight):
         }
 
         initial_climb = InitialClimbPhase(
-            **kwargs, polar=low_speed_climb_polar, thrust_rate=1.0, name="initial climb"
+            **kwargs,
+            polar=low_speed_climb_polar,
+            thrust_rate=1.0,
+            name=FlightPhase.INITIAL_CLIMB.value,
         )
         climb = ClimbPhase(
             **kwargs,
@@ -216,21 +219,21 @@ class StandardFlight(AbstractSimpleFlight):
             thrust_rate=thrust_rates[FlightPhase.CLIMB],
             target_altitude=self.climb_target_altitude,
             maximum_mach=self.cruise_mach,
-            name="climb",
+            name=FlightPhase.CLIMB.value,
         )
         cruise = CruiseSegment(
             **kwargs,
             target=FlightPoint(),
             polar=high_speed_polar,
             engine_setting=EngineSetting.CRUISE,
-            name="cruise",
+            name=FlightPhase.CRUISE.value,
         )
         descent = DescentPhase(
             **kwargs,
             polar=high_speed_polar,
             thrust_rate=thrust_rates[FlightPhase.DESCENT],
             target_altitude=self.descent_target_altitude,
-            name="descent",
+            name=FlightPhase.DESCENT.value,
         )
         super().__init__(
             cruise_distance, [initial_climb, climb], cruise, [descent],

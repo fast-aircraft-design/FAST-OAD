@@ -201,11 +201,17 @@ class SizingFlight(om.ExplicitComponent):
 
         # Get flight points for each end of phase
         end_of_initial_climb = FlightPoint(
-            flight_points.loc[flight_points.name == "initial climb"].iloc[-1]
+            flight_points.loc[flight_points.name == FlightPhase.INITIAL_CLIMB.value].iloc[-1]
         )
-        end_of_climb = FlightPoint(flight_points.loc[flight_points.name == "climb"].iloc[-1])
-        end_of_cruise = FlightPoint(flight_points.loc[flight_points.name == "cruise"].iloc[-1])
-        end_of_descent = FlightPoint(flight_points.loc[flight_points.name == "descent"].iloc[-1])
+        end_of_climb = FlightPoint(
+            flight_points.loc[flight_points.name == FlightPhase.CLIMB.value].iloc[-1]
+        )
+        end_of_cruise = FlightPoint(
+            flight_points.loc[flight_points.name == FlightPhase.CRUISE.value].iloc[-1]
+        )
+        end_of_descent = FlightPoint(
+            flight_points.loc[flight_points.name == FlightPhase.DESCENT.value].iloc[-1]
+        )
 
         # Set OpenMDAO outputs
         outputs["data:mission:sizing:initial_climb:fuel"] = (
@@ -269,25 +275,23 @@ class SizingFlight(om.ExplicitComponent):
 
         # Get flight points for each end of phase
         end_of_diversion_climb = FlightPoint(
-            diversion_flight_points.loc[diversion_flight_points.name == "climb"].iloc[-1]
+            diversion_flight_points.loc[
+                diversion_flight_points.name == FlightPhase.CLIMB.value
+            ].iloc[-1]
         )
         end_of_diversion_cruise = FlightPoint(
-            diversion_flight_points.loc[diversion_flight_points.name == "cruise"].iloc[-1]
+            diversion_flight_points.loc[
+                diversion_flight_points.name == FlightPhase.CRUISE.value
+            ].iloc[-1]
         )
         end_of_diversion_descent = FlightPoint(
-            diversion_flight_points.loc[diversion_flight_points.name == "descent"].iloc[-1]
+            diversion_flight_points.loc[
+                diversion_flight_points.name == FlightPhase.DESCENT.value
+            ].iloc[-1]
         )
 
         # rename phases because all flight points will be concatenated later.
-        diversion_flight_points.loc[
-            diversion_flight_points.name == "climb"
-        ].name = "diversion climb"
-        diversion_flight_points.loc[
-            diversion_flight_points.name == "cruise"
-        ].name = "diversion cruise"
-        diversion_flight_points.loc[
-            diversion_flight_points.name == "descent"
-        ].name = "diversion descent"
+        diversion_flight_points.name = "diversion_" + diversion_flight_points.name
 
         # Set OpenMDAO outputs
         outputs["data:mission:sizing:diversion:climb:fuel"] = (
@@ -345,7 +349,7 @@ class SizingFlight(om.ExplicitComponent):
             target=FlightPoint(time=taxi_in_duration),
             propulsion=propulsion_model,
             thrust_rate=taxi_in_thrust_rate,
-            name="taxi-in",
+            name=FlightPhase.TAXI_IN.value,
         )
         start_of_taxi_in = FlightPoint(end_of_holding)
         start_of_taxi_in.true_airspeed = inputs["data:mission:sizing:taxi_in:speed"]

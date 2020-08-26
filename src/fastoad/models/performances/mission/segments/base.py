@@ -1,6 +1,6 @@
 """Base classes for simulating flight segments."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,13 +18,13 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
+from scipy.constants import g
+from scipy.optimize import root_scalar
+
 from fastoad.base.dict import DynamicAttributeDict, AddKeyAttributes
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion import IPropulsion
 from fastoad.utils.physics import AtmosphereSI
-from scipy.constants import g
-from scipy.optimize import root_scalar
-
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..flight_point import FlightPoint
@@ -64,6 +64,7 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
                        message will be issued in logger.
     :ivar maximum_mach: if defined, this maximum Mach number will be enforced at each time
                         step, whatever the speed specifications.
+    :ivar name: the name of the current flight sequence.
     """
 
     def __init__(

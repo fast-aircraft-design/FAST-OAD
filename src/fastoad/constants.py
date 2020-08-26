@@ -1,6 +1,6 @@
 """Definition of globally used constants."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,22 +15,25 @@
 from enum import IntEnum, Enum
 
 
-class FlightPhase(IntEnum):
+class FlightPhase(Enum):
+    """
+    Enumeration of flight phases.
+    """
 
-    """Enumeration of flight phases."""
-
-    TAXI_IN = 0
-    TAKEOFF = 1
-    CLIMB = 2
-    CRUISE = 3
-    DESCENT = 5
-    LANDING = 6
-    TAXI_OUT = 7
+    TAXI_OUT = "taxi_out"
+    TAKEOFF = "takeoff"
+    INITIAL_CLIMB = "initial_climb"
+    CLIMB = "climb"
+    CRUISE = "cruise"
+    DESCENT = "descent"
+    LANDING = "landing"
+    TAXI_IN = "taxi_in"
 
 
 class EngineSetting(IntEnum):
-
-    """Enumeration of engine settings."""
+    """
+    Enumeration of engine settings.
+    """
 
     TAKEOFF = 1
     CLIMB = 2
@@ -39,7 +42,6 @@ class EngineSetting(IntEnum):
 
 
 class RangeCategory(Enum):
-
     """
     Definition of lower and upper limits of aircraft range categories, in Nautical Miles.
 
@@ -48,7 +50,6 @@ class RangeCategory(Enum):
 
     which is equivalent to:
         >>>  RangeCategory.SHORT.min() <= range_value <= RangeCategory.SHORT.max()
-
     """
 
     SHORT = (0.0, 1500.0)
