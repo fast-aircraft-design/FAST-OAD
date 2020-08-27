@@ -19,12 +19,12 @@ from logging import Logger
 from typing import Tuple, List
 
 import numpy as np
+import openmdao
 import openmdao.api as om
+from packaging import version
 
 
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
-
-
 def get_unconnected_input_names(
     problem: om.Problem, logger: Logger = None
 ) -> Tuple[List[str], List[str]]:
@@ -46,22 +46,28 @@ def get_unconnected_input_names(
     model = get_problem_after_setup(problem).model
 
     prom2abs: dict = model._var_allprocs_prom2abs_list["input"]
-    connexions: dict = model._conn_global_abs_in2out
+    connections: dict = model._conn_global_abs_in2out
 
-    mandatory_unconnected = []
-    optional_unconnected = []
+    unconnected = set()
 
-    for abs_names in prom2abs.values():
-        # At each iteration, get absolute names that match one promoted name, or one
-        # absolute name that has not been promoted.
-        unconnected = [a for a in abs_names if a not in connexions or len(connexions[a]) == 0]
-        if unconnected:
-            for abs_name in abs_names:
-                value = model._var_abs2meta[abs_name]["value"]
-                if np.all(np.isnan(value)):
-                    mandatory_unconnected.append(abs_name)
-                else:
-                    optional_unconnected.append(abs_name)
+    if version.parse(openmdao.__version__) >= version.parse("3.2"):
+        for abs_name, src in connections.items():
+            if src.startswith("_auto_ivc."):
+                unconnected.add(abs_name)
+    else:
+        for abs_names in prom2abs.values():
+            # At each iteration, get absolute names that match one promoted name, or one
+            # absolute name that has not been promoted.
+            unconnected |= {
+                a for a in abs_names if a not in connections or len(connections[a]) == 0
+            }
+
+    mandatory_unconnected = {
+        abs_name
+        for abs_name in unconnected
+        if np.all(np.isnan(model._var_abs2meta[abs_name]["value"]))
+    }
+    optional_unconnected = unconnected - mandatory_unconnected
 
     if logger:
         if mandatory_unconnected:
@@ -77,7 +83,7 @@ def get_unconnected_input_names(
                 value = model._var_abs2meta[abs_name]["value"]
                 logger.warning("    %s : %s", abs_name, value)
 
-    return mandatory_unconnected, optional_unconnected
+    return list(mandatory_unconnected), list(optional_unconnected)
 
 
 def get_problem_after_setup(problem: om.Problem) -> om.Problem:
