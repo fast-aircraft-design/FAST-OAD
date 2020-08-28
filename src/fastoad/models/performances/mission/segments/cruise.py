@@ -15,9 +15,9 @@
 from typing import List
 
 import pandas as pd
+from fastoad.base.flight_point import FlightPoint
 
 from .base import RegulatedThrustSegment
-from ..flight_point import FlightPoint
 
 
 class CruiseSegment(RegulatedThrustSegment):

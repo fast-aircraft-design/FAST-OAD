@@ -11,22 +11,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Union, Sequence, Optional, Tuple
-
 import numpy as np
 import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot
 
-from fastoad.constants import EngineSetting
+from fastoad.base.flight_point import FlightPoint
 from fastoad.models.performances.mission.segments.hold import HoldSegment
-from fastoad.models.propulsion import EngineSet, IPropulsion
+from fastoad.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion, FuelEngineSet
 from ..altitude_change import AltitudeChangeSegment
 from ..cruise import OptimalCruiseSegment, CruiseSegment
 from ..speed_change import SpeedChangeSegment
 from ..taxi import TaxiSegment
-from ...flight_point import FlightPoint
 from ...polar import Polar
 
 
@@ -40,7 +37,7 @@ def print_dataframe(df):
         print(df)
 
 
-class DummyEngine(IPropulsion):
+class DummyEngine(AbstractFuelPropulsion):
     def __init__(self, max_thrust, max_sfc):
         """
         Dummy engine model.
@@ -55,24 +52,14 @@ class DummyEngine(IPropulsion):
         self.max_thrust = max_thrust
         self.max_sfc = max_sfc
 
-    def compute_flight_points(
-        self,
-        mach: Union[float, Sequence],
-        altitude: Union[float, Sequence],
-        engine_setting: Union[EngineSetting, Sequence],
-        use_thrust_rate: Optional[Union[bool, Sequence]] = None,
-        thrust_rate: Optional[Union[float, Sequence]] = None,
-        thrust: Optional[Union[float, Sequence]] = None,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
+    def compute_flight_points(self, flight_point: FlightPoint):
 
-        if use_thrust_rate or thrust is None:
-            thrust = self.max_thrust * thrust_rate
+        if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
+            flight_point.thrust_rate = flight_point.thrust / self.max_thrust
         else:
-            thrust_rate = thrust / self.max_thrust
+            flight_point.thrust = self.max_thrust * flight_point.thrust_rate
 
-        sfc = self.max_sfc * (1.0 + thrust_rate) / 2.0
-
-        return sfc, thrust_rate, thrust
+        flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0
 
 
 @pytest.fixture
@@ -84,7 +71,7 @@ def polar() -> Polar:
 
 
 def test_climb_fixed_altitude_at_constant_TAS(polar):
-    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     # initialisation then change instance attributes
     segment = AltitudeChangeSegment(
@@ -106,7 +93,7 @@ def test_climb_fixed_altitude_at_constant_TAS(polar):
 
 
 def test_climb_fixed_altitude_at_constant_EAS(polar):
-    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
         target=FlightPoint(altitude=10000.0, equivalent_airspeed="constant"),
@@ -130,7 +117,7 @@ def test_climb_fixed_altitude_at_constant_EAS(polar):
 
 
 def test_climb_optimal_altitude_at_fixed_TAS(polar):
-    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
         target=FlightPoint(
@@ -154,7 +141,7 @@ def test_climb_optimal_altitude_at_fixed_TAS(polar):
 
 
 def test_climb_optimal_flight_level_at_fixed_TAS(polar):
-    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
         target=FlightPoint(
@@ -179,7 +166,7 @@ def test_climb_optimal_flight_level_at_fixed_TAS(polar):
 
 
 def test_climb_optimal_altitude_at_fixed_TAS_with_capped_mach(polar):
-    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
         target=FlightPoint(
@@ -205,7 +192,7 @@ def test_climb_optimal_altitude_at_fixed_TAS_with_capped_mach(polar):
 
 
 def test_climb_not_enough_thrust(polar):
-    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     segment = AltitudeChangeSegment(
         target=FlightPoint(altitude=10000.0, true_airspeed="constant"),
@@ -221,7 +208,7 @@ def test_climb_not_enough_thrust(polar):
 
 
 def test_descent_to_fixed_altitude_at_constant_TAS(polar):
-    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
         target=FlightPoint(altitude=5000.0, true_airspeed="constant"),
@@ -244,7 +231,7 @@ def test_descent_to_fixed_altitude_at_constant_TAS(polar):
 
 
 def test_descent_to_fixed_altitude_at_constant_EAS(polar):
-    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
         target=FlightPoint(altitude=5000.0, equivalent_airspeed="constant"),
@@ -265,7 +252,7 @@ def test_descent_to_fixed_altitude_at_constant_EAS(polar):
 
 
 def test_descent_to_fixed_EAS_at_constant_mach(polar):
-    propulsion = EngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     flight_points = AltitudeChangeSegment(
         target=FlightPoint(equivalent_airspeed=150.0, mach="constant"),
@@ -288,7 +275,7 @@ def test_descent_to_fixed_EAS_at_constant_mach(polar):
 
 
 def test_acceleration_to_TAS(polar):
-    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = SpeedChangeSegment(
         target={"true_airspeed": 250.0},
@@ -312,7 +299,7 @@ def test_acceleration_to_TAS(polar):
 
 
 def test_acceleration_to_EAS(polar):
-    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     flight_points = SpeedChangeSegment(
         target=FlightPoint(equivalent_airspeed=250.0),
@@ -333,7 +320,7 @@ def test_acceleration_to_EAS(polar):
 
 
 def test_acceleration_not_enough_thrust(polar):
-    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = SpeedChangeSegment(
         target=FlightPoint(true_airspeed=250.0),
@@ -348,7 +335,7 @@ def test_acceleration_not_enough_thrust(polar):
 
 
 def test_deceleration_not_enough_thrust(polar):
-    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = SpeedChangeSegment(
         target=FlightPoint(true_airspeed=150.0),
@@ -373,7 +360,7 @@ def test_deceleration_not_enough_thrust(polar):
 
 
 def test_cruise_at_constant_altitude(polar):
-    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = CruiseSegment(
         target=FlightPoint(ground_distance=5.0e5),
@@ -399,7 +386,7 @@ def test_cruise_at_constant_altitude(polar):
 
 
 def test_optimal_cruise(polar):
-    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = OptimalCruiseSegment(
         target=FlightPoint(ground_distance=5.0e5),
@@ -427,7 +414,7 @@ def test_optimal_cruise(polar):
 
 
 def test_taxi():
-    propulsion = EngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = TaxiSegment(target=FlightPoint(time=500.0), propulsion=propulsion, thrust_rate=0.1)
     flight_points = segment.compute_from(
@@ -443,7 +430,7 @@ def test_taxi():
 
 
 def test_hold(polar):
-    propulsion = EngineSet(DummyEngine(0.5e5, 2.0e-5), 2)
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 2.0e-5), 2)
 
     segment = HoldSegment(
         target=FlightPoint(time=3000.0), propulsion=propulsion, reference_area=120.0, polar=polar

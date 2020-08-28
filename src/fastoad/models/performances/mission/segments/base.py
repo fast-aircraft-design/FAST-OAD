@@ -22,12 +22,12 @@ from scipy.constants import g
 from scipy.optimize import root_scalar
 
 from fastoad.base.dict import DynamicAttributeDict, AddKeyAttributes
+from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion import IPropulsion
 from fastoad.utils.physics import AtmosphereSI
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
-from ..flight_point import FlightPoint
 from ..polar import Polar
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -210,7 +210,7 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         previous = flight_points[-1]
         next_point = FlightPoint()
 
-        next_point.mass = previous.mass - previous.sfc * previous.thrust * time_step
+        next_point.mass = previous.mass - self.propulsion.get_consumed_mass(previous, time_step)
         next_point.time = previous.time + time_step
         next_point.ground_distance = (
             previous.ground_distance
@@ -355,7 +355,7 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         """
         Computes propulsion data.
 
-        Provided fligh point is modified in place.
+        Provided flight point is modified in place.
 
         :param flight_point:
         """
@@ -370,16 +370,9 @@ class ManualThrustSegment(AbstractSegment, ABC):
     """
 
     def _compute_propulsion(self, flight_point: FlightPoint):
-        (
-            flight_point.sfc,
-            flight_point.thrust_rate,
-            flight_point.thrust,
-        ) = self.propulsion.compute_flight_points(
-            flight_point.mach,
-            flight_point.altitude,
-            flight_point.engine_setting,
-            thrust_rate=self.thrust_rate,
-        )
+        flight_point.thrust_rate = self.thrust_rate
+        flight_point.thrust_is_regulated = False
+        self.propulsion.compute_flight_points(flight_point)
 
 
 @AddKeyAttributes({"time_step": 60.0})
@@ -393,16 +386,9 @@ class RegulatedThrustSegment(AbstractSegment, ABC):
         self.target.mach = "constant"
 
     def _compute_propulsion(self, flight_point: FlightPoint):
-        (
-            flight_point.sfc,
-            flight_point.thrust_rate,
-            flight_point.thrust,
-        ) = self.propulsion.compute_flight_points(
-            flight_point.mach,
-            flight_point.altitude,
-            flight_point.engine_setting,
-            thrust=flight_point.drag,
-        )
+        flight_point.thrust = flight_point.drag
+        flight_point.thrust_is_regulated = True
+        self.propulsion.compute_flight_points(flight_point)
 
     def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         return 0.0, 0.0

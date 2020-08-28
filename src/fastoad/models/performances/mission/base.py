@@ -16,10 +16,9 @@ from abc import ABC, abstractmethod
 from typing import List, Union
 
 import pandas as pd
+from fastoad.base.flight_point import FlightPoint
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.propulsion import IPropulsion
-
-from .flight_point import FlightPoint
 
 
 class IFlightPart(ABC):

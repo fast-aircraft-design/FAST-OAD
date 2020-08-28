@@ -1,6 +1,6 @@
 """OpenMDAO wrapping of RubberEngine."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,17 +13,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+from openmdao.core.component import Component
+
 from fastoad.models.propulsion import IOMPropulsionWrapper, IPropulsion, BaseOMPropulsionComponent
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
-from openmdao.core.component import Component
-
 from .rubber_engine import RubberEngine
 
 
-# Note: For the decorator to work, this module must be started as an iPOPO bundle,
-# which is automatically done because OMRubberEngineComponent is currently registered
-# as an OpenMDAO component with OpenMDAOSystemRegistry.register_system() in fastoad.register
 @RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine")
 class OMRubberEngineWrapper(IOMPropulsionWrapper):
     """

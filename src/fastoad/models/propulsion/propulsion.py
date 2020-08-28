@@ -1,6 +1,6 @@
 """Base module for propulsion models."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2020  ONERA/ISAE
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,95 +13,90 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from typing import Union, Sequence, Optional, Tuple
+from typing import Union
 
 import numpy as np
 import openmdao.api as om
-from fastoad.constants import EngineSetting
+import pandas as pd
 from openmdao.core.component import Component
+
+from fastoad.base.dict import AddKeyAttributes
+from fastoad.base.flight_point import FlightPoint
 
 
 class IPropulsion(ABC):
     """
     Interface that should be implemented by propulsion models.
+
+    Using this class allows to delegate to the propulsion model the management of
+    propulsion-related data when computing performances.
+
+    The performance model calls :meth:`compute_flight_points` by providing one or
+    several flight points. The method will feed these flight points with results
+    of the model (e.g. thrust, SFC, ..).
+
+    The performance model will then be able to call :meth:`get_consumed_mass` to
+    know the mass consumption for each flight point.
+
+    Note::
+
+        If the propulsion model needs fields that are not among defined fields
+        of the :class`FlightPoint class`, these fields can be made authorized by
+        :class`FlightPoint class` by putting such command before defining the
+        class::
+
+            >>> # Simply adds the fields:
+            >>> AddKeyAttributes(["ion_drive_power", "warp"])(FlightPoint)
+            >>> # Adds the fields with associated default values:
+            >>> AddKeyAttributes({"ion_drive_power":110., "warp":9.0})(FlightPoint)
     """
 
     @abstractmethod
-    def compute_flight_points(
-        self,
-        mach: Union[float, Sequence],
-        altitude: Union[float, Sequence],
-        engine_setting: Union[EngineSetting, Sequence],
-        use_thrust_rate: Optional[Union[bool, Sequence]] = None,
-        thrust_rate: Optional[Union[float, Sequence]] = None,
-        thrust: Optional[Union[float, Sequence]] = None,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
+    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
         """
         Computes Specific Fuel Consumption according to provided conditions.
 
-        Each input can be a float, a list or an array.
-        Inputs that are not floats must all have the same shape (numpy speaking).
+        See :class:`FlightPoint` for available fields that may be used for computation.
+        If a DataFrame instance is provided, it is expected that its columns match
+        field names of FlightPoint (actually, the DataFrame instance should be
+        generated from a list of FlightPoint instances).
 
-        .. note:: **About use_thrust_rate, thrust_rate and thrust**
+        .. note:: **About thrust_is_regulated, thrust_rate and thrust**
 
-            :code:`use_thrust_rate` tells if a flight point should be computed using
-            :code:`thrust_rate` or :code:`thrust` as input. This way, the method can be used
-            in a vectorized mode, where each point can be set to respect a **thrust** order or a
-            **thrust rate** order.
+            :code:`thrust_is_regulated` tells if a flight point should be computed using
+            :code:`thrust_rate` (when False) or :code:`thrust` (when True) as input. This way,
+            the method can be used in a vectorized mode, where each point can be set to respect
+            a **thrust** order or a **thrust rate** order.
 
-            - if :code:`use_thrust_rate` is :code:`None`, the considered input will be the
-              provided one between :code:`thrust_rate` and :code:`thrust` (if both are provided,
+            - if :code:`thrust_is_regulated` is not defined, the considered input will be the
+              defined one between :code:`thrust_rate` and :code:`thrust` (if both are provided,
               :code:`thrust_rate` will be used)
 
-            - if :code:`use_thrust_rate` is :code:`True` or :code:`False` (i.e., not a sequence),
-              the considered input will be taken accordingly, and should of course not be None.
+            - if :code:`thrust_is_regulated` is :code:`True` or :code:`False` (i.e., not a sequence),
+              the considered input will be taken accordingly, and should of course be defined.
 
-            - if :code:`use_thrust_rate` is a sequence or array, :code:`thrust_rate` and
-              :code:`thrust` should be provided and have the same shape as
-              :code:`use_thrust_rate:code:`. The method will consider for each element which input
-              will be used according to :code:`use_thrust_rate`.
+            - if there are several flight points, :code:`thrust_is_regulated` is a sequence or array,
+              :code:`thrust_rate` and :code:`thrust` should be provided and have the same shape as
+              :code:`thrust_is_regulated:code:`. The method will consider for each element which input
+              will be used according to :code:`thrust_is_regulated`.
 
 
-        :param mach: Mach number
-        :param altitude: (unit=m) altitude w.r.t. to sea level
-        :param engine_setting: engine setting
-        :param use_thrust_rate: tells if thrust_rate or thrust should be used (works element-wise)
-        :param thrust_rate: thrust rate (unit=none)
-        :param thrust: required thrust (unit=N)
-        :return: SFC (in kg/s/N), thrust rate, thrust (in N)
+        :param flight_points: FlightPoint or DataFram instance
+        :return: None (inputs are updated in-place)
         """
 
-
-class EngineSet(IPropulsion):
-    def __init__(self, engine: IPropulsion, engine_count):
+    @abstractmethod
+    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
         """
-        Class for modelling an assembly of identical engines.
+        Computes consumed mass for provided flight point and time step.
 
-        Thrust is supposed equally distributed among them.
+        This method should rely on FlightPoint fields that are generated by
+        :meth: `compute_flight_points`.
 
-        :param engine: the engine model
-        :param engine_count:
+        :param flight_point:
+        :param time_step:
+        :return: the consumed mass in kg
         """
-        self.engine = engine
-        self.engine_count = engine_count
-
-    def compute_flight_points(
-        self,
-        mach: Union[float, Sequence],
-        altitude: Union[float, Sequence],
-        engine_setting: Union[EngineSetting, Sequence],
-        use_thrust_rate: Optional[Union[bool, Sequence]] = None,
-        thrust_rate: Optional[Union[float, Sequence]] = None,
-        thrust: Optional[Union[float, Sequence]] = None,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
-
-        if thrust is not None:
-            thrust = thrust / self.engine_count
-
-        sfc, thrust_rate, thrust = self.engine.compute_flight_points(
-            mach, altitude, engine_setting, use_thrust_rate, thrust_rate, thrust
-        )
-        return sfc, thrust_rate, thrust * self.engine_count
 
 
 class IOMPropulsionWrapper:
@@ -166,17 +161,20 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wrapper = self.get_wrapper().get_model(inputs)
-        sfc, thrust_rate, thrust = wrapper.compute_flight_points(
-            inputs["data:propulsion:mach"],
-            inputs["data:propulsion:altitude"],
-            inputs["data:propulsion:engine_setting"],
-            inputs["data:propulsion:use_thrust_rate"],
-            inputs["data:propulsion:required_thrust_rate"],
-            inputs["data:propulsion:required_thrust"],
+        flight_point = FlightPoint(
+            mach=inputs["data:propulsion:mach"],
+            altitude=inputs["data:propulsion:altitude"],
+            engine_setting=inputs["data:propulsion:engine_setting"],
+            thrust_is_regulated=np.logical_not(
+                inputs["data:propulsion:use_thrust_rate"].astype(int)
+            ),
+            thrust_rate=inputs["data:propulsion:required_thrust_rate"],
+            thrust=inputs["data:propulsion:required_thrust"],
         )
-        outputs["data:propulsion:SFC"] = sfc
-        outputs["data:propulsion:thrust_rate"] = thrust_rate
-        outputs["data:propulsion:thrust"] = thrust
+        wrapper.compute_flight_points(flight_point)
+        outputs["data:propulsion:SFC"] = flight_point.sfc
+        outputs["data:propulsion:thrust_rate"] = flight_point.thrust_rate
+        outputs["data:propulsion:thrust"] = flight_point.thrust
 
     @staticmethod
     @abstractmethod
