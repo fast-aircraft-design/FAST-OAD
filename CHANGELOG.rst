@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 0.4.1-beta
+Version 0.4.2-beta
 ==================
 
 - Prevents installation of OpenMDAO 3.2 and above for incompatibility reasons.
