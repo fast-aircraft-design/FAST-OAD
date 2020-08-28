@@ -61,7 +61,7 @@ Extensibility
 =============
 If you need FlightPoint to store parameters that are not already there, you
 can do this in your Python code (outside of any class or function, preferably
-in the python module where you will use these new paramaters)::
+in the python module where you will use these new parameters)::
 
     from fastoad.base.flight_point import FlightPoint
     from fastoad.base.dict import AddKeyAttributes
