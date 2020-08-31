@@ -20,6 +20,7 @@ import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
 from IPython.display import display, clear_output
+
 from fastoad.io import VariableIO, IVariableIOFormatter
 from fastoad.openmdao.variables import VariableList
 
@@ -98,7 +99,7 @@ class VariableViewer:
 
         :param file_path: the path of file to save. If not given, the initially read file will be overwritten.
         :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
-       """
+        """
         if file_path is None:
             file_path = self.file
 

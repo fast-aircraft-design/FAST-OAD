@@ -27,6 +27,9 @@ import pandas as pd
 import requests
 from IPython import InteractiveShell
 from IPython.display import display, HTML
+from whatsopt.show_utils import generate_xdsm_html
+from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
+
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
@@ -37,9 +40,6 @@ from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
 from fastoad.utils.postprocessing import OptimizationViewer
 from fastoad.utils.resource_management.copy import copy_resource
-from whatsopt.show_utils import generate_xdsm_html
-from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
-
 from . import resources
 
 # Logger for this module
@@ -307,7 +307,7 @@ def write_xdsm(
     api_key=None,
 ):
     """
-    
+
     :param configuration_file_path:
     :param xdsm_file_path:
     :param overwrite:

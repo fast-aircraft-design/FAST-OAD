@@ -23,10 +23,10 @@ import ipywidgets as widgets
 import numpy as np
 import pandas as pd
 from IPython.display import display, clear_output
+
 from fastoad.io import VariableIO
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.openmdao.variables import VariableList
-
 from .exceptions import FastMissingFile
 
 pd.set_option("display.max_rows", None)
@@ -173,7 +173,7 @@ class OptimizationViewer:
             - the .toml configuration file
             - the input file (initial values)
             - the output file (values)
-       """
+        """
         conf = self.problem_configuration
         input_variables = VariableIO(self.problem_configuration.input_file_path, None).read()
         output_variables = VariableIO(self.problem_configuration.output_file_path, None).read()

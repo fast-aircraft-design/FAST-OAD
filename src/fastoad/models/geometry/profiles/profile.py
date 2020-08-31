@@ -30,10 +30,10 @@ THICKNESS = "thickness"
 
 
 class Profile:
-    """ Class for managing 2D wing profiles
-        :param chord_length:
-        :param x:
-        :param y:
+    """Class for managing 2D wing profiles
+    :param chord_length:
+    :param x:
+    :param y:
     """
 
     # pylint: disable=invalid-name  # X and Z are valid names in this context
@@ -103,7 +103,7 @@ class Profile:
             self.thickness_ratio = max_thickness / chord_length
 
     def get_mean_line(self) -> pd.DataFrame:
-        """ Point set of mean line of the profile.
+        """Point set of mean line of the profile.
 
         DataFrame keys are 'x' and 'z', given in meters.
         """
@@ -111,7 +111,7 @@ class Profile:
         return mean_line
 
     def get_relative_thickness(self) -> pd.DataFrame:
-        """ Point set of relative thickness of the profile.
+        """Point set of relative thickness of the profile.
 
         DataFrame keys are 'x' and 'thickness' and are relative to chord_length.
         'x' is form 0. to 1.
@@ -119,21 +119,21 @@ class Profile:
         return self._rel_mean_line_and_thickness[[X, THICKNESS]] * [1.0, self.thickness_ratio]
 
     def get_upper_side(self) -> pd.DataFrame:
-        """ Point set of upper side of the profile.
+        """Point set of upper side of the profile.
 
         DataFrame keys are 'x' and 'z', given in meters.
         """
         return self._get_side_points(operator.add)
 
     def get_lower_side(self) -> pd.DataFrame:
-        """ Point set of lower side of the profile.
+        """Point set of lower side of the profile.
 
         DataFrame keys are 'x' and 'z', given in meters.
         """
         return self._get_side_points(operator.sub)
 
     def get_sides(self) -> pd.DataFrame:
-        """ Point set of the whole profile
+        """Point set of the whole profile
 
         Points are given from trailing edge to trailing edge, starting by upper side.
         """

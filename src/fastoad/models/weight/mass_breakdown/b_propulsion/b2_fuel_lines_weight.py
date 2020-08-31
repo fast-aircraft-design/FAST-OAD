@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 class FuelLinesWeight(ExplicitComponent):
     """
     Weight estimation for fuel lines
-    
+
     Based on formula in :cite:`supaero:2014`, mass contribution B2
     """
 

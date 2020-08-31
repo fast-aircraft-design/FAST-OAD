@@ -15,8 +15,9 @@ Estimation of life support systems weight
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.constants import RangeCategory
 from openmdao.core.explicitcomponent import ExplicitComponent
+
+from fastoad.constants import RangeCategory
 
 
 class LifeSupportSystemsWeight(ExplicitComponent):
@@ -24,7 +25,7 @@ class LifeSupportSystemsWeight(ExplicitComponent):
     Weight estimation for life support systems
 
     This includes:
-    
+
     - insulation
     - air conditioning / pressurization
     - de-icing

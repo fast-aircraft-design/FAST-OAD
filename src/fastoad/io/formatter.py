@@ -40,4 +40,4 @@ class IVariableIOFormatter(ABC):
 
         :param data_source:
         :param variables:
-       """
+        """

@@ -81,8 +81,7 @@ class FastBadSystemOptionError(FastError):
 
 
 class FastIncompatibleServiceClass(FastError):
-    """
-    """
+    """"""
 
     def __init__(self, registered_class: type, service_id: str, base_class: type):
         """
