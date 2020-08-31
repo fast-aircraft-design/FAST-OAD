@@ -13,9 +13,7 @@
 
 from copy import deepcopy
 
-import openmdao
 import openmdao.api as om
-from packaging import version
 
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
@@ -99,28 +97,27 @@ class FASTOADProblem(om.Problem):
             reader = VariableIO(self.input_file_path)
             variables = reader.read()
 
-            if version.parse(openmdao.__version__) >= version.parse("3.2"):
-                for var in variables:
-                    self.model.set_input_defaults(var.name, var.value, var.units)
-            else:
-                # For OpenMDAO before 3.2, we have to add an IndepVarComp as the first system.
-                ivc = variables.to_ivc()
+            ivc = variables.to_ivc()
 
-                # ivc will be added through add_subsystem, but we must use set_order() to
-                # put it first.
-                # So we need order of existing subsystem to provide the full order list to
-                # set_order() to get order of systems, we use system_iter() that can be used
-                # only after setup().
-                # But we will not be allowed to use add_subsystem() after setup().
-                # So we use setup() on a copy of current instance, and get order from this copy
-                tmp_prob = deepcopy(self)
-                tmp_prob.setup()
-                previous_order = [
-                    system.name for system in tmp_prob.model.system_iter(recurse=False)
-                ]
+            # ivc will be added through add_subsystem, but we must use set_order() to
+            # put it first.
+            # So we need order of existing subsystem to provide the full order list to
+            # set_order() to get order of systems, we use system_iter() that can be used
+            # only after setup().
+            # But we will not be allowed to use add_subsystem() after setup().
+            # So we use setup() on a copy of current instance, and get order from this copy
+            tmp_prob = deepcopy(self)
+            tmp_prob.setup()
+            previous_order = [
+                system.name
+                for system in tmp_prob.model.system_iter(recurse=False)
+                if system.name != "_auto_ivc"
+                # OpenMDAO 3.2+ specific : _auto_ivc is an output of system_iter() but is not
+                # accepted as input of set_order()
+            ]
 
-                self.model.add_subsystem(INPUT_SYSTEM_NAME, ivc, promotes=["*"])
-                self.model.set_order([INPUT_SYSTEM_NAME] + previous_order)
+            self.model.add_subsystem(INPUT_SYSTEM_NAME, ivc, promotes=["*"])
+            self.model.set_order([INPUT_SYSTEM_NAME] + previous_order)
 
     def write_outputs(self):
         """
