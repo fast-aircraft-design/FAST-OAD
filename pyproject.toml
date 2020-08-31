@@ -65,7 +65,7 @@
     pytest = "^5.2"
     pytest-cov = "*"
     pre-commit = "*"
-    black = { version = "*", allow-prereleases = true }
+    black = { version = "<20.", allow-prereleases = true }
     pylint = "*"
     nbval = "*"
     sphinx = "*"
