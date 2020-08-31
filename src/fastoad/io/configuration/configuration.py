@@ -21,19 +21,19 @@ from typing import Dict
 
 import openmdao.api as om
 import tomlkit
+
 from fastoad.io import IVariableIOFormatter
+from fastoad.models.defaults import set_all_input_defaults
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.utils.files import make_parent_dir
-
 from .exceptions import (
     FASTConfigurationBaseKeyBuildingError,
     FASTConfigurationBadOpenMDAOInstructionError,
     FASTConfigurationError,
 )
 
-# Logger for this module
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 KEY_FOLDERS = "module_folders"
 KEY_INPUT_FILE = "input_file"
@@ -246,6 +246,7 @@ class FASTOADProblemConfigurator:
             _LOGGER.error(log_err)
             raise log_err
 
+        set_all_input_defaults(model)
         return model
 
     def _parse_problem_table(self, group: om.Group, table: dict):
