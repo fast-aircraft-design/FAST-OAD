@@ -27,6 +27,9 @@ import pandas as pd
 import requests
 from IPython import InteractiveShell
 from IPython.display import display, HTML
+from whatsopt.show_utils import generate_xdsm_html
+from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
+
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
@@ -37,12 +40,11 @@ from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
 from fastoad.utils.postprocessing import OptimizationViewer
 from fastoad.utils.resource_management.copy import copy_resource
-from whatsopt.show_utils import generate_xdsm_html
-from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
-
 from . import resources
 
 # Logger for this module
+from ..module_management.service_registry import RegisterPropulsion
+
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
 
@@ -252,17 +254,33 @@ def list_systems(
         out_file = open(out, "w")
     else:
         out_file = out
-    out_file.writelines(["-- AVAILABLE SYSTEM IDENTIFIERS " + "-" * 68 + "\n", "=" * 100 + "\n"])
+    out_file.writelines(["== AVAILABLE SYSTEM IDENTIFIERS " + "=" * 68 + "\n", "-" * 100 + "\n"])
     for identifier in sorted(OpenMDAOSystemRegistry.get_system_ids()):
         path = BundleLoader().get_factory_path(identifier)
         domain = OpenMDAOSystemRegistry.get_system_domain(identifier)
         description = OpenMDAOSystemRegistry.get_system_description(identifier)
+        if description is None:
+            description = ""
         out_file.write("  IDENTIFIER:   %s\n" % identifier)
         out_file.write("  PATH:         %s\n" % path)
         out_file.write("  DOMAIN:       %s\n" % domain.value)
         out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
-        out_file.write("=" * 100 + "\n")
         out_file.write("-" * 100 + "\n")
+    out_file.write("=" * 100 + "\n")
+
+    out_file.writelines(
+        ["\n== AVAILABLE PROPULSION WRAPPER IDENTIFIERS " + "=" * 56 + "\n", "-" * 100 + "\n"]
+    )
+    for identifier in sorted(RegisterPropulsion.get_model_ids()):
+        path = BundleLoader().get_factory_path(identifier)
+        description = RegisterPropulsion.get_service_description(identifier)
+        if description is None:
+            description = ""
+        out_file.write("  IDENTIFIER:   %s\n" % identifier)
+        out_file.write("  PATH:         %s\n" % path)
+        out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
+        out_file.write("-" * 100 + "\n")
+    out_file.write("=" * 100 + "\n")
 
     if isinstance(out, str):
         out_file.close()
