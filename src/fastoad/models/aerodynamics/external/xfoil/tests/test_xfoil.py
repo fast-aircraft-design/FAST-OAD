@@ -46,6 +46,7 @@ def test_compute():
     ivc.add_output("xfoil:mach", 0.20)
     ivc.add_output("data:geometry:wing:thickness_ratio", 0.1284)
 
+    # Base test ----------------------------------------------------------------
     xfoil_comp = XfoilPolar(
         alpha_start=15.0, alpha_end=25.0, iter_limit=20, xfoil_exe_path=xfoil_path
     )
@@ -53,20 +54,23 @@ def test_compute():
     assert problem["xfoil:CL_max_2D"] == pytest.approx(1.94, 1e-2)
     assert not pth.exists(XFOIL_RESULTS)
 
+    # Test that will stop before real max CL -----------------------------------
     xfoil_comp = XfoilPolar(
         alpha_start=12.0, alpha_end=20.0, iter_limit=20, xfoil_exe_path=xfoil_path
-    )  # will stop before real max CL
+    )
     problem = run_system(xfoil_comp, ivc)
     assert problem["xfoil:CL_max_2D"] == pytest.approx(1.92, 1e-2)
     assert not pth.exists(XFOIL_RESULTS)
 
+    # Test that will not converge ----------------------------------------------
     xfoil_comp = XfoilPolar(
         alpha_start=50.0, alpha_end=55.0, iter_limit=2, xfoil_exe_path=xfoil_path
-    )  # will not converge
+    )
     problem = run_system(xfoil_comp, ivc)
     assert problem["xfoil:CL_max_2D"] == pytest.approx(DEFAULT_2D_CL_MAX, 1e-2)
     assert not pth.exists(XFOIL_RESULTS)
 
+    # Test that will output results in provided folder -------------------------
     xfoil_comp = XfoilPolar(
         iter_limit=20, result_folder_path=XFOIL_RESULTS, xfoil_exe_path=xfoil_path
     )
