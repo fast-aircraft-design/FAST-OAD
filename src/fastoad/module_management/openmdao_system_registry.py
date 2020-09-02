@@ -19,7 +19,6 @@ from types import MethodType
 from typing import List, Union, Any
 
 from fastoad.openmdao.types import SystemSubclass
-
 from .bundle_loader import BundleLoader
 from .constants import (
     SERVICE_OPENMDAO_SYSTEM,
@@ -143,7 +142,7 @@ class OpenMDAOSystemRegistry:
         return cls._get_system_property(system_or_id, DOMAIN_PROPERTY_NAME)
 
     @classmethod
-    def get_system_description(cls, system_or_id: Union[str, SystemSubclass]) -> ModelDomain:
+    def get_system_description(cls, system_or_id: Union[str, SystemSubclass]) -> str:
         """
 
         :param system_or_id: an identifier of a registered OpenMDAO System class or

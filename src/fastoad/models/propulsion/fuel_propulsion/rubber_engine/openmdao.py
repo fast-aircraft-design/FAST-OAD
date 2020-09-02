@@ -1,6 +1,6 @@
 """OpenMDAO wrapping of RubberEngine."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,7 +21,15 @@ from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from .rubber_engine import RubberEngine
 
 
-@RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine")
+@RegisterPropulsion(
+    "fastoad.wrapper.propulsion.rubber_engine",
+    desc="""
+Parametric engine model as OpenMDAO component.
+
+Implementation of E. Roux models for fuel consumption of low bypass ratio engines
+For more information, see RubberEngine class in FAST-OAD developer documentation.
+""",
+)
 class OMRubberEngineWrapper(IOMPropulsionWrapper):
     """
     Wrapper class of for rubber engine model.
