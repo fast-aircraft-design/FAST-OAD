@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 0.5.0-beta
+==================
+
+- Added compatibility with OpenMDAO 3.2.
+- Added the mission performance module (currently computes a fixed standard mission).
+- Propulsion models are now declared in a specific way so that another
+  module can do a direct call to the needed propulsion model.
+
+
 Version 0.4.2-beta
 ==================
 
