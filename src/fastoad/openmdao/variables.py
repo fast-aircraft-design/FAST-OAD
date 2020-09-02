@@ -447,7 +447,7 @@ class VariableList(list):
 
         # from ivc outputs
         ivc_inputs = []
-        for subsystem in model._subsystems_allprocs:
+        for subsystem in model.system_iter():
             if isinstance(subsystem, om.IndepVarComp):
                 input_variables = cls.from_ivc(subsystem)
                 for var in input_variables:
@@ -494,8 +494,8 @@ class VariableList(list):
         all the unconnected inputs of an OpenMDAO Problem.
 
         If *optional_inputs* is False, only inputs that have numpy.nan as default value (hence
-        considered as mandatory) will be in returned instance. Otherwise, all unconnected inputs will
-        be in returned instance.
+        considered as mandatory) will be in returned instance. Otherwise, all unconnected inputs
+        will be in returned instance.
 
         :param problem: OpenMDAO Problem instance to inspect
         :param with_optional_inputs: If True, returned instance will contain all unconnected inputs.

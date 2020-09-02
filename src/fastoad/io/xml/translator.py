@@ -17,6 +17,7 @@ Conversion from OpenMDAO variables to XPath
 from typing import Sequence, Union, IO, Set
 
 import numpy as np
+
 from fastoad.io.xml.exceptions import (
     FastXpathTranslatorInconsistentLists,
     FastXpathTranslatorDuplicates,
@@ -120,7 +121,7 @@ class VarXpathTranslator:
         :param xpath: XML Path
         :return: OpenMDAO variable name that matches xpath
         :raise FastXpathTranslatorXPathError: if xpath is unknown
-       """
+        """
         if xpath in self._xpaths:
             i = self._xpaths.index(xpath)
             return self._variable_names[i]

@@ -37,13 +37,6 @@ def test_get_unconnected_inputs():
     expected_mandatory_variables = {}
     expected_optional_variables = {}
 
-    # Test with a problem with a single component
-    test_label = "single_component"
-    test_labels.append(test_label)
-    components[test_label] = Disc1()
-    expected_mandatory_variables[test_label] = ["x"]
-    expected_optional_variables[test_label] = ["y2", "z"]
-
     # Test with a group problem with a single component (no promoted variable)
     test_label = "single_component_group"
     test_labels.append(test_label)

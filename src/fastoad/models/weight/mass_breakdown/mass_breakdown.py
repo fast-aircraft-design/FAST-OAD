@@ -13,8 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-from fastoad.models.options import PAYLOAD_FROM_NPAX
 
+from fastoad.models.options import PAYLOAD_FROM_NPAX
 from .a_airframe import (
     WingWeight,
     FuselageWeight,
@@ -244,7 +244,7 @@ class FurnitureWeight(om.Group):
 
 
 class OperatingWeightEmpty(om.Group):
-    """ Operating Empty Weight (OEW) estimation.
+    """Operating Empty Weight (OEW) estimation.
 
     This group aggregates weight from all components of the aircraft.
     """

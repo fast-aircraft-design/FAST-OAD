@@ -21,7 +21,7 @@ import openmdao.api as om
 class PaintWeight(om.ExplicitComponent):
     """
     Weight estimation for paint
-    
+
     Based on formula in :cite:`supaero:2014`, mass contribution A7
     """
 

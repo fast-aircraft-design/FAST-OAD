@@ -15,7 +15,6 @@ from fnmatch import fnmatchcase
 from typing import Union, IO, List, Sequence
 
 from fastoad.openmdao.variables import VariableList
-
 from . import IVariableIOFormatter
 from .xml import VariableXmlStandardFormatter
 
@@ -33,7 +32,9 @@ class VariableIO:
 
     def __init__(self, data_source: Union[str, IO], formatter: IVariableIOFormatter = None):
         self._data_source = data_source
-        self.formatter: IVariableIOFormatter = formatter if formatter else VariableXmlStandardFormatter()
+        self.formatter: IVariableIOFormatter = (
+            formatter if formatter else VariableXmlStandardFormatter()
+        )
 
     def read(self, only: List[str] = None, ignore: List[str] = None) -> VariableList:
         """

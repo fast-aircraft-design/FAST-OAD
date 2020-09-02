@@ -107,9 +107,11 @@ def test_ivc_from_to_variables():
     vars["c"] = {"value": -3.2, "units": "kg/s", "desc": "some test"}
 
     ivc = vars.to_ivc()
-    problem = om.Problem(ivc)
+    problem = om.Problem()
+    problem.model.add_subsystem("ivc", ivc, promotes=["*"])
     problem.setup()
     assert problem["a"] == 5
+    assert problem["b"] == 2.5
     assert problem.get_val("b", units="cm") == 250
     assert problem.get_val("c", units="kg/ms") == -0.0032
 
@@ -204,7 +206,8 @@ def test_get_variables_from_problem():
             assert var.is_input == expected_var.is_input
 
     # Check with an ExplicitComponent ------------------------------------------
-    problem = om.Problem(Disc1())
+    problem = om.Problem()
+    problem.model.add_subsystem("disc1", Disc1(), promotes=["*"])
     expected_vars = [
         Variable(name="x", value=np.array([np.nan]), units=None, is_input=True),
         Variable(name="y2", value=np.array([1.0]), units=None, is_input=True),
@@ -361,13 +364,16 @@ def test_variables_from_unconnected_inputs():
     ):
         problem.setup()
         vars = VariableList.from_unconnected_inputs(problem, with_optional_inputs=False)
-        assert vars == expected_mandatory_vars
+        assert set(vars) == set(expected_mandatory_vars)
 
         vars = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
-        assert vars == expected_mandatory_vars + expected_optional_vars
+        assert set(vars) == set(expected_mandatory_vars + expected_optional_vars)
 
     # Check with an ExplicitComponent ------------------------------------------
-    problem = om.Problem(Disc1())
+    group = om.Group()
+    group.add_subsystem("disc1", Disc1(), promotes=["*"])
+    problem = om.Problem(group)
+
     expected_mandatory_vars = [
         Variable(name="x", value=np.array([np.nan]), units=None, is_input=True)
     ]

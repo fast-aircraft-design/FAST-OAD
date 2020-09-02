@@ -325,7 +325,7 @@ def write_xdsm(
     api_key=None,
 ):
     """
-    
+
     :param configuration_file_path:
     :param xdsm_file_path:
     :param overwrite:

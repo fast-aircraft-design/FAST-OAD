@@ -23,7 +23,7 @@ class PowerSystemsWeight(ExplicitComponent):
     Weight estimation for power systems (generation and distribution)
 
     This includes:
-    
+
     - Auxiliary Power Unit (APU)
     - electric systems
     - hydraulic systems
