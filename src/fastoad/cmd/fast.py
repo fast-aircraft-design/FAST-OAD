@@ -23,6 +23,7 @@ from distutils.util import strtobool
 import fastoad
 from fastoad.cmd import api
 from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.notebooks import tutorial
 from fastoad.utils.resource_management.copy import copy_resource_folder
 
 NOTEBOOK_FOLDER_NAME = "FAST_OAD_notebooks"
@@ -155,7 +156,9 @@ class Main:
         if pth.exists(target_path):
             shutil.rmtree(target_path)
         os.makedirs(target_path)
-        copy_resource_folder("fastoad.notebooks.tutorial", target_path)
+
+        copy_resource_folder(tutorial, target_path)
+        # Note: copy_resource_folder(tutorial, target_path) would fail because of IPython imports
 
         # Give info for running Jupyter
         print("")
