@@ -33,7 +33,21 @@ _LOGGER = logging.getLogger(__name__)
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
 # Metadata that will be ignore when checking variable equality and when adding variable
 # to an OpenMDAO component
-METADATA_TO_IGNORE = ["is_input", "tags", "size", "src_indices", "flat_src_indices", "distributed"]
+METADATA_TO_IGNORE = [
+    "is_input",
+    "tags",
+    "size",
+    "src_indices",
+    "flat_src_indices",
+    "distributed",
+    "res_units",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
+    "lower",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
+    "upper",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
+    "ref",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
+    "ref0",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
+    "res_ref",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
+    "ref",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
+]
 
 
 class Variable(Hashable):
