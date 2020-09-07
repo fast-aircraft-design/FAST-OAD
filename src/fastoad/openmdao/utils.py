@@ -92,11 +92,20 @@ def get_problem_after_setup(problem: om.Problem) -> om.Problem:
     having the problem being actually setup.
 
     :param problem:
-    :return: the problem itself it setup() has already been run, or a copy of the provided problem after setup()
-             has been run
+    :return: the problem itself it setup() has already been run, or a copy of the provided problem
+             after setup() has been run
     """
 
-    if problem._setup_status == 0:
+    if version.parse(openmdao.__version__) < version.parse("3.3"):
+        problem_is_setup = problem._setup_status != 0
+    else:
+        from openmdao.core.constants import _SetupStatus
+
+        problem_is_setup = (
+            problem._metadata and problem._metadata["setup_status"] >= _SetupStatus.POST_SETUP
+        )
+
+    if not problem_is_setup:
         # If setup() has not been done, we create a copy of the problem so we can work
         # on the model without doing setup() out of user notice
         tmp_problem = deepcopy(problem)

@@ -38,6 +38,7 @@ METADATA_TO_IGNORE = [
     "tags",
     "size",
     "src_indices",
+    "src_slice",
     "flat_src_indices",
     "distributed",
     "res_units",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
@@ -47,6 +48,8 @@ METADATA_TO_IGNORE = [
     "ref0",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
     "res_ref",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
     "ref",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
+    "global_shape",
+    "global_size",
 ]
 
 
