@@ -20,6 +20,7 @@ import sys
 import textwrap as tw
 from shutil import get_terminal_size
 from typing import IO, Union
+import time
 
 import numpy as np
 import openmdao.api as om
@@ -410,17 +411,20 @@ def _run_problem(
         )
 
     problem.setup()
+    start_time = time.clock()
     if mode == "run_model":
         problem.run_model()
         problem.optim_failed = False  # Actually, we don't know
     else:
         problem.optim_failed = problem.run_driver()
+    end_time = time.clock()
+    computation_time = round(end_time - start_time, 2)
 
     problem.write_outputs()
     if problem.optim_failed:
-        _LOGGER.error("Optimization failed")
+        _LOGGER.error("Optimization failed after " + str(computation_time) + " seconds")
     else:
-        _LOGGER.info("Computation finished")
+        _LOGGER.info("Computation finished after " + str(computation_time) + " seconds")
 
     _LOGGER.info("Problem outputs written in %s", outputs_path)
 
