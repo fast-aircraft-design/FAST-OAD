@@ -355,7 +355,7 @@ class VariableList(list):
             var_rel_names = ivc._var_rel_names
 
         for name in var_rel_names["output"]:
-            metadata = var_rel2meta[name]
+            metadata = deepcopy(var_rel2meta[name])
             value = metadata.pop("value")
             if np.shape(value) == (1,):
                 value = float(value[0])
@@ -480,7 +480,7 @@ class VariableList(list):
             if not promoted_only or "." not in prom_name:
                 # Pick the first
                 abs_name = abs_names[0]
-                metadata = model._var_abs2meta[abs_name]
+                metadata = deepcopy(model._var_abs2meta[abs_name])
 
                 # Setting type (IN or OUT)
                 if prom_name in global_inputs:
@@ -542,7 +542,7 @@ class VariableList(list):
                 prom_name = model._var_abs2prom["input"][abs_name]
                 if prom_name not in processed_prom_names:
                     processed_prom_names.append(prom_name)
-                    metadata = model._var_abs2meta[abs_name]
+                    metadata = deepcopy(model._var_abs2meta[abs_name])
                     metadata.update({"is_input": True})
                     variables[prom_name] = metadata
 
