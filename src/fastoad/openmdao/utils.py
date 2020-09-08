@@ -92,7 +92,7 @@ def get_problem_after_setup(problem: om.Problem) -> om.Problem:
     having the problem being actually setup.
 
     :param problem:
-    :return: the problem itself it setup() has already been run, or a copy of the provided problem
+    :return: the problem itself if setup() has already been run, or a copy of the provided problem
              after setup() has been run
     """
 
