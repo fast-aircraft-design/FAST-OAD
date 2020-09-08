@@ -20,7 +20,7 @@ import sys
 import textwrap as tw
 from shutil import get_terminal_size
 from typing import IO, Union
-import time
+from time import process_time
 
 import numpy as np
 import openmdao.api as om
@@ -411,13 +411,13 @@ def _run_problem(
         )
 
     problem.setup()
-    start_time = time.clock()
+    start_time = process_time()
     if mode == "run_model":
         problem.run_model()
         problem.optim_failed = False  # Actually, we don't know
     else:
         problem.optim_failed = problem.run_driver()
-    end_time = time.clock()
+    end_time = process_time()
     computation_time = round(end_time - start_time, 2)
 
     problem.write_outputs()
