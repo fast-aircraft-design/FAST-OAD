@@ -7,7 +7,8 @@ Version 0.5.2-beta
 
 - Added compatibility with OpenMDAO 3.3.
 - Added computation time in log info.
-- Fixed bug in copy_ressource_folder() and XFOIL input file.
+- Fixed bug in XFOIL input file. #204
+- Fixed bug in copy_resource_folder(). #205
 
 Version 0.5.1-beta
 ==================
