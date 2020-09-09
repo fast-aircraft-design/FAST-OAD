@@ -16,12 +16,14 @@ Helper module for copying resources
 
 import os.path as pth
 import shutil
+from types import ModuleType
 from typing import List
+
+from importlib_resources import Package, contents, is_resource
+from importlib_resources import path
 
 # TODO: When Python 3.6 is abandoned, use importlib.resources instead
 from fastoad.utils.files import make_parent_dir
-from importlib_resources import Package, contents, is_resource
-from importlib_resources import path
 
 
 def copy_resource(package: Package, resource: str, target_path):
@@ -46,13 +48,16 @@ def copy_resource(package: Package, resource: str, target_path):
 
 def copy_resource_folder(package: Package, destination_path: str, exclude: List[str] = None):
     """
-    Copies the full named package in destination folder, except for
-    names in exclusion_list
+    Copies the full content of provided package in destination folder.
 
-    **Important**: As the resources in the folder are discovered by browsing
-    through the folder, they are not explicitly listed in the Python code.
-    Therefore, to have the install process run smoothly, these resources need
-    to be listed in the MANIFEST.in file.
+    Names of files that should not be copied have to be listed in `exclude`.
+
+    .. Warning ::
+
+        As the resources in the folder are discovered by browsing
+        through the folder, they are not explicitly listed in the Python code.
+        Therefore, to have the install process run smoothly, these resources need
+        to be listed in the MANIFEST.in file.
 
     :param package: name of resource package to copy
     :param destination_path: file system path of destination
@@ -69,6 +74,13 @@ def copy_resource_folder(package: Package, destination_path: str, exclude: List[
             destination_file_path = pth.join(destination_path, resource_name)
             copy_resource(package, resource_name, destination_file_path)
         else:
-            new_package_name = ".".join([package, resource_name])
+            # In case of subfolders that are only declared in MANIFEST.in,
+            # getattr(package, "resource_name") will fail (is there another way?).
+            # So we fall back to using package name as as string.
+            if isinstance(package, ModuleType):
+                package_name = package.__name__
+            else:  # str
+                package_name = package
+            new_package_name = ".".join([package_name, resource_name])
             new_destination_path = pth.join(destination_path, resource_name)
-            copy_resource_folder(new_package_name, new_destination_path)
+            copy_resource_folder(new_package_name, new_destination_path, exclude=exclude)
