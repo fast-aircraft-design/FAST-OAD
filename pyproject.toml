@@ -45,7 +45,7 @@
 # doing again the commit including changes in docs/requirements.txt will succeed.
     python = "^3.6.1"
     numpy = "*"
-    scipy = "*"
+    scipy = "^1.2"
     pandas = "^1"
     openmdao="^3"
     lxml = "*"
