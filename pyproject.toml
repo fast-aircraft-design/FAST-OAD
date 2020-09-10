@@ -1,40 +1,40 @@
 [tool.black]
-    line-length = 100
+line-length = 100
 
 [tool.poetry]
-    name = "FAST-OAD"
-    version = "0.0.0"
-    description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
-    readme = "README.md"
-    authors = [
-        "Christophe DAVID <christophe.david@onera.fr>",
-        "Scott DELBECQ <Scott.DELBECQ@isae-supaero.fr>"
-    ]
-    packages = [
-        { include = "fastoad", from = "src" },
-    ]
-    homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
-    keywords = [
-        "aircraft",
-        "design",
-        "multi-disciplinary"
-    ]
-    license = "GPL-3.0-only"
-    classifiers = [
-        "Development Status :: 4 - Beta",
-        "Environment :: Console",
-        "Intended Audience :: Science/Research",
-        "Intended Audience :: Education",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-        "Natural Language :: English",
-        "Operating System :: Microsoft :: Windows",
-        "Operating System :: POSIX :: Linux",
-        "Operating System :: MacOS",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Topic :: Scientific/Engineering :: Physics"
-    ]
+name = "FAST-OAD"
+version = "0.0.0"
+description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
+readme = "README.md"
+authors = [
+    "Christophe DAVID <christophe.david@onera.fr>",
+    "Scott DELBECQ <Scott.DELBECQ@isae-supaero.fr>"
+]
+packages = [
+    { include = "fastoad", from = "src" },
+]
+homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
+keywords = [
+    "aircraft",
+    "design",
+    "multi-disciplinary"
+]
+license = "GPL-3.0-only"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Scientific/Engineering :: Physics"
+]
 
 [tool.poetry.dependencies]
 # IMPORTANT: when modifying this list, docs/requirements.txt must be updated for
@@ -43,39 +43,41 @@
 # of poetry.lock file will modify docs/requirements.txt and make
 # the commit fail because "files were modified by this hook". In that case,
 # doing again the commit including changes in docs/requirements.txt will succeed.
-    python = "^3.6.1"
-    numpy = "*"
-    scipy = "^1.2"
-    pandas = "^1"
-    openmdao="^3.4"
-    lxml = "*"
-    ipopo = "^1"
-    jupyterlab = "*"
-    matplotlib = "*"
-    plotly = "*"
-    ipywidgets = "*"
-    importlib_resources = "*"
-    ipysheet = "*"
-    tomlkit = "*"
-    wop = "^1.12.0"
+python = "^3.6.1"
+numpy = "*"
+scipy = "^1.2"
+pandas = "^1"
+openmdao = "^3.4"
+lxml = "*"
+ipopo = "^1"
+jupyterlab = "*"
+matplotlib = "*"
+plotly = "*"
+ipywidgets = "*"
+importlib_resources = "*"
+ipysheet = "*"
+tomlkit = "*"
+wop = "^1.12.0"
+strictyaml = "1.1.0"
+ensure = "^1.0.0"
 
 
 [tool.poetry.dev-dependencies]
-    wheel = "*"
-    pytest = "^5.2"
-    pytest-cov = "*"
-    pre-commit = "*"
-    black = { version = "19.10b0", allow-prereleases = true } # if version is changed, please change it also in .pre-commit-config.yaml file.
-    pylint = "*"
-    nbval = "*"
-    sphinx = "*"
-    sphinx-rtd-theme = "*"
-    sphinxcontrib-bibtex = "*"
-    setuptools_scm = "*"
+wheel = "*"
+pytest = "^5.2"
+pytest-cov = "*"
+pre-commit = "*"
+black = { version = "19.10b0", allow-prereleases = true } # if version is changed, please change it also in .pre-commit-config.yaml file.
+pylint = "*"
+nbval = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
+sphinxcontrib-bibtex = "*"
+setuptools_scm = "*"
 
 [tool.poetry.scripts]
-    fastoad = "fastoad.cmd.fast:main"
+fastoad = "fastoad.cmd.fast:main"
 
 [build-system]
-    requires = ["poetry>=0.12"]
-    build-backend = "poetry.masonry.api"
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
