@@ -187,7 +187,9 @@ class SizingFlight(om.ExplicitComponent):
         )
 
         end_of_takeoff = FlightPoint(
-            mass=inputs["data:weight:aircraft:MTOW"] - inputs["data:mission:sizing:takeoff:fuel"],
+            mass=inputs["data:weight:aircraft:MTOW"]
+            - inputs["data:mission:sizing:takeoff:fuel"]
+            - inputs["data:mission:sizing:taxi_out:fuel"],
             true_airspeed=inputs["data:mission:sizing:takeoff:V2"],
             altitude=inputs["data:mission:sizing:takeoff:altitude"] + 35 * foot,
             ground_distance=0.0,

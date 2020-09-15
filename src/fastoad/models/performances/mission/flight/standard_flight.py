@@ -204,7 +204,6 @@ class StandardFlight(AbstractSimpleFlight):
         kwargs = {
             "propulsion": propulsion,
             "reference_area": reference_area,
-            "time_step": time_step,
         }
 
         initial_climb = InitialClimbPhase(
@@ -212,6 +211,7 @@ class StandardFlight(AbstractSimpleFlight):
             polar=low_speed_climb_polar,
             thrust_rate=1.0,
             name=FlightPhase.INITIAL_CLIMB.value,
+            time_step=0.2,
         )
         climb = ClimbPhase(
             **kwargs,
@@ -220,6 +220,7 @@ class StandardFlight(AbstractSimpleFlight):
             target_altitude=self.climb_target_altitude,
             maximum_mach=self.cruise_mach,
             name=FlightPhase.CLIMB.value,
+            time_step=5.0,
         )
         cruise = CruiseSegment(
             **kwargs,
@@ -234,6 +235,7 @@ class StandardFlight(AbstractSimpleFlight):
             thrust_rate=thrust_rates[FlightPhase.DESCENT],
             target_altitude=self.descent_target_altitude,
             name=FlightPhase.DESCENT.value,
+            time_step=5.0,
         )
         super().__init__(
             cruise_distance, [initial_climb, climb], cruise, [descent],

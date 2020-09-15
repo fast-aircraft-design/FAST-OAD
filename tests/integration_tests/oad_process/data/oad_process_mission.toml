@@ -10,12 +10,12 @@ output_file = "./oad_process_mission_outputs.xml"
 [model]
     nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
     linear_solver = "om.DirectSolver()"
-    [model.geometry]
-        id = "fastoad.geometry.legacy"
-    [model.weight]
-        id = "fastoad.weight.legacy"
-    [model.mtow]
-        id = "fastoad.loop.mtow"
+#    [model.geometry]
+#        id = "fastoad.geometry.legacy"
+#    [model.weight]
+#        id = "fastoad.weight.legacy"
+#    [model.mtow]
+#        id = "fastoad.loop.mtow"
     [model.aerodynamics_highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
     [model.aerodynamics_lowspeed]
