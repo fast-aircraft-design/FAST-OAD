@@ -157,3 +157,11 @@ def test_optimization_viewer(cleanup):
 
     # After a run
     api.optimization_viewer(CONFIGURATION_FILE_PATH)
+
+
+def test_variable_viewer(cleanup):
+
+    file_path = pth.join(DATA_FOLDER_PATH, "short_inputs.xml")
+
+    # Using default file formatter
+    api.variable_viewer(file_path)
