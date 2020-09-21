@@ -28,6 +28,7 @@ import pandas as pd
 import requests
 from IPython import InteractiveShell
 from IPython.display import display, HTML
+from fastoad.io import IVariableIOFormatter
 from whatsopt.show_utils import generate_xdsm_html
 from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
 
@@ -39,7 +40,7 @@ from fastoad.module_management import BundleLoader
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
-from fastoad.utils.postprocessing import OptimizationViewer
+from fastoad.utils.postprocessing import OptimizationViewer, VariableViewer
 from fastoad.utils.resource_management.copy import copy_resource
 from . import resources
 
@@ -466,5 +467,19 @@ def optimization_viewer(configuration_file_path: str):
     problem_configuration = FASTOADProblemConfigurator(configuration_file_path)
     viewer = OptimizationViewer()
     viewer.load(problem_configuration)
+
+    return viewer.display()
+
+
+def variable_viewer(file_path: str, file_formatter: IVariableIOFormatter = None):
+    """
+    Displays a widget that enables to visualize variables information and edit their values.
+
+    :param file_path: the path of file to interact with
+    :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
+    :return: display of the VariableViewer
+    """
+    viewer = VariableViewer()
+    viewer.load(file_path, file_formatter)
 
     return viewer.display()

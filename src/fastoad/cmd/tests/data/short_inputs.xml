@@ -1,0 +1,82 @@
+<FASTOAD_model>
+  <data>
+    <TLAR>
+      <NPAX is_input="True">185.0<!--top-level requirement: number of passengers, assuming a classic eco/business class repartition--></NPAX>
+      <approach_speed units="kn" is_input="True">132.0<!--top-level requirement: approach speed--></approach_speed>
+      <cruise_mach is_input="True">0.78<!--top-level requirement: cruise Mach number--></cruise_mach>
+      <range units="NM" is_input="True">3200.0<!--top-level requirement: design range--></range>
+    </TLAR>
+    <geometry>
+      <has_T_tail is_input="True">0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+      <cabin>
+        <aisle_width units="m" is_input="True">0.48<!--width of aisles--></aisle_width>
+        <exit_width units="m" is_input="True">0.51<!--width of exits--></exit_width>
+        <containers>
+          <count_by_row is_input="True">1.0<!--number of cargo containers along width--></count_by_row>
+        </containers>
+        <crew_count>
+          <technical is_input="True">2.0<!--number of technical crew members--></technical>
+        </crew_count>
+        <seats>
+          <economical>
+            <count_by_row is_input="True">6.0<!--number of economical class seats along width--></count_by_row>
+            <length units="m" is_input="True">0.86<!--length of economical class seats--></length>
+            <width units="m" is_input="True">0.46<!--width of economical class seats--></width>
+          </economical>
+        </seats>
+      </cabin>
+      <flap>
+        <chord_ratio is_input="True">0.197<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+        <span_ratio is_input="True">0.8<!--ratio (width of flaps)/(total span)--></span_ratio>
+      </flap>
+      <horizontal_tail>
+        <aspect_ratio is_input="True">4.28778048454<!--aspect ratio of horizontal tail--></aspect_ratio>
+        <sweep_25 units="deg" is_input="True">28.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
+        <taper_ratio is_input="True">0.3<!--taper ratio of horizontal tail--></taper_ratio>
+        <thickness_ratio is_input="True">0.1<!--thickness ratio of horizontal tail--></thickness_ratio>
+      </horizontal_tail>
+      <propulsion>
+        <layout is_input="True">1.0<!--position of engines (1=under the wing / 2=rear fuselage)--></layout>
+        <engine>
+          <count is_input="True">2.0<!--number of engines--></count>
+          <y_ratio is_input="True">0.34<!--engine position with respect to total span--></y_ratio>
+        </engine>
+      </propulsion>
+      <slat>
+        <chord_ratio is_input="True">0.177<!--mean value of slat chord)/(section chord)--></chord_ratio>
+        <span_ratio is_input="True">0.9<!--ratio (width of slats)/(total span)--></span_ratio>
+      </slat>
+      <vertical_tail>
+        <aspect_ratio is_input="True">1.74462618632<!--aspect ratio of vertical tail--></aspect_ratio>
+        <sweep_25 units="deg" is_input="True">35.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
+        <taper_ratio is_input="True">0.3<!--taper ratio of vertical tail--></taper_ratio>
+        <thickness_ratio is_input="True">0.1<!--thickness ratio of vertical tail--></thickness_ratio>
+      </vertical_tail>
+      <wing>
+        <aspect_ratio is_input="True">9.48<!--wing aspect ratio--></aspect_ratio>
+        <sweep_25 units="deg" is_input="True">25.0<!--sweep angle at 25% chord of wing--></sweep_25>
+        <taper_ratio is_input="True">0.38<!--taper ratio of wing--></taper_ratio>
+        <kink>
+          <span_ratio is_input="True">0.4<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
+        </kink>
+        <MAC>
+          <at25percent>
+            <x units="m" is_input="True">16.5<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
+          </at25percent>
+        </MAC>
+        <spar_ratio>
+          <front>
+            <kink is_input="True">0.15<!--ratio (front spar position)/(chord length) at wing kink--></kink>
+            <root is_input="True">0.11<!--ratio (front spar position)/(chord length) at wing root--></root>
+            <tip is_input="True">0.27<!--ratio (front spar position)/(chord length) at wing tip--></tip>
+          </front>
+          <rear>
+            <kink is_input="True">0.66<!--ratio (rear spar position)/(chord length) at wing kink--></kink>
+            <root is_input="True">0.57<!--ratio (rear spar position)/(chord length) at wing root--></root>
+            <tip is_input="True">0.56<!--ratio (rear spar position)/(chord length) at wing tip--></tip>
+          </rear>
+        </spar_ratio>
+      </wing>
+    </geometry>
+  </data>
+</FASTOAD_model>
