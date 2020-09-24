@@ -1,0 +1,130 @@
+phase_definitions:
+  initial_climb:
+    engine_setting: takeoff
+    polar: data:aerodynamics:aircraft:takeoff
+    thrust_rate: 1.0
+    time_step: 0.2
+    steps:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 400.
+            unit: ft
+          equivalent_airspeed:
+            value: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 250
+            unit: kn
+      - segment: altitude_change
+        #        polar: data:aerodynamics:aircraft:low_speed
+        target:
+          altitude:
+            value: 1500.
+            unit: ft
+          equivalent_airspeed:
+            value: constant
+  climb:
+    engine_setting: climb
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: data:mission:sizing:climb:thrust_rate
+    time_step: 5.0
+    steps:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed:
+            value: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 300.
+            unit: kn
+      - segment: altitude_change
+        target:
+          equivalent_airspeed:
+            value: constant
+          altitude:
+            value: -20000.
+        maximum_mach: data:TLAR:cruise_mach
+  descent:
+    engine_setting: idle
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: data:mission:sizing:descent:thrust_rate
+    time_step: 5.0
+    steps:
+      - segment: altitude_change
+        target:
+          equivalent_airspeed:
+            value: 300
+            unit: kn
+          mach:
+            value: constant
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed:
+            value: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 250.
+            unit: kn
+      - segment: altitude_change
+        target:
+          equivalent_airspeed:
+            value: constant
+          altitude:
+            value: 1500.
+            unit: ft
+  holding:
+    steps:
+      - segment: holding
+        polar: data:aerodynamics:aircraft:cruise
+        target:
+          time: data:mission:sizing:holding:duration
+  taxi_in:
+    steps:
+      - segment: taxi
+        thrust_rate: data:mission:sizing:taxi_in:thrust_rate
+        target:
+          time: data:mission:sizing:taxi_in:duration
+
+route_definitions:
+  main_route:
+    range: data:TLAR:range
+    steps:
+      - phase: initial_climb
+      - phase: climb
+      - segment: cruise
+        engine_setting: cruise
+        polar: data:aerodynamics:aircraft:cruise
+      - phase: descent
+
+  diversion:
+    range: data:mission:sizing:diversion:distance
+    steps:
+      - phase: climb
+        target:
+          altitude:
+            value: 22000.
+            unit: ft
+          equivalent_airspeed:
+            value: constant
+      - segment: cruise
+        engine_setting: cruise
+        polar: data:aerodynamics:aircraft:cruise
+      - phase: descent
+
+mission:
+  name: sizing
+  steps:
+    - route: main_route
+    - route: diversion
+    - phase: holding
+    - phase: taxi_in
