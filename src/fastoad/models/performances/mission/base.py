@@ -12,16 +12,21 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import List, Union
 
 import pandas as pd
+
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.propulsion import IPropulsion
 
 
 class IFlightPart(ABC):
+    def __init__(self):
+        self.name = None
+        self._flight_sequence = []
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
         Computes a flight sequence from provided start point.
@@ -33,10 +38,14 @@ class IFlightPart(ABC):
         """
 
 
-class AbstractFlightSequence(IFlightPart):
+class FlightSequence(IFlightPart):
     """
     Defines and computes a flight sequence.
     """
+
+    def __init__(self):
+        super().__init__()
+        self._flight_sequence = []
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         segments = []
@@ -58,16 +67,12 @@ class AbstractFlightSequence(IFlightPart):
             return pd.concat(segments).reset_index(drop=True)
 
     @property
-    @abstractmethod
-    def flight_sequence(self) -> List[Union[IFlightPart, str]]:
-        """
-        Defines the sequence as used in :meth:`compute_from`.
-
-        :return: the list of IFlightPart instances for the mission.
-        """
+    def flight_sequence(self) -> List[Union[IFlightPart]]:
+        """List of IFlightPart instances that should be run sequentially."""
+        return self._flight_sequence
 
 
-class AbstractManualThrustFlightPhase(AbstractFlightSequence, ABC):
+class AbstractManualThrustFlightPhase(FlightSequence, ABC):
     """
     Base class for climb and descent phases.
     """
@@ -80,7 +85,7 @@ class AbstractManualThrustFlightPhase(AbstractFlightSequence, ABC):
         polar: Polar,
         thrust_rate: float = 1.0,
         name="",
-        time_step=None,
+        time_step=None
     ):
         """
         Initialization is done only with keyword arguments.
@@ -92,6 +97,7 @@ class AbstractManualThrustFlightPhase(AbstractFlightSequence, ABC):
         :param time_step: if provided, this time step will be applied for all segments.
         """
 
+        super().__init__()
         self.segment_kwargs = {
             "propulsion": propulsion,
             "reference_area": reference_area,

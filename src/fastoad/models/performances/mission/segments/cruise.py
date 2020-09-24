@@ -15,8 +15,8 @@
 from typing import List
 
 import pandas as pd
-from fastoad.base.flight_point import FlightPoint
 
+from fastoad.base.flight_point import FlightPoint
 from .base import RegulatedThrustSegment
 
 
@@ -55,7 +55,7 @@ class OptimalCruiseSegment(CruiseSegment):
         start.altitude = self._get_optimal_altitude(start.mass, start.mach)
         return super().compute_from(start)
 
-    def _compute_next_altitude(self, next_point, previous_point):
+    def _compute_next_altitude(self, next_point: FlightPoint, previous_point: FlightPoint):
         next_point.altitude = self._get_optimal_altitude(
             next_point.mass, previous_point.mach, altitude_guess=previous_point.altitude
         )

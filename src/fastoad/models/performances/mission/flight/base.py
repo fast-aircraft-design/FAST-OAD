@@ -15,14 +15,14 @@
 from typing import List, Union
 
 import pandas as pd
-from fastoad.base.flight_point import FlightPoint
 from scipy.optimize import root_scalar
 
-from ..base import AbstractFlightSequence, IFlightPart
+from fastoad.base.flight_point import FlightPoint
+from ..base import FlightSequence, IFlightPart
 from ..segments.cruise import CruiseSegment
 
 
-class AbstractSimpleFlight(AbstractFlightSequence):
+class SimpleFlight(FlightSequence):
     """
     Computes a simple flight.
 
@@ -35,9 +35,9 @@ class AbstractSimpleFlight(AbstractFlightSequence):
     def __init__(
         self,
         cruise_distance: float,
-        climb_phases: List[AbstractFlightSequence],
+        climb_phases: List[FlightSequence],
         cruise_phase: CruiseSegment,
-        descent_phases: List[AbstractFlightSequence],
+        descent_phases: List[FlightSequence],
     ):
         """
 
@@ -46,7 +46,7 @@ class AbstractSimpleFlight(AbstractFlightSequence):
         :param cruise_phase:
         :param descent_phases:
         """
-
+        super().__init__()
         self.climb_phases = climb_phases
         self.cruise_segment = cruise_phase
         self.cruise_segment.target = FlightPoint(ground_distance=cruise_distance, mach="constant")
@@ -71,7 +71,7 @@ class RangedFlight(IFlightPart):
     """
 
     def __init__(
-        self, flight_definition: AbstractSimpleFlight, flight_distance: float,
+        self, flight_definition: SimpleFlight, flight_distance: float,
     ):
         """
         Computes the flight and adjust the cruise distance to achieve the provided flight distance.
@@ -79,10 +79,12 @@ class RangedFlight(IFlightPart):
         :param flight_definition:
         :param flight_distance: in meters
         """
+        super().__init__()
         self.flight_distance = flight_distance
         self.flight = flight_definition
         self.flight_points = None
         self.distance_accuracy = 0.5e3
+        self.flight_sequence = flight_definition.flight_sequence
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         def compute_flight(cruise_distance):

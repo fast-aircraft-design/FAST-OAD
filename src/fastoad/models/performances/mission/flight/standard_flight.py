@@ -19,7 +19,7 @@ from scipy.constants import foot, knot
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase, EngineSetting
 from fastoad.models.propulsion import IPropulsion
-from .base import AbstractSimpleFlight
+from .base import SimpleFlight
 from ..base import IFlightPart, AbstractManualThrustFlightPhase
 from ..polar import Polar
 from ..segments.altitude_change import AltitudeChangeSegment
@@ -145,7 +145,7 @@ class DescentPhase(AbstractManualThrustFlightPhase):
         ]
 
 
-class StandardFlight(AbstractSimpleFlight):
+class StandardFlight(SimpleFlight):
     """
     Defines and computes a standard flight mission.
 
