@@ -48,23 +48,23 @@ class FlightSequence(IFlightPart):
         self._flight_sequence = []
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        segments = []
-        segment_start = start
-        for segment_calculator in self.flight_sequence:
-            flight_points = segment_calculator.compute_from(segment_start)
-            if len(segments) > 0:
+        parts = []
+        part_start = start
+        for part in self.flight_sequence:
+            flight_points = part.compute_from(part_start)
+            if len(parts) > 0:
                 # First point of the segment is omitted, as it is the
                 # last of previous segment.
                 if len(flight_points) > 1:
-                    segments.append(flight_points.iloc[1:])
+                    parts.append(flight_points.iloc[1:])
             else:
                 # But it is kept if the computed segment is the first one.
-                segments.append(flight_points)
+                parts.append(flight_points)
 
-            segment_start = FlightPoint(flight_points.iloc[-1])
+            part_start = FlightPoint(flight_points.iloc[-1])
 
-        if segments:
-            return pd.concat(segments).reset_index(drop=True)
+        if parts:
+            return pd.concat(parts).reset_index(drop=True)
 
     @property
     def flight_sequence(self) -> List[Union[IFlightPart]]:
