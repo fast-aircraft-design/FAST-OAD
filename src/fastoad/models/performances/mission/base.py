@@ -34,7 +34,8 @@ class IFlightPart(ABC):
         :param start: the initial flight point, defined for `altitude`, `mass` and speed
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
-        :return: a pandas DataFrame where columns names match :attr:`FlightPoint.labels`
+        :return: a pandas DataFrame where columns names match
+                 :meth:`fastoad.base.flight_point.FlightPoint.get_attribute_keys`
         """
 
 

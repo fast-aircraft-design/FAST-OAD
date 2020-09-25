@@ -1,5 +1,5 @@
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,49 +19,51 @@ from fastoad.exceptions import FastUnexpectedKeywordArgument
 
 
 class DynamicAttributeDict(dict):
+    """
+    A dictionary class where keys can also be used as attributes.
+
+    The keys that can be used as attributes are defined using decorators
+    :class:`AddKeyAttribute` or  :class:`SetKeyAttributes`.
+
+    They can also be used as keyword arguments when instantiating this class.
+
+    .. Note::
+
+        Using this class as a dict is useful when instantiating another
+        dict or a pandas DataFrame, or instantiating from them. Direct interaction
+        with DynamicAttributeDict instance should be done through attributes.
+
+    Example::
+
+        >>> @AddKeyAttributes({"foo": 0.0, "bar": None, "baz": 42.0})
+        ... class MyDict(DynamicAttributeDict):
+        ...     pass
+        ...
+
+        >>> d = MyDict(foo=5, bar="aa")
+        >>> d.foo
+        5
+        >>> d.bar
+        'aa'
+        >>> d.baz  # returns the default value
+        42.0
+        >>> d["foo"] = 10.0  # can still be used as a dict
+        >>> d.foo  # but change are propagated to/from the matching attribute
+        10.0
+        >>> d.foo = np.nan  # setting None or numpy.nan returns to default value
+        >>> d["foo"]
+        0.0
+        >>> d.foo # But the attribute will now return the default value
+        0.0
+        >>> d.bar = None  # If default value is None, setting None or numpy.nan deletes the key.
+        >>> # d["bar"]  #would trigger a key error
+        >>> d.bar # But the attribute will return None
+    """
+
     def __init__(self, *args, **kwargs):
         """
-        A dictionary class where keys can also be used as attributes.
-
-        The keys that can be used as attributes are defined using decorators
-        :class:`AddKeyAttribute` or  :class:`SetKeyAttributes`.
-
-        They can also be used as keyword arguments when instantiating this class.
-
-        .. Note::
-
-            Using this class as a dict is useful when instantiating another
-            dict or a pandas DataFrame, or instantiating from them. Direct interaction
-            with DynamicAttributeDict instance should be done through attributes.
-
-        Example::
-
-            >>> @AddKeyAttributes({"foo": 0.0, "bar": None, "baz": 42.0})
-            ... class MyDict(DynamicAttributeDict):
-            ...     pass
-            ...
-
-            >>> d = MyDict(foo=5, bar="aa")
-            >>> d.foo
-            5
-            >>> d.bar
-            'aa'
-            >>> d.baz  # returns the default value
-            42.0
-            >>> d["foo"] = 10.0  # can still be used as a dict
-            >>> d.foo  # but change are propagated to/from the matching attribute
-            10.0
-            >>> d.foo = np.nan  # setting None or numpy.nan returns to default value
-            >>> d["foo"]
-            0.0
-            >>> d.foo # But the attribute will now return the default value
-            0.0
-            >>> d.bar = None  # If default value is None, setting None or numpy.nan deletes the key.
-            >>> # d["bar"]  #would trigger a key error
-            >>> d.bar # But the attribute will return None
-
-        :param args: a dict-like object where all keys are contained in :attr:`attribute_keys`
-        :param kwargs: argument keywords must be names contained in :attr:`attribute_keys`
+        :param args: a dict-like object where all keys are contained in :meth:`get_attribute_keys`
+        :param kwargs: argument keywords must be names contained in :meth:`get_attribute_keys`
         """
 
         if hasattr(self, "get_attribute_keys"):
