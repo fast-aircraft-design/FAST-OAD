@@ -63,7 +63,13 @@ def get_unconnected_input_names(
     mandatory_unconnected = {
         abs_name
         for abs_name in unconnected
-        if np.all(np.isnan(model._var_abs2meta[abs_name]["value"]))
+        if np.all(
+            np.isnan(
+                model.get_io_metadata(metadata_keys=["value"], return_rel_names=False)[abs_name][
+                    "value"
+                ]
+            )
+        )
     }
     optional_unconnected = unconnected - mandatory_unconnected
 
@@ -78,7 +84,7 @@ def get_unconnected_input_names(
                 "Following inputs are not connected so their default value will be used:"
             )
             for abs_name in sorted(optional_unconnected):
-                value = model._var_abs2meta[abs_name]["value"]
+                value = model.get_io_metadata(metadata_keys=["value"])[abs_name]["value"]
                 logger.warning("    %s : %s", abs_name, value)
 
     return list(mandatory_unconnected), list(optional_unconnected)

@@ -50,6 +50,7 @@ METADATA_TO_IGNORE = [
     "ref",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
     "global_shape",
     "global_size",
+    "discrete",  # currently inconsistent in openMDAO 3.4
 ]
 
 
@@ -164,7 +165,12 @@ class Variable(Hashable):
 
     @property
     def is_input(self):
-        """ True if variable is a problem input, False if it is an output (None if information not found) """
+        """ I/O status of the variable.
+
+        - True if variable is a problem input
+        - False if it is an output
+        - None if information not found
+        """
         return self.metadata.get("is_input")
 
     @is_input.setter
@@ -480,7 +486,13 @@ class VariableList(list):
             if not promoted_only or "." not in prom_name:
                 # Pick the first
                 abs_name = abs_names[0]
-                metadata = deepcopy(model._var_abs2meta[abs_name])
+                metadata = {
+                    key: value
+                    for key, value in model.get_io_metadata(
+                        metadata_keys=["value", "units", "upper", "lower"], return_rel_names=False,
+                    )[abs_name].items()
+                    if value != "Unavailable"
+                }
 
                 # Setting type (IN or OUT)
                 if prom_name in global_inputs:
@@ -529,11 +541,12 @@ class VariableList(list):
 
         # processed_prom_names will store promoted names that have been already processed, so that
         # it won't be stored twice.
-        # By processing mandatory variable first, a promoted variable that would be mandatory somewhere
-        # and optional elsewhere will be retained as mandatory (and associated value will be NaN),
-        # which is fine.
-        # For promoted names that link to several optional variables and no mandatory ones, associated
-        # value will be the first encountered one, and this is as good a choice as any other.
+        # By processing mandatory variable first, a promoted variable that would be mandatory
+        # somewhere and optional elsewhere will be retained as mandatory (and associated value
+        # will be NaN), which is fine.
+        # For promoted names that link to several optional variables and no mandatory ones,
+        # associated value will be the first encountered one, and this is as good a choice as any
+        # other.
         processed_prom_names = []
 
         def _add_outputs(unconnected_names):
@@ -542,7 +555,11 @@ class VariableList(list):
                 prom_name = model._var_abs2prom["input"][abs_name]
                 if prom_name not in processed_prom_names:
                     processed_prom_names.append(prom_name)
-                    metadata = deepcopy(model._var_abs2meta[abs_name])
+                    metadata = deepcopy(
+                        model.get_io_metadata(
+                            metadata_keys=["value", "units"], return_rel_names=False
+                        )[abs_name]
+                    )
                     metadata.update({"is_input": True})
                     variables[prom_name] = metadata
 

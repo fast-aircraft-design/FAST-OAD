@@ -369,35 +369,35 @@ def test_variables_from_unconnected_inputs():
         vars = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
         assert set(vars) == set(expected_mandatory_vars + expected_optional_vars)
 
-    # Check with an ExplicitComponent ------------------------------------------
+    print("Check with an ExplicitComponent")  # ----------------------------------------------------
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     problem = om.Problem(group)
 
     expected_mandatory_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True)
+        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True, prom_name="x")
     ]
     expected_optional_vars = [
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="y2", value=np.array([1.0]), units=None, is_input=True),
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True, prom_name="z"),
+        Variable(name="y2", value=np.array([1.0]), units=None, is_input=True, prom_name="y2"),
     ]
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
-    # Check with a Group -------------------------------------------------------
+    print("Check with a Group")  # -----------------------------------------------------------------
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
     problem = om.Problem(group)
 
     expected_mandatory_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True)
+        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True, prom_name="x")
     ]
     expected_optional_vars = [
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True)
+        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True, prom_name="z")
     ]
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
 
-    # Check with the whole Sellar problem --------------------------------------
+    print("Check with the whole Sellar problem")  # ------------------------------------------------
     # 'z' variable should now be mandatory, because it is so in Functions
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
@@ -406,8 +406,10 @@ def test_variables_from_unconnected_inputs():
     problem = om.Problem(group)
 
     expected_mandatory_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True),
-        Variable(name="z", value=np.array([np.nan, np.nan]), units="m**2", is_input=True),
+        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True, prom_name="x"),
+        Variable(
+            name="z", value=np.array([np.nan, np.nan]), units="m**2", is_input=True, prom_name="z"
+        ),
     ]
     expected_optional_vars = []
     _test_and_check(problem, expected_mandatory_vars, expected_optional_vars)
