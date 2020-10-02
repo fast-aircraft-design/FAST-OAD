@@ -65,7 +65,7 @@ class SimpleFlight(FlightSequence):
         return self.climb_phases + [self.cruise_segment] + self.descent_phases
 
 
-class RangedFlight(IFlightPart):
+class RangedFlight(FlightSequence):
     """
     Computes a flight so that it covers the specified distance.
     """
@@ -84,7 +84,6 @@ class RangedFlight(IFlightPart):
         self.flight = flight_definition
         self.flight_points = None
         self.distance_accuracy = 0.5e3
-        self.flight_sequence = flight_definition.flight_sequence
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         def compute_flight(cruise_distance):
@@ -104,3 +103,7 @@ class RangedFlight(IFlightPart):
             method="secant",
         )
         return self.flight_points
+
+    @property
+    def flight_sequence(self) -> List[Union[IFlightPart, str]]:
+        return self.flight.flight_sequence
