@@ -19,9 +19,7 @@ from logging import Logger
 from typing import Tuple, List
 
 import numpy as np
-import openmdao
 import openmdao.api as om
-from packaging import version
 
 
 # pylint: disable=protected-access #  needed for OpenMDAO introspection
@@ -96,14 +94,11 @@ def get_problem_after_setup(problem: om.Problem) -> om.Problem:
              after setup() has been run
     """
 
-    if version.parse(openmdao.__version__) < version.parse("3.3"):
-        problem_is_setup = problem._setup_status != 0
-    else:
-        from openmdao.core.constants import _SetupStatus
+    from openmdao.core.constants import _SetupStatus
 
-        problem_is_setup = (
-            problem._metadata and problem._metadata["setup_status"] >= _SetupStatus.POST_SETUP
-        )
+    problem_is_setup = (
+        problem._metadata and problem._metadata["setup_status"] >= _SetupStatus.POST_SETUP
+    )
 
     if not problem_is_setup:
         # If setup() has not been done, we create a copy of the problem so we can work

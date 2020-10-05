@@ -12,9 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import openmdao
 import openmdao.api as om
-from packaging import version
 
 from fastoad.openmdao.utils import get_problem_after_setup
 
@@ -23,17 +21,12 @@ def set_all_input_defaults(model: om.Group):
     """
     Sets needed defaults to avoid error messages about ambiguous variable definitions.
 
-    Does nothing if OpenMDAO version is below 3.2.
-
     :param model: the model where defaults will be added in place.
     """
-    # FIXME: This solution is a patch to get compatible with OpenMDAO 3.2 but it not really
+    # FIXME: This solution is a patch to get compatible with OpenMDAO 3.2+ but it not really
     #  satisfactory because it does not help in case of custom models using existing variables
     #  with different units.
     #  Maybe a future evolution of OpenMDAO will open the way to a better solution...
-
-    if version.parse(openmdao.__version__) < version.parse("3.2"):
-        return
 
     variables = {
         "data:geometry:wing:sweep_25": dict(val=np.nan, units="deg"),
