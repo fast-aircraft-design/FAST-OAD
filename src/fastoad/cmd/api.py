@@ -135,7 +135,7 @@ def list_variables(
     problem = conf.get_problem()
 
     # Extracting inputs and outputs
-    variables = VariableList.from_problem(problem, promoted_only=False)
+    variables = VariableList.from_problem(problem, get_promoted_names=False)
     variables.sort(key=lambda var: var.name)
     input_variables = VariableList([var for var in variables if var.is_input])
     output_variables = VariableList([var for var in variables if not var.is_input])

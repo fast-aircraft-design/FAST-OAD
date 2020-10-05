@@ -436,7 +436,7 @@ class VariableList(list):
 
     @classmethod
     def from_problem(
-        cls, problem: om.Problem, use_initial_values: bool = False, promoted_only=True,
+        cls, problem: om.Problem, use_initial_values: bool = False, get_promoted_names=True,
     ) -> "VariableList":
         """
         Creates a VariableList instance containing
@@ -449,7 +449,7 @@ class VariableList(list):
 
         :param problem: OpenMDAO Problem instance to inspect
         :param use_initial_values: if True, returned instance will contain values before computation
-        :param promoted_only: if True, non-promoted variables will be excluded
+        :param get_promoted_names: if True, only promoted variable names will be returned
         :return: VariableList instance
         """
         variables = VariableList()
@@ -461,12 +461,10 @@ class VariableList(list):
         # Determining global inputs
 
         # from unconnected inputs
-        mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
-        unconnected_abs_names = mandatory_unconnected + optional_unconnected
-
-        unconnected_inputs = []
-        for abs_name in unconnected_abs_names:
-            unconnected_inputs.append(model._var_abs2prom["input"][abs_name])
+        mandatory_unconnected, optional_unconnected = get_unconnected_input_names(
+            problem, promoted_names=True
+        )
+        unconnected_inputs = mandatory_unconnected + optional_unconnected
 
         # from ivc outputs
         ivc_inputs = []
@@ -478,21 +476,43 @@ class VariableList(list):
 
         global_inputs = unconnected_inputs + ivc_inputs
 
-        prom2abs = {}
-        prom2abs.update(model._var_allprocs_prom2abs_list["input"])
-        prom2abs.update(model._var_allprocs_prom2abs_list["output"])
+        # prom2abs = {}
+        # prom2abs.update(model._var_allprocs_prom2abs_list["input"])
+        # prom2abs.update(model._var_allprocs_prom2abs_list["output"])
 
-        for prom_name, abs_names in prom2abs.items():
-            if not promoted_only or "." not in prom_name:
-                # Pick the first
-                abs_name = abs_names[0]
-                metadata = {
-                    key: value
-                    for key, value in model.get_io_metadata(
-                        metadata_keys=["value", "units", "upper", "lower"], return_rel_names=False,
-                    )[abs_name].items()
-                    if value != "Unavailable"
-                }
+        for abs_name, metadata in model.get_io_metadata(
+            metadata_keys=["value", "units", "upper", "lower"], return_rel_names=False
+        ).items():
+            metadata = {key: value for key, value in metadata.items() if value != "Unavailable"}
+            prom_name = metadata["prom_name"]
+
+            if not (get_promoted_names and prom_name == abs_name):
+                if get_promoted_names and prom_name in variables.names():
+                    # In case we get promoted names, several variables can match the same
+                    # promoted name, with possibly different declaration for default values.
+                    # We retain the first non-NaN value with defined units. If no units is
+                    # ever defined, the first non-NaN value is kept.
+                    # A non-NaN value with no units will be retained against a NaN value with
+                    # defined units.
+
+                    if np.all(np.isnan(variables[prom_name].value)) and metadata["units"] is None:
+                        # Current variable can add no data.
+                        continue
+
+                    if (
+                        not np.all(np.isnan(variables[prom_name].value))
+                        and variables[prom_name].units is not None
+                    ):
+                        # We already have a non-NaN value with defined units for current promoted
+                        # name. No need for using the current variable.
+                        continue
+
+                    if not np.all(np.isnan(variables[prom_name].value)) and np.all(
+                        np.isnan(metadata["value"])
+                    ):
+                        # We already have a non-NaN value and current variable has a NaN value and
+                        # can only add information about units. We keep the non-NaN value
+                        continue
 
                 # Setting type (IN or OUT)
                 if prom_name in global_inputs:
