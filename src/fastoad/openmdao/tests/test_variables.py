@@ -115,6 +115,7 @@ def test_ivc_from_to_variables():
     assert problem.get_val("b", units="cm") == 250
     assert problem.get_val("c", units="kg/ms") == -0.0032
 
+    ivc = vars.to_ivc()
     new_vars = VariableList.from_ivc(ivc)
     assert vars.names() == new_vars.names()
     for var, new_var in zip(vars, new_vars):

@@ -51,6 +51,8 @@ METADATA_TO_IGNORE = [
     "global_shape",
     "global_size",
     "discrete",  # currently inconsistent in openMDAO 3.4
+    "prom_name",
+    "desc",
 ]
 
 
@@ -353,15 +355,13 @@ class VariableList(list):
         """
         variables = VariableList()
 
-        if ivc._static_mode:
-            var_rel2meta = ivc._static_var_rel2meta
-            var_rel_names = ivc._static_var_rel_names
-        else:
-            var_rel2meta = ivc._var_rel2meta
-            var_rel_names = ivc._var_rel_names
+        ivc = deepcopy(ivc)
+        om.Problem(ivc).setup()  # Need setup to have get_io_metadata working
 
-        for name in var_rel_names["output"]:
-            metadata = deepcopy(var_rel2meta[name])
+        for name, metadata in ivc.get_io_metadata(
+            metadata_keys=["value", "units", "upper", "lower"]
+        ).items():
+            metadata = metadata.copy()
             value = metadata.pop("value")
             if np.shape(value) == (1,):
                 value = float(value[0])
