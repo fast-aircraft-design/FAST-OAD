@@ -22,9 +22,8 @@ import numpy as np
 import openmdao.api as om
 
 
-# pylint: disable=protected-access #  needed for OpenMDAO introspection
 def get_unconnected_input_names(
-    problem: om.Problem, logger: Logger = None
+    problem: om.Problem, promoted_names=False, logger: Logger = None
 ) -> Tuple[List[str], List[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
@@ -37,41 +36,25 @@ def get_unconnected_input_names(
 
     :param problem: OpenMDAO Problem or System instance to inspect
     :param logger: optional logger instance
+    :param promoted_names: if True, promoted names will be returned instead of absolute ones
     :return: tuple(list of missing mandatory inputs, list of missing optional inputs)
     """
 
     # Setup() is needed
     model = get_problem_after_setup(problem).model
 
-    prom2abs: dict = model._var_allprocs_prom2abs_list["input"]
-    connections: dict = model._conn_global_abs_in2out
+    mandatory_unconnected = set()
+    optional_unconnected = set()
 
-    unconnected = set()
-
-    if version.parse(openmdao.__version__) >= version.parse("3.2"):
-        for abs_name, src in connections.items():
-            if src.startswith("_auto_ivc."):
-                unconnected.add(abs_name)
-    else:
-        for abs_names in prom2abs.values():
-            # At each iteration, get absolute names that match one promoted name, or one
-            # absolute name that has not been promoted.
-            unconnected |= {
-                a for a in abs_names if a not in connections or len(connections[a]) == 0
-            }
-
-    mandatory_unconnected = {
-        abs_name
-        for abs_name in unconnected
-        if np.all(
-            np.isnan(
-                model.get_io_metadata(metadata_keys=["value"], return_rel_names=False)[abs_name][
-                    "value"
-                ]
-            )
-        )
-    }
-    optional_unconnected = unconnected - mandatory_unconnected
+    for abs_name, metadata in model.get_io_metadata(
+        "input", metadata_keys=["value"], return_rel_names=False
+    ).items():
+        name = metadata["prom_name"] if promoted_names else abs_name
+        if model.get_source(abs_name).startswith("_auto_ivc."):
+            if np.all(np.isnan(metadata["value"])):
+                mandatory_unconnected.add(name)
+            else:
+                optional_unconnected.add(name)
 
     if logger:
         if mandatory_unconnected:
