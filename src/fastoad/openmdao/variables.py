@@ -414,7 +414,7 @@ class VariableList(list):
         return VariableList([_get_variable(row) for row in df[column_names].values])
 
     @classmethod
-    def from_system(cls, system: System,) -> "VariableList":
+    def from_system(cls, system: System) -> "VariableList":
         """
         Creates a VariableList instance containing inputs and outputs of a an OpenMDAO System.
         The inputs (is_input=True) correspond to the variables of IndepVarComp
@@ -429,7 +429,13 @@ class VariableList(list):
         :return: VariableList instance
         """
 
-        problem = om.Problem(deepcopy(system))
+        problem = om.Problem()
+        if isinstance(system, om.Group):
+            problem.model = deepcopy(system)
+        else:
+            # problem.model has to be a group
+            problem.model.add_subsystem("comp", deepcopy(system), promotes=["*"])
+
         problem.setup()
         return VariableList.from_problem(problem, use_initial_values=True)
 
