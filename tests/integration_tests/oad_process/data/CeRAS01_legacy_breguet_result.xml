@@ -2,7 +2,7 @@
 <?xml-stylesheet type="text/xsl" href="fastDataModel.xsl"?>
 <!--
   ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2020  ONERA/ISAE
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -306,27 +306,27 @@
                 <Wing_A1>
                     <A1>
                         <k>1.05</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A1>
                     <A11>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A11>
                     <A12>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A12>
                     <A13>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A13>
                     <A14>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A14>
                     <A15>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A15>
                     <K_voil>1.05</K_voil>
                     <K_mvo>1.39</K_mvo>
@@ -334,7 +334,7 @@
                 <fuselage_A2>
                     <A2>
                         <k>1.1</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A2>
                     <K_tr>1.05</K_tr>
                     <K_fus>1.0</K_fus>
@@ -342,153 +342,153 @@
                 <empennage_A3>
                     <A31>
                         <k>1.08</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A31>
                     <A32>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A32>
                 </empennage_A3>
                 <flight_controls_A4>
                     <K_fc>0.000135</K_fc>
                     <A4>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A4>
                 </flight_controls_A4>
                 <LG_A5>
                     <A5>
                         <k>0.85</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A5>
                 </LG_A5>
                 <propulsion_B1>
                     <B1>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </B1>
                 </propulsion_B1>
                 <pylon_A6>
                     <A6>
                         <k>0.85</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A6>
                 </pylon_A6>
                 <paint_A7>
                     <A7>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </A7>
                 </paint_A7>
                 <fuel_lines_B2>
                     <B2>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </B2>
                 </fuel_lines_B2>
                 <unconsumables_B3>
                     <B3>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </B3>
                 </unconsumables_B3>
                 <power_systems_C1>
                     <C11>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C11>
                     <C12>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C12>
                     <C13>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C13>
                     <K_elec>1.0</K_elec>
                 </power_systems_C1>
                 <LSS_C2>
                     <C21>
                         <k>2.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C21>
                     <C22>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C22>
                     <C23>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C23>
                     <C24>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C24>
                     <C25>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C25>
                     <C26>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C26>
                     <C27>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C27>
                 </LSS_C2>
                 <instrument_navigation_C3>
                     <C3>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C3>
                 </instrument_navigation_C3>
                 <transmissions_C4>
                     <C4>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C4>
                 </transmissions_C4>
                 <FOS_C5>
                     <C5>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C5>
                 </FOS_C5>
                 <flight_kit_C6>
                     <C6>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </C6>
                 </flight_kit_C6>
                 <cargo_cfg_D1>
                     <D1>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </D1>
                 </cargo_cfg_D1>
                 <passenger_seat_D2>
                     <D2>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </D2>
                 </passenger_seat_D2>
                 <food_water_D3>
                     <D3>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </D3>
                 </food_water_D3>
                 <security_kit_D4>
                     <D4>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </D4>
                 </security_kit_D4>
                 <toilet_D5>
                     <D5>
                         <k>1.0</k>
-                        <offset>0.0</offset>
+                        <offset unit="kg">0.0</offset>
                     </D5>
                 </toilet_D5>
             </k_factors>

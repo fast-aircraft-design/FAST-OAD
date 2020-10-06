@@ -15,5 +15,5 @@
 
 <aircraft>
   <x>2.0</x>
-  <z>[5.0, 2.0]</z>
+  <z units="m**2">[5.0, 2.0]</z>
 </aircraft>
