@@ -569,17 +569,17 @@ class VariableList(list):
         # other.
         processed_prom_names = []
 
+        io_metadata = model.get_io_metadata(
+            metadata_keys=["value", "units"], return_rel_names=False
+        )
+
         def _add_outputs(unconnected_names):
             """ Fills ivc with data associated to each provided var"""
             for abs_name in unconnected_names:
-                prom_name = model._var_abs2prom["input"][abs_name]
+                prom_name = io_metadata[abs_name]["prom_name"]
                 if prom_name not in processed_prom_names:
                     processed_prom_names.append(prom_name)
-                    metadata = deepcopy(
-                        model.get_io_metadata(
-                            metadata_keys=["value", "units"], return_rel_names=False
-                        )[abs_name]
-                    )
+                    metadata = deepcopy(io_metadata[abs_name])
                     metadata.update({"is_input": True})
                     variables[prom_name] = metadata
 
