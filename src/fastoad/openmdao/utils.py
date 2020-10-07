@@ -16,7 +16,7 @@ Utility functions for OpenMDAO classes/instances
 
 from copy import deepcopy
 from logging import Logger
-from typing import Tuple, List
+from typing import Tuple, List, TypeVar
 
 import numpy as np
 import openmdao.api as om
@@ -27,6 +27,10 @@ def get_unconnected_input_names(
 ) -> Tuple[List[str], List[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
+
+    .. warning::
+
+        problem.setup() must have been run.
 
     Inputs that have numpy.nan as default value are considered as mandatory. Other ones are
     considered as optional.
@@ -40,8 +44,7 @@ def get_unconnected_input_names(
     :return: tuple(list of missing mandatory inputs, list of missing optional inputs)
     """
 
-    # Setup() is needed
-    model = get_problem_after_setup(problem).model
+    model = problem.model
 
     mandatory_unconnected = set()
     optional_unconnected = set()
@@ -73,8 +76,17 @@ def get_unconnected_input_names(
     return list(mandatory_unconnected), list(optional_unconnected)
 
 
-def get_problem_after_setup(problem: om.Problem) -> om.Problem:
+T = TypeVar("T", bound=om.Problem)
+
+
+def get_problem_after_setup(problem: T) -> T:
     """
+    Returns a copy of the provided problem, where setup() has been run on the copy.
+
+    .. warning::
+
+        problem.setup() must NOT have been run.
+
     This method should be used when an operation is needed that requires setup() to be run, without
     having the problem being actually setup.
 
@@ -83,17 +95,6 @@ def get_problem_after_setup(problem: om.Problem) -> om.Problem:
              after setup() has been run
     """
 
-    from openmdao.core.constants import _SetupStatus
-
-    problem_is_setup = (
-        problem._metadata and problem._metadata["setup_status"] >= _SetupStatus.POST_SETUP
-    )
-
-    if not problem_is_setup:
-        # If setup() has not been done, we create a copy of the problem so we can work
-        # on the model without doing setup() out of user notice
-        tmp_problem = deepcopy(problem)
-        tmp_problem.setup()
-        return tmp_problem
-    else:
-        return problem
+    tmp_problem = deepcopy(problem)
+    tmp_problem.setup()
+    return tmp_problem

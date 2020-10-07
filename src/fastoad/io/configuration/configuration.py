@@ -182,6 +182,7 @@ class FASTOADProblemConfigurator:
                                  not provided, expected format will be the default one.
         """
         problem = self.get_problem(read_inputs=False)
+        problem.setup()
         problem.write_needed_inputs(source_file_path, source_formatter)
 
     def get_optimization_definition(self) -> Dict:

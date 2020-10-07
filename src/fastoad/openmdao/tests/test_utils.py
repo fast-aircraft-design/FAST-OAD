@@ -90,6 +90,8 @@ def _test_problem(
 ):
     """ Tests get_unconnected_inputs for provided problem """
 
+    problem.setup()
+
     # with logger provided
     mandatory, optional = get_unconnected_input_names(problem, logger=_LOGGER)
     assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)

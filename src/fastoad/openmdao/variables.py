@@ -25,7 +25,7 @@ from importlib_resources import open_text
 from openmdao.core.system import System
 
 from . import resources
-from .utils import get_problem_after_setup, get_unconnected_input_names
+from .utils import get_unconnected_input_names
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -416,8 +416,7 @@ class VariableList(list):
     @classmethod
     def from_system(cls, system: System,) -> "VariableList":
         """
-        Creates a VariableList instance containing variables (inputs and outputs)
-        of a an OpenMDAO System.
+        Creates a VariableList instance containing inputs and outputs of a an OpenMDAO System.
         The inputs (is_input=True) correspond to the variables of IndepVarComp
         components and all the unconnected variables.
 
@@ -439,8 +438,12 @@ class VariableList(list):
         cls, problem: om.Problem, use_initial_values: bool = False, get_promoted_names=True,
     ) -> "VariableList":
         """
-        Creates a VariableList instance containing
-        variables (inputs and outputs) of a an OpenMDAO Problem.
+        Creates a VariableList instance containing inputs and outputs of a an OpenMDAO Problem.
+
+        .. warning::
+
+            problem.setup() must have been run.
+
         The inputs (is_input=True) correspond to the variables of IndepVarComp
         components and all the unconnected variables.
 
@@ -454,8 +457,6 @@ class VariableList(list):
         """
         variables = VariableList()
 
-        # Setup() is needed
-        problem = get_problem_after_setup(problem)
         model = problem.model
 
         # Determining global inputs
@@ -539,8 +540,11 @@ class VariableList(list):
         cls, problem: om.Problem, with_optional_inputs: bool = False
     ) -> "VariableList":
         """
-        This function returns a VariableList instance containing
-        all the unconnected inputs of an OpenMDAO Problem.
+        Creates a VariableList instance containing unconnected inputs of an OpenMDAO Problem.
+
+        .. warning::
+
+            problem.setup() must have been run.
 
         If *optional_inputs* is False, only inputs that have numpy.nan as default value (hence
         considered as mandatory) will be in returned instance. Otherwise, all unconnected inputs
@@ -552,9 +556,6 @@ class VariableList(list):
         :return: VariableList instance
         """
         variables = VariableList()
-
-        # Setup() is needed
-        problem = get_problem_after_setup(problem)
 
         mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
         model = problem.model
