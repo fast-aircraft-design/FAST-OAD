@@ -14,8 +14,6 @@ Test module for OpenMDAO checks
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
-
 import openmdao.api as om
 
 from .sellar_example.disc1 import Disc1
@@ -23,9 +21,6 @@ from .sellar_example.disc2 import Disc2
 from .sellar_example.functions import Functions
 from .sellar_example.sellar import Sellar
 from ..utils import get_unconnected_input_names
-
-# Logger for this module
-_LOGGER = logging.getLogger(__name__)
 
 
 def test_get_unconnected_inputs():
@@ -78,7 +73,6 @@ def test_get_unconnected_inputs():
     expected_optional_variables[test_label] = []
 
     for label in test_labels:
-        _LOGGER.info("Testing %s -------------------" % label)
         problem = om.Problem(components[label])
         _test_problem(
             problem, expected_mandatory_variables[label], expected_optional_variables[label]
@@ -92,12 +86,6 @@ def _test_problem(
 
     problem.setup()
 
-    # with logger provided
-    mandatory, optional = get_unconnected_input_names(problem, logger=_LOGGER)
-    assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)
-    assert sorted(optional) == sorted(expected_missing_optional_variables)
-
-    # without providing logger
     mandatory, optional = get_unconnected_input_names(problem)
     assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)
     assert sorted(optional) == sorted(expected_missing_optional_variables)

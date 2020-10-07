@@ -15,7 +15,6 @@ Utility functions for OpenMDAO classes/instances
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from copy import deepcopy
-from logging import Logger
 from typing import Tuple, List, TypeVar
 
 import numpy as np
@@ -23,7 +22,7 @@ import openmdao.api as om
 
 
 def get_unconnected_input_names(
-    problem: om.Problem, promoted_names=False, logger: Logger = None
+    problem: om.Problem, promoted_names=False
 ) -> Tuple[List[str], List[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
@@ -35,11 +34,7 @@ def get_unconnected_input_names(
     Inputs that have numpy.nan as default value are considered as mandatory. Other ones are
     considered as optional.
 
-    If a logger is provided, it will issue errors for the first category, and warnings for the
-    second one.
-
     :param problem: OpenMDAO Problem or System instance to inspect
-    :param logger: optional logger instance
     :param promoted_names: if True, promoted names will be returned instead of absolute ones
     :return: tuple(list of missing mandatory inputs, list of missing optional inputs)
     """
@@ -58,20 +53,6 @@ def get_unconnected_input_names(
                 mandatory_unconnected.add(name)
             else:
                 optional_unconnected.add(name)
-
-    if logger:
-        if mandatory_unconnected:
-            logger.error("Following inputs are required and not connected:")
-            for abs_name in sorted(mandatory_unconnected):
-                logger.error("    %s", abs_name)
-
-        if optional_unconnected:
-            logger.warning(
-                "Following inputs are not connected so their default value will be used:"
-            )
-            for abs_name in sorted(optional_unconnected):
-                value = model.get_io_metadata(metadata_keys=["value"])[abs_name]["value"]
-                logger.warning("    %s : %s", abs_name, value)
 
     return list(mandatory_unconnected), list(optional_unconnected)
 
