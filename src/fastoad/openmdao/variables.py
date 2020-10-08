@@ -89,7 +89,7 @@ class Variable(Hashable):
     # Default metadata
     _base_metadata = {}
 
-    def __init__(self, name, **kwargs: Dict):
+    def __init__(self, name, **kwargs):
         super().__init__()
 
         self.name = name
@@ -117,8 +117,18 @@ class Variable(Hashable):
             self.__class__._base_metadata["shape"] = None
         # Done with class attributes ------------------------------------------
 
+        # Feed self.metadata with kwargs, but remove first attributes with "Unavailable" as
+        # value, which is a value that can be provided by OpenMDAO.
         self.metadata = self.__class__._base_metadata.copy()
-        self.metadata.update(kwargs)
+        self.metadata.update(
+            {
+                key: value
+                for key, value in kwargs.items()
+                # The isinstance check is needed if value is a numpy array. In this case, a
+                # FutureWarning is issued because it is compared to a scalar.
+                if not isinstance(value, str) or value != "Unavailable"
+            }
+        )
         self._set_default_shape()
 
         # If no description, add one from DESCRIPTION_FILE_PATH, if available
@@ -490,7 +500,7 @@ class VariableList(list):
         for abs_name, metadata in model.get_io_metadata(
             metadata_keys=["value", "units", "upper", "lower"], return_rel_names=False
         ).items():
-            metadata = {key: value for key, value in metadata.items() if value != "Unavailable"}
+            metadata = metadata.copy()  # a copy is needed because we will modify it later
             prom_name = metadata["prom_name"]
 
             if not (get_promoted_names and prom_name == abs_name):
