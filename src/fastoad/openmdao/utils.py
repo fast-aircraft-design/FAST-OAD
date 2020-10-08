@@ -54,6 +54,11 @@ def get_unconnected_input_names(
             else:
                 optional_unconnected.add(name)
 
+    # If a promoted variable is defined both with NaN and non-NaN value, it is
+    # considered as mandatory
+    if promoted_names:
+        optional_unconnected = optional_unconnected - mandatory_unconnected
+
     return list(mandatory_unconnected), list(optional_unconnected)
 
 

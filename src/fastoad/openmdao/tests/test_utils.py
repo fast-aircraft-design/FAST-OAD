@@ -23,69 +23,79 @@ from .sellar_example.sellar import Sellar
 from ..utils import get_unconnected_input_names
 
 
-def test_get_unconnected_inputs():
-    """ Tests get_unconnected_inputs() on a minimal problem  """
-    # Check with Component as problem model -----------------------------------
-
-    test_labels = []
-    components = {}
-    expected_mandatory_variables = {}
-    expected_optional_variables = {}
-
+def test_get_unconnected_input_names_single_component_group():
     # Test with a group problem with a single component (no promoted variable)
-    test_label = "single_component_group"
-    test_labels.append(test_label)
     group = om.Group()
     group.add_subsystem("disc1", Disc1())
-    components[test_label] = group
-    expected_mandatory_variables[test_label] = ["disc1.x"]
-    expected_optional_variables[test_label] = ["disc1.y2", "disc1.z"]
 
-    # Test with a group problem with one component and some input
-    test_label = "component+some_input"
-    test_labels.append(test_label)
+    expected_mandatory_variables = {"disc1.x"}
+    expected_optional_variables = {"disc1.y2", "disc1.z"}
+    _test_problem(
+        om.Problem(group), expected_mandatory_variables, expected_optional_variables, False
+    )
+    _test_problem(
+        om.Problem(group), expected_mandatory_variables, expected_optional_variables, True
+    )
+
+
+def test_get_unconnected_input_names_one_component_and_ivc():
     group = om.Group()
     group.add_subsystem("disc1", Disc1())
     ivc = om.IndepVarComp()
     ivc.add_output("y2", 1.0)
     group.add_subsystem("inputs", ivc)
     group.connect("inputs.y2", "disc1.y2")
-    components[test_label] = group
-    expected_mandatory_variables[test_label] = ["disc1.x"]
-    expected_optional_variables[test_label] = ["disc1.z"]
 
-    # Test with a group problem with Sellar components
-    test_label = "Sellar_components"
-    test_labels.append(test_label)
+    expected_mandatory_variables = {"disc1.x"}
+    expected_optional_variables = {"disc1.z"}
+    _test_problem(
+        om.Problem(group), expected_mandatory_variables, expected_optional_variables, False
+    )
+    _test_problem(
+        om.Problem(group), expected_mandatory_variables, expected_optional_variables, True
+    )
+
+
+def test_get_unconnected_input_names_sellar_components():
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
     group.add_subsystem("functions", Functions(), promotes=["*"])
-    components[test_label] = group
-    expected_mandatory_variables[test_label] = ["disc1.x", "functions.z"]
-    expected_optional_variables[test_label] = ["disc1.z", "disc2.z", "functions.x"]
 
-    # Test with the fully set Sellar problem
-    test_label = "Sellar"
-    test_labels.append(test_label)
-    components[test_label] = Sellar()
-    expected_mandatory_variables[test_label] = []
-    expected_optional_variables[test_label] = []
+    expected_mandatory_variables = {"disc1.x", "functions.z"}
+    expected_optional_variables = {"disc1.z", "disc2.z", "functions.x"}
+    _test_problem(
+        om.Problem(group), expected_mandatory_variables, expected_optional_variables, False
+    )
 
-    for label in test_labels:
-        problem = om.Problem(components[label])
-        _test_problem(
-            problem, expected_mandatory_variables[label], expected_optional_variables[label]
-        )
+    expected_mandatory_variables = {"z", "x"}
+    expected_optional_variables = set()
+    _test_problem(
+        om.Problem(group), expected_mandatory_variables, expected_optional_variables, True
+    )
+
+
+def test_get_unconnected_input_names_full_sellar():
+    expected_mandatory_variables = set()
+    expected_optional_variables = set()
+    _test_problem(
+        om.Problem(Sellar()), expected_mandatory_variables, expected_optional_variables, False
+    )
+    _test_problem(
+        om.Problem(Sellar()), expected_mandatory_variables, expected_optional_variables, True
+    )
 
 
 def _test_problem(
-    problem, expected_missing_mandatory_variables, expected_missing_optional_variables
+    problem,
+    expected_missing_mandatory_variables,
+    expected_missing_optional_variables,
+    get_promoted_names,
 ):
     """ Tests get_unconnected_inputs for provided problem """
 
     problem.setup()
 
-    mandatory, optional = get_unconnected_input_names(problem)
-    assert sorted(mandatory) == sorted(expected_missing_mandatory_variables)
-    assert sorted(optional) == sorted(expected_missing_optional_variables)
+    mandatory, optional = get_unconnected_input_names(problem, promoted_names=get_promoted_names)
+    assert set(mandatory) == expected_missing_mandatory_variables
+    assert set(optional) == expected_missing_optional_variables
