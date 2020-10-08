@@ -18,7 +18,6 @@
 import math
 
 import numpy as np
-from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -29,7 +28,6 @@ class Cd0NacelleAndPylons(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options["low_speed_aero"]
 
-        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
             self.add_input("data:aerodynamics:wing:low_speed:reynolds", val=np.nan)
             self.add_input("data:aerodynamics:aircraft:takeoff:mach", val=np.nan)

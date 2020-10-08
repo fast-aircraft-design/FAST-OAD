@@ -19,7 +19,6 @@ from scipy.constants import foot, nautical_mile
 from fastoad import BundleLoader
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase
-from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from fastoad.models.performances.breguet import Breguet
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
@@ -63,11 +62,11 @@ class SizingFlight(om.ExplicitComponent):
         self.add_input("data:geometry:propulsion:engine:count", 2)
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
 
-        self.add_input("data:aerodynamics:aircraft:cruise:CL", np.nan, shape=POLAR_POINT_COUNT)
-        self.add_input("data:aerodynamics:aircraft:cruise:CD", np.nan, shape=POLAR_POINT_COUNT)
+        self.add_input("data:aerodynamics:aircraft:cruise:CL", shape_by_conn=True, val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD", shape_by_conn=True, val=np.nan)
 
-        self.add_input("data:aerodynamics:aircraft:takeoff:CL", np.nan, shape=POLAR_POINT_COUNT)
-        self.add_input("data:aerodynamics:aircraft:takeoff:CD", np.nan, shape=POLAR_POINT_COUNT)
+        self.add_input("data:aerodynamics:aircraft:takeoff:CL", shape_by_conn=True, val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:takeoff:CD", shape_by_conn=True, val=np.nan)
 
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
 
