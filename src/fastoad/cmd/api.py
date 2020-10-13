@@ -19,8 +19,8 @@ import os.path as pth
 import sys
 import textwrap as tw
 from shutil import get_terminal_size
-from typing import IO, Union
 from time import process_time
+from typing import IO, Union
 
 import numpy as np
 import openmdao.api as om
@@ -28,11 +28,11 @@ import pandas as pd
 import requests
 from IPython import InteractiveShell
 from IPython.display import display, HTML
-from fastoad.io import IVariableIOFormatter
 from whatsopt.show_utils import generate_xdsm_html
 from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
 
 from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.io import IVariableIOFormatter
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
@@ -43,8 +43,6 @@ from fastoad.utils.files import make_parent_dir
 from fastoad.utils.postprocessing import OptimizationViewer, VariableViewer
 from fastoad.utils.resource_management.copy import copy_resource
 from . import resources
-
-# Logger for this module
 from ..module_management.service_registry import RegisterPropulsion
 
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
@@ -115,7 +113,7 @@ def list_variables(
     force_text_output: bool = False,
 ):
     """
-    Writes list of system outputs for the :class:`FASTOADProblem` specified in configuration_file_path.
+    Writes list of variables for the :class:`FASTOADProblem` specified in configuration_file_path.
 
     List is generally written as text. It can be displayed as a scrollable table view if:
     - function is used in an interactive IPython shell
@@ -124,18 +122,20 @@ def list_variables(
 
     :param configuration_file_path:
     :param out: the output stream or a path for the output file
-    :param overwrite: if True and out parameter is a file path, the file will be written even if one already
-                      exists
-    :param force_text_output: if True, list will be written as text, even if command is used in an interactive IPython
-                              shell (Jupyter notebook). Has no effect in other shells or if out parameter is not
-                              sys.stdout
-    :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file exists
+    :param overwrite: if True and out parameter is a file path, the file will be written even if one
+                      already exists
+    :param force_text_output: if True, list will be written as text, even if command is used in an
+                              interactive IPython shell (Jupyter notebook). Has no effect in other
+                              shells or if out parameter is not sys.stdout
+    :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
+                                exists
     """
     conf = FASTOADProblemConfigurator(configuration_file_path)
     problem = conf.get_problem()
+    problem.setup()
 
     # Extracting inputs and outputs
-    variables = VariableList.from_problem(problem, promoted_only=False)
+    variables = VariableList.from_problem(problem, get_promoted_names=False)
     variables.sort(key=lambda var: var.name)
     input_variables = VariableList([var for var in variables if var.is_input])
     output_variables = VariableList([var for var in variables if not var.is_input])

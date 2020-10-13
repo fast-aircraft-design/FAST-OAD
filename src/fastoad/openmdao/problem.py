@@ -68,6 +68,10 @@ class FASTOADProblem(om.Problem):
         """
         Writes the input file of the problem with unconnected inputs of the problem.
 
+        .. warning::
+
+            :meth:`setup` must have been run on this Problem instance.
+
         Written value of each variable will be taken:
         1. from input_data if it contains the variable
         2. from defined default values in component definitions

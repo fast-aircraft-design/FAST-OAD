@@ -15,7 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -28,23 +27,30 @@ class Cd0Total(ExplicitComponent):
 
         self.add_input("data:geometry:aircraft:wetted_area", val=np.nan, units="m**2")
 
-        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
-            self.add_input("data:aerodynamics:wing:low_speed:CD0", val=nans_array)
-            self.add_input("data:aerodynamics:fuselage:low_speed:CD0", val=nans_array)
+            self.add_input("data:aerodynamics:wing:low_speed:CD0", shape_by_conn=True, val=np.nan)
+            self.add_input(
+                "data:aerodynamics:fuselage:low_speed:CD0", shape_by_conn=True, val=np.nan
+            )
             self.add_input("data:aerodynamics:horizontal_tail:low_speed:CD0", val=np.nan)
             self.add_input("data:aerodynamics:vertical_tail:low_speed:CD0", val=np.nan)
             self.add_input("data:aerodynamics:nacelles:low_speed:CD0", val=np.nan)
             self.add_input("data:aerodynamics:pylons:low_speed:CD0", val=np.nan)
-            self.add_output("data:aerodynamics:aircraft:low_speed:CD0", shape=POLAR_POINT_COUNT)
+            self.add_output(
+                "data:aerodynamics:aircraft:low_speed:CD0",
+                copy_shape="data:aerodynamics:wing:low_speed:CD0",
+            )
         else:
-            self.add_input("data:aerodynamics:wing:cruise:CD0", val=nans_array)
-            self.add_input("data:aerodynamics:fuselage:cruise:CD0", val=nans_array)
+            self.add_input("data:aerodynamics:wing:cruise:CD0", shape_by_conn=True, val=np.nan)
+            self.add_input("data:aerodynamics:fuselage:cruise:CD0", shape_by_conn=True, val=np.nan)
             self.add_input("data:aerodynamics:horizontal_tail:cruise:CD0", val=np.nan)
             self.add_input("data:aerodynamics:vertical_tail:cruise:CD0", val=np.nan)
             self.add_input("data:aerodynamics:nacelles:cruise:CD0", val=np.nan)
             self.add_input("data:aerodynamics:pylons:cruise:CD0", val=np.nan)
-            self.add_output("data:aerodynamics:aircraft:cruise:CD0", shape=POLAR_POINT_COUNT)
+            self.add_output(
+                "data:aerodynamics:aircraft:cruise:CD0",
+                copy_shape="data:aerodynamics:wing:cruise:CD0",
+            )
 
         self.declare_partials("*", "*", method="fd")
 

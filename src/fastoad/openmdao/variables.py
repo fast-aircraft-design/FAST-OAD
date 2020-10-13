@@ -25,7 +25,7 @@ from importlib_resources import open_text
 from openmdao.core.system import System
 
 from . import resources
-from .utils import get_problem_after_setup, get_unconnected_input_names
+from .utils import get_unconnected_input_names
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -50,6 +50,9 @@ METADATA_TO_IGNORE = [
     "ref",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
     "global_shape",
     "global_size",
+    "discrete",  # currently inconsistent in openMDAO 3.4
+    "prom_name",
+    "desc",
 ]
 
 
@@ -86,7 +89,7 @@ class Variable(Hashable):
     # Default metadata
     _base_metadata = {}
 
-    def __init__(self, name, **kwargs: Dict):
+    def __init__(self, name, **kwargs):
         super().__init__()
 
         self.name = name
@@ -114,8 +117,18 @@ class Variable(Hashable):
             self.__class__._base_metadata["shape"] = None
         # Done with class attributes ------------------------------------------
 
+        # Feed self.metadata with kwargs, but remove first attributes with "Unavailable" as
+        # value, which is a value that can be provided by OpenMDAO.
         self.metadata = self.__class__._base_metadata.copy()
-        self.metadata.update(kwargs)
+        self.metadata.update(
+            {
+                key: value
+                for key, value in kwargs.items()
+                # The isinstance check is needed if value is a numpy array. In this case, a
+                # FutureWarning is issued because it is compared to a scalar.
+                if not isinstance(value, str) or value != "Unavailable"
+            }
+        )
         self._set_default_shape()
 
         # If no description, add one from DESCRIPTION_FILE_PATH, if available
@@ -164,7 +177,12 @@ class Variable(Hashable):
 
     @property
     def is_input(self):
-        """ True if variable is a problem input, False if it is an output (None if information not found) """
+        """ I/O status of the variable.
+
+        - True if variable is a problem input
+        - False if it is an output
+        - None if information not found
+        """
         return self.metadata.get("is_input")
 
     @is_input.setter
@@ -347,15 +365,13 @@ class VariableList(list):
         """
         variables = VariableList()
 
-        if ivc._static_mode:
-            var_rel2meta = ivc._static_var_rel2meta
-            var_rel_names = ivc._static_var_rel_names
-        else:
-            var_rel2meta = ivc._var_rel2meta
-            var_rel_names = ivc._var_rel_names
+        ivc = deepcopy(ivc)
+        om.Problem(ivc).setup()  # Need setup to have get_io_metadata working
 
-        for name in var_rel_names["output"]:
-            metadata = deepcopy(var_rel2meta[name])
+        for name, metadata in ivc.get_io_metadata(
+            metadata_keys=["value", "units", "upper", "lower"]
+        ).items():
+            metadata = metadata.copy()
             value = metadata.pop("value")
             if np.shape(value) == (1,):
                 value = float(value[0])
@@ -408,10 +424,9 @@ class VariableList(list):
         return VariableList([_get_variable(row) for row in df[column_names].values])
 
     @classmethod
-    def from_system(cls, system: System,) -> "VariableList":
+    def from_system(cls, system: System) -> "VariableList":
         """
-        Creates a VariableList instance containing variables (inputs and outputs)
-        of a an OpenMDAO System.
+        Creates a VariableList instance containing inputs and outputs of a an OpenMDAO System.
         The inputs (is_input=True) correspond to the variables of IndepVarComp
         components and all the unconnected variables.
 
@@ -424,17 +439,27 @@ class VariableList(list):
         :return: VariableList instance
         """
 
-        problem = om.Problem(deepcopy(system))
+        problem = om.Problem()
+        if isinstance(system, om.Group):
+            problem.model = deepcopy(system)
+        else:
+            # problem.model has to be a group
+            problem.model.add_subsystem("comp", deepcopy(system), promotes=["*"])
+
         problem.setup()
         return VariableList.from_problem(problem, use_initial_values=True)
 
     @classmethod
     def from_problem(
-        cls, problem: om.Problem, use_initial_values: bool = False, promoted_only=True,
+        cls, problem: om.Problem, use_initial_values: bool = False, get_promoted_names=True,
     ) -> "VariableList":
         """
-        Creates a VariableList instance containing
-        variables (inputs and outputs) of a an OpenMDAO Problem.
+        Creates a VariableList instance containing inputs and outputs of a an OpenMDAO Problem.
+
+        .. warning::
+
+            problem.setup() must have been run.
+
         The inputs (is_input=True) correspond to the variables of IndepVarComp
         components and all the unconnected variables.
 
@@ -443,24 +468,20 @@ class VariableList(list):
 
         :param problem: OpenMDAO Problem instance to inspect
         :param use_initial_values: if True, returned instance will contain values before computation
-        :param promoted_only: if True, non-promoted variables will be excluded
+        :param get_promoted_names: if True, only promoted variable names will be returned
         :return: VariableList instance
         """
         variables = VariableList()
 
-        # Setup() is needed
-        problem = get_problem_after_setup(problem)
         model = problem.model
 
         # Determining global inputs
 
         # from unconnected inputs
-        mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
-        unconnected_abs_names = mandatory_unconnected + optional_unconnected
-
-        unconnected_inputs = []
-        for abs_name in unconnected_abs_names:
-            unconnected_inputs.append(model._var_abs2prom["input"][abs_name])
+        mandatory_unconnected, optional_unconnected = get_unconnected_input_names(
+            problem, promoted_names=True
+        )
+        unconnected_inputs = mandatory_unconnected + optional_unconnected
 
         # from ivc outputs
         ivc_inputs = []
@@ -472,15 +493,39 @@ class VariableList(list):
 
         global_inputs = unconnected_inputs + ivc_inputs
 
-        prom2abs = {}
-        prom2abs.update(model._var_allprocs_prom2abs_list["input"])
-        prom2abs.update(model._var_allprocs_prom2abs_list["output"])
+        for abs_name, metadata in model.get_io_metadata(
+            metadata_keys=["value", "units", "upper", "lower"], return_rel_names=False
+        ).items():
+            metadata = metadata.copy()  # a copy is needed because we will modify it later
+            prom_name = metadata["prom_name"]
 
-        for prom_name, abs_names in prom2abs.items():
-            if not promoted_only or "." not in prom_name:
-                # Pick the first
-                abs_name = abs_names[0]
-                metadata = deepcopy(model._var_abs2meta[abs_name])
+            if not (get_promoted_names and prom_name == abs_name):
+                if get_promoted_names and prom_name in variables.names():
+                    # In case we get promoted names, several variables can match the same
+                    # promoted name, with possibly different declaration for default values.
+                    # We retain the first non-NaN value with defined units. If no units is
+                    # ever defined, the first non-NaN value is kept.
+                    # A non-NaN value with no units will be retained against a NaN value with
+                    # defined units.
+
+                    if np.all(np.isnan(variables[prom_name].value)) and metadata["units"] is None:
+                        # Current variable can add no data.
+                        continue
+
+                    if (
+                        not np.all(np.isnan(variables[prom_name].value))
+                        and variables[prom_name].units is not None
+                    ):
+                        # We already have a non-NaN value with defined units for current promoted
+                        # name. No need for using the current variable.
+                        continue
+
+                    if not np.all(np.isnan(variables[prom_name].value)) and np.all(
+                        np.isnan(metadata["value"])
+                    ):
+                        # We already have a non-NaN value and current variable has a NaN value and
+                        # can only add information about units. We keep the non-NaN value
+                        continue
 
                 # Setting type (IN or OUT)
                 if prom_name in global_inputs:
@@ -507,8 +552,11 @@ class VariableList(list):
         cls, problem: om.Problem, with_optional_inputs: bool = False
     ) -> "VariableList":
         """
-        This function returns a VariableList instance containing
-        all the unconnected inputs of an OpenMDAO Problem.
+        Creates a VariableList instance containing unconnected inputs of an OpenMDAO Problem.
+
+        .. warning::
+
+            problem.setup() must have been run.
 
         If *optional_inputs* is False, only inputs that have numpy.nan as default value (hence
         considered as mandatory) will be in returned instance. Otherwise, all unconnected inputs
@@ -521,28 +569,30 @@ class VariableList(list):
         """
         variables = VariableList()
 
-        # Setup() is needed
-        problem = get_problem_after_setup(problem)
-
         mandatory_unconnected, optional_unconnected = get_unconnected_input_names(problem)
         model = problem.model
 
         # processed_prom_names will store promoted names that have been already processed, so that
         # it won't be stored twice.
-        # By processing mandatory variable first, a promoted variable that would be mandatory somewhere
-        # and optional elsewhere will be retained as mandatory (and associated value will be NaN),
-        # which is fine.
-        # For promoted names that link to several optional variables and no mandatory ones, associated
-        # value will be the first encountered one, and this is as good a choice as any other.
+        # By processing mandatory variable first, a promoted variable that would be mandatory
+        # somewhere and optional elsewhere will be retained as mandatory (and associated value
+        # will be NaN), which is fine.
+        # For promoted names that link to several optional variables and no mandatory ones,
+        # associated value will be the first encountered one, and this is as good a choice as any
+        # other.
         processed_prom_names = []
+
+        io_metadata = model.get_io_metadata(
+            metadata_keys=["value", "units"], return_rel_names=False
+        )
 
         def _add_outputs(unconnected_names):
             """ Fills ivc with data associated to each provided var"""
             for abs_name in unconnected_names:
-                prom_name = model._var_abs2prom["input"][abs_name]
+                prom_name = io_metadata[abs_name]["prom_name"]
                 if prom_name not in processed_prom_names:
                     processed_prom_names.append(prom_name)
-                    metadata = deepcopy(model._var_abs2meta[abs_name])
+                    metadata = deepcopy(io_metadata[abs_name])
                     metadata.update({"is_input": True})
                     variables[prom_name] = metadata
 

@@ -16,7 +16,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -27,13 +26,20 @@ class CdTrim(ExplicitComponent):
     def setup(self):
         self.low_speed_aero = self.options["low_speed_aero"]
 
-        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.low_speed_aero:
-            self.add_input("data:aerodynamics:aircraft:low_speed:CL", val=nans_array)
-            self.add_output("data:aerodynamics:aircraft:low_speed:CD:trim", shape=POLAR_POINT_COUNT)
+            self.add_input(
+                "data:aerodynamics:aircraft:low_speed:CL", shape_by_conn=True, val=np.nan
+            )
+            self.add_output(
+                "data:aerodynamics:aircraft:low_speed:CD:trim",
+                copy_shape="data:aerodynamics:aircraft:low_speed:CL",
+            )
         else:
-            self.add_input("data:aerodynamics:aircraft:cruise:CL", val=nans_array)
-            self.add_output("data:aerodynamics:aircraft:cruise:CD:trim", shape=POLAR_POINT_COUNT)
+            self.add_input("data:aerodynamics:aircraft:cruise:CL", shape_by_conn=True, val=np.nan)
+            self.add_output(
+                "data:aerodynamics:aircraft:cruise:CD:trim",
+                copy_shape="data:aerodynamics:aircraft:cruise:CL",
+            )
 
         self.declare_partials("*", "*", method="fd")
 

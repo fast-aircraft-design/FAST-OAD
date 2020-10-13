@@ -17,7 +17,6 @@
 from enum import Enum
 
 import numpy as np
-from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
@@ -38,11 +37,16 @@ class ComputePolar(ExplicitComponent):
         self.add_input("tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k", val=np.nan)
         self.add_input("tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:offset", val=np.nan)
 
-        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.options["type"] != PolarType.HIGH_SPEED:
-            self.add_input("data:aerodynamics:aircraft:low_speed:CL", val=nans_array)
-            self.add_input("data:aerodynamics:aircraft:low_speed:CD0", val=nans_array)
-            self.add_input("data:aerodynamics:aircraft:low_speed:CD:trim", val=nans_array)
+            self.add_input(
+                "data:aerodynamics:aircraft:low_speed:CL", shape_by_conn=True, val=np.nan
+            )
+            self.add_input(
+                "data:aerodynamics:aircraft:low_speed:CD0", shape_by_conn=True, val=np.nan
+            )
+            self.add_input(
+                "data:aerodynamics:aircraft:low_speed:CD:trim", shape_by_conn=True, val=np.nan
+            )
             self.add_input(
                 "data:aerodynamics:aircraft:low_speed:induced_drag_coefficient", val=np.nan
             )
@@ -50,26 +54,53 @@ class ComputePolar(ExplicitComponent):
             if self.options["type"] == PolarType.TAKEOFF:
                 self.add_input("data:aerodynamics:high_lift_devices:takeoff:CL", val=np.nan)
                 self.add_input("data:aerodynamics:high_lift_devices:takeoff:CD", val=np.nan)
-                self.add_output("data:aerodynamics:aircraft:takeoff:CL", shape=POLAR_POINT_COUNT)
-                self.add_output("data:aerodynamics:aircraft:takeoff:CD", shape=POLAR_POINT_COUNT)
+                self.add_output(
+                    "data:aerodynamics:aircraft:takeoff:CL",
+                    copy_shape="data:aerodynamics:aircraft:low_speed:CL",
+                )
+                self.add_output(
+                    "data:aerodynamics:aircraft:takeoff:CD",
+                    copy_shape="data:aerodynamics:aircraft:low_speed:CL",
+                )
 
             elif self.options["type"] == PolarType.LANDING:
                 self.add_input("data:aerodynamics:high_lift_devices:landing:CL", val=np.nan)
                 self.add_input("data:aerodynamics:high_lift_devices:landing:CD", val=np.nan)
-                self.add_output("data:aerodynamics:landing:CL", val=np.nan)
-                self.add_output("data:aerodynamics:aircraft:landing:CL", shape=POLAR_POINT_COUNT)
-                self.add_output("data:aerodynamics:aircraft:landing:CD", shape=POLAR_POINT_COUNT)
+                self.add_output(
+                    "data:aerodynamics:landing:CL",
+                    copy_shape="data:aerodynamics:aircraft:low_speed:CL",
+                )
+                self.add_output(
+                    "data:aerodynamics:aircraft:landing:CL",
+                    copy_shape="data:aerodynamics:aircraft:low_speed:CL",
+                )
+                self.add_output(
+                    "data:aerodynamics:aircraft:landing:CD",
+                    copy_shape="data:aerodynamics:aircraft:low_speed:CL",
+                )
             else:
-                self.add_output("data:aerodynamics:aircraft:low_speed:CD", shape=POLAR_POINT_COUNT)
+                self.add_output(
+                    "data:aerodynamics:aircraft:low_speed:CD",
+                    copy_shape="data:aerodynamics:aircraft:low_speed:CL",
+                )
 
         else:
-            self.add_input("data:aerodynamics:aircraft:cruise:CL", val=nans_array)
-            self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=nans_array)
-            self.add_input("data:aerodynamics:aircraft:cruise:CD:trim", val=nans_array)
-            self.add_input("data:aerodynamics:aircraft:cruise:CD:compressibility", val=nans_array)
+            self.add_input("data:aerodynamics:aircraft:cruise:CL", shape_by_conn=True, val=np.nan)
+            self.add_input("data:aerodynamics:aircraft:cruise:CD0", shape_by_conn=True, val=np.nan)
+            self.add_input(
+                "data:aerodynamics:aircraft:cruise:CD:trim", shape_by_conn=True, val=np.nan
+            )
+            self.add_input(
+                "data:aerodynamics:aircraft:cruise:CD:compressibility",
+                shape_by_conn=True,
+                val=np.nan,
+            )
             self.add_input("data:aerodynamics:aircraft:cruise:induced_drag_coefficient", val=np.nan)
 
-            self.add_output("data:aerodynamics:aircraft:cruise:CD", shape=POLAR_POINT_COUNT)
+            self.add_output(
+                "data:aerodynamics:aircraft:cruise:CD",
+                copy_shape="data:aerodynamics:aircraft:cruise:CL",
+            )
             self.add_output("data:aerodynamics:aircraft:cruise:L_D_max")
             self.add_output("data:aerodynamics:aircraft:cruise:optimal_CL")
             self.add_output("data:aerodynamics:aircraft:cruise:optimal_CD")

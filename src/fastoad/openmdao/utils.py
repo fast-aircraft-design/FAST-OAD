@@ -15,79 +15,64 @@ Utility functions for OpenMDAO classes/instances
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from copy import deepcopy
-from logging import Logger
-from typing import Tuple, List
+from typing import Tuple, List, TypeVar
 
 import numpy as np
-import openmdao
 import openmdao.api as om
-from packaging import version
 
 
-# pylint: disable=protected-access #  needed for OpenMDAO introspection
 def get_unconnected_input_names(
-    problem: om.Problem, logger: Logger = None
+    problem: om.Problem, promoted_names=False
 ) -> Tuple[List[str], List[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
 
+    .. warning::
+
+        problem.setup() must have been run.
+
     Inputs that have numpy.nan as default value are considered as mandatory. Other ones are
     considered as optional.
 
-    If a logger is provided, it will issue errors for the first category, and warnings for the
-    second one.
-
     :param problem: OpenMDAO Problem or System instance to inspect
-    :param logger: optional logger instance
+    :param promoted_names: if True, promoted names will be returned instead of absolute ones
     :return: tuple(list of missing mandatory inputs, list of missing optional inputs)
     """
 
-    # Setup() is needed
-    model = get_problem_after_setup(problem).model
+    model = problem.model
 
-    prom2abs: dict = model._var_allprocs_prom2abs_list["input"]
-    connections: dict = model._conn_global_abs_in2out
+    mandatory_unconnected = set()
+    optional_unconnected = set()
 
-    unconnected = set()
+    for abs_name, metadata in model.get_io_metadata(
+        "input", metadata_keys=["value"], return_rel_names=False
+    ).items():
+        name = metadata["prom_name"] if promoted_names else abs_name
+        if model.get_source(abs_name).startswith("_auto_ivc."):
+            if np.all(np.isnan(metadata["value"])):
+                mandatory_unconnected.add(name)
+            else:
+                optional_unconnected.add(name)
 
-    if version.parse(openmdao.__version__) >= version.parse("3.2"):
-        for abs_name, src in connections.items():
-            if src.startswith("_auto_ivc."):
-                unconnected.add(abs_name)
-    else:
-        for abs_names in prom2abs.values():
-            # At each iteration, get absolute names that match one promoted name, or one
-            # absolute name that has not been promoted.
-            unconnected |= {
-                a for a in abs_names if a not in connections or len(connections[a]) == 0
-            }
-
-    mandatory_unconnected = {
-        abs_name
-        for abs_name in unconnected
-        if np.all(np.isnan(model._var_abs2meta[abs_name]["value"]))
-    }
-    optional_unconnected = unconnected - mandatory_unconnected
-
-    if logger:
-        if mandatory_unconnected:
-            logger.error("Following inputs are required and not connected:")
-            for abs_name in sorted(mandatory_unconnected):
-                logger.error("    %s", abs_name)
-
-        if optional_unconnected:
-            logger.warning(
-                "Following inputs are not connected so their default value will be used:"
-            )
-            for abs_name in sorted(optional_unconnected):
-                value = model._var_abs2meta[abs_name]["value"]
-                logger.warning("    %s : %s", abs_name, value)
+    # If a promoted variable is defined both with NaN and non-NaN value, it is
+    # considered as mandatory
+    if promoted_names:
+        optional_unconnected = optional_unconnected - mandatory_unconnected
 
     return list(mandatory_unconnected), list(optional_unconnected)
 
 
-def get_problem_after_setup(problem: om.Problem) -> om.Problem:
+T = TypeVar("T", bound=om.Problem)
+
+
+def get_problem_after_setup(problem: T) -> T:
     """
+    Returns a copy of the provided problem, where setup() has been run on the copy.
+
+    .. warning::
+
+        problem.setup() must NOT have been run.
+
     This method should be used when an operation is needed that requires setup() to be run, without
     having the problem being actually setup.
 
@@ -96,20 +81,6 @@ def get_problem_after_setup(problem: om.Problem) -> om.Problem:
              after setup() has been run
     """
 
-    if version.parse(openmdao.__version__) < version.parse("3.3"):
-        problem_is_setup = problem._setup_status != 0
-    else:
-        from openmdao.core.constants import _SetupStatus
-
-        problem_is_setup = (
-            problem._metadata and problem._metadata["setup_status"] >= _SetupStatus.POST_SETUP
-        )
-
-    if not problem_is_setup:
-        # If setup() has not been done, we create a copy of the problem so we can work
-        # on the model without doing setup() out of user notice
-        tmp_problem = deepcopy(problem)
-        tmp_problem.setup()
-        return tmp_problem
-    else:
-        return problem
+    tmp_problem = deepcopy(problem)
+    tmp_problem.setup()
+    return tmp_problem

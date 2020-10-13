@@ -83,6 +83,8 @@ class OptimizationViewer:
 
         self.problem_configuration = problem_configuration
         problem = self.problem_configuration.get_problem()
+        problem.setup()
+
         if pth.isfile(problem.input_file_path):
             input_variables = VariableIO(problem.input_file_path).read()
         else:

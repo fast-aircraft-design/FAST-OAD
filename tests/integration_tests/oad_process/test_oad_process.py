@@ -2,7 +2,7 @@
 Test module for Overall Aircraft Design process
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,12 +23,13 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 import pytest
+from numpy.testing import assert_allclose
+
 from fastoad import api
 from fastoad.io import VariableIO
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
-from numpy.testing import assert_allclose
-
+from fastoad.openmdao.utils import get_problem_after_setup
 from tests import root_folder_path
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
@@ -53,7 +54,7 @@ def test_oad_process(cleanup):
     ).get_problem()
 
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
-    problem.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+    get_problem_after_setup(problem).write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
     problem.read_inputs()
     problem.setup()
     problem.run_model()
@@ -137,7 +138,7 @@ def run_non_regression_test(
 
     # Generation and reading of inputs ----------------------------------------
     ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
-    problem.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+    get_problem_after_setup(problem).write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
     problem.read_inputs()
     problem.setup()
 

@@ -18,18 +18,17 @@
 from math import exp
 
 import numpy as np
-from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class CdCompressibility(ExplicitComponent):
     def setup(self):
 
-        nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         self.add_input("data:TLAR:cruise_mach", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:cruise:CL", val=nans_array)
+        self.add_input("data:aerodynamics:aircraft:cruise:CL", shape_by_conn=True, val=np.nan)
         self.add_output(
-            "data:aerodynamics:aircraft:cruise:CD:compressibility", shape=POLAR_POINT_COUNT
+            "data:aerodynamics:aircraft:cruise:CD:compressibility",
+            copy_shape="data:aerodynamics:aircraft:cruise:CL",
         )
 
         self.declare_partials("*", "*", method="fd")

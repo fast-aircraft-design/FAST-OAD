@@ -90,7 +90,7 @@ class Sellar(Group):
     def setup(self):
         indeps = self.add_subsystem("indeps", IndepVarComp(), promotes=["*"])
         indeps.add_output("x", 2)
-        indeps.add_output("z", [5, 2])
+        indeps.add_output("z", [5, 2], units="m**2")
         self.add_subsystem(
             "Disc1", self._sellar_factory.create_disc1(), promotes=["x", "z", "y1", "y2"]
         )
