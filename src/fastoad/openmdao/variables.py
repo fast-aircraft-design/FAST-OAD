@@ -493,10 +493,6 @@ class VariableList(list):
 
         global_inputs = unconnected_inputs + ivc_inputs
 
-        # prom2abs = {}
-        # prom2abs.update(model._var_allprocs_prom2abs_list["input"])
-        # prom2abs.update(model._var_allprocs_prom2abs_list["output"])
-
         for abs_name, metadata in model.get_io_metadata(
             metadata_keys=["value", "units", "upper", "lower"], return_rel_names=False
         ).items():
