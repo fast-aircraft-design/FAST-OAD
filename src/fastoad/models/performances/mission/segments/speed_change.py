@@ -16,7 +16,6 @@ import logging
 from typing import Tuple, List
 
 from fastoad.base.flight_point import FlightPoint
-
 from .base import ManualThrustSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -35,6 +34,8 @@ class SpeedChangeSegment(ManualThrustSegment):
             return self.target.true_airspeed - flight_points[-1].true_airspeed
         elif self.target.equivalent_airspeed:
             return self.target.equivalent_airspeed - flight_points[-1].equivalent_airspeed
+        elif self.target.mach:
+            return self.target.mach - flight_points[-1].mach
 
     def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         acceleration = (thrust - drag) / mass
