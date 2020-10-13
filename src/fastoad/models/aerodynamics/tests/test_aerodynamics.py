@@ -155,7 +155,7 @@ def test_aerodynamics_high_speed():
     assert cd[cl == 0.0] == approx(0.02102, abs=1e-5)
     assert cd[cl == 0.2] == approx(0.02282, abs=1e-5)
     assert cd[cl == 0.42] == approx(0.02977, abs=1e-5)
-    assert cd[cl == 0.85] == approx(0.24041, abs=1e-5)
+    assert cd[cl == 0.85] == approx(0.07062, abs=1e-5)
 
     assert problem["data:aerodynamics:aircraft:cruise:optimal_CL"] == approx(0.51, abs=1e-3)
     assert problem["data:aerodynamics:aircraft:cruise:optimal_CD"] == approx(0.03487, abs=1e-5)
