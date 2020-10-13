@@ -451,7 +451,11 @@ class VariableList(list):
 
     @classmethod
     def from_problem(
-        cls, problem: om.Problem, use_initial_values: bool = False, get_promoted_names=True,
+        cls,
+        problem: om.Problem,
+        use_initial_values: bool = False,
+        get_promoted_names=True,
+        get_auto_ivc_vars=False,
     ) -> "VariableList":
         """
         Creates a VariableList instance containing inputs and outputs of a an OpenMDAO Problem.
@@ -463,12 +467,13 @@ class VariableList(list):
         The inputs (is_input=True) correspond to the variables of IndepVarComp
         components and all the unconnected variables.
 
-        If variables are promoted, the promoted name will be used. Otherwise ( and if
+        If variables are promoted, the promoted name will be used. Otherwise (and if
         promoted_only is False), the absolute name will be used.
 
         :param problem: OpenMDAO Problem instance to inspect
         :param use_initial_values: if True, returned instance will contain values before computation
         :param get_promoted_names: if True, only promoted variable names will be returned
+        :param get_auto_ivc_vars:
         :return: VariableList instance
         """
         variables = VariableList()
@@ -487,16 +492,21 @@ class VariableList(list):
         ivc_inputs = []
         for subsystem in model.system_iter():
             if isinstance(subsystem, om.IndepVarComp):
-                input_variables = cls.from_ivc(subsystem)
-                for var in input_variables:
-                    ivc_inputs.append(var.name)
+                if get_auto_ivc_vars or subsystem.name != "_auto_ivc":
+                    input_variables = cls.from_ivc(subsystem)
+                    for var in input_variables:
+                        ivc_inputs.append(var.name)
 
         global_inputs = unconnected_inputs + ivc_inputs
 
         for abs_name, metadata in model.get_io_metadata(
             metadata_keys=["value", "units", "upper", "lower"], return_rel_names=False
         ).items():
-            metadata = metadata.copy()  # a copy is needed because we will modify it later
+
+            # Exclude vars from _auto_ivc unless they are required
+            if not get_auto_ivc_vars and abs_name.startswith("_auto_ivc"):
+                continue
+
             prom_name = metadata["prom_name"]
 
             if not (get_promoted_names and prom_name == abs_name):
@@ -526,6 +536,8 @@ class VariableList(list):
                         # We already have a non-NaN value and current variable has a NaN value and
                         # can only add information about units. We keep the non-NaN value
                         continue
+
+                metadata = metadata.copy()  # a copy is needed because we will modify it
 
                 # Setting type (IN or OUT)
                 if prom_name in global_inputs:
