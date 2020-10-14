@@ -24,7 +24,7 @@ from .mission_files.mission import Mission
 from .mission_files.schema import MissionDefinition
 
 
-class SizingFlight(om.ExplicitComponent):
+class SizingMission(om.ExplicitComponent):
     def __init__(self, **kwargs):
         """
         Computes thrust, SFC and thrust rate by direct call to engine model.

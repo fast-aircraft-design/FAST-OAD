@@ -33,7 +33,7 @@ output_file = "./oad_process_mission_outputs.xml"
     [model.group.hq.static_margin]
         id = "fastoad.handling_qualities.static_margin"
     [model.performance]
-        id = "fastoad.performances.sizing_flight"
+        id = "fastoad.performances.sizing_mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
     [model.wing_area]
         id = "fastoad.loop.wing_area"

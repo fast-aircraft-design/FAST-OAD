@@ -20,5 +20,5 @@ output_file = "./oad_process_mission_outputs.xml"
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false
     [model.performance]
-        id = "fastoad.performances.sizing_flight"
+        id = "fastoad.performances.sizing_mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"

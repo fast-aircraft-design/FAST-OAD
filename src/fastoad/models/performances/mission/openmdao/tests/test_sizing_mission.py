@@ -18,11 +18,11 @@ from shutil import rmtree
 
 import matplotlib.pyplot as plt
 import pytest
+from fastoad.models.performances.mission.openmdao.flight import SizingMission
 from matplotlib.ticker import MultipleLocator
 from scipy.constants import foot, knot
 
 from fastoad.io import VariableIO
-from fastoad.models.performances.mission.openmdao.flight import SizingFlight
 from tests.testing_utilities import run_system
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -77,11 +77,11 @@ def plot_flight(flight_points, fig_filename):
     plt.close()
 
 
-def test_sizing_flight(cleanup):
-    input_file_path = pth.join(DATA_FOLDER_PATH, "flight_inputs.xml")
+def test_sizing_mission(cleanup):
+    input_file_path = pth.join(DATA_FOLDER_PATH, "mission_inputs.xml")
     ivc = VariableIO(input_file_path).read().to_ivc()
 
     problem = run_system(
-        SizingFlight(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc
+        SizingMission(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc
     )
     plot_flight(problem.model.component.flight_points, "flight.png")
