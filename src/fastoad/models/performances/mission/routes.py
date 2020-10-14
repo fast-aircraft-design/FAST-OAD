@@ -1,4 +1,3 @@
-"""Base classes for flight computation."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,15 +17,15 @@ import pandas as pd
 from scipy.optimize import root_scalar
 
 from fastoad.base.flight_point import FlightPoint
-from ..base import FlightSequence, IFlightPart
-from ..segments.cruise import CruiseSegment
+from fastoad.models.performances.mission.base import FlightSequence, IFlightPart
+from fastoad.models.performances.mission.segments.cruise import CruiseSegment
 
 
-class SimpleFlight(FlightSequence):
+class SimpleRoute(FlightSequence):
     """
-    Computes a simple flight.
+    Computes a simple route.
 
-    The computed flight will be be made of:
+    The computed route will be be made of:
         - any number of climb phases
         - one cruise segment
         - any number of descent phases.
@@ -54,6 +53,7 @@ class SimpleFlight(FlightSequence):
 
     @property
     def cruise_distance(self):
+        """Ground distance to be covered during cruise."""
         return self.cruise_segment.target
 
     @cruise_distance.setter
@@ -65,23 +65,23 @@ class SimpleFlight(FlightSequence):
         return self.climb_phases + [self.cruise_segment] + self.descent_phases
 
 
-class RangedFlight(FlightSequence):
+class RangedRoute(FlightSequence):
     """
-    Computes a flight so that it covers the specified distance.
+    Computes a route so that it covers the specified distance.
     """
 
     def __init__(
-        self, flight_definition: SimpleFlight, flight_distance: float,
+        self, route_definition: SimpleRoute, flight_distance: float,
     ):
         """
-        Computes the flight and adjust the cruise distance to achieve the provided flight distance.
+        Computes the route and adjust the cruise distance to achieve the provided flight distance.
 
-        :param flight_definition:
+        :param route_definition:
         :param flight_distance: in meters
         """
         super().__init__()
         self.flight_distance = flight_distance
-        self.flight = flight_definition
+        self.flight = route_definition
         self.flight_points = None
         self.distance_accuracy = 0.5e3
 

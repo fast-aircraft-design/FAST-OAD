@@ -13,19 +13,20 @@ Schema for mission definition files.
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from collections import OrderedDict
 from enum import Enum
 from typing import Union, Set
 
 from ensure import Ensure
-from strictyaml import load, Map, MapPattern, Optional, Str, Float, Seq, Any, YAML
+from strictyaml import load, Map, MapPattern, Optional, Str, Float, Seq, Any, YAML, CommaSeparated
 
 from fastoad.base.flight_point import FlightPoint
-from ...segments.cruise import CruiseSegment
-from ...segments.hold import HoldSegment
-from ...segments.speed_change import SpeedChangeSegment
-from ...segments.taxi import TaxiSegment
-from ....mission.segments.altitude_change import AltitudeChangeSegment
+from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
+from fastoad.models.performances.mission.segments.cruise import CruiseSegment
+from fastoad.models.performances.mission.segments.hold import HoldSegment
+from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
+from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 
 # Tags
 SEGMENT_TAG = "segment"
@@ -113,7 +114,7 @@ class MissionDefinition(dict):
                 Ensure(step_name).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
 
     @staticmethod
-    def _process_polar_definition(struct: dict):
+    def _process_polar_definition(struct: YAML):
         """
         If "foo:bar:baz" is provided as value for the "polar" key in provided dictionary, it is
         replaced by the dict {"CL":"foo:bar:baz:CL", "CD":"foo:bar:baz:CD"}
@@ -121,9 +122,7 @@ class MissionDefinition(dict):
         if POLAR_TAG in struct:
             polar_def = struct[POLAR_TAG].value
             if isinstance(polar_def, str) and ":" in polar_def:
-                struct[POLAR_TAG] = YAML(
-                    OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
-                )
+                struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
 
     @classmethod
     def _get_schema(cls):
@@ -148,10 +147,12 @@ class MissionDefinition(dict):
 
     @classmethod
     def _get_base_step_mapping(cls) -> dict:
+        polar_coeff_schema = CommaSeparated(Float()) | Str()
+        polar_schema = Map({"CL": polar_coeff_schema, "CD": polar_coeff_schema}) | Str()
         return {
             Optional("target", default=None): cls._get_target_schema(),
             Optional("engine_setting", default=None): Str(),
-            Optional("polar", default=None): Str(),
+            Optional(POLAR_TAG, default=None): polar_schema,
             Optional("thrust_rate", default=None): Float() | Str(),
             Optional("time_step", default=None): Float(),
             Optional("maximum_mach", default=None): Float() | Str(),

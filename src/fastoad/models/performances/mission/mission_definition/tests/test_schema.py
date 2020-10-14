@@ -46,10 +46,7 @@ def test_schema():
                             ("engine_setting", "takeoff"),
                             (
                                 "polar",
-                                {
-                                    "CD": "data:aerodynamics:aircraft:takeoff:CD",
-                                    "CL": "data:aerodynamics:aircraft:takeoff:CL",
-                                },
+                                OrderedDict([("CL", [0.0, 0.5, 1.0]), ("CD", [0.0, 0.03, 0.12])]),
                             ),
                             ("thrust_rate", "data:mission:sizing:climb:thrust_rate"),
                             (
@@ -81,6 +78,21 @@ def test_schema():
                                         [
                                             ("segment", "speed_change"),
                                             (
+                                                "polar",
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "CL",
+                                                            "data:aerodynamics:aircraft:takeoff:CL",
+                                                        ),
+                                                        (
+                                                            "CD",
+                                                            "data:aerodynamics:aircraft:takeoff:CD",
+                                                        ),
+                                                    ]
+                                                ),
+                                            ),
+                                            (
                                                 "target",
                                                 OrderedDict(
                                                     [
@@ -98,6 +110,21 @@ def test_schema():
                                     OrderedDict(
                                         [
                                             ("segment", "altitude_change"),
+                                            (
+                                                "polar",
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "CL",
+                                                            "data:aerodynamics:aircraft:takeoff:CL",
+                                                        ),
+                                                        (
+                                                            "CD",
+                                                            "data:aerodynamics:aircraft:takeoff:CD",
+                                                        ),
+                                                    ]
+                                                ),
+                                            ),
                                             (
                                                 "target",
                                                 OrderedDict(
@@ -129,10 +156,12 @@ def test_schema():
                             ("engine_setting", "climb"),
                             (
                                 "polar",
-                                {
-                                    "CD": "data:aerodynamics:aircraft:cruise:CD",
-                                    "CL": "data:aerodynamics:aircraft:cruise:CL",
-                                },
+                                OrderedDict(
+                                    [
+                                        ("CL", "data:aerodynamics:aircraft:cruise:CL"),
+                                        ("CD", "data:aerodynamics:aircraft:cruise:CD"),
+                                    ]
+                                ),
                             ),
                             ("thrust_rate", "data:mission:sizing:climb:thrust_rate"),
                             (
@@ -211,10 +240,12 @@ def test_schema():
                             ("engine_setting", "idle"),
                             (
                                 "polar",
-                                {
-                                    "CD": "data:aerodynamics:aircraft:cruise:CD",
-                                    "CL": "data:aerodynamics:aircraft:cruise:CL",
-                                },
+                                OrderedDict(
+                                    [
+                                        ("CL", "data:aerodynamics:aircraft:cruise:CL"),
+                                        ("CD", "data:aerodynamics:aircraft:cruise:CD"),
+                                    ]
+                                ),
                             ),
                             ("thrust_rate", "data:mission:sizing:descent:thrust_rate"),
                             (
@@ -321,10 +352,18 @@ def test_schema():
                                             ("segment", "holding"),
                                             (
                                                 "polar",
-                                                {
-                                                    "CD": "data:aerodynamics:aircraft:cruise:CD",
-                                                    "CL": "data:aerodynamics:aircraft:cruise:CL",
-                                                },
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "CL",
+                                                            "data:aerodynamics:aircraft:cruise:CL",
+                                                        ),
+                                                        (
+                                                            "CD",
+                                                            "data:aerodynamics:aircraft:cruise:CD",
+                                                        ),
+                                                    ]
+                                                ),
                                             ),
                                             (
                                                 "target",
@@ -396,10 +435,18 @@ def test_schema():
                                             ("engine_setting", "cruise"),
                                             (
                                                 "polar",
-                                                {
-                                                    "CD": "data:aerodynamics:aircraft:cruise:CD",
-                                                    "CL": "data:aerodynamics:aircraft:cruise:CL",
-                                                },
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "CL",
+                                                            "data:aerodynamics:aircraft:cruise:CL",
+                                                        ),
+                                                        (
+                                                            "CD",
+                                                            "data:aerodynamics:aircraft:cruise:CD",
+                                                        ),
+                                                    ]
+                                                ),
                                             ),
                                         ]
                                     ),
@@ -445,10 +492,18 @@ def test_schema():
                                             ("engine_setting", "cruise"),
                                             (
                                                 "polar",
-                                                {
-                                                    "CD": "data:aerodynamics:aircraft:cruise:CD",
-                                                    "CL": "data:aerodynamics:aircraft:cruise:CL",
-                                                },
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "CL",
+                                                            "data:aerodynamics:aircraft:cruise:CL",
+                                                        ),
+                                                        (
+                                                            "CD",
+                                                            "data:aerodynamics:aircraft:cruise:CD",
+                                                        ),
+                                                    ]
+                                                ),
                                             ),
                                         ]
                                     ),

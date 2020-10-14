@@ -18,12 +18,12 @@ from shutil import rmtree
 
 import matplotlib.pyplot as plt
 import pytest
-from fastoad.models.performances.mission.openmdao.flight import SizingMission
 from matplotlib.ticker import MultipleLocator
 from scipy.constants import foot, knot
 
 from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
+from ..sizing_mission import SizingMission
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")

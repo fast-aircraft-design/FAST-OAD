@@ -1,3 +1,6 @@
+"""
+OpenMDAO component for computation of sizing mission.
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -20,8 +23,8 @@ from fastoad import BundleLoader
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from . import resources
-from .mission_files.mission import Mission
-from .mission_files.schema import MissionDefinition
+from .mission_wrapper import MissionWrapper
+from ..mission_definition.schema import MissionDefinition
 
 
 class SizingMission(om.ExplicitComponent):
@@ -39,7 +42,7 @@ class SizingMission(om.ExplicitComponent):
         self.flight_points = None
         self._engine_wrapper = None
         self._mission_input = None
-        self._mission: Mission = None
+        self._mission: MissionWrapper = None
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
@@ -54,7 +57,7 @@ class SizingMission(om.ExplicitComponent):
         if not self._mission_input:
             with path(resources, "sizing_mission.yml") as mission_input_file:
                 self._mission_input = MissionDefinition(mission_input_file)
-        self._mission = Mission(self._mission_input)
+        self._mission = MissionWrapper(self._mission_input)
         self._mission.setup(self)
 
         self.add_input("data:geometry:propulsion:engine:count", 2)

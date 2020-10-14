@@ -18,8 +18,6 @@ from typing import List, Union
 import pandas as pd
 
 from fastoad.base.flight_point import FlightPoint
-from fastoad.models.performances.mission.polar import Polar
-from fastoad.models.propulsion import IPropulsion
 
 
 class IFlightPart(ABC):
@@ -71,39 +69,3 @@ class FlightSequence(IFlightPart):
     def flight_sequence(self) -> List[Union[IFlightPart]]:
         """List of IFlightPart instances that should be run sequentially."""
         return self._flight_sequence
-
-
-class AbstractManualThrustFlightPhase(FlightSequence, ABC):
-    """
-    Base class for climb and descent phases.
-    """
-
-    def __init__(
-        self,
-        *,
-        propulsion: IPropulsion,
-        reference_area: float,
-        polar: Polar,
-        thrust_rate: float = 1.0,
-        name="",
-        time_step=None
-    ):
-        """
-        Initialization is done only with keyword arguments.
-
-        :param propulsion:
-        :param reference_area:
-        :param polar:
-        :param thrust_rate:
-        :param time_step: if provided, this time step will be applied for all segments.
-        """
-
-        super().__init__()
-        self.segment_kwargs = {
-            "propulsion": propulsion,
-            "reference_area": reference_area,
-            "polar": polar,
-            "thrust_rate": thrust_rate,
-            "name": name,
-            "time_step": time_step,
-        }
