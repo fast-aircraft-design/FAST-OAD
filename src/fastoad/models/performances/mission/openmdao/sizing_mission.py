@@ -25,6 +25,8 @@ from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from . import resources
 from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
+from ..polar import Polar
+from ...breguet import Breguet
 
 
 class SizingMission(om.ExplicitComponent):
@@ -73,6 +75,38 @@ class SizingMission(om.ExplicitComponent):
         self.declare_partials(["*"], ["*"])
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        if inputs["data:geometry:wing:area"] == 10.0:
+            print("!!!!!!!!!! BREGUET !!!!!!!!!!!!!!")
+            self.compute_breguet(inputs, outputs)
+        else:
+            print("!!!!!!!!!! TIME STEP !!!!!!!!!!!!!!")
+            self.compute_mission(inputs, outputs)
+
+    def compute_breguet(self, inputs, outputs):
+        propulsion_model = FuelEngineSet(
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
+        )
+        high_speed_polar = Polar(
+            inputs["data:aerodynamics:aircraft:cruise:CL"],
+            inputs["data:aerodynamics:aircraft:cruise:CD"],
+        )
+
+        breguet = Breguet(
+            propulsion_model,
+            max(
+                10.0, high_speed_polar.optimal_cl / high_speed_polar.cd(high_speed_polar.optimal_cl)
+            ),
+            inputs["data:TLAR:cruise_mach"],
+            10000.0,
+        )
+        breguet.compute(
+            inputs["data:weight:aircraft:MTOW"], inputs["data:TLAR:range"],
+        )
+
+        outputs["data:mission:sizing:ZFW"] = breguet.zfw
+        outputs["data:mission:sizing:fuel"] = breguet.mission_fuel
+
+    def compute_mission(self, inputs, outputs):
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
