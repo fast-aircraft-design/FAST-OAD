@@ -402,6 +402,7 @@ settings:weight:airframe:wing:mass:k_mvo	1.39 for Airbus type aircrafts
 settings:weight:airframe:wing:mass:k_voil	1.00 if 4 engines / 1.05 if 2 or 3 engines / 1.10 if engines on fuselage
 settings:weight:systems:power:mass:k_elec	electricity coefficient: 1.00 if 2 engines (A300, A310 type) / (1.02 if 2 engines (DC9, Caravelle type) / 1.03 if 3 engines (B727 type) / 1.05 if 3 engines (DC10, L1011 type) / 1.08 if 4 engines (B747 type)
 test:test_variable	for testing (do not remove, keep first)
+tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling	maximum authorized value for compressibility drag. Allows to prevent the model from overestimating the compressibility effect, especially for aircraft models after year 2000.
 tuning:aerodynamics:aircraft:cruise:CD:k	correction ratio to apply to computed drag coefficient in cruise conditions
 tuning:aerodynamics:aircraft:cruise:CD:offset	correction offset to apply to computed drag coefficient in cruise conditions
 tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k	correction ratio to apply to computed induced drag coefficient in cruise conditions

@@ -517,7 +517,7 @@
                     <offset>0.0</offset>
                 </Cx>
                 <winglet_Cx>
-                    <k>1.0</k>
+                    <k>0.87</k>
                     <offset>0.0</offset>
                 </winglet_Cx>
                 <HL_LDG>

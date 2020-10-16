@@ -18,9 +18,9 @@ import os.path as pth
 from platform import system
 
 import pytest
-from fastoad.io import VariableIO
 from pytest import approx
 
+from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 from ..aerodynamics_high_speed import AerodynamicsHighSpeed
@@ -152,13 +152,13 @@ def test_aerodynamics_high_speed():
     cd = problem["data:aerodynamics:aircraft:cruise:CD"]
     cl = problem["data:aerodynamics:aircraft:cruise:CL"]
 
-    assert cd[cl == 0.0] == approx(0.02030, abs=1e-5)
-    assert cd[cl == 0.2] == approx(0.02209, abs=1e-5)
-    assert cd[cl == 0.42] == approx(0.02897, abs=1e-5)
-    assert cd[cl == 0.85] == approx(0.11781, abs=1e-5)
+    assert cd[cl == 0.0] == approx(0.02102, abs=1e-5)
+    assert cd[cl == 0.2] == approx(0.02282, abs=1e-5)
+    assert cd[cl == 0.42] == approx(0.02977, abs=1e-5)
+    assert cd[cl == 0.85] == approx(0.07062, abs=1e-5)
 
-    assert problem["data:aerodynamics:aircraft:cruise:optimal_CL"] == approx(0.54, abs=1e-3)
-    assert problem["data:aerodynamics:aircraft:cruise:optimal_CD"] == approx(0.03550, abs=1e-5)
+    assert problem["data:aerodynamics:aircraft:cruise:optimal_CL"] == approx(0.51, abs=1e-3)
+    assert problem["data:aerodynamics:aircraft:cruise:optimal_CD"] == approx(0.03487, abs=1e-5)
 
 
 def test_aerodynamics_low_speed():

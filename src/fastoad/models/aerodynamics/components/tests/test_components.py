@@ -3,7 +3,7 @@ test module for modules in aerodynamics/components
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -172,22 +172,40 @@ def test_cd0():
 def test_cd_compressibility():
     """ Tests CdCompressibility """
 
-    def get_cd_compressibility(mach, cl):
+    def get_cd_compressibility(mach, cl, sweep, thickness_ratio, max_cd_comp=0.01):
         ivc = IndepVarComp()
         ivc.add_output(
             "data:aerodynamics:aircraft:cruise:CL", 150 * [cl]
         )  # needed because size of input array is fixed
         ivc.add_output("data:TLAR:cruise_mach", mach)
+        ivc.add_output("data:geometry:wing:sweep_25", sweep, units="deg")
+        ivc.add_output("data:geometry:wing:thickness_ratio", thickness_ratio)
+        ivc.add_output(
+            "tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling", max_cd_comp
+        )
+
         problem = run_system(CdCompressibility(), ivc)
         return problem["data:aerodynamics:aircraft:cruise:CD:compressibility"][0]
 
-    assert get_cd_compressibility(0.78, 0.2) == approx(0.00028, abs=1e-5)
-    assert get_cd_compressibility(0.78, 0.35) == approx(0.00028, abs=1e-5)
-    assert get_cd_compressibility(0.78, 0.5) == approx(0.00045, abs=1e-5)
-    assert get_cd_compressibility(0.84, 0.2) == approx(0.00359, abs=1e-5)
-    assert get_cd_compressibility(0.84, 0.35) == approx(0.00359, abs=1e-5)
-    assert get_cd_compressibility(0.84, 0.5) == approx(0.00580, abs=1e-5)
-    assert get_cd_compressibility(0.2, 0.9) == approx(0.0, abs=1e-5)
+    assert get_cd_compressibility(0.2, 0.9, 28, 0.12) == approx(0.0, abs=1e-5)
+    assert get_cd_compressibility(0.78, 0.2, 28, 0.12) == approx(0.00028, abs=1e-5)
+    assert get_cd_compressibility(0.78, 0.35, 28, 0.12) == approx(0.00028, abs=1e-5)
+    assert get_cd_compressibility(0.78, 0.5, 28, 0.12) == approx(0.00045, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.2, 28, 0.12) == approx(0.00359, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.35, 28, 0.12) == approx(0.00359, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.5, 28, 0.12) == approx(0.00580, abs=1e-5)
+
+    assert get_cd_compressibility(0.84, 0.2, 28, 0.12, 0.002) == approx(0.002, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.35, 28, 0.12, 0.002) == approx(0.002, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.5, 28, 0.12, 0.002) == approx(0.002, abs=1e-5)
+
+    assert get_cd_compressibility(0.84, 0.2, 35, 0.12) == approx(0.00023, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.35, 35, 0.12) == approx(0.00023, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.5, 35, 0.12) == approx(0.00039, abs=1e-5)
+
+    assert get_cd_compressibility(0.84, 0.2, 28, 0.10) == approx(0.00137, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.35, 28, 0.10) == approx(0.00137, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.5, 28, 0.10) == approx(0.00221, abs=1e-5)
 
 
 def test_cd_trim():
@@ -263,13 +281,13 @@ def test_polar_high_speed():
     cd = problem["data:aerodynamics:aircraft:cruise:CD"]
     cl = problem["data:aerodynamics:aircraft:cruise:CL"]
 
-    assert cd[cl == 0.0] == approx(0.02030, abs=1e-5)
-    assert cd[cl == 0.2] == approx(0.02209, abs=1e-5)
-    assert cd[cl == 0.42] == approx(0.02897, abs=1e-5)
-    assert cd[cl == 0.85] == approx(0.11781, abs=1e-5)
+    assert cd[cl == 0.0] == approx(0.02102, abs=1e-5)
+    assert cd[cl == 0.2] == approx(0.02281, abs=1e-5)
+    assert cd[cl == 0.42] == approx(0.02977, abs=1e-5)
+    assert cd[cl == 0.85] == approx(0.07062, abs=1e-5)
 
-    assert problem["data:aerodynamics:aircraft:cruise:optimal_CL"] == approx(0.54, abs=1e-3)
-    assert problem["data:aerodynamics:aircraft:cruise:optimal_CD"] == approx(0.03550, abs=1e-5)
+    assert problem["data:aerodynamics:aircraft:cruise:optimal_CL"] == approx(0.51, abs=1e-3)
+    assert problem["data:aerodynamics:aircraft:cruise:optimal_CD"] == approx(0.03487, abs=1e-5)
 
 
 def test_polar_low_speed():

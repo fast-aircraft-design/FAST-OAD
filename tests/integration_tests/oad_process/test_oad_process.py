@@ -257,11 +257,11 @@ def test_api(cleanup):
 
     assert_allclose(problem["data:handling_qualities:static_margin"], -0.005519, atol=1e-3)
     assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.5, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 77069, atol=1)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 77065, atol=1)
     assert_allclose(problem["data:geometry:wing:area"], 130.29, atol=1e-2)
     assert_allclose(problem["data:geometry:vertical_tail:area"], 27.65, atol=1e-2)
     assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.25, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:fuel"], 20498, atol=1)
+    assert_allclose(problem["data:mission:sizing:fuel"], 20494, atol=1)
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)

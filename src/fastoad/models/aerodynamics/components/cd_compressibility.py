@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+Compressibility drag computation.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -15,17 +15,29 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from math import exp
-
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class CdCompressibility(ExplicitComponent):
+    """
+    Computation of drag increment due to compressibility effects.
+
+    Formula from §4.2.4 of :cite:`supaero:2014`. This formula can be used for aircraft
+    before year 2000.
+    Earlier aircraft have more optimized wing profiles that are expected to limit the
+    compressibility drag below 2 drag counts. Until a better model can be provided, the
+    variable `tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling` allows to
+    control the maximum authorized compressibility drag.
+    """
+
     def setup(self):
 
         self.add_input("data:TLAR:cruise_mach", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CL", shape_by_conn=True, val=np.nan)
+        self.add_input("data:geometry:wing:sweep_25", units="deg", val=np.nan)
+        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
+        self.add_input("tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling", val=0.01)
         self.add_output(
             "data:aerodynamics:aircraft:cruise:CD:compressibility",
             copy_shape="data:aerodynamics:aircraft:cruise:CL",
@@ -36,13 +48,18 @@ class CdCompressibility(ExplicitComponent):
     def compute(self, inputs, outputs):
         cl = inputs["data:aerodynamics:aircraft:cruise:CL"]
         m = inputs["data:TLAR:cruise_mach"]
+        max_cd_comp = inputs["tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling"]
+        sweep_angle = inputs["data:geometry:wing:sweep_25"]
+        thickness_ratio = inputs["data:geometry:wing:thickness_ratio"]
 
-        cd_comp = []
+        # Computation of characteristic Mach for 28° sweep and 0.12 of relative thickness
+        m_charac_comp_0 = -0.5 * np.maximum(0.35, cl) ** 2 + 0.35 * np.maximum(0.35, cl) + 0.765
 
-        for cl_val in cl:
-            # FIXME: The computed characteristic Mach is for sweep angle 28° and relative thickness
-            #        of 0.12. It should be corrected according to actual values
-            m_charac_comp = -0.5 * max(0.35, cl_val) ** 2 + 0.35 * max(0.35, cl_val) + 0.765
-            cd_comp.append(0.002 * exp(42.58 * (m - m_charac_comp)))
+        # Computation of characteristic Mach for actual sweep angle and relative thickness
+        m_charac_comp = (
+            m_charac_comp_0 * np.cos(np.radians(28)) + 0.12 - thickness_ratio
+        ) / np.cos(np.radians(sweep_angle))
+
+        cd_comp = np.minimum(max_cd_comp, 0.002 * np.exp(42.58 * (m - m_charac_comp)))
 
         outputs["data:aerodynamics:aircraft:cruise:CD:compressibility"] = cd_comp
