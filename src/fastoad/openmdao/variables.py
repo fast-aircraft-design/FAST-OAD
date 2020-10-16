@@ -463,8 +463,12 @@ class VariableList(list):
         The inputs (is_input=True) correspond to the variables of IndepVarComp
         components and all the unconnected variables.
 
-        If variables are promoted, the promoted name will be used. Otherwise ( and if
+        If variables are promoted, the promoted name will be used. Otherwise (and if
         promoted_only is False), the absolute name will be used.
+
+        .. note::
+
+            Variables from _auto_ivc are ignored.
 
         :param problem: OpenMDAO Problem instance to inspect
         :param use_initial_values: if True, returned instance will contain values before computation
@@ -487,16 +491,21 @@ class VariableList(list):
         ivc_inputs = []
         for subsystem in model.system_iter():
             if isinstance(subsystem, om.IndepVarComp):
-                input_variables = cls.from_ivc(subsystem)
-                for var in input_variables:
-                    ivc_inputs.append(var.name)
+                if subsystem.name != "_auto_ivc":  # Exclude vars from _auto_ivc
+                    input_variables = cls.from_ivc(subsystem)
+                    for var in input_variables:
+                        ivc_inputs.append(var.name)
 
         global_inputs = unconnected_inputs + ivc_inputs
 
         for abs_name, metadata in model.get_io_metadata(
             metadata_keys=["value", "units", "upper", "lower"], return_rel_names=False
         ).items():
-            metadata = metadata.copy()  # a copy is needed because we will modify it later
+
+            # Exclude vars from _auto_ivc
+            if abs_name.startswith("_auto_ivc."):
+                continue
+
             prom_name = metadata["prom_name"]
 
             if not (get_promoted_names and prom_name == abs_name):
@@ -526,6 +535,8 @@ class VariableList(list):
                         # We already have a non-NaN value and current variable has a NaN value and
                         # can only add information about units. We keep the non-NaN value
                         continue
+
+                metadata = metadata.copy()  # a copy is needed because we will modify it
 
                 # Setting type (IN or OUT)
                 if prom_name in global_inputs:
