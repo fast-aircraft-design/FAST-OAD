@@ -2,13 +2,26 @@
 Changelog
 =========
 
+Version 0.5.3-beta
+==================
+
+- Added compatibility with OpenMDAO 3.4, which is now the minimum required
+  version of OpenMDAO. (#231)
+- Simplified call to VariableViewer. (#221)
+- Bug fix: model for compressibility drag now takes into account sweep angle
+  and thickness ratio. (#237)
+- Bug fix: at installation, minimum version of Scipy is forced to 1.2. (#219)
+- Bug fix: SpeedChangeSegment class now accepts Mach number as possible target. (#234)
+- Bug fix: variable "data:weight:aircraft_empty:mass has now "kg" as unit. (#236)
+
+
 Version 0.5.2-beta
 ==================
 
-- Added compatibility with OpenMDAO 3.3.
-- Added computation time in log info.
-- Fixed bug in XFOIL input file. #204
-- Fixed bug in copy_resource_folder(). #205
+- Added compatibility with OpenMDAO 3.3. (#210)
+- Added computation time in log info. (#211)
+- Fixed bug in XFOIL input file. (#208)
+- Fixed bug in copy_resource_folder(). (#212)
 
 Version 0.5.1-beta
 ==================
