@@ -100,13 +100,26 @@ def test_non_regression_breguet(cleanup):
     )
 
 
+def test_non_regression_mission_only(cleanup):
+    run_non_regression_test(
+        "oad_process_mission_only.toml",
+        "CeRAS01_legacy_mission_result.xml",
+        "non_regression_mission_only",
+        use_xfoil=False,
+        vars_to_check=["data:mission:sizing:fuel"],
+        tolerance=1.0e-2,
+        check_weight_perfo_loop=False,
+    )
+
+
+@pytest.mark.skip
 def test_non_regression_mission(cleanup):
     run_non_regression_test(
         "oad_process_mission.toml",
         "CeRAS01_legacy_mission_result.xml",
         "non_regression_mission",
         use_xfoil=False,
-        check_only_mtow=True,
+        vars_to_check=["data:weight:aircraft:MTOW", "data:mission:sizing:fuel"],
         tolerance=1.0e-2,
     )
 
@@ -116,8 +129,9 @@ def run_non_regression_test(
     legacy_result_file,
     result_dir,
     use_xfoil=False,
-    check_only_mtow=False,
+    vars_to_check=None,
     tolerance=5.0e-3,
+    check_weight_perfo_loop=True,
 ):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, result_dir)
     configuration_file_path = pth.join(results_folder_path, conf_file)
@@ -156,28 +170,29 @@ def run_non_regression_test(
         problem, outfile=pth.join(results_folder_path, "connections.html"), show_browser=False
     )
 
-    # Check that weight-performances loop correctly converged
-    # assert_allclose(
-    #     problem["data:weight:aircraft:OWE"],
-    #     problem["data:weight:airframe:mass"]
-    #     + problem["data:weight:propulsion:mass"]
-    #     + problem["data:weight:systems:mass"]
-    #     + problem["data:weight:furniture:mass"]
-    #     + problem["data:weight:crew:mass"],
-    #     atol=1,
-    # )
-    # assert_allclose(
-    #     problem["data:weight:aircraft:MZFW"],
-    #     problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
-    #     atol=1,
-    # )
-    # assert_allclose(
-    #     problem["data:weight:aircraft:MTOW"],
-    #     problem["data:weight:aircraft:OWE"]
-    #     + problem["data:weight:aircraft:payload"]
-    #     + problem["data:mission:sizing:fuel"],
-    #     atol=1,
-    # )
+    if check_weight_perfo_loop:
+        # Check that weight-performances loop correctly converged
+        assert_allclose(
+            problem["data:weight:aircraft:OWE"],
+            problem["data:weight:airframe:mass"]
+            + problem["data:weight:propulsion:mass"]
+            + problem["data:weight:systems:mass"]
+            + problem["data:weight:furniture:mass"]
+            + problem["data:weight:crew:mass"],
+            atol=1,
+        )
+        assert_allclose(
+            problem["data:weight:aircraft:MZFW"],
+            problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
+            atol=1,
+        )
+        assert_allclose(
+            problem["data:weight:aircraft:MTOW"],
+            problem["data:weight:aircraft:OWE"]
+            + problem["data:weight:aircraft:payload"]
+            + problem["data:mission:sizing:fuel"],
+            atol=1,
+        )
 
     ref_var_list = VariableIO(
         pth.join(DATA_FOLDER_PATH, legacy_result_file), formatter=VariableLegacy1XmlFormatter(),
@@ -209,8 +224,9 @@ def run_non_regression_test(
     pd.set_option("display.max_colwidth", 120)
     print(df.sort_values(by=["abs_rel_delta"]))
 
-    if check_only_mtow:
-        assert np.all(df.abs_rel_delta.loc[df.name == "data:weight:aircraft:MTOW"] < tolerance)
+    if vars_to_check is not None:
+        for name in vars_to_check:
+            assert np.all(df.abs_rel_delta.loc[df.name == name] < tolerance)
     else:
         assert np.all(df.abs_rel_delta < tolerance)
 
