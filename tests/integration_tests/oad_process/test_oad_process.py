@@ -112,7 +112,7 @@ def test_non_regression_mission_only(cleanup):
     )
 
 
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_non_regression_mission(cleanup):
     run_non_regression_test(
         "oad_process_mission.toml",

@@ -154,6 +154,7 @@ class MissionDefinition(dict):
             Optional("engine_setting", default=None): Str(),
             Optional(POLAR_TAG, default=None): polar_schema,
             Optional("thrust_rate", default=None): Float() | Str(),
+            Optional("climb_thrust_rate", default=None): Float() | Str(),
             Optional("time_step", default=None): Float(),
             Optional("maximum_mach", default=None): Float() | Str(),
         }

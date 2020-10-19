@@ -104,6 +104,9 @@ route_definitions:
       - segment: cruise
         engine_setting: cruise
         polar: data:aerodynamics:aircraft:cruise
+        target:
+          altitude: -20000.
+        climb_thrust_rate: data:mission:sizing:climb:thrust_rate
       - phase: descent
 
   diversion:

@@ -81,8 +81,22 @@ class SizingMission(om.ExplicitComponent):
         else:
             print("!!!!!!!!!! TIME STEP !!!!!!!!!!!!!!")
             self.compute_mission(inputs, outputs)
+            print("cruise altitude:", np.max(self.flight_points.altitude) / foot)
+            for name in ["data:geometry:wing:area", "data:weight:aircraft:MTOW"]:
+                print(name, inputs[name])
+
+            for name in ["data:mission:sizing:ZFW", "data:mission:sizing:fuel"]:
+                print(name, outputs[name])
 
     def compute_breguet(self, inputs, outputs):
+        """
+        Computes mission using simple Breguet formula at altitude==10000m
+
+        Useful for initiating the computation.
+
+        :param inputs: OpenMDAO input vector
+        :param outputs: OpenMDAO output vector
+        """
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
@@ -107,6 +121,12 @@ class SizingMission(om.ExplicitComponent):
         outputs["data:mission:sizing:fuel"] = breguet.mission_fuel
 
     def compute_mission(self, inputs, outputs):
+        """
+        Computes mission using time-step integration.
+
+        :param inputs: OpenMDAO input vector
+        :param outputs: OpenMDAO output vector
+        """
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )

@@ -1,3 +1,6 @@
+"""
+Classes for computation of routes (i.e. assemblies of climb, cruise and descent phases).
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -48,7 +51,7 @@ class SimpleRoute(FlightSequence):
         super().__init__()
         self.climb_phases = climb_phases
         self.cruise_segment = cruise_phase
-        self.cruise_segment.target = FlightPoint(ground_distance=cruise_distance, mach="constant")
+        self.cruise_distance = cruise_distance
         self.descent_phases = descent_phases
 
     @property
@@ -58,7 +61,7 @@ class SimpleRoute(FlightSequence):
 
     @cruise_distance.setter
     def cruise_distance(self, cruise_distance):
-        self.cruise_segment.target = FlightPoint(ground_distance=cruise_distance)
+        self.cruise_segment.target.ground_distance = cruise_distance
 
     @property
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:

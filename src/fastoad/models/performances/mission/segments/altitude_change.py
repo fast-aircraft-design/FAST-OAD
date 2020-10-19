@@ -1,6 +1,6 @@
 """Classes for climb/descent segments."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,14 +15,14 @@
 import logging
 from typing import Tuple, List
 
-import numpy as np
 import pandas as pd
+from scipy.constants import g
+
 from fastoad.base.dict import AddKeyAttributes
 from fastoad.base.flight_point import FlightPoint
 from fastoad.utils.physics import AtmosphereSI
-from scipy.constants import g, foot
-
 from .base import ManualThrustSegment
+from ..util import get_closest_flight_level
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -124,8 +124,9 @@ class AltitudeChangeSegment(ManualThrustSegment):
             if self.target.CL == self.OPTIMAL_ALTITUDE:
                 self.target.altitude = optimal_altitude
             else:  # self.target.CL == self.OPTIMAL_FLIGHT_LEVEL:
-                flight_level = 1000 * foot
-                self.target.altitude = flight_level * np.floor(optimal_altitude / flight_level)
+                self.target.altitude = get_closest_flight_level(
+                    optimal_altitude, up_direction=False
+                )
 
         if self.target.altitude:
             return self.target.altitude - current.altitude
