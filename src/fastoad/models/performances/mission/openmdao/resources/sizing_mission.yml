@@ -106,7 +106,7 @@ route_definitions:
         polar: data:aerodynamics:aircraft:cruise
         target:
           altitude: -20000.
-        climb_thrust_rate: data:mission:sizing:climb:thrust_rate
+        maximum_flight_level: 340
       - phase: descent
 
   diversion:

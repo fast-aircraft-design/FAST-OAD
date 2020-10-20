@@ -10,6 +10,7 @@ output_file = "./oad_process_mission_outputs.xml"
 [model]
     nonlinear_solver = "om.NonlinearBlockGS(maxiter=30)"
     linear_solver = "om.DirectSolver()"
+
     [model.group]
         nonlinear_solver = "om.NonlinearBlockGS(maxiter=30)"
         linear_solver = "om.DirectSolver()"
@@ -32,6 +33,7 @@ output_file = "./oad_process_mission_outputs.xml"
         id = "fastoad.handling_qualities.tail_sizing"
     [model.group.hq.static_margin]
         id = "fastoad.handling_qualities.static_margin"
+
     [model.performance]
         id = "fastoad.performances.sizing_mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"

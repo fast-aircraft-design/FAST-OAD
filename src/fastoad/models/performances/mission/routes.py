@@ -65,6 +65,14 @@ class SimpleRoute(FlightSequence):
 
     @property
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:
+
+        # The preliminary climb segment of the cruise segment is set to the
+        # last segment before cruise.
+        cruise_climb = self.climb_phases[-1]
+        while isinstance(cruise_climb, FlightSequence):
+            cruise_climb = cruise_climb.flight_sequence[-1]
+        self.cruise_segment.climb_class = cruise_climb
+
         return self.climb_phases + [self.cruise_segment] + self.descent_phases
 
 

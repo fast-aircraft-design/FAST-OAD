@@ -112,7 +112,6 @@ def test_non_regression_mission_only(cleanup):
     )
 
 
-# @pytest.mark.skip
 def test_non_regression_mission(cleanup):
     run_non_regression_test(
         "oad_process_mission.toml",
@@ -226,7 +225,9 @@ def run_non_regression_test(
 
     if vars_to_check is not None:
         for name in vars_to_check:
-            assert np.all(df.abs_rel_delta.loc[df.name == name] < tolerance)
+            row = df.loc[df.name == name]
+            assert_allclose(row.ref_value, row.value, rtol=tolerance)
+            # assert np.all(df.abs_rel_delta.loc[df.name == name] < tolerance)
     else:
         assert np.all(df.abs_rel_delta < tolerance)
 

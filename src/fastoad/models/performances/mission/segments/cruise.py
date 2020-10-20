@@ -11,19 +11,20 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from copy import deepcopy
 from typing import List
 
 import pandas as pd
+from scipy.constants import foot
 
 from fastoad.base.dict import AddKeyAttributes
 from fastoad.base.flight_point import FlightPoint
-from .altitude_change import AltitudeChangeSegment
 from .base import RegulatedThrustSegment
 from ..util import get_closest_flight_level
 
 
-@AddKeyAttributes({"climb_thrust_rate": 1.0})
+@AddKeyAttributes({"climb_class": None, "maximum_flight_level": 500.0})
 class CruiseSegment(RegulatedThrustSegment):
     """
     Class for computing cruise flight segment at constant altitude.
@@ -56,6 +57,8 @@ class CruiseSegment(RegulatedThrustSegment):
             while go_to_next_level:
                 old_mass_loss = mass_loss
                 cruise_altitude = get_closest_flight_level(cruise_altitude + 1.0e-3)
+                if cruise_altitude > self.maximum_flight_level * 100.0 * foot:
+                    break
 
                 new_results = self._climb_to_altitude_and_cruise(start, cruise_altitude, new_cruise)
                 mass_loss = start.mass - new_results.mass.iloc[-1]
@@ -71,17 +74,11 @@ class CruiseSegment(RegulatedThrustSegment):
     def _climb_to_altitude_and_cruise(
         self, start: FlightPoint, cruise_altitude: float, cruise_definition: "CruiseSegment"
     ):
-        climb_points = AltitudeChangeSegment(
-            target=FlightPoint(altitude=cruise_altitude, mach="constant"),
-            propulsion=self.propulsion,
-            reference_area=self.reference_area,
-            polar=self.polar,
-            thrust_rate=self.climb_thrust_rate,
-            name=self.name,
-        ).compute_from(start)
+        climb_definition = deepcopy(self.climb_class)
+        climb_definition.target = FlightPoint(altitude=cruise_altitude, mach="constant")
+        climb_points = climb_definition.compute_from(start)
 
         cruise_start = FlightPoint(climb_points.iloc[-1])
-
         cruise_definition.target.ground_distance = (
             self.target.ground_distance - cruise_start.ground_distance
         )

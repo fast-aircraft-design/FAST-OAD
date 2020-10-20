@@ -405,13 +405,20 @@ def test_cruise_at_constant_altitude(polar):
 
 def test_cruise_at_optimal_flight_level_with_climb_first(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 3.0e-5), 2)
+    reference_area = 120.0
 
     segment = CruiseSegment(
         target=FlightPoint(ground_distance=10.0e6, altitude=CruiseSegment.OPTIMAL_FLIGHT_LEVEL),
         propulsion=propulsion,
-        reference_area=120.0,
+        reference_area=reference_area,
         polar=polar,
-        climb_thrust_rate=0.9,
+        climb_class=AltitudeChangeSegment(
+            target=FlightPoint(mach="constant"),
+            propulsion=propulsion,
+            reference_area=reference_area,
+            polar=polar,
+            thrust_rate=0.9,
+        ),
     )
 
     flight_points = segment.compute_from(FlightPoint(mass=70000.0, altitude=8000.0, mach=0.78))
@@ -433,13 +440,20 @@ def test_cruise_at_optimal_flight_level_with_climb_first(polar):
 
 def test_cruise_at_optimal_flight_level_with_start_at_exact_flight_level(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 3.0e-5), 2)
+    reference_area = 120.0
 
     segment = CruiseSegment(
         target=FlightPoint(ground_distance=10.0e6, altitude=CruiseSegment.OPTIMAL_FLIGHT_LEVEL),
         propulsion=propulsion,
-        reference_area=120.0,
+        reference_area=reference_area,
         polar=polar,
-        climb_thrust_rate=0.9,
+        climb_class=AltitudeChangeSegment(
+            target=FlightPoint(mach="constant"),
+            propulsion=propulsion,
+            reference_area=reference_area,
+            polar=polar,
+            thrust_rate=0.9,
+        ),
     )
 
     # Start at exact optimum flight level ==========================================================

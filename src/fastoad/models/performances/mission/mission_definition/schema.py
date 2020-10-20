@@ -157,6 +157,7 @@ class MissionDefinition(dict):
             Optional("climb_thrust_rate", default=None): Float() | Str(),
             Optional("time_step", default=None): Float(),
             Optional("maximum_mach", default=None): Float() | Str(),
+            Optional("maximum_flight_level", default=None): Float() | Str(),
         }
 
     @classmethod
