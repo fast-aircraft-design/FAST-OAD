@@ -4,7 +4,7 @@ title = "OAD process with performances as Breguet computation"
 module_folders = []
 
 # Input and output files
-input_file = "./problem_inputs_breguet.xml"
+input_file = "./problem_inputs.xml"
 output_file = "./results/problem_outputs_breguet.xml"
 
 # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
