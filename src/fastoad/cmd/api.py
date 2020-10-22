@@ -19,8 +19,8 @@ import os.path as pth
 import sys
 import textwrap as tw
 from shutil import get_terminal_size
-from typing import IO, Union
 from time import time
+from typing import IO, Union
 
 import numpy as np
 import openmdao.api as om
@@ -32,7 +32,7 @@ from whatsopt.show_utils import generate_xdsm_html
 from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
 
 from fastoad.cmd.exceptions import FastFileExistsError
-from fastoad.io import IVariableIOFormatter
+from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.io.configuration import FASTOADProblem
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
@@ -471,15 +471,34 @@ def optimization_viewer(configuration_file_path: str):
     return viewer.display()
 
 
-def variable_viewer(file_path: str, file_formatter: IVariableIOFormatter = None):
+def variable_viewer(file_path: str, file_formatter: IVariableIOFormatter = None, editable=True):
     """
     Displays a widget that enables to visualize variables information and edit their values.
 
     :param file_path: the path of file to interact with
-    :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
-    :return: display of the VariableViewer
+    :param file_formatter: the formatter that defines file format. If not provided, default format
+                           will be assumed.
+    :param editable: if True, an editable table with variable filters will be displayed. If False,
+                     the table will not be editable nor searchable, but can be stored in an HTML
+                     file.
+    :return: display handle of the VariableViewer
     """
-    viewer = VariableViewer()
-    viewer.load(file_path, file_formatter)
+    if editable:
+        viewer = VariableViewer()
+        viewer.load(file_path, file_formatter)
 
-    return viewer.display()
+        handle = viewer.display()
+    else:
+        variables = VariableIO(file_path, file_formatter).read()
+        variables.sort(key=lambda var: var.name)
+
+        table = variables.to_dataframe()[["name", "value", "units", "is_input", "desc"]].rename(
+            columns={"name": "Name", "value": "Value", "units": "Unit", "desc": "Description"}
+        )
+        table["I/O"] = "OUT"
+        table["I/O"].loc[table["is_input"]] = "IN"
+        del table["is_input"]
+        table.set_index("Name", drop=True, inplace=True)
+
+        handle = display(HTML(table.to_html()))
+    return handle
