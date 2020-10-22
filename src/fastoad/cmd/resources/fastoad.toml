@@ -40,7 +40,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
 #    [model.performance]
 #        id = "fastoad.performances.sizing_mission"
 #        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
-#        out_file = "D:/complete/path/flight_points.csv"
+#        out_file = "./flight_points.csv"
     [model.hq_tail_sizing]
         id = "fastoad.handling_qualities.tail_sizing"
     [model.hq_static_margin]

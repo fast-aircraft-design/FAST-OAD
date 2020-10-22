@@ -159,12 +159,6 @@ def run_non_regression_test(
     problem.run_model()
     problem.write_outputs()
 
-    try:
-        problem.model.performance.flight_points.to_csv(
-            pth.join(results_folder_path, "flight_points.csv"), sep=";", decimal=".",
-        )
-    except AttributeError:
-        pass
     om.view_connections(
         problem, outfile=pth.join(results_folder_path, "connections.html"), show_browser=False
     )
