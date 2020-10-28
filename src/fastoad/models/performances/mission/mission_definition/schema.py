@@ -23,7 +23,7 @@ from strictyaml import load, Map, MapPattern, Optional, Str, Float, Seq, Any, YA
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
-from fastoad.models.performances.mission.segments.cruise import CruiseSegment
+from fastoad.models.performances.mission.segments.cruise import CruiseSegment, OptimalCruiseSegment
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
@@ -32,6 +32,7 @@ from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 SEGMENT_TAG = "segment"
 ROUTE_TAG = "route"
 PHASE_TAG = "phase"
+CRUISE_TYPE_TAG = "cruise_type"
 STEPS_TAG = "steps"
 MISSION_DEFINITION_TAG = "mission"
 ROUTE_DEFINITIONS_TAG = "route_definitions"
@@ -92,19 +93,19 @@ class MissionDefinition(dict):
                 cls._process_polar_definition(segment_definition)
 
         for route_definition in content[ROUTE_DEFINITIONS_TAG].values():
-            range_step_count = 0
+            # Routes are expected to contain some phases and ONE cruise phase
+            cruise_step_count = 0
             for step in route_definition[STEPS_TAG]:
                 cls._process_polar_definition(step)
-
-                Ensure(step.keys()).contains_one_of([PHASE_TAG, SEGMENT_TAG])
+                Ensure(step.keys()).contains_one_of([PHASE_TAG, CRUISE_TYPE_TAG])
 
                 if PHASE_TAG in step:
                     Ensure(step[PHASE_TAG]).is_in(step_names)
                     YAML(step).revalidate(Map(cls._get_phase_in_route_mapping()))
-                else:
-                    range_step_count += 1
-                    YAML(step).revalidate(Map(cls._get_segment_mapping()))
-            Ensure(range_step_count).is_less_than_or_equal_to(1)
+                else:  # CRUISE_TYPE_TAG in step
+                    cruise_step_count += 1
+                    YAML(step).revalidate(Map(cls._get_segment_mapping(CRUISE_TYPE_TAG)))
+            Ensure(cruise_step_count).is_less_than_or_equal_to(1)
 
         for step in content[MISSION_DEFINITION_TAG][STEPS_TAG]:
             step_type, step_name = tuple(*step.items())
@@ -156,13 +157,12 @@ class MissionDefinition(dict):
             Optional("thrust_rate", default=None): Float() | Str(),
             Optional("climb_thrust_rate", default=None): Float() | Str(),
             Optional("time_step", default=None): Float(),
-            Optional("maximum_mach", default=None): Float() | Str(),
             Optional("maximum_flight_level", default=None): Float() | Str(),
         }
 
     @classmethod
-    def _get_segment_mapping(cls) -> dict:
-        segment_map = {SEGMENT_TAG: Str()}
+    def _get_segment_mapping(cls, tag=SEGMENT_TAG) -> dict:
+        segment_map = {tag: Str()}
         segment_map.update(cls._get_base_step_mapping())
         return segment_map
 
@@ -201,11 +201,12 @@ class SegmentNames(Enum):
     """
     Class that lists available flight segments.
 
-    Enum values are linked to matching implementation with :meth`get_segment_class`.
+    Enum values are linked to matching implementation with :meth:`get_segment_class`.
     """
 
     ALTITUDE_CHANGE = "altitude_change"
     CRUISE = "cruise"
+    OPTIMAL_CRUISE = "optimal_cruise"
     SPEED_CHANGE = "speed_change"
     HOLDING = "holding"
     TAXI = "taxi"
@@ -228,6 +229,7 @@ class SegmentNames(Enum):
         segments = {
             cls.ALTITUDE_CHANGE.value: AltitudeChangeSegment,
             cls.CRUISE.value: CruiseSegment,
+            cls.OPTIMAL_CRUISE.value: OptimalCruiseSegment,
             cls.SPEED_CHANGE.value: SpeedChangeSegment,
             cls.HOLDING.value: HoldSegment,
             cls.TAXI.value: TaxiSegment,

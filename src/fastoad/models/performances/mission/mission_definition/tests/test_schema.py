@@ -214,10 +214,21 @@ def test_schema():
                                                 "target",
                                                 OrderedDict(
                                                     [
-                                                        (
-                                                            "equivalent_airspeed",
-                                                            OrderedDict([("value", "constant")]),
-                                                        ),
+                                                        ("equivalent_airspeed", "constant"),
+                                                        ("mach", "data:TLAR:cruise_mach"),
+                                                    ]
+                                                ),
+                                            ),
+                                        ]
+                                    ),
+                                    OrderedDict(
+                                        [
+                                            ("segment", "altitude_change"),
+                                            (
+                                                "target",
+                                                OrderedDict(
+                                                    [
+                                                        ("mach", "constant"),
                                                         (
                                                             "altitude",
                                                             OrderedDict([("value", -20000.0)]),
@@ -225,7 +236,6 @@ def test_schema():
                                                     ]
                                                 ),
                                             ),
-                                            ("maximum_mach", "data:TLAR:cruise_mach"),
                                         ]
                                     ),
                                 ],
@@ -431,7 +441,7 @@ def test_schema():
                                     OrderedDict([("phase", "climb")]),
                                     OrderedDict(
                                         [
-                                            ("segment", "cruise"),
+                                            ("cruise_type", "optimal_cruise"),
                                             ("engine_setting", "cruise"),
                                             (
                                                 "polar",
@@ -488,7 +498,7 @@ def test_schema():
                                     ),
                                     OrderedDict(
                                         [
-                                            ("segment", "cruise"),
+                                            ("cruise_type", "cruise"),
                                             ("engine_setting", "cruise"),
                                             (
                                                 "polar",

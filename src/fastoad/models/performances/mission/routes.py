@@ -71,7 +71,7 @@ class SimpleRoute(FlightSequence):
         cruise_climb = self.climb_phases[-1]
         while isinstance(cruise_climb, FlightSequence):
             cruise_climb = cruise_climb.flight_sequence[-1]
-        self.cruise_segment.climb_class = cruise_climb
+        self.cruise_segment.climb_segment = cruise_climb
 
         return self.climb_phases + [self.cruise_segment] + self.descent_phases
 

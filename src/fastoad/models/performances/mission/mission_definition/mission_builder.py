@@ -24,16 +24,17 @@ from fastoad.constants import EngineSetting
 from fastoad.models.performances.mission.base import FlightSequence
 from fastoad.models.performances.mission.base import IFlightPart
 from fastoad.models.performances.mission.polar import Polar
-from fastoad.models.performances.mission.segments.base import AbstractSegment
+from fastoad.models.performances.mission.segments.base import FlightSegment
 from fastoad.models.propulsion import IPropulsion
 from .schema import (
     PHASE_DEFINITIONS_TAG,
     ROUTE_DEFINITIONS_TAG,
-    STEPS_TAG,
-    SegmentNames,
     MISSION_DEFINITION_TAG,
+    STEPS_TAG,
     PHASE_TAG,
     SEGMENT_TAG,
+    CRUISE_TYPE_TAG,
+    SegmentNames,
     MissionDefinition,
 )
 from ..routes import SimpleRoute, RangedRoute
@@ -173,11 +174,12 @@ class MissionBuilder:
                     else:
                         descent_phases.append(phase)
                 else:
-                    # Schema ensures there is one and only one SEGMENT_TAG
+                    # Schema ensures there is one and only one CRUISE_TYPE_TAG
                     cruise_phase = self._build_segment(
                         step_definition,
                         {"name": "cruise", "target": FlightPoint(ground_distance=0.0)},
                         inputs,
+                        tag=CRUISE_TYPE_TAG,
                     )
                     climb = False
 
@@ -200,12 +202,12 @@ class MissionBuilder:
 
             self._phases[phase_name] = phase
 
-    def _build_segment(self, step_definition, kwargs, inputs: Optional[Mapping]) -> AbstractSegment:
-        segment_class = SegmentNames.get_segment_class(step_definition[SEGMENT_TAG])
+    def _build_segment(
+        self, step_definition, kwargs, inputs: Optional[Mapping], tag=SEGMENT_TAG
+    ) -> FlightSegment:
+        segment_class = SegmentNames.get_segment_class(step_definition[tag])
         step_kwargs = kwargs.copy()
-        step_kwargs.update(
-            {name: value for name, value in step_definition.items() if name != SEGMENT_TAG}
-        )
+        step_kwargs.update({name: value for name, value in step_definition.items() if name != tag})
         step_kwargs.update(self._base_kwargs)
         for key, value in step_kwargs.items():
             if key == "polar":

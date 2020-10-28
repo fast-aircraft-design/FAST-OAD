@@ -368,9 +368,12 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
                 target=FlightPoint(equivalent_airspeed=300.0 * knot), **self.segment_kwargs,
             ),
             AltitudeChangeSegment(
-                target=FlightPoint(equivalent_airspeed="constant", altitude=self.target_altitude),
+                target=FlightPoint(equivalent_airspeed="constant", mach=self.maximum_mach),
                 **self.segment_kwargs,
-                maximum_mach=self.maximum_mach,
+            ),
+            AltitudeChangeSegment(
+                target=FlightPoint(mach="constant", altitude=self.target_altitude),
+                **self.segment_kwargs,
             ),
         ]
 

@@ -45,11 +45,13 @@ phase_definitions:
             unit: kn
       - segment: altitude_change
         target:
-          equivalent_airspeed:
-            value: constant
+          equivalent_airspeed: constant
+          mach: data:TLAR:cruise_mach
+      - segment: altitude_change
+        target:
+          mach: constant
           altitude:
-            value: -20000.
-        maximum_mach: data:TLAR:cruise_mach
+            value: optimal_flight_level
   descent:
     engine_setting: idle
     polar: data:aerodynamics:aircraft:cruise
@@ -101,11 +103,11 @@ route_definitions:
     steps:
       - phase: initial_climb
       - phase: climb
-      - segment: cruise
+      - cruise_type: cruise
         engine_setting: cruise
         polar: data:aerodynamics:aircraft:cruise
         target:
-          altitude: -20000.
+          altitude: optimal_flight_level
         maximum_flight_level: 340
       - phase: descent
 
@@ -119,7 +121,7 @@ route_definitions:
             unit: ft
           equivalent_airspeed:
             value: constant
-      - segment: cruise
+      - cruise_type: cruise
         engine_setting: cruise
         polar: data:aerodynamics:aircraft:cruise
       - phase: descent
