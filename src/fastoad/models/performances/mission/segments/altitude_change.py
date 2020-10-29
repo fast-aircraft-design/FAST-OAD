@@ -73,14 +73,20 @@ class AltitudeChangeSegment(ManualThrustSegment):
         start = FlightPoint(start)
         self.complete_flight_point(start)  # needed to ensure all speed values are computed.
 
-        if self.target.altitude and isinstance(self.target.altitude, str):
-            # Target altitude will be modified along the process, so we keep track
-            # of the original order in target CL, that is not used otherwise.
-            self.target.CL = self.target.altitude
-            # let's put a numerical, negative value in self.target.altitude to
-            # ensure there will be no problem in self._get_distance_to_target()
-            self.target.altitude = -1000.0
-            self.interrupt_if_getting_further_from_target = False
+        if self.target.altitude:
+            if isinstance(self.target.altitude, str):
+                # Target altitude will be modified along the process, so we keep track
+                # of the original order in target CL, that is not used otherwise.
+                self.target.CL = self.target.altitude  # pylint: disable=invalid-name
+                # let's put a numerical, negative value in self.target.altitude to
+                # ensure there will be no problem in self._get_distance_to_target()
+                self.target.altitude = -1000.0
+                self.interrupt_if_getting_further_from_target = False
+            else:
+                # Target altitude is fixed, back to original settings (in case
+                # this instance is used more than once)
+                self.target.CL = None
+                self.interrupt_if_getting_further_from_target = True
 
         atm = AtmosphereSI(start.altitude)
         if self.target.equivalent_airspeed == self.CONSTANT_VALUE:

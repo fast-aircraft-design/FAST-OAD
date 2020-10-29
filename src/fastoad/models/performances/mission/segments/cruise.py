@@ -39,10 +39,13 @@ class CruiseSegment(RegulatedThrustSegment):
     Target altitude can also be set to
     :attr:`~.altitude_change.AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL`. In that case, the cruise
     will be preceded by a climb segment and :attr:`climb_segment` must be set at instantiation.
+
     (Target ground distance will be achieved by the sum of ground distances
     covered during climb and cruise)
-    In this case, climb will be done up to the IFR Flight Level (as multiple of 1000 feet, one flight level being 100 feet)
-      that ensures minimum mass decrease, while being at most equal to :attr:`maximum_flight_level`.
+
+    In this case, climb will be done up to the IFR Flight Level (as multiple of 1000 feet,
+    one flight level being 100 feet) that ensures minimum mass decrease, while being at most
+    equal to :attr:`maximum_flight_level`.
     """
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
@@ -82,7 +85,7 @@ class CruiseSegment(RegulatedThrustSegment):
         self, start: FlightPoint, cruise_altitude: float, cruise_definition: "CruiseSegment"
     ):
         climb_definition = deepcopy(self.climb_segment)
-        climb_definition.target = FlightPoint(altitude=cruise_altitude, mach=self.CONSTANT_VALUE)
+        climb_definition.target.altitude = cruise_altitude
         climb_points = climb_definition.compute_from(start)
 
         cruise_start = FlightPoint(climb_points.iloc[-1])
