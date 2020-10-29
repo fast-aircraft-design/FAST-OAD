@@ -151,6 +151,8 @@ class AddKeyAttributes:
 
         :param attribute_definition: the list of keys that will be attributes. If it is
                                      a dictionary, the values are the associated default values.
+                                     Values that are dictionaries can have "default" and "doc" as
+                                     keys so default value can be set as well as documentation.
                                      If it is a list or a set, default values will be None.
         """
         if isinstance(attribute_definition, dict):
