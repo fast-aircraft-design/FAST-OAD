@@ -165,3 +165,5 @@ def test_variable_viewer(cleanup):
 
     # Using default file formatter
     api.variable_viewer(file_path)
+
+    api.variable_viewer(file_path, editable=False)

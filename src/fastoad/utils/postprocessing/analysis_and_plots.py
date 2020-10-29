@@ -16,8 +16,9 @@ Defines the analysis and plotting functions for postprocessing
 import numpy as np
 import plotly
 import plotly.graph_objects as go
-from fastoad.io import VariableIO
 from plotly.subplots import make_subplots
+
+from fastoad.io import VariableIO
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
@@ -48,6 +49,9 @@ def wing_geometry_plot(
     wing_kink_chord = variables["data:geometry:wing:kink:chord"].value[0]
     wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
 
+    mean_aerodynamic_chord = variables["data:geometry:wing:MAC:length"].value[0]
+    mac25_x_position = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
+    distance_root_mac_chords = variables["data:geometry:wing:MAC:leading_edge:x:local"].value[0]
     # pylint: disable=invalid-name # that's a common naming
     y = np.array(
         [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
@@ -69,6 +73,8 @@ def wing_geometry_plot(
             0,
         ]
     )
+
+    x = x + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
     # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x, x))
 
