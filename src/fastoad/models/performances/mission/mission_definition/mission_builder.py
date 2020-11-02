@@ -75,8 +75,6 @@ class MissionBuilder:
         else:
             self.definition = mission_definition
         self._base_kwargs = {"reference_area": reference_area, "propulsion": propulsion}
-        self._phases: Dict[str, FlightSequence] = {}
-        self._routes: Dict[str, FlightSequence] = {}
 
     @property
     def propulsion(self) -> IPropulsion:
@@ -102,9 +100,9 @@ class MissionBuilder:
         :param inputs:
         :return:
         """
-        self._build_phases(inputs)
-        self._build_routes(inputs)
-        return self._build_mission()
+        phases = self._build_phases(inputs)
+        routes = self._build_routes(phases, inputs)
+        return self._build_mission(routes, phases)
 
     def identify_inputs(self, input_definition: Dict[str, str], struct=None):
         """
@@ -131,16 +129,25 @@ class MissionBuilder:
             for value in struct:
                 self.identify_inputs(input_definition, value)
 
-    def _build_mission(self):
+    def _build_mission(
+        self, routes: Dict[str, FlightSequence], phases: Dict[str, FlightSequence]
+    ) -> FlightSequence:
+        """
+        Builds the mission.
+
+        :param routes: dict of route instances, built by :meth:`_build_routes`
+        :param phases: dict of phase instance, built by :meth:`_build_phases`
+        :return: the mission instance
+        """
         mission = FlightSequence()
 
         mission.name = self.definition[MISSION_DEFINITION_TAG]["name"]
         for part_spec in self.definition[MISSION_DEFINITION_TAG][STEPS_TAG]:
             part_type = "route" if "route" in part_spec else "phase"
             if part_type == "route":
-                part = self._routes[part_spec["route"]]
+                part = routes[part_spec["route"]]
             else:
-                part = self._phases[part_spec["phase"]]
+                part = phases[part_spec["phase"]]
             part.name = list(part_spec.values())[0]
             mission.flight_sequence.append(part)
 
@@ -149,6 +156,15 @@ class MissionBuilder:
         return mission
 
     def _propagate_name(self, part: IFlightPart, new_name: str):
+        """
+        Changes the `name` property of all flight sub-parts of provided IFlightPart instance.
+
+        If a subpart has a non-empty name, its new name is its old name, prepended with `new_name`.
+        Otherwise, its names becomes the one of its parent after modification.
+
+        :param part:
+        :param new_name:
+        """
         part.name = new_name
         if isinstance(part, FlightSequence):
             for subpart in part.flight_sequence:
@@ -157,14 +173,26 @@ class MissionBuilder:
                 else:
                     subpart.name = part.name
 
-    def _build_routes(self, inputs: Optional[Mapping] = None):
+    def _build_routes(
+        self, phases: Dict[str, FlightSequence], inputs: Optional[Mapping] = None
+    ) -> Dict[str, FlightSequence]:
+        """
+        Builds the routes.
+
+        :param phases: dict of phase instance, built by :meth:`_build_phases`
+        :param inputs: if provided, any input parameter that is a string which matches
+                       a key of `inputs` will be replaced by the corresponding value
+        :return: dict of route instances, matched by their name.
+        """
+        routes: Dict[str, FlightSequence] = {}
+
         for route_name, definition in self.definition[ROUTE_DEFINITIONS_TAG].items():
             climb_phases = []
             descent_phases = []
             climb = True
             for step_definition in definition[STEPS_TAG]:
                 if PHASE_TAG in step_definition:
-                    phase = deepcopy(self._phases[step_definition[PHASE_TAG]])
+                    phase = deepcopy(phases[step_definition[PHASE_TAG]])
                     if "target" in step_definition:
                         self._parse_target(step_definition["target"])
                         self._replace_by_inputs(step_definition["target"], inputs)
@@ -188,9 +216,20 @@ class MissionBuilder:
             flight_range = definition["range"]
             if isinstance(flight_range, str):
                 flight_range = inputs[definition["range"]]
-            self._routes[route_name] = RangedRoute(sequence, flight_range)
+            routes[route_name] = RangedRoute(sequence, flight_range)
 
-    def _build_phases(self, inputs: Optional[Mapping] = None):
+        return routes
+
+    def _build_phases(self, inputs: Optional[Mapping] = None) -> Dict[str, FlightSequence]:
+        """
+        Builds the phases.
+
+        :param inputs: if provided, any input parameter that is a string which matches
+                       a key of `inputs` will be replaced by the corresponding value
+        :return: dict of phase instances, matched by their name.
+        """
+        phases: Dict[str, FlightSequence] = {}
+
         for phase_name, definition in self.definition[PHASE_DEFINITIONS_TAG].items():
             phase = FlightSequence()
             kwargs = {name: value for name, value in definition.items() if name != STEPS_TAG}
@@ -200,11 +239,23 @@ class MissionBuilder:
                 segment = self._build_segment(step_definition, kwargs, inputs)
                 phase.flight_sequence.append(segment)
 
-            self._phases[phase_name] = phase
+            phases[phase_name] = phase
+
+        return phases
 
     def _build_segment(
-        self, step_definition, kwargs, inputs: Optional[Mapping], tag=SEGMENT_TAG
+        self, step_definition: dict, kwargs: dict, inputs: Optional[Mapping], tag=SEGMENT_TAG
     ) -> FlightSegment:
+        """
+        Builds a flight segment according to provided definition.
+
+        :param step_definition: the segment definition from mission file
+        :param kwargs: a preset of keyword arguments for FlightSegment instantiation
+        :param inputs: if provided, any input parameter that is a string which matches
+                       a key of `inputs` will be replaced by the corresponding value
+        :param tag: the expected tag for specifying the segment type
+        :return: the FlightSegment instance
+        """
         segment_class = SegmentNames.get_segment_class(step_definition[tag])
         step_kwargs = kwargs.copy()
         step_kwargs.update({name: value for name, value in step_definition.items() if name != tag})
@@ -232,16 +283,30 @@ class MissionBuilder:
         return segment
 
     @staticmethod
-    def _parse_target(value):
-        for target_key, target_value in value.items():
+    def _parse_target(target_definition: dict):
+        """
+        For each parameter in target definition, if the associated value is a dict (with
+        "value" and "unit" as keys), transforms it into a value in base units, as
+        defined in BASE_UNITS.
+
+        :param target_definition:
+        """
+        for target_key, target_value in target_definition.items():
             if isinstance(target_value, dict) and "value" in target_value:
-                value[target_key] = om.convert_units(
+                target_definition[target_key] = om.convert_units(
                     target_value["value"], target_value.get("unit"), BASE_UNITS.get(target_key),
                 )
 
     @staticmethod
-    def _replace_by_inputs(dict_value, inputs: Optional[Mapping]):
+    def _replace_by_inputs(parameter_definition: dict, inputs: Optional[Mapping]):
+        """
+        In provided dict, if a value is a string that matches a key of `inputs`, replaces
+        it by the value provided in `inputs`.
+
+        :param parameter_definition:
+        :param inputs:
+        """
         if inputs:
-            for key, value in dict_value.items():
+            for key, value in parameter_definition.items():
                 if isinstance(value, str) and value in inputs:
-                    dict_value[key] = inputs[value]
+                    parameter_definition[key] = inputs[value]

@@ -25,7 +25,16 @@ from .base import RegulatedThrustSegment
 from ..util import get_closest_flight_level
 
 
-@AddKeyAttributes({"climb_segment": None, "maximum_flight_level": 500.0})
+@AddKeyAttributes(
+    {
+        "climb_segment": {
+            "default": None,
+            "doc": ":class:`~.altitude_change.AltitudeChangeSegment` instance that will "
+            "be used if a preliminary climb is needed.",
+        },
+        "maximum_flight_level": {"default": 500.0, "doc": "Maximum authorized flight level."},
+    }
+)
 class CruiseSegment(RegulatedThrustSegment):
     """
     Class for computing cruise flight segment at constant altitude.

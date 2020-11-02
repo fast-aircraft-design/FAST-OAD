@@ -35,11 +35,23 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 DEFAULT_TIME_STEP = 0.2
 
 SEGMENT_KEYWORD_ARGUMENTS = {
-    "time_step": DEFAULT_TIME_STEP,
-    "engine_setting": EngineSetting.CLIMB,
-    "altitude_bounds": (-500.0, 40000.0),  # large limits for stopping bad computation
-    "mach_bounds": (0.0, 5.0),  # large limits for stopping bad computation
-    "name": "",
+    "time_step": {
+        "default": DEFAULT_TIME_STEP,
+        "doc": "Time step that will be applied during computation.",
+    },
+    "engine_setting": {
+        "default": EngineSetting.CLIMB,
+        "doc": "Engine setting that will be provided to propulsion model.",
+    },
+    "name": {"default": "", "doc": "Name of current flight part."},
+    "altitude_bounds": {
+        "default": (-500.0, 40000.0),  # large limits for stopping bad computation
+        "doc": "Computation will be stopped if altitude gets out of these limits.",
+    },
+    "mach_bounds": {
+        "default": (0.0, 5.0),  # large limits for stopping bad computation
+        "doc": "Computation will be stopped if Mach gets out of these limits.",
+    },
 }
 
 
