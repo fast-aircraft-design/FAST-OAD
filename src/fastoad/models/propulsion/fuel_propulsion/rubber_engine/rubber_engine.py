@@ -110,10 +110,17 @@ class RubberEngine(AbstractFuelPropulsion):
             flight_points.thrust_rate,
             flight_points.thrust,
         )
-        # flight_points.sfc = sfc raises a warning if flight_points is a DataFrame
-        flight_points["sfc"] = sfc
-        flight_points["thrust_rate"] = thrust_rate
-        flight_points["thrust"] = thrust
+        # flight_points.sfc = sfc raises a warning if flight_points is a DataFrame that has not
+        # already this field, so we add needed fields before setting values
+        if isinstance(flight_points, pd.DataFrame):
+            new_column_names = flight_points.columns.tolist()
+            for name in ["sfc", "thrust_rate", "thrust"]:
+                if name not in new_column_names:
+                    flight_points.insert(len(flight_points.columns), name, value=np.nan)
+
+        flight_points.sfc = sfc
+        flight_points.thrust_rate = thrust_rate
+        flight_points.thrust = thrust
 
     def compute_flight_points_from_dt4(
         self,

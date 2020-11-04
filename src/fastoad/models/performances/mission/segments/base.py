@@ -14,6 +14,7 @@
 
 import logging
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import List, Tuple
 
 import numpy as np
@@ -21,7 +22,6 @@ import pandas as pd
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
-from fastoad.base.dict import DynamicAttributeDict, AddKeyAttributes
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion import IPropulsion
@@ -55,8 +55,8 @@ SEGMENT_KEYWORD_ARGUMENTS = {
 }
 
 
-@AddKeyAttributes(SEGMENT_KEYWORD_ARGUMENTS)
-class FlightSegment(DynamicAttributeDict, IFlightPart):
+@dataclass
+class FlightSegment(IFlightPart):
     """
     Base class for flight path segment.
 
@@ -79,32 +79,21 @@ class FlightSegment(DynamicAttributeDict, IFlightPart):
     #: Using this value will tell to keep the associated parameter constant.
     CONSTANT_VALUE = "constant"
 
-    def __init__(
-        self,
-        *,
-        target: FlightPoint,
-        propulsion: IPropulsion,
-        reference_area: float,
-        polar: Polar,
-        **kwargs
-    ):
-        """
-        Only keyword arguments are accepted.
+    target: FlightPoint
+    propulsion: IPropulsion
+    reference_area: float
+    polar: Polar
 
-        :param target: the target flight point, defined for any relevant parameter
-        :param propulsion: the propulsion model
-        :param reference_area: the reference area for aerodynamic forces
-        :param polar: the aerodynamic polar
-        """
-        self.propulsion = propulsion
-        self.reference_area = reference_area
-        self.polar = polar
-        self.target = FlightPoint(target)
+    interrupt_if_getting_further_from_target = True
 
-        # If true, computation will stop if a flight point is further from target
-        # than previous one.
-        self.interrupt_if_getting_further_from_target = True
-        super().__init__(**kwargs)
+    time_step: float = DEFAULT_TIME_STEP  # Time step that will be applied during computation.
+    engine_setting: EngineSetting = EngineSetting.CLIMB  # Engine setting that will be provided to propulsion model.
+    name: str = ""  # Name of current flight part.
+    altitude_bounds: tuple = (
+        -500.0,
+        40000.0,
+    )  # Computation will be stopped if altitude gets out of these limits.
+    mach_bounds: tuple = (0.0, 5.0)  # Computation will be stopped if Mach gets out of these limits.
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
@@ -120,7 +109,6 @@ class FlightSegment(DynamicAttributeDict, IFlightPart):
                       defined for `time` and/or `ground_distance`.
         :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
         """
-        start = FlightPoint(start)
         if start.time is None:
             start.time = 0.0
         if start.ground_distance is None:
@@ -327,13 +315,13 @@ class FlightSegment(DynamicAttributeDict, IFlightPart):
             return (atm.density - optimal_air_density) * 100.0
 
         optimal_altitude = root_scalar(
-            distance_to_optimum, x0=altitude_guess, x1=altitude_guess - 1000.0
+            distance_to_optimum, x0=altitude_guess, x1=altitude_guess - 1000.0,
         ).root
 
         return optimal_altitude
 
     @abstractmethod
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         """
         Computes a "distance" from last flight point to target.
 
@@ -368,7 +356,7 @@ class FlightSegment(DynamicAttributeDict, IFlightPart):
         """
 
 
-@AddKeyAttributes({"thrust_rate": 1.0})
+@dataclass
 class ManualThrustSegment(FlightSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is imposed.
@@ -376,17 +364,21 @@ class ManualThrustSegment(FlightSegment, ABC):
     :ivar thrust_rate: used thrust rate. Can be set at instantiation using a keyword argument.
     """
 
+    thrust_rate: float = 1.0
+
     def _compute_propulsion(self, flight_point: FlightPoint):
         flight_point.thrust_rate = self.thrust_rate
         flight_point.thrust_is_regulated = False
         self.propulsion.compute_flight_points(flight_point)
 
 
-@AddKeyAttributes({"time_step": 60.0})
+@dataclass
 class RegulatedThrustSegment(FlightSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is adjusted on drag.
     """
+
+    time_step: float = 60.0
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -401,6 +393,7 @@ class RegulatedThrustSegment(FlightSegment, ABC):
         return 0.0, 0.0
 
 
+@dataclass
 class FixedDurationSegment(FlightSegment, ABC):
     """
     Class for computing phases where duration is fixed.
@@ -410,12 +403,13 @@ class FixedDurationSegment(FlightSegment, ABC):
     start.time + target.time.
     """
 
+    time_step: float = 60.0
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        start = FlightPoint(start)
         if start.time:
             self.target.time = self.target.time + start.time
         return super().compute_from(start)
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
         return self.target.time - current.time

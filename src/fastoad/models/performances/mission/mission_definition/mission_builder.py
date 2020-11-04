@@ -268,9 +268,11 @@ class MissionBuilder:
                 self._replace_by_inputs(polar, inputs)
                 step_kwargs[key] = Polar(polar["CL"], polar["CD"])
             elif key == "target":
-                self._parse_target(value)
-                self._replace_by_inputs(value, inputs)
-                step_kwargs[key] = FlightPoint(**value)
+                if not isinstance(value, FlightPoint):
+                    self._parse_target(value)
+                    self._replace_by_inputs(value, inputs)
+                    value = FlightPoint(**value)
+                step_kwargs[key] = value
             else:
                 step_kwargs[key] = value
 
@@ -291,6 +293,7 @@ class MissionBuilder:
 
         :param target_definition:
         """
+
         for target_key, target_value in target_definition.items():
             if isinstance(target_value, dict) and "value" in target_value:
                 target_definition[target_key] = om.convert_units(

@@ -11,15 +11,16 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from fastoad.base.dict import DynamicAttributeDict, AddKeyAttributes
+from dataclasses import dataclass
 
 
 # Set of dictionary keys that are mapped to instance attributes.
+from typing import Mapping
+
 LABELS = {
-    "time": dict(doc="Time in seconds."),
+    "time": dict(default=0.0, doc="Time in seconds."),
     "altitude": dict(doc="Altitude in meters."),
-    "ground_distance": dict(doc="Covered ground distance in meters."),
+    "ground_distance": dict(default=0.0, doc="Covered ground distance in meters."),
     "mass": dict(doc="Mass in kg."),  # in kg
     "true_airspeed": dict(doc="True airspeed (TAS) in m/s."),
     "equivalent_airspeed": dict(doc="Equivalent airspeed (EAS) in m/s."),
@@ -37,12 +38,13 @@ LABELS = {
     "sfc": dict(doc="Specific Fuel Consumption in kg/N/s."),
     "slope_angle": dict(doc="Slope angle in radians."),
     "acceleration": dict(doc="Acceleration value in m/s**2."),
-    "name": dict(doc="Name of current phase."),
+    "name": dict(default="", doc="Name of current phase."),
 }
 
 
-@AddKeyAttributes(LABELS)
-class FlightPoint(DynamicAttributeDict):
+# @AddKeyAttributes(LABELS)
+@dataclass
+class FlightPoint:
     """
     Class for storing data for one flight point.
 
@@ -84,3 +86,26 @@ class FlightPoint(DynamicAttributeDict):
     The set of dictionary keys that are mapped to instance attributes is given by
     :meth:`get_attribute_keys`.
     """
+
+    time: float = 0.0  # Time in seconds.
+    altitude: float = None
+    ground_distance: float = 0.0
+    mass: float = None
+    true_airspeed: float = None
+    equivalent_airspeed: float = None
+    mach: float = None
+    engine_setting: float = None
+    CL: float = None
+    CD: float = None
+    drag: float = None
+    thrust: float = None
+    thrust_rate: float = None
+    thrust_is_regulated: bool = None
+    sfc: float = None
+    slope_angle: float = None
+    acceleration: float = None
+    name: str = None
+
+    @classmethod
+    def create_from(cls, dict_like: Mapping) -> "FlightPoint":
+        return cls(**dict(dict_like))

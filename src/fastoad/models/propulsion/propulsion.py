@@ -20,7 +20,6 @@ import openmdao.api as om
 import pandas as pd
 from openmdao.core.component import Component
 
-from fastoad.base.dict import AddKeyAttributes
 from fastoad.base.flight_point import FlightPoint
 
 

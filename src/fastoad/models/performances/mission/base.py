@@ -32,8 +32,8 @@ class IFlightPart(ABC):
         :param start: the initial flight point, defined for `altitude`, `mass` and speed
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
-        :return: a pandas DataFrame where columns names match
-                 :meth:`fastoad.base.flight_point.FlightPoint.get_attribute_keys`
+        :return: a pandas DataFrame where columns names match fields of
+                 :meth:`fastoad.base.flight_point.FlightPoint`
         """
 
 
@@ -60,7 +60,7 @@ class FlightSequence(IFlightPart):
                 # But it is kept if the computed segment is the first one.
                 parts.append(flight_points)
 
-            part_start = FlightPoint(flight_points.iloc[-1])
+            part_start = FlightPoint.create_from(flight_points.iloc[-1])
 
         if parts:
             return pd.concat(parts).reset_index(drop=True)

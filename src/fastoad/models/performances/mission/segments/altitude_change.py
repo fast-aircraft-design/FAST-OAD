@@ -13,21 +13,22 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from dataclasses import dataclass
 from typing import Tuple, List
 
 import pandas as pd
 from scipy.constants import g
 
-from fastoad.base.dict import AddKeyAttributes
 from fastoad.base.flight_point import FlightPoint
 from fastoad.utils.physics import AtmosphereSI
 from .base import ManualThrustSegment
+from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..util import get_closest_flight_level
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-@AddKeyAttributes({"time_step": 2.0})
+@dataclass
 class AltitudeChangeSegment(ManualThrustSegment):
     """
     Computes a flight path segment where altitude is modified with constant speed.
@@ -62,15 +63,16 @@ class AltitudeChangeSegment(ManualThrustSegment):
         :code:`"constant"`. One of the two other ones can be set as target.
     """
 
+    time_step: float = 2.0
+
     #: Using this value will tell to target the altitude with max lift/drag ratio.
-    OPTIMAL_ALTITUDE = "optimal_altitude"
+    OPTIMAL_ALTITUDE = "optimal_altitude"  # pylint: disable=invalid-name # used as constant
 
     #: Using this value will tell to target the nearest flight level to altitude
     #  with max lift/drag ratio.
-    OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"
+    OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # pylint: disable=invalid-name # used as constant
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        start = FlightPoint(start)
         self.complete_flight_point(start)  # needed to ensure all speed values are computed.
 
         if self.target.altitude:
@@ -96,7 +98,7 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
         return super().compute_from(start)
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
         if self.target.CL:
             # Optimal altitude is based on a target Mach number, though target speed
@@ -105,10 +107,10 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
             # First, as target speed is expected to be set to self.CONSTANT_VALUE for one
             # parameter. Let's get the real value from start point.
-            target_speed = FlightPoint(self.target)
+            target_speed = self.target
             for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
-                if isinstance(target_speed.get(speed_param), str):
-                    target_speed[speed_param] = flight_points[0][speed_param]
+                if isinstance(getattr(target_speed, speed_param), str):
+                    setattr(target_speed, speed_param, getattr(flight_points[0], speed_param))
 
             # Now, let's compute target Mach number
             atm = AtmosphereSI(max(self.target.altitude, current.altitude))
@@ -139,6 +141,10 @@ class AltitudeChangeSegment(ManualThrustSegment):
             return self.target.equivalent_airspeed - current.equivalent_airspeed
         elif self.target.mach and self.target.mach != self.CONSTANT_VALUE:
             return self.target.mach - current.mach
+        else:
+            raise FastFlightSegmentIncompleteFlightPoint(
+                "No valid target definition for altitude change."
+            )
 
     def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         gamma = (thrust - drag) / mass / g

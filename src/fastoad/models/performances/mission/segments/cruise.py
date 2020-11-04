@@ -13,28 +13,19 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from copy import deepcopy
+from dataclasses import dataclass
 from typing import List
 
 import pandas as pd
 from scipy.constants import foot
 
-from fastoad.base.dict import AddKeyAttributes
 from fastoad.base.flight_point import FlightPoint
 from .altitude_change import AltitudeChangeSegment
 from .base import RegulatedThrustSegment
 from ..util import get_closest_flight_level
 
 
-@AddKeyAttributes(
-    {
-        "climb_segment": {
-            "default": None,
-            "doc": ":class:`~.altitude_change.AltitudeChangeSegment` instance that will "
-            "be used if a preliminary climb is needed.",
-        },
-        "maximum_flight_level": {"default": 500.0, "doc": "Maximum authorized flight level."},
-    }
-)
+@dataclass
 class CruiseSegment(RegulatedThrustSegment):
     """
     Class for computing cruise flight segment at constant altitude.
@@ -57,8 +48,11 @@ class CruiseSegment(RegulatedThrustSegment):
     equal to :attr:`maximum_flight_level`.
     """
 
+    climb_segment: AltitudeChangeSegment = None
+    maximum_flight_level: float = 500.0
+    mach: float = "constant"
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        start = FlightPoint(start)
         if start.ground_distance:
             self.target.ground_distance = self.target.ground_distance + start.ground_distance
 
@@ -97,7 +91,7 @@ class CruiseSegment(RegulatedThrustSegment):
         climb_definition.target.altitude = cruise_altitude
         climb_points = climb_definition.compute_from(start)
 
-        cruise_start = FlightPoint(climb_points.iloc[-1])
+        cruise_start = FlightPoint.create_from(climb_points.iloc[-1])
         cruise_definition.target.ground_distance = (
             self.target.ground_distance - cruise_start.ground_distance
         )
@@ -105,11 +99,12 @@ class CruiseSegment(RegulatedThrustSegment):
 
         return pd.concat([climb_points, cruise_points]).reset_index(drop=True)
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
         return self.target.ground_distance - current.ground_distance
 
 
+@dataclass
 class OptimalCruiseSegment(CruiseSegment):
     """
     Class for computing cruise flight segment at maximum lift/drag ratio.
@@ -119,7 +114,6 @@ class OptimalCruiseSegment(CruiseSegment):
     """
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        start = FlightPoint(start)
         start.altitude = self._get_optimal_altitude(start.mass, start.mach)
         return super().compute_from(start)
 

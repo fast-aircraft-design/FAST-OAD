@@ -29,7 +29,7 @@ class SpeedChangeSegment(ManualThrustSegment):
     and mach.
     """
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         if self.target.true_airspeed:
             return self.target.true_airspeed - flight_points[-1].true_airspeed
         elif self.target.equivalent_airspeed:

@@ -15,6 +15,7 @@ Schema for mission definition files.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from collections import OrderedDict
+from dataclasses import fields
 from enum import Enum
 from typing import Union, Set
 
@@ -138,7 +139,7 @@ class MissionDefinition(dict):
     @classmethod
     def _get_target_schema(cls) -> Map:
         target_schema_map = {}
-        for key in FlightPoint.get_attribute_keys():
+        for key in [f.name for f in fields(FlightPoint)]:
             target_schema_map[Optional(key, default=None)] = (
                 Float()
                 | Str()
