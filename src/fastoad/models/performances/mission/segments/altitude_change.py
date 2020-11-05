@@ -69,7 +69,7 @@ class AltitudeChangeSegment(ManualThrustSegment):
     OPTIMAL_ALTITUDE = "optimal_altitude"  # pylint: disable=invalid-name # used as constant
 
     #: Using this value will tell to target the nearest flight level to altitude
-    #  with max lift/drag ratio.
+    #: with max lift/drag ratio.
     OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # pylint: disable=invalid-name # used as constant
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
