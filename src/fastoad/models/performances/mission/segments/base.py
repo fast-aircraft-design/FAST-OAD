@@ -34,66 +34,55 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 DEFAULT_TIME_STEP = 0.2
 
-SEGMENT_KEYWORD_ARGUMENTS = {
-    "time_step": {
-        "default": DEFAULT_TIME_STEP,
-        "doc": "Time step that will be applied during computation.",
-    },
-    "engine_setting": {
-        "default": EngineSetting.CLIMB,
-        "doc": "Engine setting that will be provided to propulsion model.",
-    },
-    "name": {"default": "", "doc": "Name of current flight part."},
-    "altitude_bounds": {
-        "default": (-500.0, 40000.0),  # large limits for stopping bad computation
-        "doc": "Computation will be stopped if altitude gets out of these limits.",
-    },
-    "mach_bounds": {
-        "default": (0.0, 5.0),  # large limits for stopping bad computation
-        "doc": "Computation will be stopped if Mach gets out of these limits.",
-    },
-}
-
 
 @dataclass
 class FlightSegment(IFlightPart):
     """
     Base class for flight path segment.
 
-    Behaviour can be modified using following instance attributes (can be set at
-    instantiation using corresponding keyword arguments):
-
-    :ivar time_step: used time step for computation (actual time step can be lower at
-                     some particular times of the flight path).
-    :ivar engine_setting: the :class:`EngineSetting` value associated to the segment. Can be
-                        used in the propulsion model.
-    :ivar altitude_bounds: minimum and maximum authorized altitude values. If computed altitude
-                           gets beyond these limits, computation will be interrupted and a warning
-                           message will be issued in logger.
-    :ivar mach_bounds: minimum and maximum authorized mach values. If computed Mach
-                       gets beyond these limits, computation will be interrupted and a warning
-                       message will be issued in logger.
-    :ivar name: the name of the current flight sequence.
+    As a dataclass, attributes can be set at instantiation.
     """
 
-    #: Using this value will tell to keep the associated parameter constant.
-    CONSTANT_VALUE = "constant"
-
+    #: A FlightPoint instance that provide parameter values that should all be reached at the
+    #: end of :meth:`compute_from`. Possible parameters depend on the current segment. A parameter
+    #: can also be set to :attr:`CONSTANT_VALUE` to tell that initial value should be kept during
+    #: all segment.
     target: FlightPoint
+
+    #: A IPropulsion instance that will be called at each time step.
     propulsion: IPropulsion
+
+    #: The reference area, in m**2.
     reference_area: float
+
+    #: The Polar instance that will provide drag data.
     polar: Polar
 
-    interrupt_if_getting_further_from_target = True
+    #: Used time step for computation (actual time step can be lower at some particular times of
+    #: the flight path).
+    time_step: float = DEFAULT_TIME_STEP
 
-    time_step: float = DEFAULT_TIME_STEP  # Time step that will be applied during computation.
-    engine_setting: EngineSetting = EngineSetting.CLIMB  # Engine setting that will be provided to propulsion model.
-    name: str = ""  # Name of current flight part.
-    altitude_bounds: tuple = (
-        -500.0,
-        40000.0,
-    )  # Computation will be stopped if altitude gets out of these limits.
-    mach_bounds: tuple = (0.0, 5.0)  # Computation will be stopped if Mach gets out of these limits.
+    #: The EngineSetting value associated to the segment. Can be used in the propulsion
+    #: model.
+    engine_setting: EngineSetting = EngineSetting.CLIMB
+
+    #: Minimum and maximum authorized altitude values. If computed altitude gets beyond these
+    #: limits, computation will be interrupted and a warning message will be issued in logger.
+    altitude_bounds: tuple = (-500.0, 40000.0)
+
+    #: Minimum and maximum authorized mach values. If computed Mach gets beyond these limits,
+    #: computation will be interrupted and a warning message will be issued in logger.
+    mach_bounds: tuple = (0.0, 5.0)
+
+    #: The name of the current flight sequence.
+    name: str = ""
+
+    #: If True, computation will be interrupted if a parameter stops getting closer to target
+    #: between two iterations (which can mean the provided thrust rate is not adapted).
+    interrupt_if_getting_further_from_target: bool = True
+
+    #: Using this value will tell to keep the associated parameter constant.
+    CONSTANT_VALUE = "constant"  # pylint: disable=invalid-name # used as constant
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
@@ -107,7 +96,8 @@ class FlightSegment(IFlightPart):
         :param start: the initial flight point, defined for `altitude`, `mass` and speed
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
-        :return: a pandas DataFrame where columns are given by :attr:`FlightPoint.labels`
+        :return: a pandas DataFrame where columns names match fields of
+                 :meth:`fastoad.base.flight_point.FlightPoint`
         """
         if start.time is None:
             start.time = 0.0
