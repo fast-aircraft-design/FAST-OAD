@@ -392,7 +392,7 @@ def test_cruise_at_optimal_flight_level_with_climb_first(polar):
         reference_area=reference_area,
         polar=polar,
         climb_segment=AltitudeChangeSegment(
-            target=FlightPoint(mach="constant"),
+            target=FlightPoint(),
             propulsion=propulsion,
             reference_area=reference_area,
             polar=polar,
@@ -429,7 +429,7 @@ def test_cruise_at_optimal_flight_level_with_start_at_exact_flight_level(polar):
         reference_area=reference_area,
         polar=polar,
         climb_segment=AltitudeChangeSegment(
-            target=FlightPoint(mach="constant"),
+            target=FlightPoint(),
             propulsion=propulsion,
             reference_area=reference_area,
             polar=polar,
@@ -459,7 +459,7 @@ def test_optimal_cruise(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = OptimalCruiseSegment(
-        target=FlightPoint(ground_distance=5.0e5, mach="constant"),
+        target=FlightPoint(ground_distance=5.0e5),
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,

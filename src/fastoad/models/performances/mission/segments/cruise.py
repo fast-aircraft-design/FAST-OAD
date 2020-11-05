@@ -48,11 +48,16 @@ class CruiseSegment(RegulatedThrustSegment):
     equal to :attr:`maximum_flight_level`.
     """
 
+    #: The AltitudeChangeSegment that can be used if a preliminary climb is needed (its target
+    #: will be ignored).
     climb_segment: AltitudeChangeSegment = None
+
+    #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
-    mach: float = "constant"
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        self.target.mach = self.CONSTANT_VALUE
+
         if start.ground_distance:
             self.target.ground_distance = self.target.ground_distance + start.ground_distance
 
@@ -88,7 +93,7 @@ class CruiseSegment(RegulatedThrustSegment):
         self, start: FlightPoint, cruise_altitude: float, cruise_definition: "CruiseSegment"
     ):
         climb_definition = deepcopy(self.climb_segment)
-        climb_definition.target.altitude = cruise_altitude
+        climb_definition.target = FlightPoint(altitude=cruise_altitude, mach=self.CONSTANT_VALUE)
         climb_points = climb_definition.compute_from(start)
 
         cruise_start = FlightPoint.create_from(climb_points.iloc[-1])
@@ -104,7 +109,6 @@ class CruiseSegment(RegulatedThrustSegment):
         return self.target.ground_distance - current.ground_distance
 
 
-@dataclass
 class OptimalCruiseSegment(CruiseSegment):
     """
     Class for computing cruise flight segment at maximum lift/drag ratio.
