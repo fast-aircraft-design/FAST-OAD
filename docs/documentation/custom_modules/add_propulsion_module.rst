@@ -36,7 +36,12 @@ Available flight parameters
 ===========================
 The documentation of :class:`~fastoad.base.flight_point.FlightPoint` provides
 the list of available flight parameters, available as Python properties.
-This list is available through Python using :code:`FlightPoint.get_attribute_keys()`.
+As FlightPoint is a dataclass, this list is available through Python using::
+
+    >>> from fastoad.base.flight_point import FlightPoint
+    >>> from dataclasses import fields
+
+    >>> [f.name for f in fields(FlightPoint)]
 
 Exchanges with pandas DataFrame
 ===============================
@@ -51,8 +56,8 @@ A pandas DataFrame can be easily created from a list of FlightPoint instances::
 
 And FlightPoint instances can be created from DataFrame rows::
 
-    >>> fp1bis = FlightPoint(df.iloc[0]  # one FlightPoint instance from a row
-    >>> flight_points = [ FlightPoint(row) for row in df.iloc ]  # a list of FlightPoint instances from the whole DataFrame
+    >>> fp1bis = FlightPoint(df.iloc[0])  # one FlightPoint instance from a row
+    >>> flight_points = [ FlightPoint.create_from(row) for row in df.iloc ]  # a list of FlightPoint instances from the whole DataFrame
 
 
 .. _flight_point_extensibility:
