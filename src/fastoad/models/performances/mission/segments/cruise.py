@@ -96,7 +96,7 @@ class CruiseSegment(RegulatedThrustSegment):
         climb_definition.target = FlightPoint(altitude=cruise_altitude, mach=self.CONSTANT_VALUE)
         climb_points = climb_definition.compute_from(start)
 
-        cruise_start = FlightPoint.create_from(climb_points.iloc[-1])
+        cruise_start = FlightPoint.create(climb_points.iloc[-1])
         cruise_definition.target.ground_distance = (
             self.target.ground_distance - cruise_start.ground_distance
         )

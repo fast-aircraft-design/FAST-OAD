@@ -145,7 +145,7 @@ class MissionWrapper:
         flight_points = mission.compute_from(start_flight_point)
         for part in mission.flight_sequence:
             var_name_root = "data:mission:%s" % part.name
-            part_end = FlightPoint.create_from(
+            part_end = FlightPoint.create(
                 flight_points.loc[flight_points.name.str.startswith(part.name)].iloc[-1]
             )
             _compute_vars(var_name_root, current_flight_point, part_end)
@@ -156,7 +156,7 @@ class MissionWrapper:
                 for phase in part.flight_sequence:
                     phase_points = flight_points.loc[flight_points.name == phase.name]
                     if len(phase_points) > 0:
-                        phase_end = FlightPoint.create_from(phase_points.iloc[-1])
+                        phase_end = FlightPoint.create(phase_points.iloc[-1])
                         var_name_root = "data:mission:%s" % phase.name
                         _compute_vars(var_name_root, phase_start, phase_end)
                         phase_start = phase_end

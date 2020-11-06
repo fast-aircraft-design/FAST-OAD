@@ -152,10 +152,10 @@ class SizingMission(om.ExplicitComponent):
         self.flight_points = self._mission.compute(inputs, outputs, end_of_takeoff)
 
         # Final ================================================================
-        end_of_descent = FlightPoint.create_from(
+        end_of_descent = FlightPoint.create(
             self.flight_points.loc[self.flight_points.name == "sizing:main_route:descent"].iloc[-1]
         )
-        end_of_taxi_in = FlightPoint.create_from(self.flight_points.iloc[-1])
+        end_of_taxi_in = FlightPoint.create(self.flight_points.iloc[-1])
 
         fuel_route = inputs["data:weight:aircraft:MTOW"] - end_of_descent.mass
         outputs["data:mission:sizing:ZFW"] = end_of_taxi_in.mass - 0.03 * fuel_route

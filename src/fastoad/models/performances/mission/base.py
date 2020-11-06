@@ -60,7 +60,7 @@ class FlightSequence(IFlightPart):
                 # But it is kept if the computed segment is the first one.
                 parts.append(flight_points)
 
-            part_start = FlightPoint.create_from(flight_points.iloc[-1])
+            part_start = FlightPoint.create(flight_points.iloc[-1])
 
         if parts:
             return pd.concat(parts).reset_index(drop=True)
