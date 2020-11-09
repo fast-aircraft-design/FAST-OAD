@@ -211,7 +211,7 @@ class MissionBuilder:
                     )
                     climb = False
 
-            sequence = SimpleRoute(0.0, climb_phases, cruise_phase, descent_phases)
+            sequence = SimpleRoute(climb_phases, cruise_phase, descent_phases)
             sequence.name = route_name
             flight_range = definition["range"]
             if isinstance(flight_range, str):

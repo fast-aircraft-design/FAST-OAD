@@ -14,6 +14,7 @@ Classes for computation of routes (i.e. assemblies of climb, cruise and descent 
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from dataclasses import dataclass
 from typing import List, Union
 
 import pandas as pd
@@ -24,6 +25,7 @@ from fastoad.models.performances.mission.base import FlightSequence, IFlightPart
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment
 
 
+@dataclass
 class SimpleRoute(FlightSequence):
     """
     Computes a simple route.
@@ -34,38 +36,29 @@ class SimpleRoute(FlightSequence):
         - any number of descent phases.
     """
 
-    def __init__(
-        self,
-        cruise_distance: float,
-        climb_phases: List[FlightSequence],
-        cruise_phase: CruiseSegment,
-        descent_phases: List[FlightSequence],
-    ):
-        """
+    #: Any number of flight phases that will occur before cruise.
+    climb_phases: List[FlightSequence]
 
-        :param cruise_distance:
-        :param climb_phases:
-        :param cruise_phase:
-        :param descent_phases:
-        """
-        super().__init__()
-        self.climb_phases = climb_phases
-        self.cruise_segment = cruise_phase
-        self.cruise_distance = cruise_distance
-        self.descent_phases = descent_phases
+    #: The cruise phase.
+    cruise_segment: CruiseSegment
+
+    #: Any number of flight phases that will occur after cruise.
+    descent_phases: List[FlightSequence]
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.flight_sequence.extend(self._get_flight_sequence())
 
     @property
     def cruise_distance(self):
-        """Ground distance to be covered during cruise."""
+        """Ground distance to be covered during cruise, as set in target of :attr:cruise_segment."""
         return self.cruise_segment.target
 
     @cruise_distance.setter
     def cruise_distance(self, cruise_distance):
         self.cruise_segment.target.ground_distance = cruise_distance
 
-    @property
-    def flight_sequence(self) -> List[Union[IFlightPart, str]]:
-
+    def _get_flight_sequence(self) -> List[IFlightPart]:
         # The preliminary climb segment of the cruise segment is set to the
         # last segment before cruise.
         cruise_climb = self.climb_phases[-1]

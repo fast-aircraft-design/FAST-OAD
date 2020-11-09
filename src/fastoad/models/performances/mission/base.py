@@ -13,7 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC
-from typing import List, Union
+from dataclasses import dataclass
+from typing import List
 
 import pandas as pd
 
@@ -21,10 +22,6 @@ from fastoad.base.flight_point import FlightPoint
 
 
 class IFlightPart(ABC):
-    def __init__(self):
-        self.name = None
-        self._flight_sequence = []
-
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
         Computes a flight sequence from provided start point.
@@ -37,13 +34,13 @@ class IFlightPart(ABC):
         """
 
 
+@dataclass
 class FlightSequence(IFlightPart):
     """
     Defines and computes a flight sequence.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __post_init__(self):
         self._flight_sequence = []
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
@@ -66,6 +63,6 @@ class FlightSequence(IFlightPart):
             return pd.concat(parts).reset_index(drop=True)
 
     @property
-    def flight_sequence(self) -> List[Union[IFlightPart]]:
+    def flight_sequence(self) -> List[IFlightPart]:
         """List of IFlightPart instances that should be run sequentially."""
         return self._flight_sequence

@@ -246,7 +246,7 @@ class StandardFlight(SimpleRoute):
         )
         cruise = CruiseSegment(
             **kwargs,
-            target=FlightPoint(),
+            target=FlightPoint(ground_distance=cruise_distance),
             polar=high_speed_polar,
             engine_setting=EngineSetting.CRUISE,
             name=FlightPhase.CRUISE.value,
@@ -260,7 +260,7 @@ class StandardFlight(SimpleRoute):
             time_step=5.0,
         )
         super().__init__(
-            cruise_distance, [initial_climb, climb], cruise, [descent],
+            [initial_climb, climb], cruise, [descent],
         )
 
 
