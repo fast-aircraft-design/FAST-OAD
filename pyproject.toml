@@ -30,7 +30,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Topic :: Scientific/Engineering :: Physics"
@@ -43,7 +42,7 @@ classifiers = [
 # of poetry.lock file will modify docs/requirements.txt and make
 # the commit fail because "files were modified by this hook". In that case,
 # doing again the commit including changes in docs/requirements.txt will succeed.
-python = "^3.6.1"
+python = "^3.7"
 numpy = "*"
 scipy = "^1.2"
 pandas = "^1"
@@ -54,7 +53,6 @@ jupyterlab = "*"
 matplotlib = "*"
 plotly = "*"
 ipywidgets = "*"
-importlib_resources = "*"
 ipysheet = "*"
 tomlkit = "*"
 wop = "^1.12.0"
@@ -73,7 +71,6 @@ nbval = "*"
 sphinx = "*"
 sphinx-rtd-theme = "*"
 sphinxcontrib-bibtex = "*"
-setuptools_scm = "*"
 
 [tool.poetry.scripts]
 fastoad = "fastoad.cmd.fast:main"

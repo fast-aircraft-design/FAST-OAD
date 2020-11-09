@@ -14,9 +14,10 @@ OpenMDAO component for computation of sizing mission.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from importlib.resources import path
+
 import numpy as np
 import openmdao.api as om
-from importlib_resources import path
 from scipy.constants import foot
 
 from fastoad import BundleLoader

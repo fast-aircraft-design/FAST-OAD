@@ -16,9 +16,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
+from importlib.resources import open_text
 
 import numpy as np
-from importlib_resources import open_text
 from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy import interpolate
 

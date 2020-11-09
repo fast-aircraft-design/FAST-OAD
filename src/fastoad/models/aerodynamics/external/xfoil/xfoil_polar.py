@@ -18,11 +18,11 @@ import logging
 import os
 import os.path as pth
 import shutil
+from importlib.resources import path
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
-from importlib_resources import path
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 
