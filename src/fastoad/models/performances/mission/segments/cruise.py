@@ -16,8 +16,9 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import List
 
+import numpy as np
 import pandas as pd
-from scipy.constants import foot
+from scipy.constants import foot, g
 
 from fastoad.base.flight_point import FlightPoint
 from .altitude_change import AltitudeChangeSegment
@@ -196,3 +197,43 @@ class ClimbAndCruiseSegment(CruiseSegment):
         cruise_points = cruise_segment.compute_from(cruise_start)
 
         return pd.concat([climb_points, cruise_points]).reset_index(drop=True)
+
+
+@dataclass
+class BreguetCruiseSegment(CruiseSegment):
+    """
+    Class for computing cruise flight segment at constant altitude using Breguet-Leduc formula.
+
+    As formula relies on SFC, the :attr:`propulsion` model must be able to fill FlightPoint.sfc
+    when FlightPoint.thrust is provided.
+    """
+
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        self.complete_flight_point(start)
+
+        cruise_mass_ratio = self._compute_cruise_mass_ratio(start, self.target.ground_distance)
+
+        end = deepcopy(start)
+        end.mass = start.mass * cruise_mass_ratio
+        end.ground_distance = start.ground_distance + self.target.ground_distance
+        end.time = start.time + end.ground_distance / end.true_airspeed
+        end.name = self.name
+        self.complete_flight_point(end)
+
+        return pd.DataFrame([start, end])
+
+    def _compute_cruise_mass_ratio(self, start: FlightPoint, cruise_distance):
+        """
+        Computes mass ratio between end and start of cruise
+
+        :param start: the initial flight point, defined for `CL`, `CD`, `mass` and`true_airspeed`
+        :param cruise_distance: cruise distance in meters
+        :return: (mass at end of cruise) / (mass at start of cruise)
+        """
+
+        lift_drag_ratio = start.CL / start.CD
+        start.thrust = start.mass / lift_drag_ratio * g
+        self.propulsion.compute_flight_points(start)
+
+        range_factor = start.true_airspeed * lift_drag_ratio / g / start.sfc
+        return 1.0 / np.exp(cruise_distance / range_factor)
