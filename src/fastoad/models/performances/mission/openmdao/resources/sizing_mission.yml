@@ -131,7 +131,7 @@ route_definitions:
     range: data:mission:sizing:diversion:distance
     steps:
       - phase: diversion_climb
-      - cruise_type: cruise
+      - cruise_type: breguet
         engine_setting: cruise
         polar: data:aerodynamics:aircraft:cruise
       - phase: descent

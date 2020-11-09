@@ -28,6 +28,7 @@ from fastoad.models.performances.mission.segments.altitude_change import Altitud
 from fastoad.models.performances.mission.segments.cruise import (
     OptimalCruiseSegment,
     ClimbAndCruiseSegment,
+    BreguetCruiseSegment,
 )
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
@@ -217,6 +218,7 @@ class SegmentNames(Enum):
     ALTITUDE_CHANGE = "altitude_change"
     CRUISE = "cruise"
     OPTIMAL_CRUISE = "optimal_cruise"
+    BREGUET = "breguet"
     SPEED_CHANGE = "speed_change"
     HOLDING = "holding"
     TAXI = "taxi"
@@ -240,6 +242,7 @@ class SegmentNames(Enum):
             cls.ALTITUDE_CHANGE.value: AltitudeChangeSegment,
             cls.CRUISE.value: ClimbAndCruiseSegment,
             cls.OPTIMAL_CRUISE.value: OptimalCruiseSegment,
+            cls.BREGUET.value: BreguetCruiseSegment,
             cls.SPEED_CHANGE.value: SpeedChangeSegment,
             cls.HOLDING.value: HoldSegment,
             cls.TAXI.value: TaxiSegment,
