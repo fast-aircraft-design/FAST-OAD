@@ -107,23 +107,20 @@ class ClimbAndCruiseSegment(CruiseSegment):
     #: will be ignored).
     climb_segment: AltitudeChangeSegment = None
 
-    cruise_segment_type: type = CruiseSegment
-
     #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         climb_segment = deepcopy(self.climb_segment)
+        climb_segment.target = deepcopy(self.target)
 
-        cruise_segment = self.cruise_segment_type(
+        cruise_segment = CruiseSegment(
             target=deepcopy(self.target),
             propulsion=self.propulsion,
             reference_area=self.reference_area,
             polar=self.polar,
+            name=self.name,
         )
-
-        climb_segment.target = deepcopy(self.target)
-        cruise_segment.target = deepcopy(self.target)
 
         if start.ground_distance:
             self.target.ground_distance = self.target.ground_distance + start.ground_distance
