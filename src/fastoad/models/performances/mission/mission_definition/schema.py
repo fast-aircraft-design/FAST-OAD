@@ -24,7 +24,10 @@ from strictyaml import load, Map, MapPattern, Optional, Str, Float, Seq, Any, YA
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
-from fastoad.models.performances.mission.segments.cruise import CruiseSegment, OptimalCruiseSegment
+from fastoad.models.performances.mission.segments.cruise import (
+    OptimalCruiseSegment,
+    ClimbAndCruiseSegment,
+)
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
@@ -229,7 +232,7 @@ class SegmentNames(Enum):
         """
         segments = {
             cls.ALTITUDE_CHANGE.value: AltitudeChangeSegment,
-            cls.CRUISE.value: CruiseSegment,
+            cls.CRUISE.value: ClimbAndCruiseSegment,
             cls.OPTIMAL_CRUISE.value: OptimalCruiseSegment,
             cls.SPEED_CHANGE.value: SpeedChangeSegment,
             cls.HOLDING.value: HoldSegment,

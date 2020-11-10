@@ -21,7 +21,7 @@ from fastoad.base.flight_point import FlightPoint
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion, FuelEngineSet
 from ..altitude_change import AltitudeChangeSegment
-from ..cruise import OptimalCruiseSegment, CruiseSegment
+from ..cruise import OptimalCruiseSegment, CruiseSegment, ClimbAndCruiseSegment
 from ..speed_change import SpeedChangeSegment
 from ..taxi import TaxiSegment
 from ...polar import Polar
@@ -380,11 +380,11 @@ def test_cruise_at_constant_altitude(polar):
     assert_allclose(last_point.mass, 69568.0, rtol=1e-4)
 
 
-def test_cruise_at_optimal_flight_level_with_climb_first(polar):
+def test_climb_and_cruise_at_optimal_flight_level(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 3.0e-5), 2)
     reference_area = 120.0
 
-    segment = CruiseSegment(
+    segment = ClimbAndCruiseSegment(
         target=FlightPoint(
             ground_distance=10.0e6, altitude=AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL
         ),
@@ -400,7 +400,9 @@ def test_cruise_at_optimal_flight_level_with_climb_first(polar):
         ),
     )
 
-    flight_points = segment.compute_from(FlightPoint(mass=70000.0, altitude=8000.0, mach=0.78))
+    flight_points = segment.compute_from(
+        FlightPoint(mass=70000.0, altitude=8000.0, mach=0.78, ground_distance=1.0e6)
+    )
 
     first_point = flight_points.iloc[0]
     last_point = flight_points.iloc[-1]
@@ -411,17 +413,17 @@ def test_cruise_at_optimal_flight_level_with_climb_first(polar):
     assert_allclose(first_point.true_airspeed, 240.3, atol=0.1)
 
     assert_allclose(last_point.altitude, 9753.6)
-    assert_allclose(last_point.ground_distance, 10.0e6)
+    assert_allclose(last_point.ground_distance, 11.0e6)
     assert_allclose(last_point.time, 42658.7, rtol=1e-2)
     assert_allclose(last_point.true_airspeed, 234.4, atol=0.1)
     assert_allclose(last_point.mass, 48874.0, rtol=1e-4)
 
 
-def test_cruise_at_optimal_flight_level_with_start_at_exact_flight_level(polar):
+def test_climb_and_cruise_at_optimal_flight_level_with_start_at_exact_flight_level(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 3.0e-5), 2)
     reference_area = 120.0
 
-    segment = CruiseSegment(
+    segment = ClimbAndCruiseSegment(
         target=FlightPoint(
             ground_distance=10.0e6, altitude=AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL
         ),
@@ -465,7 +467,7 @@ def test_optimal_cruise(polar):
         polar=polar,
     )
     flight_points = segment.compute_from(
-        FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78),
+        FlightPoint(mass=70000.0, time=1000.0, ground_distance=1.0e5, mach=0.78),
     )
 
     first_point = flight_points.iloc[0]
