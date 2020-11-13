@@ -77,17 +77,9 @@ class SizingMission(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if inputs["data:geometry:wing:area"] == 10.0:
-            print("!!!!!!!!!! BREGUET !!!!!!!!!!!!!!")
             self.compute_breguet(inputs, outputs)
         else:
-            print("!!!!!!!!!! TIME STEP !!!!!!!!!!!!!!")
             self.compute_mission(inputs, outputs)
-            print("cruise altitude:", np.max(self.flight_points.altitude) / foot)
-            for name in ["data:geometry:wing:area", "data:weight:aircraft:MTOW"]:
-                print(name, inputs[name])
-
-            for name in ["data:mission:sizing:ZFW", "data:mission:sizing:fuel"]:
-                print(name, outputs[name])
 
     def compute_breguet(self, inputs, outputs):
         """
