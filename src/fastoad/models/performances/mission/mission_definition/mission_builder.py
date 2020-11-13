@@ -193,10 +193,6 @@ class MissionBuilder:
             for step_definition in definition[STEPS_TAG]:
                 if PHASE_TAG in step_definition:
                     phase = deepcopy(phases[step_definition[PHASE_TAG]])
-                    if "target" in step_definition:
-                        self._parse_target(step_definition["target"])
-                        self._replace_by_inputs(step_definition["target"], inputs)
-                        phase.flight_sequence[-1].target = FlightPoint(**step_definition["target"])
                     if climb:
                         climb_phases.append(phase)
                     else:
