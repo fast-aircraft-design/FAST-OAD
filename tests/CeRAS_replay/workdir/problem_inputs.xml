@@ -1,5 +1,5 @@
 <!--
-  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
   ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -217,6 +217,21 @@
         </power>
       </systems>
     </weight>
+    <mission>
+      <sizing>
+        <breguet>
+          <climb>
+            <mass_ratio is_input="True">0.97<!--For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)--></mass_ratio>
+          </climb>
+          <descent>
+            <mass_ratio is_input="True">0.98<!--For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)--></mass_ratio>
+          </descent>
+          <reserve>
+            <mass_ratio is_input="True">0.06<!--For Breguet performance computation: (weight of fuel reserve)/ZFW--></mass_ratio>
+          </reserve>
+        </breguet>
+      </sizing>
+    </mission>
   </settings>
   <tuning>
     <aerodynamics>

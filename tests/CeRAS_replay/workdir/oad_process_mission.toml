@@ -4,7 +4,7 @@ title = "OAD process with performances as time step integration"
 module_folders = []
 
 # Input and output files
-input_file = "./problem_inputs.xml"
+input_file = "./results/problem_inputs_mission.xml"
 output_file = "./results/problem_outputs_mission.xml"
 
 # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
@@ -32,18 +32,20 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
     [model.group.weight]
         id = "fastoad.weight.legacy"
     [model.group.mtow]
-        id = "fastoad.loop.mtow"
+        id = "fastoad.mass_performances.compute_MTOW"
     [model.group.hq.tail_sizing]
         id = "fastoad.handling_qualities.tail_sizing"
     [model.group.hq.static_margin]
         id = "fastoad.handling_qualities.static_margin"
 
     [model.performance]
-        id = "fastoad.performances.sizing_mission"
+        id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "./results/mission_CeRAS.csv"
         mission_file_path = "./sizing_mission.yml"
-    [model.wing_area]
+        adjust_fuel = true
+        is_sizing = true
+   [model.wing_area]
         id = "fastoad.loop.wing_area"
 
 
