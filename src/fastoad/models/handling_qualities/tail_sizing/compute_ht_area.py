@@ -1,7 +1,7 @@
 """
 Estimation of horizontal tail area
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,8 +16,9 @@ Estimation of horizontal tail area
 
 import numpy as np
 import openmdao.api as om
-from fastoad.utils.physics import Atmosphere
 from scipy.constants import g
+
+from fastoad.utils.physics import Atmosphere
 
 
 class ComputeHTArea(om.ExplicitComponent):

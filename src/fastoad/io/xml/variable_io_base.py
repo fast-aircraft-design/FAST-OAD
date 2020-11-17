@@ -1,7 +1,7 @@
 """
 Defines how OpenMDAO variables are serialized to XML using a conversion table
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,11 @@ import warnings
 from typing import IO, Union
 
 import numpy as np
+from lxml import etree
+from lxml.etree import XPathEvalError
+from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
+from openmdao.vectors.vector import Vector
+
 from fastoad.io.formatter import IVariableIOFormatter
 from fastoad.io.xml.exceptions import (
     FastXPathEvalError,
@@ -32,11 +37,6 @@ from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
 from fastoad.utils.strings import get_float_list_from_string
-from lxml import etree
-from lxml.etree import XPathEvalError
-from lxml.etree import _Element  # pylint: disable=protected-access  # Useful for type hinting
-from openmdao.vectors.vector import Vector
-
 from .constants import DEFAULT_UNIT_ATTRIBUTE, DEFAULT_IO_ATTRIBUTE, ROOT_TAG
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module

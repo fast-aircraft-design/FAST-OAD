@@ -1,4 +1,4 @@
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -12,15 +12,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
+from numpy.testing import assert_allclose
+from scipy.constants import foot
+
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import (
     OMRubberEngineComponent,
     RubberEngine,
 )
-from numpy.testing import assert_allclose
-from scipy.constants import foot
-
 from tests.testing_utilities import run_system
 from ..openmdao import OMBreguet
 

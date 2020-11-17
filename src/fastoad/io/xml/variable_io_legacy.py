@@ -1,7 +1,7 @@
 """
 Readers for legacy XML format
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,10 +14,10 @@ Readers for legacy XML format
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.io.xml import VariableXmlBaseFormatter
-from fastoad.io.xml.translator import VarXpathTranslator
 from importlib_resources import open_text
 
+from fastoad.io.xml import VariableXmlBaseFormatter
+from fastoad.io.xml.translator import VarXpathTranslator
 from . import resources
 
 CONVERSION_FILENAME_1 = "legacy1.txt"

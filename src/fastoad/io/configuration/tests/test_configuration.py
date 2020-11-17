@@ -1,7 +1,7 @@
 """
 Test module for configuration.py
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -21,13 +21,13 @@ import numpy as np
 import openmdao.api as om
 import pytest
 import tomlkit
+
 from fastoad.io.configuration.configuration import (
     FASTOADProblemConfigurator,
     KEY_INPUT_FILE,
     KEY_OUTPUT_FILE,
     TABLE_MODEL,
 )
-
 from ..exceptions import (
     FASTConfigurationError,
     FASTConfigurationBadOpenMDAOInstructionError,

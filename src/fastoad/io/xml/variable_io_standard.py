@@ -1,7 +1,7 @@
 """
 Defines how OpenMDAO variables are serialized to XML
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@ import logging
 from typing import Union, IO
 
 from fastoad.openmdao.variables import VariableList
-
 from .exceptions import FastXPathEvalError
 from .translator import VarXpathTranslator
 from .variable_io_base import VariableXmlBaseFormatter

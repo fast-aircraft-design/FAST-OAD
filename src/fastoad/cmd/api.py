@@ -1,7 +1,7 @@
 """
 API
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -33,17 +33,16 @@ from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
 
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io import IVariableIOFormatter, VariableIO
-from fastoad.io.configuration import FASTOADProblem
-from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
-from fastoad.module_management import BundleLoader
-from fastoad.module_management import OpenMDAOSystemRegistry
+from fastoad.module_management import BundleLoader, OpenMDAOSystemRegistry
+from fastoad.module_management.service_registry import RegisterPropulsion
+from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
 from fastoad.utils.postprocessing import OptimizationViewer, VariableViewer
 from fastoad.utils.resource_management.copy import copy_resource
 from . import resources
-from ..module_management.service_registry import RegisterPropulsion
 
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
