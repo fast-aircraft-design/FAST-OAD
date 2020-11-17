@@ -1,7 +1,7 @@
 """
 Test module for Overall Aircraft Design process
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -266,13 +266,13 @@ def test_api(cleanup):
         atol=1,
     )
 
-    assert_allclose(problem["data:handling_qualities:static_margin"], -0.005519, atol=1e-3)
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.5, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 77065, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 130.29, atol=1e-2)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.65, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.25, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:fuel"], 20494, atol=1)
+    assert_allclose(problem["data:handling_qualities:static_margin"], -0.072251, atol=1e-3)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.0, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 76094, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 128.98, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.07, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.50, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:fuel"], 20213, atol=1)
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
@@ -308,4 +308,4 @@ def test_api(cleanup):
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:fuel"], 20565, atol=50)
+    assert_allclose(problem["data:mission:sizing:fuel"], 20338, atol=50)
