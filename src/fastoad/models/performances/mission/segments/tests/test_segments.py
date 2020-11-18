@@ -153,7 +153,6 @@ def test_climb_optimal_flight_level_at_fixed_TAS(polar):
         thrust_rate=1.0,
         time_step=2.0,
     ).compute_from(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),)
-    print_dataframe(flight_points)
 
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
@@ -163,32 +162,6 @@ def test_climb_optimal_flight_level_at_fixed_TAS(polar):
     assert_allclose(last_point.mach, 0.8318, rtol=1e-4)
     assert_allclose(last_point.mass, 69843.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 19091.0, rtol=1e-3)
-
-
-def test_climb_optimal_altitude_at_fixed_TAS_with_capped_mach(polar):
-    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
-
-    flight_points = AltitudeChangeSegment(
-        target=FlightPoint(
-            altitude=AltitudeChangeSegment.OPTIMAL_ALTITUDE, true_airspeed="constant"
-        ),
-        propulsion=propulsion,
-        reference_area=120.0,
-        polar=polar,
-        thrust_rate=1.0,
-        time_step=2.0,
-        maximum_mach=0.80,
-    ).compute_from(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0),)
-
-    last_point = flight_points.iloc[-1]
-    # Note: reference values are obtained by running the process with 0.01s as time step
-    assert_allclose(last_point.CL, polar.optimal_cl)
-    assert_allclose(last_point.altitude, 9507.2, atol=0.1)
-    assert_allclose(last_point.mach, 0.80, rtol=1e-4)
-    assert_allclose(last_point.time, 75.4, rtol=1e-2)
-    assert_allclose(last_point.true_airspeed, 241.3, atol=0.1)
-    assert_allclose(last_point.mass, 69849.0, rtol=1e-4)
-    assert_allclose(last_point.ground_distance, 18112.0, rtol=1e-3)
 
 
 def test_climb_not_enough_thrust(polar):
@@ -391,8 +364,6 @@ def test_cruise_at_constant_altitude(polar):
     )
     flight_points = segment.compute_from(FlightPoint(mass=70000.0, altitude=10000.0, mach=0.78))
 
-    print_dataframe(flight_points)
-
     first_point = flight_points.iloc[0]
     last_point = FlightPoint(flight_points.iloc[-1])
     # Note: reference values are obtained by running the process with 0.05s as time step
@@ -404,6 +375,81 @@ def test_cruise_at_constant_altitude(polar):
     assert_allclose(last_point.time, 2141.0, rtol=1e-2)
     assert_allclose(last_point.true_airspeed, 233.6, atol=0.1)
     assert_allclose(last_point.mass, 69568.0, rtol=1e-4)
+
+
+def test_cruise_at_optimal_flight_level_with_climb_first(polar):
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 3.0e-5), 2)
+    reference_area = 120.0
+
+    segment = CruiseSegment(
+        target=FlightPoint(
+            ground_distance=10.0e6, altitude=AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL
+        ),
+        propulsion=propulsion,
+        reference_area=reference_area,
+        polar=polar,
+        climb_segment=AltitudeChangeSegment(
+            target=FlightPoint(mach="constant"),
+            propulsion=propulsion,
+            reference_area=reference_area,
+            polar=polar,
+            thrust_rate=0.9,
+        ),
+    )
+
+    flight_points = segment.compute_from(FlightPoint(mass=70000.0, altitude=8000.0, mach=0.78))
+
+    first_point = flight_points.iloc[0]
+    last_point = FlightPoint(flight_points.iloc[-1])
+    # Note: reference values are obtained by running the process with 1.0s as time step
+
+    assert_allclose(first_point.altitude, 8000.0)
+    assert_allclose(first_point.thrust_rate, 0.9)
+    assert_allclose(first_point.true_airspeed, 240.3, atol=0.1)
+
+    assert_allclose(last_point.altitude, 9753.6)
+    assert_allclose(last_point.ground_distance, 10.0e6)
+    assert_allclose(last_point.time, 42658.7, rtol=1e-2)
+    assert_allclose(last_point.true_airspeed, 234.4, atol=0.1)
+    assert_allclose(last_point.mass, 48874.0, rtol=1e-4)
+
+
+def test_cruise_at_optimal_flight_level_with_start_at_exact_flight_level(polar):
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 3.0e-5), 2)
+    reference_area = 120.0
+
+    segment = CruiseSegment(
+        target=FlightPoint(
+            ground_distance=10.0e6, altitude=AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL
+        ),
+        propulsion=propulsion,
+        reference_area=reference_area,
+        polar=polar,
+        climb_segment=AltitudeChangeSegment(
+            target=FlightPoint(mach="constant"),
+            propulsion=propulsion,
+            reference_area=reference_area,
+            polar=polar,
+            thrust_rate=0.9,
+        ),
+    )
+
+    # Start at exact optimum flight level ==========================================================
+    flight_points = segment.compute_from(FlightPoint(mass=70000.0, altitude=9753.6, mach=0.78))
+
+    first_point = flight_points.iloc[0]
+    last_point = FlightPoint(flight_points.iloc[-1])
+    # Note: reference values are obtained by running the process with 1.0s as time step
+
+    assert_allclose(first_point.altitude, 9753.6)
+    assert_allclose(first_point.thrust_rate, 0.9)
+    assert_allclose(first_point.true_airspeed, 234.4, atol=0.1)
+
+    assert_allclose(last_point.altitude, 9753.6)
+    assert_allclose(last_point.ground_distance, 10.0e6)
+    assert_allclose(last_point.time, 42658.7, rtol=1e-2)
+    assert_allclose(last_point.true_airspeed, 234.4, atol=0.1)
+    assert_allclose(last_point.mass, 48987.0, rtol=1e-4)
 
 
 def test_optimal_cruise(polar):
@@ -459,8 +505,6 @@ def test_hold(polar):
     flight_points = segment.compute_from(
         FlightPoint(altitude=500.0, equivalent_airspeed=250.0, mass=60000.0),
     )
-
-    print_dataframe(flight_points)
 
     last_point = FlightPoint(flight_points.iloc[-1])
     assert_allclose(last_point.time, 3000.0)

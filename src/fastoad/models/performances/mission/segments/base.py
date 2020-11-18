@@ -1,6 +1,6 @@
 """Base classes for simulating flight segments."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -35,17 +35,28 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 DEFAULT_TIME_STEP = 0.2
 
 SEGMENT_KEYWORD_ARGUMENTS = {
-    "time_step": DEFAULT_TIME_STEP,
-    "engine_setting": EngineSetting.CLIMB,
-    "altitude_bounds": (-500.0, 40000.0),  # large limits for stopping bad computation
-    "mach_bounds": (0.0, 5.0),  # large limits for stopping bad computation
-    "maximum_mach": 100.0,  # not limited by default
-    "name": "",
+    "time_step": {
+        "default": DEFAULT_TIME_STEP,
+        "doc": "Time step that will be applied during computation.",
+    },
+    "engine_setting": {
+        "default": EngineSetting.CLIMB,
+        "doc": "Engine setting that will be provided to propulsion model.",
+    },
+    "name": {"default": "", "doc": "Name of current flight part."},
+    "altitude_bounds": {
+        "default": (-500.0, 40000.0),  # large limits for stopping bad computation
+        "doc": "Computation will be stopped if altitude gets out of these limits.",
+    },
+    "mach_bounds": {
+        "default": (0.0, 5.0),  # large limits for stopping bad computation
+        "doc": "Computation will be stopped if Mach gets out of these limits.",
+    },
 }
 
 
 @AddKeyAttributes(SEGMENT_KEYWORD_ARGUMENTS)
-class AbstractSegment(IFlightPart, DynamicAttributeDict):
+class FlightSegment(DynamicAttributeDict, IFlightPart):
     """
     Base class for flight path segment.
 
@@ -62,10 +73,11 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
     :ivar mach_bounds: minimum and maximum authorized mach values. If computed Mach
                        gets beyond these limits, computation will be interrupted and a warning
                        message will be issued in logger.
-    :ivar maximum_mach: if defined, this maximum Mach number will be enforced at each time
-                        step, whatever the speed specifications.
     :ivar name: the name of the current flight sequence.
     """
+
+    #: Using this value will tell to keep the associated parameter constant.
+    CONSTANT_VALUE = "constant"
 
     def __init__(
         self,
@@ -218,11 +230,11 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         )
         self._compute_next_altitude(next_point, previous)
 
-        if self.target.true_airspeed == "constant":
+        if self.target.true_airspeed == self.CONSTANT_VALUE:
             next_point.true_airspeed = previous.true_airspeed
-        elif self.target.equivalent_airspeed == "constant":
+        elif self.target.equivalent_airspeed == self.CONSTANT_VALUE:
             next_point.equivalent_airspeed = start.equivalent_airspeed
-        elif self.target.mach == "constant":
+        elif self.target.mach == self.CONSTANT_VALUE:
             next_point.mach = start.mach
         else:
             next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
@@ -243,11 +255,6 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
         flight_point.engine_setting = self.engine_setting
 
         self._complete_speed_values(flight_point)
-        # Mach number is capped by self.maximum_mach
-        if flight_point.mach > self.maximum_mach:
-            flight_point.mach = self.maximum_mach
-            flight_point.true_airspeed = flight_point.equivalent_airspeed = None
-            self._complete_speed_values(flight_point)
 
         atm = AtmosphereSI(flight_point.altitude)
         reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
@@ -290,7 +297,7 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
             )
 
     @staticmethod
-    def _compute_next_altitude(next_point, previous_point):
+    def _compute_next_altitude(next_point: FlightPoint, previous_point: FlightPoint):
         time_step = next_point.time - previous_point.time
         next_point.altitude = (
             previous_point.altitude
@@ -362,7 +369,7 @@ class AbstractSegment(IFlightPart, DynamicAttributeDict):
 
 
 @AddKeyAttributes({"thrust_rate": 1.0})
-class ManualThrustSegment(AbstractSegment, ABC):
+class ManualThrustSegment(FlightSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is imposed.
 
@@ -376,14 +383,14 @@ class ManualThrustSegment(AbstractSegment, ABC):
 
 
 @AddKeyAttributes({"time_step": 60.0})
-class RegulatedThrustSegment(AbstractSegment, ABC):
+class RegulatedThrustSegment(FlightSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is adjusted on drag.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.target.mach = "constant"
+        self.target.mach = self.CONSTANT_VALUE
 
     def _compute_propulsion(self, flight_point: FlightPoint):
         flight_point.thrust = flight_point.drag
@@ -394,7 +401,7 @@ class RegulatedThrustSegment(AbstractSegment, ABC):
         return 0.0, 0.0
 
 
-class FixedDurationSegment(AbstractSegment, ABC):
+class FixedDurationSegment(FlightSegment, ABC):
     """
     Class for computing phases where duration is fixed.
 

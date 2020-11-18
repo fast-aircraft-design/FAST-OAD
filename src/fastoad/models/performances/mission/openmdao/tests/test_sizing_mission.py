@@ -1,5 +1,5 @@
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,12 +18,12 @@ from shutil import rmtree
 
 import matplotlib.pyplot as plt
 import pytest
-from fastoad.io import VariableIO
-from fastoad.models.performances.mission.openmdao.flight import SizingFlight
 from matplotlib.ticker import MultipleLocator
 from scipy.constants import foot, knot
 
+from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
+from ..sizing_mission import SizingMission
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -77,21 +77,11 @@ def plot_flight(flight_points, fig_filename):
     plt.close()
 
 
-def test_sizing_flight(cleanup):
-    # problem = FASTOADProblem()
-    # problem.model = SizingFlight(propulsion_id="fastoad.wrapper.propulsion.rubber_engine")
-    # problem.input_file_path = pth.join(DATA_FOLDER_PATH, "flight_inputs.xml")
-    # problem.write_needed_inputs(
-    #     r"D:\cdavid\PyCharmProjects\FAST-OAD\tests\integration_tests\oad_process\results\non_regression\problem_outputs.xml"
-    # )
-
-    input_file_path = pth.join(DATA_FOLDER_PATH, "flight_inputs.xml")
+def test_sizing_mission(cleanup):
+    input_file_path = pth.join(DATA_FOLDER_PATH, "mission_inputs.xml")
     ivc = VariableIO(input_file_path).read().to_ivc()
 
     problem = run_system(
-        SizingFlight(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc
+        SizingMission(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc
     )
     plot_flight(problem.model.component.flight_points, "flight.png")
-
-    # assert_allclose(problem["data:mission:sizing:ZFW"], 65076.0, atol=1)
-    # assert_allclose(problem["data:mission:sizing:fuel"], 8924.0, atol=1)

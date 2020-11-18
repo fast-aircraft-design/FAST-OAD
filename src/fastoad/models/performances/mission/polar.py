@@ -52,11 +52,14 @@ class Polar:
         """The CL value that provides larger lift/drag ratio."""
         return self._optimal_CL
 
-    def cd(self, cl):
+    def cd(self, cl=None):
         """
         Computes drag coefficient (CD) by interpolation in definition data.
 
-        :param cl: lift coefficient (CL) values
+        :param cl: lift coefficient (CL) values. If not provided, the CL definition vector will be
+                   used (i.e. CD definition vector will be returned)
         :return: CD values for each provide CL values
         """
+        if cl is None:
+            return self._cd(self._definition_CL)
         return self._cd(cl)

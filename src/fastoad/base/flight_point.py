@@ -1,6 +1,6 @@
 """Structure for managing flight point data."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,8 +25,8 @@ LABELS = {
     "equivalent_airspeed": dict(doc="Equivalent airspeed (EAS) in m/s."),
     "mach": dict(doc="Mach number."),
     "engine_setting": dict(doc="Engine setting (see :class:`~fastoad.constants.EngineSetting`)."),
-    "CL": dict(doc="Lift coeffient."),
-    "CD": dict(doc="Drag coeffient."),
+    "CL": dict(doc="Lift coefficient."),
+    "CD": dict(doc="Drag coefficient."),
     "drag": dict(doc="Aircraft drag in Newtons."),
     "thrust": dict(doc="Thrust in Newtons."),
     "thrust_rate": dict(doc="Thrust rate (between 0. and 1.)"),
@@ -62,23 +62,25 @@ class FlightPoint(DynamicAttributeDict):
         >>> fp["mass"]
         50000.0
 
-    Note: constructor will forbid usage of unknown keys as keyword argument, but
-    other methods will allow them, while not making the matching between dict
-    keys and attributes, hence::
+    .. Note::
 
-        >>> fp["foo"] = 42  # Ok
-        >>> bar = fp.foo  # raises exception !!!!
-        >>> fp.foo = 50  # allowed by Python
-        >>> # But inner dict is not affected:
-        >>> fp.foo
-        50
-        >>> fp["foo"]
-        42
+        Constructor will forbid usage of unknown keys as keyword argument, but
+        other methods will allow them, while not making the matching between dict
+        keys and attributes, hence::
+
+            >>> fp["foo"] = 42  # Ok
+            >>> bar = fp.foo  # raises exception !!!!
+            >>> fp.foo = 50  # allowed by Python
+            >>> # But inner dict is not affected:
+            >>> fp.foo
+            50
+            >>> fp["foo"]
+            42
 
     This class is especially useful for generating pandas DataFrame: a pandas
     DataFrame can be generated from a list of dict... or a list of FlightPoint
     instances.
 
     The set of dictionary keys that are mapped to instance attributes is given by
-    the :meth:`get_attribute_keys`.
+    :meth:`get_attribute_keys`.
     """
