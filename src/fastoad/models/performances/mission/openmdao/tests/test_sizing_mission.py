@@ -85,6 +85,7 @@ def test_sizing_mission(cleanup):
         SizingMission(
             propulsion_id="fastoad.wrapper.propulsion.rubber_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "flight_points.csv"),
+            breguet_iterations=0,
         ),
         ivc,
     )

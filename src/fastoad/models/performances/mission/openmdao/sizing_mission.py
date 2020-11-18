@@ -14,6 +14,7 @@ OpenMDAO component for computation of sizing mission.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from importlib.resources import path
 
 import numpy as np
@@ -28,6 +29,8 @@ from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
 from ..polar import Polar
 from ...breguet import Breguet
+
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 class SizingMission(om.ExplicitComponent):
@@ -50,7 +53,7 @@ class SizingMission(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("out_file", default="", types=str)
-
+        self.options.declare("breguet_iterations", default=2, types=int)
         self.options.declare("mission_file_path", types=str, allow_none=True, default=None)
 
     def setup(self):
@@ -76,9 +79,11 @@ class SizingMission(om.ExplicitComponent):
         self.declare_partials(["*"], ["*"])
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        if inputs["data:geometry:wing:area"] == 10.0:
+        if self.iter_count_without_approx < self.options["breguet_iterations"]:
+            _LOGGER.info("Using Breguet for computing sizing mission.")
             self.compute_breguet(inputs, outputs)
         else:
+            _LOGGER.info("Using time-step integration for computing sizing mission.")
             self.compute_mission(inputs, outputs)
 
     def compute_breguet(self, inputs, outputs):
