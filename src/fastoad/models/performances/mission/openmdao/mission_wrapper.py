@@ -88,6 +88,10 @@ class MissionWrapper:
     def reference_area(self, reference_area: float):
         self._mission_builder.reference_area = reference_area
 
+    @property
+    def mission_name(self) -> str:
+        return self._mission_builder.definition[MISSION_DEFINITION_TAG]["name"]
+
     def setup(self, component: om.ExplicitComponent):
         """
         To be used during setup() of provided OpenMDAO component.
@@ -177,16 +181,15 @@ class MissionWrapper:
         """
         output_definition = {}
 
-        name = self._mission_builder.definition[MISSION_DEFINITION_TAG]["name"]
-        output_definition.update(self._add_vars(name))
+        output_definition.update(self._add_vars(self.mission_name))
 
         for step in self._mission_builder.definition[MISSION_DEFINITION_TAG][STEPS_TAG]:
             if PHASE_TAG in step:
                 phase_name = step[PHASE_TAG]
-                output_definition.update(self._add_vars(name, phase_name=phase_name))
+                output_definition.update(self._add_vars(self.mission_name, phase_name=phase_name))
             else:
                 route_name = step[ROUTE_TAG]
-                output_definition.update(self._add_vars(name, route_name))
+                output_definition.update(self._add_vars(self.mission_name, route_name))
                 route_definition = self._mission_builder.definition[ROUTE_DEFINITIONS_TAG][
                     route_name
                 ]
@@ -195,7 +198,9 @@ class MissionWrapper:
                         phase_name = step_definition[PHASE_TAG]
                     else:
                         phase_name = "cruise"
-                    output_definition.update(self._add_vars(name, route_name, phase_name))
+                    output_definition.update(
+                        self._add_vars(self.mission_name, route_name, phase_name)
+                    )
 
         return output_definition
 
