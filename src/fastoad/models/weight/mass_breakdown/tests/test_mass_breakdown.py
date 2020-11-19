@@ -1,7 +1,7 @@
 """
 Test module for mass breakdown functions
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@ import os.path as pth
 
 import openmdao.api as om
 import pytest
-from fastoad.io import VariableIO
 
+from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
 from ..a_airframe import (
     EmpennageWeight,

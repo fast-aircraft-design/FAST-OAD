@@ -2,7 +2,7 @@
     Estimation of wing geometry
 """
 
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+from openmdao.api import Group
 
 from fastoad.models.geometry.geom_components.wing.components.compute_b_50 import ComputeB50
 from fastoad.models.geometry.geom_components.wing.components.compute_cl_alpha import ComputeCLalpha
@@ -30,8 +32,6 @@ from fastoad.models.geometry.geom_components.wing.components.compute_wet_area_wi
 )
 from fastoad.models.geometry.geom_components.wing.components.compute_x_wing import ComputeXWing
 from fastoad.models.geometry.geom_components.wing.components.compute_y_wing import ComputeYWing
-
-from openmdao.api import Group
 
 
 class ComputeWingGeometry(Group):

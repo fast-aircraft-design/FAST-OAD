@@ -1,5 +1,5 @@
 """For checking validity domain of OpenMDAO variables."""
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -23,8 +23,9 @@ from uuid import UUID
 
 import numpy as np
 import openmdao.api as om
-from fastoad.openmdao.variables import VariableList
 from openmdao.utils.units import convert_units
+
+from fastoad.openmdao.variables import VariableList
 
 CheckRecord = namedtuple(
     "CheckRecord",

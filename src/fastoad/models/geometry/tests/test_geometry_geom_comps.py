@@ -1,7 +1,7 @@
 """
 Test module for geometry functions of cg components
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,9 +17,9 @@ Test module for geometry functions of cg components
 import os.path as pth
 
 import pytest
+
 from fastoad.io import VariableIO
 from fastoad.models.weight.cg.cg_components import ComputeHTcg, ComputeVTcg, UpdateMLG
-
 from tests.testing_utilities import run_system
 from ..geom_components import ComputeTotalArea
 from ..geom_components.fuselage import (
