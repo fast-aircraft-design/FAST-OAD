@@ -14,7 +14,7 @@ Mission wrapper.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Union, Dict, Tuple
+from typing import Union, Dict, Tuple, List
 
 import numpy as np
 import openmdao.api as om
@@ -89,8 +89,12 @@ class MissionWrapper:
         self._mission_builder.reference_area = reference_area
 
     @property
+    def definition(self):
+        return self._mission_builder.definition
+
+    @property
     def mission_name(self) -> str:
-        return self._mission_builder.definition[MISSION_DEFINITION_TAG]["name"]
+        return self.definition[MISSION_DEFINITION_TAG]["name"]
 
     def setup(self, component: om.ExplicitComponent):
         """
@@ -114,6 +118,12 @@ class MissionWrapper:
 
         for name, (units, desc) in output_definition.items():
             component.add_output(name, units=units, desc=desc)
+
+    def get_route_ranges(self, inputs) -> List[float]:
+        return self._mission_builder.get_route_ranges(inputs)
+
+    def get_route_cruise_speeds(self, inputs) -> List[Tuple[str, float]]:
+        return self._mission_builder.get_route_cruise_speeds(inputs)
 
     def compute(
         self, inputs: Vector, outputs: Vector, start_flight_point: FlightPoint
@@ -183,16 +193,14 @@ class MissionWrapper:
 
         output_definition.update(self._add_vars(self.mission_name))
 
-        for step in self._mission_builder.definition[MISSION_DEFINITION_TAG][STEPS_TAG]:
+        for step in self.definition[MISSION_DEFINITION_TAG][STEPS_TAG]:
             if PHASE_TAG in step:
                 phase_name = step[PHASE_TAG]
                 output_definition.update(self._add_vars(self.mission_name, phase_name=phase_name))
             else:
                 route_name = step[ROUTE_TAG]
                 output_definition.update(self._add_vars(self.mission_name, route_name))
-                route_definition = self._mission_builder.definition[ROUTE_DEFINITIONS_TAG][
-                    route_name
-                ]
+                route_definition = self.definition[ROUTE_DEFINITIONS_TAG][route_name]
                 for step_definition in route_definition[STEPS_TAG]:
                     if PHASE_TAG in step_definition:
                         phase_name = step_definition[PHASE_TAG]
