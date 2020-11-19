@@ -1,0 +1,74 @@
+title = "Sample OAD Process using time-step integration for mission computation"
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders = []
+
+# Input and output files
+input_file = "./problem_inputs.xml"
+output_file = "./problem_outputs.xml"
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
+
+# Definition of OpenMDAO model (group)
+[model]
+
+    # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=30)"
+    linear_solver = "om.DirectSolver()"
+
+    # Although "model" is a mandatory name for the top level of the model, its
+    # sub-components can be freely named by user.
+
+    # Subgroups can be defined
+    [model.subgroup]
+        nonlinear_solver = "om.NonlinearBlockGS(maxiter=30)"
+        linear_solver = "om.DirectSolver()"
+
+        [model.subgroup.geometry]
+            # The declared entity is an OpenMDAO component when it has the "id" field
+            id = "fastoad.geometry.legacy"
+        [model.subgroup.aerodynamics_highspeed]
+            id = "fastoad.aerodynamics.highspeed.legacy"
+        [model.subgroup.aerodynamics_lowspeed]
+            id = "fastoad.aerodynamics.lowspeed.legacy"
+        [model.subgroup.aerodynamics_takeoff]
+            id = "fastoad.aerodynamics.takeoff.legacy"
+        [model.subgroup.aerodynamics_landing]
+            id = "fastoad.aerodynamics.landing.legacy"
+            use_xfoil = false
+        [model.subgroup.weight]
+            id = "fastoad.weight.legacy"
+        [model.subgroup.mtow]
+            id = "fastoad.loop.mtow"
+
+        # Below model.subgroup.hq group is declared implicitly.
+        # As it has no declared solver, this is just a formal way to organize components.
+        [model.subgroup.hq.tail_sizing]
+            id = "fastoad.handling_qualities.tail_sizing"
+        [model.subgroup.hq.static_margin]
+            id = "fastoad.handling_qualities.static_margin"
+
+    # CPU-costly model is put out of the subgroup
+    [model.performance]
+        id = "fastoad.performances.sizing_mission"
+        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
+        out_file = "./flight_points.csv"
+
+    # this looping component must be in the main loop
+    [model.wing_area]
+        id = "fastoad.loop.wing_area"
+
+[optimization]  # This section is needed only if optimization process is run
+    [[optimization.design_var]]
+        name = "data:geometry:wing:MAC:at25percent:x"
+        lower = 16.0
+        upper = 18.0
+
+    [[optimization.constraint]]
+        name = "data:handling_qualities:static_margin"
+        lower = 0.05
+        upper = 0.1
+
+    [[optimization.objective]]
+        name = "data:mission:sizing:fuel"
