@@ -17,6 +17,7 @@ Schema for mission definition files.
 from collections import OrderedDict
 from dataclasses import fields
 from enum import Enum
+from os import PathLike
 from typing import Union, Set
 
 from ensure import Ensure
@@ -45,7 +46,7 @@ POLAR_TAG = "polar"
 
 
 class MissionDefinition(dict):
-    def __init__(self, file_path: str = None):
+    def __init__(self, file_path: Union[str, PathLike] = None):
         """
         Class for reading a mission definition from a YAML file.
 
@@ -58,7 +59,7 @@ class MissionDefinition(dict):
         if file_path:
             self.load(file_path)
 
-    def load(self, file_path: str):
+    def load(self, file_path: Union[str, PathLike]):
         """
         Loads a mission definition from provided file path.
 
