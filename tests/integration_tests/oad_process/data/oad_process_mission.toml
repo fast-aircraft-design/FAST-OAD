@@ -38,5 +38,6 @@ output_file = "./oad_process_mission_outputs.xml"
         id = "fastoad.performances.sizing_mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "./flight_points.csv"
+        breguet_iterations = 2
     [model.wing_area]
         id = "fastoad.loop.wing_area"
