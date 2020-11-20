@@ -11,60 +11,51 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import pandas as pd
 import pytest
-from numpy.testing import assert_allclose
 
-from fastoad.exceptions import FastUnexpectedKeywordArgument
 from ..flight_point import FlightPoint
 
 
-def test_FlightPoint():
+def test_add_remove_field():
 
-    # Init with kwargs, with one attribute initialized #############################################
-    fp1 = FlightPoint(mass=50000.0)
-    assert fp1.mass == 50000.0
-    assert fp1.mass == fp1["mass"]
-    fp1.mass = 70000.0
-    assert fp1["mass"] == 70000.0
+    # Without add_field(), an unknown field will raise errors
+    fp1 = FlightPoint(time=100.0, mass=70000.0)
+    with pytest.raises(AttributeError):
+        fp1.foo
+    with pytest.raises(TypeError):
+        fp2 = FlightPoint(time=100.0, mass=70000.0, foo=42)
 
-    # Non initialized but known attributes are initialized to None
-    for label in FlightPoint.get_attribute_keys():
-        if label != "mass":
-            assert getattr(fp1, label) is None
+    # After add_field(), no problem
+    FlightPoint.add_field("foo", annotation_type=int, default_value=5)
+    fp1 = FlightPoint(time=100.0, mass=70000.0)
+    fp1.foo
+    fp2 = FlightPoint(time=100.0, mass=70000.0, foo=42)
 
-    # Init with dictionary, with all attributes initialized ########################################
-    test_values = {
-        key: value
-        for key, value in zip(
-            FlightPoint.get_attribute_keys(), range(len(FlightPoint.get_attribute_keys()))
-        )
-    }
-    fp2 = FlightPoint(test_values)
-    for label in FlightPoint.get_attribute_keys():
-        assert getattr(fp2, label) == test_values[label]
-        assert getattr(fp2, label) == fp2[label]
-        new_value = test_values[label] * 100
-        setattr(fp2, label, new_value)
-        assert fp2[label] == new_value
+    # After remove_field(), back to initial state, an unknown field will raise errors
+    FlightPoint.remove_field("foo")
+    fp1 = FlightPoint(time=100.0, mass=70000.0)
+    with pytest.raises(AttributeError):
+        fp1.foo
+    with pytest.raises(TypeError):
+        fp2 = FlightPoint(time=100.0, mass=70000.0, foo=42)
 
-    # Init with unknown attribute ##################################################################
-    with pytest.raises(FastUnexpectedKeywordArgument):
-        _ = FlightPoint(unknown=0)
 
-    # Unknown dictionary keys are allowed, though
-    _ = FlightPoint({"unknown": 0})
+def test_create():
+    df = pd.DataFrame(dict(time=[0.0, 1.0, 2.0], mach=[0.0, 0.02, 0.05]))
 
-    # FlightPoint to/from pandas DataFrame #########################################################
-    assert fp1 == FlightPoint(pd.DataFrame([fp1]).iloc[0])
+    flight_point = FlightPoint.create(df.iloc[1])
+    assert flight_point.time == 1.0
+    assert flight_point.mach == 0.02
 
-    df = pd.DataFrame([fp1, fp2])
-    for label in FlightPoint.get_attribute_keys():
-        assert_allclose(df[label], [fp1.get(label, np.nan), fp2.get(label, np.nan)])
 
-    fp2bis = FlightPoint(df.iloc[-1])
-    assert fp2 == fp2bis
+def test_create_list():
+    df = pd.DataFrame(dict(time=[0.0, 1.0, 2.0], mach=[0.0, 0.02, 0.05]))
 
-    fp1bis = FlightPoint(df.iloc[0])
-    assert fp1 == fp1bis
+    flight_points = FlightPoint.create_list(df)
+    assert flight_points[0].time == 0.0
+    assert flight_points[0].mach == 0.0
+    assert flight_points[1].time == 1.0
+    assert flight_points[1].mach == 0.02
+    assert flight_points[2].time == 2.0
+    assert flight_points[2].mach == 0.05

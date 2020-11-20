@@ -14,9 +14,10 @@ Airfoil reshape function
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from importlib.resources import open_text
+
 import numpy as np
 import pandas as pd
-from importlib_resources import open_text
 
 from .profile import Profile
 from .. import resources

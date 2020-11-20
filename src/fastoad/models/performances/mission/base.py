@@ -13,7 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC
-from typing import List, Union
+from dataclasses import dataclass
+from typing import List
 
 import pandas as pd
 
@@ -21,10 +22,6 @@ from fastoad.base.flight_point import FlightPoint
 
 
 class IFlightPart(ABC):
-    def __init__(self):
-        self.name = None
-        self._flight_sequence = []
-
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
         Computes a flight sequence from provided start point.
@@ -32,18 +29,18 @@ class IFlightPart(ABC):
         :param start: the initial flight point, defined for `altitude`, `mass` and speed
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
-        :return: a pandas DataFrame where columns names match
-                 :meth:`fastoad.base.flight_point.FlightPoint.get_attribute_keys`
+        :return: a pandas DataFrame where columns names match fields of
+                 :meth:`fastoad.base.flight_point.FlightPoint`
         """
 
 
+@dataclass
 class FlightSequence(IFlightPart):
     """
     Defines and computes a flight sequence.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __post_init__(self):
         self._flight_sequence = []
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
@@ -60,12 +57,12 @@ class FlightSequence(IFlightPart):
                 # But it is kept if the computed segment is the first one.
                 parts.append(flight_points)
 
-            part_start = FlightPoint(flight_points.iloc[-1])
+            part_start = FlightPoint.create(flight_points.iloc[-1])
 
         if parts:
             return pd.concat(parts).reset_index(drop=True)
 
     @property
-    def flight_sequence(self) -> List[Union[IFlightPart]]:
+    def flight_sequence(self) -> List[IFlightPart]:
         """List of IFlightPart instances that should be run sequentially."""
         return self._flight_sequence

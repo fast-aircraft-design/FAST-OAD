@@ -193,10 +193,6 @@ class MissionBuilder:
             for step_definition in definition[STEPS_TAG]:
                 if PHASE_TAG in step_definition:
                     phase = deepcopy(phases[step_definition[PHASE_TAG]])
-                    if "target" in step_definition:
-                        self._parse_target(step_definition["target"])
-                        self._replace_by_inputs(step_definition["target"], inputs)
-                        phase.flight_sequence[-1].target = FlightPoint(**step_definition["target"])
                     if climb:
                         climb_phases.append(phase)
                     else:
@@ -211,7 +207,7 @@ class MissionBuilder:
                     )
                     climb = False
 
-            sequence = SimpleRoute(0.0, climb_phases, cruise_phase, descent_phases)
+            sequence = SimpleRoute(climb_phases, cruise_phase, descent_phases)
             sequence.name = route_name
             flight_range = definition["range"]
             if isinstance(flight_range, str):
@@ -268,9 +264,11 @@ class MissionBuilder:
                 self._replace_by_inputs(polar, inputs)
                 step_kwargs[key] = Polar(polar["CL"], polar["CD"])
             elif key == "target":
-                self._parse_target(value)
-                self._replace_by_inputs(value, inputs)
-                step_kwargs[key] = FlightPoint(**value)
+                if not isinstance(value, FlightPoint):
+                    self._parse_target(value)
+                    self._replace_by_inputs(value, inputs)
+                    value = FlightPoint(**value)
+                step_kwargs[key] = value
             else:
                 step_kwargs[key] = value
 
@@ -291,6 +289,7 @@ class MissionBuilder:
 
         :param target_definition:
         """
+
         for target_key, target_value in target_definition.items():
             if isinstance(target_value, dict) and "value" in target_value:
                 target_definition[target_key] = om.convert_units(

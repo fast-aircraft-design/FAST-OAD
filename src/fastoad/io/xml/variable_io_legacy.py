@@ -14,7 +14,7 @@ Readers for legacy XML format
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from importlib_resources import open_text
+from importlib.resources import open_text
 
 from fastoad.io.xml import VariableXmlBaseFormatter
 from fastoad.io.xml.translator import VarXpathTranslator

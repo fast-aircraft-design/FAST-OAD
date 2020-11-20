@@ -15,6 +15,7 @@ Schema for mission definition files.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from collections import OrderedDict
+from dataclasses import fields
 from enum import Enum
 from typing import Union, Set
 
@@ -23,7 +24,10 @@ from strictyaml import load, Map, MapPattern, Optional, Str, Float, Seq, Any, YA
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
-from fastoad.models.performances.mission.segments.cruise import CruiseSegment, OptimalCruiseSegment
+from fastoad.models.performances.mission.segments.cruise import (
+    OptimalCruiseSegment,
+    ClimbAndCruiseSegment,
+)
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
@@ -138,7 +142,7 @@ class MissionDefinition(dict):
     @classmethod
     def _get_target_schema(cls) -> Map:
         target_schema_map = {}
-        for key in FlightPoint.get_attribute_keys():
+        for key in [f.name for f in fields(FlightPoint)]:
             target_schema_map[Optional(key, default=None)] = (
                 Float()
                 | Str()
@@ -228,7 +232,7 @@ class SegmentNames(Enum):
         """
         segments = {
             cls.ALTITUDE_CHANGE.value: AltitudeChangeSegment,
-            cls.CRUISE.value: CruiseSegment,
+            cls.CRUISE.value: ClimbAndCruiseSegment,
             cls.OPTIMAL_CRUISE.value: OptimalCruiseSegment,
             cls.SPEED_CHANGE.value: SpeedChangeSegment,
             cls.HOLDING.value: HoldSegment,

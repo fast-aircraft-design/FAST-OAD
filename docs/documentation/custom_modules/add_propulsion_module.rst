@@ -35,12 +35,17 @@ FlightPoint class is meant for:
 Available flight parameters
 ===========================
 The documentation of :class:`~fastoad.base.flight_point.FlightPoint` provides
-the list of available flight parameters, available as Python properties.
-This list is available through Python using :code:`FlightPoint.get_attribute_keys()`.
+the list of available flight parameters, available as attributes.
+As FlightPoint is a dataclass, this list is available through Python using::
+
+    >>> from fastoad.base.flight_point import FlightPoint
+    >>> from dataclasses import fields
+
+    >>> [f.name for f in fields(FlightPoint)]
 
 Exchanges with pandas DataFrame
 ===============================
-A pandas DataFrame can be easily created from a list of FlightPoint instances::
+A pandas DataFrame can be generated from a list of FlightPoint instances::
 
     >>> import pandas as pd
     >>> from fastoad.base.flight_point import FlightPoint
@@ -51,29 +56,35 @@ A pandas DataFrame can be easily created from a list of FlightPoint instances::
 
 And FlightPoint instances can be created from DataFrame rows::
 
-    >>> fp1bis = FlightPoint(df.iloc[0]  # one FlightPoint instance from a row
-    >>> flight_points = [ FlightPoint(row) for row in df.iloc ]  # a list of FlightPoint instances from the whole DataFrame
+    # Get one FlightPoint instance from a DataFrame row
+    >>> fp1bis = FlightPoint.create(df.iloc[0])
+
+    # Get a list of FlightPoint instances from the whole DataFrame
+    >>> flight_points = FlightPoint.create_list(df)
 
 
 .. _flight_point_extensibility:
 
 Extensibility
 =============
-If you need FlightPoint to store parameters that are not already there, you
-can do this in your Python code (outside of any class or function, preferably
-in the python module where you will use these new parameters)::
+FlightPoint class is bundled with several fields that are commonly used in trajectory
+assessment, but one might need additional fields.
 
-    from fastoad.base.flight_point import FlightPoint
-    from fastoad.base.dict import AddKeyAttributes
+Python allows to add attributes to any instance at runtime, but for FlightPoint to run
+smoothly, especially when exchanging data with pandas, you have to work at class level.
+This can be done using :meth:`add_field`, preferably outside of any class or function::
 
-    # Simply add the parameters:
-    AddKeyAttributes(["ion_drive_power", "warp"])(FlightPoint)
+    # Adds a float field with None as default value
+    >>> FlightPoint.add_field("ion_drive_power")
 
-    # Or add the parameters with associated default values:
-    AddKeyAttributes({"ion_drive_power":110., "warp":9.0})(FlightPoint)
+    # Adds a field and define its type and default value
+    >>> FlightPoint.add_field("warp", annotation_type=int, default_value=9)
 
-It modifies the definition of the FlightPoint class so that it will accept
-your newly defined parameters in all your Python code.
+    # Now these fields can be used at instantiation
+    >>> fp = FlightPoint(ion_drive_power=110.0, warp=12)
+
+    # Removes a field, even an original one (useful only to avoid having it in outputs)
+    >>> FlightPoint.remove_field("sfc")
 
 *************************
 The IPropulsion interface

@@ -82,6 +82,11 @@ def test_sizing_mission(cleanup):
     ivc = VariableIO(input_file_path).read().to_ivc()
 
     problem = run_system(
-        SizingMission(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc
+        SizingMission(
+            propulsion_id="fastoad.wrapper.propulsion.rubber_engine",
+            out_file=pth.join(RESULTS_FOLDER_PATH, "flight_points.csv"),
+            breguet_iterations=0,
+        ),
+        ivc,
     )
     plot_flight(problem.model.component.flight_points, "flight.png")

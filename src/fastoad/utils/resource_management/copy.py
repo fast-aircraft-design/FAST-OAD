@@ -16,13 +16,11 @@ Helper module for copying resources
 
 import os.path as pth
 import shutil
+from importlib.resources import Package, contents, is_resource
+from importlib.resources import path
 from types import ModuleType
 from typing import List
 
-from importlib_resources import Package, contents, is_resource
-from importlib_resources import path
-
-# TODO: When Python 3.6 is abandoned, use importlib.resources instead
 from fastoad.utils.files import make_parent_dir
 
 

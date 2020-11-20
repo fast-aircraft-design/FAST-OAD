@@ -14,9 +14,10 @@ Computation of lift and drag increment due to high-lift devices
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from importlib.resources import open_text
+
 import numpy as np
 import openmdao.api as om
-from importlib_resources import open_text
 from scipy import interpolate
 
 from . import resources
