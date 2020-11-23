@@ -111,7 +111,9 @@ route_definitions:
       - phase: descent
 
   diversion:
-    range: data:mission:sizing:diversion:distance
+    range:
+      value: 500
+      unit: NM
     steps:
       - phase: climb
         target:

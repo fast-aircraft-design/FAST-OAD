@@ -144,11 +144,7 @@ class MissionDefinition(dict):
     def _get_target_schema(cls) -> Map:
         target_schema_map = {}
         for key in [f.name for f in fields(FlightPoint)]:
-            target_schema_map[Optional(key, default=None)] = (
-                Float()
-                | Str()
-                | Map({"value": Float() | Str(), Optional("unit", default=None): Str()})
-            )
+            target_schema_map[Optional(key, default=None)] = cls._get_dimensioned_value_mapping()
         return Map(target_schema_map)
 
     @classmethod
@@ -185,7 +181,16 @@ class MissionDefinition(dict):
 
     @classmethod
     def _get_route_mapping(cls) -> dict:
-        return {"range": Float() | Str(), STEPS_TAG: Seq(Any())}
+        return {
+            "range": cls._get_dimensioned_value_mapping(),
+            STEPS_TAG: Seq(Any()),
+        }
+
+    @classmethod
+    def _get_dimensioned_value_mapping(cls):
+        return (
+            Float() | Str() | Map({"value": Float() | Str(), Optional("unit", default=None): Str()})
+        )
 
     @classmethod
     def _get_mission_mapping(cls) -> dict:

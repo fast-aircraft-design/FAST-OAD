@@ -209,6 +209,7 @@ class MissionBuilder:
 
             sequence = SimpleRoute(climb_phases, cruise_phase, descent_phases)
             sequence.name = route_name
+            self._parse_target(definition)
             flight_range = definition["range"]
             if isinstance(flight_range, str):
                 flight_range = inputs[definition["range"]]
