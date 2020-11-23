@@ -150,6 +150,8 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
         flight_distance=total_distance,
     )
 
+    assert flight_calculator.cruise_speed == ("mach", 0.78)
+
     start = FlightPoint(
         true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0, ground_distance=100000.0,
     )

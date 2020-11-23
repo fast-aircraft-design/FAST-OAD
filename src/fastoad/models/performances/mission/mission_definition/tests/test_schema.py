@@ -244,6 +244,86 @@ def test_schema():
                     ),
                 ),
                 (
+                    "diversion_climb",
+                    OrderedDict(
+                        [
+                            ("engine_setting", "climb"),
+                            (
+                                "polar",
+                                OrderedDict(
+                                    [
+                                        ("CL", "data:aerodynamics:aircraft:cruise:CL"),
+                                        ("CD", "data:aerodynamics:aircraft:cruise:CD"),
+                                    ]
+                                ),
+                            ),
+                            ("thrust_rate", "data:mission:sizing:climb:thrust_rate"),
+                            ("time_step", 5.0),
+                            (
+                                "steps",
+                                [
+                                    OrderedDict(
+                                        [
+                                            ("segment", "altitude_change"),
+                                            (
+                                                "target",
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "altitude",
+                                                            OrderedDict(
+                                                                [("value", 10000.0), ("unit", "ft")]
+                                                            ),
+                                                        ),
+                                                        ("equivalent_airspeed", "constant"),
+                                                    ]
+                                                ),
+                                            ),
+                                        ]
+                                    ),
+                                    OrderedDict(
+                                        [
+                                            ("segment", "speed_change"),
+                                            (
+                                                "target",
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "equivalent_airspeed",
+                                                            OrderedDict(
+                                                                [("value", 300.0), ("unit", "kn")]
+                                                            ),
+                                                        )
+                                                    ]
+                                                ),
+                                            ),
+                                        ]
+                                    ),
+                                    OrderedDict(
+                                        [
+                                            ("segment", "altitude_change"),
+                                            (
+                                                "target",
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "altitude",
+                                                            OrderedDict(
+                                                                [("value", 22000.0), ("unit", "ft")]
+                                                            ),
+                                                        ),
+                                                        ("equivalent_airspeed", "constant"),
+                                                    ]
+                                                ),
+                                            ),
+                                        ]
+                                    ),
+                                ],
+                            ),
+                        ]
+                    ),
+                ),
+                (
                     "descent",
                     OrderedDict(
                         [
@@ -474,28 +554,7 @@ def test_schema():
                             (
                                 "steps",
                                 [
-                                    OrderedDict(
-                                        [
-                                            ("phase", "climb"),
-                                            (
-                                                "target",
-                                                OrderedDict(
-                                                    [
-                                                        (
-                                                            "altitude",
-                                                            OrderedDict(
-                                                                [("value", 22000.0), ("unit", "ft")]
-                                                            ),
-                                                        ),
-                                                        (
-                                                            "equivalent_airspeed",
-                                                            OrderedDict([("value", "constant")]),
-                                                        ),
-                                                    ]
-                                                ),
-                                            ),
-                                        ]
-                                    ),
+                                    OrderedDict([("phase", "diversion_climb")]),
                                     OrderedDict(
                                         [
                                             ("cruise_type", "cruise"),

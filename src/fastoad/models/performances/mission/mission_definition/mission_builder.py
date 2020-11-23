@@ -15,7 +15,7 @@ Mission generator.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from copy import deepcopy
-from typing import Mapping, Union, Dict, Optional
+from typing import Mapping, Union, Dict, Optional, List, Tuple
 
 import openmdao.api as om
 
@@ -96,8 +96,10 @@ class MissionBuilder:
 
     def build(self, inputs: Optional[Mapping] = None) -> FlightSequence:
         """
-        Builds the flight sequence from definition file
-        :param inputs:
+        Builds the flight sequence from definition file.
+
+        :param inputs: if provided, any input parameter that is a string which matches
+                       a key of `inputs` will be replaced by the corresponding value
         :return:
         """
         phases = self._build_phases(inputs)
@@ -128,6 +130,31 @@ class MissionBuilder:
         elif isinstance(struct, list):
             for value in struct:
                 self.identify_inputs(input_definition, value)
+
+    def get_route_ranges(self, inputs: Optional[Mapping] = None) -> List[float]:
+        """
+
+        :param inputs: if provided, any input parameter that is a string which matches
+                       a key of `inputs` will be replaced by the corresponding value
+        :return: list of flight ranges for each element of the flight sequence that is a route
+        """
+        routes = self.build(inputs).flight_sequence
+        return [route.flight_distance for route in routes if isinstance(route, RangedRoute)]
+
+    def get_route_cruise_speeds(self, inputs: Optional[Mapping] = None) -> List[Tuple[str, float]]:
+        """
+        Determines the cruise speed for each route in the flight sequence.
+
+        Each result of the list is a tuple where the first element is the parameter name
+        (mach, true_airspeed, equivalent_airspeed) and the second one is the value.
+
+        :param inputs: if provided, any input parameter that is a string which matches
+                       a key of `inputs` will be replaced by the corresponding value
+        :return: list of cruise speed definitions for each element of the flight sequence that is
+                 a route
+        """
+        routes = self.build(inputs).flight_sequence
+        return [route.cruise_speed for route in routes if isinstance(route, RangedRoute)]
 
     def _build_mission(
         self, routes: Dict[str, FlightSequence], phases: Dict[str, FlightSequence]

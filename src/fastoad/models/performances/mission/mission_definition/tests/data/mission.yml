@@ -55,6 +55,29 @@ phase_definitions:
           mach: constant
           altitude:
             value: -20000.
+  diversion_climb:
+    engine_setting: climb
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: data:mission:sizing:climb:thrust_rate
+    time_step: 5.0
+    steps:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 300.
+            unit: kn
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 22000.
+            unit: ft
+          equivalent_airspeed: constant
   descent:
     engine_setting: idle
     polar: data:aerodynamics:aircraft:cruise
@@ -115,13 +138,7 @@ route_definitions:
       value: 500
       unit: NM
     steps:
-      - phase: climb
-        target:
-          altitude:
-            value: 22000.
-            unit: ft
-          equivalent_airspeed:
-            value: constant
+      - phase: diversion_climb
       - cruise_type: cruise
         engine_setting: cruise
         polar: data:aerodynamics:aircraft:cruise

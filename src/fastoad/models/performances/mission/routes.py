@@ -15,13 +15,14 @@ Classes for computation of routes (i.e. assemblies of climb, cruise and descent 
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Union, Tuple, Optional
 
 import pandas as pd
 from scipy.optimize import root_scalar
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.performances.mission.base import FlightSequence, IFlightPart
+from fastoad.models.performances.mission.segments.base import FlightSegment
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment
 
 
@@ -51,12 +52,30 @@ class SimpleRoute(FlightSequence):
 
     @property
     def cruise_distance(self):
-        """Ground distance to be covered during cruise, as set in target of :attr:cruise_segment."""
+        """
+        Ground distance to be covered during cruise, as set in target of :attr:`cruise_segment`.
+        """
         return self.cruise_segment.target
 
     @cruise_distance.setter
     def cruise_distance(self, cruise_distance):
         self.cruise_segment.target.ground_distance = cruise_distance
+
+    @property
+    def cruise_speed(self) -> Optional[Tuple[str, float]]:
+        """
+        Type (among `true_airspeed`, `equivalent_airspeed` and `mach`) and value of cruise speed.
+        """
+        climb_segments = []
+        for phase in self.climb_phases:
+            climb_segments += phase.flight_sequence
+
+        climb_segments.reverse()
+        for segment in climb_segments:
+            for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
+                speed_value = getattr(segment.target, speed_param)
+                if speed_value and speed_value != FlightSegment.CONSTANT_VALUE:
+                    return speed_param, speed_value
 
     def _get_flight_sequence(self) -> List[IFlightPart]:
         # The preliminary climb segment of the cruise segment is set to the
@@ -111,3 +130,10 @@ class RangedRoute(FlightSequence):
     @property
     def flight_sequence(self) -> List[Union[IFlightPart, str]]:
         return self.flight.flight_sequence
+
+    @property
+    def cruise_speed(self) -> Tuple[str, float]:
+        """
+        Type (among `true_airspeed`, `equivalent_airspeed` and `mach`) and value of cruise speed.
+        """
+        return self.flight.cruise_speed
