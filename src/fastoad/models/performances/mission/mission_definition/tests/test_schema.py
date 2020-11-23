@@ -470,7 +470,7 @@ def test_schema():
                     "diversion",
                     OrderedDict(
                         [
-                            ("range", "data:mission:sizing:diversion:distance"),
+                            ("range", OrderedDict([("value", 500.0), ("unit", "NM")])),
                             (
                                 "steps",
                                 [
