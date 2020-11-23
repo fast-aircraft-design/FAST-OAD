@@ -19,14 +19,58 @@ from shutil import rmtree
 import matplotlib.pyplot as plt
 import pytest
 from matplotlib.ticker import MultipleLocator
+from openmdao.core.component import Component
 from scipy.constants import foot, knot
 
+from fastoad import BundleLoader
+from fastoad.base.flight_point import FlightPoint
 from fastoad.io import VariableIO
+from fastoad.models.propulsion import IOMPropulsionWrapper, IPropulsion
+from fastoad.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
+from fastoad.module_management.service_registry import RegisterPropulsion
 from tests.testing_utilities import run_system
 from ..sizing_mission import SizingMission
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+
+
+class DummyEngine(AbstractFuelPropulsion):
+    def __init__(self, max_thrust, max_sfc):
+        """
+        Dummy engine model.
+
+        Max thrust does not depend on flight conditions.
+        SFC varies linearly with thrust_rate, from max_sfc/2. when thrust rate is 0.,
+        to max_sfc when thrust_rate is 1.0
+
+        :param max_thrust: thrust when thrust rate = 1.0
+        :param max_sfc: SFC when thrust rate = 1.0
+        """
+        self.max_thrust = max_thrust
+        self.max_sfc = max_sfc
+
+    def compute_flight_points(self, flight_point: FlightPoint):
+
+        if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
+            flight_point.thrust_rate = flight_point.thrust / self.max_thrust
+        else:
+            flight_point.thrust = self.max_thrust * flight_point.thrust_rate
+
+        flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0
+
+
+@RegisterPropulsion("test.wrapper.propulsion.dummy_engine")
+class DummyEngineWrapper(IOMPropulsionWrapper):
+    def setup(self, component: Component):
+        pass
+
+    @staticmethod
+    def get_model(inputs) -> IPropulsion:
+        return DummyEngine(1.2e5, 1.5e-5)
+
+
+BundleLoader().context.install_bundle(__name__).start()
 
 
 @pytest.fixture(scope="module")
@@ -78,12 +122,13 @@ def plot_flight(flight_points, fig_filename):
 
 
 def test_sizing_mission(cleanup):
+
     input_file_path = pth.join(DATA_FOLDER_PATH, "mission_inputs.xml")
     ivc = VariableIO(input_file_path).read().to_ivc()
 
     problem = run_system(
         SizingMission(
-            propulsion_id="fastoad.wrapper.propulsion.rubber_engine",
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "flight_points.csv"),
             breguet_iterations=0,
         ),
