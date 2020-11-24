@@ -73,7 +73,7 @@ def get_nodes_cards(comp_name, nodes):
     if comp_name == "strut":
         id_basis = 5000000
     for i in range(0, np.size(nodes, axis=0)):
-        id0 = convert_8digit_nastran(int(id_basis + i))
+        id0 = convert_8digit_nastran(id_basis + i)
         c_1 = convert_8digit_nastran(nodes[i, 0])
         c_2 = convert_8digit_nastran(nodes[i, 1])
         c_3 = convert_8digit_nastran(nodes[i, 2])
@@ -94,19 +94,19 @@ def get_props_cards(comp_name, props):
     if comp_name == "strut":
         id_basis = 5000000
     for i in range(0, np.size(props, axis=0)):
-        b_ids = convert_8digit_nastran(int(id_basis + i + 1000))
-        p_ids = convert_8digit_nastran(int(id_basis + i + 11000))
-        p_mat = convert_8digit_nastran(int(id_basis + 111000))
+        b_ids = convert_8digit_nastran(id_basis + i + 1000)
+        p_ids = convert_8digit_nastran(id_basis + i + 11000)
+        p_mat = convert_8digit_nastran(id_basis + 111000)
         if comp_name == "wing" or comp_name == "horizontal_tail" or comp_name == "strut":
             if i < np.size(props, axis=0) / 2:
-                id1 = convert_8digit_nastran(int(id_basis + i))
-                id2 = convert_8digit_nastran(int(id_basis + i + 1))
+                id1 = convert_8digit_nastran(id_basis + i)
+                id2 = convert_8digit_nastran(id_basis + i + 1)
             else:
-                id1 = convert_8digit_nastran(int(id_basis + i + 1))
-                id2 = convert_8digit_nastran(int(id_basis + i + 2))
+                id1 = convert_8digit_nastran(id_basis + i + 1)
+                id2 = convert_8digit_nastran(id_basis + i + 2)
         else:
-            id1 = convert_8digit_nastran(int(id_basis + i))
-            id2 = convert_8digit_nastran(int(id_basis + i + 1))
+            id1 = convert_8digit_nastran(id_basis + i)
+            id2 = convert_8digit_nastran(id_basis + i + 1)
         if comp_name != "vertical_tail":
             v_1 = convert_8digit_nastran(0.0)
             v_2 = convert_8digit_nastran(0.0)
@@ -154,7 +154,7 @@ def get_mat_cards(comp_name, mat_props):
         id_basis = 4000000
     if comp_name == "strut":
         id_basis = 5000000
-    p_mat = convert_8digit_nastran(int(id_basis + 111000))  # Only one Mat per comp until now
+    p_mat = convert_8digit_nastran(id_basis + 111000)  # Only one Mat per comp until now
     young_modulus = convert_8digit_nastran(mat_props[0])
     mu = convert_8digit_nastran(mat_props[1])
     rho = convert_8digit_nastran(mat_props[2])
@@ -175,7 +175,7 @@ def get_rbe_junction_cards(comp_name, nodes):
         id_basis = 5000000
     if comp_name == "wing" or comp_name == "horizontal_tail" or comp_name == "strut":
         id1 = id_basis
-        id2 = convert_8digit_nastran((id_basis + int(np.size(nodes, axis=0) / 2)))
+        id2 = convert_8digit_nastran(id_basis + np.size(nodes, axis=0) / 2)
         strg.append("RBE2," + str(90000000 + id_basis) + "," + str(id1) + ", 123456," + id2 + "\n")
     else:
         strg.append("$ Non-symmetrical component i.e. no need for junction \n")
@@ -223,14 +223,14 @@ def get_bc_cards(component_name, master_name, master_nodes, slave_nodes, loc_cg)
         else:
             dist = master_nodes[:, 0] - loc_cg
     if master_name == "wing" and component_name == "strut":
-        ids = np.arange(0, np.size(master_nodes, axis=0)) + 1000000
+        ids = np.arange(0, np.size(master_nodes, axis=0), dtype=int) + 1000000
         dist = slave_nodes[-1, 1] - master_nodes[:, 1]
     ind_sup = np.where(dist >= 0)
     ind_inf = np.where(dist <= 0)
     ind_min = np.where(dist[ind_sup] == np.min(dist[ind_sup]))
     ind_max = np.where(dist[ind_inf] == np.max(dist[ind_inf]))
-    sew_id1 = convert_8digit_nastran(int(ids[ind_sup][ind_min][0]))
-    sew_id2 = convert_8digit_nastran(int(ids[ind_inf][ind_max][0]))
+    sew_id1 = convert_8digit_nastran(ids[ind_sup][ind_min][0])
+    sew_id2 = convert_8digit_nastran(ids[ind_inf][ind_max][0])
     d_1 = dist[ind_sup][ind_min][0]
     d_2 = abs(dist[ind_inf][ind_max][0])
     if d_1 < d_2:
