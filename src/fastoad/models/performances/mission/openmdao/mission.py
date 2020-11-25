@@ -16,6 +16,7 @@ OpenMDAO component for time-step computation of missions.
 
 import logging
 from enum import Enum
+from importlib.resources import path
 
 import numpy as np
 import openmdao.api as om
@@ -27,7 +28,9 @@ from fastoad.base.flight_point import FlightPoint
 from fastoad.models.propulsion import IOMPropulsionWrapper
 from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastoad.utils.physics import AtmosphereSI
+from . import resources
 from .mission_wrapper import MissionWrapper
+from ..mission_definition.schema import MissionDefinition
 from ..polar import Polar
 from ...breguet import Breguet
 
@@ -39,14 +42,18 @@ class Mission(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("out_file", default="", types=str)
         self.options.declare("breguet_iterations", default=1, types=int)
-        self.options.declare("mission_file_path", types=str)
+        self.options.declare(
+            "mission_file_path", default=None, types=(str, MissionDefinition), allow_none=True
+        )
+        self.options.declare("adjust_block_fuel", default=True, types=bool)
 
     def setup(self):
 
-        self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=5.0e-4)
-        self.linear_solver = om.DirectSolver()
-
+        if not self.options["mission_file_path"]:
+            with path(resources, "sizing_mission.yml") as mission_input_file:
+                self.options["mission_file_path"] = MissionDefinition(mission_input_file)
         mission_wrapper = MissionWrapper(self.options["mission_file_path"])
+
         mission_name = mission_wrapper.mission_name
 
         self.set_input_defaults("data:weight:aircraft:OWE", np.nan, units="kg")
@@ -58,19 +65,46 @@ class Mission(om.Group):
             ["data:weight:aircraft:OWE", "data:mission:%s:payload" % mission_name],
             units="kg",
         )
-
-        tow_computation = om.AddSubtractComp()
-        tow_computation.add_equation(
-            "data:mission:%s:TOW" % mission_name,
-            ["data:mission:%s:ZFW" % mission_name, "data:mission:%s:block_fuel" % mission_name],
-            units="kg",
-        )
-
         self.add_subsystem("ZFW_computation", zfw_computation, promotes=["*"])
-        self.add_subsystem("TOW_computation", tow_computation, promotes=["*"])
+
+        if not self.options["adjust_block_fuel"]:
+            # There will be no loop -> Ensure Breguet computation will not be used
+            # as it is only for initiating computation
+            self.options["breguet_iterations"] = 0
+        else:
+            # Need for a loop, so we need a solver
+            self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=5.0e-4)
+            self.linear_solver = om.DirectSolver()
+
+            # Looping component
+            tow_computation = om.AddSubtractComp()
+            tow_computation.add_equation(
+                "data:mission:%s:TOW" % mission_name,
+                [
+                    "data:mission:%s:ZFW" % mission_name,
+                    "data:mission:%s:needed_block_fuel" % mission_name,
+                ],
+                units="kg",
+            )
+
+            self.add_subsystem("TOW_computation", tow_computation, promotes=["*"])
+
+        mission_options = dict(self.options.items())
+        del mission_options["adjust_block_fuel"]
+        del mission_options["mission_file_path"]
+        mission_options["mission_wrapper"] = mission_wrapper
         self.add_subsystem(
-            "mission_computation", MissionComponent(**dict(self.options.items())), promotes=["*"]
+            "mission_computation", MissionComponent(**mission_options), promotes=["*"]
         )
+
+        block_fuel_computation = om.AddSubtractComp()
+        block_fuel_computation.add_equation(
+            "data:mission:%s:block_fuel" % mission_name,
+            ["data:mission:%s:TOW" % mission_name, "data:mission:%s:ZFW" % mission_name,],
+            units="kg",
+            scaling_factors=[1, -1],
+        )
+        self.add_subsystem("block_fuel_computation", block_fuel_computation, promotes=["*"])
 
     @property
     def flight_points(self) -> pd.DataFrame:
@@ -98,19 +132,19 @@ class MissionComponent(om.ExplicitComponent):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("out_file", default="", types=str)
         self.options.declare("breguet_iterations", default=2, types=int)
-        self.options.declare("mission_file_path", types=str)
+        self.options.declare("mission_wrapper", types=MissionWrapper)
 
     def setup(self):
         self._engine_wrapper = self._get_engine_wrapper()
         self._engine_wrapper.setup(self)
-        self._mission = MissionWrapper(self.options["mission_file_path"])
+        self._mission = self.options["mission_wrapper"]
         self._mission.setup(self)
 
         mission_name = self._mission.mission_name
 
         class MissionVars(Enum):
             TOW = "data:mission:%s:TOW" % mission_name
-            BLOCK_FUEL = "data:mission:%s:block_fuel" % mission_name
+            BLOCK_FUEL = "data:mission:%s:needed_block_fuel" % mission_name
             TAXI_OUT_FUEL = "data:mission:%s:taxi_out:fuel" % mission_name
             TAKEOFF_FUEL = "data:mission:%s:takeoff:fuel" % mission_name
             TAKEOFF_ALTITUDE = "data:mission:%s:takeoff:altitude" % mission_name
