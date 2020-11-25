@@ -1,4 +1,4 @@
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ def set_all_input_defaults(model: om.Group):
     # FIXME: This solution is a patch to get compatible with OpenMDAO 3.2+ but it not really
     #  satisfactory because it does not help in case of custom models using existing variables
     #  with different units.
-    #  Maybe a future evolution of OpenMDAO will open the way to a better solution...
+    #  A correct usage of OpenMAO configure() method should be investigated...
 
     variables = {
         "data:geometry:wing:sweep_25": dict(val=np.nan, units="deg"),
@@ -50,3 +50,5 @@ def set_all_input_defaults(model: om.Group):
                     break
             if var_default_has_been_set:
                 del variables[var_name]
+            else:
+                break
