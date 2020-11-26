@@ -256,7 +256,7 @@ configuration:landing_gear_type, Aircraft/configuration/LG_type
 configuration:engine:type, Aircraft/configuration/engine_type
 data:geometry:propulsion:layout, Aircraft/configuration/engine_loc
 configuration:cruise_option, Aircraft/configuration/cruise_option
-data:mission:sizing:fuel, Aircraft/mission/sizing/fuel_mission
+data:mission:sizing:needed_block_fuel, Aircraft/mission/sizing/fuel_mission
 data:mission:sizing:block_fuel, Aircraft/mission/sizing/fuel_block
 data:mission:sizing:fuel_reserve, Aircraft/mission/sizing/fuel_reserve
 data:mission:sizing:flight:fuel, Aircraft/mission/sizing/fuel_trip

@@ -239,9 +239,10 @@
     </load_case>
     <mission>
       <sizing>
+        <TOW units="kg">76438.4445137<!--maximum takeoff weight--></TOW>
         <block_fuel units="kg">16856.6384298<!--total fuel mass at start--></block_fuel>
         <block_time units="min">389.332<!--total duration of mission--></block_time>
-        <fuel units="kg">20258.9468572<!--consumed fuel mass during whole mission--></fuel>
+        <needed_block_fuel units="kg">20258.9468572<!--consumed fuel mass during whole mission--></needed_block_fuel>
         <fuel_reserve units="kg">3402.30842736<!--mass of fuel reserve--></fuel_reserve>
         <climb>
           <thrust_rate>0.93<!--thrust rate (between 0.0 and 1.0) during climb phase in sizing mission--></thrust_rate>
