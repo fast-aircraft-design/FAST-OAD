@@ -158,59 +158,6 @@ data:load_case:lc1:altitude	altitude for sizing load case 1 (gust with minimum a
 data:load_case:lc2:U_gust	gust vertical speed for sizing load case 2 (gust with maximum aircraft mass)
 data:load_case:lc2:Vc_EAS	equivalent air speed for sizing load case 2 (gust with maximum aircraft mass)
 data:load_case:lc2:altitude	altitude for sizing load case 2 (gust with maximum aircraft mass)
-data:mission:operational:climb:thrust_rate	thrust rate (between 0.0 and 1.0) during climb phase in operational mission
-data:mission:operational:descent:thrust_rate	thrust rate (between 0.0 and 1.0) during descent phase in operational mission
-data:mission:operational:diversion:climb:duration	duration of diversion climb phase in operational mission
-data:mission:operational:diversion:climb:fuel	mass of consumed fuel during diversion climb phase in operational mission
-data:mission:operational:diversion:cruise:distance	travelled distance during diversion cruise phase in operational mission
-data:mission:operational:diversion:cruise:duration	duration of diversion cruise phase in operational mission
-data:mission:operational:diversion:cruise:fuel	mass of consumed fuel during diversion cruise phase in operational mission
-data:mission:operational:diversion:descent:duration	duration of diversion descent phase in operational mission
-data:mission:operational:diversion:descent:fuel	mass of consumed fuel during diversion descent phase in operational mission
-data:mission:operational:flight:duration	total flight time in operational mission
-data:mission:operational:flight:fuel	mass of total fuel consumed during flight in operational mission
-data:mission:operational:flight:range	total travelled distance during flight in operational mission
-data:mission:operational:holding:CAS	Calibrated Air Speed during holding phase in operational mission
-data:mission:operational:holding:altitude	altitude during holding phase in operational mission
-data:mission:operational:holding:duration	duration of holding phase in operational mission
-data:mission:operational:holding:fuel	mass of consumed fuel during holding phase in operational mission
-data:mission:operational:initial_climb:fuel	mass of consumed fuel during initial climb phase in operational mission
-data:mission:operational:landing:duration	duration of landing phase in operational mission
-data:mission:operational:landing:flap_angle	flap angle during landing phase in operational mission
-data:mission:operational:landing:friction_coefficient_brake	ground friction coefficient with full brakes in operational mission
-data:mission:operational:landing:fuel	mass of consumed fuel during landing phase in operational mission
-data:mission:operational:landing:length	runway length required for landing in operational mission
-data:mission:operational:landing:slat_angle	slat angle during landing phase in operational mission
-data:mission:operational:landing:thrust_rate	thrust rate (between 0.0 and 1.0) during landing phase in operational mission
-data:mission:operational:main_route:climb:duration	duration of climb phase in operational mission
-data:mission:operational:main_route:climb:fuel	mass of consumed fuel during climb phase in operational mission
-data:mission:operational:main_route:climb:max_climb_rate	maximum climb rate in operational mission
-data:mission:operational:main_route:cruise:altitude	altitude during cruise phase in operational mission
-data:mission:operational:main_route:cruise:duration	duration of cruise phase in operational mission
-data:mission:operational:main_route:cruise:fuel	mass of consumed fuel during cruise phase in operational mission
-data:mission:operational:main_route:cruise:mach	Mach number during cruise phase in operational mission
-data:mission:operational:main_route:descent:duration	duration of descent phase in operational mission
-data:mission:operational:main_route:descent:fuel	mass of consumed fuel during descent phase in operational mission
-data:mission:operational:takeoff:TOFL	TakeOff Field Length in operational mission
-data:mission:operational:takeoff:V2	safety speed before reaching 35 feet height in operational mission
-data:mission:operational:takeoff:VLOF	lift-off speed in operational mission
-data:mission:operational:takeoff:VMCA	air minimum control speed in operational mission
-data:mission:operational:takeoff:VR	rotation speed in operational mission
-data:mission:operational:takeoff:altitude	altitude at takeoff in operational mission
-data:mission:operational:takeoff:delta_ISA	ISA temperature increment during takeoff phase in operational mission
-data:mission:operational:takeoff:duration	duration of takeoff phase in operational mission
-data:mission:operational:takeoff:flap_angle	flap angle during takeoff phase in operational mission
-data:mission:operational:takeoff:friction_coefficient_no_brake	ground friction coefficient with no brake in operational mission
-data:mission:operational:takeoff:fuel	mass of consumed fuel during takeoff phase in operational mission
-data:mission:operational:takeoff:slat_angle	slat angle during takeoff phase in operational mission
-data:mission:operational:taxi_in:duration	duration of taxi-in phase in operational mission
-data:mission:operational:taxi_in:fuel	mass of consumed fuel during taxi-in phase in operational mission
-data:mission:operational:taxi_in:speed	speed during taxi-in phase in operational mission
-data:mission:operational:taxi_in:thrust_rate	thrust rate (between 0.0 and 1.0) during taxi-in phase in operational mission
-data:mission:operational:taxi_out:duration	duration of taxi-out phase in operational mission
-data:mission:operational:taxi_out:fuel	mass of consumed fuel during taxi-out phase in operational mission
-data:mission:operational:taxi_out:speed	speed during taxi-out phase in operational mission
-data:mission:operational:taxi_out:thrust_rate	thrust rate (between 0.0 and 1.0) during taxi-out phase in operational mission
 data:mission:sizing:ZFW	aircraft mass with payload, without fuel, in sizing mission
 data:mission:sizing:block_fuel	total fuel mass at start
 data:mission:sizing:block_time	total duration of mission
@@ -228,7 +175,7 @@ data:mission:sizing:diversion:descent:fuel	mass of consumed fuel during diversio
 data:mission:sizing:diversion:distance	distance to travel during diversion in sizing mission
 data:mission:sizing:flight:duration	total flight time in sizing mission
 data:mission:sizing:flight:fuel	mass of consumed fuel during flight in sizing mission
-data:mission:sizing:fuel	consumed fuel mass during whole mission
+data:mission:sizing:needed_block_fuel	consumed fuel mass during whole mission
 data:mission:sizing:fuel:unitary	consumption/passenger/distance_unit in sizing mission
 data:mission:sizing:fuel_reserve	mass of fuel reserve
 data:mission:sizing:holding:CAS	Calibrated Air Speed during holding phase in sizing mission

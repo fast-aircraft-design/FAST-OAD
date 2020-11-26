@@ -20,7 +20,8 @@ output_file = "./oad_process_mission_outputs.xml"
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false
     [model.performance]
-        id = "fastoad.performances.sizing_mission"
+        id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "./flight_points.csv"
-        breguet_iterations = 1
+        breguet_iterations = 0
+        adjust_block_fuel = false
