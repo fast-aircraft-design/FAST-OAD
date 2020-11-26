@@ -28,7 +28,6 @@ from numpy.testing import assert_allclose
 from fastoad import api
 from fastoad.io import VariableIO
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
-from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.openmdao.utils import get_problem_after_setup
 from tests import root_folder_path
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
@@ -54,7 +53,7 @@ def test_oad_process(cleanup):
     ).get_problem()
 
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
-    get_problem_after_setup(problem).write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+    get_problem_after_setup(problem).write_needed_inputs(ref_inputs)
     problem.read_inputs()
     problem.setup()
     problem.run_model()
@@ -106,7 +105,7 @@ def test_non_regression_mission_only(cleanup):
         "CeRAS01_legacy_mission_result.xml",
         "non_regression_mission_only",
         use_xfoil=False,
-        vars_to_check=["data:mission:sizing:fuel"],
+        vars_to_check=["data:mission:sizing:needed_block_fuel"],
         tolerance=1.0e-2,
         check_weight_perfo_loop=False,
     )
@@ -151,7 +150,7 @@ def run_non_regression_test(
 
     # Generation and reading of inputs ----------------------------------------
     ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
-    get_problem_after_setup(problem).write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+    get_problem_after_setup(problem).write_needed_inputs(ref_inputs)
     problem.read_inputs()
     problem.setup()
 
@@ -187,9 +186,7 @@ def run_non_regression_test(
             atol=1,
         )
 
-    ref_var_list = VariableIO(
-        pth.join(DATA_FOLDER_PATH, legacy_result_file), formatter=VariableLegacy1XmlFormatter(),
-    ).read()
+    ref_var_list = VariableIO(pth.join(DATA_FOLDER_PATH, legacy_result_file),).read()
 
     row_list = []
     for ref_var in ref_var_list:
