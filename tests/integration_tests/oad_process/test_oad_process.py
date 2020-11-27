@@ -85,7 +85,7 @@ def test_oad_process(cleanup):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:mission:sizing:fuel"],
+        + problem["data:mission:sizing:needed_block_fuel"],
         atol=1,
     )
 
@@ -182,7 +182,7 @@ def run_non_regression_test(
             problem["data:weight:aircraft:MTOW"],
             problem["data:weight:aircraft:OWE"]
             + problem["data:weight:aircraft:payload"]
-            + problem["data:mission:sizing:fuel"],
+            + problem["data:mission:sizing:needed_block_fuel"],
             atol=1,
         )
 
@@ -259,7 +259,7 @@ def test_api(cleanup):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:mission:sizing:fuel"],
+        + problem["data:mission:sizing:needed_block_fuel"],
         atol=1,
     )
 
@@ -269,7 +269,7 @@ def test_api(cleanup):
     assert_allclose(problem["data:geometry:wing:area"], 128.98, atol=1e-2)
     assert_allclose(problem["data:geometry:vertical_tail:area"], 27.07, atol=1e-2)
     assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.50, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:fuel"], 20213, atol=1)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20213, atol=1)
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
@@ -294,7 +294,7 @@ def test_api(cleanup):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:mission:sizing:fuel"],
+        + problem["data:mission:sizing:needed_block_fuel"],
         atol=1,
     )
 
@@ -305,4 +305,4 @@ def test_api(cleanup):
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:fuel"], 20338, atol=50)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20338, atol=50)

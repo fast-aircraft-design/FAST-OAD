@@ -240,7 +240,6 @@
     <mission>
       <sizing>
         <TOW units="kg">76438.4445137<!--maximum takeoff weight--></TOW>
-        <block_fuel units="kg">16856.6384298<!--total fuel mass at start--></block_fuel>
         <block_time units="min">389.332<!--total duration of mission--></block_time>
         <needed_block_fuel units="kg">20258.9468572<!--consumed fuel mass during whole mission--></needed_block_fuel>
         <fuel_reserve units="kg">3402.30842736<!--mass of fuel reserve--></fuel_reserve>
@@ -330,95 +329,6 @@
           </descent>
         </main_route>
       </sizing>
-      <operational>
-        <climb>
-          <thrust_rate>0.93<!--thrust rate (between 0.0 and 1.0) during climb phase in operational mission--></thrust_rate>
-        </climb>
-        <descent>
-          <thrust_rate>0.0<!--thrust rate (between 0.0 and 1.0) during descent phase in operational mission--></thrust_rate>
-        </descent>
-        <flight>
-          <duration units="min">52.97<!--total flight time in operational mission--></duration>
-          <fuel units="kg">5023.71<!--mass of total fuel consumed during flight in operational mission--></fuel>
-          <range units="NM">500.0<!--total travelled distance during flight in operational mission--></range>
-        </flight>
-        <holding>
-          <CAS units="m/s">230.0<!--Calibrated Air Speed during holding phase in operational mission--></CAS>
-          <altitude units="ft">1500.0<!--altitude during holding phase in operational mission--></altitude>
-          <duration units="s">2700.0<!--duration of holding phase in operational mission--></duration>
-          <fuel units="kg">1482.07<!--mass of consumed fuel during holding phase in operational mission--></fuel>
-        </holding>
-        <initial_climb>
-          <fuel units="kg">1298.63<!--mass of consumed fuel during initial climb phase in operational mission--></fuel>
-        </initial_climb>
-        <landing>
-          <duration units="min">1.88<!--duration of landing phase in operational mission--></duration>
-          <flap_angle units="deg">40.0<!--flap angle during landing phase in operational mission--></flap_angle>
-          <friction_coefficient_brake>0.3<!--ground friction coefficient with full brakes in operational mission--></friction_coefficient_brake>
-          <fuel units="kg">0.32<!--mass of consumed fuel during landing phase in operational mission--></fuel>
-          <length units="m">45.92<!--runway length required for landing in operational mission--></length>
-          <slat_angle units="deg">27.0<!--slat angle during landing phase in operational mission--></slat_angle>
-          <thrust_rate>0.1<!--thrust rate (between 0.0 and 1.0) during landing phase in operational mission--></thrust_rate>
-        </landing>
-        <takeoff>
-          <TOFL units="m">1560.94<!--TakeOff Field Length in operational mission--></TOFL>
-          <V2 units="m/s">0.0<!--safety speed before reaching 35 feet height in operational mission--></V2>
-          <VLOF units="m/s">0.0<!--lift-off speed in operational mission--></VLOF>
-          <VMCA units="m/s">0.0<!--air minimum control speed in operational mission--></VMCA>
-          <VR units="m/s">0.0<!--rotation speed in operational mission--></VR>
-          <altitude units="m">0.0<!--altitude at takeoff in operational mission--></altitude>
-          <delta_ISA units="degC">15.0<!--ISA temperature increment during takeoff phase in operational mission--></delta_ISA>
-          <duration units="min">0.55<!--duration of takeoff phase in operational mission--></duration>
-          <flap_angle units="deg">10.0<!--flap angle during takeoff phase in operational mission--></flap_angle>
-          <friction_coefficient_no_brake>0.03<!--ground friction coefficient with no brake in operational mission--></friction_coefficient_no_brake>
-          <fuel units="kg">77.8<!--mass of consumed fuel during takeoff phase in operational mission--></fuel>
-          <slat_angle units="deg">18.0<!--slat angle during takeoff phase in operational mission--></slat_angle>
-        </takeoff>
-        <taxi_in>
-          <duration units="s">300.0<!--duration of taxi-in phase in operational mission--></duration>
-          <fuel units="kg">157.06<!--mass of consumed fuel during taxi-in phase in operational mission--></fuel>
-          <speed units="kn">30.0<!--speed during taxi-in phase in operational mission--></speed>
-          <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in operational mission--></thrust_rate>
-        </taxi_in>
-        <taxi_out>
-          <duration units="s">540.0<!--duration of taxi-out phase in operational mission--></duration>
-          <fuel units="kg">282.7<!--mass of consumed fuel during taxi-out phase in operational mission--></fuel>
-          <speed units="kn">30.0<!--speed during taxi-out phase in operational mission--></speed>
-          <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in operational mission--></thrust_rate>
-        </taxi_out>
-        <diversion>
-          <climb>
-            <duration units="min">7.5<!--duration of diversion climb phase in operational mission--></duration>
-            <fuel units="kg">602.43<!--mass of consumed fuel during diversion climb phase in operational mission--></fuel>
-          </climb>
-          <cruise>
-            <distance units="NM">200.0<!--travelled distance during diversion cruise phase in operational mission--></distance>
-            <duration units="min">0.5<!--duration of diversion cruise phase in operational mission--></duration>
-            <fuel units="kg">24.75<!--mass of consumed fuel during diversion cruise phase in operational mission--></fuel>
-          </cruise>
-          <descent>
-            <duration units="min">21.42<!--duration of diversion descent phase in operational mission--></duration>
-            <fuel units="kg">306.82<!--mass of consumed fuel during diversion descent phase in operational mission--></fuel>
-          </descent>
-        </diversion>
-        <main_route>
-          <climb>
-            <duration units="min">19.84<!--duration of climb phase in operational mission--></duration>
-            <fuel units="kg">1298.63<!--mass of consumed fuel during climb phase in operational mission--></fuel>
-            <max_climb_rate>0.0<!--maximum climb rate in operational mission--></max_climb_rate>
-          </climb>
-          <cruise>
-            <altitude units="ft">35000.0<!--altitude during cruise phase in operational mission--></altitude>
-            <duration units="min">17.0<!--duration of cruise phase in operational mission--></duration>
-            <fuel units="kg">586.64<!--mass of consumed fuel during cruise phase in operational mission--></fuel>
-            <mach>0.78<!--Mach number during cruise phase in operational mission--></mach>
-          </cruise>
-          <descent>
-            <duration units="min">21.42<!--duration of descent phase in operational mission--></duration>
-            <fuel units="kg">350.45<!--mass of consumed fuel during descent phase in operational mission--></fuel>
-          </descent>
-        </main_route>
-      </operational>
     </mission>
     <weight>
       <aircraft>
