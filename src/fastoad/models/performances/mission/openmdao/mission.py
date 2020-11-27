@@ -45,7 +45,8 @@ class Mission(om.Group):
         self.options.declare(
             "mission_file_path", default=None, types=(str, MissionDefinition), allow_none=True
         )
-        self.options.declare("adjust_block_fuel", default=True, types=bool)
+        self.options.declare("compute_TOW", default=True, types=bool)
+        self.options.declare("add_solver", default=True, types=bool)
 
     def setup(self):
 
@@ -67,16 +68,7 @@ class Mission(om.Group):
         )
         self.add_subsystem("ZFW_computation", zfw_computation, promotes=["*"])
 
-        if not self.options["adjust_block_fuel"]:
-            # There will be no loop -> Ensure Breguet computation will not be used
-            # as it is only for initiating computation
-            self.options["breguet_iterations"] = 0
-        else:
-            # Need for a loop, so we need a solver
-            self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=5.0e-4)
-            self.linear_solver = om.DirectSolver()
-
-            # Looping component
+        if self.options["compute_TOW"]:
             tow_computation = om.AddSubtractComp()
             tow_computation.add_equation(
                 "data:mission:%s:TOW" % mission_name,
@@ -89,8 +81,13 @@ class Mission(om.Group):
 
             self.add_subsystem("TOW_computation", tow_computation, promotes=["*"])
 
+            if self.options["add_solver"]:
+                self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=5.0e-4)
+                self.linear_solver = om.DirectSolver()
+
         mission_options = dict(self.options.items())
-        del mission_options["adjust_block_fuel"]
+        del mission_options["compute_TOW"]
+        del mission_options["add_solver"]
         del mission_options["mission_file_path"]
         mission_options["mission_wrapper"] = mission_wrapper
         self.add_subsystem(

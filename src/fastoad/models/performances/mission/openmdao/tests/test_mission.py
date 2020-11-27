@@ -155,7 +155,7 @@ def test_mission_group_without_loop(cleanup):
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
             breguet_iterations=0,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
-            adjust_block_fuel=False,
+            compute_TOW=False,
         ),
         ivc,
     )
