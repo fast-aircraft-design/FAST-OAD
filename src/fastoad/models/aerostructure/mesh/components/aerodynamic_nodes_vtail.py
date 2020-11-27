@@ -37,7 +37,7 @@ class AerodynamicNodesVtail(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan)
 
         self.add_output(
-            "data:aerostructural:aerodynamic:vertcal_tail:nodes",
+            "data:aerostructural:aerodynamic:vertical_tail:nodes",
             val=np.nan,
             shape=((n_secs + 1), 3),
         )
@@ -71,13 +71,13 @@ class AerodynamicNodesVtail(om.ExplicitComponent):
 
     @staticmethod
     def _get_nodes_loc(n_sections, dimensions):
-        z_le = np.linspace(dimensions["z_root"], dimensions["z_tip"], n_sections + 1)
+        z_le = np.linspace(dimensions["z_root"][0], dimensions["z_tip"][0], n_sections + 1)
 
         x_le = np.zeros((n_sections + 1, 1))
         y_le = np.zeros((n_sections + 1, 1))
         for i in range(0, np.size(y_le)):
-            x_le[i] = (z_le[i] - dimensions["z_root"]) * (
-                dimensions["x_tip"] - dimensions["x_root"]
-            ) / (dimensions["z_tip"] - dimensions["z_root"]) + dimensions["x_root"]
+            x_le[i] = (z_le[i] - dimensions["z_root"][0]) * (
+                dimensions["x_tip"][0] - dimensions["x_root"][0]
+            ) / (dimensions["z_tip"][0] - dimensions["z_root"][0]) + dimensions["x_root"][0]
         xyz = np.hstack((x_le, y_le, z_le[:, np.newaxis]))
         return xyz

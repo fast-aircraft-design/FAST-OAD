@@ -74,17 +74,21 @@ class AerodynamicNodesHtail(om.ExplicitComponent):
 
     @staticmethod
     def _get_nodes_loc(n_sections, dimensions):
-        y_le = np.linspace(0.0, dimensions["y_tip"], n_sections + 1)
+        y_le = np.linspace(0.0, dimensions["y_tip"][0], n_sections + 1)
 
         x_le = np.zeros((n_sections + 1, 1))
         z_le = np.zeros((n_sections + 1, 1))
         for i in range(0, np.size(y_le)):
             x_le[i] = (
-                y_le[i] * (dimensions["x_tip"] - dimensions["x_root"]) / dimensions["y_tip"]
+                y_le[i]
+                * (dimensions["x_tip"][0] - dimensions["x_root"][0])
+                / dimensions["y_tip"][0]
                 + dimensions["x_root"]
             )  # y_root assumed = 0.
             z_le[i] = (
-                y_le[i] * (dimensions["z_tip"] - dimensions["z_root"]) / dimensions["y_tip"]
+                y_le[i]
+                * (dimensions["z_tip"][0] - dimensions["z_root"][0])
+                / dimensions["y_tip"][0]
                 + dimensions["z_root"]
             )  # y_root assumed = 0.
         xyz_r = np.hstack((x_le, y_le[:, np.newaxis], z_le))  # right tail coordinates

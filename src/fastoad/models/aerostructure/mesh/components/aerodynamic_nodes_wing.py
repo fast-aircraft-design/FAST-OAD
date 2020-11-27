@@ -41,8 +41,6 @@ class AerodynamicNodesWing(om.ExplicitComponent):
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:z", val=0.0, units="m")
 
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-
         self.add_output(
             "data:aerostructural:aerodynamic:wing:nodes", val=np.nan, shape=((n_secs + 1) * 2, 3)
         )
@@ -77,34 +75,37 @@ class AerodynamicNodesWing(om.ExplicitComponent):
     def _get_nodes_loc(n_sections, dimensions):
         elem_span = dimensions["y_tip"] - dimensions["y_root"]
         kink_ratio = (dimensions["y_kink"] - dimensions["y_root"]) / elem_span
-        n_sections_kink = kink_ratio * n_sections
+        n_sections_kink = int(np.round(kink_ratio * n_sections)[0])
         n_sections_tip = n_sections - n_sections_kink
 
-        y_le = np.vstack(
+        y_le = np.hstack(
             (
                 np.linspace(
-                    dimensions["y_root"], dimensions["y_kink"], n_sections_kink + 1, endpoint=False
+                    dimensions["y_root"][0],
+                    dimensions["y_kink"][0],
+                    n_sections_kink,
+                    endpoint=False,
                 ),
-                np.linspace(dimensions["y_kink"], dimensions["y_tip"], n_sections_tip + 1),
+                np.linspace(dimensions["y_kink"][0], dimensions["y_tip"][0], n_sections_tip + 1),
             )
         )
-        x_le = np.zeros((n_sections + 1), 1)
-        z_le = np.zeros((n_sections + 1), 1)
+        x_le = np.zeros((n_sections + 1, 1))
+        z_le = np.zeros((n_sections + 1, 1))
         for i in range(0, np.size(y_le)):
-            if y_le[i] <= dimensions["y_kink"]:
+            if y_le[i] <= dimensions["y_kink"][0]:
                 x_le[i] = (y_le[i] - dimensions["y_root"]) * (
-                    dimensions["x_kink"] - dimensions["x_root"]
-                ) / (dimensions["y_kink"] - dimensions["y_root"]) + dimensions["x_root"]
-                z_le[i] = (y_le[i] - dimensions["y_root"]) * (
-                    dimensions["z_kink"] - dimensions["z_root"]
-                ) / (dimensions["y_kink"] - dimensions["y_root"]) + dimensions["z_root"]
+                    dimensions["x_kink"][0] - dimensions["x_root"][0]
+                ) / (dimensions["y_kink"][0] - dimensions["y_root"][0]) + dimensions["x_root"][0]
+                z_le[i] = (y_le[i] - dimensions["y_root"][0]) * (
+                    dimensions["z_kink"][0] - dimensions["z_root"][0]
+                ) / (dimensions["y_kink"][0] - dimensions["y_root"][0]) + dimensions["z_root"][0]
             else:
-                x_le[i] = (y_le[i] - dimensions["y_kink"]) * (
-                    dimensions["x_tip"] - dimensions["x_kink"]
-                ) / (dimensions["y_tip"] - dimensions["y_kink"]) + dimensions["x_kink"]
-                z_le[i] = (y_le[i] - dimensions["y_kink"]) * (
-                    dimensions["z_tip"] - dimensions["z_kink"]
-                ) / (dimensions["y_tip"] - dimensions["y_kink"]) + dimensions["z_kink"]
+                x_le[i] = (y_le[i] - dimensions["y_kink"][0]) * (
+                    dimensions["x_tip"][0] - dimensions["x_kink"][0]
+                ) / (dimensions["y_tip"][0] - dimensions["y_kink"][0]) + dimensions["x_kink"][0]
+                z_le[i] = (y_le[i] - dimensions["y_kink"][0]) * (
+                    dimensions["z_tip"][0] - dimensions["z_kink"][0]
+                ) / (dimensions["y_tip"][0] - dimensions["y_kink"][0]) + dimensions["z_kink"][0]
 
         xyz_r = np.hstack((x_le, y_le[:, np.newaxis], z_le))  # right tail coordinates
         xyz_l = np.hstack((x_le, -y_le[:, np.newaxis], z_le))  # symmetry for left tail coordinates
