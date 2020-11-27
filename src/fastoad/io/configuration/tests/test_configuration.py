@@ -164,7 +164,7 @@ def test_set_optimization_definition(cleanup):
             "x": {"name": "x", "lower": 0, "upper": 20},
             "z": {"name": "z", "lower": 0, "upper": 10},
         },
-        "constraint": {"g1": {"name": "g1", "upper": 10}, "g2": {"name": "g2", "upper": 0},},
+        "constraint": {"gg1": {"name": "gg1", "upper": 10}, "gg2": {"name": "gg2", "upper": 0},},
         "objective": {"f": {"name": "f"}},
     }
 
@@ -173,7 +173,7 @@ def test_set_optimization_definition(cleanup):
             {"name": "x", "lower": 0, "upper": 20},
             {"name": "z", "lower": 0, "upper": 10},
         ],
-        "constraint": [{"name": "g1", "upper": 10}, {"name": "g2", "upper": 0}],
+        "constraint": [{"name": "gg1", "upper": 10}, {"name": "gg2", "upper": 0}],
         "objective": [{"name": "f"}],
     }
 

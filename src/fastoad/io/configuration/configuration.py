@@ -38,6 +38,7 @@ KEY_FOLDERS = "module_folders"
 KEY_INPUT_FILE = "input_file"
 KEY_OUTPUT_FILE = "output_file"
 KEY_COMPONENT_ID = "id"
+KEY_CONNECTION_ID = "connection"
 TABLE_MODEL = "model"
 KEY_DRIVER = "driver"
 TABLE_OPTIMIZATION = "optimization"
@@ -292,6 +293,10 @@ class FASTOADProblemConfigurator:
                         # There has been an error while parsing an attribute.
                         # Error is relayed with key added for context
                         raise FASTConfigurationBadOpenMDAOInstructionError(err, key)
+            elif key == KEY_CONNECTION_ID and isinstance(value, list):
+                # a list of dict currently defines only connections
+                for connection_def in value:
+                    group.connect(connection_def["source"], connection_def["target"])
             else:
                 # value is an attribute of current component and will be literally interpreted
                 try:
