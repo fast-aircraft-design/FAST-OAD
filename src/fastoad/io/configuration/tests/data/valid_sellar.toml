@@ -3,7 +3,7 @@
 title = "Sellar"
 
 module_folders = [
-  "sellar_example",
+  "conf_sellar_example",
   "d:/path/does/not/exist" # will only trigger a warning
 ]
 
@@ -16,11 +16,11 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
         nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
         linear_solver = "om.ScipyKrylov()"
         [model.cycle.disc1]
-            id = "sellar.disc1"
+            id = "configuration_test.sellar.disc1"
         [model.cycle.disc2]
-            id = "sellar.disc2"
+            id = "configuration_test.sellar.disc2"
     [model.functions]
-        id = "sellar.functions"
+        id = "configuration_test.sellar.functions"
 
 [optimization]
     [[optimization.design_var]]

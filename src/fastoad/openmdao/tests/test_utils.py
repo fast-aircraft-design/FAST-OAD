@@ -16,10 +16,10 @@ Test module for OpenMDAO checks
 
 import openmdao.api as om
 
-from .sellar_example.disc1 import Disc1
-from .sellar_example.disc2 import Disc2
-from .sellar_example.functions import Functions
-from .sellar_example.sellar import Sellar
+from .openmdao_sellar_example.disc1 import Disc1
+from .openmdao_sellar_example.disc2 import Disc2
+from .openmdao_sellar_example.functions import Functions
+from .openmdao_sellar_example.sellar import Sellar
 from ..utils import get_unconnected_input_names
 
 

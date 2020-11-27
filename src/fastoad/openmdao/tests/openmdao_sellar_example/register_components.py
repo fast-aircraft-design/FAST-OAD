@@ -22,9 +22,11 @@ from .disc2 import Disc2
 from .functions import Functions
 
 OpenMDAOSystemRegistry.register_system(
-    Disc1, "sellar.disc1", domain=ModelDomain.OTHER, desc="some text"
+    Disc1, "openmdao_test.sellar.disc1", domain=ModelDomain.OTHER, desc="some text"
 )
 OpenMDAOSystemRegistry.register_system(
-    Disc2, "sellar.disc2", domain=ModelDomain.GEOMETRY,
+    Disc2, "openmdao_test.sellar.disc2", domain=ModelDomain.GEOMETRY,
 )
-OpenMDAOSystemRegistry.register_system(Functions, "sellar.functions", options={"best_doctor": 11})
+OpenMDAOSystemRegistry.register_system(
+    Functions, "openmdao_test.sellar.functions", options={"best_doctor": 11}
+)

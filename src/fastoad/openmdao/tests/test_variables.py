@@ -21,9 +21,9 @@ import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 
-from .sellar_example.disc1 import Disc1
-from .sellar_example.disc2 import Disc2
-from .sellar_example.functions import Functions
+from .openmdao_sellar_example.disc1 import Disc1
+from .openmdao_sellar_example.disc2 import Disc2
+from .openmdao_sellar_example.functions import Functions
 from ..variables import VariableList, Variable
 
 

@@ -20,8 +20,8 @@ import os.path as pth
 import pytest
 from openmdao.api import Problem, ScipyOptimizeDriver
 
-from .sellar_example.disc2 import Disc2
-from .sellar_example.sellar import Sellar, ISellarFactory
+from .module_sellar_example.disc2 import Disc2
+from .module_sellar_example.sellar import Sellar, ISellarFactory
 from .. import BundleLoader
 from .. import OpenMDAOSystemRegistry as Registry
 from ..constants import SERVICE_OPENMDAO_SYSTEM, ModelDomain
@@ -40,7 +40,7 @@ logging.basicConfig(level=logging.DEBUG)
 @pytest.fixture(scope="module")
 def load():
     """ Loads components """
-    Registry.explore_folder(pth.join(pth.dirname(__file__), "sellar_example"))
+    Registry.explore_folder(pth.join(pth.dirname(__file__), "module_sellar_example"))
 
 
 def test_components_alone(load):
@@ -59,8 +59,11 @@ def test_get_system(load):
 
     # Get component 1 #########################################################
     # Tests also the definition of model domain
-    disc1_component = Registry.get_system("sellar.disc1")
-    assert Registry.get_system_domain("sellar.disc1").value == ModelDomain.OTHER.value
+    disc1_component = Registry.get_system("module_management_test.sellar.disc1")
+    assert (
+        Registry.get_system_domain("module_management_test.sellar.disc1").value
+        == ModelDomain.OTHER.value
+    )
     assert Registry.get_system_domain(disc1_component).value == ModelDomain.OTHER.value
     assert Registry.get_system_description(disc1_component) == "some text"
     assert disc1_component is not None
@@ -72,10 +75,17 @@ def test_get_system(load):
     # Get component 2 #########################################################
     # Tests also the transmission of options
     with pytest.raises(FastBadSystemOptionError):
-        disc2_component = Registry.get_system("sellar.disc2", options={"not_declared": -1})
+        disc2_component = Registry.get_system(
+            "module_management_test.sellar.disc2", options={"not_declared": -1}
+        )
 
-    disc2_component = Registry.get_system("sellar.disc2", options={"answer": -1})
-    assert Registry.get_system_domain("sellar.disc2").value == ModelDomain.GEOMETRY.value
+    disc2_component = Registry.get_system(
+        "module_management_test.sellar.disc2", options={"answer": -1}
+    )
+    assert (
+        Registry.get_system_domain("module_management_test.sellar.disc2").value
+        == ModelDomain.GEOMETRY.value
+    )
     assert Registry.get_system_domain(disc2_component).value == ModelDomain.GEOMETRY.value
     assert Registry.get_system_description(disc2_component) == Disc2.__doc__
     assert (
@@ -90,10 +100,15 @@ def test_get_system(load):
     # Get component 2 bis #####################################################
     # Tests the transmission of options at registration
     with pytest.raises(FastBadSystemOptionError):
-        functions_component = Registry.get_system("sellar.functions", options={"not_declared": -1})
+        functions_component = Registry.get_system(
+            "module_management_test.sellar.functions", options={"not_declared": -1}
+        )
 
-    functions_component = Registry.get_system("sellar.functions")
-    assert Registry.get_system_domain("sellar.functions").value == ModelDomain.UNSPECIFIED.value
+    functions_component = Registry.get_system("module_management_test.sellar.functions")
+    assert (
+        Registry.get_system_domain("module_management_test.sellar.functions").value
+        == ModelDomain.UNSPECIFIED.value
+    )
     assert Registry.get_system_domain(functions_component).value == ModelDomain.UNSPECIFIED.value
     assert (
         functions_component.options["best_doctor"] == 10
@@ -146,15 +161,15 @@ def test_sellar(load):
 
         @staticmethod
         def create_disc1():
-            return Registry.get_system("sellar.disc1")
+            return Registry.get_system("module_management_test.sellar.disc1")
 
         @staticmethod
         def create_disc2():
-            return Registry.get_system("sellar.disc2")
+            return Registry.get_system("module_management_test.sellar.disc2")
 
         @staticmethod
         def create_functions():
-            return Registry.get_system("sellar.functions")
+            return Registry.get_system("module_management_test.sellar.functions")
 
     classical_problem = sellar_setup(Sellar())  # Reference
     fastoad_problem = sellar_setup(
