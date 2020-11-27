@@ -64,7 +64,7 @@ class _ComputeWingArea(om.ExplicitComponent):
         max_CL = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         wing_area_approach = 2 * mlw * g / ((approach_speed / 1.23) ** 2) / (1.225 * max_CL)
 
-        outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)
+        outputs["data:geometry:wing:area"] = np.nanmax([wing_area_mission, wing_area_approach])
 
 
 class _ComputeWingAreaConstraints(om.ExplicitComponent):
