@@ -253,7 +253,7 @@
     <mission>
       <sizing>
         <ZFW units="kg">56552.24853796562<!--aircraft mass with payload, without fuel, in sizing mission--></ZFW>
-        <fuel units="kg">20484.57180359991<!--consumed fuel mass during whole mission--></fuel>
+        <needed_block_fuel units="kg">20484.57180359991<!--consumed fuel mass during whole mission--></needed_block_fuel>
         <fuel_reserve units="kg">3393.134912275496<!--mass of fuel reserve--></fuel_reserve>
         <cs25>
           <sizing_load_1 units="kg">246299.4786190937<!--sizing load during gust with minimum aircraft mass--></sizing_load_1>
