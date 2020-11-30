@@ -31,7 +31,7 @@ def test_compute_wing_area():
     ivc.add_output("data:geometry:wing:aspect_ratio", 9.48)
     ivc.add_output("data:geometry:wing:root:thickness_ratio", 0.15)
     ivc.add_output("data:geometry:wing:tip:thickness_ratio", 0.11)
-    ivc.add_output("data:mission:sizing:fuel", val=20500, units="kg")
+    ivc.add_output("data:mission:sizing:needed_block_fuel", val=20500, units="kg")
     ivc.add_output("data:TLAR:approach_speed", val=132, units="kn")
     ivc.add_output("data:weight:aircraft:MLW", val=66300, units="kg")
 
@@ -50,7 +50,7 @@ def test_compute_wing_area():
     ivc.add_output("data:geometry:wing:aspect_ratio", 9.48)
     ivc.add_output("data:geometry:wing:root:thickness_ratio", 0.15)
     ivc.add_output("data:geometry:wing:tip:thickness_ratio", 0.11)
-    ivc.add_output("data:mission:sizing:fuel", val=15000, units="kg")
+    ivc.add_output("data:mission:sizing:needed_block_fuel", val=15000, units="kg")
     ivc.add_output("data:TLAR:approach_speed", val=132, units="kn")
     ivc.add_output("data:weight:aircraft:MLW", val=66300, units="kg")
 

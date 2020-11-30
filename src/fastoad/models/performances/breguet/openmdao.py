@@ -78,7 +78,7 @@ class BreguetWithPropulsion(om.ExplicitComponent):
         self.add_output("data:mission:sizing:main_route:cruise:distance", units="m", ref=1e3)
         self.add_output("data:mission:sizing:main_route:descent:distance", units="m", ref=1e3)
         self.add_output("data:mission:sizing:ZFW", units="kg", ref=1e4)
-        self.add_output("data:mission:sizing:fuel", units="kg", ref=1e4)
+        self.add_output("data:mission:sizing:needed_block_fuel", units="kg", ref=1e4)
         self.add_output("data:mission:sizing:main_route:fuel", units="kg", ref=1e4)
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg", ref=1e4)
         self.add_output("data:mission:sizing:main_route:cruise:fuel", units="kg", ref=1e4)
@@ -114,7 +114,7 @@ class BreguetWithPropulsion(om.ExplicitComponent):
         outputs["data:propulsion:thrust_rate"] = breguet.thrust_rate
         outputs["data:propulsion:thrust"] = breguet.thrust
         outputs["data:mission:sizing:ZFW"] = breguet.zfw
-        outputs["data:mission:sizing:fuel"] = breguet.mission_fuel
+        outputs["data:mission:sizing:needed_block_fuel"] = breguet.mission_fuel
         outputs["data:mission:sizing:main_route:fuel"] = breguet.flight_fuel
         outputs["data:mission:sizing:main_route:climb:fuel"] = breguet.climb_fuel
         outputs["data:mission:sizing:main_route:cruise:fuel"] = breguet.cruise_fuel
@@ -131,7 +131,7 @@ class _Consumption(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:mission:sizing:fuel", np.nan, units="kg")
+        self.add_input("data:mission:sizing:needed_block_fuel", np.nan, units="kg")
         self.add_input("data:TLAR:range", np.nan, units="km")
         self.add_input("data:TLAR:NPAX", np.nan)
 
@@ -139,7 +139,7 @@ class _Consumption(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        fuel = inputs["data:mission:sizing:fuel"]
+        fuel = inputs["data:mission:sizing:needed_block_fuel"]
         npax = inputs["data:TLAR:NPAX"]
         distance = inputs["data:TLAR:range"]
 
@@ -211,7 +211,7 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
         self.add_input("settings:mission:sizing:breguet:reserve:mass_ratio", 0.06)
 
         self.add_output("data:mission:sizing:ZFW", units="kg", ref=1e4)
-        self.add_output("data:mission:sizing:fuel", units="kg", ref=1e4)
+        self.add_output("data:mission:sizing:needed_block_fuel", units="kg", ref=1e4)
         self.add_output("data:mission:sizing:main_route:fuel", units="kg", ref=1e4)
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg", ref=1e4)
         self.add_output("data:mission:sizing:main_route:cruise:fuel", units="kg", ref=1e4)
@@ -233,7 +233,7 @@ class _FuelWeightFromMTOW(om.ExplicitComponent):
 
         outputs["data:mission:sizing:ZFW"] = zfw
 
-        outputs["data:mission:sizing:fuel"] = mission_fuel
+        outputs["data:mission:sizing:needed_block_fuel"] = mission_fuel
         outputs["data:mission:sizing:main_route:fuel"] = mtow * (1.0 - flight_mass_ratio)
         outputs["data:mission:sizing:main_route:climb:fuel"] = mtow * (1.0 - climb_mass_ratio)
         outputs["data:mission:sizing:main_route:cruise:fuel"] = (

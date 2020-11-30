@@ -39,7 +39,7 @@ def test_breguet():
     problem = run_system(OMBreguet(), ivc)
 
     assert_allclose(problem["data:mission:sizing:ZFW"], 65617.0, rtol=1e-3)
-    assert_allclose(problem["data:mission:sizing:fuel"], 8382.0, rtol=1e-3)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 8382.0, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0604, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0604, rtol=1e-3)
     assert_allclose(
@@ -64,12 +64,12 @@ def test_breguet():
     problem = run_system(OMBreguet(), ivc)
 
     assert_allclose(problem["data:mission:sizing:ZFW"], 62473.0, rtol=1e-3)
-    assert_allclose(problem["data:mission:sizing:fuel"], 11526.0, rtol=1e-3)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 11526.0, rtol=1e-3)
     assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0346, rtol=1e-3)
 
     # Check consistency of other outputs
     assert_allclose(
-        problem["data:mission:sizing:fuel"],
+        problem["data:mission:sizing:needed_block_fuel"],
         problem["data:mission:sizing:main_route:fuel"]
         + problem["data:mission:sizing:fuel_reserve"],
         rtol=1e-3,
@@ -107,14 +107,14 @@ def test_breguet_with_rubber_engine():
     problem = run_system(group, ivc)
 
     assert_allclose(problem["data:mission:sizing:ZFW"], 65076.0, atol=1)
-    assert_allclose(problem["data:mission:sizing:fuel"], 8924.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 8924.0, atol=1)
     assert_allclose(problem["data:mission:sizing:fuel:unitary"], 0.0642, rtol=1e-3)
 
     # With direct call to rubber engine
     problem2 = run_system(OMBreguet(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), ivc)
 
     assert_allclose(problem2["data:mission:sizing:ZFW"], 65076.0, atol=1)
-    assert_allclose(problem2["data:mission:sizing:fuel"], 8924.0, atol=1)
+    assert_allclose(problem2["data:mission:sizing:needed_block_fuel"], 8924.0, atol=1)
     assert_allclose(problem2["data:mission:sizing:fuel:unitary"], 0.0642, rtol=1e-3)
 
     engine = RubberEngine(5, 30, 1500, 100000, 0.95, 35000 * foot, -50)
