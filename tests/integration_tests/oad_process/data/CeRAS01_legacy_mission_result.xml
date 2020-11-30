@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="fastDataModel.xsl"?>
 <!--
-  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
   ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -440,7 +440,7 @@
                     <offset>0</offset>
                 </winglet_Cl>
                 <winglet_Cx id="244">
-                    <k>0.955</k>
+                    <k>0.91</k>
                     <offset>0</offset>
                 </winglet_Cx>
                 <HL_TOFF id="191">

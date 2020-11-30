@@ -1,7 +1,7 @@
 """
 Tests basic XML serializer for OpenMDAO variables
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -19,12 +19,12 @@ from shutil import rmtree
 
 import numpy as np
 import pytest
-from fastoad.io import VariableIO
-from fastoad.io.xml import VariableXmlStandardFormatter
-from fastoad.openmdao.variables import VariableList
 from lxml import etree
 from numpy.testing import assert_allclose
 
+from fastoad.io import VariableIO
+from fastoad.io.xml import VariableXmlStandardFormatter
+from fastoad.openmdao.variables import VariableList
 from ..exceptions import FastXPathEvalError
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")

@@ -1,5 +1,5 @@
 """Classes for Taxi sequences."""
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -12,13 +12,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from dataclasses import dataclass
 from typing import Tuple
 
 from fastoad.models.performances.mission.segments.base import FixedDurationSegment
-
 from .base import ManualThrustSegment
+from ..polar import Polar
 
 
+@dataclass
 class TaxiSegment(ManualThrustSegment, FixedDurationSegment):
     """
     Class for computing Taxi phases.
@@ -27,11 +29,8 @@ class TaxiSegment(ManualThrustSegment, FixedDurationSegment):
     constant altitude, speed and thrust rate.
     """
 
-    def __init__(self, **kwargs):
-
-        kwargs["polar"] = None
-        kwargs["reference_area"] = 1.0
-        super().__init__(**kwargs)
+    polar: Polar = None
+    reference_area: float = 1.0
 
     def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         return 0.0, 0.0

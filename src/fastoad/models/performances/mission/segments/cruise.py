@@ -1,5 +1,5 @@
 """Classes for simulating cruise segments."""
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -12,17 +12,23 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from copy import deepcopy
+from dataclasses import dataclass
 from typing import List
 
 import pandas as pd
+from scipy.constants import foot
+
 from fastoad.base.flight_point import FlightPoint
+from .altitude_change import AltitudeChangeSegment
+from .base import RegulatedThrustSegment, FlightSegment
+from ..util import get_closest_flight_level
 
-from .base import RegulatedThrustSegment
 
-
+@dataclass
 class CruiseSegment(RegulatedThrustSegment):
     """
-    Class for computing cruise flight segment at constant altitude.
+    Class for computing cruise flight segment at constant altitude and speed.
 
     Mach is considered constant, equal to Mach at starting point.
     Altitude is constant.
@@ -31,31 +37,162 @@ class CruiseSegment(RegulatedThrustSegment):
     the initial value.
     """
 
+    def __post_init__(self):
+        # Constant speed at constant altitude is necessarily constant Mach, but
+        # subclasses can be at variable altitude, so Mach is considered constant
+        # if no other constant speed parameter is set to "constant".
+        if (
+            self.target.true_airspeed != FlightSegment.CONSTANT_VALUE
+            and self.target.equivalent_airspeed != FlightSegment.CONSTANT_VALUE
+        ):
+            self.target.mach = FlightSegment.CONSTANT_VALUE
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        start = FlightPoint(start)
         if start.ground_distance:
             self.target.ground_distance = self.target.ground_distance + start.ground_distance
         return super().compute_from(start)
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
         return self.target.ground_distance - current.ground_distance
 
 
+@dataclass
 class OptimalCruiseSegment(CruiseSegment):
     """
     Class for computing cruise flight segment at maximum lift/drag ratio.
 
-    Mach is considered constant, equal to Mach at starting point. Altitude is set **at every
-    point** to get the optimum CL according to current mass.
+    Altitude is set **at every point** to get the optimum CL according to current mass.
+    Target is a specified ground_distance. The target definition indicates
+    the ground_distance to be covered during the segment, independently of
+    the initial value.
+    Target should also specify a speed parameter set to "constant", among `mach`,
+    `true_airspeed` and `equivalent_airspeed`. If not, Mach will be assumed constant.
     """
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        start = FlightPoint(start)
         start.altitude = self._get_optimal_altitude(start.mass, start.mach)
         return super().compute_from(start)
 
-    def _compute_next_altitude(self, next_point, previous_point):
+    def _compute_next_altitude(self, next_point: FlightPoint, previous_point: FlightPoint):
         next_point.altitude = self._get_optimal_altitude(
             next_point.mass, previous_point.mach, altitude_guess=previous_point.altitude
         )
+
+
+@dataclass
+class ClimbAndCruiseSegment(CruiseSegment):
+    """
+    Class for computing cruise flight segment at constant altitude.
+
+    Target is a specified ground_distance. The target definition indicates
+    the ground_distance to be covered during the segment, independently of
+    the initial value.
+    Target should also specify a speed parameter set to "constant", among `mach`,
+    `true_airspeed` and `equivalent_airspeed`. If not, Mach will be assumed constant.
+
+    Target altitude can also be set to
+    :attr:`~.altitude_change.AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL`. In that case, the cruise
+    will be preceded by a climb segment and :attr:`climb_segment` must be set at instantiation.
+
+    (Target ground distance will be achieved by the sum of ground distances
+    covered during climb and cruise)
+
+    In this case, climb will be done up to the IFR Flight Level (as multiple of 1000 feet,
+    one flight level being 100 feet) that ensures minimum mass decrease, while being at most
+    equal to :attr:`maximum_flight_level`.
+    """
+
+    #: The AltitudeChangeSegment that can be used if a preliminary climb is needed (its target
+    #: will be ignored).
+    climb_segment: AltitudeChangeSegment = None
+
+    #: The maximum allowed flight level (i.e. multiple of 100 feet).
+    maximum_flight_level: float = 500.0
+
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        climb_segment = deepcopy(self.climb_segment)
+        climb_segment.target = deepcopy(self.target)
+
+        cruise_segment = CruiseSegment(
+            target=deepcopy(self.target),
+            propulsion=self.propulsion,
+            reference_area=self.reference_area,
+            polar=self.polar,
+            name=self.name,
+        )
+
+        if start.ground_distance:
+            self.target.ground_distance = self.target.ground_distance + start.ground_distance
+
+        if (
+            self.target.altitude == AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL
+            and climb_segment is not None
+        ):
+            cruise_segment.target.altitude = None
+
+            # Go to the next flight level, or keep altitude if already at a flight level
+            cruise_altitude = get_closest_flight_level(start.altitude - 1.0e-3)
+            results = self._climb_to_altitude_and_cruise(
+                start, cruise_altitude, climb_segment, cruise_segment
+            )
+            mass_loss = start.mass - results.mass.iloc[-1]
+
+            go_to_next_level = True
+
+            while go_to_next_level:
+                old_mass_loss = mass_loss
+                cruise_altitude = get_closest_flight_level(cruise_altitude + 1.0e-3)
+                if cruise_altitude > self.maximum_flight_level * 100.0 * foot:
+                    break
+
+                new_results = self._climb_to_altitude_and_cruise(
+                    start, cruise_altitude, climb_segment, cruise_segment
+                )
+                mass_loss = start.mass - new_results.mass.iloc[-1]
+
+                go_to_next_level = mass_loss < old_mass_loss
+                if go_to_next_level:
+                    results = new_results
+
+        elif self.target.altitude is not None:
+            results = self._climb_to_altitude_and_cruise(
+                start, self.target.altitude, climb_segment, cruise_segment
+            )
+        else:
+            results = super().compute_from(start)
+
+        return results
+
+    def _climb_to_altitude_and_cruise(
+        self,
+        start: FlightPoint,
+        cruise_altitude: float,
+        climb_segment: AltitudeChangeSegment,
+        cruise_segment: CruiseSegment,
+    ):
+        """
+        Climbs up to cruise_altitude and cruise, while ensuring final ground_distance is
+        equal to self.target.ground_distance.
+
+        :param start:
+        :param cruise_altitude:
+        :param climb_segment:
+        :param cruise_segment:
+        :return:
+        """
+        climb_segment.target = FlightPoint(
+            altitude=cruise_altitude,
+            mach=cruise_segment.target.mach,
+            true_airspeed=cruise_segment.target.true_airspeed,
+            equivalent_airspeed=cruise_segment.target.equivalent_airspeed,
+        )
+        climb_points = climb_segment.compute_from(start)
+
+        cruise_start = FlightPoint.create(climb_points.iloc[-1])
+        cruise_segment.target.ground_distance = (
+            self.target.ground_distance - cruise_start.ground_distance
+        )
+        cruise_points = cruise_segment.compute_from(cruise_start)
+
+        return pd.concat([climb_points, cruise_points]).reset_index(drop=True)

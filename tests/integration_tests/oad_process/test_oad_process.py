@@ -1,7 +1,7 @@
 """
 Test module for Overall Aircraft Design process
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -100,13 +100,25 @@ def test_non_regression_breguet(cleanup):
     )
 
 
+def test_non_regression_mission_only(cleanup):
+    run_non_regression_test(
+        "oad_process_mission_only.toml",
+        "CeRAS01_legacy_mission_result.xml",
+        "non_regression_mission_only",
+        use_xfoil=False,
+        vars_to_check=["data:mission:sizing:fuel"],
+        tolerance=1.0e-2,
+        check_weight_perfo_loop=False,
+    )
+
+
 def test_non_regression_mission(cleanup):
     run_non_regression_test(
         "oad_process_mission.toml",
         "CeRAS01_legacy_mission_result.xml",
         "non_regression_mission",
         use_xfoil=False,
-        check_only_mtow=True,
+        vars_to_check=["data:weight:aircraft:MTOW", "data:mission:sizing:fuel"],
         tolerance=1.0e-2,
     )
 
@@ -116,8 +128,9 @@ def run_non_regression_test(
     legacy_result_file,
     result_dir,
     use_xfoil=False,
-    check_only_mtow=False,
+    vars_to_check=None,
     tolerance=5.0e-3,
+    check_weight_perfo_loop=True,
 ):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, result_dir)
     configuration_file_path = pth.join(results_folder_path, conf_file)
@@ -146,38 +159,33 @@ def run_non_regression_test(
     problem.run_model()
     problem.write_outputs()
 
-    try:
-        problem.model.performance.flight_points.to_csv(
-            pth.join(results_folder_path, "flight_points.csv"), sep="\t", decimal=",",
-        )
-    except AttributeError:
-        pass
     om.view_connections(
         problem, outfile=pth.join(results_folder_path, "connections.html"), show_browser=False
     )
 
-    # Check that weight-performances loop correctly converged
-    assert_allclose(
-        problem["data:weight:aircraft:OWE"],
-        problem["data:weight:airframe:mass"]
-        + problem["data:weight:propulsion:mass"]
-        + problem["data:weight:systems:mass"]
-        + problem["data:weight:furniture:mass"]
-        + problem["data:weight:crew:mass"],
-        atol=1,
-    )
-    assert_allclose(
-        problem["data:weight:aircraft:MZFW"],
-        problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
-        atol=1,
-    )
-    # assert_allclose(
-    #     problem["data:weight:aircraft:MTOW"],
-    #     problem["data:weight:aircraft:OWE"]
-    #     + problem["data:weight:aircraft:payload"]
-    #     + problem["data:mission:sizing:fuel"],
-    #     atol=1,
-    # )
+    if check_weight_perfo_loop:
+        # Check that weight-performances loop correctly converged
+        assert_allclose(
+            problem["data:weight:aircraft:OWE"],
+            problem["data:weight:airframe:mass"]
+            + problem["data:weight:propulsion:mass"]
+            + problem["data:weight:systems:mass"]
+            + problem["data:weight:furniture:mass"]
+            + problem["data:weight:crew:mass"],
+            atol=1,
+        )
+        assert_allclose(
+            problem["data:weight:aircraft:MZFW"],
+            problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
+            atol=1,
+        )
+        assert_allclose(
+            problem["data:weight:aircraft:MTOW"],
+            problem["data:weight:aircraft:OWE"]
+            + problem["data:weight:aircraft:payload"]
+            + problem["data:mission:sizing:fuel"],
+            atol=1,
+        )
 
     ref_var_list = VariableIO(
         pth.join(DATA_FOLDER_PATH, legacy_result_file), formatter=VariableLegacy1XmlFormatter(),
@@ -209,8 +217,11 @@ def run_non_regression_test(
     pd.set_option("display.max_colwidth", 120)
     print(df.sort_values(by=["abs_rel_delta"]))
 
-    if check_only_mtow:
-        assert np.all(df.abs_rel_delta.loc[df.name == "data:weight:aircraft:MTOW"] < tolerance)
+    if vars_to_check is not None:
+        for name in vars_to_check:
+            row = df.loc[df.name == name]
+            assert_allclose(row.ref_value, row.value, rtol=tolerance)
+            # assert np.all(df.abs_rel_delta.loc[df.name == name] < tolerance)
     else:
         assert np.all(df.abs_rel_delta < tolerance)
 
@@ -255,13 +266,13 @@ def test_api(cleanup):
         atol=1,
     )
 
-    assert_allclose(problem["data:handling_qualities:static_margin"], -0.005519, atol=1e-3)
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.5, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 77065, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 130.29, atol=1e-2)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.65, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.25, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:fuel"], 20494, atol=1)
+    assert_allclose(problem["data:handling_qualities:static_margin"], -0.072251, atol=1e-3)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.0, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 76094, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 128.98, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.07, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.50, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:fuel"], 20213, atol=1)
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
@@ -297,4 +308,4 @@ def test_api(cleanup):
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:fuel"], 20565, atol=50)
+    assert_allclose(problem["data:mission:sizing:fuel"], 20338, atol=50)

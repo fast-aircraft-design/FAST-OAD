@@ -1,6 +1,6 @@
 """Base module for propulsion models."""
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,7 +20,6 @@ import openmdao.api as om
 import pandas as pd
 from openmdao.core.component import Component
 
-from fastoad.base.dict import AddKeyAttributes
 from fastoad.base.flight_point import FlightPoint
 
 

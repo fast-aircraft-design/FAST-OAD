@@ -1,5 +1,5 @@
 """Classes for acceleration/deceleration segments."""
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ class SpeedChangeSegment(ManualThrustSegment):
     and mach.
     """
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> bool:
+    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         if self.target.true_airspeed:
             return self.target.true_airspeed - flight_points[-1].true_airspeed
         elif self.target.equivalent_airspeed:

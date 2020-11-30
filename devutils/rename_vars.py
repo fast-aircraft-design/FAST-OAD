@@ -3,7 +3,7 @@ This script reads the 2 column files 'rename_vars.txt' where the the first
 column contains old OpenMDAO variable names and the new names.
 Replaces old names by new ones in all files of ./src and ./tests.
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ import os.path as pth
 import re
 
 import numpy as np
+
 from fastoad.io import VariableIO
 from fastoad.io.xml import VariableXmlBaseFormatter
 from fastoad.io.xml.exceptions import (
@@ -30,7 +31,6 @@ from fastoad.io.xml.exceptions import (
 )
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.io.xml.variable_io_standard import BasicVarXpathTranslator
-
 from tests import root_folder_path
 
 SRC_PATH = pth.join(root_folder_path, "src")

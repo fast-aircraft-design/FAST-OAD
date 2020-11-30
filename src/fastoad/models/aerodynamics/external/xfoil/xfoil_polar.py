@@ -1,7 +1,7 @@
 """
 This module launches XFOIL computations
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,11 +18,11 @@ import logging
 import os
 import os.path as pth
 import shutil
+from importlib.resources import path
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
-from importlib_resources import path
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 

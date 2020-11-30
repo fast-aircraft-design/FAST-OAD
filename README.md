@@ -26,7 +26,7 @@ documentation](https://fast-oad.readthedocs.io/).
 Install
 -------
 
-**Prerequisite**:FAST-OAD needs at least **Python 3.6.1**.
+**Prerequisite**:FAST-OAD needs at least **Python 3.7.0**.
 
 It is recommended (but not required) to install FAST-OAD in a virtual
 environment ([conda](https://docs.conda.io/en/latest/),

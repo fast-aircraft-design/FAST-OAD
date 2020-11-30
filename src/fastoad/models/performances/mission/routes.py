@@ -1,5 +1,7 @@
-"""Base classes for flight computation."""
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+"""
+Classes for computation of routes (i.e. assemblies of climb, cruise and descent phases).
+"""
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -12,75 +14,78 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from dataclasses import dataclass
 from typing import List, Union
 
 import pandas as pd
-from fastoad.base.flight_point import FlightPoint
 from scipy.optimize import root_scalar
 
-from ..base import AbstractFlightSequence, IFlightPart
-from ..segments.cruise import CruiseSegment
+from fastoad.base.flight_point import FlightPoint
+from fastoad.models.performances.mission.base import FlightSequence, IFlightPart
+from fastoad.models.performances.mission.segments.cruise import CruiseSegment
 
 
-class AbstractSimpleFlight(AbstractFlightSequence):
+@dataclass
+class SimpleRoute(FlightSequence):
     """
-    Computes a simple flight.
+    Computes a simple route.
 
-    The computed flight will be be made of:
+    The computed route will be be made of:
         - any number of climb phases
         - one cruise segment
         - any number of descent phases.
     """
 
-    def __init__(
-        self,
-        cruise_distance: float,
-        climb_phases: List[AbstractFlightSequence],
-        cruise_phase: CruiseSegment,
-        descent_phases: List[AbstractFlightSequence],
-    ):
-        """
+    #: Any number of flight phases that will occur before cruise.
+    climb_phases: List[FlightSequence]
 
-        :param cruise_distance:
-        :param climb_phases:
-        :param cruise_phase:
-        :param descent_phases:
-        """
+    #: The cruise phase.
+    cruise_segment: CruiseSegment
 
-        self.climb_phases = climb_phases
-        self.cruise_segment = cruise_phase
-        self.cruise_segment.target = FlightPoint(ground_distance=cruise_distance, mach="constant")
-        self.descent_phases = descent_phases
+    #: Any number of flight phases that will occur after cruise.
+    descent_phases: List[FlightSequence]
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.flight_sequence.extend(self._get_flight_sequence())
 
     @property
     def cruise_distance(self):
+        """Ground distance to be covered during cruise, as set in target of :attr:cruise_segment."""
         return self.cruise_segment.target
 
     @cruise_distance.setter
     def cruise_distance(self, cruise_distance):
-        self.cruise_segment.target = FlightPoint(ground_distance=cruise_distance)
+        self.cruise_segment.target.ground_distance = cruise_distance
 
-    @property
-    def flight_sequence(self) -> List[Union[IFlightPart, str]]:
+    def _get_flight_sequence(self) -> List[IFlightPart]:
+        # The preliminary climb segment of the cruise segment is set to the
+        # last segment before cruise.
+        cruise_climb = self.climb_phases[-1]
+        while isinstance(cruise_climb, FlightSequence):
+            cruise_climb = cruise_climb.flight_sequence[-1]
+        self.cruise_segment.climb_segment = cruise_climb
+
         return self.climb_phases + [self.cruise_segment] + self.descent_phases
 
 
-class RangedFlight(IFlightPart):
+class RangedRoute(FlightSequence):
     """
-    Computes a flight so that it covers the specified distance.
+    Computes a route so that it covers the specified distance.
     """
 
     def __init__(
-        self, flight_definition: AbstractSimpleFlight, flight_distance: float,
+        self, route_definition: SimpleRoute, flight_distance: float,
     ):
         """
-        Computes the flight and adjust the cruise distance to achieve the provided flight distance.
+        Computes the route and adjust the cruise distance to achieve the provided flight distance.
 
-        :param flight_definition:
+        :param route_definition:
         :param flight_distance: in meters
         """
+        super().__init__()
         self.flight_distance = flight_distance
-        self.flight = flight_definition
+        self.flight = route_definition
         self.flight_points = None
         self.distance_accuracy = 0.5e3
 
@@ -102,3 +107,7 @@ class RangedFlight(IFlightPart):
             method="secant",
         )
         return self.flight_points
+
+    @property
+    def flight_sequence(self) -> List[Union[IFlightPart, str]]:
+        return self.flight.flight_sequence

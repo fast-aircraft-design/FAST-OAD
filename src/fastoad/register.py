@@ -2,8 +2,8 @@
 This module is for registering all internal OpenMDAO modules that we want
 available through OpenMDAOSystemRegistry
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA/ISAE
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -24,7 +24,7 @@ from fastoad.models.handling_qualities.compute_static_margin import ComputeStati
 from fastoad.models.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from fastoad.models.loops.compute_wing_area import ComputeWingArea
 from fastoad.models.performances.breguet import OMBreguet
-from fastoad.models.performances.mission.openmdao.flight import SizingFlight
+from fastoad.models.performances.mission.openmdao.sizing_mission import SizingMission
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
 from fastoad.models.weight.mass_breakdown.mass_breakdown import MTOWComputation
 from fastoad.models.weight.weight import Weight
@@ -93,7 +93,7 @@ def register_openmdao_systems():
     )
 
     OpenMDAOSystemRegistry.register_system(
-        SizingFlight, "fastoad.performances.sizing_flight", domain=ModelDomain.PERFORMANCE
+        SizingMission, "fastoad.performances.sizing_mission", domain=ModelDomain.PERFORMANCE
     )
 
     # Propulsion ##################################################################

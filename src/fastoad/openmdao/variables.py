@@ -1,7 +1,7 @@
 """
 Module for managing OpenMDAO variables
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,12 +16,12 @@ Module for managing OpenMDAO variables
 
 import logging
 from copy import deepcopy
+from importlib.resources import open_text
 from typing import Dict, Hashable, List, Union
 
 import numpy as np
 import openmdao.api as om
 import pandas as pd
-from importlib_resources import open_text
 from openmdao.core.system import System
 
 from . import resources

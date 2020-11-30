@@ -125,9 +125,9 @@ class FASTOADProblemConfigurator:
         :param conf_file: Path to the file to open or a file descriptor
         """
 
-        self._conf_file = pth.abspath(conf_file)
+        self._conf_file = pth.abspath(conf_file)  # for resolving relative paths
 
-        conf_dirname = pth.dirname(pth.abspath(conf_file))  # for resolving relative paths
+        conf_dirname = pth.dirname(self._conf_file)
         with open(conf_file, "r") as file:
             d = file.read()
             self._conf_dict = tomlkit.loads(d)
@@ -263,6 +263,24 @@ class FASTOADProblemConfigurator:
                     # It is a non-group component, that should be registered with its ID
                     options = value.copy()
                     identifier = options.pop(KEY_COMPONENT_ID)
+
+                    # Process option values that are relative paths
+                    conf_dirname = pth.dirname(self._conf_file)
+                    for name, option_value in options.items():
+                        option_is_path = (
+                            name.endswith("file")
+                            or name.endswith("path")
+                            or name.endswith("dir")
+                            or name.endswith("directory")
+                            or name.endswith("folder")
+                        )
+                        if (
+                            isinstance(option_value, str)
+                            and option_is_path
+                            and not pth.isabs(option_value)
+                        ):
+                            options[name] = pth.join(conf_dirname, option_value)
+
                     sub_component = OpenMDAOSystemRegistry.get_system(identifier, options=options)
                     group.add_subsystem(key, sub_component, promotes=["*"])
                 else:

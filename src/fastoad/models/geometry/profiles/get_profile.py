@@ -1,7 +1,7 @@
 """
 Airfoil reshape function
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,9 +14,10 @@ Airfoil reshape function
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from importlib.resources import open_text
+
 import numpy as np
 import pandas as pd
-from importlib_resources import open_text
 
 from .profile import Profile
 from .. import resources

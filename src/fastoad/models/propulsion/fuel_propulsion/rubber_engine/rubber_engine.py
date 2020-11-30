@@ -1,5 +1,5 @@
 """Parametric turbofan engine."""
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -110,6 +110,14 @@ class RubberEngine(AbstractFuelPropulsion):
             flight_points.thrust_rate,
             flight_points.thrust,
         )
+        # flight_points.sfc = sfc raises a warning if flight_points is a DataFrame that has not
+        # already this field, so we add needed fields before setting values
+        if isinstance(flight_points, pd.DataFrame):
+            new_column_names = flight_points.columns.tolist()
+            for name in ["sfc", "thrust_rate", "thrust"]:
+                if name not in new_column_names:
+                    flight_points.insert(len(flight_points.columns), name, value=np.nan)
+
         flight_points.sfc = sfc
         flight_points.thrust_rate = thrust_rate
         flight_points.thrust = thrust

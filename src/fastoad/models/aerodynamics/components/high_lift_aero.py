@@ -1,7 +1,7 @@
 """
 Computation of lift and drag increment due to high-lift devices
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,9 +14,10 @@ Computation of lift and drag increment due to high-lift devices
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from importlib.resources import open_text
+
 import numpy as np
 import openmdao.api as om
-from importlib_resources import open_text
 from scipy import interpolate
 
 from . import resources
