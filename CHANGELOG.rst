@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 0.5.4-beta
+==================
+
+- Bug fix: An infinite loop could occur if custom modules were declaring the same variable
+  several times with different units or default values.
+
+
 Version 0.5.3-beta
 ==================
 

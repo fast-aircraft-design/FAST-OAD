@@ -23,7 +23,6 @@ import openmdao.api as om
 import tomlkit
 
 from fastoad.io import IVariableIOFormatter
-from fastoad.models.defaults import set_all_input_defaults
 from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.utils.files import make_parent_dir
@@ -229,7 +228,7 @@ class FASTOADProblemConfigurator:
         :return: the built model
         """
 
-        model = om.Group()
+        model = AutoUnitsDefaultGroup()
         model_definition = self._conf_dict.get(TABLE_MODEL)
 
         try:
@@ -247,7 +246,6 @@ class FASTOADProblemConfigurator:
             _LOGGER.error(log_err)
             raise log_err
 
-        set_all_input_defaults(model)
         return model
 
     def _parse_problem_table(self, group: om.Group, table: dict):
@@ -373,3 +371,25 @@ def _om_eval(string_to_eval: str):
     if "__" in string_to_eval:
         raise ValueError("No double underscore allowed in evaluated string for security reasons")
     return eval(string_to_eval, {"__builtins__": {}}, {"om": om})
+
+
+class AutoUnitsDefaultGroup(om.Group):
+    """
+    OpenMDAO group that automatically use self.set_input_defaults() to resolve declaration
+    conflicts in variable units
+    """
+
+    def configure(self):
+        var_units = {}
+        system: om.Group
+        for system in self.system_iter(recurse=False):
+            system_metadata = system.get_io_metadata("input", metadata_keys=["units"])
+            var_units.update(
+                {
+                    metadata["prom_name"]: metadata["units"]
+                    for name, metadata in system_metadata.items()
+                    if "." not in metadata["prom_name"]  # tells that var is promoted
+                }
+            )
+        for name, units in var_units.items():
+            self.set_input_defaults(name, units=units)
