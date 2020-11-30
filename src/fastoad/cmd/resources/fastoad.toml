@@ -24,7 +24,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
     [model.weight]
         id = "fastoad.weight.legacy"
     [model.mtow]
-        id = "fastoad.loop.mtow"
+        id = "fastoad.mass_performances.link_MTOW"
     [model.aerodynamics_highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
     [model.aerodynamics_lowspeed]
@@ -60,4 +60,4 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
         upper = 0.1
 
     [[optimization.objective]]
-        name = "data:mission:sizing:fuel"
+        name = "data:mission:sizing:needed_block_fuel"
