@@ -49,23 +49,6 @@ from .payload import ComputePayload
 from .update_mlw_and_mzfw import UpdateMLWandMZFW
 
 
-class MTOWComputation(om.AddSubtractComp):
-    """
-    Computes MTOW from OWE, design payload and consumed fuel in sizing mission.
-    """
-
-    def setup(self):
-        self.add_equation(
-            "data:weight:aircraft:MTOW",
-            [
-                "data:weight:aircraft:OWE",
-                "data:weight:aircraft:payload",
-                "data:mission:sizing:fuel",
-            ],
-            units="kg",
-        )
-
-
 class MassBreakdown(om.Group):
     """
     Computes analytically the mass of each part of the aircraft, and the resulting sum,
