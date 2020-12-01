@@ -23,6 +23,9 @@ class AerodynamicChordsFuselage(om.ExplicitComponent):
     Computes fuselage chords length for each aerodynamic section
     """
 
+    def initialize(self):
+        self.options.declare("number_of_sections", types=int, allow_none=True)
+
     def setup(self):
         self.add_input("data:geometry:fuselage:length", val=np.nan)
         self.add_input("data:geometry:fuselage:front_length", val=np.nan)
@@ -37,26 +40,31 @@ class AerodynamicChordsFuselage(om.ExplicitComponent):
         c_h_right = np.zeros(3)
         c_v_top = np.zeros(3)
         c_v_bottom = np.zeros(3)
-        c_h_right[0] = inputs["data:geometry:fuselage:length"]
+        c_h_right[0] = inputs["data:geometry:fuselage:length"][0]
         c_h_right[1] = (
-            inputs["data:geometry:fuselage:length"]
-            - inputs["data:geometry:fuselage:rear_length"] / 2
+            inputs["data:geometry:fuselage:length"][0]
+            - inputs["data:geometry:fuselage:rear_length"][0] / 2
         )
-        c_h_right[1] = (
-            inputs["data:geometry:fuselage:length"] - inputs["data:geometry:fuselage:rear_length"]
+        c_h_right[2] = (
+            inputs["data:geometry:fuselage:length"][0]
+            - inputs["data:geometry:fuselage:front_length"][0]
+            - inputs["data:geometry:fuselage:rear_length"][0]
         )
-        c_v_top[0] = inputs["data:geometry:fuselage:length"]
-        c_v_top[1] = inputs["data:geometry:fuselage:length"]
-        c_v_top[1] = (
-            inputs["data:geometry:fuselage:length"] - inputs["data:geometry:fuselage:front_length"]
+        c_v_top[0] = inputs["data:geometry:fuselage:length"][0]
+        c_v_top[1] = inputs["data:geometry:fuselage:length"][0]
+        c_v_top[2] = (
+            inputs["data:geometry:fuselage:length"][0]
+            - inputs["data:geometry:fuselage:front_length"][0]
         )
-        c_v_bottom[0] = inputs["data:geometry:fuselage:length"]
+        c_v_bottom[0] = inputs["data:geometry:fuselage:length"][0]
         c_v_bottom[1] = (
-            inputs["data:geometry:fuselage:length"]
-            - inputs["data:geometry:fuselage:rear_length"] / 2
+            inputs["data:geometry:fuselage:length"][0]
+            - inputs["data:geometry:fuselage:rear_length"][0] / 2
         )
-        c_v_bottom[1] = (
-            inputs["data:geometry:fuselage:length"] - inputs["data:geometry:fuselage:rear_length"]
+        c_v_bottom[2] = (
+            inputs["data:geometry:fuselage:length"][0]
+            - inputs["data:geometry:fuselage:front_length"][0]
+            - inputs["data:geometry:fuselage:rear_length"][0]
         )
         chords = np.vstack((c_h_right, c_h_right, c_v_top, c_v_bottom))
         outputs["data:aerostructural:aerodynamic:fuselage:local_chords"] = chords

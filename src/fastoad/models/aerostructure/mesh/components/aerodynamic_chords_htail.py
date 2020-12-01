@@ -31,7 +31,7 @@ class AerodynamicChordsHtail(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
 
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:horizontal_tail:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
 
         self.add_input("data:aerostructural:aerodynamic:horizontal_tail:nodes", shape_by_conn=True)
 
@@ -50,7 +50,7 @@ class AerodynamicChordsHtail(om.ExplicitComponent):
         dim = {
             "y_tip": inputs["data:geometry:horizontal_tail:span"] / 2,
             "root_chord": inputs["data:geometry:horizontal_tail:root:chord"],
-            "tip_chord": inputs["data:geometry:wing:horizontal_tail:chord"],
+            "tip_chord": inputs["data:geometry:horizontal_tail:tip:chord"],
         }
         y_le = inputs["data:aerostructural:aerodynamic:horizontal_tail:nodes"][:, 1]
 
@@ -64,8 +64,8 @@ class AerodynamicChordsHtail(om.ExplicitComponent):
         for i in range(0, np.size(y_le)):
             chords[i] = (
                 np.abs(y_le[i])
-                * (dimensions["tip_chord"] - dimensions["root_chord"])
-                / dimensions["y_tip"]
-                + dimensions["root_chord"]
+                * (dimensions["tip_chord"][0] - dimensions["root_chord"][0])
+                / dimensions["y_tip"][0]
+                + dimensions["root_chord"][0]
             )
         return chords

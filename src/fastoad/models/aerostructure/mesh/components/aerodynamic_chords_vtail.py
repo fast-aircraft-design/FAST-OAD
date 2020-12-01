@@ -51,7 +51,7 @@ class AerodynamicChordsVtail(om.ExplicitComponent):
             "z_root": z_root,
             "z_tip": inputs["data:geometry:vertical_tail:span"] + z_root,
             "root_chord": inputs["data:geometry:vertical_tail:root:chord"],
-            "tip_chord": inputs["data:geometry:wing:horizontal_tail:chord"],
+            "tip_chord": inputs["data:geometry:vertical_tail:tip:chord"],
         }
         z_le = inputs["data:aerostructural:aerodynamic:vertical_tail:nodes"][:, 2]
 
@@ -63,7 +63,7 @@ class AerodynamicChordsVtail(om.ExplicitComponent):
     def _get_chord_len(n_sections, dimensions, z_le):
         chords = np.zeros((n_sections + 1))
         for i in range(0, np.size(z_le)):
-            chords[i] = (z_le[i] - dimensions["z_root"]) * (
-                dimensions["tip_chord"] - dimensions["root_chord"]
-            ) / (dimensions["z_tip"] - dimensions["z_root"]) + dimensions["root_chord"]
+            chords[i] = (z_le[i] - dimensions["z_root"][0]) * (
+                dimensions["tip_chord"][0] - dimensions["root_chord"][0]
+            ) / (dimensions["z_tip"][0] - dimensions["z_root"][0]) + dimensions["root_chord"][0]
         return chords

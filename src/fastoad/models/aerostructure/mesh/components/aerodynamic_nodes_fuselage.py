@@ -23,6 +23,9 @@ class AerodynamicNodesFuselage(om.ExplicitComponent):
     Computes horizontal tail points for aerodynamic grid generation (AVL)
     """
 
+    def initialize(self):
+        self.options.declare("number_of_sections", types=int, allow_none=True)
+
     def setup(self):
         # Declare inputs ---------------------------------------------------------------------------
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
@@ -42,20 +45,20 @@ class AerodynamicNodesFuselage(om.ExplicitComponent):
         xyz_v_top = np.zeros((3, 3))
         xyz_v_bottom = np.zeros((3, 3))
 
-        xyz_h_right[1, 1] = inputs["data:geometry:fuselage:maximum_width"] / 4
-        xyz_h_right[2, 0] = inputs["data:geometry:fuselage:front_length"]
-        xyz_h_right[2, 1] = inputs["data:geometry:fuselage:maximum_width"] / 2
-        xyz_h_left[1, 1] = -inputs["data:geometry:fuselage:maximum_width"] / 4
-        xyz_h_left[2, 0] = inputs["data:geometry:fuselage:front_length"]
-        xyz_h_left[2, 1] = -inputs["data:geometry:fuselage:maximum_width"] / 2
+        xyz_h_right[1, 1] = inputs["data:geometry:fuselage:maximum_width"][0] / 4
+        xyz_h_right[2, 0] = inputs["data:geometry:fuselage:front_length"][0]
+        xyz_h_right[2, 1] = inputs["data:geometry:fuselage:maximum_width"][0] / 2
+        xyz_h_left[1, 1] = -inputs["data:geometry:fuselage:maximum_width"][0] / 4
+        xyz_h_left[2, 0] = inputs["data:geometry:fuselage:front_length"][0]
+        xyz_h_left[2, 1] = -inputs["data:geometry:fuselage:maximum_width"][0] / 2
 
-        xyz_v_top[1, 2] = inputs["data:geometry:fuselage:maximum_height"] / 4
-        xyz_v_top[2, 0] = inputs["data:geometry:fuselage:front_length"]
-        xyz_v_top[2, 2] = inputs["data:geometry:fuselage:maximum_height"] / 2
-        xyz_v_bottom[1, 2] = -inputs["data:geometry:fuselage:maximum_height"] / 4
-        xyz_v_bottom[2, 0] = inputs["data:geometry:fuselage:front_length"]
-        xyz_v_bottom[2, 2] = -inputs["data:geometry:fuselage:maximum_height"] / 2
+        xyz_v_top[1, 2] = inputs["data:geometry:fuselage:maximum_height"][0] / 4
+        xyz_v_top[2, 0] = inputs["data:geometry:fuselage:front_length"][0]
+        xyz_v_top[2, 2] = inputs["data:geometry:fuselage:maximum_height"][0] / 2
+        xyz_v_bottom[1, 2] = -inputs["data:geometry:fuselage:maximum_height"][0] / 4
+        xyz_v_bottom[2, 0] = inputs["data:geometry:fuselage:front_length"][0]
+        xyz_v_bottom[2, 2] = -inputs["data:geometry:fuselage:maximum_height"][0] / 2
 
-        outputs["data:aerostructural:aerodynamic:vertical_tail:nodes"] = np.vstack(
+        outputs["data:aerostructural:aerodynamic:fuselage:nodes"] = np.vstack(
             (xyz_h_right, xyz_h_left, xyz_v_top, xyz_v_bottom)
         )
