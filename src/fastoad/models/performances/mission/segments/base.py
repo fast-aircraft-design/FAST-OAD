@@ -257,9 +257,9 @@ class FlightSegment(IFlightPart):
         atm = AtmosphereSI(flight_point.altitude)
 
         if flight_point.true_airspeed is None:
-            if flight_point.mach:
+            if flight_point.mach is not None:
                 flight_point.true_airspeed = flight_point.mach * atm.speed_of_sound
-            elif flight_point.equivalent_airspeed:
+            elif flight_point.equivalent_airspeed is not None:
                 flight_point.true_airspeed = atm.get_true_airspeed(flight_point.equivalent_airspeed)
             else:
                 raise FastFlightSegmentIncompleteFlightPoint(
