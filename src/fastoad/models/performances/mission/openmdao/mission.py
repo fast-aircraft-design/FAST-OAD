@@ -51,7 +51,15 @@ class Mission(om.Group):
     def setup(self):
 
         if not self.options["mission_file_path"]:
-            with path(resources, "sizing_mission.yml") as mission_input_file:
+            # If no mission_file_path provided, the default mission is applied
+            self.options["mission_file_path"] = "::sizing_mission"
+        if "::" in self.options["mission_file_path"]:
+            # The configuration file parser will have added the working directory before
+            # the file name. But as the user-provided string begins with "::", we just
+            # have to ignore all before "::".
+            i = self.options["mission_file_path"].index("::")
+            file_name = self.options["mission_file_path"][i + 2 :] + ".yml"
+            with path(resources, file_name) as mission_input_file:
                 self.options["mission_file_path"] = MissionDefinition(mission_input_file)
         mission_wrapper = MissionWrapper(self.options["mission_file_path"])
 
