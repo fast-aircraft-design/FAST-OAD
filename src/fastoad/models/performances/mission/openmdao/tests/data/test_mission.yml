@@ -89,8 +89,6 @@ route_definitions:
       - cruise_type: cruise
         engine_setting: cruise
         polar: data:aerodynamics:aircraft:cruise
-        target:
-          altitude: 10000.
       - phase: descent
 
 mission:
