@@ -90,7 +90,7 @@ class Mission(om.Group):
             self.add_subsystem("TOW_computation", tow_computation, promotes=["*"])
 
             if self.options["add_solver"]:
-                self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=5.0e-4)
+                self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4)
                 self.linear_solver = om.DirectSolver()
 
         mission_options = dict(self.options.items())
