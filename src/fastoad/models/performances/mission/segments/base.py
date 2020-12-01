@@ -43,7 +43,7 @@ class FlightSegment(IFlightPart):
     As a dataclass, attributes can be set at instantiation.
     """
 
-    #: A FlightPoint instance that provide parameter values that should all be reached at the
+    #: A FlightPoint instance that provides parameter values that should all be reached at the
     #: end of :meth:`compute_from`. Possible parameters depend on the current segment. A parameter
     #: can also be set to :attr:`CONSTANT_VALUE` to tell that initial value should be kept during
     #: all segment.

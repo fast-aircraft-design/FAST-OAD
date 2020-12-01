@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List
 
@@ -22,6 +22,7 @@ from fastoad.base.flight_point import FlightPoint
 
 
 class IFlightPart(ABC):
+    @abstractmethod
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
         Computes a flight sequence from provided start point.
