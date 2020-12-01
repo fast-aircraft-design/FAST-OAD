@@ -144,6 +144,24 @@ def test_mission_component(cleanup):
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6471.0, atol=1.0)
 
 
+def test_mission_component_breguet(cleanup):
+
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
+    ivc = VariableIO(input_file_path).read().to_ivc()
+
+    problem = run_system(
+        MissionComponent(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=pth.join(RESULTS_FOLDER_PATH, "test_breguet.csv"),
+            breguet_iterations=0,
+            mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_breguet.yml")),
+        ),
+        ivc,
+    )
+    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6333.0, atol=1.0)
+
+
 def test_mission_group_without_loop(cleanup):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     vars = VariableIO(input_file_path).read()
@@ -160,6 +178,25 @@ def test_mission_group_without_loop(cleanup):
         ivc,
     )
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6471.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
+
+
+def test_mission_group_breguet_without_loop(cleanup):
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
+    vars = VariableIO(input_file_path).read()
+    ivc = vars.to_ivc()
+
+    problem = run_system(
+        Mission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
+            breguet_iterations=0,
+            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
+            compute_TOW=False,
+        ),
+        ivc,
+    )
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6333.0, atol=1.0)
     assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
 
 
@@ -195,4 +232,39 @@ def test_mission_group_with_loop(cleanup):
     )
     assert_allclose(
         problem["data:mission:operational:needed_block_fuel"], 5587.0, atol=1.0,
+    )
+
+
+def test_mission_group_breguet_with_loop(cleanup):
+
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
+    vars = VariableIO(input_file_path).read()
+    del vars["data:mission:operational:TOW"]
+    ivc = vars.to_ivc()
+
+    problem = run_system(
+        Mission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=pth.join(RESULTS_FOLDER_PATH, "test_looped_mission_group.csv"),
+            breguet_iterations=1,
+            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
+        ),
+        ivc,
+    )
+
+    # check loop
+    assert_allclose(
+        problem["data:mission:operational:TOW"],
+        problem["data:mission:operational:OWE"]
+        + problem["data:mission:operational:payload"]
+        + problem["data:mission:operational:block_fuel"],
+        atol=1.0,
+    )
+    assert_allclose(
+        problem["data:mission:operational:needed_block_fuel"],
+        problem["data:mission:operational:block_fuel"],
+        atol=1.0,
+    )
+    assert_allclose(
+        problem["data:mission:operational:needed_block_fuel"], 5626.0, atol=1.0,
     )
