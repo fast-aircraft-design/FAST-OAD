@@ -24,15 +24,16 @@ from ensure import Ensure
 from strictyaml import load, Map, MapPattern, Optional, Str, Float, Seq, Any, YAML, CommaSeparated
 
 from fastoad.base.flight_point import FlightPoint
-from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
-from fastoad.models.performances.mission.segments.cruise import (
+from ..segments.altitude_change import AltitudeChangeSegment
+from ..segments.cruise import (
     OptimalCruiseSegment,
     ClimbAndCruiseSegment,
     BreguetCruiseSegment,
 )
-from fastoad.models.performances.mission.segments.hold import HoldSegment
-from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
-from fastoad.models.performances.mission.segments.taxi import TaxiSegment
+from ..segments.hold import HoldSegment
+from ..segments.speed_change import SpeedChangeSegment
+from ..segments.taxi import TaxiSegment
+from ..segments.transition import DummyTransitionSegment
 
 # Tags
 SEGMENT_TAG = "segment"
@@ -160,6 +161,8 @@ class MissionDefinition(dict):
             Optional("climb_thrust_rate", default=None): Float() | Str(),
             Optional("time_step", default=None): Float(),
             Optional("maximum_flight_level", default=None): Float() | Str(),
+            Optional("mass_ratio", default=None): Float() | Str(),
+            Optional("reserve_mass_ratio", default=None): Float() | Str(),
         }
 
     @classmethod
@@ -216,6 +219,7 @@ class SegmentNames(Enum):
     """
 
     ALTITUDE_CHANGE = "altitude_change"
+    TRANSITION = "transition"
     CRUISE = "cruise"
     OPTIMAL_CRUISE = "optimal_cruise"
     BREGUET = "breguet"
@@ -240,6 +244,7 @@ class SegmentNames(Enum):
         """
         segments = {
             cls.ALTITUDE_CHANGE.value: AltitudeChangeSegment,
+            cls.TRANSITION.value: DummyTransitionSegment,
             cls.CRUISE.value: ClimbAndCruiseSegment,
             cls.OPTIMAL_CRUISE.value: OptimalCruiseSegment,
             cls.BREGUET.value: BreguetCruiseSegment,
