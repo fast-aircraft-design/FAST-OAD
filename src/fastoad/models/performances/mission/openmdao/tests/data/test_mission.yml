@@ -95,3 +95,6 @@ mission:
   name: operational
   steps:
     - route: main_route
+    - reserve:
+        ref: main_route
+        multiplier: 0.03
