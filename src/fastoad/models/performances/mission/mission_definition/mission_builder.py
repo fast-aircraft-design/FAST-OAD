@@ -50,10 +50,6 @@ BASE_UNITS = {
 
 
 class MissionBuilder:
-    """
-    This class builds and computes a mission from a provided definition.
-    """
-
     def __init__(
         self,
         mission_definition: Union[str, MissionDefinition],
@@ -93,6 +89,11 @@ class MissionBuilder:
     @reference_area.setter
     def reference_area(self, reference_area: float):
         self._base_kwargs["reference_area"] = reference_area
+
+    @property
+    def mission_name(self) -> str:
+        """The mission name as defined in input file."""
+        return self.definition[MISSION_DEFINITION_TAG]["name"]
 
     def build(self, inputs: Optional[Mapping] = None) -> FlightSequence:
         """
@@ -168,7 +169,7 @@ class MissionBuilder:
         """
         mission = FlightSequence()
 
-        mission.name = self.definition[MISSION_DEFINITION_TAG]["name"]
+        mission.name = self.mission_name
         for part_spec in self.definition[MISSION_DEFINITION_TAG][STEPS_TAG]:
             part_type = "route" if "route" in part_spec else "phase"
             if part_type == "route":
