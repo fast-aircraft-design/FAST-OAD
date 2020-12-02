@@ -143,3 +143,6 @@ mission:
     - route: diversion
     - phase: holding
     - phase: taxi_in
+    - reserve:
+        ref: main_route
+        multiplier: 0.03

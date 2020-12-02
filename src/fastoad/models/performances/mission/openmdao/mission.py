@@ -254,20 +254,8 @@ class MissionComponent(om.ExplicitComponent):
         self.flight_points = self._mission.compute(inputs, outputs, end_of_takeoff)
 
         # Final ================================================================
-        first_point_name_items = self.flight_points.name.iloc[0].split(":")
-        i = first_point_name_items.index(self._mission.mission_name)
-        first_route_name = first_point_name_items[i + 1]
-        end_of_first_route = FlightPoint.create(
-            self.flight_points.loc[
-                self.flight_points.name.str.contains(
-                    "%s:%s" % (self._mission.mission_name, first_route_name)
-                )
-            ].iloc[-1]
-        )
         end_of_mission = FlightPoint.create(self.flight_points.iloc[-1])
-
-        fuel_route = inputs[self._mission_vars.TOW.value] - end_of_first_route.mass
-        zfw = end_of_mission.mass - 0.03 * fuel_route
+        zfw = end_of_mission.mass - self._mission.get_reserve(self.flight_points)
         outputs[self._mission_vars.BLOCK_FUEL.value] = inputs[self._mission_vars.TOW.value] - zfw
 
         if self.options["out_file"]:

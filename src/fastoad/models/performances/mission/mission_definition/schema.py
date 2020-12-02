@@ -51,6 +51,7 @@ from ..segments.transition import DummyTransitionSegment
 SEGMENT_TAG = "segment"
 ROUTE_TAG = "route"
 PHASE_TAG = "phase"
+RESERVE_TAG = "reserve"
 CRUISE_TYPE_TAG = "cruise_type"
 STEPS_TAG = "steps"
 MISSION_DEFINITION_TAG = "mission"
@@ -126,12 +127,19 @@ class MissionDefinition(dict):
                     YAML(step).revalidate(Map(cls._get_segment_mapping(CRUISE_TYPE_TAG)))
             Ensure(cruise_step_count).is_less_than_or_equal_to(1)
 
+        reserve_count = 0
         for step in content[MISSION_DEFINITION_TAG][STEPS_TAG]:
-            step_type, step_name = tuple(*step.items())
+            step_type, value = tuple(*step.items())
             if step_type == PHASE_TAG:
-                Ensure(step_name).is_in(content[PHASE_DEFINITIONS_TAG].keys())
+                Ensure(value).is_in(content[PHASE_DEFINITIONS_TAG].keys())
             elif step_type == ROUTE_TAG:
-                Ensure(step_name).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
+                Ensure(value).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
+            elif step_type == RESERVE_TAG:
+                reserve_count += 1
+                Ensure(value["ref"]).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
+        Ensure(reserve_count).is_less_than_or_equal_to(1)
+        if reserve_count == 1:
+            Ensure(step_type).equals(RESERVE_TAG)
 
     @staticmethod
     def _process_polar_definition(struct: YAML):
@@ -220,6 +228,9 @@ class MissionDefinition(dict):
                     {
                         Optional(ROUTE_TAG, default=None): Str(),
                         Optional(PHASE_TAG, default=None): Str(),
+                        Optional(RESERVE_TAG, default=None): Map(
+                            {"ref": Str(), "multiplier": Float() | Str()}
+                        ),
                     }
                 )
             ),

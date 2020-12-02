@@ -21,7 +21,7 @@ phase_definitions:
             value: 250
             unit: NM
         mass_ratio: 0.997
-        reserve_mass_ratio: 0.01
+        reserve_mass_ratio: 0.013
 
 route_definitions:
   main_route:

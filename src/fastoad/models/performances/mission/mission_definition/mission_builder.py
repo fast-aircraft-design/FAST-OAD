@@ -18,6 +18,7 @@ from copy import deepcopy
 from typing import Mapping, Union, Dict, Optional, List, Tuple
 
 import openmdao.api as om
+import pandas as pd
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
@@ -36,6 +37,7 @@ from .schema import (
     CRUISE_TYPE_TAG,
     SegmentNames,
     MissionDefinition,
+    RESERVE_TAG,
 )
 from ..routes import SimpleRoute, RangedRoute
 
@@ -171,17 +173,40 @@ class MissionBuilder:
 
         mission.name = self.mission_name
         for part_spec in self.definition[MISSION_DEFINITION_TAG][STEPS_TAG]:
-            part_type = "route" if "route" in part_spec else "phase"
-            if part_type == "route":
+            if "route" in part_spec:
                 part = routes[part_spec["route"]]
-            else:
+            elif "phase" in part_spec:
                 part = phases[part_spec["phase"]]
+            else:
+                continue
             part.name = list(part_spec.values())[0]
             mission.flight_sequence.append(part)
 
         self._propagate_name(mission, mission.name)
 
         return mission
+
+    def get_reserve(self, flight_points: pd.DataFrame) -> float:
+        """
+        Computes the reserve fuel according to definition in mission input file.
+
+        :param flight_points: the dataframe returned by compute_from() method of the
+                              instance returned by :meth:`build`
+        :return: the reserve fuel mass in kg, or 0.0 if no reserve is defined.
+        """
+
+        last_part_spec = self.definition[MISSION_DEFINITION_TAG][STEPS_TAG][-1]
+        if RESERVE_TAG in last_part_spec:
+            ref_name = last_part_spec[RESERVE_TAG]["ref"]
+            multiplier = last_part_spec[RESERVE_TAG]["multiplier"]
+
+            route_points = flight_points.loc[
+                flight_points.name.str.contains("%s:%s" % (self.mission_name, ref_name))
+            ]
+            consumed_mass = route_points.mass.iloc[0] - route_points.mass.iloc[-1]
+            return consumed_mass * multiplier
+
+        return 0.0
 
     def _propagate_name(self, part: IFlightPart, new_name: str):
         """

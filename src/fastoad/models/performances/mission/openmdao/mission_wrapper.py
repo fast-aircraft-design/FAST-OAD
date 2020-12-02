@@ -143,7 +143,7 @@ class MissionWrapper(MissionBuilder):
             if PHASE_TAG in step:
                 phase_name = step[PHASE_TAG]
                 output_definition.update(self._add_vars(self.mission_name, phase_name=phase_name))
-            else:
+            elif ROUTE_TAG in step:
                 route_name = step[ROUTE_TAG]
                 output_definition.update(self._add_vars(self.mission_name, route_name))
                 route_definition = self.definition[ROUTE_DEFINITIONS_TAG][route_name]
