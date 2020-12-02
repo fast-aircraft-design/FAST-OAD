@@ -21,7 +21,19 @@ from os import PathLike
 from typing import Union, Set
 
 from ensure import Ensure
-from strictyaml import load, Map, MapPattern, Optional, Str, Float, Seq, Any, YAML, CommaSeparated
+from strictyaml import (
+    load,
+    Map,
+    MapPattern,
+    Optional,
+    Str,
+    Float,
+    Bool,
+    Seq,
+    Any,
+    YAML,
+    CommaSeparated,
+)
 
 from fastoad.base.flight_point import FlightPoint
 from ..segments.altitude_change import AltitudeChangeSegment
@@ -154,6 +166,8 @@ class MissionDefinition(dict):
         polar_coeff_schema = CommaSeparated(Float()) | Str()
         polar_schema = Map({"CL": polar_coeff_schema, "CD": polar_coeff_schema}) | Str()
         return {
+            # TODO: this mapping covers all possible segments, but some options are relevant
+            #  only for some segments. A better check could be done in second-pass validation.
             Optional("target", default=None): cls._get_target_schema(),
             Optional("engine_setting", default=None): Str(),
             Optional(POLAR_TAG, default=None): polar_schema,
@@ -163,6 +177,7 @@ class MissionDefinition(dict):
             Optional("maximum_flight_level", default=None): Float() | Str(),
             Optional("mass_ratio", default=None): Float() | Str(),
             Optional("reserve_mass_ratio", default=None): Float() | Str(),
+            Optional("use_max_lift_drag_ratio", default=None): Bool() | Str(),
         }
 
     @classmethod
