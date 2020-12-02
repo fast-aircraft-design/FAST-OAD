@@ -285,13 +285,13 @@ def mass_breakdown_bar_plot(
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     # pylint: disable=invalid-name # that's a common naming
-    MTOW = convert_units(
+    mtow = convert_units(
         variables["data:weight:aircraft:MTOW"].value[0],
         variables["data:weight:aircraft:MTOW"].units,
         "kg",
     )
     # pylint: disable=invalid-name # that's a common naming
-    OWE = convert_units(
+    owe = convert_units(
         variables["data:weight:aircraft:OWE"].value[0],
         variables["data:weight:aircraft:OWE"].units,
         "kg",
@@ -318,7 +318,7 @@ def mass_breakdown_bar_plot(
     i = len(fig.data)
 
     weight_labels = ["MTOW", "OWE", "Fuel - Mission", "Payload"]
-    weight_values = [MTOW, OWE, fuel_mission, payload]
+    weight_values = [mtow, owe, fuel_mission, payload]
     fig.add_trace(
         go.Bar(name="", x=weight_labels, y=weight_values, marker_color=COLS[i], showlegend=False),
         row=1,
@@ -361,12 +361,12 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    MTOW = convert_units(
+    mtow = convert_units(
         variables["data:weight:aircraft:MTOW"].value[0],
         variables["data:weight:aircraft:MTOW"].units,
         "kg",
     )
-    OWE = convert_units(
+    owe = convert_units(
         variables["data:weight:aircraft:OWE"].value[0],
         variables["data:weight:aircraft:OWE"].units,
         "kg",
@@ -383,36 +383,36 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     )
 
     # TODO: Deal with this in a more generic manner ?
-    if round(MTOW, 6) == round(OWE + payload + fuel_mission, 6):
-        MTOW = OWE + payload + fuel_mission
+    if round(mtow, 6) == round(owe + payload + fuel_mission, 6):
+        mtow = owe + payload + fuel_mission
 
     fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]],)
 
     fig.add_trace(
         go.Sunburst(
             labels=[
-                "MTOW" + "<br>" + str(int(MTOW)) + " [kg]",
+                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
                 "payload"
                 + "<br>"
                 + str(int(payload))
                 + " [kg] ("
-                + str(round(payload / MTOW * 100, 1))
+                + str(round(payload / mtow * 100, 1))
                 + "%)",
                 "fuel_mission"
                 + "<br>"
                 + str(int(fuel_mission))
                 + " [kg] ("
-                + str(round(fuel_mission / MTOW * 100, 1))
+                + str(round(fuel_mission / mtow * 100, 1))
                 + "%)",
-                "OWE" + "<br>" + str(int(OWE)) + " [kg] (" + str(round(OWE / MTOW * 100, 1)) + "%)",
+                "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / mtow * 100, 1)) + "%)",
             ],
             parents=[
                 "",
-                "MTOW" + "<br>" + str(int(MTOW)) + " [kg]",
-                "MTOW" + "<br>" + str(int(MTOW)) + " [kg]",
-                "MTOW" + "<br>" + str(int(MTOW)) + " [kg]",
+                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
+                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
+                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
             ],
-            values=[MTOW, payload, fuel_mission, OWE],
+            values=[mtow, payload, fuel_mission, owe],
             branchvalues="total",
         ),
         1,
@@ -438,13 +438,12 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
                     + "<br>"
                     + str(int(variables[variable].value[0]))
                     + " [kg] ("
-                    + str(round(variables[variable].value[0] / OWE * 100, 1))
+                    + str(round(variables[variable].value[0] / owe * 100, 1))
                     + "%)"
                 )
     sub_categories_values = []
     sub_categories_names = []
     sub_categories_parent = []
-    sum_categories = np.zeros(len(categories_names))
     for variable in variables.names():
         name_split = variable.split(":")
         if isinstance(name_split, list) and len(name_split) >= 5:
@@ -458,14 +457,14 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
                 sub_categories_names.append(variable_name)
 
     # Define figure data
-    figure_labels = ["OWE" + "<br>" + str(int(OWE)) + " [kg]"]
+    figure_labels = ["OWE" + "<br>" + str(int(owe)) + " [kg]"]
     figure_labels.extend(categories_labels)
     figure_labels.extend(sub_categories_names)
     figure_parents = [""]
-    for idx in range(len(categories_names)):
-        figure_parents.append("OWE" + "<br>" + str(int(OWE)) + " [kg]")
+    for _ in categories_names:
+        figure_parents.append("OWE" + "<br>" + str(int(owe)) + " [kg]")
     figure_parents.extend(sub_categories_parent)
-    figure_values = [OWE]
+    figure_values = [owe]
     figure_values.extend(categories_values)
     figure_values.extend(sub_categories_values)
 
