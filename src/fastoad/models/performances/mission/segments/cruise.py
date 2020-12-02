@@ -208,6 +208,8 @@ class BreguetCruiseSegment(CruiseSegment):
     when FlightPoint.thrust is provided.
     """
 
+    use_max_lift_drag_ratio: bool = False
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         self.complete_flight_point(start)
 
@@ -231,7 +233,10 @@ class BreguetCruiseSegment(CruiseSegment):
         :return: (mass at end of cruise) / (mass at start of cruise)
         """
 
-        lift_drag_ratio = start.CL / start.CD
+        if self.use_max_lift_drag_ratio:
+            lift_drag_ratio = self.polar.optimal_cl / self.polar.cd(self.polar.optimal_cl)
+        else:
+            lift_drag_ratio = start.CL / start.CD
         start.thrust = start.mass / lift_drag_ratio * g
         self.propulsion.compute_flight_points(start)
 

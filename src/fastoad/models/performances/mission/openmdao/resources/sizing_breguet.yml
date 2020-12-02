@@ -35,6 +35,7 @@ route_definitions:
       - cruise_type: breguet
         engine_setting: cruise
         polar: data:aerodynamics:aircraft:cruise
+        use_max_lift_drag_ratio : true
       - phase: descent
 
 mission:
