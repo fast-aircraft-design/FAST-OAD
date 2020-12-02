@@ -14,7 +14,7 @@ Mission wrapper.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Union, Dict, Tuple, List
+from typing import Dict, Tuple
 
 import numpy as np
 import openmdao.api as om
@@ -23,11 +23,9 @@ from openmdao.vectors.vector import Vector
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
-from fastoad.models.propulsion import IPropulsion
 from ..base import FlightSequence
 from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.schema import (
-    MissionDefinition,
     MISSION_DEFINITION_TAG,
     STEPS_TAG,
     PHASE_TAG,
@@ -45,56 +43,10 @@ BASE_UNITS = {
 }
 
 
-class MissionWrapper:
+class MissionWrapper(MissionBuilder):
     """
-    This class builds and computes a mission from a provided definition.
+    Wrapper around :class:`MissionBuilder` for using with OpenMDAO
     """
-
-    def __init__(
-        self,
-        mission_definition: Union[str, MissionDefinition],
-        propulsion: IPropulsion = None,
-        reference_area: float = None,
-    ):
-        """
-        This class builds and computes a mission from a provided definition.
-
-        :param mission_definition: as file path or MissionDefinition instance
-        :param propulsion: if not provided, the property :attr:`propulsion` must be
-                           set before calling :meth:`compute`
-        :param reference_area: if not provided, the property :attr:`reference_area` must be
-                               set before calling :meth:`compute`
-        """
-
-        self._mission_builder: MissionBuilder = MissionBuilder(
-            mission_definition, propulsion, reference_area
-        )
-
-    @property
-    def propulsion(self) -> IPropulsion:
-        """Propulsion model for performance computation."""
-        return self._mission_builder.propulsion
-
-    @propulsion.setter
-    def propulsion(self, propulsion: IPropulsion):
-        self._mission_builder.propulsion = propulsion
-
-    @property
-    def reference_area(self) -> float:
-        """Reference area for aerodynamic polar."""
-        return self._mission_builder.reference_area
-
-    @reference_area.setter
-    def reference_area(self, reference_area: float):
-        self._mission_builder.reference_area = reference_area
-
-    @property
-    def definition(self):
-        return self._mission_builder.definition
-
-    @property
-    def mission_name(self) -> str:
-        return self.definition[MISSION_DEFINITION_TAG]["name"]
 
     def setup(self, component: om.ExplicitComponent):
         """
@@ -105,7 +57,7 @@ class MissionWrapper:
         :param component: the OpenMDAO component where the setup is done.
         """
         input_definition = {}
-        self._mission_builder.identify_inputs(input_definition)
+        self.identify_inputs(input_definition)
         output_definition = self._identify_outputs()
         output_definition = {
             name: value for name, value in output_definition.items() if name not in input_definition
@@ -118,12 +70,6 @@ class MissionWrapper:
 
         for name, (units, desc) in output_definition.items():
             component.add_output(name, units=units, desc=desc)
-
-    def get_route_ranges(self, inputs) -> List[float]:
-        return self._mission_builder.get_route_ranges(inputs)
-
-    def get_route_cruise_speeds(self, inputs) -> List[Tuple[str, float]]:
-        return self._mission_builder.get_route_cruise_speeds(inputs)
 
     def compute(
         self, inputs: Vector, outputs: Vector, start_flight_point: FlightPoint
@@ -141,7 +87,7 @@ class MissionWrapper:
         :return: a pandas DataFrame where columns names match
                  :meth:`fastoad.base.flight_point.FlightPoint.get_attribute_keys`
         """
-        mission = self._mission_builder.build(inputs)
+        mission = self.build(inputs)
 
         def _compute_vars(name_root, start: FlightPoint, end: FlightPoint):
             """Computes duration, burned fuel and covered distance."""
