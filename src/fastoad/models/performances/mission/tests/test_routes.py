@@ -24,7 +24,7 @@ import os.path as pth
 from abc import ABC
 from os import mkdir
 from shutil import rmtree
-from typing import Dict, List, Union
+from typing import List, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -41,7 +41,7 @@ from fastoad.models.performances.mission.base import (
     FlightSequence,
 )
 from fastoad.models.performances.mission.polar import Polar
-from fastoad.models.performances.mission.routes import SimpleRoute, RangedRoute
+from fastoad.models.performances.mission.routes import RangedRoute
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
@@ -138,18 +138,37 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     propulsion = FuelEngineSet(engine, 2)
 
     total_distance = 2.0e6
-    flight_calculator = RangedRoute(
-        StandardFlight(
-            propulsion=propulsion,
-            reference_area=120.0,
-            low_speed_climb_polar=low_speed_polar,
-            high_speed_polar=high_speed_polar,
-            cruise_mach=0.78,
-            thrust_rates={FlightPhase.CLIMB: 0.93, FlightPhase.DESCENT: 0.2},
-        ),
-        flight_distance=total_distance,
+
+    kwargs = dict(propulsion=propulsion, reference_area=120.0,)
+    initial_climb = InitialClimbPhase(
+        **kwargs, polar=low_speed_polar, thrust_rate=1.0, name="initial_climb", time_step=0.2,
+    )
+    climb = ClimbPhase(
+        **kwargs,
+        polar=high_speed_polar,
+        thrust_rate=0.93,
+        target_altitude="mach",
+        maximum_mach=0.78,
+        name="climb",
+        time_step=5.0,
+    )
+    cruise = CruiseSegment(
+        **kwargs,
+        target=FlightPoint(ground_distance=0.0),
+        polar=high_speed_polar,
+        engine_setting=EngineSetting.CRUISE,
+        name=FlightPhase.CRUISE.value,
+    )
+    descent = DescentPhase(
+        **kwargs,
+        polar=high_speed_polar,
+        thrust_rate=0.2,
+        target_altitude=1500.0 * foot,
+        name=FlightPhase.DESCENT.value,
+        time_step=5.0,
     )
 
+    flight_calculator = RangedRoute([initial_climb, climb], cruise, [descent], total_distance)
     assert flight_calculator.cruise_speed == ("mach", 0.78)
 
     start = FlightPoint(
@@ -166,104 +185,7 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     )
 
 
-# We define here in Python the StandardFlight class that feeds the test of RangedRoute ============
-
-
-class StandardFlight(SimpleRoute):
-    """
-    Defines and computes a standard flight mission.
-
-    The flight sequence is:
-    - initial climb
-    - climb
-    - cruise at constant altitude
-    - descent
-    """
-
-    def __init__(
-        self,
-        propulsion: IPropulsion,
-        reference_area: float,
-        low_speed_climb_polar: Polar,
-        high_speed_polar: Polar,
-        cruise_mach: float,
-        thrust_rates: Dict[FlightPhase, float],
-        cruise_distance: float = 0.0,
-        climb_target_altitude: float = AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL,
-        descent_target_altitude: float = 1500.0 * foot,
-        time_step=None,
-    ):
-        """
-
-        :param propulsion:
-        :param reference_area:
-        :param low_speed_climb_polar:
-        :param high_speed_polar:
-        :param cruise_mach:
-        :param thrust_rates:
-        :param cruise_distance:
-        :param climb_target_altitude: (in m) altitude where cruise will begin. If value is
-                                      AltitudeChangeSegment.OPTIMAL_ALTITUDE (default), climb will
-                                      stop when maximum lift/drag ratio is achieved. Cruise will go
-                                      on at the same altitude.
-        :param descent_target_altitude: (in m) altitude where descent will end in meters
-                                        Default is 457.2m (1500ft)
-        :param time_step: if provided, this time step will be applied for all segments.
-        """
-
-        self.flight_phase_kwargs = {
-            "propulsion": propulsion,
-            "reference_area": reference_area,
-            "time_step": time_step,
-        }
-
-        self.low_speed_climb_polar = low_speed_climb_polar
-        self.high_speed_polar = high_speed_polar
-        self.cruise_mach = cruise_mach
-        self.thrust_rates = thrust_rates
-        self.climb_target_altitude = climb_target_altitude
-        self.descent_target_altitude = descent_target_altitude
-        self.time_step = time_step
-
-        kwargs = {
-            "propulsion": propulsion,
-            "reference_area": reference_area,
-        }
-
-        initial_climb = InitialClimbPhase(
-            **kwargs,
-            polar=low_speed_climb_polar,
-            thrust_rate=1.0,
-            name=FlightPhase.INITIAL_CLIMB.value,
-            time_step=0.2,
-        )
-        climb = ClimbPhase(
-            **kwargs,
-            polar=high_speed_polar,
-            thrust_rate=thrust_rates[FlightPhase.CLIMB],
-            target_altitude=self.climb_target_altitude,
-            maximum_mach=self.cruise_mach,
-            name=FlightPhase.CLIMB.value,
-            time_step=5.0,
-        )
-        cruise = CruiseSegment(
-            **kwargs,
-            target=FlightPoint(ground_distance=cruise_distance),
-            polar=high_speed_polar,
-            engine_setting=EngineSetting.CRUISE,
-            name=FlightPhase.CRUISE.value,
-        )
-        descent = DescentPhase(
-            **kwargs,
-            polar=high_speed_polar,
-            thrust_rate=thrust_rates[FlightPhase.DESCENT],
-            target_altitude=self.descent_target_altitude,
-            name=FlightPhase.DESCENT.value,
-            time_step=5.0,
-        )
-        super().__init__(
-            [initial_climb, climb], cruise, [descent],
-        )
+# We define here in Python the flight phases that feed the test of RangedRoute ============
 
 
 class AbstractManualThrustFlightPhase(FlightSequence, ABC):

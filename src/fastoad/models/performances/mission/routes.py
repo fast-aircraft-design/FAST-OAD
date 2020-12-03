@@ -15,7 +15,7 @@ Classes for computation of routes (i.e. assemblies of climb, cruise and descent 
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import List, Union, Tuple, Optional
+from typing import List, Tuple, Optional
 
 import pandas as pd
 from scipy.optimize import root_scalar
@@ -88,30 +88,26 @@ class SimpleRoute(FlightSequence):
         return self.climb_phases + [self.cruise_segment] + self.descent_phases
 
 
-class RangedRoute(FlightSequence):
+@dataclass
+class RangedRoute(SimpleRoute):
     """
-    Computes a route so that it covers the specified distance.
+    Computes a route so that it covers the specified ground distance.
     """
 
-    def __init__(
-        self, route_definition: SimpleRoute, flight_distance: float,
-    ):
-        """
-        Computes the route and adjust the cruise distance to achieve the provided flight distance.
+    #: Target ground distance for whole route
+    flight_distance: float
 
-        :param route_definition:
-        :param flight_distance: in meters
-        """
-        super().__init__()
-        self.flight_distance = flight_distance
-        self.flight = route_definition
+    #: Accuracy on actual total ground distance for the solver. In meters
+    distance_accuracy: float = 0.5e3
+
+    def __post_init__(self):
+        super().__post_init__()
         self.flight_points = None
-        self.distance_accuracy = 0.5e3
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         def compute_flight(cruise_distance):
-            self.flight.cruise_distance = cruise_distance
-            self.flight_points = self.flight.compute_from(start)
+            self.cruise_distance = cruise_distance
+            self.flight_points = super(RangedRoute, self).compute_from(start)
             obtained_distance = (
                 self.flight_points.iloc[-1].ground_distance
                 - self.flight_points.iloc[0].ground_distance
@@ -126,14 +122,3 @@ class RangedRoute(FlightSequence):
             method="secant",
         )
         return self.flight_points
-
-    @property
-    def flight_sequence(self) -> List[Union[IFlightPart, str]]:
-        return self.flight.flight_sequence
-
-    @property
-    def cruise_speed(self) -> Tuple[str, float]:
-        """
-        Type (among `true_airspeed`, `equivalent_airspeed` and `mach`) and value of cruise speed.
-        """
-        return self.flight.cruise_speed
