@@ -39,7 +39,7 @@ from .schema import (
     MissionDefinition,
     RESERVE_TAG,
 )
-from ..routes import SimpleRoute, RangedRoute
+from ..routes import RangedRoute
 
 BASE_UNITS = {
     "altitude": "m",
@@ -260,13 +260,13 @@ class MissionBuilder:
                     )
                     climb = False
 
-            sequence = SimpleRoute(climb_phases, cruise_phase, descent_phases)
-            sequence.name = route_name
             self._parse_target(definition)
             flight_range = definition["range"]
             if isinstance(flight_range, str):
                 flight_range = inputs[definition["range"]]
-            routes[route_name] = RangedRoute(sequence, flight_range)
+            route = RangedRoute(climb_phases, cruise_phase, descent_phases, flight_range)
+            route.name = route_name
+            routes[route_name] = route
 
         return routes
 
