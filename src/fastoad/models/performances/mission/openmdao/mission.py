@@ -49,7 +49,6 @@ class Mission(om.Group):
         self.options.declare("add_solver", default=True, types=bool)
 
     def setup(self):
-
         if not self.options["mission_file_path"]:
             # If no mission_file_path provided, the default mission is applied
             self.options["mission_file_path"] = "::sizing_mission"
@@ -113,6 +112,7 @@ class Mission(om.Group):
 
     @property
     def flight_points(self) -> pd.DataFrame:
+        """Dataframe that lists all computed flight point data."""
         return self.mission_computation.flight_points
 
 

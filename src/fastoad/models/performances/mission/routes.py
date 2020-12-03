@@ -77,6 +77,8 @@ class SimpleRoute(FlightSequence):
                 if speed_value and speed_value != FlightSegment.CONSTANT_VALUE:
                     return speed_param, speed_value
 
+        return None
+
     def _get_flight_sequence(self) -> List[IFlightPart]:
         # The preliminary climb segment of the cruise segment is set to the
         # last segment before cruise.
