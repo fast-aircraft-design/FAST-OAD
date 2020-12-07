@@ -1,7 +1,7 @@
 """
 Defines the analysis and plotting functions for postprocessing
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from fastoad.io import VariableIO
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
+# pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
@@ -35,8 +36,8 @@ def wing_geometry_plot(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
     :return: wing plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -109,8 +110,8 @@ def aircraft_geometry_plot(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
     :return: wing plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -236,8 +237,8 @@ def drag_polar_plot(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
     :return: wing plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -278,29 +279,30 @@ def mass_breakdown_bar_plot(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
     :return: bar plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    # pylint: disable=invalid-name # that's a common naming
     mtow = convert_units(
         variables["data:weight:aircraft:MTOW"].value[0],
         variables["data:weight:aircraft:MTOW"].units,
         "kg",
     )
-    # pylint: disable=invalid-name # that's a common naming
+
     owe = convert_units(
         variables["data:weight:aircraft:OWE"].value[0],
         variables["data:weight:aircraft:OWE"].units,
         "kg",
     )
+
     payload = convert_units(
         variables["data:weight:aircraft:payload"].value[0],
         variables["data:weight:aircraft:payload"].units,
         "kg",
     )
+
     fuel_mission = convert_units(
         variables["data:mission:sizing:fuel"].value[0],
         variables["data:mission:sizing:fuel"].units,
@@ -355,8 +357,8 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     Each design can be provided a name.
 
     :param aircraft_file_path: path of data file
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
     :return: sunburst plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
