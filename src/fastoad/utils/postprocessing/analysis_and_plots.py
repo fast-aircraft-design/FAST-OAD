@@ -294,6 +294,7 @@ def mass_breakdown_bar_plot(
         "data:mission:sizing:fuel": "kg",
     }
 
+    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
     mtow, owe, payload, fuel_mission = _get_variable_values_with_new_units(
         variables, var_names_and_new_units
     )
@@ -317,20 +318,12 @@ def mass_breakdown_bar_plot(
     )
 
     # Get data:weight decomposition
-    weight_values = []
-    weight_labels = []
-    for variable in variables.names():
-        name_split = variable.split(":")
-        if isinstance(name_split, list) and len(name_split) == 4:
-            if name_split[0] + name_split[1] + name_split[3] == "dataweightmass" and not (
-                "aircraft" in name_split[2]
-            ):
-                weight_values.append(
-                    convert_units(variables[variable].value[0], variables[variable].units, "kg")
-                )
-                weight_labels.append(name_split[2])
+    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
+    main_weight_values, main_weight_names = _data_weight_decomposition(variables, owe=None)
     fig.add_trace(
-        go.Bar(name=name, x=weight_labels, y=weight_values, marker_color=COLS[i]), row=1, col=2,
+        go.Bar(name=name, x=main_weight_names, y=main_weight_values, marker_color=COLS[i]),
+        row=1,
+        col=2,
     )
 
     fig.update_layout(yaxis_title="[kg]")
@@ -359,6 +352,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
         "data:mission:sizing:fuel": "kg",
     }
 
+    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
     mtow, owe, payload, fuel_mission = _get_variable_values_with_new_units(
         variables, var_names_and_new_units
     )
@@ -401,27 +395,10 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     )
 
     # Get data:weight 2-levels decomposition
-    categories_values = []
-    categories_names = []
-    categories_labels = []
-    for variable in variables.names():
-        name_split = variable.split(":")
-        if isinstance(name_split, list) and len(name_split) == 4:
-            if name_split[0] + name_split[1] + name_split[3] == "dataweightmass" and not (
-                "aircraft" in name_split[2]
-            ):
-                categories_values.append(
-                    convert_units(variables[variable].value[0], variables[variable].units, "kg")
-                )
-                categories_names.append(name_split[2])
-                categories_labels.append(
-                    name_split[2]
-                    + "<br>"
-                    + str(int(variables[variable].value[0]))
-                    + " [kg] ("
-                    + str(round(variables[variable].value[0] / owe * 100, 1))
-                    + "%)"
-                )
+    categories_values, categories_names, categories_labels = _data_weight_decomposition(
+        variables, owe=owe
+    )
+
     sub_categories_values = []
     sub_categories_names = []
     sub_categories_parent = []
@@ -484,3 +461,42 @@ def _get_variable_values_with_new_units(
         )
 
     return new_values
+
+
+def _data_weight_decomposition(variables: VariableIO, owe=None):
+    """
+    Returns the two level weight decomposition of MTOW and optionally the decomposition of owe
+    subcategories.
+
+    :param variables: instance containing variables information
+    :param owe: value of OWE, if provided names of owe subcategories will be provided
+    :return: variable values, names and optionally owe subcategories names
+    """
+    categories_values = []
+    categories_names = []
+    owe_subcategories_names = []
+    for variable in variables.names():
+        name_split = variable.split(":")
+        if isinstance(name_split, list) and len(name_split) == 4:
+            if name_split[0] + name_split[1] + name_split[3] == "dataweightmass" and not (
+                "aircraft" in name_split[2]
+            ):
+                categories_values.append(
+                    convert_units(variables[variable].value[0], variables[variable].units, "kg")
+                )
+                categories_names.append(name_split[2])
+                if owe:
+                    owe_subcategories_names.append(
+                        name_split[2]
+                        + "<br>"
+                        + str(int(variables[variable].value[0]))
+                        + " [kg] ("
+                        + str(round(variables[variable].value[0] / owe * 100, 1))
+                        + "%)"
+                    )
+    if owe:
+        result = categories_values, categories_names, owe_subcategories_names
+    else:
+        result = categories_values, categories_names
+
+    return result
