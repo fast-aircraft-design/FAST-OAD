@@ -24,7 +24,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
     [model.weight]
         id = "fastoad.weight.legacy"
     [model.mtow]
-        id = "fastoad.mass_performances.link_MTOW"
+        id = "fastoad.mass_performances.compute_MTOW"
     [model.aerodynamics_highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
     [model.aerodynamics_lowspeed]
@@ -35,8 +35,12 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false
     [model.performance]
-        id = "fastoad.performances.breguet"
+        id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
+        mission_file_path = "::sizing_breguet"
+        compute_TOW = true
+        add_solver = false
+        is_sizing = true
 #    [model.performance]
 #        id = "fastoad.performances.sizing_mission"
 #        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"

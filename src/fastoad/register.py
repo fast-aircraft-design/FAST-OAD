@@ -3,7 +3,7 @@ This module is for registering all internal OpenMDAO modules that we want
 available through RegisterOpenMDAOSystem
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,10 +23,12 @@ from fastoad.models.geometry import Geometry
 from fastoad.models.handling_qualities.compute_static_margin import ComputeStaticMargin
 from fastoad.models.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from fastoad.models.loops.compute_wing_area import ComputeWingArea
-from fastoad.models.performances.breguet import OMBreguet
-from fastoad.models.performances.mission.openmdao.link_mtow import LinkMTOW
+from fastoad.models.performances.mission.openmdao.link_mtow import ComputeMTOW
 from fastoad.models.performances.mission.openmdao.mission import Mission
-from fastoad.models.propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
+from fastoad.models.propulsion.fuel_propulsion.rubber_engine import (
+    OMRubberEngineComponent,
+    OMRubberEngineWrapper,
+)
 from fastoad.models.weight.weight import Weight
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterPropulsion, RegisterOpenMDAOSystem
@@ -72,20 +74,15 @@ def register_openmdao_systems():
     # Loops #######################################################################
     RegisterOpenMDAOSystem("fastoad.loop.wing_area", domain=ModelDomain.OTHER)(ComputeWingArea)
 
-    RegisterOpenMDAOSystem(
-        "fastoad.mass_performances.link_MTOW", domain=ModelDomain.OTHER
-    )(LinkMTOW)
+    RegisterOpenMDAOSystem("fastoad.mass_performances.compute_MTOW", domain=ModelDomain.OTHER)(
+        ComputeMTOW
+    )
 
     # Weight ######################################################################
     RegisterOpenMDAOSystem("fastoad.weight.legacy", domain=ModelDomain.WEIGHT)(Weight)
-    # Performance #################################################################
-    RegisterOpenMDAOSystem("fastoad.performances.breguet", domain=ModelDomain.PERFORMANCE)(
-        OMBreguet
-    )
 
-    RegisterOpenMDAOSystem(
-         "fastoad.performances.mission", domain=ModelDomain.PERFORMANCE
-    )(Mission)
+    # Performance #################################################################
+    RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)(Mission)
 
     # Propulsion ##################################################################
     rubber_engine_description = """

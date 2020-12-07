@@ -21,7 +21,7 @@ import openmdao.api as om
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-class LinkMTOW(om.AddSubtractComp):
+class ComputeMTOW(om.AddSubtractComp):
     """
     Computes MTOW from OWE, design payload and consumed fuel in sizing mission.
     """
@@ -36,7 +36,7 @@ class LinkMTOW(om.AddSubtractComp):
             [
                 "data:weight:aircraft:OWE",
                 "data:weight:aircraft:payload",
-                "data:mission:%s:needed_block_fuel" % self.options["mission_name"],
+                "data:weight:aircraft:sizing_block_fuel",
             ],
             units="kg",
         )
