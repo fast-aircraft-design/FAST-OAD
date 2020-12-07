@@ -294,7 +294,7 @@ def mass_breakdown_bar_plot(
         "data:mission:sizing:fuel": "kg",
     }
 
-    mtow, owe, payload, fuel_mission = get_variable_values_with_new_units(
+    mtow, owe, payload, fuel_mission = _get_variable_values_with_new_units(
         variables, var_names_and_new_units
     )
 
@@ -359,7 +359,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
         "data:mission:sizing:fuel": "kg",
     }
 
-    mtow, owe, payload, fuel_mission = get_variable_values_with_new_units(
+    mtow, owe, payload, fuel_mission = _get_variable_values_with_new_units(
         variables, var_names_and_new_units
     )
 
@@ -466,7 +466,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     return fig
 
 
-def get_variable_values_with_new_units(
+def _get_variable_values_with_new_units(
     variables: VariableIO, var_names_and_new_units: Dict[str, str]
 ):
     """
