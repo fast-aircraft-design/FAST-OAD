@@ -47,6 +47,7 @@ class Mission(om.Group):
         )
         self.options.declare("compute_TOW", default=True, types=bool)
         self.options.declare("add_solver", default=True, types=bool)
+        self.options.declare("is_sizing", default=False, types=bool)
 
     def setup(self):
         if not self.options["mission_file_path"]:
@@ -65,12 +66,17 @@ class Mission(om.Group):
         mission_name = mission_wrapper.mission_name
 
         self.set_input_defaults("data:weight:aircraft:OWE", np.nan, units="kg")
-        self.set_input_defaults("data:mission:%s:payload" % mission_name, np.nan, units="kg")
+
+        if self.options["is_sizing"]:
+            payload_var = "data:weight:aircraft:payload"
+        else:
+            payload_var = "data:mission:%s:payload" % mission_name
+            self.set_input_defaults("data:mission:%s:payload" % mission_name, np.nan, units="kg")
 
         zfw_computation = om.AddSubtractComp()
         zfw_computation.add_equation(
             "data:mission:%s:ZFW" % mission_name,
-            ["data:weight:aircraft:OWE", "data:mission:%s:payload" % mission_name],
+            ["data:weight:aircraft:OWE", payload_var],
             units="kg",
         )
         self.add_subsystem("ZFW_computation", zfw_computation, promotes=["*"])
@@ -138,6 +144,7 @@ class MissionComponent(om.ExplicitComponent):
         self.options.declare("out_file", default="", types=str)
         self.options.declare("breguet_iterations", default=2, types=int)
         self.options.declare("mission_wrapper", types=MissionWrapper)
+        self.options.declare("is_sizing", default=False, types=bool)
 
     def setup(self):
         self._engine_wrapper = self._get_engine_wrapper()
@@ -166,6 +173,8 @@ class MissionComponent(om.ExplicitComponent):
         self.add_input(self._mission_vars.TAKEOFF_V2.value, np.nan, units="m/s")
 
         self.add_output(self._mission_vars.BLOCK_FUEL.value, units="kg")
+        if self.options["is_sizing"]:
+            self.add_output("data:weight:aircraft:sizing_block_fuel", units="kg")
 
         self.declare_partials(["*"], ["*"])
 
@@ -273,6 +282,10 @@ class MissionComponent(om.ExplicitComponent):
         end_of_mission = FlightPoint.create(self.flight_points.iloc[-1])
         zfw = end_of_mission.mass - self._mission.get_reserve(self.flight_points)
         outputs[self._mission_vars.BLOCK_FUEL.value] = inputs[self._mission_vars.TOW.value] - zfw
+        if self.options["is_sizing"]:
+            outputs["data:weight:aircraft:sizing_block_fuel"] = outputs[
+                self._mission_vars.BLOCK_FUEL.value
+            ]
 
         if self.options["out_file"]:
             self.flight_points.to_csv(self.options["out_file"])

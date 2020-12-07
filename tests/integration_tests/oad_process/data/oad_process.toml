@@ -15,16 +15,20 @@ output_file = "../results/oad_process_outputs.xml"
     [model.weight]
         id = "fastoad.weight.legacy"
     [model.link_MTOW]
-        id = "fastoad.mass_performances.link_MTOW"
+        id = "fastoad.mass_performances.compute_MTOW"
     [model.aerodynamics]
         id = "fastoad.aerodynamics.highspeed.legacy"
     [model.aerodynamics_landing]
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false
     [model.performance]
-        id = "fastoad.performances.breguet"
-    [model.propulsion]
-        id = "fastoad.propulsion.rubber_engine"
+        id = "fastoad.performances.mission"
+        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
+        out_file = "../results/flight_points.csv"
+        mission_file_path = "::sizing_breguet"
+        compute_TOW = true
+        add_solver = false
+        is_sizing = true
     [model.hq.tail_sizing]
         id = "fastoad.handling_qualities.tail_sizing"
     [model.hq.static_margin]
