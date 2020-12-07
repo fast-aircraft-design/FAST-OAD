@@ -231,7 +231,7 @@ def test_mission_group_with_loop(cleanup):
         atol=1.0,
     )
     assert_allclose(
-        problem["data:mission:operational:needed_block_fuel"], 5580.0, atol=1.0,
+        problem["data:mission:operational:needed_block_fuel"], 5530.0, atol=1.0,
     )
 
 

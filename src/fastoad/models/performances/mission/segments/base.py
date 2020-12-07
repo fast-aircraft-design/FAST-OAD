@@ -52,11 +52,11 @@ class FlightSegment(IFlightPart):
     #: A IPropulsion instance that will be called at each time step.
     propulsion: IPropulsion
 
-    #: The reference area, in m**2.
-    reference_area: float
-
     #: The Polar instance that will provide drag data.
     polar: Polar
+
+    #: The reference area, in m**2.
+    reference_area: float
 
     #: Used time step for computation (actual time step can be lower at some particular times of
     #: the flight path).

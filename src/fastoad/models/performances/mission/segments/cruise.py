@@ -208,7 +208,13 @@ class BreguetCruiseSegment(CruiseSegment):
     when FlightPoint.thrust is provided.
     """
 
+    #: if True, max lift/drag ratio will be used instead of the one computed with polar using
+    #: CL deduced from mass and altitude.
+    #: In this case, reference_area parameter will be unused
     use_max_lift_drag_ratio: bool = False
+
+    #: The reference area, in m**2. Used only if use_max_lift_drag_ratio is False.
+    reference_area: float = 1.0
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         self.complete_flight_point(start)
