@@ -13,6 +13,8 @@ Defines the analysis and plotting functions for postprocessing
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from typing import Dict
+
 import numpy as np
 import plotly
 import plotly.graph_objects as go
@@ -285,28 +287,15 @@ def mass_breakdown_bar_plot(
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    mtow = convert_units(
-        variables["data:weight:aircraft:MTOW"].value[0],
-        variables["data:weight:aircraft:MTOW"].units,
-        "kg",
-    )
+    var_names_and_new_units = {
+        "data:weight:aircraft:MTOW": "kg",
+        "data:weight:aircraft:OWE": "kg",
+        "data:weight:aircraft:payload": "kg",
+        "data:mission:sizing:fuel": "kg",
+    }
 
-    owe = convert_units(
-        variables["data:weight:aircraft:OWE"].value[0],
-        variables["data:weight:aircraft:OWE"].units,
-        "kg",
-    )
-
-    payload = convert_units(
-        variables["data:weight:aircraft:payload"].value[0],
-        variables["data:weight:aircraft:payload"].units,
-        "kg",
-    )
-
-    fuel_mission = convert_units(
-        variables["data:mission:sizing:fuel"].value[0],
-        variables["data:mission:sizing:fuel"].units,
-        "kg",
+    mtow, owe, payload, fuel_mission = get_variable_values_with_new_units(
+        variables, var_names_and_new_units
     )
 
     if fig is None:
@@ -363,25 +352,15 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    mtow = convert_units(
-        variables["data:weight:aircraft:MTOW"].value[0],
-        variables["data:weight:aircraft:MTOW"].units,
-        "kg",
-    )
-    owe = convert_units(
-        variables["data:weight:aircraft:OWE"].value[0],
-        variables["data:weight:aircraft:OWE"].units,
-        "kg",
-    )
-    payload = convert_units(
-        variables["data:weight:aircraft:payload"].value[0],
-        variables["data:weight:aircraft:payload"].units,
-        "kg",
-    )
-    fuel_mission = convert_units(
-        variables["data:mission:sizing:fuel"].value[0],
-        variables["data:mission:sizing:fuel"].units,
-        "kg",
+    var_names_and_new_units = {
+        "data:weight:aircraft:MTOW": "kg",
+        "data:weight:aircraft:OWE": "kg",
+        "data:weight:aircraft:payload": "kg",
+        "data:mission:sizing:fuel": "kg",
+    }
+
+    mtow, owe, payload, fuel_mission = get_variable_values_with_new_units(
+        variables, var_names_and_new_units
     )
 
     # TODO: Deal with this in a more generic manner ?
@@ -485,3 +464,23 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     fig.update_layout(title_text="Mass Breakdown", title_x=0.5)
 
     return fig
+
+
+def get_variable_values_with_new_units(
+    variables: VariableIO, var_names_and_new_units: Dict[str, str]
+):
+    """
+    Returns the value of the requested variable names with respect to their new units in the order
+    in which their were given. This function works only for variable of value with shape=1 or float.
+
+    :param variables: instance containing variables information
+    :param var_names_and_new_units: dictionnary of the variable names as keys and units as value
+    :return: values of the requested variables with respect to their new units
+    """
+    new_values = []
+    for variable_name, unit in var_names_and_new_units.items():
+        new_values.append(
+            convert_units(variables[variable_name].value[0], variables[variable_name].units, unit,)
+        )
+
+    return new_values
