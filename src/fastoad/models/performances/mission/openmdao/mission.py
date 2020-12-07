@@ -32,7 +32,7 @@ from . import resources
 from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
 from ..polar import Polar
-from ...breguet import Breguet
+from ..segments.cruise import BreguetCruiseSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -172,16 +172,16 @@ class MissionComponent(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.iter_count_without_approx < self.options["breguet_iterations"]:
             _LOGGER.info("Using Breguet for computing sizing mission.")
-            self.compute_breguet(inputs, outputs)
+            self._compute_breguet(inputs, outputs)
         else:
             _LOGGER.info("Using time-step integration for computing sizing mission.")
-            self.compute_mission(inputs, outputs)
+            self._compute_mission(inputs, outputs)
 
-    def compute_breguet(self, inputs, outputs):
+    def _compute_breguet(self, inputs, outputs):
         """
         Computes mission using simple Breguet formula at altitude==10000m
 
-        Useful for initiating the computation.
+        Useful onlu for initiating the computation.
 
         :param inputs: OpenMDAO input vector
         :param outputs: OpenMDAO output vector
@@ -189,12 +189,29 @@ class MissionComponent(om.ExplicitComponent):
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
+
+        # Polar processing.
+        # At computation start, polar may be irrelevant and give a very low lift/drag ratio.
+        # In this case, we
         high_speed_polar = Polar(
             inputs["data:aerodynamics:aircraft:cruise:CL"],
             inputs["data:aerodynamics:aircraft:cruise:CD"],
         )
+        use_minimum_l_d_ratio = False
+        try:
+            if (
+                high_speed_polar.optimal_cl / high_speed_polar.cd(high_speed_polar.optimal_cl)
+                < 10.0
+            ):
+                use_minimum_l_d_ratio = True
+        except ZeroDivisionError:
+            use_minimum_l_d_ratio = True
+        if use_minimum_l_d_ratio:
+            # We replace by a polar that has at least 10.0 as max L/D ratio
+            high_speed_polar = Polar(np.array([0.0, 0.5, 1.0]), np.array([0.1, 0.05, 1.0]))
+        # End of polar processing
 
-        distance = np.sum(self._mission.get_route_ranges(inputs))
+        distance = np.asscalar(np.sum(self._mission.get_route_ranges(inputs)))
         cruise_speed_param, cruise_speed_value = self._mission.get_route_cruise_speeds(inputs)[0]
         altitude = 10000.0
 
@@ -208,21 +225,20 @@ class MissionComponent(om.ExplicitComponent):
             elif cruise_speed_param == "equivalent_airspeed":
                 cruise_mach = atm.get_true_airspeed(cruise_speed_value) / atm.speed_of_sound
 
-        breguet = Breguet(
-            propulsion_model,
-            max(
-                10.0, high_speed_polar.optimal_cl / high_speed_polar.cd(high_speed_polar.optimal_cl)
-            ),
-            cruise_mach,
-            altitude,
+        breguet = BreguetCruiseSegment(
+            FlightPoint(ground_distance=distance),
+            propulsion=propulsion_model,
+            polar=high_speed_polar,
+            use_max_lift_drag_ratio=True,
         )
-        breguet.compute(
-            inputs[self._mission_vars.TOW.value], distance,
+        start_point = FlightPoint(
+            mass=inputs[self._mission_vars.TOW.value], altitude=altitude, mach=cruise_mach
         )
+        flight_points = breguet.compute_from(start_point)
+        end_point = FlightPoint.create(flight_points.iloc[-1])
+        outputs[self._mission_vars.BLOCK_FUEL.value] = start_point.mass - end_point.mass
 
-        outputs[self._mission_vars.BLOCK_FUEL.value] = breguet.mission_fuel
-
-    def compute_mission(self, inputs, outputs):
+    def _compute_mission(self, inputs, outputs):
         """
         Computes mission using time-step integration.
 
