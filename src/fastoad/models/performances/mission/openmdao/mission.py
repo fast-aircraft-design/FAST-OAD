@@ -265,12 +265,7 @@ class MissionComponent(om.ExplicitComponent):
 
         end_of_takeoff = FlightPoint(
             time=0.0,
-            # FIXME: legacy FAST was considering that aircraft was at MTOW before taxi out,
-            #  though it supposed to be at MTOW at takeoff. We keep this logic for sake of
-            #  non-regression, but it should be corrected later.
-            mass=inputs[self._mission_vars.TOW.value]
-            - inputs[self._mission_vars.TAKEOFF_FUEL.value]
-            - inputs[self._mission_vars.TAXI_OUT_FUEL.value],
+            mass=inputs[self._mission_vars.TOW.value],
             true_airspeed=inputs[self._mission_vars.TAKEOFF_V2.value],
             altitude=inputs[self._mission_vars.TAKEOFF_ALTITUDE.value] + 35 * foot,
             ground_distance=0.0,
@@ -281,7 +276,12 @@ class MissionComponent(om.ExplicitComponent):
         # Final ================================================================
         end_of_mission = FlightPoint.create(self.flight_points.iloc[-1])
         zfw = end_of_mission.mass - self._mission.get_reserve(self.flight_points)
-        outputs[self._mission_vars.BLOCK_FUEL.value] = inputs[self._mission_vars.TOW.value] - zfw
+        outputs[self._mission_vars.BLOCK_FUEL.value] = (
+            inputs[self._mission_vars.TOW.value]
+            + inputs[self._mission_vars.TAKEOFF_FUEL.value]
+            + inputs[self._mission_vars.TAXI_OUT_FUEL.value]
+            - zfw
+        )
         if self.options["is_sizing"]:
             outputs["data:weight:aircraft:sizing_block_fuel"] = outputs[
                 self._mission_vars.BLOCK_FUEL.value
