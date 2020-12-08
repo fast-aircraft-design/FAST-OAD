@@ -41,7 +41,7 @@ class Mission(om.Group):
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("out_file", default="", types=str)
-        self.options.declare("breguet_iterations", default=1, types=int)
+        self.options.declare("initial_iterations", default=2, types=int)
         self.options.declare(
             "mission_file_path", default=None, types=(str, MissionDefinition), allow_none=True
         )
@@ -142,7 +142,7 @@ class MissionComponent(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("out_file", default="", types=str)
-        self.options.declare("breguet_iterations", default=2, types=int)
+        self.options.declare("initial_iterations", default=2, types=int)
         self.options.declare("mission_wrapper", types=MissionWrapper)
         self.options.declare("is_sizing", default=False, types=bool)
 
@@ -179,7 +179,7 @@ class MissionComponent(om.ExplicitComponent):
         self.declare_partials(["*"], ["*"])
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        if self.iter_count_without_approx < self.options["breguet_iterations"]:
+        if self.iter_count_without_approx < self.options["initial_iterations"]:
             _LOGGER.info("Using Breguet for computing sizing mission.")
             self._compute_breguet(inputs, outputs)
         else:
