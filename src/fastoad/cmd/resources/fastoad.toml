@@ -38,13 +38,11 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         mission_file_path = "::sizing_breguet"
-        compute_TOW = true
+#        mission_file_path = "::sizing_mission"
+        out_file = "./flight_points.csv"
+        adjust_fuel = true
         add_solver = false
         is_sizing = true
-#    [model.performance]
-#        id = "fastoad.performances.sizing_mission"
-#        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
-#        out_file = "./flight_points.csv"
     [model.hq_tail_sizing]
         id = "fastoad.handling_qualities.tail_sizing"
     [model.hq_static_margin]

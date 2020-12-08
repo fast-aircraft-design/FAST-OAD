@@ -57,8 +57,7 @@ class Mission(om.Group):
                             consume useless CPU-time. This option drives the number of first
                             iterations where a simple Breguet formula will be used instead of the
                             specified mission.
-      - compute_TOW: if True, TakeOff Weight will be computed so block fuel will fit fuel
-                     consumption during mission
+      - adjust_fuel: if True, block fuel will fit fuel consumption during mission.
       - add_solver: not used if compute_TOW is False. Otherwise, setting this option to False will
                     deactivate the local solver. Useful if a global solver is used.
       - is_sizing: if True, TOW will be considered equal to MTOW and mission payload will be
@@ -72,7 +71,7 @@ class Mission(om.Group):
             "mission_file_path", default=None, types=(str, MissionDefinition), allow_none=True
         )
         self.options.declare("initial_iterations", default=2, types=int)
-        self.options.declare("compute_TOW", default=True, types=bool)
+        self.options.declare("adjust_fuel", default=True, types=bool)
         self.options.declare("add_solver", default=True, types=bool)
         self.options.declare("is_sizing", default=False, types=bool)
 
@@ -96,7 +95,7 @@ class Mission(om.Group):
 
         self.add_subsystem("ZFW_computation", self._get_zfw_component(mission_name), promotes=["*"])
 
-        if self.options["compute_TOW"]:
+        if self.options["adjust_fuel"]:
             self.add_subsystem(
                 "TOW_computation", self._get_tow_component(mission_name), promotes=["*"]
             )
@@ -105,7 +104,7 @@ class Mission(om.Group):
                 self.linear_solver = om.DirectSolver()
 
         mission_options = dict(self.options.items())
-        del mission_options["compute_TOW"]
+        del mission_options["adjust_fuel"]
         del mission_options["add_solver"]
         del mission_options["mission_file_path"]
         mission_options["mission_wrapper"] = mission_wrapper

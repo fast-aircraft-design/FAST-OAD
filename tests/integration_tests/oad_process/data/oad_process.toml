@@ -26,7 +26,7 @@ output_file = "../results/oad_process_outputs.xml"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "../results/flight_points.csv"
         mission_file_path = "::sizing_breguet"
-        compute_TOW = true
+        adjust_fuel = true
         add_solver = false
         is_sizing = true
     [model.hq.tail_sizing]
