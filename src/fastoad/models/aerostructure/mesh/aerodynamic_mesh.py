@@ -27,16 +27,16 @@ class AerodynamicMesh(om.Group):
     def setup(self):
         comps = self.options["components"]
         n_sections = self.options["components_sections"]
-        if n_sections is not None and len(n_sections) != len(comps):
+        if len(n_sections) != len(comps):
             msg = "Each element (wing, fuselage, ...) should have an associated number of sections"
             raise ValueError(msg)
-        for i in range(0, len(comps)):
-            nodes_class = AerodynamicNodesClasses[comps[i].upper()].value
-            chord_class = AerodynamicChordsClasses[comps[i].upper()].value
+        for comp, n_section in zip(comps, n_sections):
+            nodes_class = AerodynamicNodesClasses[comp.upper()].value
+            chord_class = AerodynamicChordsClasses[comp.upper()].value
 
             self.add_subsystem(
-                comps[i] + "Nodes", nodes_class(number_of_sections=n_sections[i]), promotes=["*"]
+                comp + "Nodes", nodes_class(number_of_sections=n_section), promotes=["*"]
             )
             self.add_subsystem(
-                comps[i] + "Chords", chord_class(number_of_sections=n_sections[i]), promotes=["*"]
+                comp + "Chords", chord_class(number_of_sections=n_section), promotes=["*"]
             )

@@ -67,13 +67,13 @@ class AerodynamicChordsWing(om.ExplicitComponent):
     @staticmethod
     def _get_chord_len(n_sections, dimensions, y_le):
         chords = np.zeros((n_sections + 1) * 2)
-        for i in range(0, np.size(y_le)):
-            if -dimensions["y_kink"] <= y_le[i] <= dimensions["y_kink"]:
-                chords[i] = (np.abs(y_le[i]) - dimensions["y_root"]) * (
+        for idx, y in enumerate(y_le):
+            if -dimensions["y_kink"] <= y <= dimensions["y_kink"]:
+                chords[idx] = (np.abs(y) - dimensions["y_root"]) * (
                     dimensions["kink_chord"] - dimensions["root_chord"]
                 ) / (dimensions["y_kink"] - dimensions["y_root"]) + dimensions["root_chord"]
             else:
-                chords[i] = (np.abs(y_le[i]) - dimensions["y_kink"]) * (
+                chords[idx] = (np.abs(y_le[y]) - dimensions["y_kink"]) * (
                     dimensions["tip_chord"] - dimensions["kink_chord"]
                 ) / (dimensions["y_tip"] - dimensions["y_kink"]) + dimensions["kink_chord"]
         return chords

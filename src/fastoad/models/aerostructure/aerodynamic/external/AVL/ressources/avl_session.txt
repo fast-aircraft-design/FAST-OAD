@@ -1,0 +1,20 @@
+LOAD
+data.avl
+.OPER
+A C 0.5
+M
+MN 0.75
+V 210
+D 0.223
+G 9.81
+
+O
+P T F T F
+
+X
+W
+results.out
+
+QUIT
+
+

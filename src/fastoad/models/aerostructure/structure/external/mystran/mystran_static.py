@@ -12,13 +12,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import openmdao.api as om
-import numpy as np
-
 import os
 import os.path as pth
 from tempfile import TemporaryDirectory
 import shutil
+
+import openmdao.api as om
+import numpy as np
 
 from fastoad.models.aerostructure.structure.external.mystran.utils.read_f06 import readf06
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_nodes_cards
@@ -56,44 +56,42 @@ class MystranStatic(om.ExternalCodeComp):
         self.options.declare(OPTION_RESULT_FOLDER_PATH, default="", types=str, allow_none=True)
 
     def setup(self):
-        comp = self.options["components"]
+        comps = self.options["components"]
         nsects = self.options["components_sections"]
 
         # System inputs ---------------------------------------------------------------------------
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
-        self.add_input("data:aerostructural:sizing_load_factor", val=1.0)
-        for i in range(0, len(comp)):
-            if comp[i] == "wing":
-                n_nodes = (nsects[i] + 1) * 2 + 2
-                n_props = (nsects[i] + 1) * 2
-            elif comp[i] == "horizontal_tail" or comp[i] == "strut":
-                n_nodes = (nsects[i] + 1) * 2
-                n_props = nsects[i] * 2
+        self.add_input("data:aerostructural:load_case:load_factor", val=1.0)
+        for comp, nsect in zip(comps, nsects):
+            if comp == "wing":
+                n_nodes = (nsect + 1) * 2 + 2
+                n_props = (nsect + 1) * 2
+            elif comp in ("horizontal_tail", "strut"):
+                n_nodes = (nsect + 1) * 2
+                n_props = nsect * 2
             else:
-                n_nodes = nsects[i] + 1
-                n_props = nsects[i]
+                n_nodes = nsect + 1
+                n_props = nsect
+            self.add_input("data:aerostructural:structure:" + comp + ":nodes", shape_by_conn=True)
             self.add_input(
-                "data:aerostructural:structure:" + comp[i] + ":nodes", shape_by_conn=True
+                "data:aerostructural:structure:" + comp + ":beam_properties", shape_by_conn=True
             )
             self.add_input(
-                "data:aerostructural:structure:" + comp[i] + ":beam_properties", shape_by_conn=True
-            )
-            self.add_input(
-                "data:aerostructural:structure:" + comp[i] + ":nodal_forces_moments",
+                "data:aerostructural:structure:" + comp + ":nodal_forces_moments",
                 shape_by_conn=True,
             )
-            self.add_input("data:aerostructural:structure:" + comp[i] + ":material:E", val=70e9)
-            self.add_input("data:aerostructural:structure:" + comp[i] + ":material:mu", val=0.33)
+            self.add_input("data:aerostructural:structure:" + comp + ":material:E", val=70e9)
+            self.add_input("data:aerostructural:structure:" + comp + ":material:mu", val=0.33)
             self.add_input(
-                "data:aerostructural:structure:" + comp[i] + ":material:density", val=2810.0
+                "data:aerostructural:structure:" + comp + ":material:density", val=2810.0
             )
 
             self.add_output(
-                "data:aerostructural:structure:" + comp[i] + ":displacements", shape=(n_nodes, 6)
+                "data:aerostructural:structure:" + comp + ":displacements", shape=(n_nodes, 6)
             )
 
             self.add_output(
-                "data:aerostructural:structure:" + comp[i] + ":stresses", shape=(n_props, 4)
+                "data:aerostructural:structure:" + comp + ":stresses", shape=(n_props, 4)
             )
 
             # Initialisation of the MYSTRAN (NASTRAN) input file (.dat) ----------------------------
@@ -109,7 +107,7 @@ class MystranStatic(om.ExternalCodeComp):
 
         # Prepare input file ----------------------------------------------------------------------
         cg_loc = inputs["data:geometry:wing:MAC:at25percent:x"]
-        nz = inputs["data:aerostructural:sizing_load_factor"]
+        nz = inputs["data:aerostructural:load_case:load_factor"]
         strg = []
         for comp in components:
             mat_prop = np.zeros(3)
@@ -161,13 +159,9 @@ class MystranStatic(om.ExternalCodeComp):
         # split displacements and stresses matrices for each component
         splited_disp = self._get_component_disp(displacements, components, nsects)
         splited_stresses = self._get_component_stress(stresses, components, nsects)
-        for i in range(0, len(components)):
-            outputs[
-                "data:aerostructural:structure:" + components[i] + ":displacements"
-            ] = splited_disp[i]
-            outputs[
-                "data:aerostructural:structure:" + components[i] + ":stresses"
-            ] = splited_stresses[i]
+        for i, comp in enumerate(components):
+            outputs["data:aerostructural:structure:" + comp + ":displacements"] = splited_disp[i]
+            outputs["data:aerostructural:structure:" + comp + ":stresses"] = splited_stresses[i]
 
         # Getting output files if needed ----------------------------------------------------------
         if self.options[OPTION_RESULT_FOLDER_PATH]:
