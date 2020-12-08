@@ -52,7 +52,7 @@ def test_breguet_with_rubber_engine():
     problem = run_system(
         Mission(
             propulsion_id="fastoad.wrapper.propulsion.rubber_engine",
-            breguet_iterations=0,
+            initial_iterations=0,
             mission_file_path="::sizing_breguet",
             compute_TOW=False,
         ),
