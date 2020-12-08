@@ -58,6 +58,9 @@ class Mission(om.Group):
                             iterations where a simple Breguet formula will be used instead of the
                             specified mission.
       - adjust_fuel: if True, block fuel will fit fuel consumption during mission.
+      - compute_TOW: if True, TakeOff Weight will be computed from mission block fuel and ZFW.
+                     If False, block fuel will be computed from TOW and ZFW.
+                     Not used (actually forced to True) if adjust_fuel is True.
       - add_solver: not used if compute_TOW is False. Otherwise, setting this option to False will
                     deactivate the local solver. Useful if a global solver is used.
       - is_sizing: if True, TOW will be considered equal to MTOW and mission payload will be
@@ -72,6 +75,7 @@ class Mission(om.Group):
         )
         self.options.declare("initial_iterations", default=2, types=int)
         self.options.declare("adjust_fuel", default=True, types=bool)
+        self.options.declare("compute_TOW", default=False, types=bool)
         self.options.declare("add_solver", default=True, types=bool)
         self.options.declare("is_sizing", default=False, types=bool)
 
@@ -94,24 +98,34 @@ class Mission(om.Group):
         self.add_subsystem("ZFW_computation", self._get_zfw_component(mission_name), promotes=["*"])
 
         if self.options["adjust_fuel"]:
-            self.add_subsystem(
-                "TOW_computation", self._get_tow_component(mission_name), promotes=["*"]
+            self.options["compute_TOW"] = True
+            self.connect(
+                "data:mission:%s:needed_block_fuel" % mission_name,
+                "data:mission:%s:block_fuel" % mission_name,
             )
             if self.options["add_solver"]:
                 self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4)
                 self.linear_solver = om.DirectSolver()
 
+        if self.options["compute_TOW"]:
+            self.add_subsystem(
+                "TOW_computation", self._get_tow_component(mission_name), promotes=["*"]
+            )
+        else:
+            self.add_subsystem(
+                "block_fuel_computation",
+                self._get_block_fuel_component(mission_name),
+                promotes=["*"],
+            )
+
         mission_options = dict(self.options.items())
         del mission_options["adjust_fuel"]
+        del mission_options["compute_TOW"]
         del mission_options["add_solver"]
         del mission_options["mission_file_path"]
         mission_options["mission_wrapper"] = mission_wrapper
         self.add_subsystem(
             "mission_computation", MissionComponent(**mission_options), promotes=["*"]
-        )
-
-        self.add_subsystem(
-            "block_fuel_computation", self._get_block_fuel_component(mission_name), promotes=["*"]
         )
 
     @property
@@ -148,10 +162,7 @@ class Mission(om.Group):
         tow_computation = om.AddSubtractComp()
         tow_computation.add_equation(
             "data:mission:%s:TOW" % mission_name,
-            [
-                "data:mission:%s:ZFW" % mission_name,
-                "data:mission:%s:needed_block_fuel" % mission_name,
-            ],
+            ["data:mission:%s:ZFW" % mission_name, "data:mission:%s:block_fuel" % mission_name,],
             units="kg",
         )
         return tow_computation
