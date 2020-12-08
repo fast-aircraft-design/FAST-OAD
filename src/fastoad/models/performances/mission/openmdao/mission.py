@@ -38,13 +38,40 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 class Mission(om.Group):
+    """
+    Computes a mission as specified in mission input file.
+
+    Options:
+      - propulsion_id: (mandatory) the identifier of the propulsion wrapper.
+      - out_file: if provided, a csv file will be written at provided path with all computed
+                  flight points. If path is relative, it will be resolved from working
+                  directory.
+      - mission_file_path: the path to file that defines the mission.
+                           If path is relative, it will be resolved from working directory.
+                           If can also begin with two colons "::" to use pre-defined missions:
+                               - "::sizing_mission" : design mission for CeRAS-01
+                               - "::breguet" : a simple mission with Breguet formula for cruise, and
+                                               input coefficients for fuel reserve and fuel
+                                               consumption during climb and descent
+      - initial_iterations: During first solver loops, a complete mission computation can fail or
+                            consume useless CPU-time. This option drives the number of first
+                            iterations where a simple Breguet formula will be used instead of the
+                            specified mission.
+      - compute_TOW: if True, TakeOff Weight will be computed so block fuel will fit fuel
+                     consumption during mission
+      - add_solver: not used if compute_TOW is False. Otherwise, setting this option to False will
+                    deactivate the local solver. Useful if a global solver is used.
+      - is_sizing: if True, TOW will be considered equal to MTOW and mission payload will be
+                   considered equal to design payload.
+    """
+
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("out_file", default="", types=str)
-        self.options.declare("initial_iterations", default=2, types=int)
         self.options.declare(
             "mission_file_path", default=None, types=(str, MissionDefinition), allow_none=True
         )
+        self.options.declare("initial_iterations", default=2, types=int)
         self.options.declare("compute_TOW", default=True, types=bool)
         self.options.declare("add_solver", default=True, types=bool)
         self.options.declare("is_sizing", default=False, types=bool)
@@ -67,33 +94,12 @@ class Mission(om.Group):
 
         self.set_input_defaults("data:weight:aircraft:OWE", np.nan, units="kg")
 
-        if self.options["is_sizing"]:
-            payload_var = "data:weight:aircraft:payload"
-        else:
-            payload_var = "data:mission:%s:payload" % mission_name
-            self.set_input_defaults("data:mission:%s:payload" % mission_name, np.nan, units="kg")
-
-        zfw_computation = om.AddSubtractComp()
-        zfw_computation.add_equation(
-            "data:mission:%s:ZFW" % mission_name,
-            ["data:weight:aircraft:OWE", payload_var],
-            units="kg",
-        )
-        self.add_subsystem("ZFW_computation", zfw_computation, promotes=["*"])
+        self.add_subsystem("ZFW_computation", self._get_zfw_component(mission_name), promotes=["*"])
 
         if self.options["compute_TOW"]:
-            tow_computation = om.AddSubtractComp()
-            tow_computation.add_equation(
-                "data:mission:%s:TOW" % mission_name,
-                [
-                    "data:mission:%s:ZFW" % mission_name,
-                    "data:mission:%s:needed_block_fuel" % mission_name,
-                ],
-                units="kg",
+            self.add_subsystem(
+                "TOW_computation", self._get_tow_component(mission_name), promotes=["*"]
             )
-
-            self.add_subsystem("TOW_computation", tow_computation, promotes=["*"])
-
             if self.options["add_solver"]:
                 self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4)
                 self.linear_solver = om.DirectSolver()
@@ -107,31 +113,87 @@ class Mission(om.Group):
             "mission_computation", MissionComponent(**mission_options), promotes=["*"]
         )
 
-        block_fuel_computation = om.AddSubtractComp()
-        block_fuel_computation.add_equation(
-            "data:mission:%s:block_fuel" % mission_name,
-            ["data:mission:%s:TOW" % mission_name, "data:mission:%s:ZFW" % mission_name,],
-            units="kg",
-            scaling_factors=[1, -1],
+        self.add_subsystem(
+            "block_fuel_computation", self._get_block_fuel_component(mission_name), promotes=["*"]
         )
-        self.add_subsystem("block_fuel_computation", block_fuel_computation, promotes=["*"])
 
     @property
     def flight_points(self) -> pd.DataFrame:
         """Dataframe that lists all computed flight point data."""
         return self.mission_computation.flight_points
 
+    def _get_zfw_component(self, mission_name: str) -> om.AddSubtractComp:
+        """
+
+        :param mission_name:
+        :return: component that computes Zero Fuel Weight from OWE and mission payload
+        """
+        if self.options["is_sizing"]:
+            payload_var = "data:weight:aircraft:payload"
+        else:
+            payload_var = "data:mission:%s:payload" % mission_name
+            self.set_input_defaults("data:mission:%s:payload" % mission_name, np.nan, units="kg")
+
+        zfw_computation = om.AddSubtractComp()
+        zfw_computation.add_equation(
+            "data:mission:%s:ZFW" % mission_name,
+            ["data:weight:aircraft:OWE", payload_var],
+            units="kg",
+        )
+        return zfw_computation
+
+    @staticmethod
+    def _get_tow_component(mission_name: str) -> om.AddSubtractComp:
+        """
+
+        :param mission_name:
+        :return: component that computes TakeOff Weight from ZFW and needed block fuel
+        """
+        tow_computation = om.AddSubtractComp()
+        tow_computation.add_equation(
+            "data:mission:%s:TOW" % mission_name,
+            [
+                "data:mission:%s:ZFW" % mission_name,
+                "data:mission:%s:needed_block_fuel" % mission_name,
+            ],
+            units="kg",
+        )
+        return tow_computation
+
+    @staticmethod
+    def _get_block_fuel_component(mission_name: str) -> om.AddSubtractComp:
+        """
+
+        :param mission_name:
+        :return: component that computes initial block fuel from TOW and ZFW
+        """
+        block_fuel_computation = om.AddSubtractComp()
+        block_fuel_computation.add_equation(
+            "data:mission:%s:block_fuel" % mission_name,
+            ["data:mission:%s:TOW" % mission_name, "data:mission:%s:ZFW" % mission_name],
+            units="kg",
+            scaling_factors=[1, -1],
+        )
+        return block_fuel_computation
+
 
 class MissionComponent(om.ExplicitComponent):
     def __init__(self, **kwargs):
         """
-        Computes thrust, SFC and thrust rate by direct call to engine model.
+        Computes a mission as specified in mission input file
 
         Options:
           - propulsion_id: (mandatory) the identifier of the propulsion wrapper.
           - out_file: if provided, a csv file will be written at provided path with all computed
                       flight points. If path is relative, it will be resolved from working
-                      directory
+                      directory.
+          - mission_wrapper: the MissionWrapper instance that defines the mission.
+          - initial_iterations: During first solver loops, a complete mission computation can fail
+                                or consume useless CPU-time. This option drives the number of first
+                                iterations where a simple Breguet formula will be used instead of
+                                the specified mission.
+          - is_sizing: if True, TOW will be considered equal to MTOW and mission payload will be
+                       considered equal to design payload.
         """
         super().__init__(**kwargs)
         self.flight_points = None
