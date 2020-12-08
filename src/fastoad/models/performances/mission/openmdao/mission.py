@@ -91,8 +91,6 @@ class Mission(om.Group):
 
         mission_name = mission_wrapper.mission_name
 
-        self.set_input_defaults("data:weight:aircraft:OWE", np.nan, units="kg")
-
         self.add_subsystem("ZFW_computation", self._get_zfw_component(mission_name), promotes=["*"])
 
         if self.options["adjust_fuel"]:
@@ -131,7 +129,6 @@ class Mission(om.Group):
             payload_var = "data:weight:aircraft:payload"
         else:
             payload_var = "data:mission:%s:payload" % mission_name
-            self.set_input_defaults("data:mission:%s:payload" % mission_name, np.nan, units="kg")
 
         zfw_computation = om.AddSubtractComp()
         zfw_computation.add_equation(
