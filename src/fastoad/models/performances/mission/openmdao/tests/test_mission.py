@@ -173,7 +173,7 @@ def test_mission_group_without_loop(cleanup):
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
             initial_iterations=0,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
-            compute_TOW=False,
+            adjust_fuel=False,
         ),
         ivc,
     )
@@ -192,7 +192,7 @@ def test_mission_group_breguet_without_loop(cleanup):
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
             initial_iterations=0,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
-            compute_TOW=False,
+            adjust_fuel=False,
         ),
         ivc,
     )

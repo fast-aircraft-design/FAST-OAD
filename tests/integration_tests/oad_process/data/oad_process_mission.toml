@@ -40,7 +40,7 @@ output_file = "./oad_process_mission_outputs.xml"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "./flight_points.csv"
         initial_iterations = 1
-        compute_TOW = true
+        adjust_fuel = true
         add_solver = false
         is_sizing = true
     [model.wing_area]

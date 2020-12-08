@@ -54,7 +54,7 @@ def test_breguet_with_rubber_engine():
             propulsion_id="fastoad.wrapper.propulsion.rubber_engine",
             initial_iterations=0,
             mission_file_path="::sizing_breguet",
-            compute_TOW=False,
+            adjust_fuel=False,
         ),
         ivc,
     )
