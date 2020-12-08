@@ -251,7 +251,7 @@ class MissionComponent(om.ExplicitComponent):
         """
         Computes mission using simple Breguet formula at altitude==10000m
 
-        Useful onlu for initiating the computation.
+        Useful only for initiating the computation.
 
         :param inputs: OpenMDAO input vector
         :param outputs: OpenMDAO output vector
@@ -260,27 +260,7 @@ class MissionComponent(om.ExplicitComponent):
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
 
-        # Polar processing.
-        # At computation start, polar may be irrelevant and give a very low lift/drag ratio.
-        # In this case, we
-        high_speed_polar = Polar(
-            inputs["data:aerodynamics:aircraft:cruise:CL"],
-            inputs["data:aerodynamics:aircraft:cruise:CD"],
-        )
-        use_minimum_l_d_ratio = False
-        try:
-            if (
-                high_speed_polar.optimal_cl / high_speed_polar.cd(high_speed_polar.optimal_cl)
-                < 10.0
-            ):
-                use_minimum_l_d_ratio = True
-        except ZeroDivisionError:
-            use_minimum_l_d_ratio = True
-        if use_minimum_l_d_ratio:
-            # We replace by a polar that has at least 10.0 as max L/D ratio
-            high_speed_polar = Polar(np.array([0.0, 0.5, 1.0]), np.array([0.1, 0.05, 1.0]))
-        # End of polar processing
-
+        high_speed_polar = self._get_initial_polar(inputs)
         distance = np.asscalar(np.sum(self._mission.get_route_ranges(inputs)))
         cruise_speed_param, cruise_speed_value = self._mission.get_route_cruise_speeds(inputs)[0]
         altitude = 10000.0
@@ -307,6 +287,33 @@ class MissionComponent(om.ExplicitComponent):
         flight_points = breguet.compute_from(start_point)
         end_point = FlightPoint.create(flight_points.iloc[-1])
         outputs[self._mission_vars.BLOCK_FUEL.value] = start_point.mass - end_point.mass
+
+    @staticmethod
+    def _get_initial_polar(inputs) -> Polar:
+        """
+        At computation start, polar may be irrelevant and give a very low lift/drag ratio.
+
+        In that case, this method returns a fake polar that has 10.0 as max lift drag ratio.
+        Otherwise, the actual cruise polar is returned.
+        """
+        high_speed_polar = Polar(
+            inputs["data:aerodynamics:aircraft:cruise:CL"],
+            inputs["data:aerodynamics:aircraft:cruise:CD"],
+        )
+        use_minimum_l_d_ratio = False
+        try:
+            if (
+                high_speed_polar.optimal_cl / high_speed_polar.cd(high_speed_polar.optimal_cl)
+                < 10.0
+            ):
+                use_minimum_l_d_ratio = True
+        except ZeroDivisionError:
+            use_minimum_l_d_ratio = True
+        if use_minimum_l_d_ratio:
+            # We replace by a polar that has at least 10.0 as max L/D ratio
+            high_speed_polar = Polar(np.array([0.0, 0.5, 1.0]), np.array([0.1, 0.05, 1.0]))
+
+        return high_speed_polar
 
     def _compute_mission(self, inputs, outputs):
         """
