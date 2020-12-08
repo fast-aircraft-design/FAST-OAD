@@ -264,11 +264,11 @@ def test_api_eval(cleanup):
 
     assert_allclose(problem["data:handling_qualities:static_margin"], -0.071146, atol=1e-3)
     assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.0, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 76610.0, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 130.66, atol=1e-2)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.38, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.86, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20577.0, atol=1)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 76796, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 131.26, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.49, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.99, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20708, atol=1)
 
 
 def test_api_optim(cleanup):
@@ -319,4 +319,4 @@ def test_api_optim(cleanup):
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20704.0, atol=50)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20837, atol=50)
