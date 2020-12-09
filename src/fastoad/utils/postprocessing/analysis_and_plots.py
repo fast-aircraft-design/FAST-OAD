@@ -318,8 +318,7 @@ def mass_breakdown_bar_plot(
     )
 
     # Get data:weight decomposition
-    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
-    main_weight_values, main_weight_names = _data_weight_decomposition(variables, owe=None)
+    main_weight_values, main_weight_names, _ = _data_weight_decomposition(variables, owe=None)
     fig.add_trace(
         go.Bar(name=name, x=main_weight_names, y=main_weight_values, marker_color=COLS[i]),
         row=1,
@@ -472,21 +471,21 @@ def _data_weight_decomposition(variables: VariableIO, owe=None):
     :param owe: value of OWE, if provided names of owe subcategories will be provided
     :return: variable values, names and optionally owe subcategories names
     """
-    categories_values = []
-    categories_names = []
-    owe_subcategories_names = []
+    category_values = []
+    category_names = []
+    owe_subcategory_names = []
     for variable in variables.names():
         name_split = variable.split(":")
         if isinstance(name_split, list) and len(name_split) == 4:
             if name_split[0] + name_split[1] + name_split[3] == "dataweightmass" and not (
                 "aircraft" in name_split[2]
             ):
-                categories_values.append(
+                category_values.append(
                     convert_units(variables[variable].value[0], variables[variable].units, "kg")
                 )
-                categories_names.append(name_split[2])
+                category_names.append(name_split[2])
                 if owe:
-                    owe_subcategories_names.append(
+                    owe_subcategory_names.append(
                         name_split[2]
                         + "<br>"
                         + str(int(variables[variable].value[0]))
@@ -495,8 +494,8 @@ def _data_weight_decomposition(variables: VariableIO, owe=None):
                         + "%)"
                     )
     if owe:
-        result = categories_values, categories_names, owe_subcategories_names
+        result = category_values, category_names, owe_subcategory_names
     else:
-        result = categories_values, categories_names
+        result = category_values, category_names, None
 
     return result
