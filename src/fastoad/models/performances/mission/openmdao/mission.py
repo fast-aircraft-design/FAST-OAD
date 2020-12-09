@@ -249,10 +249,10 @@ class MissionComponent(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.iter_count_without_approx < self.options["initial_iterations"]:
-            _LOGGER.info("Using Breguet for computing sizing mission.")
+            _LOGGER.info("Mission computation: Using initializer computation.")
             self._compute_breguet(inputs, outputs)
         else:
-            _LOGGER.info("Using time-step integration for computing sizing mission.")
+            _LOGGER.info("Mission computation: Using mission definition.")
             self._compute_mission(inputs, outputs)
 
     def _compute_breguet(self, inputs, outputs):
