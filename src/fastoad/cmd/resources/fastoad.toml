@@ -41,7 +41,6 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
 #        mission_file_path = "::sizing_mission"
         out_file = "./flight_points.csv"
         adjust_fuel = true
-        add_solver = false
         is_sizing = true
     [model.hq_tail_sizing]
         id = "fastoad.handling_qualities.tail_sizing"
