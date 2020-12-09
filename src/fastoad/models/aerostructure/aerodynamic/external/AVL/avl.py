@@ -24,7 +24,7 @@ from openmdao.api import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 from openmdao.utils.file_wrap import FileParser
 import numpy as np
-
+from scipy.constants import g
 
 from fastoad.utils.physics import Atmosphere as Atm
 from fastoad.models.aerostructure.aerodynamic.external.AVL import avl336
@@ -95,10 +95,10 @@ class AVL(ExternalCodeComp):
             else:
                 size += n_sect
 
-        self.add_output("data:aerostructural:aerodynamic:forces", val=np.nan, shape=(size, 6))
+        self.add_output("data:aerostructural:aerodynamic:forces", val=np.nan, shape=(size, 3))
         if not self.options["sizing"]:
             self.add_output("data:aerostructural:aerodynamic:CDi", val=np.nan)
-            self.add_output("data:aerostructural:aerodynamic:CDL", val=np.nan)
+            self.add_output("data:aerostructural:aerodynamic:CL", val=np.nan)
             self.add_output("data:aerostructural:aerodynamic:Oswald_Coeff", val=np.nan)
 
         self.declare_partials("*", "*", method="fd")
@@ -133,7 +133,7 @@ class AVL(ExternalCodeComp):
 
         m_lc = inputs["data:aerostructural:load_case:weight"]
         nz = inputs["data:aerostructural:sizing_load_factor"]
-        cl = nz * m_lc / (q * s_ref)
+        cl = nz * m_lc * g / (q * s_ref)
 
         tmp_result_file = pth.joint(tmp_dir.name, _AVL_RESULT_NAME)
         parser = InputFileGenerator()
@@ -151,7 +151,7 @@ class AVL(ExternalCodeComp):
 
         # AVL geometry file (.avl) creation --------------------------------------------------------
         input_geom_file = pth.join(tmp_dir.name, _AVL_GEOM_NAME)
-        self._get_avl_geom_file(inputs, input_geom_file)
+        self._get_avl_geom_file(inputs, tmp_dir.name)
 
         # Check for input and output file presence -------------------------------------------------
         self.options["external_input_file"] = [
@@ -174,9 +174,9 @@ class AVL(ExternalCodeComp):
         parser_out = FileParser()
         parser_out.set_file(tmp_result_file)
         parser_out.mark_anchor("CZtot")
-        outputs["data:aerostructural:CL"] = parser_out.transfer_var(2, 3)
-        outputs["data:aerostructural:CDi"] = parser_out.transfer_var(4, 6)
-        outputs["data:aerostructural:Oswald_Coeff"] = parser_out.transfer_var(6, 6)
+        outputs["data:aerostructural:aerodynamic:CL"] = parser_out.transfer_var(2, 3)
+        outputs["data:aerostructural:aerodynamic:CDi"] = parser_out.transfer_var(4, 6)
+        outputs["data:aerostructural:aerodynamic:Oswald_Coeff"] = parser_out.transfer_var(6, 6)
         parser_out.mark_anchor("Surface Forces", 1)
         surface_coef = parser_out.transfer_2Darray(7, 3, size, 6)
         outputs["data:aerostructural:aerodynamic:forces"] = q * s_ref * surface_coef
@@ -190,7 +190,14 @@ class AVL(ExternalCodeComp):
                 geometry_file = pth.join(result_folder_path, _AVL_GEOM_NAME)
                 shutil.move(input_geom_file, geometry_file)
 
-    def _get_avl_geom_file(self, inputs, dir_path):
+    def _get_avl_geom_file(self, inputs: dict, dir_path: str):
+        """
+        Generate AVL geometry file(*.avl) from om.ExternalCodeComp inputs and stores it in the
+        temporary directory.
+        :param inputs: Dictionary of om.ExternalCodeComp inputs
+        :param dir_path: temporary directory where are stored avl computation files
+        :return:
+        """
         with open(pth.join(dir_path, _AVL_GEOM_NAME)) as data_file:
             lines = self._get_geom_file_header(inputs)
 
@@ -216,6 +223,11 @@ class AVL(ExternalCodeComp):
 
     @staticmethod
     def _get_geom_file_header(inputs):
+        """
+        Generates header of the AVL geometry file (*.avl) from wing geometry characteristics.
+        :param inputs: Dictionary of om.ExternalCodeComp inputs
+        :return:
+        """
         s_ref = inputs["data:geometry:wing:area"]
         c_ref = inputs["data:geometry:wing:MAC:length"]
         b_ref = inputs["data:geometry:wing:span"]
@@ -224,9 +236,9 @@ class AVL(ExternalCodeComp):
         mach_ref = np.cos(inputs["data:geometry:wing:sweep_0"]) * inputs["data:TLAR:cruise_mach"]
         # First lines of the input file
         lines = [
-            "AVL data file for FAST-OAD \n",
+            "AVL geometry FAST-OAD \n",
             str(mach_ref[0]) + "\n",
-            "0 0 0 \n",
+            "0 0 0.0 \n",
             str(s_ref[0]) + " " + str(c_ref[0]) + " " + str(b_ref[0]) + "\n",
             str(x_ref[0]) + "0.0 0.0 \n",
         ]

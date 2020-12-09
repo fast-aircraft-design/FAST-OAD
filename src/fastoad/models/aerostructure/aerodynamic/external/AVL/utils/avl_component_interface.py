@@ -164,13 +164,15 @@ class AvlFuseGeom(IAvlComponentGenerator):
                     comp_lines = [
                         "SURFACE \n",
                         "Fuse H" + "\n",
-                        str(c_space) + " 1.0 " + "1 0.0 \n",
+                        str(c_space) + " 1.0 " + "\n",
                         "COMPONENT\n",
                         str(self.index) + "\n",
+                        "YDUPLICATE \n",
+                        "0.0 \n",
                     ]
                 comp_lines += [
                     "SECTION\n",
-                    x_le + " " + y_le + " " + z_le + " " + chord + " " + ainc + "\n",
+                    x_le + " " + y_le + " " + z_le + " " + chord + " " + ainc + " 1 0.0\n",
                 ]
             elif 2 < idx <= 5:
                 continue
@@ -185,14 +187,14 @@ class AvlFuseGeom(IAvlComponentGenerator):
                     comp_lines = [
                         "SURFACE \n",
                         "Fuse T" + "\n",
-                        str(c_space) + " 1.0 " + "1 0.0 \n",
+                        str(c_space) + " 1.0 " + "\n",
                         "COMPONENT\n",
                         str(self.index) + "\n",
                         "NOWAKE\n",
                     ]
                 comp_lines += [
                     "SECTION\n",
-                    x_le + " " + y_le + " " + z_le + " " + chord + " " + ainc + "\n",
+                    x_le + " " + y_le + " " + z_le + " " + chord + " " + ainc + " 1 0.0 \n",
                 ]
             else:
                 x_le = str(node[0])
@@ -204,12 +206,12 @@ class AvlFuseGeom(IAvlComponentGenerator):
                     comp_lines = [
                         "SURFACE \n",
                         "Fuse B" + "\n",
-                        str(c_space) + " 1.0 " + "1 0.0 \n",
+                        str(c_space) + " 1.0 " + "\n",
                         "COMPONENT\n",
                         str(self.index) + "\n",
                         "NOWAKE\n",
                     ]
                 comp_lines += [
                     "SECTION\n",
-                    x_le + " " + y_le + " " + z_le + " " + chord + " " + ainc + "\n",
+                    x_le + " " + y_le + " " + z_le + " " + chord + " " + ainc + " 1 0.0\n",
                 ]
