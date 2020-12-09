@@ -212,6 +212,7 @@ def test_mission_group_with_loop(cleanup):
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_looped_mission_group.csv"),
             initial_iterations=1,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+            add_solver=True,
         ),
         ivc,
     )
@@ -247,6 +248,7 @@ def test_mission_group_breguet_with_loop(cleanup):
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_looped_mission_group.csv"),
             initial_iterations=1,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
+            add_solver=True,
         ),
         ivc,
     )

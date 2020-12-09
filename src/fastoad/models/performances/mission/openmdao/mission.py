@@ -76,7 +76,7 @@ class Mission(om.Group):
         self.options.declare("initial_iterations", default=2, types=int)
         self.options.declare("adjust_fuel", default=True, types=bool)
         self.options.declare("compute_TOW", default=False, types=bool)
-        self.options.declare("add_solver", default=True, types=bool)
+        self.options.declare("add_solver", default=False, types=bool)
         self.options.declare("is_sizing", default=False, types=bool)
 
     def setup(self):
