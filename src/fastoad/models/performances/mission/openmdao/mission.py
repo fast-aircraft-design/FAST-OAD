@@ -363,6 +363,13 @@ class MissionComponent(om.ExplicitComponent):
                 self._mission_vars.BLOCK_FUEL.value
             ]
 
+        def asscalar(value):
+            if isinstance(value, np.ndarray):
+                return np.asscalar(value)
+            else:
+                return value
+
+        self.flight_points = self.flight_points.applymap(asscalar)
         if self.options["out_file"]:
             self.flight_points.to_csv(self.options["out_file"])
 
