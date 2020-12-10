@@ -30,7 +30,7 @@
         <NPAX1 is_input="False">157.0<!--number of passengers if there are only economical class seats--></NPAX1>
         <aisle_width units="m" is_input="True">0.48<!--width of aisles--></aisle_width>
         <exit_width units="m" is_input="True">0.51<!--width of exits--></exit_width>
-        <length units="m" is_input="False">30.380964840000004<!--cabin length--></length>
+        <length units="m" is_input="False">27.5<!--cabin length--></length>
         <containers>
           <count_by_row is_input="True">1.0<!--number of cargo containers along width--></count_by_row>
         </containers>
@@ -141,11 +141,11 @@
         </tip>
       </vertical_tail>
       <wing>
-        <area units="m**2" is_input="False">121.68104729227579<!--wing reference area--></area>
+        <area units="m**2" is_input="False">122.4<!--wing reference area--></area>
         <aspect_ratio is_input="True">9.48<!--wing aspect ratio--></aspect_ratio>
         <b_50 units="m" is_input="False">36.85402909891179<!--actual length between root and tip along 50% of chord--></b_50>
         <outer_area units="m**2" is_input="False">98.28615654922766<!--wing area outside of fuselage--></outer_area>
-        <span units="m" is_input="False">33.96375020991038<!--wing span--></span>
+        <span units="m" is_input="False">34.1<!--wing span--></span>
         <sweep_0 units="rad" is_input="False">0.472709635153824<!--sweep angle at leading edge of wing--></sweep_0>
         <sweep_100_inner units="deg" is_input="False">0.0<!--sweep angle at trailing edge of wing (inner side of the kink)--></sweep_100_inner>
         <sweep_100_outer units="rad" is_input="False">0.319732377799903<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>
@@ -154,7 +154,7 @@
         <thickness_ratio is_input="False">0.12839840880979247<!--mean thickness ratio of wing--></thickness_ratio>
         <wetted_area units="m**2" is_input="False">196.5723130984553<!--wetted area of wing--></wetted_area>
         <MAC>
-          <length units="m" is_input="False">4.127477213730164<!--length of mean aerodynamic chord of wing--></length>
+          <length units="m" is_input="False">4.2<!--length of mean aerodynamic chord of wing--></length>
           <y units="m" is_input="False">6.626368094587597<!--Y-position of mean aerodynamic chord of wing--></y>
           <at25percent>
             <x units="m" is_input="True">16.0<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
@@ -235,7 +235,7 @@
     </load_case>
     <mission>
       <sizing>
-        <TOW units="kg" is_input="False">73628.61998972052</TOW>
+        <TOW units="kg" is_input="False">74000.</TOW>
         <ZFW units="kg" is_input="False">55201.94945069434<!--aircraft mass with payload, without fuel, in sizing mission--></ZFW>
         <block_fuel units="kg" is_input="False">18426.670539350707<!--total fuel mass at start--></block_fuel>
         <distance units="m" is_input="False">5857857.578426212</distance>
@@ -286,25 +286,25 @@
           <duration units="s" is_input="False">21988.782798480304</duration>
           <fuel units="kg" is_input="False">15117.265567567978<!--mass of total fuel consumed during flight in sizing mission--></fuel>
           <climb>
-            <distance units="m" is_input="False">257685.38736146982<!--covered ground distance during climb phase--></distance>
-            <duration units="s" is_input="False">1214.3946972619826<!--duration of climb phase in sizing mission--></duration>
-            <fuel units="kg" is_input="False">1619.384954005087<!--mass of consumed fuel during climb phase in sizing mission--></fuel>
+            <distance units="m" is_input="False">267984.6<!--covered ground distance during climb phase--></distance>
+            <duration units="s" is_input="False">1384.9<!--duration of climb phase in sizing mission--></duration>
+            <fuel units="kg" is_input="False">1721.3<!--mass of consumed fuel during climb phase in sizing mission--></fuel>
           </climb>
           <cruise>
             <altitude units="m" is_input="True">10668.0<!--altitude during cruise phase in sizing mission--></altitude>
-            <distance units="m" is_input="False">4613089.862453713<!--covered ground distance during cruise phase--></distance>
-            <duration units="s" is_input="False">19530.74985190721<!--duration of cruise phase in sizing mission--></duration>
-            <fuel units="kg" is_input="False">13141.488353205656<!--mass of consumed fuel during cruise phase in sizing mission--></fuel>
+            <distance units="m" is_input="False">4531869.6<!--covered ground distance during cruise phase--></distance>
+            <duration units="s" is_input="False">19616.6<!--duration of cruise phase in sizing mission--></duration>
+            <fuel units="kg" is_input="False">12312.0<!--mass of consumed fuel during cruise phase in sizing mission--></fuel>
           </cruise>
           <descent>
-            <distance units="m" is_input="False">216891.89376028348<!--covered ground distance during descent phase--></distance>
-            <duration units="s" is_input="False">1196.0139455946191<!--duration of descent phase in sizing mission--></duration>
-            <fuel units="kg" is_input="False">239.6280816250728<!--mass of consumed fuel during descent phase in sizing mission--></fuel>
+            <distance units="m" is_input="False">552406.5<!--covered ground distance during descent phase--></distance>
+            <duration units="s" is_input="False">3049.2<!--duration of descent phase in sizing mission--></duration>
+            <fuel units="kg" is_input="False">2569.0<!--mass of consumed fuel during descent phase in sizing mission--></fuel>
           </descent>
           <initial_climb>
-            <distance units="m" is_input="False">5330.481669768027</distance>
-            <duration units="s" is_input="False">47.624303716492626</duration>
-            <fuel units="kg" is_input="False">116.76417873216269</fuel>
+            <distance units="m" is_input="False">2300.</distance>
+            <duration units="s" is_input="False">29.2</duration>
+            <fuel units="kg" is_input="False">78.9</fuel>
           </initial_climb>
         </main_route>
         <reserve>
@@ -313,10 +313,10 @@
           <fuel units="kg" is_input="False">3387.421026997501</fuel>
         </reserve>
         <takeoff>
-          <V2 units="m/s" is_input="True">86.1<!--safety speed before reaching 35 feet height in sizing mission--></V2>
+          <V2 units="m/s" is_input="True">79.3<!--safety speed before reaching 35 feet height in sizing mission--></V2>
           <altitude units="m" is_input="True">0.0<!--altitude at takeoff in sizing mission--></altitude>
           <flap_angle units="deg" is_input="True">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
-          <fuel units="kg" is_input="True">93.6891205669<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
+          <fuel units="kg" is_input="True">82.4<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
           <slat_angle units="deg" is_input="True">18.0<!--slat angle during takeoff phase in sizing mission--></slat_angle>
         </takeoff>
         <taxi_in>
@@ -332,11 +332,11 @@
     </mission>
     <weight>
       <aircraft>
-        <MFW units="kg" is_input="False">18652.350514142647<!--maximum fuel weight--></MFW>
-        <MLW units="kg" is_input="False">64874.066417736<!--maximum landing weight--></MLW>
-        <MTOW units="kg" is_input="False">73628.61998972052<!--maximum takeoff weight--></MTOW>
-        <MZFW units="kg" is_input="False">61201.94945069434<!--maximum zero fuel weight--></MZFW>
-        <OWE units="kg" is_input="False">41593.94945069434<!--operating weight - empty--></OWE>
+        <MFW units="kg" is_input="False">18700.0<!--maximum fuel weight--></MFW>
+        <MLW units="kg" is_input="False">64500.0<!--maximum landing weight--></MLW>
+        <MTOW units="kg" is_input="False">74000.0<!--maximum takeoff weight--></MTOW>
+        <MZFW units="kg" is_input="False">62100.0<!--maximum zero fuel weight--></MZFW>
+        <OWE units="kg" is_input="False">42100.0<!--operating weight - empty--></OWE>
         <additional_fuel_capacity units="kg" is_input="False">225.67997479193946<!--fuel mass capacity of wing that exceeds sizing mission requirement--></additional_fuel_capacity>
         <max_payload units="kg" is_input="False">19608.0<!--max payload weight--></max_payload>
         <payload units="kg" is_input="False">13608.0<!--design payload weight--></payload>
@@ -773,10 +773,10 @@
       <sizing>
         <breguet>
           <climb>
-            <mass_ratio is_input="True">0.97<!--For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)--></mass_ratio>
+            <mass_ratio is_input="True">0.976<!--For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)--></mass_ratio>
           </climb>
           <descent>
-            <mass_ratio is_input="True">0.98<!--For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)--></mass_ratio>
+            <mass_ratio is_input="True">0.985<!--For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)--></mass_ratio>
           </descent>
           <reserve>
             <mass_ratio is_input="True">0.06<!--For Breguet performance computation: (weight of fuel reserve)/ZFW--></mass_ratio>
