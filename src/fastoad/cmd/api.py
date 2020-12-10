@@ -77,7 +77,7 @@ def generate_inputs(
     source_path: str = None,
     source_path_schema="native",
     overwrite: bool = False,
-):
+) -> str:
     """
     Generates input file for the :class:`FASTOADProblem` specified in configuration_file_path.
 
@@ -85,6 +85,7 @@ def generate_inputs(
     :param source_path: path of file data will be taken from
     :param source_path_schema: set to 'legacy' if the source file come from legacy FAST
     :param overwrite: if True, file will be written even if one already exists
+    :return: path of generated file
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
     """
     conf = FASTOADProblemConfigurator(configuration_file_path)
@@ -103,6 +104,7 @@ def generate_inputs(
         conf.write_needed_inputs(source_path)
 
     _LOGGER.info("Problem inputs written in %s", input_file_path)
+    return input_file_path
 
 
 def list_variables(

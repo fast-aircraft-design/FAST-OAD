@@ -54,10 +54,11 @@ def test_generate_inputs(cleanup):
     # Generating again without forcing overwrite will make it fail
     with pytest.raises(FastFileExistsError):
         api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False)
-    api.generate_inputs(
+    input_file_path = api.generate_inputs(
         CONFIGURATION_FILE_PATH, pth.join(DATA_FOLDER_PATH, "inputs.xml"), overwrite=True
     )
-    assert pth.exists(pth.join(RESULTS_FOLDER_PATH, "inputs.xml"))
+    assert input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
+    assert pth.exists(input_file_path)
 
 
 def test_list_systems(cleanup):
