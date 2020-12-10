@@ -1,0 +1,94 @@
+<!--
+  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<FASTOAD_model>
+  <data>
+    <TLAR>
+      <cruise_mach is_input="True">0.78<!--top-level requirement: cruise Mach number--></cruise_mach>
+      <range units="NM" is_input="True">2750.0<!--top-level requirement: design range--></range>
+    </TLAR>
+    <propulsion>
+      <MTO_thrust units="N" is_input="True">117880.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
+      <rubber_engine>
+        <bypass_ratio is_input="True">4.9<!--bypass ratio for rubber engine model--></bypass_ratio>
+        <delta_t4_climb is_input="True">-50.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
+        <delta_t4_cruise is_input="True">-100.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_cruise>
+        <design_altitude units="m" is_input="True">10058.4<!--design altitude for rubber engine model--></design_altitude>
+        <maximum_mach is_input="True">0.85<!--maximum Mach number for rubber engine model--></maximum_mach>
+        <overall_pressure_ratio is_input="True">32.6<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
+        <turbine_inlet_temperature units="K" is_input="True">1633.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
+      </rubber_engine>
+    </propulsion>
+    <geometry>
+      <wing>
+        <area units="m**2" is_input="True">121.68104729227579<!--wing reference area--></area>
+      </wing>
+      <propulsion>
+        <engine>
+          <count is_input="True">2.0<!--number of engines--></count>
+        </engine>
+      </propulsion>
+    </geometry>
+    <mission>
+      <sizing>
+        <TOW units="kg" is_input="True">73628.61998972052</TOW>
+        <payload units="kg" is_input="True">1.0</payload>
+        <takeoff>
+          <V2 units="m/s" is_input="True">86.1<!--safety speed before reaching 35 feet height in sizing mission--></V2>
+          <altitude units="m" is_input="True">0.0<!--altitude at takeoff in sizing mission--></altitude>
+          <fuel units="kg" is_input="True">93.6891205669<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
+        </takeoff>
+        <taxi_out>
+          <fuel units="kg" is_input="True">276.0<!--mass of consumed fuel during taxi-out phase in sizing mission--></fuel>
+        </taxi_out>
+        <main_route>
+          <cruise>
+            <altitude units="m" is_input="True">10668.0<!--altitude during cruise phase in sizing mission--></altitude>
+          </cruise>
+        </main_route>
+      </sizing>
+    </mission>
+    <weight>
+      <aircraft>
+        <OWE units="kg" is_input="True">41593.94945069434<!--operating weight - empty--></OWE>
+      </aircraft>
+    </weight>
+    <aerodynamics>
+      <aircraft>
+        <cruise>
+          <CD is_input="True">[0.021359451715359804, 0.02136010325723715, 0.021366721038068217, 0.02137940415640198, 0.021398251710787408, 0.021423362799773464, 0.02145483652190911, 0.021492771975743313, 0.02153726825982505, 0.021588424472703264, 0.021646339712926937, 0.02171111307904503, 0.021782843669606516, 0.021861630583160353, 0.021947572918255505, 0.02204076977344094, 0.022141320247265624, 0.02224932343827853, 0.022364878445028612, 0.02248808436606484, 0.02261904029993618, 0.0227578453451916, 0.02290459860038006, 0.023059399164050528, 0.023222346134751982, 0.023393538611033365, 0.023573075691443658, 0.02376105647453182, 0.02395758005884682, 0.024162745542937628, 0.0243766520253532, 0.02459939860464251, 0.02483108437935452, 0.025071808448038194, 0.025321669909242502, 0.0255807678615164, 0.025851330684881546, 0.026135613321967392, 0.026433795112189105, 0.026746110748490853, 0.02707285312387943, 0.027414377432995355, 0.02777110665041068, 0.028143538549904732, 0.028532254477870004, 0.028937930151230976, 0.02936134881820624, 0.029803417201817325, 0.030265184744824834, 0.030747866795192005, 0.03125287251877899, 0.031781838507706384, 0.032336669277445204, 0.03291958612425019, 0.03353318616106758, 0.03418051378233456, 0.0348651473488448, 0.0355913045620964, 0.03636397085042263, 0.03718905616445509, 0.03807358693851842, 0.039025941696693614, 0.04005614097009381, 0.0411762049784272, 0.042400596087182316, 0.043746767607295914, 0.04523584635170082, 0.04689348388890822, 0.04875092114508986, 0.04956784557453207, 0.05021265280009024, 0.05087026406448078, 0.05154077846625266, 0.05222429510395482, 0.05292091307613624, 0.053630731481345895, 0.05435384941813273, 0.05509036598504573, 0.055840380280633845, 0.05660399140344603, 0.05738129845203129, 0.058172400524938564, 0.05897739672071682, 0.05979638613791503, 0.06062946787508213, 0.06147674103076714, 0.06233830470351899, 0.06321425799188665, 0.06410469999441909, 0.06500972980966527, 0.06592944653617416, 0.06686394927249473, 0.06781333711717594, 0.06877770916876674, 0.06975716452581615, 0.07075180228687306, 0.07176172155048649, 0.07278702141520538, 0.07382780097957871, 0.07488415934215545, 0.07595619560148453, 0.07704400885611495, 0.07814769820459569, 0.07926736274547568, 0.0804031015773039, 0.08155501379862931, 0.08272319850800089, 0.08390775480396759, 0.08510878178507837, 0.08632637854988222, 0.08756064419692809, 0.08881167782476496, 0.09007957853194176, 0.0913644454170075, 0.09266637757851112, 0.09398547411500158, 0.09532183412502784, 0.0966755567071389, 0.09804674095988372, 0.09943548598181126, 0.10084189087147048, 0.10226605472741032, 0.1037080766481798, 0.10516805573232785, 0.10664609107840345, 0.10814228178495552, 0.10965672695053309, 0.11118952567368509, 0.11274077705296051, 0.11431058018690829, 0.1158990341740774, 0.11750623811301683, 0.11913229110227552, 0.12077729224040243, 0.1224413406259466, 0.12412453535745686, 0.1258269755334823, 0.12754876025257178, 0.12928998861327437, 0.131050759714139, 0.13283117265371455, 0.1346313265305501, 0.13645132044319455, 0.1382912534901969, 0.14015122477010616, 0.1420313333814712, 0.143931678422841, 0.1458523589927646, 0.14779347418979089, 0.14975512311246889]<!--drag coefficient in cruise conditions w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD>
+          <CL is_input="True">[0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.3, 0.31, 0.32, 0.33, 0.34, 0.35000000000000003, 0.36, 0.37, 0.38, 0.39, 0.4, 0.41000000000000003, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47000000000000003, 0.48, 0.49, 0.5, 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.5700000000000001, 0.58, 0.59, 0.6, 0.61, 0.62, 0.63, 0.64, 0.65, 0.66, 0.67, 0.68, 0.6900000000000001, 0.7000000000000001, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.8, 0.81, 0.8200000000000001, 0.8300000000000001, 0.84, 0.85, 0.86, 0.87, 0.88, 0.89, 0.9, 0.91, 0.92, 0.93, 0.9400000000000001, 0.9500000000000001, 0.96, 0.97, 0.98, 0.99, 1.0, 1.01, 1.02, 1.03, 1.04, 1.05, 1.06, 1.07, 1.08, 1.09, 1.1, 1.11, 1.12, 1.1300000000000001, 1.1400000000000001, 1.1500000000000001, 1.16, 1.17, 1.18, 1.19, 1.2, 1.21, 1.22, 1.23, 1.24, 1.25, 1.26, 1.27, 1.28, 1.29, 1.3, 1.31, 1.32, 1.33, 1.34, 1.35, 1.36, 1.37, 1.3800000000000001, 1.3900000000000001, 1.4000000000000001, 1.41, 1.42, 1.43, 1.44, 1.45, 1.46, 1.47, 1.48, 1.49]<!--scale of lift coefficient values for drag computations in cruise conditions--></CL>
+        </cruise>
+      </aircraft>
+    </aerodynamics>
+  </data>
+  <settings>
+    <mission>
+      <sizing>
+        <breguet>
+          <climb>
+            <mass_ratio is_input="True">0.97<!--For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)--></mass_ratio>
+          </climb>
+          <descent>
+            <mass_ratio is_input="True">0.98<!--For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)--></mass_ratio>
+          </descent>
+          <reserve>
+            <mass_ratio is_input="True">0.06<!--For Breguet performance computation: (weight of fuel reserve)/ZFW--></mass_ratio>
+          </reserve>
+        </breguet>
+      </sizing>
+    </mission>
+  </settings>
+</FASTOAD_model>
