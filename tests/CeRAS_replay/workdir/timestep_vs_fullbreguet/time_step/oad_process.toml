@@ -1,4 +1,4 @@
-title = "OAD process with performances as Breguet computation"
+title = "OAD process with performances as time step integration"
 
 # List of folder paths where user added custom registered OpenMDAO components
 module_folders = []
@@ -9,16 +9,14 @@ output_file = "./outputs/out.xml"
 
 # Definition of OpenMDAO model
 [model]
-#    # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
-#    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
+#    nonlinear_solver = "om.NonlinearBlockGS(maxiter=30)"
 #    linear_solver = "om.DirectSolver()"
 
     [model.performance]
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "./outputs/mission_CeRAS.csv"
-        mission_file_path = "../../mission_files/design_mission_breguet.yml"
+        mission_file_path = "../../../mission_files/design_mission.yml"
         adjust_fuel = false
         is_sizing = false
         initial_iterations = 0
-

@@ -15,10 +15,10 @@
 """
 <div class="row">
   <div class="column">
-    <img src="../img/logo-onera.png" width="200">
+    <img src="../../img/logo-onera.png" width="200">
   </div>
   <div class="column">
-    <img src="../img/logo-ISAE_SUPAERO.png" width="200">
+    <img src="../../img/logo-ISAE_SUPAERO.png" width="200">
   </div>
 </div>
 """
@@ -80,7 +80,7 @@ fig.show()
 # %%
 """
 #### From CeRAS_CSR-01_report.pdf
-<img src="../img/CeRAS_report/CeRAS_bucket_curve.jpg" width="600">
+<img src="../../img/CeRAS_report/CeRAS_bucket_curve.jpg" width="600">
 """
 
 # %%
@@ -89,7 +89,7 @@ TIMESTEP_WORK_FOLDER_PATH = "time_step"
 
 BREGUET_CONFIGURATION_FILE = pth.join(BREGUET_WORK_FOLDER_PATH, "oad_process.toml")
 TIMESTEP_CONFIGURATION_FILE = pth.join(TIMESTEP_WORK_FOLDER_PATH, "oad_process.toml")
-CeRAS_INPUT_FILE = pth.join(pth.pardir, "reference_data.xml")
+CeRAS_INPUT_FILE = pth.join(pth.pardir, pth.pardir, "reference_data.xml")
 BREGUET_CSV_FILE = pth.join(BREGUET_WORK_FOLDER_PATH, "outputs", "mission_CeRAS.csv")
 TIMESTEP_CSV_FILE = pth.join(TIMESTEP_WORK_FOLDER_PATH, "outputs", "mission_CeRAS.csv")
 
@@ -180,5 +180,5 @@ fig.show()
 # %%
 """
 #### From CeRAS_CSR-01_report.pdf
-<img src="../img/CeRAS_report/design_mission.png" width="600">
+<img src="../../img/CeRAS_report/design_mission.png" width="600">
 """
