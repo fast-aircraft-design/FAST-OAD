@@ -199,6 +199,14 @@ class Profile:
         side1.sort_values(by=X, inplace=True)
         side2.sort_values(by=X, inplace=True)
 
+        # At this point, side2 and side1 have the same last point, but in in case of thick
+        # trailing edge, it could lead to side2 to have 2 points for the same X, which will be
+        # harmful in next operations.
+        # In that case, we simply have to remove last point of side2, as it actually belongs to
+        # side1.
+        if side2[X].iloc[-1] == side2[X].iloc[-2]:
+            side2 = side2.iloc[:-1]
+
         if np.max(side1[Z]) > np.max(side2[Z]):
             upper_side_points = side1
             lower_side_points = side2
