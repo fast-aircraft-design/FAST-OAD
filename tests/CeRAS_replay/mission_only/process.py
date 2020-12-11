@@ -90,7 +90,8 @@ TIMESTEP_WORK_FOLDER_PATH = "time_step"
 BREGUET_CONFIGURATION_FILE = pth.join(BREGUET_WORK_FOLDER_PATH, "oad_process.toml")
 TIMESTEP_CONFIGURATION_FILE = pth.join(TIMESTEP_WORK_FOLDER_PATH, "oad_process.toml")
 CeRAS_INPUT_FILE = pth.join(pth.pardir, "reference_data.xml")
-MISSION_CSV_FILE = pth.join(TIMESTEP_WORK_FOLDER_PATH, "outputs", "mission_CeRAS.csv")
+BREGUET_CSV_FILE = pth.join(BREGUET_WORK_FOLDER_PATH, "outputs", "mission_CeRAS.csv")
+TIMESTEP_CSV_FILE = pth.join(TIMESTEP_WORK_FOLDER_PATH, "outputs", "mission_CeRAS.csv")
 
 
 # For having log messages on screen
@@ -122,20 +123,25 @@ timestep_problem = api.evaluate_problem(TIMESTEP_CONFIGURATION_FILE, overwrite=T
 api.variable_viewer(timestep_problem.output_file_path, editable=False)
 
 # %%
-df = pd.read_csv(MISSION_CSV_FILE)
-df.altitude /= foot
-df.ground_distance /= nautical_mile
+timestep_df = pd.read_csv(TIMESTEP_CSV_FILE)
+breguet_df = pd.read_csv(BREGUET_CSV_FILE)
+for df in [timestep_df, breguet_df]:
+    df.altitude /= foot
+    df.ground_distance /= nautical_mile
 
 fig = make_subplots(specs=[[{"secondary_y": True}]])
-fig.add_trace(
-    go.Scatter(x=df["ground_distance"], y=df["altitude"], name="altitude vs distance"),
-    secondary_y=False,
-)
+for df in [timestep_df, breguet_df]:
+    fig.add_trace(
+        go.Scatter(x=df["ground_distance"], y=df["altitude"], name="altitude vs distance"),
+        secondary_y=False,
+    )
 
-fig.add_trace(
-    go.Scatter(x=df["ground_distance"], y=df["CL"], name="CL vs distance", line=dict(dash="dot"),),
-    secondary_y=True,
-)
+    fig.add_trace(
+        go.Scatter(
+            x=df["ground_distance"], y=df["CL"], name="CL vs distance", line=dict(dash="dot"),
+        ),
+        secondary_y=True,
+    )
 
 fig.update_xaxes(range=[-30, 2800.0])
 fig.update_yaxes(title_text="Altitude [ft]", range=[0, 40000.0], secondary_y=False)
@@ -147,14 +153,16 @@ fig.show()
 fig = make_subplots(specs=[[{"secondary_y": True}]])
 
 fig.add_trace(
-    go.Scatter(x=df["ground_distance"], y=df["thrust"], name="thrust vs distance"),
+    go.Scatter(
+        x=timestep_df["ground_distance"], y=timestep_df["thrust"], name="thrust vs distance"
+    ),
     secondary_y=False,
 )
 
 fig.add_trace(
     go.Scatter(
-        x=df["ground_distance"],
-        y=df["mass"].iloc[0] - df["mass"],
+        x=timestep_df["ground_distance"],
+        y=timestep_df["mass"].iloc[0] - timestep_df["mass"],
         name="fuel vs distance",
         line=dict(dash="dot"),
     ),

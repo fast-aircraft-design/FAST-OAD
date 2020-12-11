@@ -35,7 +35,7 @@ output_file = "./outputs/out.xml"
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "./outputs/mission_CeRAS.csv"
-        mission_file_path = "::sizing_breguet"
+        mission_file_path = "../../mission_files/design_mission_breguet.yml"
         adjust_fuel = true
         is_sizing = true
     [model.hq_tail_sizing]

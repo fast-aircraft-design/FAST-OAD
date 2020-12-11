@@ -39,7 +39,7 @@ output_file = "./outputs/out.xml"
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "./outputs/mission_CeRAS.csv"
-        mission_file_path = "./inputs/sizing_mission.yml"
+        mission_file_path = "../../mission_files/design_mission.yml"
         adjust_fuel = true
         is_sizing = true
    [model.wing_area]

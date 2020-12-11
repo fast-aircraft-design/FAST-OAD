@@ -131,10 +131,10 @@
           <slat_angle units="deg" is_input="True">20.0<!--slat angle during landing phase in sizing mission--></slat_angle>
         </landing>
         <takeoff>
-          <V2 units="m/s" is_input="True">86.1<!--safety speed before reaching 35 feet height in sizing mission--></V2>
+          <V2 units="m/s" is_input="True">79.3<!--safety speed before reaching 35 feet height in sizing mission--></V2>
           <altitude units="m" is_input="True">0.0<!--altitude at takeoff in sizing mission--></altitude>
           <flap_angle units="deg" is_input="True">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
-          <fuel units="kg" is_input="True">93.6891205669<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
+          <fuel units="kg" is_input="True">82.4<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
           <slat_angle units="deg" is_input="True">18.0<!--slat angle during takeoff phase in sizing mission--></slat_angle>
         </takeoff>
         <taxi_out>
@@ -205,10 +205,10 @@
       <sizing>
         <breguet>
           <climb>
-            <mass_ratio is_input="True">0.97<!--For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)--></mass_ratio>
+            <mass_ratio is_input="True">0.976<!--For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)--></mass_ratio>
           </climb>
           <descent>
-            <mass_ratio is_input="True">0.98<!--For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)--></mass_ratio>
+            <mass_ratio is_input="True">0.985<!--For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)--></mass_ratio>
           </descent>
           <reserve>
             <mass_ratio is_input="True">0.06<!--For Breguet performance computation: (weight of fuel reserve)/ZFW--></mass_ratio>

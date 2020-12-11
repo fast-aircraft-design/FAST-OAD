@@ -33,7 +33,7 @@
     </propulsion>
     <geometry>
       <wing>
-        <area units="m**2" is_input="True">121.68104729227579<!--wing reference area--></area>
+        <area units="m**2" is_input="True">122.4<!--wing reference area--></area>
       </wing>
       <propulsion>
         <engine>
@@ -43,13 +43,17 @@
     </geometry>
     <mission>
       <sizing>
-        <TOW units="kg" is_input="True">73628.61998972052</TOW>
+        <TOW units="kg" is_input="True">74000.0</TOW>
         <payload units="kg" is_input="True">1.0</payload>
         <takeoff>
-          <V2 units="m/s" is_input="True">86.1<!--safety speed before reaching 35 feet height in sizing mission--></V2>
+          <V2 units="m/s" is_input="True">79.3<!--safety speed before reaching 35 feet height in sizing mission--></V2>
           <altitude units="m" is_input="True">0.0<!--altitude at takeoff in sizing mission--></altitude>
-          <fuel units="kg" is_input="True">93.6891205669<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
+          <fuel units="kg" is_input="True">82.4<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
         </takeoff>
+        <taxi_in>
+          <duration units="s" is_input="True">300.0<!--duration of taxi-in phase in sizing mission--></duration>
+          <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
+        </taxi_in>
         <taxi_out>
           <fuel units="kg" is_input="True">276.0<!--mass of consumed fuel during taxi-out phase in sizing mission--></fuel>
         </taxi_out>
@@ -62,7 +66,7 @@
     </mission>
     <weight>
       <aircraft>
-        <OWE units="kg" is_input="True">41593.94945069434<!--operating weight - empty--></OWE>
+        <OWE units="kg" is_input="True">42100.0<!--operating weight - empty--></OWE>
       </aircraft>
     </weight>
     <aerodynamics>
@@ -79,10 +83,10 @@
       <sizing>
         <breguet>
           <climb>
-            <mass_ratio is_input="True">0.97<!--For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)--></mass_ratio>
+            <mass_ratio is_input="True">0.976<!--For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)--></mass_ratio>
           </climb>
           <descent>
-            <mass_ratio is_input="True">0.98<!--For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)--></mass_ratio>
+            <mass_ratio is_input="True">0.985<!--For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)--></mass_ratio>
           </descent>
           <reserve>
             <mass_ratio is_input="True">0.06<!--For Breguet performance computation: (weight of fuel reserve)/ZFW--></mass_ratio>

@@ -250,7 +250,7 @@
           <sizing_load_2 units="kg" is_input="False">250477.31697471044<!--sizing load during gust with maximum aircraft mass--></sizing_load_2>
         </cs25>
         <descent>
-          <thrust_rate is_input="True">0.12<!--thrust rate (between 0.0 and 1.0) during descent phase in sizing mission--></thrust_rate>
+          <thrust_rate is_input="True">0.18<!--thrust rate (between 0.0 and 1.0) during descent phase in sizing mission--></thrust_rate>
         </descent>
         <diversion>
           <distance units="m" is_input="True">370400.0<!--distance to travel during diversion in sizing mission--></distance>
@@ -286,20 +286,20 @@
           <duration units="s" is_input="False">21988.782798480304</duration>
           <fuel units="kg" is_input="False">15117.265567567978<!--mass of total fuel consumed during flight in sizing mission--></fuel>
           <climb>
-            <distance units="m" is_input="False">267984.6<!--covered ground distance during climb phase--></distance>
-            <duration units="s" is_input="False">1384.9<!--duration of climb phase in sizing mission--></duration>
-            <fuel units="kg" is_input="False">1721.3<!--mass of consumed fuel during climb phase in sizing mission--></fuel>
+            <distance units="m" is_input="False">266752.9<!--covered ground distance during climb phase--></distance>
+            <duration units="s" is_input="False">1354.5<!--duration of climb phase in sizing mission--></duration>
+            <fuel units="kg" is_input="False">1638.9<!--mass of consumed fuel during climb phase in sizing mission--></fuel>
           </climb>
           <cruise>
             <altitude units="m" is_input="True">10668.0<!--altitude during cruise phase in sizing mission--></altitude>
-            <distance units="m" is_input="False">4531869.6<!--covered ground distance during cruise phase--></distance>
-            <duration units="s" is_input="False">19616.6<!--duration of cruise phase in sizing mission--></duration>
-            <fuel units="kg" is_input="False">12312.0<!--mass of consumed fuel during cruise phase in sizing mission--></fuel>
+            <distance units="m" is_input="False">4529569.8<!--covered ground distance during cruise phase--></distance>
+            <duration units="s" is_input="False">19587.4<!--duration of cruise phase in sizing mission--></duration>
+            <fuel units="kg" is_input="False">12233.2<!--mass of consumed fuel during cruise phase in sizing mission--></fuel>
           </cruise>
           <descent>
-            <distance units="m" is_input="False">552406.5<!--covered ground distance during descent phase--></distance>
-            <duration units="s" is_input="False">3049.2<!--duration of descent phase in sizing mission--></duration>
-            <fuel units="kg" is_input="False">2569.0<!--mass of consumed fuel during descent phase in sizing mission--></fuel>
+            <distance units="m" is_input="False">284421.9<!--covered ground distance during descent phase--></distance>
+            <duration units="s" is_input="False">1664.3<!--duration of descent phase in sizing mission--></duration>
+            <fuel units="kg" is_input="False">847.7<!--mass of consumed fuel during descent phase in sizing mission--></fuel>
           </descent>
           <initial_climb>
             <distance units="m" is_input="False">2300.</distance>

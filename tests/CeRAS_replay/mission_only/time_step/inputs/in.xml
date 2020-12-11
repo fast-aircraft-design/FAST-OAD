@@ -33,7 +33,7 @@
     </propulsion>
     <geometry>
       <wing>
-        <area units="m**2" is_input="True">121.68104729227579<!--wing reference area--></area>
+        <area units="m**2" is_input="True">122.4<!--wing reference area--></area>
       </wing>
       <propulsion>
         <engine>
@@ -43,24 +43,21 @@
     </geometry>
     <mission>
       <sizing>
-        <TOW units="kg" is_input="True">73628.61998972052</TOW>
+        <TOW units="kg" is_input="True">74000.0</TOW>
         <payload units="kg" is_input="True">1.0</payload>
         <climb>
           <thrust_rate is_input="True">0.93<!--thrust rate (between 0.0 and 1.0) during climb phase in sizing mission--></thrust_rate>
         </climb>
         <descent>
-          <thrust_rate is_input="True">0.12<!--thrust rate (between 0.0 and 1.0) during descent phase in sizing mission--></thrust_rate>
+          <thrust_rate is_input="True">0.18<!--thrust rate (between 0.0 and 1.0) during descent phase in sizing mission--></thrust_rate>
         </descent>
-        <diversion>
-          <distance units="m" is_input="True">370400.0<!--distance to travel during diversion in sizing mission--></distance>
-        </diversion>
         <holding>
           <duration units="s" is_input="True">2700.0<!--duration of holding phase in sizing mission--></duration>
         </holding>
         <takeoff>
-          <V2 units="m/s" is_input="True">86.1<!--safety speed before reaching 35 feet height in sizing mission--></V2>
+          <V2 units="m/s" is_input="True">79.3<!--safety speed before reaching 35 feet height in sizing mission--></V2>
           <altitude units="m" is_input="True">0.0<!--altitude at takeoff in sizing mission--></altitude>
-          <fuel units="kg" is_input="True">93.6891205669<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
+          <fuel units="kg" is_input="True">82.4<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
         </takeoff>
         <taxi_in>
           <duration units="s" is_input="True">300.0<!--duration of taxi-in phase in sizing mission--></duration>
@@ -73,7 +70,7 @@
     </mission>
     <weight>
       <aircraft>
-        <OWE units="kg" is_input="True">41593.94945069434<!--operating weight - empty--></OWE>
+        <OWE units="kg" is_input="True">42100.0<!--operating weight - empty--></OWE>
       </aircraft>
     </weight>
     <aerodynamics>
