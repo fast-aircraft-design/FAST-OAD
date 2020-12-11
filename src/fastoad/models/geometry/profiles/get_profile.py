@@ -23,16 +23,14 @@ from .profile import Profile
 from .. import resources
 
 
-def get_profile(
-    file_name: str = "BACJ.txt", thickness_ratio=None, chord_length=None
-) -> pd.DataFrame:
+def get_profile(file_name: str = "BACJ.txt", thickness_ratio=None, chord_length=None) -> Profile:
     """
     Reads profile from indicated resource file and returns it after resize
 
     :param file_name: name of resource (only "BACJ.txt" for now)
     :param thickness_ratio:
     :param chord_length:
-    :return: Nx2 pandas.DataFrame with x in 1st column and z in 2nd column
+    :return: the Profile instance
     """
 
     with open_text(resources, file_name) as source:
@@ -46,4 +44,4 @@ def get_profile(
     if chord_length:
         profile.chord_length = chord_length
 
-    return profile.get_sides()
+    return profile

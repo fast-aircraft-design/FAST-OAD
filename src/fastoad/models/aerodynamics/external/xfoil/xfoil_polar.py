@@ -114,7 +114,7 @@ class XfoilPolar(ExternalCodeComp):
         tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
         profile = get_profile(
             file_name=self.options[OPTION_PROFILE_NAME], thickness_ratio=thickness_ratio
-        )
+        ).get_sides()
         np.savetxt(
             tmp_profile_file_path,
             profile.to_numpy(),

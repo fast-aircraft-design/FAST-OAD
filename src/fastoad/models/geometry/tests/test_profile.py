@@ -17,6 +17,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 # pylint: disable=redefined-outer-name  # false positive on pytest fixtures
+from ..profiles.get_profile import get_profile
 from ..profiles.profile import Profile
 
 
@@ -171,3 +172,22 @@ def test_set_points(point_set):
     # plt.plot(profile.get_lower_side()['x'], profile.get_lower_side()['z'], 'o-')
     # plt.plot(profile.get_mean_line()['x'], profile.get_mean_line()['z'], 'o-')
     # plt.show()
+
+
+def test_get_profile():
+    profile = get_profile()
+    assert_allclose(1.0, profile.chord_length, rtol=1e-4)
+    assert_allclose(0.10070, profile.thickness_ratio, rtol=1e-4)
+
+    profile = get_profile("airfoil_f_15_15.txt")
+    assert_allclose(0.9823, profile.chord_length, rtol=1e-4)
+    assert_allclose(0.1527, profile.thickness_ratio, rtol=1e-4)
+
+    profile = get_profile("airfoil_f_15_12.txt")
+    assert_allclose(0.9823, profile.chord_length, rtol=1e-4)
+    print(profile.thickness_ratio)
+    assert_allclose(0.1227, profile.thickness_ratio, rtol=1e-4)
+
+    profile = get_profile("airfoil_f_15_11.txt")
+    assert_allclose(0.9823, profile.chord_length, rtol=1e-4)
+    assert_allclose(0.1127, profile.thickness_ratio, rtol=1e-4)
