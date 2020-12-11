@@ -127,10 +127,19 @@ route_definitions:
           altitude: optimal_flight_level
         maximum_flight_level: 360
       - phase: descent
+  diversion:
+    range: data:mission:sizing:diversion:distance
+    steps:
+      - phase: diversion_climb
+      - cruise_type: cruise
+        engine_setting: cruise
+        polar: data:aerodynamics:aircraft:cruise
+      - phase: descent
 
 mission:
   name: sizing
   steps:
     - route: main_route
+    - route: diversion
     - phase: holding
     - phase: taxi_in
