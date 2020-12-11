@@ -12,6 +12,8 @@ output_file = "./outputs/out.xml"
 #    nonlinear_solver = "om.NonlinearBlockGS(maxiter=30)"
 #    linear_solver = "om.DirectSolver()"
 
+    [model.group.aerodynamics_highspeed]
+        id = "fastoad.aerodynamics.highspeed.legacy"
     [model.performance]
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"

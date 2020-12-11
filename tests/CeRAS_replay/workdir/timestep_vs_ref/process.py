@@ -83,6 +83,7 @@ fig.show()
 <img src="../../img/CeRAS_report/CeRAS_bucket_curve.jpg" width="600">
 """
 
+
 # %%
 CeRAS_REF_DIR = pth.join(pth.pardir, pth.pardir, "CeRAS_ref")
 CeRAS_INPUT_FILE = pth.join(pth.pardir, pth.pardir, "reference_data.xml")
@@ -109,6 +110,41 @@ sizing_mission_problem = api.evaluate_problem(SIZING_MISSION_CONFIGURATION_FILE,
 
 # %%
 api.variable_viewer(sizing_mission_problem.output_file_path, editable=False)
+
+
+# %%
+CL_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CL"]
+CD_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CD"]
+CD0_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CD0"]
+CDi_cruise = (
+    sizing_mission_problem["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"]
+    * CL_cruise ** 2
+    * sizing_mission_problem["tuning:aerodynamics:aircraft:cruise:CD:winglet:k"]
+)
+CDc_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CD:compressibility"]
+
+fig = make_subplots(rows=1, cols=2)
+fig.add_trace(go.Scatter(x=CD_cruise, y=CL_cruise, name="Drag polar at Mach 0.78"), col=1, row=1)
+fig.add_trace(go.Scatter(x=CD0_cruise, y=CL_cruise, name="CD0 polar at Mach 0.78"), col=1, row=1)
+fig.add_trace(go.Scatter(x=CDi_cruise, y=CL_cruise, name="CDi polar at Mach 0.78"), col=1, row=1)
+fig.add_trace(go.Scatter(x=CDc_cruise, y=CL_cruise, name="CDc polar at Mach 0.78"), col=1, row=1)
+
+
+fig.add_trace(
+    go.Scatter(x=CL_cruise, y=CL_cruise / CD_cruise, name="L/D polar at Mach 0.78"), col=2, row=1
+)
+fig.update_xaxes(title_text="CD", range=[0, 0.1], col=1, row=1)
+fig.update_yaxes(title_text="CL", range=[-0.3, 1.2], col=1, row=1)
+fig.update_xaxes(title_text="CL", range=[0, 1.2], col=2, row=1)
+fig.update_yaxes(title_text="L/D", range=[4, 20], col=2, row=1)
+fig.show()
+
+
+# %%
+"""
+#### From CeRAS_CSR-01_report.pdf
+<img src="../../img/CeRAS_report/polars.png" width="600">
+"""
 
 
 # %%
