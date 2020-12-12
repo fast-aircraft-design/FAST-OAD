@@ -184,8 +184,7 @@ class Profile:
     @staticmethod
     def _create_upper_lower_sides(x: Sequence, z: Sequence) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """ returns upper side points and lower side points using provided x and z """
-        # FIXME: leading and trailing edges are located roughly. For instance
-        #        thick trailing edges are not considered.
+        # FIXME: leading and trailing edges are located roughly.
         i_leading_edge = np.argmin(x)
         i_trailing_edge = np.argmax(x)
 
@@ -200,7 +199,7 @@ class Profile:
         side2.sort_values(by=X, inplace=True)
 
         # At this point, side2 and side1 have the same last point, but in in case of thick
-        # trailing edge, it could lead to side2 to have 2 points for the same X, which will be
+        # trailing edge, it could lead to side2 having 2 points for the same X, which will be
         # harmful in next operations.
         # In that case, we simply have to remove last point of side2, as it actually belongs to
         # side1.

@@ -185,9 +185,16 @@ def test_get_profile():
 
     profile = get_profile("airfoil_f_15_12.txt")
     assert_allclose(0.9823, profile.chord_length, rtol=1e-4)
-    print(profile.thickness_ratio)
-    assert_allclose(0.1227, profile.thickness_ratio, rtol=1e-4)
+    assert_allclose(0.12215, profile.thickness_ratio, rtol=1e-4)
 
     profile = get_profile("airfoil_f_15_11.txt")
     assert_allclose(0.9823, profile.chord_length, rtol=1e-4)
-    assert_allclose(0.1127, profile.thickness_ratio, rtol=1e-4)
+    assert_allclose(0.1120, profile.thickness_ratio, rtol=1e-4)
+
+    profile = get_profile("airfoil_f_15_11.txt", chord_length=2.0)
+    assert_allclose(2.0, profile.chord_length, rtol=1e-4)
+    assert_allclose(0.1120, profile.thickness_ratio, rtol=1e-4)
+
+    profile = get_profile("airfoil_f_15_12.txt", chord_length=0.5, thickness_ratio=0.2)
+    assert_allclose(0.5, profile.chord_length, rtol=1e-4)
+    assert_allclose(0.2, profile.thickness_ratio, rtol=1e-4)
