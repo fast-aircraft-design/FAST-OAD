@@ -63,7 +63,8 @@ class Profile:
     @thickness_ratio.setter
     def thickness_ratio(self, value: float):
 
-        # mean line is modified accordingly
+        # FIXME: mean line is modified accordingly to conform to legacy algorithm, but it
+        #        is questionable
         if self._max_relative_thickness != 0.0:
             coeff = value / self._max_relative_thickness
             self._rel_mean_line_and_thickness[Z] *= coeff
@@ -166,7 +167,13 @@ class Profile:
         Fills self._rel_mean_line_and_thickness with relative values.
         Returns actual chord length and maximum thickness (in meters)
         """
-        x = lower_side_points[X].append(upper_side_points[X]).drop_duplicates().sort_values()
+        x = (
+            lower_side_points[X]
+            .append(upper_side_points[X])
+            .sort_values()
+            .drop_duplicates()
+            .reset_index(drop=True)
+        )
 
         interp_lower = interp1d(lower_side_points[X], lower_side_points[Z], kind="quadratic")
         interp_upper = interp1d(upper_side_points[X], upper_side_points[Z], kind="quadratic")

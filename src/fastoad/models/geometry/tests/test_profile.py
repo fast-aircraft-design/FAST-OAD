@@ -179,6 +179,10 @@ def test_get_profile():
     assert_allclose(1.0, profile.chord_length, rtol=1e-4)
     assert_allclose(0.10070, profile.thickness_ratio, rtol=1e-4)
 
+    profile = get_profile("naca23012.txt")
+    assert_allclose(1.0, profile.chord_length, rtol=1e-4)
+    assert_allclose(0.12006, profile.thickness_ratio, rtol=1e-4)
+
     profile = get_profile("airfoil_f_15_15.txt")
     assert_allclose(0.9823, profile.chord_length, rtol=1e-4)
     assert_allclose(0.1527, profile.thickness_ratio, rtol=1e-4)
