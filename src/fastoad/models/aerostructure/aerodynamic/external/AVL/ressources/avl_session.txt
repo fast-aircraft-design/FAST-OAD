@@ -1,6 +1,6 @@
 LOAD
 data.avl
-.OPER
+OPER
 A C 0.5
 M
 MN 0.75
@@ -9,7 +9,7 @@ D 0.223
 G 9.81
 
 O
-P T F T F
+P T T F F
 
 X
 W

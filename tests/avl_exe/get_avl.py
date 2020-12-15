@@ -1,4 +1,4 @@
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -10,3 +10,17 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import os.path as pth
+from shutil import which
+from typing import Optional
+
+
+def get_avl_path() -> Optional[str]:
+    path = pth.join(pth.dirname(__file__), "avl")
+    if pth.exists(path):
+        # If there is a local avl, use it
+        return path
+    else:
+        # Otherwise, use one that is in PATH, if it exists
+        return which("avl")

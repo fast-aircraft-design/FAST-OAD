@@ -1,0 +1,36 @@
+<FASTOAD_model>
+    <data>
+        <TLAR>
+            <cruise_mach>0.78<!--top-level requirement: cruise Mach number--></cruise_mach>
+        </TLAR>
+        <geometry>
+            <wing>
+                <area units="m**2">156.394<!--wing reference area--></area>
+                <span units="m">35.0<!--wing span--></span>
+                <sweep_0 units="deg">27.07<!--sweep angle at leading edge of wing--></sweep_0>
+                <MAC>
+                    <length units="m">4.25<!--length of mean aerodynamic chord of wing--></length>
+                    <at25percent>
+                        <x units="m">16.5<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
+                    </at25percent>
+                </MAC>
+            </wing>
+        </geometry>
+        <aerostructural>
+            <load_case>
+                <weight units="kg">78000.0<!--Aircraft weight to be considered for loads assessment--></weight>
+                <load_factor>2.5<!--Load factor for sizing conditions--></load_factor>
+                <speed>0.84<!--Mach for manoeuvre conditions--></speed>
+            </load_case>
+        </aerostructural>
+    </data>
+    <tuning>
+        <aerostructural>
+            <aerodynamic>
+                <chordwise_spacing>
+                    <k>1.0<!--Coefficient to increase or decrease the VLM chordwise spacing--></k>
+                </chordwise_spacing>
+            </aerodynamic>
+        </aerostructural>
+    </tuning>
+</FASTOAD_model>

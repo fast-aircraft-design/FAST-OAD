@@ -27,11 +27,11 @@ from pytest import approx
 from fastoad.io import VariableIO
 from fastoad.models.aerostructure.aerodynamic.external.AVL.avl import AVL
 from tests.testing_utilities import run_system
+from tests.avl_exe.get_avl import get_avl_path
 
 
 AVL_RESULTS = pth.join(pth.dirname(__file__), "results")
-
-AVL_PATH = None
+AVL_PATH = None if system() == "Windows" else get_avl_path()
 
 
 def get_indep_var_comp(var_names):
@@ -51,20 +51,20 @@ def _get_nodes(comp, sect):
     """
     nodes = np.nan
     if comp == "wing":
-        nodes = np.zeros((sect * 2, 3))
-        nodes[:, 0] = np.linspace(11.5, 19.42, sect * 2)
-        nodes[:sect, 1] = np.linspace(1.96, 17.5, sect * 2)
-        nodes[sect:, 1] = -nodes[:sect, 1]
+        nodes = np.zeros(((sect + 1) * 2, 3))
+        nodes[: sect + 1, 0] = nodes[sect + 1 :, 0] = np.linspace(11.5, 19.44, sect + 1)
+        nodes[: sect + 1, 1] = np.linspace(1.96, 17.5, sect + 1)
+        nodes[sect + 1 :, 1] = -nodes[: sect + 1, 1]
     if comp == "horizontal_tail":
-        nodes = np.zeros((sect * 2, 3))
-        nodes[:, 0] = np.linspace(32.4, 36.44, sect)
-        nodes[:sect, 1] = np.linspace(0, 6.15, sect)
-        nodes[sect:, 1] = -nodes[:sect, 1]
+        nodes = np.zeros(((sect + 1) * 2, 3))
+        nodes[: sect + 1, 0] = nodes[sect + 1 :, 0] = np.linspace(32.4, 36.44, sect + 1)
+        nodes[: sect + 1, 1] = np.linspace(0, 6.15, sect + 1)
+        nodes[sect + 1 :, 1] = -nodes[: sect + 1, 1]
         nodes[:, 2] = 1.02
     if comp == "vertical_tail":
-        nodes = np.zeros((sect, 3))
-        nodes[:, 0] = np.linspace(30.5, 36.4, sect)
-        nodes[:, 2] = np.linspace(2.03, 8.93, sect)
+        nodes = np.zeros((sect + 1, 3))
+        nodes[:, 0] = np.linspace(30.5, 36.4, sect + 1)
+        nodes[:, 2] = np.linspace(2.03, 8.93, sect + 1)
     if comp == "fuselage":
         nodes = np.zeros((12, 3))
         nodes[:3, 0] = nodes[3:6, 0] = nodes[6:9, 0] = nodes[9:12, 0] = np.linspace(0.0, 6.9, 3)
@@ -84,11 +84,11 @@ def _get_chords(comp, sect):
     """
     chords = np.nan
     if comp == "wing":
-        chords = np.linspace(6.20, 2.3, sect)
+        chords = np.tile(np.linspace(6.20, 2.3, sect + 1), 2)
     if comp == "horizontal_tail":
-        chords = np.linspace(4.4, 1.3, sect)
+        chords = np.tile(np.linspace(4.4, 1.3, sect + 1), 2)
     if comp == "vertical_tail":
-        chords = np.linspace(6.0, 1.8, sect)
+        chords = np.linspace(6.0, 1.8, sect + 1)
     if comp == "fuselage":
         chords = np.zeros(12)
         chords[0] = chords[3] = chords[6] = chords[9] = 37.5
@@ -99,10 +99,31 @@ def _get_chords(comp, sect):
     return chords
 
 
+def get_ivc_for_components(
+    components: list, sections: list, input_list: list, load_case: dict,
+):
+    ivc = get_indep_var_comp(input_list)
+    ivc.add_output("data:aerostructural:load_case:weight", load_case["weight"], units="kg")
+    ivc.add_output("data:aerostructural:load_case:altitude", load_case["altitude"], units="ft")
+    ivc.add_output("data:aerostructural:load_case:load_factor", load_case["load_factor"])
+    ivc.add_output("data:aerostructural:load_case:mach", load_case["mach"])
+    for comp, sect in zip(components, sections):
+        nodes = _get_nodes(comp, sect)
+        ivc.add_output("data:aerostructural:aerodynamic:" + comp + ":nodes", nodes)
+        chords = _get_chords(comp, sect)
+        ivc.add_output("data:aerostructural:aerodynamic:" + comp + ":chords", chords)
+        if comp == "wing":
+            twist = np.tile(np.linspace(3, -1, sect + 1), 2)
+            t_c = np.tile(np.linspace(0.12, 0.1, sect + 1), 2)
+            ivc.add_output("data:aerostructural:aerodynamic:wing:twist", twist)
+            ivc.add_output("data:aerostructural:aerodynamic:wing:thickness_ratios", t_c)
+    return ivc
+
+
 @pytest.mark.skipif(
-    system() != "Windows" and AVL_PATH is None, reason="No XFOIL executable available"
+    system() != "Windows" and AVL_PATH is None, reason="No AVL executable available"
 )
-def test_compute():
+def test_avl_design():
     """
     Test simple AVL computation without sizing option (nz=1.0) and simplified rectangular swept wing
     """
@@ -114,32 +135,133 @@ def test_compute():
         "data:geometry:wing:sweep_0",
         "data:geometry:wing:MAC:length",
         "data:geometry:wing:MAC:at25percent:x",
+        "tuning:aerostructural:aerodynamic:chordwise_spacing:k",
     ]
 
-    def get_cl_cdi_forces(components, sections):
-        ivc = get_indep_var_comp(input_list)
-        ivc.add_output("data:aerostructural:load_case:weight", 60000, units="kg")
-        for comp, sect in zip(components, sections):
-            nodes = _get_nodes(comp, sect)
-            ivc.add_output("data:aerostructural:aerodynamic:" + comp + "nodes", nodes)
-            chords = _get_chords(comp, sect)
-            ivc.add_output("data:aerostructural:aerodynamic:" + comp + "chord", chords)
-            if comp == "wing":
-                twist = np.linspace(3, -1, sect)
-                t_c = np.linspace(0.12, 0.1, sect)
-                ivc.add_output("data:aerostructural:aerodynamic:wing:twist", twist)
-                ivc.add_output("data:aerostructural:aerodynamic:wing:thickness_ratios", t_c)
+    # Test with only wing and fuselage -------------------------------------------------------------
+    load_case = {"weight": 60000, "altitude": 35000, "mach": 0.78, "load_factor": 1.0}
+    components = ["wing", "fuselage"]
+    sections = [11, 12]
+    ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
-        avl_comp = AVL(components=components, components_sections=sections, sizing=False)
+    avl_comp = AVL(components=components, components_sections=sections)
+    problem = run_system(avl_comp, ivc)
+    assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
+    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.011373, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.6678, abs=1e-4)
+    assert not pth.exists(pth.join(pth.dirname(__file__), "results"))
+    # Test for complete aircraft (wing, fuselage, tails) -------------------------------------------
+    components = ["wing", "horizontal_tail", "vertical_tail", "fuselage"]
+    sections = [11, 11, 5, 12]
+    ivc = get_ivc_for_components(components, sections, input_list, load_case)
+
+    avl_comp = AVL(components=components, components_sections=sections)
+    problem = run_system(avl_comp, ivc)
+    assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
+    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0097103, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.7766, abs=1e-4)
+    assert not pth.exists(pth.join(pth.dirname(__file__), "results"))
+    # Test with results directory provided ---------------------------------------------------------
+    components = ["wing", "horizontal_tail", "vertical_tail", "fuselage"]
+    sections = [11, 11, 5, 12]
+    ivc = get_ivc_for_components(components, sections, input_list, load_case)
+
+    avl_comp = AVL(
+        components=components, components_sections=sections, result_folder_path=AVL_RESULTS
+    )
+    problem = run_system(avl_comp, ivc)
+    assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
+    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0097103, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.7766, abs=1e-4)
+    assert pth.exists(AVL_RESULTS)
+    assert pth.exists(pth.join(AVL_RESULTS, "results.out"))
+
+
+@pytest.mark.skipif(
+    system() != "Windows" and AVL_PATH is None, reason="No AVL executable available"
+)
+def test_avl_sizing():
+    """
+    Test simple AVL computation with sizing option (nz=2.5) and simplified rectangular swept wing
+    """
+    input_list = [
+        "data:geometry:wing:span",
+        "data:geometry:wing:area",
+        "data:geometry:wing:sweep_0",
+        "data:geometry:wing:MAC:length",
+        "data:geometry:wing:MAC:at25percent:x",
+        "tuning:aerostructural:aerodynamic:chordwise_spacing:k",
+    ]
+
+    # Test with only wing and fuselage -------------------------------------------------------------
+    load_case = {"weight": 78000, "altitude": 30000, "mach": 0.84, "load_factor": 2.5}
+    components = ["wing", "fuselage"]
+    sections = [11, 12]
+    ivc = get_ivc_for_components(components, sections, input_list, load_case)
+    avl_comp = AVL(components=components, components_sections=sections)
+    problem = run_system(avl_comp, ivc)
+
+    forces_test = np.loadtxt(
+        pth.join(pth.dirname(__file__), "data", "forces_results_wing_fuse_2p5g"), skiprows=1
+    )
+    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:forces"], forces_test):
+        assert f_fast[0] == approx(f_test[0], rel=1e-3)
+        assert f_fast[1] == approx(f_test[1], rel=1e-3)
+        assert f_fast[2] == approx(f_test[2], rel=1e-3)
+        assert f_fast[4] == approx(f_test[4], rel=1e-2)
+        assert f_fast[5] == approx(f_test[5], rel=1e-2)
+
+    # Test for complete aircraft (wing, fuselage, tails) -------------------------------------------
+    components = ["wing", "horizontal_tail", "vertical_tail", "fuselage"]
+    sections = [11, 11, 5, 12]
+    ivc = get_ivc_for_components(components, sections, input_list, load_case)
+
+    avl_comp = AVL(components=components, components_sections=sections)
+    problem = run_system(avl_comp, ivc)
+    forces_test = np.loadtxt(
+        pth.join(pth.dirname(__file__), "data", "forces_results_full_2p5g"), skiprows=1
+    )
+    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:forces"], forces_test):
+        assert f_fast[0] == approx(f_test[0], rel=1e-3)
+        assert f_fast[1] == approx(f_test[1], rel=1e-3)
+        assert f_fast[2] == approx(f_test[2], rel=1e-3)
+        assert f_fast[4] == approx(f_test[4], rel=1e-2)
+        assert f_fast[5] == approx(f_test[5], rel=1e-2)
+
+
+@pytest.mark.skipif(
+    system() != "Windows" and AVL_PATH is None, reason="No AVL executable available"
+)
+def test_avl_path():
+    """
+    Tests AVL with a specified exe path.
+    :return:
+    """
+    input_list = [
+        "data:geometry:wing:span",
+        "data:geometry:wing:area",
+        "data:geometry:wing:sweep_0",
+        "data:geometry:wing:MAC:length",
+        "data:geometry:wing:MAC:at25percent:x",
+        "tuning:aerostructural:aerodynamic:chordwise_spacing:k",
+    ]
+
+    # Test with only wing and fuselage -------------------------------------------------------------
+    load_case = {"weight": 60000, "altitude": 35000, "mach": 0.78, "load_factor": 1.0}
+    components = ["wing", "fuselage"]
+    sections = [11, 12]
+    ivc = get_ivc_for_components(components, sections, input_list, load_case)
+
+    avl_comp = AVL(components=components, components_sections=sections)
+
+    avl_comp.options["avl_exe_path"] = "Dummy"  # bad name
+    with pytest.raises(ValueError):
         problem = run_system(avl_comp, ivc)
-        cl = problem["data:aerostructural:aerodynamic:CL"]
-        cdi = problem["data:aerostructural:aerodynamic:CDi"]
-        oswald = problem["data:aerostructural:aerodynamic:Oswald_Coeff"]
-        forces = problem["data:aerostructural:aerodynamic:forces"]
-        return cl, cdi, oswald, forces
 
-    assert get_cl_cdi_forces(["wing", "fuselage"], [12, 3])[0] == approx(0.37, abs=1e-3)
-    assert get_cl_cdi_forces(["wing", "fuselage"], [12, 3])[1] == approx(0.01274, abs=1e-5)
-    assert get_cl_cdi_forces(["wing", "fuselage"], [12, 3])[2] == approx(0.6573, abs=1e-4)
-
-    # Test with only wing and fuselage
+    avl_comp.options["avl_exe_path"] = (
+        AVL_PATH if AVL_PATH else pth.join(pth.dirname(__file__), pth.pardir, "avl336", "avl.exe")
+    )
+    problem = run_system(avl_comp, ivc)
+    assert problem["data:aerostructural:aerodynamic:CL"] == approx(0.37, abs=1e-3)
+    assert problem["data:aerostructural:aerodynamic:CDi"] == approx(0.011373, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"] == approx(0.6678, abs=1e-4)
