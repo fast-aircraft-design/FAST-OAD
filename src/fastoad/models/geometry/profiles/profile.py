@@ -115,7 +115,7 @@ class Profile:
         """Point set of relative thickness of the profile.
 
         DataFrame keys are 'x' and 'thickness' and are relative to chord_length.
-        'x' is form 0. to 1.
+        'x' is from 0. to 1.
         """
         return self._rel_mean_line_and_thickness[[X, THICKNESS]] * [1.0, self.thickness_ratio]
 
