@@ -297,7 +297,9 @@
         </geometry>
         <handling_qualities>
             <static_margin>
-                -0.07556179197340485<!--(X-position of neutral point - X-position of center of gravity ) / (mean aerodynamic chord)--></static_margin>
+                -0.07556179197340485<!--(X-position of neutral point - X-position of center of gravity ) / (mean aerodynamic chord)-->
+                <target>0.05<!--(X-position of neutral point - X-position of center of gravity ) / (mean aerodynamic chord) target--></target>
+            </static_margin>
         </handling_qualities>
         <propulsion>
             <MTO_thrust units="N">
