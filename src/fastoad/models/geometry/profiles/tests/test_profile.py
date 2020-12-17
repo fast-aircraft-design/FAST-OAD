@@ -17,8 +17,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 # pylint: disable=redefined-outer-name  # false positive on pytest fixtures
-from ..profiles.get_profile import get_profile
-from ..profiles.profile import Profile
+from ..get_profile import get_profile
+from ..profile import Profile
 
 
 @pytest.fixture()

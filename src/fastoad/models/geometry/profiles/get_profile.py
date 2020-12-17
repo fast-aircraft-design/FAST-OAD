@@ -17,10 +17,9 @@ Airfoil reshape function
 from importlib.resources import open_text
 
 import numpy as np
-import pandas as pd
 
+from . import resources
 from .profile import Profile
-from .. import resources
 
 
 def get_profile(file_name: str = "BACJ.txt", thickness_ratio=None, chord_length=None) -> Profile:
