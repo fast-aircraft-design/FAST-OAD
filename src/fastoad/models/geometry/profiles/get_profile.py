@@ -22,13 +22,15 @@ from . import resources
 from .profile import Profile
 
 
-def get_profile(file_name: str = "BACJ.txt", thickness_ratio=None, chord_length=None) -> Profile:
+# FIXME: user currently has to know the name of available resources. A class would allow
+#        to provide more introspection.
+def get_profile(file_name: str = "BACJ.txt", chord_length=1.0, thickness_ratio=None) -> Profile:
     """
     Reads profile from indicated resource file and returns it after resize
 
-    :param file_name: name of resource (only "BACJ.txt" for now)
+    :param file_name: name of resource
+    :param chord_length: set to None to get original chord length
     :param thickness_ratio:
-    :param chord_length:
     :return: the Profile instance
     """
 
