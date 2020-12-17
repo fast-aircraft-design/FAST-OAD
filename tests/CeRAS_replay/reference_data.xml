@@ -793,7 +793,8 @@
             <k is_input="True">1.0<!--correction ratio to apply to computed drag coefficient in cruise conditions--></k>
             <offset is_input="True">0.0<!--correction offset to apply to computed drag coefficient in cruise conditions--></offset>
             <compressibility>
-              <ceiling is_input="True">0.5<!--maximum authorized value for compressibility drag. Allows to prevent the model from overestimating the compressibility effect, especially for aircraft models after year 2000.--></ceiling>
+              <max_value is_input="True">0.5</max_value>
+              <characteristic_mach_increment is_input="True">0.015</characteristic_mach_increment>
             </compressibility>
             <winglet_effect>
               <k is_input="True">0.87<!--correction ratio to apply to computed induced drag coefficient in cruise conditions--></k>
