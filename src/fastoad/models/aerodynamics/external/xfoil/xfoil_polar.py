@@ -27,7 +27,7 @@ from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 
 from fastoad.models.aerodynamics.external.xfoil import xfoil699
-from fastoad.models.geometry.profiles.get_profile import get_profile
+from fastoad.models.geometry.profiles import get_profile
 from fastoad.utils.resource_management.copy import copy_resource
 from . import resources
 

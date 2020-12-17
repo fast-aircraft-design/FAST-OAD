@@ -21,7 +21,7 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy import interpolate
 
-from fastoad.models.geometry.profiles.get_profile import get_profile
+from fastoad.models.geometry.profiles import get_profile
 
 
 class ComputeTanksCG(ExplicitComponent):
