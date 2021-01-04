@@ -122,6 +122,7 @@ CDi_cruise = (
     * sizing_mission_problem["tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k"]
 )
 CDc_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CD:compressibility"]
+CDtrim_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CD:trim"]
 CDwing_cruise = sizing_mission_problem["data:aerodynamics:wing:cruise:CD0"]
 CDfuselage_cruise = sizing_mission_problem["data:aerodynamics:fuselage:cruise:CD0"]
 
@@ -130,6 +131,9 @@ fig.add_trace(go.Scatter(x=CD_cruise, y=CL_cruise, name="Drag polar at Mach 0.78
 fig.add_trace(go.Scatter(x=CD0_cruise, y=CL_cruise, name="CD0 polar at Mach 0.78"), col=1, row=1)
 fig.add_trace(go.Scatter(x=CDi_cruise, y=CL_cruise, name="CDi polar at Mach 0.78"), col=1, row=1)
 fig.add_trace(go.Scatter(x=CDc_cruise, y=CL_cruise, name="CDc polar at Mach 0.78"), col=1, row=1)
+fig.add_trace(
+    go.Scatter(x=CDtrim_cruise, y=CL_cruise, name="CDtrim polar at Mach 0.78"), col=1, row=1
+)
 fig.add_trace(
     go.Scatter(x=CDwing_cruise, y=CL_cruise, name="CD wing polar at Mach 0.78"), col=1, row=1
 )
