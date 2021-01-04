@@ -237,6 +237,7 @@
       <sizing>
         <TOW units="kg" is_input="False">74000.</TOW>
         <ZFW units="kg" is_input="False">55201.94945069434<!--aircraft mass with payload, without fuel, in sizing mission--></ZFW>
+        <payload units="kg">13608.</payload>
         <block_fuel units="kg" is_input="False">18426.670539350707<!--total fuel mass at start--></block_fuel>
         <distance units="m" is_input="False">5857857.578426212</distance>
         <duration units="s" is_input="False">26979.7056013327</duration>
@@ -794,10 +795,10 @@
             <offset is_input="True">0.0<!--correction offset to apply to computed drag coefficient in cruise conditions--></offset>
             <compressibility>
               <max_value is_input="True">0.5</max_value>
-              <characteristic_mach_increment is_input="True">0.015</characteristic_mach_increment>
+              <characteristic_mach_increment is_input="True">0.018</characteristic_mach_increment>
             </compressibility>
             <winglet_effect>
-              <k is_input="True">0.87<!--correction ratio to apply to computed induced drag coefficient in cruise conditions--></k>
+              <k is_input="True">0.9<!--correction ratio to apply to computed induced drag coefficient in cruise conditions--></k>
               <offset is_input="True">0.0<!--correction ratio to apply to computed drag coefficient in cruise conditions--></offset>
             </winglet_effect>
           </CD>

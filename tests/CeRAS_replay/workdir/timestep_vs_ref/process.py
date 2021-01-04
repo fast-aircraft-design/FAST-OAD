@@ -38,6 +38,7 @@ from scipy.constants import nautical_mile
 from fastoad import api
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
+from fastoad.io import VariableIO
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 
 # %%
@@ -88,8 +89,18 @@ fig.show()
 CeRAS_REF_DIR = pth.join(pth.pardir, pth.pardir, "CeRAS_ref")
 CeRAS_INPUT_FILE = pth.join(pth.pardir, pth.pardir, "reference_data.xml")
 SIZING_MISSION_WORK_FOLDER_PATH = "missionStudy_R5093_PL13608"
-SIZING_MISSION_CONFIGURATION_FILE = pth.join(SIZING_MISSION_WORK_FOLDER_PATH, "oad_process.toml")
-SIZING_MISSION_CSV_FILE = pth.join(SIZING_MISSION_WORK_FOLDER_PATH, "outputs", "mission_CeRAS.csv")
+SIZING_MISSION_REPLAY_CONFIGURATION_FILE = pth.join(
+    SIZING_MISSION_WORK_FOLDER_PATH, "mission_replay.toml"
+)
+SIZING_MISSION_FUEL_SIZING_CONFIGURATION_FILE = pth.join(
+    SIZING_MISSION_WORK_FOLDER_PATH, "fuel_sizing.toml"
+)
+SIZING_MISSION_REPLAY_CSV_FILE = pth.join(
+    SIZING_MISSION_WORK_FOLDER_PATH, "outputs", "mission_replay.csv"
+)
+SIZING_MISSION_FUEL_SIZING_CSV_FILE = pth.join(
+    SIZING_MISSION_WORK_FOLDER_PATH, "outputs", "fuel_sizing.csv"
+)
 
 
 # For having log messages on screen
@@ -99,14 +110,16 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)-8s: %(message)s")
 # from IPython.core.display import display, HTML
 # display(HTML("<style>.container { width:95% !important; }</style>"))
 
-#
+# %%
 sizing_mission_input_file = api.generate_inputs(
-    SIZING_MISSION_CONFIGURATION_FILE, CeRAS_INPUT_FILE, overwrite=True
+    SIZING_MISSION_REPLAY_CONFIGURATION_FILE, CeRAS_INPUT_FILE, overwrite=True
 )
 api.variable_viewer(sizing_mission_input_file, editable=False)
 
 # %%
-sizing_mission_problem = api.evaluate_problem(SIZING_MISSION_CONFIGURATION_FILE, overwrite=True)
+sizing_mission_problem = api.evaluate_problem(
+    SIZING_MISSION_REPLAY_CONFIGURATION_FILE, overwrite=True
+)
 
 # %%
 api.variable_viewer(sizing_mission_problem.output_file_path, editable=False)
@@ -194,17 +207,17 @@ def read_ceras_df(csv_file_path):
 
 
 # %%
-sizing_mission_df = pd.read_csv(SIZING_MISSION_CSV_FILE)
-ref_sizing_mission__df = read_ceras_df(
+sizing_mission_df = pd.read_csv(SIZING_MISSION_REPLAY_CSV_FILE)
+ref_sizing_mission_df = read_ceras_df(
     pth.join(CeRAS_REF_DIR, "CSR-01_missionStudy_R5093_PL13608_out.csv")
 )
 
-for df in [sizing_mission_df, ref_sizing_mission__df]:
+for df in [sizing_mission_df, ref_sizing_mission_df]:
     df.altitude /= foot
     df.ground_distance /= nautical_mile
 
 fig = make_subplots(specs=[[{"secondary_y": True}]])
-for df, name in zip([sizing_mission_df, ref_sizing_mission__df], ["FAST-OAD", "CeRAS ref"]):
+for df, name in zip([sizing_mission_df, ref_sizing_mission_df], ["FAST-OAD", "CeRAS ref"]):
     fig.add_trace(
         go.Scatter(
             x=df["ground_distance"], y=df["altitude"], name="[%s] altitude vs distance" % name
@@ -228,7 +241,7 @@ fig.show()
 
 
 fig = make_subplots(specs=[[{"secondary_y": True}]])
-for df, name in zip([sizing_mission_df, ref_sizing_mission__df], ["FAST-OAD", "CeRAS ref"]):
+for df, name in zip([sizing_mission_df, ref_sizing_mission_df], ["FAST-OAD", "CeRAS ref"]):
     fig.add_trace(
         go.Scatter(x=df["ground_distance"], y=df["thrust"], name="[%s] thrust vs distance" % name),
         secondary_y=False,
@@ -249,7 +262,52 @@ fig.update_layout(margin=dict(l=300, r=280, t=0, b=20), width=1000, height=250)
 fig.show()
 
 # %%
-"""
-#### From CeRAS_CSR-01_report.pdf
-<img src="../../img/CeRAS_report/design_mission.png" width="600">
-"""
+sizing_mission_input_file = api.generate_inputs(
+    SIZING_MISSION_FUEL_SIZING_CONFIGURATION_FILE, CeRAS_INPUT_FILE, overwrite=True
+)
+api.variable_viewer(sizing_mission_input_file, editable=False)
+
+# %%
+sizing_mission_problem = api.evaluate_problem(
+    SIZING_MISSION_FUEL_SIZING_CONFIGURATION_FILE, overwrite=True
+)
+
+# %%
+vars = VariableIO(sizing_mission_problem.output_file_path).read()
+print(vars["data:mission:sizing:TOW"])
+
+# %%
+api.variable_viewer(sizing_mission_problem.output_file_path, editable=False)
+
+# %%
+sizing_mission_df = pd.read_csv(SIZING_MISSION_FUEL_SIZING_CSV_FILE)
+ref_sizing_mission_df = read_ceras_df(
+    pth.join(CeRAS_REF_DIR, "CSR-01_missionStudy_R5093_PL13608_out.csv")
+)
+
+for df in [sizing_mission_df, ref_sizing_mission_df]:
+    df.altitude /= foot
+    df.ground_distance /= nautical_mile
+
+fig = make_subplots(specs=[[{"secondary_y": True}]])
+for df, name in zip([sizing_mission_df, ref_sizing_mission_df], ["FAST-OAD", "CeRAS ref"]):
+    fig.add_trace(
+        go.Scatter(
+            x=df["ground_distance"], y=df["altitude"], name="[%s] altitude vs distance" % name
+        ),
+        secondary_y=False,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=df["ground_distance"],
+            y=df["CL"],
+            name="[%s] CL vs distance" % name,
+            line=dict(dash="dot"),
+        ),
+        secondary_y=True,
+    )
+fig.update_xaxes(range=[-30, 2800.0])
+fig.update_yaxes(title_text="Altitude [ft]", range=[0, 40000.0], secondary_y=False)
+fig.update_yaxes(title_text="CL", range=[0.3, 0.8], secondary_y=True)
+fig.update_layout(margin=dict(l=300, r=280, t=20, b=0), width=1000, height=250)
+fig.show()
