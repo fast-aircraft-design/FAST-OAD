@@ -141,7 +141,7 @@ def test_mission_component(cleanup):
         ivc,
     )
     # plot_flight(problem.model.component.flight_points, "test_mission.png")
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6480.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6589.0, atol=1.0)
 
 
 def test_mission_component_breguet(cleanup):
@@ -177,7 +177,7 @@ def test_mission_group_without_loop(cleanup):
         ),
         ivc,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6480.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6589.0, atol=1.0)
     assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
 
 
@@ -232,7 +232,7 @@ def test_mission_group_with_loop(cleanup):
         atol=1.0,
     )
     assert_allclose(
-        problem["data:mission:operational:needed_block_fuel"], 5596.0, atol=1.0,
+        problem["data:mission:operational:needed_block_fuel"], 5700.0, atol=1.0,
     )
 
 
