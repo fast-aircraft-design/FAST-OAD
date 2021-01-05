@@ -124,6 +124,12 @@ class FlightSegment(IFlightPart):
                     :param time_step: time step for new point
                     :return: new distance to target
                     """
+
+                    if isinstance(time_step, np.ndarray):
+                        # root_scalar() will provide time_step ad (1,) array, resulting
+                        # in all parameters of the new flight point being also (1,) arrays.
+                        # We want to avoid that
+                        time_step = time_step.item()
                     del flight_points[-1]
                     self._add_new_flight_point(flight_points, time_step)
                     return self._get_distance_to_target(flight_points)
