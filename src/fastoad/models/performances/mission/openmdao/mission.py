@@ -104,7 +104,7 @@ class Mission(om.Group):
                 "data:mission:%s:block_fuel" % mission_name,
             )
             if self.options["add_solver"]:
-                self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4)
+                self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4, iprint=0)
                 self.linear_solver = om.DirectSolver()
 
         if self.options["compute_TOW"]:
