@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from typing import Tuple, List
 
 import pandas as pd
-from scipy.constants import g
+from scipy.constants import g, foot
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.utils.physics import AtmosphereSI
@@ -51,20 +51,27 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
     .. note:: **Setting target**
 
-        Target can be an altitude, or a speed.
+        Target can be an altitude, or a speed:
 
-        Target altitude can be a float value (in **meters**), or can be set to:
+        - Target altitude can be a float value (in **meters**), or can be set to:
 
-        - :attr:`OPTIMAL_ALTITUDE`: in that case, the target altitude will be the altitude
-          where maximum lift/drag ratio is achieved for target speed, depending on current mass.
-        - :attr:`OPTIMAL_FLIGHT_LEVEL`: same as above, except that altitude will be rounded to
-          the nearest flight level (multiple of 1000 feet).
+            - :attr:`OPTIMAL_ALTITUDE`: in that case, the target altitude will be the altitude
+              where maximum lift/drag ratio is achieved for target speed, depending on current mass.
+            - :attr:`OPTIMAL_FLIGHT_LEVEL`: same as above, except that altitude will be rounded to
+              the nearest flight level (multiple of 100 feet).
 
-        For a speed target, as explained above, one value  TAS, EAS or Mach must be
-        :code:`"constant"`. One of the two other ones can be set as target.
+        - For a speed target, as explained above, one value  TAS, EAS or Mach must be
+          :code:`"constant"`. One of the two other ones can be set as target.
+
+        In any case, the achieved value will be capped so it respects
+        :attr:`maximum_flight_level`.
+
     """
 
     time_step: float = 2.0
+
+    #: The maximum allowed flight level (i.e. multiple of 100 feet).
+    maximum_flight_level: float = 500.0
 
     #: Using this value will tell to target the altitude with max lift/drag ratio.
     OPTIMAL_ALTITUDE = "optimal_altitude"  # pylint: disable=invalid-name # used as constant
@@ -101,6 +108,12 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
+
+        # Max flight level is first priority
+        max_authorized_altitude = self.maximum_flight_level * 100.0 * foot
+        if current.altitude >= max_authorized_altitude:
+            return max_authorized_altitude - current.altitude
+
         if self.target.CL:
             # Optimal altitude is based on a target Mach number, though target speed
             # may be specified as TAS or EAS. If so, Mach number has to be computed
