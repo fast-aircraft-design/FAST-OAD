@@ -13,6 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from copy import copy
 from dataclasses import dataclass
 from typing import Tuple, List
 
@@ -107,7 +108,7 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
             # First, as target speed is expected to be set to self.CONSTANT_VALUE for one
             # parameter. Let's get the real value from start point.
-            target_speed = self.target
+            target_speed = copy(self.target)
             for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
                 if isinstance(getattr(target_speed, speed_param), str):
                     setattr(target_speed, speed_param, getattr(flight_points[0], speed_param))
