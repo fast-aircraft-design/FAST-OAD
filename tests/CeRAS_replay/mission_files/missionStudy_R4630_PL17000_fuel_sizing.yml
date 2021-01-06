@@ -26,7 +26,7 @@ phase_definitions:
   climb:
     engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise
-    thrust_rate: data:mission:SPP_design:climb:thrust_rate
+    thrust_rate: data:mission:MTOW_mission:climb:thrust_rate
     time_step: 5.0
     steps:
       - segment: altitude_change
@@ -52,7 +52,7 @@ phase_definitions:
   diversion_climb:
     engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise
-    thrust_rate: data:mission:SPP_design:climb:thrust_rate
+    thrust_rate: data:mission:MTOW_mission:climb:thrust_rate
     time_step: 5.0
     steps:
       - segment: altitude_change
@@ -75,7 +75,7 @@ phase_definitions:
   descent:
     engine_setting: idle
     polar: data:aerodynamics:aircraft:cruise
-    thrust_rate: data:mission:SPP_design:descent:thrust_rate
+    thrust_rate: data:mission:MTOW_mission:descent:thrust_rate
     time_step: 5.0
     steps:
       - segment: altitude_change
@@ -106,17 +106,17 @@ phase_definitions:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
-          time: data:mission:SPP_design:holding:duration
+          time: data:mission:MTOW_mission:holding:duration
   taxi_in:
     steps:
       - segment: taxi
-        thrust_rate: data:mission:SPP_design:taxi_in:thrust_rate
+        thrust_rate: data:mission:MTOW_mission:taxi_in:thrust_rate
         target:
-          time: data:mission:SPP_design:taxi_in:duration
+          time: data:mission:MTOW_mission:taxi_in:duration
 
 route_definitions:
   main_route:
-    range: data:TLAR:range
+    range: data:mission:MTOW_mission:range
     steps:
       - phase: initial_climb
       - phase: climb
@@ -128,7 +128,7 @@ route_definitions:
         maximum_flight_level: 360
       - phase: descent
   diversion:
-    range: data:mission:SPP_design:diversion:distance
+    range: data:mission:MTOW_mission:diversion:distance
     steps:
       - phase: diversion_climb
       - cruise_type: cruise

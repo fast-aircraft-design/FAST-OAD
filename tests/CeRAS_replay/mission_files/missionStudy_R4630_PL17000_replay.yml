@@ -81,7 +81,7 @@ phase_definitions:
 
 route_definitions:
   main_route:
-    range: data:TLAR:range
+    range: data:mission:MTOW_mission:range
     steps:
       - phase: initial_climb
       - phase: climb
