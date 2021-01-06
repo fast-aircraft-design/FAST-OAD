@@ -60,7 +60,7 @@ class StructureBeamProps(om.ExplicitComponent):
                 shape=(n_sections, 4),
             )
 
-        elif c_type == "horizontal_tail" or c_type == "strut":
+        elif c_type in ("horizontal_tail", "strut"):
             self.add_input("data:geometry:" + c_type + ":span", val=np.nan)
             self.add_input("data:geometry:" + c_type + ":root:chord", val=np.nan)
             self.add_input("data:geometry:" + c_type + ":tip:chord", val=np.nan)

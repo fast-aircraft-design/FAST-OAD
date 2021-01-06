@@ -109,7 +109,7 @@ def get_ivc_for_components(
     ivc.add_output("data:aerostructural:load_case:mach", load_case["mach"])
     for comp, sect in zip(components, sections):
         nodes = _get_nodes(comp, sect)
-        ivc.add_output("data:aerostructural:aerodynamic:" + comp + ":nodes", nodes)
+        ivc.add_output("data:aerostructural:aerodynamic:" + comp + ":def_nodes", nodes)
         chords = _get_chords(comp, sect)
         ivc.add_output("data:aerostructural:aerodynamic:" + comp + ":chords", chords)
         if comp == "wing":
