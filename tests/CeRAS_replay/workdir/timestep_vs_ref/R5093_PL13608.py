@@ -26,6 +26,8 @@
 # %%
 import logging
 import os.path as pth
+from os import mkdir
+from shutil import rmtree
 
 import numpy as np
 import pandas as pd
@@ -86,21 +88,21 @@ fig.show()
 
 
 # %%
+mission_name = "R5093_PL13608"
+
 CeRAS_REF_DIR = pth.join(pth.pardir, pth.pardir, "CeRAS_ref")
+CeRAS_REF_CSV_PATH = pth.join(CeRAS_REF_DIR, "CSR-01_missionStudy_%s_out.csv" % mission_name)
 CeRAS_INPUT_FILE = pth.join(pth.pardir, pth.pardir, "reference_data.xml")
-SIZING_MISSION_WORK_FOLDER_PATH = "missionStudy_R5093_PL13608"
-SIZING_MISSION_REPLAY_CONFIGURATION_FILE = pth.join(
-    SIZING_MISSION_WORK_FOLDER_PATH, "mission_replay.toml"
-)
-SIZING_MISSION_FUEL_SIZING_CONFIGURATION_FILE = pth.join(
-    SIZING_MISSION_WORK_FOLDER_PATH, "fuel_sizing.toml"
-)
-SIZING_MISSION_REPLAY_CSV_FILE = pth.join(
-    SIZING_MISSION_WORK_FOLDER_PATH, "outputs", "mission_replay.csv"
-)
-SIZING_MISSION_FUEL_SIZING_CSV_FILE = pth.join(
-    SIZING_MISSION_WORK_FOLDER_PATH, "outputs", "fuel_sizing.csv"
-)
+
+WORK_FOLDER_PATH = mission_name
+REPLAY_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "mission_replay.toml")
+FUEL_SIZING_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "fuel_sizing.toml")
+
+OUTPUT_FOLDER_PATH = pth.join(WORK_FOLDER_PATH, "outputs")
+rmtree(OUTPUT_FOLDER_PATH, ignore_errors=True)
+mkdir(OUTPUT_FOLDER_PATH)
+REPLAY_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "mission_replay.csv")
+FUEL_SIZING_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "fuel_sizing.csv")
 
 
 # For having log messages on screen
@@ -111,33 +113,29 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)-8s: %(message)s")
 # display(HTML("<style>.container { width:95% !important; }</style>"))
 
 # %%
-sizing_mission_input_file = api.generate_inputs(
-    SIZING_MISSION_REPLAY_CONFIGURATION_FILE, CeRAS_INPUT_FILE, overwrite=True
-)
-api.variable_viewer(sizing_mission_input_file, editable=False)
+input_file = api.generate_inputs(REPLAY_CONFIGURATION_FILE, CeRAS_INPUT_FILE, overwrite=True)
+api.variable_viewer(input_file, editable=False)
 
 # %%
-sizing_mission_problem = api.evaluate_problem(
-    SIZING_MISSION_REPLAY_CONFIGURATION_FILE, overwrite=True
-)
+problem = api.evaluate_problem(REPLAY_CONFIGURATION_FILE, overwrite=True)
 
 # %%
-api.variable_viewer(sizing_mission_problem.output_file_path, editable=False)
+api.variable_viewer(problem.output_file_path, editable=False)
 
 
 # %%
-CL_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CL"]
-CD_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CD"]
-CD0_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CD0"]
+CL_cruise = problem["data:aerodynamics:aircraft:cruise:CL"]
+CD_cruise = problem["data:aerodynamics:aircraft:cruise:CD"]
+CD0_cruise = problem["data:aerodynamics:aircraft:cruise:CD0"]
 CDi_cruise = (
-    sizing_mission_problem["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"]
+    problem["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"]
     * CL_cruise ** 2
-    * sizing_mission_problem["tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k"]
+    * problem["tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k"]
 )
-CDc_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CD:compressibility"]
-CDtrim_cruise = sizing_mission_problem["data:aerodynamics:aircraft:cruise:CD:trim"]
-CDwing_cruise = sizing_mission_problem["data:aerodynamics:wing:cruise:CD0"]
-CDfuselage_cruise = sizing_mission_problem["data:aerodynamics:fuselage:cruise:CD0"]
+CDc_cruise = problem["data:aerodynamics:aircraft:cruise:CD:compressibility"]
+CDtrim_cruise = problem["data:aerodynamics:aircraft:cruise:CD:trim"]
+CDwing_cruise = problem["data:aerodynamics:wing:cruise:CD0"]
+CDfuselage_cruise = problem["data:aerodynamics:fuselage:cruise:CD0"]
 
 fig = make_subplots(rows=1, cols=2)
 fig.add_trace(go.Scatter(x=CD_cruise, y=CL_cruise, name="Drag polar at Mach 0.78"), col=1, row=1)
@@ -207,128 +205,79 @@ def read_ceras_df(csv_file_path):
 
 
 # %%
-sizing_mission_df = pd.read_csv(SIZING_MISSION_REPLAY_CSV_FILE)
-ref_sizing_mission_df = read_ceras_df(
-    pth.join(CeRAS_REF_DIR, "CSR-01_missionStudy_R5093_PL13608_out.csv")
-)
 
-for df in [sizing_mission_df, ref_sizing_mission_df]:
-    df.altitude /= foot
-    df.ground_distance /= nautical_mile
 
-fig = make_subplots(specs=[[{"secondary_y": True}]])
-for df, name in zip([sizing_mission_df, ref_sizing_mission_df], ["FAST-OAD", "CeRAS ref"]):
-    fig.add_trace(
-        go.Scatter(
-            x=df["ground_distance"], y=df["altitude"], name="[%s] altitude vs distance" % name
-        ),
-        secondary_y=False,
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=df["ground_distance"],
-            y=df["CL"],
-            name="[%s] CL vs distance" % name,
-            line=dict(dash="dot"),
-        ),
-        secondary_y=True,
-    )
-fig.update_xaxes(range=[-30, 2800.0])
-fig.update_yaxes(title_text="Altitude [ft]", range=[0, 40000.0], secondary_y=False)
-fig.update_yaxes(title_text="CL", range=[0.3, 0.8], secondary_y=True)
-fig.update_layout(margin=dict(l=300, r=280, t=20, b=0), width=1000, height=250)
-fig.show()
+def plot_mission_against_ceras(fastoad_csv_path, ceras_csv_path):
+    fastoad_df = pd.read_csv(fastoad_csv_path)
+    ref_df = read_ceras_df(ceras_csv_path)
 
-fig = make_subplots(specs=[[{"secondary_y": True}]])
-for df, name in zip([sizing_mission_df, ref_sizing_mission_df], ["FAST-OAD", "CeRAS ref"]):
-    fig.add_trace(
-        go.Scatter(x=df["ground_distance"], y=df["thrust"], name="[%s] thrust vs distance" % name),
-        secondary_y=False,
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=df["ground_distance"],
-            y=df["mass"].iloc[0] - df["mass"],
-            name="[%s] fuel vs distance" % name,
-            line=dict(dash="dot"),
-        ),
-        secondary_y=True,
-    )
-fig.update_xaxes(title_text="Range [nm]", range=[-30, 2800.0])
-fig.update_yaxes(title_text="Thrust [N]", range=[0, 300000.0], secondary_y=False)
-fig.update_yaxes(title_text="Block fuel [kg]", range=[0.0, 21000.0], secondary_y=True)
-fig.update_layout(margin=dict(l=300, r=280, t=0, b=20), width=1000, height=250)
-fig.show()
+    for df in [fastoad_df, ref_df]:
+        df.altitude /= foot
+        df.ground_distance /= nautical_mile
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    for df, name in zip([fastoad_df, ref_df], ["FAST-OAD", "CeRAS ref"]):
+        fig.add_trace(
+            go.Scatter(
+                x=df["ground_distance"], y=df["altitude"], name="[%s] altitude vs distance" % name
+            ),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=df["ground_distance"],
+                y=df["CL"],
+                name="[%s] CL vs distance" % name,
+                line=dict(dash="dot"),
+            ),
+            secondary_y=True,
+        )
+    fig.update_xaxes(range=[-30, 2800.0])
+    fig.update_yaxes(title_text="Altitude [ft]", range=[0, 40000.0], secondary_y=False)
+    fig.update_yaxes(title_text="CL", range=[0.3, 0.8], secondary_y=True)
+    fig.update_layout(margin=dict(l=300, r=280, t=20, b=0), width=1000, height=250)
+    fig.show()
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    for df, name in zip([fastoad_df, ref_df], ["FAST-OAD", "CeRAS ref"]):
+        fig.add_trace(
+            go.Scatter(
+                x=df["ground_distance"], y=df["thrust"], name="[%s] thrust vs distance" % name
+            ),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=df["ground_distance"],
+                y=df["mass"].iloc[0] - df["mass"],
+                name="[%s] fuel vs distance" % name,
+                line=dict(dash="dot"),
+            ),
+            secondary_y=True,
+        )
+    fig.update_xaxes(title_text="Range [nm]", range=[-30, 2800.0])
+    fig.update_yaxes(title_text="Thrust [N]", range=[0, 300000.0], secondary_y=False)
+    fig.update_yaxes(title_text="Block fuel [kg]", range=[0.0, 21000.0], secondary_y=True)
+    fig.update_layout(margin=dict(l=300, r=280, t=0, b=20), width=1000, height=250)
+    fig.show()
+
 
 # %%
-sizing_mission_input_file = api.generate_inputs(
-    SIZING_MISSION_FUEL_SIZING_CONFIGURATION_FILE, CeRAS_INPUT_FILE, overwrite=True
-)
-api.variable_viewer(sizing_mission_input_file, editable=False)
+plot_mission_against_ceras(REPLAY_CSV_FILE, CeRAS_REF_CSV_PATH)
 
 # %%
-sizing_mission_problem = api.evaluate_problem(
-    SIZING_MISSION_FUEL_SIZING_CONFIGURATION_FILE, overwrite=True
-)
+input_file = api.generate_inputs(FUEL_SIZING_CONFIGURATION_FILE, CeRAS_INPUT_FILE, overwrite=True)
+api.variable_viewer(input_file, editable=False)
 
 # %%
-vars = VariableIO(sizing_mission_problem.output_file_path).read()
-print(vars["data:mission:sizing:TOW"])
+problem = api.evaluate_problem(FUEL_SIZING_CONFIGURATION_FILE, overwrite=True)
 
 # %%
-api.variable_viewer(sizing_mission_problem.output_file_path, editable=False)
+vars = VariableIO(problem.output_file_path).read()
+print(vars["data:mission:SPP_design:TOW"])
 
 # %%
-sizing_mission_df = pd.read_csv(SIZING_MISSION_FUEL_SIZING_CSV_FILE)
-ref_sizing_mission_df = read_ceras_df(
-    pth.join(CeRAS_REF_DIR, "CSR-01_missionStudy_R5093_PL13608_out.csv")
-)
+api.variable_viewer(problem.output_file_path, editable=False)
 
-for df in [sizing_mission_df, ref_sizing_mission_df]:
-    df.altitude /= foot
-    df.ground_distance /= nautical_mile
-
-fig = make_subplots(specs=[[{"secondary_y": True}]])
-for df, name in zip([sizing_mission_df, ref_sizing_mission_df], ["FAST-OAD", "CeRAS ref"]):
-    fig.add_trace(
-        go.Scatter(
-            x=df["ground_distance"], y=df["altitude"], name="[%s] altitude vs distance" % name
-        ),
-        secondary_y=False,
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=df["ground_distance"],
-            y=df["CL"],
-            name="[%s] CL vs distance" % name,
-            line=dict(dash="dot"),
-        ),
-        secondary_y=True,
-    )
-fig.update_xaxes(range=[-30, 2800.0])
-fig.update_yaxes(title_text="Altitude [ft]", range=[0, 40000.0], secondary_y=False)
-fig.update_yaxes(title_text="CL", range=[0.3, 0.8], secondary_y=True)
-fig.update_layout(margin=dict(l=300, r=280, t=20, b=0), width=1000, height=250)
-fig.show()
-
-
-fig = make_subplots(specs=[[{"secondary_y": True}]])
-for df, name in zip([sizing_mission_df, ref_sizing_mission_df], ["FAST-OAD", "CeRAS ref"]):
-    fig.add_trace(
-        go.Scatter(x=df["ground_distance"], y=df["thrust"], name="[%s] thrust vs distance" % name),
-        secondary_y=False,
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=df["ground_distance"],
-            y=df["mass"].iloc[0] - df["mass"],
-            name="[%s] fuel vs distance" % name,
-            line=dict(dash="dot"),
-        ),
-        secondary_y=True,
-    )
-fig.update_xaxes(title_text="Range [nm]", range=[-30, 2800.0])
-fig.update_yaxes(title_text="Thrust [N]", range=[0, 300000.0], secondary_y=False)
-fig.update_yaxes(title_text="Block fuel [kg]", range=[0.0, 21000.0], secondary_y=True)
-fig.update_layout(margin=dict(l=300, r=280, t=0, b=20), width=1000, height=250)
-fig.show()
+# %%
+plot_mission_against_ceras(FUEL_SIZING_CSV_FILE, CeRAS_REF_CSV_PATH)

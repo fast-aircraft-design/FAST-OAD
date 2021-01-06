@@ -26,7 +26,7 @@ phase_definitions:
   climb:
     engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise
-    thrust_rate: data:mission:sizing:climb:thrust_rate
+    thrust_rate: data:mission:SPP_design:climb:thrust_rate
     time_step: 5.0
     steps:
       - segment: altitude_change
@@ -52,7 +52,7 @@ phase_definitions:
   descent:
     engine_setting: idle
     polar: data:aerodynamics:aircraft:cruise
-    thrust_rate: data:mission:sizing:descent:thrust_rate
+    thrust_rate: data:mission:SPP_design:descent:thrust_rate
     time_step: 5.0
     steps:
       - segment: altitude_change
@@ -81,7 +81,7 @@ phase_definitions:
 
 route_definitions:
   main_route:
-    range: data:TLAR:range
+    range: data:mission:SPP_design:range
     steps:
       - phase: initial_climb
       - phase: climb
@@ -94,6 +94,6 @@ route_definitions:
       - phase: descent
 
 mission:
-  name: sizing
+  name: SPP_design
   steps:
     - route: main_route
