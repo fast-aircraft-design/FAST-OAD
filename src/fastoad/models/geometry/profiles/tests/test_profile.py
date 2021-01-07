@@ -17,7 +17,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 # pylint: disable=redefined-outer-name  # false positive on pytest fixtures
-from ..profiles.profile import Profile
+from ..get_profile import get_profile
+from ..profile import Profile
 
 
 @pytest.fixture()
@@ -137,27 +138,27 @@ def test_set_points(point_set):
     # Direct initialization from point set
     profile = Profile()
     profile.set_points(x * 2.5, z * 2.5)
-    assert_allclose(2.5, profile.chord_length, rtol=1e-4)
-    assert_allclose(0.10070, profile.thickness_ratio, rtol=1e-4)
+    assert_allclose(profile.chord_length, 2.5, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.10070, rtol=1e-4)
 
     # Initialization after having set chord length
     profile = Profile()
     profile.chord_length = 0.5
     profile.set_points(x, z)
-    assert_allclose(0.5, profile.chord_length, rtol=1e-4)
-    assert_allclose(0.10070, profile.thickness_ratio, rtol=1e-4)
+    assert_allclose(profile.chord_length, 0.5, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.10070, rtol=1e-4)
 
     # Initialization after having set relative thickness
     profile = Profile()
     profile.thickness_ratio = 0.2
     profile.set_points(x * 1.5, z)
-    assert_allclose(1.5, profile.chord_length, rtol=1e-4)
-    assert_allclose(0.2, profile.thickness_ratio, rtol=1e-4)
+    assert_allclose(profile.chord_length, 1.5, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.2, rtol=1e-4)
 
     # Setting points while explicitly ignoring previous chord length and thickness
     profile.set_points(x, z, False, False)
-    assert_allclose(1.0, profile.chord_length, rtol=1e-4)
-    assert_allclose(0.10070, profile.thickness_ratio, rtol=1e-4)
+    assert_allclose(profile.chord_length, 1.0, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.10070, rtol=1e-4)
 
     # Check relative thickness distribution
     relative_thickness = profile.get_relative_thickness()
@@ -165,9 +166,80 @@ def test_set_points(point_set):
     assert_allclose(1.0, np.max(relative_thickness["x"]), rtol=1e-4)
     assert_allclose(0.10070, np.max(relative_thickness["thickness"]), rtol=1e-4)
 
+    # # Activate this part to get a visual check of the interpolation
     # import matplotlib.pyplot as plt
     # plt.axes(aspect='equal')
     # plt.plot(profile.get_upper_side()['x'], profile.get_upper_side()['z'], 'o-')
     # plt.plot(profile.get_lower_side()['x'], profile.get_lower_side()['z'], 'o-')
     # plt.plot(profile.get_mean_line()['x'], profile.get_mean_line()['z'], 'o-')
     # plt.show()
+
+
+def test_get_profile():
+    # Default profile ("BACJ.txt")
+    profile = get_profile()
+    assert_allclose(profile.chord_length, 1.0, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.10070, rtol=1e-4)
+    upper = profile.get_upper_side()
+    lower = profile.get_lower_side()
+    for vect in [upper, lower]:
+        assert_allclose(np.min(vect.x), 0.0)
+        assert_allclose(np.max(vect.x), 1.0)
+    thickness = profile.get_relative_thickness()
+    assert_allclose(np.max(thickness.thickness), 0.10070, rtol=1e-4)
+
+    # Profile where original chord length is not 1.0
+    profile = get_profile("airfoil_f_15_15.txt")
+    assert_allclose(profile.chord_length, 1.0, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.1527, rtol=1e-4)
+    upper = profile.get_upper_side()
+    lower = profile.get_lower_side()
+    for vect in [upper, lower]:
+        assert_allclose(np.min(vect.x), 0.0)
+        assert_allclose(np.max(vect.x), 1.0)
+    thickness = profile.get_relative_thickness()
+    assert_allclose(np.max(thickness.thickness), 0.1527, rtol=1e-4)
+
+    # Ask for original chord length
+    profile = get_profile("airfoil_f_15_15.txt", chord_length=None)
+    assert_allclose(profile.chord_length, 0.9823, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.1527, rtol=1e-4)
+    upper = profile.get_upper_side()
+    lower = profile.get_lower_side()
+    for vect in [upper, lower]:
+        assert_allclose(np.min(vect.x), 0.0)
+        assert_allclose(np.max(vect.x), 0.9823, rtol=1e-4)
+    thickness = profile.get_relative_thickness()
+    assert_allclose(np.max(thickness.thickness), 0.1527, rtol=1e-4)
+
+    profile = get_profile("airfoil_f_15_12.txt", chord_length=None)
+    assert_allclose(profile.chord_length, 0.9823, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.12215, rtol=1e-4)
+
+    profile = get_profile("airfoil_f_15_11.txt", chord_length=None)
+    assert_allclose(profile.chord_length, 0.9823, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.1120, rtol=1e-4)
+
+    # Modification of chord length and thickness
+    profile = get_profile("airfoil_f_15_12.txt", chord_length=0.5, thickness_ratio=0.2)
+    assert_allclose(profile.chord_length, 0.5, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.2, rtol=1e-4)
+    upper = profile.get_upper_side()
+    lower = profile.get_lower_side()
+    for vect in [upper, lower]:
+        assert_allclose(np.min(vect.x), 0.0)
+        assert_allclose(np.max(vect.x), 0.5, rtol=1e-4)
+    thickness = profile.get_relative_thickness()
+    assert_allclose(np.max(thickness.thickness), 0.2, rtol=1e-4)
+
+    # Profile with thick trailing edge
+    profile = get_profile("naca23012.txt")
+    assert_allclose(profile.chord_length, 1.0, rtol=1e-4)
+    assert_allclose(profile.thickness_ratio, 0.12006, rtol=1e-4)
+    upper = profile.get_upper_side()
+    lower = profile.get_lower_side()
+    for vect in [upper, lower]:
+        assert_allclose(np.min(vect.x), 0.0)
+        assert_allclose(np.max(vect.x), 1.0, rtol=1e-4)
+    thickness = profile.get_relative_thickness()
+    assert_allclose(np.max(thickness.thickness), 0.12006, rtol=1e-4)

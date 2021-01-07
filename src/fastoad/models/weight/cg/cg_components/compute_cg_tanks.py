@@ -16,13 +16,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
-from importlib.resources import open_text
 
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy import interpolate
 
-from fastoad.models.geometry import resources
+from fastoad.models.geometry.profiles import get_profile
 
 
 class ComputeTanksCG(ExplicitComponent):
@@ -60,12 +59,6 @@ class ComputeTanksCG(ExplicitComponent):
     def compute(self, inputs, outputs):
 
         # TODO: decompose into a function to make the code more clear
-        x_up = []
-        x_down = []
-        y_up = []
-        y_down = []
-        xy_up = []
-        xy_down = []
         front_spar_ratio_root = inputs["data:geometry:wing:spar_ratio:front:root"]
         front_spar_ratio_kink = inputs["data:geometry:wing:spar_ratio:front:kink"]
         front_spar_ratio_tip = inputs["data:geometry:wing:spar_ratio:front:tip"]
@@ -85,82 +78,18 @@ class ComputeTanksCG(ExplicitComponent):
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
 
-        airfoil_file = open_text(resources, "airfoil_f_15_15.dat")
-        node_number = int(airfoil_file.readline())
-        for _ in range(1, node_number):
-            line = airfoil_file.readline()
-            xy_up.append([float(xy) for xy in line.split(",")])
-        for _ in range(node_number + 1):
-            line = airfoil_file.readline()
-            xy_down.append([float(xy) for xy in line.split(",")])
-        airfoil_file.close()
-        for xy_u in xy_up:
-            x_up.append(xy_u[0])
-            y_up.append(xy_u[1])
-        for xy_d in xy_down:
-            x_down.append(xy_d[0])
-            y_down.append(xy_d[1])
-        y_up_root_front = interpolate.interp1d(x_up, y_up)(front_spar_ratio_root)
-        y_down_root_front = interpolate.interp1d(x_down, y_down)(front_spar_ratio_root)
-        y_up_root_rear = interpolate.interp1d(x_up, y_up)(rear_spar_ratio_root)
-        y_down_root_rear = interpolate.interp1d(x_down, y_down)(rear_spar_ratio_root)
-        height_root_front = (y_up_root_front - y_down_root_front) * l2_wing
-        height_root_rear = (y_up_root_rear - y_down_root_rear) * l2_wing
-        x_up = []
-        x_down = []
-        y_up = []
-        y_down = []
-        xy_up = []
-        xy_down = []
-        airfoil_file = open_text(resources, "airfoil_f_15_12.dat")
-        node_number = int(airfoil_file.readline())
-        for _ in range(1, node_number):
-            line = airfoil_file.readline()
-            xy_up.append([float(xy) for xy in line.split(",")])
-        for _ in range(node_number + 1):
-            line = airfoil_file.readline()
-            xy_down.append([float(xy) for xy in line.split(",")])
-        airfoil_file.close()
-        for xy_u in xy_up:
-            x_up.append(xy_u[0])
-            y_up.append(xy_u[1])
-        for xy_d in xy_down:
-            x_down.append(xy_d[0])
-            y_down.append(xy_d[1])
-        y_up_kink_front = interpolate.interp1d(x_up, y_up)(front_spar_ratio_kink)
-        y_down_kink_front = interpolate.interp1d(x_down, y_down)(front_spar_ratio_kink)
-        y_up_kink_rear = interpolate.interp1d(x_up, y_up)(rear_spar_ratio_kink)
-        y_down_kink_rear = interpolate.interp1d(x_down, y_down)(rear_spar_ratio_kink)
-        height_kink_front = (y_up_kink_front - y_down_kink_front) * l3_wing
-        height_kink_rear = (y_up_kink_rear - y_down_kink_rear) * l3_wing
-
-        x_up = []
-        x_down = []
-        y_up = []
-        y_down = []
-        xy_up = []
-        xy_down = []
-        airfoil_file = open_text(resources, "airfoil_f_15_11.dat")
-        node_number = int(airfoil_file.readline())
-        for _ in range(1, node_number):
-            line = airfoil_file.readline()
-            xy_up.append([float(xy) for xy in line.split(",")])
-        for _ in range(node_number + 1):
-            line = airfoil_file.readline()
-            xy_down.append([float(xy) for xy in line.split(",")])
-        airfoil_file.close()
-        for xy_u in xy_up:
-            x_up.append(xy_u[0])
-            y_up.append(xy_u[1])
-        for xy_d in xy_down:
-            x_down.append(xy_d[0])
-            y_down.append(xy_d[1])
-        y_up_tip_front = interpolate.interp1d(x_up, y_up)(front_spar_ratio_tip)
-        y_down_tip_front = interpolate.interp1d(x_down, y_down)(front_spar_ratio_tip)
-        y_up_tip_rear = interpolate.interp1d(x_up, y_up)(rear_spar_ratio_tip)
-        y_down_tip_rear = interpolate.interp1d(x_down, y_down)(rear_spar_ratio_tip)
-        height_tip_front = (y_up_tip_front - y_down_tip_front) * l4_wing
-        height_tip_rear = (y_up_tip_rear - y_down_tip_rear) * l4_wing
+        profile = get_profile("airfoil_f_15_15.txt", chord_length=1.0)
+        height_root_front, height_root_rear = self._get_thickness(
+            profile, l2_wing, [front_spar_ratio_root, rear_spar_ratio_root]
+        )
+        profile = get_profile("airfoil_f_15_12.txt", chord_length=1.0)
+        height_kink_front, height_kink_rear = self._get_thickness(
+            profile, l3_wing, [front_spar_ratio_root, rear_spar_ratio_root]
+        )
+        profile = get_profile("airfoil_f_15_11.txt", chord_length=1.0)
+        height_tip_front, height_tip_rear = self._get_thickness(
+            profile, l4_wing, [front_spar_ratio_root, rear_spar_ratio_root]
+        )
 
         l_root = l2_wing * (rear_spar_ratio_root - front_spar_ratio_root)
         l_kink = l3_wing * (rear_spar_ratio_kink - front_spar_ratio_kink)
@@ -173,7 +102,7 @@ class ComputeTanksCG(ExplicitComponent):
         vol_side_inner = (
             (s_root + s_kink + math.sqrt(s_root * s_kink)) * (y3_wing - y2_wing) * 2 / 3
         )
-        # Assume in the region ourward 0.8 of the span, no tank installed
+        # Assume in the region outward 0.8 of the span, no tank installed
         ratio_1 = y4_wing * self.ratio / (y4_wing - y3_wing)
         s_real_tip = (ratio_1 * (s_kink ** 0.5 - s_tip ** 0.5) + s_tip ** 0.5) ** 2
         vol_side_out = (
@@ -268,3 +197,17 @@ class ComputeTanksCG(ExplicitComponent):
         # (vol_side_out*0.8+vol_side_inner*0.8+vol_central*0.8)
 
         outputs["data:weight:fuel_tank:CG:x"] = x_cg_tank
+
+    @staticmethod
+    def _get_thickness(profile, l2_wing, relative_x):
+        """
+
+        :param profile:
+        :param l2_wing:
+        :param relative_x:
+        :return: profile thickness at provide value(s) of relative_x
+        """
+        relative_thickness = profile.get_relative_thickness()
+        relative_x_scale = relative_thickness.x
+        thickness = relative_thickness.thickness * l2_wing
+        return interpolate.interp1d(relative_x_scale, thickness)(relative_x)

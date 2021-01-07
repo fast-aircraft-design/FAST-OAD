@@ -350,7 +350,7 @@ def test_compute_cg_tanks(input_xml):
     problem = run_system(ComputeTanksCG(), input_vars)
 
     x_cg_tank = problem["data:weight:fuel_tank:CG:x"]
-    assert x_cg_tank == pytest.approx(16.05, abs=1e-2)
+    assert x_cg_tank == pytest.approx(16.12, abs=1e-2)
 
 
 def test_compute_cg_wing(input_xml):

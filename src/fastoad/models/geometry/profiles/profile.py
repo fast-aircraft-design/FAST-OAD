@@ -63,7 +63,8 @@ class Profile:
     @thickness_ratio.setter
     def thickness_ratio(self, value: float):
 
-        # mean line is modified accordingly
+        # FIXME: mean line is modified accordingly to conform to legacy algorithm, but it
+        #        is questionable
         if self._max_relative_thickness != 0.0:
             coeff = value / self._max_relative_thickness
             self._rel_mean_line_and_thickness[Z] *= coeff
@@ -114,7 +115,7 @@ class Profile:
         """Point set of relative thickness of the profile.
 
         DataFrame keys are 'x' and 'thickness' and are relative to chord_length.
-        'x' is form 0. to 1.
+        'x' is from 0. to 1.
         """
         return self._rel_mean_line_and_thickness[[X, THICKNESS]] * [1.0, self.thickness_ratio]
 
@@ -166,7 +167,13 @@ class Profile:
         Fills self._rel_mean_line_and_thickness with relative values.
         Returns actual chord length and maximum thickness (in meters)
         """
-        x = lower_side_points[X].append(upper_side_points[X]).drop_duplicates().sort_values()
+        x = (
+            lower_side_points[X]
+            .append(upper_side_points[X])
+            .sort_values()
+            .drop_duplicates()
+            .reset_index(drop=True)
+        )
 
         interp_lower = interp1d(lower_side_points[X], lower_side_points[Z], kind="quadratic")
         interp_upper = interp1d(upper_side_points[X], upper_side_points[Z], kind="quadratic")
@@ -184,8 +191,7 @@ class Profile:
     @staticmethod
     def _create_upper_lower_sides(x: Sequence, z: Sequence) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """ returns upper side points and lower side points using provided x and z """
-        # FIXME: leading and trailing edges are located roughly. For instance
-        #        thick trailing edges are not considered.
+        # FIXME: leading and trailing edges are located roughly.
         i_leading_edge = np.argmin(x)
         i_trailing_edge = np.argmax(x)
 
@@ -198,6 +204,14 @@ class Profile:
 
         side1.sort_values(by=X, inplace=True)
         side2.sort_values(by=X, inplace=True)
+
+        # At this point, side2 and side1 have the same last point, but in in case of thick
+        # trailing edge, it could lead to side2 having 2 points for the same X, which will be
+        # harmful in next operations.
+        # In that case, we simply have to remove last point of side2, as it actually belongs to
+        # side1.
+        if side2[X].iloc[-1] == side2[X].iloc[-2]:
+            side2 = side2.iloc[:-1]
 
         if np.max(side1[Z]) > np.max(side2[Z]):
             upper_side_points = side1
