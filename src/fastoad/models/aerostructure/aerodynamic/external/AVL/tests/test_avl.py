@@ -184,6 +184,8 @@ def test_avl_sizing():
     """
     Test simple AVL computation with sizing option (nz=2.5) and simplified rectangular swept wing
     """
+    if pth.exists(AVL_RESULTS):
+        shutil.rmtree(AVL_RESULTS)
     input_list = [
         "data:geometry:wing:span",
         "data:geometry:wing:area",
@@ -204,7 +206,15 @@ def test_avl_sizing():
     forces_test = np.loadtxt(
         pth.join(pth.dirname(__file__), "data", "forces_results_wing_fuse_2p5g"), skiprows=1
     )
-    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:forces"], forces_test):
+    f_test_w = forces_test[:-4, :]  # Remove fuselage surfaces forces
+    f_test_f = forces_test[-4:, :]  # Remove wings surfaces forces
+    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:wing:forces"], f_test_w):
+        assert f_fast[0] == approx(f_test[0], rel=1e-3)
+        assert f_fast[1] == approx(f_test[1], rel=1e-3)
+        assert f_fast[2] == approx(f_test[2], rel=1e-3)
+        assert f_fast[4] == approx(f_test[4], rel=1e-2)
+        assert f_fast[5] == approx(f_test[5], rel=1e-2)
+    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:fuselage:forces"], f_test_f):
         assert f_fast[0] == approx(f_test[0], rel=1e-3)
         assert f_fast[1] == approx(f_test[1], rel=1e-3)
         assert f_fast[2] == approx(f_test[2], rel=1e-3)
@@ -221,7 +231,34 @@ def test_avl_sizing():
     forces_test = np.loadtxt(
         pth.join(pth.dirname(__file__), "data", "forces_results_full_2p5g"), skiprows=1
     )
-    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:forces"], forces_test):
+    f_test_w = forces_test[:22, :]  # Wings surface forces & moments
+    f_test_h = forces_test[22:44, :]  # Horizontal tails surface forces & moments
+    f_test_v = forces_test[44:49, :]  # Vertical tail surface forces & moments
+    f_test_f = forces_test[49:, :]  # Fuselage surface forces & moments
+
+    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:wing:forces"], f_test_w):
+        assert f_fast[0] == approx(f_test[0], rel=1e-3)
+        assert f_fast[1] == approx(f_test[1], rel=1e-3)
+        assert f_fast[2] == approx(f_test[2], rel=1e-3)
+        assert f_fast[4] == approx(f_test[4], rel=1e-2)
+        assert f_fast[5] == approx(f_test[5], rel=1e-2)
+    for f_fast, f_test in zip(
+        problem["data:aerostructural:aerodynamic:horizontal_tail:forces"], f_test_h
+    ):
+        assert f_fast[0] == approx(f_test[0], rel=1e-3)
+        assert f_fast[1] == approx(f_test[1], rel=1e-3)
+        assert f_fast[2] == approx(f_test[2], rel=1e-3)
+        assert f_fast[4] == approx(f_test[4], rel=1e-2)
+        assert f_fast[5] == approx(f_test[5], rel=1e-2)
+    for f_fast, f_test in zip(
+        problem["data:aerostructural:aerodynamic:vertical_tail:forces"], f_test_v
+    ):
+        assert f_fast[0] == approx(f_test[0], rel=1e-3)
+        assert f_fast[1] == approx(f_test[1], rel=1e-3)
+        assert f_fast[2] == approx(f_test[2], rel=1e-3)
+        assert f_fast[4] == approx(f_test[4], rel=1e-2)
+        assert f_fast[5] == approx(f_test[5], rel=1e-2)
+    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:fuselage:forces"], f_test_f):
         assert f_fast[0] == approx(f_test[0], rel=1e-3)
         assert f_fast[1] == approx(f_test[1], rel=1e-3)
         assert f_fast[2] == approx(f_test[2], rel=1e-3)
@@ -237,6 +274,8 @@ def test_avl_path():
     Tests AVL with a specified exe path.
     :return:
     """
+    if pth.exists(AVL_RESULTS):
+        shutil.rmtree(AVL_RESULTS)
     input_list = [
         "data:geometry:wing:span",
         "data:geometry:wing:area",

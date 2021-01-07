@@ -198,7 +198,7 @@ class AvlFuseGeom(IAvlComponentGenerator):
                 if idx == 0:
                     comp_lines += [
                         "SURFACE \n",
-                        "Fuse H" + "\n",
+                        "Fuselage H" + "\n",
                         str(c_space) + " 1.0 " + "\n",
                         "COMPONENT\n",
                         str(self.index) + "\n",
@@ -221,7 +221,7 @@ class AvlFuseGeom(IAvlComponentGenerator):
                 if idx == 6:
                     comp_lines += [
                         "SURFACE \n",
-                        "Fuse T" + "\n",
+                        "Fuselage T" + "\n",
                         str(c_space) + " 1.0 " + "\n",
                         "COMPONENT\n",
                         str(self.index) + "\n",
@@ -240,7 +240,7 @@ class AvlFuseGeom(IAvlComponentGenerator):
                 if idx == 9:
                     comp_lines += [
                         "SURFACE \n",
-                        "Fuse B" + "\n",
+                        "Fuselage B" + "\n",
                         str(c_space) + " 1.0 " + "\n",
                         "COMPONENT\n",
                         str(self.index) + "\n",

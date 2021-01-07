@@ -24,7 +24,7 @@ from openmdao.api import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 from openmdao.utils.file_wrap import FileParser
 import numpy as np
-from scipy.constants import g
+from scipy.constants import g, degree
 
 from fastoad.utils.physics import Atmosphere as Atm
 from fastoad.models.aerostructure.aerodynamic.external.AVL import avl336
@@ -32,6 +32,7 @@ import fastoad.models.aerodynamics.external.xfoil.resources as xfoil_resources
 from fastoad.utils.resource_management.copy import copy_resource
 from . import ressources
 from .utils.avl_components_classes import AvlGeometryComponents
+from .utils.avl_components_dict import AVL_COMPONENT_NAMES
 
 
 OPTION_RESULT_AVL_FILENAME = "result_avl_filename"
@@ -92,12 +93,18 @@ class AVL(ExternalCodeComp):
                 self.add_input(
                     "data:aerostructural:aerodynamic:wing:twist", val=np.nan, shape_by_conn=True
                 )
-            if comp in ("wing", "horizontal_tail", "strut"):
-                size += n_sect * 2
-            elif comp != "fuselage":
-                size += n_sect
 
-        self.add_output("data:aerostructural:aerodynamic:forces", val=np.nan, shape=(size, 6))
+            size = n_sect  # Default number of section for non symmetrical components
+            if comp in ("wing", "horizontal_tail", "strut"):
+                size = n_sect * 2  # Number of section doubled for symmetrical components
+            elif comp == "fuselage":
+                size = 4
+
+            self.add_output(
+                "data:aerostructural:aerodynamic:" + comp + ":forces", val=0.0, shape=(size, 6)
+            )
+
+        # self.add_output("data:aerostructural:aerodynamic:forces", val=np.nan, shape=(size, 6))
         self.add_output("data:aerostructural:aerodynamic:CDi", val=np.nan)
         self.add_output("data:aerostructural:aerodynamic:CL", val=np.nan)
         self.add_output("data:aerostructural:aerodynamic:Oswald_Coeff", val=np.nan)
@@ -133,6 +140,8 @@ class AVL(ExternalCodeComp):
         # AVL session file creation ----------------------------------------------------------------
 
         s_ref = inputs["data:geometry:wing:area"]
+        b_ref = inputs["data:geometry:wing:span"]
+        c_ref = inputs["data:geometry:wing:MAC:length"]
         mach = inputs["data:aerostructural:load_case:mach"]
         alt = inputs["data:aerostructural:load_case:altitude"]
         rho = Atm(alt).density
@@ -175,24 +184,36 @@ class AVL(ExternalCodeComp):
         super().compute(inputs, outputs)
 
         # Gather results ---------------------------------------------------------------------------
-        size = 0
-        for (comp, sect,) in zip(self.options["components"], self.options["components_sections"]):
-            if comp in ("wing", "horizontal_tail", "strut"):
-                size += sect * 2
-            elif comp == "fuselage":
-                size += 4
-            else:
-                size += sect
         parser_out = FileParser()
         parser_out.set_file(tmp_result_file)
+        parser_out.mark_anchor("Alpha =")
+        aoa = parser_out.transfer_var(0, 3)
         parser_out.mark_anchor("CLtot =")
         outputs["data:aerostructural:aerodynamic:CL"] = parser_out.transfer_var(0, 3)
         parser_out.mark_anchor("CDind =")
         outputs["data:aerostructural:aerodynamic:CDi"] = parser_out.transfer_var(0, 6)
         outputs["data:aerostructural:aerodynamic:Oswald_Coeff"] = parser_out.transfer_var(2, 6)
-        parser_out.mark_anchor("Area", 1)
-        surface_coef = parser_out.transfer_2Darray(1, 3, size, 8)
-        outputs["data:aerostructural:aerodynamic:forces"] = q * s_ref * surface_coef
+        for (comp, sect) in zip(self.options["components"], self.options["components_sections"]):
+            size = sect  # default number of section for non symmetric components
+            if comp in ("wing", "horizontal_tail", "strut"):
+                size = sect * 2  # number of sections doubled for symmetric components
+            elif comp == "fuselage":
+                size = 4  # particular case for fuselage due to specific VLM modelling
+            avl_comp = AVL_COMPONENT_NAMES[comp]
+            parser_out.mark_anchor(avl_comp)
+            comp_coef = parser_out.transfer_2Darray(0, 3, size - 1, 8)
+            #  Reorganise result array to have coefficient in direct axis order
+            comp_coef[:, :] = comp_coef[:, [1, 3, 0, 4, 2, 5]]
+            #  Comvert coefficients into forces and moments
+            comp_coef[:, :3] *= q * s_ref
+            comp_coef[:, [3, 5]] *= q * s_ref * b_ref
+            comp_coef[:, 4] *= q * s_ref * c_ref
+            #  Change forces and moment from aerodynamic to body axis
+            r_mat = self._get_rotation_matrix(aoa * degree, axis="y")
+            comp_coef[:, :3] = np.dot(comp_coef[:, :3], r_mat)
+            comp_coef[:, 3:] = np.dot(comp_coef[:, 3:], r_mat)
+            outputs["data:aerostructural:aerodynamic:" + comp + ":forces"] = comp_coef
+        # outputs["data:aerostructural:aerodynamic:forces"] = q * s_ref * surface_coef
 
         # Store input and result files if necessary ------------------------------------------------
         if self.options[OPTION_RESULT_FOLDER_PATH]:
@@ -272,3 +293,15 @@ class AVL(ExternalCodeComp):
             str(x_ref[0]) + " 0.0 0.0 \n",
         ]
         return lines
+
+    @staticmethod
+    def _get_rotation_matrix(angle, axis="y"):
+        c = np.cos(angle)
+        s = np.sin(angle)
+        if axis == "x":
+            r_mat = np.array([[1, 0, 0], [0, c, s], [0, -s, c]])
+        elif axis == "y":
+            r_mat = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
+        else:
+            r_mat = np.array([[c, s, 0], [-s, c, 0], [0, 0, 1]])
+        return r_mat
