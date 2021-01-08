@@ -36,6 +36,9 @@ class ComponentDisplacements(om.ExplicitComponent):
             val=0.0,
         )
 
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="fd")
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         comp = self.options["component"]
         # Transfer Matrix
