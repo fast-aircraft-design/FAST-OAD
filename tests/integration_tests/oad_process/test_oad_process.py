@@ -223,8 +223,8 @@ def run_non_regression_test(
         assert np.all(df.abs_rel_delta < tolerance)
 
 
-def test_api(cleanup):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api")
+def test_api_eval(cleanup):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval")
     configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
 
     # Generation of configuration file ----------------------------------------
@@ -270,6 +270,21 @@ def test_api(cleanup):
     assert_allclose(problem["data:geometry:vertical_tail:area"], 27.07, atol=1e-2)
     assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.50, atol=1e-2)
     assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20213, atol=1)
+
+
+def test_api_optim(cleanup):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_optim")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
+
+    # Generation of configuration file ----------------------------------------
+    api.generate_configuration_file(configuration_file_path, True)
+
+    # Generation of inputs ----------------------------------------------------
+    # We get the same inputs as in tutorial notebook
+    source_xml = pth.join(
+        root_folder_path, "src", "fastoad", "notebooks", "tutorial", "data", "CeRAS01_baseline.xml"
+    )
+    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
