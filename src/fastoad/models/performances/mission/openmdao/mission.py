@@ -27,7 +27,6 @@ from fastoad import BundleLoader
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.propulsion import IOMPropulsionWrapper
 from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
-from fastoad.utils.physics import AtmosphereSI
 from . import resources
 from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
@@ -257,7 +256,8 @@ class MissionComponent(om.ExplicitComponent):
 
     def _compute_breguet(self, inputs, outputs):
         """
-        Computes mission using simple Breguet formula at altitude==10000m
+        Computes mission using simple Breguet formula at altitude==100m and Mach 0.1
+        (but max L/D ratio is assumed anyway)
 
         Useful only for initiating the computation.
 
@@ -270,18 +270,9 @@ class MissionComponent(om.ExplicitComponent):
 
         high_speed_polar = self._get_initial_polar(inputs)
         distance = np.asscalar(np.sum(self._mission.get_route_ranges(inputs)))
-        cruise_speed_param, cruise_speed_value = self._mission.get_route_cruise_speeds(inputs)[0]
-        altitude = 10000.0
 
-        cruise_mach = 0.8  # next lines should overwrite this value
-        if cruise_speed_param == "mach":
-            cruise_mach = cruise_speed_value
-        else:
-            atm = AtmosphereSI(altitude)
-            if cruise_speed_param == "true_airspeed":
-                cruise_mach = cruise_speed_value / atm.speed_of_sound
-            elif cruise_speed_param == "equivalent_airspeed":
-                cruise_mach = atm.get_true_airspeed(cruise_speed_value) / atm.speed_of_sound
+        altitude = 100.0
+        cruise_mach = 0.1
 
         breguet = BreguetCruiseSegment(
             FlightPoint(ground_distance=distance),
@@ -363,13 +354,12 @@ class MissionComponent(om.ExplicitComponent):
                 self._mission_vars.BLOCK_FUEL.value
             ]
 
-        def asscalar(value):
+        def as_scalar(value):
             if isinstance(value, np.ndarray):
                 return np.asscalar(value)
-            else:
-                return value
+            return value
 
-        self.flight_points = self.flight_points.applymap(asscalar)
+        self.flight_points = self.flight_points.applymap(as_scalar)
         if self.options["out_file"]:
             self.flight_points.to_csv(self.options["out_file"])
 

@@ -36,10 +36,7 @@ from scipy.constants import knot, foot
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase, EngineSetting
-from fastoad.models.performances.mission.base import (
-    IFlightPart,
-    FlightSequence,
-)
+from fastoad.models.performances.mission.base import IFlightPart
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.performances.mission.routes import RangedRoute
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
@@ -188,7 +185,7 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
 # We define here in Python the flight phases that feed the test of RangedRoute ============
 
 
-class AbstractManualThrustFlightPhase(FlightSequence, ABC):
+class AbstractManualThrustFlightPhase(ABC):
     """
     Base class for climb and descent phases.
     """
@@ -222,6 +219,25 @@ class AbstractManualThrustFlightPhase(FlightSequence, ABC):
             "name": name,
             "time_step": time_step,
         }
+
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        parts = []
+        part_start = start
+        for part in self.flight_sequence:
+            flight_points = part.compute_from(part_start)
+            if len(parts) > 0:
+                # First point of the segment is omitted, as it is the
+                # last of previous segment.
+                if len(flight_points) > 1:
+                    parts.append(flight_points.iloc[1:])
+            else:
+                # But it is kept if the computed segment is the first one.
+                parts.append(flight_points)
+
+            part_start = FlightPoint.create(flight_points.iloc[-1])
+
+        if parts:
+            return pd.concat(parts).reset_index(drop=True)
 
 
 class InitialClimbPhase(AbstractManualThrustFlightPhase):

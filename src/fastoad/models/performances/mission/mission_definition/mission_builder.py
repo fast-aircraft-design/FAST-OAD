@@ -105,6 +105,8 @@ class MissionBuilder:
                        a key of `inputs` will be replaced by the corresponding value
         :return:
         """
+        self._parse_values_and_units(self.definition)
+
         phases = self._build_phases(inputs)
         routes = self._build_routes(phases, inputs)
         return self._build_mission(routes, phases)
@@ -260,11 +262,14 @@ class MissionBuilder:
                     )
                     climb = False
 
-            self._parse_target(definition)
-            flight_range = definition["range"]
-            if isinstance(flight_range, str):
-                flight_range = inputs[definition["range"]]
-            route = RangedRoute(climb_phases, cruise_phase, descent_phases, flight_range)
+            if "range" in definition:
+                flight_range = definition["range"]
+                if isinstance(flight_range, str):
+                    flight_range = inputs[definition["range"]]
+                route = RangedRoute(climb_phases, cruise_phase, descent_phases, flight_range)
+            else:
+                route = FlightSequence()
+                route.flight_sequence.extend(climb_phases)
             route.name = route_name
             routes[route_name] = route
 
@@ -316,15 +321,13 @@ class MissionBuilder:
                 for coeff in ["CL", "CD"]:
                     polar[coeff] = value[coeff]
                 self._replace_by_inputs(polar, inputs)
-                step_kwargs[key] = Polar(polar["CL"], polar["CD"])
+                value = Polar(polar["CL"], polar["CD"])
             elif key == "target":
                 if not isinstance(value, FlightPoint):
-                    self._parse_target(value)
                     self._replace_by_inputs(value, inputs)
                     value = FlightPoint(**value)
-                step_kwargs[key] = value
-            else:
-                step_kwargs[key] = value
+
+            step_kwargs[key] = value
 
         if "engine_setting" in step_kwargs:
             step_kwargs["engine_setting"] = EngineSetting.convert(step_kwargs["engine_setting"])
@@ -334,21 +337,29 @@ class MissionBuilder:
         segment = segment_class(**step_kwargs)
         return segment
 
-    @staticmethod
-    def _parse_target(target_definition: dict):
+    @classmethod
+    def _parse_values_and_units(cls, definition):
         """
-        For each parameter in target definition, if the associated value is a dict (with
-        "value" and "unit" as keys), transforms it into a value in base units, as
-        defined in BASE_UNITS.
+        Browse recursively provided dictionary and if a dictionary that has
+        "value" and "unit" as only keys is found, it is transformed into a
+        value in base units, as defined in BASE_UNITS.
 
-        :param target_definition:
+        Does nothing if definition is not a dict.
+
+        :param definition:
         """
 
-        for target_key, target_value in target_definition.items():
-            if isinstance(target_value, dict) and "value" in target_value:
-                target_definition[target_key] = om.convert_units(
-                    target_value["value"], target_value.get("unit"), BASE_UNITS.get(target_key),
-                )
+        if isinstance(definition, dict):
+            for key, value in definition.items():
+                if isinstance(value, dict) and "value" in value.keys():
+                    definition[key] = om.convert_units(
+                        value["value"], value.get("unit"), BASE_UNITS.get(key),
+                    )
+                else:
+                    cls._parse_values_and_units(value)
+        elif isinstance(definition, list):
+            for value in definition:
+                cls._parse_values_and_units(value)
 
     @staticmethod
     def _replace_by_inputs(parameter_definition: dict, inputs: Optional[Mapping]):

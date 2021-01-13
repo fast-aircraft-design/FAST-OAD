@@ -17,6 +17,7 @@ Classes for computation of routes (i.e. assemblies of climb, cruise and descent 
 from dataclasses import dataclass
 from typing import List, Tuple, Optional
 
+import numpy as np
 import pandas as pd
 from scipy.optimize import root_scalar
 
@@ -102,25 +103,57 @@ class RangedRoute(SimpleRoute):
     #: Accuracy on actual total ground distance for the solver. In meters
     distance_accuracy: float = 0.5e3
 
-    def __post_init__(self):
-        super().__post_init__()
-        self.flight_points = None
-
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        def compute_flight(cruise_distance):
-            self.cruise_distance = cruise_distance
-            self.flight_points = super(RangedRoute, self).compute_from(start)
-            obtained_distance = (
-                self.flight_points.iloc[-1].ground_distance
-                - self.flight_points.iloc[0].ground_distance
-            )
-            return self.flight_distance - obtained_distance
+        # In very simple cases, climb and descent phases can have fixed
+        # covered ground distance. In that case, cruise distance is easy to
+        # obtain from flight_distance.
+        # In other cases, cruise distance is obtained using a solver.
+        climb_descent_distances = []
+        for phase in self.climb_phases + self.descent_phases:
+            climb_descent_distances.extend(self._get_ground_distances(phase))
 
+        if 0.0 in climb_descent_distances:
+            return self._solve_cruise_distance(start)
+
+        self.cruise_distance = self.flight_distance - np.sum(climb_descent_distances)
+        return super(RangedRoute, self).compute_from(start)
+
+    @classmethod
+    def _get_ground_distances(cls, phase: FlightSequence) -> list:
+        ground_distances = []
+        for flight_part in phase.flight_sequence:
+            if isinstance(flight_part, FlightSegment):
+                ground_distances.append(flight_part.target.ground_distance)
+            else:
+                ground_distances.extend(cls._get_ground_distances(flight_part))
+
+        return ground_distances
+
+    def _solve_cruise_distance(self, start: FlightPoint) -> pd.DataFrame:
+        """
+        Adjusts cruise distance through a solver to have whole route that
+        matches provided flight distance.
+        """
+
+        class _ComputeFlight:
+            def compute_flight(_self, cruise_distance):
+                # We use "_self" because we want to keep the reference to the
+                # outer class as "self"
+                self.cruise_distance = cruise_distance
+                _self.flight_points = super(RangedRoute, self).compute_from(start)
+                obtained_distance = (
+                    _self.flight_points.iloc[-1].ground_distance
+                    - _self.flight_points.iloc[0].ground_distance
+                )
+                return self.flight_distance - obtained_distance
+
+        flight_computer = _ComputeFlight()
         root_scalar(
-            compute_flight,
+            flight_computer.compute_flight,
             x0=self.flight_distance * 0.5,
             x1=self.flight_distance * 0.25,
             xtol=0.5e3,
             method="secant",
         )
-        return self.flight_points
+
+        return flight_computer.flight_points
