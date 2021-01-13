@@ -234,14 +234,7 @@ def test_api_eval(cleanup):
     source_xml = pth.join(
         root_folder_path, "src", "fastoad", "notebooks", "tutorial", "data", "CeRAS01_baseline.xml"
     )
-    input_file_path = api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
-
-    # Previous Breguet component did not take into account consumed fuel during
-    # taxi-out and takeoff, so we nullify them for now to get same results
-    inputs = VariableIO(input_file_path).read()
-    inputs["data:mission:sizing:taxi_out:fuel"].value = 0.0
-    inputs["data:mission:sizing:takeoff:fuel"].value = 0.0
-    VariableIO(input_file_path).write(inputs)
+    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run model ---------------------------------------------------------------
     problem = api.evaluate_problem(configuration_file_path, True)
@@ -269,13 +262,13 @@ def test_api_eval(cleanup):
         atol=1,
     )
 
-    assert_allclose(problem["data:handling_qualities:static_margin"], -0.072251, atol=1e-3)
+    assert_allclose(problem["data:handling_qualities:static_margin"], -0.071146, atol=1e-3)
     assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.0, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 76093, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 128.98, atol=1e-2)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.07, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.50, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20211, atol=1)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 76610.0, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 130.66, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.38, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.86, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20577.0, atol=1)
 
 
 def test_api_optim(cleanup):
@@ -290,14 +283,7 @@ def test_api_optim(cleanup):
     source_xml = pth.join(
         root_folder_path, "src", "fastoad", "notebooks", "tutorial", "data", "CeRAS01_baseline.xml"
     )
-    input_file_path = api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
-
-    # Previous Breguet component did not take into account consumed fuel during
-    # taxi-out and takeoff, so we nullify them for now to get same results
-    inputs = VariableIO(input_file_path).read()
-    inputs["data:mission:sizing:taxi_out:fuel"].value = 0.0
-    inputs["data:mission:sizing:takeoff:fuel"].value = 0.0
-    VariableIO(input_file_path).write(inputs)
+    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
@@ -333,4 +319,4 @@ def test_api_optim(cleanup):
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20332, atol=50)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20704.0, atol=50)
