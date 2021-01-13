@@ -60,7 +60,7 @@ def test_breguet_with_rubber_engine():
     )
 
     assert_allclose(problem["data:mission:sizing:main_route:climb:fuel"], 2220.0, atol=1)
-    assert_allclose(problem["data:mission:sizing:main_route:cruise:distance"], 426000.0, atol=1)
     assert_allclose(problem["data:mission:sizing:main_route:cruise:fuel"], 1391.0, atol=1)
     assert_allclose(problem["data:mission:sizing:main_route:descent:fuel"], 1408.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:main_route:cruise:distance"], 426000.0, atol=1)
     assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 8924.0, atol=1)

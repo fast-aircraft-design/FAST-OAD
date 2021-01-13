@@ -216,6 +216,13 @@ class BreguetCruiseSegment(CruiseSegment):
     #: The reference area, in m**2. Used only if use_max_lift_drag_ratio is False.
     reference_area: float = 1.0
 
+    #:
+    climb_and_descent_distance: float = 0.0
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.target.ground_distance = self.target.ground_distance - self.climb_and_descent_distance
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         self.complete_flight_point(start)
 

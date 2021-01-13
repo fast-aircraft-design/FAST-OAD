@@ -209,7 +209,7 @@ class MissionDefinition(dict):
     @classmethod
     def _get_route_mapping(cls) -> dict:
         return {
-            "range": cls._get_dimensioned_value_mapping(),
+            Optional("range", default=None): cls._get_dimensioned_value_mapping(),
             STEPS_TAG: Seq(Any()),
         }
 
