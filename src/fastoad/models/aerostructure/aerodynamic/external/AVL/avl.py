@@ -75,9 +75,14 @@ class AVL(ExternalCodeComp):
         size = 4
         for comp, n_sect in zip(comps, sects):
             self.add_input(
-                "data:aerostructural:aerodynamic:" + comp + ":def_nodes",
+                "data:aerostructural:aerodynamic:" + comp + ":nodes",
                 val=np.nan,
                 shape_by_conn=True,
+            )
+            self.add_input(
+                "data:aerostructural:aerodynamic:" + comp + ":displacements",
+                val=0.0,
+                copy_shape="data:aerostructural:aerodynamic:" + comp + ":nodes",
             )
             self.add_input(
                 "data:aerostructural:aerodynamic:" + comp + ":chords",
@@ -256,7 +261,10 @@ class AVL(ExternalCodeComp):
                 geom_gen = geom_gen_class()
                 geom_gen.index = count
                 geom_gen.k_c = k_chords
-                geom_gen.nodes = inputs["data:aerostructural:aerodynamic:" + comp + ":def_nodes"]
+                geom_gen.nodes = (
+                    inputs["data:aerostructural:aerodynamic:" + comp + ":nodes"]
+                    + inputs["data:aerostructural:aerodynamic:" + comp + ":displacements"]
+                )
                 geom_gen.chords = inputs["data:aerostructural:aerodynamic:" + comp + ":chords"]
                 if comp == "wing":
                     geom_gen.twist = inputs["data:aerostructural:aerodynamic:wing:twist"]
