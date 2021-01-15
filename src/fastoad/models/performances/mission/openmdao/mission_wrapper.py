@@ -56,13 +56,13 @@ class MissionWrapper(MissionBuilder):
 
         :param component: the OpenMDAO component where the setup is done.
         """
-        input_definition = {}
-        self.identify_inputs(input_definition)
         output_definition = self._identify_outputs()
         output_definition = {
-            name: value for name, value in output_definition.items() if name not in input_definition
+            name: value
+            for name, value in output_definition.items()
+            if name not in self.input_definition
         }
-        for name, units in input_definition.items():
+        for name, units in self.input_definition.items():
             if name.endswith(":CD") or name.endswith(":CL"):
                 component.add_input(name, np.nan, units=units, shape=POLAR_POINT_COUNT)
             else:

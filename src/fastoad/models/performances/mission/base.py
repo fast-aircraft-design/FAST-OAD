@@ -43,6 +43,7 @@ class FlightSequence(IFlightPart):
 
     def __post_init__(self):
         self._flight_sequence = []
+        self.name = ""
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         parts = []
