@@ -38,7 +38,7 @@ class _ComputeWingArea(om.ExplicitComponent):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
-        self.add_input("data:mission:sizing:needed_block_fuel", val=np.nan, units="kg")
+        self.add_input("data:weight:aircraft:sizing_block_fuel", val=np.nan, units="kg")
         self.add_input("data:TLAR:approach_speed", val=np.nan, units="m/s")
 
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
@@ -51,7 +51,7 @@ class _ComputeWingArea(om.ExplicitComponent):
         lambda_wing = inputs["data:geometry:wing:aspect_ratio"]
         root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
-        mfw_mission = inputs["data:mission:sizing:needed_block_fuel"]
+        mfw_mission = inputs["data:weight:aircraft:sizing_block_fuel"]
         wing_area_mission = (
             (mfw_mission - 1570.0)
             / 224
@@ -69,7 +69,7 @@ class _ComputeWingArea(om.ExplicitComponent):
 
 class _ComputeWingAreaConstraints(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:mission:sizing:needed_block_fuel", val=np.nan, units="kg")
+        self.add_input("data:weight:aircraft:sizing_block_fuel", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="kg")
 
         self.add_input("data:TLAR:approach_speed", val=np.nan, units="m/s")
@@ -82,7 +82,7 @@ class _ComputeWingAreaConstraints(om.ExplicitComponent):
 
         self.declare_partials(
             "data:weight:aircraft:additional_fuel_capacity",
-            ["data:weight:aircraft:MFW", "data:mission:sizing:needed_block_fuel"],
+            ["data:weight:aircraft:MFW", "data:weight:aircraft:sizing_block_fuel"],
             method="fd",
         )
         self.declare_partials(
@@ -98,7 +98,7 @@ class _ComputeWingAreaConstraints(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mfw = inputs["data:weight:aircraft:MFW"]
-        mission_fuel = inputs["data:mission:sizing:needed_block_fuel"]
+        mission_fuel = inputs["data:weight:aircraft:sizing_block_fuel"]
         v_approach = inputs["data:TLAR:approach_speed"]
         cl_max = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         mlw = inputs["data:weight:aircraft:MLW"]

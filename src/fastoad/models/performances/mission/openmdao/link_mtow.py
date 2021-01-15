@@ -28,7 +28,6 @@ class ComputeMTOW(om.AddSubtractComp):
 
     def initialize(self):
         super().initialize()
-        self.options.declare("mission_name", default="sizing", types=str)
 
     def setup(self):
         self.add_equation(
