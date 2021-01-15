@@ -344,6 +344,19 @@
                             10668.0<!--altitude during cruise phase in sizing mission--></altitude>
                     </cruise>
                 </main_route>
+                <landing>
+                    <flap_angle units="deg" is_input="True">
+                        30.0<!--flap angle during landing phase in sizing mission--></flap_angle>
+                    <slat_angle units="deg" is_input="True">
+                        20.0<!--slat angle during landing phase in sizing mission--></slat_angle>
+                </landing>
+                <takeoff>
+                    <flap_angle units="deg" is_input="True">
+                        10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
+                    <slat_angle units="deg" is_input="True">
+                        18.0<!--slat angle during takeoff phase in sizing mission--></slat_angle>
+                </takeoff>
+
             </sizing>
             <SPP_design>
                 <TOW units="kg" is_input="False">74000.</TOW>
@@ -461,7 +474,7 @@
                     225.67997479193946<!--fuel mass capacity of wing that exceeds sizing mission requirement--></additional_fuel_capacity>
                 <max_payload units="kg" is_input="False">
                     19608.0<!--max payload weight--></max_payload>
-                <payload units="kg" is_input="False">13608.0<!--design payload weight--></payload>
+                <payload units="kg" is_input="False">17000.0<!--design payload weight--></payload>
                 <sizing_block_fuel units="kg" is_input="False">18426.670539350707
                 </sizing_block_fuel>
                 <CG>

@@ -44,6 +44,8 @@ from fastoad.io import VariableIO
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 
 # %%
+from fastoad.utils.postprocessing.analysis_and_plots import mass_breakdown_sun_plot
+
 engine = RubberEngine(
     bypass_ratio=4.9,
     overall_pressure_ratio=32.6,
@@ -96,12 +98,14 @@ CeRAS_INPUT_FILE = pth.join(pth.pardir, pth.pardir, "reference_data.xml")
 WORK_FOLDER_PATH = mission_name
 REPLAY_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "mission_replay.toml")
 FUEL_SIZING_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "fuel_sizing.toml")
+OAD_SIZING_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_sizing.toml")
 
 OUTPUT_FOLDER_PATH = pth.join(WORK_FOLDER_PATH, "outputs")
 rmtree(OUTPUT_FOLDER_PATH, ignore_errors=True)
 mkdir(OUTPUT_FOLDER_PATH)
 REPLAY_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "mission_replay.csv")
 FUEL_SIZING_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "fuel_sizing.csv")
+OAD_SIZING_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "oad_sizing.csv")
 
 
 # For having log messages on screen
@@ -167,7 +171,10 @@ fig.show()
 # %%
 """
 #### From CeRAS_CSR-01_report.pdf
-<img src="../../img/CeRAS_report/polars.png" width="600">
+<table><tr>
+<td> <img src="../../img/CeRAS_report/polars.png" width="600"/> </td>
+<td> <img src="../../img/CeRAS_report/polar-breakdown.png" width="400"/> </td>
+</tr></table>
 """
 
 
@@ -265,8 +272,12 @@ def plot_mission_against_ceras(fastoad_csv_path, ceras_csv_path):
 plot_mission_against_ceras(REPLAY_CSV_FILE, CeRAS_REF_CSV_PATH)
 
 # %%
+"""
+## FUEL SIZING
+"""
+
+# %%
 input_file = api.generate_inputs(FUEL_SIZING_CONFIGURATION_FILE, CeRAS_INPUT_FILE, overwrite=True)
-api.variable_viewer(input_file, editable=False)
 
 # %%
 problem = api.evaluate_problem(FUEL_SIZING_CONFIGURATION_FILE, overwrite=True)
@@ -274,9 +285,38 @@ problem = api.evaluate_problem(FUEL_SIZING_CONFIGURATION_FILE, overwrite=True)
 # %%
 vars = VariableIO(problem.output_file_path).read()
 print(vars["data:mission:MTOW_mission:TOW"])
-
-# %%
 api.variable_viewer(problem.output_file_path, editable=False)
 
 # %%
 plot_mission_against_ceras(FUEL_SIZING_CSV_FILE, CeRAS_REF_CSV_PATH)
+
+# %%
+"""
+## OAD SIZING
+"""
+
+# %%
+input_file = api.generate_inputs(OAD_SIZING_CONFIGURATION_FILE, CeRAS_INPUT_FILE, overwrite=True)
+
+# %%
+problem = api.evaluate_problem(OAD_SIZING_CONFIGURATION_FILE, overwrite=True)
+
+# %%
+vars = VariableIO(problem.output_file_path).read()
+print(vars["data:mission:MTOW_mission:TOW"])
+api.variable_viewer(problem.output_file_path, editable=False)
+
+# %%
+plot_mission_against_ceras(OAD_SIZING_CSV_FILE, CeRAS_REF_CSV_PATH)
+
+# %%
+mass_breakdown_sun_plot(problem.output_file_path)
+
+# %%
+"""
+#### From CeRAS_CSR-01_report.pdf
+<table><tr>
+<td> <img src="../../img/CeRAS_report/mass_breakdown_1.png" width="600"/> </td>
+<td> <img src="../../img/CeRAS_report/mass_breakdown_2.png" width="600"/> </td>
+</tr></table>
+"""

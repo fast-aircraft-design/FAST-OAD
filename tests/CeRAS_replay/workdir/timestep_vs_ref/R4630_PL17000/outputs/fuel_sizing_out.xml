@@ -91,13 +91,13 @@
     </geometry>
     <mission>
       <MTOW_mission>
-        <TOW units="kg" is_input="False">76830.08983715993</TOW>
+        <TOW units="kg" is_input="False">76830.24151591078</TOW>
         <ZFW units="kg" is_input="False">59100.0</ZFW>
-        <block_fuel units="kg" is_input="False">17730.154017407884</block_fuel>
-        <distance units="m" is_input="False">5394808.387142965</distance>
-        <duration units="s" is_input="False">25757.942913093608</duration>
-        <fuel units="kg" is_input="False">17371.75401740789</fuel>
-        <needed_block_fuel units="kg" is_input="False">17730.154017407884</needed_block_fuel>
+        <block_fuel units="kg" is_input="False">17730.185068417297</block_fuel>
+        <distance units="m" is_input="False">5394808.387101989</distance>
+        <duration units="s" is_input="False">25757.942374120576</duration>
+        <fuel units="kg" is_input="False">17371.785068417303</fuel>
+        <needed_block_fuel units="kg" is_input="False">17730.185068417297</needed_block_fuel>
         <payload units="kg" is_input="True">17000.0</payload>
         <range units="m" is_input="True">4630000.0</range>
         <climb>
@@ -108,52 +108,52 @@
         </descent>
         <diversion>
           <distance units="m" is_input="True">370400.0</distance>
-          <duration units="s" is_input="False">2119.9492482935893</duration>
-          <fuel units="kg" is_input="False">1392.705768050837</fuel>
+          <duration units="s" is_input="False">2119.94888874127</duration>
+          <fuel units="kg" is_input="False">1392.7071094909625</fuel>
           <cruise>
-            <distance units="m" is_input="False">95780.07277166191</distance>
-            <duration units="s" is_input="False">437.7732758587081</duration>
-            <fuel units="kg" is_input="False">339.2700654046712</fuel>
+            <distance units="m" is_input="False">95780.0378949698</distance>
+            <duration units="s" is_input="False">437.7731164509787</duration>
+            <fuel units="kg" is_input="False">339.27017146530125</fuel>
           </cruise>
           <descent>
-            <distance units="m" is_input="False">206611.93210541457</distance>
-            <duration units="s" is_input="False">1297.4973714314292</duration>
-            <fuel units="kg" is_input="False">414.9164047973609</fuel>
+            <distance units="m" is_input="False">206611.78499155864</distance>
+            <duration units="s" is_input="False">1297.4961581950665</duration>
+            <fuel units="kg" is_input="False">414.91596550158283</fuel>
           </descent>
           <diversion_climb>
-            <distance units="m" is_input="False">68012.11352834664</distance>
-            <duration units="s" is_input="False">384.67860100345206</duration>
-            <fuel units="kg" is_input="False">638.5192978488049</fuel>
+            <distance units="m" is_input="False">68012.29548305646</distance>
+            <duration units="s" is_input="False">384.6796140952247</duration>
+            <fuel units="kg" is_input="False">638.5209725240784</fuel>
           </diversion_climb>
         </diversion>
         <holding>
           <distance units="m" is_input="False">354995.51639653277</distance>
           <duration units="s" is_input="True">2700.0</duration>
-          <fuel units="kg" is_input="False">1419.4061058005755</fuel>
+          <fuel units="kg" is_input="False">1419.4081262165564</fuel>
         </holding>
         <main_route>
-          <distance units="m" is_input="False">4629964.806074605</distance>
-          <duration units="s" is_input="False">20637.99366480002</duration>
-          <fuel units="kg" is_input="False">14359.334207717104</fuel>
+          <distance units="m" is_input="False">4629964.806069468</distance>
+          <duration units="s" is_input="False">20637.993485379306</duration>
+          <fuel units="kg" is_input="False">14359.36189687041</fuel>
           <climb>
-            <distance units="m" is_input="False">275707.4975153735</distance>
-            <duration units="s" is_input="False">1307.400484370721</duration>
-            <fuel units="kg" is_input="False">1726.199022074652</fuel>
+            <distance units="m" is_input="False">275709.0812862447</distance>
+            <duration units="s" is_input="False">1307.4076770631793</duration>
+            <fuel units="kg" is_input="False">1726.207540824893</fuel>
           </climb>
           <cruise>
-            <distance units="m" is_input="False">4055213.3969067647</distance>
-            <duration units="s" is_input="False">17612.29848202206</duration>
-            <fuel units="kg" is_input="False">11994.237066243702</fuel>
+            <distance units="m" is_input="False">4055211.897009149</distance>
+            <duration units="s" is_input="False">17612.29196778105</duration>
+            <fuel units="kg" is_input="False">11994.256234761728</fuel>
           </cruise>
           <descent>
-            <distance units="m" is_input="False">293034.6347512482</distance>
-            <duration units="s" is_input="False">1662.8550378908767</duration>
-            <fuel units="kg" is_input="False">503.35793873505463</fuel>
+            <distance units="m" is_input="False">293034.5339271268</distance>
+            <duration units="s" is_input="False">1662.8540210682913</duration>
+            <fuel units="kg" is_input="False">503.3575528025758</fuel>
           </descent>
           <initial_climb>
-            <distance units="m" is_input="False">6009.276901218807</distance>
-            <duration units="s" is_input="False">55.439660516360064</duration>
-            <fuel units="kg" is_input="False">135.54018066369463</fuel>
+            <distance units="m" is_input="False">6009.293846947454</distance>
+            <duration units="s" is_input="False">55.43981946678637</duration>
+            <fuel units="kg" is_input="False">135.540568481214</fuel>
           </initial_climb>
         </main_route>
         <takeoff>
