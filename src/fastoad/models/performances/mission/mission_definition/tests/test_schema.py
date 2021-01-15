@@ -48,7 +48,7 @@ def test_schema():
                                 "polar",
                                 OrderedDict([("CL", [0.0, 0.5, 1.0]), ("CD", [0.0, 0.03, 0.12])]),
                             ),
-                            ("thrust_rate", "data:mission:sizing:climb:thrust_rate"),
+                            ("thrust_rate", "data:propulsion:climb:thrust_rate"),
                             (
                                 "steps",
                                 [
@@ -163,7 +163,7 @@ def test_schema():
                                     ]
                                 ),
                             ),
-                            ("thrust_rate", "data:mission:sizing:climb:thrust_rate"),
+                            ("thrust_rate", "data:propulsion:climb:thrust_rate"),
                             (
                                 "steps",
                                 [
@@ -257,7 +257,7 @@ def test_schema():
                                     ]
                                 ),
                             ),
-                            ("thrust_rate", "data:mission:sizing:climb:thrust_rate"),
+                            ("thrust_rate", "data:propulsion:climb:thrust_rate"),
                             ("time_step", 5.0),
                             (
                                 "steps",
@@ -337,7 +337,7 @@ def test_schema():
                                     ]
                                 ),
                             ),
-                            ("thrust_rate", "data:mission:sizing:descent:thrust_rate"),
+                            ("thrust_rate", "data:propulsion:descent:thrust_rate"),
                             (
                                 "steps",
                                 [
@@ -414,12 +414,7 @@ def test_schema():
                                                             "equivalent_airspeed",
                                                             OrderedDict([("value", "constant")]),
                                                         ),
-                                                        (
-                                                            "altitude",
-                                                            OrderedDict(
-                                                                [("value", 1500.0), ("unit", "ft")]
-                                                            ),
-                                                        ),
+                                                        ("altitude", ":final_altitude"),
                                                     ]
                                                 ),
                                             ),
@@ -455,17 +450,7 @@ def test_schema():
                                                     ]
                                                 ),
                                             ),
-                                            (
-                                                "target",
-                                                OrderedDict(
-                                                    [
-                                                        (
-                                                            "time",
-                                                            "data:mission:sizing:holding:duration",
-                                                        )
-                                                    ]
-                                                ),
-                                            ),
+                                            ("target", OrderedDict([("time", ":duration")])),
                                         ]
                                     )
                                 ],
@@ -483,21 +468,8 @@ def test_schema():
                                     OrderedDict(
                                         [
                                             ("segment", "taxi"),
-                                            (
-                                                "thrust_rate",
-                                                "data:mission:sizing:taxi_in:thrust_rate",
-                                            ),
-                                            (
-                                                "target",
-                                                OrderedDict(
-                                                    [
-                                                        (
-                                                            "time",
-                                                            "data:mission:sizing:taxi_in:duration",
-                                                        )
-                                                    ]
-                                                ),
-                                            ),
+                                            ("thrust_rate", "data:propulsion:taxi:thrust_rate"),
+                                            ("target", OrderedDict([("time", ":duration")])),
                                         ]
                                     )
                                 ],

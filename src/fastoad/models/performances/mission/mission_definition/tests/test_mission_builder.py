@@ -35,20 +35,20 @@ def test_inputs():
     mission_builder = MissionBuilder(
         pth.join(DATA_FOLDER_PATH, "mission.yml"), Mock(IPropulsion), 100.0
     )
-    input_definition = {}
-    mission_builder.identify_inputs(input_definition)
-    assert input_definition == {
+    assert mission_builder.input_definition == {
         "data:TLAR:cruise_mach": None,
         "data:TLAR:range": "m",
         "data:aerodynamics:aircraft:cruise:CD": None,
         "data:aerodynamics:aircraft:cruise:CL": None,
         "data:aerodynamics:aircraft:takeoff:CD": None,
         "data:aerodynamics:aircraft:takeoff:CL": None,
-        "data:mission:sizing:climb:thrust_rate": None,
-        "data:mission:sizing:descent:thrust_rate": None,
+        "data:propulsion:climb:thrust_rate": None,
+        "data:propulsion:descent:thrust_rate": None,
+        "data:propulsion:taxi:thrust_rate": None,
         "data:mission:sizing:holding:duration": "s",
+        "data:mission:sizing:main:descent:final_altitude": "m",
+        "data:mission:sizing:diversion:descent:final_altitude": "m",
         "data:mission:sizing:taxi_in:duration": "s",
-        "data:mission:sizing:taxi_in:thrust_rate": None,
     }
 
 
@@ -77,6 +77,7 @@ def test_build():
         "data:mission:sizing:taxi_in:thrust_rate": 0.5,
     }
     mission = mission_builder.build(inputs)
+    mission_builder._build_mission_structure()
 
     assert len(mission.flight_sequence) == 4
     assert mission.flight_sequence[0].name == "sizing:main"
