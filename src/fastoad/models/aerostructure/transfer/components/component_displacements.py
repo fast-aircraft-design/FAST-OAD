@@ -26,12 +26,13 @@ class ComponentDisplacements(om.ExplicitComponent):
             "data:aerostructural:transfer:" + comp + ":matrix", shape_by_conn=True, val=np.nan
         )
         self.add_input(
-            "data:aerostructural:structure:" + comp + ":displacements",
-            shape_by_conn=True,
-            val=np.nan,
+            "data:aerostructural:structure:" + comp + ":displacements", shape_by_conn=True, val=0.0,
+        )
+        self.add_input(
+            "data:aerostructural:aerodynamic:" + comp + ":nodes", val=np.nan, shape_by_conn=True
         )
         self.add_output(
-            "data:aerostructural:aerodynamic:" + comp + ":def_nodes",
+            "data:aerostructural:aerodynamic:" + comp + ":displacements",
             copy_shape="data:aerostructural:aerodynamic:" + comp + ":nodes",
             val=0.0,
         )
@@ -45,8 +46,11 @@ class ComponentDisplacements(om.ExplicitComponent):
         t_mat = inputs["data:aerostructural:transfer:" + comp + ":matrix"]
 
         # Structural nodes displacements
-        disp_s = inputs["data:aerostructural:structure:" + comp + ":displacements"]
-
+        disp_s = np.matrix.flatten(
+            inputs["data:aerostructural:structure:" + comp + ":displacements"]
+        )
         # Aerodynamic nodes displacements
-        disp_a = np.dot(t_mat, disp_s)
-        outputs["data:aerostructural:aerodynamic:" + comp + ":def_nodes"] = disp_a
+        disp_a = np.dot(t_mat, disp_s).reshape(
+            np.shape(outputs["data:aerostructural:aerodynamic:" + comp + ":displacements"])
+        )
+        outputs["data:aerostructural:aerodynamic:" + comp + ":displacements"] = disp_a

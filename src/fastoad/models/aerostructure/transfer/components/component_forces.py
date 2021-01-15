@@ -25,11 +25,12 @@ class ComponentForces(om.ExplicitComponent):
 
     def initialize(self):
         self.options.declare("component", types=str)
-        self.options.declare("number_of_section", types=str)
+        self.options.declare("number_of_sections", types=int)
 
     def setup(self):
         comp = self.options["component"]
-        self.add_input("data:geometry:wing:MAC:at25percent:x")
+        sect = self.options["number_of_sections"]
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
         self.add_input(
             "data:aerostructural:aerodynamic:" + comp + ":nodes", val=np.nan, shape_by_conn=True
         )
@@ -39,6 +40,12 @@ class ComponentForces(om.ExplicitComponent):
         self.add_input(
             "data:aerostructural:aerodynamic:" + comp + ":forces", val=0.0, shape_by_conn=True
         )
+        size = sect + 1
+        if comp in ("wing", "horizontal_tail", "strut"):
+            size = (sect + 1) * 2
+        self.add_output(
+            "data:aerostructural:structure:" + comp + ":forces", val=0.0, shape=(size, 6)
+        )
 
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
@@ -46,7 +53,7 @@ class ComponentForces(om.ExplicitComponent):
     def compute(self, inputs, outputs):
         comp = self.options["component"]
         n_a = inputs["data:aerostructural:aerodynamic:" + comp + ":nodes"]
-        n_s = inputs["data:aerostructural:aerodynamic:" + comp + ":forces"]
+        n_s = inputs["data:aerostructural:structure:" + comp + ":nodes"]
         f_a = inputs["data:aerostructural:aerodynamic:" + comp + ":forces"]
         x_ref = inputs["data:geometry:wing:MAC:at25percent:x"]
         if comp in ("wing", "horizontal_tail", "strut"):
@@ -76,13 +83,13 @@ class ComponentForces(om.ExplicitComponent):
             n_a1 = n_a[idx, :]
             n_a2 = n_a[idx + 1, :]
             n_cp = np.array(
-                [x_ref - f[4] / f[2], 0.5 * (n_a1[1] + n_a2[1]), 0.5 * (n_a1[2] + n_a2[2])]
+                [x_ref[0] - f[4] / f[2], 0.5 * (n_a1[1] + n_a2[1]), 0.5 * (n_a1[2] + n_a2[2])]
             )
-            r_s1 = n_s[idx, :] - n_cp
-            r_s2 = n_s[idx + 1] - n_cp
-            f_s[idx, :3] = f_a[:3] * 0.5
-            f_s[idx + 1, :3] = f_a[:3] * 0.5
-            f_s[idx, 3:] = np.cross(0.5 * f_a[:3], r_s1)
-            f_s[idx + 1, 3:] = np.cross(0.5 * f_a[:3], r_s2)
+            r_s1 = n_cp - n_s[idx, :]
+            r_s2 = n_cp - n_s[idx + 1]
+            f_s[idx, :3] += f[:3] * 0.5
+            f_s[idx + 1, :3] += f[:3] * 0.5
+            f_s[idx, 3:] += np.cross(r_s1, 0.5 * f[:3])
+            f_s[idx + 1, 3:] += np.cross(r_s2, 0.5 * f[:3])
 
         return f_s

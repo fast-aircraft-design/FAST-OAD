@@ -10,20 +10,3 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
-import openmdao.api as om
-from fastoad.models.aerostructure.transfer.components.component_forces import ComponentForces
-
-
-class ForcesTransfer(om.Group):
-    def initialize(self):
-        self.options.declare("components", types=list)
-
-    def setup(self):
-        comps = self.options["components"]
-
-        for comp in comps:
-            self.add_subsystem(
-                comp + "Forces_Transfer", ComponentForces(component=comp), promotes=["*"],
-            )

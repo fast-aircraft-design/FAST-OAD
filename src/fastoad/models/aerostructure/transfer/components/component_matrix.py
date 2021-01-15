@@ -49,8 +49,8 @@ class ComponentMatrix(om.ExplicitComponent):
     def compute(self, inputs, outputs):
         comp = self.options["component"]
         meth = self.options["interpolation_method"]
-        nodes_a = inputs["data:aerostructural:aerodynamic:wing:nodes"]
-        nodes_s = inputs["data:aerostructural:structure:wing:nodes"]
+        nodes_a = inputs["data:aerostructural:aerodynamic:" + comp + ":nodes"]
+        nodes_s = inputs["data:aerostructural:structure:" + comp + ":nodes"]
         t_mat = InterpolationMatrix(nodes_a, nodes_s, methode=meth)
         outputs[
             "data:aerostructural:transfer:" + comp + ":matrix"
