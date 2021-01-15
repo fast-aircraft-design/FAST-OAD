@@ -72,7 +72,6 @@ class AVL(ExternalCodeComp):
         self.add_input("data:aerostructural:load_case:altitude", val=np.nan, units="ft")
         self.add_input("tuning:aerostructural:aerodynamic:chordwise_spacing:k", val=np.nan)
 
-        size = 4
         for comp, n_sect in zip(comps, sects):
             self.add_input(
                 "data:aerostructural:aerodynamic:" + comp + ":nodes",

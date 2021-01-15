@@ -13,14 +13,20 @@
 
 
 from fastoad.models.aerostructure.mesh.structure_mesh import StructureMesh
+from fastoad.models.aerostructure.mesh.aerodynamic_mesh import AerodynamicMesh
+from fastoad.models.aerostructure.transfer.transfer_matrices import TransferMatrices
+from fastoad.models.aerostructure.transfer.displacements_transfer import DisplacementsTransfer
+from fastoad.models.aerostructure.transfer.forces_transfer import ForcesTransfer
 from fastoad.models.aerostructure.structure.external.mystran.mystran_static import MystranStatic
+from fastoad.models.aerostructure.aerodynamic.external.AVL.avl import AVL
 from fastoad.models.options import OpenMdaoOptionDispatcherGroup as OmOptGrp
 
 
-class StructureSolver(OmOptGrp):
+class StaticSolver(OmOptGrp):
     def initialize(self):
         self.options.declare("components", types=list)
         self.options.declare("components_sections", types=list)
+        self.options.declare("components_interp", types=list)
 
     def setup(self):
         self.add_subsystem(
@@ -29,6 +35,41 @@ class StructureSolver(OmOptGrp):
                 components=self.options["components"],
                 components_sections=self.options["components_sections"],
             ),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "aerodynamic_mesh",
+            AerodynamicMesh(
+                components=self.options["components"],
+                components_sections=self.options["components_sections"],
+            ),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "displacement_transfer_matrices",
+            TransferMatrices(
+                components=self.options["components"],
+                components_sections=self.options["components_sections"],
+                components_interp=self.options["components_interp"],
+            ),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "displacement_transfer",
+            DisplacementsTransfer(components=self.options["components"]),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "Aerodynamic_solver",
+            AVL(
+                components=self.options["components"],
+                components_sections=self.options["components_sections"],
+            ),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "Forces_transfer",
+            ForcesTransfer(components=self.options["components"],),
             promotes=["*"],
         )
         self.add_subsystem(
