@@ -52,6 +52,7 @@ class Mission(om.Group):
                                - "::breguet" : a simple mission with Breguet formula for cruise, and
                                                input coefficients for fuel reserve and fuel
                                                consumption during climb and descent
+      - mission_name: the mission name. Required if mission file defines several missions.
       - initial_iterations: During first solver loops, a complete mission computation can fail or
                             consume useless CPU-time. This option drives the number of first
                             iterations where a simple Breguet formula will be used instead of the
@@ -72,6 +73,7 @@ class Mission(om.Group):
         self.options.declare(
             "mission_file_path", default=None, types=(str, MissionDefinition), allow_none=True
         )
+        self.options.declare("mission_name", default=None, types=str, allow_none=True)
         self.options.declare("initial_iterations", default=2, types=int)
         self.options.declare("adjust_fuel", default=True, types=bool)
         self.options.declare("compute_TOW", default=False, types=bool)
@@ -91,8 +93,10 @@ class Mission(om.Group):
             with path(resources, file_name) as mission_input_file:
                 self.options["mission_file_path"] = MissionDefinition(mission_input_file)
         mission_wrapper = MissionWrapper(self.options["mission_file_path"])
+        if self.options["mission_name"] is None:
+            self.options["mission_name"] = mission_wrapper.get_unique_mission_name()
 
-        mission_name = mission_wrapper.mission_name
+        mission_name = self.options["mission_name"]
 
         self.add_subsystem("ZFW_computation", self._get_zfw_component(mission_name), promotes=["*"])
 
@@ -123,6 +127,7 @@ class Mission(om.Group):
         del mission_options["add_solver"]
         del mission_options["mission_file_path"]
         mission_options["mission_wrapper"] = mission_wrapper
+        mission_options["mission_name"] = mission_name
         self.add_subsystem(
             "mission_computation", MissionComponent(**mission_options), promotes=["*"]
         )
@@ -204,7 +209,7 @@ class MissionComponent(om.ExplicitComponent):
         super().__init__(**kwargs)
         self.flight_points = None
         self._engine_wrapper = None
-        self._mission: MissionWrapper = None
+        self._mission_wrapper: MissionWrapper = None
         self._mission_vars: type = None
 
     def initialize(self):
@@ -212,15 +217,16 @@ class MissionComponent(om.ExplicitComponent):
         self.options.declare("out_file", default="", types=str)
         self.options.declare("initial_iterations", default=2, types=int)
         self.options.declare("mission_wrapper", types=MissionWrapper)
+        self.options.declare("mission_name", types=str)
         self.options.declare("is_sizing", default=False, types=bool)
 
     def setup(self):
         self._engine_wrapper = self._get_engine_wrapper()
         self._engine_wrapper.setup(self)
-        self._mission = self.options["mission_wrapper"]
-        self._mission.setup(self)
+        self._mission_wrapper = self.options["mission_wrapper"]
+        self._mission_wrapper.setup(self, self.options["mission_name"])
 
-        mission_name = self._mission.mission_name
+        mission_name = self.options["mission_name"]
 
         class MissionVars(Enum):
             TOW = "data:mission:%s:TOW" % mission_name
@@ -269,7 +275,9 @@ class MissionComponent(om.ExplicitComponent):
         )
 
         high_speed_polar = self._get_initial_polar(inputs)
-        distance = np.asscalar(np.sum(self._mission.get_route_ranges(inputs)))
+        distance = np.asscalar(
+            np.sum(self._mission_wrapper.get_route_ranges(inputs, self.options["mission_name"]))
+        )
 
         altitude = 100.0
         cruise_mach = 0.1
@@ -327,8 +335,8 @@ class MissionComponent(om.ExplicitComponent):
 
         reference_area = inputs["data:geometry:wing:area"]
 
-        self._mission.propulsion = propulsion_model
-        self._mission.reference_area = reference_area
+        self._mission_wrapper.propulsion = propulsion_model
+        self._mission_wrapper.reference_area = reference_area
 
         end_of_takeoff = FlightPoint(
             time=0.0,
@@ -338,11 +346,13 @@ class MissionComponent(om.ExplicitComponent):
             ground_distance=0.0,
         )
 
-        self.flight_points = self._mission.compute(inputs, outputs, end_of_takeoff)
+        self.flight_points = self._mission_wrapper.compute(inputs, outputs, end_of_takeoff)
 
         # Final ================================================================
         end_of_mission = FlightPoint.create(self.flight_points.iloc[-1])
-        zfw = end_of_mission.mass - self._mission.get_reserve(self.flight_points)
+        zfw = end_of_mission.mass - self._mission_wrapper.get_reserve(
+            self.flight_points, self.options["mission_name"]
+        )
         outputs[self._mission_vars.BLOCK_FUEL.value] = (
             inputs[self._mission_vars.TOW.value]
             + inputs[self._mission_vars.TAKEOFF_FUEL.value]

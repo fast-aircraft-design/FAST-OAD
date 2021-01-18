@@ -54,9 +54,9 @@ PHASE_TAG = "phase"
 RESERVE_TAG = "reserve"
 CRUISE_TYPE_TAG = "cruise_type"
 STEPS_TAG = "steps"
-MISSION_DEFINITION_TAG = "mission"
-ROUTE_DEFINITIONS_TAG = "route_definitions"
-PHASE_DEFINITIONS_TAG = "phase_definitions"
+MISSION_DEFINITION_TAG = "missions"
+ROUTE_DEFINITIONS_TAG = "routes"
+PHASE_DEFINITIONS_TAG = "phases"
 POLAR_TAG = "polar"
 
 
@@ -127,19 +127,21 @@ class MissionDefinition(dict):
                     YAML(step).revalidate(Map(cls._get_segment_mapping(CRUISE_TYPE_TAG)))
             Ensure(cruise_step_count).is_less_than_or_equal_to(1)
 
-        reserve_count = 0
-        for step in content[MISSION_DEFINITION_TAG][STEPS_TAG]:
-            step_type, value = tuple(*step.items())
-            if step_type == PHASE_TAG:
-                Ensure(value).is_in(content[PHASE_DEFINITIONS_TAG].keys())
-            elif step_type == ROUTE_TAG:
-                Ensure(value).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
-            elif step_type == RESERVE_TAG:
-                reserve_count += 1
-                Ensure(value["ref"]).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
-        Ensure(reserve_count).is_less_than_or_equal_to(1)
-        if reserve_count == 1:
-            Ensure(step_type).equals(RESERVE_TAG)
+        for mission_definition in content[MISSION_DEFINITION_TAG].values():
+            reserve_count = 0
+            for step in mission_definition[STEPS_TAG]:
+                step_type, value = tuple(*step.items())
+                if step_type == PHASE_TAG:
+                    Ensure(value).is_in(content[PHASE_DEFINITIONS_TAG].keys())
+                elif step_type == ROUTE_TAG:
+                    Ensure(value).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
+                elif step_type == RESERVE_TAG:
+                    reserve_count += 1
+                    Ensure(value["ref"]).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
+            Ensure(reserve_count).is_less_than_or_equal_to(1)
+            if reserve_count == 1:
+                # reserve definition should be the last step
+                Ensure(step_type).equals(RESERVE_TAG)
 
     @staticmethod
     def _process_polar_definition(struct: YAML):
@@ -158,7 +160,7 @@ class MissionDefinition(dict):
             {
                 PHASE_DEFINITIONS_TAG: MapPattern(Str(), Map(cls._get_phase_mapping())),
                 ROUTE_DEFINITIONS_TAG: MapPattern(Str(), Map(cls._get_route_mapping())),
-                MISSION_DEFINITION_TAG: Map(cls._get_mission_mapping()),
+                MISSION_DEFINITION_TAG: MapPattern(Str(), Map(cls._get_mission_mapping())),
             }
         )
 
@@ -222,7 +224,6 @@ class MissionDefinition(dict):
     @classmethod
     def _get_mission_mapping(cls) -> dict:
         return {
-            "name": Str(),
             STEPS_TAG: Seq(
                 Map(
                     {

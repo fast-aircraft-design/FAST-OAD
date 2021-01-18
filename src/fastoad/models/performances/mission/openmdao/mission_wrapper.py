@@ -48,21 +48,29 @@ class MissionWrapper(MissionBuilder):
     Wrapper around :class:`MissionBuilder` for using with OpenMDAO
     """
 
-    def setup(self, component: om.ExplicitComponent):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.mission_name = None
+
+    def setup(self, component: om.ExplicitComponent, mission_name: str = None):
         """
         To be used during setup() of provided OpenMDAO component.
 
         It adds input and output variables deduced from mission definition file.
 
         :param component: the OpenMDAO component where the setup is done.
+        :param mission_name: mission name (can be omitted if only one mission is defined)
         """
-        output_definition = self._identify_outputs()
+
+        if mission_name is None:
+            mission_name = self.get_unique_mission_name()
+        self.mission_name = mission_name
+        input_definition = self.get_input_variables(mission_name)
+        output_definition = self._identify_outputs(mission_name)
         output_definition = {
-            name: value
-            for name, value in output_definition.items()
-            if name not in self.input_definition
+            name: value for name, value in output_definition.items() if name not in input_definition
         }
-        for name, units in self.input_definition.items():
+        for name, units in input_definition.items():
             if name.endswith(":CD") or name.endswith(":CL"):
                 component.add_input(name, np.nan, units=units, shape=POLAR_POINT_COUNT)
             else:
@@ -82,12 +90,12 @@ class MissionWrapper(MissionBuilder):
         part of the flight.
 
         :param inputs: the input vector of the OpenMDAO component
-        :param outputs:  the output vector of the OpenMDAO component
+        :param outputs: the output vector of the OpenMDAO component
         :param start_flight_point: the starting flight point just after takeoff
         :return: a pandas DataFrame where columns names match
                  :meth:`fastoad.base.flight_point.FlightPoint.get_attribute_keys`
         """
-        mission = self.build(inputs)
+        mission = self.build(inputs, self.mission_name)
 
         def _compute_vars(name_root, start: FlightPoint, end: FlightPoint):
             """Computes duration, burned fuel and covered distance."""
@@ -129,7 +137,7 @@ class MissionWrapper(MissionBuilder):
 
         return flight_points
 
-    def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
+    def _identify_outputs(self, mission_name) -> Dict[str, Tuple[str, str]]:
         """
         Builds names of OpenMDAO outputs from names of mission, route and phases.
 
@@ -137,24 +145,22 @@ class MissionWrapper(MissionBuilder):
         """
         output_definition = {}
 
-        output_definition.update(self._add_vars(self.mission_name))
+        output_definition.update(self._add_vars(mission_name))
 
-        for step in self.definition[MISSION_DEFINITION_TAG][STEPS_TAG]:
+        for step in self.definition[MISSION_DEFINITION_TAG][mission_name][STEPS_TAG]:
             if PHASE_TAG in step:
                 phase_name = step[PHASE_TAG]
-                output_definition.update(self._add_vars(self.mission_name, phase_name=phase_name))
+                output_definition.update(self._add_vars(mission_name, phase_name=phase_name))
             elif ROUTE_TAG in step:
                 route_name = step[ROUTE_TAG]
-                output_definition.update(self._add_vars(self.mission_name, route_name))
+                output_definition.update(self._add_vars(mission_name, route_name))
                 route_definition = self.definition[ROUTE_DEFINITIONS_TAG][route_name]
                 for step_definition in route_definition[STEPS_TAG]:
                     if PHASE_TAG in step_definition:
                         phase_name = step_definition[PHASE_TAG]
                     else:
                         phase_name = "cruise"
-                    output_definition.update(
-                        self._add_vars(self.mission_name, route_name, phase_name)
-                    )
+                    output_definition.update(self._add_vars(mission_name, route_name, phase_name))
 
         return output_definition
 

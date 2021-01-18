@@ -1,4 +1,4 @@
-phase_definitions:
+phases:
   climb:
     steps:
       - segment: transition
@@ -27,7 +27,7 @@ phase_definitions:
           mach: 0.
         reserve_mass_ratio: settings:mission:sizing:breguet:reserve:mass_ratio
 
-route_definitions:
+routes:
   main_route:
     range: data:TLAR:range
     steps:
@@ -38,8 +38,8 @@ route_definitions:
         use_max_lift_drag_ratio : true
       - phase: descent
 
-mission:
-  name: sizing
-  steps:
-    - route: main_route
-    - phase: reserve
+missions:
+  sizing:
+    steps:
+      - route: main_route
+      - phase: reserve

@@ -25,6 +25,7 @@ from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 from fastoad.models.propulsion import IPropulsion
+from ..exceptions import FastMissionFileMissingMissionNameError
 from ..mission_builder import MissionBuilder
 from ..schema import MissionDefinition
 
@@ -33,35 +34,59 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 def test_inputs():
     mission_builder = MissionBuilder(
-        pth.join(DATA_FOLDER_PATH, "mission.yml"), Mock(IPropulsion), 100.0
+        pth.join(DATA_FOLDER_PATH, "mission.yml"),
+        propulsion=Mock(IPropulsion),
+        reference_area=100.0,
     )
-    assert mission_builder.input_definition == {
+    with pytest.raises(FastMissionFileMissingMissionNameError):
+        mission_builder.get_input_variables()
+
+    assert mission_builder.get_input_variables("sizing") == {
         "data:TLAR:cruise_mach": None,
-        "data:TLAR:range": "m",
         "data:aerodynamics:aircraft:cruise:CD": None,
         "data:aerodynamics:aircraft:cruise:CL": None,
         "data:aerodynamics:aircraft:takeoff:CD": None,
         "data:aerodynamics:aircraft:takeoff:CL": None,
-        "data:propulsion:climb:thrust_rate": None,
-        "data:propulsion:descent:thrust_rate": None,
-        "data:propulsion:taxi:thrust_rate": None,
+        "data:mission:sizing:diversion:descent:final_altitude": "m",
+        "data:mission:sizing:diversion:range": "m",
         "data:mission:sizing:holding:duration": "s",
         "data:mission:sizing:main:descent:final_altitude": "m",
-        "data:mission:sizing:diversion:descent:final_altitude": "m",
+        "data:mission:sizing:main:range": "m",
         "data:mission:sizing:taxi_in:duration": "s",
+        "data:mission:sizing:taxi_in:thrust_rate": None,
+        "data:propulsion:climb:thrust_rate": None,
+        "data:propulsion:descent:thrust_rate": None,
+    }
+    assert mission_builder.get_input_variables("operational") == {
+        "data:TLAR:cruise_mach": None,
+        "data:aerodynamics:aircraft:cruise:CD": None,
+        "data:aerodynamics:aircraft:cruise:CL": None,
+        "data:aerodynamics:aircraft:takeoff:CD": None,
+        "data:aerodynamics:aircraft:takeoff:CL": None,
+        "data:mission:operational:main:descent:final_altitude": "m",
+        "data:mission:operational:main:range": "m",
+        "data:mission:operational:taxi_in:duration": "s",
+        "data:mission:operational:taxi_in:thrust_rate": None,
+        "data:mission:operational:taxi_out:duration": "s",
+        "data:mission:operational:taxi_out:thrust_rate": None,
+        "data:propulsion:climb:thrust_rate": None,
+        "data:propulsion:descent:thrust_rate": None,
     }
 
 
 def test_build():
     mission_definition = MissionDefinition(pth.join(DATA_FOLDER_PATH, "mission.yml"))
-    mission_builder = MissionBuilder(mission_definition, Mock(IPropulsion), 100.0)
+    mission_builder = MissionBuilder(
+        mission_definition, propulsion=Mock(IPropulsion), reference_area=100.0
+    )
 
     cl = np.linspace(0.0, 1.0, 11)
     cd = 0.5 * cl ** 2
 
     inputs = {
         "data:TLAR:cruise_mach": 0.78,
-        "data:TLAR:range": 8.0e6,
+        "data:mission:sizing:main:range": 8000.0e3,
+        "data:mission:sizing:diversion:range": 926.0e3,
         "initial_climb:final_altitude": 500,
         "initial_climb:final_equivalent_airspeed": 130.0,
         "data:aerodynamics:aircraft:cruise:CD": cd,
@@ -76,8 +101,7 @@ def test_build():
         "data:mission:sizing:taxi_in:duration": 300.0,
         "data:mission:sizing:taxi_in:thrust_rate": 0.5,
     }
-    mission = mission_builder.build(inputs)
-    mission_builder._build_mission_structure()
+    mission = mission_builder.build(inputs, mission_name="sizing")
 
     assert len(mission.flight_sequence) == 4
     assert mission.flight_sequence[0].name == "sizing:main"
@@ -130,62 +154,32 @@ def test_build():
 
 def test_get_flight_ranges():
     mission_definition = MissionDefinition(pth.join(DATA_FOLDER_PATH, "mission.yml"))
-    mission_builder = MissionBuilder(mission_definition, Mock(IPropulsion), 100.0)
-
-    cl = np.linspace(0.0, 1.0, 11)
-    cd = 0.5 * cl ** 2
-
-    inputs = {
-        "data:TLAR:cruise_mach": 0.78,
-        "data:TLAR:range": 8.0e6,
-        "initial_climb:final_altitude": 500,
-        "initial_climb:final_equivalent_airspeed": 130.0,
-        "data:aerodynamics:aircraft:cruise:CD": cd,
-        "data:aerodynamics:aircraft:cruise:CL": cl,
-        "data:aerodynamics:aircraft:low_speed:CD": cd,
-        "data:aerodynamics:aircraft:low_speed:CL": cl,
-        "data:aerodynamics:aircraft:takeoff:CD": cd,
-        "data:aerodynamics:aircraft:takeoff:CL": cl,
-        "data:mission:sizing:climb:thrust_rate": 0.9,
-        "data:mission:sizing:descent:thrust_rate": 0.5,
-        "data:mission:sizing:holding:duration": 2000.0,
-        "data:mission:sizing:taxi_in:duration": 300.0,
-        "data:mission:sizing:taxi_in:thrust_rate": 0.5,
-    }
-
-    assert_allclose(mission_builder.get_route_ranges(inputs), [8.0e6, 926.0e3])
-
-
-def test_get_route_cruise_speeds():
-    mission_definition = MissionDefinition(pth.join(DATA_FOLDER_PATH, "mission.yml"))
-    mission_builder = MissionBuilder(mission_definition, Mock(IPropulsion), 100.0)
-
-    cl = np.linspace(0.0, 1.0, 11)
-    cd = 0.5 * cl ** 2
-
-    inputs = {
-        "data:TLAR:cruise_mach": 0.78,
-        "data:TLAR:range": 8.0e6,
-        "initial_climb:final_altitude": 500,
-        "initial_climb:final_equivalent_airspeed": 130.0,
-        "data:aerodynamics:aircraft:cruise:CD": cd,
-        "data:aerodynamics:aircraft:cruise:CL": cl,
-        "data:aerodynamics:aircraft:low_speed:CD": cd,
-        "data:aerodynamics:aircraft:low_speed:CL": cl,
-        "data:aerodynamics:aircraft:takeoff:CD": cd,
-        "data:aerodynamics:aircraft:takeoff:CL": cl,
-        "data:mission:sizing:climb:thrust_rate": 0.9,
-        "data:mission:sizing:descent:thrust_rate": 0.5,
-        "data:mission:sizing:holding:duration": 2000.0,
-        "data:mission:sizing:taxi_in:duration": 300.0,
-        "data:mission:sizing:taxi_in:thrust_rate": 0.5,
-    }
-
-    result = mission_builder.get_route_cruise_speeds(inputs)
-    speed_params = [tup[0] for tup in result]
-    speed_values = [tup[1] for tup in result]
-
-    assert speed_params == ["mach", "equivalent_airspeed"]
-    assert_allclose(
-        speed_values, [0.78, 154.333], rtol=1.0e-4,
+    mission_builder = MissionBuilder(
+        mission_definition, propulsion=Mock(IPropulsion), reference_area=100.0
     )
+
+    cl = np.linspace(0.0, 1.0, 11)
+    cd = 0.5 * cl ** 2
+
+    inputs = {
+        "data:TLAR:cruise_mach": 0.78,
+        "data:mission:sizing:main:range": 8000.0e3,
+        "data:mission:operational:main:range": 500.0e3,
+        "data:mission:sizing:diversion:range": 926.0e3,
+        "initial_climb:final_altitude": 500,
+        "initial_climb:final_equivalent_airspeed": 130.0,
+        "data:aerodynamics:aircraft:cruise:CD": cd,
+        "data:aerodynamics:aircraft:cruise:CL": cl,
+        "data:aerodynamics:aircraft:low_speed:CD": cd,
+        "data:aerodynamics:aircraft:low_speed:CL": cl,
+        "data:aerodynamics:aircraft:takeoff:CD": cd,
+        "data:aerodynamics:aircraft:takeoff:CL": cl,
+        "data:mission:sizing:climb:thrust_rate": 0.9,
+        "data:mission:sizing:descent:thrust_rate": 0.5,
+        "data:mission:sizing:holding:duration": 2000.0,
+        "data:mission:sizing:taxi_in:duration": 300.0,
+        "data:mission:sizing:taxi_in:thrust_rate": 0.5,
+    }
+
+    assert_allclose(mission_builder.get_route_ranges(inputs, "sizing"), [8000.0e3, 926.0e3])
+    assert_allclose(mission_builder.get_route_ranges(inputs, "operational"), [500.0e3])

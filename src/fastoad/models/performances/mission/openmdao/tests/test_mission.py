@@ -31,6 +31,7 @@ from fastoad.module_management.service_registry import RegisterPropulsion
 from tests.testing_utilities import run_system
 from ..mission import MissionComponent, Mission
 from ..mission_wrapper import MissionWrapper
+from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -137,6 +138,7 @@ def test_mission_component(cleanup):
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_mission.csv"),
             initial_iterations=0,
             mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_mission.yml")),
+            mission_name="operational",
         ),
         ivc,
     )
@@ -155,6 +157,7 @@ def test_mission_component_breguet(cleanup):
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_breguet.csv"),
             initial_iterations=0,
             mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_breguet.yml")),
+            mission_name="operational",
         ),
         ivc,
     )
@@ -167,12 +170,25 @@ def test_mission_group_without_loop(cleanup):
     vars = VariableIO(input_file_path).read()
     ivc = vars.to_ivc()
 
+    with pytest.raises(FastMissionFileMissingMissionNameError):
+        run_system(
+            Mission(
+                propulsion_id="test.wrapper.propulsion.dummy_engine",
+                out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
+                initial_iterations=0,
+                mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+                adjust_fuel=False,
+            ),
+            ivc,
+        )
+
     problem = run_system(
         Mission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
             initial_iterations=0,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+            mission_name="operational",
             adjust_fuel=False,
         ),
         ivc,
@@ -213,6 +229,7 @@ def test_mission_group_with_loop(cleanup):
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_looped_mission_group.csv"),
             initial_iterations=1,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+            mission_name="operational",
             add_solver=True,
         ),
         ivc,
