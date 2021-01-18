@@ -26,9 +26,6 @@ class ComputeMTOW(om.AddSubtractComp):
     Computes MTOW from OWE, design payload and consumed fuel in sizing mission.
     """
 
-    def initialize(self):
-        super().initialize()
-
     def setup(self):
         self.add_equation(
             "data:weight:aircraft:MTOW",

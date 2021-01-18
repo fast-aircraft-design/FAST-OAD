@@ -1,3 +1,4 @@
+"""Exceptions for mission definition."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,6 +16,4 @@ from fastoad.exceptions import FastError
 
 
 class FastMissionFileMissingMissionNameError(FastError):
-    """
-    Raised when a mission definition is used without specifying the mission name.
-    """
+    """Raised when a mission definition is used without specifying the mission name."""

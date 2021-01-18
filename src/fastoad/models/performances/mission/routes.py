@@ -103,6 +103,12 @@ class RangedRoute(SimpleRoute):
     #: Accuracy on actual total ground distance for the solver. In meters
     distance_accuracy: float = 0.5e3
 
+    def __post_init__(self):
+        super().__post_init__()
+
+        # We will use this to keep data along root_scalar process (see _solve_cruise_distance() )
+        self._flight_points = None
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         # In very simple cases, climb and descent phases can have fixed
         # covered ground distance. In that case, cruise distance is easy to
@@ -116,7 +122,7 @@ class RangedRoute(SimpleRoute):
             return self._solve_cruise_distance(start)
 
         self.cruise_distance = self.flight_distance - np.sum(climb_descent_distances)
-        return super(RangedRoute, self).compute_from(start)
+        return super().compute_from(start)
 
     @classmethod
     def _get_ground_distances(cls, phase: FlightSequence) -> list:
@@ -135,25 +141,29 @@ class RangedRoute(SimpleRoute):
         matches provided flight distance.
         """
 
-        class _ComputeFlight:
-            def compute_flight(_self, cruise_distance):
-                # We use "_self" because we want to keep the reference to the
-                # outer class as "self"
-                self.cruise_distance = cruise_distance
-                _self.flight_points = super(RangedRoute, self).compute_from(start)
-                obtained_distance = (
-                    _self.flight_points.iloc[-1].ground_distance
-                    - _self.flight_points.iloc[0].ground_distance
-                )
-                return self.flight_distance - obtained_distance
-
-        flight_computer = _ComputeFlight()
         root_scalar(
-            flight_computer.compute_flight,
+            self._compute_flight,
+            args=(start,),
             x0=self.flight_distance * 0.5,
             x1=self.flight_distance * 0.25,
             xtol=0.5e3,
             method="secant",
         )
 
-        return flight_computer.flight_points
+        return self._flight_points
+
+    def _compute_flight(self, cruise_distance, start: FlightPoint):
+        """
+        Computes flight for provided cruise distance
+
+        :param cruise_distance:
+        :param start:
+        :return: difference between computes distance and self.flight_distance
+        """
+        self.cruise_distance = cruise_distance
+        self._flight_points = super().compute_from(start)
+        obtained_distance = (
+            self._flight_points.iloc[-1].ground_distance
+            - self._flight_points.iloc[0].ground_distance
+        )
+        return self.flight_distance - obtained_distance

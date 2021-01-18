@@ -22,6 +22,9 @@ from fastoad.base.flight_point import FlightPoint
 
 
 class IFlightPart(ABC):
+    def __init__(self):
+        self.name = ""
+
     @abstractmethod
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
@@ -43,7 +46,6 @@ class FlightSequence(IFlightPart):
 
     def __post_init__(self):
         self._flight_sequence = []
-        self.name = ""
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         parts = []
