@@ -192,10 +192,10 @@ class MissionBuilder:
         """
         if len(self._structure) == 1:
             return list(self._structure.keys())[0]
-        else:
-            raise FastMissionFileMissingMissionNameError(
-                "Mission name must be specified if several missions are defined in mission file."
-            )
+
+        raise FastMissionFileMissingMissionNameError(
+            "Mission name must be specified if several missions are defined in mission file."
+        )
 
     def _build_structure(self) -> OrderedDict:
         """
@@ -362,7 +362,9 @@ class MissionBuilder:
             flight_range = route_structure["range"]
             if isinstance(flight_range, str):
                 flight_range = inputs[route_structure["range"]]
-            route = RangedRoute(climb_phases, cruise_phase, descent_phases, flight_range)
+            route = RangedRoute(
+                climb_phases, cruise_phase, descent_phases, flight_distance=flight_range
+            )
         else:
             route = FlightSequence()
             route.flight_sequence.extend(climb_phases)
