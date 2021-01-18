@@ -1,4 +1,4 @@
-phase_definitions:
+phases:
   initial_climb:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
@@ -114,7 +114,7 @@ phase_definitions:
         target:
           time: data:mission:sizing:taxi_in:duration
 
-route_definitions:
+routes:
   main_route:
     range: data:TLAR:range
     steps:
@@ -136,13 +136,13 @@ route_definitions:
         polar: data:aerodynamics:aircraft:cruise
       - phase: descent
 
-mission:
-  name: sizing
-  steps:
-    - route: main_route
-    - route: diversion
-    - phase: holding
-    - phase: taxi_in
-    - reserve:
-        ref: main_route
-        multiplier: 0.03
+missions:
+  sizing:
+    steps:
+      - route: main_route
+      - route: diversion
+      - phase: holding
+      - phase: taxi_in
+      - reserve:
+          ref: main_route
+          multiplier: 0.03

@@ -1,4 +1,4 @@
-phase_definitions:
+phases:
   initial_climb:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
@@ -78,7 +78,7 @@ phase_definitions:
             value: 1500.
             unit: ft
 
-route_definitions:
+routes:
   main_route:
     range:
       value: 2000.
@@ -91,10 +91,13 @@ route_definitions:
         polar: data:aerodynamics:aircraft:cruise
       - phase: descent
 
-mission:
-  name: operational
-  steps:
-    - route: main_route
-    - reserve:
-        ref: main_route
-        multiplier: 0.03
+missions:
+  unused:
+    steps:
+      - route: main_route
+  operational:
+    steps:
+      - route: main_route
+      - reserve:
+          ref: main_route
+          multiplier: 0.03

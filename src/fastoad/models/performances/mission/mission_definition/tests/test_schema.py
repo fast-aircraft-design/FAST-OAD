@@ -23,21 +23,42 @@ def test_schema():
     d = MissionDefinition(pth.join(DATA_FOLDER_PATH, "mission.yml"))
 
     assert d == {
-        "mission": OrderedDict(
+        "missions": OrderedDict(
             [
-                ("name", "sizing"),
                 (
-                    "steps",
-                    [
-                        OrderedDict([("route", "main")]),
-                        OrderedDict([("route", "diversion")]),
-                        OrderedDict([("phase", "holding")]),
-                        OrderedDict([("phase", "taxi_in")]),
-                    ],
+                    "sizing",
+                    OrderedDict(
+                        [
+                            (
+                                "steps",
+                                [
+                                    OrderedDict([("route", "main")]),
+                                    OrderedDict([("route", "diversion")]),
+                                    OrderedDict([("phase", "holding")]),
+                                    OrderedDict([("phase", "taxi_in")]),
+                                ],
+                            )
+                        ]
+                    ),
+                ),
+                (
+                    "operational",
+                    OrderedDict(
+                        [
+                            (
+                                "steps",
+                                [
+                                    OrderedDict([("phase", "taxi_out")]),
+                                    OrderedDict([("route", "main")]),
+                                    OrderedDict([("phase", "taxi_in")]),
+                                ],
+                            )
+                        ]
+                    ),
                 ),
             ]
         ),
-        "phase_definitions": OrderedDict(
+        "phases": OrderedDict(
             [
                 (
                     "initial_climb",
@@ -459,7 +480,7 @@ def test_schema():
                     ),
                 ),
                 (
-                    "taxi_in",
+                    "taxi_out",
                     OrderedDict(
                         [
                             (
@@ -468,7 +489,7 @@ def test_schema():
                                     OrderedDict(
                                         [
                                             ("segment", "taxi"),
-                                            ("thrust_rate", "data:propulsion:taxi:thrust_rate"),
+                                            ("thrust_rate", ":thrust_rate"),
                                             ("target", OrderedDict([("time", ":duration")])),
                                         ]
                                     )
@@ -477,15 +498,34 @@ def test_schema():
                         ]
                     ),
                 ),
+                (
+                    "taxi_in",
+                    OrderedDict(
+                        [
+                            ("thrust_rate", ":thrust_rate"),
+                            (
+                                "steps",
+                                [
+                                    OrderedDict(
+                                        [
+                                            ("segment", "taxi"),
+                                            ("target", OrderedDict([("time", ":duration")])),
+                                        ]
+                                    )
+                                ],
+                            ),
+                        ]
+                    ),
+                ),
             ]
         ),
-        "route_definitions": OrderedDict(
+        "routes": OrderedDict(
             [
                 (
                     "main",
                     OrderedDict(
                         [
-                            ("range", "data:TLAR:range"),
+                            ("range", ":range"),
                             (
                                 "steps",
                                 [
@@ -522,7 +562,7 @@ def test_schema():
                     "diversion",
                     OrderedDict(
                         [
-                            ("range", OrderedDict([("value", 500.0), ("unit", "NM")])),
+                            ("range", ":range"),
                             (
                                 "steps",
                                 [

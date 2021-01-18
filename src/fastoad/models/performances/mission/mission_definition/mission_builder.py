@@ -15,7 +15,7 @@ Mission generator.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Mapping, Union, Dict, Optional, List, Tuple
+from typing import Mapping, Union, Dict, Optional, List
 
 import openmdao.api as om
 import pandas as pd
@@ -27,6 +27,7 @@ from fastoad.models.performances.mission.base import IFlightPart
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.performances.mission.segments.base import FlightSegment
 from fastoad.models.propulsion import IPropulsion
+from .exceptions import FastMissionFileMissingMissionNameError
 from .schema import (
     PHASE_DEFINITIONS_TAG,
     ROUTE_DEFINITIONS_TAG,
@@ -55,6 +56,7 @@ class MissionBuilder:
     def __init__(
         self,
         mission_definition: Union[str, MissionDefinition],
+        *,
         propulsion: IPropulsion = None,
         reference_area: float = None,
     ):
@@ -73,6 +75,11 @@ class MissionBuilder:
 
     @property
     def definition(self) -> MissionDefinition:
+        """
+        The mission definition instance.
+
+        If it is set as a file path, then the matching file will be read and interpreted.
+        """
         return self._definition
 
     @definition.setter
@@ -84,9 +91,7 @@ class MissionBuilder:
         else:
             self._definition = mission_definition
 
-        self._structure = self._build_mission_structure()
-        self._input_definition = {}
-        self._identify_inputs(self.input_definition, self._structure, "data:mission")
+        self._structure = self._build_structure()
 
     @property
     def propulsion(self) -> IPropulsion:
@@ -106,84 +111,118 @@ class MissionBuilder:
     def reference_area(self, reference_area: float):
         self._base_kwargs["reference_area"] = reference_area
 
-    @property
-    def mission_name(self) -> str:
-        """The mission name as defined in input file."""
-        return self.definition[MISSION_DEFINITION_TAG]["name"]
-
-    @property
-    def input_definition(self) -> Dict[str, str]:
-        """
-        The variable inputs in mission definition as a dict where key, values are
-        names, units.
-        """
-        return self._input_definition
-
-    def build(self, inputs: Optional[Mapping] = None) -> FlightSequence:
+    def build(self, inputs: Optional[Mapping] = None, mission_name: str = None,) -> FlightSequence:
         """
         Builds the flight sequence from definition file.
 
         :param inputs: if provided, any input parameter that is a string which matches
                        a key of `inputs` will be replaced by the corresponding value
+        :param mission_name: mission name (can be omitted if only one mission is defined)
         :return:
         """
         self._parse_values_and_units(self._structure)
-        mission = self._build_mission(self._structure, inputs)
+        self.get_input_variables(mission_name)  # Needed to process "contextual" variable names
+        if mission_name is None:
+            mission_name = self.get_unique_mission_name()
+        mission = self._build_mission(self._structure[mission_name], inputs)
         self._propagate_name(mission, mission.name)
         return mission
 
-    def get_route_ranges(self, inputs: Optional[Mapping] = None) -> List[float]:
+    def get_route_ranges(
+        self, inputs: Optional[Mapping] = None, mission_name: str = None
+    ) -> List[float]:
         """
 
         :param inputs: if provided, any input parameter that is a string which matches
                        a key of `inputs` will be replaced by the corresponding value
+        :param mission_name: mission name (can be omitted if only one mission is defined)
         :return: list of flight ranges for each element of the flight sequence that is a route
         """
-        routes = self.build(inputs).flight_sequence
+        routes = self.build(inputs, mission_name).flight_sequence
         return [route.flight_distance for route in routes if isinstance(route, RangedRoute)]
 
-    def get_route_cruise_speeds(self, inputs: Optional[Mapping] = None) -> List[Tuple[str, float]]:
-        """
-        Determines the cruise speed for each route in the flight sequence.
-
-        Each result of the list is a tuple where the first element is the parameter name
-        (mach, true_airspeed, equivalent_airspeed) and the second one is the value.
-
-        :param inputs: if provided, any input parameter that is a string which matches
-                       a key of `inputs` will be replaced by the corresponding value
-        :return: list of cruise speed definitions for each element of the flight sequence that is
-                 a route
-        """
-        routes = self.build(inputs).flight_sequence
-        return [route.cruise_speed for route in routes if isinstance(route, RangedRoute)]
-
-    def get_reserve(self, flight_points: pd.DataFrame) -> float:
+    def get_reserve(self, flight_points: pd.DataFrame, mission_name: str = None) -> float:
         """
         Computes the reserve fuel according to definition in mission input file.
 
         :param flight_points: the dataframe returned by compute_from() method of the
                               instance returned by :meth:`build`
+        :param mission_name: mission name (can be omitted if only one mission is defined)
         :return: the reserve fuel mass in kg, or 0.0 if no reserve is defined.
         """
 
-        last_part_spec = self.definition[MISSION_DEFINITION_TAG][STEPS_TAG][-1]
+        if mission_name is None:
+            mission_name = self.get_unique_mission_name()
+
+        last_part_spec = self.definition[MISSION_DEFINITION_TAG][mission_name][STEPS_TAG][-1]
         if RESERVE_TAG in last_part_spec:
             ref_name = last_part_spec[RESERVE_TAG]["ref"]
             multiplier = last_part_spec[RESERVE_TAG]["multiplier"]
 
             route_points = flight_points.loc[
-                flight_points.name.str.contains("%s:%s" % (self.mission_name, ref_name))
+                flight_points.name.str.contains("%s:%s" % (mission_name, ref_name))
             ]
             consumed_mass = route_points.mass.iloc[0] - route_points.mass.iloc[-1]
             return consumed_mass * multiplier
 
         return 0.0
 
-    def _build_mission_structure(self):
+    def get_input_variables(self, mission_name=None) -> Dict[str, str]:
+        """
+        Identify variables for a defined mission.
+
+        :param mission_name: mission name (can be omitted if only one mission is defined)
+        :return: a dict where key, values are names, units.
+        """
+        if mission_name is None:
+            mission_name = self.get_unique_mission_name()
+
+        input_definition = {}
+        self._identify_inputs(input_definition, self._structure[mission_name])
+
+        return input_definition
+
+    def get_unique_mission_name(self) -> str:
+        """
+        Provides mission name if only one mission is defined in mission file.
+
+        :return: the mission name, if only one mission is defined
+        :raise FastMissionFileMissingMissionNameError: if several missions are defined in mission
+                                                       file
+        """
+        if len(self._structure) == 1:
+            return list(self._structure.keys())[0]
+        else:
+            raise FastMissionFileMissingMissionNameError(
+                "Mission name must be specified if several missions are defined in mission file."
+            )
+
+    def _build_structure(self) -> OrderedDict:
+        """
+        Builds mission structures.
+
+        Unlike definition that is a mirror of the definition file, mission structures are
+        a mirror of the matching missions, so that building the actual mission instance will
+        just be a translation of the structure.
+        E.g., the definition can contain a phase that is defined once, but used in several routes.
+        The structure will define each route with the complete definition of the phase in each one.
+
+        The returned dict has mission names as keys and mission structures as values.
+        """
         structure = OrderedDict()
         structure.update(deepcopy(self.definition[MISSION_DEFINITION_TAG]))
+        for mission_name, mission_definition in self.definition[MISSION_DEFINITION_TAG].items():
+            mission_structure = OrderedDict({"mission": mission_name})
+            mission_structure.update(self._build_mission_structure(mission_definition))
+            structure[mission_name] = mission_structure
+        return structure
+
+    def _build_mission_structure(self, mission_definition) -> OrderedDict:
+        """Builds structure of a mission from its definition."""
+        mission_structure = OrderedDict()
+        mission_structure.update(deepcopy(mission_definition))
         mission_parts = []
-        for part_definition in self.definition[MISSION_DEFINITION_TAG][STEPS_TAG]:
+        for part_definition in mission_definition[STEPS_TAG]:
             if "route" in part_definition:
                 route_name = part_definition["route"]
                 route_structure = OrderedDict({"route": route_name})
@@ -201,10 +240,11 @@ class MissionBuilder:
             else:
                 mission_parts.append(part_definition)
 
-        structure[STEPS_TAG] = mission_parts
-        return structure
+        mission_structure[STEPS_TAG] = mission_parts
+        return mission_structure
 
-    def _build_route_structure(self, route_definition):
+    def _build_route_structure(self, route_definition) -> OrderedDict:
+        """Builds structure of a route from its definition."""
         route_structure = OrderedDict()
         route_structure.update(deepcopy(route_definition))
         route_parts = []
@@ -220,7 +260,9 @@ class MissionBuilder:
         route_structure[STEPS_TAG] = route_parts
         return route_structure
 
-    def _identify_inputs(self, input_definition: Dict[str, str], struct=None, prefix=None):
+    def _identify_inputs(
+        self, input_definition: Dict[str, str], struct: OrderedDict, prefix: str = None
+    ):
         """
         Identifies the OpenMDAO variables that are provided as parameter values.
 
@@ -230,27 +272,29 @@ class MissionBuilder:
         If a value starts with a colon ":<some_name>", it will be considered contextual and the
         actual name will be built as
         "data:mission:<mission_name>:<route_name>:<phase_name>:<some_name>" (route and phase names
-        will be used only if applicable).
+        will be used only if applicable). The variable name in provided structure will be modified
+        accordingly.
 
         :param input_definition: dictionary to be completed with variable names as keys and units
                                  as values
-        :param struct: any part of the mission definition dictionary. If None, the
-                       complete mission definition will be used.
+        :param struct: any part of the structure dictionary.
+        :param prefix:
+
         """
-        if struct is None:
-            struct = self._structure
+        if prefix is None:
+            prefix = "data:mission"
 
         if isinstance(struct, dict):
             for key, value in struct.items():
+                name = struct.get("mission", "") + struct.get("route", "") + struct.get("phase", "")
+                prefix_addition = ":" + name if name else ""
+
                 if isinstance(value, str) and ":" in value:
                     if value.startswith(":"):
-                        value = prefix + value
+                        value = prefix + prefix_addition + value
                     input_definition[value] = BASE_UNITS.get(key)
+                    struct[key] = value
                 elif isinstance(value, (dict, list)):
-                    name = (
-                        struct.get("name", "") + struct.get("route", "") + struct.get("phase", "")
-                    )
-                    prefix_addition = ":" + name if name else ""
                     self._identify_inputs(input_definition, value, prefix + prefix_addition)
 
         elif isinstance(struct, list):
@@ -261,7 +305,7 @@ class MissionBuilder:
         self, mission_structure: OrderedDict, inputs: Optional[Mapping] = None
     ) -> FlightSequence:
         """
-        Builds mission instance from self._structure
+        Builds mission instance from provided structure.
 
         :param mission_structure: structure of the mission to build
         :param inputs: if provided, variable inputs will be replaced by their value.
@@ -269,7 +313,7 @@ class MissionBuilder:
         """
         mission = FlightSequence()
 
-        mission.name = self.mission_name
+        mission.name = mission_structure["mission"]
         for part_spec in mission_structure[STEPS_TAG]:
             if "route" in part_spec:
                 part = self._build_route(part_spec, inputs)

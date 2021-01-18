@@ -1,4 +1,4 @@
-phase_definitions:
+phases:
   initial_climb:
     engine_setting: takeoff
     polar:
@@ -113,16 +113,22 @@ phase_definitions:
         polar: data:aerodynamics:aircraft:cruise
         target:
           time: :duration
-  taxi_in:
+  taxi_out:
     steps:
       - segment: taxi
-        thrust_rate: data:propulsion:taxi:thrust_rate
+        thrust_rate: :thrust_rate
+        target:
+          time: :duration
+  taxi_in:
+    thrust_rate: :thrust_rate
+    steps:
+      - segment: taxi
         target:
           time: :duration
 
-route_definitions:
+routes:
   main:
-    range: data:TLAR:range
+    range: :range
     steps:
       - phase: initial_climb
       - phase: climb
@@ -132,9 +138,7 @@ route_definitions:
       - phase: descent
 
   diversion:
-    range:
-      value: 500
-      unit: NM
+    range: :range
     steps:
       - phase: diversion_climb
       - cruise_type: cruise
@@ -142,10 +146,16 @@ route_definitions:
         polar: data:aerodynamics:aircraft:cruise
       - phase: descent
 
-mission:
-  name: sizing
-  steps:
-    - route: main
-    - route: diversion
-    - phase: holding
-    - phase: taxi_in
+missions:
+  sizing:
+    steps:
+      - route: main
+      - route: diversion
+      - phase: holding
+      - phase: taxi_in
+  operational:
+    steps:
+      - phase: taxi_out
+      - route: main
+      - phase: taxi_in
+
