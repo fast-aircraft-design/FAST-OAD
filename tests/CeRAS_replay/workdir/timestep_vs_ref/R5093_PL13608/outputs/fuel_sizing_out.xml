@@ -1,3 +1,18 @@
+<!--
+  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
 <FASTOAD_model>
   <data>
     <TLAR>
@@ -5,6 +20,15 @@
     </TLAR>
     <propulsion>
       <MTO_thrust units="N" is_input="True">117880.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
+      <climb>
+        <thrust_rate is_input="True">0.93</thrust_rate>
+      </climb>
+      <descent>
+        <thrust_rate is_input="True">0.18</thrust_rate>
+      </descent>
+      <initial_climb>
+        <thrust_rate is_input="True">1.0</thrust_rate>
+      </initial_climb>
       <rubber_engine>
         <bypass_ratio is_input="True">4.9<!--bypass ratio for rubber engine model--></bypass_ratio>
         <delta_t4_climb is_input="True">-50.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
@@ -14,6 +38,9 @@
         <overall_pressure_ratio is_input="True">32.6<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
         <turbine_inlet_temperature units="K" is_input="True">1633.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
       </rubber_engine>
+      <taxi>
+        <thrust_rate is_input="True">0.3</thrust_rate>
+      </taxi>
     </propulsion>
     <geometry>
       <aircraft>
@@ -76,69 +103,63 @@
     </geometry>
     <mission>
       <SPP_design>
-        <TOW units="kg" is_input="False">74089.68563701824</TOW>
+        <TOW units="kg" is_input="False">74089.81257527307</TOW>
         <ZFW units="kg" is_input="False">55708.0</ZFW>
-        <block_fuel units="kg" is_input="False">18381.74219844651</block_fuel>
-        <distance units="m" is_input="False">5857845.39281789</distance>
-        <duration units="s" is_input="False">27788.765601485575</duration>
-        <fuel units="kg" is_input="False">18023.342198446517</fuel>
-        <needed_block_fuel units="kg" is_input="False">18381.74219844651</needed_block_fuel>
+        <block_fuel units="kg" is_input="False">18381.767370653855</block_fuel>
+        <distance units="m" is_input="False">5857845.392761231</distance>
+        <duration units="s" is_input="False">27788.764831233046</duration>
+        <fuel units="kg" is_input="False">18023.36737065386</fuel>
+        <needed_block_fuel units="kg" is_input="False">18381.767370653855</needed_block_fuel>
         <payload units="kg" is_input="True">13608.0</payload>
-        <range units="m" is_input="True">5093000.0</range>
-        <climb>
-          <thrust_rate is_input="True">0.93</thrust_rate>
-        </climb>
-        <descent>
-          <thrust_rate is_input="True">0.18</thrust_rate>
-        </descent>
         <diversion>
           <distance units="m" is_input="True">370400.0</distance>
-          <duration units="s" is_input="False">2130.3500565957474</duration>
-          <fuel units="kg" is_input="False">1356.3343281354246</fuel>
+          <duration units="s" is_input="False">2130.349735723932</duration>
+          <fuel units="kg" is_input="False">1356.3353807787644</fuel>
           <cruise>
-            <distance units="m" is_input="False">96739.94671540055</distance>
-            <duration units="s" is_input="False">442.1604844773901</duration>
-            <fuel units="kg" is_input="False">336.37091011841403</fuel>
+            <distance units="m" is_input="False">96739.91901662294</distance>
+            <duration units="s" is_input="False">442.1603578771028</duration>
+            <fuel units="kg" is_input="False">336.37099616601336</fuel>
           </cruise>
           <descent>
-            <distance units="m" is_input="False">210645.4194750078</distance>
-            <duration units="s" is_input="False">1331.2590214325173</duration>
-            <fuel units="kg" is_input="False">427.21689837187296</fuel>
+            <distance units="m" is_input="False">210645.30140220746</distance>
+            <duration units="s" is_input="False">1331.2580171028421</duration>
+            <fuel units="kg" is_input="False">427.2165298168329</fuel>
           </descent>
           <diversion_climb>
-            <distance units="m" is_input="False">63021.716740425676</distance>
-            <duration units="s" is_input="False">356.93055068584</duration>
-            <fuel units="kg" is_input="False">592.7465196451376</fuel>
+            <distance units="m" is_input="False">63021.862460559234</distance>
+            <duration units="s" is_input="False">356.93136074398717</duration>
+            <fuel units="kg" is_input="False">592.7478547959181</fuel>
           </diversion_climb>
         </diversion>
         <holding>
           <distance units="m" is_input="False">354995.51639653277</distance>
           <duration units="s" is_input="True">2700.0</duration>
-          <fuel units="kg" is_input="False">1365.2427245095823</fuel>
+          <fuel units="kg" is_input="False">1365.2442726554073</fuel>
         </holding>
         <main_route>
-          <distance units="m" is_input="False">5092998.84722412</distance>
-          <duration units="s" is_input="False">22658.415544889827</duration>
-          <fuel units="kg" is_input="False">15101.457209962136</fuel>
+          <distance units="m" is_input="False">5092998.847218906</distance>
+          <duration units="s" is_input="False">22658.415095509114</duration>
+          <fuel units="kg" is_input="False">15101.479781380316</fuel>
+          <range units="m" is_input="True">5093000.0</range>
           <climb>
-            <distance units="m" is_input="False">250076.65947625396</distance>
-            <duration units="s" is_input="False">1190.5909165585388</duration>
-            <fuel units="kg" is_input="False">1586.0311213354435</fuel>
+            <distance units="m" is_input="False">250077.72997637422</distance>
+            <duration units="s" is_input="False">1190.5958064550334</duration>
+            <fuel units="kg" is_input="False">1586.0370671686105</fuel>
           </climb>
           <cruise>
-            <distance units="m" is_input="False">4541634.210607802</distance>
-            <duration units="s" is_input="False">19724.885115915207</duration>
-            <fuel units="kg" is_input="False">12872.752639485807</fuel>
+            <distance units="m" is_input="False">4541633.194982406</distance>
+            <duration units="s" is_input="False">19724.880445885177</duration>
+            <fuel units="kg" is_input="False">12872.769268331322</fuel>
           </cruise>
           <descent>
-            <distance units="m" is_input="False">295578.290223442</distance>
-            <duration units="s" is_input="False">1690.3011755418593</duration>
-            <fuel units="kg" is_input="False">513.9697785775206</fuel>
+            <distance units="m" is_input="False">295578.2217560215</distance>
+            <duration units="s" is_input="False">1690.300379649514</duration>
+            <fuel units="kg" is_input="False">513.9694661849207</fuel>
           </descent>
           <initial_climb>
-            <distance units="m" is_input="False">5709.686916622268</distance>
-            <duration units="s" is_input="False">52.63833687422268</duration>
-            <fuel units="kg" is_input="False">128.70367056336545</fuel>
+            <distance units="m" is_input="False">5709.700504104231</distance>
+            <duration units="s" is_input="False">52.63846351939031</duration>
+            <fuel units="kg" is_input="False">128.7039796954632</fuel>
           </initial_climb>
         </main_route>
         <takeoff>
@@ -150,7 +171,6 @@
           <distance units="m" is_input="False">39443.94626640342</distance>
           <duration units="s" is_input="True">300.0</duration>
           <fuel units="kg" is_input="False">200.30793583937339</fuel>
-          <thrust_rate is_input="True">0.3</thrust_rate>
         </taxi_in>
         <taxi_out>
           <fuel units="kg" is_input="True">276.0</fuel>

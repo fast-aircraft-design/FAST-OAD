@@ -42,9 +42,12 @@ from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.io import VariableIO
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
+from fastoad.utils.postprocessing.analysis_and_plots import (
+    mass_breakdown_sun_plot,
+    wing_geometry_plot,
+)
 
 # %%
-from fastoad.utils.postprocessing.analysis_and_plots import mass_breakdown_sun_plot
 
 engine = RubberEngine(
     bypass_ratio=4.9,
@@ -320,3 +323,6 @@ mass_breakdown_sun_plot(problem.output_file_path)
 <td> <img src="../../img/CeRAS_report/mass_breakdown_2.png" width="600"/> </td>
 </tr></table>
 """
+
+# %%
+wing_geometry_plot(problem.output_file_path)

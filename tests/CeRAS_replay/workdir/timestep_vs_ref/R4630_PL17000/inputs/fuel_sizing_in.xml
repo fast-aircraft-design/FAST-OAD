@@ -20,6 +20,15 @@
     </TLAR>
     <propulsion>
       <MTO_thrust units="N" is_input="True">117880.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
+      <climb>
+        <thrust_rate is_input="True">0.93</thrust_rate>
+      </climb>
+      <descent>
+        <thrust_rate is_input="True">0.18</thrust_rate>
+      </descent>
+      <initial_climb>
+        <thrust_rate is_input="True">1.0</thrust_rate>
+      </initial_climb>
       <rubber_engine>
         <bypass_ratio is_input="True">4.9<!--bypass ratio for rubber engine model--></bypass_ratio>
         <delta_t4_climb is_input="True">-50.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
@@ -29,6 +38,9 @@
         <overall_pressure_ratio is_input="True">32.6<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
         <turbine_inlet_temperature units="K" is_input="True">1633.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
       </rubber_engine>
+      <taxi>
+        <thrust_rate is_input="True">0.3</thrust_rate>
+      </taxi>
     </propulsion>
     <geometry>
       <aircraft>
@@ -92,19 +104,15 @@
     <mission>
       <MTOW_mission>
         <payload units="kg" is_input="True">17000.0</payload>
-        <range units="NM" is_input="True">2500.0</range>
-        <climb>
-          <thrust_rate is_input="True">0.93</thrust_rate>
-        </climb>
-        <descent>
-          <thrust_rate is_input="True">0.18</thrust_rate>
-        </descent>
         <diversion>
           <distance units="NM" is_input="True">200.0</distance>
         </diversion>
         <holding>
           <duration units="min" is_input="True">45.0</duration>
         </holding>
+        <main_route>
+          <range units="NM" is_input="True">2500.0</range>
+        </main_route>
         <takeoff>
           <V2 units="m/s" is_input="True">79.3</V2>
           <altitude units="m" is_input="True">0.0</altitude>
@@ -112,7 +120,6 @@
         </takeoff>
         <taxi_in>
           <duration units="s" is_input="True">300.0</duration>
-          <thrust_rate is_input="True">0.3</thrust_rate>
         </taxi_in>
         <taxi_out>
           <fuel units="kg" is_input="True">276.0</fuel>

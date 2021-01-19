@@ -317,6 +317,18 @@
                 <turbine_inlet_temperature units="K" is_input="True">
                     1633.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
             </rubber_engine>
+            <initial_climb>
+                <thrust_rate>1.0</thrust_rate>
+            </initial_climb>
+            <climb>
+                <thrust_rate>0.93</thrust_rate>
+            </climb>
+            <descent>
+                <thrust_rate>0.18</thrust_rate>
+            </descent>
+            <taxi>
+                <thrust_rate>0.3</thrust_rate>
+            </taxi>
         </propulsion>
         <load_case>
             <lc1>
@@ -361,15 +373,9 @@
             <SPP_design>
                 <TOW units="kg" is_input="False">74000.</TOW>
                 <payload units="kg">13608.</payload>
-                <range units="NM">2750.</range>
-                <climb>
-                    <thrust_rate is_input="True">
-                        0.93<!--thrust rate (between 0.0 and 1.0) during climb phase in sizing mission--></thrust_rate>
-                </climb>
-                <descent>
-                    <thrust_rate is_input="True">
-                        0.18<!--thrust rate (between 0.0 and 1.0) during descent phase in sizing mission--></thrust_rate>
-                </descent>
+                <main_route>
+                    <range units="NM">2750.</range>
+                </main_route>
                 <diversion>
                     <distance units="NM" is_input="True">
                         200.0<!--distance to travel during diversion in sizing mission--></distance>
@@ -402,8 +408,6 @@
                         300.0<!--duration of taxi-in phase in sizing mission--></duration>
                     <fuel units="kg" is_input="False">
                         200.30793583937339<!--mass of consumed fuel during taxi-in phase in sizing mission--></fuel>
-                    <thrust_rate is_input="True">
-                        0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
                 </taxi_in>
                 <taxi_out>
                     <fuel units="kg" is_input="True">
@@ -413,15 +417,9 @@
             <MTOW_mission>
                 <TOW units="kg" is_input="False">77000.</TOW>
                 <payload units="kg">17000.</payload>
-                <range units="NM">2500.</range>
-                <climb>
-                    <thrust_rate is_input="True">
-                        0.93<!--thrust rate (between 0.0 and 1.0) during climb phase in sizing mission--></thrust_rate>
-                </climb>
-                <descent>
-                    <thrust_rate is_input="True">
-                        0.18<!--thrust rate (between 0.0 and 1.0) during descent phase in sizing mission--></thrust_rate>
-                </descent>
+                <main_route>
+                    <range units="NM">2500.</range>
+                </main_route>
                 <diversion>
                     <distance units="NM" is_input="True">
                         200.0<!--distance to travel during diversion in sizing mission--></distance>
@@ -454,8 +452,6 @@
                         300.0<!--duration of taxi-in phase in sizing mission--></duration>
                     <fuel units="kg" is_input="False">
                         200.30793583937339<!--mass of consumed fuel during taxi-in phase in sizing mission--></fuel>
-                    <thrust_rate is_input="True">
-                        0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
                 </taxi_in>
                 <taxi_out>
                     <fuel units="kg" is_input="True">

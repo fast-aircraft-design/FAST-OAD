@@ -1,3 +1,18 @@
+<!--
+  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
 <FASTOAD_model>
   <data>
     <TLAR>
@@ -5,6 +20,15 @@
     </TLAR>
     <propulsion>
       <MTO_thrust units="N" is_input="True">117880.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
+      <climb>
+        <thrust_rate is_input="True">0.93</thrust_rate>
+      </climb>
+      <descent>
+        <thrust_rate is_input="True">0.18</thrust_rate>
+      </descent>
+      <initial_climb>
+        <thrust_rate is_input="True">1.0</thrust_rate>
+      </initial_climb>
       <rubber_engine>
         <bypass_ratio is_input="True">4.9<!--bypass ratio for rubber engine model--></bypass_ratio>
         <delta_t4_climb is_input="True">-50.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
@@ -78,13 +102,9 @@
       <SPP_design>
         <TOW units="kg" is_input="True">74000.0</TOW>
         <payload units="kg" is_input="True">13608.0</payload>
-        <range units="NM" is_input="True">2750.0</range>
-        <climb>
-          <thrust_rate is_input="True">0.93</thrust_rate>
-        </climb>
-        <descent>
-          <thrust_rate is_input="True">0.18</thrust_rate>
-        </descent>
+        <main_route>
+          <range units="NM" is_input="True">2750.0</range>
+        </main_route>
         <takeoff>
           <V2 units="m/s" is_input="True">79.3</V2>
           <altitude units="m" is_input="True">0.0</altitude>

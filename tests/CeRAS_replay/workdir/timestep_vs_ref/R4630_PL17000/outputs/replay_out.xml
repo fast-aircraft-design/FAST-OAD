@@ -20,6 +20,15 @@
     </TLAR>
     <propulsion>
       <MTO_thrust units="N" is_input="True">117880.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
+      <climb>
+        <thrust_rate is_input="True">0.93</thrust_rate>
+      </climb>
+      <descent>
+        <thrust_rate is_input="True">0.18</thrust_rate>
+      </descent>
+      <initial_climb>
+        <thrust_rate is_input="True">1.0</thrust_rate>
+      </initial_climb>
       <rubber_engine>
         <bypass_ratio is_input="True">4.9<!--bypass ratio for rubber engine model--></bypass_ratio>
         <delta_t4_climb is_input="True">-50.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
@@ -99,11 +108,11 @@
         <fuel units="kg" is_input="False">14390.440714253542</fuel>
         <needed_block_fuel units="kg" is_input="False">14748.840714253536</needed_block_fuel>
         <payload units="kg" is_input="True">17000.0</payload>
-        <range units="m" is_input="True">4630000.0</range>
         <main_route>
           <distance units="m" is_input="False">4629964.805855896</distance>
           <duration units="s" is_input="False">20637.791268863282</duration>
           <fuel units="kg" is_input="False">14390.440714253542</fuel>
+          <range units="m" is_input="True">4630000.0</range>
           <climb>
             <distance units="m" is_input="False">277496.97744240187</distance>
             <duration units="s" is_input="False">1315.522767354534</duration>
@@ -134,14 +143,6 @@
           <fuel units="kg" is_input="True">276.0</fuel>
         </taxi_out>
       </MTOW_mission>
-      <SPP_design>
-        <climb>
-          <thrust_rate is_input="True">0.93</thrust_rate>
-        </climb>
-        <descent>
-          <thrust_rate is_input="True">0.18</thrust_rate>
-        </descent>
-      </SPP_design>
       <sizing>
         <main_route>
           <cruise>
