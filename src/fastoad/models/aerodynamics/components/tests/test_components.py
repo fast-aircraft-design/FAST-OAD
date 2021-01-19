@@ -172,7 +172,7 @@ def test_cd0():
 def test_cd_compressibility():
     """ Tests CdCompressibility """
 
-    def get_cd_compressibility(mach, cl, sweep, thickness_ratio, max_cd_comp=0.01):
+    def get_cd_compressibility(mach, cl, sweep, thickness_ratio, delta_charac_mach=0.0):
         ivc = IndepVarComp()
         ivc.add_output(
             "data:aerodynamics:aircraft:cruise:CL", 150 * [cl]
@@ -181,7 +181,8 @@ def test_cd_compressibility():
         ivc.add_output("data:geometry:wing:sweep_25", sweep, units="deg")
         ivc.add_output("data:geometry:wing:thickness_ratio", thickness_ratio)
         ivc.add_output(
-            "tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling", max_cd_comp
+            "tuning:aerodynamics:aircraft:cruise:CD:compressibility:characteristic_mach_increment",
+            delta_charac_mach,
         )
 
         problem = run_system(CdCompressibility(), ivc)
@@ -195,13 +196,15 @@ def test_cd_compressibility():
     assert get_cd_compressibility(0.84, 0.35, 28, 0.12) == approx(0.00359, abs=1e-5)
     assert get_cd_compressibility(0.84, 0.5, 28, 0.12) == approx(0.00580, abs=1e-5)
 
-    assert get_cd_compressibility(0.84, 0.2, 28, 0.12, 0.002) == approx(0.002, abs=1e-5)
-    assert get_cd_compressibility(0.84, 0.35, 28, 0.12, 0.002) == approx(0.002, abs=1e-5)
-    assert get_cd_compressibility(0.84, 0.5, 28, 0.12, 0.002) == approx(0.002, abs=1e-5)
-
     assert get_cd_compressibility(0.84, 0.2, 35, 0.12) == approx(0.00023, abs=1e-5)
     assert get_cd_compressibility(0.84, 0.35, 35, 0.12) == approx(0.00023, abs=1e-5)
     assert get_cd_compressibility(0.84, 0.5, 35, 0.12) == approx(0.00039, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.2, 28, 0.12, 0.05) == approx(0.00043, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.35, 28, 0.12, 0.05) == approx(0.00043, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.5, 28, 0.12, 0.05) == approx(0.00069, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.5, 28, 0.12) == approx(0.00579, abs=1e-5)
+    assert get_cd_compressibility(0.84, 0.8, 28, 0.12) == approx(0.26769, abs=1e-5)
+    assert get_cd_compressibility(0.84, 1.0, 28, 0.12) == approx(0.5, abs=1e-5)  # capped
 
     assert get_cd_compressibility(0.84, 0.2, 28, 0.10) == approx(0.00137, abs=1e-5)
     assert get_cd_compressibility(0.84, 0.35, 28, 0.10) == approx(0.00137, abs=1e-5)
@@ -284,7 +287,7 @@ def test_polar_high_speed():
     assert cd[cl == 0.0] == approx(0.02102, abs=1e-5)
     assert cd[cl == 0.2] == approx(0.02281, abs=1e-5)
     assert cd[cl == 0.42] == approx(0.02977, abs=1e-5)
-    assert cd[cl == 0.85] == approx(0.07062, abs=1e-5)
+    assert cd[cl == 0.85] == approx(0.24041, abs=1e-5)
 
     assert problem["data:aerodynamics:aircraft:cruise:optimal_CL"] == approx(0.51, abs=1e-3)
     assert problem["data:aerodynamics:aircraft:cruise:optimal_CD"] == approx(0.03487, abs=1e-5)

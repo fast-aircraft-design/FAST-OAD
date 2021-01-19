@@ -27,8 +27,9 @@ class CdCompressibility(ExplicitComponent):
     before year 2000.
     Earlier aircraft have more optimized wing profiles that are expected to limit the
     compressibility drag below 2 drag counts. Until a better model can be provided, the
-    variable `tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling` allows to
-    control the maximum authorized compressibility drag.
+    variable `tuning:aerodynamics:aircraft:cruise:CD:compressibility:characteristic_mach_increment`
+    allows to move the characteristic Mach number, thus moving the CD divergence to higher
+    Mach numbers.
     """
 
     def setup(self):
@@ -37,7 +38,11 @@ class CdCompressibility(ExplicitComponent):
         self.add_input("data:aerodynamics:aircraft:cruise:CL", shape_by_conn=True, val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", units="deg", val=np.nan)
         self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
-        self.add_input("tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling", val=0.01)
+        self.add_input("tuning:aerodynamics:aircraft:cruise:CD:compressibility:max_value", val=0.5)
+        self.add_input(
+            "tuning:aerodynamics:aircraft:cruise:CD:compressibility:characteristic_mach_increment",
+            val=0.0,
+        )
         self.add_output(
             "data:aerodynamics:aircraft:cruise:CD:compressibility",
             copy_shape="data:aerodynamics:aircraft:cruise:CL",
@@ -48,12 +53,20 @@ class CdCompressibility(ExplicitComponent):
     def compute(self, inputs, outputs):
         cl = inputs["data:aerodynamics:aircraft:cruise:CL"]
         m = inputs["data:TLAR:cruise_mach"]
-        max_cd_comp = inputs["tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling"]
+        max_cd_comp = inputs["tuning:aerodynamics:aircraft:cruise:CD:compressibility:max_value"]
+        delta_m_charac_0 = inputs[
+            "tuning:aerodynamics:aircraft:cruise:CD:compressibility:characteristic_mach_increment"
+        ]
         sweep_angle = inputs["data:geometry:wing:sweep_25"]
         thickness_ratio = inputs["data:geometry:wing:thickness_ratio"]
 
         # Computation of characteristic Mach for 28° sweep and 0.12 of relative thickness
-        m_charac_comp_0 = -0.5 * np.maximum(0.35, cl) ** 2 + 0.35 * np.maximum(0.35, cl) + 0.765
+        m_charac_comp_0 = (
+            -0.5 * np.maximum(0.35, cl) ** 2
+            + 0.35 * np.maximum(0.35, cl)
+            + 0.765
+            + delta_m_charac_0
+        )
 
         # Computation of characteristic Mach for actual sweep angle and relative thickness
         m_charac_comp = (
