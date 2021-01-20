@@ -33,6 +33,10 @@ class ComponentMatrix(om.ExplicitComponent):
             k = 1
         s_1 = (n_sects + 1) * k * 3  # number of aerodynamic displacements for symmetric wing
         s_2 = (n_sects + 1) * k * 6  # number of structural displacements for symmetric wing
+
+        #  Fuselage modelling in AVL based on 12 leading edge points no longitudinal discretization
+        if comp == "fuselage":
+            s_1 = 36
         self.add_input(
             "data:aerostructural:aerodynamic:" + comp + ":nodes", val=np.nan, shape_by_conn=True
         )

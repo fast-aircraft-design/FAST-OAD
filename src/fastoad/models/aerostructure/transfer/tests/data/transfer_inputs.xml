@@ -1,0 +1,58 @@
+<!--
+  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<FASTOAD_model>
+    <data>
+        <geometry>
+            <wing>
+                <MAC>
+                    <at25percent>
+                        <x units="m">15.0</x>
+                    </at25percent>
+                </MAC>
+            </wing>
+        </geometry>
+        <aerostructural>
+            <structure>
+                <wing>
+                    <nodes>[[16.0, 2.0, 0.0], [16.0, 5.0, 0.0], [16.0, 8.0, 0.0], [16.0, 11.0, 0.0], [16.0, 14.0, 0.0], [16.0, 17.0, 0.0], [16.0, -2.0, 0.0], [16.0, -5.0, 0.0], [16.0, -8.0, 0.0], [16.0, -11.0, 0.0], [16.0, -14.0, 0.0], [16.0, -17.0, 0.0]]</nodes>
+                </wing>
+                <horizontal_tail>
+                    <nodes>[[32.0,0.0,1.0],[32.0,1.0,1.0],[32.0,2.0,1.0],[32.0,3.0,1.0],[32.0,4.0,1.0],[32.0,5.0,1.0],[32.0,0.0,1.0],[32.0,-1.0,1.0],[32.0,-2.0,1.0],[32.0,-3.0,1.0],[32.0,-4.0,1.0],[32.0,-5.0,1.0]]</nodes>
+                </horizontal_tail>
+                <vertical_tail>
+                    <nodes>[[31.0,0.0,2.0],[31.0,0.0,3.0],[31.0,0.0,4.0],[31.0,0.0,5.0],[31.0,0.0,6.0],[31.0,0.0,7.0]]</nodes>
+                </vertical_tail>
+                <fuselage>
+                    <nodes>[[0.0,0.0,0.0],[9.0,0.0,0.0],[18.0,0.0,0.0],[27.0,0.0,0.0],[36.0,0.0,0.0]]</nodes>
+                </fuselage>
+            </structure>
+            <aerodynamic>
+                <wing>
+                    <nodes>[[14.0, 2.0, 0.0], [14.0, 5.0, 0.0], [14.0, 8.0, 0.0], [14.0, 11.0, 0.0], [14.0, 14.0, 0.0], [14.0, 17.0, 0.0], [14.0, -2.0, 0.0], [14.0, -5.0, 0.0], [14.0, -8.0, 0.0], [14.0, -11.0, 0.0], [14.0, -14.0, 0.0], [14.0, -17.0, 0.0]]</nodes>
+                </wing>
+                <horizontal_tail>
+                    <nodes>[[31.0,0.0,1.0],[31.0,1.0,1.0],[31.0,2.0,1.0],[31.0,3.0,1.0],[31.0,4.0,1.0],[31.0,5.0,1.0],[31.0,0.0,1.0],[31.0,-1.0,1.0],[31.0,-2.0,1.0],[31.0,-3.0,1.0],[31.0,-4.0,1.0],[31.0,-5.0,1.0]]</nodes>
+                </horizontal_tail>
+                <vertical_tail>
+                    <nodes>[[30.0,0.0,2.0],[30.0,0.0,3.0],[30.0,0.0,4.0],[30.0,0.0,5.0],[30.0,0.0,6.0],[30.0,0.0,7.0]]</nodes>
+                </vertical_tail>
+                <fuselage>
+                    <nodes>[[0.0,0.0,0.0],[0.0,1.0,0.0],[6.0,2.0,0.0],[0.0,0.0,0.0],[0.0,-1.0,0.0],[6.0,-2.0,0.0],[0.0,0.0,0.0],[0.0,0.0,1.0],[6.0,0.0,2.0],[0.0,0.0,0.0],[0.0,0.0,-1.0],[6.0,0.0,-2.0]]</nodes>
+                </fuselage>
+            </aerodynamic>
+        </aerostructural>
+    </data>
+</FASTOAD_model>

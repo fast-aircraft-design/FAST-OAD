@@ -29,9 +29,24 @@ def find_closest(n1: np.ndarray, nodes2: np.ndarray) -> (np.ndarray, np.ndarray)
         dist[idx] = np.linalg.norm(n1 - node)
     id1 = np.argsort(dist)[0]
     id2 = np.argsort(dist)[1]
+
+    # Prevent to consider twice the same point for components starting on the symmetry axis
+    if np.array_equal(nodes2[id1, :], nodes2[id2, :]):
+        id2 = np.argsort(dist)[2]
     indices = np.array([id1, id2])
     closest = np.array([nodes2[id1, :], nodes2[id2, :]])
     return indices, closest
+
+
+def _symmetry_test(array: np.ndarray) -> bool:
+    n = np.size(array, axis=0)
+    sym = False
+    if n % 2 == 0:
+        if np.array_equal(array[: int(n / 2), 1], -array[int(n / 2) :, 1]) or np.array_equal(
+            array[: int(n / 2), 2], -array[int(n / 2) :, 2]
+        ):
+            sym = True
+    return sym
 
 
 class InterpolationMatrix:
@@ -64,8 +79,16 @@ class InterpolationMatrix:
         :return: linear_mat: linear interpolation matrix
         """
         linear_mat = np.zeros((3 * np.size(nodes1, axis=0), 6 * np.size(nodes2, axis=0)))
+        sym = _symmetry_test(nodes1)
         for i, n1 in enumerate(nodes1):
-            idx, clst = find_closest(n1, nodes2)
+            if sym and i >= np.size(nodes1, axis=0) / 2:
+                idx, clst = (
+                    find_closest(n1, nodes2[int(np.size(nodes1, axis=0) / 2) :, :])[0]
+                    + int(np.size(nodes1, axis=0) / 2),
+                    find_closest(n1, nodes2[int(np.size(nodes1, axis=0) / 2) :, :])[1],
+                )
+            else:
+                idx, clst = find_closest(n1, nodes2)
             n21 = clst[0]
             n22 = clst[1]
             direct = n22 - n21
