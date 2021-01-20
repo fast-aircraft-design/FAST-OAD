@@ -15,7 +15,7 @@ The base layer for registering and retrieving OpenMDAO systems
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from types import MethodType
+import warnings
 from typing import List, Union, Any
 
 from fastoad.openmdao.types import SystemSubclass
@@ -27,12 +27,8 @@ from .constants import (
     DOMAIN_PROPERTY_NAME,
     ModelDomain,
 )
-from .exceptions import (
-    FastDuplicateFactoryError,
-    FastUnknownOMSystemIdentifierError,
-    FastDuplicateOMSystemIdentifierException,
-    FastBadSystemOptionError,
-)
+from .exceptions import FastBadSystemOptionError
+from .service_registry import _option_decorator
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -53,6 +49,12 @@ class OpenMDAOSystemRegistry:
 
         :param folder_path:
         """
+        warnings.warn(
+            "OpenMDAOSystemRegistry will be removed in version 1.0. "
+            "Please use RegisterOpenMDAOSystem decorator instead.",
+            DeprecationWarning,
+        )
+
         cls._loader.install_packages(folder_path)
 
     @classmethod
@@ -76,19 +78,22 @@ class OpenMDAOSystemRegistry:
         :param options: options to be transmitted to OpenMDAO class at run-time
         :raise FastDuplicateOMSystemIdentifierException:
         """
-        try:
-            properties = {
-                DOMAIN_PROPERTY_NAME: domain if domain else ModelDomain.UNSPECIFIED,
-                DESCRIPTION_PROPERTY_NAME: desc if desc else system_class.__doc__,
-                OPTION_PROPERTY_NAME: options if options else {},
-            }
-            factory = cls._loader.register_factory(
-                system_class, identifier, SERVICE_OPENMDAO_SYSTEM, properties
-            )
-            return factory
-        except FastDuplicateFactoryError as err:
-            # Just a more specialized error message
-            raise FastDuplicateOMSystemIdentifierException(err.factory_name)
+
+        warnings.warn(
+            "OpenMDAOSystemRegistry will be removed in version 1.0. "
+            "Please use RegisterOpenMDAOSystem decorator instead.",
+            DeprecationWarning,
+        )
+
+        properties = {
+            DOMAIN_PROPERTY_NAME: domain if domain else ModelDomain.UNSPECIFIED,
+            DESCRIPTION_PROPERTY_NAME: desc if desc else system_class.__doc__,
+            OPTION_PROPERTY_NAME: options if options else {},
+        }
+        factory = cls._loader.register_factory(
+            system_class, identifier, SERVICE_OPENMDAO_SYSTEM, properties
+        )
+        return factory
 
     @classmethod
     def get_system_ids(cls, properties: dict = None) -> List[str]:
@@ -98,6 +103,12 @@ class OpenMDAOSystemRegistry:
                            will be returned
         :return: the list of identifiers for registered factories.
         """
+        warnings.warn(
+            "OpenMDAOSystemRegistry will be removed in version 1.0. "
+            "Please use RegisterOpenMDAOSystem decorator instead.",
+            DeprecationWarning,
+        )
+
         return cls._loader.get_factory_names(SERVICE_OPENMDAO_SYSTEM, properties=properties)
 
     @classmethod
@@ -108,11 +119,13 @@ class OpenMDAOSystemRegistry:
         :param options: option values at system instantiation
         :return: an OpenMDAO system instantiated from the registered class
         """
+        warnings.warn(
+            "OpenMDAOSystemRegistry will be removed in version 1.0. "
+            "Please use RegisterOpenMDAOSystem decorator instead.",
+            DeprecationWarning,
+        )
 
-        try:
-            properties = cls._loader.get_factory_properties(identifier).copy()
-        except ValueError:
-            raise FastUnknownOMSystemIdentifierError(identifier)
+        properties = cls._loader.get_factory_properties(identifier).copy()
 
         if options:
             properties[OPTION_PROPERTY_NAME] = properties[OPTION_PROPERTY_NAME].copy()
@@ -139,6 +152,12 @@ class OpenMDAOSystemRegistry:
                              an instance of a registered OpenMDAO System class
         :return: the model domain associated to given system or system identifier
         """
+        warnings.warn(
+            "OpenMDAOSystemRegistry will be removed in version 1.0. "
+            "Please use RegisterOpenMDAOSystem decorator instead.",
+            DeprecationWarning,
+        )
+
         return cls._get_system_property(system_or_id, DOMAIN_PROPERTY_NAME)
 
     @classmethod
@@ -149,6 +168,11 @@ class OpenMDAOSystemRegistry:
                              an instance of a registered OpenMDAO System class
         :return: the description associated to given system or system identifier
         """
+        warnings.warn(
+            "OpenMDAOSystemRegistry will be removed in version 1.0. "
+            "Please use RegisterOpenMDAOSystem decorator instead.",
+            DeprecationWarning,
+        )
 
         return cls._get_system_property(system_or_id, DESCRIPTION_PROPERTY_NAME)
 
@@ -163,60 +187,13 @@ class OpenMDAOSystemRegistry:
         :param property_name:
         :return: the property value associated to given system or system identifier
         """
+        warnings.warn(
+            "OpenMDAOSystemRegistry will be removed in version 1.0. "
+            "Please use RegisterOpenMDAOSystem decorator instead.",
+            DeprecationWarning,
+        )
 
         if isinstance(system_or_id, str):
             return BundleLoader().get_factory_property(system_or_id, property_name)
         else:
             return BundleLoader().get_instance_property(system_or_id, property_name)
-
-
-def _option_decorator(instance: SystemSubclass) -> SystemSubclass:
-    """
-    Decorates provided OpenMDAO instance so that instance.options are populated
-    using iPOPO property named after OPTION_PROPERTY_NAME constant.
-
-    :param instance: the instance to decorate
-    :return: the decorated instance
-    """
-
-    # Rationale:
-    #   The idea here is to populate the options at `setup()` time while keeping
-    #   all the operations that are in the original `setup()` of the class.
-    #
-    #   This could have been done by making all our OpenMDAO classes inherit from
-    #   a base class where the option values are retrieved, but modifying each
-    #   OpenMDAO class looks overkill. Moreover, it would add to them a dependency
-    #   to FAST-OAD after having avoided to introduce dependencies outside OpenMDAO.
-    #   Last but not least, we would need future contributor to stick to this practice
-    #   of inheritance.
-    #
-    #   Therefore, the most obvious alternative is a decorator. In this decorator, we
-    #   could have produced a new instance of the same class that has its own `setup()`
-    #   that calls the original `setup()` (i.e. the original Decorator pattern AIUI)
-    #   but the new instance would be out of iPOPO's scope.
-    #   So we just modify the original instance where we need to "replace"
-    #   the `setup()` method to have our code called automagically, without losing the
-    #   initial code of `setup()` where there is probably important things. So the trick
-    #   is to rename the original `setup()` as `original_setup()`, and create a new
-    #   `setup()` that does its job and then calls `original_setup()`.
-
-    def setup(self):
-        """ Will replace the original setup() method"""
-
-        # Use values from iPOPO option properties
-        option_dict = getattr(self, "_" + OPTION_PROPERTY_NAME, None)
-        if option_dict:
-            for name, value in option_dict.items():
-                self.options[name] = value
-
-        # Call the original setup method
-        self.__setup_before_option_decorator()
-
-    # Move the (already bound) method "setup" to "__setup_before_option_decorator"
-    setattr(instance, "__setup_before_option_decorator", instance.setup)
-
-    # Create and bind the new "setup" method
-    setup_method = MethodType(setup, instance)
-    setattr(instance, "setup", setup_method)
-
-    return instance

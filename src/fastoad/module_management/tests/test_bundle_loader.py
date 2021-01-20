@@ -22,12 +22,17 @@ import pytest
 from pelix.framework import FrameworkFactory
 
 from .. import BundleLoader
-from ..exceptions import FastDuplicateFactoryError
+from ..exceptions import (
+    FastBundleLoaderDuplicateFactoryError,
+    FastBundleLoaderUnknownFactoryNameError,
+)
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
 
 logging.basicConfig(level=logging.DEBUG)
+
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 
 @pytest.fixture()
@@ -100,7 +105,7 @@ def test_install_packages(delete_framework):
     """
     loader = BundleLoader()
 
-    loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+    loader.install_packages(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
     assert (
         loader.framework.get_bundle_by_name("dummy_pelix_bundles.hello_world_with_decorators")
         is not None
@@ -123,7 +128,7 @@ def test_install_packages_on_faulty_install(delete_framework):
     sys.modules["numpy.random.mtrand"].__path__ = None
 
     # Install packages
-    loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+    loader.install_packages(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
     assert (
         loader.framework.get_bundle_by_name("dummy_pelix_bundles.hello_world_with_decorators")
         is not None
@@ -139,13 +144,13 @@ def test_register_factory(delete_framework):
     """
 
     loader = BundleLoader()
-    loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+    loader.install_packages(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
 
     class Greetings1:
         def hello(self, name="World"):
             return "Hello, {0}!".format(name)
 
-    with pytest.raises(FastDuplicateFactoryError) as exc_info:
+    with pytest.raises(FastBundleLoaderDuplicateFactoryError) as exc_info:
         loader.register_factory(Greetings1, "hello-universe-factory", "hello.world")
     assert exc_info.value.factory_name == "hello-universe-factory"
 
@@ -155,7 +160,7 @@ def test_get_services(delete_framework):
     Tests the method for retrieving services according to properties
     """
     loader = BundleLoader()
-    loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+    loader.install_packages(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
 
     # Missing service
     services = loader.get_services("does.not.exists")
@@ -201,7 +206,10 @@ def test_instantiate_component(delete_framework):
     Tests the method for instantiating a component from factory name
     """
     loader = BundleLoader()
-    loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+    loader.install_packages(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
+
+    with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
+        unknown = loader.instantiate_component("the-unknown-hello-world-factory")
 
     # 2 services should already be instantiated
     services = loader.get_services("hello.world")
@@ -222,7 +230,7 @@ def test_get_factory_names(delete_framework):
     Tests the method for retrieving factories according to properties
     """
     loader = BundleLoader()
-    loader.install_packages(pth.join(pth.dirname(__file__), "dummy_pelix_bundles"))
+    loader.install_packages(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
 
     # Missing service
     factory_names = loader.get_factory_names("does.not.exists")

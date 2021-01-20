@@ -16,7 +16,7 @@ Basis for registering and retrieving services
 
 import logging
 import re
-from typing import List, Tuple, Set, Union, Optional, Any
+from typing import List, Tuple, Set, Union, Optional, Any, Type, TypeVar, Dict
 
 import pelix
 from pelix.framework import FrameworkFactory, Framework, Bundle, BundleContext
@@ -24,10 +24,15 @@ from pelix.internals.registry import ServiceReference
 from pelix.ipopo.constants import SERVICE_IPOPO, use_ipopo
 from pelix.ipopo.decorators import ComponentFactory, Provides, Property
 
-from .exceptions import FastDuplicateFactoryError
+from .exceptions import (
+    FastBundleLoaderDuplicateFactoryError,
+    FastBundleLoaderUnknownFactoryNameError,
+)
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
+
+T = TypeVar("T")
 
 
 class BundleLoader:
@@ -119,11 +124,11 @@ class BundleLoader:
 
     def register_factory(
         self,
-        component_class: type,
+        component_class: Type[T],
         factory_name: str,
         service_names: Union[List[str], str],
         properties: dict = None,
-    ) -> type:
+    ) -> Type[T]:
         """
         Registers provided class as iPOPO component factory.
 
@@ -134,10 +139,18 @@ class BundleLoader:
         :return: the input class, amended by iPOPO
         :raise FastDuplicateFactoryError:
         """
+
+        # Let's ensure the bundle is installed
+        bundle = self.context.install_bundle(component_class.__module__)
+
+        # If a factory is registered once the bundle is started, it will not be effective,
+        # so we stop the bundle to start it again after registering
+        bundle.stop()
+
         obj = Provides(service_names)(component_class)
         with use_ipopo(self.context) as ipopo:
             if ipopo.is_registered_factory(factory_name):
-                raise FastDuplicateFactoryError(factory_name)
+                raise FastBundleLoaderDuplicateFactoryError(factory_name)
 
         if properties:
             for key, value in properties.items():
@@ -145,8 +158,8 @@ class BundleLoader:
 
         factory = ComponentFactory(factory_name)(obj)
 
-        # Now factory is registered, ensure its bundle is installed and started
-        self.context.install_bundle(component_class.__module__).start()
+        # Registering is done. Bundle can be (re)started.
+        bundle.start()
 
         return factory
 
@@ -205,26 +218,22 @@ class BundleLoader:
         :return: path of the file where the factory is defined
         """
 
-        with use_ipopo(self.context) as ipopo:
-            details = ipopo.get_factory_details(factory_name)
-            bundle: Bundle = details["bundle"]
-            return bundle.get_location()
+        details = self.get_factory_details(factory_name)
+        bundle: Bundle = details["bundle"]
+        return bundle.get_location()
 
     def get_factory_properties(self, factory_name: str) -> dict:
         """
-
         :param factory_name:
         :return: properties of the factory
         """
 
-        with use_ipopo(self.context) as ipopo:
-            details = ipopo.get_factory_details(factory_name)
-            properties = details["properties"]
-            return properties
+        details = self.get_factory_details(factory_name)
+        properties = details["properties"]
+        return properties
 
     def get_factory_property(self, factory_name: str, property_name: str) -> Any:
         """
-
         :param factory_name:
         :param property_name:
         :return: property value, or None if property is not found
@@ -233,9 +242,20 @@ class BundleLoader:
         properties = self.get_factory_properties(factory_name)
         return properties.get(property_name)
 
+    def get_factory_details(self, factory_name: str) -> Dict[str, Any]:
+        """
+        :param factory_name: name of the factory
+        :return: factory details as in iPOPO
+        :raise FastBundleLoaderUnknownFactoryNameError: unknown factory name
+        """
+        with use_ipopo(self.context) as ipopo:
+            try:
+                return ipopo.get_factory_details(factory_name)
+            except ValueError as exc:
+                raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
+
     def get_instance_property(self, instance: Any, property_name: str) -> Any:
         """
-
         :param instance: any instance from :meth:~BundleLoader.instantiate_component
         :param property_name:
         :return: property value, or None if property is not found
@@ -253,11 +273,15 @@ class BundleLoader:
         :param factory_name: name of the factory
         :param properties: Initial properties of the component instance
         :return: the component instance
+        :raise FastBundleLoaderUnknownFactoryNameError: unknown factory name
         """
         with use_ipopo(self.context) as ipopo:
-            return ipopo.instantiate(
-                factory_name, self._get_instance_name(factory_name), properties
-            )
+            try:
+                return ipopo.instantiate(
+                    factory_name, self._get_instance_name(factory_name), properties
+                )
+            except TypeError as exc:
+                raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
 
     def _get_instance_name(self, base_name: str):
         """

@@ -1,6 +1,6 @@
 """
 This module is for registering all internal OpenMDAO modules that we want
-available through OpenMDAOSystemRegistry
+available through RegisterOpenMDAOSystem
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -25,11 +25,14 @@ from fastoad.models.handling_qualities.tail_sizing.compute_tail_areas import Com
 from fastoad.models.loops.compute_wing_area import ComputeWingArea
 from fastoad.models.performances.breguet import OMBreguet
 from fastoad.models.performances.mission.openmdao.sizing_mission import SizingMission
-from fastoad.models.propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
+from fastoad.models.propulsion.fuel_propulsion.rubber_engine import (
+    OMRubberEngineComponent,
+    OMRubberEngineWrapper,
+)
 from fastoad.models.weight.mass_breakdown.mass_breakdown import MTOWComputation
 from fastoad.models.weight.weight import Weight
-from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterPropulsion, RegisterOpenMDAOSystem
 
 
 def register_openmdao_systems():
@@ -40,60 +43,44 @@ def register_openmdao_systems():
     is a started bundle for iPOPO
     """
     # Aerodynamics ################################################################
-    OpenMDAOSystemRegistry.register_system(
-        AerodynamicsTakeoff, "fastoad.aerodynamics.takeoff.legacy", domain=ModelDomain.AERODYNAMICS
+    RegisterOpenMDAOSystem("fastoad.aerodynamics.takeoff.legacy", domain=ModelDomain.AERODYNAMICS)(
+        AerodynamicsTakeoff
     )
-    OpenMDAOSystemRegistry.register_system(
-        AerodynamicsLanding, "fastoad.aerodynamics.landing.legacy", domain=ModelDomain.AERODYNAMICS
+    RegisterOpenMDAOSystem("fastoad.aerodynamics.landing.legacy", domain=ModelDomain.AERODYNAMICS)(
+        AerodynamicsLanding
     )
-    OpenMDAOSystemRegistry.register_system(
-        AerodynamicsHighSpeed,
-        "fastoad.aerodynamics.highspeed.legacy",
-        domain=ModelDomain.AERODYNAMICS,
-    )
-    OpenMDAOSystemRegistry.register_system(
-        AerodynamicsLowSpeed,
-        "fastoad.aerodynamics.lowspeed.legacy",
-        domain=ModelDomain.AERODYNAMICS,
-    )
+    RegisterOpenMDAOSystem(
+        "fastoad.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS,
+    )(AerodynamicsHighSpeed)
+    RegisterOpenMDAOSystem(
+        "fastoad.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS,
+    )(AerodynamicsLowSpeed)
 
     # Geometry ####################################################################
-    OpenMDAOSystemRegistry.register_system(
-        Geometry, "fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY
-    )
+    RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)(Geometry)
 
     # handling qualities ##########################################################
-    OpenMDAOSystemRegistry.register_system(
-        ComputeTailAreas,
-        "fastoad.handling_qualities.tail_sizing",
-        domain=ModelDomain.HANDLING_QUALITIES,
-    )
-    OpenMDAOSystemRegistry.register_system(
-        ComputeStaticMargin,
-        "fastoad.handling_qualities.static_margin",
-        domain=ModelDomain.HANDLING_QUALITIES,
-    )
+    RegisterOpenMDAOSystem(
+        "fastoad.handling_qualities.tail_sizing", domain=ModelDomain.HANDLING_QUALITIES,
+    )(ComputeTailAreas)
+    RegisterOpenMDAOSystem(
+        "fastoad.handling_qualities.static_margin", domain=ModelDomain.HANDLING_QUALITIES,
+    )(ComputeStaticMargin)
 
     # Loops #######################################################################
-    OpenMDAOSystemRegistry.register_system(
-        ComputeWingArea, "fastoad.loop.wing_area", domain=ModelDomain.OTHER
-    )
+    RegisterOpenMDAOSystem("fastoad.loop.wing_area", domain=ModelDomain.OTHER)(ComputeWingArea)
 
-    OpenMDAOSystemRegistry.register_system(
-        MTOWComputation, "fastoad.loop.mtow", domain=ModelDomain.WEIGHT
-    )
+    RegisterOpenMDAOSystem("fastoad.loop.mtow", domain=ModelDomain.WEIGHT)(MTOWComputation)
 
     # Weight ######################################################################
-    OpenMDAOSystemRegistry.register_system(
-        Weight, "fastoad.weight.legacy", domain=ModelDomain.WEIGHT
-    )
+    RegisterOpenMDAOSystem("fastoad.weight.legacy", domain=ModelDomain.WEIGHT)(Weight)
     # Performance #################################################################
-    OpenMDAOSystemRegistry.register_system(
-        OMBreguet, "fastoad.performances.breguet", domain=ModelDomain.PERFORMANCE
+    RegisterOpenMDAOSystem("fastoad.performances.breguet", domain=ModelDomain.PERFORMANCE)(
+        OMBreguet
     )
 
-    OpenMDAOSystemRegistry.register_system(
-        SizingMission, "fastoad.performances.sizing_mission", domain=ModelDomain.PERFORMANCE
+    RegisterOpenMDAOSystem("fastoad.performances.sizing_mission", domain=ModelDomain.PERFORMANCE)(
+        SizingMission
     )
 
     # Propulsion ##################################################################
@@ -104,9 +91,12 @@ def register_openmdao_systems():
     For more information, see RubberEngine class in FAST-OAD developer documentation.
     """
 
-    OpenMDAOSystemRegistry.register_system(
-        OMRubberEngineComponent,
+    RegisterOpenMDAOSystem(
         "fastoad.propulsion.rubber_engine",
-        domain=ModelDomain.PROPULSION,
         desc=rubber_engine_description,
+        domain=ModelDomain.PROPULSION,
+    )(OMRubberEngineComponent)
+
+    RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine", desc=rubber_engine_description,)(
+        OMRubberEngineWrapper
     )

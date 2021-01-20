@@ -21,9 +21,9 @@ import numpy as np
 import openmdao.api as om
 from scipy.constants import foot
 
-from fastoad import BundleLoader
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastoad.module_management.service_registry import RegisterPropulsion
 from . import resources
 from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
@@ -57,7 +57,7 @@ class SizingMission(om.ExplicitComponent):
         self.options.declare("mission_file_path", types=str, allow_none=True, default=None)
 
     def setup(self):
-        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
+        self._engine_wrapper = RegisterPropulsion.get_provider(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
         self._mission_input = self.options["mission_file_path"]
         if not self._mission_input:

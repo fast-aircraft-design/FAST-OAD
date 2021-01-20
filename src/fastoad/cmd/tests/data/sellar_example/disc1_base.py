@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    Sellar discipline 1
-"""
+"""Sellar discipline 1"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

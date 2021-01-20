@@ -16,20 +16,10 @@ import numpy as np
 from openmdao.core.component import Component
 
 from fastoad.models.propulsion import IOMPropulsionWrapper, IPropulsion, BaseOMPropulsionComponent
-from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from .rubber_engine import RubberEngine
 
 
-@RegisterPropulsion(
-    "fastoad.wrapper.propulsion.rubber_engine",
-    desc="""
-Parametric engine model as OpenMDAO component.
-
-Implementation of E. Roux models for fuel consumption of low bypass ratio engines
-For more information, see RubberEngine class in FAST-OAD developer documentation.
-""",
-)
 class OMRubberEngineWrapper(IOMPropulsionWrapper):
     """
     Wrapper class of for rubber engine model.

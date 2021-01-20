@@ -16,9 +16,9 @@ import numpy as np
 import openmdao.api as om
 from scipy.constants import g
 
-from fastoad import BundleLoader
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.utils.physics import AtmosphereSI
 from . import Breguet
 
@@ -60,7 +60,7 @@ class BreguetWithPropulsion(om.ExplicitComponent):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
+        self._engine_wrapper = RegisterPropulsion.get_provider(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")

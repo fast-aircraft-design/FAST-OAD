@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    Sellar discipline 2
-"""
+"""Sellar discipline 2"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,9 +11,13 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .disc2_base import Disc2Base
 
 
+@RegisterOpenMDAOSystem("sellar.disc2", domain=ModelDomain.GEOMETRY)
 class Disc2(Disc2Base):
     """ An OpenMDAO component to encapsulate Disc2 discipline """
 

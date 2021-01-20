@@ -15,8 +15,8 @@
 from fastoad.exceptions import FastError
 
 
-class FastDuplicateFactoryError(FastError):
-    def __init__(self, factory_name):
+class FastBundleLoaderDuplicateFactoryError(FastError):
+    def __init__(self, factory_name: str):
         """
         Raised when trying to register a factory with an already used name.
 
@@ -26,42 +26,15 @@ class FastDuplicateFactoryError(FastError):
         self.factory_name = factory_name
 
 
-class FastDuplicateOMSystemIdentifierException(FastDuplicateFactoryError):
-    """
-    Raised when trying to register an OpenMDAO System with an already used identifier.
-    """
-
-    def __str__(self):
+class FastBundleLoaderUnknownFactoryNameError(FastError):
+    def __init__(self, factory_name: str):
         """
+        Raised when trying to instantiate a component from an unknown factory.
 
-        :return:
+        :param factory_name:
         """
-        return (
-            "Tried to register an OpenMDAO system with an already used identifier : %s"
-            % self.factory_name
-        )
-
-
-class FastNoOMSystemFoundError(FastError):
-    def __init__(self, properties):
-        """
-        Raised when no registered OpenMDAO system could be found from asked properties.
-
-        :param properties:
-        """
-        super().__init__("No OpenMDAO system found with these properties: %s" % properties)
-        self.properties = properties
-
-
-class FastUnknownOMSystemIdentifierError(FastError):
-    def __init__(self, identifier):
-        """
-        Raised when no OpenMDAO system is registered with asked identifier.
-
-        :param identifier:
-        """
-        super().__init__("No OpenMDAO system found with this identifier: %s" % identifier)
-        self.identifier = identifier
+        super().__init__('"%s" is not registered.' % factory_name)
+        self.factory_name = factory_name
 
 
 class FastBadSystemOptionError(FastError):
@@ -80,7 +53,7 @@ class FastBadSystemOptionError(FastError):
         self.option_names = option_names
 
 
-class FastIncompatibleServiceClass(FastError):
+class FastIncompatibleServiceClassError(FastError):
     """"""
 
     def __init__(self, registered_class: type, service_id: str, base_class: type):
