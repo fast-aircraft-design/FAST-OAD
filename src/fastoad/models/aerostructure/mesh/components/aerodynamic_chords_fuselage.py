@@ -31,7 +31,7 @@ class AerodynamicChordsFuselage(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:front_length", val=np.nan)
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan)
 
-        self.add_output("data:aerostructural:aerodynamic:fuselage:local_chords", shape=(12, 1))
+        self.add_output("data:aerostructural:aerodynamic:fuselage:chords", shape=(12, 1))
 
     def setup_partials(self):
         self.declare_partials("*", "*", "fd")
@@ -67,4 +67,4 @@ class AerodynamicChordsFuselage(om.ExplicitComponent):
             - inputs["data:geometry:fuselage:rear_length"][0]
         )
         chords = np.vstack((c_h_right, c_h_right, c_v_top, c_v_bottom))
-        outputs["data:aerostructural:aerodynamic:fuselage:local_chords"] = chords
+        outputs["data:aerostructural:aerodynamic:fuselage:chords"] = chords

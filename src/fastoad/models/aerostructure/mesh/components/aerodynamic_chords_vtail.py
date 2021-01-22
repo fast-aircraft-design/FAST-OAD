@@ -16,6 +16,7 @@ Computes Aerodynamic vtail mesh sections length
 
 import openmdao.api as om
 import numpy as np
+from scipy.interpolate import interp1d as interp
 
 
 class AerodynamicChordsVtail(om.ExplicitComponent):
@@ -28,17 +29,17 @@ class AerodynamicChordsVtail(om.ExplicitComponent):
 
     def setup(self):
         n_secs = self.options["number_of_sections"]
-        self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
+        self.add_input("data:geometry:vertical_tail:span", val=np.nan)
+        self.add_input(
+            "data:geometry:vertical_tail:root:chord", val=np.nan,
+        )
+        self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan)
+        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan)
 
         self.add_input("data:aerostructural:aerodynamic:vertical_tail:nodes", shape_by_conn=True)
 
         self.add_output(
-            "data:aerostructural:aerodynamic:vertical_tail:local_chords",
-            val=np.nan,
-            shape=(n_secs + 1),
+            "data:aerostructural:aerodynamic:vertical_tail:chords", val=np.nan, shape=(n_secs + 1),
         )
 
     def setup_partials(self):
@@ -46,24 +47,28 @@ class AerodynamicChordsVtail(om.ExplicitComponent):
 
     def compute(self, inputs, outputs):
         n_secs = self.options["number_of_sections"]
-        z_root = inputs["data:geometry:fuselage:maximum_height"] / 2
-        dim = {
-            "z_root": z_root,
-            "z_tip": inputs["data:geometry:vertical_tail:span"] + z_root,
-            "root_chord": inputs["data:geometry:vertical_tail:root:chord"],
-            "tip_chord": inputs["data:geometry:vertical_tail:tip:chord"],
-        }
+
+        #  Characteristic points -------------------------------------------------------------------
+        z_root = inputs["data:geometry:fuselage:maximum_height"][0] / 2
+        z_tip = inputs["data:geometry:vertical_tail:span"][0] + z_root
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"][0]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"][0]
+
+        z_interp = [z_root, z_tip]
+        chord_interp = [root_chord, tip_chord]
+        f_c = interp(z_interp, chord_interp)
+
+        #  Chords interpolation --------------------------------------------------------------------
         z_le = inputs["data:aerostructural:aerodynamic:vertical_tail:nodes"][:, 2]
+        chords = f_c(z_le)
 
-        outputs["data:aerostructural:aerodynamic:vertical_tail:local_chords"] = self._get_chord_len(
-            n_secs, dim, z_le
-        )
+        outputs["data:aerostructural:aerodynamic:vertical_tail:chords"] = chords
 
-    @staticmethod
-    def _get_chord_len(n_sections, dimensions, z_le):
-        chords = np.zeros((n_sections + 1))
-        for i in range(0, np.size(z_le)):
-            chords[i] = (z_le[i] - dimensions["z_root"][0]) * (
-                dimensions["tip_chord"][0] - dimensions["root_chord"][0]
-            ) / (dimensions["z_tip"][0] - dimensions["z_root"][0]) + dimensions["root_chord"][0]
-        return chords
+    # @staticmethod
+    # def _get_chord_len(n_sections, dimensions, z_le):
+    #     chords = np.zeros((n_sections + 1))
+    #     for i in range(0, np.size(z_le)):
+    #         chords[i] = (z_le[i] - dimensions["z_root"][0]) * (
+    #             dimensions["tip_chord"][0] - dimensions["root_chord"][0]
+    #         ) / (dimensions["z_tip"][0] - dimensions["z_root"][0]) + dimensions["root_chord"][0]
+    #     return chords

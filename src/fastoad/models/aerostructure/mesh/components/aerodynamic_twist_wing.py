@@ -19,7 +19,7 @@ import numpy as np
 from scipy.interpolate import interp1d as interp
 
 
-class AerodynamicThicknessRatiosWing(om.ExplicitComponent):
+class AerodynamicTwistWing(om.ExplicitComponent):
     """
     Class to interpolate wing twist for each spanwise section of the wing
     """
@@ -40,23 +40,25 @@ class AerodynamicThicknessRatiosWing(om.ExplicitComponent):
         self.add_input("data:aerostructural:aerodynamic:wing:nodes", shape_by_conn=True)
 
         self.add_output(
-            "data:aerostructural:aerodynamic:wing:twist", val=np.nan, shape=((n_sects + 1) * 2)
+            "data:aerostructural:aerodynamic:wing:twist", val=0.0, shape=((n_sects + 1) * 2)
         )
 
     def compute(self, inputs, outputs):
         n_sects = self.options["number_of_sections"]
         y = [
+            0.0,
             inputs["data:geometry:wing:root:y"][0],
             inputs["data:geometry:wing:kink:y"][0],
             inputs["data:geometry:wing:tip:y"][0],
         ]
-        t_c = [
+        twist = [
+            inputs["data:geometry:wing:root:twist"][0],
             inputs["data:geometry:wing:root:twist"][0],
             inputs["data:geometry:wing:kink:twist"][0],
             inputs["data:geometry:wing:tip:twist"][0],
         ]
         nodes = inputs["data:aerostructural:aerodynamic:wing:nodes"]
         y_i = nodes[: n_sects + 1, 1]
-        f = interp(y, t_c, 2)
+        f = interp(y, twist, 2)
         t_ci = f(y_i)
         outputs["data:aerostructural:aerodynamic:wing:twist"] = np.tile(t_ci, 2)

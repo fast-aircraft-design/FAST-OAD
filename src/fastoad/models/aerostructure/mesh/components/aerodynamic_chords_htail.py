@@ -16,6 +16,7 @@ Computes Aerodynamic htail  mesh sections length
 
 import openmdao.api as om
 import numpy as np
+from scipy.interpolate import interp1d as interp
 
 
 class AerodynamicChordsHtail(om.ExplicitComponent):
@@ -36,7 +37,7 @@ class AerodynamicChordsHtail(om.ExplicitComponent):
         self.add_input("data:aerostructural:aerodynamic:horizontal_tail:nodes", shape_by_conn=True)
 
         self.add_output(
-            "data:aerostructural:aerodynamic:horizontal_tail:local_chords",
+            "data:aerostructural:aerodynamic:horizontal_tail:chords",
             val=np.nan,
             shape=((n_secs + 1) * 2),
         )
@@ -45,27 +46,31 @@ class AerodynamicChordsHtail(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-
         n_secs = self.options["number_of_sections"]
-        dim = {
-            "y_tip": inputs["data:geometry:horizontal_tail:span"] / 2,
-            "root_chord": inputs["data:geometry:horizontal_tail:root:chord"],
-            "tip_chord": inputs["data:geometry:horizontal_tail:tip:chord"],
-        }
+
+        #  Characteristic points -------------------------------------------------------------------
+        y_tip = inputs["data:geometry:horizontal_tail:span"][0] / 2
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"][0]
+        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"][0]
+
+        y_interp = [0.0, y_tip]
+        chord_interp = [root_chord, tip_chord]
+        f_c = interp(y_interp, chord_interp)
+
+        #  Chords interpolation --------------------------------------------------------------------
         y_le = inputs["data:aerostructural:aerodynamic:horizontal_tail:nodes"][:, 1]
+        chords = f_c(np.abs(y_le))
 
-        outputs[
-            "data:aerostructural:aerodynamic:horizontal_tail:local_chords"
-        ] = self._get_chord_len(n_secs, dim, y_le)
+        outputs["data:aerostructural:aerodynamic:horizontal_tail:chords"] = chords
 
-    @staticmethod
-    def _get_chord_len(n_sections, dimensions, y_le):
-        chords = np.zeros((n_sections + 1) * 2)
-        for i in range(0, np.size(y_le)):
-            chords[i] = (
-                np.abs(y_le[i])
-                * (dimensions["tip_chord"][0] - dimensions["root_chord"][0])
-                / dimensions["y_tip"][0]
-                + dimensions["root_chord"][0]
-            )
-        return chords
+    # @staticmethod
+    # def _get_chord_len(n_sections, dimensions, y_le):
+    #     chords = np.zeros((n_sections + 1) * 2)
+    #     for i in range(0, np.size(y_le)):
+    #         chords[i] = (
+    #             np.abs(y_le[i])
+    #             * (dimensions["tip_chord"][0] - dimensions["root_chord"][0])
+    #             / dimensions["y_tip"][0]
+    #             + dimensions["root_chord"][0]
+    #         )
+    #     return chords

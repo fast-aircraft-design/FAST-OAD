@@ -28,9 +28,9 @@ class AerodynamicNodesFuselage(om.ExplicitComponent):
 
     def setup(self):
         # Declare inputs ---------------------------------------------------------------------------
-        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan)
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan)
+        self.add_input("data:geometry:fuselage:front_length", val=np.nan)
         # Declare outputs --------------------------------------------------------------------------
 
         self.add_output("data:aerostructural:aerodynamic:fuselage:nodes", val=np.nan, shape=(12, 3))

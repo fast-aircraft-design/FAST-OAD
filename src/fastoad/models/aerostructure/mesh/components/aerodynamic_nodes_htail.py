@@ -16,6 +16,7 @@ Computes Aerodynamic mesh nodes locations
 
 import openmdao.api as om
 import numpy as np
+from scipy.interpolate import interp1d as interp
 
 
 class AerodynamicNodesHtail(om.ExplicitComponent):
@@ -29,14 +30,14 @@ class AerodynamicNodesHtail(om.ExplicitComponent):
     def setup(self):
         n_secs = self.options["number_of_sections"]
         # Declare inputs ---------------------------------------------------------------------------
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:local", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:span", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:sweep_0", val=np.nan, units="rad")
-        self.add_input("data:geometry:horizontal_tail:root:z", val=0.0, units="m")
-        self.add_input("data:geometry:horizontal_tail:tip:z", val=0.0, units="m")
+        self.add_input("data:geometry:horizontal_tail:root:z", val=0.0)
+        self.add_input("data:geometry:horizontal_tail:tip:z", val=0.0)
         # Declare outputs --------------------------------------------------------------------------
 
         self.add_output(
@@ -52,45 +53,57 @@ class AerodynamicNodesHtail(om.ExplicitComponent):
         n_secs = self.options["number_of_sections"]
         # Prepare inputs ---------------------------------------------------------------------------
         x_root = (
-            inputs["data:geometry:wing:MAC:at25percent:x"]
-            + inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
-            - 0.25 * inputs["data:geometry:horizontal_tail:MAC:length"]
-            - inputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"]
+            inputs["data:geometry:wing:MAC:at25percent:x"][0]
+            + inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"][0]
+            - 0.25 * inputs["data:geometry:horizontal_tail:MAC:length"][0]
+            - inputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"][0]
         )
-        x_tip = x_root + inputs["data:geometry:horizontal_tail:span"] / 2 * np.tan(
-            inputs["data:geometry:horizontal_tail:sweep_0"]
+        x_tip = x_root + inputs["data:geometry:horizontal_tail:span"][0] / 2 * np.tan(
+            inputs["data:geometry:horizontal_tail:sweep_0"][0]
         )
-        dim = {
-            "x_root": x_root,
-            "x_tip": x_tip,
-            "y_tip": inputs["data:geometry:horizontal_tail:span"] / 2,
-            "z_root": inputs["data:geometry:horizontal_tail:root:z"],
-            "z_tip": inputs["data:geometry:horizontal_tail:tip:z"],
-        }
+        x_root = x_root
+        x_tip = x_tip
+        y_tip = inputs["data:geometry:horizontal_tail:span"][0] / 2
+        z_root = inputs["data:geometry:horizontal_tail:root:z"][0]
+        z_tip = inputs["data:geometry:horizontal_tail:tip:z"][0]
 
-        outputs["data:aerostructural:aerodynamic:horizontal_tail:nodes"] = self._get_nodes_loc(
-            n_secs, dim
-        )
+        x_interp = [x_root, x_tip]
+        y_interp = [0.0, y_tip]
+        z_interp = [z_root, z_tip]
 
-    @staticmethod
-    def _get_nodes_loc(n_sections, dimensions):
-        y_le = np.linspace(0.0, dimensions["y_tip"][0], n_sections + 1)
+        f_x = interp(y_interp, x_interp)
+        f_z = interp(y_interp, z_interp)
 
-        x_le = np.zeros((n_sections + 1, 1))
-        z_le = np.zeros((n_sections + 1, 1))
-        for i in range(0, np.size(y_le)):
-            x_le[i] = (
-                y_le[i]
-                * (dimensions["x_tip"][0] - dimensions["x_root"][0])
-                / dimensions["y_tip"][0]
-                + dimensions["x_root"]
-            )  # y_root assumed = 0.
-            z_le[i] = (
-                y_le[i]
-                * (dimensions["z_tip"][0] - dimensions["z_root"][0])
-                / dimensions["y_tip"][0]
-                + dimensions["z_root"]
-            )  # y_root assumed = 0.
-        xyz_r = np.hstack((x_le, y_le[:, np.newaxis], z_le))  # right tail coordinates
-        xyz_l = np.hstack((x_le, -y_le[:, np.newaxis], z_le))  # symmetry for left tail coordinates
-        return np.vstack((xyz_r, xyz_l))
+        #  Nodes coordinates interpolation ---------------------------------------------------------
+        y_le = np.linspace(0.0, y_tip, n_secs + 1)
+        x_le = f_x(y_le)
+        z_le = f_z(y_le)
+
+        #  Symmetry anc sides concatenation --------------------------------------------------------
+        xyz_r = np.hstack((x_le[:, np.newaxis], y_le[:, np.newaxis], z_le[:, np.newaxis]))
+        xyz_l = np.hstack((x_le[:, np.newaxis], -y_le[:, np.newaxis], z_le[:, np.newaxis]))
+
+        outputs["data:aerostructural:aerodynamic:horizontal_tail:nodes"] = np.vstack((xyz_r, xyz_l))
+
+    # @staticmethod
+    # def _get_nodes_loc(n_sections, dimensions):
+    #     y_le = np.linspace(0.0, dimensions["y_tip"][0], n_sections + 1)
+    #
+    #     x_le = np.zeros((n_sections + 1, 1))
+    #     z_le = np.zeros((n_sections + 1, 1))
+    #     for i in range(0, np.size(y_le)):
+    #         x_le[i] = (
+    #             y_le[i]
+    #             * (dimensions["x_tip"][0] - dimensions["x_root"][0])
+    #             / dimensions["y_tip"][0]
+    #             + dimensions["x_root"]
+    #         )  # y_root assumed = 0.
+    #         z_le[i] = (
+    #             y_le[i]
+    #             * (dimensions["z_tip"][0] - dimensions["z_root"][0])
+    #             / dimensions["y_tip"][0]
+    #             + dimensions["z_root"]
+    #         )  # y_root assumed = 0.
+    #     xyz_r = np.hstack((x_le, y_le[:, np.newaxis], z_le))  # right tail coordinates
+    #     xyz_l = np.hstack((x_le, -y_le[:, np.newaxis], z_le))  # symmetry for left tail coordinates
+    #     return np.vstack((xyz_r, xyz_l))

@@ -29,9 +29,9 @@ class AerodynamicThicknessRatiosWing(om.ExplicitComponent):
 
     def setup(self):
         n_sects = self.options["number_of_sections"]
-        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan)
+        self.add_input("data:geometry:wing:kink:y", val=np.nan)
+        self.add_input("data:geometry:wing:tip:y", val=np.nan)
 
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:kink:thickness_ratio", val=np.nan)
@@ -41,7 +41,7 @@ class AerodynamicThicknessRatiosWing(om.ExplicitComponent):
 
         self.add_output(
             "data:aerostructural:aerodynamic:wing:thickness_ratios",
-            val=np.nan,
+            val=0.1,
             shape=((n_sects + 1) * 2),
         )
 

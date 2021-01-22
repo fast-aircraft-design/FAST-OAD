@@ -16,6 +16,7 @@ Computes Aerodynamic mesh nodes locations
 
 import openmdao.api as om
 import numpy as np
+from scipy.interpolate import interp1d as interp
 
 
 class AerodynamicNodesVtail(om.ExplicitComponent):
@@ -48,36 +49,42 @@ class AerodynamicNodesVtail(om.ExplicitComponent):
     def compute(self, inputs, outputs):
         n_secs = self.options["number_of_sections"]
 
+        #  Characteristic points -------------------------------------------------------------------
         x_root = (
-            inputs["data:geometry:wing:MAC:at25percent:x"]
-            + inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
-            - 0.25 * inputs["data:geometry:vertical_tail:MAC:length"]
-            - inputs["data:geometry:vertical_tail:MAC:at25percent:x:local"]
+            inputs["data:geometry:wing:MAC:at25percent:x"][0]
+            + inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"][0]
+            - 0.25 * inputs["data:geometry:vertical_tail:MAC:length"][0]
+            - inputs["data:geometry:vertical_tail:MAC:at25percent:x:local"][0]
         )
-        x_tip = x_root + inputs["data:geometry:vertical_tail:span"] * np.tan(
-            inputs["data:geometry:vertical_tail:sweep_0"]
+        x_tip = x_root + inputs["data:geometry:vertical_tail:span"][0] * np.tan(
+            inputs["data:geometry:vertical_tail:sweep_0"][0]
         )
-        z_root = inputs["data:geometry:fuselage:maximum_height"] / 2
-        dim = {
-            "x_root": x_root,
-            "x_tip": x_tip,
-            "z_tip": inputs["data:geometry:vertical_tail:span"] + z_root,
-            "z_root": z_root,
-        }
+        z_root = inputs["data:geometry:fuselage:maximum_height"][0] / 2
+        z_tip = inputs["data:geometry:vertical_tail:span"][0] + z_root
 
-        outputs["data:aerostructural:aerodynamic:vertical_tail:nodes"] = self._get_nodes_loc(
-            n_secs, dim
+        x_interp = [x_root, x_tip]
+        z_interp = [z_root, z_tip]
+
+        f_x = interp(z_interp, x_interp)
+
+        #  Nodes coordinates interpolation ---------------------------------------------------------
+        z_le = np.linspace(z_root, z_tip, n_secs + 1).reshape((n_secs + 1, 1))
+        y_le = np.zeros((n_secs + 1, 1))
+        x_le = f_x(z_le)
+
+        outputs["data:aerostructural:aerodynamic:vertical_tail:nodes"] = np.hstack(
+            (x_le, y_le, z_le)
         )
 
-    @staticmethod
-    def _get_nodes_loc(n_sections, dimensions):
-        z_le = np.linspace(dimensions["z_root"][0], dimensions["z_tip"][0], n_sections + 1)
-
-        x_le = np.zeros((n_sections + 1, 1))
-        y_le = np.zeros((n_sections + 1, 1))
-        for i in range(0, np.size(y_le)):
-            x_le[i] = (z_le[i] - dimensions["z_root"][0]) * (
-                dimensions["x_tip"][0] - dimensions["x_root"][0]
-            ) / (dimensions["z_tip"][0] - dimensions["z_root"][0]) + dimensions["x_root"][0]
-        xyz = np.hstack((x_le, y_le, z_le[:, np.newaxis]))
-        return xyz
+    # @staticmethod
+    # def _get_nodes_loc(n_sections, dimensions):
+    #     z_le = np.linspace(dimensions["z_root"][0], dimensions["z_tip"][0], n_sections + 1)
+    #
+    #     x_le = np.zeros((n_sections + 1, 1))
+    #     y_le = np.zeros((n_sections + 1, 1))
+    #     for i in range(0, np.size(y_le)):
+    #         x_le[i] = (z_le[i] - dimensions["z_root"][0]) * (
+    #             dimensions["x_tip"][0] - dimensions["x_root"][0]
+    #         ) / (dimensions["z_tip"][0] - dimensions["z_root"][0]) + dimensions["x_root"][0]
+    #     xyz = np.hstack((x_le, y_le, z_le[:, np.newaxis]))
+    #     return xyz
