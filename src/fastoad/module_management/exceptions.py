@@ -54,8 +54,6 @@ class FastBadSystemOptionError(FastError):
 
 
 class FastIncompatibleServiceClassError(FastError):
-    """"""
-
     def __init__(self, registered_class: type, service_id: str, base_class: type):
         """
         Raised when trying to register as service a class that does not implement

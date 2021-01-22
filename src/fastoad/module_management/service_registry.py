@@ -169,8 +169,8 @@ class RegisterService:
 
         if isinstance(instance_or_id, str):
             return cls._loader.get_factory_property(instance_or_id, property_name)
-        else:
-            return cls._loader.get_instance_property(instance_or_id, property_name)
+
+        return cls._loader.get_instance_property(instance_or_id, property_name)
 
 
 class RegisterPropulsion(
