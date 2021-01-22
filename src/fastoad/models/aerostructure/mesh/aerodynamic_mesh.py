@@ -17,6 +17,10 @@ Module generating aerodynamic mesh for VLM computations
 import openmdao.api as om
 from fastoad.models.aerostructure.mesh.components.components_classes import AerodynamicNodesClasses
 from fastoad.models.aerostructure.mesh.components.components_classes import AerodynamicChordsClasses
+from fastoad.models.aerostructure.mesh.components.aerodynamic_twist_wing import AerodynamicTwistWing
+from fastoad.models.aerostructure.mesh.components.aerodynamic_thickness_ratios_wing import (
+    AerodynamicThicknessRatiosWing,
+)
 
 
 class AerodynamicMesh(om.Group):
@@ -40,3 +44,12 @@ class AerodynamicMesh(om.Group):
             self.add_subsystem(
                 comp + "Chords", chord_class(number_of_sections=n_section), promotes=["*"]
             )
+            if comp == "wing":
+                self.add_subsystem(
+                    "wing_twist", AerodynamicTwistWing(number_of_sections=n_section), promotes=["*"]
+                )
+                self.add_subsystem(
+                    "wing_tc",
+                    AerodynamicThicknessRatiosWing(number_of_sections=n_section),
+                    promotes=["*"],
+                )

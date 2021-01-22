@@ -84,6 +84,7 @@
         <kink>
           <chord units="m">3.611864055351467<!--chord length at wing kink--></chord>
           <thickness_ratio>0.12069450428120491<!--thickness ratio at wing kink--></thickness_ratio>
+          <twist>0.5</twist>
           <y units="m">7.027409516243423<!--Y-position of wing kink--></y>
           <leading_edge>
             <x>
@@ -94,11 +95,13 @@
         <root>
           <chord units="m">6.202426502154557<!--chord length at wing root--></chord>
           <thickness_ratio>0.15921402692414266<!--thickness ratio at wing root--></thickness_ratio>
+          <twist>3.5</twist>
           <y units="m">1.95994<!--Y-position of wing root--></y>
         </root>
         <tip>
           <chord units="m">1.718403498979457<!--chord length at wing tip--></chord>
           <thickness_ratio>0.11042263157642153<!--thickness ratio at wing tip--></thickness_ratio>
+          <twist>0.3</twist>
           <y units="m">17.568523790608555<!--Y-position of wing tip--></y>
           <leading_edge>
             <x>

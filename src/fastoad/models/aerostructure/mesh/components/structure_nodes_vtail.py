@@ -32,7 +32,7 @@ class StructureNodesVtail(om.ExplicitComponent):
         n_secs = self.options["number_of_sections"]
 
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan)
+        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan)
         self.add_input("data:geometry:vertical_tail:sweep_0", val=np.nan, units="rad")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan)
         self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan)
@@ -56,7 +56,7 @@ class StructureNodesVtail(om.ExplicitComponent):
         x_tip = x_root + inputs["data:geometry:vertical_tail:span"][0] * np.tan(
             inputs["data:geometry:vertical_tail:sweep_0"][0]
         )
-        z_root = 0.5 * inputs["data:geometry:fuselage:maximum_width"][0]
+        z_root = 0.5 * inputs["data:geometry:fuselage:maximum_height"][0]
         z_tip = z_root + inputs["data:geometry:vertical_tail:span"][0]
         root_chord = inputs["data:geometry:vertical_tail:root:chord"][0]
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"][0]

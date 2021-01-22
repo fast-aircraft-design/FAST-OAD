@@ -48,17 +48,19 @@ class AerodynamicThicknessRatiosWing(om.ExplicitComponent):
     def compute(self, inputs, outputs):
         n_sects = self.options["number_of_sections"]
         y = [
+            0.0,
             inputs["data:geometry:wing:root:y"][0],
             inputs["data:geometry:wing:kink:y"][0],
             inputs["data:geometry:wing:tip:y"][0],
         ]
         t_c = [
             inputs["data:geometry:wing:root:thickness_ratio"][0],
+            inputs["data:geometry:wing:root:thickness_ratio"][0],
             inputs["data:geometry:wing:kink:thickness_ratio"][0],
             inputs["data:geometry:wing:tip:thickness_ratio"][0],
         ]
         nodes = inputs["data:aerostructural:aerodynamic:wing:nodes"]
         y_i = nodes[: n_sects + 1, 1]
-        f = interp(y, t_c, 2)
+        f = interp(y, t_c, "linear")
         t_ci = f(y_i)
         outputs["data:aerostructural:aerodynamic:wing:thickness_ratios"] = np.tile(t_ci, 2)

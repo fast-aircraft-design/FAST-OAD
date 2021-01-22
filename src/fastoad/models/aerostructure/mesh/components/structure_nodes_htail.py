@@ -38,8 +38,8 @@ class StructureNodesHtail(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:local", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:root:z", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:tip:z", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:root:z", val=np.zeros(1))
+        self.add_input("data:geometry:horizontal_tail:tip:z", val=np.zeros(1))
         # self.add_input("settings:aerostructural:horizontal_tail:struct_sections", val=np.nan)
         self.add_output(
             "data:aerostructural:structure:horizontal_tail:nodes",
