@@ -77,8 +77,7 @@ class MystranStatic(om.ExternalCodeComp):
                 "data:aerostructural:structure:" + comp + ":beam_properties", shape_by_conn=True
             )
             self.add_input(
-                "data:aerostructural:structure:" + comp + ":nodal_forces_moments",
-                shape_by_conn=True,
+                "data:aerostructural:structure:" + comp + ":forces", shape_by_conn=True,
             )
             self.add_input("data:aerostructural:structure:" + comp + ":material:E", val=70e9)
             self.add_input("data:aerostructural:structure:" + comp + ":material:mu", val=0.33)
@@ -87,11 +86,13 @@ class MystranStatic(om.ExternalCodeComp):
             )
 
             self.add_output(
-                "data:aerostructural:structure:" + comp + ":displacements", shape=(n_nodes, 6)
+                "data:aerostructural:structure:" + comp + ":displacements",
+                val=0.0,
+                shape=(n_nodes, 6),
             )
 
             self.add_output(
-                "data:aerostructural:structure:" + comp + ":stresses", shape=(n_props, 4)
+                "data:aerostructural:structure:" + comp + ":stresses", val=0.0, shape=(n_props, 4)
             )
 
             # Initialisation of the MYSTRAN (NASTRAN) input file (.dat) ----------------------------
@@ -113,7 +114,7 @@ class MystranStatic(om.ExternalCodeComp):
             mat_prop = np.zeros(3)
             nodes = inputs["data:aerostructural:structure:" + comp + ":nodes"]
             props = inputs["data:aerostructural:structure:" + comp + ":beam_properties"]
-            forces = inputs["data:aerostructural:structure:" + comp + ":nodal_forces_moments"]
+            forces = inputs["data:aerostructural:structure:" + comp + ":forces"]
             mat_prop[0] = inputs["data:aerostructural:structure:" + comp + ":material:E"]
             mat_prop[1] = inputs["data:aerostructural:structure:" + comp + ":material:mu"]
             mat_prop[2] = inputs["data:aerostructural:structure:" + comp + ":material:density"]

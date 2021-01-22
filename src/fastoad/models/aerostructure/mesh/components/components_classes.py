@@ -23,6 +23,9 @@ from .aerodynamic_chords_wing import AerodynamicChordsWing
 from .aerodynamic_chords_htail import AerodynamicChordsHtail
 from .aerodynamic_chords_vtail import AerodynamicChordsVtail
 from .aerodynamic_chords_fuselage import AerodynamicChordsFuselage
+from .structure_nodes_wing import StructureNodesWing
+from .structure_nodes_htail import StructureNodesHtail
+from .structure_nodes_vtail import StructureNodesVtail
 
 
 class AerodynamicNodesClasses(Enum):
@@ -37,3 +40,9 @@ class AerodynamicChordsClasses(Enum):
     HORIZONTAL_TAIL = AerodynamicChordsHtail
     VERTICAL_TAIL = AerodynamicChordsVtail
     FUSELAGE = AerodynamicChordsFuselage
+
+
+class StructureNodesClasses(Enum):
+    WING = StructureNodesWing
+    HORIZONTAL_TAIL = StructureNodesHtail
+    VERTICAL_TAIL = StructureNodesVtail

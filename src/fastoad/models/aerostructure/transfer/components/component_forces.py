@@ -38,7 +38,7 @@ class ComponentForces(om.ExplicitComponent):
             "data:aerostructural:structure:" + comp + ":nodes", val=np.nan, shape_by_conn=True
         )
         self.add_input(
-            "data:aerostructural:aerodynamic:" + comp + ":forces", val=0.0, shape_by_conn=True
+            "data:aerostructural:aerodynamic:" + comp + ":forces", val=np.nan, shape_by_conn=True
         )
         size = sect + 1
         if comp in ("wing", "horizontal_tail", "strut"):

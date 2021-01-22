@@ -70,7 +70,7 @@ class AVL(ExternalCodeComp):
         self.add_input("data:aerostructural:load_case:weight", val=np.nan)
         self.add_input("data:aerostructural:load_case:load_factor", val=1.0)
         self.add_input("data:aerostructural:load_case:altitude", val=np.nan, units="ft")
-        self.add_input("tuning:aerostructural:aerodynamic:chordwise_spacing:k", val=np.nan)
+        self.add_input("tuning:aerostructural:aerodynamic:chordwise_spacing:k", val=12)
 
         for comp, n_sect in zip(comps, sects):
             self.add_input(
@@ -95,7 +95,7 @@ class AVL(ExternalCodeComp):
                     shape_by_conn=True,
                 )
                 self.add_input(
-                    "data:aerostructural:aerodynamic:wing:twist", val=np.nan, shape_by_conn=True
+                    "data:aerostructural:aerodynamic:wing:twist", val=0.0, shape_by_conn=True
                 )
 
             size = n_sect  # Default number of section for non symmetrical components
