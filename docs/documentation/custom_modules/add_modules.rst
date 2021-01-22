@@ -127,16 +127,18 @@ Register your system(s)
 ***********************
 
 Once your OpenMDAO system is ready, you have to register it to make it discoverable by FAST-OAD.
-Assuming your OpenMDAO class is named `MyOMClass` in `my_module.py`, you can create, in the same
-folder, the file `register.py` (name is not mandatory) with following lines:
+
+To do that, you just have to add the :class:`~fastoad.module_management.service_registry.RegisterOpenMDAOSystem`
+decorator to your OpenMDAO class like this:
 
 .. code-block:: python
 
-    from my_module import MyOMClass
-    from fastoad.module_management import OpenMDAOSystemRegistry
+    from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+    import openmdao.api as om
 
-    OpenMDAOSystemRegistry.register_system(MyOMClass, "my.custom.name")
-
+    @RegisterOpenMDAOSystem("my.custom.name")
+    class MyOMClass(om.ExplicitComponent):
+        ...
 
 .. note::
 

@@ -184,11 +184,11 @@ Registering the wrapper
 
 Registering is needed for being able to choose your propulsion wrapper in
 FAST-OAD configuration file. Due to the specific status of propulsion models,
-the registering process is different that
+the registering process is a bit different that
 :ref:`the one for classic OpenMDAO modules<add-modules-register-systems>`.
 
 The registering is done using the
-:class:`fastoad.module_management.service_registry.RegisterPropulsion`
+:class:`~fastoad.module_management.service_registry.RegisterPropulsion`
 decorator::
 
     from fastoad.models.propulsion import IOMPropulsionWrapper
