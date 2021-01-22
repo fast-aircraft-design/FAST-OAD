@@ -39,8 +39,13 @@ def register_openmdao_systems():
     """
     The place where to register FAST-OAD internal models.
 
+    This function is needed, because using decorators directly in FAST-OAD code will not work,
+    because unlike what happens for custom modules, we do not run
+    RegisterSomeService.explore_folder() on FAST-OAD code (and we don't want to, as it may not
+    be even installed as a real folder).
+
     Warning: this function is effective only if called from a Python module that
-    is a started bundle for iPOPO
+    is a started bundle for iPOPO.
     """
     # Aerodynamics ################################################################
     RegisterOpenMDAOSystem("fastoad.aerodynamics.takeoff.legacy", domain=ModelDomain.AERODYNAMICS)(
