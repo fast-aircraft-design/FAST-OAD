@@ -15,12 +15,10 @@ Module generating aerodynamic mesh for VLM computations
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-from fastoad.models.aerostructure.mesh.components.components_classes import AerodynamicNodesClasses
-from fastoad.models.aerostructure.mesh.components.components_classes import AerodynamicChordsClasses
-from fastoad.models.aerostructure.mesh.components.aerodynamic_twist_wing import AerodynamicTwistWing
-from fastoad.models.aerostructure.mesh.components.aerodynamic_thickness_ratios_wing import (
-    AerodynamicThicknessRatiosWing,
-)
+from .nodes.nodes_classes import AerodynamicNodesClasses
+from .aerodynamic_properties.properties_classes import AerodynamicChordsClasses
+from .aerodynamic_properties.aerodynamic_twist_wing import AerodynamicTwistWing
+from .aerodynamic_properties.aerodynamic_thickness_ratios_wing import AerodynamicThicknessRatiosWing
 
 
 class AerodynamicMesh(om.Group):

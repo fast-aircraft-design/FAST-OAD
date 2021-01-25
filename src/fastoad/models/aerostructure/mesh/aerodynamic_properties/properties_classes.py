@@ -1,6 +1,3 @@
-"""
-Defines classes for dynamic call of nodes and chords classes for aerodynamic mesh
-"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,25 +11,13 @@ Defines classes for dynamic call of nodes and chords classes for aerodynamic mes
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 from enum import Enum
-from fastoad.models.aerostructure.mesh.components.aerodynamic_nodes_wing import AerodynamicNodesWing
-from .aerodynamic_nodes_htail import AerodynamicNodesHtail
-from .aerodynamic_nodes_vtail import AerodynamicNodesVtail
-from .aerodynamic_nodes_fuselage import AerodynamicNodesFuselage
+
 from .aerodynamic_chords_wing import AerodynamicChordsWing
 from .aerodynamic_chords_htail import AerodynamicChordsHtail
 from .aerodynamic_chords_vtail import AerodynamicChordsVtail
 from .aerodynamic_chords_fuselage import AerodynamicChordsFuselage
-from .structure_nodes_wing import StructureNodesWing
-from .structure_nodes_htail import StructureNodesHtail
-from .structure_nodes_vtail import StructureNodesVtail
-
-
-class AerodynamicNodesClasses(Enum):
-    WING = AerodynamicNodesWing
-    HORIZONTAL_TAIL = AerodynamicNodesHtail
-    VERTICAL_TAIL = AerodynamicNodesVtail
-    FUSELAGE = AerodynamicNodesFuselage
 
 
 class AerodynamicChordsClasses(Enum):
@@ -40,9 +25,3 @@ class AerodynamicChordsClasses(Enum):
     HORIZONTAL_TAIL = AerodynamicChordsHtail
     VERTICAL_TAIL = AerodynamicChordsVtail
     FUSELAGE = AerodynamicChordsFuselage
-
-
-class StructureNodesClasses(Enum):
-    WING = StructureNodesWing
-    HORIZONTAL_TAIL = StructureNodesHtail
-    VERTICAL_TAIL = StructureNodesVtail

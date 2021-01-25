@@ -13,8 +13,8 @@
 
 
 from openmdao.core.group import Group
-from fastoad.models.aerostructure.mesh.components.structure_nodes import StructureNodes
-from fastoad.models.aerostructure.mesh.components.structure_props import StructureBeamProps
+from .nodes.nodes_classes import StructureNodesClasses
+from .structure_properties.properties_classes import BeamPropertiesClass
 
 
 class StructureMesh(Group):
@@ -28,14 +28,13 @@ class StructureMesh(Group):
         if n_sections is not None and len(n_sections) != len(comps):
             msg = "Number of components and number of associated sections must correspond"
             raise ValueError(msg)
-        for i in range(0, len(comps)):
+        for comp, n_section in zip(comps, n_sections):
+            nodes_class = StructureNodesClasses[comp.upper()].value
+            props_class = BeamPropertiesClass[comp.upper()].value
+
             self.add_subsystem(
-                comps[i] + "_nodes",
-                StructureNodes(component=comps[i], number_of_sections=n_sections[i]),
-                promotes=["*"],
+                comp + "_nodes", nodes_class(number_of_sections=n_section), promotes=["*"],
             )
             self.add_subsystem(
-                comps[i] + "_prop",
-                StructureBeamProps(component=comps[i], number_of_sections=n_sections[i]),
-                promotes=["*"],
+                comps + "_prop", props_class(number_of_sections=n_sections), promotes=["*"]
             )
