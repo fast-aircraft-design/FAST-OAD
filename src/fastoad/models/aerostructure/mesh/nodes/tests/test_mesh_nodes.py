@@ -18,7 +18,6 @@ import os.path as pth
 import openmdao.api as om
 import numpy as np
 
-import pytest
 from pytest import approx
 from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
@@ -27,10 +26,7 @@ from ..aerodynamic_nodes_htail import AerodynamicNodesHtail
 from ..aerodynamic_nodes_wing import AerodynamicNodesWing
 from ..aerodynamic_nodes_vtail import AerodynamicNodesVtail
 from ..aerodynamic_nodes_fuselage import AerodynamicNodesFuselage
-from ..aerodynamic_chords_htail import AerodynamicChordsHtail
-from ..aerodynamic_chords_vtail import AerodynamicChordsVtail
-from ..aerodynamic_chords_wing import AerodynamicChordsWing
-from ..aerodynamic_chords_fuselage import AerodynamicChordsFuselage
+
 from ..structure_nodes_wing import StructureNodesWing
 from ..structure_nodes_htail import StructureNodesHtail
 from ..structure_nodes_vtail import StructureNodesVtail
@@ -112,124 +108,6 @@ def test_vtail_nodes():
     assert nodes[-1, 0] == approx(35.31307, abs=1e-5)
     assert nodes[5, 2] - nodes[4, 2] == approx(0.57510, abs=1e-5)
     assert nodes[-1, 2] == approx(8.93118, abs=1e-5)
-
-
-def test_wing_chords():
-    input_list = [
-        "data:geometry:wing:root:y",
-        "data:geometry:wing:kink:y",
-        "data:geometry:wing:tip:y",
-        "data:geometry:wing:root:chord",
-        "data:geometry:wing:kink:chord",
-        "data:geometry:wing:tip:chord",
-        "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:leading_edge:x:local",
-        "data:geometry:wing:MAC:at25percent:x",
-        "data:geometry:wing:root:z",
-        "data:geometry:wing:kink:leading_edge:x:local",
-        "data:geometry:wing:kink:z",
-        "data:geometry:wing:tip:leading_edge:x:local",
-        "data:geometry:wing:tip:z",
-    ]
-
-    ivc = get_indep_var_comp(input_list)
-    group = om.Group()
-    group.add_subsystem("WingNodes", AerodynamicNodesWing(number_of_sections=12), promotes=["*"])
-    group.add_subsystem("WingChords", AerodynamicChordsWing(number_of_sections=12), promotes=["*"])
-
-    problem = run_system(group, ivc)
-    chord = problem["data:aerostructural:aerodynamic:wing:chords"]
-
-    assert chord[0] == approx(6.20243, abs=1e-5)  # Check root chord
-    assert chord[2] == approx(5.33890, abs=1e-5)  # Check intermediate inner chord
-    assert chord[4] == approx(3.61186, abs=1e-5)  # Check kink chord
-    assert chord[8] == approx(2.66513, abs=1e-5)  # Check intermediate outer chord
-    assert chord[12] == approx(1.71840, abs=1e-5)  # Check tip chord
-    assert chord[15] == approx(5.33890, abs=1e-5)  # Check symmetry intermediate inner chord
-    assert chord[21] == approx(2.66513, abs=1e-5)  # Check symmetry intermediate outer chord
-
-
-def test_htail_chords():
-    input_list = [
-        "data:geometry:wing:MAC:at25percent:x",
-        "data:geometry:horizontal_tail:MAC:length",
-        "data:geometry:horizontal_tail:MAC:at25percent:x:local",
-        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-        "data:geometry:horizontal_tail:span",
-        "data:geometry:horizontal_tail:sweep_0",
-        "data:geometry:horizontal_tail:span",
-        "data:geometry:horizontal_tail:root:chord",
-        "data:geometry:horizontal_tail:tip:chord",
-    ]
-
-    ivc = get_indep_var_comp(input_list)
-    group = om.Group()
-    group.add_subsystem("HtailNodes", AerodynamicNodesHtail(number_of_sections=12), promotes=["*"])
-    group.add_subsystem(
-        "HtailChords", AerodynamicChordsHtail(number_of_sections=12), promotes=["*"]
-    )
-    problem = run_system(group, ivc)
-    chord = problem["data:aerostructural:aerodynamic:horizontal_tail:chords"]
-
-    assert chord[0] == approx(4.40580, abs=1e-5)  # Check root chord
-    assert chord[6] == approx(2.86377, abs=1e-5)  # Check intermediate chord
-    assert chord[12] == approx(1.32174, abs=1e-5)  # Check tip chord
-    assert chord[19] == approx(2.86377, abs=1e-5)  # Check symmetry intermediate chord
-
-
-def test_vtail_chords():
-    input_list = [
-        "data:geometry:wing:MAC:at25percent:x",
-        "data:geometry:vertical_tail:MAC:at25percent:x:local",
-        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-        "data:geometry:vertical_tail:MAC:length",
-        "data:geometry:vertical_tail:span",
-        "data:geometry:vertical_tail:sweep_0",
-        "data:geometry:fuselage:maximum_height",
-        "data:geometry:vertical_tail:root:chord",
-        "data:geometry:vertical_tail:tip:chord",
-    ]
-
-    ivc = get_indep_var_comp(input_list)
-    group = om.Group()
-    group.add_subsystem("VtailNodes", AerodynamicNodesVtail(number_of_sections=12), promotes=["*"])
-    group.add_subsystem(
-        "VtailChords", AerodynamicChordsVtail(number_of_sections=12), promotes=["*"]
-    )
-    problem = run_system(group, ivc)
-    chord = problem["data:aerostructural:aerodynamic:vertical_tail:chords"]
-
-    assert chord[0] == approx(6.08571, abs=1e-5)  # Check root chord
-    assert chord[6] == approx(3.95571, abs=1e-5)  # Check intermediate chord
-    assert chord[12] == approx(1.82571, abs=1e-5)  # Check tip chord
-
-
-def test_fuselage_chords():
-    input_list = [
-        "data:geometry:fuselage:maximum_height",
-        "data:geometry:fuselage:maximum_width",
-        "data:geometry:fuselage:front_length",
-        "data:geometry:fuselage:length",
-        "data:geometry:fuselage:rear_length",
-    ]
-
-    ivc = get_indep_var_comp(input_list)
-    group = om.Group()
-    group.add_subsystem("FuseNodes", AerodynamicNodesFuselage(), promotes=["*"])
-    group.add_subsystem("FuseChords", AerodynamicChordsFuselage(), promotes=["*"])
-    problem = run_system(group, ivc)
-    chord = problem["data:aerostructural:aerodynamic:fuselage:chords"]
-
-    assert chord[0] == approx(37.50736, abs=1e-5)  # Check centreline
-    assert chord[1] == approx(30.19958, abs=1e-5)  # Check mid width line (rear cone)
-    assert chord[2] == approx(15.99, abs=1e-5)  # Check max width line (rear cone + non-cyl front)
-    assert chord[4] == approx(30.19958, abs=1e-5)  # Check symmetry mid width
-    assert chord[7] == approx(37.50736, abs=1e-5)  # Check top mid height
-    assert chord[8] == approx(30.60557, abs=1e-5)  # Check top max height (non-cyl front)
-    assert chord[10] == approx(30.19958, abs=1e-5)  # Check bottom mid height (rear cone)
-    assert chord[11] == approx(
-        15.99, abs=1e-5
-    )  # Check bottom max height (rear cone + non-cyl front)
 
 
 def test_structure_wing_nodes():
