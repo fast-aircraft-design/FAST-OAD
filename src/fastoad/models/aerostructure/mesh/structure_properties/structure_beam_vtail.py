@@ -28,8 +28,6 @@ class VtailBeamProps(om.ExplicitComponent):
         n_secs = self.options["number_of_sections"]
 
         # Inputs -----------------------------------------------------------------------------------
-        self.add_input("data:geometry:vertical_tail:root:z", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:tip:z", val=np.nan)
         self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan)
         self.add_input("data:geometry:vertical_tail:root:skin_thickness", val=0.005, units="m")
         self.add_input("data:geometry:vertical_tail:root:web_thickness", val=0.005, units="m")
@@ -56,15 +54,15 @@ class VtailBeamProps(om.ExplicitComponent):
         n_secs = self.options["number_of_sections"]
 
         #  Characteristic lengths and points -------------------------------------------------------
-        root_z = 0.5 * inputs["data:geometry:fuselage:maximum_height"]
-        tip_z = inputs["data:geometry:vertical_tail:span"] + root_z
-        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
-        root_skin_thickness = inputs["data:geometry:vertical_tail:root:skin_thickness"]
-        root_web_thickness = inputs["data:geometry:vertical_tail:root:web_thickness"]
-        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
-        tip_skin_thickness = inputs["data:geometry:vertical_tail:tip:skin_thickness"]
-        tip_web_thickness = inputs["data:geometry:vertical_tail:tip:web_thickness"]
-        thickness_ratio = inputs["data:geometry:vertical_tail:thickness_ratio"]
+        root_z = 0.5 * inputs["data:geometry:fuselage:maximum_height"][0]
+        tip_z = inputs["data:geometry:vertical_tail:span"][0] + root_z
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"][0]
+        root_skin_thickness = inputs["data:geometry:vertical_tail:root:skin_thickness"][0]
+        root_web_thickness = inputs["data:geometry:vertical_tail:root:web_thickness"][0]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"][0]
+        tip_skin_thickness = inputs["data:geometry:vertical_tail:tip:skin_thickness"][0]
+        tip_web_thickness = inputs["data:geometry:vertical_tail:tip:web_thickness"][0]
+        thickness_ratio = inputs["data:geometry:vertical_tail:thickness_ratio"][0]
 
         z = inputs["data:aerostructural:structure:vertical_tail:nodes"][:n_secs, 2]
 
@@ -74,25 +72,30 @@ class VtailBeamProps(om.ExplicitComponent):
         #  VTP Box chord and height computation ----------------------------------------------------
         c_box_root = 0.5 * root_chord  # Box is assumed to extend over 50% of the HTP chord
         c_box_tip = 0.5 * tip_chord
-        h_box = root_chord * thickness_ratio * np.ones(n_secs)
+        h_box_root = root_chord * thickness_ratio
+        h_box_tip = tip_chord * thickness_ratio
 
         #  Reference points for interpolation ------------------------------------------------------
         z_interp = [root_z, tip_z]
         c_interp = [c_box_root, c_box_tip]
+        h_interp = [h_box_root, h_box_tip]
         t_skin_interp = [root_skin_thickness, tip_skin_thickness]
         t_web_interp = [root_web_thickness, tip_web_thickness]
 
         #  Box dimensions interpolation ------------------------------------------------------------
         f_c_box = interp(z_interp, c_interp)
+        f_h_box = interp(z_interp, h_interp)
         f_t_skin = interp(z_interp, t_skin_interp)
         f_t_web = interp(z_interp, t_web_interp)
 
         c_box = f_c_box(z)
+        h_box = f_h_box(z)
         t_skin = f_t_skin(z)
         t_web = f_t_web(z)
 
         #  Beam properties computation -------------------------------------------------------------
         beam_box = Beam(c_box, h_box, t_skin, t_web, n_spar, a_spar, type="box")
+        beam_box.compute_section_properties()
         a_beam = beam_box.a.reshape((n_secs, 1))
         i1 = beam_box.i1.reshape((n_secs, 1))
         i2 = beam_box.i2.reshape((n_secs, 1))
@@ -100,4 +103,4 @@ class VtailBeamProps(om.ExplicitComponent):
         props = np.hstack((a_beam, i1, i2, j))
 
         #  Outputs --------------------------------------------------------------------
-        outputs["data:aerostructural:strucutre:horizontal_tail:beam_properties"] = props
+        outputs["data:aerostructural:structure:vertical_tail:beam_properties"] = props

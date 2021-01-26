@@ -59,6 +59,6 @@ class AerodynamicTwistWing(om.ExplicitComponent):
         ]
         nodes = inputs["data:aerostructural:aerodynamic:wing:nodes"]
         y_i = nodes[: n_sects + 1, 1]
-        f = interp(y, twist, 2)
+        f = interp(y, twist, "linear")
         t_ci = f(y_i)
         outputs["data:aerostructural:aerodynamic:wing:twist"] = np.tile(t_ci, 2)

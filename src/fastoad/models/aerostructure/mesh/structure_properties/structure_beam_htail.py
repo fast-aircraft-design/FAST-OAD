@@ -53,14 +53,14 @@ class HtailBeamProps(om.ExplicitComponent):
 
         #  Characteristic lengths and points -------------------------------------------------------
         root_y = 0.0
-        tip_y = inputs["data:geometry:horizontal_tail:span"]
-        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
-        root_skin_thickness = inputs["data:geometry:horizontal_tail:root:skin_thickness"]
-        root_web_thickness = inputs["data:geometry:horizontal_tail:root:web_thickness"]
-        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
-        tip_skin_thickness = inputs["data:geometry:horizontal_tail:tip:skin_thickness"]
-        tip_web_thickness = inputs["data:geometry:horizontal_tail:tip:web_thickness"]
-        thickness_ratio = inputs["data:geometry:horizontal_tail:thickness_ratio"]
+        tip_y = inputs["data:geometry:horizontal_tail:span"][0] / 2
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"][0]
+        root_skin_thickness = inputs["data:geometry:horizontal_tail:root:skin_thickness"][0]
+        root_web_thickness = inputs["data:geometry:horizontal_tail:root:web_thickness"][0]
+        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"][0]
+        tip_skin_thickness = inputs["data:geometry:horizontal_tail:tip:skin_thickness"][0]
+        tip_web_thickness = inputs["data:geometry:horizontal_tail:tip:web_thickness"][0]
+        thickness_ratio = inputs["data:geometry:horizontal_tail:thickness_ratio"][0]
 
         # Beam properties are computed with geometric values corresponding to the inner point
         # This choice is conservative from a mass point of view.
@@ -72,25 +72,30 @@ class HtailBeamProps(om.ExplicitComponent):
         #  HTP Box chord and height computation ----------------------------------------------------
         c_box_root = 0.5 * root_chord  # Box is assumed to extend over 50% of the HTP chord
         c_box_tip = 0.5 * tip_chord
-        h_box = root_chord * thickness_ratio * np.ones(n_secs)
+        h_box_root = root_chord * thickness_ratio
+        h_box_tip = tip_chord * thickness_ratio
 
         #  Reference points for interpolation ------------------------------------------------------
         y_interp = [root_y, tip_y]
         c_interp = [c_box_root, c_box_tip]
+        h_interp = [h_box_root, h_box_tip]
         t_skin_interp = [root_skin_thickness, tip_skin_thickness]
         t_web_interp = [root_web_thickness, tip_web_thickness]
 
         #  Box dimensions interpolation ------------------------------------------------------------
         f_c_box = interp(y_interp, c_interp)
+        f_h_box = interp(y_interp, h_interp)
         f_t_skin = interp(y_interp, t_skin_interp)
         f_t_web = interp(y_interp, t_web_interp)
 
         c_box = f_c_box(y)
+        h_box = f_h_box(y)
         t_skin = f_t_skin(y)
         t_web = f_t_web(y)
 
         #  Beam properties computation -------------------------------------------------------------
         beam_box = Beam(c_box, h_box, t_skin, t_web, n_spar, a_spar, type="box")
+        beam_box.compute_section_properties()
         a_beam = beam_box.a.reshape((n_secs, 1))
         i1 = beam_box.i1.reshape((n_secs, 1))
         i2 = beam_box.i2.reshape((n_secs, 1))
@@ -98,4 +103,6 @@ class HtailBeamProps(om.ExplicitComponent):
         props = np.hstack((a_beam, i1, i2, j))
 
         #  Symmetry and outputs --------------------------------------------------------------------
-        outputs["data:aerostructural:strucutre:horizontal_tail:beam_properties"] = np.tile(props, 2)
+        outputs["data:aerostructural:structure:horizontal_tail:beam_properties"] = np.tile(
+            props, (2, 1)
+        )

@@ -23,6 +23,8 @@ from ...nodes.aerodynamic_nodes_vtail import AerodynamicNodesVtail
 from ..aerodynamic_chords_htail import AerodynamicChordsHtail
 from ..aerodynamic_chords_vtail import AerodynamicChordsVtail
 from ..aerodynamic_chords_wing import AerodynamicChordsWing
+from ..aerodynamic_twist_wing import AerodynamicTwistWing
+from ..aerodynamic_thickness_ratios_wing import AerodynamicThicknessRatiosWing
 from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
 
@@ -125,3 +127,77 @@ def test_vtail_chords():
     assert chord[0] == approx(6.08571, abs=1e-5)  # Check root chord
     assert chord[6] == approx(3.95571, abs=1e-5)  # Check intermediate chord
     assert chord[12] == approx(1.82571, abs=1e-5)  # Check tip chord
+
+
+def test_wing_twist():
+    input_list = [
+        "data:geometry:wing:root:y",
+        "data:geometry:wing:kink:y",
+        "data:geometry:wing:tip:y",
+        "data:geometry:wing:root:chord",
+        "data:geometry:wing:kink:chord",
+        "data:geometry:wing:tip:chord",
+        "data:geometry:wing:root:twist",
+        "data:geometry:wing:kink:twist",
+        "data:geometry:wing:tip:twist",
+        "data:geometry:wing:MAC:length",
+        "data:geometry:wing:MAC:leading_edge:x:local",
+        "data:geometry:wing:MAC:at25percent:x",
+        "data:geometry:wing:root:z",
+        "data:geometry:wing:kink:leading_edge:x:local",
+        "data:geometry:wing:kink:z",
+        "data:geometry:wing:tip:leading_edge:x:local",
+        "data:geometry:wing:tip:z",
+    ]
+
+    ivc = get_indep_var_comp(input_list)
+    group = om.Group()
+    group.add_subsystem("WingNodes", AerodynamicNodesWing(number_of_sections=12), promotes=["*"])
+    group.add_subsystem("WingChords", AerodynamicTwistWing(number_of_sections=12), promotes=["*"])
+    problem = run_system(group, ivc)
+    twist = problem["data:aerostructural:aerodynamic:wing:twist"]
+
+    assert twist[0] == approx(3.5, abs=1e-5)  # Check root twist
+    assert twist[2] == approx(2.5, abs=1e-5)  # Check intermediate inner twist
+    assert twist[4] == approx(0.5, abs=1e-5)  # Check kink twist
+    assert twist[10] == approx(0.35, abs=1e-5)  # Check intermediate outer twist
+    assert twist[12] == approx(0.3, abs=1e-5)  # Check tip twist
+    assert twist[:13] == approx(twist[13:], abs=1e-9)  # Check symmetry
+
+
+def test_wing_thickness_ratio():
+    input_list = [
+        "data:geometry:wing:root:y",
+        "data:geometry:wing:kink:y",
+        "data:geometry:wing:tip:y",
+        "data:geometry:wing:root:chord",
+        "data:geometry:wing:kink:chord",
+        "data:geometry:wing:tip:chord",
+        "data:geometry:wing:root:thickness_ratio",
+        "data:geometry:wing:kink:thickness_ratio",
+        "data:geometry:wing:tip:thickness_ratio",
+        "data:geometry:wing:MAC:length",
+        "data:geometry:wing:MAC:leading_edge:x:local",
+        "data:geometry:wing:MAC:at25percent:x",
+        "data:geometry:wing:root:z",
+        "data:geometry:wing:kink:leading_edge:x:local",
+        "data:geometry:wing:kink:z",
+        "data:geometry:wing:tip:leading_edge:x:local",
+        "data:geometry:wing:tip:z",
+    ]
+
+    ivc = get_indep_var_comp(input_list)
+    group = om.Group()
+    group.add_subsystem("WingNodes", AerodynamicNodesWing(number_of_sections=12), promotes=["*"])
+    group.add_subsystem(
+        "WingChords", AerodynamicThicknessRatiosWing(number_of_sections=12), promotes=["*"]
+    )
+    problem = run_system(group, ivc)
+    t_c = problem["data:aerostructural:aerodynamic:wing:thickness_ratios"]
+
+    assert t_c[0] == approx(0.15921, abs=1e-5)  # Check root twist
+    assert t_c[2] == approx(0.14637, abs=1e-5)  # Check intermediate inner twist
+    assert t_c[4] == approx(0.12069, abs=1e-5)  # Check kink twist
+    assert t_c[10] == approx(0.11299, abs=1e-5)  # Check intermediate outer twist
+    assert t_c[12] == approx(0.11042, abs=1e-5)  # Check tip twist
+    assert t_c[:13] == approx(t_c[13:], abs=1e-9)  # Check symmetry

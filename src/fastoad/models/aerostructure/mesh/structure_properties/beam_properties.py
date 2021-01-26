@@ -23,7 +23,7 @@ class Beam:
         height: (float, np.ndarray),
         t_flange: (float, np.ndarray),
         t_web: (float, np.ndarray),
-        spars: (float, np.ndarray),
+        spars: (int, np.ndarray),
         a_spars: (float, np.ndarray),
         type="box",
     ):
@@ -32,12 +32,8 @@ class Beam:
         self.t_flange = t_flange
         self.t_web = t_web
         self.type = type
-        self.spars = spars
+        self.spars = int(spars)
         self.a_spars = a_spars
-        self.a = np.nan
-        self.i1 = np.nan
-        self.i2 = np.nan
-        self.j = np.nan
 
     def compute_section_properties(self):
         if self.type == "box":
@@ -48,26 +44,27 @@ class Beam:
             self._i_properties()
 
     def _box_properties(self):
-        s2 = 0.0
+        s2 = np.zeros((np.size(self.length)))
         if self.spars > 1:
-            d_spar = self.length / (self.spars - 1)
-            d2 = np.zeros(self.spars)
-            for k in range(self.spars):
-                d2[k] = (d_spar * k - self.length / 2) ** 2
-            s2 = np.sum(d2)
+            for idx, length in enumerate(self.length):
+                d_spar = length / (self.spars - 1)
+                d2 = np.zeros(self.spars)
+                for k in range(self.spars):
+                    d2[k] = (d_spar * k - length / 2) ** 2
+                s2[idx] = np.sum(d2)
 
-        self.a = (
-            2 * (self.length * self.t_flange + self.height * self.t_web) + self.spars * self.a_spars
+        self.a = 2 * (
+            (self.length * self.t_flange + self.height * self.t_web) + self.spars * self.a_spars
         )
         self.i1 = 2 * (
-            (self.t_web * self.length ** 3) / 12
+            (self.t_web * self.height ** 3) / 12
             + (self.t_flange * self.length * self.height ** 2) / 4
             + (self.spars * self.a_spars * self.height ** 2) / 4
         )
         self.i2 = 2 * (
             (self.t_flange * self.length ** 3) / 12
             + (self.t_web * self.height * self.length ** 2) / 4
-            + s2 * self.a_spars * 2
+            + s2 * self.a_spars * self.spars
         )
         self.j = (
             2

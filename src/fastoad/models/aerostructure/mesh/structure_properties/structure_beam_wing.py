@@ -133,6 +133,7 @@ class WingBeamProps(om.ExplicitComponent):
 
         #  Beam properties computation -------------------------------------------------------------
         beam_box = Beam(c_box, h_box, t_skin, t_web, n_spar, a_spar, type="box")
+        beam_box.compute_section_properties()
         a_beam = beam_box.a.reshape((n_secs, 1))
         i1 = beam_box.i1.reshape((n_secs, 1))
         i2 = beam_box.i2.reshape((n_secs, 1))
@@ -140,4 +141,4 @@ class WingBeamProps(om.ExplicitComponent):
         props = np.hstack((a_beam, i1, i2, j))
 
         #  Symmetry --------------------------------------------------------------------------------
-        outputs["data:aerostructural:structure:wing:beam_properties"] = np.tile(props, 2)
+        outputs["data:aerostructural:structure:wing:beam_properties"] = np.tile(props, (2, 1))
