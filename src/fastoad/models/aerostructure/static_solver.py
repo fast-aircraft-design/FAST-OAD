@@ -69,7 +69,10 @@ class StaticSolver(OmOptGrp):
         )
         self.add_subsystem(
             "Forces_transfer",
-            ForcesTransfer(components=self.options["components"],),
+            ForcesTransfer(
+                components=self.options["components"],
+                components_sections=self.options["components_sections"],
+            ),
             promotes=["*"],
         )
         self.add_subsystem(
