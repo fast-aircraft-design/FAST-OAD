@@ -15,6 +15,7 @@ from pkg_resources import get_distribution, DistributionNotFound
 
 from .cmd import api
 from .module_management import BundleLoader
+from .register import register_openmdao_systems
 
 try:
     # Change here if project is renamed and does not equal the package name
@@ -25,5 +26,5 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-# Loading bundles
-BundleLoader().context.install_bundle("fastoad.activator").start()
+# Register modules
+register_openmdao_systems()
