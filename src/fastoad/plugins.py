@@ -1,3 +1,6 @@
+"""
+Plugin system for module declaration.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,25 +16,18 @@
 
 import logging
 
-from pkg_resources import get_distribution, DistributionNotFound
-
-from .cmd import api
-from .module_management import BundleLoader
-from .plugins import load_plugins
-from .register import register_openmdao_systems
+from pkg_resources import iter_entry_points
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "FAST-OAD"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:
-    __version__ = "unknown"
-finally:
-    del get_distribution, DistributionNotFound
 
-# Register modules
-register_openmdao_systems()
-
-load_plugins()
+def load_plugins():
+    """
+    Loads declared plugins.
+    """
+    # Loading plugins
+    discovered_plugins = {
+        entry_point.name: entry_point.load() for entry_point in iter_entry_points("fastoad.models")
+    }
+    for plugin_name in discovered_plugins:
+        _LOGGER.info("Loaded FAST-OAD plugin %s", plugin_name)
