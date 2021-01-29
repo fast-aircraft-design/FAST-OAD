@@ -1,6 +1,6 @@
 """Module for registering services."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,7 +18,6 @@ from typing import List, TypeVar, Type, Union, Any
 
 from openmdao.core.system import System
 
-from fastoad.models.propulsion import IOMPropulsionWrapper
 from .bundle_loader import BundleLoader
 from .constants import (
     SERVICE_PROPULSION_WRAPPER,
@@ -29,6 +28,7 @@ from .constants import (
     ModelDomain,
 )
 from .exceptions import FastBadSystemOptionError, FastIncompatibleServiceClassError
+from ..model_base.propulsion import IOMPropulsionWrapper
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 T = TypeVar("T")

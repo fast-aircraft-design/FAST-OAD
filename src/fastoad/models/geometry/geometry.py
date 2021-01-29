@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,7 @@
 
 import openmdao.api as om
 
+from fastoad.model_base.options import CABIN_SIZING_OPTION
 from fastoad.models.geometry.compute_aero_center import ComputeAeroCenter
 from fastoad.models.geometry.geom_components import ComputeTotalArea
 from fastoad.models.geometry.geom_components.fuselage.compute_fuselage import (
@@ -29,7 +30,6 @@ from fastoad.models.geometry.geom_components.nacelle_pylons.compute_nacelle_pylo
 )
 from fastoad.models.geometry.geom_components.vt import ComputeVerticalTailGeometry
 from fastoad.models.geometry.geom_components.wing.compute_wing import ComputeWingGeometry
-from fastoad.models.options import CABIN_SIZING_OPTION
 
 
 class Geometry(om.Group):
