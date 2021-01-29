@@ -55,7 +55,7 @@ class OpenMDAOSystemRegistry:
             DeprecationWarning,
         )
 
-        cls._loader.install_packages(folder_path)
+        cls._loader.explore_folder(folder_path)
 
     @classmethod
     def register_system(

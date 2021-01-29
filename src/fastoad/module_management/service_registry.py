@@ -115,7 +115,7 @@ class RegisterService:
 
         :param folder_path:
         """
-        cls._loader.install_packages(folder_path)
+        cls._loader.explore_folder(folder_path)
 
     @classmethod
     def get_provider_ids(cls) -> List[str]:
