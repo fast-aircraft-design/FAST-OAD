@@ -3,7 +3,7 @@ This module is for registering all internal OpenMDAO modules that we want
 available through RegisterOpenMDAOSystem
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,27 +15,27 @@ available through RegisterOpenMDAOSystem
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
-from fastoad.models.aerodynamics.aerodynamics_landing import AerodynamicsLanding
-from fastoad.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
-from fastoad.models.aerodynamics.aerodynamics_takeoff import AerodynamicsTakeoff
-from fastoad.models.geometry import Geometry
-from fastoad.models.handling_qualities.compute_static_margin import ComputeStaticMargin
-from fastoad.models.handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
-from fastoad.models.loops.compute_wing_area import ComputeWingArea
-from fastoad.models.performances.breguet import OMBreguet
-from fastoad.models.performances.mission.openmdao.sizing_mission import SizingMission
-from fastoad.models.propulsion.fuel_propulsion.rubber_engine import (
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterPropulsion, RegisterOpenMDAOSystem
+from .aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
+from .aerodynamics.aerodynamics_landing import AerodynamicsLanding
+from .aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
+from .aerodynamics.aerodynamics_takeoff import AerodynamicsTakeoff
+from .geometry import Geometry
+from .handling_qualities.compute_static_margin import ComputeStaticMargin
+from .handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
+from .loops.compute_wing_area import ComputeWingArea
+from .performances.breguet import OMBreguet
+from .performances.mission.openmdao.sizing_mission import SizingMission
+from .propulsion.fuel_propulsion.rubber_engine import (
     OMRubberEngineComponent,
     OMRubberEngineWrapper,
 )
-from fastoad.models.weight.mass_breakdown.mass_breakdown import MTOWComputation
-from fastoad.models.weight.weight import Weight
-from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterPropulsion, RegisterOpenMDAOSystem
+from .weight.mass_breakdown.mass_breakdown import MTOWComputation
+from .weight.weight import Weight
 
 
-def register_openmdao_systems():
+def register_models():
     """
     The place where to register FAST-OAD internal models.
 
@@ -43,9 +43,6 @@ def register_openmdao_systems():
     because unlike what happens for custom modules, we do not run
     RegisterSomeService.explore_folder() on FAST-OAD code (and we don't want to, as it may not
     be even installed as a real folder).
-
-    Warning: this function is effective only if called from a Python module that
-    is a started bundle for iPOPO.
     """
     # Aerodynamics ################################################################
     RegisterOpenMDAOSystem("fastoad.aerodynamics.takeoff.legacy", domain=ModelDomain.AERODYNAMICS)(

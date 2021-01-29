@@ -75,6 +75,9 @@ sphinxcontrib-bibtex = "*"
 [tool.poetry.scripts]
 fastoad = "fastoad.cmd.fast:main"
 
+[tool.poetry.plugins."fastoad.models"]
+"internal_models" = "fastoad.models"
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"

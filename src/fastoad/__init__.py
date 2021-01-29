@@ -11,16 +11,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 
 from pkg_resources import get_distribution, DistributionNotFound
 
 from .cmd import api
 from .module_management import BundleLoader
 from .plugins import load_plugins
-from .register import register_openmdao_systems
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 try:
     # Change here if project is renamed and does not equal the package name
@@ -30,8 +26,5 @@ except DistributionNotFound:
     __version__ = "unknown"
 finally:
     del get_distribution, DistributionNotFound
-
-# Register modules
-register_openmdao_systems()
 
 load_plugins()
