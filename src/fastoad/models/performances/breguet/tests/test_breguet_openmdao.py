@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +15,6 @@ import openmdao.api as om
 from numpy.testing import assert_allclose
 from scipy.constants import foot
 
-from fastoad import BundleLoader
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import (
@@ -85,7 +84,6 @@ def test_breguet():
 
 
 def test_breguet_with_rubber_engine():
-    print(BundleLoader().get_factory_names())
     ivc = om.IndepVarComp()
     ivc.add_output("data:mission:sizing:main_route:cruise:altitude", 35000, units="ft")
     ivc.add_output("data:TLAR:cruise_mach", 0.78)
