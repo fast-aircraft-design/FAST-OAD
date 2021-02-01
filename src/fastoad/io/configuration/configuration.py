@@ -23,7 +23,6 @@ import openmdao.api as om
 import tomlkit
 
 from fastoad.io import IVariableIOFormatter
-from fastoad.module_management import OpenMDAOSystemRegistry
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.utils.files import make_parent_dir
 from .exceptions import (
@@ -31,6 +30,7 @@ from .exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
     FASTConfigurationError,
 )
+from ...module_management.service_registry import RegisterOpenMDAOSystem
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -147,7 +147,7 @@ class FASTOADProblemConfigurator:
             if not pth.exists(folder_path):
                 _LOGGER.warning("SKIPPED %s: it does not exist.")
             else:
-                OpenMDAOSystemRegistry.explore_folder(folder_path)
+                RegisterOpenMDAOSystem.explore_folder(folder_path)
 
     def save(self, filename: str = None):
         """
@@ -235,7 +235,7 @@ class FASTOADProblemConfigurator:
             if KEY_COMPONENT_ID in model_definition:
                 # The defined model is only one system
                 system_id = model_definition[KEY_COMPONENT_ID]
-                sub_component = OpenMDAOSystemRegistry.get_system(system_id)
+                sub_component = RegisterOpenMDAOSystem.get_system(system_id)
                 model.add_subsystem("system", sub_component, promotes=["*"])
             else:
                 # The defined model is a group
@@ -281,7 +281,7 @@ class FASTOADProblemConfigurator:
                         ):
                             options[name] = pth.join(conf_dirname, option_value)
 
-                    sub_component = OpenMDAOSystemRegistry.get_system(identifier, options=options)
+                    sub_component = RegisterOpenMDAOSystem.get_system(identifier, options=options)
                     group.add_subsystem(key, sub_component, promotes=["*"])
                 else:
                     # It is a Group

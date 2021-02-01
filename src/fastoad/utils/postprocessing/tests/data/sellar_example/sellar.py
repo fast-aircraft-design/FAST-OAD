@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-  Sellar openMDAO group
-"""
+"""Sellar openMDAO group"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -90,7 +87,7 @@ class Sellar(Group):
     def setup(self):
         indeps = self.add_subsystem("indeps", IndepVarComp(), promotes=["*"])
         indeps.add_output("x", 2)
-        indeps.add_output("z", [5, 2])
+        indeps.add_output("z", [5, 2], units="m**2")
         self.add_subsystem(
             "Disc1", self._sellar_factory.create_disc1(), promotes=["x", "z", "y1", "y2"]
         )

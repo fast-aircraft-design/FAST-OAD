@@ -15,4 +15,3 @@ Management of modules using Pelix/iPOPO
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .bundle_loader import BundleLoader
-from .openmdao_system_registry import OpenMDAOSystemRegistry

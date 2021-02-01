@@ -11,13 +11,14 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from enum import Enum
 
 # Services
 SERVICE_OPENMDAO_SYSTEM = "fast.openmdao.system"
 SERVICE_PROPULSION_WRAPPER = "fastoad.wrapper.propulsion"
 
-# Properties for OpenMDAOSystemRegistry
+# Properties for RegisterOpenMDAOSystem
 OPTION_PROPERTY_NAME = "OPTIONS"
 DESCRIPTION_PROPERTY_NAME = "DESCRIPTION"
 DOMAIN_PROPERTY_NAME = "DOMAIN"

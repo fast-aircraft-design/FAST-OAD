@@ -1,4 +1,7 @@
-"""Sellar discipline 1"""
+"""
+Demonstrates the alternate way register components in RegisterOpenMDAOSystem.
+The main way would be to use the decorator directly on class definition.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,24 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .disc1_base import Disc1Base
+from .functions import Functions
 
-
-@RegisterOpenMDAOSystem("sellar.disc1", domain=ModelDomain.OTHER, desc="some text")
-class Disc1(Disc1Base):
-    """ An OpenMDAO component to encapsulate Disc1 discipline """
-
-    # pylint: disable=invalid-name
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """
-        Evaluates the equation
-        y1 = z1**2 + z2 + x1 - 0.2*y2
-        """
-        z1 = inputs["z"][0]
-        z2 = inputs["z"][1]
-        x1 = inputs["x"]
-        y2 = inputs["y2"]
-
-        outputs["y1"] = z1 ** 2 + z2 + x1 - 0.2 * y2
+RegisterOpenMDAOSystem("sellar.functions", desc="some text", options={"best_doctor": 11})(Functions)

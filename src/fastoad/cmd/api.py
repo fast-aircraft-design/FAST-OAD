@@ -35,8 +35,8 @@ from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
-from fastoad.module_management import BundleLoader, OpenMDAOSystemRegistry
-from fastoad.module_management.service_registry import RegisterPropulsion
+from fastoad.module_management import BundleLoader
+from fastoad.module_management.service_registry import RegisterPropulsion, RegisterOpenMDAOSystem
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
@@ -258,10 +258,10 @@ def list_systems(
     else:
         out_file = out
     out_file.writelines(["== AVAILABLE SYSTEM IDENTIFIERS " + "=" * 68 + "\n", "-" * 100 + "\n"])
-    for identifier in sorted(OpenMDAOSystemRegistry.get_system_ids()):
+    for identifier in sorted(RegisterOpenMDAOSystem.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
-        domain = OpenMDAOSystemRegistry.get_system_domain(identifier)
-        description = OpenMDAOSystemRegistry.get_system_description(identifier)
+        domain = RegisterOpenMDAOSystem.get_provider_domain(identifier)
+        description = RegisterOpenMDAOSystem.get_provider_description(identifier)
         if description is None:
             description = ""
         out_file.write("  IDENTIFIER:   %s\n" % identifier)
@@ -274,9 +274,9 @@ def list_systems(
     out_file.writelines(
         ["\n== AVAILABLE PROPULSION WRAPPER IDENTIFIERS " + "=" * 56 + "\n", "-" * 100 + "\n"]
     )
-    for identifier in sorted(RegisterPropulsion.get_model_ids()):
+    for identifier in sorted(RegisterPropulsion.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
-        description = RegisterPropulsion.get_service_description(identifier)
+        description = RegisterPropulsion.get_provider_description(identifier)
         if description is None:
             description = ""
         out_file.write("  IDENTIFIER:   %s\n" % identifier)

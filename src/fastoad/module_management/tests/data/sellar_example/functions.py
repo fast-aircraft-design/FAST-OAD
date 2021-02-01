@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    Sellar discipline 2
-"""
+"""Sellar functions"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,27 +11,26 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from .disc2_base import Disc2Base
+
+from math import exp
+
+from .functions_base import FunctionsBase
 
 
-class Disc2(Disc2Base):
-    """ An OpenMDAO component to encapsulate Disc2 discipline """
+# @RegisterOpenMDAOSystem("sellar.functions", desc="some text", options={"best_doctor": 11})
+# Instead of being registered with the decorator above, this class is registered
+# in register_components.py to test this alternate way
+class Functions(FunctionsBase):
+    """ An OpenMDAO component to encapsulate Functions discipline """
 
-    # pylint: disable=invalid-name
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """
-        Evaluates the equation
-        y2 = y1**(.5) + z1 + z2
-        """
+        """ Functions computation """
 
-        z1 = inputs["z"][0]
         z2 = inputs["z"][1]
+        x1 = inputs["x"]
         y1 = inputs["y1"]
+        y2 = inputs["y2"]
 
-        # Note: this may cause some issues. However, y1 is constrained to be
-        # above 3.16, so lets just let it converge, and the optimizer will
-        # throw it out
-        if y1.real < 0.0:
-            y1 *= -1
-
-        outputs["y2"] = y1 ** 0.5 + z1 + z2
+        outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2)
+        outputs["g1"] = 3.16 - y1
+        outputs["g2"] = y2 - 24.0

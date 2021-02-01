@@ -24,8 +24,11 @@ from .data.sellar_example.disc2 import Disc2
 from .data.sellar_example.sellar import Sellar, ISellarFactory
 from .. import BundleLoader
 from ..constants import SERVICE_OPENMDAO_SYSTEM, ModelDomain
-from ..exceptions import FastBadSystemOptionError, FastBundleLoaderUnknownFactoryNameError
-from ..openmdao_system_registry import OpenMDAOSystemRegistry as Registry
+from ..exceptions import (
+    FastBadSystemOptionError,
+    FastBundleLoaderUnknownFactoryNameError,
+)
+from ..service_registry import RegisterOpenMDAOSystem
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -34,7 +37,7 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 @pytest.fixture(scope="module")
 def load():
     """ Loads components """
-    Registry.explore_folder(pth.join(DATA_FOLDER_PATH, "sellar_example"))
+    RegisterOpenMDAOSystem.explore_folder(pth.join(DATA_FOLDER_PATH, "sellar_example"))
 
 
 def test_components_alone(load):
@@ -53,10 +56,14 @@ def test_get_system(load):
 
     # Get component 1 #########################################################
     # Tests also the definition of model domain
-    disc1_component = Registry.get_system("sellar.disc1")
-    assert Registry.get_system_domain("sellar.disc1").value == ModelDomain.OTHER.value
-    assert Registry.get_system_domain(disc1_component).value == ModelDomain.OTHER.value
-    assert Registry.get_system_description(disc1_component) == "some text"
+    disc1_component = RegisterOpenMDAOSystem.get_system("sellar.disc1")
+    assert (
+        RegisterOpenMDAOSystem.get_provider_domain("sellar.disc1").value == ModelDomain.OTHER.value
+    )
+    assert (
+        RegisterOpenMDAOSystem.get_provider_domain(disc1_component).value == ModelDomain.OTHER.value
+    )
+    assert RegisterOpenMDAOSystem.get_provider_description(disc1_component) == "some text"
     assert disc1_component is not None
     disc1_component.setup()
     outputs = {}
@@ -66,12 +73,20 @@ def test_get_system(load):
     # Get component 2 #########################################################
     # Tests also the transmission of options
     with pytest.raises(FastBadSystemOptionError):
-        disc2_component = Registry.get_system("sellar.disc2", options={"not_declared": -1})
+        disc2_component = RegisterOpenMDAOSystem.get_system(
+            "sellar.disc2", options={"not_declared": -1}
+        )
 
-    disc2_component = Registry.get_system("sellar.disc2", options={"answer": -1})
-    assert Registry.get_system_domain("sellar.disc2").value == ModelDomain.GEOMETRY.value
-    assert Registry.get_system_domain(disc2_component).value == ModelDomain.GEOMETRY.value
-    assert Registry.get_system_description(disc2_component) == Disc2.__doc__
+    disc2_component = RegisterOpenMDAOSystem.get_system("sellar.disc2", options={"answer": -1})
+    assert (
+        RegisterOpenMDAOSystem.get_provider_domain("sellar.disc2").value
+        == ModelDomain.GEOMETRY.value
+    )
+    assert (
+        RegisterOpenMDAOSystem.get_provider_domain(disc2_component).value
+        == ModelDomain.GEOMETRY.value
+    )
+    assert RegisterOpenMDAOSystem.get_provider_description(disc2_component) == Disc2.__doc__
     assert (
         disc2_component.options["answer"] == 42
     )  # still the initial value as setup() has not been run
@@ -84,11 +99,19 @@ def test_get_system(load):
     # Get component 2 bis #####################################################
     # Tests the transmission of options at registration
     with pytest.raises(FastBadSystemOptionError):
-        functions_component = Registry.get_system("sellar.functions", options={"not_declared": -1})
+        functions_component = RegisterOpenMDAOSystem.get_system(
+            "sellar.functions", options={"not_declared": -1}
+        )
 
-    functions_component = Registry.get_system("sellar.functions")
-    assert Registry.get_system_domain("sellar.functions").value == ModelDomain.UNSPECIFIED.value
-    assert Registry.get_system_domain(functions_component).value == ModelDomain.UNSPECIFIED.value
+    functions_component = RegisterOpenMDAOSystem.get_system("sellar.functions")
+    assert (
+        RegisterOpenMDAOSystem.get_provider_domain("sellar.functions").value
+        == ModelDomain.UNSPECIFIED.value
+    )
+    assert (
+        RegisterOpenMDAOSystem.get_provider_domain(functions_component).value
+        == ModelDomain.UNSPECIFIED.value
+    )
     assert (
         functions_component.options["best_doctor"] == 10
     )  # still the initial value as setup() has not been run
@@ -97,12 +120,12 @@ def test_get_system(load):
 
     # Get unknown component ###################################################
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
-        Registry.get_system("unknown.identifier")
+        RegisterOpenMDAOSystem.get_system("unknown.identifier")
 
 
 def test_sellar(load):
     """
-    Demonstrates usage of OpenMDAOSystemRegistry in a simple Sellar problem
+    Demonstrates usage of RegisterOpenMDAOSystem in a simple Sellar problem
     """
 
     def sellar_setup(sellar_instance: Sellar):
@@ -135,25 +158,25 @@ def test_sellar(load):
 
     class SellarComponentProviderByFast(ISellarFactory):
         """
-        Provides Sellar components using OpenMDAOSystemRegistry
+        Provides Sellar components using RegisterOpenMDAOSystem
         """
 
         @staticmethod
         def create_disc1():
-            return Registry.get_system("sellar.disc1")
+            return RegisterOpenMDAOSystem.get_system("sellar.disc1")
 
         @staticmethod
         def create_disc2():
-            return Registry.get_system("sellar.disc2")
+            return RegisterOpenMDAOSystem.get_system("sellar.disc2")
 
         @staticmethod
         def create_functions():
-            return Registry.get_system("sellar.functions")
+            return RegisterOpenMDAOSystem.get_system("sellar.functions")
 
     classical_problem = sellar_setup(Sellar())  # Reference
     fastoad_problem = sellar_setup(
         Sellar(SellarComponentProviderByFast)
-    )  # Using OpenMDAOSystemRegistry
+    )  # Using RegisterOpenMDAOSystem
 
     classical_problem.run_driver()
     assert classical_problem["f"] != fastoad_problem["f"]  # fastoad_problem has not run yet

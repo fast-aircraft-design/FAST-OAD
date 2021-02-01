@@ -12,78 +12,257 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List
+import logging
+from types import MethodType
+from typing import List, TypeVar, Type, Union, Any
 
-from pelix.ipopo.decorators import ComponentFactory, Provides, Property
+from openmdao.core.system import System
 
 from fastoad.models.propulsion import IOMPropulsionWrapper
-from fastoad.module_management import BundleLoader
-from fastoad.module_management.constants import (
+from .bundle_loader import BundleLoader
+from .constants import (
     SERVICE_PROPULSION_WRAPPER,
     DESCRIPTION_PROPERTY_NAME,
+    SERVICE_OPENMDAO_SYSTEM,
+    OPTION_PROPERTY_NAME,
+    DOMAIN_PROPERTY_NAME,
+    ModelDomain,
 )
-from fastoad.module_management.exceptions import FastIncompatibleServiceClass
+from .exceptions import FastBadSystemOptionError, FastIncompatibleServiceClassError
+
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
+T = TypeVar("T")
 
 
 class RegisterService:
-    # FIXME: the content of this class and of OpenMDAOSystemRegistry should be unified.
-    def __init__(self, provider_id: str, service_id: str, base_class: type = None, desc=None):
+    """
+    Decorator class that allows to register a service, associated to a base class (or interface).
+
+    The registered class must inherit from this base class.
+
+    The definition of the base class is done by subclassing, e.g.::
+
+        class RegisterSomeService( RegisterService, base_class=ISomeService):
+            "Allows to register classes that implement interface ISomeService."
+
+
+    Then basic registering of a class is done with::
+
+        @RegisterSomeService("my.particularservice")
+        class ParticularService(ISomeService):
+            ...
+    """
+
+    _base_class: type
+    service_id: str
+    _loader = BundleLoader()
+
+    @classmethod
+    def __init_subclass__(
+        cls, *, base_class: type = object, service_id: str = None, domain: ModelDomain = None,
+    ):
         """
-        Decorator class that allows to register a service.
 
-        The service can be associated to a base class (or interface). Then all registered
-        classes must inherit from this base class.
+        :param base_class: the base class that shall be parent to all registered classes
+        :param service_id: the identifier of the service. If not provided, it will be automatically
+                           set.
+        :param domain: a category that can be associated to the registered service
+        """
 
-        Warning: the module must be started as an iPOPO bundle for the decorator to work.
+        cls._base_class = base_class
 
+        if service_id:
+            cls.service_id = service_id
+        else:
+            cls.service_id = "%s.%s" % (__name__, cls.__name__)
+
+        cls._domain = domain
+
+    def __init__(
+        self, provider_id: str, desc=None, domain: ModelDomain = None, options: dict = None
+    ):
+        """
         :param provider_id: the identifier of the service provider to register
-        :param service_id: the identifier of the service
-        :param base_class: the class that should be parent to the registered class
         :param desc: description of the service. If not provided, the docstring will be used.
+        :param domain: a category for the registered service provider
+        :param options: a dictionary of options that can be associated to the service provider
         """
         self._id = provider_id
-        self._service_id = service_id
-        self._base_class = base_class
         self._desc = desc
+        self._options = options
+        if domain:
+            self._domain = domain
 
-    def __call__(self, service_class: type) -> type:
-        if self._base_class and not issubclass(service_class, self._base_class):
-            raise FastIncompatibleServiceClass(service_class, self._service_id, self._base_class)
+    def __call__(self, service_class: Type[T]) -> Type[T]:
 
-        if self._desc:
-            prop = Property(DESCRIPTION_PROPERTY_NAME, None, self._desc)
-        else:
-            prop = Property(DESCRIPTION_PROPERTY_NAME, None, service_class.__doc__)
+        if not issubclass(service_class, self._base_class):
+            raise FastIncompatibleServiceClassError(
+                service_class, self.service_id, self._base_class
+            )
 
-        return ComponentFactory(self._id)(prop(Provides(self._service_id)(service_class)))
+        properties = {
+            DOMAIN_PROPERTY_NAME: self._domain if self._domain else ModelDomain.UNSPECIFIED,
+            DESCRIPTION_PROPERTY_NAME: self._desc if self._desc else service_class.__doc__,
+            OPTION_PROPERTY_NAME: self._options if self._options else {},
+        }
 
-    @classmethod
-    def get_service_description(cls, service_id: str) -> str:
-        """
-
-        :param service_id: an identifier of a registered service
-        :return: the description associated to given system or system identifier
-        """
-
-        return BundleLoader().get_factory_property(service_id, DESCRIPTION_PROPERTY_NAME)
-
-
-class RegisterPropulsion(RegisterService):
-    def __init__(self, model_id, desc=None):
-        """
-        Decorator class for registering a propulsion-dedicated model.
-
-        Warning: the module must be started as an iPOPO bundle for the decorator to work.
-
-        :param model_id: the identifier of the propulsion model
-        :param desc: description of the model. If not provided, the docstring will be used.
-        """
-        super().__init__(model_id, SERVICE_PROPULSION_WRAPPER, IOMPropulsionWrapper, desc=desc)
+        return self._loader.register_factory(service_class, self._id, self.service_id, properties)
 
     @classmethod
-    def get_model_ids(cls) -> List[str]:
+    def explore_folder(cls, folder_path: str):
+        """
+        Explores provided folder and looks for service providers to register.
+
+        :param folder_path:
+        """
+        cls._loader.install_packages(folder_path)
+
+    @classmethod
+    def get_provider_ids(cls) -> List[str]:
+        """
+        :return: the list of identifiers of providers of the service.
+        """
+        return cls._loader.get_factory_names(cls.service_id)
+
+    @classmethod
+    def get_provider(cls, service_provider_id: str, options: dict = None) -> Any:
+        """
+        Instantiates the desired service provider.
+
+        :param service_provider_id: identifier of a registered service provider
+        :param options: options that should be associated to the created instance
+        :return: the created instance
         """
 
-        :return: the list of identifiers for registered propulsion models.
+        properties = cls._loader.get_factory_properties(service_provider_id).copy()
+
+        if options:
+            properties[OPTION_PROPERTY_NAME] = properties[OPTION_PROPERTY_NAME].copy()
+            properties[OPTION_PROPERTY_NAME].update(options)
+
+        return cls._loader.instantiate_component(service_provider_id, properties)
+
+    @classmethod
+    def get_provider_description(cls, instance_or_id: Union[str, T]) -> str:
         """
-        return BundleLoader().get_factory_names(SERVICE_PROPULSION_WRAPPER)
+        :param instance_or_id: an identifier or an instance of a registered service provider
+        :return: the description associated to given instance or identifier
+        """
+
+        return cls._get_provider_property(instance_or_id, DESCRIPTION_PROPERTY_NAME)
+
+    @classmethod
+    def get_provider_domain(cls, instance_or_id: Union[str, System]) -> ModelDomain:
+        """
+        :param instance_or_id: an identifier or an instance of a registered service provider
+        :return: the model domain associated to given instance or identifier
+        """
+        return cls._get_provider_property(instance_or_id, DOMAIN_PROPERTY_NAME)
+
+    @classmethod
+    def _get_provider_property(cls, instance_or_id: Any, property_name: str) -> Any:
+        """
+        :param instance_or_id: an identifier or an instance of a registered service provider
+        :param property_name:
+        :return: the property value associated to given instance or identifier
+        """
+
+        if isinstance(instance_or_id, str):
+            return cls._loader.get_factory_property(instance_or_id, property_name)
+
+        return cls._loader.get_instance_property(instance_or_id, property_name)
+
+
+class RegisterPropulsion(
+    RegisterService,
+    base_class=IOMPropulsionWrapper,
+    service_id=SERVICE_PROPULSION_WRAPPER,
+    domain=ModelDomain.PROPULSION,
+):
+    """
+    Decorator class for registering an OpenMDAO wrapper of a propulsion-dedicated model.
+    """
+
+
+class RegisterOpenMDAOSystem(
+    RegisterService, base_class=System, service_id=SERVICE_OPENMDAO_SYSTEM
+):
+    """
+    Decorator class for registering an OpenMDAO system for use in FAST-OAD configuration.
+    """
+
+    @classmethod
+    def get_system(cls, identifier: str, options: dict = None) -> System:
+        """
+        Specialized version of :meth:`RegisterService.get_provider` that allows to
+        define OpenMDAO options on-the-fly.
+
+        :param identifier: identifier of the registered class
+        :param options: option values at system instantiation
+        :return: an OpenMDAO system instantiated from the registered class
+        """
+
+        system = super().get_provider(identifier, options)
+
+        # Before making the system available to get options from OPTION_PROPERTY_NAME,
+        # check that options are valid to avoid failure at setup()
+        options = getattr(system, "_" + OPTION_PROPERTY_NAME, None)
+        if options:
+            invalid_options = [name for name in options if name not in system.options]
+            if invalid_options:
+                raise FastBadSystemOptionError(identifier, invalid_options)
+
+        decorated_system = _option_decorator(system)
+        return decorated_system
+
+
+def _option_decorator(instance: System) -> System:
+    """
+    Decorates provided OpenMDAO instance so that instance.options are populated
+    using iPOPO property named after OPTION_PROPERTY_NAME constant.
+
+    :param instance: the instance to decorate
+    :return: the decorated instance
+    """
+
+    # Rationale:
+    #   The idea here is to populate the options at `setup()` time while keeping
+    #   all the operations that are in the original `setup()` of the class.
+    #
+    #   This could have been done by making all our OpenMDAO classes inherit from
+    #   a base class where the option values are retrieved, but modifying each
+    #   OpenMDAO class looks overkill. Moreover, it would add to them a dependency
+    #   to FAST-OAD after having avoided to introduce dependencies outside OpenMDAO.
+    #   Last but not least, we would need future contributor to stick to this practice
+    #   of inheritance.
+    #
+    #   Therefore, the most obvious alternative is a decorator. In this decorator, we
+    #   could have produced a new instance of the same class that has its own `setup()`
+    #   that calls the original `setup()` (i.e. the original Decorator pattern AIUI)
+    #   but the new instance would be out of iPOPO's scope.
+    #   So we just modify the original instance where we need to "replace"
+    #   the `setup()` method to have our code called automagically, without losing the
+    #   initial code of `setup()` where there is probably important things. So the trick
+    #   is to rename the original `setup()` as `__setup_before_option_decorator()`, and create a
+    #   new `setup()` that does its job and then calls `__setup_before_option_decorator()`.
+
+    def setup(self):
+        """ Will replace the original setup() method"""
+
+        # Use values from iPOPO option properties
+        option_dict = getattr(self, "_" + OPTION_PROPERTY_NAME, None)
+        if option_dict:
+            for name, value in option_dict.items():
+                self.options[name] = value
+
+        # Call the original setup method
+        self.__setup_before_option_decorator()
+
+    # Move the (already bound) method "setup" to "__setup_before_option_decorator"
+    setattr(instance, "__setup_before_option_decorator", instance.setup)
+
+    # Create and bind the new "setup" method
+    setup_method = MethodType(setup, instance)
+    setattr(instance, "setup", setup_method)
+
+    return instance

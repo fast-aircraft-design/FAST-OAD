@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-    Sellar discipline 1
-"""
+"""Sellar functions"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -19,13 +16,23 @@ import numpy as np
 from openmdao.api import ExplicitComponent
 
 
-class Disc1Base(ExplicitComponent):
-    """ An OpenMDAO base component to encapsulate Disc1 discipline """
+class FunctionsBase(ExplicitComponent):
+    """ An OpenMDAO base component to encapsulate Functions discipline """
+
+    def initialize(self):
+        self.options.declare("best_doctor", 10)
 
     def setup(self):
-        self.add_input("x", val=np.nan, desc="")  # NaN as default for testing connexion check
-        self.add_input("z", val=[5, 2], desc="", units="m**2")  # for testing non-None units
+        self.add_input("x", val=2, desc="")
+        self.add_input(
+            "z", val=[np.nan, np.nan], desc="", units="m**2"
+        )  # NaN as default for testing connexion check
+        self.add_input("y1", val=1.0, desc="")
         self.add_input("y2", val=1.0, desc="")
 
-        self.add_output("y1", val=1.0, desc="")
+        self.add_output("f", val=1.0, desc="")
+
+        self.add_output("g1", val=1.0, desc="")
+
+        self.add_output("g2", val=1.0, desc="")
         self.declare_partials("*", "*", method="fd")
