@@ -27,8 +27,8 @@ class Functions(FunctionsBase):
 
         z2 = inputs["z"][1]
         x1 = inputs["x"]
-        y1 = inputs["y1"]
-        y2 = inputs["y2"]
+        y1 = inputs["yy1"]
+        y2 = inputs["yy2"]
 
         outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2)
         outputs["g1"] = 3.16 - y1

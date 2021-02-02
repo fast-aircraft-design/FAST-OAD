@@ -12,6 +12,12 @@ output_file = "../results/outputs.xml"
 
 driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 [model]
+    [[model.connection]]
+        source = "y1"
+        target = "yy1"
+    [[model.connection]]
+        source = "y2"
+        target = "yy2"
     [model.cycle]
         nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
         linear_solver = "om.ScipyKrylov()"

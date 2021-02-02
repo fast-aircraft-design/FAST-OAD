@@ -28,8 +28,8 @@ class FunctionsBase(ExplicitComponent):
         self.add_input(
             "z", val=[np.nan, np.nan], desc="", units="m**2"
         )  # NaN as default for testing connexion check
-        self.add_input("y1", val=1.0, desc="")
-        self.add_input("y2", val=1.0, desc="")
+        self.add_input("yy1", val=1.0, desc="")
+        self.add_input("yy2", val=1.0, desc="")
 
         self.add_output("f", val=1.0, desc="")
 
