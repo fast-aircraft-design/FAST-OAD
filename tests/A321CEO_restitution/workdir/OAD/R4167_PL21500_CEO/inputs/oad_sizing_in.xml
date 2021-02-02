@@ -32,7 +32,7 @@
       <horizontal_tail>
         <aspect_ratio is_input="True">4.28778048454<!--aspect ratio of horizontal tail--></aspect_ratio>
         <sweep_25 units="deg" is_input="True">28.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
-        <taper_ratio is_input="True">0.30<!--taper ratio of horizontal tail--></taper_ratio>
+        <taper_ratio is_input="True">0.3<!--taper ratio of horizontal tail--></taper_ratio>
         <thickness_ratio is_input="True">0.1<!--thickness ratio of horizontal tail--></thickness_ratio>
       </horizontal_tail>
       <propulsion>
@@ -53,7 +53,7 @@
         <thickness_ratio is_input="True">0.1<!--thickness ratio of vertical tail--></thickness_ratio>
       </vertical_tail>
       <wing>
-        <aspect_ratio is_input="True">9.48<!--wing aspect ratio--></aspect_ratio>
+        <aspect_ratio is_input="True">9.24<!--wing aspect ratio--></aspect_ratio>
         <sweep_25 units="deg" is_input="True">25.0<!--sweep angle at 25% chord of wing--></sweep_25>
         <taper_ratio is_input="True">0.38<!--taper ratio of wing--></taper_ratio>
         <kink>
@@ -61,7 +61,7 @@
         </kink>
         <MAC>
           <at25percent>
-            <x units="m" is_input="True">19.94<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
+            <x units="m" is_input="True">20.5<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
           </at25percent>
         </MAC>
         <spar_ratio>
@@ -84,7 +84,7 @@
         <thrust_rate is_input="True">0.93</thrust_rate>
       </climb>
       <descent>
-        <thrust_rate is_input="True">0.17</thrust_rate>
+        <thrust_rate is_input="True">0.16</thrust_rate>
       </descent>
       <initial_climb>
         <thrust_rate is_input="True">1.0</thrust_rate>
@@ -95,7 +95,7 @@
         <delta_t4_cruise is_input="True">-100.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_cruise>
         <design_altitude units="m" is_input="True">10058.4<!--design altitude for rubber engine model--></design_altitude>
         <maximum_mach is_input="True">0.85<!--maximum Mach number for rubber engine model--></maximum_mach>
-        <overall_pressure_ratio is_input="True">35.2<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
+        <overall_pressure_ratio is_input="True">33.5<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
         <turbine_inlet_temperature units="K" is_input="True">1633.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
       </rubber_engine>
       <taxi>
@@ -198,7 +198,7 @@
         </fuselage>
         <landing_gear>
           <front>
-            <weight_ratio is_input="True">0.05<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
+            <weight_ratio is_input="True">0.06<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
           </front>
         </landing_gear>
         <wing>
@@ -259,7 +259,7 @@
           </CD>
           <CL>
             <double_slot_effect>
-              <k is_input="True">1.05</k>
+              <k is_input="True">1.10</k>
             </double_slot_effect>
           </CL>
         </landing>
@@ -334,7 +334,7 @@
           </ribs>
           <secondary_parts>
             <mass>
-              <k is_input="True">1.0<!--wing secondary parts (A15): correction ratio to be applied on computed mass--></k>
+              <k is_input="True">1.01<!--wing secondary parts (A15): correction ratio to be applied on computed mass--></k>
               <offset units="kg" is_input="True">0.0<!--wing secondary parts (A15): correction offset to be applied on computed mass--></offset>
             </mass>
           </secondary_parts>
