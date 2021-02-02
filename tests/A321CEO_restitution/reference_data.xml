@@ -30,7 +30,7 @@
                 0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
             <aircraft>
                 <wetted_area units="m**2" is_input="False">
-                    774.6603519386925<!--total wetted area--></wetted_area>
+                    877.0765790595314<!--total wetted area--></wetted_area>
             </aircraft>
             <cabin>
                 <NPAX1 is_input="False">

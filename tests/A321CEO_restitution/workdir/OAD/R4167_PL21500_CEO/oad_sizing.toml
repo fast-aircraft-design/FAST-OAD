@@ -41,8 +41,8 @@ output_file = "./outputs/oad_sizing_out.xml"
         adjust_fuel = true
         is_sizing = true
         initial_iterations = 2
-   # [model.hq_tail_sizing]
-   #     id = "fastoad.handling_qualities.tail_sizing"
+    [model.hq_tail_sizing]
+        id = "fastoad.handling_qualities.tail_sizing"
     [model.hq_static_margin]
         id = "fastoad.handling_qualities.static_margin"
     [model.wing_area]

@@ -30,19 +30,10 @@
         <span_ratio is_input="True">0.8<!--ratio (width of flaps)/(total span)--></span_ratio>
       </flap>
       <horizontal_tail>
-        <area units="m**2" is_input="True">31.8721103451862<!--horizontal tail area--></area>
         <aspect_ratio is_input="True">4.28778048454<!--aspect ratio of horizontal tail--></aspect_ratio>
         <sweep_25 units="deg" is_input="True">28.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
-        <taper_ratio is_input="True">0.3<!--taper ratio of horizontal tail--></taper_ratio>
+        <taper_ratio is_input="True">0.30<!--taper ratio of horizontal tail--></taper_ratio>
         <thickness_ratio is_input="True">0.1<!--thickness ratio of horizontal tail--></thickness_ratio>
-        <wetted_area units="m**2" is_input="True">63.7442206903724<!--wetted area of horizontal tail--></wetted_area>
-        <MAC>
-          <at25percent>
-            <x>
-              <from_wingMAC25 units="m" is_input="True">20.48<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
-            </x>
-          </at25percent>
-        </MAC>
       </horizontal_tail>
       <propulsion>
         <layout is_input="True">1.0<!--position of engines (1=under the wing / 2=rear fuselage)--></layout>
@@ -56,12 +47,10 @@
         <span_ratio is_input="True">0.9<!--ratio (width of slats)/(total span)--></span_ratio>
       </slat>
       <vertical_tail>
-        <area units="m**2" is_input="True">25.73475105077482<!--vertical tail area--></area>
         <aspect_ratio is_input="True">1.74462618632<!--aspect ratio of vertical tail--></aspect_ratio>
         <sweep_25 units="deg" is_input="True">35.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
-        <taper_ratio is_input="True">0.3<!--taper ratio of vertical tail--></taper_ratio>
+        <taper_ratio is_input="True">0.30<!--taper ratio of vertical tail--></taper_ratio>
         <thickness_ratio is_input="True">0.1<!--thickness ratio of vertical tail--></thickness_ratio>
-        <wetted_area units="m**2" is_input="True">54.04297720662712<!--wetted area of vertical tail--></wetted_area>
       </vertical_tail>
       <wing>
         <aspect_ratio is_input="True">9.48<!--wing aspect ratio--></aspect_ratio>
@@ -72,7 +61,7 @@
         </kink>
         <MAC>
           <at25percent>
-            <x units="m" is_input="True">20.27<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
+            <x units="m" is_input="True">19.94<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
           </at25percent>
         </MAC>
         <spar_ratio>
@@ -95,7 +84,7 @@
         <thrust_rate is_input="True">0.93</thrust_rate>
       </climb>
       <descent>
-        <thrust_rate is_input="True">0.18</thrust_rate>
+        <thrust_rate is_input="True">0.17</thrust_rate>
       </descent>
       <initial_climb>
         <thrust_rate is_input="True">1.0</thrust_rate>
@@ -179,7 +168,22 @@
     </mission>
   </data>
   <settings>
+    <geometry>
+      <horizontal_tail>
+        <position_ratio_on_fuselage is_input="True">0.91</position_ratio_on_fuselage>
+      </horizontal_tail>
+    </geometry>
     <weight>
+      <aircraft>
+        <CG>
+          <range is_input="True">0.3<!--distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)--></range>
+          <aft>
+            <MAC_position>
+              <margin is_input="True">0.05</margin>
+            </MAC_position>
+          </aft>
+        </CG>
+      </aircraft>
       <airframe>
         <flight_controls>
           <mass>
@@ -194,7 +198,7 @@
         </fuselage>
         <landing_gear>
           <front>
-            <weight_ratio is_input="True">0.08<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
+            <weight_ratio is_input="True">0.05<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
           </front>
         </landing_gear>
         <wing>
@@ -211,15 +215,6 @@
           </mass>
         </power>
       </systems>
-      <aircraft>
-        <CG>
-          <aft>
-            <MAC_position>
-              <margin is_input="True">0.05</margin>
-            </MAC_position>
-          </aft>
-        </CG>
-      </aircraft>
     </weight>
   </settings>
   <tuning>
@@ -286,7 +281,7 @@
         </fuselage>
         <horizontal_tail>
           <mass>
-            <k is_input="True">1.0<!--horizontal tail (A31): correction ratio to be applied on computed mass--></k>
+            <k is_input="True">1.00<!--horizontal tail (A31): correction ratio to be applied on computed mass--></k>
             <offset units="kg" is_input="True">0.0<!--horizontal tail (A31): correction offset to be applied on computed mass--></offset>
           </mass>
         </horizontal_tail>
