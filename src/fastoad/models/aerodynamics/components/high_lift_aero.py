@@ -48,6 +48,12 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
             self.add_output("data:aerodynamics:high_lift_devices:takeoff:CL")
             self.add_output("data:aerodynamics:high_lift_devices:takeoff:CD")
 
+        self.add_input(
+            "tuning:aerodynamics:high_lift_devices:landing:CD:double_slot_effect:k", val=1.0
+        )
+        self.add_input(
+            "tuning:aerodynamics:high_lift_devices:landing:CL:double_slot_effect:k", val=1.0
+        )
         self.add_input("data:geometry:wing:sweep_0", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:sweep_100_outer", val=np.nan, units="rad")
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
@@ -67,7 +73,8 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
             flap_angle = inputs["data:mission:sizing:takeoff:flap_angle"]
             slat_angle = inputs["data:mission:sizing:takeoff:slat_angle"]
             mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
-
+        k_cd_slot = inputs["tuning:aerodynamics:high_lift_devices:landing:CD:double_slot_effect:k"]
+        k_cl_slot = inputs["tuning:aerodynamics:high_lift_devices:landing:CL:double_slot_effect:k"]
         le_sweep_angle = inputs["data:geometry:wing:sweep_0"]
         te_sweep_angle = inputs["data:geometry:wing:sweep_100_outer"]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
@@ -76,34 +83,42 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         slat_span_ratio = inputs["data:geometry:slat:span_ratio"]
 
         if self.options["landing_flag"]:
-            outputs["data:aerodynamics:high_lift_devices:landing:CL"] = self._get_delta_cl(
-                slat_angle,
-                flap_angle,
-                slat_span_ratio,
-                flap_span_ratio,
-                slat_chord_ratio,
-                flap_chord_ratio,
-                mach,
-                le_sweep_angle,
-                te_sweep_angle,
+            outputs["data:aerodynamics:high_lift_devices:landing:CL"] = (
+                k_cl_slot
+                * self._get_delta_cl(
+                    slat_angle,
+                    flap_angle,
+                    slat_span_ratio,
+                    flap_span_ratio,
+                    slat_chord_ratio,
+                    flap_chord_ratio,
+                    mach,
+                    le_sweep_angle,
+                    te_sweep_angle,
+                )
             )
-            outputs["data:aerodynamics:high_lift_devices:landing:CD"] = self._get_delta_cd(
-                slat_angle, flap_angle, slat_span_ratio, flap_span_ratio
+            outputs["data:aerodynamics:high_lift_devices:landing:CD"] = (
+                k_cd_slot
+                * self._get_delta_cd(slat_angle, flap_angle, slat_span_ratio, flap_span_ratio)
             )
         else:
-            outputs["data:aerodynamics:high_lift_devices:takeoff:CL"] = self._get_delta_cl(
-                slat_angle,
-                flap_angle,
-                slat_span_ratio,
-                flap_span_ratio,
-                slat_chord_ratio,
-                flap_chord_ratio,
-                mach,
-                le_sweep_angle,
-                te_sweep_angle,
+            outputs["data:aerodynamics:high_lift_devices:takeoff:CL"] = (
+                k_cl_slot
+                * self._get_delta_cl(
+                    slat_angle,
+                    flap_angle,
+                    slat_span_ratio,
+                    flap_span_ratio,
+                    slat_chord_ratio,
+                    flap_chord_ratio,
+                    mach,
+                    le_sweep_angle,
+                    te_sweep_angle,
+                )
             )
-            outputs["data:aerodynamics:high_lift_devices:takeoff:CD"] = self._get_delta_cd(
-                slat_angle, flap_angle, slat_span_ratio, flap_span_ratio
+            outputs["data:aerodynamics:high_lift_devices:takeoff:CD"] = (
+                k_cd_slot
+                * self._get_delta_cd(slat_angle, flap_angle, slat_span_ratio, flap_span_ratio)
             )
 
     def _get_delta_cl(
