@@ -2,7 +2,7 @@
 Module for managing OpenMDAO variables
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,21 +16,20 @@ Module for managing OpenMDAO variables
 
 import logging
 from copy import deepcopy
-from importlib.resources import open_text
-from typing import Dict, Hashable, List, Union
+from typing import Dict, Hashable, List, Union, Mapping, Iterable, Tuple
 
 import numpy as np
 import openmdao.api as om
 import pandas as pd
 from openmdao.core.system import System
 
-from . import resources
 from .utils import get_unconnected_input_names
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
+
 # Metadata that will be ignore when checking variable equality and when adding variable
 # to an OpenMDAO component
 METADATA_TO_IGNORE = [
@@ -99,12 +98,6 @@ class Variable(Hashable):
         """ Dictionary for metadata of the variable """
 
         # Initialize class attributes once at first instantiation -------------
-        if not self._variable_descriptions:
-            # Class attribute, but it's safer to initialize it at first instantiation
-            with open_text(resources, DESCRIPTION_FILENAME) as desc_io:
-                vars_descs = np.genfromtxt(desc_io, delimiter="\t", dtype=str)
-            self.__class__._variable_descriptions.update(vars_descs)
-
         if not self._base_metadata:
             # Get variable base metadata from an ExplicitComponent
             comp = om.ExplicitComponent()
@@ -134,6 +127,18 @@ class Variable(Hashable):
         # If no description, add one from DESCRIPTION_FILE_PATH, if available
         if not self.description and self.name in self._variable_descriptions:
             self.description = self._variable_descriptions[self.name]
+
+    @classmethod
+    def update_variable_descriptions(
+        cls, variable_descriptions: Union[Mapping[str, str], Iterable[Tuple[str, str]]]
+    ):
+        """
+        Updates description of variables.
+
+        :param variable_descriptions: dict-like object with variable names as keys and descriptions
+                                      as values
+        """
+        cls._variable_descriptions.update(variable_descriptions)
 
     @classmethod
     def get_openmdao_keys(cls):
