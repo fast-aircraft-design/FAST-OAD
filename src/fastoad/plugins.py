@@ -20,6 +20,7 @@ from importlib.resources import open_text, contents
 import numpy as np
 from pkg_resources import iter_entry_points
 
+from fastoad import BundleLoader
 from fastoad.openmdao.variables import DESCRIPTION_FILENAME, Variable
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -34,6 +35,7 @@ def load_plugins():
         entry_point.name: entry_point.load() for entry_point in iter_entry_points("fastoad.models")
     }
     for plugin_name, package in discovered_plugins.items():
+        _recursive_load(package.__name__)
         _LOGGER.info("Loaded FAST-OAD plugin %s", plugin_name)
         if DESCRIPTION_FILENAME in contents(package):
             try:
@@ -49,3 +51,28 @@ def load_plugins():
                 )
         else:
             _LOGGER.info("No variable description in plugin %s", plugin_name)
+
+
+def _recursive_load(package_name: str):
+    """
+    Recursively loads indicated package, which will register all classes that are decorated
+    with an iPOPO decorator or a RegisterSystem.
+
+    :param package_name:
+    """
+    try:
+        package_contents = contents(package_name)
+    except (TypeError, ModuleNotFoundError):
+        if package_name.endswith(".py"):
+            try:
+                bundle = BundleLoader().context.install_bundle(package_name[:-3])
+                bundle.stop()
+                bundle.start()
+                _LOGGER.info("Loaded %s" % package_name)
+            except:  # There can be plenty of good reasons to fail, so we just log it.
+                _LOGGER.info("Ignored %s" % package_name)
+
+        return
+
+    for item in package_contents:
+        _recursive_load(".".join([package_name, item]))
