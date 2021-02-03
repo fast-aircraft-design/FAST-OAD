@@ -1,0 +1,2 @@
+dummy:variable	Some dummy variable.
+dummy:variable2	Some other dummy variable.
