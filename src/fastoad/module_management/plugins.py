@@ -20,8 +20,8 @@ from importlib.resources import open_text, contents
 import numpy as np
 from pkg_resources import iter_entry_points
 
-from fastoad import BundleLoader
 from fastoad.openmdao.variables import DESCRIPTION_FILENAME, Variable
+from .bundle_loader import BundleLoader
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 

@@ -12,11 +12,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+from fastoad.module_management.plugins import load_plugins
 from pkg_resources import get_distribution, DistributionNotFound
 
 from .cmd import api
-from .module_management import BundleLoader
-from .plugins import load_plugins
 
 try:
     # Change here if project is renamed and does not equal the package name
