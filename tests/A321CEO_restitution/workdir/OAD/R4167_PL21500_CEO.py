@@ -51,6 +51,7 @@ from fastoad.utils.postprocessing.analysis_and_plots import (
 mission_name = "R4167_PL21500_CEO"
 
 A321CEO_INPUT_FILE = pth.join(pth.pardir, pth.pardir, "reference_data.xml")
+VARIANT_INPUT_FILE = pth.join(pth.pardir, pth.pardir, "reference_data.xml")
 
 WORK_FOLDER_PATH = mission_name
 OAD_SIZING_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_sizing.toml")
@@ -66,6 +67,9 @@ mkdir(OUTPUT_FOLDER_PATH)
 OAD_SIZING_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "oad_sizing.csv")
 OAD_WING_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "oad_sizing_wing.csv")
 FUEL_SIZING_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "fuel_sizing.csv")
+
+# Input files for derivatives from WV00
+VARIANT_INPUT_FILE = pth.join(OUTPUT_FOLDER_PATH, "oad_sizing_out.xml")
 
 # For having log messages on screen
 logging.basicConfig(level=logging.INFO, format="%(levelname)-8s: %(message)s")
@@ -230,21 +234,3 @@ mass_breakdown_sun_plot(problem.output_file_path)
 # %%
 
 wing_geometry_plot(problem.output_file_path, name="FAST-OAD A321")
-
-# %%
-"""
-## Fuel sizing wing imposed to A320 Shape
-"""
-
-# %%
-# input_file = api.generate_inputs(FUEL_SIZING_CONFIGURATION_FILE, A321CEO_INPUT_FILE, overwrite=True)
-input_file = pth.join(INPUT_FOLDER_PATH, "fuel_sizing_in.xml")
-api.variable_viewer(input_file, editable=True)
-
-# %%
-problem = api.evaluate_problem(FUEL_SIZING_CONFIGURATION_FILE, overwrite=True)
-
-# %%
-plot_results(FUEL_SIZING_CSV_FILE)
-
-# %%

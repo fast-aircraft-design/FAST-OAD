@@ -53,7 +53,7 @@
         <thickness_ratio is_input="True">0.1<!--thickness ratio of vertical tail--></thickness_ratio>
       </vertical_tail>
       <wing>
-        <aspect_ratio is_input="True">9.24<!--wing aspect ratio--></aspect_ratio>
+        <aspect_ratio is_input="True">9.48<!--wing aspect ratio--></aspect_ratio>
         <sweep_25 units="deg" is_input="True">25.0<!--sweep angle at 25% chord of wing--></sweep_25>
         <taper_ratio is_input="True">0.38<!--taper ratio of wing--></taper_ratio>
         <kink>
