@@ -1,5 +1,5 @@
 """
-Plugin system for module declaration.
+Plugin system for declaration of FAST-OAD models.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
@@ -16,8 +16,6 @@ Plugin system for module declaration.
 
 import logging
 from importlib.resources import open_text, contents
-from types import ModuleType
-from typing import Dict
 
 from pkg_resources import iter_entry_points
 
@@ -29,22 +27,18 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 MODEL_PLUGIN_ID = "fastoad_model"
 
 
-def load_plugins() -> Dict[str, ModuleType]:
+def load_plugins():
     """
     Loads declared plugins.
-
-    :return: dictionary (plugin name, module)
     """
-    # Loading plugins
-    discovered_plugins = {
-        entry_point.name: entry_point.load() for entry_point in iter_entry_points(MODEL_PLUGIN_ID)
-    }
-    for plugin_name, package in discovered_plugins.items():
-        _recursive_load(package.__name__)
+    for entry_point in iter_entry_points(MODEL_PLUGIN_ID):
+        plugin_name = entry_point.name
+        module_name = entry_point.module_name
+        _recursive_load(module_name)
         _LOGGER.info("Loaded FAST-OAD plugin %s", plugin_name)
-        if DESCRIPTION_FILENAME in contents(package):
+        if DESCRIPTION_FILENAME in contents(module_name):
             try:
-                with open_text(package, DESCRIPTION_FILENAME) as desc_io:
+                with open_text(module_name, DESCRIPTION_FILENAME) as desc_io:
                     Variable.read_variable_descriptions(desc_io)
                 _LOGGER.info("Loaded variable descriptions from plugin %s", plugin_name)
             except Exception as exc:
@@ -55,8 +49,6 @@ def load_plugins() -> Dict[str, ModuleType]:
                 )
         else:
             _LOGGER.info("No variable description in plugin %s", plugin_name)
-
-    return discovered_plugins
 
 
 def _recursive_load(package_name: str):
