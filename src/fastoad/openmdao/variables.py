@@ -15,6 +15,7 @@ Module for managing OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from builtins import isinstance
 from copy import deepcopy
 from typing import Dict, Hashable, List, Union, Mapping, Iterable, Tuple
 
@@ -138,6 +139,11 @@ class Variable(Hashable):
         :param variable_descriptions: dict-like object with variable names as keys and descriptions
                                       as values
         """
+        if isinstance(variable_descriptions, Iterable) and np.shape(variable_descriptions) == (2,):
+            # If only a 2-elements tuple-like is provided, like what happens when np.genfromtxt()
+            # reads a one-line file, we need a reshape for dict.update() to work correctly.
+            variable_descriptions = np.reshape(variable_descriptions, (1, 2))
+
         cls._variable_descriptions.update(variable_descriptions)
 
     @classmethod
