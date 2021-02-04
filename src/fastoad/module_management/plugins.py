@@ -27,6 +27,8 @@ from .bundle_loader import BundleLoader
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
+MODEL_PLUGIN_ID = "fastoad_model"
+
 
 def load_plugins() -> Dict[str, ModuleType]:
     """
@@ -36,7 +38,7 @@ def load_plugins() -> Dict[str, ModuleType]:
     """
     # Loading plugins
     discovered_plugins = {
-        entry_point.name: entry_point.load() for entry_point in iter_entry_points("fastoad.models")
+        entry_point.name: entry_point.load() for entry_point in iter_entry_points(MODEL_PLUGIN_ID)
     }
     for plugin_name, package in discovered_plugins.items():
         _recursive_load(package.__name__)

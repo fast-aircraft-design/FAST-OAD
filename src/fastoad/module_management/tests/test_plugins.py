@@ -17,7 +17,7 @@ import pytest
 from pkg_resources import EntryPoint, get_distribution
 
 from ..exceptions import FastBundleLoaderUnknownFactoryNameError
-from ..plugins import load_plugins
+from ..plugins import load_plugins, MODEL_PLUGIN_ID
 from ..service_registry import RegisterService
 from ...openmdao.variables import Variable
 
@@ -42,7 +42,7 @@ def test_plugins():
     dummy_plugin = EntryPoint(
         "test_plugin", "fastoad.module_management.tests.data.dummy_plugin", dist=dist,
     )
-    dist.get_entry_map("fastoad.models")["test_plugin"] = dummy_plugin
+    dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin"] = dummy_plugin
 
     # Before load_plugins(), services are not registered
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
