@@ -19,7 +19,6 @@ from importlib.resources import open_text, contents
 from types import ModuleType
 from typing import Dict
 
-import numpy as np
 from pkg_resources import iter_entry_points
 
 from fastoad.openmdao.variables import DESCRIPTION_FILENAME, Variable
@@ -46,8 +45,7 @@ def load_plugins() -> Dict[str, ModuleType]:
         if DESCRIPTION_FILENAME in contents(package):
             try:
                 with open_text(package, DESCRIPTION_FILENAME) as desc_io:
-                    vars_descs = np.genfromtxt(desc_io, delimiter="||", dtype=str, autostrip=True)
-                Variable.update_variable_descriptions(vars_descs)
+                    Variable.read_variable_descriptions(desc_io)
                 _LOGGER.info("Loaded variable descriptions from plugin %s", plugin_name)
             except Exception as exc:
                 _LOGGER.error(

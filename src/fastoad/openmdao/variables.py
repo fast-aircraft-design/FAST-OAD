@@ -17,6 +17,7 @@ Module for managing OpenMDAO variables
 import logging
 from builtins import isinstance
 from copy import deepcopy
+from pathlib import Path
 from typing import Dict, Hashable, List, Union, Mapping, Iterable, Tuple
 
 import numpy as np
@@ -130,6 +131,31 @@ class Variable(Hashable):
             self.description = self._variable_descriptions[self.name]
 
     @classmethod
+    def read_variable_descriptions(
+        cls, file_path: Union[str, Path, Iterable[str]], update_existing: bool = True
+    ):
+        """
+        Reads variable descriptions from provided file.
+
+        Each line of the file should be formatted like::
+
+            my:variable||The description of my:variable, as long as needed, but on one line.
+
+        :param file_path: file path, as string or pathlib.Path, or sequence of strings
+        :param update_existing: if True, previous descriptions will be updated.
+                                if False, previous descriptions will be erased.
+        """
+        if not update_existing:
+            cls._variable_descriptions = {}
+
+        variable_descriptions = np.genfromtxt(file_path, delimiter="||", dtype=str, autostrip=True)
+        if np.shape(variable_descriptions) == (2,):
+            # If only a 2-elements tuple-like is provided, like what happens when np.genfromtxt()
+            # reads a one-line file, we need a reshape for dict.update() to work correctly.
+            variable_descriptions = np.reshape(variable_descriptions, (1, 2))
+        cls.update_variable_descriptions(variable_descriptions)
+
+    @classmethod
     def update_variable_descriptions(
         cls, variable_descriptions: Union[Mapping[str, str], Iterable[Tuple[str, str]]]
     ):
@@ -139,11 +165,6 @@ class Variable(Hashable):
         :param variable_descriptions: dict-like object with variable names as keys and descriptions
                                       as values
         """
-        if isinstance(variable_descriptions, Iterable) and np.shape(variable_descriptions) == (2,):
-            # If only a 2-elements tuple-like is provided, like what happens when np.genfromtxt()
-            # reads a one-line file, we need a reshape for dict.update() to work correctly.
-            variable_descriptions = np.reshape(variable_descriptions, (1, 2))
-
         cls._variable_descriptions.update(variable_descriptions)
 
     @classmethod
