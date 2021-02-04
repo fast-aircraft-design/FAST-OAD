@@ -29,6 +29,7 @@ from ..exceptions import (
     FastBundleLoaderUnknownFactoryNameError,
 )
 from ..service_registry import RegisterOpenMDAOSystem
+from ...openmdao.variables import Variable
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -38,6 +39,14 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 def load():
     """ Loads components """
     RegisterOpenMDAOSystem.explore_folder(pth.join(DATA_FOLDER_PATH, "module_sellar_example"))
+
+
+def test_variable_description(load):
+    """
+    The variable description file must have been read during explore_folder()
+    """
+    assert Variable("x").description == ""  # No description provided
+    assert Variable("z").description == 'the "Z" variable :)'
 
 
 def test_components_alone(load):

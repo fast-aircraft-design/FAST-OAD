@@ -13,6 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os.path as pth
 from types import MethodType
 from typing import List, TypeVar, Type, Union, Any
 
@@ -29,6 +30,7 @@ from .constants import (
 )
 from .exceptions import FastBadSystemOptionError, FastIncompatibleServiceClassError
 from ..model_base.propulsion import IOMPropulsionWrapper
+from ..openmdao.variables import DESCRIPTION_FILENAME, Variable
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 T = TypeVar("T")
@@ -115,6 +117,11 @@ class RegisterService:
 
         :param folder_path:
         """
+        description_file_path = pth.join(folder_path, DESCRIPTION_FILENAME)
+        if pth.isfile(description_file_path):
+            Variable.read_variable_descriptions(description_file_path)
+            _LOGGER.info("Loaded variable descriptions from file %s", description_file_path)
+
         cls._loader.explore_folder(folder_path)
 
     @classmethod
@@ -190,6 +197,23 @@ class RegisterOpenMDAOSystem(
     """
     Decorator class for registering an OpenMDAO system for use in FAST-OAD configuration.
     """
+
+    @classmethod
+    def explore_folder(cls, folder_path: str):
+        """
+        Explores provided folder and looks for OpenMDAO systems to register.
+
+        Also, if there is a file for variable description at root of provided folder,
+        it is read.
+
+        :param folder_path:
+        """
+        description_file_path = pth.join(folder_path, DESCRIPTION_FILENAME)
+        if pth.isfile(description_file_path):
+            Variable.read_variable_descriptions(description_file_path)
+            _LOGGER.info("Loaded variable descriptions from file %s", description_file_path)
+
+        super().explore_folder(folder_path)
 
     @classmethod
     def get_system(cls, identifier: str, options: dict = None) -> System:
