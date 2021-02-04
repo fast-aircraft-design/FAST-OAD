@@ -16,6 +16,8 @@ Plugin system for module declaration.
 
 import logging
 from importlib.resources import open_text, contents
+from types import ModuleType
+from typing import Dict
 
 import numpy as np
 from pkg_resources import iter_entry_points
@@ -26,9 +28,11 @@ from .bundle_loader import BundleLoader
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-def load_plugins():
+def load_plugins() -> Dict[str, ModuleType]:
     """
     Loads declared plugins.
+
+    :return: dictionary (plugin name, module)
     """
     # Loading plugins
     discovered_plugins = {
@@ -51,6 +55,8 @@ def load_plugins():
                 )
         else:
             _LOGGER.info("No variable description in plugin %s", plugin_name)
+
+    return discovered_plugins
 
 
 def _recursive_load(package_name: str):
