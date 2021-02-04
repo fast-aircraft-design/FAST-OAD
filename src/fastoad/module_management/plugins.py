@@ -44,7 +44,7 @@ def load_plugins() -> Dict[str, ModuleType]:
         if DESCRIPTION_FILENAME in contents(package):
             try:
                 with open_text(package, DESCRIPTION_FILENAME) as desc_io:
-                    vars_descs = np.genfromtxt(desc_io, delimiter="\t", dtype=str)
+                    vars_descs = np.genfromtxt(desc_io, delimiter="||", dtype=str, autostrip=True)
                 Variable.update_variable_descriptions(vars_descs)
                 _LOGGER.info("Loaded variable descriptions from plugin %s", plugin_name)
             except Exception as exc:
