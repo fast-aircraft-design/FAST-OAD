@@ -36,7 +36,6 @@ class RegisterDummyService(RegisterService, base_class=DummyBase):
 
 # Tests ####################################
 def test_plugins():
-
     # Declaring the plugin
     dist = get_distribution("FAST-OAD")
     dummy_plugin = EntryPoint(
