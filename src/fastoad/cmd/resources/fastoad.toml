@@ -13,7 +13,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
 # Definition of OpenMDAO model
 [model]
     # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
-    nonlinear_solver = "om.NonlinearBlockGS(maxiter=50, iprint=1)"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100, iprint=1)"
     linear_solver = "om.DirectSolver()"
     # Although "model" is a mandatory name for the top level of the model, its
     # sub-components can be freely named by user

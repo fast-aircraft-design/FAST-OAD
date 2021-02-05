@@ -273,7 +273,52 @@ def test_api(cleanup):
     assert_allclose(problem["data:geometry:horizontal_tail:area"], 36.4, atol=1e-1)
     assert_allclose(problem["data:mission:sizing:fuel"], 20338, atol=1)
 
+    # Test on the limit possible range for robustness
+
+    INPUT_FILE = pth.join(results_folder_path, "problem_inputs.xml")
+    variables_io = VariableIO(INPUT_FILE)
+    var_list = variables_io.read()
+
+    # We update the variable list (VariableList class)
+    var_list["data:TLAR:range"].value = 6500.0  # [nm}
+    variables_io.write(var_list)
+
+    # Run model ---------------------------------------------------------------
+    problem = api.evaluate_problem(configuration_file_path, True)
+
+    # Check that weight-performances loop correctly converged
+    assert_allclose(
+        problem["data:weight:aircraft:OWE"],
+        problem["data:weight:airframe:mass"]
+        + problem["data:weight:propulsion:mass"]
+        + problem["data:weight:systems:mass"]
+        + problem["data:weight:furniture:mass"]
+        + problem["data:weight:crew:mass"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MZFW"],
+        problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MTOW"],
+        problem["data:weight:aircraft:OWE"]
+        + problem["data:weight:aircraft:payload"]
+        + problem["data:mission:sizing:fuel"],
+        atol=1,
+    )
+
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.050, atol=1e-3)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 18.289, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 132917, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 269.91, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 67.3, atol=1e-1)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 89.0, atol=1e-1)
+    assert_allclose(problem["data:mission:sizing:fuel"], 58005, atol=1)
+
     # Run optim ---------------------------------------------------------------
+    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
     problem = api.optimize_problem(configuration_file_path, True)
     assert not problem.optim_failed
 
@@ -308,3 +353,63 @@ def test_api(cleanup):
 
     # Objective
     assert_allclose(problem["data:mission:sizing:fuel"], 20224, atol=50)
+
+
+def test_performance(cleanup):
+    # Testing limit cases for models and OAD process
+
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
+
+    # Generation of configuration file ----------------------------------------
+    api.generate_configuration_file(configuration_file_path, True)
+
+    # Generation of inputs ----------------------------------------------------
+    # We get the same inputs as in tutorial notebook
+    source_xml = pth.join(
+        root_folder_path, "src", "fastoad", "notebooks", "tutorial", "data", "CeRAS01_baseline.xml"
+    )
+    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
+
+    # Test on the limit possible range
+    INPUT_FILE = pth.join(results_folder_path, "problem_inputs.xml")
+    variables_io = VariableIO(INPUT_FILE)
+    var_list = variables_io.read()
+
+    # We update the variable list (VariableList class)
+    var_list["data:TLAR:range"].value = 6500.0  # [nm}
+    variables_io.write(var_list)
+
+    # Run model ---------------------------------------------------------------
+    problem = api.evaluate_problem(configuration_file_path, True)
+
+    # Check that weight-performances loop correctly converged
+    assert_allclose(
+        problem["data:weight:aircraft:OWE"],
+        problem["data:weight:airframe:mass"]
+        + problem["data:weight:propulsion:mass"]
+        + problem["data:weight:systems:mass"]
+        + problem["data:weight:furniture:mass"]
+        + problem["data:weight:crew:mass"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MZFW"],
+        problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MTOW"],
+        problem["data:weight:aircraft:OWE"]
+        + problem["data:weight:aircraft:payload"]
+        + problem["data:mission:sizing:fuel"],
+        atol=1,
+    )
+
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.050, atol=1e-3)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 18.289, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 132917, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 269.91, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 67.3, atol=1e-1)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 89.0, atol=1e-1)
+    assert_allclose(problem["data:mission:sizing:fuel"], 58005, atol=1)
