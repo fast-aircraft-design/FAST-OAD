@@ -413,3 +413,47 @@ def test_performance(cleanup):
     assert_allclose(problem["data:geometry:vertical_tail:area"], 67.3, atol=1e-1)
     assert_allclose(problem["data:geometry:horizontal_tail:area"], 89.0, atol=1e-1)
     assert_allclose(problem["data:mission:sizing:fuel"], 58005, atol=1)
+
+    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
+
+    # Test on the limit possible range
+    var_list = variables_io.read()
+
+    # We update the variable list (VariableList class)
+    var_list["data:TLAR:NPAX"].value = 300.0  # [-]
+    var_list["data:TLAR:range"].value = 4000.0  # [nm]
+    variables_io.write(var_list)
+
+    # Run model ---------------------------------------------------------------
+    problem = api.evaluate_problem(configuration_file_path, True)
+
+    # Check that weight-performances loop correctly converged
+    assert_allclose(
+        problem["data:weight:aircraft:OWE"],
+        problem["data:weight:airframe:mass"]
+        + problem["data:weight:propulsion:mass"]
+        + problem["data:weight:systems:mass"]
+        + problem["data:weight:furniture:mass"]
+        + problem["data:weight:crew:mass"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MZFW"],
+        problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MTOW"],
+        problem["data:weight:aircraft:OWE"]
+        + problem["data:weight:aircraft:payload"]
+        + problem["data:mission:sizing:fuel"],
+        atol=1,
+    )
+
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.050, atol=1e-3)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 18.289, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 186647, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 309.37, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 56.1, atol=1e-1)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 105.1, atol=1e-1)
+    assert_allclose(problem["data:mission:sizing:fuel"], 63871, atol=1)
