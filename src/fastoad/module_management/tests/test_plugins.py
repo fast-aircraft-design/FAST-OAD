@@ -64,6 +64,5 @@ def test_plugins():
     decorated_dummy_3 = RegisterDummyService.get_provider("test.plugin.decorated.3")
     assert decorated_dummy_3.my_class() == "DecoratedDummy3"
 
-    # Checking variable description:
-    var = Variable("dummy:variable")
-    assert var.description == "Some dummy variable."
+    # Checking variable description.
+    assert Variable("dummy:variable").description == "Some dummy variable."

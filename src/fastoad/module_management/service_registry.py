@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os.path as pth
 from types import MethodType
 from typing import List, TypeVar, Type, Union, Any
 
@@ -30,7 +29,7 @@ from .constants import (
 )
 from .exceptions import FastBadSystemOptionError, FastIncompatibleServiceClassError
 from ..model_base.propulsion import IOMPropulsionWrapper
-from ..openmdao.variables import DESCRIPTION_FILENAME, Variable
+from ..openmdao.variables import Variable
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 T = TypeVar("T")
@@ -117,10 +116,7 @@ class RegisterService:
 
         :param folder_path:
         """
-        description_file_path = pth.join(folder_path, DESCRIPTION_FILENAME)
-        if pth.isfile(description_file_path):
-            Variable.read_variable_descriptions(description_file_path)
-            _LOGGER.info("Loaded variable descriptions from file %s", description_file_path)
+        Variable.read_variable_descriptions(folder_path)
 
         cls._loader.explore_folder(folder_path)
 
@@ -180,8 +176,28 @@ class RegisterService:
         return cls._loader.get_instance_property(instance_or_id, property_name)
 
 
+class _RegisterOpenMDAOService(RegisterService):
+    """
+    Base class for registering OpenMDAO-related classes.
+
+    This class just ensures that variable_descriptions.txt files that are at the
+    same package level as the decorated class are loaded.
+    """
+
+    def __call__(self, service_class: Type[T]) -> Type[T]:
+
+        # service_class.__module__ provides the name for the .py file, but
+        # we want just the parent package name.
+        package_name = ".".join(service_class.__module__.split(".")[:-1])
+
+        Variable.read_variable_descriptions(package_name)
+
+        # and now the actual call
+        return super().__call__(service_class)
+
+
 class RegisterPropulsion(
-    RegisterService,
+    _RegisterOpenMDAOService,
     base_class=IOMPropulsionWrapper,
     service_id=SERVICE_PROPULSION_WRAPPER,
     domain=ModelDomain.PROPULSION,
@@ -192,10 +208,13 @@ class RegisterPropulsion(
 
 
 class RegisterOpenMDAOSystem(
-    RegisterService, base_class=System, service_id=SERVICE_OPENMDAO_SYSTEM
+    _RegisterOpenMDAOService, base_class=System, service_id=SERVICE_OPENMDAO_SYSTEM
 ):
     """
     Decorator class for registering an OpenMDAO system for use in FAST-OAD configuration.
+
+    If a variable_descriptions.txt file is in the same folder as the class module, its
+    content is loaded (once, even if several classes are registered at the same level).
     """
 
     @classmethod
@@ -208,10 +227,7 @@ class RegisterOpenMDAOSystem(
 
         :param folder_path:
         """
-        description_file_path = pth.join(folder_path, DESCRIPTION_FILENAME)
-        if pth.isfile(description_file_path):
-            Variable.read_variable_descriptions(description_file_path)
-            _LOGGER.info("Loaded variable descriptions from file %s", description_file_path)
+        Variable.read_variable_descriptions(folder_path)
 
         super().explore_folder(folder_path)
 

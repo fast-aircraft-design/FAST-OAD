@@ -15,11 +15,11 @@ Plugin system for declaration of FAST-OAD models.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from importlib.resources import open_text, contents
+from importlib.resources import contents
 
 from pkg_resources import iter_entry_points
 
-from fastoad.openmdao.variables import DESCRIPTION_FILENAME, Variable
+from fastoad.openmdao.variables import Variable
 from .bundle_loader import BundleLoader
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -36,19 +36,7 @@ def load_plugins():
         module_name = entry_point.module_name
         _recursive_load(module_name)
         _LOGGER.info("Loaded FAST-OAD plugin %s", plugin_name)
-        if DESCRIPTION_FILENAME in contents(module_name):
-            try:
-                with open_text(module_name, DESCRIPTION_FILENAME) as desc_io:
-                    Variable.read_variable_descriptions(desc_io)
-                _LOGGER.info("Loaded variable descriptions from plugin %s", plugin_name)
-            except Exception as exc:
-                _LOGGER.error(
-                    "Could not read variable description for plugin %s. Error log is:\n%s",
-                    plugin_name,
-                    exc,
-                )
-        else:
-            _LOGGER.info("No variable description in plugin %s", plugin_name)
+        Variable.read_variable_descriptions(module_name)
 
 
 def _recursive_load(package_name: str):

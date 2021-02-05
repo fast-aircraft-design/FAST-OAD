@@ -15,9 +15,10 @@ Module for managing OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os.path as pth
 from builtins import isinstance
 from copy import deepcopy
-from pathlib import Path
+from importlib.resources import open_text, contents
 from typing import Dict, Hashable, List, Union, Mapping, Iterable, Tuple
 
 import numpy as np
@@ -84,8 +85,11 @@ class Variable(Hashable):
     :param kwargs: the attributes of the variable, as keyword arguments
     """
 
-    # Will store content of DESCRIPTION_FILE_PATH once and for all
+    # Will store content of description files
     _variable_descriptions = {}
+
+    # The list of modules of path where description files have been read
+    _loaded_descriptions = set()
 
     # Default metadata
     _base_metadata = {}
@@ -131,29 +135,60 @@ class Variable(Hashable):
             self.description = self._variable_descriptions[self.name]
 
     @classmethod
-    def read_variable_descriptions(
-        cls, file_path: Union[str, Path, Iterable[str]], update_existing: bool = True
-    ):
+    def read_variable_descriptions(cls, file_parent: str, update_existing: bool = True):
         """
-        Reads variable descriptions from provided file.
+        Reads variable descriptions in indicated folder or package, if it contains some.
+
+        The file variable_descriptions.txt is looked for. Nothing is done if it is not
+        found (no error raised also).
 
         Each line of the file should be formatted like::
 
             my:variable||The description of my:variable, as long as needed, but on one line.
 
-        :param file_path: file path, as string or pathlib.Path, or sequence of strings
+        :param file_parent: the folder path or the package name that should contain the file
         :param update_existing: if True, previous descriptions will be updated.
                                 if False, previous descriptions will be erased.
         """
         if not update_existing:
             cls._variable_descriptions = {}
+            cls._loaded_descriptions = set()
 
-        variable_descriptions = np.genfromtxt(file_path, delimiter="||", dtype=str, autostrip=True)
-        if np.shape(variable_descriptions) == (2,):
-            # If only a 2-elements tuple-like is provided, like what happens when np.genfromtxt()
-            # reads a one-line file, we need a reshape for dict.update() to work correctly.
-            variable_descriptions = np.reshape(variable_descriptions, (1, 2))
-        cls.update_variable_descriptions(variable_descriptions)
+        variable_descriptions = None
+        description_file = None
+
+        if pth.isdir(file_parent):
+            file_path = pth.join(file_parent, DESCRIPTION_FILENAME)
+            if pth.isfile(file_path):
+                description_file = open(file_path)
+        else:
+            # Then it is a module name
+            if DESCRIPTION_FILENAME in contents(file_parent):
+                description_file = open_text(file_parent, DESCRIPTION_FILENAME)
+
+        if description_file is not None:
+            try:
+                variable_descriptions = np.genfromtxt(
+                    description_file, delimiter="||", dtype=str, autostrip=True
+                )
+            except Exception as exc:
+                _LOGGER.error(
+                    "Could not read file %s in %s. Error log is:\n%s",
+                    DESCRIPTION_FILENAME,
+                    file_parent,
+                    exc,
+                )
+            description_file.close()
+
+        if variable_descriptions is not None:
+            if np.shape(variable_descriptions) == (2,):
+                # If the file contains only one line, np.genfromtxt() will return a (2,)-shaped
+                # array. We need a reshape for dict.update() to work correctly.
+                variable_descriptions = np.reshape(variable_descriptions, (1, 2))
+
+            cls._loaded_descriptions.add(file_parent)
+            cls.update_variable_descriptions(variable_descriptions)
+            _LOGGER.info("Loaded variable descriptions in %s", file_parent)
 
     @classmethod
     def update_variable_descriptions(

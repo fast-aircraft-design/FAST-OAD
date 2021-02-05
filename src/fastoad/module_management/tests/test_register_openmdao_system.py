@@ -20,7 +20,7 @@ import os.path as pth
 import pytest
 from openmdao.api import Problem, ScipyOptimizeDriver
 
-from .data.module_sellar_example.disc2 import Disc2
+from .data.module_sellar_example.disc2.disc2 import Disc2
 from .data.module_sellar_example.sellar import Sellar, ISellarFactory
 from .. import BundleLoader
 from ..constants import SERVICE_OPENMDAO_SYSTEM, ModelDomain
@@ -46,7 +46,10 @@ def test_variable_description(load):
     The variable description file must have been read during explore_folder()
     """
     assert Variable("x").description == ""  # No description provided
-    assert Variable("z").description == 'the "Z" variable :)'
+    assert Variable("z").description == 'the "Z" variable :)'  # this description is at folder root
+    assert (
+        Variable("y1").description == 'the "Y1" variable !'
+    )  # this description is in a subpackage
 
 
 def test_components_alone(load):
