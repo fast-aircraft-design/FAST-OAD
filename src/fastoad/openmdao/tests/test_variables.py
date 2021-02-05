@@ -2,7 +2,7 @@
 Module for testing VariableList.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,9 +21,9 @@ import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 
-from .sellar_example.disc1 import Disc1
-from .sellar_example.disc2 import Disc2
-from .sellar_example.functions import Functions
+from .openmdao_sellar_example.disc1 import Disc1
+from .openmdao_sellar_example.disc2 import Disc2
+from .openmdao_sellar_example.functions import Functions
 from ..variables import VariableList, Variable
 
 

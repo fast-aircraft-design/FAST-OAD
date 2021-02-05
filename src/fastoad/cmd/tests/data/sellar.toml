@@ -3,7 +3,7 @@
 title = "Sellar"
 
 module_folders = [
-  "sellar_example"
+  "./cmd_sellar_example"
 ]
 
 input_file = "../results/inputs.xml"
@@ -15,11 +15,11 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP', tol=1e-8)"
   [model.group]
     nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
     [model.group.disc1]
-      id = "sellar.disc1"
+      id = "cmd_test.sellar.disc1"
     [model.group.disc2]
-      id = "sellar.disc2"
+      id = "cmd_test.sellar.disc2"
   [model.functions]
-    id = "sellar.functions"
+    id = "cmd_test.sellar.functions"
 
 [optimization]
     [[optimization.design_var]]

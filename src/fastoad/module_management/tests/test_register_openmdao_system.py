@@ -2,7 +2,7 @@
 Test module for openmdao_system_registry.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,8 +20,8 @@ import os.path as pth
 import pytest
 from openmdao.api import Problem, ScipyOptimizeDriver
 
-from .data.sellar_example.disc2 import Disc2
-from .data.sellar_example.sellar import Sellar, ISellarFactory
+from .data.module_sellar_example.disc2 import Disc2
+from .data.module_sellar_example.sellar import Sellar, ISellarFactory
 from .. import BundleLoader
 from ..constants import SERVICE_OPENMDAO_SYSTEM, ModelDomain
 from ..exceptions import (
@@ -37,7 +37,7 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 @pytest.fixture(scope="module")
 def load():
     """ Loads components """
-    RegisterOpenMDAOSystem.explore_folder(pth.join(DATA_FOLDER_PATH, "sellar_example"))
+    RegisterOpenMDAOSystem.explore_folder(pth.join(DATA_FOLDER_PATH, "module_sellar_example"))
 
 
 def test_components_alone(load):
@@ -56,9 +56,10 @@ def test_get_system(load):
 
     # Get component 1 #########################################################
     # Tests also the definition of model domain
-    disc1_component = RegisterOpenMDAOSystem.get_system("sellar.disc1")
+    disc1_component = RegisterOpenMDAOSystem.get_system("module_management_test.sellar.disc1")
     assert (
-        RegisterOpenMDAOSystem.get_provider_domain("sellar.disc1").value == ModelDomain.OTHER.value
+        RegisterOpenMDAOSystem.get_provider_domain("module_management_test.sellar.disc1").value
+        == ModelDomain.OTHER.value
     )
     assert (
         RegisterOpenMDAOSystem.get_provider_domain(disc1_component).value == ModelDomain.OTHER.value
@@ -74,12 +75,14 @@ def test_get_system(load):
     # Tests also the transmission of options
     with pytest.raises(FastBadSystemOptionError):
         disc2_component = RegisterOpenMDAOSystem.get_system(
-            "sellar.disc2", options={"not_declared": -1}
+            "module_management_test.sellar.disc2", options={"not_declared": -1}
         )
 
-    disc2_component = RegisterOpenMDAOSystem.get_system("sellar.disc2", options={"answer": -1})
+    disc2_component = RegisterOpenMDAOSystem.get_system(
+        "module_management_test.sellar.disc2", options={"answer": -1}
+    )
     assert (
-        RegisterOpenMDAOSystem.get_provider_domain("sellar.disc2").value
+        RegisterOpenMDAOSystem.get_provider_domain("module_management_test.sellar.disc2").value
         == ModelDomain.GEOMETRY.value
     )
     assert (
@@ -100,12 +103,14 @@ def test_get_system(load):
     # Tests the transmission of options at registration
     with pytest.raises(FastBadSystemOptionError):
         functions_component = RegisterOpenMDAOSystem.get_system(
-            "sellar.functions", options={"not_declared": -1}
+            "module_management_test.sellar.functions", options={"not_declared": -1}
         )
 
-    functions_component = RegisterOpenMDAOSystem.get_system("sellar.functions")
+    functions_component = RegisterOpenMDAOSystem.get_system(
+        "module_management_test.sellar.functions"
+    )
     assert (
-        RegisterOpenMDAOSystem.get_provider_domain("sellar.functions").value
+        RegisterOpenMDAOSystem.get_provider_domain("module_management_test.sellar.functions").value
         == ModelDomain.UNSPECIFIED.value
     )
     assert (
@@ -163,15 +168,15 @@ def test_sellar(load):
 
         @staticmethod
         def create_disc1():
-            return RegisterOpenMDAOSystem.get_system("sellar.disc1")
+            return RegisterOpenMDAOSystem.get_system("module_management_test.sellar.disc1")
 
         @staticmethod
         def create_disc2():
-            return RegisterOpenMDAOSystem.get_system("sellar.disc2")
+            return RegisterOpenMDAOSystem.get_system("module_management_test.sellar.disc2")
 
         @staticmethod
         def create_functions():
-            return RegisterOpenMDAOSystem.get_system("sellar.functions")
+            return RegisterOpenMDAOSystem.get_system("module_management_test.sellar.functions")
 
     classical_problem = sellar_setup(Sellar())  # Reference
     fastoad_problem = sellar_setup(

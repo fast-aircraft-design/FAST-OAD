@@ -2,7 +2,7 @@
 Test module for configuration.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -164,7 +164,7 @@ def test_set_optimization_definition(cleanup):
             "x": {"name": "x", "lower": 0, "upper": 20},
             "z": {"name": "z", "lower": 0, "upper": 10},
         },
-        "constraint": {"g1": {"name": "g1", "upper": 10}, "g2": {"name": "g2", "upper": 0},},
+        "constraint": {"gg1": {"name": "gg1", "upper": 10}, "gg2": {"name": "gg2", "upper": 0},},
         "objective": {"f": {"name": "f"}},
     }
 
@@ -173,7 +173,7 @@ def test_set_optimization_definition(cleanup):
             {"name": "x", "lower": 0, "upper": 20},
             {"name": "z", "lower": 0, "upper": 10},
         ],
-        "constraint": [{"name": "g1", "upper": 10}, {"name": "g2", "upper": 0}],
+        "constraint": [{"name": "gg1", "upper": 10}, {"name": "gg2", "upper": 0}],
         "objective": [{"name": "f"}],
     }
 

@@ -2,7 +2,7 @@
 Test module for OpenMDAO checks
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,10 +16,10 @@ Test module for OpenMDAO checks
 
 import openmdao.api as om
 
-from .sellar_example.disc1 import Disc1
-from .sellar_example.disc2 import Disc2
-from .sellar_example.functions import Functions
-from .sellar_example.sellar import Sellar
+from .openmdao_sellar_example.disc1 import Disc1
+from .openmdao_sellar_example.disc2 import Disc2
+from .openmdao_sellar_example.functions import Functions
+from .openmdao_sellar_example.sellar import Sellar
 from ..utils import get_unconnected_input_names
 
 
