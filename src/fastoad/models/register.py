@@ -78,7 +78,7 @@ RegisterOpenMDAOSystem("fastoad.performances.sizing_mission", domain=ModelDomain
 )
 
 # Propulsion ##################################################################
-rubber_engine_description = """
+RUBBER_ENGINE_DESCRIPTION = """
 Parametric engine model as OpenMDAO component.
 
 Implementation of E. Roux models for fuel consumption of low bypass ratio engines
@@ -87,10 +87,10 @@ For more information, see RubberEngine class in FAST-OAD developer documentation
 
 RegisterOpenMDAOSystem(
     "fastoad.propulsion.rubber_engine",
-    desc=rubber_engine_description,
+    desc=RUBBER_ENGINE_DESCRIPTION,
     domain=ModelDomain.PROPULSION,
 )(OMRubberEngineComponent)
 
-RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine", desc=rubber_engine_description,)(
+RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine", desc=RUBBER_ENGINE_DESCRIPTION,)(
     OMRubberEngineWrapper
 )

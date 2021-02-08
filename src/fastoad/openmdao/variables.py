@@ -172,6 +172,7 @@ class Variable(Hashable):
                     description_file, delimiter="||", dtype=str, autostrip=True
                 )
             except Exception as exc:
+                # Reading the file is not mandatory, so let's just log the error.
                 _LOGGER.error(
                     "Could not read file %s in %s. Error log is:\n%s",
                     DESCRIPTION_FILENAME,

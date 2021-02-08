@@ -54,9 +54,9 @@ def _recursive_load(package_name: str):
                 bundle = BundleLoader().context.install_bundle(package_name[:-3])
                 bundle.stop()
                 bundle.start()
-                _LOGGER.info("Loaded %s" % package_name)
+                _LOGGER.info("Loaded %s", package_name)
             except:  # There can be plenty of good reasons to fail, so we just log it.
-                _LOGGER.info("Ignored %s" % package_name)
+                _LOGGER.info("Ignored %s", package_name)
 
         return
 
