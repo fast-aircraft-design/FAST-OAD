@@ -61,7 +61,6 @@ ensure = "^1.0.0"
 
 
 [tool.poetry.dev-dependencies]
-wheel = "*"
 pytest = "^5.2"
 pytest-cov = "*"
 pre-commit = "*"
