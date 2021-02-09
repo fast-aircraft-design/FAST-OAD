@@ -97,7 +97,10 @@ class OMRubberEngineWrapper(IOMPropulsionWrapper):
             "specified to avoid OpenMDAO making unwanted conversion",
         )
         component.add_input(
-            "tuning:propulsion:rubber_engine:SFC:k1", 1.0, desc="ratio to correct SFC along cruise"
+            "tuning:propulsion:rubber_engine:SFC:k1", 1.0, desc="ratio to correct SFC at sea level"
+        )
+        component.add_input(
+            "tuning:propulsion:rubber_engine:SFC:k2", 1.0, desc="ratio to correct SFC at FL400"
         )
 
     @staticmethod
@@ -121,6 +124,7 @@ class OMRubberEngineWrapper(IOMPropulsionWrapper):
             "delta_t4_cruise": inputs["data:propulsion:rubber_engine:delta_t4_cruise"],
             "mto_thrust": inputs["data:propulsion:MTO_thrust"],
             "k1_sfc": inputs["tuning:propulsion:rubber_engine:SFC:k1"],
+            "k2_sfc": inputs["tuning:propulsion:rubber_engine:SFC:k2"],
         }
 
         return RubberEngine(**engine_params)
