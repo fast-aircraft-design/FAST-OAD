@@ -96,6 +96,9 @@ class OMRubberEngineWrapper(IOMPropulsionWrapper):
             desc="As it is a delta, unit is K or °C, but is not "
             "specified to avoid OpenMDAO making unwanted conversion",
         )
+        component.add_input(
+            "tuning:propulsion:rubber_engine:SFC:k1", 1.0, desc="ratio to correct SFC along cruise"
+        )
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -117,6 +120,7 @@ class OMRubberEngineWrapper(IOMPropulsionWrapper):
             "delta_t4_climb": inputs["data:propulsion:rubber_engine:delta_t4_climb"],
             "delta_t4_cruise": inputs["data:propulsion:rubber_engine:delta_t4_cruise"],
             "mto_thrust": inputs["data:propulsion:MTO_thrust"],
+            "k1_sfc": inputs["tuning:propulsion:rubber_engine:SFC:k1"],
         }
 
         return RubberEngine(**engine_params)
