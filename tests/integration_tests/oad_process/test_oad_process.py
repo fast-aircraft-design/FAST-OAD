@@ -451,7 +451,7 @@ def test_performance(cleanup):
     )
 
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.050, atol=1e-3)
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 18.289, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 28.819, atol=1e-2)
     assert_allclose(problem["data:weight:aircraft:MTOW"], 186647, atol=1)
     assert_allclose(problem["data:geometry:wing:area"], 309.37, atol=1e-2)
     assert_allclose(problem["data:geometry:vertical_tail:area"], 56.1, atol=1e-1)
