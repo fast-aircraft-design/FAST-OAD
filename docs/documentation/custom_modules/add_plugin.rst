@@ -49,7 +49,8 @@ the :code:`custom_modules` field)
 Building
 ******************************
 You can build your package with the command line :code:`poetry build`.
-If your pyproject.toml file is configured like so that your project name is `ST
+Let's assume your :code:`pyproject.toml` file is configured so that your project name is
+:code:`STST_drive_models`, as below:
 
 .. code-block:: toml
 
