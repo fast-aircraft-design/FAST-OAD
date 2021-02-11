@@ -80,5 +80,5 @@ jobs:
 
       - name: Performance tests
         if: runner.os == 'Linux'
-        run: poetry run pytest --no-cov tests/integration_tests
+        run: poetry run pytest --no-cov tests/performance_tests
         shell: bash
