@@ -1,6 +1,6 @@
 """Classes for simulating cruise segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -99,9 +99,8 @@ class ClimbAndCruiseSegment(CruiseSegment):
     (Target ground distance will be achieved by the sum of ground distances
     covered during climb and cruise)
 
-    In this case, climb will be done up to the IFR Flight Level (as multiple of 1000 feet,
-    one flight level being 100 feet) that ensures minimum mass decrease, while being at most
-    equal to :attr:`maximum_flight_level`.
+    In this case, climb will be done up to the IFR Flight Level (as multiple of 100 feet) that
+    ensures minimum mass decrease, while being at most equal to :attr:`maximum_flight_level`.
     """
 
     #: The AltitudeChangeSegment that can be used if a preliminary climb is needed (its target
