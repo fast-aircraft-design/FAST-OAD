@@ -1,3 +1,4 @@
+"""Sellar discipline 1"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,20 +12,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
+from openmdao.api import ExplicitComponent
 
-from pkg_resources import get_distribution, DistributionNotFound
 
-from fastoad.module_management.plugins import load_plugins
-from .cmd import api
+class Disc1Base(ExplicitComponent):
+    """ An OpenMDAO base component to encapsulate Disc1 discipline """
 
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "FAST-OAD"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:
-    __version__ = "unknown"
-finally:
-    del get_distribution, DistributionNotFound
+    def setup(self):
+        self.add_input("x", val=np.nan, desc="")  # NaN as default for testing connexion check
+        self.add_input("z", val=[5, 2], desc="", units="m**2")  # for testing non-None units
+        self.add_input("y2", val=1.0, desc="")
 
-load_plugins()
-del load_plugins
+        self.add_output("y1", val=1.0, desc="This description should not apply")
+        self.declare_partials("*", "*", method="fd")

@@ -2,7 +2,7 @@
 Mission wrapper.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -22,8 +22,8 @@ import pandas as pd
 from openmdao.vectors.vector import Vector
 
 from fastoad.base.flight_point import FlightPoint
+from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
-from fastoad.models.propulsion import IPropulsion
 from ..base import FlightSequence
 from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.schema import (

@@ -61,7 +61,6 @@ ensure = "^1.0.0"
 
 
 [tool.poetry.dev-dependencies]
-wheel = "*"
 pytest = "^5.2"
 pytest-cov = "*"
 pre-commit = "*"
@@ -74,6 +73,9 @@ sphinxcontrib-bibtex = "*"
 
 [tool.poetry.scripts]
 fastoad = "fastoad.cmd.fast:main"
+
+[tool.poetry.plugins."fastoad_model"]
+"internal_models" = "fastoad.models"
 
 [build-system]
 requires = ["poetry>=0.12"]

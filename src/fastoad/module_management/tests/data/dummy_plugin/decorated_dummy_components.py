@@ -1,3 +1,6 @@
+"""
+Module in a subpackage where services are declared with decorators
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,19 +15,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-from pkg_resources import get_distribution, DistributionNotFound
+from ...test_plugins import RegisterDummyService, DummyBase
 
-from fastoad.module_management.plugins import load_plugins
-from .cmd import api
 
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "FAST-OAD"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:
-    __version__ = "unknown"
-finally:
-    del get_distribution, DistributionNotFound
-
-load_plugins()
-del load_plugins
+@RegisterDummyService("test.plugin.decorated.3")
+class DecoratedDummy3(DummyBase):
+    pass

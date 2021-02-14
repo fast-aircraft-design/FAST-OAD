@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,12 +19,12 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot
 
+from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.base import FlightSequence
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
-from fastoad.models.propulsion import IPropulsion
 from ..mission_builder import MissionBuilder
 from ..schema import MissionDefinition
 

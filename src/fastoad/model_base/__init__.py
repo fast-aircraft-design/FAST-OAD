@@ -10,21 +10,3 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
-from pkg_resources import get_distribution, DistributionNotFound
-
-from fastoad.module_management.plugins import load_plugins
-from .cmd import api
-
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "FAST-OAD"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:
-    __version__ = "unknown"
-finally:
-    del get_distribution, DistributionNotFound
-
-load_plugins()
-del load_plugins

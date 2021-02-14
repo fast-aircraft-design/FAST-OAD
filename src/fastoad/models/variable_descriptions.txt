@@ -1,0 +1,489 @@
+# Documentation of variables used in FAST-OAD models
+# Each line shoud be like:
+# my:variable||The description of my:variable, as long as needed, but on one line.
+# The separator "||" can be surrounded with spaces (that will be ignored)
+data:TLAR:NPAX || top-level requirement: number of passengers, assuming a classic eco/business class repartition
+data:TLAR:approach_speed || top-level requirement: approach speed
+data:TLAR:cruise_mach || top-level requirement: cruise Mach number
+data:TLAR:max_TOFL || top-level requirement: maximum takeoff field length
+data:TLAR:range || top-level requirement: design range
+data:aerodynamics:aircraft:cruise:CD || drag coefficient in cruise conditions w.r.t. data:aerodynamics:aircraft:cruise:CL
+data:aerodynamics:aircraft:cruise:CD0 || profile drag coefficient for whole aircraft w.r.t. data:aerodynamics:aircraft:cruise:CL
+data:aerodynamics:aircraft:cruise:CD:compressibility || increment of drag coefficient due to compressibility effects (shock waves) w.r.t. data:aerodynamics:aircraft:cruise:CL
+data:aerodynamics:aircraft:cruise:CD:trim || increment of drag coefficient due to aircraft trim w.r.t. data:aerodynamics:aircraft:cruise:CL
+data:aerodynamics:aircraft:cruise:CL || scale of lift coefficient values for drag computations in cruise conditions
+data:aerodynamics:aircraft:cruise:CL_alpha || derivative of lift coefficient with respect to angle of attack in cruise conditions
+data:aerodynamics:aircraft:cruise:L_D_max || max lift/drag ratio in cruise conditions
+data:aerodynamics:aircraft:cruise:induced_drag_coefficient || multiply squared lift coefficient by this coefficient to get induced drag coefficient
+data:aerodynamics:aircraft:cruise:optimal_CD || drag coefficient at maximum lift/drag ratio in cruise conditions
+data:aerodynamics:aircraft:cruise:optimal_CL || lift coefficient at maximum lift/drag ratio in cruise conditions
+data:aerodynamics:aircraft:landing:CL_max || maximum lift coefficient in landing conditions
+data:aerodynamics:aircraft:landing:CL_max_clean || maximum lift coefficient in landing conditions without high-lift devices
+data:aerodynamics:aircraft:landing:additional_CL_capacity || at landing, is equal to (maximum lift coefficient)-(maximum required lift coefficient)
+data:aerodynamics:aircraft:landing:mach || considered Mach number for landing phase
+data:aerodynamics:aircraft:low_speed:CD || drag coefficient in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL
+data:aerodynamics:aircraft:low_speed:CD0 || profile drag coefficient for whole aircraft in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL
+data:aerodynamics:aircraft:low_speed:CD:trim || increment of drag coefficient due to aircraft trim in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL
+data:aerodynamics:aircraft:low_speed:CL || scale of lift coefficient values for drag computations in low speed conditions
+data:aerodynamics:aircraft:low_speed:CL_alpha || derivative of lift coefficient with respect to angle of attack in low speed conditions
+data:aerodynamics:aircraft:low_speed:induced_drag_coefficient || multiply squared lift coefficient by this coefficient to get induced drag coefficient
+data:aerodynamics:aircraft:takeoff:CL0_clean || value of lift coefficient at angle of attack 0 in clean configuration at takeoff
+data:aerodynamics:aircraft:takeoff:CL_alpha || derivative of lift coefficient with respect to angle of attack in takeoff conditions
+data:aerodynamics:aircraft:takeoff:mach || considered Mach number for takeoff phase
+data:aerodynamics:cruise:neutral_point:x || X-position of neutral point - X-position of aircraft nose
+data:aerodynamics:fuselage:cruise:CD0 || profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL
+data:aerodynamics:fuselage:cruise:CnBeta || derivative of yawing moment against sideslip angle for fuselage in cruise conditions
+data:aerodynamics:high_lift_devices:landing:CD || increment of CD due to high-lift devices for landing phase
+data:aerodynamics:high_lift_devices:landing:CL || increment of CL due to high-lift devices for landing phase
+data:aerodynamics:high_lift_devices:takeoff:CD || increment of CD due to high-lift devices for takeoff phase
+data:aerodynamics:high_lift_devices:takeoff:CL || increment of CL due to high-lift devices for takeoff phase
+data:aerodynamics:horizontal_tail:cruise:CD0 || profile drag coefficient for horizontal tail
+data:aerodynamics:horizontal_tail:cruise:CL_alpha || derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions
+data:aerodynamics:nacelles:cruise:CD0 || profile drag coefficient for nacelles
+data:aerodynamics:pylons:cruise:CD0 || profile drag coefficient for pylons
+data:aerodynamics:vertical_tail:cruise:CD0 || profile drag coefficient for vertical tail
+data:aerodynamics:vertical_tail:cruise:CL_alpha || derivative of lift coefficient of horizontal tail with respect to local "angle of attack" in cruise conditions
+data:aerodynamics:vertical_tail:cruise:CnBeta || derivative of yawing moment against sideslip angle for vertical tail in cruise conditions
+data:aerodynamics:wing:cruise:CD0 || profile drag coefficient for wing w.r.t. data:aerodynamics:aircraft:cruise:CL
+data:aerodynamics:wing:cruise:reynolds || Reynolds number based on wing mean aerodynamic chord in cruise conditions
+data:aerodynamics:wing:low_speed:reynolds || Reynolds number based on wing mean aerodynamic chord in low speed conditions
+data:geometry:aircraft:wetted_area || total wetted area
+data:geometry:cabin:NPAX1 || number of passengers if there are only economical class seats
+data:geometry:cabin:aisle_width || width of aisles
+data:geometry:cabin:containers:count || total number of cargo containers
+data:geometry:cabin:containers:count_by_row || number of cargo containers along width
+data:geometry:cabin:crew_count:commercial || number of commercial crew members
+data:geometry:cabin:crew_count:technical || number of technical crew members
+data:geometry:cabin:exit_width || width of exits
+data:geometry:cabin:length || cabin length
+data:geometry:cabin:pallet_count || number of pallet in cargo hold
+data:geometry:cabin:seat_rows:count || number of seat rows in the cabin
+data:geometry:cabin:seats:business:count_by_row || number of business class seats along width
+data:geometry:cabin:seats:business:length || length of business class seats
+data:geometry:cabin:seats:business:width || width of business class seats
+data:geometry:cabin:seats:economical:count_by_row || number of economical class seats along width
+data:geometry:cabin:seats:economical:length || length of economical class seats
+data:geometry:cabin:seats:economical:width || width of economical class seats
+data:geometry:flap:chord_ratio || mean value of (flap chord)/(section chord)
+data:geometry:flap:span_ratio || ratio (width of flaps)/(total span)
+data:geometry:fuselage:PAX_length || length of passenger-dedicated zone
+data:geometry:fuselage:front_length || length of front non-cylindrical part of the fuselage
+data:geometry:fuselage:length || total fuselage length
+data:geometry:fuselage:maximum_height || maximum fuselage height
+data:geometry:fuselage:maximum_width || maximum fuselage width
+data:geometry:fuselage:rear_length || length of rear non-cylindrical part of the fuselage
+data:geometry:fuselage:wetted_area || wetted area of fuselage
+data:geometry:has_T_tail || 0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail
+data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25 || distance along X between 25% MAC of wing and 25% MAC of horizontal tail
+data:geometry:horizontal_tail:MAC:at25percent:x:local || X-position of the 25% of mean aerodynamic chord of horizontal tail w.r.t. leading edge of root chord
+data:geometry:horizontal_tail:MAC:length || mean aerodynamic chord length of horizontal tail
+data:geometry:horizontal_tail:MAC:y || Y-position of mean aerodynamic chord of horizontal tail
+data:geometry:horizontal_tail:area || horizontal tail area
+data:geometry:horizontal_tail:aspect_ratio || aspect ratio of horizontal tail
+data:geometry:horizontal_tail:root:chord || chord length at root of horizontal tail
+data:geometry:horizontal_tail:span || horizontal tail span
+data:geometry:horizontal_tail:sweep_0 || sweep angle at leading edge of horizontal tail
+data:geometry:horizontal_tail:sweep_100 || sweep angle at trailing edge of horizontal tail
+data:geometry:horizontal_tail:sweep_25 || sweep angle at 25% chord of horizontal tail
+data:geometry:horizontal_tail:taper_ratio || taper ratio of horizontal tail
+data:geometry:horizontal_tail:thickness_ratio || thickness ratio of horizontal tail
+data:geometry:horizontal_tail:tip:chord || chord length at tip of horizontal tail
+data:geometry:horizontal_tail:volume_coefficient || volume coefficient of horizontal tail
+data:geometry:horizontal_tail:wetted_area || wetted area of horizontal tail
+data:geometry:landing_gear:front:distance_to_main || distance between front and main landing gears
+data:geometry:landing_gear:height || height of landing gear
+data:geometry:propulsion:engine:count || number of engines
+data:geometry:propulsion:engine:y_ratio || engine position with respect to total span
+data:geometry:propulsion:fan:length || engine length
+data:geometry:propulsion:layout || position of engines (1=under the wing / 2=rear fuselage)
+data:geometry:propulsion:nacelle:diameter || nacelle diameter
+data:geometry:propulsion:nacelle:length || nacelle length
+data:geometry:propulsion:nacelle:wetted_area || wetted area of nacelle
+data:geometry:propulsion:nacelle:y || Y-position of nacelle center
+data:geometry:propulsion:pylon:length || pylon length
+data:geometry:propulsion:pylon:wetted_area || wetted area of pylon
+data:geometry:slat:chord_ratio || mean value of slat chord)/(section chord)
+data:geometry:slat:span_ratio || ratio (width of slats)/(total span)
+data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25 || distance along X between 25% MAC of wing and 25% MAC of vertical tail
+data:geometry:vertical_tail:MAC:at25percent:x:local || X-position of the 25% of mean aerodynamic chord of vertical tail w.r.t. leading edge of root chord
+data:geometry:vertical_tail:MAC:length || mean aerodynamic chord length of vertical tail
+data:geometry:vertical_tail:MAC:z || Z-position of mean aerodynamic chord of vertical tail
+data:geometry:vertical_tail:area || vertical tail area
+data:geometry:vertical_tail:aspect_ratio || aspect ratio of vertical tail
+data:geometry:vertical_tail:root:chord || chord length at root of vertical tail
+data:geometry:vertical_tail:span || vertical tail span
+data:geometry:vertical_tail:sweep_0 || sweep angle at leading edge of vertical tail
+data:geometry:vertical_tail:sweep_100 || sweep angle at trailing edge of vertical tail
+data:geometry:vertical_tail:sweep_25 || sweep angle at 25% chord of vertical tail
+data:geometry:vertical_tail:taper_ratio || taper ratio of vertical tail
+data:geometry:vertical_tail:thickness_ratio || thickness ratio of vertical tail
+data:geometry:vertical_tail:tip:chord || chord length at tip of vertical tail
+data:geometry:vertical_tail:volume_coefficient || volume coefficient of vertical tail
+data:geometry:vertical_tail:wetted_area || wetted area of vertical tail
+data:geometry:wing:MAC:at25percent:x || X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)
+data:geometry:wing:MAC:leading_edge:x:local || X-position of leading edge of mean aerodynamic chord w.r.t. leading edge of root chord
+data:geometry:wing:MAC:length || length of mean aerodynamic chord of wing
+data:geometry:wing:MAC:y || Y-position of mean aerodynamic chord of wing
+data:geometry:wing:area || wing reference area
+data:geometry:wing:aspect_ratio || wing aspect ratio
+data:geometry:wing:b_50 || actual length between root and tip along 50% of chord
+data:geometry:wing:kink:chord || chord length at wing kink
+data:geometry:wing:kink:leading_edge:x:local || X-position of leading edge at wing kink w.r.t. leading edge of root chord
+data:geometry:wing:kink:span_ratio || ratio (Y-position of kink)/(semi-span)
+data:geometry:wing:kink:thickness_ratio || thickness ratio at wing kink
+data:geometry:wing:kink:y || Y-position of wing kink
+data:geometry:wing:outer_area || wing area outside of fuselage
+data:geometry:wing:root:chord || chord length at wing root
+data:geometry:wing:root:thickness_ratio || thickness ratio at wing root
+data:geometry:wing:root:virtual_chord || virtual chord length at wing root if sweep angle of trailing edge of outer wing part was on the whole wing (no kink)
+data:geometry:wing:root:y || Y-position of wing root
+data:geometry:wing:span || wing span
+data:geometry:wing:spar_ratio:front:kink || ratio (front spar position)/(chord length) at wing kink
+data:geometry:wing:spar_ratio:front:root || ratio (front spar position)/(chord length) at wing root
+data:geometry:wing:spar_ratio:front:tip || ratio (front spar position)/(chord length) at wing tip
+data:geometry:wing:spar_ratio:rear:kink || ratio (rear spar position)/(chord length) at wing kink
+data:geometry:wing:spar_ratio:rear:root || ratio (rear spar position)/(chord length) at wing root
+data:geometry:wing:spar_ratio:rear:tip || ratio (rear spar position)/(chord length) at wing tip
+data:geometry:wing:sweep_0 || sweep angle at leading edge of wing
+data:geometry:wing:sweep_100_inner || sweep angle at trailing edge of wing (inner side of the kink)
+data:geometry:wing:sweep_100_outer || sweep angle at trailing edge of wing (outer side of the kink)
+data:geometry:wing:sweep_25 || sweep angle at 25% chord of wing
+data:geometry:wing:taper_ratio || taper ratio of wing
+data:geometry:wing:thickness_ratio || mean thickness ratio of wing
+data:geometry:wing:tip:chord || chord length at wing tip
+data:geometry:wing:tip:leading_edge:x:local || X-position of leading edge at wing tip w.r.t. leading edge of root chord
+data:geometry:wing:tip:thickness_ratio || thickness ratio at wing tip
+data:geometry:wing:tip:y || Y-position of wing tip
+data:geometry:wing:wetted_area || wetted area of wing
+data:handling_qualities:static_margin || (X-position of neutral point - X-position of center of gravity ) / (mean aerodynamic chord)
+data:load_case:lc1:U_gust || gust vertical speed for sizing load case 1 (gust with minimum aircraft mass)
+data:load_case:lc1:Vc_EAS || equivalent air speed for sizing load case 1 (gust with minimum aircraft mass)
+data:load_case:lc1:altitude || altitude for sizing load case 1 (gust with minimum aircraft mass)
+data:load_case:lc2:U_gust || gust vertical speed for sizing load case 2 (gust with maximum aircraft mass)
+data:load_case:lc2:Vc_EAS || equivalent air speed for sizing load case 2 (gust with maximum aircraft mass)
+data:load_case:lc2:altitude || altitude for sizing load case 2 (gust with maximum aircraft mass)
+data:mission:operational:climb:thrust_rate || thrust rate (between 0.0 and 1.0) during climb phase in operational mission
+data:mission:operational:descent:thrust_rate || thrust rate (between 0.0 and 1.0) during descent phase in operational mission
+data:mission:operational:diversion:climb:duration || duration of diversion climb phase in operational mission
+data:mission:operational:diversion:climb:fuel || mass of consumed fuel during diversion climb phase in operational mission
+data:mission:operational:diversion:cruise:distance || travelled distance during diversion cruise phase in operational mission
+data:mission:operational:diversion:cruise:duration || duration of diversion cruise phase in operational mission
+data:mission:operational:diversion:cruise:fuel || mass of consumed fuel during diversion cruise phase in operational mission
+data:mission:operational:diversion:descent:duration || duration of diversion descent phase in operational mission
+data:mission:operational:diversion:descent:fuel || mass of consumed fuel during diversion descent phase in operational mission
+data:mission:operational:flight:duration || total flight time in operational mission
+data:mission:operational:flight:fuel || mass of total fuel consumed during flight in operational mission
+data:mission:operational:flight:range || total travelled distance during flight in operational mission
+data:mission:operational:holding:CAS || Calibrated Air Speed during holding phase in operational mission
+data:mission:operational:holding:altitude || altitude during holding phase in operational mission
+data:mission:operational:holding:duration || duration of holding phase in operational mission
+data:mission:operational:holding:fuel || mass of consumed fuel during holding phase in operational mission
+data:mission:operational:initial_climb:fuel || mass of consumed fuel during initial climb phase in operational mission
+data:mission:operational:landing:duration || duration of landing phase in operational mission
+data:mission:operational:landing:flap_angle || flap angle during landing phase in operational mission
+data:mission:operational:landing:friction_coefficient_brake || ground friction coefficient with full brakes in operational mission
+data:mission:operational:landing:fuel || mass of consumed fuel during landing phase in operational mission
+data:mission:operational:landing:length || runway length required for landing in operational mission
+data:mission:operational:landing:slat_angle || slat angle during landing phase in operational mission
+data:mission:operational:landing:thrust_rate || thrust rate (between 0.0 and 1.0) during landing phase in operational mission
+data:mission:operational:main_route:climb:duration || duration of climb phase in operational mission
+data:mission:operational:main_route:climb:fuel || mass of consumed fuel during climb phase in operational mission
+data:mission:operational:main_route:climb:max_climb_rate || maximum climb rate in operational mission
+data:mission:operational:main_route:cruise:altitude || altitude during cruise phase in operational mission
+data:mission:operational:main_route:cruise:duration || duration of cruise phase in operational mission
+data:mission:operational:main_route:cruise:fuel || mass of consumed fuel during cruise phase in operational mission
+data:mission:operational:main_route:cruise:mach || Mach number during cruise phase in operational mission
+data:mission:operational:main_route:descent:duration || duration of descent phase in operational mission
+data:mission:operational:main_route:descent:fuel || mass of consumed fuel during descent phase in operational mission
+data:mission:operational:takeoff:TOFL || TakeOff Field Length in operational mission
+data:mission:operational:takeoff:V2 || safety speed before reaching 35 feet height in operational mission
+data:mission:operational:takeoff:VLOF || lift-off speed in operational mission
+data:mission:operational:takeoff:VMCA || air minimum control speed in operational mission
+data:mission:operational:takeoff:VR || rotation speed in operational mission
+data:mission:operational:takeoff:altitude || altitude at takeoff in operational mission
+data:mission:operational:takeoff:delta_ISA || ISA temperature increment during takeoff phase in operational mission
+data:mission:operational:takeoff:duration || duration of takeoff phase in operational mission
+data:mission:operational:takeoff:flap_angle || flap angle during takeoff phase in operational mission
+data:mission:operational:takeoff:friction_coefficient_no_brake || ground friction coefficient with no brake in operational mission
+data:mission:operational:takeoff:fuel || mass of consumed fuel during takeoff phase in operational mission
+data:mission:operational:takeoff:slat_angle || slat angle during takeoff phase in operational mission
+data:mission:operational:taxi_in:duration || duration of taxi-in phase in operational mission
+data:mission:operational:taxi_in:fuel || mass of consumed fuel during taxi-in phase in operational mission
+data:mission:operational:taxi_in:speed || speed during taxi-in phase in operational mission
+data:mission:operational:taxi_in:thrust_rate || thrust rate (between 0.0 and 1.0) during taxi-in phase in operational mission
+data:mission:operational:taxi_out:duration || duration of taxi-out phase in operational mission
+data:mission:operational:taxi_out:fuel || mass of consumed fuel during taxi-out phase in operational mission
+data:mission:operational:taxi_out:speed || speed during taxi-out phase in operational mission
+data:mission:operational:taxi_out:thrust_rate || thrust rate (between 0.0 and 1.0) during taxi-out phase in operational mission
+data:mission:sizing:ZFW || aircraft mass with payload, without fuel, in sizing mission
+data:mission:sizing:block_fuel || total fuel mass at start
+data:mission:sizing:block_time || total duration of mission
+data:mission:sizing:climb:thrust_rate || thrust rate (between 0.0 and 1.0) during climb phase in sizing mission
+data:mission:sizing:cs25:sizing_load_1 || sizing load during gust with minimum aircraft mass
+data:mission:sizing:cs25:sizing_load_2 || sizing load during gust with maximum aircraft mass
+data:mission:sizing:descent:thrust_rate || thrust rate (between 0.0 and 1.0) during descent phase in sizing mission
+data:mission:sizing:diversion:climb:duration || duration of diversion climb phase in sizing mission
+data:mission:sizing:diversion:climb:fuel || mass of consumed fuel during diversion climb phase in sizing mission
+data:mission:sizing:diversion:cruise:distance || travelled distance during diversion cruise phase in sizing mission
+data:mission:sizing:diversion:cruise:duration || duration of diversion cruise phase in sizing mission
+data:mission:sizing:diversion:cruise:fuel || mass of consumed fuel during diversion cruise phase in sizing mission
+data:mission:sizing:diversion:descent:duration || duration of diversion descent phase in sizing mission
+data:mission:sizing:diversion:descent:fuel || mass of consumed fuel during diversion descent phase in sizing mission
+data:mission:sizing:diversion:distance || distance to travel during diversion in sizing mission
+data:mission:sizing:flight:duration || total flight time in sizing mission
+data:mission:sizing:flight:fuel || mass of consumed fuel during flight in sizing mission
+data:mission:sizing:fuel || consumed fuel mass during whole mission
+data:mission:sizing:fuel:unitary || consumption/passenger/distance_unit in sizing mission
+data:mission:sizing:fuel_reserve || mass of fuel reserve
+data:mission:sizing:holding:CAS || Calibrated Air Speed during holding phase in sizing mission
+data:mission:sizing:holding:altitude || altitude during holding phase in sizing mission
+data:mission:sizing:holding:duration || duration of holding phase in sizing mission
+data:mission:sizing:holding:fuel || mass of consumed fuel during holding phase in sizing mission
+data:mission:sizing:initial_climb:fuel || mass of consumed fuel during initial climb phase in sizing mission
+data:mission:sizing:landing:duration || duration of landing phase in sizing mission
+data:mission:sizing:landing:flap_angle || flap angle during landing phase in sizing mission
+data:mission:sizing:landing:friction_coefficient_brake || ground friction coefficient with full brakes in sizing mission
+data:mission:sizing:landing:fuel || mass of consumed fuel during landing phase in sizing mission
+data:mission:sizing:landing:length || runway length required for landing in sizing mission
+data:mission:sizing:landing:slat_angle || slat angle during landing phase in sizing mission
+data:mission:sizing:landing:thrust_rate || thrust rate (between 0.0 and 1.0) during landing phase in sizing mission
+data:mission:sizing:main_route:climb:distance || covered ground distance during climb phase
+data:mission:sizing:main_route:climb:duration || duration of climb phase in sizing mission
+data:mission:sizing:main_route:climb:fuel || mass of consumed fuel during climb phase in sizing mission
+data:mission:sizing:main_route:climb:max_climb_rate || maximum climb rate in sizing mission
+data:mission:sizing:main_route:cruise:altitude || altitude during cruise phase in sizing mission
+data:mission:sizing:main_route:cruise:distance || covered ground distance during cruise phase
+data:mission:sizing:main_route:cruise:duration || duration of cruise phase in sizing mission
+data:mission:sizing:main_route:cruise:fuel || mass of consumed fuel during cruise phase in sizing mission
+data:mission:sizing:main_route:cruise:mass_ratio || ratio (aircraft mass at end of cruise)/(aircraft mass at start of cruise)
+data:mission:sizing:main_route:descent:distance || covered ground distance during descent phase
+data:mission:sizing:main_route:descent:duration || duration of descent phase in sizing mission
+data:mission:sizing:main_route:descent:fuel || mass of consumed fuel during descent phase in sizing mission
+data:mission:sizing:main_route:fuel || mass of total fuel consumed during flight in sizing mission
+data:mission:sizing:takeoff:TOFL || TakeOff Field Length in sizing mission
+data:mission:sizing:takeoff:V2 || safety speed before reaching 35 feet height in sizing mission
+data:mission:sizing:takeoff:VLOF || lift-off speed in sizing mission
+data:mission:sizing:takeoff:VMCA || air minimum control speed in sizing mission
+data:mission:sizing:takeoff:VR || rotation speed in sizing mission
+data:mission:sizing:takeoff:altitude || altitude at takeoff in sizing mission
+data:mission:sizing:takeoff:delta_ISA || ISA temperature increment during takeoff phase in sizing mission
+data:mission:sizing:takeoff:duration || duration of takeoff phase in sizing mission
+data:mission:sizing:takeoff:flap_angle || flap angle during takeoff phase in sizing mission
+data:mission:sizing:takeoff:friction_coefficient_no_brake || ground friction coefficient with no brake in sizing mission
+data:mission:sizing:takeoff:fuel || mass of consumed fuel during takeoff phase in sizing mission
+data:mission:sizing:takeoff:slat_angle || slat angle during takeoff phase in sizing mission
+data:mission:sizing:taxi_in:duration || duration of taxi-in phase in sizing mission
+data:mission:sizing:taxi_in:fuel || mass of consumed fuel during taxi-in phase in sizing mission
+data:mission:sizing:taxi_in:speed || speed during taxi-in phase in sizing mission
+data:mission:sizing:taxi_in:thrust_rate || thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission
+data:mission:sizing:taxi_out:duration || duration of taxi-out phase in sizing mission
+data:mission:sizing:taxi_out:fuel || mass of consumed fuel during taxi-out phase in sizing mission
+data:mission:sizing:taxi_out:speed || speed during taxi-out phase in sizing mission
+data:mission:sizing:taxi_out:thrust_rate || thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission
+data:propulsion:MTO_thrust || maximum thrust of one engine at sea level
+data:propulsion:SFC || Specific Fuel Consumption (can be a vector)
+data:propulsion:altitude || altitude for propulsion calculation (can be a vector)
+data:propulsion:mach || Mach number for propulsion calculation (can be a vector)
+data:propulsion:phase || flight phase for propulsion calculation (can be a vector): TafeOff=1 / Climb=2 / Cruise=3 / Idle=4
+data:propulsion:required_thrust || thrust setpoint (can be a vector). Used if "data:propulsion:use_thrust_rate" is 0
+data:propulsion:required_thrust_rate || thrust setpoint (can be a vector). Used if "data:propulsion:use_thrust_rate" is 1
+data:propulsion:rubber_engine:bypass_ratio || bypass ratio for rubber engine model
+data:propulsion:rubber_engine:delta_t4_climb || As it is a delta, unit is K or °C, but is not specified to avoid OpenMDAO making unwanted conversion
+data:propulsion:rubber_engine:delta_t4_cruise || As it is a delta, unit is K or °C, but is not specified to avoid OpenMDAO making unwanted conversion
+data:propulsion:rubber_engine:design_altitude || design altitude for rubber engine model
+data:propulsion:rubber_engine:maximum_mach || maximum Mach number for rubber engine model
+data:propulsion:rubber_engine:overall_pressure_ratio || Overall pressure ratio for rubber engine model
+data:propulsion:rubber_engine:turbine_inlet_temperature || design turbine inlet temperature (T4) for rubber engine model
+data:propulsion:thrust || actual thrust value (can be a vector)
+data:propulsion:thrust_rate || actual thrust rate (can be a vector)
+data:propulsion:use_thrust_rate || (can be a vector) If 1, calculation will use data:propulsion:required_thrust_rate. If 0, calculation will use data:propulsion:required_thrust
+data:weight:aircraft:CG:aft:MAC_position || most aft X-position of center of gravity as ratio of mean aerodynamic chord
+data:weight:aircraft:CG:aft:x || most aft X-position of aircraft center of gravity
+data:weight:aircraft:LW || landing weight
+data:weight:aircraft:MFW || maximum fuel weight
+data:weight:aircraft:MLW || maximum landing weight
+data:weight:aircraft:MTOW || maximum takeoff weight
+data:weight:aircraft:MZFW || maximum zero fuel weight
+data:weight:aircraft:OWE || operating weight - empty
+data:weight:aircraft:additional_fuel_capacity || fuel mass capacity of wing that exceeds sizing mission requirement
+data:weight:aircraft:empty:CG:MAC_position || X-position of center of gravity as ratio of mean aerodynamic chord for empty aircraft
+data:weight:aircraft:load_case_1:CG:MAC_position || X-position of center of gravity as ratio of mean aerodynamic chord for load case 1
+data:weight:aircraft:load_case_2:CG:MAC_position || X-position of center of gravity as ratio of mean aerodynamic chord for load case 2
+data:weight:aircraft:load_case_3:CG:MAC_position || X-position of center of gravity as ratio of mean aerodynamic chord for load case 3
+data:weight:aircraft:load_case_4:CG:MAC_position || X-position of center of gravity as ratio of mean aerodynamic chord for load case 4
+data:weight:aircraft:max_payload || max payload weight
+data:weight:aircraft:payload || design payload weight
+data:weight:aircraft_empty:CG:x || X-position center of gravity of empty aircraft
+data:weight:aircraft_empty:mass || mass of empty aircraft (=OWE - mass of crew)
+data:weight:airframe:CG:x || airframe (A): X-position of center of gravity
+data:weight:airframe:flight_controls:CG:x || flight controls (A4): X-position of center of gravity
+data:weight:airframe:flight_controls:mass || flight controls (A4): total mass
+data:weight:airframe:fuselage:CG:x || fuselage (A2): X-position of center of gravity
+data:weight:airframe:fuselage:mass || fuselage (A2): total mass
+data:weight:airframe:horizontal_tail:CG:x || horizontal tail (A31): X-position of center of gravity
+data:weight:airframe:horizontal_tail:mass || horizontal tail (A31): mass
+data:weight:airframe:landing_gear:front:CG:x || front landing gear (A52): X-position of center of gravity
+data:weight:airframe:landing_gear:front:mass || front landing gear (A52): mass
+data:weight:airframe:landing_gear:main:CG:x || main landing gear (A51): X-position of center of gravity
+data:weight:airframe:landing_gear:main:mass || main landing gear (A51): mass
+data:weight:airframe:mass || airframe (A): mass
+data:weight:airframe:paint:CG:x || paint (A7): X-position of center of gravity
+data:weight:airframe:paint:mass || paint (A7): total mass
+data:weight:airframe:pylon:CG:x || pylon (A6): X-position of center of gravity
+data:weight:airframe:pylon:mass || pylon (A6): total mass
+data:weight:airframe:vertical_tail:CG:x || vertical tail (A32): X-position of center of gravity
+data:weight:airframe:vertical_tail:mass || vertical tail (A32): mass
+data:weight:airframe:wing:CG:x || wing (A1): X-position of center of gravity
+data:weight:airframe:wing:mass || wing (A1): total mass
+data:weight:crew:CG:x || crew (E): X-position of center of gravity
+data:weight:crew:mass || crew (E): mass
+data:weight:fuel_tank:CG:x || fuel tank: X-position of center of gravity
+data:weight:furniture:CG:x || aircraft furniture (D): X-position of center of gravity
+data:weight:furniture:cargo_configuration:CG:x || cargo configuration (D1): X-position of center of gravity
+data:weight:furniture:cargo_configuration:mass || cargo configuration (D1): mass
+data:weight:furniture:food_water:CG:x || food water (D3): X-position of center of gravity
+data:weight:furniture:food_water:mass || food water (D3): mass
+data:weight:furniture:mass || aircraft furniture (D): mass
+data:weight:furniture:passenger_seats:CG:x || passenger seats (D2): X-position of center of gravity
+data:weight:furniture:passenger_seats:mass || passenger seats (D2): mass
+data:weight:furniture:security_kit:CG:x || security kit (D4): X-position of center of gravity
+data:weight:furniture:security_kit:mass || security kit (D4): mass
+data:weight:furniture:toilets:CG:x || toilets (D5): X-position of center of gravity
+data:weight:furniture:toilets:mass || toilets (D5): mass
+data:weight:payload:PAX:CG:x || passengers: X-position of center of gravity
+data:weight:payload:front_fret:CG:x || front fret: X-position of center of gravity
+data:weight:payload:rear_fret:CG:x || rear fret: X-position of center of gravity
+data:weight:propulsion:CG:x || propulsion system (B): X-position of center of gravity
+data:weight:propulsion:engine:CG:x || engine (B1): X-position of center of gravity
+data:weight:propulsion:engine:mass || engine (B1): mass
+data:weight:propulsion:fuel_lines:CG:x || fuel lines (B2): X-position of center of gravity
+data:weight:propulsion:fuel_lines:mass || fuel lines (B2): mass
+data:weight:propulsion:mass || propulsion system (B): mass
+data:weight:propulsion:unconsumables:CG:x || unconsumables (B3): X-position of center of gravity
+data:weight:propulsion:unconsumables:mass || unconsumables (B3): mass
+data:weight:systems:CG:x || aircraft systems (C): X-position of center of gravity
+data:weight:systems:flight_kit:CG:x || flight kit (C6): X-position of center of gravity
+data:weight:systems:flight_kit:mass || flight kit (C6): mass
+data:weight:systems:life_support:air_conditioning:CG:x || air conditioning (C2): X-position of center of gravity
+data:weight:systems:life_support:air_conditioning:mass || air conditioning (C2): mass
+data:weight:systems:life_support:cabin_lighting:CG:x || cabin lighting (C2): X-position of center of gravity
+data:weight:systems:life_support:cabin_lighting:mass || cabin lighting (C2): mass
+data:weight:systems:life_support:de-icing:CG:x || de-icing (C2): X-position of center of gravity
+data:weight:systems:life_support:de-icing:mass || de-icing (C2): mass
+data:weight:systems:life_support:insulation:CG:x || insulation (C21): X-position of center of gravity
+data:weight:systems:life_support:insulation:mass || insulation (C21): mass
+data:weight:systems:life_support:oxygen:CG:x || oxygen (C21): X-position of center of gravity
+data:weight:systems:life_support:oxygen:mass || oxygen (C21): mass
+data:weight:systems:life_support:safety_equipment:CG:x || safety equipment (C21): X-position of center of gravity
+data:weight:systems:life_support:safety_equipment:mass || safety equipment (C21): mass
+data:weight:systems:life_support:seats_crew_accommodation:CG:x || seats crew accommodation (C21): X-position of center of gravity
+data:weight:systems:life_support:seats_crew_accommodation:mass || seats crew accommodation (C21): mass
+data:weight:systems:mass || aircraft systems (C): mass
+data:weight:systems:navigation:CG:x || navigation (C3): X-position of center of gravity
+data:weight:systems:navigation:mass || navigation (C3): mass
+data:weight:systems:operational:cargo_hold:CG:x || cargo hold (C52): X-position of center of gravity
+data:weight:systems:operational:cargo_hold:mass || cargo hold (C52): mass
+data:weight:systems:operational:radar:CG:x || radar (C51): X-position of center of gravity
+data:weight:systems:operational:radar:mass || radar (C51): mass
+data:weight:systems:power:auxiliary_power_unit:CG:x || power (C1): X-position of center of gravity
+data:weight:systems:power:auxiliary_power_unit:mass || power (C1): mass
+data:weight:systems:power:electric_systems:CG:x || power (C1): X-position of center of gravity
+data:weight:systems:power:electric_systems:mass || power (C1): mass
+data:weight:systems:power:hydraulic_systems:CG:x || power (C1): X-position of center of gravity
+data:weight:systems:power:hydraulic_systems:mass || power (C1): mass
+data:weight:systems:transmission:CG:x || transmission (C4): X-position of center of gravity
+data:weight:systems:transmission:mass || transmission (C4): mass
+settings:mission:sizing:breguet:climb:mass_ratio || For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)
+settings:mission:sizing:breguet:climb_descent_distance || For Breguet performance computation: assumption of ground distance covered during climb + descent
+settings:mission:sizing:breguet:descent:mass_ratio || For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)
+settings:mission:sizing:breguet:reserve:mass_ratio || For Breguet performance computation: (weight of fuel reserve)/ZFW
+settings:weight:aircraft:CG:range || distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)
+settings:weight:airframe:flight_controls:mass:k_fc || flight controls (A4): 0.85e-4 if electrical, 1.35e-4 if conventional
+settings:weight:airframe:fuselage:mass:k_fus || correction coefficient: 1.00 if all engines under wing / 1.02 with 2 engines at rear / 1.03 if 3 engines at rear / 1.05 if 1 engine in vertical tail (with or without 2 engines under wing)
+settings:weight:airframe:fuselage:mass:k_lg || correction coefficient: 1.05 if main landing gear under wing / 1.10 if main landing gear under fuselage
+settings:weight:airframe:landing_gear:front:weight_ratio || part of aircraft weight that is supported by front landing gear
+settings:weight:airframe:wing:mass:k_mvo || 1.39 for Airbus type aircrafts
+settings:weight:airframe:wing:mass:k_voil || 1.00 if 4 engines / 1.05 if 2 or 3 engines / 1.10 if engines on fuselage
+settings:weight:systems:power:mass:k_elec || electricity coefficient: 1.00 if 2 engines (A300, A310 type) / (1.02 if 2 engines (DC9, Caravelle type) / 1.03 if 3 engines (B727 type) / 1.05 if 3 engines (DC10, L1011 type) / 1.08 if 4 engines (B747 type)
+test:test_variable || for testing (do not remove, keep first)
+tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling || maximum authorized value for compressibility drag. Allows to prevent the model from overestimating the compressibility effect, especially for aircraft models after year 2000.
+tuning:aerodynamics:aircraft:cruise:CD:k || correction ratio to apply to computed drag coefficient in cruise conditions
+tuning:aerodynamics:aircraft:cruise:CD:offset || correction offset to apply to computed drag coefficient in cruise conditions
+tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k || correction ratio to apply to computed induced drag coefficient in cruise conditions
+tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:offset || correction ratio to apply to computed drag coefficient in cruise conditions
+tuning:aerodynamics:aircraft:cruise:CL:k || ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
+tuning:aerodynamics:aircraft:cruise:CL:offset || offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
+tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:k || ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
+tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:offset || offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
+tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k || correction ratio to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
+tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:offset || correction offset to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
+tuning:weight:airframe:flight_controls:mass:k || flight controls (A4): correction ratio to be applied on computed mass
+tuning:weight:airframe:flight_controls:mass:offset || flight controls (A4): correction offset to be applied on computed mass
+tuning:weight:airframe:fuselage:mass:k || fuselage (A2): correction ratio to be applied on computed mass
+tuning:weight:airframe:fuselage:mass:offset || fuselage (A2): correction offset to be applied on computed mass
+tuning:weight:airframe:horizontal_tail:mass:k || horizontal tail (A31): correction ratio to be applied on computed mass
+tuning:weight:airframe:horizontal_tail:mass:offset || horizontal tail (A31): correction offset to be applied on computed mass
+tuning:weight:airframe:landing_gear:mass:k || landing gears (A5): correction ratio to be applied on computed mass
+tuning:weight:airframe:landing_gear:mass:offset || landing gears (A5): correction offset to be applied on computed mass
+tuning:weight:airframe:paint:mass:k || paint (A7): correction ratio to be applied on computed mass
+tuning:weight:airframe:paint:mass:offset || paint (A7): correction offset to be applied on computed mass
+tuning:weight:airframe:pylon:mass:k || pylon (A6): correction ratio to be applied on computed mass
+tuning:weight:airframe:pylon:mass:offset || pylon (A6): correction offset to be applied on computed mass
+tuning:weight:airframe:vertical_tail:mass:k || vertical tail (A32): correction ratio to be applied on computed mass
+tuning:weight:airframe:vertical_tail:mass:offset || vertical tail (A32): correction offset to be applied on computed mass
+tuning:weight:airframe:wing:bending_sizing:mass:k || wing bending sizing (A11): correction ratio to be applied on computed mass
+tuning:weight:airframe:wing:bending_sizing:mass:offset || wing bending sizing (A11): correction offset to be applied on computed mass
+tuning:weight:airframe:wing:mass:k || wing (A1): correction ratio to be applied on computed mass
+tuning:weight:airframe:wing:mass:offset || wing (A1): correction offset to be applied on computed mass
+tuning:weight:airframe:wing:reinforcements:mass:k || wing reinforcements (A14): correction ratio to be applied on computed mass
+tuning:weight:airframe:wing:reinforcements:mass:offset || wing reinforcements (A14): correction offset to be applied on computed mass
+tuning:weight:airframe:wing:ribs:mass:k || wing ribs (A13): correction ratio to be applied on computed mass
+tuning:weight:airframe:wing:ribs:mass:offset || wing ribs (A13): correction offset to be applied on computed mass
+tuning:weight:airframe:wing:secondary_parts:mass:k || wing secondary parts (A15): correction ratio to be applied on computed mass
+tuning:weight:airframe:wing:secondary_parts:mass:offset || wing secondary parts (A15): correction offset to be applied on computed mass
+tuning:weight:airframe:wing:shear_sizing:mass:k || wing shear sizing (A12): correction ratio to be applied on computed mass
+tuning:weight:airframe:wing:shear_sizing:mass:offset || wing shear sizing (A12): correction offset to be applied on computed mass
+tuning:weight:furniture:cargo_configuration:mass:k || cargo configuration (D1): correction ratio to be applied on computed mass
+tuning:weight:furniture:cargo_configuration:mass:offset || cargo configuration (D1): correction offset to be applied on computed mass
+tuning:weight:furniture:food_water:mass:k || food water (D3): correction ratio to be applied on computed mass
+tuning:weight:furniture:food_water:mass:offset || food water (D3): correction offset to be applied on computed mass
+tuning:weight:furniture:passenger_seats:mass:k || passenger seats (D2): correction ratio to be applied on computed mass
+tuning:weight:furniture:passenger_seats:mass:offset || passenger seats (D2): correction offset to be applied on computed mass
+tuning:weight:furniture:security_kit:mass:k || security kit (D4): correction ratio to be applied on computed mass
+tuning:weight:furniture:security_kit:mass:offset || security kit (D4): correction offset to be applied on computed mass
+tuning:weight:furniture:toilets:mass:k || toilets (D5): correction ratio to be applied on computed mass
+tuning:weight:furniture:toilets:mass:offset || toilets (D5): correction offset to be applied on computed mass
+tuning:weight:propulsion:engine:mass:k || engine (B1): correction ratio to be applied on computed mass
+tuning:weight:propulsion:engine:mass:offset || engine (B1): correction offset to be applied on computed mass
+tuning:weight:propulsion:fuel_lines:mass:k || fuel lines (B2): correction ratio to be applied on computed mass
+tuning:weight:propulsion:fuel_lines:mass:offset || fuel lines (B2): correction offset to be applied on computed mass
+tuning:weight:propulsion:unconsumables:mass:k || unconsumables (B3): correction ratio to be applied on computed mass
+tuning:weight:propulsion:unconsumables:mass:offset || unconsumables (B3): correction offset to be applied on computed mass
+tuning:weight:systems:flight_kit:mass:k || flight kit (C6): correction ratio to be applied on computed mass
+tuning:weight:systems:flight_kit:mass:offset || flight kit (C6): correction offset to be applied on computed mass
+tuning:weight:systems:life_support:air_conditioning:mass:k || air conditioning (C21): correction ratio to be applied on computed mass
+tuning:weight:systems:life_support:air_conditioning:mass:offset || air conditioning (C21): correction offset to be applied on computed mass
+tuning:weight:systems:life_support:cabin_lighting:mass:k || cabin lighting (C21): correction ratio to be applied on computed mass
+tuning:weight:systems:life_support:cabin_lighting:mass:offset || cabin lighting (C21): correction offset to be applied on computed mass
+tuning:weight:systems:life_support:de-icing:mass:k || de-icing (C21): correction ratio to be applied on computed mass
+tuning:weight:systems:life_support:de-icing:mass:offset || de-icing (C21): correction offset to be applied on computed mass
+tuning:weight:systems:life_support:insulation:mass:k || insulation (C21): correction ratio to be applied on computed mass
+tuning:weight:systems:life_support:insulation:mass:offset || insulation (C21): correction offset to be applied on computed mass
+tuning:weight:systems:life_support:oxygen:mass:k || oxygen (C21): correction ratio to be applied on computed mass
+tuning:weight:systems:life_support:oxygen:mass:offset || oxygen (C21): correction offset to be applied on computed mass
+tuning:weight:systems:life_support:safety_equipment:mass:k || safety equipment (C21): correction ratio to be applied on computed mass
+tuning:weight:systems:life_support:safety_equipment:mass:offset || safety equipment (C21): correction offset to be applied on computed mass
+tuning:weight:systems:life_support:seats_crew_accommodation:mass:k || seats crew accommodation (C21): correction ratio to be applied on computed mass
+tuning:weight:systems:life_support:seats_crew_accommodation:mass:offset || seats crew accommodation (C21): correction offset to be applied on computed mass
+tuning:weight:systems:navigation:mass:k || navigation (C3): correction ratio to be applied on computed mass
+tuning:weight:systems:navigation:mass:offset || navigation (C3): correction offset to be applied on computed mass
+tuning:weight:systems:operational:mass:k || operational (C5): correction ratio to be applied on computed mass
+tuning:weight:systems:operational:mass:offset || operational (C5): correction offset to be applied on computed mass
+tuning:weight:systems:power:auxiliary_power_unit:mass:k || power (C1): correction ratio to be applied on computed mass
+tuning:weight:systems:power:auxiliary_power_unit:mass:offset || power (C1): correction offset to be applied on computed mass
+tuning:weight:systems:power:electric_systems:mass:k || power (C1): correction ratio to be applied on computed mass
+tuning:weight:systems:power:electric_systems:mass:offset || power (C1): correction offset to be applied on computed mass
+tuning:weight:systems:power:hydraulic_systems:mass:k || power (C1): correction ratio to be applied on computed mass
+tuning:weight:systems:power:hydraulic_systems:mass:offset || power (C1): correction offset to be applied on computed mass
+tuning:weight:systems:transmission:mass:k || transmission (C4): correction ratio to be applied on computed mass
+tuning:weight:systems:transmission:mass:offset || transmission (C4): correction offset to be applied on computed mass

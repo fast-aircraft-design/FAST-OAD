@@ -152,7 +152,7 @@ Modify the configuration file
 *****************************
 
 The folders that contain your Python files must be listed in :code:`module_folders`
-in the configuration file:
+in the :ref:`configuration-file`:
 
 .. code-block:: TOML
 
@@ -161,10 +161,12 @@ in the configuration file:
     # List of folder paths where user added custom registered OpenMDAO components
     module_folders = ["/path/to/my/custom/module/folder", "/another/path/"]
 
-Once this is done, (assuming your configuration file is named `my_custom_conf.toml`)
-your custom, registered, system should appear in the list provided by the command:
+    ...
 
-.. code:: bash
+Once this is done, (assuming your configuration file is named :code:`my_custom_conf.toml`)
+your custom, registered, system should appear in the list provided by the command line:
+
+.. code:: shell-session
 
       $ fastoad list_systems my_custom_conf.toml
 
