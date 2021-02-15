@@ -73,7 +73,7 @@ class Mission(om.Group):
             "mission_file_path", default=None, types=(str, MissionDefinition), allow_none=True
         )
         self.options.declare("mission_name", default=None, types=str, allow_none=True)
-        self.options.declare("initial_iterations", default=2, types=int)
+        self.options.declare("initial_iterations", default=1, types=int)
         self.options.declare("adjust_fuel", default=True, types=bool)
         self.options.declare("compute_TOW", default=False, types=bool)
         self.options.declare("add_solver", default=False, types=bool)
@@ -252,11 +252,13 @@ class MissionComponent(om.ExplicitComponent):
         self.declare_partials(["*"], ["*"])
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        if self.iter_count_without_approx < self.options["initial_iterations"]:
-            _LOGGER.info("Mission computation: Using initializer computation.")
+        iter_count = self.iter_count_without_approx
+        message_prefix = "Mission computation - iteration %i : " % iter_count
+        if iter_count < self.options["initial_iterations"]:
+            _LOGGER.info(message_prefix + "Using initializer computation. OTHER ITERATIONS NEEDED.")
             self._compute_breguet(inputs, outputs)
         else:
-            _LOGGER.info("Mission computation: Using mission definition.")
+            _LOGGER.info(message_prefix + "Using mission definition.")
             self._compute_mission(inputs, outputs)
 
     def _compute_breguet(self, inputs, outputs):

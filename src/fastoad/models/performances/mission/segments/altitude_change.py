@@ -1,6 +1,6 @@
 """Classes for climb/descent segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -83,7 +83,7 @@ class AltitudeChangeSegment(ManualThrustSegment):
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         self.complete_flight_point(start)  # needed to ensure all speed values are computed.
 
-        if self.target.altitude:
+        if self.target.altitude is not None:
             if isinstance(self.target.altitude, str):
                 # Target altitude will be modified along the process, so we keep track
                 # of the original order in target CL, that is not used otherwise.
@@ -144,21 +144,21 @@ class AltitudeChangeSegment(ManualThrustSegment):
                     optimal_altitude, up_direction=False
                 )
 
-        if self.target.altitude:
+        if self.target.altitude is not None:
             return self.target.altitude - current.altitude
-        elif self.target.true_airspeed and self.target.true_airspeed != self.CONSTANT_VALUE:
+        if self.target.true_airspeed and self.target.true_airspeed != self.CONSTANT_VALUE:
             return self.target.true_airspeed - current.true_airspeed
-        elif (
+        if (
             self.target.equivalent_airspeed
             and self.target.equivalent_airspeed != self.CONSTANT_VALUE
         ):
             return self.target.equivalent_airspeed - current.equivalent_airspeed
-        elif self.target.mach and self.target.mach != self.CONSTANT_VALUE:
+        if self.target.mach is not None and self.target.mach != self.CONSTANT_VALUE:
             return self.target.mach - current.mach
-        else:
-            raise FastFlightSegmentIncompleteFlightPoint(
-                "No valid target definition for altitude change."
-            )
+
+        raise FastFlightSegmentIncompleteFlightPoint(
+            "No valid target definition for altitude change."
+        )
 
     def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         gamma = (thrust - drag) / mass / g

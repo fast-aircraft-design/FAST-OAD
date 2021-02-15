@@ -84,6 +84,10 @@ class FlightSegment(IFlightPart):
     #: Using this value will tell to keep the associated parameter constant.
     CONSTANT_VALUE = "constant"  # pylint: disable=invalid-name # used as constant
 
+    def __post_init__(self):
+        # Ensure target fields are not numpy arrays
+        self.target.scalarize()
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
         Computes the flight path segment from provided start point.
