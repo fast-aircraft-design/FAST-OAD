@@ -25,8 +25,7 @@ from scipy.constants import foot, knot
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.io import VariableIO
-from fastoad.models.propulsion import IOMPropulsionWrapper, IPropulsion
-from fastoad.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
+from fastoad.model_base.propulsion import AbstractFuelPropulsion, IOMPropulsionWrapper, IPropulsion
 from fastoad.module_management.service_registry import RegisterPropulsion
 from tests.testing_utilities import run_system
 from ..mission import MissionComponent, Mission

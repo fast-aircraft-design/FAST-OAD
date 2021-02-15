@@ -2,7 +2,7 @@
 Weight computation (mass and CG)
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@ Weight computation (mass and CG)
 
 import openmdao.api as om
 
-from fastoad.models.options import PAYLOAD_FROM_NPAX
+from fastoad.model_base.options import PAYLOAD_FROM_NPAX
 from fastoad.models.weight.cg.cg import CG
 from fastoad.models.weight.mass_breakdown import MassBreakdown
 

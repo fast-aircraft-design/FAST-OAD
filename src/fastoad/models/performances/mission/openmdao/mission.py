@@ -2,7 +2,7 @@
 OpenMDAO component for time-step computation of missions.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,10 +23,9 @@ import openmdao.api as om
 import pandas as pd
 from scipy.constants import foot
 
-from fastoad import BundleLoader
 from fastoad.base.flight_point import FlightPoint
-from fastoad.models.propulsion import IOMPropulsionWrapper
-from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastoad.model_base.propulsion import FuelEngineSet, IOMPropulsionWrapper
+from fastoad.module_management.service_registry import RegisterPropulsion
 from . import resources
 from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
@@ -382,4 +381,4 @@ class MissionComponent(om.ExplicitComponent):
 
         :return: the engine wrapper instance
         """
-        return BundleLoader().instantiate_component(self.options["propulsion_id"])
+        return RegisterPropulsion.get_provider(self.options["propulsion_id"])

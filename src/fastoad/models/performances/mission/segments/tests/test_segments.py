@@ -18,7 +18,7 @@ from numpy.testing import assert_allclose
 from scipy.constants import foot
 
 from fastoad.base.flight_point import FlightPoint
-from fastoad.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion, FuelEngineSet
+from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet
 from ..altitude_change import AltitudeChangeSegment
 from ..cruise import (
     OptimalCruiseSegment,

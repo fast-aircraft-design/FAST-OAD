@@ -13,6 +13,7 @@ Mission generator.
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from collections import OrderedDict
 from copy import deepcopy
 from typing import Mapping, Union, Dict, Optional, List
@@ -23,11 +24,6 @@ import pandas as pd
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.model_base.propulsion import IPropulsion
-from fastoad.models.performances.mission.base import FlightSequence
-from fastoad.models.performances.mission.base import IFlightPart
-from fastoad.models.performances.mission.polar import Polar
-from fastoad.models.performances.mission.segments.base import FlightSegment
-from fastoad.models.propulsion import IPropulsion
 from .exceptions import FastMissionFileMissingMissionNameError
 from .schema import (
     PHASE_DEFINITIONS_TAG,
@@ -41,7 +37,11 @@ from .schema import (
     MissionDefinition,
     RESERVE_TAG,
 )
+from ..base import FlightSequence
+from ..base import IFlightPart
+from ..polar import Polar
 from ..routes import RangedRoute
+from ..segments.base import FlightSegment
 
 BASE_UNITS = {
     "altitude": "m",

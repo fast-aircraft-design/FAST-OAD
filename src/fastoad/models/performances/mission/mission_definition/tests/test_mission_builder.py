@@ -25,7 +25,6 @@ from fastoad.models.performances.mission.segments.altitude_change import Altitud
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
-from fastoad.models.propulsion import IPropulsion
 from ..exceptions import FastMissionFileMissingMissionNameError
 from ..mission_builder import MissionBuilder
 from ..schema import MissionDefinition
