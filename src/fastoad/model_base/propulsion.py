@@ -1,6 +1,8 @@
-"""Base module for propulsion models."""
+"""
+Base classes for propulsion components.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,8 +18,8 @@ from abc import ABC, abstractmethod
 from typing import Union
 
 import numpy as np
-import openmdao.api as om
 import pandas as pd
+from openmdao import api as om
 from openmdao.core.component import Component
 
 from fastoad.base.flight_point import FlightPoint
@@ -41,13 +43,8 @@ class IPropulsion(ABC):
 
         If the propulsion model needs fields that are not among defined fields
         of the :class`FlightPoint class`, these fields can be made authorized by
-        :class`FlightPoint class` by putting such command before defining the
-        class::
-
-            >>> # Simply adds the fields:
-            >>> AddKeyAttributes(["ion_drive_power", "warp"])(FlightPoint)
-            >>> # Adds the fields with associated default values:
-            >>> AddKeyAttributes({"ion_drive_power":110., "warp":9.0})(FlightPoint)
+        :class`FlightPoint class`. Please see part about extensibility in
+        :class`FlightPoint class` documentation.
     """
 
     @abstractmethod
@@ -183,3 +180,36 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
 
         :return: an instance of OpenMDAO wrapper for propulsion model
         """
+
+
+class AbstractFuelPropulsion(IPropulsion, ABC):
+    """
+    Propulsion model that consume any fuel should inherit from this one.
+
+    In inheritors, :meth:`compute_flight_points` is expected to define
+    "sfc" and "thrust" in computed FlightPoint instances.
+    """
+
+    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
+        return time_step * flight_point.sfc * flight_point.thrust
+
+
+class FuelEngineSet(AbstractFuelPropulsion):
+    def __init__(self, engine: IPropulsion, engine_count):
+        """
+        Class for modelling an assembly of identical fuel engines.
+
+        Thrust is supposed equally distributed among them.
+
+        :param engine: the engine model
+        :param engine_count:
+        """
+        self.engine = engine
+        self.engine_count = engine_count
+
+    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+        if flight_points.thrust is not None:
+            flight_points.thrust = flight_points.thrust / self.engine_count
+
+        self.engine.compute_flight_points(flight_points)
+        flight_points.thrust = flight_points.thrust * self.engine_count

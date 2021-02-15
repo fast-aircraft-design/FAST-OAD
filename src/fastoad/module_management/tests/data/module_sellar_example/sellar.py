@@ -19,8 +19,8 @@ from typing import Type
 from openmdao.api import Group, IndepVarComp
 from openmdao.api import NonlinearBlockGS
 
-from .disc1 import Disc1
-from .disc2 import Disc2
+from .disc1.disc1 import Disc1
+from .disc2.disc2 import Disc2
 from .functions import Functions
 
 

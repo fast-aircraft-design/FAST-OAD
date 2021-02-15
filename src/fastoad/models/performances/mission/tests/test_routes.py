@@ -8,7 +8,7 @@ why almost no numerical check is done here (such checks will be done in the
 non-regression tests).
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -36,14 +36,13 @@ from scipy.constants import knot, foot
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import FlightPhase, EngineSetting
+from fastoad.model_base.propulsion import IPropulsion, FuelEngineSet
 from fastoad.models.performances.mission.base import IFlightPart
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.performances.mission.routes import RangedRoute
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
-from fastoad.models.propulsion import IPropulsion
-from fastoad.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")

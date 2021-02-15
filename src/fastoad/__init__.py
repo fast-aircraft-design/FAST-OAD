@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,10 +11,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 from pkg_resources import get_distribution, DistributionNotFound
 
+from fastoad.module_management.plugins import load_plugins
 from .cmd import api
-from .module_management import BundleLoader
 
 try:
     # Change here if project is renamed and does not equal the package name
@@ -25,5 +26,5 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-# Loading bundles
-BundleLoader().context.install_bundle("fastoad.activator").start()
+load_plugins()
+del load_plugins

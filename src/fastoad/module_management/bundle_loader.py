@@ -71,7 +71,7 @@ class BundleLoader:
         """
         return self.framework.get_bundle_context()
 
-    def install_packages(self, folder_path: str) -> Tuple[Set[Bundle], Set[str]]:
+    def explore_folder(self, folder_path: str) -> Tuple[Set[Bundle], Set[str]]:
         """
         Installs bundles found in *folder_path*.
 

@@ -2,7 +2,7 @@
 Module for managing OpenMDAO variables
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,22 +15,24 @@ Module for managing OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os.path as pth
+from builtins import isinstance
 from copy import deepcopy
-from importlib.resources import open_text
-from typing import Dict, Hashable, List, Union
+from importlib.resources import open_text, contents
+from typing import Dict, Hashable, List, Union, Mapping, Iterable, Tuple
 
 import numpy as np
 import openmdao.api as om
 import pandas as pd
 from openmdao.core.system import System
 
-from . import resources
 from .utils import get_unconnected_input_names
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
+
 # Metadata that will be ignore when checking variable equality and when adding variable
 # to an OpenMDAO component
 METADATA_TO_IGNORE = [
@@ -83,8 +85,11 @@ class Variable(Hashable):
     :param kwargs: the attributes of the variable, as keyword arguments
     """
 
-    # Will store content of DESCRIPTION_FILE_PATH once and for all
+    # Will store content of description files
     _variable_descriptions = {}
+
+    # The list of modules of path where description files have been read
+    _loaded_descriptions = set()
 
     # Default metadata
     _base_metadata = {}
@@ -99,12 +104,6 @@ class Variable(Hashable):
         """ Dictionary for metadata of the variable """
 
         # Initialize class attributes once at first instantiation -------------
-        if not self._variable_descriptions:
-            # Class attribute, but it's safer to initialize it at first instantiation
-            with open_text(resources, DESCRIPTION_FILENAME) as desc_io:
-                vars_descs = np.genfromtxt(desc_io, delimiter="\t", dtype=str)
-            self.__class__._variable_descriptions.update(vars_descs)
-
         if not self._base_metadata:
             # Get variable base metadata from an ExplicitComponent
             comp = om.ExplicitComponent()
@@ -134,6 +133,75 @@ class Variable(Hashable):
         # If no description, add one from DESCRIPTION_FILE_PATH, if available
         if not self.description and self.name in self._variable_descriptions:
             self.description = self._variable_descriptions[self.name]
+
+    @classmethod
+    def read_variable_descriptions(cls, file_parent: str, update_existing: bool = True):
+        """
+        Reads variable descriptions in indicated folder or package, if it contains some.
+
+        The file variable_descriptions.txt is looked for. Nothing is done if it is not
+        found (no error raised also).
+
+        Each line of the file should be formatted like::
+
+            my:variable||The description of my:variable, as long as needed, but on one line.
+
+        :param file_parent: the folder path or the package name that should contain the file
+        :param update_existing: if True, previous descriptions will be updated.
+                                if False, previous descriptions will be erased.
+        """
+        if not update_existing:
+            cls._variable_descriptions = {}
+            cls._loaded_descriptions = set()
+
+        variable_descriptions = None
+        description_file = None
+
+        if pth.isdir(file_parent):
+            file_path = pth.join(file_parent, DESCRIPTION_FILENAME)
+            if pth.isfile(file_path):
+                description_file = open(file_path)
+        else:
+            # Then it is a module name
+            if DESCRIPTION_FILENAME in contents(file_parent):
+                description_file = open_text(file_parent, DESCRIPTION_FILENAME)
+
+        if description_file is not None:
+            try:
+                variable_descriptions = np.genfromtxt(
+                    description_file, delimiter="||", dtype=str, autostrip=True
+                )
+            except Exception as exc:
+                # Reading the file is not mandatory, so let's just log the error.
+                _LOGGER.error(
+                    "Could not read file %s in %s. Error log is:\n%s",
+                    DESCRIPTION_FILENAME,
+                    file_parent,
+                    exc,
+                )
+            description_file.close()
+
+        if variable_descriptions is not None:
+            if np.shape(variable_descriptions) == (2,):
+                # If the file contains only one line, np.genfromtxt() will return a (2,)-shaped
+                # array. We need a reshape for dict.update() to work correctly.
+                variable_descriptions = np.reshape(variable_descriptions, (1, 2))
+
+            cls._loaded_descriptions.add(file_parent)
+            cls.update_variable_descriptions(variable_descriptions)
+            _LOGGER.info("Loaded variable descriptions in %s", file_parent)
+
+    @classmethod
+    def update_variable_descriptions(
+        cls, variable_descriptions: Union[Mapping[str, str], Iterable[Tuple[str, str]]]
+    ):
+        """
+        Updates description of variables.
+
+        :param variable_descriptions: dict-like object with variable names as keys and descriptions
+                                      as values
+        """
+        cls._variable_descriptions.update(variable_descriptions)
 
     @classmethod
     def get_openmdao_keys(cls):

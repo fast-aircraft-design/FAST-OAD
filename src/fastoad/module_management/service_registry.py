@@ -1,6 +1,6 @@
 """Module for registering services."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,7 +18,6 @@ from typing import List, TypeVar, Type, Union, Any
 
 from openmdao.core.system import System
 
-from fastoad.models.propulsion import IOMPropulsionWrapper
 from .bundle_loader import BundleLoader
 from .constants import (
     SERVICE_PROPULSION_WRAPPER,
@@ -29,6 +28,8 @@ from .constants import (
     ModelDomain,
 )
 from .exceptions import FastBadSystemOptionError, FastIncompatibleServiceClassError
+from ..model_base.propulsion import IOMPropulsionWrapper
+from ..openmdao.variables import Variable
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 T = TypeVar("T")
@@ -115,7 +116,9 @@ class RegisterService:
 
         :param folder_path:
         """
-        cls._loader.install_packages(folder_path)
+        Variable.read_variable_descriptions(folder_path)
+
+        cls._loader.explore_folder(folder_path)
 
     @classmethod
     def get_provider_ids(cls) -> List[str]:
@@ -173,8 +176,28 @@ class RegisterService:
         return cls._loader.get_instance_property(instance_or_id, property_name)
 
 
+class _RegisterOpenMDAOService(RegisterService):
+    """
+    Base class for registering OpenMDAO-related classes.
+
+    This class just ensures that variable_descriptions.txt files that are at the
+    same package level as the decorated class are loaded.
+    """
+
+    def __call__(self, service_class: Type[T]) -> Type[T]:
+
+        # service_class.__module__ provides the name for the .py file, but
+        # we want just the parent package name.
+        package_name = ".".join(service_class.__module__.split(".")[:-1])
+
+        Variable.read_variable_descriptions(package_name)
+
+        # and now the actual call
+        return super().__call__(service_class)
+
+
 class RegisterPropulsion(
-    RegisterService,
+    _RegisterOpenMDAOService,
     base_class=IOMPropulsionWrapper,
     service_id=SERVICE_PROPULSION_WRAPPER,
     domain=ModelDomain.PROPULSION,
@@ -185,11 +208,28 @@ class RegisterPropulsion(
 
 
 class RegisterOpenMDAOSystem(
-    RegisterService, base_class=System, service_id=SERVICE_OPENMDAO_SYSTEM
+    _RegisterOpenMDAOService, base_class=System, service_id=SERVICE_OPENMDAO_SYSTEM
 ):
     """
     Decorator class for registering an OpenMDAO system for use in FAST-OAD configuration.
+
+    If a variable_descriptions.txt file is in the same folder as the class module, its
+    content is loaded (once, even if several classes are registered at the same level).
     """
+
+    @classmethod
+    def explore_folder(cls, folder_path: str):
+        """
+        Explores provided folder and looks for OpenMDAO systems to register.
+
+        Also, if there is a file for variable description at root of provided folder,
+        it is read.
+
+        :param folder_path:
+        """
+        Variable.read_variable_descriptions(folder_path)
+
+        super().explore_folder(folder_path)
 
     @classmethod
     def get_system(cls, identifier: str, options: dict = None) -> System:

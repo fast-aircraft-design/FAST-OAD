@@ -13,9 +13,9 @@ OpenMDAO systems. This part is addressed in the :ref:`API documentation<fastoad>
 
 .. _configuration-file:
 
-*******************************
-The FAST-OAD configuration file
-*******************************
+***************************
+FAST-OAD configuration file
+***************************
 FAST-OAD configuration files are in `TOML format <https://github.com/toml-lang/toml#toml>`_.
 
 .. code:: toml
@@ -229,14 +229,14 @@ if you prefer using Python, you can skip this part and go to :ref:`python-usage`
 
 The FAST-OAD command is :code:`fastoad`. Inline help is available with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad -h
 
 `fastoad` works through sub-commands. Each sub-command provides its own
 inline help using
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad <sub-command> -h
 
@@ -248,7 +248,7 @@ How to generate a configuration file
 
 FAST-OAD can provide a ready-to use configuration file with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad gen_conf my_conf.toml
 
@@ -265,7 +265,7 @@ you need the list of available systems.
 
 List of FAST-OAD systems can be obtained with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad list_systems
 
@@ -273,7 +273,7 @@ If you added custom systems in your configuration file `my_conf.toml`
 (see `how to add custom OpenMDAO modules to FAST-OAD<Add modules>`),
 they can be listed along FAST-OAD systems with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad list_systems my_conf.toml
 
@@ -286,7 +286,7 @@ How to get list of variables
 Once your problem is defined in `my_conf.toml`, you can get a list of the variables of
 your problem with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad list_variables my_conf.toml
 
@@ -299,7 +299,7 @@ How to generate an input file
 The name of the input file is defined in your configuration file `my_conf.toml`.
 This input file can be generated with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad gen_inputs my_conf.toml
 
@@ -310,7 +310,7 @@ will be "nan". Actual value must be filled before the process is run.
 If you already have a file that contains these values, you can use it to populate
 your new input files with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad gen_inputs my_conf.toml my_ref_values.xml
 
@@ -336,7 +336,7 @@ It provides in-depth information about the whole process.
 
 You can create a :code:`n2.html` file with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad n2 my_conf.toml
 
@@ -357,7 +357,7 @@ run your own server.
 
 You can create a :code:`xdsm.html` file with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad xdsm my_conf.toml
 
@@ -375,7 +375,7 @@ Run Multi-Disciplinary Analysis
 
 Once your problem is defined in `my_conf.toml`, you can simply run it with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad eval my_conf.toml
 
@@ -389,7 +389,7 @@ Run Multi-Disciplinary Optimization
 
 You can also run the defined optimization with:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad optim my_conf.toml
 
@@ -406,7 +406,7 @@ use the high-level interface of FAST-OAD.
 
 To do so, type this command **in your terminal**:
 
-.. code:: bash
+.. code:: shell-session
 
     $ fastoad notebooks
 

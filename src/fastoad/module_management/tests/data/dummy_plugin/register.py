@@ -1,8 +1,5 @@
-"""
-Where initialization operations can be done
-"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,22 +11,8 @@ Where initialization operations can be done
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from pelix.constants import BundleActivator
+from .declared_dummy_components import DeclaredDummy1, DeclaredDummy2
+from ...test_plugins import RegisterDummyService
 
-from fastoad.register import register_openmdao_systems
-
-
-@BundleActivator
-class FASTOADActivator:
-    """
-    Activator class where internal modules are loaded
-
-    Having the loading operation in start() method ensures it is done only once
-    as long as this iPOPO bundle is active.
-    """
-
-    def start(self, context):
-        """
-        Loads inner packages of FAST
-        """
-        register_openmdao_systems()
+RegisterDummyService("test.plugin.declared.1")(DeclaredDummy1)
+RegisterDummyService("test.plugin.declared.2")(DeclaredDummy2)
