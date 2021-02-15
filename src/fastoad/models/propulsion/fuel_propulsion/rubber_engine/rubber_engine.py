@@ -18,6 +18,7 @@ from typing import Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
+from scipy.interpolate.interpolate import interp1d
 
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
@@ -57,6 +58,8 @@ class RubberEngine(AbstractFuelPropulsion):
         design_altitude: float,
         delta_t4_climb: float = -50,
         delta_t4_cruise: float = -100,
+        k1_sfc: float = 1.0,
+        k2_sfc: float = 1.0,
     ):
         """
         Parametric turbofan engine.
@@ -85,6 +88,8 @@ class RubberEngine(AbstractFuelPropulsion):
         self.f_0 = mto_thrust
         self.mach_max = maximum_mach
         self.design_alt = design_altitude
+        self.k1_sfc = k1_sfc
+        self.k2_sfc = k2_sfc
 
         # This dictionary is expected to have a dT4 value for all EngineSetting values
         self.dt4_values = {
@@ -117,7 +122,13 @@ class RubberEngine(AbstractFuelPropulsion):
                 if name not in new_column_names:
                     flight_points.insert(len(flight_points.columns), name, value=np.nan)
 
-        flight_points.sfc = sfc
+        # SFC correction for NEO engines dependent on altitude.
+        f = interp1d(
+            [-50000.0, 0.0, 12192.0, 100000.0], np.hstack((1.0, self.k1_sfc, self.k2_sfc, 1.0))
+        )
+        k_sfc = f(flight_points.altitude)
+
+        flight_points.sfc = sfc * k_sfc
         flight_points.thrust_rate = thrust_rate
         flight_points.thrust = thrust
 
