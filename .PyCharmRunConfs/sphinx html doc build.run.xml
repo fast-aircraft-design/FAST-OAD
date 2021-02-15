@@ -1,0 +1,33 @@
+<!--
+  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="sphinx html doc build" type="docs" factoryName="Sphinx task">
+    <module name="FAST-OAD" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <option name="SDK_HOME" value="" />
+    <option name="WORKING_DIRECTORY" value="" />
+    <option name="IS_MODULE_SDK" value="true" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <option name="docutils_input_file" value="$PROJECT_DIR$/docs" />
+    <option name="docutils_output_file" value="$PROJECT_DIR$/build/sphinx" />
+    <option name="docutils_params" value="" />
+    <option name="docutils_task" value="html" />
+    <option name="docutils_open_in_browser" value="false" />
+    <method v="2" />
+  </configuration>
+</component>
