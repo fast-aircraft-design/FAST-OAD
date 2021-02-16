@@ -1,0 +1,1038 @@
+<FASTOAD_model>
+  <data>
+    <TLAR>
+      <NPAX is_input="True">195.0<!--top-level requirement: number of passengers, assuming a classic eco/business class repartition--></NPAX>
+      <approach_speed units="m/s" is_input="True">72.02<!--top-level requirement: approach speed--></approach_speed>
+      <cruise_mach is_input="True">0.78<!--top-level requirement: cruise Mach number--></cruise_mach>
+      <range units="nmi" is_input="True">2150.0<!--top-level requirement: design range--></range>
+    </TLAR>
+    <geometry>
+      <has_T_tail is_input="True">0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+      <aircraft>
+        <wetted_area units="m**2" is_input="False">880.3120222444684<!--total wetted area--></wetted_area>
+      </aircraft>
+      <cabin>
+        <NPAX1 is_input="False">204.0<!--number of passengers if there are only economical class seats--></NPAX1>
+        <aisle_width units="m" is_input="True">0.48<!--width of aisles--></aisle_width>
+        <exit_width units="m" is_input="True">0.51<!--width of exits--></exit_width>
+        <length units="m" is_input="False">35.953764840000005<!--cabin length--></length>
+        <containers>
+          <count_by_row is_input="True">1.0<!--number of cargo containers along width--></count_by_row>
+        </containers>
+        <crew_count>
+          <commercial is_input="False">6.0<!--number of commercial crew members--></commercial>
+          <technical is_input="True">2.0<!--number of technical crew members--></technical>
+        </crew_count>
+        <seats>
+          <economical>
+            <count_by_row is_input="True">6.0<!--number of economical class seats along width--></count_by_row>
+            <length units="m" is_input="True">0.86<!--length of economical class seats--></length>
+            <width units="m" is_input="True">0.46<!--width of economical class seats--></width>
+          </economical>
+        </seats>
+      </cabin>
+      <flap>
+        <chord_ratio is_input="True">0.197<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+        <span_ratio is_input="True">0.8<!--ratio (width of flaps)/(total span)--></span_ratio>
+      </flap>
+      <fuselage>
+        <PAX_length units="m" is_input="False">29.75<!--length of passenger-dedicated zone--></PAX_length>
+        <front_length units="m" is_input="False">6.901795999999999<!--length of front non-cylindrical part of the fuselage--></front_length>
+        <length units="m" is_input="False">44.387364000000005<!--total fuselage length--></length>
+        <maximum_height units="m" is_input="False">4.05988<!--maximum fuselage height--></maximum_height>
+        <maximum_width units="m" is_input="False">3.91988<!--maximum fuselage width--></maximum_width>
+        <rear_length units="m" is_input="False">14.615568<!--length of rear non-cylindrical part of the fuselage--></rear_length>
+        <wetted_area units="m**2" is_input="False">488.1808238555285<!--wetted area of fuselage--></wetted_area>
+      </fuselage>
+      <horizontal_tail>
+        <area units="m**2" is_input="False">35.36624753529212<!--horizontal tail area--></area>
+        <aspect_ratio is_input="True">4.28778048454<!--aspect ratio of horizontal tail--></aspect_ratio>
+        <span units="m" is_input="False">12.31432929555676<!--horizontal tail span--></span>
+        <sweep_0 units="deg" is_input="False">33.31651496553977<!--sweep angle at leading edge of horizontal tail--></sweep_0>
+        <sweep_100 units="deg" is_input="False">8.808941784256668<!--sweep angle at trailing edge of horizontal tail--></sweep_100>
+        <sweep_25 units="deg" is_input="True">28.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
+        <taper_ratio is_input="True">0.3<!--taper ratio of horizontal tail--></taper_ratio>
+        <thickness_ratio is_input="True">0.1<!--thickness ratio of horizontal tail--></thickness_ratio>
+        <wetted_area units="m**2" is_input="False">70.73249507058424<!--wetted area of horizontal tail--></wetted_area>
+        <MAC>
+          <length units="m" is_input="False">3.1495249403056356<!--mean aerodynamic chord length of horizontal tail--></length>
+          <y units="m" is_input="False">2.5260162657552327<!--Y-position of mean aerodynamic chord of horizontal tail--></y>
+          <at25percent>
+            <x>
+              <from_wingMAC25 units="m" is_input="False">19.89250124000001<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
+              <local units="m" is_input="False">1.6603250123437248<!--X-position of the 25% of mean aerodynamic chord of horizontal tail w.r.t. leading edge of root chord--></local>
+            </x>
+          </at25percent>
+        </MAC>
+        <root>
+          <chord units="m" is_input="False">4.418398297551072<!--chord length at root of horizontal tail--></chord>
+        </root>
+        <tip>
+          <chord units="m" is_input="False">1.3255194892653215<!--chord length at tip of horizontal tail--></chord>
+        </tip>
+      </horizontal_tail>
+      <landing_gear>
+        <height units="m" is_input="False">3.172960160163426<!--height of landing gear--></height>
+      </landing_gear>
+      <propulsion>
+        <layout is_input="True">1.0<!--position of engines (1=under the wing / 2=rear fuselage)--></layout>
+        <engine>
+          <count is_input="True">2.0<!--number of engines--></count>
+          <y_ratio is_input="True">0.34<!--engine position with respect to total span--></y_ratio>
+        </engine>
+        <fan>
+          <length units="m" is_input="False">3.3268674996158167<!--engine length--></length>
+        </fan>
+        <nacelle>
+          <diameter units="m" is_input="False">2.266400114402447<!--nacelle diameter--></diameter>
+          <length units="m" is_input="False">5.544779166026362<!--nacelle length--></length>
+          <wetted_area units="m**2" is_input="False">23.0096<!--wetted area of nacelle--></wetted_area>
+          <y units="m" is_input="False">5.881873477471426<!--Y-position of nacelle center--></y>
+        </nacelle>
+        <pylon>
+          <length units="m" is_input="False">6.0992570826289985<!--pylon length--></length>
+          <wetted_area units="m**2" is_input="False">8.05336<!--wetted area of pylon--></wetted_area>
+        </pylon>
+      </propulsion>
+      <slat>
+        <chord_ratio is_input="True">0.177<!--mean value of slat chord)/(section chord)--></chord_ratio>
+        <span_ratio is_input="True">0.9<!--ratio (width of slats)/(total span)--></span_ratio>
+      </slat>
+      <vertical_tail>
+        <area units="m**2" is_input="False">25.953426793388374<!--vertical tail area--></area>
+        <aspect_ratio is_input="True">1.74462618632<!--aspect ratio of vertical tail--></aspect_ratio>
+        <span units="m" is_input="False">6.728969312657299<!--vertical tail span--></span>
+        <sweep_0 units="deg" is_input="False">40.51480176597914<!--sweep angle at leading edge of vertical tail--></sweep_0>
+        <sweep_100 units="deg" is_input="False">13.34651978540079<!--sweep angle at trailing edge of vertical tail--></sweep_100>
+        <sweep_25 units="deg" is_input="True">35.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
+        <taper_ratio is_input="True">0.3<!--taper ratio of vertical tail--></taper_ratio>
+        <thickness_ratio is_input="True">0.1<!--thickness ratio of vertical tail--></thickness_ratio>
+        <wetted_area units="m**2" is_input="False">54.50219626611559<!--wetted area of vertical tail--></wetted_area>
+        <MAC>
+          <length units="m" is_input="False">4.229733385173687<!--mean aerodynamic chord length of vertical tail--></length>
+          <z units="m" is_input="False">2.7606027949363274<!--Z-position of mean aerodynamic chord of vertical tail--></z>
+          <at25percent>
+            <x>
+              <from_wingMAC25 units="m" is_input="False">18.560880320000003<!--distance along X between 25% MAC of wing and 25% MAC of vertical tail--></from_wingMAC25>
+              <local units="m" is_input="False">2.3590111991929765<!--X-position of the 25% of mean aerodynamic chord of vertical tail w.r.t. leading edge of root chord--></local>
+            </x>
+          </at25percent>
+        </MAC>
+        <root>
+          <chord units="m" is_input="False">5.933798633876755<!--chord length at root of vertical tail--></chord>
+        </root>
+        <tip>
+          <chord units="m" is_input="False">1.7801395901630264<!--chord length at tip of vertical tail--></chord>
+        </tip>
+      </vertical_tail>
+      <wing>
+        <area units="m**2" is_input="False">126.27726776590191<!--wing reference area--></area>
+        <aspect_ratio is_input="True">9.48<!--wing aspect ratio--></aspect_ratio>
+        <b_50 units="m" is_input="False">37.544840631667384<!--actual length between root and tip along 50% of chord--></b_50>
+        <outer_area units="m**2" is_input="False">102.38529352335725<!--wing area outside of fuselage--></outer_area>
+        <span units="m" is_input="False">34.59925574983191<!--wing span--></span>
+        <sweep_0 units="rad" is_input="False">0.4726373328436012<!--sweep angle at leading edge of wing--></sweep_0>
+        <sweep_100_inner units="deg" is_input="False">-1.0260037602439953e-14<!--sweep angle at trailing edge of wing (inner side of the kink)--></sweep_100_inner>
+        <sweep_100_outer units="rad" is_input="False">0.31997894601525495<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>
+        <sweep_25 units="deg" is_input="True">25.0<!--sweep angle at 25% chord of wing--></sweep_25>
+        <taper_ratio is_input="True">0.38<!--taper ratio of wing--></taper_ratio>
+        <thickness_ratio is_input="False">0.12839840880979247<!--mean thickness ratio of wing--></thickness_ratio>
+        <wetted_area units="m**2" is_input="False">204.7705870467145<!--wetted area of wing--></wetted_area>
+        <MAC>
+          <length units="m" is_input="False">4.206615839319471<!--length of mean aerodynamic chord of wing--></length>
+          <y units="m" is_input="False">6.747667241413646<!--Y-position of mean aerodynamic chord of wing--></y>
+          <at25percent>
+            <x units="m" is_input="True">20.5<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
+          </at25percent>
+          <leading_edge>
+            <x>
+              <local units="m" is_input="False">2.5427077937323133<!--X-position of leading edge of mean aerodynamic chord w.r.t. leading edge of root chord--></local>
+            </x>
+          </leading_edge>
+        </MAC>
+        <kink>
+          <chord units="m" is_input="False">3.5591339399816944<!--chord length at wing kink--></chord>
+          <span_ratio is_input="True">0.4<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
+          <thickness_ratio is_input="False">0.12069450428120491<!--thickness ratio at wing kink--></thickness_ratio>
+          <y units="m" is_input="False">6.919851149966383<!--Y-position of wing kink--></y>
+          <leading_edge>
+            <x>
+              <local units="m" is_input="False">2.5359440330213987<!--X-position of leading edge at wing kink w.r.t. leading edge of root chord--></local>
+            </x>
+          </leading_edge>
+        </kink>
+        <root>
+          <chord units="m" is_input="False">6.095077973003094<!--chord length at wing root--></chord>
+          <thickness_ratio is_input="False">0.15921402692414266<!--thickness ratio at wing root--></thickness_ratio>
+          <virtual_chord units="m" is_input="False">4.451531860076532<!--virtual chord length at wing root if sweep angle of trailing edge of outer wing part was on the whole wing (no kink)--></virtual_chord>
+          <y units="m" is_input="False">1.95994<!--Y-position of wing root--></y>
+        </root>
+        <tip>
+          <chord units="m" is_input="False">1.6915821068290822<!--chord length at wing tip--></chord>
+          <thickness_ratio is_input="False">0.11042263157642153<!--thickness ratio at wing tip--></thickness_ratio>
+          <y units="m" is_input="False">17.299627874915956<!--Y-position of wing tip--></y>
+          <leading_edge>
+            <x>
+              <local units="m" is_input="False">7.843001368092549<!--X-position of leading edge at wing tip w.r.t. leading edge of root chord--></local>
+            </x>
+          </leading_edge>
+        </tip>
+        <spar_ratio>
+          <front>
+            <kink is_input="True">0.15<!--ratio (front spar position)/(chord length) at wing kink--></kink>
+            <root is_input="True">0.11<!--ratio (front spar position)/(chord length) at wing root--></root>
+            <tip is_input="True">0.27<!--ratio (front spar position)/(chord length) at wing tip--></tip>
+          </front>
+          <rear>
+            <kink is_input="True">0.66<!--ratio (rear spar position)/(chord length) at wing kink--></kink>
+            <root is_input="True">0.57<!--ratio (rear spar position)/(chord length) at wing root--></root>
+            <tip is_input="True">0.56<!--ratio (rear spar position)/(chord length) at wing tip--></tip>
+          </rear>
+        </spar_ratio>
+      </wing>
+    </geometry>
+    <handling_qualities>
+      <static_margin is_input="False">0.04085430795025652<!--(X-position of neutral point - X-position of center of gravity ) / (mean aerodynamic chord)--></static_margin>
+    </handling_qualities>
+    <propulsion>
+      <MTO_thrust units="N" is_input="True">133440.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
+      <climb>
+        <thrust_rate is_input="True">0.93</thrust_rate>
+      </climb>
+      <descent>
+        <thrust_rate is_input="True">0.16</thrust_rate>
+      </descent>
+      <initial_climb>
+        <thrust_rate is_input="True">1.0</thrust_rate>
+      </initial_climb>
+      <rubber_engine>
+        <bypass_ratio is_input="True">4.6<!--bypass ratio for rubber engine model--></bypass_ratio>
+        <delta_t4_climb is_input="True">-50.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
+        <delta_t4_cruise is_input="True">-100.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_cruise>
+        <design_altitude units="m" is_input="True">10058.4<!--design altitude for rubber engine model--></design_altitude>
+        <maximum_mach is_input="True">0.85<!--maximum Mach number for rubber engine model--></maximum_mach>
+        <overall_pressure_ratio is_input="True">35.2<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
+        <turbine_inlet_temperature units="degK" is_input="True">1633.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
+      </rubber_engine>
+      <taxi>
+        <thrust_rate is_input="True">0.3</thrust_rate>
+      </taxi>
+    </propulsion>
+    <load_case>
+      <lc1>
+        <U_gust units="m/s" is_input="True">15.25<!--gust vertical speed for sizing load case 1 (gust with minimum aircraft mass)--></U_gust>
+        <Vc_EAS units="m/s" is_input="True">375.0<!--equivalent air speed for sizing load case 1 (gust with minimum aircraft mass)--></Vc_EAS>
+        <altitude units="ft" is_input="True">65616.79790026246<!--altitude for sizing load case 1 (gust with minimum aircraft mass)--></altitude>
+      </lc1>
+      <lc2>
+        <U_gust units="m/s" is_input="True">15.25<!--gust vertical speed for sizing load case 2 (gust with maximum aircraft mass)--></U_gust>
+        <Vc_EAS units="knot" is_input="True">728.9416846652267<!--equivalent air speed for sizing load case 2 (gust with maximum aircraft mass)--></Vc_EAS>
+        <altitude units="ft" is_input="True">65616.79790026246<!--altitude for sizing load case 2 (gust with maximum aircraft mass)--></altitude>
+      </lc2>
+    </load_case>
+    <mission>
+      <SPP_design>
+        <TOW units="kg" is_input="False">89546.5853415548</TOW>
+        <ZFW units="kg" is_input="False">69927.16626526351</ZFW>
+        <block_fuel units="kg" is_input="False">19619.41907606412</block_fuel>
+        <distance units="m" is_input="False">4931907.940505492</distance>
+        <duration units="s" is_input="False">23483.448278911033</duration>
+        <fuel units="kg" is_input="False">19261.019076064127</fuel>
+        <needed_block_fuel units="kg" is_input="False">19619.41907606412</needed_block_fuel>
+        <diversion>
+          <distance units="m" is_input="True">370400.0</distance>
+          <duration units="s" is_input="False">2058.559362268039</duration>
+          <fuel units="kg" is_input="False">1584.609024177902</fuel>
+          <cruise>
+            <distance units="m" is_input="False">119421.99630123936</distance>
+            <duration units="s" is_input="False">545.8312675854213</duration>
+            <fuel units="kg" is_input="False">477.3677554300957</fuel>
+          </cruise>
+          <descent>
+            <distance units="m" is_input="False">180197.88825421222</distance>
+            <duration units="s" is_input="False">1111.6771266402502</duration>
+            <fuel units="kg" is_input="False">353.640591937452</fuel>
+          </descent>
+          <diversion_climb>
+            <distance units="m" is_input="False">70787.02464474039</distance>
+            <duration units="s" is_input="False">401.05096804236746</duration>
+            <fuel units="kg" is_input="False">753.6006768103543</fuel>
+          </diversion_climb>
+        </diversion>
+        <holding>
+          <distance units="m" is_input="False">354995.51639653277</distance>
+          <duration units="s" is_input="True">2700.0</duration>
+          <fuel units="kg" is_input="False">1670.2844747203198</fuel>
+        </holding>
+        <main_route>
+          <distance units="m" is_input="False">4167061.5686423634</distance>
+          <duration units="s" is_input="False">18424.888916642994</duration>
+          <fuel units="kg" is_input="False">15780.947600056286</fuel>
+          <range units="m" is_input="True">4167000.0</range>
+          <climb>
+            <distance units="m" is_input="False">253622.481926886</distance>
+            <duration units="s" is_input="False">1219.7532898463828</duration>
+            <fuel units="kg" is_input="False">1903.0363935909845</fuel>
+          </climb>
+          <cruise>
+            <distance units="m" is_input="False">3655191.917889981</distance>
+            <duration units="s" is_input="False">15731.860116822978</duration>
+            <fuel units="kg" is_input="False">13285.617335770468</fuel>
+          </cruise>
+          <descent>
+            <distance units="m" is_input="False">251918.5339925806</distance>
+            <duration units="s" is_input="False">1414.6068396584124</duration>
+            <fuel units="kg" is_input="False">431.4306377826142</fuel>
+          </descent>
+          <initial_climb>
+            <distance units="m" is_input="False">6328.634832915695</distance>
+            <duration units="s" is_input="False">58.66867031522152</duration>
+            <fuel units="kg" is_input="False">160.86323291221925</fuel>
+          </initial_climb>
+        </main_route>
+        <takeoff>
+          <V2 units="m/s" is_input="True">79.3</V2>
+          <altitude units="m" is_input="True">0.0</altitude>
+          <fuel units="kg" is_input="True">82.4</fuel>
+        </takeoff>
+        <taxi_in>
+          <distance units="m" is_input="False">39443.94626640342</distance>
+          <duration units="s" is_input="True">300.0</duration>
+          <fuel units="kg" is_input="False">225.17797710961895</fuel>
+        </taxi_in>
+        <taxi_out>
+          <fuel units="kg" is_input="True">276.0</fuel>
+        </taxi_out>
+      </SPP_design>
+      <sizing>
+        <cs25>
+          <sizing_load_1 units="kg" is_input="False">281244.4671694751<!--sizing load during gust with minimum aircraft mass--></sizing_load_1>
+          <sizing_load_2 units="kg" is_input="False">303411.3450398854<!--sizing load during gust with maximum aircraft mass--></sizing_load_2>
+        </cs25>
+        <landing>
+          <flap_angle units="deg" is_input="True">25.0<!--flap angle during landing phase in sizing mission--></flap_angle>
+          <slat_angle units="deg" is_input="True">27.0<!--slat angle during landing phase in sizing mission--></slat_angle>
+        </landing>
+        <takeoff>
+          <flap_angle units="deg" is_input="True">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
+          <slat_angle units="deg" is_input="True">18.0<!--slat angle during takeoff phase in sizing mission--></slat_angle>
+        </takeoff>
+        <main_route>
+          <cruise>
+            <altitude units="m" is_input="True">10668.0<!--altitude during cruise phase in sizing mission--></altitude>
+          </cruise>
+        </main_route>
+      </sizing>
+    </mission>
+    <weight>
+      <aircraft>
+        <MFW units="kg" is_input="False">19629.303029216408<!--maximum fuel weight--></MFW>
+        <MLW units="kg" is_input="False">75712.79624117933<!--maximum landing weight--></MLW>
+        <MTOW units="kg" is_input="False">89546.5853415548<!--maximum takeoff weight--></MTOW>
+        <MZFW units="kg" is_input="False">71427.16626526351<!--maximum zero fuel weight--></MZFW>
+        <OWE units="kg" is_input="False">48427.16626526351<!--operating weight - empty--></OWE>
+        <additional_fuel_capacity units="kg" is_input="False">9.883953152286267<!--fuel mass capacity of wing that exceeds sizing mission requirement--></additional_fuel_capacity>
+        <max_payload units="kg" is_input="True">23000.0<!--max payload weight--></max_payload>
+        <payload units="kg" is_input="True">21500.0<!--design payload weight--></payload>
+        <sizing_block_fuel units="kg" is_input="False">19619.41907606412</sizing_block_fuel>
+        <CG>
+          <aft>
+            <MAC_position is_input="False">0.37225125171538515<!--most aft X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>
+            <x units="m" is_input="False">21.01426405184257<!--most aft X-position of aircraft center of gravity--></x>
+          </aft>
+        </CG>
+        <empty>
+          <CG>
+            <MAC_position is_input="False">0.3165886384063215<!--X-position of center of gravity as ratio of mean aerodynamic chord for empty aircraft--></MAC_position>
+          </CG>
+        </empty>
+        <load_case_1>
+          <CG>
+            <MAC_position is_input="False">0.2743055984683499<!--X-position of center of gravity as ratio of mean aerodynamic chord for load case 1--></MAC_position>
+          </CG>
+        </load_case_1>
+        <load_case_2>
+          <CG>
+            <MAC_position is_input="False">0.211139385856099<!--X-position of center of gravity as ratio of mean aerodynamic chord for load case 2--></MAC_position>
+          </CG>
+        </load_case_2>
+        <load_case_3>
+          <CG>
+            <MAC_position is_input="False">0.30912835239887304<!--X-position of center of gravity as ratio of mean aerodynamic chord for load case 3--></MAC_position>
+          </CG>
+        </load_case_3>
+        <load_case_4>
+          <CG>
+            <MAC_position is_input="False">0.32225125171538516<!--X-position of center of gravity as ratio of mean aerodynamic chord for load case 4--></MAC_position>
+          </CG>
+        </load_case_4>
+      </aircraft>
+      <aircraft_empty>
+        <mass units="kg" is_input="False">47807.166266544824<!--mass of empty aircraft (=OWE - mass of crew)--></mass>
+        <CG>
+          <x units="m" is_input="False">20.78011282103875<!--X-position center of gravity of empty aircraft--></x>
+        </CG>
+      </aircraft_empty>
+      <airframe>
+        <mass units="kg" is_input="False">26034.993955948044<!--airframe (A): mass--></mass>
+        <flight_controls>
+          <mass units="kg" is_input="False">948.9760030459648<!--flight controls (A4): total mass--></mass>
+          <CG>
+            <x units="m" is_input="False">23.000716219440914<!--flight controls (A4): X-position of center of gravity--></x>
+          </CG>
+        </flight_controls>
+        <fuselage>
+          <mass units="kg" is_input="False">10109.812702595545<!--fuselage (A2): total mass--></mass>
+          <CG>
+            <x units="m" is_input="False">19.974313800000004<!--fuselage (A2): X-position of center of gravity--></x>
+          </CG>
+        </fuselage>
+        <horizontal_tail>
+          <mass units="kg" is_input="False">703.1435415774812<!--horizontal tail (A31): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">40.844774862432295<!--horizontal tail (A31): X-position of center of gravity--></x>
+          </CG>
+        </horizontal_tail>
+        <paint>
+          <mass units="kg" is_input="False">158.4561640040043<!--paint (A7): total mass--></mass>
+          <CG>
+            <x units="m" is_input="False">0.0<!--paint (A7): X-position of center of gravity--></x>
+          </CG>
+        </paint>
+        <pylon>
+          <mass units="kg" is_input="False">1324.6678065780275<!--pylon (A6): total mass--></mass>
+          <CG>
+            <x units="m" is_input="False">17.59742872907239<!--pylon (A6): X-position of center of gravity--></x>
+          </CG>
+        </pylon>
+        <vertical_tail>
+          <mass units="kg" is_input="False">537.0436771791362<!--vertical tail (A32): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">40.33968535056206<!--vertical tail (A32): X-position of center of gravity--></x>
+          </CG>
+        </vertical_tail>
+        <wing>
+          <mass units="kg" is_input="False">9270.820766939429<!--wing (A1): total mass--></mass>
+          <CG>
+            <x units="m" is_input="False">20.601907882527033<!--wing (A1): X-position of center of gravity--></x>
+          </CG>
+        </wing>
+        <landing_gear>
+          <front>
+            <mass units="kg" is_input="False">436.184569077239<!--front landing gear (A52): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">5.176347<!--front landing gear (A52): X-position of center of gravity--></x>
+            </CG>
+          </front>
+          <main>
+            <mass units="kg" is_input="False">2545.8887249512195<!--main landing gear (A51): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">22.025194927492098<!--main landing gear (A51): X-position of center of gravity--></x>
+            </CG>
+          </main>
+        </landing_gear>
+      </airframe>
+      <crew>
+        <mass units="kg" is_input="False">620.0<!--crew (E): mass--></mass>
+      </crew>
+      <furniture>
+        <mass units="kg" is_input="False">4046.25<!--aircraft furniture (D): mass--></mass>
+        <food_water>
+          <mass units="kg" is_input="False">1706.25<!--food water (D3): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">36.28379600000001<!--food water (D3): X-position of center of gravity--></x>
+          </CG>
+        </food_water>
+        <passenger_seats>
+          <mass units="kg" is_input="False">1950.0<!--passenger seats (D2): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">20.056796<!--passenger seats (D2): X-position of center of gravity--></x>
+          </CG>
+        </passenger_seats>
+        <security_kit>
+          <mass units="kg" is_input="False">292.5<!--security kit (D4): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">20.056796<!--security kit (D4): X-position of center of gravity--></x>
+          </CG>
+        </security_kit>
+        <toilets>
+          <mass units="kg" is_input="False">97.5<!--toilets (D5): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">20.056796<!--toilets (D5): X-position of center of gravity--></x>
+          </CG>
+        </toilets>
+      </furniture>
+      <propulsion>
+        <mass units="kg" is_input="False">8430.527267338573<!--propulsion system (B): mass--></mass>
+        <engine>
+          <mass units="kg" is_input="False">7841.4624<!--engine (B1): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">17.59742872907239<!--engine (B1): X-position of center of gravity--></x>
+          </CG>
+        </engine>
+        <fuel_lines>
+          <mass units="kg" is_input="False">470.36230673631496<!--fuel lines (B2): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">17.59742872907239<!--fuel lines (B2): X-position of center of gravity--></x>
+          </CG>
+        </fuel_lines>
+        <unconsumables>
+          <mass units="kg" is_input="False">118.70256060225744<!--unconsumables (B3): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">17.59742872907239<!--unconsumables (B3): X-position of center of gravity--></x>
+          </CG>
+        </unconsumables>
+      </propulsion>
+      <systems>
+        <mass units="kg" is_input="False">9295.395041976893<!--aircraft systems (C): mass--></mass>
+        <flight_kit>
+          <mass units="kg" is_input="False">45.0<!--flight kit (C6): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">8.156796<!--flight kit (C6): X-position of center of gravity--></x>
+          </CG>
+        </flight_kit>
+        <navigation>
+          <mass units="kg" is_input="False">504.9950447455137<!--navigation (C3): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">5.5214368<!--navigation (C3): X-position of center of gravity--></x>
+          </CG>
+        </navigation>
+        <transmission>
+          <mass units="kg" is_input="False">200.0<!--transmission (C4): mass--></mass>
+          <CG>
+            <x units="m" is_input="False">22.193682000000003<!--transmission (C4): X-position of center of gravity--></x>
+          </CG>
+        </transmission>
+        <life_support>
+          <air_conditioning>
+            <mass units="kg" is_input="False">1085.267416694238<!--air conditioning (C2): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">20.056796<!--air conditioning (C2): X-position of center of gravity--></x>
+            </CG>
+          </air_conditioning>
+          <cabin_lighting>
+            <mass units="kg" is_input="False">200.80077923293814<!--cabin lighting (C2): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">19.974313800000004<!--cabin lighting (C2): X-position of center of gravity--></x>
+            </CG>
+          </cabin_lighting>
+          <de-icing>
+            <mass units="kg" is_input="False">161.52962451618194<!--de-icing (C2): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">19.86900762410208<!--de-icing (C2): X-position of center of gravity--></x>
+            </CG>
+          </de-icing>
+          <insulation>
+            <mass units="kg" is_input="False">2667.7817812376074<!--insulation (C21): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">19.974313800000004<!--insulation (C21): X-position of center of gravity--></x>
+            </CG>
+          </insulation>
+          <oxygen>
+            <mass units="kg" is_input="False">345.2<!--oxygen (C21): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">20.056796<!--oxygen (C21): X-position of center of gravity--></x>
+            </CG>
+          </oxygen>
+          <safety_equipment>
+            <mass units="kg" is_input="False">547.614624<!--safety equipment (C21): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">19.70463162860495<!--safety equipment (C21): X-position of center of gravity--></x>
+            </CG>
+          </safety_equipment>
+          <seats_crew_accommodation>
+            <mass units="kg" is_input="False">162.0<!--seats crew accommodation (C21): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">20.056796<!--seats crew accommodation (C21): X-position of center of gravity--></x>
+            </CG>
+          </seats_crew_accommodation>
+        </life_support>
+        <operational>
+          <cargo_hold>
+            <mass units="kg" is_input="False">441.27574034538225<!--cargo hold (C52): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">20.056796<!--cargo hold (C52): X-position of center of gravity--></x>
+            </CG>
+          </cargo_hold>
+          <radar>
+            <mass units="kg" is_input="False">100.0<!--radar (C51): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">0.8877472800000001<!--radar (C51): X-position of center of gravity--></x>
+            </CG>
+          </radar>
+        </operational>
+        <power>
+          <auxiliary_power_unit>
+            <mass units="kg" is_input="False">339.8143781055358<!--power (C1): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">42.1679958<!--power (C1): X-position of center of gravity--></x>
+            </CG>
+          </auxiliary_power_unit>
+          <electric_systems>
+            <mass units="kg" is_input="False">1582.835921681123<!--power (C1): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">22.193682000000003<!--power (C1): X-position of center of gravity--></x>
+            </CG>
+          </electric_systems>
+          <hydraulic_systems>
+            <mass units="kg" is_input="False">911.2797314183745<!--power (C1): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">22.193682000000003<!--power (C1): X-position of center of gravity--></x>
+            </CG>
+          </hydraulic_systems>
+        </power>
+      </systems>
+      <fuel_tank>
+        <CG>
+          <x units="m" is_input="False">20.015421166752553<!--fuel tank: X-position of center of gravity--></x>
+        </CG>
+      </fuel_tank>
+      <payload>
+        <PAX>
+          <CG>
+            <x units="m" is_input="False">20.056796<!--passengers: X-position of center of gravity--></x>
+          </CG>
+        </PAX>
+        <front_fret>
+          <CG>
+            <x units="m" is_input="False">11.903717123218911<!--front fret: X-position of center of gravity--></x>
+          </CG>
+        </front_fret>
+        <rear_fret>
+          <CG>
+            <x units="m" is_input="False">26.206748312420153<!--rear fret: X-position of center of gravity--></x>
+          </CG>
+        </rear_fret>
+      </payload>
+    </weight>
+    <aerodynamics>
+      <aircraft>
+        <cruise>
+          <CD is_input="False">[0.02165925431121349, 0.02166091895140081, 0.021668797080971528, 0.02168298740447232, 0.02170358862644988, 0.02173069945145089, 0.021764418584022036, 0.021804844728710016, 0.021852076590061505, 0.021906212872623197, 0.021967352280941776, 0.02203559351956393, 0.022111035293036346, 0.022193776305905716, 0.022283915262718723, 0.022381550868022054, 0.022486781826362393, 0.022599706842286432, 0.022720424620340858, 0.02284903386507236, 0.022985633281027623, 0.023130321572753326, 0.023283197444796174, 0.023444359601702835, 0.023613906748020014, 0.023791937588294388, 0.02397855082707264, 0.02417384516890147, 0.024377919318327553, 0.02459087197989759, 0.02481280185815825, 0.025043807657656236, 0.02528398808293823, 0.025533441838550917, 0.025792267629040987, 0.026060564158955128, 0.02633943927403877, 0.026630013408989205, 0.02693242329731496, 0.02724683190650414, 0.027573429787096544, 0.02791243701656214, 0.028264105795658613, 0.028628723775112396, 0.02900661821364356, 0.02939816109547844, 0.02980377536769651, 0.030223942496418646, 0.03065921158765761, 0.031110210375722695, 0.03157765845202493, 0.03206238319325973, 0.03256533895439874, 0.03308763022394174, 0.033630539603104644, 0.03419556167549544, 0.03478444409011341, 0.03539923750194986, 0.03604235641868003, 0.036716653511534546, 0.03742551059253957, 0.03817295027649675, 0.038963773382952434, 0.03980372845404007, 0.04069972145046453, 0.041660075846920205, 0.04269485611958733, 0.04381627118507225, 0.04503917895268718, 0.04638171910699522, 0.04786610896326385, 0.04951964728857317, 0.05137598409086366, 0.05347673152560602, 0.05587351356091864, 0.058630581624524045, 0.061828162475251996, 0.06556675615386229, 0.06997267033144625, 0.07520516845116634, 0.08146573057009045, 0.08901008839293259, 0.09816391416902884, 0.10934333676956327, 0.1230818546470624, 0.14006575204316812, 0.16118085357458226, 0.18757444493533496, 0.2207375435259356, 0.26261456109132275, 0.31574995470167716, 0.3834849841224418, 0.4702225642638422, 0.5607178337025133, 0.5617196109060839, 0.5627367811218797, 0.5637694430544478, 0.5648176954083344, 0.5658816368880863, 0.5669613661982503, 0.5680569820433731, 0.5691685831280012, 0.5702962681566814, 0.5714401358339606, 0.5726002848643852, 0.573776813952502, 0.5749698218028576, 0.5761794071199987, 0.5774056686084722, 0.5786487049728244, 0.5799086149176025, 0.5811854971473526, 0.582479450366622, 0.5837905732799568, 0.5851189645919039, 0.5864647230070102, 0.5878279472298223, 0.5892087359648868, 0.5906071879167504, 0.5920234017899598, 0.5934574762890616, 0.5949095101186025, 0.5963796019831294, 0.5978678505871889, 0.5993743546353276, 0.6008992128320921, 0.6024425238820292, 0.6040043864896858, 0.6055848993596082, 0.6071841611963434, 0.6088022707044379, 0.6104393265884385, 0.6120954275528917, 0.6137706723023444, 0.6154651595413432, 0.6171789879744347, 0.6189122563061659, 0.6206650632410831, 0.6224375074837332, 0.6242296877386627, 0.6260417027104186, 0.6278736511035474, 0.6297256316225956, 0.6315977429721105, 0.633490083856638, 0.6354027529807253, 0.6373358490489189, 0.6392894707657656, 0.6412637168358122, 0.6432586859636049]<!--drag coefficient in cruise conditions w.r.t. data:aerodynamics:aircraft:cruise:CL--><compressibility is_input="False">[0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004860339336812821, 0.0004870430748800309, 0.0004900830874281256, 0.0004951920002874174, 0.0005024340763993088, 0.0005119011617569214, 0.0005237146292835341, 0.0005380279751901413, 0.0005550301456564885, 0.0005749496948559705, 0.000598059902468222, 0.0006246850110260332, 0.0006552077821036006, 0.0006900786171669877, 0.0007298265459788082, 0.0007750724554034027, 0.0008265450175894865, 0.0008850998829620444, 0.0009517428354741398, 0.0010276577717950224, 0.0011142405709859704, 0.0012131401774996004, 0.0013263085417805178, 0.0014560614669572897, 0.0016051529197138414, 0.00177686600752964, 0.0019751246406596755, 0.0022046309341035753, 0.002471034725448123, 0.0027811432708514886, 0.003143181340461387, 0.0035671147059113664, 0.004065053579261072, 0.004651757165276041, 0.005345266443972686, 0.006167700026071808, 0.0071462579741068104, 0.008314491591471481, 0.009713914329089827, 0.01139605145053357, 0.013425055678978537, 0.015881055068707812, 0.018864450955934486, 0.022501452307203212, 0.026951223861129768, 0.032415146970235335, 0.039148854634687265, 0.047477920399274925, 0.05781837443063571, 0.07070361647674946, 0.08681983207471135, 0.10705274713667655, 0.1325495486521285, 0.16480115531702993, 0.20575188017177268, 0.25794608158199084, 0.3247249206085806, 0.41049121345722095, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]<!--increment of drag coefficient due to compressibility effects (shock waves) w.r.t. data:aerodynamics:aircraft:cruise:CL--></compressibility><trim is_input="False">[0.0, 5.89e-06, 1.178e-05, 1.767e-05, 2.356e-05, 2.945e-05, 3.534e-05, 4.123e-05, 4.712e-05, 5.3009999999999996e-05, 5.89e-05, 6.479e-05, 7.068e-05, 7.657000000000001e-05, 8.246e-05, 8.834999999999999e-05, 9.424e-05, 0.00010013, 0.00010601999999999999, 0.00011191, 0.0001178, 0.00012369, 0.00012958, 0.00013547, 0.00014136, 0.00014725, 0.00015314000000000001, 0.00015903, 0.00016492, 0.00017081, 0.00017669999999999999, 0.00018259, 0.00018848, 0.00019437, 0.00020026, 0.00020615000000000002, 0.00021203999999999998, 0.00021793, 0.00022382, 0.00022971000000000002, 0.0002356, 0.00024149000000000002, 0.00024738, 0.00025327, 0.00025916, 0.00026505, 0.00027094, 0.00027683000000000004, 0.00028272, 0.00028861, 0.0002945, 0.00030039, 0.00030628000000000003, 0.00031217, 0.00031806, 0.00032395000000000004, 0.00032984, 0.00033573, 0.00034162, 0.00034751, 0.00035339999999999997, 0.00035929, 0.00036518, 0.00037107, 0.00037696, 0.00038285, 0.00038874, 0.00039463000000000004, 0.00040052, 0.00040641000000000006, 0.00041230000000000005, 0.00041819, 0.00042407999999999996, 0.00042997, 0.00043586, 0.00044175, 0.00044764, 0.00045353, 0.00045942000000000004, 0.00046531000000000003, 0.0004712, 0.00047709000000000006, 0.00048298000000000004, 0.0004888700000000001, 0.00049476, 0.0005006499999999999, 0.00050654, 0.00051243, 0.00051832, 0.00052421, 0.0005301, 0.00053599, 0.00054188, 0.00054777, 0.0005536600000000001, 0.00055955, 0.00056544, 0.00057133, 0.00057722, 0.00058311, 0.000589, 0.00059489, 0.00060078, 0.00060667, 0.0006125600000000001, 0.00061845, 0.00062434, 0.0006302300000000001, 0.00063612, 0.00064201, 0.0006479000000000001, 0.00065379, 0.00065968, 0.0006655700000000001, 0.00067146, 0.0006773500000000001, 0.00068324, 0.0006891299999999999, 0.00069502, 0.00070091, 0.0007067999999999999, 0.00071269, 0.00071858, 0.00072447, 0.00073036, 0.00073625, 0.00074214, 0.00074803, 0.00075392, 0.00075981, 0.0007657, 0.0007715900000000001, 0.00077748, 0.00078337, 0.0007892600000000001, 0.0007951500000000001, 0.00080104, 0.0008069300000000001, 0.0008128200000000001, 0.00081871, 0.0008246000000000001, 0.0008304899999999999, 0.00083638, 0.00084227, 0.0008481599999999999, 0.00085405, 0.00085994, 0.0008658299999999999, 0.00087172, 0.00087761]<!--increment of drag coefficient due to aircraft trim w.r.t. data:aerodynamics:aircraft:cruise:CL--></trim></CD>
+          <CD0 is_input="False">[0.021173220377532206, 0.021165160962524892, 0.021155646926511704, 0.021144776974039315, 0.021132649809654423, 0.021119364137903707, 0.02110501866333386, 0.02108971209049157, 0.021073543123923517, 0.0210566104681764, 0.021039012827796893, 0.02102084890733169, 0.02100221741132748, 0.020983217044330947, 0.020963946510888783, 0.020944504515547666, 0.02092498976285429, 0.02090550095735534, 0.020886136803597508, 0.020866996006127476, 0.02084817726949193, 0.020829779298237563, 0.02081190079691106, 0.020794640470059102, 0.020778097022228388, 0.020762369157965595, 0.02074755558181741, 0.02073375499833053, 0.020721066112051635, 0.020709587627527417, 0.020699418249304557, 0.020690656681929744, 0.020683401629949666, 0.020677751797911013, 0.02067380589036047, 0.020671662611844725, 0.02067142066691046, 0.02067317876010437, 0.020677035595973135, 0.02068308987906345, 0.020691440313921994, 0.02070218560509546, 0.02071542445713054, 0.020731255574573913, 0.020749777661972262, 0.020771089423872284, 0.020795289564820664, 0.020822476789364084, 0.020852749802049236, 0.02088620730742281, 0.02092294801003149, 0.020963070614421958, 0.02100667382514091, 0.02105385634673503, 0.021104716883751, 0.021159354140735515, 0.021217866822235257, 0.021280353632796917, 0.02134691327696718, 0.021417644459292735, 0.021492645884320268, 0.02157201625659646, 0.021655854280668012, 0.021744258661081598, 0.021837328102383917, 0.021935161309121643, 0.022037856985841476, 0.022145513837090097, 0.022258230567414192, 0.02237610588136045, 0.02249923848347556, 0.022627727078306206, 0.022761670370399074, 0.02290116706430086, 0.02304631586455824, 0.02319721547571791, 0.02335396460232655, 0.023516661948930855, 0.023685406220077507, 0.023860296120313193, 0.0240414303541846, 0.02422890762623842, 0.024422826641021342, 0.024623286103080042, 0.02483038471696121, 0.02504422118721154, 0.025264894218377718, 0.025492502515006427, 0.02572714478164436, 0.025968919722838196, 0.02621792604313463, 0.026474262447080343, 0.02673802763922203, 0.02700932032410637, 0.02728823920628006, 0.02757488299028977, 0.02786935038068221, 0.028171740082004043, 0.02848215079880198, 0.028800681235622697, 0.029127430097012873, 0.029462496087519205, 0.029805977911688382, 0.03015797427406709, 0.030518583879202008, 0.030887905431639832, 0.031266037635927245, 0.03165307919661096, 0.032049128818237606, 0.03245428520535391, 0.032868647062506556, 0.03329231309424224, 0.03372538200510764, 0.034167952499649434, 0.03462012328241431, 0.03508199305794896, 0.03555366053080008, 0.03603522440551434, 0.03652678338663845, 0.037028436178719086, 0.03754028148630294, 0.03806241801393667, 0.038594944466167, 0.0391379595475406, 0.03969156196260417, 0.04025585041590439, 0.04083092361198793, 0.0414168802554015, 0.04201381905069178, 0.04262183870240546, 0.043241037915089216, 0.043871515393289755, 0.044513369841553754, 0.04516669996442788, 0.04583160446645886, 0.046508182052193356, 0.04719653142617806, 0.04789675129295965, 0.04860894035708482, 0.04933319732310028, 0.050069620895552676, 0.05081830977898872, 0.05157936267795508, 0.05235287829699848, 0.053138955340665574, 0.053937692513503076, 0.05474918852005764, 0.05557354206487598, 0.05641085185250477, 0.05726121658749072]<!--profile drag coefficient for whole aircraft w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
+          <CL is_input="False">[0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.3, 0.31, 0.32, 0.33, 0.34, 0.35000000000000003, 0.36, 0.37, 0.38, 0.39, 0.4, 0.41000000000000003, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47000000000000003, 0.48, 0.49, 0.5, 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.5700000000000001, 0.58, 0.59, 0.6, 0.61, 0.62, 0.63, 0.64, 0.65, 0.66, 0.67, 0.68, 0.6900000000000001, 0.7000000000000001, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.8, 0.81, 0.8200000000000001, 0.8300000000000001, 0.84, 0.85, 0.86, 0.87, 0.88, 0.89, 0.9, 0.91, 0.92, 0.93, 0.9400000000000001, 0.9500000000000001, 0.96, 0.97, 0.98, 0.99, 1.0, 1.01, 1.02, 1.03, 1.04, 1.05, 1.06, 1.07, 1.08, 1.09, 1.1, 1.11, 1.12, 1.1300000000000001, 1.1400000000000001, 1.1500000000000001, 1.16, 1.17, 1.18, 1.19, 1.2, 1.21, 1.22, 1.23, 1.24, 1.25, 1.26, 1.27, 1.28, 1.29, 1.3, 1.31, 1.32, 1.33, 1.34, 1.35, 1.36, 1.37, 1.3800000000000001, 1.3900000000000001, 1.4000000000000001, 1.41, 1.42, 1.43, 1.44, 1.45, 1.46, 1.47, 1.48, 1.49]<!--scale of lift coefficient values for drag computations in cruise conditions--></CL>
+          <CL_alpha is_input="False">6.418197840005499<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
+          <L_D_max is_input="False">16.102041745068757<!--max lift/drag ratio in cruise conditions--></L_D_max>
+          <induced_drag_coefficient is_input="False">0.04260061327373352<!--multiply squared lift coefficient by this coefficient to get induced drag coefficient--></induced_drag_coefficient>
+          <optimal_CD is_input="False">0.03539923750194986<!--drag coefficient at maximum lift/drag ratio in cruise conditions--></optimal_CD>
+          <optimal_CL is_input="False">0.5700000000000001<!--lift coefficient at maximum lift/drag ratio in cruise conditions--></optimal_CL>
+        </cruise>
+        <landing>
+          <CL_max is_input="False">2.8000299756815545<!--maximum lift coefficient in landing conditions--></CL_max>
+          <CL_max_clean is_input="False">1.5824133961659907<!--maximum lift coefficient in landing conditions without high-lift devices--></CL_max_clean>
+          <CL_max_clean_2D is_input="True">1.94</CL_max_clean_2D>
+          <additional_CL_capacity is_input="False">-4.440892098500626e-16<!--at landing, is equal to (maximum lift coefficient)-(maximum required lift coefficient)--></additional_CL_capacity>
+          <mach is_input="False">0.2063372973322812<!--considered Mach number for landing phase--></mach>
+          <reynolds is_input="False">18956546.257836632</reynolds>
+        </landing>
+        <low_speed>
+          <CD is_input="False">[0.023000102539106657, 0.02300283527629914, 0.02301104815266493, 0.023024849443517115, 0.023044347424168794, 0.023069650369933067, 0.02310086655612303, 0.023138104258051788, 0.023181471751032433, 0.02323107731037806, 0.023287029211401772, 0.023349435729416664, 0.023418405139735844, 0.023494045717672392, 0.02357646573853942, 0.023665773477650014, 0.023762077210317284, 0.023865485211854328, 0.02397610575757423, 0.0240940471227901, 0.024219417582815043, 0.024352325412962134, 0.02449287888854449, 0.024641186284875195, 0.024797355877267366, 0.024961495941034084, 0.02513371475148845, 0.025314120583943566, 0.02550282171371253, 0.02569992641610844, 0.025905542966444386, 0.026119779640033477, 0.02634274471218881, 0.02657454645822347, 0.026815293153450572, 0.0270650930731832, 0.02732405449273446, 0.027592285687417447, 0.027869894932545256, 0.028156990503430998, 0.028453680675387755, 0.028760073723728637, 0.029076277923766724, 0.029402401550815138, 0.029738552880186966, 0.030084840187195303, 0.030441371747153244, 0.030808255835373895, 0.031185600727170353, 0.031573514697855715, 0.03197210602274307, 0.032381482977145534, 0.032801753836376187, 0.033233026875748146, 0.033675410370574484, 0.03412901259616832, 0.03459394182784275, 0.03507030634091085, 0.035558214410685754, 0.036057774312480514, 0.03656909432160828, 0.037092282713382115, 0.03762744776311513, 0.038174697746120416, 0.03873414093771106, 0.0393058856132002, 0.03989004004790089, 0.04048671251712625, 0.04109601129618938, 0.04171804466040337, 0.042352920885081316, 0.043000748245536305, 0.043661635017081465, 0.044335689475029874, 0.04502301989469465, 0.04572373455138885, 0.04643794172042562, 0.04716574967711802, 0.047907266696779166, 0.04866260105472217, 0.0494318610262601, 0.050215154886706054, 0.05101259091137317, 0.05182427737557449, 0.052650322554623145, 0.05349083472383223, 0.05434592215851486, 0.0552156931339841, 0.056100255925553066, 0.056999718808534855, 0.057914190058242554, 0.05884377794998928, 0.059788590759088114, 0.060748736760852164, 0.06172432423059453, 0.06271546144362827, 0.06372225667526656, 0.06474481820082242, 0.06578325429560901, 0.06683767323493937, 0.06790818329412665, 0.06899489274848392, 0.07009790987332429, 0.07121734294396083, 0.07235330023570669, 0.0735058900238749, 0.07467522058377864, 0.07586140019073094, 0.07706453712004491, 0.07828473964703367, 0.0795221160470103, 0.08077677459528793, 0.0820488235671796, 0.08333837123799848, 0.0846455258830576, 0.08597039577767007, 0.087313089197149, 0.08867371441680752, 0.0900523797119587, 0.09144919335791565, 0.09286426362999145, 0.09429769880349918, 0.09574960715375197, 0.09722009695606293, 0.09870927648574515, 0.10021725401811168, 0.10174413782847568, 0.10329003619215019, 0.10485505738444836, 0.10643930968068327, 0.10804290135616801, 0.10966594068621571, 0.1113085359461394, 0.11297079541125224, 0.11465282735686733, 0.11635474005829771, 0.11807664179085654, 0.11981864082985687, 0.12158084545061182, 0.1233633639284345, 0.12516630453863797, 0.12698977555653534, 0.12883388525743977, 0.13069874191666428, 0.13258445380952202, 0.13449112921132605, 0.13641887639738945, 0.13836780364302537, 0.1403380192235469, 0.14232963141426716]<!--drag coefficient in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL--><trim is_input="False">[0.0, 5.89e-06, 1.178e-05, 1.767e-05, 2.356e-05, 2.945e-05, 3.534e-05, 4.123e-05, 4.712e-05, 5.3009999999999996e-05, 5.89e-05, 6.479e-05, 7.068e-05, 7.657000000000001e-05, 8.246e-05, 8.834999999999999e-05, 9.424e-05, 0.00010013, 0.00010601999999999999, 0.00011191, 0.0001178, 0.00012369, 0.00012958, 0.00013547, 0.00014136, 0.00014725, 0.00015314000000000001, 0.00015903, 0.00016492, 0.00017081, 0.00017669999999999999, 0.00018259, 0.00018848, 0.00019437, 0.00020026, 0.00020615000000000002, 0.00021203999999999998, 0.00021793, 0.00022382, 0.00022971000000000002, 0.0002356, 0.00024149000000000002, 0.00024738, 0.00025327, 0.00025916, 0.00026505, 0.00027094, 0.00027683000000000004, 0.00028272, 0.00028861, 0.0002945, 0.00030039, 0.00030628000000000003, 0.00031217, 0.00031806, 0.00032395000000000004, 0.00032984, 0.00033573, 0.00034162, 0.00034751, 0.00035339999999999997, 0.00035929, 0.00036518, 0.00037107, 0.00037696, 0.00038285, 0.00038874, 0.00039463000000000004, 0.00040052, 0.00040641000000000006, 0.00041230000000000005, 0.00041819, 0.00042407999999999996, 0.00042997, 0.00043586, 0.00044175, 0.00044764, 0.00045353, 0.00045942000000000004, 0.00046531000000000003, 0.0004712, 0.00047709000000000006, 0.00048298000000000004, 0.0004888700000000001, 0.00049476, 0.0005006499999999999, 0.00050654, 0.00051243, 0.00051832, 0.00052421, 0.0005301, 0.00053599, 0.00054188, 0.00054777, 0.0005536600000000001, 0.00055955, 0.00056544, 0.00057133, 0.00057722, 0.00058311, 0.000589, 0.00059489, 0.00060078, 0.00060667, 0.0006125600000000001, 0.00061845, 0.00062434, 0.0006302300000000001, 0.00063612, 0.00064201, 0.0006479000000000001, 0.00065379, 0.00065968, 0.0006655700000000001, 0.00067146, 0.0006773500000000001, 0.00068324, 0.0006891299999999999, 0.00069502, 0.00070091, 0.0007067999999999999, 0.00071269, 0.00071858, 0.00072447, 0.00073036, 0.00073625, 0.00074214, 0.00074803, 0.00075392, 0.00075981, 0.0007657, 0.0007715900000000001, 0.00077748, 0.00078337, 0.0007892600000000001, 0.0007951500000000001, 0.00080104, 0.0008069300000000001, 0.0008128200000000001, 0.00081871, 0.0008246000000000001, 0.0008304899999999999, 0.00083638, 0.00084227, 0.0008481599999999999, 0.00085405, 0.00085994, 0.0008658299999999999, 0.00087172, 0.00087761]<!--increment of drag coefficient due to aircraft trim in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL--></trim></CD>
+          <CD0 is_input="False">[0.023000102539106657, 0.022993397945263786, 0.022985078828523523, 0.022975253464198948, 0.022964030127603167, 0.022951517094049276, 0.022937822638850372, 0.022923055037319555, 0.022907322564769923, 0.022890733496514572, 0.022873396107866602, 0.02285541867413911, 0.0228369094706452, 0.022817976772697954, 0.022798728855610486, 0.022779273994695884, 0.022759720465267252, 0.02274017654263769, 0.022720750502120284, 0.022701550619028142, 0.022682685168674364, 0.02266426242637204, 0.02264639066743427, 0.022629178167174153, 0.022612733200904792, 0.022597164043939275, 0.022582578971590706, 0.022569086259172182, 0.0225567941819968, 0.022545811015377667, 0.022536245034627866, 0.0225282045150605, 0.022521797731988674, 0.022517132960725477, 0.022514318476584014, 0.022513462554877378, 0.022514673470918668, 0.02251805950002098, 0.022523728917497415, 0.022531789998661074, 0.022542351018825048, 0.02255552025330244, 0.022571405977406343, 0.022590116466449862, 0.022611759995746092, 0.022636444840608127, 0.022664279276349064, 0.022695371578282008, 0.022729830021720056, 0.022767762881976298, 0.022809278434363846, 0.022854484954195783, 0.022903490716785213, 0.02295640399744524, 0.02301333307148895, 0.023074386214229452, 0.023139671700979837, 0.023209297807053206, 0.02328337280776266, 0.02336200497842128, 0.023445302594342188, 0.02353337393083847, 0.023626327263223224, 0.023724270866809546, 0.023827313016910535, 0.023935561988839296, 0.02404912605790892, 0.024168113499432504, 0.02429263258872315, 0.024422791601093955, 0.024558698811858015, 0.02470046249632843, 0.024848190929818294, 0.025001992387640715, 0.025161975145108782, 0.02532824747753559, 0.025500917660234247, 0.02568009396851784, 0.025865884677699475, 0.026058398063092254, 0.02625774240000926, 0.026464025963763602, 0.02667735702966838, 0.02689784387303668, 0.02712559476918161, 0.027360717993416262, 0.027603321821053746, 0.027853514527407145, 0.028111404387789567, 0.028377099677514103, 0.02865070867189385, 0.02893233964624192, 0.029222100875871394, 0.02952010063609538, 0.02982644720222697, 0.03014124884957926, 0.030464613853465362, 0.030796650489198357, 0.031137467032091356, 0.031487171757457445, 0.03184587294060973, 0.03221367885686131, 0.03259069778152528, 0.032977037989914734, 0.03337280775734278, 0.0337781153591225, 0.03419306907056702, 0.03461777716698942, 0.03505234792370278, 0.03549688961602021, 0.035951510519254826, 0.03641631890871972, 0.03689142305972797, 0.037376931247592705, 0.037872951747627, 0.038379592835143944, 0.038896962785456644, 0.039425169873878216, 0.03996432237572175, 0.04051452856630034, 0.04107589672092708, 0.041648535114915064, 0.0422325520235774, 0.04282805572222719, 0.043435154486177525, 0.044053956590741496, 0.0446845703112322, 0.045327103922962755, 0.04598166570124624, 0.04664836392139577, 0.04732730685872442, 0.048018602788545306, 0.048722359986171526, 0.04943868672691616, 0.05016769128609234, 0.05090948193901311, 0.05166416696099163, 0.05243185462734096, 0.05321265321337419, 0.05400667099440445, 0.0548140162457448, 0.05563479724270837, 0.05646912226060824, 0.05731709957475753, 0.05817883746046933, 0.059054444193056714, 0.05994402804783279, 0.06084769730011068, 0.06176556022520346, 0.06269772509842425]<!--profile drag coefficient for whole aircraft in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL--></CD0>
+          <CL is_input="False">[0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.3, 0.31, 0.32, 0.33, 0.34, 0.35000000000000003, 0.36, 0.37, 0.38, 0.39, 0.4, 0.41000000000000003, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47000000000000003, 0.48, 0.49, 0.5, 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.5700000000000001, 0.58, 0.59, 0.6, 0.61, 0.62, 0.63, 0.64, 0.65, 0.66, 0.67, 0.68, 0.6900000000000001, 0.7000000000000001, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.8, 0.81, 0.8200000000000001, 0.8300000000000001, 0.84, 0.85, 0.86, 0.87, 0.88, 0.89, 0.9, 0.91, 0.92, 0.93, 0.9400000000000001, 0.9500000000000001, 0.96, 0.97, 0.98, 0.99, 1.0, 1.01, 1.02, 1.03, 1.04, 1.05, 1.06, 1.07, 1.08, 1.09, 1.1, 1.11, 1.12, 1.1300000000000001, 1.1400000000000001, 1.1500000000000001, 1.16, 1.17, 1.18, 1.19, 1.2, 1.21, 1.22, 1.23, 1.24, 1.25, 1.26, 1.27, 1.28, 1.29, 1.3, 1.31, 1.32, 1.33, 1.34, 1.35, 1.36, 1.37, 1.3800000000000001, 1.3900000000000001, 1.4000000000000001, 1.41, 1.42, 1.43, 1.44, 1.45, 1.46, 1.47, 1.48, 1.49]<!--scale of lift coefficient values for drag computations in low speed conditions--></CL>
+          <induced_drag_coefficient is_input="False">0.039414789281685465<!--multiply squared lift coefficient by this coefficient to get induced drag coefficient--></induced_drag_coefficient>
+        </low_speed>
+        <takeoff>
+          <CD is_input="False">[0.0485362408978708, 0.04893834692285089, 0.04934593308700429, 0.04975910766564408, 0.05017797893408336, 0.05060265516763524, 0.0510332446416128, 0.051469855631329164, 0.05191259641209742, 0.05236157525923065, 0.052816900448041965, 0.05327868025384447, 0.053747022951951245, 0.0542220368176754, 0.05470383012633004, 0.055192511153228235, 0.05568818817368311, 0.056190969463007764, 0.056700963296515264, 0.05721827794951875, 0.057743021697331295, 0.05827530281526598, 0.05881522957863595, 0.05936291026275426, 0.059918453142934036, 0.06048196649448836, 0.06105355859273033, 0.06163333771297305, 0.06222141213052962, 0.06281789012071314, 0.06342287995883668, 0.06403648992021338, 0.06465882828015632, 0.06529000331397858, 0.06593012329699328, 0.06657929650451352, 0.06723763121185239, 0.06790523569432298, 0.0685822182272384, 0.06926868708591175, 0.06996475054565611, 0.07067051688178459, 0.07138609436961028, 0.0721115912844463, 0.07284711590160574, 0.07359277649640168, 0.07434868134414724, 0.07511493872015548, 0.07589165689973953, 0.07667894415821251, 0.07747690877088748, 0.07828565901307755, 0.07910530316009579, 0.07993594948725538, 0.0807777062698693, 0.08163068178325075, 0.08249498430271278, 0.0833707221035685, 0.08425800346113099, 0.08515693665071336, 0.08606762994762873, 0.08699019162719018, 0.08792472996471079, 0.08887135323550369, 0.08983016971488195, 0.09080128767815868, 0.09178481540064698, 0.09278086115765995, 0.09378953322451068, 0.09481093987651226, 0.09584518938897782, 0.09689239003722042, 0.09795265009655318, 0.0990260778422892, 0.10011278154974158, 0.10121286949422338, 0.10232644995104777, 0.10345363119552776, 0.10459452150297653, 0.1057492291487071, 0.10691786240803267, 0.10810052955626621, 0.10929733886872095, 0.11050839862070985, 0.11173381708754614, 0.11297370254454282, 0.11422816326701304, 0.1154973075302699, 0.11678124360962647, 0.11808007978039585, 0.11939392431789117, 0.1207228854974255, 0.12206707159431193, 0.12342659088386361, 0.12480155164139357, 0.1261920621422149, 0.1275982306616408, 0.1290201654749843, 0.13045797485755845, 0.13191176708467645, 0.1333816504316513, 0.13486773317379622, 0.13637012358642414, 0.13788892994484833, 0.13942426052438175, 0.14097622360033762, 0.14254492744802894, 0.14413048034276887, 0.1457329905598704, 0.14735256637464678, 0.148989316062411, 0.15064334789847628, 0.15231477015815553, 0.15400369111676201, 0.15571021904960874, 0.15743446223200885, 0.15917652893927536, 0.16093652744672146, 0.16271456602966028, 0.16451075296340478, 0.16632519652326822, 0.16815800498456357, 0.17000928662260398, 0.17187914971270252, 0.17376770253017235, 0.17567505335032646, 0.17760131044847807, 0.17954658209994018, 0.18151097658002602, 0.18349460216404848, 0.18549756712732085, 0.1875199797451561, 0.18956194829286746, 0.19162358104576785, 0.1937049862791706, 0.19580627226838856, 0.19792754728873502, 0.20006891961552292, 0.2022304975240655, 0.20441238928967576, 0.2066147031876669, 0.20883754749335182, 0.21108103048204382, 0.21334526042905597, 0.21563034560970132, 0.21793639429929296, 0.22026351477314393, 0.2226118153065675, 0.2249814041748766, 0.2273723896533845]</CD>
+          <CL is_input="False">[0.5629208041307178, 0.5729208041307178, 0.5829208041307178, 0.5929208041307178, 0.6029208041307178, 0.6129208041307178, 0.6229208041307177, 0.6329208041307177, 0.6429208041307177, 0.6529208041307177, 0.6629208041307177, 0.6729208041307178, 0.6829208041307178, 0.6929208041307178, 0.7029208041307178, 0.7129208041307178, 0.7229208041307178, 0.7329208041307178, 0.7429208041307178, 0.7529208041307178, 0.7629208041307178, 0.7729208041307177, 0.7829208041307177, 0.7929208041307177, 0.8029208041307178, 0.8129208041307178, 0.8229208041307178, 0.8329208041307178, 0.8429208041307178, 0.8529208041307177, 0.8629208041307177, 0.8729208041307177, 0.8829208041307177, 0.8929208041307177, 0.9029208041307177, 0.9129208041307177, 0.9229208041307178, 0.9329208041307178, 0.9429208041307178, 0.9529208041307178, 0.9629208041307178, 0.9729208041307178, 0.9829208041307178, 0.9929208041307178, 1.0029208041307178, 1.0129208041307178, 1.0229208041307178, 1.0329208041307179, 1.0429208041307176, 1.0529208041307179, 1.0629208041307177, 1.0729208041307179, 1.0829208041307177, 1.092920804130718, 1.1029208041307177, 1.112920804130718, 1.1229208041307177, 1.132920804130718, 1.1429208041307177, 1.1529208041307177, 1.1629208041307177, 1.1729208041307178, 1.1829208041307178, 1.1929208041307178, 1.2029208041307178, 1.2129208041307178, 1.2229208041307178, 1.2329208041307178, 1.2429208041307178, 1.2529208041307178, 1.2629208041307178, 1.2729208041307176, 1.2829208041307179, 1.2929208041307176, 1.3029208041307179, 1.3129208041307177, 1.3229208041307179, 1.3329208041307177, 1.342920804130718, 1.3529208041307177, 1.362920804130718, 1.3729208041307177, 1.382920804130718, 1.3929208041307177, 1.4029208041307177, 1.4129208041307177, 1.4229208041307178, 1.4329208041307178, 1.4429208041307178, 1.4529208041307178, 1.4629208041307178, 1.4729208041307178, 1.4829208041307178, 1.4929208041307178, 1.5029208041307178, 1.5129208041307178, 1.5229208041307176, 1.5329208041307179, 1.5429208041307176, 1.5529208041307179, 1.5629208041307177, 1.5729208041307179, 1.5829208041307177, 1.592920804130718, 1.6029208041307177, 1.612920804130718, 1.6229208041307177, 1.632920804130718, 1.6429208041307177, 1.652920804130718, 1.6629208041307177, 1.672920804130718, 1.6829208041307178, 1.692920804130718, 1.7029208041307178, 1.712920804130718, 1.7229208041307178, 1.7329208041307176, 1.7429208041307178, 1.7529208041307176, 1.7629208041307178, 1.7729208041307176, 1.7829208041307179, 1.7929208041307176, 1.8029208041307179, 1.8129208041307177, 1.8229208041307179, 1.8329208041307177, 1.842920804130718, 1.8529208041307177, 1.862920804130718, 1.8729208041307177, 1.882920804130718, 1.8929208041307177, 1.902920804130718, 1.9129208041307177, 1.922920804130718, 1.9329208041307178, 1.942920804130718, 1.9529208041307178, 1.962920804130718, 1.9729208041307178, 1.9829208041307176, 1.9929208041307178, 2.0029208041307176, 2.012920804130718, 2.0229208041307176, 2.032920804130718, 2.0429208041307176, 2.052920804130718]</CL>
+          <CL0_clean is_input="False">0.2<!--value of lift coefficient at angle of attack 0 in clean configuration at takeoff--></CL0_clean>
+          <CL_alpha units="1/rad" is_input="False">4.949337044162386<!--derivative of lift coefficient with respect to angle of attack in takeoff conditions--></CL_alpha>
+          <mach is_input="True">0.2<!--considered Mach number for takeoff phase--></mach>
+        </takeoff>
+      </aircraft>
+      <cruise>
+        <neutral_point>
+          <x is_input="False">0.41310555966564166<!--X-position of neutral point - X-position of aircraft nose--></x>
+        </neutral_point>
+      </cruise>
+      <fuselage>
+        <cruise>
+          <CD0 is_input="False">[0.008423695621608333, 0.008403721413829465, 0.008383923511643533, 0.008364301915050535, 0.008344856624050472, 0.008325587638643344, 0.00830649495882915, 0.008287578584607892, 0.008268838515979569, 0.00825027475294418, 0.008231887295501724, 0.008213676143652204, 0.008195641297395619, 0.00817778275673197, 0.008160100521661254, 0.008142594592183474, 0.008125264968298627, 0.008108111650006716, 0.00809113463730774, 0.008074333930201698, 0.008057709528688591, 0.00804126143276842, 0.008024989642441182, 0.00800889415770688, 0.007992974978565512, 0.00797723210501708, 0.00796166553706158, 0.007946275274699016, 0.007931061317929387, 0.007916023666752694, 0.007901162321168935, 0.00788647728117811, 0.00787196854678022, 0.007857636117975264, 0.007843479994763244, 0.00782950017714416, 0.00781569666511801, 0.007802069458684793, 0.007788618557844512, 0.007775343962597165, 0.007762245672942754, 0.0077493236888812765, 0.007736578010412735, 0.007724008637537127, 0.0077116155702544546, 0.007699398808564717, 0.007687358352467913, 0.007675494201964045, 0.0076638063570531115, 0.007652294817735113, 0.007640959584010049, 0.007629800655877919, 0.0076188180333387244, 0.007608011716392465, 0.007597381705039139, 0.007586927999278749, 0.007576650599111294, 0.007566549504536773, 0.007556624715555188, 0.007546876232166536, 0.007537304054370819, 0.007527908182168037, 0.007518688615558191, 0.007509645354541279, 0.007500778399117301, 0.007492087749286259, 0.007483573405048151, 0.007475235366402977, 0.0074670736333507385, 0.007459088205891435, 0.007451279084025066, 0.0074436462677516324, 0.0074361897570711325, 0.007428909551983568, 0.007421805652488938, 0.007414878058587243, 0.007408126770278483, 0.007401551787562658, 0.0073951531104397665, 0.00738893073890981, 0.007382884672972789, 0.007377014912628703, 0.00737132145787755, 0.007365804308719333, 0.007360463465154052, 0.0073552989271817035, 0.007350310694802291, 0.007345498768015813, 0.00734086314682227, 0.007336403831221661, 0.007332120821213988, 0.007328014116799249, 0.007324083717977444, 0.007320329624748575, 0.00731675183711264, 0.00731335035506964, 0.0073101251786195755, 0.007307076307762445, 0.007304203742498249, 0.007301507482826988, 0.007298987528748662, 0.0072966438802632705, 0.007294476537370814, 0.007292485500071292, 0.007290670768364705, 0.007289032342251053, 0.007287570221730336, 0.007286284406802552, 0.0072851748974677045, 0.007284241693725791, 0.0072834847955768126, 0.007282904203020768, 0.00728249991605766, 0.007282271934687485, 0.007282220258910246, 0.007282344888725941, 0.007282645824134571, 0.007283123065136136, 0.007283776611730635, 0.00728460646391807, 0.007285612621698439, 0.007286795085071743, 0.007288153854037981, 0.007289688928597155, 0.007291400308749263, 0.007293287994494305, 0.007295351985832283, 0.007297592282763196, 0.007300008885287043, 0.007302601793403825, 0.007305371007113541, 0.007308316526416192, 0.007311438351311779, 0.0073147364818003, 0.007318210917881755, 0.007321861659556146, 0.007325688706823471, 0.007329692059683731, 0.007333871718136925, 0.007338227682183055, 0.007342759951822119, 0.0073474685270541185, 0.007352353407879052, 0.00735741459429692, 0.007362652086307724, 0.007368065883911462, 0.007373655987108135, 0.007379422395897742, 0.0073853651102802845, 0.007391484130255761]<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
+          <CnBeta is_input="False">-0.13250360634782954<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></CnBeta>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="False">[0.009074079647738823, 0.009054105439959957, 0.009034307537774025, 0.009014685941181027, 0.008995240650180963, 0.008975971664773836, 0.008956878984959641, 0.008937962610738382, 0.00891922254211006, 0.00890065877907467, 0.008882271321632215, 0.008864060169782695, 0.00884602532352611, 0.00882816678286246, 0.008810484547791745, 0.008792978618313964, 0.00877564899442912, 0.008758495676137207, 0.008741518663438232, 0.00872471795633219, 0.008708093554819083, 0.008691645458898912, 0.008675373668571674, 0.00865927818383737, 0.008643359004696002, 0.00862761613114757, 0.008612049563192071, 0.008596659300829508, 0.00858144534405988, 0.008566407692883185, 0.008551546347299425, 0.008536861307308602, 0.008522352572910712, 0.008508020144105757, 0.008493864020893737, 0.00847988420327465, 0.0084660806912485, 0.008452453484815284, 0.008439002583975003, 0.008425727988727656, 0.008412629699073245, 0.008399707715011768, 0.008386962036543226, 0.008374392663667619, 0.008361999596384945, 0.008349782834695209, 0.008337742378598405, 0.008325878228094536, 0.008314190383183604, 0.008302678843865603, 0.00829134361014054, 0.008280184682008411, 0.008269202059469216, 0.008258395742522956, 0.00824776573116963, 0.00823731202540924, 0.008227034625241785, 0.008216933530667265, 0.008207008741685678, 0.008197260258297027, 0.00818768808050131, 0.00817829220829853, 0.008169072641688683, 0.00816002938067177, 0.008151162425247792, 0.00814247177541675, 0.008133957431178642, 0.008125619392533468, 0.00811745765948123, 0.008109472232021927, 0.008101663110155557, 0.008094030293882124, 0.008086573783201625, 0.00807929357811406, 0.00807218967861943, 0.008065262084717735, 0.008058510796408975, 0.008051935813693149, 0.008045537136570257, 0.008039314765040302, 0.00803326869910328, 0.008027398938759193, 0.008021705484008042, 0.008016188334849825, 0.008010847491284542, 0.008005682953312195, 0.008000694720932783, 0.007995882794146305, 0.007991247172952761, 0.007986787857352153, 0.007982504847344479, 0.00797839814292974, 0.007974467744107936, 0.007970713650879067, 0.007967135863243132, 0.007963734381200132, 0.007960509204750067, 0.007957460333892937, 0.007954587768628741, 0.00795189150895748, 0.007949371554879153, 0.007947027906393763, 0.007944860563501306, 0.007942869526201784, 0.007941054794495197, 0.007939416368381544, 0.007937954247860826, 0.007936668432933044, 0.007935558923598195, 0.007934625719856283, 0.007933868821707305, 0.00793328822915126, 0.00793288394218815, 0.007932655960817978, 0.007932604285040737, 0.007932728914856432, 0.007933029850265063, 0.007933507091266627, 0.007934160637861128, 0.007934990490048562, 0.00793599664782893, 0.007937179111202234, 0.007938537880168472, 0.007940072954727645, 0.007941784334879754, 0.007943672020624798, 0.007945736011962775, 0.007947976308893687, 0.007950392911417534, 0.007952985819534316, 0.007955755033244033, 0.007958700552546685, 0.00796182237744227, 0.00796512050793079, 0.007968594944012248, 0.007972245685686637, 0.007976072732953962, 0.007980076085814223, 0.007984255744267418, 0.007988611708313546, 0.00799314397795261, 0.007997852553184609, 0.008002737434009543, 0.008007798620427413, 0.008013036112438216, 0.008018449910041954, 0.008024040013238625, 0.008029806422028234, 0.008035749136410775, 0.008041868156386254]</CD0>
+        </low_speed>
+      </fuselage>
+      <high_lift_devices>
+        <landing>
+          <CD is_input="False">0.030340625976083894<!--increment of CD due to high-lift devices for landing phase--></CD>
+          <CL is_input="False">1.2176165795155636<!--increment of CL due to high-lift devices for landing phase--></CL>
+        </landing>
+        <takeoff>
+          <CD is_input="False">0.014295361743277777<!--increment of CD due to high-lift devices for takeoff phase--></CD>
+          <CL is_input="False">0.5629208041307178<!--increment of CL due to high-lift devices for takeoff phase--></CL>
+        </takeoff>
+      </high_lift_devices>
+      <horizontal_tail>
+        <cruise>
+          <CD0 is_input="False">0.001803865335648423<!--profile drag coefficient for horizontal tail--></CD0>
+          <CL_alpha is_input="False">3.4698175649817595<!--derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions--></CL_alpha>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="False">0.0019802104783601254</CD0>
+        </low_speed>
+      </horizontal_tail>
+      <nacelles>
+        <cruise>
+          <CD0 is_input="False">0.0016304117070882643<!--profile drag coefficient for nacelles--></CD0>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="False">0.0017488139537969818</CD0>
+        </low_speed>
+      </nacelles>
+      <pylons>
+        <cruise>
+          <CD0 is_input="False">0.0003570938148870297<!--profile drag coefficient for pylons--></CD0>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="False">0.0003913684077255194</CD0>
+        </low_speed>
+      </pylons>
+      <vertical_tail>
+        <cruise>
+          <CD0 is_input="False">0.0012760985878005617<!--profile drag coefficient for vertical tail--></CD0>
+          <CL_alpha is_input="False">2.546156443275808<!--derivative of lift coefficient of horizontal tail with respect to local "angle of attack" in cruise conditions--></CL_alpha>
+          <CnBeta units="m**2" is_input="False">0.27295034234782956<!--derivative of yawing moment against sideslip angle for vertical tail in cruise conditions--></CnBeta>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="False">0.001399815047350373</CD0>
+        </low_speed>
+      </vertical_tail>
+      <wing>
+        <cruise>
+          <CD0 is_input="False">[0.005704595065076766, 0.0057172625620895345, 0.005728434985961772, 0.005738201822788099, 0.005746652558663137, 0.005753876679681508, 0.005759963671937834, 0.005765003021526738, 0.005769084214542841, 0.005772296737080766, 0.005774730075235134, 0.005776473715100566, 0.005777617142771687, 0.005778249844343116, 0.005778461305909479, 0.005778341013565393, 0.005777978453405484, 0.005777463111524371, 0.0057768844740166796, 0.005776332026977029, 0.005775895256500041, 0.00577566364868034, 0.005775726689612546, 0.00577617386539128, 0.005777094662111169, 0.0057785785658668294, 0.005780715062752885, 0.005783593638863959, 0.005787303780294674, 0.005791934973139649, 0.005797576703493509, 0.005804318457450874, 0.005812249721106367, 0.00582145998055461, 0.005832038721890225, 0.005844075431207834, 0.005857659594602057, 0.00587288069816752, 0.005889828227998842, 0.005908591670190646, 0.005929260510837554, 0.005951924236034189, 0.00597667233187517, 0.006003594284455124, 0.006032779579868667, 0.006064317704210426, 0.006098298143575019, 0.006134810384057073, 0.006173943911751205, 0.00621578821275204, 0.0062604327731542, 0.006307967079052304, 0.006358480616540977, 0.0064120628717148406, 0.006468803330668516, 0.006528791479496626, 0.006592116804293793, 0.0066588687911546375, 0.006729136926173782, 0.006803010695445849, 0.006880579585065462, 0.006961933081127239, 0.0070471606697258046, 0.007136351836955781, 0.007229596068911792, 0.007326982851688454, 0.007428601671380395, 0.0075345420140822345, 0.007644893365888594, 0.007759745212894095, 0.00787918704119336, 0.008003308336881012, 0.008132198586051673, 0.008265947274799967, 0.008404643889220511, 0.00854837791540793, 0.008697238839456847, 0.008851316147461881, 0.009010699325517655, 0.009175477859718794, 0.009345741236159916, 0.009521578940935646, 0.009703080460140606, 0.009890335279869416, 0.010083432886216694, 0.010282462765277074, 0.010487514403145166, 0.010698677285915595, 0.010916040899682991, 0.011139694730541968, 0.011369728264587148, 0.011606230987913154, 0.011849292386614616, 0.01209900194678614, 0.012355449154522368, 0.012618723495917899, 0.012888914457067375, 0.013166111524065403, 0.01345040418300662, 0.013741881919985637, 0.01404063422109708, 0.014346750572435563, 0.014660320460095721, 0.014981433370172173, 0.015310178788759534, 0.01564664620195243, 0.015990925095845484, 0.01634310495653333, 0.016703275270110562, 0.017071525522671813, 0.017447945200311715, 0.017832623789124893, 0.018225650775205954, 0.01862711564464953, 0.019037107883550227, 0.019455716978002687, 0.019883032414101526, 0.020319143677941357, 0.020764140255616816, 0.021218111633222524, 0.021681147296853095, 0.022153336732603144, 0.02263476942656731, 0.02312553486484021, 0.023625722533516465, 0.024135421918690694, 0.02465472250645751, 0.025183713782911555, 0.02572248523414744, 0.026271126346259794, 0.026829726605343218, 0.02739837549749237, 0.027977162508801848, 0.028566177125366268, 0.02916550883328027, 0.029775247118638465, 0.03039548146753548, 0.031026301366065934, 0.031667796300324444, 0.03232005575640565, 0.032983169220404146, 0.03365722617841457, 0.03434231611653154, 0.0350385285208497, 0.03574595287746364, 0.036464678672468005, 0.0371947953919574, 0.03793639252202646, 0.038689559548769806, 0.03945438595828206]<!--profile drag coefficient for wing w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
+          <reynolds is_input="False">6124998.624249204<!--Reynolds number based on wing mean aerodynamic chord in cruise conditions--></reynolds>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="False">[0.006257734192583147, 0.0062716299780485405, 0.006283885722423342, 0.00629459958871258, 0.006303869739921289, 0.006311794339054499, 0.006318471549117241, 0.0063239995331145485, 0.006328476454051452, 0.0063320004749329835, 0.006334669758764175, 0.0063365824685500585, 0.006337836767295665, 0.006338530818006025, 0.0063387627836861745, 0.00633863082734114, 0.006338233111975956, 0.006337667800595653, 0.006337033056205263, 0.006336427041809819, 0.006335947920414353, 0.0063356938550238944, 0.006335763008643476, 0.006336253544278129, 0.006337263624932886, 0.00633889141361278, 0.006341235073322838, 0.006344392767068094, 0.006348462657853583, 0.006353542908684335, 0.006359731682565378, 0.0063671271425017485, 0.006375827451498475, 0.006385930772560591, 0.006397535268693127, 0.006410739102901117, 0.006425640438189587, 0.006442337437563576, 0.006460928264028112, 0.006481511080588225, 0.006504184050248952, 0.0065290453360153195, 0.0065561931008923605, 0.006585725507885109, 0.006617740719998596, 0.00665233690023785, 0.006689612211607906, 0.006729664817113796, 0.006772592879760547, 0.006818494562553196, 0.006867468028496775, 0.00691961144059631, 0.006975022961856837, 0.007033800755283388, 0.0070960429838809935, 0.007161847810654685, 0.007231313398609493, 0.007304537910750452, 0.007381619510082593, 0.007462656359610945, 0.007547746622340545, 0.007636988461276418, 0.007730480039423602, 0.007828319519787123, 0.007930605065372017, 0.008037434839183316, 0.008148907004226049, 0.008265119723505248, 0.008386171160025947, 0.008512159476793174, 0.008643182836811963, 0.008779339403087344, 0.008920727338624352, 0.00906744480642802, 0.009219589969503374, 0.009377260990855446, 0.009540556033489274, 0.009709573260409882, 0.009884410834622307, 0.01006516691913158, 0.010251939676942731, 0.010444827271060792, 0.0106439278644908, 0.010849339620237776, 0.011061160701306756, 0.011279489270702776, 0.011504423491430866, 0.011736061526496056, 0.011974501538903379, 0.012219841691657865, 0.012472180147764547, 0.012731615070228457, 0.012998244622054627, 0.013272166966248087, 0.013553480265813872, 0.013842282683757003, 0.014138672383082529, 0.014442747526795467, 0.014754606277900859, 0.01507434679940373, 0.015402067254309116, 0.015737865805622038, 0.016081840616347542, 0.016434089849490657, 0.01679471166805641, 0.017163804235049828, 0.017541465713475958, 0.017927794266339826, 0.01832288805664645, 0.018726845247400866, 0.019139764001608123, 0.019561742482273246, 0.019992878852401252, 0.020433271274997195, 0.02088301791306608, 0.02134221692961296, 0.02181096648764285, 0.0222893647501608, 0.022777509880171833, 0.023275500040680987, 0.02378343339469329, 0.024301408105213754, 0.02482952233524744, 0.025367874247799373, 0.025916562005874576, 0.026475683772478085, 0.027045337710614917, 0.027625621983290133, 0.028216634753508746, 0.028818474184275796, 0.029431238438596293, 0.030055025679475298, 0.030689934069917837, 0.03133606177292893, 0.031993506951513616, 0.03266236776867691, 0.03334274238742388, 0.03403472897075952, 0.034738425681688875, 0.03545393068321699, 0.03618134213834887, 0.03692075821008957, 0.037672277061444104, 0.03843599685541753, 0.039212015755014866, 0.04000043192324113, 0.04080134352310136, 0.04161484871760061, 0.04244104566974388, 0.043280032542536234]</CD0>
+          <reynolds is_input="False">4659199.490056267<!--Reynolds number based on wing mean aerodynamic chord in low speed conditions--></reynolds>
+        </low_speed>
+      </wing>
+    </aerodynamics>
+  </data>
+  <settings>
+    <geometry>
+      <horizontal_tail>
+        <position_ratio_on_fuselage is_input="True">0.91</position_ratio_on_fuselage>
+      </horizontal_tail>
+    </geometry>
+    <weight>
+      <aircraft>
+        <CG>
+          <range is_input="True">0.3<!--distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)--></range>
+          <aft>
+            <MAC_position>
+              <margin is_input="True">0.05</margin>
+            </MAC_position>
+          </aft>
+        </CG>
+      </aircraft>
+      <airframe>
+        <flight_controls>
+          <mass>
+            <k_fc is_input="True">0.000135<!--flight controls (A4): 0.85e-4 if electrical, 1.35e-4 if conventional--></k_fc>
+          </mass>
+        </flight_controls>
+        <fuselage>
+          <mass>
+            <k_fus is_input="True">1.0<!--correction coefficient: 1.00 if all engines under wing / 1.02 with 2 engines at rear / 1.03 if 3 engines at rear / 1.05 if 1 engine in vertical tail (with or without 2 engines under wing)--></k_fus>
+            <k_lg is_input="True">1.05<!--correction coefficient: 1.05 if main landing gear under wing / 1.10 if main landing gear under fuselage--></k_lg>
+          </mass>
+        </fuselage>
+        <landing_gear>
+          <front>
+            <weight_ratio is_input="True">0.06<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
+          </front>
+        </landing_gear>
+        <wing>
+          <mass>
+            <k_mvo is_input="True">1.39<!--1.39 for Airbus type aircrafts--></k_mvo>
+            <k_voil is_input="True">1.05<!--1.00 if 4 engines / 1.05 if 2 or 3 engines / 1.10 if engines on fuselage--></k_voil>
+          </mass>
+        </wing>
+      </airframe>
+      <systems>
+        <power>
+          <mass>
+            <k_elec is_input="True">1.0<!--electricity coefficient: 1.00 if 2 engines (A300, A310 type) / (1.02 if 2 engines (DC9, Caravelle type) / 1.03 if 3 engines (B727 type) / 1.05 if 3 engines (DC10, L1011 type) / 1.08 if 4 engines (B747 type)--></k_elec>
+          </mass>
+        </power>
+      </systems>
+    </weight>
+  </settings>
+  <tuning>
+    <propulsion>
+      <rubber_engine>
+        <SFC>
+          <k1 is_input="True">1.0</k1>
+          <k2 is_input="True">1.0</k2>
+        </SFC>
+      </rubber_engine>
+    </propulsion>
+    <aerodynamics>
+      <aircraft>
+        <cruise>
+          <CD>
+            <k is_input="True">1.0<!--correction ratio to apply to computed drag coefficient in cruise conditions--></k>
+            <offset is_input="True">0.0<!--correction offset to apply to computed drag coefficient in cruise conditions--></offset>
+            <compressibility>
+              <characteristic_mach_increment is_input="True">0.018</characteristic_mach_increment>
+              <max_value is_input="True">0.5</max_value>
+            </compressibility>
+            <winglet_effect>
+              <k is_input="True">0.9<!--correction ratio to apply to computed induced drag coefficient in cruise conditions--></k>
+              <offset is_input="True">0.0<!--correction ratio to apply to computed drag coefficient in cruise conditions--></offset>
+            </winglet_effect>
+          </CD>
+          <CL>
+            <k is_input="True">1.0<!--ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation--></k>
+            <offset is_input="True">0.0<!--offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation--></offset>
+            <winglet_effect>
+              <k is_input="True">1.0<!--ratio to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation--></k>
+              <offset is_input="True">0.0<!--offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation--></offset>
+            </winglet_effect>
+          </CL>
+        </cruise>
+        <landing>
+          <CL_max>
+            <landing_gear_effect>
+              <k is_input="True">1.0<!--correction ratio to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear--></k>
+            </landing_gear_effect>
+          </CL_max>
+        </landing>
+      </aircraft>
+      <high_lift_devices>
+        <landing>
+          <CD>
+            <double_slot_effect>
+              <k is_input="True">1.0</k>
+            </double_slot_effect>
+          </CD>
+          <CL>
+            <double_slot_effect>
+              <k is_input="True">1.1</k>
+            </double_slot_effect>
+          </CL>
+        </landing>
+      </high_lift_devices>
+    </aerodynamics>
+    <weight>
+      <airframe>
+        <flight_controls>
+          <mass>
+            <k is_input="True">1.0<!--flight controls (A4): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--flight controls (A4): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </flight_controls>
+        <fuselage>
+          <mass>
+            <k is_input="True">1.0<!--fuselage (A2): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--fuselage (A2): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </fuselage>
+        <horizontal_tail>
+          <mass>
+            <k is_input="True">1.0<!--horizontal tail (A31): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--horizontal tail (A31): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </horizontal_tail>
+        <landing_gear>
+          <mass>
+            <k is_input="True">0.85<!--landing gears (A5): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--landing gears (A5): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </landing_gear>
+        <paint>
+          <mass>
+            <k is_input="True">1.0<!--paint (A7): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--paint (A7): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </paint>
+        <pylon>
+          <mass>
+            <k is_input="True">0.85<!--pylon (A6): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--pylon (A6): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </pylon>
+        <vertical_tail>
+          <mass>
+            <k is_input="True">1.0<!--vertical tail (A32): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--vertical tail (A32): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </vertical_tail>
+        <wing>
+          <mass>
+            <k is_input="True">1.0<!--wing (A1): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--wing (A1): correction offset to be applied on computed mass--></offset>
+          </mass>
+          <bending_sizing>
+            <mass>
+              <k is_input="True">1.0<!--wing bending sizing (A11): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--wing bending sizing (A11): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </bending_sizing>
+          <reinforcements>
+            <mass>
+              <k is_input="True">1.0<!--wing reinforcements (A14): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--wing reinforcements (A14): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </reinforcements>
+          <ribs>
+            <mass>
+              <k is_input="True">1.0<!--wing ribs (A13): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--wing ribs (A13): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </ribs>
+          <secondary_parts>
+            <mass>
+              <k is_input="True">1.01<!--wing secondary parts (A15): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--wing secondary parts (A15): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </secondary_parts>
+          <shear_sizing>
+            <mass>
+              <k is_input="True">1.0<!--wing shear sizing (A12): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--wing shear sizing (A12): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </shear_sizing>
+        </wing>
+      </airframe>
+      <furniture>
+        <food_water>
+          <mass>
+            <k is_input="True">1.0<!--food water (D3): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--food water (D3): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </food_water>
+        <passenger_seats>
+          <mass>
+            <k is_input="True">1.0<!--passenger seats (D2): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--passenger seats (D2): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </passenger_seats>
+        <security_kit>
+          <mass>
+            <k is_input="True">1.0<!--security kit (D4): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--security kit (D4): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </security_kit>
+        <toilets>
+          <mass>
+            <k is_input="True">1.0<!--toilets (D5): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--toilets (D5): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </toilets>
+      </furniture>
+      <propulsion>
+        <engine>
+          <mass>
+            <k is_input="True">1.0<!--engine (B1): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--engine (B1): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </engine>
+        <fuel_lines>
+          <mass>
+            <k is_input="True">1.0<!--fuel lines (B2): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--fuel lines (B2): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </fuel_lines>
+        <unconsumables>
+          <mass>
+            <k is_input="True">1.0<!--unconsumables (B3): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--unconsumables (B3): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </unconsumables>
+      </propulsion>
+      <systems>
+        <flight_kit>
+          <mass>
+            <k is_input="True">1.0<!--flight kit (C6): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--flight kit (C6): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </flight_kit>
+        <navigation>
+          <mass>
+            <k is_input="True">1.0<!--navigation (C3): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--navigation (C3): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </navigation>
+        <operational>
+          <mass>
+            <k is_input="True">1.0<!--operational (C5): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--operational (C5): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </operational>
+        <transmission>
+          <mass>
+            <k is_input="True">1.0<!--transmission (C4): correction ratio to be applied on computed mass--></k>
+            <offset units="kg" is_input="True">0.0<!--transmission (C4): correction offset to be applied on computed mass--></offset>
+          </mass>
+        </transmission>
+        <life_support>
+          <air_conditioning>
+            <mass>
+              <k is_input="True">1.0<!--air conditioning (C21): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--air conditioning (C21): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </air_conditioning>
+          <cabin_lighting>
+            <mass>
+              <k is_input="True">1.0<!--cabin lighting (C21): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--cabin lighting (C21): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </cabin_lighting>
+          <de-icing>
+            <mass>
+              <k is_input="True">1.0<!--de-icing (C21): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--de-icing (C21): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </de-icing>
+          <insulation>
+            <mass>
+              <k is_input="True">2.0<!--insulation (C21): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--insulation (C21): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </insulation>
+          <oxygen>
+            <mass>
+              <k is_input="True">1.0<!--oxygen (C21): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--oxygen (C21): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </oxygen>
+          <safety_equipment>
+            <mass>
+              <k is_input="True">1.0<!--safety equipment (C21): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--safety equipment (C21): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </safety_equipment>
+          <seats_crew_accommodation>
+            <mass>
+              <k is_input="True">1.0<!--seats crew accommodation (C21): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--seats crew accommodation (C21): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </seats_crew_accommodation>
+        </life_support>
+        <power>
+          <auxiliary_power_unit>
+            <mass>
+              <k is_input="True">1.0<!--power (C1): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </auxiliary_power_unit>
+          <electric_systems>
+            <mass>
+              <k is_input="True">1.0<!--power (C1): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </electric_systems>
+          <hydraulic_systems>
+            <mass>
+              <k is_input="True">1.0<!--power (C1): correction ratio to be applied on computed mass--></k>
+              <offset units="kg" is_input="True">0.0<!--power (C1): correction offset to be applied on computed mass--></offset>
+            </mass>
+          </hydraulic_systems>
+        </power>
+      </systems>
+    </weight>
+  </tuning>
+</FASTOAD_model>
