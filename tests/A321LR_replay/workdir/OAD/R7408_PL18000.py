@@ -15,10 +15,10 @@
 """
 <div class="row">
   <div class="column">
-    <img src="../../img/logo-onera.png" width="200">
+    <img src="../../../CeRAS_replay/img/logo-onera.png" width="200">
   </div>
   <div class="column">
-    <img src="../../img/logo-ISAE_SUPAERO.png" width="200">
+    <img src="../../../CeRAS_replay/img/logo-ISAE_SUPAERO.png" width="200">
   </div>
 </div>
 """
@@ -36,31 +36,252 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from scipy.constants import foot
 from scipy.constants import nautical_mile
+from scipy.interpolate.interpolate import interp1d
 
 from fastoad import api
 from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.io import VariableIO
+from fastoad.utils.physics.atmosphere import Atmosphere as Atm
 from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 from fastoad.utils.postprocessing.analysis_and_plots import (
     mass_breakdown_sun_plot,
     wing_geometry_plot,
+    aircraft_geometry_plot,
 )
 
 # %%
 
-engine = RubberEngine(
-    bypass_ratio=4.5,
-    overall_pressure_ratio=35.2,
-    turbine_inlet_temperature=1600,
-    mto_thrust=140550,
+
+def plot_results(fast_oad_csv, compare_with=None):
+    fast_df = pd.read_csv(fast_oad_csv)
+    fast_df.altitude /= foot
+    fast_df.ground_distance /= nautical_mile
+    name = "FAST-OAD A321NEO"
+    if compare_with:
+        fast_df2 = pd.read_csv(compare_with)
+        fast_df2.altitude /= foot
+        fast_df2.ground_distance /= nautical_mile
+        name2 = "FAST-OAD A321NEO CFM tuned"
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(
+        go.Scatter(
+            x=fast_df["ground_distance"],
+            y=fast_df["altitude"],
+            name="[%s] altitude vs distance" % name,
+        ),
+        secondary_y=False,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=fast_df["ground_distance"],
+            y=fast_df["CL"],
+            name="[%s] CL vs distance" % name,
+            line=dict(dash="dot"),
+        ),
+        secondary_y=True,
+    )
+    if compare_with:
+        fig.add_trace(
+            go.Scatter(
+                x=fast_df2["ground_distance"],
+                y=fast_df2["altitude"],
+                name="[%s] altitude vs distance" % name2,
+            ),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=fast_df2["ground_distance"],
+                y=fast_df2["CL"],
+                name="[%s] CL vs distance" % name2,
+                line=dict(dash="dot"),
+            ),
+            secondary_y=True,
+        )
+
+    fig.update_xaxes(range=[-30, 3100.0])
+    fig.update_yaxes(title_text="Altitude [ft]", range=[0, 40000.0], secondary_y=False)
+    fig.update_yaxes(title_text="CL", range=[0.3, 0.8], secondary_y=True)
+    fig.update_layout(margin=dict(l=300, r=280, t=20, b=0), width=1000, height=250)
+    fig.show()
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    fig.add_trace(
+        go.Scatter(
+            x=fast_df["ground_distance"], y=fast_df["thrust"], name="[%s] thrust vs distance" % name
+        ),
+        secondary_y=False,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=fast_df["ground_distance"],
+            y=fast_df["mass"].iloc[0] - fast_df["mass"],
+            name="[%s] fuel vs distance" % name,
+            line=dict(dash="dot"),
+        ),
+        secondary_y=True,
+    )
+    if compare_with:
+        fig.add_trace(
+            go.Scatter(
+                x=fast_df2["ground_distance"],
+                y=fast_df2["thrust"],
+                name="[%s] thrust vs distance" % name2,
+            ),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=fast_df2["ground_distance"],
+                y=fast_df2["mass"].iloc[0] - fast_df2["mass"],
+                name="[%s] fuel vs distance" % name2,
+                line=dict(dash="dot"),
+            ),
+            secondary_y=True,
+        )
+    fig.update_xaxes(title_text="Range [nm]", range=[-30, 2800.0])
+    fig.update_yaxes(title_text="Thrust [N]", range=[0, 300000.0], secondary_y=False)
+    fig.update_yaxes(title_text="Block fuel [kg]", range=[0.0, 21000.0], secondary_y=True)
+    fig.update_layout(margin=dict(l=300, r=280, t=0, b=20), width=1000, height=250)
+    fig.show()
+
+    fig = make_subplots()
+    fig.add_trace(
+        go.Scatter(
+            x=fast_df["ground_distance"], y=fast_df["sfc"], name="[%s] sfc vs distance" % name
+        )
+    )
+    if compare_with:
+        fig.add_trace(
+            go.Scatter(
+                x=fast_df2["ground_distance"],
+                y=fast_df2["sfc"],
+                name="[%s] sfc vs distance" % name2,
+            )
+        )
+    fig.update_xaxes(title_text="Range [nm]", range=[-30, 2800.0])
+    fig.update_yaxes(title_text="TSFC [kg/s/N]", range=[0, 300000.0])
+    fig.update_layout(margin=dict(l=300, r=280, t=0, b=20), width=1000, height=250)
+    fig.show()
+
+
+# %%
+"""
+# Inputs
+"""
+
+# %%
+mission_name = "R7408_PL18000"
+ref_A321 = "R4167_PL21500_CEO"
+REFERENCE_DIRECTORY = pth.join(
+    pth.pardir, pth.pardir, pth.pardir, "A321CEO_restitution", "workdir", "OAD"
+)
+
+A321LR_INPUT_FILE = pth.join(pth.pardir, pth.pardir, "reference_data.xml")
+REFERENCE_A321_FILE = pth.join(REFERENCE_DIRECTORY, ref_A321, "outputs", "oad_sizing_out.xml")
+
+WORK_FOLDER_PATH = mission_name
+FUEL_SIZING_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "fuel_sizing.toml")
+FUEL_SIZING_CFM_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "fuel_sizing_cfm.toml")
+WING_IMPOSED_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_sizing_wing_imposed.toml")
+
+OUTPUT_FOLDER_PATH = pth.join(WORK_FOLDER_PATH, "outputs")
+rmtree(OUTPUT_FOLDER_PATH, ignore_errors=True)
+mkdir(OUTPUT_FOLDER_PATH)
+OAD_SIZING_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "oad_sizing.csv")
+FUEL_SIZING_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "fuel_sizing.csv")
+FUEL_SIZING_CFM_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "fuel_sizing_cfm.csv")
+WING_IMPOSED_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "oad_sizing_wing_imposed.csv")
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)-8s: %(message)s")
+
+# %%
+"""
+# NEO Engine LEAP-1A Specific consumption
+"""
+
+# %%
+
+engine_leap = RubberEngine(
+    bypass_ratio=11,
+    overall_pressure_ratio=40,
+    turbine_inlet_temperature=1833,
+    mto_thrust=143050,
+    maximum_mach=0.85,
+    design_altitude=34500 * foot,
+    delta_t4_climb=-50.0,
+    delta_t4_cruise=-100.0,
+    k1_sfc=1.215,
+    k2_sfc=1.01,
+)
+
+engine_cfm56 = RubberEngine(
+    bypass_ratio=5.5,
+    overall_pressure_ratio=34.4,
+    turbine_inlet_temperature=1633,
+    mto_thrust=133440.0,
     maximum_mach=0.85,
     design_altitude=10058.4,
     delta_t4_climb=-50.0,
     delta_t4_cruise=-100.0,
+    k1_sfc=0.85,
+    k2_sfc=0.92,
 )
 
-thrust = np.linspace(10.0e3, 32.0e3, 20)
+thrust = np.linspace(5.0e3, 15.0e4, 200)
+
+bucket_points = pd.DataFrame(
+    [
+        FlightPoint(
+            altitude=0 * foot,
+            mach=0.2,
+            thrust=thrust,
+            thrust_rate=0.0,
+            thrust_is_regulated=True,
+            engine_setting=EngineSetting.convert("TAKEOFF"),
+        )
+        for thrust in np.linspace(10.0e3, 15.0e4, 200)
+    ]
+)
+bucket_points_cfm56 = pd.DataFrame(
+    [
+        FlightPoint(
+            altitude=0 * foot,
+            mach=0.2,
+            thrust=thrust,
+            thrust_rate=0.0,
+            thrust_is_regulated=True,
+            engine_setting=EngineSetting.convert("TAKEOFF"),
+        )
+        for thrust in np.linspace(10.0e3, 15.0e4, 200)
+    ]
+)
+
+
+engine_leap.compute_flight_points(bucket_points)
+bucket_points["sfc"] = bucket_points["sfc"]
+engine_cfm56.compute_flight_points(bucket_points_cfm56)
+bucket_points_cfm56["sfc"] = bucket_points_cfm56["sfc"]
+
+fig = make_subplots()
+fig.add_trace(go.Scatter(x=bucket_points["thrust"], y=bucket_points["sfc"], name="LEAP"))
+fig.update_xaxes(title_text="Thrust per engine [N]", range=[5000, 150000])
+fig.update_yaxes(title_text="SFC [kg/s/N]", range=[0.9e-5, 1.0e-5])
+fig.update_layout(margin=dict(l=265, r=145, t=20, b=20),)
+# fig.show()
+
+fig.add_trace(
+    go.Scatter(x=bucket_points_cfm56["thrust"], y=bucket_points_cfm56["sfc"], name="CFM56 mod")
+)
+fig.update_xaxes(title_text="Thrust per engine [N]", range=[5000, 150000])
+fig.update_yaxes(title_text="SFC [kg/s/N]", range=[0.9e-5, 1.0e-5])
+fig.update_layout(margin=dict(l=265, r=145, t=20, b=20),)
+fig.show()
+
+thrust = np.linspace(5.0e3, 40.0e3, 20)
 
 bucket_points = pd.DataFrame(
     [
@@ -72,35 +293,213 @@ bucket_points = pd.DataFrame(
             thrust_is_regulated=True,
             engine_setting=EngineSetting.convert("CRUISE"),
         )
-        for thrust in np.linspace(10.0e3, 32.0e3, 20)
+        for thrust in np.linspace(5.0e3, 40.0e3, 20)
+    ]
+)
+bucket_points_cfm56 = pd.DataFrame(
+    [
+        FlightPoint(
+            altitude=35000 * foot,
+            mach=0.78,
+            thrust=thrust,
+            thrust_rate=0.0,
+            thrust_is_regulated=True,
+            engine_setting=EngineSetting.convert("CRUISE"),
+        )
+        for thrust in np.linspace(5.0e3, 40.0e3, 20)
     ]
 )
 
 
-engine.compute_flight_points(bucket_points)
+engine_leap.compute_flight_points(bucket_points)
+bucket_points["sfc"] = bucket_points["sfc"]
+engine_cfm56.compute_flight_points(bucket_points_cfm56)
+bucket_points_cfm56["sfc"] = bucket_points_cfm56["sfc"]
 
-fig = px.line(bucket_points, x="thrust", y="sfc", width=800, height=350)
-fig.update_xaxes(title_text="Thrust per engine [N]", range=[5000, 35000])
+fig = make_subplots()
+fig.add_trace(go.Scatter(x=bucket_points["thrust"], y=bucket_points["sfc"], name="LEAP"))
+fig.update_xaxes(title_text="Thrust per engine [N]", range=[5000, 45000])
+fig.update_yaxes(title_text="SFC [kg/s/N]", range=[1.4e-5, 2.0e-5])
+fig.update_layout(margin=dict(l=265, r=145, t=20, b=20),)
+# fig.show()
+
+fig.add_trace(
+    go.Scatter(x=bucket_points_cfm56["thrust"], y=bucket_points_cfm56["sfc"], name="CFM56 mod")
+)
+fig.update_xaxes(title_text="Thrust per engine [N]", range=[5000, 45000])
 fig.update_yaxes(title_text="SFC [kg/s/N]", range=[1.4e-5, 2.0e-5])
 fig.update_layout(margin=dict(l=265, r=145, t=20, b=20),)
 fig.show()
+f_dt4 = interp1d(
+    [0.0, 4999.0, 5000.0, 9144.0, 9144.1, 14000.0], [0.0, 0.0, -50.0, -50.0, -100.0, -100.0]
+)
+altitude = np.linspace(0, 13000, 101)
+dt4 = f_dt4(altitude)
+mach = np.linspace(0.0, 0.8, 9)
+
+fig = make_subplots(subplot_titles=["LEAP Thrust"])
+for m in mach:
+    thrust = engine_leap.max_thrust(Atm(altitude, altitude_in_feet=False), mach=m, delta_t4=dt4)
+    fig.add_trace(go.Scatter(x=altitude, y=thrust, name="Mach =%s" % m))
+fig.update_xaxes(title_text="Altitude [m]", range=[0, 14000])
+fig.update_yaxes(title_text="Max Thrust [N]", range=[0, 140000])
+fig.show()
+
+fig = make_subplots(subplot_titles=["CFM tuned Thrust"])
+for m in mach:
+    thrust = engine_cfm56.max_thrust(Atm(altitude, altitude_in_feet=False), mach=m, delta_t4=dt4)
+    fig.add_trace(go.Scatter(x=altitude, y=thrust, name="Mach =%s" % m))
+fig.update_xaxes(title_text="Altitude [m]", range=[0, 14000])
+fig.update_yaxes(title_text="Max Thrust [N]", range=[0, 140000])
+fig.show()
+
+# %%
+"""
+## Fuel Sizing with LEAP characteristics
+Here the geometry is frozen to WV00 without sharklet one. The engine rating is updated to take into 
+account the New Engine Option. The performance of the engine, particularly the consumption is tuned 
+through a linear correction that penalise Rubber Engine model to better fit LEAP performances. 
+"""
+
+# %%
+input_file = pth.join(WORK_FOLDER_PATH, "inputs", "fuel_sizing_in.xml")
 
 # %%
 
-mission_name = "R7408_PL18000"
-
-A321LR_INPUT_FILE = pth.join(pth.pardir, pth.pardir, "reference_data.xml")
-
-WORK_FOLDER_PATH = mission_name
-OAD_SIZING_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_sizing.toml")
-
-OUTPUT_FOLDER_PATH = pth.join(WORK_FOLDER_PATH, "outputs")
-rmtree(OUTPUT_FOLDER_PATH, ignore_errors=True)
-mkdir(OUTPUT_FOLDER_PATH)
-OAD_SIZING_CSV_FILE = pth.join(OUTPUT_FOLDER_PATH, "oad_sizing.csv")
+api.variable_viewer(input_file, editable=True)
 
 # %%
-input_file = api.generate_inputs(OAD_SIZING_CONFIGURATION_FILE, A321LR_INPUT_FILE, overwrite=True)
+problem = api.evaluate_problem(FUEL_SIZING_CONFIGURATION_FILE, overwrite=True)
+
+# %%
+api.variable_viewer(problem.output_file_path, editable=True)
+
+# %%
+
+plot_results(FUEL_SIZING_CSV_FILE)
+
+# %%
+
+print("TOW = ", problem["data:mission:MTOW_mission:TOW"])
+print("Fuel = ", problem["data:mission:MTOW_mission:block_fuel"])
+
+# %%
+"""
+## Fuel Sizing with CFM56 characteristics
+Here the geometry is frozen to WV00 without sharklet one. The engine rating is updated to take into 
+account the New Engine Option. The performance of the engine, particularly the consumption is tuned 
+through a linear correction to fit CFM56 engine with LEAP performance. Only the MTO thrust is 
+updated BR and PR remain at CFM56 values as well as inlet temperature. In that way we remain in the 
+domain of validity of rubber engine model. 
+"""
+
+# %%
+input_file = pth.join(WORK_FOLDER_PATH, "inputs", "fuel_sizing_cfm_in.xml")
+
+# %%
+
+api.variable_viewer(input_file, editable=True)
+
+# %%
+problem = api.evaluate_problem(FUEL_SIZING_CFM_CONFIGURATION_FILE, overwrite=True)
+
+# %%
+api.variable_viewer(problem.output_file_path, editable=True)
+
+# %%
+
+plot_results(FUEL_SIZING_CSV_FILE, compare_with=FUEL_SIZING_CFM_CSV_FILE)
+
+# %%
+
+print("TOW = ", problem["data:mission:MTOW_mission:TOW"])
+print("Fuel = ", problem["data:mission:MTOW_mission:block_fuel"])
+
+# %%
+CL_cruise = problem["data:aerodynamics:aircraft:cruise:CL"]
+CD_cruise = problem["data:aerodynamics:aircraft:cruise:CD"]
+CD0_cruise = (
+    problem["data:aerodynamics:aircraft:cruise:CD0"]
+    * problem["tuning:aerodynamics:aircraft:cruise:CD:k"]
+)
+CDi_cruise = (
+    problem["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"]
+    * CL_cruise ** 2
+    * problem["tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k"]
+) * problem["tuning:aerodynamics:aircraft:cruise:CD:k"]
+CDc_cruise = (
+    problem["data:aerodynamics:aircraft:cruise:CD:compressibility"]
+    * problem["tuning:aerodynamics:aircraft:cruise:CD:k"]
+)
+CDtrim_cruise = (
+    problem["data:aerodynamics:aircraft:cruise:CD:trim"]
+    * problem["tuning:aerodynamics:aircraft:cruise:CD:k"]
+)
+CDwing_cruise = (
+    problem["data:aerodynamics:wing:cruise:CD0"]
+    * problem["tuning:aerodynamics:aircraft:cruise:CD:k"]
+)
+CDfuselage_cruise = (
+    problem["data:aerodynamics:fuselage:cruise:CD0"]
+    * problem["tuning:aerodynamics:aircraft:cruise:CD:k"]
+)
+
+fig = make_subplots(rows=1, cols=2)
+fig.add_trace(go.Scatter(x=CD_cruise, y=CL_cruise, name="Drag polar at Mach 0.78"), col=1, row=1)
+fig.add_trace(go.Scatter(x=CD0_cruise, y=CL_cruise, name="CD0 polar at Mach 0.78"), col=1, row=1)
+fig.add_trace(go.Scatter(x=CDi_cruise, y=CL_cruise, name="CDi polar at Mach 0.78"), col=1, row=1)
+fig.add_trace(go.Scatter(x=CDc_cruise, y=CL_cruise, name="CDc polar at Mach 0.78"), col=1, row=1)
+fig.add_trace(
+    go.Scatter(x=CDtrim_cruise, y=CL_cruise, name="CDtrim polar at Mach 0.78"), col=1, row=1
+)
+fig.add_trace(
+    go.Scatter(x=CDwing_cruise, y=CL_cruise, name="CD wing polar at Mach 0.78"), col=1, row=1
+)
+fig.add_trace(
+    go.Scatter(x=CDfuselage_cruise, y=CL_cruise, name="CD fuselage polar at Mach 0.78"),
+    col=1,
+    row=1,
+)
+
+
+fig.add_trace(
+    go.Scatter(x=CL_cruise, y=CL_cruise / CD_cruise, name="L/D polar at Mach 0.78"), col=2, row=1
+)
+fig.update_xaxes(title_text="CD", range=[0, 0.1], col=1, row=1)
+fig.update_yaxes(title_text="CL", range=[-0.3, 1.2], col=1, row=1)
+fig.update_xaxes(title_text="CL", range=[0, 1.2], col=2, row=1)
+fig.update_yaxes(title_text="L/D", range=[4, 20], col=2, row=1)
+fig.show()
+
+# %%
+"""
+## OAD SIZING
+"""
+
+# %%
+input_file = pth.join(WORK_FOLDER_PATH, "inputs", "oad_sizing_wing_imposed_in.xml")
 api.variable_viewer(input_file, editable=False)
 
 # %%
+problem = api.evaluate_problem(WING_IMPOSED_CONFIGURATION_FILE, overwrite=True)
+
+# %%
+api.variable_viewer(problem.output_file_path, editable=False)
+
+# %%
+
+plot_results(WING_IMPOSED_CSV_FILE)
+
+# %%
+
+mass_breakdown_sun_plot(problem.output_file_path)
+
+# %%
+fig = wing_geometry_plot(REFERENCE_A321_FILE, name="FAST-OAD A321 CEO WV00")
+fig = wing_geometry_plot(problem.output_file_path, name="FAST-OAD A321LR", fig=fig)
+fig.show()
+
+# %%
+fig = aircraft_geometry_plot(REFERENCE_A321_FILE, name="FAST-OAD A321 CEO WV00")
+fig = aircraft_geometry_plot(problem.output_file_path, name="FAST-OAD A321LR", fig=fig)
+fig.show()

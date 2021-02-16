@@ -15,13 +15,13 @@
         <thrust_rate is_input="True">1.0</thrust_rate>
       </initial_climb>
       <rubber_engine>
-        <bypass_ratio is_input="True">11.0<!--bypass ratio for rubber engine model--></bypass_ratio>
+        <bypass_ratio is_input="True">5.5<!--bypass ratio for rubber engine model--></bypass_ratio>
         <delta_t4_climb is_input="True">-50.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
         <delta_t4_cruise is_input="True">-100.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_cruise>
-        <design_altitude units="m" is_input="True">10668.0<!--design altitude for rubber engine model--></design_altitude>
+        <design_altitude units="m" is_input="True">10058.4<!--design altitude for rubber engine model--></design_altitude>
         <maximum_mach is_input="True">0.85<!--maximum Mach number for rubber engine model--></maximum_mach>
-        <overall_pressure_ratio is_input="True">40.0<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
-        <turbine_inlet_temperature units="degK" is_input="True">1833.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
+        <overall_pressure_ratio is_input="True">34.4<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
+        <turbine_inlet_temperature units="degK" is_input="True">1600.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
       </rubber_engine>
       <taxi>
         <thrust_rate is_input="True">0.3</thrust_rate>
@@ -29,7 +29,7 @@
     </propulsion>
     <geometry>
       <aircraft>
-        <wetted_area units="m**2" is_input="True">880.2434297607647<!--total wetted area--></wetted_area>
+        <wetted_area units="m**2" is_input="True">896.1928970054014<!--total wetted area--></wetted_area>
       </aircraft>
       <fuselage>
         <length units="m" is_input="True">44.387364000000005<!--total fuselage length--></length>
@@ -40,25 +40,25 @@
       <horizontal_tail>
         <sweep_25 units="deg" is_input="True">28.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
         <thickness_ratio is_input="True">0.1<!--thickness ratio of horizontal tail--></thickness_ratio>
-        <wetted_area units="m**2" is_input="True">70.69344698283237<!--wetted area of horizontal tail--></wetted_area>
+        <wetted_area units="m**2" is_input="True">70.78153538037314<!--wetted area of horizontal tail--></wetted_area>
         <MAC>
-          <length units="m" is_input="True">3.1486554678624494<!--mean aerodynamic chord length of horizontal tail--></length>
+          <length units="m" is_input="True">3.15061656667198<!--mean aerodynamic chord length of horizontal tail--></length>
         </MAC>
       </horizontal_tail>
       <vertical_tail>
         <sweep_25 units="deg" is_input="True">35.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
         <thickness_ratio is_input="True">0.1<!--thickness ratio of vertical tail--></thickness_ratio>
-        <wetted_area units="m**2" is_input="True">54.4971642172573<!--wetted area of vertical tail--></wetted_area>
+        <wetted_area units="m**2" is_input="True">54.257334303280444<!--wetted area of vertical tail--></wetted_area>
         <MAC>
-          <length units="m" is_input="True">4.229538120372972<!--mean aerodynamic chord length of vertical tail--></length>
+          <length units="m" is_input="True">4.220221229816336<!--mean aerodynamic chord length of vertical tail--></length>
         </MAC>
       </vertical_tail>
       <wing>
-        <area units="m**2" is_input="True">126.26354028765496<!--wing reference area--></area>
+        <area units="m**2" is_input="True">126.42162521045712<!--wing reference area--></area>
         <span units="m" is_input="True">35.8<!--wing span--></span>
         <sweep_25 units="deg" is_input="True">25.0<!--sweep angle at 25% chord of wing--></sweep_25>
         <thickness_ratio is_input="True">0.12839840880979247<!--mean thickness ratio of wing--></thickness_ratio>
-        <wetted_area units="m**2" is_input="True">204.74607470274805<!--wetted area of wing--></wetted_area>
+        <wetted_area units="m**2" is_input="True">220.84728346271442<!--wetted area of wing--></wetted_area>
         <MAC>
           <length units="m" is_input="True">4.206381682275613<!--length of mean aerodynamic chord of wing--></length>
         </MAC>
@@ -88,7 +88,7 @@
     </geometry>
     <mission>
       <MTOW_mission>
-        <payload units="kg" is_input="True">24400.0</payload>
+        <payload units="kg" is_input="True">18000.0</payload>
         <diversion>
           <distance units="NM" is_input="True">200.0</distance>
         </diversion>
@@ -96,7 +96,7 @@
           <duration units="min" is_input="True">45.0</duration>
         </holding>
         <main_route>
-          <range units="NM" is_input="True">2700.0</range>
+          <range units="NM" is_input="True">4000.0</range>
         </main_route>
         <takeoff>
           <V2 units="m/s" is_input="True">79.3</V2>
@@ -120,7 +120,7 @@
     </mission>
     <weight>
       <aircraft>
-        <OWE units="kg" is_input="True">50300.40793574303<!--operating weight - empty--></OWE>
+        <OWE units="kg" is_input="True">52100.40793574303<!--operating weight - empty--></OWE>
       </aircraft>
     </weight>
     <aerodynamics>
@@ -136,8 +136,8 @@
     <propulsion>
       <rubber_engine>
         <SFC>
-          <k1 is_input="True">1.215</k1>
-          <k2 is_input="True">1.01</k2>
+          <k1 is_input="True">0.85</k1>
+          <k2 is_input="True">0.926</k2>
         </SFC>
       </rubber_engine>
     </propulsion>
