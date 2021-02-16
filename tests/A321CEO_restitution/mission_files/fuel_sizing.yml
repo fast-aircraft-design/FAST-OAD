@@ -48,8 +48,7 @@ phases:
         target:
           mach: constant
           altitude:
-            value: 35000.
-            unit: ft
+            value: optimal_flight_level
   diversion_climb:
     engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise

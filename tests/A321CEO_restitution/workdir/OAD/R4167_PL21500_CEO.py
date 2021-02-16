@@ -45,6 +45,7 @@ from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 from fastoad.utils.postprocessing.analysis_and_plots import (
     mass_breakdown_sun_plot,
     wing_geometry_plot,
+    aircraft_geometry_plot,
 )
 
 # %%
@@ -196,36 +197,6 @@ api.variable_viewer(problem.output_file_path, editable=True)
 # %%
 
 plot_results(OAD_SIZING_CSV_FILE)
-
-# %%
-
-mass_breakdown_sun_plot(problem.output_file_path)
-
-# %%
-
-wing_geometry_plot(problem.output_file_path, name="FAST-OAD A321")
-
-# %%
-"""
-## OAD Sizing wing imposed to A320 Shape
-"""
-
-# %%
-# input_file = api.generate_inputs(OAD_WING_CONFIGURATION_FILE, A321CEO_INPUT_FILE_WING, overwrite=False)
-input_file = pth.join(INPUT_FOLDER_PATH, "oad_sizing_wing_imposed_in.xml")
-# %%
-
-api.variable_viewer(input_file, editable=True)
-
-# %%
-problem = api.evaluate_problem(OAD_WING_CONFIGURATION_FILE, overwrite=True)
-
-# %%
-api.variable_viewer(problem.output_file_path, editable=True)
-
-# %%
-
-plot_results(OAD_WING_CSV_FILE)
 
 # %%
 

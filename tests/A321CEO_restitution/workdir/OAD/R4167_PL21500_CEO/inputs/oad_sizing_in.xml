@@ -90,12 +90,12 @@
         <thrust_rate is_input="True">1.0</thrust_rate>
       </initial_climb>
       <rubber_engine>
-        <bypass_ratio is_input="True">4.9<!--bypass ratio for rubber engine model--></bypass_ratio>
+        <bypass_ratio is_input="True">4.6<!--bypass ratio for rubber engine model--></bypass_ratio>
         <delta_t4_climb is_input="True">-50.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
         <delta_t4_cruise is_input="True">-100.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_cruise>
         <design_altitude units="m" is_input="True">10058.4<!--design altitude for rubber engine model--></design_altitude>
         <maximum_mach is_input="True">0.85<!--maximum Mach number for rubber engine model--></maximum_mach>
-        <overall_pressure_ratio is_input="True">33.5<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
+        <overall_pressure_ratio is_input="True">35.2<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
         <turbine_inlet_temperature units="K" is_input="True">1633.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
       </rubber_engine>
       <taxi>
