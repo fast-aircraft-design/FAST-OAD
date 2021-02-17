@@ -13,24 +13,15 @@ Test module for Overall Aircraft Design process
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
 import os.path as pth
-import shutil
 from platform import system
 from shutil import rmtree
 
-import numpy as np
-import openmdao.api as om
-import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
 from fastoad import api
 from fastoad.io import VariableIO
-from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
-from fastoad.io.xml import VariableLegacy1XmlFormatter
-from fastoad.openmdao.utils import get_problem_after_setup
-from tests import root_folder_path
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -44,7 +35,7 @@ def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-def test_performance(cleanup):
+def test_robustness(cleanup):
     # Testing limit cases for models and OAD process
     configuration_file_path = pth.join(DATA_FOLDER_PATH, "oad_process.toml")
 
