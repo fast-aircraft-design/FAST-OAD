@@ -17,9 +17,9 @@
     <data>
         <TLAR>
             <NPAX is_input="True">
-                185.0<!--top-level requirement: number of passengers, assuming a classic eco/business class repartition--></NPAX>
+                180.0<!--top-level requirement: number of passengers, assuming a classic eco/business class repartition--></NPAX>
             <approach_speed units="m/s" is_input="True">
-                67.90666666666667<!--top-level requirement: approach speed--></approach_speed>
+                69.964446<!--top-level requirement: approach speed--></approach_speed>
             <cruise_mach is_input="True">
                 0.78<!--top-level requirement: cruise Mach number--></cruise_mach>
             <range units="NM" is_input="True">
@@ -201,7 +201,7 @@
             </vertical_tail>
             <wing>
                 <area units="m**2" is_input="False">122.4<!--wing reference area--></area>
-                <aspect_ratio is_input="True">1017<!--wing aspect ratio--></aspect_ratio>
+                <aspect_ratio is_input="True">9.48<!--wing aspect ratio--></aspect_ratio>
                 <b_50 units="m" is_input="False">
                     36.85402909891179<!--actual length between root and tip along 50% of chord--></b_50>
                 <outer_area units="m**2" is_input="False">
@@ -300,10 +300,10 @@
         </handling_qualities>
         <propulsion>
             <MTO_thrust units="N" is_input="True">
-                117880.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
+                143050.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
             <rubber_engine>
                 <bypass_ratio is_input="True">
-                    4.9<!--bypass ratio for rubber engine model--></bypass_ratio>
+                    11.0<!--bypass ratio for rubber engine model--></bypass_ratio>
                 <delta_t4_climb is_input="True">
                     -50.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
                 <delta_t4_cruise is_input="True">
@@ -313,7 +313,7 @@
                 <maximum_mach is_input="True">
                     0.85<!--maximum Mach number for rubber engine model--></maximum_mach>
                 <overall_pressure_ratio is_input="True">
-                    32.6<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
+                    40.0<!--Overall pressure ratio for rubber engine model--></overall_pressure_ratio>
                 <turbine_inlet_temperature units="K" is_input="True">
                     1633.0<!--design turbine inlet temperature (T4) for rubber engine model--></turbine_inlet_temperature>
             </rubber_engine>
@@ -358,7 +358,7 @@
                 </main_route>
                 <landing>
                     <flap_angle units="deg" is_input="True">
-                        40.0<!--flap angle during landing phase in sizing mission--></flap_angle>
+                        34.<!--flap angle during landing phase in sizing mission--></flap_angle>
                     <slat_angle units="deg" is_input="True">
                         27.0<!--slat angle during landing phase in sizing mission--></slat_angle>
                 </landing>
@@ -372,9 +372,9 @@
             </sizing>
             <SPP_design>
                 <TOW units="kg" is_input="False">74000.</TOW>
-                <payload units="kg">13608.</payload>
+                <payload units="kg">18000.</payload>
                 <main_route>
-                    <range units="NM">2750.</range>
+                    <range units="NM">4000.</range>
                 </main_route>
                 <diversion>
                     <distance units="NM" is_input="True">
@@ -386,9 +386,9 @@
                 </holding>
                 <landing>
                     <flap_angle units="deg" is_input="True">
-                        30.0<!--flap angle during landing phase in sizing mission--></flap_angle>
+                        34.0<!--flap angle during landing phase in sizing mission--></flap_angle>
                     <slat_angle units="deg" is_input="True">
-                        20.0<!--slat angle during landing phase in sizing mission--></slat_angle>
+                        27.0<!--slat angle during landing phase in sizing mission--></slat_angle>
                 </landing>
                 <takeoff>
                     <V2 units="m/s" is_input="True">
@@ -416,9 +416,9 @@
             </SPP_design>
             <MTOW_mission>
                 <TOW units="kg" is_input="False">77000.</TOW>
-                <payload units="kg">17000.</payload>
+                <payload units="kg">18000.</payload>
                 <main_route>
-                    <range units="NM">2500.</range>
+                    <range units="NM">3050.</range>
                 </main_route>
                 <diversion>
                     <distance units="NM" is_input="True">
@@ -430,7 +430,7 @@
                 </holding>
                 <landing>
                     <flap_angle units="deg" is_input="True">
-                        40.0<!--flap angle during landing phase in sizing mission--></flap_angle>
+                        34.0<!--flap angle during landing phase in sizing mission--></flap_angle>
                     <slat_angle units="deg" is_input="True">
                         27.0<!--slat angle during landing phase in sizing mission--></slat_angle>
                 </landing>
@@ -469,8 +469,8 @@
                 <additional_fuel_capacity units="kg" is_input="False">
                     225.67997479193946<!--fuel mass capacity of wing that exceeds sizing mission requirement--></additional_fuel_capacity>
                 <max_payload units="kg" is_input="False">
-                    19608.0<!--max payload weight--></max_payload>
-                <payload units="kg" is_input="False">17000.0<!--design payload weight--></payload>
+                    23500<!--max payload weight--></max_payload>
+                <payload units="kg" is_input="False">18000.0<!--design payload weight--></payload>
                 <sizing_block_fuel units="kg" is_input="False">18426.670539350707
                 </sizing_block_fuel>
                 <CG>
@@ -1608,7 +1608,7 @@
                 <flight_controls>
                     <mass>
                         <k_fc is_input="True">
-                            0.000135<!--flight controls (A4): 0.85e-4 if electrical, 1.35e-4 if conventional--></k_fc>
+                            0.000085<!--flight controls (A4): 0.85e-4 if electrical, 1.35e-4 if conventional--></k_fc>
                     </mass>
                 </flight_controls>
                 <fuselage>

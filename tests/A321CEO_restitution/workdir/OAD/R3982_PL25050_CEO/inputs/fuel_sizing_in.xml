@@ -9,7 +9,7 @@
         <thrust_rate is_input="True">0.93</thrust_rate>
       </climb>
       <descent>
-        <thrust_rate is_input="True">0.14</thrust_rate>
+        <thrust_rate is_input="True">0.15</thrust_rate>
       </descent>
       <initial_climb>
         <thrust_rate is_input="True">1.0</thrust_rate>

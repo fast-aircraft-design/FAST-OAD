@@ -125,7 +125,7 @@ routes:
         polar: data:aerodynamics:aircraft:cruise
         target:
           altitude: optimal_flight_level
-        maximum_flight_level: 360
+        maximum_flight_level: 390
       - phase: descent
   diversion:
     range: :distance

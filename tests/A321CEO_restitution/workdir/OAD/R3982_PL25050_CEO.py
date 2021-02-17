@@ -117,7 +117,8 @@ def plot_results(fast_oad_csv):
 
 The geometry comes from OAD sizing for WV 00 (89T) with a payload of 21500kg and a range of 2250NM.
 The range and payload are updated respectively to 2150NM and 25000kg to compute the fuel for the new
-weight variant.  
+weight variant. 320 kg are added to the OWE to take into account new engines (more powerful
+IAE V2533-A5). 
 """
 
 # %%
