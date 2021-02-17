@@ -1,0 +1,36 @@
+title = "OAD process with performances as time step integration"
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders = []
+
+# Input and output files
+input_file = "./inputs/fuel_sizing_new_in.xml"
+output_file = "./outputs/fuel_sizing_out_new.xml"
+
+# Definition of OpenMDAO model
+[model]
+#    nonlinear_solver = "om.NonlinearBlockGS(maxiter=30)"
+#    linear_solver = "om.DirectSolver()"
+    [model.weight]
+        id = "fastoad.weight.legacy"
+        payload_from_npax = false
+    [model.group.aerodynamics_highspeed]
+        id = "fastoad.aerodynamics.highspeed.legacy"
+    #[model.group.aerodynamics_lowspeed]
+    #    id = "fastoad.aerodynamics.lowspeed.legacy"
+    #[model.group.aerodynamics_takeoff]
+    #    id = "fastoad.aerodynamics.takeoff.legacy"
+    #[model.group.aerodynamics_landing]
+    #    id = "fastoad.aerodynamics.landing.legacy"
+    #    use_xfoil = false
+    [model.performance]
+        id = "fastoad.performances.mission"
+        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
+        out_file = "./outputs/fuel_sizing_new.csv"
+        mission_file_path = "../../../mission_files/fuel_sizing.yml"
+        mission_name = "MTOW_mission"
+        adjust_fuel = true
+        is_sizing = false
+        add_solver = true
+        initial_iterations = 0
+

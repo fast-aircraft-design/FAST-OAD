@@ -79,18 +79,18 @@
       </wing>
     </geometry>
     <propulsion>
-      <MTO_thrust units="N" is_input="True">133440.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
+      <MTO_thrust units="N" is_input="True">140550.0<!--maximum thrust of one engine at sea level--></MTO_thrust>
       <climb>
         <thrust_rate is_input="True">0.93</thrust_rate>
       </climb>
       <descent>
-        <thrust_rate is_input="True">0.18</thrust_rate>
+        <thrust_rate is_input="True">0.15</thrust_rate>
       </descent>
       <initial_climb>
         <thrust_rate is_input="True">1.0</thrust_rate>
       </initial_climb>
       <rubber_engine>
-        <bypass_ratio is_input="True">4.9<!--bypass ratio for rubber engine model--></bypass_ratio>
+        <bypass_ratio is_input="True">4.5<!--bypass ratio for rubber engine model--></bypass_ratio>
         <delta_t4_climb is_input="True">-50.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_climb>
         <delta_t4_cruise is_input="True">-100.0<!--As it is a delta, unit is K or &#176;C, but is not specified to avoid OpenMDAO making unwanted conversion--></delta_t4_cruise>
         <design_altitude units="m" is_input="True">10058.4<!--design altitude for rubber engine model--></design_altitude>
@@ -156,8 +156,8 @@
           <slat_angle units="deg" is_input="True">27.0<!--slat angle during landing phase in sizing mission--></slat_angle>
         </landing>
         <takeoff>
-          <flap_angle units="deg" is_input="True">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
-          <slat_angle units="deg" is_input="True">18.0<!--slat angle during takeoff phase in sizing mission--></slat_angle>
+          <flap_angle units="deg" is_input="True">14.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
+          <slat_angle units="deg" is_input="True">22.0<!--slat angle during takeoff phase in sizing mission--></slat_angle>
         </takeoff>
         <main_route>
           <cruise>
@@ -275,7 +275,7 @@
         </flight_controls>
         <fuselage>
           <mass>
-            <k is_input="True">1.0<!--fuselage (A2): correction ratio to be applied on computed mass--></k>
+            <k is_input="True">0.99<!--fuselage (A2): correction ratio to be applied on computed mass--></k>
             <offset units="kg" is_input="True">0.0<!--fuselage (A2): correction offset to be applied on computed mass--></offset>
           </mass>
         </fuselage>
@@ -311,7 +311,7 @@
         </vertical_tail>
         <wing>
           <mass>
-            <k is_input="True">1.0<!--wing (A1): correction ratio to be applied on computed mass--></k>
+            <k is_input="True">0.96<!--wing (A1): correction ratio to be applied on computed mass--></k>
             <offset units="kg" is_input="True">0.0<!--wing (A1): correction offset to be applied on computed mass--></offset>
           </mass>
           <bending_sizing>
