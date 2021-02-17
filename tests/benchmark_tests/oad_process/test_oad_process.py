@@ -66,7 +66,7 @@ def test_robustness(cleanup):
     )
 
     assert_allclose(
-        iter_count, 5464, atol=50,
+        iter_count, 5464, atol=100,
     )
 
     # Check that weight-performances loop correctly converged
@@ -120,7 +120,7 @@ def test_robustness(cleanup):
     )
 
     assert_allclose(
-        iter_count, 4878, atol=50,
+        iter_count, 4878, atol=100,
     )
 
     # Check that weight-performances loop correctly converged
