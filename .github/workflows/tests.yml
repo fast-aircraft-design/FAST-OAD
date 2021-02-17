@@ -78,7 +78,7 @@ jobs:
         run: poetry run pytest --no-cov --nbval-lax -p no:python src
         shell: bash
 
-      - name: Performance tests
-        if: runner.os == 'Linux'
-        run: poetry run pytest --no-cov tests/performance_tests
+      - name: Benchmark tests
+        if: runner.os == 'Windows'
+        run: poetry run pytest --no-cov tests/benchmark_tests
         shell: bash
