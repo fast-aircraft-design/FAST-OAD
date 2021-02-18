@@ -36,5 +36,5 @@ class StructureMesh(Group):
                 comp + "_nodes", nodes_class(number_of_sections=n_section), promotes=["*"],
             )
             self.add_subsystem(
-                comps + "_prop", props_class(number_of_sections=n_sections), promotes=["*"]
+                comp + "_prop", props_class(number_of_sections=n_section), promotes=["*"]
             )

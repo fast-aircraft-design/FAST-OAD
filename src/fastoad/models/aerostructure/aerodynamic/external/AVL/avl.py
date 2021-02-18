@@ -80,7 +80,7 @@ class AVL(ExternalCodeComp):
             )
             self.add_input(
                 "data:aerostructural:aerodynamic:" + comp + ":displacements",
-                val=0.0,
+                val=np.nan,
                 copy_shape="data:aerostructural:aerodynamic:" + comp + ":nodes",
             )
             self.add_input(
@@ -95,7 +95,7 @@ class AVL(ExternalCodeComp):
                     shape_by_conn=True,
                 )
                 self.add_input(
-                    "data:aerostructural:aerodynamic:wing:twist", val=0.0, shape_by_conn=True
+                    "data:aerostructural:aerodynamic:wing:twist", val=np.nan, shape_by_conn=True
                 )
 
             size = n_sect  # Default number of section for non symmetrical components

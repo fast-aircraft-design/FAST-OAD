@@ -21,14 +21,16 @@ import openmdao.api as om
 import numpy as np
 
 from fastoad.models.aerostructure.structure.external.mystran.utils.read_f06 import readf06
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_nodes_cards
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_props_cards
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_mat_cards
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import (
+    get_nodes_cards,
+    get_props_cards,
+    get_mat_cards,
     get_rbe_junction_cards,
 )
+from fastoad.models.aerostructure.structure.external.mystran.utils.constant import basis_id
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_forces_cards
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_bc_cards
+from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_rbe_cards
+from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_spc_cards
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_nastran_bdf
 from fastoad.utils.resource_management.copy import copy_resource
 
@@ -63,10 +65,10 @@ class MystranStatic(om.ExternalCodeComp):
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
         self.add_input("data:aerostructural:load_case:load_factor", val=1.0)
         for comp, nsect in zip(comps, nsects):
-            if comp == "wing":
-                n_nodes = (nsect + 1) * 2 + 2
-                n_props = (nsect + 1) * 2
-            elif comp in ("horizontal_tail", "strut"):
+            # if comp == "wing":
+            #     n_nodes = (nsect + 1) * 2
+            #     n_props = nsect * 2
+            if comp in ("wing", "horizontal_tail", "strut"):
                 n_nodes = (nsect + 1) * 2
                 n_props = nsect * 2
             else:
@@ -110,7 +112,8 @@ class MystranStatic(om.ExternalCodeComp):
         cg_loc = inputs["data:geometry:wing:MAC:at25percent:x"]
         nz = inputs["data:aerostructural:load_case:load_factor"]
         strg = []
-        for comp in components:
+        spc_strg = "SPCADD, 1, "
+        for idx, comp in enumerate(components):
             mat_prop = np.zeros(3)
             nodes = inputs["data:aerostructural:structure:" + comp + ":nodes"]
             props = inputs["data:aerostructural:structure:" + comp + ":beam_properties"]
@@ -118,22 +121,24 @@ class MystranStatic(om.ExternalCodeComp):
             mat_prop[0] = inputs["data:aerostructural:structure:" + comp + ":material:E"]
             mat_prop[1] = inputs["data:aerostructural:structure:" + comp + ":material:mu"]
             mat_prop[2] = inputs["data:aerostructural:structure:" + comp + ":material:density"]
-            strg += get_nodes_cards(comp, nodes)
-            strg += get_props_cards(comp, props)
-            strg += get_mat_cards(comp, mat_prop)
-            strg += get_rbe_junction_cards(comp, nodes)
-            strg += get_forces_cards(comp, forces)
-            if comp != "strut":
-                master = "fuselage"
-                master_nodes = inputs["data:aerostructural:structure:fuselage:nodes"]
-                strg += get_bc_cards(comp, master, master_nodes, nodes, cg_loc)
+            strg += get_nodes_cards(comp, nodes, basis_id[comp])
+            strg += get_props_cards(comp, props, basis_id[comp])
+            strg += get_mat_cards(mat_prop, basis_id[comp])
+            strg += get_rbe_junction_cards(comp, nodes, basis_id[comp])
+            strg += get_forces_cards(comp, forces, basis_id[comp])
+            # if comp != "strut":
+            #     master = "fuselage"
+            #     master_nodes = inputs["data:aerostructural:structure:fuselage:nodes"]
+            #     strg += get_bc_cards(comp, master, master_nodes, nodes, cg_loc)
             if comp == "strut":
-                master = "fuselage"
-                master_nodes = inputs["data:aerostructural:structure:fuselage:nodes"]
-                strg += get_bc_cards(comp, master, master_nodes, nodes, cg_loc)
                 master = "wing"
                 master_nodes = inputs["data:aerostructural:structure:wing:nodes"]
-                strg += get_bc_cards(comp, master, master_nodes, nodes, cg_loc)
+                strg += get_rbe_cards(comp, master, master_nodes, nodes, cg_loc)
+                strg += get_spc_cards(idx + 2, "123", basis_id[comp])
+            else:
+                strg += get_spc_cards(idx + 2, "123456", basis_id[comp])
+            spc_strg += str(idx + 2) + ", "
+        strg += [spc_strg + "\n"]
 
         tmp_dir = TemporaryDirectory()
         self.input_file = pth.join(tmp_dir.name, _TMP_INPUT_FILE_NAME)
@@ -158,11 +163,13 @@ class MystranStatic(om.ExternalCodeComp):
         # Post-processing -------------------------------------------------------------------------
         displacements, stresses = readf06(result_file)
         # split displacements and stresses matrices for each component
-        splited_disp = self._get_component_disp(displacements, components, nsects)
-        splited_stresses = self._get_component_stress(stresses, components, nsects)
+        split_displacements = self._get_component_disp(displacements, components, nsects)
+        split_stresses = self._get_component_stress(stresses, components, nsects)
         for i, comp in enumerate(components):
-            outputs["data:aerostructural:structure:" + comp + ":displacements"] = splited_disp[i]
-            outputs["data:aerostructural:structure:" + comp + ":stresses"] = splited_stresses[i]
+            outputs[
+                "data:aerostructural:structure:" + comp + ":displacements"
+            ] = split_displacements[i]
+            outputs["data:aerostructural:structure:" + comp + ":stresses"] = split_stresses[i]
 
         # Getting output files if needed ----------------------------------------------------------
         if self.options[OPTION_RESULT_FOLDER_PATH]:

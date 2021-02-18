@@ -60,19 +60,9 @@ def convert_8digit_nastran(value):
     return value_8dgt
 
 
-def get_nodes_cards(comp_name, nodes):
+def get_nodes_cards(comp_name, nodes, id_basis):
     strg = ["$ Component:   " + comp_name + "\n \n" + "$$ Grids: \n"]
-    if comp_name == "wing":
-        id_basis = 1000000
-    if comp_name == "fuselage":
-        id_basis = 2000000
-    if comp_name == "horizontal_tail":
-        id_basis = 3000000
-    if comp_name == "vertical_tail":
-        id_basis = 4000000
-    if comp_name == "strut":
-        id_basis = 5000000
-    for i in range(0, np.size(nodes, axis=0)):
+    for i in range(np.size(nodes, axis=0)):
         id0 = convert_8digit_nastran(id_basis + i)
         c_1 = convert_8digit_nastran(nodes[i, 0])
         c_2 = convert_8digit_nastran(nodes[i, 1])
@@ -81,19 +71,9 @@ def get_nodes_cards(comp_name, nodes):
     return strg
 
 
-def get_props_cards(comp_name, props):
+def get_props_cards(comp_name, props, id_basis):
     strg = ["$$ Beams definition and properties:  \n"]
-    if comp_name == "wing":
-        id_basis = 1000000
-    if comp_name == "fuselage":
-        id_basis = 2000000
-    if comp_name == "horizontal_tail":
-        id_basis = 3000000
-    if comp_name == "vertical_tail":
-        id_basis = 4000000
-    if comp_name == "strut":
-        id_basis = 5000000
-    for i in range(0, np.size(props, axis=0)):
+    for i in range(np.size(props, axis=0)):
         b_ids = convert_8digit_nastran(id_basis + i + 1000)
         p_ids = convert_8digit_nastran(id_basis + i + 11000)
         p_mat = convert_8digit_nastran(id_basis + 111000)
@@ -142,59 +122,29 @@ def get_props_cards(comp_name, props):
     return strg
 
 
-def get_mat_cards(comp_name, mat_props):
+def get_mat_cards(mat_props, id_basis):
     strg = ["\n$$ Material card: \n"]
-    if comp_name == "wing":
-        id_basis = 1000000
-    if comp_name == "fuselage":
-        id_basis = 2000000
-    if comp_name == "horizontal_tail":
-        id_basis = 3000000
-    if comp_name == "vertical_tail":
-        id_basis = 4000000
-    if comp_name == "strut":
-        id_basis = 5000000
     p_mat = convert_8digit_nastran(id_basis + 111000)  # Only one Mat per comp until now
     young_modulus = convert_8digit_nastran(mat_props[0])
     mu = convert_8digit_nastran(mat_props[1])
     rho = convert_8digit_nastran(mat_props[2])
     strg.append("MAT1," + p_mat + "," + young_modulus + ",," + mu + "," + rho + "\n \n \n")
+    return strg
 
 
-def get_rbe_junction_cards(comp_name, nodes):
+def get_rbe_junction_cards(comp_name, nodes, id_basis):
     strg = ["$ Junction of " + comp_name + " symmetrical parts \n"]
-    if comp_name == "wing":
-        id_basis = 1000000
-    if comp_name == "fuselage":
-        id_basis = 2000000
-    if comp_name == "horizontal_tail":
-        id_basis = 3000000
-    if comp_name == "vertical_tail":
-        id_basis = 4000000
-    if comp_name == "strut":
-        id_basis = 5000000
     if comp_name == "wing" or comp_name == "horizontal_tail" or comp_name == "strut":
         id1 = id_basis
-        id2 = convert_8digit_nastran(id_basis + np.size(nodes, axis=0) / 2)
+        id2 = convert_8digit_nastran(id_basis + int(np.size(nodes, axis=0) / 2))
         strg.append("RBE2," + str(90000000 + id_basis) + "," + str(id1) + ", 123456," + id2 + "\n")
     else:
         strg.append("$ Non-symmetrical component i.e. no need for junction \n")
     return strg
 
 
-def get_forces_cards(component_name, forces):
-    strg = ["$ Component:   " + component_name + "\n \n" + "$$ Grids: \n"]
-    if component_name == "wing":
-        id_basis = 1000000
-    if component_name == "fuselage":
-        id_basis = 2000000
-    if component_name == "horizontal_tail":
-        id_basis = 3000000
-    if component_name == "vertical_tail":
-        id_basis = 4000000
-    if component_name == "strut":
-        id_basis = 5000000
-    strg.append("$ Forces card : \n")
+def get_forces_cards(component_name, forces, id_basis):
+    strg = ["$ Component:   " + component_name + "\n \n" + "$$ Grids: \n", "$ Forces card : \n"]
     for i in range(0, np.size(forces, axis=0)):
         fid = convert_8digit_nastran(id_basis + i)
         f_x = convert_8digit_nastran(forces[i, 0])
@@ -214,7 +164,12 @@ def get_forces_cards(component_name, forces):
     return strg
 
 
-def get_bc_cards(component_name, master_name, master_nodes, slave_nodes, loc_cg):
+def get_spc_cards(spc_id, dof, id_basis):
+    strg = ["$ Clamping \n", "SPC1, " + str(spc_id) + ", " + str(dof) + ", " + str(id_basis) + "\n"]
+    return strg
+
+
+def get_rbe_cards(component_name, master_name, master_nodes, slave_nodes, loc_cg):
     strg = []
     if master_name == "fuselage":
         ids = np.arange(0, np.size(master_nodes, axis=0)) + 2000000
@@ -260,10 +215,6 @@ def get_bc_cards(component_name, master_name, master_nodes, slave_nodes, loc_cg)
         strg.append("\n$$ sewing fuselage / strut \n")
         strg.append("RBE2,95000002," + sew_id1 + ",123456," + id_slave1 + " \n")
         strg.append("RBE2,95000003," + sew_id + ",123456," + id_slave2 + " \n")
-
-    if component_name == "fuselage":
-        strg.append("$ SPC card: A/C clamped at center of gravity location \n")
-        strg.append("SPC1,1,123456," + sew_id + "\n")
 
     return strg
 

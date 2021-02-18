@@ -90,12 +90,10 @@ def test_aerostructure():
         "data:aerostructural:load_case:weight",
         "data:aerostructural:load_case:altitude",
     ]
-    comps = ["wing", "horizontal_tail", "vertical_tail", "fuselage"]
-    sects = [5, 5, 5, 4]
+    comps = ["wing"]
+    sects = [5]
     interp = ["linear", "linear", "linear", "rigid"]
     ivc = get_indep_var_comp(input_list)
-    twist = np.tile(np.linspace(3, -1, 6), 2)
-    t_c = np.tile(np.linspace(0.12, 0.1, 6), 2)
     problem = run_system(
         StaticSolver(components=comps, components_sections=sects, components_interp=interp), ivc
     )

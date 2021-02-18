@@ -11,6 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import openmdao.api as om
 
 from fastoad.models.aerostructure.mesh.structure_mesh import StructureMesh
 from fastoad.models.aerostructure.mesh.aerodynamic_mesh import AerodynamicMesh
@@ -54,6 +55,57 @@ class StaticSolver(OmOptGrp):
             ),
             promotes=["*"],
         )
+
+        self.add_subsystem(
+            "aerostructural_loop",
+            _AerostructuralLoop(
+                components=self.options["components"],
+                components_sections=self.options["components_sections"],
+                components_interp=self.options["components_interp"],
+            ),
+            promotes=["*"],
+        )
+        # self.add_subsystem(
+        #     "displacement_transfer",
+        #     DisplacementsTransfer(components=self.options["components"]),
+        #     promotes=["*"],
+        # )
+        # self.add_subsystem(
+        #     "Aerodynamic_solver",
+        #     AVL(
+        #         components=self.options["components"],
+        #         components_sections=self.options["components_sections"],
+        #     ),
+        #     promotes=["*"],
+        # )
+        # self.add_subsystem(
+        #     "Forces_transfer",
+        #     ForcesTransfer(
+        #         components=self.options["components"],
+        #         components_sections=self.options["components_sections"],
+        #     ),
+        #     promotes=["*"],
+        # )
+        # self.add_subsystem(
+        #     "static_structure_solver",
+        #     MystranStatic(
+        #         components=self.options["components"],
+        #         components_sections=self.options["components_sections"],
+        #     ),
+        #     promotes=["*"],
+        # )
+
+
+class _AerostructuralLoop(OmOptGrp):
+    def initialize(self):
+        self.options.declare("components", types=list)
+        self.options.declare("components_sections", types=list)
+        self.options.declare("components_interp", types=list)
+
+    def setup(self):
+        self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30)
+        self.linear_solver = om.DirectSolver()
+
         self.add_subsystem(
             "displacement_transfer",
             DisplacementsTransfer(components=self.options["components"]),
