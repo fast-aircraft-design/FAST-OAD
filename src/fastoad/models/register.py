@@ -28,6 +28,7 @@ from .geometry import Geometry
 from .handling_qualities.compute_static_margin import ComputeStaticMargin
 from .handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from .loops.compute_wing_area import ComputeWingArea
+from .loops.compute_wing_position import ComputeWingPosition
 from .performances.breguet import OMBreguet
 from .performances.mission.openmdao.sizing_mission import SizingMission
 from .propulsion.fuel_propulsion.rubber_engine import (
@@ -65,6 +66,7 @@ RegisterOpenMDAOSystem(
 
 # Loops #######################################################################
 RegisterOpenMDAOSystem("fastoad.loop.wing_area", domain=ModelDomain.OTHER)(ComputeWingArea)
+RegisterOpenMDAOSystem("fastoad.loop.wing_position", domain=ModelDomain.OTHER)(ComputeWingPosition)
 
 RegisterOpenMDAOSystem("fastoad.loop.mtow", domain=ModelDomain.WEIGHT)(MTOWComputation)
 
