@@ -97,3 +97,9 @@ def test_aerostructure():
     problem = run_system(
         StaticSolver(components=comps, components_sections=sects, components_interp=interp), ivc
     )
+    print(problem["data:aerostructural:structure:wing:forces"])
+    print(problem["data:aerostructural:aerodynamic:wing:forces"])
+    print(problem["data:aerostructural:structure:wing:displacements"])
+    print(problem["data:aerostructural:structure:wing:stresses"])
+    print(problem["data:aerostructural:aerodynamic:wing:displacements"])
+    om.n2(problem)

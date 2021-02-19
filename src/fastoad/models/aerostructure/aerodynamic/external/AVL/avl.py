@@ -109,9 +109,9 @@ class AVL(ExternalCodeComp):
             )
 
         # self.add_output("data:aerostructural:aerodynamic:forces", val=np.nan, shape=(size, 6))
-        self.add_output("data:aerostructural:aerodynamic:CDi", val=np.nan)
-        self.add_output("data:aerostructural:aerodynamic:CL", val=np.nan)
-        self.add_output("data:aerostructural:aerodynamic:Oswald_Coeff", val=np.nan)
+        self.add_output("data:aerostructural:aerodynamic:CDi", val=0.0)
+        self.add_output("data:aerostructural:aerodynamic:CL", val=0.0)
+        self.add_output("data:aerostructural:aerodynamic:Oswald_Coeff", val=0.0)
 
         self.declare_partials("*", "*", method="fd")
 

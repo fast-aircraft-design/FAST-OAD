@@ -103,14 +103,7 @@ class _AerostructuralLoop(OmOptGrp):
         self.options.declare("components_interp", types=list)
 
     def setup(self):
-        self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30)
-        self.linear_solver = om.DirectSolver()
 
-        self.add_subsystem(
-            "displacement_transfer",
-            DisplacementsTransfer(components=self.options["components"]),
-            promotes=["*"],
-        )
         self.add_subsystem(
             "Aerodynamic_solver",
             AVL(
@@ -135,3 +128,12 @@ class _AerostructuralLoop(OmOptGrp):
             ),
             promotes=["*"],
         )
+
+        self.add_subsystem(
+            "displacement_transfer",
+            DisplacementsTransfer(components=self.options["components"]),
+            promotes=["*"],
+        )
+
+        self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, iprint=1, rtol=1e-3, atol=1e-9)
+        self.linear_solver = om.DirectSolver()

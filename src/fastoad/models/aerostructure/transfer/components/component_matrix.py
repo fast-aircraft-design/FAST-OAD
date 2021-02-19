@@ -44,7 +44,7 @@ class ComponentMatrix(om.ExplicitComponent):
             "data:aerostructural:structure:" + comp + ":nodes", val=np.nan, shape_by_conn=True
         )
         self.add_output(
-            "data:aerostructural:transfer:" + comp + ":matrix", val=np.nan, shape=(s_1, s_2)
+            "data:aerostructural:transfer:" + comp + ":matrix", val=0.0, shape=(s_1, s_2)
         )
 
     def setup_partials(self):

@@ -42,6 +42,7 @@ OPTION_RESULT_FOLDER_PATH = "result_folder_path"
 _TMP_INPUT_FILE_NAME = "run.dat"
 _TMP_OUTPUT_FILE_NAME = "run.F06"
 _STDERR_FILE_NAME = "run.ERR"
+_STDOUT_FILE_NAME = "mystran.log"
 MYSTRAN_EXE_NAME = "MYSTRAN.exe"
 
 
@@ -74,12 +75,17 @@ class MystranStatic(om.ExternalCodeComp):
             else:
                 n_nodes = nsect + 1
                 n_props = nsect
-            self.add_input("data:aerostructural:structure:" + comp + ":nodes", shape_by_conn=True)
+
             self.add_input(
-                "data:aerostructural:structure:" + comp + ":beam_properties", shape_by_conn=True
+                "data:aerostructural:structure:" + comp + ":nodes", val=np.nan, shape_by_conn=True
             )
             self.add_input(
-                "data:aerostructural:structure:" + comp + ":forces", shape_by_conn=True,
+                "data:aerostructural:structure:" + comp + ":beam_properties",
+                val=np.nan,
+                shape_by_conn=True,
+            )
+            self.add_input(
+                "data:aerostructural:structure:" + comp + ":forces", val=np.nan, shape_by_conn=True,
             )
             self.add_input("data:aerostructural:structure:" + comp + ":material:E", val=70e9)
             self.add_input("data:aerostructural:structure:" + comp + ":material:mu", val=0.33)
@@ -99,6 +105,8 @@ class MystranStatic(om.ExternalCodeComp):
 
             # Initialisation of the MYSTRAN (NASTRAN) input file (.dat) ----------------------------
         self.input_file = ""
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
         result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
@@ -153,6 +161,7 @@ class MystranStatic(om.ExternalCodeComp):
         # Input BDF file generation ---------------------------------------------------------------
         get_nastran_bdf(self.input_file, strg, sol="static", nz=nz)
         self.sderr = pth.join(tmp_dir.name, _STDERR_FILE_NAME)
+        self.stdout = pth.join(tmp_dir.name, _STDOUT_FILE_NAME)
         # Run MYSTRAN -----------------------------------------------------------------------------
         result_file = pth.join(tmp_dir.name, _TMP_OUTPUT_FILE_NAME)
         # self.options["external_input_files"] = [input_file]
@@ -163,8 +172,10 @@ class MystranStatic(om.ExternalCodeComp):
         # Post-processing -------------------------------------------------------------------------
         displacements, stresses = readf06(result_file)
         # split displacements and stresses matrices for each component
-        split_displacements = self._get_component_disp(displacements, components, nsects)
-        split_stresses = self._get_component_stress(stresses, components, nsects)
+        split_displacements = self._get_component_matrix(
+            displacements, components, nsects, type="grid"
+        )
+        split_stresses = self._get_component_matrix(stresses, components, nsects, type="element")
         for i, comp in enumerate(components):
             outputs[
                 "data:aerostructural:structure:" + comp + ":displacements"
@@ -184,37 +195,48 @@ class MystranStatic(om.ExternalCodeComp):
         tmp_dir.cleanup()
 
     @staticmethod
-    def _get_component_disp(disp_matrix, comps, nsects):
-
+    def _get_component_matrix(matrix, comps, nsects, type="grid"):
+        """
+        This function split a FEM results matrix into structural component matrices e.g.
+        displacements for the wing.
+        :param matrix: FEM results matrix
+        :param comps: list of structural components
+        :param nsects: number of section (elements) per components
+        :param type: "grid" or "element" whether the results is grid-wise or element-wise.
+        :return:
+        """
+        if type == "grid":
+            matrix_size_increment = 1
+        elif type == "element":
+            matrix_size_increment = 0
+        else:
+            msg = "extraction not possible for FEM entities different from grid or element"
+            raise ValueError(msg)
         split_sections = np.zeros(len(nsects), dtype=int)
 
-        for i in range(0, len(comps)):
-            if comps[i] == "wing":
-                n_nodes = (nsects[i] + 1) * 2 + 2
-            elif comps[i] == "horizontal_tail" or comps[i] == "strut":
-                n_nodes = (nsects[i] + 1) * 2
+        for idx, comp in enumerate(comps):
+            if comp in ("wing", "horizontal_tail", "strut"):
+                n_nodes = (nsects[idx] + matrix_size_increment) * 2
             else:
-                n_nodes = nsects[i] + 1
-            if i != 0:
-                split_sections[i] = int(n_nodes) + split_sections[i - 1]
+                n_nodes = nsects[idx] + matrix_size_increment
+            if idx != 0:
+                split_sections[idx] = int(n_nodes) + split_sections[idx - 1]
             else:
-                split_sections[i] = int(n_nodes)
-        return np.split(disp_matrix, split_sections)
+                split_sections[idx] = int(n_nodes)
+        return np.split(matrix, split_sections)
 
     @staticmethod
     def _get_component_stress(stress_matrix, comps, nsects):
 
         split_sections = np.zeros(len(nsects), dtype=int)
 
-        for i in range(0, len(comps)):
-            if comps[i] == "wing":
-                n_nodes = (nsects[i] + 1) * 2
-            elif comps[i] == "horizontal_tail" or comps[i] == "strut":
-                n_nodes = nsects[i] * 2
+        for idx, comp in enumerate(comps):
+            if comp in ("wing", "horizontal_tail", "strut"):
+                n_nodes = nsects[idx] * 2
             else:
-                n_nodes = nsects[i]
-            if i != 0:
-                split_sections[i] = int(n_nodes) + split_sections[i - 1]
+                n_nodes = nsects[idx]
+            if idx != 0:
+                split_sections[idx] = int(n_nodes) + split_sections[idx - 1]
             else:
-                split_sections[i] = int(n_nodes)
+                split_sections[idx] = int(n_nodes)
         return np.split(stress_matrix, split_sections)

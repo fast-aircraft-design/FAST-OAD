@@ -26,7 +26,9 @@ class ComponentDisplacements(om.ExplicitComponent):
             "data:aerostructural:transfer:" + comp + ":matrix", shape_by_conn=True, val=np.nan
         )
         self.add_input(
-            "data:aerostructural:structure:" + comp + ":displacements", shape_by_conn=True, val=0.0,
+            "data:aerostructural:structure:" + comp + ":displacements",
+            shape_by_conn=True,
+            val=np.nan,
         )
         self.add_input(
             "data:aerostructural:aerodynamic:" + comp + ":nodes", val=np.nan, shape_by_conn=True
