@@ -207,7 +207,7 @@ class AVL(ExternalCodeComp):
             parser_out.mark_anchor(avl_comp)
             comp_coef = parser_out.transfer_2Darray(0, 3, size - 1, 8)
             #  Reorganise result array to have coefficient in direct axis order
-            comp_coef[:, :] = comp_coef[:, [1, 3, 0, 4, 2, 5]]
+            comp_coef[:, :] = comp_coef[:, [1, 3, 0, 5, 2, 4]]
             #  Comvert coefficients into forces and moments
             comp_coef[:, :3] *= q * s_ref
             comp_coef[:, [3, 5]] *= q * s_ref * b_ref
@@ -215,7 +215,7 @@ class AVL(ExternalCodeComp):
             #  Change forces and moment from aerodynamic to body axis
             r_mat = self._get_rotation_matrix(aoa * degree, axis="y")
             comp_coef[:, :3] = np.dot(comp_coef[:, :3], r_mat)
-            comp_coef[:, 3:] = np.dot(comp_coef[:, 3:], r_mat)
+            comp_coef[:, 3:] = np.dot(comp_coef[:, 3:], r_mat)  # Moments in std axis ie X fwd
             outputs["data:aerostructural:aerodynamic:" + comp + ":forces"] = comp_coef
         # outputs["data:aerostructural:aerodynamic:forces"] = q * s_ref * surface_coef
 

@@ -52,9 +52,10 @@ def _get_nodes(comp, sect):
     nodes = np.nan
     if comp == "wing":
         nodes = np.zeros(((sect + 1) * 2, 3))
-        nodes[: sect + 1, 0] = nodes[sect + 1 :, 0] = np.linspace(11.5, 19.44, sect + 1)
-        nodes[: sect + 1, 1] = np.linspace(1.96, 17.5, sect + 1)
-        nodes[sect + 1 :, 1] = -nodes[: sect + 1, 1]
+        nodes[0, :] = nodes[sect + 1, :] = np.array([11.5, 0.0, 0.0])
+        nodes[1 : sect + 1, 0] = nodes[sect + 2 :, 0] = np.linspace(11.5, 19.44, sect)
+        nodes[1 : sect + 1, 1] = np.linspace(1.96, 17.5, sect)
+        nodes[sect + 2 :, 1] = -nodes[1 : sect + 1, 1]
     if comp == "horizontal_tail":
         nodes = np.zeros(((sect + 1) * 2, 3))
         nodes[: sect + 1, 0] = nodes[sect + 1 :, 0] = np.linspace(32.4, 36.44, sect + 1)
@@ -84,7 +85,9 @@ def _get_chords(comp, sect):
     """
     chords = np.nan
     if comp == "wing":
-        chords = np.tile(np.linspace(6.20, 2.3, sect + 1), 2)
+        chords = np.zeros((sect + 1) * 2)
+        chords[0] = chords[sect + 1] = 6.2
+        chords[1 : sect + 1] = chords[sect + 2 :] = np.linspace(6.20, 2.3, sect)
     if comp == "horizontal_tail":
         chords = np.tile(np.linspace(4.4, 1.3, sect + 1), 2)
     if comp == "vertical_tail":
@@ -108,13 +111,32 @@ def get_ivc_for_components(
     ivc.add_output("data:aerostructural:load_case:load_factor", load_case["load_factor"])
     ivc.add_output("data:aerostructural:load_case:mach", load_case["mach"])
     for comp, sect in zip(components, sections):
+        if comp == "horizontal_tail":
+            ivc.add_output(
+                "data:aerostructural:aerodynamic:" + comp + ":displacements",
+                np.zeros(((sect + 1) * 2, 3)),
+            )
+        elif comp == "vertical_tail":
+            ivc.add_output(
+                "data:aerostructural:aerodynamic:" + comp + ":displacements",
+                np.zeros((sect + 1, 3)),
+            )
+        elif comp == "wing":
+            ivc.add_output(
+                "data:aerostructural:aerodynamic:" + comp + ":displacements",
+                np.zeros(((sect + 1) * 2, 3)),
+            )
         nodes = _get_nodes(comp, sect)
         ivc.add_output("data:aerostructural:aerodynamic:" + comp + ":nodes", nodes)
         chords = _get_chords(comp, sect)
         ivc.add_output("data:aerostructural:aerodynamic:" + comp + ":chords", chords)
         if comp == "wing":
-            twist = np.tile(np.linspace(3, -1, sect + 1), 2)
-            t_c = np.tile(np.linspace(0.12, 0.1, sect + 1), 2)
+            twist = np.zeros((sect + 1) * 2)
+            t_c = np.zeros((sect + 1) * 2)
+            twist[0] = twist[sect + 2] = 3.0
+            twist[1 : sect + 1] = twist[sect + 2 :] = np.linspace(3, -1, sect)
+            t_c[0] = t_c[sect + 1] = 0.12
+            t_c[1 : sect + 1] = t_c[sect + 2 :] = np.linspace(0.12, 0.1, sect)
             ivc.add_output("data:aerostructural:aerodynamic:wing:twist", twist)
             ivc.add_output("data:aerostructural:aerodynamic:wing:thickness_ratios", t_c)
     return ivc
@@ -140,30 +162,30 @@ def test_avl_design():
 
     # Test with only wing and fuselage -------------------------------------------------------------
     load_case = {"weight": 60000, "altitude": 35000, "mach": 0.78, "load_factor": 1.0}
-    components = ["wing", "fuselage"]
-    sections = [11, 12]
+    components = ["wing"]
+    sections = [12]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
     avl_comp = AVL(components=components, components_sections=sections)
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
-    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.011373, abs=1e-5)
-    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.6678, abs=1e-4)
+    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0056713, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.9524, abs=1e-4)
     assert not pth.exists(pth.join(pth.dirname(__file__), "results"))
-    # Test for complete aircraft (wing, fuselage, tails) -------------------------------------------
-    components = ["wing", "horizontal_tail", "vertical_tail", "fuselage"]
-    sections = [11, 11, 5, 12]
+    # Test for complete aircraft (wing and tails) --------------------------------------------------
+    components = ["wing", "horizontal_tail", "vertical_tail"]
+    sections = [12, 11, 5]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
     avl_comp = AVL(components=components, components_sections=sections)
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
-    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0097103, abs=1e-5)
-    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.7766, abs=1e-4)
+    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0060361, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.9454, abs=1e-4)
     assert not pth.exists(pth.join(pth.dirname(__file__), "results"))
     # Test with results directory provided ---------------------------------------------------------
-    components = ["wing", "horizontal_tail", "vertical_tail", "fuselage"]
-    sections = [11, 11, 5, 12]
+    components = ["wing", "horizontal_tail", "vertical_tail"]
+    sections = [12, 11, 5]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
     avl_comp = AVL(
@@ -171,8 +193,8 @@ def test_avl_design():
     )
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
-    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0097103, abs=1e-5)
-    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.7766, abs=1e-4)
+    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0060361, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.9454, abs=1e-4)
     assert pth.exists(AVL_RESULTS)
     assert pth.exists(pth.join(AVL_RESULTS, "results.out"))
 
@@ -197,33 +219,23 @@ def test_avl_sizing():
 
     # Test with only wing and fuselage -------------------------------------------------------------
     load_case = {"weight": 78000, "altitude": 30000, "mach": 0.84, "load_factor": 2.5}
-    components = ["wing", "fuselage"]
-    sections = [11, 12]
+    components = ["wing"]
+    sections = [12]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
     avl_comp = AVL(components=components, components_sections=sections)
     problem = run_system(avl_comp, ivc)
 
     forces_test = np.loadtxt(
-        pth.join(pth.dirname(__file__), "data", "forces_results_wing_fuse_2p5g"), skiprows=1
+        pth.join(pth.dirname(__file__), "data", "forces_results_wing_2p5g"), skiprows=1
     )
-    f_test_w = forces_test[:-4, :]  # Remove fuselage surfaces forces
-    f_test_f = forces_test[-4:, :]  # Remove wings surfaces forces
-    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:wing:forces"], f_test_w):
-        assert f_fast[0] == approx(f_test[0], rel=1e-3)
-        assert f_fast[1] == approx(f_test[1], rel=1e-3)
-        assert f_fast[2] == approx(f_test[2], rel=1e-3)
-        assert f_fast[4] == approx(f_test[4], rel=1e-2)
-        assert f_fast[5] == approx(f_test[5], rel=1e-2)
-    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:fuselage:forces"], f_test_f):
-        assert f_fast[0] == approx(f_test[0], rel=1e-3)
-        assert f_fast[1] == approx(f_test[1], rel=1e-3)
-        assert f_fast[2] == approx(f_test[2], rel=1e-3)
-        assert f_fast[4] == approx(f_test[4], rel=1e-2)
-        assert f_fast[5] == approx(f_test[5], rel=1e-2)
+
+    np.testing.assert_allclose(
+        problem["data:aerostructural:aerodynamic:wing:forces"], forces_test, rtol=1e-3
+    )
 
     # Test for complete aircraft (wing, fuselage, tails) -------------------------------------------
-    components = ["wing", "horizontal_tail", "vertical_tail", "fuselage"]
-    sections = [11, 11, 5, 12]
+    components = ["wing", "horizontal_tail", "vertical_tail"]
+    sections = [12, 11, 5]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
     avl_comp = AVL(components=components, components_sections=sections)
@@ -231,39 +243,15 @@ def test_avl_sizing():
     forces_test = np.loadtxt(
         pth.join(pth.dirname(__file__), "data", "forces_results_full_2p5g"), skiprows=1
     )
-    f_test_w = forces_test[:22, :]  # Wings surface forces & moments
-    f_test_h = forces_test[22:44, :]  # Horizontal tails surface forces & moments
-    f_test_v = forces_test[44:49, :]  # Vertical tail surface forces & moments
-    f_test_f = forces_test[49:, :]  # Fuselage surface forces & moments
 
-    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:wing:forces"], f_test_w):
-        assert f_fast[0] == approx(f_test[0], rel=1e-3)
-        assert f_fast[1] == approx(f_test[1], rel=1e-3)
-        assert f_fast[2] == approx(f_test[2], rel=1e-3)
-        assert f_fast[4] == approx(f_test[4], rel=1e-2)
-        assert f_fast[5] == approx(f_test[5], rel=1e-2)
-    for f_fast, f_test in zip(
-        problem["data:aerostructural:aerodynamic:horizontal_tail:forces"], f_test_h
-    ):
-        assert f_fast[0] == approx(f_test[0], rel=1e-3)
-        assert f_fast[1] == approx(f_test[1], rel=1e-3)
-        assert f_fast[2] == approx(f_test[2], rel=1e-3)
-        assert f_fast[4] == approx(f_test[4], rel=1e-2)
-        assert f_fast[5] == approx(f_test[5], rel=1e-2)
-    for f_fast, f_test in zip(
-        problem["data:aerostructural:aerodynamic:vertical_tail:forces"], f_test_v
-    ):
-        assert f_fast[0] == approx(f_test[0], rel=1e-3)
-        assert f_fast[1] == approx(f_test[1], rel=1e-3)
-        assert f_fast[2] == approx(f_test[2], rel=1e-3)
-        assert f_fast[4] == approx(f_test[4], rel=1e-2)
-        assert f_fast[5] == approx(f_test[5], rel=1e-2)
-    for f_fast, f_test in zip(problem["data:aerostructural:aerodynamic:fuselage:forces"], f_test_f):
-        assert f_fast[0] == approx(f_test[0], rel=1e-3)
-        assert f_fast[1] == approx(f_test[1], rel=1e-3)
-        assert f_fast[2] == approx(f_test[2], rel=1e-3)
-        assert f_fast[4] == approx(f_test[4], rel=1e-2)
-        assert f_fast[5] == approx(f_test[5], rel=1e-2)
+    forces_fast = np.vstack(
+        (
+            problem["data:aerostructural:aerodynamic:wing:forces"],
+            problem["data:aerostructural:aerodynamic:horizontal_tail:forces"],
+            problem["data:aerostructural:aerodynamic:vertical_tail:forces"],
+        )
+    )
+    np.testing.assert_allclose(forces_fast, forces_test)
 
 
 @pytest.mark.skipif(
@@ -287,8 +275,8 @@ def test_avl_path():
 
     # Test with only wing and fuselage -------------------------------------------------------------
     load_case = {"weight": 60000, "altitude": 35000, "mach": 0.78, "load_factor": 1.0}
-    components = ["wing", "fuselage"]
-    sections = [11, 12]
+    components = ["wing"]
+    sections = [11]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
     avl_comp = AVL(components=components, components_sections=sections)
@@ -302,5 +290,5 @@ def test_avl_path():
     )
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"] == approx(0.37, abs=1e-3)
-    assert problem["data:aerostructural:aerodynamic:CDi"] == approx(0.011373, abs=1e-5)
-    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"] == approx(0.6678, abs=1e-4)
+    assert problem["data:aerostructural:aerodynamic:CDi"] == approx(0.0056713, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"] == approx(0.9524, abs=1e-4)

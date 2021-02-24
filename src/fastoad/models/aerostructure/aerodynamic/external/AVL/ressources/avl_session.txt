@@ -10,6 +10,7 @@ G 9.81
 
 O
 P T T F F
+A
 
 X
 W
