@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -52,7 +52,7 @@ def test_breguet_with_rubber_engine():
     problem = run_system(
         Mission(
             propulsion_id="fastoad.wrapper.propulsion.rubber_engine",
-            initial_iterations=0,
+            use_initializer_iteration=False,
             mission_file_path="::sizing_breguet",
             adjust_fuel=False,
         ),

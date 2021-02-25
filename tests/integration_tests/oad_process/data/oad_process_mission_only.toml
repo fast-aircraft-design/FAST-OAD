@@ -23,5 +23,5 @@ output_file = "./oad_process_mission_outputs.xml"
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "./flight_points.csv"
-        initial_iterations = 0
+        use_initializer_iteration = false
         adjust_fuel = false

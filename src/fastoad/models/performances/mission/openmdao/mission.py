@@ -52,10 +52,12 @@ class Mission(om.Group):
                                                input coefficients for fuel reserve and fuel
                                                consumption during climb and descent
       - mission_name: the mission name. Required if mission file defines several missions.
-      - initial_iterations: During first solver loops, a complete mission computation can fail or
-                            consume useless CPU-time. This option drives the number of first
-                            iterations where a simple Breguet formula will be used instead of the
-                            specified mission.
+      - use_initializer_iteration: During first solver loop, a complete mission computation can
+                                   fail or consume useless CPU-time. When activated, this option
+                                   ensures the first iteration is done using a simple, dummy,
+                                   formula instead of the specified mission.
+                                   Set this option to False if you do expect this model to be
+                                   computed only once.
       - adjust_fuel: if True, block fuel will fit fuel consumption during mission.
       - compute_TOW: if True, TakeOff Weight will be computed from mission block fuel and ZFW.
                      If False, block fuel will be computed from TOW and ZFW.
@@ -73,7 +75,7 @@ class Mission(om.Group):
             "mission_file_path", default=None, types=(str, MissionDefinition), allow_none=True
         )
         self.options.declare("mission_name", default=None, types=str, allow_none=True)
-        self.options.declare("initial_iterations", default=1, types=int)
+        self.options.declare("use_initializer_iteration", default=True, types=bool)
         self.options.declare("adjust_fuel", default=True, types=bool)
         self.options.declare("compute_TOW", default=False, types=bool)
         self.options.declare("add_solver", default=False, types=bool)
@@ -198,10 +200,12 @@ class MissionComponent(om.ExplicitComponent):
                       flight points. If path is relative, it will be resolved from working
                       directory.
           - mission_wrapper: the MissionWrapper instance that defines the mission.
-          - initial_iterations: During first solver loops, a complete mission computation can fail
-                                or consume useless CPU-time. This option drives the number of first
-                                iterations where a simple Breguet formula will be used instead of
-                                the specified mission.
+          - use_initializer_iteration: During first solver loop, a complete mission computation can
+                                       fail or consume useless CPU-time. When activated, this option
+                                       ensures the first iteration is done using a simple, dummy,
+                                       formula instead of the specified mission.
+                                       Set this option to False if you do expect this model to be
+                                       computed only once.
           - is_sizing: if True, TOW will be considered equal to MTOW and mission payload will be
                        considered equal to design payload.
         """
@@ -214,7 +218,7 @@ class MissionComponent(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("out_file", default="", types=str)
-        self.options.declare("initial_iterations", default=2, types=int)
+        self.options.declare("use_initializer_iteration", default=True, types=bool)
         self.options.declare("mission_wrapper", types=MissionWrapper)
         self.options.declare("mission_name", types=str)
         self.options.declare("is_sizing", default=False, types=bool)
@@ -254,7 +258,7 @@ class MissionComponent(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         iter_count = self.iter_count_without_approx
         message_prefix = "Mission computation - iteration %i : " % iter_count
-        if iter_count < self.options["initial_iterations"]:
+        if iter_count == 0 and self.options["use_initializer_iteration"]:
             _LOGGER.info(message_prefix + "Using initializer computation. OTHER ITERATIONS NEEDED.")
             self._compute_breguet(inputs, outputs)
         else:

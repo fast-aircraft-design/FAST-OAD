@@ -135,7 +135,7 @@ def test_mission_component(cleanup):
         MissionComponent(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_mission.csv"),
-            initial_iterations=0,
+            use_initializer_iteration=False,
             mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_mission.yml")),
             mission_name="operational",
         ),
@@ -154,7 +154,7 @@ def test_mission_component_breguet(cleanup):
         MissionComponent(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_breguet.csv"),
-            initial_iterations=0,
+            use_initializer_iteration=False,
             mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_breguet.yml")),
             mission_name="operational",
         ),
@@ -174,7 +174,7 @@ def test_mission_group_without_loop(cleanup):
             Mission(
                 propulsion_id="test.wrapper.propulsion.dummy_engine",
                 out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
-                initial_iterations=0,
+                use_initializer_iteration=False,
                 mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
                 adjust_fuel=False,
             ),
@@ -185,7 +185,7 @@ def test_mission_group_without_loop(cleanup):
         Mission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
-            initial_iterations=0,
+            use_initializer_iteration=False,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
             mission_name="operational",
             adjust_fuel=False,
@@ -205,7 +205,7 @@ def test_mission_group_breguet_without_loop(cleanup):
         Mission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
-            initial_iterations=0,
+            use_initializer_iteration=False,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
             adjust_fuel=False,
         ),
@@ -226,7 +226,7 @@ def test_mission_group_with_loop(cleanup):
         Mission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_looped_mission_group.csv"),
-            initial_iterations=1,
+            use_initializer_iteration=True,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
             mission_name="operational",
             add_solver=True,
@@ -263,7 +263,7 @@ def test_mission_group_breguet_with_loop(cleanup):
         Mission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_looped_mission_group.csv"),
-            initial_iterations=1,
+            use_initializer_iteration=True,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
             add_solver=True,
         ),
