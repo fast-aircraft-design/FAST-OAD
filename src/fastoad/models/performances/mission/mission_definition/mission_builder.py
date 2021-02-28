@@ -262,7 +262,7 @@ class MissionBuilder:
         return route_structure
 
     def _identify_inputs(
-        self, input_definition: Dict[str, str], struct: OrderedDict, prefix: str = None
+        self, input_definition: Dict[str, str], struct: Union[OrderedDict, list], prefix: str = None
     ):
         """
         Identifies the OpenMDAO variables that are provided as parameter values.
@@ -270,11 +270,12 @@ class MissionBuilder:
         A value is considered an OpenMDAO variable as soon as it is a string that
         contains a colon ":".
 
-        If a value starts with a colon ":<some_name>", it will be considered contextual and the
+        If a value starts with a tilde "~<some_name>", it will be considered contextual and the
         actual name will be built as
         "data:mission:<mission_name>:<route_name>:<phase_name>:<some_name>" (route and phase names
         will be used only if applicable). The variable name in provided structure will be modified
         accordingly.
+        If value is simply "~", the parameter name will be used.
 
         :param input_definition: dictionary to be completed with variable names as keys and units
                                  as values
@@ -290,9 +291,10 @@ class MissionBuilder:
                 name = struct.get("mission", "") + struct.get("route", "") + struct.get("phase", "")
                 prefix_addition = ":" + name if name else ""
 
+                if isinstance(value, str) and value.startswith("~"):
+                    suffix = key if value == "~" else value[1:]
+                    value = prefix + prefix_addition + ":" + suffix
                 if isinstance(value, str) and ":" in value:
-                    if value.startswith(":"):
-                        value = prefix + prefix_addition + value
                     input_definition[value] = BASE_UNITS.get(key)
                     struct[key] = value
                 elif isinstance(value, (dict, list)):

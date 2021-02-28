@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -435,7 +435,7 @@ def test_schema():
                                                             "equivalent_airspeed",
                                                             OrderedDict([("value", "constant")]),
                                                         ),
-                                                        ("altitude", ":final_altitude"),
+                                                        ("altitude", "~final_altitude"),
                                                     ]
                                                 ),
                                             ),
@@ -471,7 +471,7 @@ def test_schema():
                                                     ]
                                                 ),
                                             ),
-                                            ("target", OrderedDict([("time", ":duration")])),
+                                            ("target", OrderedDict([("time", "~duration")])),
                                         ]
                                     )
                                 ],
@@ -489,8 +489,8 @@ def test_schema():
                                     OrderedDict(
                                         [
                                             ("segment", "taxi"),
-                                            ("thrust_rate", ":thrust_rate"),
-                                            ("target", OrderedDict([("time", ":duration")])),
+                                            ("thrust_rate", "~"),
+                                            ("target", OrderedDict([("time", "~duration")])),
                                         ]
                                     )
                                 ],
@@ -502,14 +502,14 @@ def test_schema():
                     "taxi_in",
                     OrderedDict(
                         [
-                            ("thrust_rate", ":thrust_rate"),
+                            ("thrust_rate", "~"),
                             (
                                 "steps",
                                 [
                                     OrderedDict(
                                         [
                                             ("segment", "taxi"),
-                                            ("target", OrderedDict([("time", ":duration")])),
+                                            ("target", OrderedDict([("time", "~duration")])),
                                         ]
                                     )
                                 ],
@@ -525,7 +525,7 @@ def test_schema():
                     "main",
                     OrderedDict(
                         [
-                            ("range", ":range"),
+                            ("range", "~"),
                             (
                                 "steps",
                                 [
@@ -562,7 +562,7 @@ def test_schema():
                     "diversion",
                     OrderedDict(
                         [
-                            ("range", ":range"),
+                            ("range", "~"),
                             (
                                 "steps",
                                 [

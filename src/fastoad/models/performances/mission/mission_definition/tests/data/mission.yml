@@ -106,29 +106,29 @@ phases:
         target:
           equivalent_airspeed:
             value: constant
-          altitude: :final_altitude
+          altitude: ~final_altitude
   holding:
     steps:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
-          time: :duration
+          time: ~duration
   taxi_out:
     steps:
       - segment: taxi
-        thrust_rate: :thrust_rate
+        thrust_rate: ~
         target:
-          time: :duration
+          time: ~duration
   taxi_in:
-    thrust_rate: :thrust_rate
+    thrust_rate: ~
     steps:
       - segment: taxi
         target:
-          time: :duration
+          time: ~duration
 
 routes:
   main:
-    range: :range
+    range: ~
     steps:
       - phase: initial_climb
       - phase: climb
@@ -138,7 +138,7 @@ routes:
       - phase: descent
 
   diversion:
-    range: :range
+    range: ~
     steps:
       - phase: diversion_climb
       - cruise_type: cruise
