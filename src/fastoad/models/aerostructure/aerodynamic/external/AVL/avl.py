@@ -70,7 +70,7 @@ class AVL(ExternalCodeComp):
         self.add_input("data:aerostructural:load_case:weight", val=np.nan)
         self.add_input("data:aerostructural:load_case:load_factor", val=1.0)
         self.add_input("data:aerostructural:load_case:altitude", val=np.nan, units="ft")
-        self.add_input("tuning:aerostructural:aerodynamic:chordwise_spacing:k", val=12)
+        self.add_input("tuning:aerostructural:aerodynamic:chordwise_spacing:k", val=1.0)
 
         for comp, n_sect in zip(comps, sects):
             self.add_input(

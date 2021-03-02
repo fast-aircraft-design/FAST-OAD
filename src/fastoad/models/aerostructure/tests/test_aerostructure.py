@@ -97,9 +97,26 @@ def test_aerostructure():
     problem = run_system(
         StaticSolver(components=comps, components_sections=sects, components_interp=interp), ivc
     )
-    print(problem["data:aerostructural:structure:wing:forces"])
-    print(problem["data:aerostructural:aerodynamic:wing:forces"])
-    print(problem["data:aerostructural:structure:wing:displacements"])
-    print(problem["data:aerostructural:structure:wing:stresses"])
-    print(problem["data:aerostructural:aerodynamic:wing:displacements"])
-    om.n2(problem)
+    tz_test = np.array([0, 0.132, 0.452, 0.874, 1.336, 1.806, 0, 0.132, 0.452, 0.874, 1.336, 1.806])
+    ry_test = np.array(
+        [
+            0.0,
+            -1.38e-3,
+            -2.628e-3,
+            -3.678e-3,
+            -4.415e-3,
+            -4.689e-3,
+            0.0,
+            -1.38e-3,
+            -2.628e-3,
+            -3.678e-3,
+            -4.415e-3,
+            -4.689e-3,
+        ]
+    )
+    np.testing.assert_allclose(
+        problem["data:aerostructural:structure:wing:displacements"][:, 2], tz_test, atol=1e-2
+    )
+    np.testing.assert_allclose(
+        problem["data:aerostructural:structure:wing:displacements"][:, 4], ry_test, atol=1e-5
+    )

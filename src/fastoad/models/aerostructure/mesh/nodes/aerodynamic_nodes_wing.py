@@ -71,11 +71,11 @@ class AerodynamicNodesWing(om.ExplicitComponent):
         belly_ratio = y_root / y_tip
         kink_ratio = (y_kink - y_root) / y_tip
 
-        if int(np.round(belly_ratio * n_secs)) < 1:
+        if 0 < int(np.round(belly_ratio * n_secs)) < 1:
             n_sections_belly = 1
         else:
             n_sections_belly = int(np.round(belly_ratio * n_secs))
-        if int(np.round(kink_ratio * n_secs)) < 1:
+        if 0 < int(np.round(kink_ratio * n_secs)) < 1:
             n_sections_kink = 1
         else:
             n_sections_kink = int(np.round(kink_ratio * n_secs))
