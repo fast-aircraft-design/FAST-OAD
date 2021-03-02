@@ -12,12 +12,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import openmdao.api as om
+from platform import system
+
 import numpy as np
 import os.path as pth
+import pytest
+
 from fastoad.io import VariableIO
 
-from pytest import approx
 from tests.testing_utilities import run_system
 from fastoad.models.aerostructure.static_solver import StaticSolver
 
@@ -30,6 +32,7 @@ def get_indep_var_comp(var_names):
     return ivc
 
 
+@pytest.mark.skipif(system() != "Windows", reason="No AVL executable available")
 def test_aerostructure():
     input_list = [
         "data:geometry:wing:MAC:length",
