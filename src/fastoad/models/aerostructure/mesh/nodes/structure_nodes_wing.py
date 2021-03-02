@@ -99,11 +99,11 @@ class StructureNodesWing(om.ExplicitComponent):
         #  Number of section (cuts) for each wing geometric section (belly, kink, tip) -------------
         belly_ratio = y_root / y_tip
         kink_ratio = (y_kink - y_root) / y_tip
-        if 0 < int(np.round(belly_ratio * n_secs)) < 1:
+        if y_root != 0 and int(np.round(belly_ratio * n_secs)) < 1:
             n_secs_belly = 1
         else:
             n_secs_belly = int(np.round(belly_ratio * n_secs))
-        if 0 < int(np.round(kink_ratio * n_secs)) < 1:
+        if y_kink != y_root and int(np.round(kink_ratio * n_secs)) < 1:
             n_secs_kink = 1
         else:
             n_secs_kink = int(np.round(kink_ratio * n_secs))
