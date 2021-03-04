@@ -42,10 +42,8 @@ class Mission(om.Group):
     Options:
       - propulsion_id: (mandatory) the identifier of the propulsion wrapper.
       - out_file: if provided, a csv file will be written at provided path with all computed
-                  flight points. If path is relative, it will be resolved from working
-                  directory.
+                  flight points.
       - mission_file_path: the path to file that defines the mission.
-                           If path is relative, it will be resolved from working directory.
                            If can also begin with two colons "::" to use pre-defined missions:
                                - "::sizing_mission" : design mission for CeRAS-01
                                - "::breguet" : a simple mission with Breguet formula for cruise, and
@@ -72,7 +70,10 @@ class Mission(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("out_file", default="", types=str)
         self.options.declare(
-            "mission_file_path", default=None, types=(str, MissionDefinition), allow_none=True
+            "mission_file_path",
+            default="::sizing_mission",
+            types=(str, MissionDefinition),
+            allow_none=True,
         )
         self.options.declare("mission_name", default=None, types=str, allow_none=True)
         self.options.declare("use_initializer_iteration", default=True, types=bool)
@@ -82,9 +83,6 @@ class Mission(om.Group):
         self.options.declare("is_sizing", default=False, types=bool)
 
     def setup(self):
-        if not self.options["mission_file_path"]:
-            # If no mission_file_path provided, the default mission is applied
-            self.options["mission_file_path"] = "::sizing_mission"
         if "::" in self.options["mission_file_path"]:
             # The configuration file parser will have added the working directory before
             # the file name. But as the user-provided string begins with "::", we just
@@ -197,8 +195,7 @@ class MissionComponent(om.ExplicitComponent):
         Options:
           - propulsion_id: (mandatory) the identifier of the propulsion wrapper.
           - out_file: if provided, a csv file will be written at provided path with all computed
-                      flight points. If path is relative, it will be resolved from working
-                      directory.
+                      flight points.
           - mission_wrapper: the MissionWrapper instance that defines the mission.
           - use_initializer_iteration: During first solver loop, a complete mission computation can
                                        fail or consume useless CPU-time. When activated, this option
