@@ -1,0 +1,47 @@
+title = "Sample OAD Process"
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders = []
+
+# Input and output files
+input_file = "../workdir/oad_sizing_breguet_in.xml"
+output_file = "../workdir/oad_sizing_breguet_out.xml"
+
+# Definition of OpenMDAO model
+[model]
+    # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=50)"
+    linear_solver = "om.DirectSolver()"
+
+    # Although "model" is a mandatory name for the top level of the model, its
+    # sub-components can be freely named by user
+    [model.geometry]
+        # An OpenMDAO component is identified by its "id"
+        id = "fastoad.geometry.legacy"
+    [model.weight]
+        id = "fastoad.weight.legacy"
+        payload_from_npax = false
+    [model.mtow]
+        id = "fastoad.mass_performances.compute_MTOW"
+    [model.aerodynamics_highspeed]
+        id = "fastoad.aerodynamics.highspeed.legacy"
+    [model.aerodynamics_lowspeed]
+        id = "fastoad.aerodynamics.lowspeed.legacy"
+    [model.aerodynamics_takeoff]
+        id = "fastoad.aerodynamics.takeoff.legacy"
+    [model.aerodynamics_landing]
+        id = "fastoad.aerodynamics.landing.legacy"
+        use_xfoil = false
+    [model.performance]
+        id = "fastoad.performances.mission"
+        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
+        mission_file_path = "::sizing_breguet"
+        out_file = "../workdir/oad_sizing_breguet.csv"
+        adjust_fuel = true
+        is_sizing = true
+    [model.hq_tail_sizing]
+        id = "fastoad.handling_qualities.tail_sizing"
+    [model.hq_static_margin]
+        id = "fastoad.handling_qualities.static_margin"
+    [model.wing_area]
+        id = "fastoad.loop.wing_area"
