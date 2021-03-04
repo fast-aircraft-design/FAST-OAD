@@ -26,7 +26,7 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 
 def test_compute_wing_position():
-    # The component is unit tested without being converged as it would require de geometry module
+    # The component is unit tested without being converged as it would require the geometry module
     ivc = om.IndepVarComp()
 
     ivc.add_output("data:handling_qualities:static_margin", val=0.05)
