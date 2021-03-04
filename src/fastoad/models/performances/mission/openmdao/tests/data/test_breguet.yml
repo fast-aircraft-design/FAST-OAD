@@ -28,11 +28,13 @@ routes:
     range:
       value: 2000.
       unit: NM
-    parts:
+    climb_parts:
       - phase: climb
-      - cruise_type: breguet
-        engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
       - phase: descent
 
 missions:

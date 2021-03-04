@@ -117,23 +117,27 @@ phases:
 routes:
   main_route:
     range: data:TLAR:range
-    parts:
+    climb_parts:
       - phase: initial_climb
       - phase: climb
-      - cruise_type: cruise
-        engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
-        target:
-          altitude: optimal_flight_level
-        maximum_flight_level: 340
+    cruise_part:
+      segment: cruise
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+      target:
+        altitude: optimal_flight_level
+      maximum_flight_level: 340
+    descent_parts:
       - phase: descent
   diversion:
     range: data:mission:sizing:diversion:distance
-    parts:
+    climb_parts:
       - phase: diversion_climb
-      - cruise_type: breguet
-        engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
       - phase: descent
 
 missions:

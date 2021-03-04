@@ -30,9 +30,9 @@ from strictyaml import (
     Float,
     Bool,
     Seq,
-    Any,
     YAML,
     CommaSeparated,
+    ScalarValidator,
 )
 
 from fastoad.base.flight_point import FlightPoint
@@ -52,8 +52,10 @@ SEGMENT_TAG = "segment"
 ROUTE_TAG = "route"
 PHASE_TAG = "phase"
 RESERVE_TAG = "reserve"
-CRUISE_TYPE_TAG = "cruise_type"
 PARTS_TAG = "parts"
+CLIMB_PARTS_TAG = "climb_parts"
+CRUISE_PART_TAG = "cruise_part"
+DESCENT_PARTS_TAG = "descent_parts"
 MISSION_DEFINITION_TAG = "missions"
 ROUTE_DEFINITIONS_TAG = "routes"
 PHASE_DEFINITIONS_TAG = "phases"
@@ -105,7 +107,7 @@ class MissionDefinition(dict):
 
         :param content:
         """
-        step_names = set(content[PHASE_DEFINITIONS_TAG].keys())
+        phase_names = set(content[PHASE_DEFINITIONS_TAG].keys())
 
         for phase_definition in content[PHASE_DEFINITIONS_TAG].values():
             cls._process_polar_definition(phase_definition)
@@ -113,35 +115,28 @@ class MissionDefinition(dict):
                 cls._process_polar_definition(segment_definition)
 
         for route_definition in content[ROUTE_DEFINITIONS_TAG].values():
-            # Routes are expected to contain some phases and ONE cruise phase
-            cruise_step_count = 0
-            for step in route_definition[PARTS_TAG]:
-                cls._process_polar_definition(step)
-                Ensure(step.keys()).contains_one_of([PHASE_TAG, CRUISE_TYPE_TAG])
-
-                if PHASE_TAG in step:
-                    Ensure(step[PHASE_TAG]).is_in(step_names)
-                    YAML(step).revalidate(Map(cls._get_phase_in_route_mapping()))
-                else:  # CRUISE_TYPE_TAG in step
-                    cruise_step_count += 1
-                    YAML(step).revalidate(Map(cls._get_segment_mapping(CRUISE_TYPE_TAG)))
-            Ensure(cruise_step_count).is_less_than_or_equal_to(1)
+            cls._process_polar_definition(route_definition[CRUISE_PART_TAG])
+            for part in list(route_definition[CLIMB_PARTS_TAG]) + list(
+                route_definition[DESCENT_PARTS_TAG]
+            ):
+                cls._process_polar_definition(part)
+                Ensure(part[PHASE_TAG]).is_in(phase_names)
 
         for mission_definition in content[MISSION_DEFINITION_TAG].values():
             reserve_count = 0
-            for step in mission_definition[PARTS_TAG]:
-                step_type, value = tuple(*step.items())
-                if step_type == PHASE_TAG:
+            for part in mission_definition[PARTS_TAG]:
+                part_type, value = tuple(*part.items())
+                if part_type == PHASE_TAG:
                     Ensure(value).is_in(content[PHASE_DEFINITIONS_TAG].keys())
-                elif step_type == ROUTE_TAG:
+                elif part_type == ROUTE_TAG:
                     Ensure(value).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
-                elif step_type == RESERVE_TAG:
+                elif part_type == RESERVE_TAG:
                     reserve_count += 1
                     Ensure(value["ref"]).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
             Ensure(reserve_count).is_less_than_or_equal_to(1)
             if reserve_count == 1:
-                # reserve definition should be the last step
-                Ensure(step_type).equals(RESERVE_TAG)
+                # reserve definition should be the last part
+                Ensure(part_type).equals(RESERVE_TAG)
 
     @staticmethod
     def _process_polar_definition(struct: YAML):
@@ -168,58 +163,64 @@ class MissionDefinition(dict):
     def _get_target_schema(cls) -> Map:
         target_schema_map = {}
         for key in [f.name for f in fields(FlightPoint)]:
-            target_schema_map[Optional(key, default=None)] = cls._get_dimensioned_value_mapping()
+            target_schema_map[Optional(key, default=None)] = cls._get_value_mapping()
         return Map(target_schema_map)
 
     @classmethod
-    def _get_base_step_mapping(cls) -> dict:
+    def _get_base_part_mapping(cls) -> dict:
         polar_coeff_schema = CommaSeparated(Float()) | Str()
         polar_schema = Map({"CL": polar_coeff_schema, "CD": polar_coeff_schema}) | Str()
         return {
             # TODO: this mapping covers all possible segments, but some options are relevant
             #  only for some segments. A better check could be done in second-pass validation.
             Optional("target", default=None): cls._get_target_schema(),
-            Optional("engine_setting", default=None): Str(),
+            Optional("engine_setting", default=None): cls._get_value_mapping(Str(), False),
             Optional(POLAR_TAG, default=None): polar_schema,
-            Optional("thrust_rate", default=None): Float() | Str(),
-            Optional("climb_thrust_rate", default=None): Float() | Str(),
-            Optional("time_step", default=None): Float(),
-            Optional("maximum_flight_level", default=None): Float() | Str(),
-            Optional("mass_ratio", default=None): Float() | Str(),
-            Optional("reserve_mass_ratio", default=None): Float() | Str(),
-            Optional("use_max_lift_drag_ratio", default=None): Bool() | Str(),
+            Optional("thrust_rate", default=None): cls._get_value_mapping(has_unit=False),
+            Optional("climb_thrust_rate", default=None): cls._get_value_mapping(has_unit=False),
+            Optional("time_step", default=None): cls._get_value_mapping(),
+            Optional("maximum_flight_level", default=None): cls._get_value_mapping(has_unit=False),
+            Optional("mass_ratio", default=None): cls._get_value_mapping(has_unit=False),
+            Optional("reserve_mass_ratio", default=None): cls._get_value_mapping(has_unit=False),
+            Optional("use_max_lift_drag_ratio", default=None): cls._get_value_mapping(
+                Bool(), False
+            ),
         }
 
     @classmethod
     def _get_segment_mapping(cls, tag=SEGMENT_TAG) -> dict:
         segment_map = {tag: Str()}
-        segment_map.update(cls._get_base_step_mapping())
+        segment_map.update(cls._get_base_part_mapping())
         return segment_map
 
     @classmethod
     def _get_phase_mapping(cls) -> dict:
         phase_map = {Optional(PARTS_TAG, default=None): Seq(Map(cls._get_segment_mapping()))}
-        phase_map.update(cls._get_base_step_mapping())
+        phase_map.update(cls._get_base_part_mapping())
         return phase_map
 
     @classmethod
     def _get_phase_in_route_mapping(cls) -> dict:
         phase_map = {PHASE_TAG: Str()}
-        phase_map.update(cls._get_base_step_mapping())
+        phase_map.update(cls._get_base_part_mapping())
         return phase_map
 
     @classmethod
     def _get_route_mapping(cls) -> dict:
         return {
-            Optional("range", default=None): cls._get_dimensioned_value_mapping(),
-            PARTS_TAG: Seq(Any()),
+            Optional("range", default=None): cls._get_value_mapping(),
+            Optional(CLIMB_PARTS_TAG, default=None): Seq(Map(cls._get_phase_in_route_mapping())),
+            CRUISE_PART_TAG: Map(cls._get_segment_mapping()),
+            Optional(DESCENT_PARTS_TAG, default=None): Seq(Map(cls._get_phase_in_route_mapping())),
         }
 
     @classmethod
-    def _get_dimensioned_value_mapping(cls):
-        return (
-            Float() | Str() | Map({"value": Float() | Str(), Optional("unit", default=None): Str()})
-        )
+    def _get_value_mapping(cls, value_type: ScalarValidator = Float(), has_unit=True):
+        map_dict = {"value": Float() | Str()}
+        if has_unit:
+            map_dict[Optional("unit", default=None)] = Str()
+
+        return value_type | Str() | Map(map_dict)
 
     @classmethod
     def _get_mission_mapping(cls) -> dict:
@@ -260,7 +261,7 @@ class SegmentNames(Enum):
 
         :return: the list of available segments as strings
         """
-        return {step.value for step in cls}
+        return {part.value for part in cls}
 
     @classmethod
     def get_segment_class(cls, value: Union["SegmentNames", str]) -> type:

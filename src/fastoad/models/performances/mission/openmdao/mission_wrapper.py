@@ -31,6 +31,8 @@ from ..mission_definition.schema import (
     PHASE_TAG,
     ROUTE_TAG,
     ROUTE_DEFINITIONS_TAG,
+    CLIMB_PARTS_TAG,
+    DESCENT_PARTS_TAG,
 )
 
 BASE_UNITS = {
@@ -147,20 +149,20 @@ class MissionWrapper(MissionBuilder):
 
         output_definition.update(self._add_vars(mission_name))
 
-        for step in self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG]:
-            if PHASE_TAG in step:
-                phase_name = step[PHASE_TAG]
+        for part in self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG]:
+            if PHASE_TAG in part:
+                phase_name = part[PHASE_TAG]
                 output_definition.update(self._add_vars(mission_name, phase_name=phase_name))
-            elif ROUTE_TAG in step:
-                route_name = step[ROUTE_TAG]
+            elif ROUTE_TAG in part:
+                route_name = part[ROUTE_TAG]
                 output_definition.update(self._add_vars(mission_name, route_name))
                 route_definition = self.definition[ROUTE_DEFINITIONS_TAG][route_name]
-                for step_definition in route_definition[PARTS_TAG]:
-                    if PHASE_TAG in step_definition:
-                        phase_name = step_definition[PHASE_TAG]
-                    else:
-                        phase_name = "cruise"
+                for part_definition in list(
+                    route_definition[CLIMB_PARTS_TAG] + route_definition[DESCENT_PARTS_TAG]
+                ):
+                    phase_name = part_definition[PHASE_TAG]
                     output_definition.update(self._add_vars(mission_name, route_name, phase_name))
+                output_definition.update(self._add_vars(mission_name, route_name, "cruise"))
 
         return output_definition
 

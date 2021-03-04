@@ -69,7 +69,7 @@ def test_schema():
                                 "polar",
                                 OrderedDict([("CL", [0.0, 0.5, 1.0]), ("CD", [0.0, 0.03, 0.12])]),
                             ),
-                            ("thrust_rate", "data:propulsion:climb:thrust_rate"),
+                            ("thrust_rate", OrderedDict([("value", 1.0)])),
                             (
                                 "parts",
                                 [
@@ -278,8 +278,8 @@ def test_schema():
                                     ]
                                 ),
                             ),
-                            ("thrust_rate", "data:propulsion:climb:thrust_rate"),
-                            ("time_step", 5.0),
+                            ("thrust_rate", 0.93),
+                            ("time_step", OrderedDict([("value", 5.0), ("unit", "s")])),
                             (
                                 "parts",
                                 [
@@ -348,7 +348,7 @@ def test_schema():
                     "descent",
                     OrderedDict(
                         [
-                            ("engine_setting", "idle"),
+                            ("engine_setting", OrderedDict([("value", "idle")])),
                             (
                                 "polar",
                                 OrderedDict(
@@ -527,34 +527,31 @@ def test_schema():
                         [
                             ("range", "~"),
                             (
-                                "parts",
+                                "climb_parts",
                                 [
                                     OrderedDict([("phase", "initial_climb")]),
                                     OrderedDict([("phase", "climb")]),
-                                    OrderedDict(
-                                        [
-                                            ("cruise_type", "optimal_cruise"),
-                                            ("engine_setting", "cruise"),
-                                            (
-                                                "polar",
-                                                OrderedDict(
-                                                    [
-                                                        (
-                                                            "CL",
-                                                            "data:aerodynamics:aircraft:cruise:CL",
-                                                        ),
-                                                        (
-                                                            "CD",
-                                                            "data:aerodynamics:aircraft:cruise:CD",
-                                                        ),
-                                                    ]
-                                                ),
-                                            ),
-                                        ]
-                                    ),
-                                    OrderedDict([("phase", "descent")]),
                                 ],
                             ),
+                            (
+                                "cruise_part",
+                                OrderedDict(
+                                    [
+                                        ("segment", "optimal_cruise"),
+                                        ("engine_setting", "cruise"),
+                                        (
+                                            "polar",
+                                            OrderedDict(
+                                                [
+                                                    ("CL", "data:aerodynamics:aircraft:cruise:CL"),
+                                                    ("CD", "data:aerodynamics:aircraft:cruise:CD"),
+                                                ]
+                                            ),
+                                        ),
+                                    ]
+                                ),
+                            ),
+                            ("descent_parts", [OrderedDict([("phase", "descent")])]),
                         ]
                     ),
                 ),
@@ -563,34 +560,26 @@ def test_schema():
                     OrderedDict(
                         [
                             ("range", "~"),
+                            ("climb_parts", [OrderedDict([("phase", "diversion_climb")])]),
                             (
-                                "parts",
-                                [
-                                    OrderedDict([("phase", "diversion_climb")]),
-                                    OrderedDict(
-                                        [
-                                            ("cruise_type", "cruise"),
-                                            ("engine_setting", "cruise"),
-                                            (
-                                                "polar",
-                                                OrderedDict(
-                                                    [
-                                                        (
-                                                            "CL",
-                                                            "data:aerodynamics:aircraft:cruise:CL",
-                                                        ),
-                                                        (
-                                                            "CD",
-                                                            "data:aerodynamics:aircraft:cruise:CD",
-                                                        ),
-                                                    ]
-                                                ),
+                                "cruise_part",
+                                OrderedDict(
+                                    [
+                                        ("segment", "cruise"),
+                                        ("engine_setting", "cruise"),
+                                        (
+                                            "polar",
+                                            OrderedDict(
+                                                [
+                                                    ("CL", "data:aerodynamics:aircraft:cruise:CL"),
+                                                    ("CD", "data:aerodynamics:aircraft:cruise:CD"),
+                                                ]
                                             ),
-                                        ]
-                                    ),
-                                    OrderedDict([("phase", "descent")]),
-                                ],
+                                        ),
+                                    ]
+                                ),
                             ),
+                            ("descent_parts", [OrderedDict([("phase", "descent")])]),
                         ]
                     ),
                 ),

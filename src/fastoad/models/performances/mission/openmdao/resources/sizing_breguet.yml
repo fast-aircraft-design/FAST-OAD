@@ -30,12 +30,14 @@ phases:
 routes:
   main_route:
     range: data:TLAR:range
-    parts:
+    climb_parts:
       - phase: climb
-      - cruise_type: breguet
-        engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
-        use_max_lift_drag_ratio: true
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+      use_max_lift_drag_ratio: true
+    descent_parts:
       - phase: descent
 
 missions:

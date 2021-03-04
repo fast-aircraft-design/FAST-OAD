@@ -32,10 +32,12 @@ from .schema import (
     PARTS_TAG,
     PHASE_TAG,
     SEGMENT_TAG,
-    CRUISE_TYPE_TAG,
     SegmentNames,
     MissionDefinition,
     RESERVE_TAG,
+    CLIMB_PARTS_TAG,
+    DESCENT_PARTS_TAG,
+    CRUISE_PART_TAG,
 )
 from ..base import FlightSequence
 from ..base import IFlightPart
@@ -248,18 +250,24 @@ class MissionBuilder:
         """Builds structure of a route from its definition."""
         route_structure = OrderedDict()
         route_structure.update(deepcopy(route_definition))
-        route_parts = []
-        for part_definition in route_definition[PARTS_TAG]:
-            if "phase" in part_definition:
-                phase_name = part_definition["phase"]
-                phase_structure = OrderedDict({"phase": phase_name})
-                phase_structure.update(deepcopy(self.definition[PHASE_DEFINITIONS_TAG][phase_name]))
-                route_parts.append(phase_structure)
-            else:
-                route_parts.append(part_definition)
 
-        route_structure[PARTS_TAG] = route_parts
+        route_structure[CLIMB_PARTS_TAG] = self._get_route_climb_or_descent_structure(
+            route_definition[CLIMB_PARTS_TAG]
+        )
+        route_structure[DESCENT_PARTS_TAG] = self._get_route_climb_or_descent_structure(
+            route_definition[DESCENT_PARTS_TAG]
+        )
+
         return route_structure
+
+    def _get_route_climb_or_descent_structure(self, definition):
+        parts = []
+        for part_definition in definition:
+            phase_name = part_definition["phase"]
+            phase_structure = OrderedDict({"phase": phase_name})
+            phase_structure.update(deepcopy(self.definition[PHASE_DEFINITIONS_TAG][phase_name]))
+            parts.append(phase_structure)
+        return parts
 
     def _identify_inputs(
         self, input_definition: Dict[str, str], struct: Union[OrderedDict, list], prefix: str = None
@@ -341,25 +349,23 @@ class MissionBuilder:
         """
         climb_phases = []
         descent_phases = []
-        climb = True
-        for step_structure in route_structure[PARTS_TAG]:
-            if PHASE_TAG in step_structure:
-                phase = self._build_phase(step_structure, inputs)
-                if climb:
-                    climb_phases.append(phase)
-                else:
-                    descent_phases.append(phase)
-                phase.name = list(step_structure.values())[0]
-            else:
-                # Schema ensures there is one and only one CRUISE_TYPE_TAG
-                cruise_phase = self._build_segment(
-                    step_structure,
-                    {"name": "cruise", "target": FlightPoint(ground_distance=0.0)},
-                    inputs,
-                    tag=CRUISE_TYPE_TAG,
-                )
-                cruise_phase.name = "cruise"
-                climb = False
+
+        for part_structure in route_structure[CLIMB_PARTS_TAG]:
+            phase = self._build_phase(part_structure, inputs)
+            climb_phases.append(phase)
+            phase.name = list(part_structure.values())[0]
+
+        cruise_phase = self._build_segment(
+            route_structure[CRUISE_PART_TAG],
+            {"name": "cruise", "target": FlightPoint(ground_distance=0.0)},
+            inputs,
+        )
+        cruise_phase.name = "cruise"
+
+        for part_structure in route_structure[DESCENT_PARTS_TAG]:
+            phase = self._build_phase(part_structure, inputs)
+            descent_phases.append(phase)
+            phase.name = list(part_structure.values())[0]
 
         if "range" in route_structure:
             flight_range = route_structure["range"]
@@ -386,8 +392,8 @@ class MissionBuilder:
         kwargs = {name: value for name, value in phase_structure.items() if name != PARTS_TAG}
         del kwargs[PHASE_TAG]
 
-        for step_structure in phase_structure[PARTS_TAG]:
-            segment = self._build_segment(step_structure, kwargs, inputs)
+        for part_structure in phase_structure[PARTS_TAG]:
+            segment = self._build_segment(part_structure, kwargs, inputs)
             phase.flight_sequence.append(segment)
 
         return phase
@@ -406,12 +412,12 @@ class MissionBuilder:
         :return: the FlightSegment instance
         """
         segment_class = SegmentNames.get_segment_class(segment_definition[tag])
-        step_kwargs = kwargs.copy()
-        step_kwargs.update(
+        part_kwargs = kwargs.copy()
+        part_kwargs.update(
             {name: value for name, value in segment_definition.items() if name != tag}
         )
-        step_kwargs.update(self._base_kwargs)
-        for key, value in step_kwargs.items():
+        part_kwargs.update(self._base_kwargs)
+        for key, value in part_kwargs.items():
             if key == "polar":
                 polar = {}
                 for coeff in ["CL", "CD"]:
@@ -423,14 +429,14 @@ class MissionBuilder:
                     self._replace_by_inputs(value, inputs)
                     value = FlightPoint(**value)
 
-            step_kwargs[key] = value
+            part_kwargs[key] = value
 
-        if "engine_setting" in step_kwargs:
-            step_kwargs["engine_setting"] = EngineSetting.convert(step_kwargs["engine_setting"])
+        if "engine_setting" in part_kwargs:
+            part_kwargs["engine_setting"] = EngineSetting.convert(part_kwargs["engine_setting"])
 
-        self._replace_by_inputs(step_kwargs, inputs)
+        self._replace_by_inputs(part_kwargs, inputs)
 
-        segment = segment_class(**step_kwargs)
+        segment = segment_class(**part_kwargs)
         return segment
 
     def _propagate_name(self, part: IFlightPart, new_name: str):
