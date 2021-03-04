@@ -77,8 +77,3 @@ jobs:
       - name: Notebook tests
         run: poetry run pytest --no-cov --nbval-lax -p no:python src
         shell: bash
-
-      - name: Benchmark tests
-        if: runner.os == 'Windows'
-        run: poetry run pytest --no-cov tests/benchmark_tests
-        shell: bash
