@@ -17,26 +17,19 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
     linear_solver = "om.DirectSolver()"
     # Although "model" is a mandatory name for the top level of the model, its
     # sub-components can be freely named by user
-    [model.wing_position_loop]
-        nonlinear_solver = "om.BroydenSolver(maxiter=20, iprint=0)"
-        linear_solver = "om.DirectSolver()"
-        [model.wing_position_loop.cg_tail_loops]
-            nonlinear_solver = "om.NonlinearBlockGS(maxiter=50, iprint=0)"
-            linear_solver = "om.DirectSolver()"
-            [model.wing_position_loop.cg_tail_loops.geometry]
-                # An OpenMDAO component is identified by its "id"
-                id = "fastoad.geometry.legacy"
-            [model.wing_position_loop.cg_tail_loops.weight]
-                id = "fastoad.weight.legacy"
-            [model.wing_position_loop.cg_tail_loops.mtow]
-                id = "fastoad.loop.mtow"
-            [model.wing_position_loop.cg_tail_loops.hq_tail_sizing]
-                id = "fastoad.handling_qualities.tail_sizing"
-
-        [model.wing_position_loop.hq_static_margin]
-            id = "fastoad.handling_qualities.static_margin"
-        [model.wing_position_loop.wing_position]
-            id = "fastoad.loop.wing_position"
+    [model.geometry]
+        # An OpenMDAO component is identified by its "id"
+        id = "fastoad.geometry.legacy"
+    [model.weight]
+        id = "fastoad.weight.legacy"
+    [model.mtow]
+        id = "fastoad.loop.mtow"
+    [model.hq_tail_sizing]
+        id = "fastoad.handling_qualities.tail_sizing"
+    [model.hq_static_margin]
+        id = "fastoad.handling_qualities.static_margin"
+    [model.wing_position]
+        id = "fastoad.loop.wing_position"
 
     [model.aerodynamics_highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
@@ -47,13 +40,14 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
     [model.aerodynamics_landing]
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false
+
     [model.performance]
         id = "fastoad.performances.breguet"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
-#    [model.performance]
-#        id = "fastoad.performances.sizing_mission"
-#        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
-#        out_file = "./flight_points.csv"
+    # [model.performance]
+    #     id = "fastoad.performances.sizing_mission"
+    #     propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
+    #     out_file = "./flight_points.csv"
     [model.wing_area]
         id = "fastoad.loop.wing_area"
 
