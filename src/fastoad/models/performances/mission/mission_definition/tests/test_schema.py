@@ -30,7 +30,7 @@ def test_schema():
                     OrderedDict(
                         [
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict([("route", "main")]),
                                     OrderedDict([("route", "diversion")]),
@@ -46,7 +46,7 @@ def test_schema():
                     OrderedDict(
                         [
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict([("phase", "taxi_out")]),
                                     OrderedDict([("route", "main")]),
@@ -71,7 +71,7 @@ def test_schema():
                             ),
                             ("thrust_rate", "data:propulsion:climb:thrust_rate"),
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -186,7 +186,7 @@ def test_schema():
                             ),
                             ("thrust_rate", "data:propulsion:climb:thrust_rate"),
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -281,7 +281,7 @@ def test_schema():
                             ("thrust_rate", "data:propulsion:climb:thrust_rate"),
                             ("time_step", 5.0),
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -360,7 +360,7 @@ def test_schema():
                             ),
                             ("thrust_rate", "data:propulsion:descent:thrust_rate"),
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -451,7 +451,7 @@ def test_schema():
                     OrderedDict(
                         [
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -484,7 +484,7 @@ def test_schema():
                     OrderedDict(
                         [
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -504,7 +504,7 @@ def test_schema():
                         [
                             ("thrust_rate", "~"),
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -527,7 +527,7 @@ def test_schema():
                         [
                             ("range", "~"),
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict([("phase", "initial_climb")]),
                                     OrderedDict([("phase", "climb")]),
@@ -564,7 +564,7 @@ def test_schema():
                         [
                             ("range", "~"),
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict([("phase", "diversion_climb")]),
                                     OrderedDict(

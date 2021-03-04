@@ -1,6 +1,6 @@
 phases:
   climb:
-    steps:
+    parts:
       - segment: transition
         target:
           altitude:
@@ -12,7 +12,7 @@ phases:
             unit: NM
         mass_ratio: 0.988
   descent:
-    steps:
+    parts:
       - segment: transition
         target:
           altitude: 0.
@@ -28,7 +28,7 @@ routes:
     range:
       value: 2000.
       unit: NM
-    steps:
+    parts:
       - phase: climb
       - cruise_type: breguet
         engine_setting: cruise
@@ -37,5 +37,5 @@ routes:
 
 missions:
   operational:
-    steps:
+    parts:
       - route: main_route

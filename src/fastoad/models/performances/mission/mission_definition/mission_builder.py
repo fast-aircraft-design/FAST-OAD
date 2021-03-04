@@ -29,7 +29,7 @@ from .schema import (
     PHASE_DEFINITIONS_TAG,
     ROUTE_DEFINITIONS_TAG,
     MISSION_DEFINITION_TAG,
-    STEPS_TAG,
+    PARTS_TAG,
     PHASE_TAG,
     SEGMENT_TAG,
     CRUISE_TYPE_TAG,
@@ -155,7 +155,7 @@ class MissionBuilder:
         if mission_name is None:
             mission_name = self.get_unique_mission_name()
 
-        last_part_spec = self.definition[MISSION_DEFINITION_TAG][mission_name][STEPS_TAG][-1]
+        last_part_spec = self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG][-1]
         if RESERVE_TAG in last_part_spec:
             ref_name = last_part_spec[RESERVE_TAG]["ref"]
             multiplier = last_part_spec[RESERVE_TAG]["multiplier"]
@@ -223,7 +223,7 @@ class MissionBuilder:
         mission_structure = OrderedDict()
         mission_structure.update(deepcopy(mission_definition))
         mission_parts = []
-        for part_definition in mission_definition[STEPS_TAG]:
+        for part_definition in mission_definition[PARTS_TAG]:
             if "route" in part_definition:
                 route_name = part_definition["route"]
                 route_structure = OrderedDict({"route": route_name})
@@ -241,7 +241,7 @@ class MissionBuilder:
             else:
                 mission_parts.append(part_definition)
 
-        mission_structure[STEPS_TAG] = mission_parts
+        mission_structure[PARTS_TAG] = mission_parts
         return mission_structure
 
     def _build_route_structure(self, route_definition) -> OrderedDict:
@@ -249,7 +249,7 @@ class MissionBuilder:
         route_structure = OrderedDict()
         route_structure.update(deepcopy(route_definition))
         route_parts = []
-        for part_definition in route_definition[STEPS_TAG]:
+        for part_definition in route_definition[PARTS_TAG]:
             if "phase" in part_definition:
                 phase_name = part_definition["phase"]
                 phase_structure = OrderedDict({"phase": phase_name})
@@ -258,7 +258,7 @@ class MissionBuilder:
             else:
                 route_parts.append(part_definition)
 
-        route_structure[STEPS_TAG] = route_parts
+        route_structure[PARTS_TAG] = route_parts
         return route_structure
 
     def _identify_inputs(
@@ -317,7 +317,7 @@ class MissionBuilder:
         mission = FlightSequence()
 
         mission.name = mission_structure["mission"]
-        for part_spec in mission_structure[STEPS_TAG]:
+        for part_spec in mission_structure[PARTS_TAG]:
             if "route" in part_spec:
                 part = self._build_route(part_spec, inputs)
             elif "phase" in part_spec:
@@ -342,7 +342,7 @@ class MissionBuilder:
         climb_phases = []
         descent_phases = []
         climb = True
-        for step_structure in route_structure[STEPS_TAG]:
+        for step_structure in route_structure[PARTS_TAG]:
             if PHASE_TAG in step_structure:
                 phase = self._build_phase(step_structure, inputs)
                 if climb:
@@ -383,10 +383,10 @@ class MissionBuilder:
         :return: the phase instance
         """
         phase = FlightSequence()
-        kwargs = {name: value for name, value in phase_structure.items() if name != STEPS_TAG}
+        kwargs = {name: value for name, value in phase_structure.items() if name != PARTS_TAG}
         del kwargs[PHASE_TAG]
 
-        for step_structure in phase_structure[STEPS_TAG]:
+        for step_structure in phase_structure[PARTS_TAG]:
             segment = self._build_segment(step_structure, kwargs, inputs)
             phase.flight_sequence.append(segment)
 

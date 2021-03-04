@@ -4,7 +4,7 @@ phases:
     polar: data:aerodynamics:aircraft:takeoff
     thrust_rate: 1.0
     time_step: 0.2
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -27,7 +27,7 @@ phases:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: 0.9
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -53,7 +53,7 @@ phases:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: 0.07
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           equivalent_airspeed:
@@ -83,7 +83,7 @@ routes:
     range:
       value: 2000.
       unit: NM
-    steps:
+    parts:
       - phase: initial_climb
       - phase: climb
       - cruise_type: cruise
@@ -93,10 +93,10 @@ routes:
 
 missions:
   unused:
-    steps:
+    parts:
       - route: main_route
   operational:
-    steps:
+    parts:
       - route: main_route
       - reserve:
           ref: main_route

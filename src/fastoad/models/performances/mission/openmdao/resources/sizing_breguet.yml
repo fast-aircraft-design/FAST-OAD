@@ -1,6 +1,6 @@
 phases:
   climb:
-    steps:
+    parts:
       - segment: transition
         target:
           altitude: data:mission:sizing:main_route:cruise:altitude
@@ -10,7 +10,7 @@ phases:
             unit: km
         mass_ratio: settings:mission:sizing:breguet:climb:mass_ratio
   descent:
-    steps:
+    parts:
       - segment: transition
         target:
           altitude: 0.
@@ -20,7 +20,7 @@ phases:
             unit: km
         mass_ratio: settings:mission:sizing:breguet:descent:mass_ratio
   reserve:
-    steps:
+    parts:
       - segment: transition
         target:
           altitude: 0.
@@ -30,7 +30,7 @@ phases:
 routes:
   main_route:
     range: data:TLAR:range
-    steps:
+    parts:
       - phase: climb
       - cruise_type: breguet
         engine_setting: cruise
@@ -40,6 +40,6 @@ routes:
 
 missions:
   sizing:
-    steps:
+    parts:
       - route: main_route
       - phase: reserve

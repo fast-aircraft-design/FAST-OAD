@@ -4,7 +4,7 @@ phases:
     polar: data:aerodynamics:aircraft:takeoff
     thrust_rate: 1.0
     time_step: 0.2
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -28,7 +28,7 @@ phases:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:mission:sizing:climb:thrust_rate
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -54,7 +54,7 @@ phases:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:mission:sizing:climb:thrust_rate
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -77,7 +77,7 @@ phases:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:mission:sizing:descent:thrust_rate
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           equivalent_airspeed:
@@ -102,13 +102,13 @@ phases:
             value: 1500.
             unit: ft
   holding:
-    steps:
+    parts:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
           time: data:mission:sizing:holding:duration
   taxi_in:
-    steps:
+    parts:
       - segment: taxi
         thrust_rate: data:mission:sizing:taxi_in:thrust_rate
         target:
@@ -117,7 +117,7 @@ phases:
 routes:
   main_route:
     range: data:TLAR:range
-    steps:
+    parts:
       - phase: initial_climb
       - phase: climb
       - cruise_type: cruise
@@ -129,7 +129,7 @@ routes:
       - phase: descent
   diversion:
     range: data:mission:sizing:diversion:distance
-    steps:
+    parts:
       - phase: diversion_climb
       - cruise_type: breguet
         engine_setting: cruise
@@ -138,7 +138,7 @@ routes:
 
 missions:
   sizing:
-    steps:
+    parts:
       - route: main_route
       - route: diversion
       - phase: holding

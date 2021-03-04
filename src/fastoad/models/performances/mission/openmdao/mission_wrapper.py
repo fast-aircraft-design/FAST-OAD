@@ -22,13 +22,12 @@ import pandas as pd
 from openmdao.vectors.vector import Vector
 
 from fastoad.base.flight_point import FlightPoint
-from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from ..base import FlightSequence
 from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.schema import (
     MISSION_DEFINITION_TAG,
-    STEPS_TAG,
+    PARTS_TAG,
     PHASE_TAG,
     ROUTE_TAG,
     ROUTE_DEFINITIONS_TAG,
@@ -148,7 +147,7 @@ class MissionWrapper(MissionBuilder):
 
         output_definition.update(self._add_vars(mission_name))
 
-        for step in self.definition[MISSION_DEFINITION_TAG][mission_name][STEPS_TAG]:
+        for step in self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG]:
             if PHASE_TAG in step:
                 phase_name = step[PHASE_TAG]
                 output_definition.update(self._add_vars(mission_name, phase_name=phase_name))
@@ -156,7 +155,7 @@ class MissionWrapper(MissionBuilder):
                 route_name = step[ROUTE_TAG]
                 output_definition.update(self._add_vars(mission_name, route_name))
                 route_definition = self.definition[ROUTE_DEFINITIONS_TAG][route_name]
-                for step_definition in route_definition[STEPS_TAG]:
+                for step_definition in route_definition[PARTS_TAG]:
                     if PHASE_TAG in step_definition:
                         phase_name = step_definition[PHASE_TAG]
                     else:

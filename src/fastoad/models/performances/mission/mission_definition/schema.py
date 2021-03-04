@@ -2,7 +2,7 @@
 Schema for mission definition files.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -53,7 +53,7 @@ ROUTE_TAG = "route"
 PHASE_TAG = "phase"
 RESERVE_TAG = "reserve"
 CRUISE_TYPE_TAG = "cruise_type"
-STEPS_TAG = "steps"
+PARTS_TAG = "parts"
 MISSION_DEFINITION_TAG = "missions"
 ROUTE_DEFINITIONS_TAG = "routes"
 PHASE_DEFINITIONS_TAG = "phases"
@@ -109,13 +109,13 @@ class MissionDefinition(dict):
 
         for phase_definition in content[PHASE_DEFINITIONS_TAG].values():
             cls._process_polar_definition(phase_definition)
-            for segment_definition in phase_definition[STEPS_TAG]:
+            for segment_definition in phase_definition[PARTS_TAG]:
                 cls._process_polar_definition(segment_definition)
 
         for route_definition in content[ROUTE_DEFINITIONS_TAG].values():
             # Routes are expected to contain some phases and ONE cruise phase
             cruise_step_count = 0
-            for step in route_definition[STEPS_TAG]:
+            for step in route_definition[PARTS_TAG]:
                 cls._process_polar_definition(step)
                 Ensure(step.keys()).contains_one_of([PHASE_TAG, CRUISE_TYPE_TAG])
 
@@ -129,7 +129,7 @@ class MissionDefinition(dict):
 
         for mission_definition in content[MISSION_DEFINITION_TAG].values():
             reserve_count = 0
-            for step in mission_definition[STEPS_TAG]:
+            for step in mission_definition[PARTS_TAG]:
                 step_type, value = tuple(*step.items())
                 if step_type == PHASE_TAG:
                     Ensure(value).is_in(content[PHASE_DEFINITIONS_TAG].keys())
@@ -198,7 +198,7 @@ class MissionDefinition(dict):
 
     @classmethod
     def _get_phase_mapping(cls) -> dict:
-        phase_map = {Optional(STEPS_TAG, default=None): Seq(Map(cls._get_segment_mapping()))}
+        phase_map = {Optional(PARTS_TAG, default=None): Seq(Map(cls._get_segment_mapping()))}
         phase_map.update(cls._get_base_step_mapping())
         return phase_map
 
@@ -212,7 +212,7 @@ class MissionDefinition(dict):
     def _get_route_mapping(cls) -> dict:
         return {
             Optional("range", default=None): cls._get_dimensioned_value_mapping(),
-            STEPS_TAG: Seq(Any()),
+            PARTS_TAG: Seq(Any()),
         }
 
     @classmethod
@@ -224,7 +224,7 @@ class MissionDefinition(dict):
     @classmethod
     def _get_mission_mapping(cls) -> dict:
         return {
-            STEPS_TAG: Seq(
+            PARTS_TAG: Seq(
                 Map(
                     {
                         Optional(ROUTE_TAG, default=None): Str(),
