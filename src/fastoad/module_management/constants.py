@@ -38,3 +38,4 @@ class ModelDomain(Enum):
     PROPULSION = "Propulsion"
     OTHER = "Other"
     UNSPECIFIED = "Unspecified"
+    AEROSTRUCTURE = "Aerostructure"

@@ -23,11 +23,11 @@ from fastoad.models.aerostructure.aerodynamic.external.AVL.avl import AVL
 from fastoad.models.options import OpenMdaoOptionDispatcherGroup as OmOptGrp
 
 
-class StaticSolver(OmOptGrp):
+class StaticSolver(om.Group):
     def initialize(self):
-        self.options.declare("components", types=list)
-        self.options.declare("components_sections", types=list)
-        self.options.declare("components_interp", types=list)
+        self.options.declare("components", types=list, allow_none=False)
+        self.options.declare("components_sections", types=list, allow_none=False)
+        self.options.declare("components_interp", types=list, allow_none=False)
 
     def setup(self):
         self.add_subsystem(
