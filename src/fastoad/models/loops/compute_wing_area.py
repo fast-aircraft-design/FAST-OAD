@@ -2,7 +2,7 @@
 Computation of wing area
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -53,7 +53,7 @@ class _ComputeWingArea(om.ExplicitComponent):
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
         mfw_mission = inputs["data:weight:aircraft:sizing_block_fuel"]
         wing_area_mission = (
-            (mfw_mission - 1570.0)
+            max(1000.0, mfw_mission - 1570.0)
             / 224
             / lambda_wing ** -0.4
             / (0.6 * root_thickness_ratio + 0.4 * tip_thickness_ratio)
