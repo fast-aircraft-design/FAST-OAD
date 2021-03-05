@@ -29,9 +29,9 @@ class AerodynamicTwistWing(om.ExplicitComponent):
 
     def setup(self):
         n_sects = self.options["number_of_sections"]
-        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan)
+        self.add_input("data:geometry:wing:kink:y", val=np.nan)
+        self.add_input("data:geometry:wing:tip:y", val=np.nan)
 
         self.add_input("data:geometry:wing:root:twist", val=np.nan, units="deg")
         self.add_input("data:geometry:wing:kink:twist", val=np.nan, units="deg")
