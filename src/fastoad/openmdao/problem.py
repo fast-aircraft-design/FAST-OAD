@@ -11,8 +11,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from copy import deepcopy
-
 import openmdao.api as om
 
 from fastoad.io import IVariableIOFormatter, VariableIO
@@ -23,7 +21,7 @@ INPUT_SYSTEM_NAME = "inputs"
 
 
 class FASTOADProblem(om.Problem):
-    """Vanilla OpenMDAO Problem except that it can read and write its variables from/to files.
+    """Vanilla OpenMDAO Problem except that it can write its variables to files.
 
     It also runs :class:`~fastoad.openmdao.validity_checker.ValidityDomainChecker`
     after each :meth:`run_model` or :meth:`run_driver`
@@ -91,37 +89,6 @@ class FASTOADProblem(om.Problem):
                 var.is_input = True
         writer = VariableIO(self.input_file_path)
         writer.write(variables)
-
-    def read_inputs(self):
-        """
-        Reads inputs from the configured input file.
-        """
-        if self.input_file_path:
-            # Reads input file
-            reader = VariableIO(self.input_file_path)
-            variables = reader.read()
-
-            ivc = variables.to_ivc()
-
-            # ivc will be added through add_subsystem, but we must use set_order() to
-            # put it first.
-            # So we need order of existing subsystem to provide the full order list to
-            # set_order() to get order of systems, we use system_iter() that can be used
-            # only after setup().
-            # But we will not be allowed to use add_subsystem() after setup().
-            # So we use setup() on a copy of current instance, and get order from this copy
-            tmp_prob = deepcopy(self)
-            tmp_prob.setup()
-            previous_order = [
-                system.name
-                for system in tmp_prob.model.system_iter(recurse=False)
-                if system.name != "_auto_ivc"
-                # OpenMDAO 3.2+ specific : _auto_ivc is an output of system_iter() but is not
-                # accepted as input of set_order()
-            ]
-
-            self.model.add_subsystem(INPUT_SYSTEM_NAME, ivc, promotes=["*"])
-            self.model.set_order([INPUT_SYSTEM_NAME] + previous_order)
 
     def write_outputs(self):
         """

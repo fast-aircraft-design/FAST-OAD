@@ -2,7 +2,7 @@
 Test module for Overall Aircraft Design process
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -29,7 +29,6 @@ from fastoad import api
 from fastoad.io import VariableIO
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
-from fastoad.openmdao.utils import get_problem_after_setup
 from tests import root_folder_path
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
@@ -49,13 +48,16 @@ def test_oad_process(cleanup):
     Test for the overall aircraft design process.
     """
 
-    problem = FASTOADProblemConfigurator(
-        pth.join(DATA_FOLDER_PATH, "oad_process.toml")
-    ).get_problem()
+    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "oad_process.toml"))
 
+    # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
-    get_problem_after_setup(problem).write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
-    problem.read_inputs()
+    proto_problem = configurator.get_problem()
+    proto_problem.setup()
+    proto_problem.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+
+    # Create problems with inputs
+    problem = configurator.get_problem(read_inputs=True)
     problem.setup()
     problem.run_model()
     problem.write_outputs()
@@ -123,6 +125,18 @@ def test_non_regression_mission(cleanup):
     )
 
 
+def _configure_xfoil_in_problem(problem, use_xfoil):
+    """Overwrite XFOIL usage setting of configuration file"""
+    # Next trick is needed for overloading option setting from TOML file
+    if use_xfoil and (system() == "Windows" or xfoil_path):
+        problem.model.aerodynamics_landing._OPTIONS["use_xfoil"] = True
+        if system() != "Windows":
+            problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = xfoil_path
+        # BTW we narrow computed alpha range for sake of CPU time
+        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 18.0
+        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_max"] = 22.0
+
+
 def run_non_regression_test(
     conf_file,
     legacy_result_file,
@@ -138,21 +152,18 @@ def run_non_regression_test(
     # Copy of configuration file and generation of problem instance ------------------
     api.generate_configuration_file(configuration_file_path)  # just ensure folders are created...
     shutil.copy(pth.join(DATA_FOLDER_PATH, conf_file), configuration_file_path)
-    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
+    configurator = FASTOADProblemConfigurator(configuration_file_path)
 
-    # Next trick is needed for overloading option setting from TOML file
-    if use_xfoil and (system() == "Windows" or xfoil_path):
-        problem.model.aerodynamics_landing._OPTIONS["use_xfoil"] = True
-        if system() != "Windows":
-            problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = xfoil_path
-        # BTW we narrow computed alpha range for sake of CPU time
-        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 18.0
-        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_max"] = 22.0
-
-    # Generation and reading of inputs ----------------------------------------
+    # Generation of inputs ----------------------------------------
     ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
-    get_problem_after_setup(problem).write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
-    problem.read_inputs()
+    proto_problem = configurator.get_problem()
+    _configure_xfoil_in_problem(proto_problem, use_xfoil)
+    proto_problem.setup()
+    proto_problem.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+
+    # Get problem with inputs -------------------------------------
+    problem = configurator.get_problem(read_inputs=True)
+    _configure_xfoil_in_problem(problem, use_xfoil)
     problem.setup()
 
     # Run model ---------------------------------------------------------------

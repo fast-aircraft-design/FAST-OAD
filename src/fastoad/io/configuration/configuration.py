@@ -21,8 +21,9 @@ from typing import Dict
 
 import openmdao.api as om
 import tomlkit
+from openmdao.core.indepvarcomp import IndepVarComp
 
-from fastoad.io import IVariableIOFormatter
+from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.utils.files import make_parent_dir
 from .exceptions import (
@@ -100,7 +101,14 @@ class FASTOADProblemConfigurator:
         if not self._conf_dict:
             raise RuntimeError("read configuration file first")
 
-        problem = FASTOADProblem(self._build_model())
+        if read_inputs:
+            reader = VariableIO(self.input_file_path)
+            variables = reader.read()
+            input_ivc = variables.to_ivc()
+        else:
+            input_ivc = None
+
+        problem = FASTOADProblem(self._build_model(input_ivc))
 
         problem.input_file_path = self.input_file_path
         problem.output_file_path = self.output_file_path
@@ -114,7 +122,6 @@ class FASTOADProblemConfigurator:
             self._add_objectives(problem.model)
 
         if read_inputs:
-            problem.read_inputs()
             self._add_design_vars(problem.model, auto_scaling)
 
         return problem
@@ -219,7 +226,7 @@ class FASTOADProblemConfigurator:
         subpart = {"optimization": subpart}
         self._conf_dict.update(subpart)
 
-    def _build_model(self) -> om.Group:
+    def _build_model(self, input_ivc: IndepVarComp = None) -> om.Group:
         """
         Builds the model as defined in the configuration file.
 
@@ -230,6 +237,9 @@ class FASTOADProblemConfigurator:
         """
 
         model = AutoUnitsDefaultGroup()
+        if input_ivc:
+            model.add_subsystem("fastoad_inputs", input_ivc, promotes=["*"])
+
         model_definition = self._conf_dict.get(TABLE_MODEL)
 
         try:
