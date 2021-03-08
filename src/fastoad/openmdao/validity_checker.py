@@ -1,6 +1,6 @@
 """For checking validity domain of OpenMDAO variables."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,6 @@ import inspect
 import logging
 import uuid
 from collections import namedtuple
-from copy import deepcopy
 from enum import IntEnum
 from typing import Dict, List
 from uuid import UUID
@@ -163,84 +162,38 @@ class ValidityDomainChecker:
         self.__class__._limit_definitions[self._uuid] = limit_definitions
 
     def __call__(self, om_class: type):
-
-        # update logger name if needed: if it was not given, module name of
+        # Update logger name if needed: if it was not given, module name of
         # decorated class is used.
         if not self._limit_definitions[self._uuid].logger_name:
             self._limit_definitions[self._uuid].logger_name = om_class.__module__
 
-        # "Ok kid, this is were it gets complicated"
-        # We need to do things when setup() is called. Inheritance or decorator
-        # pattern would do maybe, but it is safer to return the original (modified)
-        # input class (at least for interactions with iPOPO).
-        # Therefore, original setup() is renamed and another setup() method is
-        # added, that will call the original setup() and do what we need.
-
-        # original setup will be renamed with a name that will be unique
-        setup_new_name = "__setup_before_validity_domain_checker_%i" % int(self._uuid)
-
-        # Copy the original method "setup" to "__setup_before_option_decorator_<uuid>"
-        setattr(om_class, setup_new_name, om_class.setup)
-
-        # Set the new "setup" method
-        checker_id = self._uuid
-
-        def setup(self):
-            """Will replace the original setup method."""
-            # Ok kid, this is where it gets maybe too complicated...
-            # We need to get variables of the current OpenMDAO instance.
-            # This is done with VariableList.from_system() which we know does
-            # setup() on a copy of given instance (not much choice to be sure
-            # from_system() will work also for Group instances)
-            # But by doing this, it will call this setup() and be stuck in an
-            # infinite recursion.
-            # So we create a copy of current instance where we put back the
-            # original setup so we can safely use VariableList.from_system()
-            original_self = deepcopy(self)
-            setattr(original_self, "setup", getattr(original_self, setup_new_name))
-            variables = VariableList.from_system(original_self)
-
-            # Now update limit definition
-            limit_definitions = ValidityDomainChecker._limit_definitions[checker_id]
-            for var in variables:
-                if var.name in limit_definitions:
-                    # Get units for already defined limits
-                    limit_def = limit_definitions[var.name]
-                    if limit_def.units is None and var.units is not None:
-                        limit_def.units = var.units
-                elif "lower" in var.metadata or "upper" in var.metadata:
-                    # Get bounds if defined in add_output.
-                    lower = var.metadata.get("lower")
-                    # lower can be None if it is not found OR if it defined and set to None
-                    if lower is None:
-                        lower = -np.inf
-                    upper = var.metadata.get("upper")
-                    # upper can be None if it is not found OR if it defined and set to None
-                    if upper is None:
-                        upper = np.inf
-                    units = var.metadata.get("units")
-                    if lower > -np.inf or upper < np.inf:
-                        limit_definitions[var.name] = _LimitDefinition(lower, upper, units)
-
-            # Now run original setup that has been moved to setup_new_name
-            getattr(self, setup_new_name)()
-
-        om_class.setup = setup
-
+        # We add to the OpenMDAO class a reference to self._limit_definitions[self._uuid]
+        # to be able to update it with OpenMDAO declarations after problem setup.
+        # See _update_problem_limit_definitions()
+        om_class._fastoad_limit_definitions = self._limit_definitions[  # pylint: disable=protected-access # We create it
+            self._uuid
+        ]
         return om_class
 
     @classmethod
-    def check_problem_variables(cls, problem: om.Problem):
+    def check_problem_variables(cls, problem: om.Problem) -> List[CheckRecord]:
         """
-        Checks variable values in provided problem and logs warnings for each variable
-        that is out of registered limits.
+        Checks variable values in provided problem.
+
+        Logs warnings for each variable that is out of registered limits.
+
+        problem.setup() must have been run.
 
         :param problem:
-        :return:
+        :return: the list of checks
         """
+
+        cls._update_problem_limit_definitions(problem)
+
         variables = VariableList.from_problem(problem)
         records = cls.check_variables(variables)
         cls.log_records(records)
+        return records
 
     @classmethod
     def check_variables(cls, variables: VariableList) -> List[CheckRecord]:
@@ -248,7 +201,7 @@ class ValidityDomainChecker:
         Check values of provided variables against registered limits.
 
         :param variables:
-        :return: a list of CheckRecord instances
+        :return: the list of checks
         """
         records: List[CheckRecord] = []
 
@@ -304,6 +257,51 @@ class ValidityDomainChecker:
                     " " + record.limit_units if record.limit_units else "",
                     record.source_file,
                 )
+
+    @classmethod
+    def _update_problem_limit_definitions(cls, problem: om.Problem):
+        """
+        Updates limit definitions using variable declarations of provided OpenMDAO system.
+
+        problem.setup() must have been run.
+
+        :param problem:
+        """
+
+        variables = VariableList.from_problem(
+            problem, get_promoted_names=False, promoted_only=False
+        )
+        for var in variables:
+            system_path = var.name.split(".")
+            system = problem.model
+            for system_name in system_path[:-1]:
+                system = getattr(system, system_name)
+            var_name = system_path[-1]
+
+            if hasattr(system, "_fastoad_limit_definitions"):
+
+                limit_definitions = (
+                    system._fastoad_limit_definitions  # pylint: disable=protected-access # We added it
+                )
+
+                if var_name in limit_definitions:
+                    # Get units for already defined limits
+                    limit_def = limit_definitions[var_name]
+                    if limit_def.units is None and var.units is not None:
+                        limit_def.units = var.units
+                elif "lower" in var.metadata or "upper" in var.metadata:
+                    # Get bounds if defined in add_output.
+                    lower = var.metadata.get("lower")
+                    # lower can be None if it is not found OR if it defined and set to None
+                    if lower is None:
+                        lower = -np.inf
+                    upper = var.metadata.get("upper")
+                    # upper can be None if it is not found OR if it defined and set to None
+                    if upper is None:
+                        upper = np.inf
+                    units = var.metadata.get("units")
+                    if lower > -np.inf or upper < np.inf:
+                        limit_definitions[var_name] = _LimitDefinition(lower, upper, units)
 
     @staticmethod
     def _get_caller_filename():
