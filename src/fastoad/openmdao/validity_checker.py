@@ -16,6 +16,7 @@ import inspect
 import logging
 import uuid
 from collections import namedtuple
+from dataclasses import dataclass
 from enum import IntEnum
 from typing import Dict, List
 from uuid import UUID
@@ -52,34 +53,6 @@ class ValidityStatus(IntEnum):
     OK = 0
     TOO_LOW = -1
     TOO_HIGH = 1
-
-
-class _LimitDefinitions(dict):
-    """
-    Definition of validity check for one variable
-    """
-
-    def __init__(self, source_file, logger_name):
-        super().__init__()
-        # Where the limit definition has been set
-        self.source_file = source_file
-
-        # The chosen logger name
-        self.logger_name = logger_name
-
-
-class _LimitDefinition:
-    """
-    Definition of validity check for one variable
-    """
-
-    # namedtuple would not work, as we need the possibility to set values (especially
-    # units) after instantiation.
-    # TODO: If we drop Python3.6 support, use a dataclass
-    def __init__(self, lower, upper, units=None):
-        self.lower = lower
-        self.upper = upper
-        self.units = units
 
 
 class ValidityDomainChecker:
@@ -138,7 +111,7 @@ class ValidityDomainChecker:
     - Validity check currently only applies to scalar values
     """
 
-    _limit_definitions: Dict[UUID, _LimitDefinitions] = {}
+    _limit_definitions: Dict[UUID, "_LimitDefinitions"] = {}
 
     def __init__(self, limits: Dict[str, tuple] = None, logger_name: str = None):
         """
@@ -159,7 +132,7 @@ class ValidityDomainChecker:
             upper = bounds[1] if bounds[1] is not None else np.inf
             limit_definitions[var_name] = _LimitDefinition(lower, upper)
 
-        self.__class__._limit_definitions[self._uuid] = limit_definitions
+        self._limit_definitions[self._uuid] = limit_definitions
 
     def __call__(self, om_class: type):
         # Update logger name if needed: if it was not given, module name of
@@ -314,3 +287,27 @@ class ValidityDomainChecker:
             del frame
 
         return filename
+
+
+@dataclass
+class _LimitDefinitions(dict):
+    """
+    Definition of validity check for one variable.
+    """
+
+    source_file: str
+    logger_name: str
+
+
+@dataclass
+class _LimitDefinition:
+    """
+    Definition of one validity domain.
+
+    namedtuple would not do, as we need the possibility to set values (especially
+    units) after instantiation.
+    """
+
+    lower: float
+    upper: float
+    units: str = None
