@@ -4,8 +4,8 @@ title = "OAD process with performances as time step integration"
 module_folders = []
 
 # Input and output files
-input_file = "../workdir/replay_in.xml"
-output_file = "../workdir/replay_out.xml"
+input_file = "../../workdir/replay_in.xml"
+output_file = "../../workdir/replay_out.xml"
 
 # Definition of OpenMDAO model
 [model]
@@ -17,7 +17,7 @@ output_file = "../workdir/replay_out.xml"
     [model.performance]
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
-        out_file = "../workdir/replay.csv"
+        out_file = "../../workdir/replay.csv"
         mission_file_path = "./replay.yml"
         mission_name = "MTOW_mission"
         adjust_fuel = false

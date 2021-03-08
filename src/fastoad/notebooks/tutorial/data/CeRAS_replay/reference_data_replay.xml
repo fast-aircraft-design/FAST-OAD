@@ -23,7 +23,7 @@
             <cruise_mach is_input="True">
                 0.78<!--top-level requirement: cruise Mach number--></cruise_mach>
             <range units="NM" is_input="True">
-                2750.0<!--top-level requirement: design range--></range>
+                2500.0<!--top-level requirement: design range--></range>
         </TLAR>
         <geometry>
             <has_T_tail is_input="True">

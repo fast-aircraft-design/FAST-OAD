@@ -4,8 +4,8 @@ title = "OAD process with performances as time step integration"
 module_folders = []
 
 # Input and output files
-input_file = "../workdir/fuel_sizing_diversion_in.xml"
-output_file = "../workdir/fuel_sizing_diversion_out.xml"
+input_file = "../../workdir/fuel_sizing_diversion_in.xml"
+output_file = "../../workdir/fuel_sizing_diversion_out.xml"
 
 # Definition of OpenMDAO model
 [model]
@@ -17,7 +17,7 @@ output_file = "../workdir/fuel_sizing_diversion_out.xml"
     [model.performance]
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
-        out_file = "../workdir/fuel_sizing_diversion.csv"
+        out_file = "../../workdir/fuel_sizing_diversion.csv"
         mission_file_path = "./replay.yml"
         mission_name = "MTOW_mission_diversion"
         adjust_fuel = true
