@@ -920,7 +920,7 @@ python-versions = "*"
 
 [[package]]
 name = "plotly"
-version = "4.0.0"
+version = "4.5.0"
 description = "An open-source, interactive graphing library for Python"
 category = "main"
 optional = false
@@ -1618,7 +1618,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "fffa0d6b2b3c16b6f1632be2874468690422439d03def789fa2bbf715f3678b4"
+content-hash = "22d6dcc7c24a679e95b0044c8ca1c8be13f5c3f7c520da306045871a40229f76"
 
 [metadata.files]
 alabaster = [
@@ -2180,8 +2180,8 @@ pickleshare = [
     {file = "pickleshare-0.7.5.tar.gz", hash = "sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca"},
 ]
 plotly = [
-    {file = "plotly-4.0.0-py2.py3-none-any.whl", hash = "sha256:b4ae32398e5b862e6d65c8ae8579044df31fd989174f77e25ad91952f3aa5c78"},
-    {file = "plotly-4.0.0.tar.gz", hash = "sha256:bf4f7bac9d033818375d9985bb15c47c31bfa89419abdbd6b5f32fcaa5908047"},
+    {file = "plotly-4.5.0-py2.py3-none-any.whl", hash = "sha256:a19ed783bcf094e6207b3699ab261465bf3c7d299403678801de634bf17e2559"},
+    {file = "plotly-4.5.0.tar.gz", hash = "sha256:bb5271f648913cf330a0de4ede3084cda848f8ad8b080330a0678e1b21df97b0"},
 ]
 pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},
