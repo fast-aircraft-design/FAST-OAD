@@ -166,6 +166,7 @@ def get_forces_cards(component_name, forces, id_basis):
 
 def get_spc_cards(spc_id, dof, id_basis):
     strg = ["$ Clamping \n", "SPC1, " + str(spc_id) + ", " + str(dof) + ", " + str(id_basis) + "\n"]
+    strg += "PARAM, AUTOSPC, N \n"
     return strg
 
 
