@@ -282,7 +282,7 @@ class Variable(Hashable):
         return (
             isinstance(other, Variable)
             and self.name == other.name
-            and ((my_value == other_value) | (np.isnan(my_value) & np.isnan(other_value))).all()
+            and np.all(np.isclose(my_value, other_value, equal_nan=True))
             and my_metadata == other_metadata
         )
 
@@ -424,6 +424,23 @@ class VariableList(list):
         return df
 
     @classmethod
+    def from_dict(
+        cls, var_dict: Union[Mapping[str, dict], Iterable[Tuple[str, dict]]],
+    ) -> "VariableList":
+        """
+        Creates a VariableList instance from a dict-like object.
+
+        :param var_dict:
+        :return: a VariableList instance
+        """
+        variables = VariableList()
+
+        for var_name, metadata in dict(var_dict).items():
+            variables.append(Variable(var_name, **metadata))
+
+        return variables
+
+    @classmethod
     def from_ivc(cls, ivc: om.IndepVarComp) -> "VariableList":
         """
         Creates a VariableList instance from an OpenMDAO IndepVarComp instance
@@ -519,10 +536,14 @@ class VariableList(list):
 
     @classmethod
     def from_problem(
-        cls, problem: om.Problem, use_initial_values: bool = False, get_promoted_names=True,
+        cls,
+        problem: om.Problem,
+        use_initial_values: bool = False,
+        get_promoted_names: bool = True,
+        promoted_only: bool = True,
     ) -> "VariableList":
         """
-        Creates a VariableList instance containing inputs and outputs of a an OpenMDAO Problem.
+        Creates a VariableList instance containing inputs and outputs of an OpenMDAO Problem.
 
         .. warning::
 
@@ -531,100 +552,129 @@ class VariableList(list):
         The inputs (is_input=True) correspond to the variables of IndepVarComp
         components and all the unconnected variables.
 
-        If variables are promoted, the promoted name will be used. Otherwise (and if
-        promoted_only is False), the absolute name will be used.
-
         .. note::
 
             Variables from _auto_ivc are ignored.
 
         :param problem: OpenMDAO Problem instance to inspect
         :param use_initial_values: if True, returned instance will contain values before computation
-        :param get_promoted_names: if True, only promoted variable names will be returned
+        :param get_promoted_names: if True, promoted names will be returned instead of absolute ones
+                                   (if no promotion, absolute name will be returned)
+        :param promoted_only: if True, only promoted variable names will be returned
         :return: VariableList instance
         """
-        variables = VariableList()
 
-        model = problem.model
-
-        # Determining global inputs
-
-        # from unconnected inputs
-        mandatory_unconnected, optional_unconnected = get_unconnected_input_names(
-            problem, promoted_names=True
+        # Get inputs and outputs
+        metadata_keys = (
+            "value",
+            "units",
+            "shape",
+            "size",
+            "desc",
+            "ref",
+            "ref0",
+            "lower",
+            "upper",
+            "tags",
         )
-        unconnected_inputs = mandatory_unconnected + optional_unconnected
+        inputs = problem.model.get_io_metadata("input", metadata_keys=metadata_keys)
+        outputs = problem.model.get_io_metadata(
+            "output", metadata_keys=metadata_keys, excludes="_auto_ivc.*"
+        )
+        indep_outputs = problem.model.get_io_metadata(
+            "output", metadata_keys=metadata_keys, tags="indep_var", excludes="_auto_ivc.*"
+        )
 
-        # from ivc outputs
-        ivc_inputs = []
-        for subsystem in model.system_iter():
-            if isinstance(subsystem, om.IndepVarComp):
-                if subsystem.name != "_auto_ivc":  # Exclude vars from _auto_ivc
-                    input_variables = cls.from_ivc(subsystem)
-                    for var in input_variables:
-                        ivc_inputs.append(var.name)
+        # Move outputs from IndepVarComps into inputs
+        for abs_name, metadata in indep_outputs.items():
+            del outputs[abs_name]
+            inputs[abs_name] = metadata
 
-        global_inputs = unconnected_inputs + ivc_inputs
+        # Remove non-promoted variables if needed
+        if promoted_only:
+            inputs = {
+                name: metadata
+                for name, metadata in inputs.items()
+                if "." not in metadata["prom_name"]
+            }
+            outputs = {
+                name: metadata
+                for name, metadata in outputs.items()
+                if "." not in metadata["prom_name"]
+            }
 
-        for abs_name, metadata in model.get_io_metadata(
-            metadata_keys=["value", "units", "upper", "lower"], return_rel_names=False
-        ).items():
+        # Add "is_input" field
+        for metadata in inputs.values():
+            metadata["is_input"] = True
+        for metadata in outputs.values():
+            metadata["is_input"] = False
 
-            # Exclude vars from _auto_ivc
-            if abs_name.startswith("_auto_ivc."):
-                continue
+        # Manage variable promotion
+        if not get_promoted_names:
+            final_inputs = inputs
+            final_outputs = outputs
+        else:
+            promoted_outputs = {}
+            for metadata in outputs.values():
+                prom_name = metadata["prom_name"]
+                # In case we get promoted names, several variables can match the same
+                # promoted name, with possibly different declaration for default values.
+                # We retain the first non-NaN value with defined units. If no units is
+                # ever defined, the first non-NaN value is kept.
+                # A non-NaN value with no units will be retained against a NaN value with
+                # defined units.
 
-            prom_name = metadata["prom_name"]
+                if prom_name in promoted_outputs:
+                    # prom_name has already been encountered.
+                    # Note: the succession of "if" is to help understanding, hopefully :)
 
-            if not (get_promoted_names and prom_name == abs_name):
-                if get_promoted_names and prom_name in variables.names():
-                    # In case we get promoted names, several variables can match the same
-                    # promoted name, with possibly different declaration for default values.
-                    # We retain the first non-NaN value with defined units. If no units is
-                    # ever defined, the first non-NaN value is kept.
-                    # A non-NaN value with no units will be retained against a NaN value with
-                    # defined units.
-
-                    if np.all(np.isnan(variables[prom_name].value)) and metadata["units"] is None:
-                        # Current variable can add no data.
-                        continue
+                    if not np.all(np.isnan(promoted_outputs[prom_name]["value"])):
+                        if promoted_outputs[prom_name]["units"] is not None:
+                            # We already have a non-NaN value with defined units for current
+                            # promoted name. No need for using the current variable.
+                            continue
+                        if np.all(np.isnan(metadata["value"])):
+                            # We already have a non-NaN value and current variable has a NaN value,
+                            # so it can only add information about units. We keep the non-NaN value
+                            continue
 
                     if (
-                        not np.all(np.isnan(variables[prom_name].value))
-                        and variables[prom_name].units is not None
+                        np.all(np.isnan(promoted_outputs[prom_name]["value"]))
+                        and metadata["units"] is None
                     ):
-                        # We already have a non-NaN value with defined units for current promoted
-                        # name. No need for using the current variable.
+                        # We already have a non-NaN value and current variable provides no unit.
+                        # No need for using the current variable.
                         continue
 
-                    if not np.all(np.isnan(variables[prom_name].value)) and np.all(
-                        np.isnan(metadata["value"])
-                    ):
-                        # We already have a non-NaN value and current variable has a NaN value and
-                        # can only add information about units. We keep the non-NaN value
-                        continue
+                promoted_outputs[prom_name] = metadata
 
-                metadata = metadata.copy()  # a copy is needed because we will modify it
+            # Remove from inputs the variables that are outputs of some other component
+            promoted_inputs = {
+                metadata["prom_name"]: dict(metadata, is_input=True)
+                for metadata in inputs.values()
+                if metadata["prom_name"] not in promoted_outputs
+            }
 
-                # Setting type (IN or OUT)
-                if prom_name in global_inputs:
-                    metadata.update({"is_input": True})
-                else:
-                    metadata.update({"is_input": False})
+            final_inputs = promoted_inputs
+            final_outputs = promoted_outputs
 
-                variable = Variable(name=prom_name, **metadata)
-                if not use_initial_values:
-                    try:
-                        # Maybe useless, but we force units to ensure it is consistent
-                        variable.value = problem.get_val(prom_name, units=variable.units)
-                    except RuntimeError:
-                        # In case problem is incompletely set, problem.get_val() will fail.
-                        # In such case, falling back to the method for initial values
-                        # should be enough.
-                        pass
-                variables.append(variable)
+        # Conversion to VariableList instances
+        input_vars = VariableList.from_dict(final_inputs)
+        output_vars = VariableList.from_dict(final_outputs)
 
-        return variables
+        # Use computed value instead of initial ones, if asked for
+        for variable in input_vars + output_vars:
+            if not use_initial_values:
+                try:
+                    # Maybe useless, but we force units to ensure it is consistent
+                    variable.value = problem.get_val(variable.name, units=variable.units)
+                except RuntimeError:
+                    # In case problem is incompletely set, problem.get_val() will fail.
+                    # In such case, falling back to the method for initial values
+                    # should be enough.
+                    pass
+
+        return input_vars + output_vars
 
     @classmethod
     def from_unconnected_inputs(
@@ -691,7 +741,7 @@ class VariableList(list):
         if isinstance(key, str):
             if isinstance(value, dict):
                 if key in self.names():
-                    self[key].metadata = value
+                    self[key].metadata = deepcopy(value)
                 else:
                     self.append(Variable(key, **value))
             else:

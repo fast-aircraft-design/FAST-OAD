@@ -258,6 +258,25 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
         Variable(name="functions.g2", value=np.array([1.0]), units=None, is_input=False),
         Variable(name="functions.f", value=np.array([1.0]), units=None, is_input=False),
     ]
+    # Even without computation, not using initial value will unify values of connected variables.
+    expected_vars_non_promoted_computed = [
+        Variable(name="indeps.x", value=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.x", value=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.y1", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="disc1.y2", value=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc2.y1", value=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.y2", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.x", value=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="functions.y1", value=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.y2", value=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.g1", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.g2", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.f", value=np.array([1.0]), units=None, is_input=False),
+    ]
 
     vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=True)
     _compare_variable_lists(vars, expected_vars_promoted)
@@ -269,7 +288,7 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
     _compare_variable_lists(vars, expected_vars_promoted)
 
     vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=False)
-    _compare_variable_lists(vars, expected_vars_non_promoted)
+    _compare_variable_lists(vars, expected_vars_non_promoted_computed)
 
 
 def test_get_variables_from_problem_sellar_with_promotion_with_computation():
@@ -395,7 +414,8 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
         Variable(name="functions.f", value=np.array([1.0]), units=None, is_input=False),
     ]
 
-    expected_vars_computed = [  # Here links are done, even without computations
+    # Even without computation, not using initial value will unify values of connected variables.
+    expected_vars_computed = [
         Variable(name="indeps.x", value=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", value=np.array([1.0]), units=None, is_input=True),
@@ -405,7 +425,7 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
         Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc2.y1", value=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", value=np.array([2]), units=None, is_input=True),
+        Variable(name="functions.x", value=np.array([1.0]), units=None, is_input=True),
         Variable(name="functions.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="functions.y1", value=np.array([1.0]), units=None, is_input=True),
         Variable(name="functions.y2", value=np.array([1.0]), units=None, is_input=True),
@@ -414,16 +434,29 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
         Variable(name="functions.f", value=np.array([1.0]), units=None, is_input=False),
     ]
 
-    vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=True)
+    vars = VariableList.from_problem(
+        problem, use_initial_values=True, get_promoted_names=True, promoted_only=True
+    )
+    _compare_variable_lists(vars, [])
+
+    vars = VariableList.from_problem(
+        problem, use_initial_values=True, get_promoted_names=True, promoted_only=False
+    )
     _compare_variable_lists(vars, expected_vars_initial)
 
-    vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=False)
+    vars = VariableList.from_problem(
+        problem, use_initial_values=True, get_promoted_names=False, promoted_only=False
+    )
     _compare_variable_lists(vars, expected_vars_initial)
 
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
+    vars = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True, promoted_only=False
+    )
     _compare_variable_lists(vars, expected_vars_computed)
 
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=False)
+    vars = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=False, promoted_only=False
+    )
     _compare_variable_lists(vars, expected_vars_computed)
 
 
@@ -487,16 +520,29 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
     ]
     problem.run_model()
 
-    vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=True)
+    vars = VariableList.from_problem(
+        problem, use_initial_values=True, get_promoted_names=True, promoted_only=True
+    )
+    _compare_variable_lists(vars, [])
+
+    vars = VariableList.from_problem(
+        problem, use_initial_values=True, get_promoted_names=True, promoted_only=False
+    )
     _compare_variable_lists(vars, expected_vars_initial)
 
-    vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=False)
+    vars = VariableList.from_problem(
+        problem, use_initial_values=True, get_promoted_names=False, promoted_only=False
+    )
     _compare_variable_lists(vars, expected_vars_initial)
 
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
+    vars = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True, promoted_only=False
+    )
     _compare_variable_lists(vars, expected_vars_computed)
 
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=False)
+    vars = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=False, promoted_only=False
+    )
     _compare_variable_lists(vars, expected_vars_computed)
 
 

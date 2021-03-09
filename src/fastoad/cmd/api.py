@@ -2,7 +2,7 @@
 API
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -136,7 +136,7 @@ def list_variables(
     problem.setup()
 
     # Extracting inputs and outputs
-    variables = VariableList.from_problem(problem, get_promoted_names=False)
+    variables = VariableList.from_problem(problem)
     variables.sort(key=lambda var: var.name)
     input_variables = VariableList([var for var in variables if var.is_input])
     output_variables = VariableList([var for var in variables if not var.is_input])
