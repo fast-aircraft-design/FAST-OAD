@@ -19,6 +19,7 @@ import shutil
 
 import openmdao.api as om
 import numpy as np
+from scipy.constants import degree
 
 from fastoad.models.aerostructure.structure.external.mystran.utils.read_f06 import readf06
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import (
@@ -93,6 +94,9 @@ class MystranStatic(om.ExternalCodeComp):
                 "data:aerostructural:structure:" + comp + ":material:density", val=2810.0
             )
 
+            self.add_output(
+                "data:aerostructural:aerodynamic:" + comp + ":d_twist", val=0.0, shape=(n_nodes)
+            )
             self.add_output(
                 "data:aerostructural:structure:" + comp + ":displacements",
                 val=0.0,
@@ -180,6 +184,10 @@ class MystranStatic(om.ExternalCodeComp):
             outputs[
                 "data:aerostructural:structure:" + comp + ":displacements"
             ] = split_displacements[i]
+            if comp == "wing":
+                outputs["data:aerostructural:aerodynamic:wing:d_twist"] = (
+                    split_displacements[i][:, 4] / degree
+                )
             outputs["data:aerostructural:structure:" + comp + ":stresses"] = split_stresses[i]
 
         # Getting output files if needed ----------------------------------------------------------

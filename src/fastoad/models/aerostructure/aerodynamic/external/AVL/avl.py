@@ -97,6 +97,9 @@ class AVL(ExternalCodeComp):
                 self.add_input(
                     "data:aerostructural:aerodynamic:wing:twist", val=np.nan, shape_by_conn=True
                 )
+                self.add_input(
+                    "data:aerostructural:aerodynamic:wing:d_twist", val=np.nan, shape_by_conn=True
+                )
 
             size = n_sect  # Default number of section for non symmetrical components
             if comp in ("wing", "horizontal_tail", "strut"):
@@ -265,6 +268,7 @@ class AVL(ExternalCodeComp):
                     + inputs["data:aerostructural:aerodynamic:" + comp + ":displacements"]
                 )
                 geom_gen.chords = inputs["data:aerostructural:aerodynamic:" + comp + ":chords"]
+                geom_gen.d_twist = inputs["data:aerostructural:aerodynamic:" + comp + ":d_twist"]
                 if comp == "wing":
                     geom_gen.twist = inputs["data:aerostructural:aerodynamic:wing:twist"]
                     geom_gen.thickness_ratios = inputs[

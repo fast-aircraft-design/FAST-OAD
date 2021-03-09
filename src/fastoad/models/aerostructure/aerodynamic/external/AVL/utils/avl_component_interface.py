@@ -29,6 +29,7 @@ class IAvlComponentGenerator(ABC):
         self.nodes = np.zeros(3)
         self.chords = np.zeros(1)
         self.k_c = 1.0
+        self.d_twist = np.zeros(1)
 
     @abstractmethod
     def get_component_geom(self):
@@ -79,7 +80,7 @@ class AvlWingGeom(IAvlComponentGenerator):
             comp_lines += [
                 "SURFACE \n",
                 surf_name + "\n",
-                str(c_space) + " 1.0 " + "1 0.0 \n",
+                str(c_space) + " 1.0 " + "5 -1.1 \n",
                 "COMPONENT\n",
                 str(self.index) + "\n",
             ]
@@ -94,7 +95,7 @@ class AvlWingGeom(IAvlComponentGenerator):
                     + " "
                     + str(self.chords[idx + i])
                     + " "
-                    + str(self.twist[idx + i])
+                    + str(self.twist[idx + i] + self.d_twist[idx + i])
                     + "\n",
                 ]
                 profile = get_profile(
