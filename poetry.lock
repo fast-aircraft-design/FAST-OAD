@@ -619,20 +619,19 @@ python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
 
 [[package]]
 name = "matplotlib"
-version = "2.2.5"
+version = "3.3.4"
 description = "Python plotting package"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 
 [package.dependencies]
 cycler = ">=0.10"
 kiwisolver = ">=1.0.1"
-numpy = ">=1.7.1"
-pyparsing = ">=2.0.1,<2.0.4 || >2.0.4,<2.1.2 || >2.1.2,<2.1.6 || >2.1.6"
+numpy = ">=1.15"
+pillow = ">=6.2.0"
+pyparsing = ">=2.0.3,<2.0.4 || >2.0.4,<2.1.2 || >2.1.2,<2.1.6 || >2.1.6"
 python-dateutil = ">=2.1"
-pytz = "*"
-six = ">=1.10"
 
 [[package]]
 name = "mccabe"
@@ -926,6 +925,14 @@ description = "Tiny 'shelve'-like database with concurrency support"
 category = "main"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "pillow"
+version = "8.1.2"
+description = "Python Imaging Library (Fork)"
+category = "main"
+optional = false
+python-versions = ">=3.6"
 
 [[package]]
 name = "plotly"
@@ -1624,7 +1631,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "0094befbba023ddd0173807048c4eb88741c8c42b86353da3c46b2f04ad6b0a1"
+content-hash = "ee1018daa8c21a1b3225c9a5cfd64ed7ebd9a24b5c6148bf8480a4b3afb39e46"
 
 [metadata.files]
 alabaster = [
@@ -2057,31 +2064,31 @@ markupsafe = [
     {file = "MarkupSafe-1.1.1.tar.gz", hash = "sha256:29872e92839765e546828bb7754a68c418d927cd064fd4708fab9fe9c8bb116b"},
 ]
 matplotlib = [
-    {file = "matplotlib-2.2.5-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:d541616636cff89a7d6427ce583a5b48a93e4fbb9c7ce3e0f5f47b2436d376bb"},
-    {file = "matplotlib-2.2.5-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:7aac72d80be3d0d0378dd8136fe6e5379533f840ea1b68de63ba8eaf2adb1dee"},
-    {file = "matplotlib-2.2.5-cp27-cp27m-win32.whl", hash = "sha256:9b60582cbfd2cc314e2cd84fb86c9c879f8887458cf27940720ef8aa5a73b3b4"},
-    {file = "matplotlib-2.2.5-cp27-cp27m-win_amd64.whl", hash = "sha256:845a4c2db94419f0642946a2577fc3f50e339824eff759c68c4bb988c9769955"},
-    {file = "matplotlib-2.2.5-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:57077b4023f1af0151b6b580bccfcff2e3ec1e0f689ef58e4d1e751cdfbf13f0"},
-    {file = "matplotlib-2.2.5-cp34-cp34m-manylinux1_x86_64.whl", hash = "sha256:f436a4a425b6b7150cffde9581dc4563ae3f4f10494191db57547c202d1c15b7"},
-    {file = "matplotlib-2.2.5-cp34-cp34m-win32.whl", hash = "sha256:aa545123f55da7c6566c0e0e66c52d938129865cec2f3058a1842ca62741e248"},
-    {file = "matplotlib-2.2.5-cp34-cp34m-win_amd64.whl", hash = "sha256:62c671fa6a426d59578354c9ba6ba109f91ed65901180c999191a217f8d6a35f"},
-    {file = "matplotlib-2.2.5-cp35-cp35m-macosx_10_6_intel.whl", hash = "sha256:8f0af3228314b46ee72009c604f40c7e07b5d52048e252abb205a5ff77cc8d6b"},
-    {file = "matplotlib-2.2.5-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:88ad35aae58d1800844e3d1c06bea2831092ff930dd7902f0d3976ba762894f8"},
-    {file = "matplotlib-2.2.5-cp35-cp35m-win32.whl", hash = "sha256:8e791377f2f76fdf23bb12f71bf8182f07d5d994ad9ab7b0f7038b0f79f85ccb"},
-    {file = "matplotlib-2.2.5-cp35-cp35m-win_amd64.whl", hash = "sha256:6bcd44556cdce178100180d0d04df68ab50eb267c60453f34f248c5559579a9e"},
-    {file = "matplotlib-2.2.5-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:2391e179bd91f7e9727f4d1a09803ce4dc973ed5c517b42430e9edf60bfdcc6a"},
-    {file = "matplotlib-2.2.5-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:5d46546f152a24ce06e20b0aff0b74648cae0ab0e8de1470a4d4b5a2a8aaf414"},
-    {file = "matplotlib-2.2.5-cp36-cp36m-win32.whl", hash = "sha256:4c65889d35736ce0f2f94e0dbac72c93f85cea613fd477c7970e7af5d1e71f11"},
-    {file = "matplotlib-2.2.5-cp36-cp36m-win_amd64.whl", hash = "sha256:9e43d73ac507545d49aea0cfa7b1f6a37eec74621bd9bdff8dbb6d16f560ced8"},
-    {file = "matplotlib-2.2.5-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:a3c1c62db6469cf8eb778c5c4c020d6a35424b9a4cb385db7486b77ae35be358"},
-    {file = "matplotlib-2.2.5-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:59b219991e5ebf858cd0d35cdd97c3db30b7fd003fe9321aac0355aa8ae665b1"},
-    {file = "matplotlib-2.2.5-cp37-cp37m-win32.whl", hash = "sha256:7f78529a92242b4adc1db9daf5b71362a35cd9a5cd8cb4db2b83349df2b0dbb8"},
-    {file = "matplotlib-2.2.5-cp37-cp37m-win_amd64.whl", hash = "sha256:240565f560ff35f1c8bb5449a51c420c926478e087db89237a47ec92a29b32d1"},
-    {file = "matplotlib-2.2.5-cp38-cp38-win32.whl", hash = "sha256:73f29adce52f98564e738537449e35ea64edd37c043773694a5ee1ac9424d85a"},
-    {file = "matplotlib-2.2.5-cp38-cp38-win_amd64.whl", hash = "sha256:2f8cb0f84419808b9915cf8bf31b6e1b7542c1e4805399035799a2419e085b91"},
-    {file = "matplotlib-2.2.5-pp273-pypy_73-win32.whl", hash = "sha256:b11160764f2d1757788ad209723cada52f72f7b80903a49e5b6f8c055f5e38bd"},
-    {file = "matplotlib-2.2.5-pp373-pypy36_pp73-win32.whl", hash = "sha256:900b4f00dbd37e8b7dfe5f7209f506384c69617ab109f417ea09a55baab1af7a"},
-    {file = "matplotlib-2.2.5.tar.gz", hash = "sha256:a3037a840cd9dfdc2df9fee8af8f76ca82bfab173c0f9468193ca7a89a2b60ea"},
+    {file = "matplotlib-3.3.4-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:672960dd114e342b7c610bf32fb99d14227f29919894388b41553217457ba7ef"},
+    {file = "matplotlib-3.3.4-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:7c155437ae4fd366e2700e2716564d1787700687443de46bcb895fe0f84b761d"},
+    {file = "matplotlib-3.3.4-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:a17f0a10604fac7627ec82820439e7db611722e80c408a726cd00d8c974c2fb3"},
+    {file = "matplotlib-3.3.4-cp36-cp36m-win32.whl", hash = "sha256:215e2a30a2090221a9481db58b770ce56b8ef46f13224ae33afe221b14b24dc1"},
+    {file = "matplotlib-3.3.4-cp36-cp36m-win_amd64.whl", hash = "sha256:348e6032f666ffd151b323342f9278b16b95d4a75dfacae84a11d2829a7816ae"},
+    {file = "matplotlib-3.3.4-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:94bdd1d55c20e764d8aea9d471d2ae7a7b2c84445e0fa463f02e20f9730783e1"},
+    {file = "matplotlib-3.3.4-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:a1acb72f095f1d58ecc2538ed1b8bca0b57df313b13db36ed34b8cdf1868e674"},
+    {file = "matplotlib-3.3.4-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:46b1a60a04e6d884f0250d5cc8dc7bd21a9a96c584a7acdaab44698a44710bab"},
+    {file = "matplotlib-3.3.4-cp37-cp37m-win32.whl", hash = "sha256:ed4a9e6dcacba56b17a0a9ac22ae2c72a35b7f0ef0693aa68574f0b2df607a89"},
+    {file = "matplotlib-3.3.4-cp37-cp37m-win_amd64.whl", hash = "sha256:c24c05f645aef776e8b8931cb81e0f1632d229b42b6d216e30836e2e145a2b40"},
+    {file = "matplotlib-3.3.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:7310e353a4a35477c7f032409966920197d7df3e757c7624fd842f3eeb307d3d"},
+    {file = "matplotlib-3.3.4-cp38-cp38-manylinux1_i686.whl", hash = "sha256:451cc89cb33d6652c509fc6b588dc51c41d7246afdcc29b8624e256b7663ed1f"},
+    {file = "matplotlib-3.3.4-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:3d2eb9c1cc254d0ffa90bc96fde4b6005d09c2228f99dfd493a4219c1af99644"},
+    {file = "matplotlib-3.3.4-cp38-cp38-win32.whl", hash = "sha256:e15fa23d844d54e7b3b7243afd53b7567ee71c721f592deb0727ee85e668f96a"},
+    {file = "matplotlib-3.3.4-cp38-cp38-win_amd64.whl", hash = "sha256:1de0bb6cbfe460725f0e97b88daa8643bcf9571c18ba90bb8e41432aaeca91d6"},
+    {file = "matplotlib-3.3.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:f44149a0ef5b4991aaef12a93b8e8d66d6412e762745fea1faa61d98524e0ba9"},
+    {file = "matplotlib-3.3.4-cp39-cp39-manylinux1_i686.whl", hash = "sha256:746a1df55749629e26af7f977ea426817ca9370ad1569436608dc48d1069b87c"},
+    {file = "matplotlib-3.3.4-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:5f571b92a536206f7958f7cb2d367ff6c9a1fa8229dc35020006e4cdd1ca0acd"},
+    {file = "matplotlib-3.3.4-cp39-cp39-win32.whl", hash = "sha256:9265ae0fb35e29f9b8cc86c2ab0a2e3dcddc4dd9de4b85bf26c0f63fe5c1c2ca"},
+    {file = "matplotlib-3.3.4-cp39-cp39-win_amd64.whl", hash = "sha256:9a79e5dd7bb797aa611048f5b70588b23c5be05b63eefd8a0d152ac77c4243db"},
+    {file = "matplotlib-3.3.4-pp36-pypy36_pp73-macosx_10_9_x86_64.whl", hash = "sha256:1e850163579a8936eede29fad41e202b25923a0a8d5ffd08ce50fc0a97dcdc93"},
+    {file = "matplotlib-3.3.4-pp36-pypy36_pp73-manylinux2010_x86_64.whl", hash = "sha256:d738acfdfb65da34c91acbdb56abed46803db39af259b7f194dc96920360dbe4"},
+    {file = "matplotlib-3.3.4-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:aa49571d8030ad0b9ac39708ee77bd2a22f87815e12bdee52ecaffece9313ed8"},
+    {file = "matplotlib-3.3.4-pp37-pypy37_pp73-manylinux2010_x86_64.whl", hash = "sha256:cf3a7e54eff792f0815dbbe9b85df2f13d739289c93d346925554f71d484be78"},
+    {file = "matplotlib-3.3.4.tar.gz", hash = "sha256:3e477db76c22929e4c6876c44f88d790aacdf3c3f8f3a90cb1975c0bf37825b0"},
 ]
 mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
@@ -2207,6 +2214,41 @@ pexpect = [
 pickleshare = [
     {file = "pickleshare-0.7.5-py2.py3-none-any.whl", hash = "sha256:9649af414d74d4df115d5d718f82acb59c9d418196b7b4290ed47a12ce62df56"},
     {file = "pickleshare-0.7.5.tar.gz", hash = "sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca"},
+]
+pillow = [
+    {file = "Pillow-8.1.2-cp36-cp36m-macosx_10_10_x86_64.whl", hash = "sha256:5cf03b9534aca63b192856aa601c68d0764810857786ea5da652581f3a44c2b0"},
+    {file = "Pillow-8.1.2-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:f91b50ad88048d795c0ad004abbe1390aa1882073b1dca10bfd55d0b8cf18ec5"},
+    {file = "Pillow-8.1.2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:5762ebb4436f46b566fc6351d67a9b5386b5e5de4e58fdaa18a1c83e0e20f1a8"},
+    {file = "Pillow-8.1.2-cp36-cp36m-manylinux2014_aarch64.whl", hash = "sha256:e2cd8ac157c1e5ae88b6dd790648ee5d2777e76f1e5c7d184eaddb2938594f34"},
+    {file = "Pillow-8.1.2-cp36-cp36m-win32.whl", hash = "sha256:72027ebf682abc9bafd93b43edc44279f641e8996fb2945104471419113cfc71"},
+    {file = "Pillow-8.1.2-cp36-cp36m-win_amd64.whl", hash = "sha256:d1d6bca39bb6dd94fba23cdb3eeaea5e30c7717c5343004d900e2a63b132c341"},
+    {file = "Pillow-8.1.2-cp37-cp37m-macosx_10_10_x86_64.whl", hash = "sha256:90882c6f084ef68b71bba190209a734bf90abb82ab5e8f64444c71d5974008c6"},
+    {file = "Pillow-8.1.2-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:89e4c757a91b8c55d97c91fa09c69b3677c227b942fa749e9a66eef602f59c28"},
+    {file = "Pillow-8.1.2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:8c4e32218c764bc27fe49b7328195579581aa419920edcc321c4cb877c65258d"},
+    {file = "Pillow-8.1.2-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:a01da2c266d9868c4f91a9c6faf47a251f23b9a862dce81d2ff583135206f5be"},
+    {file = "Pillow-8.1.2-cp37-cp37m-win32.whl", hash = "sha256:30d33a1a6400132e6f521640dd3f64578ac9bfb79a619416d7e8802b4ce1dd55"},
+    {file = "Pillow-8.1.2-cp37-cp37m-win_amd64.whl", hash = "sha256:71b01ee69e7df527439d7752a2ce8fb89e19a32df484a308eca3e81f673d3a03"},
+    {file = "Pillow-8.1.2-cp38-cp38-macosx_10_10_x86_64.whl", hash = "sha256:5a2d957eb4aba9d48170b8fe6538ec1fbc2119ffe6373782c03d8acad3323f2e"},
+    {file = "Pillow-8.1.2-cp38-cp38-manylinux1_i686.whl", hash = "sha256:87f42c976f91ca2fc21a3293e25bd3cd895918597db1b95b93cbd949f7d019ce"},
+    {file = "Pillow-8.1.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:15306d71a1e96d7e271fd2a0737038b5a92ca2978d2e38b6ced7966583e3d5af"},
+    {file = "Pillow-8.1.2-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:71f31ee4df3d5e0b366dd362007740106d3210fb6a56ec4b581a5324ba254f06"},
+    {file = "Pillow-8.1.2-cp38-cp38-win32.whl", hash = "sha256:98afcac3205d31ab6a10c5006b0cf040d0026a68ec051edd3517b776c1d78b09"},
+    {file = "Pillow-8.1.2-cp38-cp38-win_amd64.whl", hash = "sha256:328240f7dddf77783e72d5ed79899a6b48bc6681f8d1f6001f55933cb4905060"},
+    {file = "Pillow-8.1.2-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:bead24c0ae3f1f6afcb915a057943ccf65fc755d11a1410a909c1fefb6c06ad1"},
+    {file = "Pillow-8.1.2-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:81b3716cc9744ffdf76b39afb6247eae754186838cedad0b0ac63b2571253fe6"},
+    {file = "Pillow-8.1.2-cp39-cp39-manylinux1_i686.whl", hash = "sha256:63cd413ac52ee3f67057223d363f4f82ce966e64906aea046daf46695e3c8238"},
+    {file = "Pillow-8.1.2-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:8565355a29655b28fdc2c666fd9a3890fe5edc6639d128814fafecfae2d70910"},
+    {file = "Pillow-8.1.2-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:1940fc4d361f9cc7e558d6f56ff38d7351b53052fd7911f4b60cd7bc091ea3b1"},
+    {file = "Pillow-8.1.2-cp39-cp39-win32.whl", hash = "sha256:46c2bcf8e1e75d154e78417b3e3c64e96def738c2a25435e74909e127a8cba5e"},
+    {file = "Pillow-8.1.2-cp39-cp39-win_amd64.whl", hash = "sha256:aeab4cd016e11e7aa5cfc49dcff8e51561fa64818a0be86efa82c7038e9369d0"},
+    {file = "Pillow-8.1.2-pp36-pypy36_pp73-macosx_10_10_x86_64.whl", hash = "sha256:74cd9aa648ed6dd25e572453eb09b08817a1e3d9f8d1bd4d8403d99e42ea790b"},
+    {file = "Pillow-8.1.2-pp36-pypy36_pp73-manylinux2010_i686.whl", hash = "sha256:e5739ae63636a52b706a0facec77b2b58e485637e1638202556156e424a02dc2"},
+    {file = "Pillow-8.1.2-pp36-pypy36_pp73-manylinux2010_x86_64.whl", hash = "sha256:903293320efe2466c1ab3509a33d6b866dc850cfd0c5d9cc92632014cec185fb"},
+    {file = "Pillow-8.1.2-pp37-pypy37_pp73-macosx_10_10_x86_64.whl", hash = "sha256:5daba2b40782c1c5157a788ec4454067c6616f5a0c1b70e26ac326a880c2d328"},
+    {file = "Pillow-8.1.2-pp37-pypy37_pp73-manylinux2010_i686.whl", hash = "sha256:1f93f2fe211f1ef75e6f589327f4d4f8545d5c8e826231b042b483d8383e8a7c"},
+    {file = "Pillow-8.1.2-pp37-pypy37_pp73-manylinux2010_x86_64.whl", hash = "sha256:6efac40344d8f668b6c4533ae02a48d52fd852ef0654cc6f19f6ac146399c733"},
+    {file = "Pillow-8.1.2-pp37-pypy37_pp73-win32.whl", hash = "sha256:f36c3ff63d6fc509ce599a2f5b0d0732189eed653420e7294c039d342c6e204a"},
+    {file = "Pillow-8.1.2.tar.gz", hash = "sha256:b07c660e014852d98a00a91adfbe25033898a9d90a8f39beb2437d22a203fc44"},
 ]
 plotly = [
     {file = "plotly-4.14.3-py2.py3-none-any.whl", hash = "sha256:d68fc15fcb49f88db27ab3e0c87110943e65fee02a47f33a8590f541b3042461"},
