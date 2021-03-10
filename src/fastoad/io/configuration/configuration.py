@@ -1,7 +1,6 @@
 """
 Module for building OpenMDAO problem from configuration file
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -22,7 +21,6 @@ from typing import Dict
 
 import openmdao.api as om
 import tomlkit
-from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.problem import FASTOADProblem
@@ -33,6 +31,7 @@ from .exceptions import (
     FASTConfigurationError,
 )
 from ...module_management.service_registry import RegisterOpenMDAOSystem
+from ...openmdao.utils import get_unconnected_input_names
 from ...openmdao.variables import VariableList
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -108,9 +107,9 @@ class FASTOADProblemConfigurator:
             raise RuntimeError("read configuration file first")
 
         if read_inputs:
-            reader = VariableIO(self.input_file_path)
-            variables = reader.read()
-            input_ivc = variables.to_ivc()
+            problem_with_no_inputs = self.get_problem(auto_scaling=auto_scaling)
+            problem_with_no_inputs.setup()
+            input_ivc = self._get_problem_inputs(problem_with_no_inputs)
         else:
             input_ivc = None
 
@@ -242,7 +241,7 @@ class FASTOADProblemConfigurator:
         subpart = {"optimization": subpart}
         self._conf_dict.update(subpart)
 
-    def _build_model(self, input_ivc: IndepVarComp = None) -> om.Group:
+    def _build_model(self, input_ivc: om.IndepVarComp = None) -> om.Group:
         """
         Builds the model as defined in the configuration file.
 
@@ -388,6 +387,35 @@ class FASTOADProblemConfigurator:
                 design_var_table["ref0"] = design_var_table["lower"]
                 design_var_table["ref"] = design_var_table["upper"]
             model.add_design_var(**design_var_table)
+
+    def _get_problem_inputs(self, problem: FASTOADProblem) -> om.IndepVarComp:
+        """
+        Reads input file for the configure problem.
+
+        Keeps only needed variables. A warning is emitted about unused variables.
+
+        :param problem: problem with missing inputs. setup() must have been run.
+        :return: IVC of input variables
+        """
+        mandatory, optional = get_unconnected_input_names(problem, promoted_names=True)
+        needed_variable_names = mandatory + optional
+
+        reader = VariableIO(self.input_file_path)
+        variables = reader.read()
+
+        useless_variable_names = [
+            name for name in variables.names() if name not in needed_variable_names
+        ]
+        _LOGGER.warning(
+            "Following variables are in input files (%s) but will not be used: %s",
+            self.input_file_path,
+            useless_variable_names,
+        )
+        for name in useless_variable_names:
+            del variables[name]
+
+        input_ivc = variables.to_ivc()
+        return input_ivc
 
     def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
         self._configuration_modifier = modifier
