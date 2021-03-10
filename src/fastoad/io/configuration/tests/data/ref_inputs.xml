@@ -1,6 +1,6 @@
 <!--
   ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ Copyright (C) 2021 ONERA & ISAE-SUPAERO
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -14,6 +14,8 @@
   -->
 
 <aircraft>
-  <x>1.0</x>
-  <z units="m**2">5.0 2.0</z>
+    <x>1.0</x>
+    <z units="m**2">5.0 2.0</z>
+    <y1>nan</y1><!-- If this variable is kept in the input IVC, OpenMDAO will raise an exception because it is an output of a component
+                     As it should be ignored, its NaN value should bring no harm.-->
 </aircraft>
