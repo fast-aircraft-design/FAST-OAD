@@ -14,7 +14,7 @@ Utility functions for OpenMDAO classes/instances
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Tuple, List, TypeVar
+from typing import Tuple, List
 
 import numpy as np
 import openmdao.api as om
@@ -59,6 +59,3 @@ def get_unconnected_input_names(
         optional_unconnected = optional_unconnected - mandatory_unconnected
 
     return list(mandatory_unconnected), list(optional_unconnected)
-
-
-T = TypeVar("T", bound=om.Problem)
