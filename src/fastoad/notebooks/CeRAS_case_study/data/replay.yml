@@ -137,12 +137,9 @@ routes:
       - phase: descent
 
 missions:
-  MTOW_mission_diversion:
+  MTOW_mission:
     steps:
       - route: main_route
       - route: diversion
       - phase: holding
       - phase: taxi_in
-  MTOW_mission:
-    steps:
-      - route: main_route
