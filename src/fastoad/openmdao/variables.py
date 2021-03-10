@@ -24,7 +24,6 @@ from typing import Dict, Hashable, List, Union, Mapping, Iterable, Tuple
 import numpy as np
 import openmdao.api as om
 import pandas as pd
-from openmdao.core.system import System
 
 from .utils import get_unconnected_input_names
 
@@ -507,32 +506,6 @@ class VariableList(list):
             return Variable(**var_as_dict)
 
         return VariableList([_get_variable(row) for row in df[column_names].values])
-
-    @classmethod
-    def from_system(cls, system: System) -> "VariableList":
-        """
-        Creates a VariableList instance containing inputs and outputs of a an OpenMDAO System.
-        The inputs (is_input=True) correspond to the variables of IndepVarComp
-        components and all the unconnected variables.
-
-        Warning: setup() must NOT have been called.
-
-        In the case of a group, if variables are promoted, the promoted name
-        will be used. Otherwise, the absolute name will be used.
-
-        :param system: OpenMDAO Component instance to inspect
-        :return: VariableList instance
-        """
-
-        problem = om.Problem()
-        if isinstance(system, om.Group):
-            problem.model = deepcopy(system)
-        else:
-            # problem.model has to be a group
-            problem.model.add_subsystem("comp", deepcopy(system), promotes=["*"])
-
-        problem.setup()
-        return VariableList.from_problem(problem, use_initial_values=True)
 
     @classmethod
     def from_problem(

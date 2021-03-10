@@ -156,35 +156,6 @@ def _compare_variable_lists(vars: List[Variable], expected_vars: List[Variable])
     assert vars_dict == expected_vars_dict
 
 
-def test_get_variables_from_system():
-    # test Component -----------------------------------------------------------
-    comp = Disc1()
-    expected_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True),
-        Variable(name="y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="y1", value=np.array([1.0]), units=None, is_input=False),
-    ]
-
-    vars = VariableList.from_system(comp)
-    _compare_variable_lists(vars, expected_vars)
-
-    # test Group ---------------------------------------------------------------
-    group = om.Group()
-    group.add_subsystem("disc1", Disc1(), promotes=["*"])
-    group.add_subsystem("disc2", Disc2(), promotes=["*"])
-
-    expected_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True),
-        Variable(name="y1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-    ]
-
-    vars = VariableList.from_system(group)
-    _compare_variable_lists(vars, expected_vars)
-
-
 def test_get_variables_from_problem_with_an_explicit_component():
     problem = om.Problem()
     problem.model.add_subsystem("disc1", Disc1(), promotes=["*"])
