@@ -16,6 +16,7 @@ Test module for Overall Aircraft Design process
 import os
 import os.path as pth
 import shutil
+from dataclasses import dataclass
 from platform import system
 from shutil import rmtree
 
@@ -27,7 +28,10 @@ from numpy.testing import assert_allclose
 
 from fastoad import api
 from fastoad.io import VariableIO
-from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+from fastoad.io.configuration.configuration import (
+    FASTOADProblemConfigurator,
+    _IConfigurationModifier,
+)
 from fastoad.io.xml import VariableLegacy1XmlFormatter
 from tests import root_folder_path
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
@@ -52,9 +56,7 @@ def test_oad_process(cleanup):
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
-    proto_problem = configurator.get_problem()
-    proto_problem.setup()
-    proto_problem.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+    configurator.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
 
     # Create problems with inputs
     problem = configurator.get_problem(read_inputs=True)
@@ -125,16 +127,20 @@ def test_non_regression_mission(cleanup):
     )
 
 
-def _configure_xfoil_in_problem(problem, use_xfoil):
+@dataclass
+class XFOILConfigurator(_IConfigurationModifier):
     """Overwrite XFOIL usage setting of configuration file"""
-    # Next trick is needed for overloading option setting from TOML file
-    if use_xfoil and (system() == "Windows" or xfoil_path):
-        problem.model.aerodynamics_landing._OPTIONS["use_xfoil"] = True
-        if system() != "Windows":
-            problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = xfoil_path
-        # BTW we narrow computed alpha range for sake of CPU time
-        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 18.0
-        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_max"] = 22.0
+
+    use_xfoil: bool
+
+    def modify(self, problem: om.Problem):
+        if self.use_xfoil and (system() == "Windows" or xfoil_path):
+            problem.model.aerodynamics_landing._OPTIONS["use_xfoil"] = True
+            if system() != "Windows":
+                problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = xfoil_path
+            # BTW we narrow computed alpha range for sake of CPU time
+            problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 18.0
+            problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_max"] = 22.0
 
 
 def run_non_regression_test(
@@ -153,17 +159,14 @@ def run_non_regression_test(
     api.generate_configuration_file(configuration_file_path)  # just ensure folders are created...
     shutil.copy(pth.join(DATA_FOLDER_PATH, conf_file), configuration_file_path)
     configurator = FASTOADProblemConfigurator(configuration_file_path)
+    configurator._set_configuration_modifier(XFOILConfigurator(use_xfoil))
 
     # Generation of inputs ----------------------------------------
     ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
-    proto_problem = configurator.get_problem()
-    _configure_xfoil_in_problem(proto_problem, use_xfoil)
-    proto_problem.setup()
-    proto_problem.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+    configurator.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
 
     # Get problem with inputs -------------------------------------
     problem = configurator.get_problem(read_inputs=True)
-    _configure_xfoil_in_problem(problem, use_xfoil)
     problem.setup()
 
     # Run model ---------------------------------------------------------------

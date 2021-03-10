@@ -13,7 +13,7 @@
 
 import openmdao.api as om
 
-from fastoad.io import IVariableIOFormatter, VariableIO
+from fastoad.io import VariableIO
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import VariableList
 
@@ -21,11 +21,11 @@ INPUT_SYSTEM_NAME = "inputs"
 
 
 class FASTOADProblem(om.Problem):
-    """Vanilla OpenMDAO Problem except that it can write its variables to files.
+    """Vanilla OpenMDAO Problem except that it can write its outputs to a file.
 
     It also runs :class:`~fastoad.openmdao.validity_checker.ValidityDomainChecker`
     after each :meth:`run_model` or :meth:`run_driver`
-    (but it does nothing if no check has been registered)
+    (but it does nothing if no check has been registered).
 
     A classical usage of this class would be::
 
@@ -59,36 +59,6 @@ class FASTOADProblem(om.Problem):
         status = super().run_driver(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
         return status
-
-    def write_needed_inputs(
-        self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None,
-    ):
-        """
-        Writes the input file of the problem with unconnected inputs of the problem.
-
-        .. warning::
-
-            :meth:`setup` must have been run on this Problem instance.
-
-        Written value of each variable will be taken:
-        1. from input_data if it contains the variable
-        2. from defined default values in component definitions
-
-        WARNING: if inputs have already been read, they won't be needed any more
-        and won't be in written file.
-
-        :param source_file_path: if provided, variable values will be read from it
-        :param source_formatter: the class that defines format of input file. if not provided,
-                                expected format will be the default one.
-        """
-        variables = VariableList.from_unconnected_inputs(self, with_optional_inputs=True)
-        if source_file_path:
-            ref_vars = VariableIO(source_file_path, source_formatter).read()
-            variables.update(ref_vars)
-            for var in variables:
-                var.is_input = True
-        writer = VariableIO(self.input_file_path)
-        writer.write(variables)
 
     def write_outputs(self):
         """

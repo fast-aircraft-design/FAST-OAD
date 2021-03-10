@@ -17,6 +17,7 @@ Module for building OpenMDAO problem from configuration file
 
 import logging
 import os.path as pth
+from abc import ABC, abstractmethod
 from typing import Dict
 
 import openmdao.api as om
@@ -32,6 +33,7 @@ from .exceptions import (
     FASTConfigurationError,
 )
 from ...module_management.service_registry import RegisterOpenMDAOSystem
+from ...openmdao.variables import VariableList
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -60,6 +62,10 @@ class FASTOADProblemConfigurator:
     def __init__(self, conf_file_path=None):
         self._conf_file = None
         self._conf_dict = {}
+
+        # self._configuration_modifier offers a way to modify problems after
+        # they have been generated from configuration (private usage for now)
+        self._configuration_modifier: "_IConfigurationModifier" = None
 
         if conf_file_path:
             self.load(conf_file_path)
@@ -123,6 +129,9 @@ class FASTOADProblemConfigurator:
 
         if read_inputs:
             self._add_design_vars(problem.model, auto_scaling)
+
+        if self._configuration_modifier:
+            self._configuration_modifier.modify(problem)
 
         return problem
 
@@ -190,7 +199,14 @@ class FASTOADProblemConfigurator:
         """
         problem = self.get_problem(read_inputs=False)
         problem.setup()
-        problem.write_needed_inputs(source_file_path, source_formatter)
+        variables = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
+        if source_file_path:
+            ref_vars = VariableIO(source_file_path, source_formatter).read()
+            variables.update(ref_vars)
+            for var in variables:
+                var.is_input = True
+        writer = VariableIO(problem.input_file_path)
+        writer.write(variables)
 
     def get_optimization_definition(self) -> Dict:
         """
@@ -373,6 +389,9 @@ class FASTOADProblemConfigurator:
                 design_var_table["ref"] = design_var_table["upper"]
             model.add_design_var(**design_var_table)
 
+    def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
+        self._configuration_modifier = modifier
+
 
 def _om_eval(string_to_eval: str):
     """
@@ -408,3 +427,17 @@ class AutoUnitsDefaultGroup(om.Group):
             )
         for name, units in var_units.items():
             self.set_input_defaults(name, units=units)
+
+
+class _IConfigurationModifier(ABC):
+    """
+    Interface for a configuration modifier used in FASTOADProblemConfigurator.
+    """
+
+    @abstractmethod
+    def modify(self, problem: om.Problem):
+        """
+        This method will do operations on the provided problem.
+
+        problem.setup() is assumed NOT called.
+        """
