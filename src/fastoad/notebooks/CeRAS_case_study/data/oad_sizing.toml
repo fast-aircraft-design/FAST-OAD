@@ -4,8 +4,8 @@ title = "Sample OAD Process"
 module_folders = []
 
 # Input and output files
-input_file = "../../workdir/oad_sizing_in.xml"
-output_file = "../../workdir/oad_sizing_out.xml"
+input_file = "../workdir/oad_sizing_in.xml"
+output_file = "../workdir/oad_sizing_out.xml"
 
 # Definition of OpenMDAO model
 [model]
@@ -36,8 +36,8 @@ output_file = "../../workdir/oad_sizing_out.xml"
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         mission_file_path = "./replay.yml"
-        mission_name = "MTOW_mission_diversion"
-        out_file = "../../workdir/oad_sizing.csv"
+        mission_name = "MTOW_mission"
+        out_file = "../workdir/oad_sizing.csv"
         adjust_fuel = true
         is_sizing = true
     [model.hq_tail_sizing]
