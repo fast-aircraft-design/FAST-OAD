@@ -19,6 +19,7 @@ import os.path as pth
 from abc import ABC, abstractmethod
 from typing import Dict
 
+import numpy as np
 import openmdao.api as om
 import tomlkit
 
@@ -29,6 +30,7 @@ from .exceptions import (
     FASTConfigurationBaseKeyBuildingError,
     FASTConfigurationBadOpenMDAOInstructionError,
     FASTConfigurationError,
+    FASTConfigurationNanInInputFile,
 )
 from ...module_management.service_registry import RegisterOpenMDAOSystem
 from ...openmdao.utils import get_unconnected_input_names
@@ -401,10 +403,10 @@ class FASTOADProblemConfigurator:
         needed_variable_names = mandatory + optional
 
         reader = VariableIO(self.input_file_path)
-        variables = reader.read()
+        input_variables = reader.read()
 
         useless_variable_names = [
-            name for name in variables.names() if name not in needed_variable_names
+            name for name in input_variables.names() if name not in needed_variable_names
         ]
         _LOGGER.warning(
             "Following variables are in input files (%s) but will not be used: %s",
@@ -412,9 +414,13 @@ class FASTOADProblemConfigurator:
             useless_variable_names,
         )
         for name in useless_variable_names:
-            del variables[name]
+            del input_variables[name]
 
-        input_ivc = variables.to_ivc()
+        nan_variable_names = [var.name for var in input_variables if np.all(np.isnan(var.value))]
+        if nan_variable_names:
+            raise FASTConfigurationNanInInputFile(self.input_file_path, nan_variable_names)
+
+        input_ivc = input_variables.to_ivc()
         return input_ivc
 
     def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):

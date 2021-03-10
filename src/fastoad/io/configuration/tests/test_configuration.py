@@ -32,6 +32,7 @@ from fastoad.io.configuration.configuration import (
 from ..exceptions import (
     FASTConfigurationError,
     FASTConfigurationBadOpenMDAOInstructionError,
+    FASTConfigurationNanInInputFile,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -113,6 +114,20 @@ def test_problem_definition_with_custom_xml(cleanup):
     problem.run_model()
 
     assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
+
+
+def test_problem_definition_with_nan_inputs(cleanup):
+    """ Tests what happens when writing inputs using existing XML with some unwanted var"""
+    conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
+
+    input_data_path = pth.join(DATA_FOLDER_PATH, "nan_inputs.xml")
+    os.makedirs(RESULTS_FOLDER_PATH, exist_ok=True)
+    shutil.copy(input_data_path, conf.input_file_path)
+
+    with pytest.raises(FASTConfigurationNanInInputFile) as exc:
+        problem = conf.get_problem(read_inputs=True, auto_scaling=True)
+        assert exc.input_file_path == input_data_path
+        assert exc.nan_variable_names == ["x"]
 
 
 def test_problem_definition_with_xml_ref_run_optim(cleanup):
