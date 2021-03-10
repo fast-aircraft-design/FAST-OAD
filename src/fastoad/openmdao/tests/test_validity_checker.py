@@ -25,8 +25,7 @@ from fastoad.openmdao.variables import VariableList, Variable
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results", "validity_checker")
 
 
 @pytest.fixture(scope="module")

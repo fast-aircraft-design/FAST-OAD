@@ -14,11 +14,27 @@
 
 from math import exp
 
-from .functions_base import FunctionsBase
+import numpy as np
+import openmdao.api as om
 
 
-class Functions(FunctionsBase):
+class Functions(om.ExplicitComponent):
     """ An OpenMDAO component to encapsulate Functions discipline """
+
+    def setup(self):
+        self.add_input("x", val=2, desc="")
+        self.add_input(
+            "z", val=[np.nan, np.nan], desc="", units="m**2"
+        )  # NaN as default for testing connexion check
+        self.add_input("y1", val=1.0, desc="")
+        self.add_input("y2", val=1.0, desc="")
+
+        self.add_output("f", val=1.0, desc="")
+
+        self.add_output("g1", val=1.0, desc="")
+
+        self.add_output("g2", val=1.0, desc="")
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """ Functions computation """

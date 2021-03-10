@@ -71,7 +71,6 @@ class Sellar(Group):
 
         :param sellar_factory: will provide the components
                     (disciplines 1 and 2 + functions)
-        :param thrift_client:
         :param kwargs:
         """
         super(Sellar, self).__init__(**kwargs)
@@ -87,13 +86,12 @@ class Sellar(Group):
     def setup(self):
         indeps = self.add_subsystem("indeps", IndepVarComp(), promotes=["*"])
         indeps.add_output("x", 2)
-        indeps.add_output("z", [5, 2])
-        self.add_subsystem(
-            "Disc1", self._sellar_factory.create_disc1(), promotes=["x", "z", "y1", "y2"]
-        )
-        self.add_subsystem("Disc2", self._sellar_factory.create_disc2(), promotes=["z", "y1", "y2"])
+        indeps.add_output("z", [5, 2], units="m**2")
+        self.add_subsystem("Disc1", self._sellar_factory.create_disc1(), promotes=["x", "z", "y2"])
+        self.add_subsystem("Disc2", self._sellar_factory.create_disc2(), promotes=["z", "y2"])
         self.add_subsystem(
             "Functions",
             self._sellar_factory.create_functions(),
-            promotes=["x", "z", "y1", "y2", "f", "g1", "g2"],
+            promotes=["x", "z", "y2", "f", "g1", "g2"],
         )
+        self.connect("Disc1.y1", ["Disc2.y1", "Functions.y1"])  # Need for a non-promoted variable
