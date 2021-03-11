@@ -301,10 +301,10 @@ def test_api(cleanup):
     )
 
     # Design Variable
-    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 9.92, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 14.24, atol=1e-2)
 
     # Constraint
-    assert_allclose(problem["data:geometry:wing:span"], 36.0, atol=1e-1)
+    assert_allclose(problem["data:geometry:wing:span"], 44.9, atol=1e-1)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:fuel"], 20224, atol=50)
+    assert_allclose(problem["data:mission:sizing:fuel"], 19862, atol=50)

@@ -55,11 +55,12 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
     [[optimization.design_var]]
         name = "data:geometry:wing:aspect_ratio"
         lower = 9.0
-        upper = 12.0
+        upper = 18.0
 
     [[optimization.constraint]]
         name = "data:geometry:wing:span"
-        upper = 36.0
+        upper = 60.0
 
     [[optimization.objective]]
         name = "data:mission:sizing:fuel"
+        scaler = 1e-4
