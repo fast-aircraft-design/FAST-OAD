@@ -29,11 +29,11 @@ def test_compute_wing_position():
     # The component is unit tested without being converged as it would require the geometry module
     ivc = om.IndepVarComp()
 
-    ivc.add_output("data:handling_qualities:static_margin", val=0.05)
+    ivc.add_output("data:handling_qualities:static_margin", val=0.1)
     ivc.add_output("data:handling_qualities:static_margin:target", val=0.05)
     ivc.add_output("data:geometry:wing:MAC:length", val=4.262)
     ivc.add_output("data:weight:aircraft:CG:aft:MAC_position", val=0.361)
     ivc.add_output("data:weight:aircraft:CG:aft:x", val=17.545)
 
     problem = run_system(ComputeWingPosition(), ivc)
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.07, atol=1e-1)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.86, atol=1e-1)
