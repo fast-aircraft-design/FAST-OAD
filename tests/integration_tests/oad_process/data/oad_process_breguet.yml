@@ -1,0 +1,36 @@
+title: OAD Process
+
+module_folders:
+
+input_file: ./oad_process_breguet_inputs.xml
+output_file: ./oad_process_breguet_outputs.xml
+
+model:
+  nonlinear_solver: om.NonlinearBlockGS(maxiter=100)
+  linear_solver: om.DirectSolver()
+  geometry:
+    id: fastoad.geometry.legacy
+  weight:
+    id: fastoad.weight.legacy
+  mtow:
+    id: fastoad.mass_performances.compute_MTOW
+  aerodynamics:
+    id: fastoad.aerodynamics.highspeed.legacy
+  aerodynamics_landing:
+    id: fastoad.aerodynamics.landing.legacy
+    use_xfoil: false
+  performance:
+        id: fastoad.performances.mission
+        propulsion_id: fastoad.wrapper.propulsion.rubber_engine
+        out_file: ./flight_points.csv
+        mission_file_path: ::sizing_breguet
+        adjust_fuel: true
+        add_solver: false
+        is_sizing: true
+  hq:
+    tail_sizing:
+      id: fastoad.handling_qualities.tail_sizing
+    static_margin:
+      id: fastoad.handling_qualities.static_margin
+  wing_area:
+    id: fastoad.loop.wing_area
