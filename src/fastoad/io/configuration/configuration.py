@@ -17,10 +17,14 @@ Module for building OpenMDAO problem from configuration file
 
 import logging
 import os.path as pth
+from abc import ABC, abstractmethod
 from typing import Dict
 
 import openmdao.api as om
+import strictyaml
 import tomlkit
+from tomlkit.container import Container
+from tomlkit.items import Array, String
 
 from fastoad.io import IVariableIOFormatter
 from fastoad.openmdao.problem import FASTOADProblem
@@ -63,10 +67,12 @@ class FASTOADProblemConfigurator:
         if conf_file_path:
             self.load(conf_file_path)
 
+        self._serializer = TOMLSerializer()
+
     @property
     def input_file_path(self):
         """path of file with input variables of the problem"""
-        path = self._conf_dict[KEY_INPUT_FILE]
+        path = str(self._conf_dict[KEY_INPUT_FILE])
         if not pth.isabs(path):
             path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
         return path
@@ -78,7 +84,7 @@ class FASTOADProblemConfigurator:
     @property
     def output_file_path(self):
         """path of file where output variables will be written"""
-        path = self._conf_dict[KEY_OUTPUT_FILE]
+        path = str(self._conf_dict[KEY_OUTPUT_FILE])
         if not pth.isabs(path):
             path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
         return path
@@ -97,7 +103,7 @@ class FASTOADProblemConfigurator:
                              variables and constraints
         :return: the problem instance
         """
-        if not self._conf_dict:
+        if self._conf_dict is None:
             raise RuntimeError("read configuration file first")
 
         problem = FASTOADProblem(self._build_model())
@@ -127,24 +133,27 @@ class FASTOADProblemConfigurator:
         """
 
         self._conf_file = pth.abspath(conf_file)  # for resolving relative paths
-
         conf_dirname = pth.dirname(self._conf_file)
-        with open(conf_file, "r") as file:
-            d = file.read()
-            self._conf_dict = tomlkit.loads(d)
+
+        if pth.splitext(self._conf_file)[-1] in [".yml", ".yaml"]:
+            self._serializer = YAMLSerializer()
+        else:
+            self._serializer = TOMLSerializer()
+
+        self._conf_dict = self._serializer.read(self._conf_file)
 
         # FIXME: Could structure of configuration file be checked more thoroughly ?
         for key in [KEY_INPUT_FILE, KEY_OUTPUT_FILE]:
             if key not in self._conf_dict:
                 raise FASTConfigurationError(missing_key=key)
 
-        if not isinstance(self._conf_dict.get(TABLE_MODEL), dict):
+        if TABLE_MODEL not in self._conf_dict:
             raise FASTConfigurationError(missing_section=TABLE_MODEL)
 
         # Looking for modules to register
         module_folder_paths = self._conf_dict.get(KEY_FOLDERS, [])
         for folder_path in module_folder_paths:
-            folder_path = pth.join(conf_dirname, folder_path)
+            folder_path = pth.join(conf_dirname, str(folder_path))
             if not pth.exists(folder_path):
                 _LOGGER.warning("SKIPPED %s: it does not exist.")
             else:
@@ -161,9 +170,7 @@ class FASTOADProblemConfigurator:
             filename = self._conf_file
 
         make_parent_dir(filename)
-        with open(filename, "w") as file:
-            d = tomlkit.dumps(self._conf_dict)
-            file.write(d)
+        self._serializer.write(filename, self._conf_dict)
 
     def write_needed_inputs(
         self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None,
@@ -256,7 +263,7 @@ class FASTOADProblemConfigurator:
         :param group:
         :param table:
         """
-        assert isinstance(table, dict), "table should be a dictionary"
+        # assert isinstance(table, dict), "table should be a dictionary"
 
         for key, value in table.items():
             if isinstance(value, dict):  # value defines a sub-component
@@ -300,7 +307,7 @@ class FASTOADProblemConfigurator:
             else:
                 # value is an attribute of current component and will be literally interpreted
                 try:
-                    setattr(group, key, _om_eval(value))  # pylint:disable=eval-used
+                    setattr(group, key, _om_eval(str(value)))  # pylint:disable=eval-used
                 except Exception as err:
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
@@ -398,3 +405,109 @@ class AutoUnitsDefaultGroup(om.Group):
             )
         for name, units in var_units.items():
             self.set_input_defaults(name, units=units)
+
+
+class IDictSerializer(ABC):
+    """Interface for reading and writing dict-like data"""
+
+    @abstractmethod
+    @property
+    def content(self):
+        """
+
+        :return:
+        """
+
+    @abstractmethod
+    @property
+    def data(self) -> dict:
+        """
+
+        :return:
+        """
+
+    @abstractmethod
+    def read(self, file_path: str):
+        """
+
+        :param file_path:
+        :return:
+        """
+
+    @abstractmethod
+    def write(self, file_path: str):
+        """
+
+        :param file_path:
+        :param content:
+        :return:
+        """
+
+
+class TOMLSerializer(IDictSerializer):
+    def __init__(self):
+        self._content = None
+
+    @property
+    def content(self):
+        return self._content
+
+    @property
+    def data(self):
+        pass
+
+    def read(self, file_path: str):
+        with open(file_path, "r") as toml_file:
+            d = toml_file.read()
+            return tomlkit.loads(d)
+
+    def write(self, file_path: str):
+        with open(file_path, "w") as file:
+            d = tomlkit.dumps(content)
+            file.write(d)
+
+    def _toml2dict(self, content):
+        if hasattr(content, "items"):
+            for name, val in content.items():
+                val = _toml_convert(val)
+                _toml2dict(val)
+                content[name] = val
+        if isinstance(content, list):
+            if len(content) == 0:
+                content.append("null")
+            for i, val in enumerate(content):
+                val = _toml_convert(val)
+                _toml2dict(val)
+                content[i] = val
+
+    def _toml_convert(self, val):
+        if isinstance(val, Container):
+            return dict(val)
+        if isinstance(val, Array):
+            return list(val)
+        if isinstance(val, String):
+            return str(val)
+        return val
+
+
+class YAMLSerializer(IDictSerializer):
+    def __init__(self):
+        self._content = None
+
+    @property
+    def content(self):
+        return self._content
+
+    @property
+    def data(self):
+        if self._content is not None:
+            return self._content.data
+
+    def read(self, file_path: str):
+        with open(file_path) as yaml_file:
+            self._content = strictyaml.load(yaml_file.read())
+
+    def write(self, file_path: str):
+        d = self._content.as_yaml()
+        with open(file_path, "w") as file:
+            file.write(d)

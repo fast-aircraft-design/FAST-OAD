@@ -78,7 +78,7 @@ def test_problem_definition(cleanup):
 
     # Reading of correct conf definition
     conf = FASTOADProblemConfigurator()
-    conf.load(pth.join(pth.dirname(__file__), "data", "valid_sellar.toml"))
+    conf.load(pth.join(pth.dirname(__file__), "data", "valid_sellar.yml"))
     assert conf.input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
     assert conf.output_file_path == pth.join(RESULTS_FOLDER_PATH, "outputs.xml")
 
