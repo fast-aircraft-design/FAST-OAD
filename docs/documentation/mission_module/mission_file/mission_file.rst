@@ -121,7 +121,7 @@ A route is identified by its name and has 4 attributes:
 
 Example:
 
-.. code-block::     yaml
+.. code-block::         yaml
 
   routes:
     main_route:
@@ -142,11 +142,13 @@ Example:
         - phase: descent
     diversion:
       range: distance
-      parts:
+      climb_parts:
         - phase: diversion_climb
-        - cruise_type: breguet
-          engine_setting: cruise
-          polar: data:aerodynamics:aircraft:cruise
+      cruise_part:
+        segment: breguet
+        engine_setting: cruise
+        polar: data:aerodynamics:aircraft:cruise
+      descent_parts:
         - phase: descent
 
 

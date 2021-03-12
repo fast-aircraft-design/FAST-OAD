@@ -54,7 +54,7 @@ Python documentation: :mod:`~fastoad.models.performances.mission.segments.speed_
 
 Example:
 
-.. code-blok:: yaml
+.. code-block:: yaml
 
     segment: speed_change
     polar: data:aerodynamics:aircraft:takeoff   # High-lift devices are ON
