@@ -56,7 +56,7 @@ ipywidgets = "*"
 ipysheet = "*"
 tomlkit = "*"
 wop = "^1.12.0"
-strictyaml = "1.1.0"
+strictyaml = "^1.1.0"
 ensure = "^1.0.0"
 
 
