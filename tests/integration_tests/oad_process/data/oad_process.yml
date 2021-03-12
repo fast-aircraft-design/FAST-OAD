@@ -1,0 +1,33 @@
+title: OAD Process
+
+module_folders:
+  - null
+
+input_file: ../results/oad_process_inputs.xml
+output_file: ../results/oad_process_outputs.xml
+
+model:
+  nonlinear_solver: om.NonlinearBlockGS(maxiter=100)
+  linear_solver: om.DirectSolver()
+  geometry:
+    id: fastoad.geometry.legacy
+  weight:
+    id: fastoad.weight.legacy
+  mtow:
+    id: fastoad.loop.mtow
+  aerodynamics:
+    id: fastoad.aerodynamics.highspeed.legacy
+  aerodynamics_landing:
+    id: fastoad.aerodynamics.landing.legacy
+    use_xfoil: no
+  performance:
+    id: fastoad.performances.breguet
+  propulsion:
+    id: fastoad.propulsion.rubber_engine
+  hq:
+    tail_sizing:
+      id: fastoad.handling_qualities.tail_sizing
+    static_margin:
+      id: fastoad.handling_qualities.static_margin
+  wing_area:
+    id: fastoad.loop.wing_area

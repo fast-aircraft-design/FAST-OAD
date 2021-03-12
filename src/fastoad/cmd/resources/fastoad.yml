@@ -1,0 +1,48 @@
+title: Sample OAD Process
+
+module_folders:
+  - null
+
+input_file: ./problem_inputs.xml
+output_file: ./problem_outputs.xml
+
+driver: om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')
+model:
+  nonlinear_solver: om.NonlinearBlockGS(maxiter=200)
+  linear_solver: om.DirectSolver()
+  geometry:
+    id: fastoad.geometry.legacy
+  weight:
+    id: fastoad.weight.legacy
+  mtow:
+    id: fastoad.loop.mtow
+  aerodynamics_highspeed:
+    id: fastoad.aerodynamics.highspeed.legacy
+  aerodynamics_lowspeed:
+    id: fastoad.aerodynamics.lowspeed.legacy
+  aerodynamics_takeoff:
+    id: fastoad.aerodynamics.takeoff.legacy
+  aerodynamics_landing:
+    id: fastoad.aerodynamics.landing.legacy
+    use_xfoil: no
+  performance:
+    id: fastoad.performances.breguet
+    propulsion_id: fastoad.wrapper.propulsion.rubber_engine
+  hq_tail_sizing:
+    id: fastoad.handling_qualities.tail_sizing
+  hq_static_margin:
+    id: fastoad.handling_qualities.static_margin
+  wing_area:
+    id: fastoad.loop.wing_area
+
+optimization:
+  design_var:
+    - name: data:geometry:wing:MAC:at25percent:x
+      lower: 16.0
+      upper: 18.0
+  constraint:
+    - name: data:handling_qualities:static_margin
+      lower: 0.05
+      upper: 0.1
+  objective:
+    - name: data:mission:sizing:fuel

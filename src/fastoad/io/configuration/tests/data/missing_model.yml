@@ -1,0 +1,18 @@
+title: Sellar
+module_folders:
+  - conf_sellar_example
+input_file: dummy/path
+output_file: other/dummy/path
+driver: om.ScipyOptimizeDriver(optimizer='SLSQP')
+Model: # As TOML is case sensitive, this section won't be recognized‡
+  cycle:
+    nonlinear_solver: om.NonlinearBlockGS(iprint=1)
+    linear_solver: om.ScipyKrylov()
+    disc2:
+      id: configuration_test.sellar.disc2
+  functions:
+    id: configuration_test.sellar.functions
+v:
+  cycle:
+    disc1:
+      id: configuration_test.sellar.disc1
