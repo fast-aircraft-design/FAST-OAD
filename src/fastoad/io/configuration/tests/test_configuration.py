@@ -21,17 +21,11 @@ import numpy as np
 import openmdao.api as om
 import pytest
 import tomlkit
+import yaml
+from jsonschema import ValidationError
 
-from fastoad.io.configuration.configuration import (
-    FASTOADProblemConfigurator,
-    KEY_INPUT_FILE,
-    KEY_OUTPUT_FILE,
-    TABLE_MODEL,
-)
-from ..exceptions import (
-    FASTConfigurationError,
-    FASTConfigurationBadOpenMDAOInstructionError,
-)
+from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+from ..exceptions import FASTConfigurationBadOpenMDAOInstructionError
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -46,77 +40,77 @@ def test_problem_definition(cleanup):
     """ Test conf definition from configuration files """
 
     # no input file
-    conf = FASTOADProblemConfigurator()
-    with pytest.raises(FASTConfigurationError) as exc_info:
-        conf.load(pth.join(pth.dirname(__file__), "data", "missing_input_file.toml"))
-    assert exc_info.value.missing_key == KEY_INPUT_FILE
+    for extension in ["toml", "yml"]:
+        conf = FASTOADProblemConfigurator()
+        with pytest.raises(ValidationError) as exc_info:
+            conf.load(pth.join(pth.dirname(__file__), "data", "missing_input_file.%s" % extension))
+        assert exc_info.value.message == "'input_file' is a required property"
 
     # no output file
-    conf = FASTOADProblemConfigurator()
-    with pytest.raises(FASTConfigurationError) as exc_info:
-        conf.load(pth.join(pth.dirname(__file__), "data", "missing_output_file.toml"))
-    assert exc_info.value.missing_key == KEY_OUTPUT_FILE
+    for extension in ["toml", "yml"]:
+        conf = FASTOADProblemConfigurator()
+        with pytest.raises(ValidationError) as exc_info:
+            conf.load(pth.join(pth.dirname(__file__), "data", "missing_output_file.%s" % extension))
+        assert exc_info.value.message == "'output_file' is a required property"
 
     # Missing model definition
-    conf = FASTOADProblemConfigurator()
-    with pytest.raises(FASTConfigurationError) as exc_info:
-        conf.load(pth.join(pth.dirname(__file__), "data", "missing_model.toml"))
-    assert exc_info.value.missing_section == TABLE_MODEL
+    for extension in ["toml", "yml"]:
+        conf = FASTOADProblemConfigurator()
+        with pytest.raises(ValidationError) as exc_info:
+            conf.load(pth.join(pth.dirname(__file__), "data", "missing_model.%s" % extension))
+        assert exc_info.value.message == "'model' is a required property"
 
     # Incorrect attribute
-    conf = FASTOADProblemConfigurator()
-    conf.load(pth.join(pth.dirname(__file__), "data", "invalid_attribute.toml"))
-    with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
-        problem = conf.get_problem(read_inputs=False)
-    assert exc_info.value.key == "model.cycle.other_group.nonlinear_solver"
-
-    # Reading of a minimal conf (model = ExplicitComponent)
-    conf = FASTOADProblemConfigurator()
-    conf.load(pth.join(pth.dirname(__file__), "data", "disc1.toml"))
-    problem = conf.get_problem(read_inputs=False)
-    assert isinstance(problem.model.system, om.ExplicitComponent)
+    for extension in ["toml", "yml"]:
+        conf = FASTOADProblemConfigurator()
+        conf.load(pth.join(pth.dirname(__file__), "data", "invalid_attribute.%s" % extension))
+        with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
+            problem = conf.get_problem(read_inputs=False)
+        assert exc_info.value.key == "model.cycle.other_group.nonlinear_solver"
 
     # Reading of correct conf definition
-    conf = FASTOADProblemConfigurator()
-    conf.load(pth.join(pth.dirname(__file__), "data", "valid_sellar.toml"))
-    assert conf.input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
-    assert conf.output_file_path == pth.join(RESULTS_FOLDER_PATH, "outputs.xml")
+    for extension in ["toml", "yml"]:
+        conf = FASTOADProblemConfigurator()
+        conf.load(pth.join(pth.dirname(__file__), "data", "valid_sellar.%s" % extension))
+        assert conf.input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
+        assert conf.output_file_path == pth.join(RESULTS_FOLDER_PATH, "outputs.xml")
 
-    # Just running these methods to check there is no crash. As simple assemblies of
-    # other methods, their results should already be unit-tested.
-    conf.write_needed_inputs()
-    problem = conf.get_problem(read_inputs=True)
+        # Just running these methods to check there is no crash. As simple assemblies of
+        # other methods, their results should already be unit-tested.
+        conf.write_needed_inputs()
+        problem = conf.get_problem(read_inputs=True)
 
-    problem.setup()
-    assert isinstance(problem.model.cycle, om.Group)
-    assert isinstance(problem.model.cycle.disc1, om.ExplicitComponent)
-    assert isinstance(problem.model.cycle.disc2, om.ExplicitComponent)
-    assert isinstance(problem.model.functions, om.ExplicitComponent)
+        problem.setup()
+        assert isinstance(problem.model.cycle, om.Group)
+        assert isinstance(problem.model.cycle.disc1, om.ExplicitComponent)
+        assert isinstance(problem.model.cycle.disc2, om.ExplicitComponent)
+        assert isinstance(problem.model.functions, om.ExplicitComponent)
 
-    assert isinstance(problem.driver, om.ScipyOptimizeDriver)
-    assert problem.driver.options["optimizer"] == "SLSQP"
-    assert isinstance(problem.model.cycle.nonlinear_solver, om.NonlinearBlockGS)
+        assert isinstance(problem.driver, om.ScipyOptimizeDriver)
+        assert problem.driver.options["optimizer"] == "SLSQP"
+        assert isinstance(problem.model.cycle.nonlinear_solver, om.NonlinearBlockGS)
 
-    problem.run_driver()
+        problem.run_driver()
 
-    problem.run_model()
-    assert np.isnan(problem["f"])
+        problem.run_model()
+        assert np.isnan(problem["f"])
 
 
 def test_problem_definition_with_xml_ref(cleanup):
     """ Tests what happens when writing inputs using data from existing XML file"""
-    conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
+    for extension in ["toml", "yml"]:
+        conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension))
 
-    input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
-    conf.write_needed_inputs(input_data)
+        input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+        conf.write_needed_inputs(input_data)
 
-    problem = conf.get_problem(read_inputs=True, auto_scaling=True)
-    # runs evaluation without optimization loop to check that inputs are taken into account
-    problem.setup()
-    problem.run_model()
+        problem = conf.get_problem(read_inputs=True, auto_scaling=True)
+        # runs evaluation without optimization loop to check that inputs are taken into account
+        problem.setup()
+        problem.run_model()
 
-    assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
-    problem.write_outputs()
+        assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
+        problem.write_outputs()
 
 
 def test_problem_definition_with_xml_ref_run_optim(cleanup):
@@ -124,71 +118,77 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     Tests what happens when writing inputs using data from existing XML file
     and running an optimization problem
     """
-    conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
+    for extension in ["toml", "yml"]:
+        conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension))
 
-    input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
-    conf.write_needed_inputs(input_data)
+        input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+        conf.write_needed_inputs(input_data)
 
-    # Runs optimization problem with semi-analytic FD
-    problem1 = conf.get_problem(read_inputs=True)
-    problem1.setup()
-    problem1.run_model()
-    assert problem1["f"] == pytest.approx(28.58830817, abs=1e-6)
-    problem1.run_driver()
-    assert problem1["f"] == pytest.approx(3.18339395, abs=1e-6)
+        # Runs optimization problem with semi-analytic FD
+        problem1 = conf.get_problem(read_inputs=True)
+        problem1.setup()
+        problem1.run_model()
+        assert problem1["f"] == pytest.approx(28.58830817, abs=1e-6)
+        problem1.run_driver()
+        assert problem1["f"] == pytest.approx(3.18339395, abs=1e-6)
 
-    # Runs optimization problem with monolithic FD
-    problem2 = conf.get_problem(read_inputs=True)
-    problem2.model.approx_totals()
-    problem2.setup()
-    problem2.run_model()  # checks problem has been reset
-    assert problem2["f"] == pytest.approx(28.58830817, abs=1e-6)
-    problem2.run_driver()
-    assert problem2["f"] == pytest.approx(3.18339395, abs=1e-6)
+        # Runs optimization problem with monolithic FD
+        problem2 = conf.get_problem(read_inputs=True)
+        problem2.model.approx_totals()
+        problem2.setup()
+        problem2.run_model()  # checks problem has been reset
+        assert problem2["f"] == pytest.approx(28.58830817, abs=1e-6)
+        problem2.run_driver()
+        assert problem2["f"] == pytest.approx(3.18339395, abs=1e-6)
 
 
 def test_set_optimization_definition(cleanup):
     """
-    Tests the modification of the optimization definition in the .toml
-    configuration file
+    Tests the modification of the optimization definition in the configuration file
     """
-    reference_file = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
-    editable_file = pth.join(RESULTS_FOLDER_PATH, "editable_valid_sellar.toml")
+    for extension in ["toml", "yml"]:
+        reference_file = pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension)
+        editable_file = pth.join(RESULTS_FOLDER_PATH, "editable_valid_sellar.%s" % extension)
 
-    # copy(reference_file, editable_file)
+        # copy(reference_file, editable_file)
 
-    conf = FASTOADProblemConfigurator(reference_file)
+        conf = FASTOADProblemConfigurator(reference_file)
 
-    optimization_def = {
-        "design_var": {
-            "x": {"name": "x", "lower": 0, "upper": 20},
-            "z": {"name": "z", "lower": 0, "upper": 10},
-        },
-        "constraint": {"gg1": {"name": "gg1", "upper": 10}, "gg2": {"name": "gg2", "upper": 0},},
-        "objective": {"f": {"name": "f"}},
-    }
+        optimization_def = {
+            "design_var": {
+                "x": {"name": "x", "lower": 0, "upper": 20},
+                "z": {"name": "z", "lower": 0, "upper": 10},
+            },
+            "constraint": {
+                "gg1": {"name": "gg1", "upper": 10},
+                "gg2": {"name": "gg2", "upper": 0},
+            },
+            "objective": {"f": {"name": "f"}},
+        }
 
-    optimization_conf = {
-        "design_var": [
-            {"name": "x", "lower": 0, "upper": 20},
-            {"name": "z", "lower": 0, "upper": 10},
-        ],
-        "constraint": [{"name": "gg1", "upper": 10}, {"name": "gg2", "upper": 0}],
-        "objective": [{"name": "f"}],
-    }
+        optimization_conf = {
+            "design_var": [
+                {"name": "x", "lower": 0, "upper": 20},
+                {"name": "z", "lower": 0, "upper": 10},
+            ],
+            "constraint": [{"name": "gg1", "upper": 10}, {"name": "gg2", "upper": 0}],
+            "objective": [{"name": "f"}],
+        }
 
-    with open(reference_file, "r") as file:
-        d = file.read()
-        conf_dict = tomlkit.loads(d)
-    conf_dict_opt = conf_dict["optimization"]
-    # Should be different
-    assert optimization_conf != conf_dict_opt
+        read = tomlkit.loads if extension == "toml" else yaml.safe_load
 
-    conf.set_optimization_definition(optimization_def)
-    conf.save(editable_file)
-    with open(editable_file, "r") as file:
-        d = file.read()
-        conf_dict = tomlkit.loads(d)
-    conf_dict_opt = conf_dict["optimization"]
-    # Should be equal
-    assert optimization_conf == conf_dict_opt
+        with open(reference_file, "r") as file:
+            d = file.read()
+            conf_dict = read(d)
+        conf_dict_opt = conf_dict["optimization"]
+        # Should be different
+        assert optimization_conf != conf_dict_opt
+
+        conf.set_optimization_definition(optimization_def)
+        conf.save(editable_file)
+        with open(editable_file, "r") as file:
+            d = file.read()
+            conf_dict = read(d)
+        conf_dict_opt = conf_dict["optimization"]
+        # Should be equal
+        assert optimization_conf == conf_dict_opt
