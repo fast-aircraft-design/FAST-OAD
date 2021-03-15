@@ -17,6 +17,13 @@ Constants for rubber engine analytical models
 
 from fastoad.utils.physics import AtmosphereSI
 
+RUBBER_ENGINE_DESCRIPTION = """
+Parametric engine model as OpenMDAO component.
+
+Implementation of E. Roux models for fuel consumption of low bypass ratio engines
+For more information, see RubberEngine class in FAST-OAD developer documentation.
+"""
+
 # Atmosphere at limits of troposhere
 ATM_SEA_LEVEL = AtmosphereSI(0)
 ATM_TROPOPAUSE = AtmosphereSI(11000)
