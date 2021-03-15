@@ -19,7 +19,7 @@ distributed along the code.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterPropulsion, RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from .aerodynamics.aerodynamics_landing import AerodynamicsLanding
 from .aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
@@ -30,12 +30,9 @@ from .handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from .loops.compute_wing_area import ComputeWingArea
 from .performances.mission.openmdao.link_mtow import ComputeMTOW
 from .performances.mission.openmdao.mission import Mission
-from .propulsion.fuel_propulsion.rubber_engine import (
-    OMRubberEngineComponent,
-    OMRubberEngineWrapper,
-)
+from .propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
+from .propulsion.fuel_propulsion.rubber_engine.constants import RUBBER_ENGINE_DESCRIPTION
 from .weight.weight import Weight
-
 
 # Aerodynamics ################################################################
 RegisterOpenMDAOSystem("fastoad.aerodynamics.takeoff.legacy", domain=ModelDomain.AERODYNAMICS)(
@@ -76,19 +73,15 @@ RegisterOpenMDAOSystem("fastoad.weight.legacy", domain=ModelDomain.WEIGHT)(Weigh
 RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)(Mission)
 
 # Propulsion ##################################################################
-RUBBER_ENGINE_DESCRIPTION = """
-Parametric engine model as OpenMDAO component.
-
-Implementation of E. Roux models for fuel consumption of low bypass ratio engines
-For more information, see RubberEngine class in FAST-OAD developer documentation.
-"""
-
 RegisterOpenMDAOSystem(
     "fastoad.propulsion.rubber_engine",
     desc=RUBBER_ENGINE_DESCRIPTION,
     domain=ModelDomain.PROPULSION,
 )(OMRubberEngineComponent)
 
-RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine", desc=RUBBER_ENGINE_DESCRIPTION,)(
-    OMRubberEngineWrapper
-)
+# FIXME: for some reason, declaring here creates problems during tests when
+#  restarting iPOPO framework, and it works better when the decorator actually
+#  decorates the class.
+# RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine", desc=RUBBER_ENGINE_DESCRIPTION,)(
+#     OMRubberEngineWrapper
+# )
