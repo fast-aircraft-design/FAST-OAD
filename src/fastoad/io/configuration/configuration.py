@@ -32,8 +32,8 @@ from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.utils.files import make_parent_dir
 from . import resources
 from .exceptions import (
-    FASTConfigurationBaseKeyBuildingError,
     FASTConfigurationBadOpenMDAOInstructionError,
+    FASTConfigurationBaseKeyBuildingError,
 )
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -137,6 +137,9 @@ class FASTOADProblemConfigurator:
 
         if pth.splitext(self._conf_file)[-1] == ".toml":
             self._serializer = _TOMLSerializer()
+            _LOGGER.warning(
+                "TOML-formatted configuration files are deprecated. Please use YAML format."
+            )
         else:
             self._serializer = _YAMLSerializer()
         self._serializer.read(self._conf_file)
@@ -435,10 +438,6 @@ class _TOMLSerializer(_IDictSerializer):
     """TOML-format serializer."""
 
     def __init__(self):
-        warnings.warn(
-            "TOML-formatted configuration files are deprecated. Please use YAML format.",
-            DeprecationWarning,
-        )
         self._data = None
 
     @property
