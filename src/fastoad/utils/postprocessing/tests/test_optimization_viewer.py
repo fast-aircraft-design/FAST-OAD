@@ -37,7 +37,7 @@ def test_optimization_viewer_load(cleanup):
     """
     Basic tests for testing the OptimizationViewer load method.
     """
-    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
+    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.yml")
 
     # The problem has not yet been run
     problem_configuration = FASTOADProblemConfigurator(filename)
@@ -64,8 +64,8 @@ def test_optimization_viewer_save(cleanup):
     """
     Basic tests for testing the OptimizationViewer save method.
     """
-    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
-    new_filename = pth.join(RESULTS_FOLDER_PATH, "new_valid_sellar.toml")
+    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.yml")
+    new_filename = pth.join(RESULTS_FOLDER_PATH, "new_valid_sellar.yml")
     copyfile(filename, new_filename)
 
     # Loading new file
@@ -91,7 +91,7 @@ def test_optimization_viewer_display(cleanup):
     """
     Basic tests for testing the OptimizationViewer load method.
     """
-    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
+    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.yml")
 
     # The problem has not yet been ran
     problem_configuration = FASTOADProblemConfigurator(filename)

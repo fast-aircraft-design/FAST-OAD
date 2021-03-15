@@ -1,11 +1,8 @@
 title: Sellar
-
 module_folders:
-  - postproc_sellar_example
-
+- postproc_sellar_example
 input_file: ../results/inputs.xml
 output_file: ../results/outputs.xml
-
 driver: om.ScipyOptimizeDriver(optimizer='SLSQP')
 model:
   cycle:
@@ -17,15 +14,14 @@ model:
       id: postproc_test.sellar.disc2
   functions:
     id: postproc_test.sellar.functions
-
 optimization:
   constraint:
-    - name: g1
-    - name: g2
+  - name: g1
+  - name: g2
   design_var:
-    - name: x
-      upper: 10.0
-    - name: z
-      upper: 10.0
+  - name: x
+    upper: 10.0
+  - name: z
+    upper: 10.0
   objective:
-    - name: f
+  - name: f
