@@ -148,6 +148,8 @@ class FASTOADProblemConfigurator:
 
         # Looking for modules to register
         module_folder_paths = self._serializer.data.get(KEY_FOLDERS)
+        if isinstance(module_folder_paths, str):
+            module_folder_paths = [module_folder_paths]
         if module_folder_paths:
             for folder_path in module_folder_paths:
                 folder_path = pth.join(conf_dirname, str(folder_path))

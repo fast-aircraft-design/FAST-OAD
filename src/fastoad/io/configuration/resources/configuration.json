@@ -111,7 +111,7 @@
       "type": "string"
     },
     "module_folders": {
-      "type": [ "array", "null" ],
+      "type": [ "array", "string", "null" ],
       "items": {
         "type": "string"
       }

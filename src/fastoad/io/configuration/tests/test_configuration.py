@@ -93,6 +93,16 @@ def test_problem_definition_no_module_folder(cleanup):
         assert exc_info.value.factory_name == "configuration_test.sellar.functions"
 
 
+def test_problem_definition_module_folder_as_one_string(cleanup):
+    for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
+        conf = FASTOADProblemConfigurator()
+        conf.load(
+            pth.join(pth.dirname(__file__), "data", "module_folder_as_one_string.%s" % extension)
+        )
+        conf.get_problem()
+
+
 def test_problem_definition_correct_configuration(cleanup):
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
