@@ -25,6 +25,8 @@ import yaml
 from jsonschema import ValidationError
 
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+from fastoad.module_management import BundleLoader
+from fastoad.module_management.plugins import load_plugins
 from ..exceptions import FASTConfigurationBadOpenMDAOInstructionError
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -34,42 +36,55 @@ RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    yield
+    load_plugins()
 
 
-def test_problem_definition(cleanup):
-    """ Test conf definition from configuration files """
+def clear_openmdao_registry():
+    """Useful to reset the module folder exploration between each test."""
+    BundleLoader().framework.delete(force=True)
 
-    # no input file
+
+def test_problem_definition_no_input_file(cleanup):
     for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
         with pytest.raises(ValidationError) as exc_info:
             conf.load(pth.join(pth.dirname(__file__), "data", "missing_input_file.%s" % extension))
         assert exc_info.value.message == "'input_file' is a required property"
 
-    # no output file
+
+def test_problem_definition_no_output_file(cleanup):
     for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
         with pytest.raises(ValidationError) as exc_info:
             conf.load(pth.join(pth.dirname(__file__), "data", "missing_output_file.%s" % extension))
         assert exc_info.value.message == "'output_file' is a required property"
 
-    # Missing model definition
+
+def test_problem_definition_no_model(cleanup):
     for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
         with pytest.raises(ValidationError) as exc_info:
             conf.load(pth.join(pth.dirname(__file__), "data", "missing_model.%s" % extension))
         assert exc_info.value.message == "'model' is a required property"
 
-    # Incorrect attribute
+
+def test_problem_definition_incorrect_attribute(cleanup):
     for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
         conf.load(pth.join(pth.dirname(__file__), "data", "invalid_attribute.%s" % extension))
         with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
             problem = conf.get_problem(read_inputs=False)
         assert exc_info.value.key == "model.cycle.other_group.nonlinear_solver"
 
-    # Reading of correct conf definition
+
+def test_problem_definition_correct_configuration(cleanup):
     for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
         conf.load(pth.join(pth.dirname(__file__), "data", "valid_sellar.%s" % extension))
         assert conf.input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
@@ -99,6 +114,7 @@ def test_problem_definition(cleanup):
 def test_problem_definition_with_xml_ref(cleanup):
     """ Tests what happens when writing inputs using data from existing XML file"""
     for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
         conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension))
 
         input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
@@ -119,6 +135,7 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     and running an optimization problem
     """
     for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
         conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension))
 
         input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
@@ -147,6 +164,7 @@ def test_set_optimization_definition(cleanup):
     Tests the modification of the optimization definition in the configuration file
     """
     for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
         reference_file = pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension)
         editable_file = pth.join(RESULTS_FOLDER_PATH, "editable_valid_sellar.%s" % extension)
 
