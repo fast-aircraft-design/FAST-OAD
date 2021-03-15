@@ -50,7 +50,7 @@ class Main:
     # ACTIONS ======================================================================================
     @staticmethod
     def _generate_conf_file(args):
-        """Generates a sample TOML file."""
+        """Generates a sample configuration file."""
         try:
             api.generate_configuration_file(args.conf_file, args.force)
         except FastFileExistsError:
@@ -238,15 +238,15 @@ class Main:
             """\
             Examples:
             ---------
-            # For the problem defined in conf_file.toml, generates the input file with default 
+            # For the problem defined in conf_file.yml, generates the input file with default 
             # values (when default values are defined):
-                %(prog)s conf_file.toml
+                %(prog)s conf_file.yml
             
             # Same as above, except that values are taken from some_file.xml when possible:
-                %(prog)s conf_file.toml some_file.xml
+                %(prog)s conf_file.yml some_file.xml
 
             # Same as above, some_file.xml is in the legacy FAST schema
-                %(prog)s conf_file.toml some_file.xml --legacy
+                %(prog)s conf_file.yml some_file.xml --legacy
             """
         )
 

@@ -47,7 +47,7 @@ from . import resources
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
 
-SAMPLE_FILENAME = "fastoad.toml"
+SAMPLE_FILENAME = "fastoad.yml"
 MAX_TABLE_WIDTH = 200  # For variable list text output
 
 

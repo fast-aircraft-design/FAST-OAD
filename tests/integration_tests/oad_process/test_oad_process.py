@@ -14,17 +14,17 @@ Test module for Overall Aircraft Design process
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
 import os.path as pth
-import shutil
 from platform import system
-from shutil import rmtree
 
 import numpy as np
+from numpy.testing import assert_allclose
 import openmdao.api as om
+import os
 import pandas as pd
 import pytest
-from numpy.testing import assert_allclose
+import shutil
+from shutil import rmtree
 
 from fastoad import api
 from fastoad.io import VariableIO
@@ -50,7 +50,7 @@ def test_oad_process(cleanup):
     """
 
     problem = FASTOADProblemConfigurator(
-        pth.join(DATA_FOLDER_PATH, "oad_process.toml")
+        pth.join(DATA_FOLDER_PATH, "oad_process.yml")
     ).get_problem()
 
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
@@ -93,7 +93,7 @@ def test_oad_process(cleanup):
 
 def test_non_regression_breguet(cleanup):
     run_non_regression_test(
-        "oad_process_breguet.toml",
+        "oad_process_breguet.yml",
         "CeRAS01_legacy_breguet_result.xml",
         "non_regression_breguet",
         use_xfoil=True,
@@ -102,7 +102,7 @@ def test_non_regression_breguet(cleanup):
 
 def test_non_regression_mission_only(cleanup):
     run_non_regression_test(
-        "oad_process_mission_only.toml",
+        "oad_process_mission_only.yml",
         "CeRAS01_legacy_mission_result.xml",
         "non_regression_mission_only",
         use_xfoil=False,
@@ -114,7 +114,7 @@ def test_non_regression_mission_only(cleanup):
 
 def test_non_regression_mission(cleanup):
     run_non_regression_test(
-        "oad_process_mission.toml",
+        "oad_process_mission.yml",
         "CeRAS01_legacy_mission_result.xml",
         "non_regression_mission",
         use_xfoil=False,
@@ -226,7 +226,7 @@ def run_non_regression_test(
 
 def test_api_eval(cleanup):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval")
-    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
 
     # Generation of configuration file ----------------------------------------
     api.generate_configuration_file(configuration_file_path, True)
@@ -275,7 +275,7 @@ def test_api_eval(cleanup):
 
 def test_api_optim(cleanup):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_optim")
-    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
 
     # Generation of configuration file ----------------------------------------
     api.generate_configuration_file(configuration_file_path, True)

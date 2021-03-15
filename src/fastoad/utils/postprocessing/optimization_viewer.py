@@ -172,7 +172,7 @@ class OptimizationViewer:
         """
         Save the optimization to the files.
         Possible files modified are:
-            - the .toml configuration file
+            - the .yml configuration file
             - the input file (initial values)
             - the output file (values)
         """

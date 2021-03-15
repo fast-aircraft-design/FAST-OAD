@@ -28,7 +28,7 @@ from ..exceptions import FastFileExistsError
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
-CONFIGURATION_FILE_PATH = pth.join(DATA_FOLDER_PATH, "sellar.toml")
+CONFIGURATION_FILE_PATH = pth.join(DATA_FOLDER_PATH, "sellar.yml")
 
 
 @pytest.fixture(scope="module")
@@ -37,7 +37,7 @@ def cleanup():
 
 
 def test_generate_configuration_file(cleanup):
-    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "new_process.toml")
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "new_process.yml")
 
     api.generate_configuration_file(configuration_file_path, False)
     # Generating again without forcing overwrite will make it fail
