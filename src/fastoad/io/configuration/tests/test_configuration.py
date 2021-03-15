@@ -26,6 +26,7 @@ from jsonschema import ValidationError
 
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.module_management import BundleLoader
+from fastoad.module_management.exceptions import FastBundleLoaderUnknownFactoryNameError
 from fastoad.module_management.plugins import load_plugins
 from ..exceptions import FASTConfigurationBadOpenMDAOInstructionError
 
@@ -80,6 +81,16 @@ def test_problem_definition_incorrect_attribute(cleanup):
         with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
             problem = conf.get_problem(read_inputs=False)
         assert exc_info.value.key == "model.cycle.other_group.nonlinear_solver"
+
+
+def test_problem_definition_no_module_folder(cleanup):
+    for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
+        conf = FASTOADProblemConfigurator()
+        conf.load(pth.join(pth.dirname(__file__), "data", "no_module_folder.%s" % extension))
+        with pytest.raises(FastBundleLoaderUnknownFactoryNameError) as exc_info:
+            conf.get_problem()
+        assert exc_info.value.factory_name == "configuration_test.sellar.functions"
 
 
 def test_problem_definition_correct_configuration(cleanup):

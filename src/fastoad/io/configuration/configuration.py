@@ -147,13 +147,14 @@ class FASTOADProblemConfigurator:
         validate(self._serializer.data, json_schema)
 
         # Looking for modules to register
-        module_folder_paths = self._serializer.data.get(KEY_FOLDERS, [])
-        for folder_path in module_folder_paths:
-            folder_path = pth.join(conf_dirname, str(folder_path))
-            if not pth.exists(folder_path):
-                _LOGGER.warning("SKIPPED %s: it does not exist.")
-            else:
-                RegisterOpenMDAOSystem.explore_folder(folder_path)
+        module_folder_paths = self._serializer.data.get(KEY_FOLDERS)
+        if module_folder_paths:
+            for folder_path in module_folder_paths:
+                folder_path = pth.join(conf_dirname, str(folder_path))
+                if not pth.exists(folder_path):
+                    _LOGGER.warning("SKIPPED %s: it does not exist.")
+                else:
+                    RegisterOpenMDAOSystem.explore_folder(folder_path)
 
     def save(self, filename: str = None):
         """
