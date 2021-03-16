@@ -40,3 +40,4 @@ optimization:
       upper: 0
   objective:
     - name: f
+      scaler: 1e-1

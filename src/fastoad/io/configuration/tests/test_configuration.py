@@ -21,8 +21,8 @@ import numpy as np
 import openmdao.api as om
 import pytest
 import tomlkit
-import yaml
 from jsonschema import ValidationError
+from ruamel import yaml
 
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.module_management import BundleLoader
@@ -188,8 +188,6 @@ def test_set_optimization_definition(cleanup):
         clear_openmdao_registry()
         reference_file = pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension)
         editable_file = pth.join(RESULTS_FOLDER_PATH, "editable_valid_sellar.%s" % extension)
-
-        # copy(reference_file, editable_file)
 
         conf = FASTOADProblemConfigurator(reference_file)
 

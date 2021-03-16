@@ -23,8 +23,8 @@ from typing import Dict
 
 import openmdao.api as om
 import tomlkit
-import yaml
 from jsonschema import validate
+from ruamel import yaml
 
 from fastoad.io import IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
@@ -466,4 +466,4 @@ class _YAMLSerializer(_IDictSerializer):
 
     def write(self, file_path: str):
         with open(file_path, "w") as file:
-            yaml.dump(self._data, file, sort_keys=False)
+            yaml.round_trip_dump(self._data, file)
