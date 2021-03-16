@@ -50,11 +50,11 @@ model:
     id: fastoad.loop.wing_area
 
 optimization:  # This section is needed only if optimization process is run
-  design_var:
+  design_variables:
     - name: data:geometry:wing:MAC:at25percent:x
       lower: 16.0
       upper: 18.0
-  constraint:
+  constraints:
     - name: data:handling_qualities:static_margin
       lower: 0.05
       upper: 0.1
