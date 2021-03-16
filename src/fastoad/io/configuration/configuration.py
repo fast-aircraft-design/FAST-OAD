@@ -42,13 +42,13 @@ KEY_FOLDERS = "module_folders"
 KEY_INPUT_FILE = "input_file"
 KEY_OUTPUT_FILE = "output_file"
 KEY_COMPONENT_ID = "id"
-KEY_CONNECTION_ID = "connection"
-TABLE_MODEL = "model"
+KEY_CONNECTION_ID = "connections"
+KEY_MODEL = "model"
 KEY_DRIVER = "driver"
-TABLE_OPTIMIZATION = "optimization"
-TABLES_DESIGN_VAR = "design_var"
-TABLES_CONSTRAINT = "constraint"
-TABLES_OBJECTIVE = "objective"
+KEY_OPTIMIZATION = "optimization"
+KEY_DESIGN_VARIABLES = "design_variables"
+KEY_CONSTRAINTS = "constraints"
+KEY_OBJECTIVE = "objective"
 JSON_SCHEMA_NAME = "configuration.json"
 
 
@@ -202,7 +202,7 @@ class FASTOADProblemConfigurator:
         """
 
         optimization_definition = {}
-        conf_dict = self._serializer.data.get(TABLE_OPTIMIZATION)
+        conf_dict = self._serializer.data.get(KEY_OPTIMIZATION)
         if conf_dict:
             for sec, elements in conf_dict.items():
                 optimization_definition[sec] = {elem["name"]: elem for elem in elements}
@@ -236,7 +236,7 @@ class FASTOADProblemConfigurator:
         """
 
         model = AutoUnitsDefaultGroup()
-        model_definition = self._serializer.data.get(TABLE_MODEL)
+        model_definition = self._serializer.data.get(KEY_MODEL)
 
         try:
             if KEY_COMPONENT_ID in model_definition:
@@ -249,7 +249,7 @@ class FASTOADProblemConfigurator:
                 self._parse_problem_table(model, model_definition)
 
         except FASTConfigurationBaseKeyBuildingError as err:
-            log_err = err.__class__(err, TABLE_MODEL)
+            log_err = err.__class__(err, KEY_MODEL)
             _LOGGER.error(log_err)
             raise log_err
 
@@ -320,7 +320,7 @@ class FASTOADProblemConfigurator:
         """
         optimization_definition = self.get_optimization_definition()
         # Constraints
-        constraint_tables = optimization_definition.get(TABLES_CONSTRAINT, {})
+        constraint_tables = optimization_definition.get(KEY_CONSTRAINTS, {})
         for constraint_table in constraint_tables.values():
             if (
                 auto_scaling
@@ -342,7 +342,7 @@ class FASTOADProblemConfigurator:
         :return:
         """
         optimization_definition = self.get_optimization_definition()
-        objective_tables = optimization_definition.get(TABLES_OBJECTIVE, {})
+        objective_tables = optimization_definition.get(KEY_OBJECTIVE, {})
         for objective_table in objective_tables.values():
             model.add_objective(**objective_table)
 
@@ -355,7 +355,7 @@ class FASTOADProblemConfigurator:
         :return:
         """
         optimization_definition = self.get_optimization_definition()
-        design_var_tables = optimization_definition.get(TABLES_DESIGN_VAR, {})
+        design_var_tables = optimization_definition.get(KEY_DESIGN_VARIABLES, {})
         for design_var_table in design_var_tables.values():
             if (
                 auto_scaling
@@ -435,6 +435,10 @@ class _TOMLSerializer(_IDictSerializer):
     """TOML-format serializer."""
 
     def __init__(self):
+        warnings.warn(
+            "TOML-formatted configuration files are deprecated. Please use YAML format.",
+            DeprecationWarning,
+        )
         self._data = None
 
     @property

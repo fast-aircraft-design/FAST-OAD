@@ -2,7 +2,7 @@
 Defines the variable viewer for postprocessing
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -22,10 +22,15 @@ import ipysheet as sh
 import ipywidgets as widgets
 import numpy as np
 import pandas as pd
-from IPython.display import display, clear_output
+from IPython.display import clear_output, display
 
 from fastoad.io import VariableIO
-from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+from fastoad.io.configuration.configuration import (
+    FASTOADProblemConfigurator,
+    KEY_CONSTRAINTS,
+    KEY_DESIGN_VARIABLES,
+    KEY_OBJECTIVE,
+)
 from fastoad.openmdao.variables import VariableList
 from .exceptions import FastMissingFile
 
@@ -99,8 +104,8 @@ class OptimizationViewer:
         optimization_variables = VariableList()
         opt_def = problem_configuration.get_optimization_definition()
         # Design Variables
-        if "design_var" in opt_def:
-            for name, design_var in opt_def["design_var"].items():
+        if KEY_DESIGN_VARIABLES in opt_def:
+            for name, design_var in opt_def[KEY_DESIGN_VARIABLES].items():
                 initial_value = input_variables[name].value
                 if "lower" in design_var:
                     lower = design_var["lower"]
@@ -125,8 +130,8 @@ class OptimizationViewer:
                 optimization_variables[name] = metadata
 
         # Constraints
-        if "constraint" in opt_def:
-            for name, constr in opt_def["constraint"].items():
+        if KEY_CONSTRAINTS in opt_def:
+            for name, constr in opt_def[KEY_CONSTRAINTS].items():
                 if "lower" in constr:
                     lower = constr["lower"]
                 else:
@@ -150,8 +155,8 @@ class OptimizationViewer:
                 optimization_variables[name] = metadata
 
         # Objectives
-        if "objective" in opt_def:
-            for name, obj in opt_def["objective"].items():
+        if KEY_OBJECTIVE in opt_def:
+            for name in opt_def[KEY_OBJECTIVE]:
                 value = output_variables[name].value
                 units = output_variables[name].units
                 desc = output_variables[name].description
@@ -193,32 +198,32 @@ class OptimizationViewer:
                     output_var.value = meta["value"]
             if meta["type"] == "design_var":
                 # TODO: later it will be possible to add/remove design variables in the ui
-                if "design_var" not in opt_def:
-                    opt_def["design_var"] = {}
-                if name not in opt_def["design_var"]:
-                    opt_def["design_var"][name] = {}
+                if KEY_DESIGN_VARIABLES not in opt_def:
+                    opt_def[KEY_DESIGN_VARIABLES] = {}
+                if name not in opt_def[KEY_DESIGN_VARIABLES]:
+                    opt_def[KEY_DESIGN_VARIABLES][name] = {}
                 if meta["lower"] and not isnan(meta["lower"]):
-                    opt_def["design_var"][name].update({"lower": meta["lower"]})
+                    opt_def[KEY_DESIGN_VARIABLES][name].update({"lower": meta["lower"]})
                 else:
-                    opt_def["design_var"][name].pop("lower", None)
+                    opt_def[KEY_DESIGN_VARIABLES][name].pop("lower", None)
                 if meta["upper"] and not isnan(meta["upper"]):
-                    opt_def["design_var"][name].update({"upper": meta["upper"]})
+                    opt_def[KEY_DESIGN_VARIABLES][name].update({"upper": meta["upper"]})
                 else:
-                    opt_def["design_var"][name].pop("upper", None)
+                    opt_def[KEY_DESIGN_VARIABLES][name].pop("upper", None)
             elif meta["type"] == "constraint":
                 # TODO: later it will be possible to add/remove constraints in the ui
-                if "constraint" not in opt_def:
-                    opt_def["constraint"] = {}
-                if name not in opt_def["constraint"]:
-                    opt_def["constraint"][name] = {}
+                if KEY_CONSTRAINTS not in opt_def:
+                    opt_def[KEY_CONSTRAINTS] = {}
+                if name not in opt_def[KEY_CONSTRAINTS]:
+                    opt_def[KEY_CONSTRAINTS][name] = {}
                 if meta["lower"] and not isnan(meta["lower"]):
-                    opt_def["constraint"][name].update({"lower": meta["lower"]})
+                    opt_def[KEY_CONSTRAINTS][name].update({"lower": meta["lower"]})
                 else:
-                    opt_def["constraint"][name].pop("lower", None)
+                    opt_def[KEY_CONSTRAINTS][name].pop("lower", None)
                 if meta["upper"] and not isnan(meta["upper"]):
-                    opt_def["constraint"][name].update({"upper": meta["upper"]})
+                    opt_def[KEY_CONSTRAINTS][name].update({"upper": meta["upper"]})
                 else:
-                    opt_def["constraint"][name].pop("upper", None)
+                    opt_def[KEY_CONSTRAINTS][name].pop("upper", None)
             else:
                 pass
 

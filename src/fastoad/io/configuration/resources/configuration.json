@@ -39,7 +39,7 @@
           "type": "string",
           "default": "om.DirectSolver()"
         },
-        "connection": {
+        "connections": {
           "type": "array",
           "required": [
             "source",
@@ -135,13 +135,13 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "design_var": {
+        "design_variables": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/variable"
           }
         },
-        "constraint": {
+        "constraints": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/variable"

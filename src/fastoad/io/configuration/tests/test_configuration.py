@@ -24,10 +24,10 @@ import tomlkit
 from jsonschema import ValidationError
 from ruamel import yaml
 
-from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.module_management import BundleLoader
 from fastoad.module_management.exceptions import FastBundleLoaderUnknownFactoryNameError
 from fastoad.module_management.plugins import load_plugins
+from ..configuration import FASTOADProblemConfigurator
 from ..exceptions import FASTConfigurationBadOpenMDAOInstructionError
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -192,11 +192,11 @@ def test_set_optimization_definition(cleanup):
         conf = FASTOADProblemConfigurator(reference_file)
 
         optimization_def = {
-            "design_var": {
+            "design_variables": {
                 "x": {"name": "x", "lower": 0, "upper": 20},
                 "z": {"name": "z", "lower": 0, "upper": 10},
             },
-            "constraint": {
+            "constraints": {
                 "gg1": {"name": "gg1", "upper": 10},
                 "gg2": {"name": "gg2", "upper": 0},
             },
@@ -204,11 +204,11 @@ def test_set_optimization_definition(cleanup):
         }
 
         optimization_conf = {
-            "design_var": [
+            "design_variables": [
                 {"name": "x", "lower": 0, "upper": 20},
                 {"name": "z", "lower": 0, "upper": 10},
             ],
-            "constraint": [{"name": "gg1", "upper": 10}, {"name": "gg2", "upper": 0}],
+            "constraints": [{"name": "gg1", "upper": 10}, {"name": "gg2", "upper": 0}],
             "objective": [{"name": "f"}],
         }
 
