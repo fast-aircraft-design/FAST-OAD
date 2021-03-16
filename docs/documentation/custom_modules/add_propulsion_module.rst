@@ -211,20 +211,20 @@ of the configuration file.
 The association of the propulsion model to the performance module is done
 with the `propulsion_id` keyword, as in following example:
 
-.. code-block:: TOML
+.. code-block:: yaml
 
-    title = "OAD Process with custom propulsion model"
+
+    title: OAD Process with custom propulsion model
 
     # List of folder paths where user added custom registered OpenMDAO components
-    module_folders = ["/path/to/my/propulsion/wrapper/"]
+    module_folders:
+      - /path/to/my/propulsion/wrapper/
+
+    [ ... ]
 
     # Definition of OpenMDAO model
-    [model]
-        [ ... ]k
-
-        [model.performance]
-            id = "fastoad.performances.sizing_flight"
-            propulsion_id = "star.trek.propulsion"
-
-        [ ... ]
-
+    model:
+      [ ... ]
+      performance:
+        id: fastoad.performances.mission
+        propulsion_id: star.trek.propulsion

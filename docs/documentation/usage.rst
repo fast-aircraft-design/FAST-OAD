@@ -16,204 +16,236 @@ OpenMDAO systems. This part is addressed in the :ref:`API documentation<fastoad>
 ***************************
 FAST-OAD configuration file
 ***************************
-FAST-OAD configuration files are in `TOML format <https://github.com/toml-lang/toml#toml>`_.
+FAST-OAD configuration files are in `YAML <https://yaml.org>`_  format.
+A quick tutorial for YAML (among many ones) is available
+`here <https://www.cloudbees.com/blog/yaml-tutorial-everything-you-need-get-started/>`_
 
-.. code:: toml
 
-    title = "Sample OAD Process"
+.. code:: yaml
+
+    title: Sample OAD Process
 
     # List of folder paths where user added custom registered OpenMDAO components
-    module_folders = []
+    module_folders:
 
     # Input and output files
-    input_file = "./problem_inputs.xml"
-    output_file = "./problem_outputs.xml"
+    input_file: ./problem_inputs.xml
+    output_file: ./problem_outputs.xml
 
     # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
-    driver = "om.ScipyOptimizeDriver()"
+    driver: om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')
 
     # Definition of OpenMDAO model
-    [model]
-        # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
-        nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
-        linear_solver = "om.DirectSolver()"
+    model:
+      # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
+      nonlinear_solver: om.NonlinearBlockGS(maxiter=100)
+      linear_solver: om.DirectSolver()
 
-        # Although "model" is a mandatory name for the top level of the model, its sub-components can be freely named by user
-        [model.geometry]
-            # An OpenMDAO component is identified by its "id"
-            id = "fastoad.geometry.legacy"
-        [model.weight]
-            id = "fastoad.weight.legacy"
-        [model.aerodynamics.highspeed]
-            id = "fastoad.aerodynamics.highspeed.legacy"
-        [model.aerodynamics.landing]
-            id = "fastoad.aerodynamics.landing.legacy"
-            use_xfoil = false
-        [model.performance]
-            id = "fastoad.performances.breguet"
-        [model.propulsion]
-            id = "fastoad.propulsion.rubber_engine"
-        [model.hq.tail_sizing]
-            id = "fastoad.handling_qualities.tail_sizing"
-        [model.hq.static_margin]
-            id = "fastoad.handling_qualities.static_margin"
-            target = 0.05
-        [model.loop]
-            id = "fastoad.loop.wing_area"
+      # Although "model" is a mandatory name for the top level of the model, its
+      # sub-components can be freely named by user
+      geometry:
+        # An OpenMDAO component is identified by its "id"
+        id: fastoad.geometry.legacy
+      weight:
+        id: fastoad.weight.legacy
+      mtow:
+        id: fastoad.mass_performances.compute_MTOW
+      aerodynamics_highspeed:
+        id: fastoad.aerodynamics.highspeed.legacy
+      aerodynamics_lowspeed:
+        id: fastoad.aerodynamics.lowspeed.legacy
+      aerodynamics_takeoff:
+        id: fastoad.aerodynamics.takeoff.legacy
+      aerodynamics_landing:
+        id: fastoad.aerodynamics.landing.legacy
+        use_xfoil: no
+      performance:
+        id: fastoad.performances.mission
+        propulsion_id: fastoad.wrapper.propulsion.rubber_engine
+        mission_file_path: ::sizing_breguet
+        # mission_file_path: ::sizing_mission
+        out_file:  ./flight_points.csv
+        adjust_fuel: yes
+        is_sizing: yes
+      hq_tail_sizing:
+        id: fastoad.handling_qualities.tail_sizing
+      hq_static_margin:
+        id: fastoad.handling_qualities.static_margin
+      wing_area:
+        id: fastoad.loop.wing_area
 
-    [optimization]
-        [[optimization.design_var]]
-            name = "data:geometry:wing:MAC:at25percent:x"
-            lower = 10.0
-            upper = 25.0
-            ref = 15.0
+    optimization:  # This section is needed only if optimization process is run
+      design_var:
+        - name: data:geometry:wing:MAC:at25percent:x
+          lower: 16.0
+          upper: 18.0
+      constraint:
+        - name: data:handling_qualities:static_margin
+          lower: 0.05
+          upper: 0.1
+      objective:
+        - name: data:mission:sizing:fuel
 
-        [[optimization.design_var]]
-            name = "data:geometry:wing:aspect_ratio"
-            lower = 6.0
-            upper = 12.0
 
-        [[optimization.constraint]]
-            name = "data:geometry:wing:span"
-            upper = 35.0
-
-        [[optimization.objective]]
-            name = "data:handling_qualities:static_margin:to_target"
 
 Now in details:
 
 Custom module path
 ==================
 
-.. code:: toml
+.. code:: yaml
 
-    module_folders = []
+    module_folders:
 
 Provides the path where user can have his custom OpenMDAO modules. See section :ref:`add-modules`.
 
 Input and output files
 ======================
 
-.. code:: toml
+.. code:: yaml
 
-    input_file = "./problem_inputs.xml"
-    output_file = "./problem_outputs.xml"
+    input_file: ./problem_inputs.xml
+    output_file: ./problem_outputs.xml
 
-Specifies the input and output files of the problem. They are defined in the configuration file and DO NOT APPEAR in the command line interface.
+Specifies the input and output files of the problem. They are defined in the configuration file
+and DO NOT APPEAR in the command line interface.
 
 Problem driver
 ==============
 
-.. code:: toml
+.. code:: yaml
 
-    # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
-    driver = "om.ScipyOptimizeDriver()"
+    driver: om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')
 
-This belongs the domain of the OpenMDAO framework and its utilization. This setting is needed for optimization problems. It is defined as in Python when assuming the OpenMDAO convention :code:`import openmdao.api as om`.
+This belongs the domain of the OpenMDAO framework and its utilization. This setting is needed for
+optimization problems. It is defined as in Python when assuming the OpenMDAO convention
+:code:`import openmdao.api as om`.
 
 For more details, please see the OpenMDAO documentation on `drivers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/drivers/index.html>`_.
 
 Solvers
 =======
 
-.. code:: toml
+.. code:: yaml
 
-    [model]
-        nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
-        linear_solver = "om.DirectSolver()"
+    model:
+      nonlinear_solver: om.NonlinearBlockGS(maxiter=100)
+      linear_solver: om.DirectSolver()
 
-This is the starting point for defining the model of the problem. The model is a group of components.
-If the model involves cycles, which happens for instance when some outputs of A are inputs of B, and vice-versa, it is necessary to specify solvers as done above.
+This is the starting point for defining the model of the problem. The model is a group of
+components. If the model involves cycles, which happens for instance when some outputs of A are
+inputs of B, and vice-versa, it is necessary to specify solvers as done above.
 
-For more details, please see the OpenMDAO documentation on `nonlinear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/nonlinear/index.html>`_ and `linear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/linear/index.html>`_.
+For more details, please see the OpenMDAO documentation on
+`nonlinear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/nonlinear/index.html>`_
+and `linear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/linear/index.html>`_.
 
 
 Problem definition
 ==================
 
-.. code:: toml
+.. code:: yaml
 
-        [model.geometry]
-            # An OpenMDAO component is identified by its "id"
-            id = "fastoad.geometry.legacy"
-        [model.weight]
-            id = "fastoad.weight.legacy"
-        [model.aerodynamics.highspeed]
-            id = "fastoad.aerodynamics.highspeed.legacy"
-        [model.aerodynamics.landing]
-            id = "fastoad.aerodynamics.landing.legacy"
-            use_xfoil = false
-        [model.performance]
-            id = "fastoad.performances.breguet"
-        [model.propulsion]
-            id = "fastoad.propulsion.rubber_engine"
-        [model.hq.tail_sizing]
-            id = "fastoad.handling_qualities.tail_sizing"
-        [model.hq.static_margin]
-            id = "fastoad.handling_qualities.static_margin"
-            target = 0.05
-        [model.loop]
-            id = "fastoad.loop.wing_area"
+      # Although "model" is a mandatory name for the top level of the model, its
+      # sub-components can be freely named by user
+      geometry:
+        # An OpenMDAO component is identified by its "id"
+        id: fastoad.geometry.legacy
+      weight:
+        id: fastoad.weight.legacy
+      mtow:
+        id: fastoad.mass_performances.compute_MTOW
+      aerodynamics_highspeed:
+        id: fastoad.aerodynamics.highspeed.legacy
+      aerodynamics_lowspeed:
+        id: fastoad.aerodynamics.lowspeed.legacy
+      aerodynamics_takeoff:
+        id: fastoad.aerodynamics.takeoff.legacy
+      aerodynamics_landing:
+        id: fastoad.aerodynamics.landing.legacy
+        use_xfoil: no
+      performance:
+        id: fastoad.performances.mission
+        propulsion_id: fastoad.wrapper.propulsion.rubber_engine
+        mission_file_path: ::sizing_breguet
+        # mission_file_path: ::sizing_mission
+        out_file:  ./flight_points.csv
+        adjust_fuel: yes
+        is_sizing: yes
+      hq_tail_sizing:
+        id: fastoad.handling_qualities.tail_sizing
+      hq_static_margin:
+        id: fastoad.handling_qualities.static_margin
+      wing_area:
+        id: fastoad.loop.wing_area
 
-Components of the model can be systems, or sub-groups. They are defined with a
-section key like :code:`[model.<some_name>]`. Unlike "model", which is the root
-element, the name of sub-components can be defined freely by user.
+Components of the model can be systems, or sub-groups. They are defined as a sub-section of
+`model:`. Unlike "model", which is the root element, the name of sub-components can be defined
+freely by user.
 
-Here above are defined systems. A system is defined by its "id" key. See
-:ref:`get-system-list`.
+Here above are defined systems. A system is defined by its "id" key, but additional keys can be
+uses, depending on the defined system. See :ref:`get-system-list`.
 
 Optimization settings
 =====================
-This settings are used only when using optimization (see :ref:`run-problem-optim`). They are ignored when doing
-analysis (see :ref:`run-problem-eval`)
+This settings are used only when using optimization (see :ref:`run-problem-optim`). They are
+ignored when doing analysis (see :ref:`run-problem-eval`).
+
+The section is identified by:
+
+.. code:: yaml
+
+    optimization:
+
 
 Design variables
 ----------------
 
-.. code:: toml
+.. code:: yaml
 
-    [[optimization.design_var]]
-        name = "propulsion:MTO_thrust"
-        lower = 0
-        ref = 1.5e5
-        ref0 = 50000
+      design_var:
+        - name: data:geometry:wing:MAC:at25percent:x
+          lower: 16.0
+          upper: 18.0
 
 Here are defined design variables (relevant only for optimization).
-Keys of this section are named after parameters of the OpenMDAO `System.add_design_var() method <http://openmdao.org/twodocs/versions/latest/features/core_features/adding_desvars_objs_consts/adding_desvars.html?highlight=add_design_var>`_
+Keys of this section are named after parameters of the OpenMDAO
+`System.add_design_var() method <http://openmdao.org/twodocs/versions/latest/features/core_features/adding_desvars_objs_consts/adding_desvars.html?highlight=add_design_var>`_
 
-This section can be repeated several times to add as many design variables as necessary.
+Several design variables can be defined.
 
 Also, see :ref:`get-variable-list`.
 
 Objective function
 ------------------
 
-.. code:: toml
+.. code:: yaml
 
-    [[optimization.objective]]
-        name = "weight:aircraft:MTOW"
-        ref = 90000
-        ref0 = 60000
+      objective:
+        - name: data:mission:sizing:fuel
 
 Here is defined the objective function (relevant only for optimization).
-Keys of this section are named after parameters of the OpenMDAO `System.add_objective() method <http://openmdao.org/twodocs/versions/latest/features/core_features/adding_desvars_objs_consts/adding_objectives.html?highlight=add_objective>`_
+Keys of this section are named after parameters of the OpenMDAO
+`System.add_objective() method <http://openmdao.org/twodocs/versions/latest/features/core_features/adding_desvars_objs_consts/adding_objectives.html?highlight=add_objective>`_
+
+Only one objective variable can be defined.
 
 Also, see :ref:`get-variable-list`.
 
 Constraints
 -----------
 
-.. code:: toml
+.. code:: yaml
 
-    [[optimization.constraint]]
-        name = "propulsion:thrust_rate"
-        lower = 0
-        upper = 1
+      constraint:
+        - name: data:handling_qualities:static_margin
+          lower: 0.05
+          upper: 0.1
 
 Here are defined constraint variables (relevant only for optimization).
 Keys of this section are named after parameters of the OpenMDAO `System.add_constraint() method <http://openmdao.org/twodocs/versions/latest/features/core_features/adding_desvars_objs_consts/adding_constraints.html?highlight=add_constraint>`_
 
-This section can be repeated several times to add as many constraint variables as necessary.
+Several constraint variables can be defined.
 
 Also, see :ref:`get-variable-list`.
 
@@ -250,9 +282,9 @@ FAST-OAD can provide a ready-to use configuration file with:
 
 .. code:: shell-session
 
-    $ fastoad gen_conf my_conf.toml
+    $ fastoad gen_conf my_conf.yml
 
-This generates the file `my_conf.toml`
+This generates the file `my_conf.yml`
 
 
 .. _get-system-list:
@@ -269,13 +301,13 @@ List of FAST-OAD systems can be obtained with:
 
     $ fastoad list_systems
 
-If you added custom systems in your configuration file `my_conf.toml`
+If you added custom systems in your configuration file `my_conf.yml`
 (see `how to add custom OpenMDAO modules to FAST-OAD<Add modules>`),
 they can be listed along FAST-OAD systems with:
 
 .. code:: shell-session
 
-    $ fastoad list_systems my_conf.toml
+    $ fastoad list_systems my_conf.yml
 
 
 .. _get-variable-list:
@@ -283,12 +315,12 @@ they can be listed along FAST-OAD systems with:
 How to get list of variables
 ============================
 
-Once your problem is defined in `my_conf.toml`, you can get a list of the variables of
+Once your problem is defined in `my_conf.yml`, you can get a list of the variables of
 your problem with:
 
 .. code:: shell-session
 
-    $ fastoad list_variables my_conf.toml
+    $ fastoad list_variables my_conf.yml
 
 
 .. _generate-input-file:
@@ -296,12 +328,12 @@ your problem with:
 How to generate an input file
 =============================
 
-The name of the input file is defined in your configuration file `my_conf.toml`.
+The name of the input file is defined in your configuration file `my_conf.yml`.
 This input file can be generated with:
 
 .. code:: shell-session
 
-    $ fastoad gen_inputs my_conf.toml
+    $ fastoad gen_inputs my_conf.yml
 
 The generated file will be an XML file that contains needed inputs for your problem.
 Values will be the default values from system definitions, which means several ones
@@ -312,7 +344,7 @@ your new input files with:
 
 .. code:: shell-session
 
-    $ fastoad gen_inputs my_conf.toml my_ref_values.xml
+    $ fastoad gen_inputs my_conf.yml my_ref_values.xml
 
 If you are using the configuration file provided by the gen_conf sub-command (see :ref`Generate conf file`), you may download our `CeRAS01_baseline.xml <https://github.com/fast-aircraft-design/FAST-OAD/raw/v0.1a/src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml>`_ and use it as source for generating your input file.
 
@@ -338,7 +370,7 @@ You can create a :code:`n2.html` file with:
 
 .. code:: shell-session
 
-    $ fastoad n2 my_conf.toml
+    $ fastoad n2 my_conf.yml
 
 .. _xdsm_diagram:
 
@@ -359,7 +391,7 @@ You can create a :code:`xdsm.html` file with:
 
 .. code:: shell-session
 
-    $ fastoad xdsm my_conf.toml
+    $ fastoad xdsm my_conf.yml
 
 *Note: it may take a couple of minutes*
 
@@ -373,11 +405,11 @@ How to run the problem
 Run Multi-Disciplinary Analysis
 -------------------------------
 
-Once your problem is defined in `my_conf.toml`, you can simply run it with:
+Once your problem is defined in `my_conf.yml`, you can simply run it with:
 
 .. code:: shell-session
 
-    $ fastoad eval my_conf.toml
+    $ fastoad eval my_conf.yml
 
 *Note: this is equivalent to OpenMDAO's run_model()*
 
@@ -391,7 +423,7 @@ You can also run the defined optimization with:
 
 .. code:: shell-session
 
-    $ fastoad optim my_conf.toml
+    $ fastoad optim my_conf.yml
 
 *Note: this is equivalent to OpenMDAO's run_driver()*
 
