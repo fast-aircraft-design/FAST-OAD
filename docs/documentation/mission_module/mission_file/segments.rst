@@ -273,6 +273,12 @@ There are some special parameters that are detailed below.
 Expected value for :code:`engine_setting` are :code:`takeoff`, :code:`climb`
 , :code:`cruise` or :code:`idle`
 
+This setting is used by the "rubber engine" propulsion model
+(see :class:`~fastoad.models.propulsion.fuel_propulsion.rubber_engine.rubber_engine.RubberEngine`).
+It roughly links the "turbine inlet temperature" (a.k.a. T4) to the flight conditions.
+
+If another propulsion model is used, this parameter may become irrelevant, and then can be omitted.
+
 
 .. _segment-parameter-polar:
 
