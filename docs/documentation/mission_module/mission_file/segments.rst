@@ -122,13 +122,13 @@ Examples:
 :code:`cruise`
 ==============
 
-A :code:`cruise`segment simulates a flight part at constant speed and altitude, and regulated
+A :code:`cruise` segment simulates a flight part at constant speed and altitude, and regulated
 thrust rate (drag is compensated).
 
 Optionally, target altitude can be set to :code:`optimal_flight_level`. In such case, cruise will
 be preceded by a climb segment that will put the aircraft at the altitude that will minimize the
 fuel consumption for the whole segment (including the prepending climb).
-This option is available because the :ref:`segment-altitude_change`segment can reach an altitude
+This option is available because the :ref:`segment-altitude_change` segment can reach an altitude
 that will optimize the lift/drag ratio at current mass, but the obtained altitude will not
 guaranty an optimal fuel consumption for the whole cruise.
 
@@ -214,7 +214,7 @@ Example:
 :code:`taxi`
 ============
 
-A :code:`taxi`segment simulates the mission parts between gate and takeoff or landing, at constant
+A :code:`taxi` segment simulates the mission parts between gate and takeoff or landing, at constant
 thrust rate. It ends when the target time is covered.
 
 Python documentation: :class:`~fastoad.models.performances.mission.segments.taxi.TaxiSegment`

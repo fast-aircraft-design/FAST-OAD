@@ -57,7 +57,7 @@ Other mission-related variables are:
 Usage in FAST-OAD configuration file
 ************************************
 
-The mission module can be used with the identifier :code`"fastoad.performances.mission"`.
+The mission module can be used with the identifier :code`fastoad.performances.mission`.
 
 The available parameters for this module are:
 
