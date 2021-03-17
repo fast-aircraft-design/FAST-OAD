@@ -139,7 +139,7 @@ class XFOILConfigurator(_IConfigurationModifier):
             if system() != "Windows":
                 problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = xfoil_path
             # BTW we narrow computed alpha range for sake of CPU time
-            problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 18.0
+            problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 16.0
             problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_max"] = 22.0
 
 
