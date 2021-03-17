@@ -24,10 +24,10 @@ from typing import Dict
 import openmdao.api as om
 import tomlkit
 from jsonschema import validate
+from openmdao.core.indepvarcomp import IndepVarComp
 from ruamel import yaml
 
-from fastoad.io import IVariableIOFormatter
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.utils.files import make_parent_dir
 from . import resources
@@ -35,6 +35,8 @@ from .exceptions import (
     FASTConfigurationBaseKeyBuildingError,
     FASTConfigurationBadOpenMDAOInstructionError,
 )
+from ...module_management.service_registry import RegisterOpenMDAOSystem
+from ...openmdao.variables import VariableList
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -65,6 +67,10 @@ class FASTOADProblemConfigurator:
         self._conf_file = None
 
         self._serializer = _YAMLSerializer()
+
+        # self._configuration_modifier offers a way to modify problems after
+        # they have been generated from configuration (private usage for now)
+        self._configuration_modifier: "_IConfigurationModifier" = None
 
         if conf_file_path:
             self.load(conf_file_path)
@@ -106,7 +112,14 @@ class FASTOADProblemConfigurator:
         if self._serializer.data is None:
             raise RuntimeError("read configuration file first")
 
-        problem = FASTOADProblem(self._build_model())
+        if read_inputs:
+            reader = VariableIO(self.input_file_path)
+            variables = reader.read()
+            input_ivc = variables.to_ivc()
+        else:
+            input_ivc = None
+
+        problem = FASTOADProblem(self._build_model(input_ivc))
 
         problem.input_file_path = self.input_file_path
         problem.output_file_path = self.output_file_path
@@ -120,8 +133,10 @@ class FASTOADProblemConfigurator:
             self._add_objectives(problem.model)
 
         if read_inputs:
-            problem.read_inputs()
             self._add_design_vars(problem.model, auto_scaling)
+
+        if self._configuration_modifier:
+            self._configuration_modifier.modify(problem)
 
         return problem
 
@@ -189,7 +204,14 @@ class FASTOADProblemConfigurator:
         """
         problem = self.get_problem(read_inputs=False)
         problem.setup()
-        problem.write_needed_inputs(source_file_path, source_formatter)
+        variables = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
+        if source_file_path:
+            ref_vars = VariableIO(source_file_path, source_formatter).read()
+            variables.update(ref_vars)
+            for var in variables:
+                var.is_input = True
+        writer = VariableIO(problem.input_file_path)
+        writer.write(variables)
 
     def get_optimization_definition(self) -> Dict:
         """
@@ -225,7 +247,7 @@ class FASTOADProblemConfigurator:
         subpart = {"optimization": subpart}
         self._serializer.data.update(subpart)
 
-    def _build_model(self) -> om.Group:
+    def _build_model(self, input_ivc: IndepVarComp = None) -> om.Group:
         """
         Builds the model as defined in the configuration file.
 
@@ -236,6 +258,9 @@ class FASTOADProblemConfigurator:
         """
 
         model = AutoUnitsDefaultGroup()
+        if input_ivc:
+            model.add_subsystem("fastoad_inputs", input_ivc, promotes=["*"])
+
         model_definition = self._serializer.data.get(TABLE_MODEL)
 
         try:
@@ -369,6 +394,9 @@ class FASTOADProblemConfigurator:
                 design_var_table["ref"] = design_var_table["upper"]
             model.add_design_var(**design_var_table)
 
+    def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
+        self._configuration_modifier = modifier
+
 
 def _om_eval(string_to_eval: str):
     """
@@ -467,3 +495,17 @@ class _YAMLSerializer(_IDictSerializer):
     def write(self, file_path: str):
         with open(file_path, "w") as file:
             yaml.round_trip_dump(self._data, file)
+
+
+class _IConfigurationModifier(ABC):
+    """
+    Interface for a configuration modifier used in FASTOADProblemConfigurator.
+    """
+
+    @abstractmethod
+    def modify(self, problem: om.Problem):
+        """
+        This method will do operations on the provided problem.
+
+        problem.setup() is assumed NOT called.
+        """
