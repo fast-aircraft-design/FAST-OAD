@@ -2,7 +2,7 @@
 API
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -47,7 +47,7 @@ from . import resources
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
 
-SAMPLE_FILENAME = "fastoad.toml"
+SAMPLE_FILENAME = "fastoad"
 MAX_TABLE_WIDTH = 200  # For variable list text output
 
 
@@ -68,7 +68,9 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
     make_parent_dir(configuration_file_path)
 
-    copy_resource(resources, SAMPLE_FILENAME, configuration_file_path)
+    file_ext = pth.splitext(configuration_file_path)[1]
+
+    copy_resource(resources, SAMPLE_FILENAME + file_ext, configuration_file_path)
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
 
 

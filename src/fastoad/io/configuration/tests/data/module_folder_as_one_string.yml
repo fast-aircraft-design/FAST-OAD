@@ -1,0 +1,11 @@
+title: Sellar
+
+module_folders: conf_sellar_example
+
+input_file: ../results/inputs.xml
+output_file: ../results/outputs.xml
+
+driver: om.ScipyOptimizeDriver(optimizer='SLSQP')
+model:
+  functions:
+    id: configuration_test.sellar.functions

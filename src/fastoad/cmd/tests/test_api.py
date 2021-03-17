@@ -2,7 +2,7 @@
 Tests for basic API
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +28,7 @@ from ..exceptions import FastFileExistsError
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
-CONFIGURATION_FILE_PATH = pth.join(DATA_FOLDER_PATH, "sellar.toml")
+CONFIGURATION_FILE_PATH = pth.join(DATA_FOLDER_PATH, "sellar.yml")
 
 
 @pytest.fixture(scope="module")
@@ -37,7 +37,7 @@ def cleanup():
 
 
 def test_generate_configuration_file(cleanup):
-    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "new_process.toml")
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "new_process.yml")
 
     api.generate_configuration_file(configuration_file_path, False)
     # Generating again without forcing overwrite will make it fail
@@ -45,7 +45,7 @@ def test_generate_configuration_file(cleanup):
         api.generate_configuration_file(configuration_file_path, False)
     api.generate_configuration_file(configuration_file_path, True)
 
-    original_file = pth.join(pth.dirname(api.__file__), "resources", SAMPLE_FILENAME)
+    original_file = pth.join(pth.dirname(api.__file__), "resources", SAMPLE_FILENAME + ".yml")
     assert cmp(configuration_file_path, original_file)
 
 

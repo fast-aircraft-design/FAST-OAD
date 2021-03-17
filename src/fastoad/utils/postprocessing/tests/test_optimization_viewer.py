@@ -2,7 +2,7 @@
 Tests for FAST-OAD optimization viewer
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -37,7 +37,7 @@ def test_optimization_viewer_load(cleanup):
     """
     Basic tests for testing the OptimizationViewer load method.
     """
-    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
+    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.yml")
 
     # The problem has not yet been run
     problem_configuration = FASTOADProblemConfigurator(filename)
@@ -64,12 +64,12 @@ def test_optimization_viewer_save(cleanup):
     """
     Basic tests for testing the OptimizationViewer save method.
     """
-    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
-    new_filename = pth.join(RESULTS_FOLDER_PATH, "new_valid_sellar.toml")
+    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.yml")
+    new_filename = pth.join(RESULTS_FOLDER_PATH, "new_valid_sellar.yml")
     copyfile(filename, new_filename)
 
     # Loading new file
-    problem_configuration = FASTOADProblemConfigurator(filename)
+    problem_configuration = FASTOADProblemConfigurator(new_filename)
 
     optim_viewer = OptimizationViewer()
 
@@ -91,7 +91,7 @@ def test_optimization_viewer_display(cleanup):
     """
     Basic tests for testing the OptimizationViewer load method.
     """
-    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
+    filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.yml")
 
     # The problem has not yet been ran
     problem_configuration = FASTOADProblemConfigurator(filename)

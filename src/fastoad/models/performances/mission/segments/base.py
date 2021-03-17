@@ -43,7 +43,7 @@ class FlightSegment(IFlightPart):
     As a dataclass, attributes can be set at instantiation.
     """
 
-    #: A FlightPoint instance that provide parameter values that should all be reached at the
+    #: A FlightPoint instance that provides parameter values that should all be reached at the
     #: end of :meth:`compute_from`. Possible parameters depend on the current segment. A parameter
     #: can also be set to :attr:`CONSTANT_VALUE` to tell that initial value should be kept during
     #: all segment.
@@ -52,11 +52,11 @@ class FlightSegment(IFlightPart):
     #: A IPropulsion instance that will be called at each time step.
     propulsion: IPropulsion
 
-    #: The reference area, in m**2.
-    reference_area: float
-
     #: The Polar instance that will provide drag data.
     polar: Polar
+
+    #: The reference area, in m**2.
+    reference_area: float
 
     #: Used time step for computation (actual time step can be lower at some particular times of
     #: the flight path).
@@ -83,6 +83,10 @@ class FlightSegment(IFlightPart):
 
     #: Using this value will tell to keep the associated parameter constant.
     CONSTANT_VALUE = "constant"  # pylint: disable=invalid-name # used as constant
+
+    def __post_init__(self):
+        # Ensure target fields are not numpy arrays
+        self.target.scalarize()
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
@@ -124,6 +128,12 @@ class FlightSegment(IFlightPart):
                     :param time_step: time step for new point
                     :return: new distance to target
                     """
+
+                    if isinstance(time_step, np.ndarray):
+                        # root_scalar() will provide time_step ad (1,) array, resulting
+                        # in all parameters of the new flight point being also (1,) arrays.
+                        # We want to avoid that
+                        time_step = time_step.item()
                     del flight_points[-1]
                     self._add_new_flight_point(flight_points, time_step)
                     return self._get_distance_to_target(flight_points)
@@ -257,9 +267,9 @@ class FlightSegment(IFlightPart):
         atm = AtmosphereSI(flight_point.altitude)
 
         if flight_point.true_airspeed is None:
-            if flight_point.mach:
+            if flight_point.mach is not None:
                 flight_point.true_airspeed = flight_point.mach * atm.speed_of_sound
-            elif flight_point.equivalent_airspeed:
+            elif flight_point.equivalent_airspeed is not None:
                 flight_point.true_airspeed = atm.get_true_airspeed(flight_point.equivalent_airspeed)
             else:
                 raise FastFlightSegmentIncompleteFlightPoint(

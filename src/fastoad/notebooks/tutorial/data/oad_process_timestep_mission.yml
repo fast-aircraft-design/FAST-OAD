@@ -1,0 +1,63 @@
+title: Sample OAD Process
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+# Input and output files
+input_file: ./problem_inputs.xml
+output_file: ./problem_outputs.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')
+
+# Definition of OpenMDAO model
+model:
+  # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
+  nonlinear_solver: om.NonlinearBlockGS(maxiter=100)
+  linear_solver: om.DirectSolver()
+
+  # Although "model" is a mandatory name for the top level of the model, its
+  # sub-components can be freely named by user
+  geometry:
+    # An OpenMDAO component is identified by its "id"
+    id: fastoad.geometry.legacy
+  weight:
+    id: fastoad.weight.legacy
+  mtow:
+    id: fastoad.mass_performances.compute_MTOW
+  aerodynamics_highspeed:
+    id: fastoad.aerodynamics.highspeed.legacy
+  aerodynamics_lowspeed:
+    id: fastoad.aerodynamics.lowspeed.legacy
+  aerodynamics_takeoff:
+    id: fastoad.aerodynamics.takeoff.legacy
+  aerodynamics_landing:
+    id: fastoad.aerodynamics.landing.legacy
+    use_xfoil: false
+  performance:
+    id: fastoad.performances.mission
+    propulsion_id: fastoad.wrapper.propulsion.rubber_engine
+    out_file: ./flight_points.csv
+    adjust_fuel: true
+    add_solver: false
+    is_sizing: true
+    use_initializer_iteration: true
+  hq_tail_sizing:
+    id: fastoad.handling_qualities.tail_sizing
+  hq_static_margin:
+    id: fastoad.handling_qualities.static_margin
+  wing_area:
+    id: fastoad.loop.wing_area
+
+optimization: # This section is needed only if optimization process is run
+  design_variables:
+    - name: data:geometry:wing:MAC:at25percent:x
+      lower: 16.0
+      upper: 18.0
+  constraints:
+    - name: data:handling_qualities:static_margin
+      lower: 0.05
+      upper: 0.1
+  objective:
+    - name: data:mission:sizing:fuel
+      scaler: 1.e-4

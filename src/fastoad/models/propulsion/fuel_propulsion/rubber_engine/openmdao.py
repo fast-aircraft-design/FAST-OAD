@@ -20,10 +20,13 @@ from fastoad.model_base.propulsion import (
     IOMPropulsionWrapper,
     BaseOMPropulsionComponent,
 )
+from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
+from .constants import RUBBER_ENGINE_DESCRIPTION
 from .rubber_engine import RubberEngine
 
 
+@RegisterPropulsion("fastoad.wrapper.propulsion.rubber_engine", desc=RUBBER_ENGINE_DESCRIPTION)
 class OMRubberEngineWrapper(IOMPropulsionWrapper):
     """
     Wrapper class of for rubber engine model.

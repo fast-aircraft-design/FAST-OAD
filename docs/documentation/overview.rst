@@ -39,7 +39,7 @@ Overview of FAST-OAD files
 **************************
 A typical run of FAST-OAD uses two types of user files:
 
-configuration file (**.toml**)
+configuration file (**.yml**)
 ==============================
 
 This file defines the OpenMDAO problem by defining :

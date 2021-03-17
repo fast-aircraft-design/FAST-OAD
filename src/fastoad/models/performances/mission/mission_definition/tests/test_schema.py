@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,21 +23,42 @@ def test_schema():
     d = MissionDefinition(pth.join(DATA_FOLDER_PATH, "mission.yml"))
 
     assert d == {
-        "mission": OrderedDict(
+        "missions": OrderedDict(
             [
-                ("name", "sizing"),
                 (
-                    "steps",
-                    [
-                        OrderedDict([("route", "main")]),
-                        OrderedDict([("route", "diversion")]),
-                        OrderedDict([("phase", "holding")]),
-                        OrderedDict([("phase", "taxi_in")]),
-                    ],
+                    "sizing",
+                    OrderedDict(
+                        [
+                            (
+                                "parts",
+                                [
+                                    OrderedDict([("route", "main")]),
+                                    OrderedDict([("route", "diversion")]),
+                                    OrderedDict([("phase", "holding")]),
+                                    OrderedDict([("phase", "taxi_in")]),
+                                ],
+                            )
+                        ]
+                    ),
+                ),
+                (
+                    "operational",
+                    OrderedDict(
+                        [
+                            (
+                                "parts",
+                                [
+                                    OrderedDict([("phase", "taxi_out")]),
+                                    OrderedDict([("route", "main")]),
+                                    OrderedDict([("phase", "taxi_in")]),
+                                ],
+                            )
+                        ]
+                    ),
                 ),
             ]
         ),
-        "phase_definitions": OrderedDict(
+        "phases": OrderedDict(
             [
                 (
                     "initial_climb",
@@ -48,9 +69,9 @@ def test_schema():
                                 "polar",
                                 OrderedDict([("CL", [0.0, 0.5, 1.0]), ("CD", [0.0, 0.03, 0.12])]),
                             ),
-                            ("thrust_rate", "data:mission:sizing:climb:thrust_rate"),
+                            ("thrust_rate", OrderedDict([("value", 1.0)])),
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -163,9 +184,9 @@ def test_schema():
                                     ]
                                 ),
                             ),
-                            ("thrust_rate", "data:mission:sizing:climb:thrust_rate"),
+                            ("thrust_rate", "data:propulsion:climb:thrust_rate"),
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -244,10 +265,10 @@ def test_schema():
                     ),
                 ),
                 (
-                    "descent",
+                    "diversion_climb",
                     OrderedDict(
                         [
-                            ("engine_setting", "idle"),
+                            ("engine_setting", "climb"),
                             (
                                 "polar",
                                 OrderedDict(
@@ -257,9 +278,89 @@ def test_schema():
                                     ]
                                 ),
                             ),
-                            ("thrust_rate", "data:mission:sizing:descent:thrust_rate"),
+                            ("thrust_rate", 0.93),
+                            ("time_step", OrderedDict([("value", 5.0), ("unit", "s")])),
                             (
-                                "steps",
+                                "parts",
+                                [
+                                    OrderedDict(
+                                        [
+                                            ("segment", "altitude_change"),
+                                            (
+                                                "target",
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "altitude",
+                                                            OrderedDict(
+                                                                [("value", 10000.0), ("unit", "ft")]
+                                                            ),
+                                                        ),
+                                                        ("equivalent_airspeed", "constant"),
+                                                    ]
+                                                ),
+                                            ),
+                                        ]
+                                    ),
+                                    OrderedDict(
+                                        [
+                                            ("segment", "speed_change"),
+                                            (
+                                                "target",
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "equivalent_airspeed",
+                                                            OrderedDict(
+                                                                [("value", 300.0), ("unit", "kn")]
+                                                            ),
+                                                        )
+                                                    ]
+                                                ),
+                                            ),
+                                        ]
+                                    ),
+                                    OrderedDict(
+                                        [
+                                            ("segment", "altitude_change"),
+                                            (
+                                                "target",
+                                                OrderedDict(
+                                                    [
+                                                        (
+                                                            "altitude",
+                                                            OrderedDict(
+                                                                [("value", 22000.0), ("unit", "ft")]
+                                                            ),
+                                                        ),
+                                                        ("equivalent_airspeed", "constant"),
+                                                    ]
+                                                ),
+                                            ),
+                                        ]
+                                    ),
+                                ],
+                            ),
+                        ]
+                    ),
+                ),
+                (
+                    "descent",
+                    OrderedDict(
+                        [
+                            ("engine_setting", OrderedDict([("value", "idle")])),
+                            (
+                                "polar",
+                                OrderedDict(
+                                    [
+                                        ("CL", "data:aerodynamics:aircraft:cruise:CL"),
+                                        ("CD", "data:aerodynamics:aircraft:cruise:CD"),
+                                    ]
+                                ),
+                            ),
+                            ("thrust_rate", "data:propulsion:descent:thrust_rate"),
+                            (
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -334,12 +435,7 @@ def test_schema():
                                                             "equivalent_airspeed",
                                                             OrderedDict([("value", "constant")]),
                                                         ),
-                                                        (
-                                                            "altitude",
-                                                            OrderedDict(
-                                                                [("value", 1500.0), ("unit", "ft")]
-                                                            ),
-                                                        ),
+                                                        ("altitude", "~final_altitude"),
                                                     ]
                                                 ),
                                             ),
@@ -355,7 +451,7 @@ def test_schema():
                     OrderedDict(
                         [
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
@@ -375,17 +471,26 @@ def test_schema():
                                                     ]
                                                 ),
                                             ),
-                                            (
-                                                "target",
-                                                OrderedDict(
-                                                    [
-                                                        (
-                                                            "time",
-                                                            "data:mission:sizing:holding:duration",
-                                                        )
-                                                    ]
-                                                ),
-                                            ),
+                                            ("target", OrderedDict([("time", "~duration")])),
+                                        ]
+                                    )
+                                ],
+                            )
+                        ]
+                    ),
+                ),
+                (
+                    "taxi_out",
+                    OrderedDict(
+                        [
+                            (
+                                "parts",
+                                [
+                                    OrderedDict(
+                                        [
+                                            ("segment", "taxi"),
+                                            ("thrust_rate", "~"),
+                                            ("target", OrderedDict([("time", "~duration")])),
                                         ]
                                     )
                                 ],
@@ -397,72 +502,56 @@ def test_schema():
                     "taxi_in",
                     OrderedDict(
                         [
+                            ("thrust_rate", "~"),
                             (
-                                "steps",
+                                "parts",
                                 [
                                     OrderedDict(
                                         [
                                             ("segment", "taxi"),
-                                            (
-                                                "thrust_rate",
-                                                "data:mission:sizing:taxi_in:thrust_rate",
-                                            ),
-                                            (
-                                                "target",
-                                                OrderedDict(
-                                                    [
-                                                        (
-                                                            "time",
-                                                            "data:mission:sizing:taxi_in:duration",
-                                                        )
-                                                    ]
-                                                ),
-                                            ),
+                                            ("target", OrderedDict([("time", "~duration")])),
                                         ]
                                     )
                                 ],
-                            )
+                            ),
                         ]
                     ),
                 ),
             ]
         ),
-        "route_definitions": OrderedDict(
+        "routes": OrderedDict(
             [
                 (
                     "main",
                     OrderedDict(
                         [
-                            ("range", "data:TLAR:range"),
+                            ("range", "~"),
                             (
-                                "steps",
+                                "climb_parts",
                                 [
                                     OrderedDict([("phase", "initial_climb")]),
                                     OrderedDict([("phase", "climb")]),
-                                    OrderedDict(
-                                        [
-                                            ("cruise_type", "optimal_cruise"),
-                                            ("engine_setting", "cruise"),
-                                            (
-                                                "polar",
-                                                OrderedDict(
-                                                    [
-                                                        (
-                                                            "CL",
-                                                            "data:aerodynamics:aircraft:cruise:CL",
-                                                        ),
-                                                        (
-                                                            "CD",
-                                                            "data:aerodynamics:aircraft:cruise:CD",
-                                                        ),
-                                                    ]
-                                                ),
-                                            ),
-                                        ]
-                                    ),
-                                    OrderedDict([("phase", "descent")]),
                                 ],
                             ),
+                            (
+                                "cruise_part",
+                                OrderedDict(
+                                    [
+                                        ("segment", "optimal_cruise"),
+                                        ("engine_setting", "cruise"),
+                                        (
+                                            "polar",
+                                            OrderedDict(
+                                                [
+                                                    ("CL", "data:aerodynamics:aircraft:cruise:CL"),
+                                                    ("CD", "data:aerodynamics:aircraft:cruise:CD"),
+                                                ]
+                                            ),
+                                        ),
+                                    ]
+                                ),
+                            ),
+                            ("descent_parts", [OrderedDict([("phase", "descent")])]),
                         ]
                     ),
                 ),
@@ -470,56 +559,27 @@ def test_schema():
                     "diversion",
                     OrderedDict(
                         [
-                            ("range", "data:mission:sizing:diversion:distance"),
+                            ("range", "~"),
+                            ("climb_parts", [OrderedDict([("phase", "diversion_climb")])]),
                             (
-                                "steps",
-                                [
-                                    OrderedDict(
-                                        [
-                                            ("phase", "climb"),
-                                            (
-                                                "target",
-                                                OrderedDict(
-                                                    [
-                                                        (
-                                                            "altitude",
-                                                            OrderedDict(
-                                                                [("value", 22000.0), ("unit", "ft")]
-                                                            ),
-                                                        ),
-                                                        (
-                                                            "equivalent_airspeed",
-                                                            OrderedDict([("value", "constant")]),
-                                                        ),
-                                                    ]
-                                                ),
+                                "cruise_part",
+                                OrderedDict(
+                                    [
+                                        ("segment", "cruise"),
+                                        ("engine_setting", "cruise"),
+                                        (
+                                            "polar",
+                                            OrderedDict(
+                                                [
+                                                    ("CL", "data:aerodynamics:aircraft:cruise:CL"),
+                                                    ("CD", "data:aerodynamics:aircraft:cruise:CD"),
+                                                ]
                                             ),
-                                        ]
-                                    ),
-                                    OrderedDict(
-                                        [
-                                            ("cruise_type", "cruise"),
-                                            ("engine_setting", "cruise"),
-                                            (
-                                                "polar",
-                                                OrderedDict(
-                                                    [
-                                                        (
-                                                            "CL",
-                                                            "data:aerodynamics:aircraft:cruise:CL",
-                                                        ),
-                                                        (
-                                                            "CD",
-                                                            "data:aerodynamics:aircraft:cruise:CD",
-                                                        ),
-                                                    ]
-                                                ),
-                                            ),
-                                        ]
-                                    ),
-                                    OrderedDict([("phase", "descent")]),
-                                ],
+                                        ),
+                                    ]
+                                ),
                             ),
+                            ("descent_parts", [OrderedDict([("phase", "descent")])]),
                         ]
                     ),
                 ),

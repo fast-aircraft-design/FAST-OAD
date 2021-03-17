@@ -1,10 +1,10 @@
-phase_definitions:
+phases:
   initial_climb:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
     thrust_rate: 1.0
     time_step: 0.2
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -28,7 +28,7 @@ phase_definitions:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:mission:sizing:climb:thrust_rate
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -54,7 +54,7 @@ phase_definitions:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:mission:sizing:climb:thrust_rate
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -77,7 +77,7 @@ phase_definitions:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:mission:sizing:descent:thrust_rate
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           equivalent_airspeed:
@@ -102,44 +102,51 @@ phase_definitions:
             value: 1500.
             unit: ft
   holding:
-    steps:
+    parts:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
           time: data:mission:sizing:holding:duration
   taxi_in:
-    steps:
+    parts:
       - segment: taxi
         thrust_rate: data:mission:sizing:taxi_in:thrust_rate
         target:
           time: data:mission:sizing:taxi_in:duration
 
-route_definitions:
+routes:
   main_route:
     range: data:TLAR:range
-    steps:
+    climb_parts:
       - phase: initial_climb
       - phase: climb
-      - cruise_type: cruise
-        engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
-        target:
-          altitude: optimal_flight_level
-        maximum_flight_level: 340
+    cruise_part:
+      segment: cruise
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+      target:
+        altitude: optimal_flight_level
+      maximum_flight_level: 340
+    descent_parts:
       - phase: descent
   diversion:
     range: data:mission:sizing:diversion:distance
-    steps:
+    climb_parts:
       - phase: diversion_climb
-      - cruise_type: cruise
-        engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
       - phase: descent
 
-mission:
-  name: sizing
-  steps:
-    - route: main_route
-    - route: diversion
-    - phase: holding
-    - phase: taxi_in
+missions:
+  sizing:
+    parts:
+      - route: main_route
+      - route: diversion
+      - phase: holding
+      - phase: taxi_in
+      - reserve:
+          ref: main_route
+          multiplier: 0.03
