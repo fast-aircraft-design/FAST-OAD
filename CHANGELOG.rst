@@ -2,11 +2,29 @@
 Changelog
 =========
 
+Version 0.6.0-alpha
+===================
+
+- FAST-OAD configuration file is now in YAML format. (#277)
+- Module declaration are now done using Python decorators directly on registered classes. (#259)
+- FAST-OAD now supports custom modules as plugins. (#266)
+- Unification of performance module. (#251)
+    - Breguet computations are now defined using the mission input file.
+    - A computed mission can now be integrated or not to the sizing process.
+- Now api.generate_inputs() returns the path of generated file. (#254)
+- Connection of OpenMDAO variables can now be done in configuration file. (#263)
+- More generic code for mass breakdown plots to ease usage for custom weight models. (#250)
+- More robust airfoil profile processing. (#256)
+- Added tuner parameter in computation of compressibility. (#258)
+- Bug fix: FAST-OAD was crashing when mpi4py was installed. (#272)
+
+
 Version 0.5.4-beta
 ==================
 
 - Bug fix: An infinite loop could occur if custom modules were declaring the same variable
-  several times with different units or default values.
+  several times with different units or default values. (#249)
+- Performance module now allows mission definition through mission input files. (#232)
 
 
 Version 0.5.3-beta
