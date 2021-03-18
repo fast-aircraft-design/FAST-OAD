@@ -315,10 +315,10 @@ def test_api_optim(cleanup):
     )
 
     # Design Variable
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.06, atol=1e-1)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.076, atol=1e-3)
 
     # Constraint
-    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, rtol=1e-5)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20837, atol=50)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20837, atol=1)
