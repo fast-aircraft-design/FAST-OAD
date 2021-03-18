@@ -8,7 +8,7 @@ input_file = "./oad_process_mission_inputs.xml"
 output_file = "./oad_process_mission_outputs.xml"
 
 [model]
-    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100, atol=1e-2)"
     linear_solver = "om.DirectSolver()"
     [model.aerodynamics_highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
