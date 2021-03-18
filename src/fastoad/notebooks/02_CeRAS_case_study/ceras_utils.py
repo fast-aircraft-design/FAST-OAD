@@ -75,7 +75,6 @@ def plot_mission_against_ceras(fastoad_csv_path, ceras_csv_path):
             ),
             secondary_y=True,
         )
-    fig.update_xaxes(range=[-30, 2800.0])
     fig.update_yaxes(title_text="Altitude [ft]", range=[0, 40000.0], secondary_y=False)
     fig.update_yaxes(title_text="CL", range=[0.3, 0.8], secondary_y=True)
     fig.update_layout(margin=dict(l=300, r=280, t=20, b=0), width=1000, height=250)
@@ -98,7 +97,7 @@ def plot_mission_against_ceras(fastoad_csv_path, ceras_csv_path):
             ),
             secondary_y=True,
         )
-    fig.update_xaxes(title_text="Range [nm]", range=[-30, 2800.0])
+    fig.update_xaxes(title_text="Range [nm]")
     fig.update_yaxes(title_text="Thrust [N]", range=[0, 300000.0], secondary_y=False)
     fig.update_yaxes(title_text="Block fuel [kg]", range=[0.0, 21000.0], secondary_y=True)
     fig.update_layout(margin=dict(l=300, r=280, t=0, b=20), width=1000, height=250)
