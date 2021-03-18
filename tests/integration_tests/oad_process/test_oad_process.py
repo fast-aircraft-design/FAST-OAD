@@ -248,7 +248,13 @@ def test_api_eval(cleanup):
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
     source_xml = pth.join(
-        root_folder_path, "src", "fastoad", "notebooks", "tutorial", "data", "CeRAS01_baseline.xml"
+        root_folder_path,
+        "src",
+        "fastoad",
+        "notebooks",
+        "01_tutorial",
+        "data",
+        "CeRAS01_baseline.xml",
     )
     api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
@@ -297,7 +303,13 @@ def test_api_optim(cleanup):
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
     source_xml = pth.join(
-        root_folder_path, "src", "fastoad", "notebooks", "tutorial", "data", "CeRAS01_baseline.xml"
+        root_folder_path,
+        "src",
+        "fastoad",
+        "notebooks",
+        "01_tutorial",
+        "data",
+        "CeRAS01_baseline.xml",
     )
     api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
