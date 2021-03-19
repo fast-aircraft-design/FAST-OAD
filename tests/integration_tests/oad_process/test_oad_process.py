@@ -13,6 +13,7 @@ Test module for Overall Aircraft Design process
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import os.path as pth
 import shutil
@@ -32,7 +33,6 @@ from fastoad.io.configuration.configuration import (
     FASTOADProblemConfigurator,
     _IConfigurationModifier,
 )
-from fastoad.io.xml import VariableLegacy1XmlFormatter
 from tests import root_folder_path
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
@@ -56,7 +56,7 @@ def test_oad_process(cleanup):
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
-    configurator.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+    configurator.write_needed_inputs(ref_inputs)
 
     # Create problems with inputs
     problem = configurator.get_problem(read_inputs=True)
@@ -90,7 +90,7 @@ def test_oad_process(cleanup):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:mission:sizing:fuel"],
+        + problem["data:mission:sizing:needed_block_fuel"],
         atol=1,
     )
 
@@ -110,7 +110,7 @@ def test_non_regression_mission_only(cleanup):
         "CeRAS01_legacy_mission_result.xml",
         "non_regression_mission_only",
         use_xfoil=False,
-        vars_to_check=["data:mission:sizing:fuel"],
+        vars_to_check=["data:mission:sizing:needed_block_fuel"],
         tolerance=1.0e-2,
         check_weight_perfo_loop=False,
     )
@@ -139,7 +139,7 @@ class XFOILConfigurator(_IConfigurationModifier):
             if system() != "Windows":
                 problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = xfoil_path
             # BTW we narrow computed alpha range for sake of CPU time
-            problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 18.0
+            problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 16.0
             problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_max"] = 22.0
 
 
@@ -163,7 +163,7 @@ def run_non_regression_test(
 
     # Generation of inputs ----------------------------------------
     ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
-    configurator.write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+    configurator.write_needed_inputs(ref_inputs)
 
     # Get problem with inputs -------------------------------------
     problem = configurator.get_problem(read_inputs=True)
@@ -197,13 +197,11 @@ def run_non_regression_test(
             problem["data:weight:aircraft:MTOW"],
             problem["data:weight:aircraft:OWE"]
             + problem["data:weight:aircraft:payload"]
-            + problem["data:mission:sizing:fuel"],
+            + problem["data:mission:sizing:needed_block_fuel"],
             atol=1,
         )
 
-    ref_var_list = VariableIO(
-        pth.join(DATA_FOLDER_PATH, legacy_result_file), formatter=VariableLegacy1XmlFormatter(),
-    ).read()
+    ref_var_list = VariableIO(pth.join(DATA_FOLDER_PATH, legacy_result_file),).read()
 
     row_list = []
     for ref_var in ref_var_list:
@@ -240,8 +238,8 @@ def run_non_regression_test(
         assert np.all(df.abs_rel_delta < tolerance)
 
 
-def test_api(cleanup):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api")
+def test_api_eval(cleanup):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval")
     configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
 
     # Generation of configuration file ----------------------------------------
@@ -276,17 +274,32 @@ def test_api(cleanup):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:mission:sizing:fuel"],
+        + problem["data:mission:sizing:needed_block_fuel"],
         atol=1,
     )
 
-    assert_allclose(problem["data:handling_qualities:static_margin"], -0.072251, atol=1e-3)
+    assert_allclose(problem["data:handling_qualities:static_margin"], -0.071146, atol=1e-3)
     assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.0, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 76094, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 128.98, atol=1e-2)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.07, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.50, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:fuel"], 20213, atol=1)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 76796, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 131.26, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.49, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.99, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20708, atol=1)
+
+
+def test_api_optim(cleanup):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_optim")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
+
+    # Generation of configuration file ----------------------------------------
+    api.generate_configuration_file(configuration_file_path, True)
+
+    # Generation of inputs ----------------------------------------------------
+    # We get the same inputs as in tutorial notebook
+    source_xml = pth.join(
+        root_folder_path, "src", "fastoad", "notebooks", "tutorial", "data", "CeRAS01_baseline.xml"
+    )
+    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
@@ -311,15 +324,15 @@ def test_api(cleanup):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:mission:sizing:fuel"],
+        + problem["data:mission:sizing:needed_block_fuel"],
         atol=1,
     )
 
     # Design Variable
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.06, atol=1e-1)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.076, atol=1e-3)
 
     # Constraint
-    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, rtol=1e-5)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:fuel"], 20338, atol=50)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20837, atol=1)

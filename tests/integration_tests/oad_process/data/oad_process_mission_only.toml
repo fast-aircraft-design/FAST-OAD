@@ -8,7 +8,7 @@ input_file = "./oad_process_mission_inputs.xml"
 output_file = "./oad_process_mission_outputs.xml"
 
 [model]
-    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100)"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100, atol=1e-2)"
     linear_solver = "om.DirectSolver()"
     [model.aerodynamics_highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
@@ -20,7 +20,8 @@ output_file = "./oad_process_mission_outputs.xml"
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false
     [model.performance]
-        id = "fastoad.performances.sizing_mission"
+        id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "./flight_points.csv"
-        breguet_iterations = 1
+        use_initializer_iteration = false
+        adjust_fuel = false

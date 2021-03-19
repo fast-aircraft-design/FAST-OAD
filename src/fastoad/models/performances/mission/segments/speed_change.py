@@ -1,6 +1,6 @@
 """Classes for acceleration/deceleration segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,7 @@ from typing import Tuple, List
 
 from fastoad.base.flight_point import FlightPoint
 from .base import ManualThrustSegment
+from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -30,12 +31,16 @@ class SpeedChangeSegment(ManualThrustSegment):
     """
 
     def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
-        if self.target.true_airspeed:
+        if self.target.true_airspeed is not None:
             return self.target.true_airspeed - flight_points[-1].true_airspeed
-        elif self.target.equivalent_airspeed:
+        if self.target.equivalent_airspeed is not None:
             return self.target.equivalent_airspeed - flight_points[-1].equivalent_airspeed
-        elif self.target.mach:
+        if self.target.mach is not None:
             return self.target.mach - flight_points[-1].mach
+
+        raise FastFlightSegmentIncompleteFlightPoint(
+            "No valid target definition for altitude change."
+        )
 
     def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         acceleration = (thrust - drag) / mass

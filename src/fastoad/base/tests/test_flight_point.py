@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,8 +11,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_allclose
 
 from ..flight_point import FlightPoint
 
@@ -59,3 +61,23 @@ def test_create_list():
     assert flight_points[1].mach == 0.02
     assert flight_points[2].time == 2.0
     assert flight_points[2].mach == 0.05
+
+
+def test_scalarize():
+    fp = FlightPoint(time=[100.0], mass=np.array([70000.0]), altitude=(1000.0,), mach=[0.7, 0.8])
+
+    assert isinstance(fp.time, list)
+    assert isinstance(fp.mass, np.ndarray)
+    assert isinstance(fp.altitude, tuple)
+    assert isinstance(fp.mach, list)
+
+    fp.scalarize()
+    assert isinstance(fp.time, float)
+    assert isinstance(fp.mass, float)
+    assert isinstance(fp.altitude, float)
+    assert isinstance(fp.mach, list)
+
+    assert fp.time == 100.0
+    assert fp.mass == 70000.0
+    assert fp.altitude == 1000.0
+    assert_allclose(fp.mach, [0.7, 0.8])

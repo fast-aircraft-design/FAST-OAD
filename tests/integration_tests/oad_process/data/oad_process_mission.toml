@@ -8,12 +8,13 @@ input_file = "./oad_process_mission_inputs.xml"
 output_file = "./oad_process_mission_outputs.xml"
 
 [model]
-    nonlinear_solver = "om.NonlinearBlockGS(maxiter=30)"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=30, atol=1e-2)"
     linear_solver = "om.DirectSolver()"
 
     [model.group]
-        nonlinear_solver = "om.NonlinearBlockGS(maxiter=30)"
+        nonlinear_solver = "om.NonlinearBlockGS(maxiter=30, atol=1e-2)"
         linear_solver = "om.DirectSolver()"
+
         [model.group.geometry]
             id = "fastoad.geometry.legacy"
         [model.group.aerodynamics_highspeed]
@@ -27,17 +28,19 @@ output_file = "./oad_process_mission_outputs.xml"
             use_xfoil = false
         [model.group.weight]
             id = "fastoad.weight.legacy"
-        [model.group.mtow]
-            id = "fastoad.loop.mtow"
+        [model.group.link_MTOW]
+            id = "fastoad.mass_performances.compute_MTOW"
         [model.group.hq.tail_sizing]
             id = "fastoad.handling_qualities.tail_sizing"
         [model.group.hq.static_margin]
             id = "fastoad.handling_qualities.static_margin"
 
     [model.performance]
-        id = "fastoad.performances.sizing_mission"
+        id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
         out_file = "./flight_points.csv"
-        breguet_iterations = 2
+        adjust_fuel = true
+        add_solver = false
+        is_sizing = true
     [model.wing_area]
         id = "fastoad.loop.wing_area"
