@@ -263,13 +263,28 @@ def test_api_eval(cleanup):
         atol=1,
     )
 
-    assert_allclose(problem["data:handling_qualities:static_margin"], 0.050, atol=1e-3)
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
     assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.07, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 76393, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 129.56, atol=1e-2)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 28.0, atol=1e-1)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 36.4, atol=1e-1)
-    assert_allclose(problem["data:mission:sizing:fuel"], 20338, atol=1)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 77103, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 131.84, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 28.47, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 36.99, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20837, atol=1)
+
+
+def test_api_optim(cleanup):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_optim")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
+
+    # Generation of configuration file ----------------------------------------
+    api.generate_configuration_file(configuration_file_path, True)
+
+    # Generation of inputs ----------------------------------------------------
+    # We get the same inputs as in tutorial notebook
+    source_xml = pth.join(
+        root_folder_path, "src", "fastoad", "notebooks", "tutorial", "data", "CeRAS01_baseline.xml"
+    )
+    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run optim ---------------------------------------------------------------
     problem = api.optimize_problem(configuration_file_path, True)
@@ -299,10 +314,10 @@ def test_api_eval(cleanup):
     )
 
     # Design Variable
-    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 14.24, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 13.58, atol=1e-2)
 
     # Constraint
-    assert_allclose(problem["data:geometry:wing:span"], 44.9, atol=1e-1)
+    assert_allclose(problem["data:geometry:wing:span"], 44.02, rtol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:fuel"], 19862, atol=50)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20363, atol=1)
