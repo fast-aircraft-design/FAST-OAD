@@ -8,7 +8,7 @@ input_file = "./problem_inputs.xml"
 output_file = "./problem_outputs.xml"
 
 # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
-driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
+driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
 
 # Definition of OpenMDAO model
 [model]
