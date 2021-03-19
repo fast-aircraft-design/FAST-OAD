@@ -2,7 +2,7 @@
 Computation of wing area
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -38,7 +38,7 @@ class _ComputeWingArea(om.ExplicitComponent):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
-        self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
+        self.add_input("data:weight:aircraft:sizing_block_fuel", val=np.nan, units="kg")
         self.add_input("data:TLAR:approach_speed", val=np.nan, units="m/s")
 
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
@@ -51,9 +51,9 @@ class _ComputeWingArea(om.ExplicitComponent):
         lambda_wing = inputs["data:geometry:wing:aspect_ratio"]
         root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
-        mfw_mission = inputs["data:mission:sizing:fuel"]
+        mfw_mission = inputs["data:weight:aircraft:sizing_block_fuel"]
         wing_area_mission = (
-            (mfw_mission - 1570.0)
+            max(1000.0, mfw_mission - 1570.0)
             / 224
             / lambda_wing ** -0.4
             / (0.6 * root_thickness_ratio + 0.4 * tip_thickness_ratio)
@@ -64,12 +64,12 @@ class _ComputeWingArea(om.ExplicitComponent):
         max_CL = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         wing_area_approach = 2 * mlw * g / ((approach_speed / 1.23) ** 2) / (1.225 * max_CL)
 
-        outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)
+        outputs["data:geometry:wing:area"] = np.nanmax([wing_area_mission, wing_area_approach])
 
 
 class _ComputeWingAreaConstraints(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
+        self.add_input("data:weight:aircraft:sizing_block_fuel", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="kg")
 
         self.add_input("data:TLAR:approach_speed", val=np.nan, units="m/s")
@@ -82,7 +82,7 @@ class _ComputeWingAreaConstraints(om.ExplicitComponent):
 
         self.declare_partials(
             "data:weight:aircraft:additional_fuel_capacity",
-            ["data:weight:aircraft:MFW", "data:mission:sizing:fuel"],
+            ["data:weight:aircraft:MFW", "data:weight:aircraft:sizing_block_fuel"],
             method="fd",
         )
         self.declare_partials(
@@ -98,7 +98,7 @@ class _ComputeWingAreaConstraints(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mfw = inputs["data:weight:aircraft:MFW"]
-        mission_fuel = inputs["data:mission:sizing:fuel"]
+        mission_fuel = inputs["data:weight:aircraft:sizing_block_fuel"]
         v_approach = inputs["data:TLAR:approach_speed"]
         cl_max = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         mlw = inputs["data:weight:aircraft:MLW"]

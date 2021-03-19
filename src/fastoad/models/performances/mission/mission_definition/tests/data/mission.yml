@@ -1,11 +1,12 @@
-phase_definitions:
+phases:
   initial_climb:
     engine_setting: takeoff
     polar:
       CL: 0.0, 0.5, 1.0
       CD: 0., 0.03, 0.12
-    thrust_rate: data:mission:sizing:climb:thrust_rate
-    steps:
+    thrust_rate:
+      value: 1.0
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -32,8 +33,8 @@ phase_definitions:
   climb:
     engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise
-    thrust_rate: data:mission:sizing:climb:thrust_rate
-    steps:
+    thrust_rate: data:propulsion:climb:thrust_rate
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -55,11 +56,37 @@ phase_definitions:
           mach: constant
           altitude:
             value: -20000.
-  descent:
-    engine_setting: idle
+  diversion_climb:
+    engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise
-    thrust_rate: data:mission:sizing:descent:thrust_rate
-    steps:
+    thrust_rate: 0.93
+    time_step:
+      value: 5.0
+      unit: s
+    parts:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 300.
+            unit: kn
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 22000.
+            unit: ft
+          equivalent_airspeed: constant
+  descent:
+    engine_setting:
+      value: idle
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: data:propulsion:descent:thrust_rate
+    parts:
       - segment: altitude_change
         target:
           equivalent_airspeed:
@@ -83,52 +110,60 @@ phase_definitions:
         target:
           equivalent_airspeed:
             value: constant
-          altitude:
-            value: 1500.
-            unit: ft
+          altitude: ~final_altitude
   holding:
-    steps:
+    parts:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
-          time: data:mission:sizing:holding:duration
-  taxi_in:
-    steps:
+          time: ~duration
+  taxi_out:
+    parts:
       - segment: taxi
-        thrust_rate: data:mission:sizing:taxi_in:thrust_rate
+        thrust_rate: ~
         target:
-          time: data:mission:sizing:taxi_in:duration
+          time: ~duration
+  taxi_in:
+    thrust_rate: ~
+    parts:
+      - segment: taxi
+        target:
+          time: ~duration
 
-route_definitions:
+routes:
   main:
-    range: data:TLAR:range
-    steps:
+    range: ~
+    climb_parts:
       - phase: initial_climb
       - phase: climb
-      - cruise_type: optimal_cruise
-        engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
+    cruise_part:
+      segment: optimal_cruise
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
       - phase: descent
 
   diversion:
-    range: data:mission:sizing:diversion:distance
-    steps:
-      - phase: climb
-        target:
-          altitude:
-            value: 22000.
-            unit: ft
-          equivalent_airspeed:
-            value: constant
-      - cruise_type: cruise
+    range: ~
+    climb_parts:
+      - phase: diversion_climb
+    cruise_part:
+        segment: cruise
         engine_setting: cruise
         polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
       - phase: descent
 
-mission:
-  name: sizing
-  steps:
-    - route: main
-    - route: diversion
-    - phase: holding
-    - phase: taxi_in
+missions:
+  sizing:
+    parts:
+      - route: main
+      - route: diversion
+      - phase: holding
+      - phase: taxi_in
+  operational:
+    parts:
+      - phase: taxi_out
+      - route: main
+      - phase: taxi_in
+

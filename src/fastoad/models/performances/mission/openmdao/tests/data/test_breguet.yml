@@ -1,0 +1,43 @@
+phases:
+  climb:
+    parts:
+      - segment: transition
+        target:
+          altitude:
+            value: 34000
+            unit: ft
+          mach: 0.78
+          ground_distance:
+            value: 250
+            unit: NM
+        mass_ratio: 0.988
+  descent:
+    parts:
+      - segment: transition
+        target:
+          altitude: 0.
+          mach: 0.
+          ground_distance:
+            value: 250
+            unit: NM
+        mass_ratio: 0.997
+        reserve_mass_ratio: 0.013
+
+routes:
+  main_route:
+    range:
+      value: 2000.
+      unit: NM
+    climb_parts:
+      - phase: climb
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
+      - phase: descent
+
+missions:
+  operational:
+    parts:
+      - route: main_route

@@ -2,7 +2,7 @@
 Test module for Overall Aircraft Design process
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,6 +13,7 @@ Test module for Overall Aircraft Design process
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import os.path as pth
 import shutil
@@ -28,7 +29,6 @@ from numpy.testing import assert_allclose
 from fastoad import api
 from fastoad.io import VariableIO
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
-from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.openmdao.utils import get_problem_after_setup
 from tests import root_folder_path
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
@@ -54,7 +54,7 @@ def test_oad_process(cleanup):
     ).get_problem()
 
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
-    get_problem_after_setup(problem).write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+    get_problem_after_setup(problem).write_needed_inputs(ref_inputs)
     problem.read_inputs()
     problem.setup()
     problem.run_model()
@@ -86,7 +86,7 @@ def test_oad_process(cleanup):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:mission:sizing:fuel"],
+        + problem["data:mission:sizing:needed_block_fuel"],
         atol=1,
     )
 
@@ -106,7 +106,7 @@ def test_non_regression_mission_only(cleanup):
         "CeRAS01_legacy_mission_result.xml",
         "non_regression_mission_only",
         use_xfoil=False,
-        vars_to_check=["data:mission:sizing:fuel"],
+        vars_to_check=["data:mission:sizing:needed_block_fuel"],
         tolerance=1.0e-2,
         check_weight_perfo_loop=False,
     )
@@ -146,12 +146,12 @@ def run_non_regression_test(
         if system() != "Windows":
             problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = xfoil_path
         # BTW we narrow computed alpha range for sake of CPU time
-        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 18.0
+        problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 16.0
         problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_max"] = 22.0
 
     # Generation and reading of inputs ----------------------------------------
     ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
-    get_problem_after_setup(problem).write_needed_inputs(ref_inputs, VariableLegacy1XmlFormatter())
+    get_problem_after_setup(problem).write_needed_inputs(ref_inputs)
     problem.read_inputs()
     problem.setup()
 
@@ -183,13 +183,11 @@ def run_non_regression_test(
             problem["data:weight:aircraft:MTOW"],
             problem["data:weight:aircraft:OWE"]
             + problem["data:weight:aircraft:payload"]
-            + problem["data:mission:sizing:fuel"],
+            + problem["data:mission:sizing:needed_block_fuel"],
             atol=1,
         )
 
-    ref_var_list = VariableIO(
-        pth.join(DATA_FOLDER_PATH, legacy_result_file), formatter=VariableLegacy1XmlFormatter(),
-    ).read()
+    ref_var_list = VariableIO(pth.join(DATA_FOLDER_PATH, legacy_result_file),).read()
 
     row_list = []
     for ref_var in ref_var_list:
@@ -225,8 +223,8 @@ def run_non_regression_test(
         assert np.all(df.abs_rel_delta < tolerance)
 
 
-def test_api(cleanup):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api")
+def test_api_eval(cleanup):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval")
     configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
 
     # Generation of configuration file ----------------------------------------
@@ -261,7 +259,7 @@ def test_api(cleanup):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:mission:sizing:fuel"],
+        + problem["data:mission:sizing:needed_block_fuel"],
         atol=1,
     )
 
@@ -296,7 +294,7 @@ def test_api(cleanup):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:mission:sizing:fuel"],
+        + problem["data:mission:sizing:needed_block_fuel"],
         atol=1,
     )
 

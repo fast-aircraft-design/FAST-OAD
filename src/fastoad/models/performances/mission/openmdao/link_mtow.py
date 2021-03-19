@@ -1,3 +1,6 @@
+"""
+OpenMDAO component for computation of sizing mission.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -10,3 +13,26 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import logging
+
+import openmdao.api as om
+
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
+
+
+class ComputeMTOW(om.AddSubtractComp):
+    """
+    Computes MTOW from OWE, design payload and consumed fuel in sizing mission.
+    """
+
+    def setup(self):
+        self.add_equation(
+            "data:weight:aircraft:MTOW",
+            [
+                "data:weight:aircraft:OWE",
+                "data:weight:aircraft:payload",
+                "data:weight:aircraft:sizing_block_fuel",
+            ],
+            units="kg",
+        )

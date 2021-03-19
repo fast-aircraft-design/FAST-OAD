@@ -31,11 +31,12 @@ from .loops.compute_wing_area import ComputeWingArea
 from .loops.compute_wing_position import ComputeWingPosition
 from .performances.breguet import OMBreguet
 from .performances.mission.openmdao.sizing_mission import SizingMission
+from .performances.mission.openmdao.link_mtow import ComputeMTOW
+from .performances.mission.openmdao.mission import Mission
 from .propulsion.fuel_propulsion.rubber_engine import (
     OMRubberEngineComponent,
     OMRubberEngineWrapper,
 )
-from .weight.mass_breakdown.mass_breakdown import MTOWComputation
 from .weight.weight import Weight
 
 
@@ -68,16 +69,15 @@ RegisterOpenMDAOSystem(
 RegisterOpenMDAOSystem("fastoad.loop.wing_area", domain=ModelDomain.OTHER)(ComputeWingArea)
 RegisterOpenMDAOSystem("fastoad.loop.wing_position", domain=ModelDomain.OTHER)(ComputeWingPosition)
 
-RegisterOpenMDAOSystem("fastoad.loop.mtow", domain=ModelDomain.WEIGHT)(MTOWComputation)
+RegisterOpenMDAOSystem("fastoad.mass_performances.compute_MTOW", domain=ModelDomain.OTHER)(
+    ComputeMTOW
+)
 
 # Weight ######################################################################
 RegisterOpenMDAOSystem("fastoad.weight.legacy", domain=ModelDomain.WEIGHT)(Weight)
-# Performance #################################################################
-RegisterOpenMDAOSystem("fastoad.performances.breguet", domain=ModelDomain.PERFORMANCE)(OMBreguet)
 
-RegisterOpenMDAOSystem("fastoad.performances.sizing_mission", domain=ModelDomain.PERFORMANCE)(
-    SizingMission
-)
+# Performance #################################################################
+RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)(Mission)
 
 # Propulsion ##################################################################
 RUBBER_ENGINE_DESCRIPTION = """

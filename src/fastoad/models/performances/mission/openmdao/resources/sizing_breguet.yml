@@ -1,0 +1,47 @@
+phases:
+  climb:
+    parts:
+      - segment: transition
+        target:
+          altitude: data:mission:sizing:main_route:cruise:altitude
+          mach: data:TLAR:cruise_mach
+          ground_distance:
+            value: 250
+            unit: km
+        mass_ratio: settings:mission:sizing:breguet:climb:mass_ratio
+  descent:
+    parts:
+      - segment: transition
+        target:
+          altitude: 0.
+          mach: 0.
+          ground_distance:
+            value: 250
+            unit: km
+        mass_ratio: settings:mission:sizing:breguet:descent:mass_ratio
+  reserve:
+    parts:
+      - segment: transition
+        target:
+          altitude: 0.
+          mach: 0.
+        reserve_mass_ratio: settings:mission:sizing:breguet:reserve:mass_ratio
+
+routes:
+  main_route:
+    range: data:TLAR:range
+    climb_parts:
+      - phase: climb
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+      use_max_lift_drag_ratio: true
+    descent_parts:
+      - phase: descent
+
+missions:
+  sizing:
+    parts:
+      - route: main_route
+      - phase: reserve

@@ -15,13 +15,15 @@ Classes for computation of routes (i.e. assemblies of climb, cruise and descent 
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Tuple, Optional
 
+import numpy as np
 import pandas as pd
 from scipy.optimize import root_scalar
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.models.performances.mission.base import FlightSequence, IFlightPart
+from fastoad.models.performances.mission.segments.base import FlightSegment
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment
 
 
@@ -51,12 +53,32 @@ class SimpleRoute(FlightSequence):
 
     @property
     def cruise_distance(self):
-        """Ground distance to be covered during cruise, as set in target of :attr:cruise_segment."""
+        """
+        Ground distance to be covered during cruise, as set in target of :attr:`cruise_segment`.
+        """
         return self.cruise_segment.target
 
     @cruise_distance.setter
     def cruise_distance(self, cruise_distance):
         self.cruise_segment.target.ground_distance = cruise_distance
+
+    @property
+    def cruise_speed(self) -> Optional[Tuple[str, float]]:
+        """
+        Type (among `true_airspeed`, `equivalent_airspeed` and `mach`) and value of cruise speed.
+        """
+        climb_segments = []
+        for phase in self.climb_phases:
+            climb_segments += phase.flight_sequence
+
+        climb_segments.reverse()
+        for segment in climb_segments:
+            for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
+                speed_value = getattr(segment.target, speed_param)
+                if speed_value and speed_value != FlightSegment.CONSTANT_VALUE:
+                    return speed_param, speed_value
+
+        return None
 
     def _get_flight_sequence(self) -> List[IFlightPart]:
         # The preliminary climb segment of the cruise segment is set to the
@@ -69,45 +91,79 @@ class SimpleRoute(FlightSequence):
         return self.climb_phases + [self.cruise_segment] + self.descent_phases
 
 
-class RangedRoute(FlightSequence):
+@dataclass
+class RangedRoute(SimpleRoute):
     """
-    Computes a route so that it covers the specified distance.
+    Computes a route so that it covers the specified ground distance.
     """
 
-    def __init__(
-        self, route_definition: SimpleRoute, flight_distance: float,
-    ):
-        """
-        Computes the route and adjust the cruise distance to achieve the provided flight distance.
+    #: Target ground distance for whole route
+    flight_distance: float
 
-        :param route_definition:
-        :param flight_distance: in meters
-        """
-        super().__init__()
-        self.flight_distance = flight_distance
-        self.flight = route_definition
-        self.flight_points = None
-        self.distance_accuracy = 0.5e3
+    #: Accuracy on actual total ground distance for the solver. In meters
+    distance_accuracy: float = 0.5e3
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        # We will use this to keep data along root_scalar process (see _solve_cruise_distance() )
+        self._flight_points = None
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        def compute_flight(cruise_distance):
-            self.flight.cruise_distance = cruise_distance
-            self.flight_points = self.flight.compute_from(start)
-            obtained_distance = (
-                self.flight_points.iloc[-1].ground_distance
-                - self.flight_points.iloc[0].ground_distance
-            )
-            return self.flight_distance - obtained_distance
+        # In very simple cases, climb and descent phases can have fixed
+        # covered ground distance. In that case, cruise distance is easy to
+        # obtain from flight_distance.
+        # In other cases, cruise distance is obtained using a solver.
+        climb_descent_distances = []
+        for phase in self.climb_phases + self.descent_phases:
+            climb_descent_distances.extend(self._get_ground_distances(phase))
+
+        if 0.0 in climb_descent_distances:
+            return self._solve_cruise_distance(start)
+
+        self.cruise_distance = self.flight_distance - np.sum(climb_descent_distances)
+        return super().compute_from(start)
+
+    @classmethod
+    def _get_ground_distances(cls, phase: FlightSequence) -> list:
+        ground_distances = []
+        for flight_part in phase.flight_sequence:
+            if isinstance(flight_part, FlightSegment):
+                ground_distances.append(flight_part.target.ground_distance)
+            else:
+                ground_distances.extend(cls._get_ground_distances(flight_part))
+
+        return ground_distances
+
+    def _solve_cruise_distance(self, start: FlightPoint) -> pd.DataFrame:
+        """
+        Adjusts cruise distance through a solver to have whole route that
+        matches provided flight distance.
+        """
 
         root_scalar(
-            compute_flight,
+            self._compute_flight,
+            args=(start,),
             x0=self.flight_distance * 0.5,
             x1=self.flight_distance * 0.25,
             xtol=0.5e3,
             method="secant",
         )
-        return self.flight_points
 
-    @property
-    def flight_sequence(self) -> List[Union[IFlightPart, str]]:
-        return self.flight.flight_sequence
+        return self._flight_points
+
+    def _compute_flight(self, cruise_distance, start: FlightPoint):
+        """
+        Computes flight for provided cruise distance
+
+        :param cruise_distance:
+        :param start:
+        :return: difference between computes distance and self.flight_distance
+        """
+        self.cruise_distance = cruise_distance
+        self._flight_points = super().compute_from(start)
+        obtained_distance = (
+            self._flight_points.iloc[-1].ground_distance
+            - self._flight_points.iloc[0].ground_distance
+        )
+        return self.flight_distance - obtained_distance
