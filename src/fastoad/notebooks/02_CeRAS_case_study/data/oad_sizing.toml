@@ -35,7 +35,7 @@ output_file = "../workdir/oad_sizing_out.xml"
     [model.performance]
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
-        mission_file_path = "./replay.yml"
+        mission_file_path = "./CeRAS_missions.yml"
         mission_name = "MTOW_mission"
         out_file = "../workdir/oad_sizing.csv"
         adjust_fuel = true

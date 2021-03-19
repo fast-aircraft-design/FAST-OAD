@@ -147,3 +147,15 @@ missions:
       - route: diversion
       - phase: holding
       - phase: taxi_in
+  SPP_design:
+    parts:
+      - route: main_route
+      - route: diversion
+      - phase: holding
+      - phase: taxi_in
+  SPP_study:
+    parts:
+      - route: main_route
+      - route: diversion
+      - phase: holding
+      - phase: taxi_in
