@@ -2,7 +2,7 @@
 Utility functions for OpenMDAO classes/instances
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,7 +14,6 @@ Utility functions for OpenMDAO classes/instances
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from copy import deepcopy
 from typing import Tuple, List, TypeVar
 
 import numpy as np
@@ -63,24 +62,3 @@ def get_unconnected_input_names(
 
 
 T = TypeVar("T", bound=om.Problem)
-
-
-def get_problem_after_setup(problem: T) -> T:
-    """
-    Returns a copy of the provided problem, where setup() has been run on the copy.
-
-    .. warning::
-
-        problem.setup() must NOT have been run.
-
-    This method should be used when an operation is needed that requires setup() to be run, without
-    having the problem being actually setup.
-
-    :param problem:
-    :return: the problem itself if setup() has already been run, or a copy of the provided problem
-             after setup() has been run
-    """
-
-    tmp_problem = deepcopy(problem)
-    tmp_problem.setup()
-    return tmp_problem

@@ -2,7 +2,7 @@
 Tests for basic API
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -78,10 +78,16 @@ def test_list_variables(cleanup):
     api.list_variables(CONFIGURATION_FILE_PATH)
 
     # Run with file output (test file existence)
-    out_file = pth.join(RESULTS_FOLDER_PATH, "list_outputs.txt")
-    assert not pth.exists(out_file)
-    api.list_variables(CONFIGURATION_FILE_PATH, out_file)
-    assert pth.exists(out_file)
+    out_file_path = pth.join(RESULTS_FOLDER_PATH, "list_outputs.txt")
+    assert not pth.exists(out_file_path)
+    api.list_variables(CONFIGURATION_FILE_PATH, out_file_path)
+    assert pth.exists(out_file_path)
+
+    with open(out_file_path) as out_file:
+        lines = [
+            line.split()[0] for line in out_file.readlines() if len(line.strip("-").strip()) > 0
+        ]
+        assert lines == ["-", "NAME", "x", "z", "-", "NAME", "f", "g1", "g2", "y1", "y2"]
 
 
 def test_write_n2(cleanup):

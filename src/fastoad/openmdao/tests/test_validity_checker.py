@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,8 +25,7 @@ from fastoad.openmdao.variables import VariableList, Variable
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results", "validity_checker")
 
 
 @pytest.fixture(scope="module")
@@ -187,17 +186,20 @@ def test_register_checks_as_decorator(cleanup):
             self.add_output("output3", 1000.0, units="kg", lower=0.0, upper=5000.0)
 
     comp = Comp1()
+    problem = om.Problem()
+    problem.model.add_subsystem("comp", comp, promotes=["*"])
+    problem.setup()
 
     # Just checking there is no side effect. VariableList.from_system() uses
     # setup(), even if it is made to have no effect, and ValidityDomainChecker
     # modifies setup(), so is is worth checking.
-    variables = VariableList.from_system(comp)
+    variables = VariableList.from_problem(problem)
     assert len(variables) == 4
 
     # Now for the real test
     # We test that upper and lower bounds are retrieved from OpenMDAO component,
     # overwritten when required and that units are correctly taken into account.
-    comp.setup()
+    ValidityDomainChecker._update_problem_limit_definitions(problem)
 
     variables = VariableList(
         [
