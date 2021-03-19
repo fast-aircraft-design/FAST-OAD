@@ -1,6 +1,6 @@
 """Classes for simulating cruise segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,8 +16,9 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import List
 
+import numpy as np
 import pandas as pd
-from scipy.constants import foot
+from scipy.constants import foot, g
 
 from fastoad.base.flight_point import FlightPoint
 from .altitude_change import AltitudeChangeSegment
@@ -98,9 +99,8 @@ class ClimbAndCruiseSegment(CruiseSegment):
     (Target ground distance will be achieved by the sum of ground distances
     covered during climb and cruise)
 
-    In this case, climb will be done up to the IFR Flight Level (as multiple of 1000 feet,
-    one flight level being 100 feet) that ensures minimum mass decrease, while being at most
-    equal to :attr:`maximum_flight_level`.
+    In this case, climb will be done up to the IFR Flight Level (as multiple of 100 feet) that
+    ensures minimum mass decrease, while being at most equal to :attr:`maximum_flight_level`.
     """
 
     #: The AltitudeChangeSegment that can be used if a preliminary climb is needed (its target
@@ -196,3 +196,61 @@ class ClimbAndCruiseSegment(CruiseSegment):
         cruise_points = cruise_segment.compute_from(cruise_start)
 
         return pd.concat([climb_points, cruise_points]).reset_index(drop=True)
+
+
+@dataclass
+class BreguetCruiseSegment(CruiseSegment):
+    """
+    Class for computing cruise flight segment at constant altitude using Breguet-Leduc formula.
+
+    As formula relies on SFC, the :attr:`propulsion` model must be able to fill FlightPoint.sfc
+    when FlightPoint.thrust is provided.
+    """
+
+    #: if True, max lift/drag ratio will be used instead of the one computed with polar using
+    #: CL deduced from mass and altitude.
+    #: In this case, reference_area parameter will be unused
+    use_max_lift_drag_ratio: bool = False
+
+    #: The reference area, in m**2. Used only if use_max_lift_drag_ratio is False.
+    reference_area: float = 1.0
+
+    #:
+    climb_and_descent_distance: float = 0.0
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.target.ground_distance = self.target.ground_distance - self.climb_and_descent_distance
+
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        self.complete_flight_point(start)
+
+        cruise_mass_ratio = self._compute_cruise_mass_ratio(start, self.target.ground_distance)
+
+        end = deepcopy(start)
+        end.mass = start.mass * cruise_mass_ratio
+        end.ground_distance = start.ground_distance + self.target.ground_distance
+        end.time = start.time + end.ground_distance / end.true_airspeed
+        end.name = self.name
+        self.complete_flight_point(end)
+
+        return pd.DataFrame([start, end])
+
+    def _compute_cruise_mass_ratio(self, start: FlightPoint, cruise_distance):
+        """
+        Computes mass ratio between end and start of cruise
+
+        :param start: the initial flight point, defined for `CL`, `CD`, `mass` and`true_airspeed`
+        :param cruise_distance: cruise distance in meters
+        :return: (mass at end of cruise) / (mass at start of cruise)
+        """
+
+        if self.use_max_lift_drag_ratio:
+            lift_drag_ratio = self.polar.optimal_cl / self.polar.cd(self.polar.optimal_cl)
+        else:
+            lift_drag_ratio = start.CL / start.CD
+        start.thrust = start.mass / lift_drag_ratio * g
+        self.propulsion.compute_flight_points(start)
+
+        range_factor = start.true_airspeed * lift_drag_ratio / g / start.sfc
+        return 1.0 / np.exp(cruise_distance / range_factor)

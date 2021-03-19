@@ -1,6 +1,6 @@
 """Structure for managing flight point data."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,9 +12,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Mapping, Any, List
 
+import numpy as np
 import pandas as pd
 
 from fastoad.constants import EngineSetting
@@ -153,3 +154,13 @@ class FlightPoint:
             delattr(cls, name)
             del cls.__annotations__[name]
             dataclass(cls)
+
+    def scalarize(self):
+        """
+        Convenience method for converting to scalars all fields that have a
+        one-item array-like value.
+        """
+        self_as_dict = asdict(self)
+        for field_name, value in self_as_dict.items():
+            if np.size(value) == 1:
+                setattr(self, field_name, np.asarray(value).item())

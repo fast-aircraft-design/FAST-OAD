@@ -18,8 +18,8 @@ from typing import Dict
 import numpy as np
 import plotly
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 from openmdao.utils.units import convert_units
+from plotly.subplots import make_subplots
 
 from fastoad.io import VariableIO
 
@@ -291,7 +291,7 @@ def mass_breakdown_bar_plot(
         "data:weight:aircraft:MTOW": "kg",
         "data:weight:aircraft:OWE": "kg",
         "data:weight:aircraft:payload": "kg",
-        "data:mission:sizing:fuel": "kg",
+        "data:weight:aircraft:sizing_block_fuel": "kg",
     }
 
     # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
@@ -348,7 +348,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
         "data:weight:aircraft:MTOW": "kg",
         "data:weight:aircraft:OWE": "kg",
         "data:weight:aircraft:payload": "kg",
-        "data:mission:sizing:fuel": "kg",
+        "data:weight:aircraft:sizing_block_fuel": "kg",
     }
 
     # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided

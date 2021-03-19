@@ -13,7 +13,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
 # Definition of OpenMDAO model
 [model]
     # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
-    nonlinear_solver = "om.NonlinearBlockGS(maxiter=200)"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=100, atol=1e-2)"
     linear_solver = "om.DirectSolver()"
 
     # Although "model" is a mandatory name for the top level of the model, its
@@ -24,7 +24,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
     [model.weight]
         id = "fastoad.weight.legacy"
     [model.mtow]
-        id = "fastoad.loop.mtow"
+        id = "fastoad.mass_performances.compute_MTOW"
     [model.aerodynamics_highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
     [model.aerodynamics_lowspeed]
@@ -35,12 +35,13 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
         id = "fastoad.aerodynamics.landing.legacy"
         use_xfoil = false
     [model.performance]
-        id = "fastoad.performances.breguet"
+        id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
-#    [model.performance]
-#        id = "fastoad.performances.sizing_mission"
-#        propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
-#        out_file = "./flight_points.csv"
+        mission_file_path = "::sizing_breguet"
+#        mission_file_path = "::sizing_mission"
+        out_file = "./flight_points.csv"
+        adjust_fuel = true
+        is_sizing = true
     [model.hq_tail_sizing]
         id = "fastoad.handling_qualities.tail_sizing"
     [model.hq_static_margin]
@@ -60,4 +61,5 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')"
         upper = 0.1
 
     [[optimization.objective]]
-        name = "data:mission:sizing:fuel"
+        name = "data:mission:sizing:needed_block_fuel"
+        scaler = 1e-4
