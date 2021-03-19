@@ -32,7 +32,6 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
     [model.wing_position]
         id = "fastoad.loop.wing_position"
 
-        id = "fastoad.mass_performances.compute_MTOW"
     [model.aerodynamics_highspeed]
         id = "fastoad.aerodynamics.highspeed.legacy"
     [model.aerodynamics_lowspeed]
@@ -51,10 +50,7 @@ driver = "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
         out_file = "./flight_points.csv"
         adjust_fuel = true
         is_sizing = true
-    [model.hq_tail_sizing]
-        id = "fastoad.handling_qualities.tail_sizing"
-    [model.hq_static_margin]
-        id = "fastoad.handling_qualities.static_margin"
+
     [model.wing_area]
         id = "fastoad.loop.wing_area"
 
