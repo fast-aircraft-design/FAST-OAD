@@ -364,7 +364,7 @@ class VariableList(list):
 
         for var in other_var_list:
             if add_variables or var.name in self.names():
-                self.append(var)
+                self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:
         """
@@ -719,7 +719,7 @@ class VariableList(list):
                     self.append(Variable(key, **value))
             else:
                 raise TypeError(
-                    'VariableList can be set with a "string index" only if value is a '
+                    'VariableList can be set with "vars[key] = value" only if value is a '
                     "dict of metadata"
                 )
         elif not isinstance(value, Variable):
