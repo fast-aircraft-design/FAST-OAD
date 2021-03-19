@@ -19,6 +19,10 @@ import openmdao.api as om
 
 
 class ComputeWingPosition(om.ExplicitComponent):
+    """
+    Computes the wing position for a static margin target
+    """
+
     def setup(self):
         self.add_input("data:handling_qualities:static_margin", val=np.nan)
         self.add_input("data:handling_qualities:static_margin:target", val=np.nan)
