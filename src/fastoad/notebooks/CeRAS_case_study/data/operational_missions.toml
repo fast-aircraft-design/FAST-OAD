@@ -23,7 +23,7 @@ output_file = "../workdir/operational_missions_out.xml"
         adjust_fuel = true
         add_solver = true
         is_sizing = false
-        initial_iterations = 1
+        use_initializer_iteration = true
     [model.SPP_study]
         id = "fastoad.performances.mission"
         propulsion_id = "fastoad.wrapper.propulsion.rubber_engine"
@@ -33,4 +33,4 @@ output_file = "../workdir/operational_missions_out.xml"
         adjust_fuel = true
         add_solver = true
         is_sizing = false
-        initial_iterations = 1
+        use_initializer_iteration = true

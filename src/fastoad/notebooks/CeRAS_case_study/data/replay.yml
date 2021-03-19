@@ -4,7 +4,7 @@ phases:
     polar: data:aerodynamics:aircraft:takeoff
     thrust_rate: data:propulsion:initial_climb:thrust_rate
     time_step: 0.2
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -28,7 +28,7 @@ phases:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:propulsion:climb:thrust_rate
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -54,7 +54,7 @@ phases:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:propulsion:climb:thrust_rate
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           altitude:
@@ -77,7 +77,7 @@ phases:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:propulsion:descent:thrust_rate
     time_step: 5.0
-    steps:
+    parts:
       - segment: altitude_change
         target:
           equivalent_airspeed:
@@ -102,43 +102,47 @@ phases:
             value: 1500.
             unit: ft
   holding:
-    steps:
+    parts:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
-          time: :duration
+          time: ~duration
   taxi_in:
-    steps:
+    parts:
       - segment: taxi
         thrust_rate: data:propulsion:taxi:thrust_rate
         target:
-          time: :duration
+          time: ~duration
 
 routes:
   main_route:
-    range: :range
-    steps:
+    range: ~range
+    climb_parts:
       - phase: initial_climb
       - phase: climb
-      - cruise_type: cruise
-        engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
-        target:
-          altitude: optimal_flight_level
-        maximum_flight_level: 360
+    cruise_part:
+      segment: cruise
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+      target:
+        altitude: optimal_flight_level
+      maximum_flight_level: 360
+    descent_parts:
       - phase: descent
   diversion:
-    range : :distance
-    steps:
+    range: ~distance
+    climb_parts:
       - phase: diversion_climb
-      - cruise_type: cruise
-        engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
+    cruise_part:
+      segment: cruise
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
       - phase: descent
 
 missions:
   MTOW_mission:
-    steps:
+    parts:
       - route: main_route
       - route: diversion
       - phase: holding

@@ -10,7 +10,7 @@ output_file = "../workdir/oad_sizing_out.xml"
 # Definition of OpenMDAO model
 [model]
     # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
-    nonlinear_solver = "om.NonlinearBlockGS(maxiter=50)"
+    nonlinear_solver = "om.NonlinearBlockGS(maxiter=50, atol=1e-2)"
     linear_solver = "om.DirectSolver()"
 
     # Although "model" is a mandatory name for the top level of the model, its
