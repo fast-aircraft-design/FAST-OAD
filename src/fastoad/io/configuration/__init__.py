@@ -2,7 +2,7 @@
 Package for building OpenMDAO problem from configuration file
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,8 +15,3 @@ Package for building OpenMDAO problem from configuration file
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .configuration import FASTOADProblemConfigurator
-
-from .exceptions import (
-    FASTConfigurationError,
-    FASTConfigurationBadOpenMDAOInstructionError,
-)

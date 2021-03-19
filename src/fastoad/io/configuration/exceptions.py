@@ -2,7 +2,7 @@
 Exceptions for package configuration
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -74,20 +74,3 @@ class FASTConfigurationBaseKeyBuildingError(FastError):
 
 class FASTConfigurationBadOpenMDAOInstructionError(FASTConfigurationBaseKeyBuildingError):
     """ Class for managing errors that result from trying to set an attribute by eval."""
-
-
-class FASTConfigurationError(FastError):
-    """Raised if incorrect definition found in configuration file"""
-
-    def __init__(self, missing_key=None, missing_section=None):
-        self.missing_key = missing_key
-        self.missing_section = missing_section
-
-        if self.missing_key:
-            msg = "Key [%s] is missing" % self.missing_key
-        elif self.missing_section:
-            msg = "Section [%s] is missing" % self.missing_section
-        else:
-            msg = "Undefined"
-
-        super().__init__(self, msg)
