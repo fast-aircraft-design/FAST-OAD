@@ -17,8 +17,8 @@ Aero computation for landing phase
 import numpy as np
 import openmdao.api as om
 
+from fastoad.base import Atmosphere
 from fastoad.model_base.options import OpenMdaoOptionDispatcherGroup
-from fastoad.utils.physics import Atmosphere
 from .components.compute_max_cl_landing import ComputeMaxClLanding
 from .components.high_lift_aero import ComputeDeltaHighLift
 from .external.xfoil import XfoilPolar

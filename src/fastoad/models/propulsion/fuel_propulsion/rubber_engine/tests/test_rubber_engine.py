@@ -3,7 +3,7 @@ Test module for rubber_engine.py
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,9 +19,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from fastoad.base.flight_point import FlightPoint
+from fastoad.base import Atmosphere, FlightPoint
 from fastoad.constants import EngineSetting
-from fastoad.utils.physics import Atmosphere
 from ..rubber_engine import RubberEngine
 
 

@@ -13,9 +13,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import Tuple, List
+from typing import List, Tuple
 
-from fastoad.base.flight_point import FlightPoint
+from fastoad.base import FlightPoint
 from .base import ManualThrustSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 

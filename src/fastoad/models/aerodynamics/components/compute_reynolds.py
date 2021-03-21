@@ -19,7 +19,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.utils.physics import AtmosphereSI
+from fastoad.base import AtmosphereSI
 
 
 class ComputeReynolds(ExplicitComponent):

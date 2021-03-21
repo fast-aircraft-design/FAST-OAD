@@ -16,31 +16,30 @@ Mission generator.
 
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Mapping, Union, Dict, Optional, List
+from typing import Dict, List, Mapping, Optional, Union
 
 import openmdao.api as om
 import pandas as pd
 
-from fastoad.base.flight_point import FlightPoint
+from fastoad.base import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.model_base.propulsion import IPropulsion
 from .exceptions import FastMissionFileMissingMissionNameError
 from .schema import (
-    PHASE_DEFINITIONS_TAG,
-    ROUTE_DEFINITIONS_TAG,
+    CLIMB_PARTS_TAG,
+    CRUISE_PART_TAG,
+    DESCENT_PARTS_TAG,
     MISSION_DEFINITION_TAG,
+    MissionDefinition,
     PARTS_TAG,
+    PHASE_DEFINITIONS_TAG,
     PHASE_TAG,
+    RESERVE_TAG,
+    ROUTE_DEFINITIONS_TAG,
     SEGMENT_TAG,
     SegmentNames,
-    MissionDefinition,
-    RESERVE_TAG,
-    CLIMB_PARTS_TAG,
-    DESCENT_PARTS_TAG,
-    CRUISE_PART_TAG,
 )
-from ..base import FlightSequence
-from ..base import IFlightPart
+from ..base import FlightSequence, IFlightPart
 from ..polar import Polar
 from ..routes import RangedRoute
 from ..segments.base import FlightSegment

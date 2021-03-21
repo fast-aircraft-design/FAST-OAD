@@ -20,8 +20,7 @@ from typing import List, Tuple
 import pandas as pd
 from scipy.constants import foot, g
 
-from fastoad.base.flight_point import FlightPoint
-from fastoad.utils.physics import AtmosphereSI
+from fastoad.base import AtmosphereSI, FlightPoint
 from .base import ManualThrustSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..util import get_closest_flight_level

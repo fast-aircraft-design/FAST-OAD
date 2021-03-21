@@ -21,18 +21,18 @@ import openmdao.api as om
 import pandas as pd
 from openmdao.vectors.vector import Vector
 
-from fastoad.base.flight_point import FlightPoint
+from fastoad.base import FlightPoint
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from ..base import FlightSequence
 from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.schema import (
+    CLIMB_PARTS_TAG,
+    DESCENT_PARTS_TAG,
     MISSION_DEFINITION_TAG,
     PARTS_TAG,
     PHASE_TAG,
-    ROUTE_TAG,
     ROUTE_DEFINITIONS_TAG,
-    CLIMB_PARTS_TAG,
-    DESCENT_PARTS_TAG,
+    ROUTE_TAG,
 )
 
 BASE_UNITS = {
