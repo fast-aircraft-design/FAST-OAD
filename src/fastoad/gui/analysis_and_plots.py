@@ -13,6 +13,7 @@ Defines the analysis and plotting functions for postprocessing
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from typing import Dict
 
 import numpy as np
@@ -22,6 +23,7 @@ from openmdao.utils.units import convert_units
 from plotly.subplots import make_subplots
 
 from fastoad.io import VariableIO
+from fastoad.openmdao.variables import VariableList
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
@@ -443,14 +445,14 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
 
 
 def _get_variable_values_with_new_units(
-    variables: VariableIO, var_names_and_new_units: Dict[str, str]
+    variables: VariableList, var_names_and_new_units: Dict[str, str]
 ):
     """
     Returns the value of the requested variable names with respect to their new units in the order
     in which their were given. This function works only for variable of value with shape=1 or float.
 
     :param variables: instance containing variables information
-    :param var_names_and_new_units: dictionnary of the variable names as keys and units as value
+    :param var_names_and_new_units: dictionary of the variable names as keys and units as value
     :return: values of the requested variables with respect to their new units
     """
     new_values = []
@@ -462,7 +464,7 @@ def _get_variable_values_with_new_units(
     return new_values
 
 
-def _data_weight_decomposition(variables: VariableIO, owe=None):
+def _data_weight_decomposition(variables: VariableList, owe=None):
     """
     Returns the two level weight decomposition of MTOW and optionally the decomposition of owe
     subcategories.

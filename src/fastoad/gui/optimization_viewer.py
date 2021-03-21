@@ -82,16 +82,14 @@ class OptimizationViewer:
         Loads the FAST-OAD problem and stores its data.
 
         :param problem_configuration: the FASTOADProblem instance.
-        :param file_formatter: the formatter that defines file format. If not provided,
-               default format will be assumed.
         """
 
         self.problem_configuration = problem_configuration
         problem = self.problem_configuration.get_problem()
         problem.setup()
 
-        if pth.isfile(problem.input_file_path):
-            input_variables = VariableIO(problem.input_file_path).read()
+        if pth.isfile(self.problem_configuration.input_file_path):
+            input_variables = VariableIO(self.problem_configuration.input_file_path).read()
         else:
             # TODO: generate the input file by default ?
             raise FastMissingFile("Please generate input file before using the optimization viewer")
