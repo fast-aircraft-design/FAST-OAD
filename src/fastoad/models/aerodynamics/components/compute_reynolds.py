@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -47,7 +47,9 @@ class ComputeReynolds(ExplicitComponent):
             mach = inputs["data:TLAR:cruise_mach"]
             altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
 
-        reynolds = AtmosphereSI(altitude).get_unitary_reynolds(mach)
+        atm = AtmosphereSI(altitude)
+        atm.mach = mach
+        reynolds = atm.unitary_reynolds
 
         if self.low_speed_aero:
             outputs["data:aerodynamics:wing:low_speed:reynolds"] = reynolds

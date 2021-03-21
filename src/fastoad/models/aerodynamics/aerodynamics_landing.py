@@ -101,10 +101,10 @@ class ComputeMachReynolds(om.ExplicitComponent):
         speed = inputs["data:TLAR:approach_speed"]
 
         atm = Atmosphere(0.0, 15.0)
-        mach = speed / atm.speed_of_sound
-        reynolds = atm.get_unitary_reynolds(mach) * l0_wing
+        atm.true_airspeed = speed
+        reynolds = atm.unitary_reynolds * l0_wing
 
-        outputs["data:aerodynamics:aircraft:landing:mach"] = mach
+        outputs["data:aerodynamics:aircraft:landing:mach"] = atm.mach
         outputs["data:aerodynamics:aircraft:landing:reynolds"] = reynolds
 
 

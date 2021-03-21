@@ -15,10 +15,10 @@
 import logging
 from copy import copy
 from dataclasses import dataclass
-from typing import Tuple, List
+from typing import List, Tuple
 
 import pandas as pd
-from scipy.constants import g, foot
+from scipy.constants import foot, g
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.utils.physics import AtmosphereSI
@@ -100,9 +100,11 @@ class AltitudeChangeSegment(ManualThrustSegment):
 
         atm = AtmosphereSI(start.altitude)
         if self.target.equivalent_airspeed == self.CONSTANT_VALUE:
-            start.true_airspeed = atm.get_true_airspeed(start.equivalent_airspeed)
+            atm.equivalent_airspeed = start.equivalent_airspeed
+            start.true_airspeed = atm.true_airspeed
         elif self.target.mach == self.CONSTANT_VALUE:
-            start.true_airspeed = start.mach * atm.speed_of_sound
+            atm.mach = start.mach
+            start.true_airspeed = atm.true_airspeed
 
         return super().compute_from(start)
 
@@ -129,9 +131,11 @@ class AltitudeChangeSegment(ManualThrustSegment):
             # Now, let's compute target Mach number
             atm = AtmosphereSI(max(self.target.altitude, current.altitude))
             if target_speed.equivalent_airspeed:
-                target_speed.true_airspeed = atm.get_true_airspeed(target_speed.equivalent_airspeed)
+                atm.equivalent_airspeed = target_speed.equivalent_airspeed
+                target_speed.true_airspeed = atm.true_airspeed
             if target_speed.true_airspeed:
-                target_speed.mach = target_speed.true_airspeed / atm.speed_of_sound
+                atm.true_airspeed = target_speed.true_airspeed
+                target_speed.mach = atm.mach
 
             # Now we compute optimal altitude
             optimal_altitude = self._get_optimal_altitude(

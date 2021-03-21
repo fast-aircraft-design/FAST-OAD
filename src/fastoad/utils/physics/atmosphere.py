@@ -2,7 +2,7 @@
 Simple implementation of International Standard Atmosphere.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,10 +15,10 @@ Simple implementation of International Standard Atmosphere.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from numbers import Number
-from typing import Union, Sequence
+from typing import Sequence, Union
 
 import numpy as np
-from scipy.constants import foot, atmosphere, R
+from scipy.constants import R, atmosphere, foot
 
 AIR_MOLAR_MASS = 28.9647e-3
 AIR_GAS_CONSTANT = R / AIR_MOLAR_MASS
@@ -87,6 +87,10 @@ class Atmosphere:
         self._density = None
         self._speed_of_sound = None
         self._kinematic_viscosity = None
+        self._mach = None
+        self._equivalent_airspeed = None
+        self._true_airspeed = None
+        self._unitary_reynolds = None
 
     def get_altitude(self, altitude_in_feet: bool = True) -> Union[float, Sequence[float]]:
         """
@@ -100,15 +104,16 @@ class Atmosphere:
 
     @property
     def delta_t(self) -> Union[float, Sequence[float]]:
-        """
-        Temperature increment applied to whole temperature profile as
-        provided at instantiation
-        """
+        """Temperature increment applied to whole temperature profile."""
         return self._delta_t
+
+    @delta_t.setter
+    def delta_t(self, value: Union[float, Sequence[float]]):
+        self._delta_t = value
 
     @property
     def temperature(self) -> Union[float, Sequence[float]]:
-        """ Temperature in K """
+        """Temperature in K."""
         if self._temperature is None:
             self._temperature = np.zeros(self._altitude.shape)
             self._temperature[self._idx_tropo] = (
@@ -119,7 +124,7 @@ class Atmosphere:
 
     @property
     def pressure(self) -> Union[float, Sequence[float]]:
-        """ Pressure in Pa """
+        """Pressure in Pa."""
         if self._pressure is None:
             self._pressure = np.zeros(self._altitude.shape)
             self._pressure[self._idx_tropo] = (
@@ -133,21 +138,21 @@ class Atmosphere:
 
     @property
     def density(self) -> Union[float, Sequence[float]]:
-        """ Density in kg/m3 """
+        """Density in kg/m3."""
         if self._density is None:
             self._density = self.pressure / AIR_GAS_CONSTANT / self.temperature
         return self._return_value(self._density)
 
     @property
     def speed_of_sound(self) -> Union[float, Sequence[float]]:
-        """ Speed of sound in m/s """
+        """Speed of sound in m/s."""
         if self._speed_of_sound is None:
             self._speed_of_sound = (1.4 * AIR_GAS_CONSTANT * self.temperature) ** 0.5
         return self._return_value(self._speed_of_sound)
 
     @property
     def kinematic_viscosity(self) -> Union[float, Sequence[float]]:
-        """ Kinematic viscosity in m2/s """
+        """Kinematic viscosity in m2/s."""
         if self._kinematic_viscosity is None:
             self._kinematic_viscosity = (
                 (0.000017894 * (self.temperature / SEA_LEVEL_TEMPERATURE) ** (3 / 2))
@@ -155,38 +160,79 @@ class Atmosphere:
             ) / self.density
         return self._return_value(self._kinematic_viscosity)
 
-    def get_unitary_reynolds(self, mach):
-        """
-        :param mach: Mach number
-        :return: Unitary Reynolds number in 1/m
-        """
-        return mach * self.speed_of_sound / self.kinematic_viscosity
+    @property
+    def mach(self) -> Union[float, Sequence[float]]:
+        """Mach number."""
+        if self._mach is None and self.true_airspeed is not None:
+            self._mach = self.true_airspeed / self.speed_of_sound
+        return self._return_value(self._mach)
 
-    def get_true_airspeed(self, equivalent_airspeed):
-        """
-        Computes true airspeed (TAS) from equivalent airspeed (EAS).
+    @property
+    def true_airspeed(self) -> Union[float, Sequence[float]]:
+        """True airspeed (TAS) in m/s."""
+        # Dev note: true_airspeed is the "hub". Other speed values will be calculated
+        # from this true_airspeed.
+        if self._true_airspeed is None:
+            if self._mach is not None:
+                self._true_airspeed = self._mach * self.speed_of_sound
+            if self._equivalent_airspeed is not None:
+                sea_level = Atmosphere(0)
+                self._true_airspeed = self._return_value(
+                    self._equivalent_airspeed * np.sqrt(sea_level.density / self.density)
+                )
+            if self._unitary_reynolds is not None:
+                self._true_airspeed = self._unitary_reynolds * self.kinematic_viscosity
+        return self._return_value(self._true_airspeed)
 
-        :param equivalent_airspeed: in m/s
-        :return: true airspeed in m/s
-        """
-        sea_level = Atmosphere(0)
-        return self._return_value(equivalent_airspeed * np.sqrt(sea_level.density / self.density))
+    @property
+    def equivalent_airspeed(self) -> Union[float, Sequence[float]]:
+        """Equivalent airspeed (EAS) in m/s."""
+        if self._equivalent_airspeed is None and self.true_airspeed is not None:
+            sea_level = Atmosphere(0)
+            self._equivalent_airspeed = self._return_value(
+                self.true_airspeed / np.sqrt(sea_level.density / self.density)
+            )
+        return self._return_value(self._equivalent_airspeed)
 
-    def get_equivalent_airspeed(self, true_airspeed):
-        """
-        Computes equivalent airspeed (EAS) from true airspeed (TAS).
+    @property
+    def unitary_reynolds(self) -> Union[float, Sequence[float]]:
+        """Unitary Reynolds number in 1/m."""
+        if self._unitary_reynolds is None and self.true_airspeed is not None:
+            self._unitary_reynolds = self.true_airspeed / self.kinematic_viscosity
+        return self._return_value(self._unitary_reynolds)
 
-        :param true_airspeed: in m/s
-        :return: equivalent airspeed in m/s
-        """
-        sea_level = Atmosphere(0)
-        return self._return_value(true_airspeed / np.sqrt(sea_level.density / self.density))
+    @mach.setter
+    def mach(self, value: Union[float, Sequence[float]]):
+        self._reset_speeds()
+        self._mach = value
+
+    @true_airspeed.setter
+    def true_airspeed(self, value: Union[float, Sequence[float]]):
+        self._reset_speeds()
+        self._true_airspeed = value
+
+    @equivalent_airspeed.setter
+    def equivalent_airspeed(self, value: Union[float, Sequence[float]]):
+        self._reset_speeds()
+        self._equivalent_airspeed = value
+
+    @unitary_reynolds.setter
+    def unitary_reynolds(self, value: Union[float, Sequence[float]]):
+        self._reset_speeds()
+        self._unitary_reynolds = value
+
+    def _reset_speeds(self):
+        """To be used before setting a new speed value as private attribute."""
+        self._mach = None
+        self._true_airspeed = None
+        self._equivalent_airspeed = None
+        self._unitary_reynolds = None
 
     def _return_value(self, value):
         """
         :returns: a float when needed. Otherwise, returns the value itself.
         """
-        if self._float_expected:
+        if value is not None and self._float_expected:
             return float(value)
 
         return value
@@ -206,4 +252,5 @@ class AtmosphereSI(Atmosphere):
 
     @property
     def altitude(self):
+        """Altitude in meters."""
         return self.get_altitude(altitude_in_feet=False)

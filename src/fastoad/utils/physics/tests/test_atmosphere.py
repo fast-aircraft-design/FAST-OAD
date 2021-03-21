@@ -1,6 +1,6 @@
 """Tests for Atmosphere class"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -133,25 +133,67 @@ def test_atmosphere():
         assert expectations["alt"][idx] / foot == pytest.approx(atm.get_altitude(), rel=1e-3)
 
 
-def test_reynolds():
-    """Tests computation of Reynolds number."""
-    atm = Atmosphere([[0, 35000], [0, 35000]])
-    mach = [[0.2, 0.2], [0.8, 0.8]]
-
-    # source:  http://www.aerospaceweb.org/design/scripts/atmosphere/
-    expected_reynolds = [[4.6593e6, 1.5738e6], [1.8637e7, 6.2952e6]]
-
-    assert_allclose(atm.get_unitary_reynolds(mach), expected_reynolds, rtol=3e-3)
-
-
 def test_speed_conversions():
     """Tests for speed conversions."""
-    atm = Atmosphere([[0.0, 1000.0, 35000.0], [0.0, 1000.0, 35000.0]])
-    TAS = [[100.0, 100.0, 100.0], [200.0, 200.0, 200.0]]
+    altitudes = [
+        [0.0, 1000.0, 35000.0],
+        [0.0, 1000.0, 35000.0],
+        [0.0, 1000.0, 35000.0],
+        [0.0, 1000.0, 35000.0],
+    ]
 
+    TAS = [
+        [100.0, 100.0, 100.0],
+        [200.0, 200.0, 200.0],
+        [270.0, 270.0, 270.0],
+        [400.0, 400.0, 400.0],
+    ]
     # source:  http://www.aerospaceweb.org/design/scripts/atmosphere/
-    expected_EAS = [[100.0, 98.5427, 55.7293], [200.0, 197.0853, 111.4586]]
+    expected_EAS = [
+        [100.0, 98.5427, 55.7293],
+        [200.0, 197.0853, 111.4586],
+        [270, 266.0652, 150.4692],
+        [400, 394.1707, 222.9173],
+    ]
+    expected_CAS = [  # currently unused
+        [100.0, 98.5799, 56.3313],
+        [200.0, 197.3624, 116.1973],
+        [270, 161.8971, 266.6984],
+        [400, 395.5782, 252.6355],
+    ]
+    expected_Mach = [
+        [0.2939, 0.2949, 0.3371],
+        [0.5877, 0.5898, 0.6743],
+        [0.7934, 0.7962, 0.9103],
+        [1.1755, 1.1795, 1.3486],
+    ]
+    expected_Re1 = [
+        [6.8459e6, 6.6836e6, 2.6530e6],
+        [1.3692e7, 1.3367e7, 5.3059e6],
+        [1.8484e7, 1.8046e7, 7.1630e6],
+        [2.7384e7, 2.6735e7, 1.0612e7],
+    ]
 
-    assert_allclose(atm.get_equivalent_airspeed(TAS), expected_EAS, rtol=3e-3)
+    atm = Atmosphere(altitudes)
+    atm.true_airspeed = TAS
+    assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-3)
+    assert_allclose(atm.mach, expected_Mach, rtol=2e-3)
+    assert_allclose(atm.unitary_reynolds, expected_Re1, rtol=2e-3)
 
-    assert_allclose(atm.get_true_airspeed(expected_EAS), TAS, rtol=3e-3)
+    atm = Atmosphere(altitudes)
+    atm.equivalent_airspeed = expected_EAS
+    assert_allclose(atm.true_airspeed, TAS, rtol=2e-3)
+    assert_allclose(atm.mach, expected_Mach, rtol=2e-3)
+    assert_allclose(atm.unitary_reynolds, expected_Re1, rtol=2e-3)
+
+    atm = Atmosphere(altitudes)
+    atm.mach = expected_Mach
+    assert_allclose(atm.true_airspeed, TAS, rtol=2e-3)
+    assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-3)
+    assert_allclose(atm.unitary_reynolds, expected_Re1, rtol=2.5e-3)
+
+    atm = Atmosphere(altitudes)
+    atm.unitary_reynolds = expected_Re1
+    assert_allclose(atm.true_airspeed, TAS, rtol=2e-3)
+    assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-3)
+    assert_allclose(atm.mach, expected_Mach, rtol=2.5e-3)
