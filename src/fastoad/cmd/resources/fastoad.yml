@@ -25,6 +25,12 @@ model:
     id: fastoad.weight.legacy
   mtow:
     id: fastoad.mass_performances.compute_MTOW
+  hq_tail_sizing:
+    id: fastoad.handling_qualities.tail_sizing
+  hq_static_margin:
+    id : fastoad.handling_qualities.static_margin
+  wing_position:
+    id: fastoad.loop.wing_position
   aerodynamics_highspeed:
     id: fastoad.aerodynamics.highspeed.legacy
   aerodynamics_lowspeed:
@@ -42,22 +48,17 @@ model:
     out_file:  ./flight_points.csv
     adjust_fuel: true
     is_sizing: true
-  hq_tail_sizing:
-    id: fastoad.handling_qualities.tail_sizing
-  hq_static_margin:
-    id: fastoad.handling_qualities.static_margin
   wing_area:
     id: fastoad.loop.wing_area
 
 optimization:  # This section is needed only if optimization process is run
   design_variables:
-    - name: data:geometry:wing:MAC:at25percent:x
-      lower: 16.0
+    - name: data:geometry:wing:aspect_ratio
+      lower: 9.0
       upper: 18.0
   constraints:
-    - name: data:handling_qualities:static_margin
-      lower: 0.05
-      upper: 0.1
+    - name: data:geometry:wing:span
+      upper: 60.0
   objective:
-    - name: data:mission:sizing:fuel
+    - name: data:mission:sizing:needed_block_fuel
       scaler: 1.e-4
