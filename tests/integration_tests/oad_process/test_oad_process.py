@@ -227,7 +227,6 @@ def run_non_regression_test(
     pd.set_option("display.max_columns", None)
     pd.set_option("display.width", 1000)
     pd.set_option("display.max_colwidth", 120)
-    print(df.sort_values(by=["abs_rel_delta"]))
 
     if vars_to_check is not None:
         for name in vars_to_check:
@@ -278,13 +277,13 @@ def test_api_eval(cleanup):
         atol=1,
     )
 
-    assert_allclose(problem["data:handling_qualities:static_margin"], -0.071146, atol=1e-3)
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.0, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 76796, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 131.26, atol=1e-2)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.49, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.99, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20708, atol=1)
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.07, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 77103, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 131.84, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 28.47, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 36.99, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20837, atol=1)
 
 
 def test_api_optim(cleanup):
@@ -329,10 +328,10 @@ def test_api_optim(cleanup):
     )
 
     # Design Variable
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.076, atol=1e-3)
+    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 13.58, atol=1e-2)
 
     # Constraint
-    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, rtol=1e-5)
+    assert_allclose(problem["data:geometry:wing:span"], 44.02, rtol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20837, atol=1)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20363, atol=1)
