@@ -22,7 +22,7 @@ import pandas as pd
 from openmdao import api as om
 from openmdao.core.component import Component
 
-from fastoad.base import FlightPoint
+from fastoad.model_base import FlightPoint
 
 
 class IPropulsion(ABC):

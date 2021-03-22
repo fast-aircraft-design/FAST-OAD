@@ -21,8 +21,8 @@ from typing import Dict, List, Mapping, Optional, Union
 import openmdao.api as om
 import pandas as pd
 
-from fastoad.base import FlightPoint
 from fastoad.constants import EngineSetting
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from .exceptions import FastMissionFileMissingMissionNameError
 from .schema import (

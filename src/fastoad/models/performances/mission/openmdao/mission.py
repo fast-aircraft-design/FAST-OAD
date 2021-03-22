@@ -23,7 +23,7 @@ import openmdao.api as om
 import pandas as pd
 from scipy.constants import foot
 
-from fastoad.base import FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet, IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
 from . import resources

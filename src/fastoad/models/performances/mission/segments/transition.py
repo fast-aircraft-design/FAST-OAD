@@ -18,7 +18,7 @@ from typing import List, Tuple
 
 import pandas as pd
 
-from fastoad.base import FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.performances.mission.segments.base import FlightSegment

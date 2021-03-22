@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 from numpy.testing import assert_allclose
 
-from fastoad.base import FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet
 
 

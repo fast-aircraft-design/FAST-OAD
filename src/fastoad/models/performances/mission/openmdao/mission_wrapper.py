@@ -21,7 +21,7 @@ import openmdao.api as om
 import pandas as pd
 from openmdao.vectors.vector import Vector
 
-from fastoad.base import FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from ..base import FlightSequence
 from ..mission_definition.mission_builder import MissionBuilder

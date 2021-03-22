@@ -34,8 +34,8 @@ from matplotlib.ticker import MultipleLocator
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot
 
-from fastoad.base import FlightPoint
 from fastoad.constants import EngineSetting, FlightPhase
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet, IPropulsion
 from fastoad.models.performances.mission.base import IFlightPart
 from fastoad.models.performances.mission.polar import Polar

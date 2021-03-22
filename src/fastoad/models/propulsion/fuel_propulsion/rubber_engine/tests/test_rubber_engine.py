@@ -19,8 +19,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from fastoad.base import Atmosphere, FlightPoint
 from fastoad.constants import EngineSetting
+from fastoad.model_base import Atmosphere, FlightPoint
 from ..rubber_engine import RubberEngine
 
 

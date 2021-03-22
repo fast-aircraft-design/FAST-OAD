@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 from scipy.constants import foot, g
 
-from fastoad.base import FlightPoint
+from fastoad.model_base import FlightPoint
 from .altitude_change import AltitudeChangeSegment
 from .base import FlightSegment, RegulatedThrustSegment
 from ..util import get_closest_flight_level

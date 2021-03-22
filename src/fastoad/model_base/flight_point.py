@@ -36,7 +36,7 @@ class FlightPoint:
         A pandas DataFrame can be generated from a list of FlightPoint instances::
 
             >>> import pandas as pd
-            >>> from fastoad.base import FlightPoint
+            >>> from fastoad.model_base import FlightPoint
 
             >>> fp1 = FlightPoint(mass=70000., altitude=0.)
             >>> fp2 = FlightPoint(mass=60000., altitude=10000.)

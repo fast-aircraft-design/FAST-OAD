@@ -18,7 +18,7 @@ from typing import List
 
 import pandas as pd
 
-from fastoad.base import FlightPoint
+from fastoad.model_base import FlightPoint
 
 
 class IFlightPart(ABC):

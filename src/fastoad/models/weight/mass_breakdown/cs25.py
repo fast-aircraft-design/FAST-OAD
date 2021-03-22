@@ -17,7 +17,7 @@ Computation of load cases
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.base import Atmosphere
+from fastoad.model_base import Atmosphere
 
 
 class Loads(ExplicitComponent):

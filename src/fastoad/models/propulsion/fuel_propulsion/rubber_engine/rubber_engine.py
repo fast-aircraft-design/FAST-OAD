@@ -19,9 +19,9 @@ from typing import Optional, Sequence, Tuple, Union
 import numpy as np
 import pandas as pd
 
-from fastoad.base import Atmosphere, FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
+from fastoad.model_base import Atmosphere, FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion
 from .constants import (
     ALPHA,

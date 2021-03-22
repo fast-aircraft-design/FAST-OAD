@@ -15,7 +15,7 @@
 import logging
 from typing import List, Tuple
 
-from fastoad.base import FlightPoint
+from fastoad.model_base import FlightPoint
 from .base import ManualThrustSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 

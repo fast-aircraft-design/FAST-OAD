@@ -22,8 +22,8 @@ import pandas as pd
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
-from fastoad.base import AtmosphereSI, FlightPoint
 from fastoad.constants import EngineSetting
+from fastoad.model_base import AtmosphereSI, FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint

@@ -36,7 +36,7 @@ from strictyaml import (
     load,
 )
 
-from fastoad.base import FlightPoint
+from fastoad.model_base import FlightPoint
 from ..segments.altitude_change import AltitudeChangeSegment
 from ..segments.cruise import BreguetCruiseSegment, ClimbAndCruiseSegment, OptimalCruiseSegment
 from ..segments.hold import HoldSegment

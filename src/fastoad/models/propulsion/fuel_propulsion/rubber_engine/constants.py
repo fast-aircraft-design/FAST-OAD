@@ -15,7 +15,7 @@ Constants for rubber engine analytical models
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.base import AtmosphereSI
+from fastoad.model_base import AtmosphereSI
 
 # Atmosphere at limits of troposhere
 ATM_SEA_LEVEL = AtmosphereSI(0)
