@@ -1,0 +1,146 @@
+"""
+Defines the analysis and plotting functions for postprocessing regarding the mission
+"""
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2021  ONERA & ISAE-SUPAERO
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from typing import Dict
+
+import numpy as np
+import pandas as pd
+import ipywidgets as widgets
+import plotly
+import plotly.graph_objects as go
+from openmdao.utils.units import convert_units
+from plotly.subplots import make_subplots
+from IPython.display import display, clear_output
+
+from fastoad.io import VariableIO
+
+COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
+
+# time,altitude,ground_distance,mass,true_airspeed,equivalent_airspeed,mach,engine_setting,CL,CD,drag,thrust,thrust_rate,thrust_is_regulated,sfc,slope_angle,acceleration
+
+BASE_UNITS = {
+    "altitude": "m",
+    "true_airspeed": "m/s",
+    "equivalent_airspeed": "m/s",
+    "range": "m",
+    "time": "s",
+    "ground_distance": "m",
+    "mass": "kg",
+    "mach": "-",
+    "engine_setting": "-",
+    "CL": "-",
+    "CD": "-",
+    "CD": "-",
+    "drag": "N",
+    "thrust": "N",
+    "thrust_rate": "-",
+    "thrust_is_regulated": "-",
+    "sfc": "kg/N",
+    "slope_angle": "rad",
+    "acceleration": "m/s²",
+}
+
+
+class MissionPostprocessing:
+    """
+    A class for facilitating the post-processing of mission and trajectories
+    """
+
+    def __init__(self):
+        # The dataframes containing each mission
+        self.missions = {}
+
+        # The figure displayed
+        self._fig = None
+
+        # The x selector
+        self._x_widget = None
+
+        # The y selector
+        self._y_widget = None
+
+    def add_mission(self, mission_file_path: str, name=None):
+        """
+        Adds the mission to the mission database (self.missions)
+        :param mission_file_path: path of the mission file
+        :param name: name to give to the mission
+        """
+
+        self.missions[name] = pd.read_csv(mission_file_path, index_col=0)
+
+        # Initialize widgets when first mission is added
+        if len(self.missions) == 1:
+            self._initialize_widgets()
+
+    def _initialize_widgets(self):
+        """
+        Initializes the widgets for selecting x and y
+        """
+
+        key = list(self.missions)[0]
+        keys = self.missions[key].keys()
+
+        self._x_widget = widgets.Dropdown(value=keys[0], options=keys)
+        self._x_widget.observe(self.display, "value")
+        self._y_widget = widgets.Dropdown(value=keys[1], options=keys)
+        self._y_widget.observe(self.display, "value")
+
+    def _build_plots(self):
+        """
+        Add a plot of the mission
+        """
+
+        x_name = self._x_widget.value
+        y_name = self._y_widget.value
+
+        for name in self.missions:
+            if self._fig is None:
+                self._fig = go.Figure()
+
+            x = self.missions[name][x_name]
+            y = self.missions[name][y_name]
+
+            scatter = go.Scatter(x=x, y=y, mode="lines", name=name)
+
+            self._fig.add_trace(scatter)
+
+            self._fig = go.FigureWidget(self._fig)
+
+        self._fig.update_layout(
+            title_text="Mission",
+            title_x=0.5,
+            xaxis_title=x_name + " [" + BASE_UNITS[x_name] + "]",
+            yaxis_title=y_name + " [" + BASE_UNITS[y_name] + "]",
+        )
+
+    def display(self, change=None) -> display:
+        """
+        Display the user interface
+        :return the display object
+        """
+        clear_output(wait=True)
+        self._update_plots()
+        toolbar = widgets.HBox(
+            [widgets.Label(value="x:"), self._x_widget, widgets.Label(value="y:"), self._y_widget]
+        )
+        ui = widgets.VBox([toolbar, self._fig])
+        return display(ui)
+
+    def _update_plots(self):
+        """
+        Update the plots
+        """
+        self._fig = None
+        self._build_plots()
