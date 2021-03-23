@@ -32,6 +32,7 @@ from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
 from ..polar import Polar
 from ..segments.cruise import BreguetCruiseSegment
+from ..segments.taxi import TaxiSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -264,6 +265,8 @@ class MissionComponent(om.ExplicitComponent):
         class MissionVars(Enum):
             TOW = "data:mission:%s:TOW" % mission_name
             BLOCK_FUEL = "data:mission:%s:needed_block_fuel" % mission_name
+            TAXI_OUT_DURATION = "data:mission:%s:taxi_out:duration" % mission_name
+            TAXI_OUT_THRUST_RATE = "data:mission:%s:taxi_out:thrust_rate" % mission_name
             TAXI_OUT_FUEL = "data:mission:%s:taxi_out:fuel" % mission_name
             TAKEOFF_FUEL = "data:mission:%s:takeoff:fuel" % mission_name
             TAKEOFF_ALTITUDE = "data:mission:%s:takeoff:altitude" % mission_name
@@ -273,13 +276,54 @@ class MissionComponent(om.ExplicitComponent):
 
         self.add_input("data:geometry:propulsion:engine:count", 2)
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
-        self.add_input(self._mission_vars.TOW.value, np.nan, units="kg")
-        self.add_input(self._mission_vars.TAXI_OUT_FUEL.value, np.nan, units="kg")
-        self.add_input(self._mission_vars.TAKEOFF_ALTITUDE.value, np.nan, units="m")
-        self.add_input(self._mission_vars.TAKEOFF_FUEL.value, np.nan, units="kg")
-        self.add_input(self._mission_vars.TAKEOFF_V2.value, np.nan, units="m/s")
+        self.add_input(
+            self._mission_vars.TOW.value,
+            np.nan,
+            units="kg",
+            desc='TakeOff Weight for mission "%s"' % mission_name,
+        )
+        self.add_input(
+            self._mission_vars.TAXI_OUT_DURATION.value,
+            np.nan,
+            units="s",
+            desc='duration of taxi-out in mission "%s"' % mission_name,
+        )
+        self.add_input(
+            self._mission_vars.TAXI_OUT_THRUST_RATE.value,
+            np.nan,
+            units="s",
+            desc='thrust rate during taxi-out in mission "%s"' % mission_name,
+        )
+        self.add_input(
+            self._mission_vars.TAKEOFF_ALTITUDE.value,
+            np.nan,
+            units="m",
+            desc='altitude of airport for mission "%s"' % mission_name,
+        )
+        self.add_input(
+            self._mission_vars.TAKEOFF_FUEL.value,
+            np.nan,
+            units="kg",
+            desc='burned fuel during takeoff phase of mission "%s"' % mission_name,
+        )
+        self.add_input(
+            self._mission_vars.TAKEOFF_V2.value,
+            np.nan,
+            units="m/s",
+            desc='takeoff safety speed for mission "%s"' % mission_name,
+        )
 
-        self.add_output(self._mission_vars.BLOCK_FUEL.value, units="kg")
+        self.add_output(
+            self._mission_vars.TAXI_OUT_FUEL.value,
+            units="kg",
+            desc='burned fuel during taxi-out of mission "%s"' % mission_name,
+        )
+        self.add_output(
+            self._mission_vars.BLOCK_FUEL.value,
+            units="kg",
+            desc='embarked fuel before taxi-out of mission "%s"' % mission_name,
+        )
+
         if self.options["is_sizing"]:
             self.add_output("data:weight:aircraft:sizing_block_fuel", units="kg")
 
@@ -373,6 +417,7 @@ class MissionComponent(om.ExplicitComponent):
         self._mission_wrapper.propulsion = propulsion_model
         self._mission_wrapper.reference_area = reference_area
 
+        self._compute_taxi_out(inputs, outputs, propulsion_model)
         end_of_takeoff = FlightPoint(
             time=0.0,
             mass=inputs[self._mission_vars.TOW.value],
@@ -391,7 +436,7 @@ class MissionComponent(om.ExplicitComponent):
         outputs[self._mission_vars.BLOCK_FUEL.value] = (
             inputs[self._mission_vars.TOW.value]
             + inputs[self._mission_vars.TAKEOFF_FUEL.value]
-            + inputs[self._mission_vars.TAXI_OUT_FUEL.value]
+            + outputs[self._mission_vars.TAXI_OUT_FUEL.value]
             - zfw
         )
         if self.options["is_sizing"]:
@@ -407,6 +452,27 @@ class MissionComponent(om.ExplicitComponent):
         self.flight_points = self.flight_points.applymap(as_scalar)
         if self.options["out_file"]:
             self.flight_points.to_csv(self.options["out_file"])
+
+    def _compute_taxi_out(self, inputs, outputs, propulsion_model):
+        """
+        Computes the taxi-out segment.
+        """
+        start_of_taxi_out = FlightPoint(
+            altitude=inputs[self._mission_vars.TAKEOFF_ALTITUDE.value],
+            true_airspeed=0.0,
+            # start mass is irrelevant here as long it does not get negative during computation.
+            mass=inputs[self._mission_vars.TOW.value],
+        )
+        taxi_segment = TaxiSegment(
+            target=FlightPoint(time=inputs[self._mission_vars.TAXI_OUT_DURATION.value],),
+            thrust_rate=inputs[self._mission_vars.TAXI_OUT_THRUST_RATE.value],
+            propulsion=propulsion_model,
+        )
+        flight_points = taxi_segment.compute_from(start_of_taxi_out)
+        end_of_taxi_out = flight_points.iloc[-1]
+        outputs[self._mission_vars.TAXI_OUT_FUEL.value] = (
+            start_of_taxi_out.mass - end_of_taxi_out.mass
+        )
 
     def _get_engine_wrapper(self) -> IOMPropulsionWrapper:
         """

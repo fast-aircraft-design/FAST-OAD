@@ -1,6 +1,6 @@
 <!--
   ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ Copyright (C) 2021 ONERA & ISAE-SUPAERO
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -298,7 +298,8 @@
         <handling_qualities>
             <static_margin>
                 -0.07556179197340485<!--(X-position of neutral point - X-position of center of gravity ) / (mean aerodynamic chord)-->
-                <target>0.05<!--(X-position of neutral point - X-position of center of gravity ) / (mean aerodynamic chord) target--></target>
+                <target>
+                    0.05<!--(X-position of neutral point - X-position of center of gravity ) / (mean aerodynamic chord) target--></target>
             </static_margin>
         </handling_qualities>
         <propulsion>
@@ -461,6 +462,10 @@
                 <taxi_out>
                     <fuel units="kg">
                         276.0<!--mass of consumed fuel during taxi-out phase in sizing mission--></fuel>
+                    <duration units="s" is_input="True">
+                        540<!--duration of taxi-out phase in sizing mission--></duration>
+                    <thrust_rate units="s" is_input="True">
+                        0.25<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
                 </taxi_out>
             </sizing>
         </mission>
@@ -1596,19 +1601,22 @@
             </horizontal_tail>
         </geometry>
         <mission>
-          <sizing>
-            <breguet>
-              <climb>
-                <mass_ratio is_input="True">0.97<!--For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)--></mass_ratio>
-              </climb>
-              <descent>
-                <mass_ratio is_input="True">0.98<!--For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)--></mass_ratio>
-              </descent>
-              <reserve>
-                <mass_ratio is_input="True">0.06<!--For Breguet performance computation: (weight of fuel reserve)/ZFW--></mass_ratio>
-              </reserve>
-            </breguet>
-          </sizing>
+            <sizing>
+                <breguet>
+                    <climb>
+                        <mass_ratio is_input="True">
+                            0.97<!--For Breguet performance computation: assumption of (mass at end of climb) / (mass at start of climb)--></mass_ratio>
+                    </climb>
+                    <descent>
+                        <mass_ratio is_input="True">
+                            0.98<!--For Breguet performance computation: assumption of (mass at end of descent) / (mass at start of descent)--></mass_ratio>
+                    </descent>
+                    <reserve>
+                        <mass_ratio is_input="True">
+                            0.06<!--For Breguet performance computation: (weight of fuel reserve)/ZFW--></mass_ratio>
+                    </reserve>
+                </breguet>
+            </sizing>
         </mission>
         <weight>
             <aircraft>

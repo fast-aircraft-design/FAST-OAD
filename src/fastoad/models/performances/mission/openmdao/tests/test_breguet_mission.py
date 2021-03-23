@@ -40,7 +40,8 @@ def test_breguet_with_rubber_engine():
     ivc.add_output("settings:mission:sizing:breguet:reserve:mass_ratio", 0.06)
     ivc.add_output("data:mission:sizing:takeoff:V2", 0.0, units="m/s")
     ivc.add_output("data:mission:sizing:takeoff:fuel", 0.0, units="kg")
-    ivc.add_output("data:mission:sizing:taxi_out:fuel", 0, units="kg")
+    ivc.add_output("data:mission:sizing:taxi_out:thrust_rate", 0)
+    ivc.add_output("data:mission:sizing:taxi_out:duration", 0, units="s")
     ivc.add_output("data:geometry:wing:area", 0.0, units="m**2")
     ivc.add_output("data:mission:sizing:takeoff:altitude", 0.0)
 
