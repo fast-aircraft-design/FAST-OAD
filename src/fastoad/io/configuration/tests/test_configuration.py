@@ -30,8 +30,8 @@ from fastoad.io.configuration.configuration import (
     TABLE_MODEL,
 )
 from ..exceptions import (
-    FASTConfigurationError,
     FASTConfigurationBadOpenMDAOInstructionError,
+    FASTConfigurationError,
     FASTConfigurationNanInInputFile,
 )
 
@@ -89,6 +89,10 @@ def test_problem_definition_with_xml_ref(cleanup):
     """ Tests what happens when writing inputs using data from existing XML file"""
     conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
 
+    result_folder_path = pth.join(RESULTS_FOLDER_PATH, "problem_definition_with_xml_ref")
+    conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
+    conf.output_file_path = pth.join(result_folder_path, "outputs.xml")
+
     input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
     conf.write_needed_inputs(input_data)
 
@@ -105,8 +109,12 @@ def test_problem_definition_with_custom_xml(cleanup):
     """ Tests what happens when writing inputs using existing XML with some unwanted var"""
     conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
 
+    result_folder_path = pth.join(RESULTS_FOLDER_PATH, "problem_definition_with_custom_xml")
+    conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
+    conf.output_file_path = pth.join(result_folder_path, "outputs.xml")
+
     input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
-    os.makedirs(RESULTS_FOLDER_PATH, exist_ok=True)
+    os.makedirs(result_folder_path, exist_ok=True)
     shutil.copy(input_data, conf.input_file_path)
 
     problem = conf.get_problem(read_inputs=True, auto_scaling=True)
@@ -114,6 +122,7 @@ def test_problem_definition_with_custom_xml(cleanup):
     problem.run_model()
 
     assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
+    problem.write_outputs()
 
 
 def test_problem_definition_with_nan_inputs(cleanup):
@@ -137,6 +146,9 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     """
     conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
 
+    result_folder_path = pth.join(RESULTS_FOLDER_PATH, "problem_definition_with_xml_ref_run_optim")
+    conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
+
     input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
     conf.write_needed_inputs(input_data)
 
@@ -147,6 +159,8 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     assert problem1["f"] == pytest.approx(28.58830817, abs=1e-6)
     problem1.run_driver()
     assert problem1["f"] == pytest.approx(3.18339395, abs=1e-6)
+    problem1.output_file_path = pth.join(result_folder_path, "outputs_1.xml")
+    problem1.write_outputs()
 
     # Runs optimization problem with monolithic FD
     problem2 = conf.get_problem(read_inputs=True)
@@ -156,6 +170,8 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     assert problem2["f"] == pytest.approx(28.58830817, abs=1e-6)
     problem2.run_driver()
     assert problem2["f"] == pytest.approx(3.18339395, abs=1e-6)
+    problem2.output_file_path = pth.join(result_folder_path, "outputs_2.xml")
+    problem2.write_outputs()
 
 
 def test_set_optimization_definition(cleanup):
