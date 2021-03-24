@@ -147,15 +147,24 @@ missions:
       - route: diversion
       - phase: holding
       - phase: taxi_in
+      - reserve:
+          ref: main_route
+          multiplier: 0.03
   SPP_design:
     parts:
       - route: main_route
       - route: diversion
       - phase: holding
       - phase: taxi_in
+      - reserve:
+          ref: main_route
+          multiplier: 0.03
   SPP_study:
     parts:
       - route: main_route
       - route: diversion
       - phase: holding
       - phase: taxi_in
+      - reserve:
+          ref: main_route
+          multiplier: 0.03

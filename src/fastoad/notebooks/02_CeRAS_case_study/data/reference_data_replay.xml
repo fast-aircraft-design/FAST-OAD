@@ -214,8 +214,8 @@
                 <sweep_100_outer units="rad" is_input="False">
                     0.319732377799903<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>
                 <sweep_25 units="deg" is_input="True">
-                    25.0<!--sweep angle at 25% chord of wing--></sweep_25>
-                <taper_ratio is_input="True">0.38<!--taper ratio of wing--></taper_ratio>
+                    24.54<!--sweep angle at 25% chord of wing--></sweep_25>
+                <taper_ratio is_input="True">0.313<!--taper ratio of wing--></taper_ratio>
                 <thickness_ratio is_input="False">
                     0.12839840880979247<!--mean thickness ratio of wing--></thickness_ratio>
                 <wetted_area units="m**2" is_input="False">
@@ -240,7 +240,7 @@
                     <chord units="m" is_input="False">
                         3.4968675540944023<!--chord length at wing kink--></chord>
                     <span_ratio is_input="True">
-                        0.4<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
+                        0.375<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
                     <thickness_ratio is_input="False">
                         0.12069450428120491<!--thickness ratio at wing kink--></thickness_ratio>
                     <y units="m" is_input="False">
