@@ -35,19 +35,23 @@ from .geom_components.wing.compute_wing import ComputeWingGeometry
 class Geometry(om.Group):
     """
     Computes geometric characteristics of the (tube-wing) aircraft:
-      - fuselage size is computed from payload requirements
+      - fuselage size can be computed from payload requirements
       - wing dimensions are computed from global parameters (area, taper ratio...)
       - tail planes are dimensioned from HQ requirements
-
-    This module also computes centers of gravity and static margin
     """
 
     def initialize(self):
-        self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
+        self.options.declare(
+            CABIN_SIZING_OPTION,
+            types=bool,
+            default=True,
+            desc="If True, fuselage dimensions will be computed from cabin specifications."
+            "\nIf False, fuselage dimensions will be input data.",
+        )
 
     def setup(self):
 
-        if self.options[CABIN_SIZING_OPTION] == 1.0:
+        if self.options[CABIN_SIZING_OPTION]:
             self.add_subsystem(
                 "compute_fuselage", ComputeFuselageGeometryCabinSizing(), promotes=["*"]
             )
