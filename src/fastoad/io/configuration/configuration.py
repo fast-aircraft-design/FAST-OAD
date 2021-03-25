@@ -1,7 +1,6 @@
 """
 Module for building OpenMDAO problem from configuration file
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,21 +17,23 @@ Module for building OpenMDAO problem from configuration file
 import logging
 import os.path as pth
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Dict, Tuple
 
+import numpy as np
 import openmdao.api as om
 import tomlkit
-from openmdao.core.indepvarcomp import IndepVarComp
 
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.utils.files import make_parent_dir
 from .exceptions import (
-    FASTConfigurationBaseKeyBuildingError,
     FASTConfigurationBadOpenMDAOInstructionError,
+    FASTConfigurationBaseKeyBuildingError,
     FASTConfigurationError,
+    FASTConfigurationNanInInputFile,
 )
 from ...module_management.service_registry import RegisterOpenMDAOSystem
+from ...openmdao.utils import get_unconnected_input_names
 from ...openmdao.variables import VariableList
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -108,16 +109,16 @@ class FASTOADProblemConfigurator:
             raise RuntimeError("read configuration file first")
 
         if read_inputs:
-            reader = VariableIO(self.input_file_path)
-            variables = reader.read()
-            input_ivc = variables.to_ivc()
+            problem_with_no_inputs = self.get_problem(auto_scaling=auto_scaling)
+            problem_with_no_inputs.setup()
+            input_ivc, unused_variables = self._get_problem_inputs(problem_with_no_inputs)
         else:
-            input_ivc = None
+            input_ivc = unused_variables = None
 
         problem = FASTOADProblem(self._build_model(input_ivc))
-
         problem.input_file_path = self.input_file_path
         problem.output_file_path = self.output_file_path
+        problem.additional_variables = unused_variables
 
         driver = self._conf_dict.get(KEY_DRIVER, "")
         if driver:
@@ -242,7 +243,7 @@ class FASTOADProblemConfigurator:
         subpart = {"optimization": subpart}
         self._conf_dict.update(subpart)
 
-    def _build_model(self, input_ivc: IndepVarComp = None) -> om.Group:
+    def _build_model(self, input_ivc: om.IndepVarComp = None) -> om.Group:
         """
         Builds the model as defined in the configuration file.
 
@@ -388,6 +389,35 @@ class FASTOADProblemConfigurator:
                 design_var_table["ref0"] = design_var_table["lower"]
                 design_var_table["ref"] = design_var_table["upper"]
             model.add_design_var(**design_var_table)
+
+    def _get_problem_inputs(self, problem: FASTOADProblem) -> Tuple[om.IndepVarComp, VariableList]:
+        """
+        Reads input file for the configure problem.
+
+        Needed variables are returned as an IndepVarComp instance while unused variables are
+        returned as a VariableList instance.
+
+        :param problem: problem with missing inputs. setup() must have been run.
+        :return: IVC of needed input variables, VariableList with unused variables.
+        """
+        mandatory, optional = get_unconnected_input_names(problem, promoted_names=True)
+        needed_variable_names = mandatory + optional
+
+        reader = VariableIO(self.input_file_path)
+        input_variables = reader.read()
+
+        unused_variables = VariableList(
+            [var for var in input_variables if var.name not in needed_variable_names]
+        )
+        for name in unused_variables.names():
+            del input_variables[name]
+
+        nan_variable_names = [var.name for var in input_variables if np.all(np.isnan(var.value))]
+        if nan_variable_names:
+            raise FASTConfigurationNanInInputFile(self.input_file_path, nan_variable_names)
+
+        input_ivc = input_variables.to_ivc()
+        return input_ivc, unused_variables
 
     def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
         self._configuration_modifier = modifier
