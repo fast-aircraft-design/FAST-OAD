@@ -14,22 +14,26 @@ Module for building OpenMDAO problem from configuration file
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import json
 import logging
 import os.path as pth
 from abc import ABC, abstractmethod
+from importlib.resources import open_text
 from typing import Dict, Tuple
 
 import numpy as np
 import openmdao.api as om
 import tomlkit
+from jsonschema import validate
+from ruamel import yaml
 
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.utils.files import make_parent_dir
+from . import resources
 from .exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
     FASTConfigurationBaseKeyBuildingError,
-    FASTConfigurationError,
     FASTConfigurationNanInInputFile,
 )
 from ...module_management.service_registry import RegisterOpenMDAOSystem
@@ -42,13 +46,14 @@ KEY_FOLDERS = "module_folders"
 KEY_INPUT_FILE = "input_file"
 KEY_OUTPUT_FILE = "output_file"
 KEY_COMPONENT_ID = "id"
-KEY_CONNECTION_ID = "connection"
-TABLE_MODEL = "model"
+KEY_CONNECTION_ID = "connections"
+KEY_MODEL = "model"
 KEY_DRIVER = "driver"
-TABLE_OPTIMIZATION = "optimization"
-TABLES_DESIGN_VAR = "design_var"
-TABLES_CONSTRAINT = "constraint"
-TABLES_OBJECTIVE = "objective"
+KEY_OPTIMIZATION = "optimization"
+KEY_DESIGN_VARIABLES = "design_variables"
+KEY_CONSTRAINTS = "constraints"
+KEY_OBJECTIVE = "objective"
+JSON_SCHEMA_NAME = "configuration.json"
 
 
 class FASTOADProblemConfigurator:
@@ -62,7 +67,8 @@ class FASTOADProblemConfigurator:
 
     def __init__(self, conf_file_path=None):
         self._conf_file = None
-        self._conf_dict = {}
+
+        self._serializer = _YAMLSerializer()
 
         # self._configuration_modifier offers a way to modify problems after
         # they have been generated from configuration (private usage for now)
@@ -74,26 +80,26 @@ class FASTOADProblemConfigurator:
     @property
     def input_file_path(self):
         """path of file with input variables of the problem"""
-        path = self._conf_dict[KEY_INPUT_FILE]
+        path = str(self._serializer.data[KEY_INPUT_FILE])
         if not pth.isabs(path):
             path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
         return path
 
     @input_file_path.setter
     def input_file_path(self, file_path: str):
-        self._conf_dict[KEY_INPUT_FILE] = file_path
+        self._serializer.data[KEY_INPUT_FILE] = file_path
 
     @property
     def output_file_path(self):
         """path of file where output variables will be written"""
-        path = self._conf_dict[KEY_OUTPUT_FILE]
+        path = str(self._serializer.data[KEY_OUTPUT_FILE])
         if not pth.isabs(path):
             path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
         return path
 
     @output_file_path.setter
     def output_file_path(self, file_path: str):
-        self._conf_dict[KEY_OUTPUT_FILE] = file_path
+        self._serializer.data[KEY_OUTPUT_FILE] = file_path
 
     def get_problem(self, read_inputs: bool = False, auto_scaling: bool = False) -> FASTOADProblem:
         """
@@ -105,7 +111,7 @@ class FASTOADProblemConfigurator:
                              variables and constraints
         :return: the problem instance
         """
-        if not self._conf_dict:
+        if self._serializer.data is None:
             raise RuntimeError("read configuration file first")
 
         if read_inputs:
@@ -120,7 +126,7 @@ class FASTOADProblemConfigurator:
         problem.output_file_path = self.output_file_path
         problem.additional_variables = unused_variables
 
-        driver = self._conf_dict.get(KEY_DRIVER, "")
+        driver = self._serializer.data.get(KEY_DRIVER, "")
         if driver:
             problem.driver = _om_eval(driver)
 
@@ -144,28 +150,33 @@ class FASTOADProblemConfigurator:
         """
 
         self._conf_file = pth.abspath(conf_file)  # for resolving relative paths
-
         conf_dirname = pth.dirname(self._conf_file)
-        with open(conf_file, "r") as file:
-            d = file.read()
-            self._conf_dict = tomlkit.loads(d)
 
-        # FIXME: Could structure of configuration file be checked more thoroughly ?
-        for key in [KEY_INPUT_FILE, KEY_OUTPUT_FILE]:
-            if key not in self._conf_dict:
-                raise FASTConfigurationError(missing_key=key)
+        if pth.splitext(self._conf_file)[-1] == ".toml":
+            self._serializer = _TOMLSerializer()
+            _LOGGER.warning(
+                "TOML-formatted configuration files are deprecated. Please use YAML format."
+            )
+        else:
+            self._serializer = _YAMLSerializer()
+        self._serializer.read(self._conf_file)
 
-        if not isinstance(self._conf_dict.get(TABLE_MODEL), dict):
-            raise FASTConfigurationError(missing_section=TABLE_MODEL)
+        # Syntax validation
+        with open_text(resources, JSON_SCHEMA_NAME) as json_file:
+            json_schema = json.loads(json_file.read())
+        validate(self._serializer.data, json_schema)
 
         # Looking for modules to register
-        module_folder_paths = self._conf_dict.get(KEY_FOLDERS, [])
-        for folder_path in module_folder_paths:
-            folder_path = pth.join(conf_dirname, folder_path)
-            if not pth.exists(folder_path):
-                _LOGGER.warning("SKIPPED %s: it does not exist.")
-            else:
-                RegisterOpenMDAOSystem.explore_folder(folder_path)
+        module_folder_paths = self._serializer.data.get(KEY_FOLDERS)
+        if isinstance(module_folder_paths, str):
+            module_folder_paths = [module_folder_paths]
+        if module_folder_paths:
+            for folder_path in module_folder_paths:
+                folder_path = pth.join(conf_dirname, str(folder_path))
+                if not pth.exists(folder_path):
+                    _LOGGER.warning("SKIPPED %s: it does not exist.")
+                else:
+                    RegisterOpenMDAOSystem.explore_folder(folder_path)
 
     def save(self, filename: str = None):
         """
@@ -178,9 +189,7 @@ class FASTOADProblemConfigurator:
             filename = self._conf_file
 
         make_parent_dir(filename)
-        with open(filename, "w") as file:
-            d = tomlkit.dumps(self._conf_dict)
-            file.write(d)
+        self._serializer.write(filename)
 
     def write_needed_inputs(
         self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None,
@@ -220,7 +229,7 @@ class FASTOADProblemConfigurator:
         """
 
         optimization_definition = {}
-        conf_dict = self._conf_dict.get(TABLE_OPTIMIZATION)
+        conf_dict = self._serializer.data.get(KEY_OPTIMIZATION)
         if conf_dict:
             for sec, elements in conf_dict.items():
                 optimization_definition[sec] = {elem["name"]: elem for elem in elements}
@@ -241,7 +250,7 @@ class FASTOADProblemConfigurator:
         for key, value in optimization_definition.items():
             subpart[key] = [value for _, value in optimization_definition[key].items()]
         subpart = {"optimization": subpart}
-        self._conf_dict.update(subpart)
+        self._serializer.data.update(subpart)
 
     def _build_model(self, input_ivc: om.IndepVarComp = None) -> om.Group:
         """
@@ -257,7 +266,7 @@ class FASTOADProblemConfigurator:
         if input_ivc:
             model.add_subsystem("fastoad_inputs", input_ivc, promotes=["*"])
 
-        model_definition = self._conf_dict.get(TABLE_MODEL)
+        model_definition = self._serializer.data.get(KEY_MODEL)
 
         try:
             if KEY_COMPONENT_ID in model_definition:
@@ -270,7 +279,7 @@ class FASTOADProblemConfigurator:
                 self._parse_problem_table(model, model_definition)
 
         except FASTConfigurationBaseKeyBuildingError as err:
-            log_err = err.__class__(err, TABLE_MODEL)
+            log_err = err.__class__(err, KEY_MODEL)
             _LOGGER.error(log_err)
             raise log_err
 
@@ -283,7 +292,7 @@ class FASTOADProblemConfigurator:
         :param group:
         :param table:
         """
-        assert isinstance(table, dict), "table should be a dictionary"
+        # assert isinstance(table, dict), "table should be a dictionary"
 
         for key, value in table.items():
             if isinstance(value, dict):  # value defines a sub-component
@@ -327,7 +336,7 @@ class FASTOADProblemConfigurator:
             else:
                 # value is an attribute of current component and will be literally interpreted
                 try:
-                    setattr(group, key, _om_eval(value))  # pylint:disable=eval-used
+                    setattr(group, key, _om_eval(str(value)))  # pylint:disable=eval-used
                 except Exception as err:
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
@@ -341,7 +350,7 @@ class FASTOADProblemConfigurator:
         """
         optimization_definition = self.get_optimization_definition()
         # Constraints
-        constraint_tables = optimization_definition.get(TABLES_CONSTRAINT, {})
+        constraint_tables = optimization_definition.get(KEY_CONSTRAINTS, {})
         for constraint_table in constraint_tables.values():
             if (
                 auto_scaling
@@ -363,7 +372,7 @@ class FASTOADProblemConfigurator:
         :return:
         """
         optimization_definition = self.get_optimization_definition()
-        objective_tables = optimization_definition.get(TABLES_OBJECTIVE, {})
+        objective_tables = optimization_definition.get(KEY_OBJECTIVE, {})
         for objective_table in objective_tables.values():
             model.add_objective(**objective_table)
 
@@ -376,7 +385,7 @@ class FASTOADProblemConfigurator:
         :return:
         """
         optimization_definition = self.get_optimization_definition()
-        design_var_tables = optimization_definition.get(TABLES_DESIGN_VAR, {})
+        design_var_tables = optimization_definition.get(KEY_DESIGN_VARIABLES, {})
         for design_var_table in design_var_tables.values():
             if (
                 auto_scaling
@@ -457,6 +466,69 @@ class AutoUnitsDefaultGroup(om.Group):
             )
         for name, units in var_units.items():
             self.set_input_defaults(name, units=units)
+
+
+class _IDictSerializer(ABC):
+    """Interface for reading and writing dict-like data"""
+
+    @property
+    @abstractmethod
+    def data(self) -> dict:
+        """
+        The data that have been read, or will be written.
+        """
+
+    @abstractmethod
+    def read(self, file_path: str):
+        """
+        Reads data from provided file.
+        :param file_path:
+        """
+
+    @abstractmethod
+    def write(self, file_path: str):
+        """
+        Writes data to provided file.
+        :param file_path:
+        """
+
+
+class _TOMLSerializer(_IDictSerializer):
+    """TOML-format serializer."""
+
+    def __init__(self):
+        self._data = None
+
+    @property
+    def data(self):
+        return self._data
+
+    def read(self, file_path: str):
+        with open(file_path, "r") as toml_file:
+            self._data = tomlkit.loads(toml_file.read())
+
+    def write(self, file_path: str):
+        with open(file_path, "w") as file:
+            file.write(tomlkit.dumps(self._data))
+
+
+class _YAMLSerializer(_IDictSerializer):
+    """YAML-format serializer."""
+
+    def __init__(self):
+        self._data = None
+
+    @property
+    def data(self):
+        return self._data
+
+    def read(self, file_path: str):
+        with open(file_path) as yaml_file:
+            self._data = yaml.safe_load(yaml_file.read())
+
+    def write(self, file_path: str):
+        with open(file_path, "w") as file:
+            yaml.round_trip_dump(self._data, file)
 
 
 class _IConfigurationModifier(ABC):

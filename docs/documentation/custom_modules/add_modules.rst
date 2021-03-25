@@ -138,7 +138,7 @@ decorator to your OpenMDAO class like this:
 
     @RegisterOpenMDAOSystem("my.custom.name")
     class MyOMClass(om.ExplicitComponent):
-        ...
+        [ ... ]
 
 .. note::
 
@@ -154,35 +154,37 @@ Modify the configuration file
 The folders that contain your Python files must be listed in :code:`module_folders`
 in the :ref:`configuration-file`:
 
-.. code-block:: TOML
+.. code-block:: yaml
 
-    title = "OAD Process with custom component"
+    title: OAD Process with custom component
 
     # List of folder paths where user added custom registered OpenMDAO components
-    module_folders = ["/path/to/my/custom/module/folder", "/another/path/"]
+    module_folders:
+      - /path/to/my/custom/module/folder
+      - /another/path/
 
-    ...
+    [ ... ]
 
-Once this is done, (assuming your configuration file is named :code:`my_custom_conf.toml`)
+Once this is done, (assuming your configuration file is named :code:`my_custom_conf.yml`)
 your custom, registered, system should appear in the list provided by the command line:
 
 .. code:: shell-session
 
-      $ fastoad list_systems my_custom_conf.toml
+      $ fastoad list_systems my_custom_conf.yml
 
 
 Then your component can be used like any other using the id you have given.
 
-.. code-block:: TOML
+.. code-block:: yaml
 
     # Definition of OpenMDAO model
-    [model]
-        [ ... ]
+    model:
+      [ ... ]
 
-        [model.my_custom_model]
-            id = "my.custom.name"
+      my_custom_model:
+        id = "my.custom.name"
 
-        [ ... ]
+      [ ... ]
 
 .. Note::
 
