@@ -228,12 +228,17 @@ def list_systems(
         path = BundleLoader().get_factory_path(identifier)
         domain = RegisterOpenMDAOSystem.get_provider_domain(identifier)
         description = RegisterOpenMDAOSystem.get_provider_description(identifier)
+        component = RegisterOpenMDAOSystem.get_system(identifier)
+        component.options.undeclare("assembled_jac_type")
         if description is None:
             description = ""
         out_file.write("  IDENTIFIER:   %s\n" % identifier)
         out_file.write("  PATH:         %s\n" % path)
         out_file.write("  DOMAIN:       %s\n" % domain.value)
         out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
+        if len(list(component.options.items())) > 0:
+            out_file.write(component.options.to_table(fmt="fancy_grid"))
+            out_file.write("\n")
         out_file.write("-" * 100 + "\n")
     out_file.write("=" * 100 + "\n")
 
