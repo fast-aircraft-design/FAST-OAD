@@ -1,7 +1,6 @@
 """
     FAST - Copyright (c) 2016 ONERA ISAE
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,20 +17,21 @@
 import openmdao.api as om
 
 from fastoad.model_base.options import CABIN_SIZING_OPTION
-from fastoad.models.geometry.compute_aero_center import ComputeAeroCenter
-from fastoad.models.geometry.geom_components import ComputeTotalArea
-from fastoad.models.geometry.geom_components.fuselage.compute_fuselage import (
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from .compute_aero_center import ComputeAeroCenter
+from .geom_components import ComputeTotalArea
+from .geom_components.fuselage.compute_fuselage import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizing,
 )
-from fastoad.models.geometry.geom_components.ht import ComputeHorizontalTailGeometry
-from fastoad.models.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import (
-    ComputeNacelleAndPylonsGeometry,
-)
-from fastoad.models.geometry.geom_components.vt import ComputeVerticalTailGeometry
-from fastoad.models.geometry.geom_components.wing.compute_wing import ComputeWingGeometry
+from .geom_components.ht import ComputeHorizontalTailGeometry
+from .geom_components.nacelle_pylons.compute_nacelle_pylons import ComputeNacelleAndPylonsGeometry
+from .geom_components.vt import ComputeVerticalTailGeometry
+from .geom_components.wing.compute_wing import ComputeWingGeometry
 
 
+@RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)
 class Geometry(om.Group):
     """
     Computes geometric characteristics of the (tube-wing) aircraft:

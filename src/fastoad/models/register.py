@@ -19,8 +19,7 @@ distributed along the code.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
-from .geometry import Geometry
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .handling_qualities.compute_static_margin import ComputeStaticMargin
 from .handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from .loops.compute_wing_area import ComputeWingArea
@@ -30,9 +29,6 @@ from .performances.mission.openmdao.mission import Mission
 from .propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
 from .propulsion.fuel_propulsion.rubber_engine.constants import RUBBER_ENGINE_DESCRIPTION
 from .weight.weight import Weight
-
-# Geometry ####################################################################
-RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)(Geometry)
 
 # handling qualities ##########################################################
 RegisterOpenMDAOSystem(
