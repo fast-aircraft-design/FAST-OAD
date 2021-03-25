@@ -13,3 +13,4 @@
 
 from .optimization_viewer import OptimizationViewer
 from .variable_viewer import VariableViewer
+from .mission import MissionPostprocessing
