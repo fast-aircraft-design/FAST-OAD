@@ -40,7 +40,7 @@ BASE_UNITS = {
 }
 
 
-class MissionPostprocessing:
+class MissionViewer:
     """
     A class for facilitating the post-processing of mission and trajectories
     """

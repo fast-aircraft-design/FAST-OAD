@@ -20,7 +20,7 @@ from shutil import rmtree
 import pytest
 import pandas as pd
 
-from .. import MissionPostprocessing
+from .. import MissionViewer
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -37,7 +37,7 @@ def test_mission_viewer(cleanup):
     """
     filename = pth.join(DATA_FOLDER_PATH, "flight_points.csv")
 
-    mission_viewer = MissionPostprocessing()
+    mission_viewer = MissionViewer()
 
     # Testing with .csv file
     mission_viewer.add_mission(filename, name="Mission 1")
