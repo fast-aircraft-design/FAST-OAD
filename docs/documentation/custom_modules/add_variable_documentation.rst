@@ -1,4 +1,4 @@
-.. _add-modules:
+.. _add-variable-documentation:
 
 ##############################
 How to document your variables
