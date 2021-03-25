@@ -108,7 +108,7 @@ def generate_inputs(
 def list_variables(
     configuration_file_path: str,
     tablefmt: str = "grid",
-    out: Union[IO, str] = sys.stdout,
+    out: Union[IO, str] = None,
     overwrite: bool = False,
     force_text_output: bool = False,
 ):
@@ -123,7 +123,7 @@ def list_variables(
     :param configuration_file_path:
     :param tablefmt: The formatting of the requested table. Options are the same as those available
                      to the tabulate package. See tabulate.tabulate_formats for a complete list.
-    :param out: the output stream or a path for the output file
+    :param out: the output stream or a path for the output file (None means sys.stdout)
     :param overwrite: if True and out parameter is a file path, the file will be written even if one
                       already exists
     :param force_text_output: if True, list will be written as text, even if command is used in an
@@ -132,6 +132,9 @@ def list_variables(
     :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
                                 exists
     """
+    if out is None:
+        out = sys.stdout
+
     conf = FASTOADProblemConfigurator(configuration_file_path)
     problem = conf.get_problem()
     problem.setup()
