@@ -40,26 +40,45 @@ class AerodynamicsLanding(OpenMdaoOptionDispatcherGroup):
 
     Contribution of high-lift devices is modelled according to their geometry (span and chord ratio)
     and their deflection angles.
-
-    Options:
-      - use_xfoil:
-         - if True, maximum 2D CL without high-lift aerodynamics:aircraft:landing:CL_max_clean_2D
-           is computed using XFOIL
-         - if False, aerodynamics:aircraft:landing:CL_max_clean_2D must be provided as input (but
-           process is faster)
-      - alpha_min, alpha_max:
-         - used if use_xfoil is True. Sets the alpha range that is explored to find maximum 2D CL
-           without high-lift
-      - xfoil_exe_path:
-         - the path to the XFOIL executable. Needed for non-Windows OS.
     """
 
     def initialize(self):
-        self.options.declare("use_xfoil", default=True, types=bool)
-        self.options.declare("xfoil_alpha_min", default=0.0, types=float)
-        self.options.declare("xfoil_alpha_max", default=30.0, types=float)
-        self.options.declare("xfoil_iter_limit", default=500, types=int)
-        self.options.declare(OPTION_XFOIL_EXE_PATH, default="", types=str, allow_none=True)
+        self.options.declare(
+            "use_xfoil",
+            default=True,
+            types=bool,
+            desc="If True, maximum 2D CL without high-lift "
+            "aerodynamics:aircraft:landing:CL_max_clean_2D is computed using XFOIL.\n"
+            "If False, aerodynamics:aircraft:landing:CL_max_clean_2D must be provided "
+            "as input (but process is faster)",
+        )
+        self.options.declare(
+            "xfoil_alpha_min",
+            default=0.0,
+            types=float,
+            desc="Used if use_xfoil is True. Sets the minimum alpha that is explored "
+            "to find maximum 2D CL without high-lift",
+        )
+        self.options.declare(
+            "xfoil_alpha_max",
+            default=30.0,
+            types=float,
+            desc="Used if use_xfoil is True. Sets the maximum alpha that is explored "
+            "to find maximum 2D CL without high-lift",
+        )
+        self.options.declare(
+            "xfoil_iter_limit",
+            default=500,
+            types=int,
+            desc="Maximum number of iterations for a XFOIL run.",
+        )
+        self.options.declare(
+            OPTION_XFOIL_EXE_PATH,
+            default="",
+            types=str,
+            allow_none=True,
+            desc="The path to the XFOIL executable. Needed for non-Windows OS.",
+        )
 
     def setup(self):
         self.add_subsystem("mach_reynolds", ComputeMachReynolds(), promotes=["*"])
