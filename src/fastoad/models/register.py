@@ -19,11 +19,7 @@ distributed along the code.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
-from .aerodynamics.aerodynamics_landing import AerodynamicsLanding
-from .aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
-from .aerodynamics.aerodynamics_takeoff import AerodynamicsTakeoff
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from .geometry import Geometry
 from .handling_qualities.compute_static_margin import ComputeStaticMargin
 from .handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
@@ -34,20 +30,6 @@ from .performances.mission.openmdao.mission import Mission
 from .propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
 from .propulsion.fuel_propulsion.rubber_engine.constants import RUBBER_ENGINE_DESCRIPTION
 from .weight.weight import Weight
-
-# Aerodynamics ################################################################
-RegisterOpenMDAOSystem("fastoad.aerodynamics.takeoff.legacy", domain=ModelDomain.AERODYNAMICS)(
-    AerodynamicsTakeoff
-)
-RegisterOpenMDAOSystem("fastoad.aerodynamics.landing.legacy", domain=ModelDomain.AERODYNAMICS)(
-    AerodynamicsLanding
-)
-RegisterOpenMDAOSystem("fastoad.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS,)(
-    AerodynamicsHighSpeed
-)
-RegisterOpenMDAOSystem("fastoad.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS,)(
-    AerodynamicsLowSpeed
-)
 
 # Geometry ####################################################################
 RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)(Geometry)

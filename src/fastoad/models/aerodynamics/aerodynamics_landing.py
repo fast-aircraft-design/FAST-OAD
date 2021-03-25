@@ -18,6 +18,8 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.model_base.options import OpenMdaoOptionDispatcherGroup
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.utils.physics import Atmosphere
 from .components.compute_max_cl_landing import ComputeMaxClLanding
 from .components.high_lift_aero import ComputeDeltaHighLift
@@ -25,6 +27,7 @@ from .external.xfoil import XfoilPolar
 from .external.xfoil.xfoil_polar import OPTION_XFOIL_EXE_PATH
 
 
+@RegisterOpenMDAOSystem("fastoad.aerodynamics.landing.legacy", domain=ModelDomain.AERODYNAMICS)
 class AerodynamicsLanding(OpenMdaoOptionDispatcherGroup):
     """
     Computes aerodynamic characteristics at landing.
