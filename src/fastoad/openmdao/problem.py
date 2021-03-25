@@ -26,29 +26,16 @@ class FASTOADProblem(om.Problem):
     It also runs :class:`~fastoad.openmdao.validity_checker.ValidityDomainChecker`
     after each :meth:`run_model` or :meth:`run_driver`
     (but it does nothing if no check has been registered).
-
-    A classical usage of this class would be::
-
-        problem = FASTOADProblem()  # instantiation
-        [... configuration as for any OpenMDAO problem ...]
-
-        problem.input_file_path = "inputs.xml"
-        problem.output_file_path = "outputs.xml"
-        problem.write_needed_inputs()  # writes the input file (defined above) with
-                                       # needed variables so user can fill it with proper values
-        # or
-        problem.write_needed_inputs('previous.xml')  # writes the input file with needed variables
-                                                     # and values taken from provided file when
-                                                     # available
-        problem.read_inputs()    # reads the input file
-        problem.run_driver()     # runs the OpenMDAO problem
-        problem.write_outputs()  # writes the output file
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.input_file_path = None
+
+        #: File path where :meth:`write_outputs` will write outputs
         self.output_file_path = None
+
+        #: Variables that are not part of the problem but that should be written in output file.
+        self.additional_variables = None
 
     def run_model(self, case_prefix=None, reset_iter_counts=True):
         status = super().run_model(case_prefix, reset_iter_counts)
@@ -66,5 +53,13 @@ class FASTOADProblem(om.Problem):
         """
         if self.output_file_path:
             writer = VariableIO(self.output_file_path)
-            variables = VariableList.from_problem(self, promoted_only=True)
+
+            if self.additional_variables is None:
+                self.additional_variables = []
+            variables = VariableList(self.additional_variables)
+            for var in variables:
+                var.is_input = None
+            variables.update(
+                VariableList.from_problem(self, promoted_only=True), add_variables=True
+            )
             writer.write(variables)
