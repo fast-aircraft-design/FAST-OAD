@@ -13,22 +13,14 @@ Defines the analysis and plotting functions for postprocessing regarding the mis
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Dict
 
-import numpy as np
 import pandas as pd
 import ipywidgets as widgets
 import plotly
 import plotly.graph_objects as go
-from openmdao.utils.units import convert_units
-from plotly.subplots import make_subplots
 from IPython.display import display, clear_output
 
-from fastoad.io import VariableIO
-
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
-
-# time,altitude,ground_distance,mass,true_airspeed,equivalent_airspeed,mach,engine_setting,CL,CD,drag,thrust,thrust_rate,thrust_is_regulated,sfc,slope_angle,acceleration
 
 BASE_UNITS = {
     "altitude": "m",
@@ -38,15 +30,8 @@ BASE_UNITS = {
     "time": "s",
     "ground_distance": "m",
     "mass": "kg",
-    "mach": "-",
-    "engine_setting": "-",
-    "CL": "-",
-    "CD": "-",
-    "CD": "-",
     "drag": "N",
     "thrust": "N",
-    "thrust_rate": "-",
-    "thrust_is_regulated": "-",
     "sfc": "kg/N",
     "slope_angle": "rad",
     "acceleration": "m/s²",
@@ -118,11 +103,15 @@ class MissionPostprocessing:
 
             self._fig = go.FigureWidget(self._fig)
 
+        # If the variable has no unit we use "[-]"
+        x_unit = BASE_UNITS.get(x_name) if BASE_UNITS.get(x_name) else "-"
+        y_unit = BASE_UNITS.get(y_name) if BASE_UNITS.get(y_name) else "-"
+
         self._fig.update_layout(
             title_text="Mission",
             title_x=0.5,
-            xaxis_title=x_name + " [" + BASE_UNITS[x_name] + "]",
-            yaxis_title=y_name + " [" + BASE_UNITS[y_name] + "]",
+            xaxis_title=x_name + " [" + x_unit + "]",
+            yaxis_title=y_name + " [" + y_unit + "]",
         )
 
     def display(self, change=None) -> display:
