@@ -14,6 +14,8 @@ Defines the analysis and plotting functions for postprocessing regarding the mis
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os.path as pth
+from typing import Union
 import pandas as pd
 import ipywidgets as widgets
 import plotly
@@ -56,14 +58,18 @@ class MissionPostprocessing:
         # The y selector
         self._y_widget = None
 
-    def add_mission(self, mission_file_path: str, name=None):
+    def add_mission(self, mission_data: Union[str, pd.DataFrame], name=None):
         """
         Adds the mission to the mission database (self.missions)
-        :param mission_file_path: path of the mission file
+        :param mission_data: path of the mission file or Dataframe containing the mission data
         :param name: name to give to the mission
         """
-
-        self.missions[name] = pd.read_csv(mission_file_path, index_col=0)
+        if type(mission_data) == str and mission_data.endswith(".csv") and pth.exists(mission_data):
+            self.missions[name] = pd.read_csv(mission_data, index_col=0)
+        elif type(mission_data) == pd.DataFrame:
+            self.missions[name] = mission_data
+        else:
+            raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
 
         # Initialize widgets when first mission is added
         if len(self.missions) == 1:
