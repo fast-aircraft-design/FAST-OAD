@@ -192,7 +192,10 @@ def list_variables(
 
 
 def list_systems(
-    configuration_file_path: str = None, out: Union[IO, str] = sys.stdout, overwrite: bool = False
+    configuration_file_path: str = None,
+    out: Union[IO, str] = sys.stdout,
+    overwrite: bool = False,
+    detailed=True,
 ):
     """
     Writes list of available systems.
@@ -207,9 +210,8 @@ def list_systems(
     """
 
     if configuration_file_path:
-        conf = FASTOADProblemConfigurator(configuration_file_path)
-        conf.load(configuration_file_path)
-    # As the problem has been configured, BundleLoader now knows additional registered systems
+        FASTOADProblemConfigurator(configuration_file_path)
+    # As the configuration has been loaded, BundleLoader now knows additional registered systems
 
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
@@ -223,43 +225,69 @@ def list_systems(
         out_file = open(out, "w")
     else:
         out_file = out
-    out_file.writelines(["== AVAILABLE SYSTEM IDENTIFIERS " + "=" * 68 + "\n", "-" * 100 + "\n"])
+
+    if detailed:
+        cell_list = _get_detailed_system_list()
+    else:
+        cell_list = _get_simple_system_list()
+
+    out_file.write(tabulate(cell_list, tablefmt="grid"))
+
+    if isinstance(out, str):
+        out_file.close()
+        _LOGGER.info("System list written in %s", out_file)
+
+
+def _get_simple_system_list():
+    cell_list = [["== AVAILABLE SYSTEM IDENTIFIERS ==", "MODULE PATH"]]
+    for identifier in sorted(RegisterOpenMDAOSystem.get_provider_ids()):
+        path = BundleLoader().get_factory_path(identifier)
+        cell_list.append([identifier, path])
+
+    cell_list.append(["== AVAILABLE PROPULSION WRAPPER IDENTIFIERS =="])
+    for identifier in sorted(RegisterPropulsion.get_provider_ids()):
+        path = BundleLoader().get_factory_path(identifier)
+        cell_list.append([identifier, path])
+
+    return cell_list
+
+
+def _get_detailed_system_list():
+    cell_list = [["== AVAILABLE SYSTEM IDENTIFIERS " + "=" * 68]]
     for identifier in sorted(RegisterOpenMDAOSystem.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         domain = RegisterOpenMDAOSystem.get_provider_domain(identifier)
         description = RegisterOpenMDAOSystem.get_provider_description(identifier)
+        if description is None:
+            description = ""
+
+        # We remove OpenMDAO's native options from the description
         component = RegisterOpenMDAOSystem.get_system(identifier)
         component.options.undeclare("assembled_jac_type")
         component.options.undeclare("distributed")
-        if description is None:
-            description = ""
-        out_file.write("  IDENTIFIER:   %s\n" % identifier)
-        out_file.write("  PATH:         %s\n" % path)
-        out_file.write("  DOMAIN:       %s\n" % domain.value)
-        out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
-        if len(list(component.options.items())) > 0:
-            out_file.write(component.options.to_table(fmt="grid"))
-            out_file.write("\n")
-        out_file.write("-" * 100 + "\n")
-    out_file.write("=" * 100 + "\n")
 
-    out_file.writelines(
-        ["\n== AVAILABLE PROPULSION WRAPPER IDENTIFIERS " + "=" * 56 + "\n", "-" * 100 + "\n"]
-    )
+        cell_content = (
+            "  IDENTIFIER:   %s\nPATH:         %s\nDOMAIN:       %s\nDESCRIPTION:  %s\n"
+            % (identifier, path, domain.value, tw.indent(tw.dedent(description), "    "))
+        )
+        if len(list(component.options.items())) > 0:
+            cell_content += component.options.to_table(fmt="grid") + "\n"
+
+        cell_list.append([cell_content])
+    cell_list.append(["== AVAILABLE PROPULSION WRAPPER IDENTIFIERS " + "=" * 56])
     for identifier in sorted(RegisterPropulsion.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         description = RegisterPropulsion.get_provider_description(identifier)
         if description is None:
             description = ""
-        out_file.write("  IDENTIFIER:   %s\n" % identifier)
-        out_file.write("  PATH:         %s\n" % path)
-        out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
-        out_file.write("-" * 100 + "\n")
-    out_file.write("=" * 100 + "\n")
 
-    if isinstance(out, str):
-        out_file.close()
-        _LOGGER.info("System list written in %s", out_file)
+        cell_content = "  IDENTIFIER:   %s\nPATH:         %s\nDESCRIPTION:  %s\n" % (
+            identifier,
+            path,
+            tw.indent(tw.dedent(description), "    "),
+        )
+        cell_list.append([cell_content])
+    return cell_list
 
 
 def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
