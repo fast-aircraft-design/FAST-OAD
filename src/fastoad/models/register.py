@@ -20,8 +20,6 @@ distributed along the code.
 
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .handling_qualities.compute_static_margin import ComputeStaticMargin
-from .handling_qualities.tail_sizing.compute_tail_areas import ComputeTailAreas
 from .loops.compute_wing_area import ComputeWingArea
 from .loops.compute_wing_position import ComputeWingPosition
 from .performances.mission.openmdao.link_mtow import ComputeMTOW
@@ -30,13 +28,6 @@ from .propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
 from .propulsion.fuel_propulsion.rubber_engine.constants import RUBBER_ENGINE_DESCRIPTION
 from .weight.weight import Weight
 
-# handling qualities ##########################################################
-RegisterOpenMDAOSystem(
-    "fastoad.handling_qualities.tail_sizing", domain=ModelDomain.HANDLING_QUALITIES,
-)(ComputeTailAreas)
-RegisterOpenMDAOSystem(
-    "fastoad.handling_qualities.static_margin", domain=ModelDomain.HANDLING_QUALITIES,
-)(ComputeStaticMargin)
 
 # Loops #######################################################################
 RegisterOpenMDAOSystem("fastoad.loop.wing_area", domain=ModelDomain.OTHER)(ComputeWingArea)
