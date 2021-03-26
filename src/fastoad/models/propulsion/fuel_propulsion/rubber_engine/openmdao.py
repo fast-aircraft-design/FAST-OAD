@@ -16,11 +16,12 @@ import numpy as np
 from openmdao.core.component import Component
 
 from fastoad.model_base.propulsion import (
-    IPropulsion,
-    IOMPropulsionWrapper,
     BaseOMPropulsionComponent,
+    IOMPropulsionWrapper,
+    IPropulsion,
 )
-from fastoad.module_management.service_registry import RegisterPropulsion
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from .constants import RUBBER_ENGINE_DESCRIPTION
 from .rubber_engine import RubberEngine
@@ -139,6 +140,11 @@ class OMRubberEngineWrapper(IOMPropulsionWrapper):
             0.0,
         ),  # limitation of max thrust model
     }
+)
+@RegisterOpenMDAOSystem(
+    "fastoad.propulsion.rubber_engine",
+    desc=RUBBER_ENGINE_DESCRIPTION,
+    domain=ModelDomain.PROPULSION,
 )
 class OMRubberEngineComponent(BaseOMPropulsionComponent):
     """
