@@ -331,7 +331,7 @@ def test_api_optim(cleanup):
     assert_allclose(problem["data:geometry:wing:aspect_ratio"], 13.58, atol=1e-2)
 
     # Constraint
-    assert_allclose(problem["data:geometry:wing:span"], 44.02, rtol=1e-2)
+    assert_allclose(problem["data:geometry:wing:span"], 44.03, atol=1e-2)
 
     # Objective
     assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20363, atol=1)
