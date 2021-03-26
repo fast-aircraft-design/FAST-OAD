@@ -60,6 +60,7 @@ tomlkit = "^0.5.3"
 jsonschema = "^3.2.0"
 strictyaml = "^1.1.0"
 ensure = "^1.0.0"
+tabulate = "^0.8.9"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

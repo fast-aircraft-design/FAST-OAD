@@ -18,8 +18,8 @@ import logging
 import os.path as pth
 from builtins import isinstance
 from copy import deepcopy
-from importlib.resources import open_text, contents
-from typing import Dict, Hashable, List, Union, Mapping, Iterable, Tuple
+from importlib.resources import contents, open_text
+from typing import Dict, Hashable, Iterable, List, Mapping, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
@@ -129,7 +129,7 @@ class Variable(Hashable):
         )
         self._set_default_shape()
 
-        # If no description, add one from DESCRIPTION_FILE_PATH, if available
+        # If no description, use the one from self._variable_descriptions, if available
         if not self.description and self.name in self._variable_descriptions:
             self.description = self._variable_descriptions[self.name]
 

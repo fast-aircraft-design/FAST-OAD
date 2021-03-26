@@ -22,6 +22,8 @@ from shutil import rmtree
 
 import pytest
 
+import fastoad.models
+from fastoad.openmdao.variables import Variable
 from .. import api
 from ..api import SAMPLE_FILENAME
 from ..exceptions import FastFileExistsError
@@ -34,6 +36,9 @@ CONFIGURATION_FILE_PATH = pth.join(DATA_FOLDER_PATH, "sellar.yml")
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+
+    # Need to clean up variable descriptions because it is manipulated in other tests.
+    Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
 
 
 def test_generate_configuration_file(cleanup):
@@ -78,16 +83,13 @@ def test_list_variables(cleanup):
     api.list_variables(CONFIGURATION_FILE_PATH)
 
     # Run with file output (test file existence)
-    out_file_path = pth.join(RESULTS_FOLDER_PATH, "list_outputs.txt")
+    out_file_path = pth.join(RESULTS_FOLDER_PATH, "list_variables.txt")
     assert not pth.exists(out_file_path)
-    api.list_variables(CONFIGURATION_FILE_PATH, out_file_path)
+    api.list_variables(CONFIGURATION_FILE_PATH, out=out_file_path)
     assert pth.exists(out_file_path)
 
-    with open(out_file_path) as out_file:
-        lines = [
-            line.split()[0] for line in out_file.readlines() if len(line.strip("-").strip()) > 0
-        ]
-        assert lines == ["-", "NAME", "x", "z", "-", "NAME", "f", "g1", "g2", "y1", "y2"]
+    ref_file_path = pth.join(DATA_FOLDER_PATH, "ref_list_variables.txt")
+    assert cmp(ref_file_path, out_file_path)
 
 
 def test_write_n2(cleanup):

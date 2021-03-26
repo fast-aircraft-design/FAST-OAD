@@ -18,25 +18,23 @@ import logging
 import os.path as pth
 import sys
 import textwrap as tw
-from shutil import get_terminal_size
 from time import time
 from typing import IO, Union
 
-import numpy as np
 import openmdao.api as om
-import pandas as pd
 import requests
 from IPython import InteractiveShell
-from IPython.display import display, HTML
+from IPython.display import HTML, display
+from tabulate import tabulate
 from whatsopt.show_utils import generate_xdsm_html
-from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
+from whatsopt.whatsopt_client import PROD_URL, WhatsOpt
 
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.module_management import BundleLoader
-from fastoad.module_management.service_registry import RegisterPropulsion, RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
@@ -109,7 +107,8 @@ def generate_inputs(
 
 def list_variables(
     configuration_file_path: str,
-    out: Union[IO, str] = sys.stdout,
+    tablefmt: str = "grid",
+    out: Union[IO, str] = None,
     overwrite: bool = False,
     force_text_output: bool = False,
 ):
@@ -122,7 +121,9 @@ def list_variables(
     - force_text_output == False
 
     :param configuration_file_path:
-    :param out: the output stream or a path for the output file
+    :param tablefmt: The formatting of the requested table. Options are the same as those available
+                     to the tabulate package. See tabulate.tabulate_formats for a complete list.
+    :param out: the output stream or a path for the output file (None means sys.stdout)
     :param overwrite: if True and out parameter is a file path, the file will be written even if one
                       already exists
     :param force_text_output: if True, list will be written as text, even if command is used in an
@@ -131,6 +132,9 @@ def list_variables(
     :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
                                 exists
     """
+    if out is None:
+        out = sys.stdout
+
     conf = FASTOADProblemConfigurator(configuration_file_path)
     problem = conf.get_problem()
     problem.setup()
@@ -141,6 +145,17 @@ def list_variables(
     input_variables = VariableList([var for var in variables if var.is_input])
     output_variables = VariableList([var for var in variables if not var.is_input])
 
+    for var in input_variables:
+        var.metadata["I/O"] = "IN"
+    for var in output_variables:
+        var.metadata["I/O"] = "OUT"
+
+    variables_df = (
+        (input_variables + output_variables)
+        .to_dataframe()[["name", "I/O", "desc"]]
+        .rename(columns={"name": "NAME", "desc": "DESCRIPTION"})
+    )
+
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
             raise FastFileExistsError(
@@ -150,75 +165,26 @@ def list_variables(
             )
         make_parent_dir(out)
         out_file = open(out, "w")
-        table_width = MAX_TABLE_WIDTH
     else:
         if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
-            # Here we display the variable list as VariableViewer in a notebook
-            for var in input_variables:
-                var.metadata["I/O"] = "IN"
-            for var in output_variables:
-                var.metadata["I/O"] = "OUT"
-
-            df = (
-                (input_variables + output_variables)
-                .to_dataframe()[["I/O", "name", "desc"]]
-                .rename(columns={"name": "Name", "desc": "Description"})
-            )
-            display(HTML(df.to_html()))
+            display(HTML(variables_df.to_html(index=False)))
             return
 
         # Here we continue with text output
         out_file = out
-        table_width = min(get_terminal_size().columns, MAX_TABLE_WIDTH) - 1
 
-    pd.set_option("display.max_colwidth", 1000)
-    max_name_length = np.max(
-        [len(name) for name in input_variables.names() + output_variables.names()]
+        # For a terminal output, we limit width of NAME column
+        variables_df["NAME"] = variables_df["NAME"].apply(lambda s: "\n".join(tw.wrap(s, 50)))
+
+    # In any case, let's break descriptions that are too long
+    variables_df["DESCRIPTION"] = variables_df["DESCRIPTION"].apply(
+        lambda s: "\n".join(tw.wrap(s, 100,))
     )
-    description_text_width = table_width - max_name_length - 2
 
-    def _write_variables(out_f, variables):
-        """Writes variables and their description as a pandas DataFrame"""
-        df = variables.to_dataframe()
-
-        # Create a new Series where description are wrapped on several lines if needed.
-        # Each line becomes an element of the Series
-        df["desc"] = ["\n".join(tw.wrap(s, description_text_width)) for s in df["desc"]]
-        new_desc = df.desc.str.split("\n", expand=True).stack()
-
-        # Create a Series for name that will match new_desc Series. Variable name will be in front of
-        # first line of description. An empty string will be in front of other lines.
-        new_name = [df.name.loc[i] if j == 0 else "" for i, j in new_desc.index]
-
-        # Create the DataFrame that will be displayed
-        new_df = pd.DataFrame({"NAME": new_name, "DESCRIPTION": new_desc})
-
-        out_f.write(
-            new_df.to_string(
-                index=False,
-                columns=["NAME", "DESCRIPTION"],
-                justify="center",
-                formatters={  # Formatters are needed for enforcing left justification
-                    "NAME": ("{:%s}" % max_name_length).format,
-                    "DESCRIPTION": ("{:%s}" % description_text_width).format,
-                },
-            )
-        )
-        out_file.write("\n")
-
-    def _write_text_with_line(txt: str, line_length: int):
-        """ Writes a line of given length with provided text inside """
-        out_file.write("-" + txt + "-" * (line_length - 1 - len(txt)) + "\n")
-
-    # Inputs
-    _write_text_with_line(" INPUTS OF THE PROBLEM ", table_width)
-    _write_variables(out_file, input_variables)
-
-    # Outputs
+    out_file.write(
+        tabulate(variables_df, headers=variables_df.columns, showindex=False, tablefmt=tablefmt)
+    )
     out_file.write("\n")
-    _write_text_with_line(" OUTPUTS OF THE PROBLEM ", table_width)
-    _write_variables(out_file, output_variables)
-    _write_text_with_line("", table_width)
 
     if isinstance(out, str):
         out_file.close()
