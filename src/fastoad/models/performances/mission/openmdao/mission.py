@@ -25,7 +25,8 @@ from scipy.constants import foot
 
 from fastoad.base.flight_point import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet, IOMPropulsionWrapper
-from fastoad.module_management.service_registry import RegisterPropulsion
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from . import resources
 from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
@@ -35,6 +36,7 @@ from ..segments.cruise import BreguetCruiseSegment
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
+@RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)
 class Mission(om.Group):
     """
     Computes a mission as specified in mission input file.

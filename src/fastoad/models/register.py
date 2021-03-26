@@ -20,12 +20,9 @@ distributed along the code.
 
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .performances.mission.openmdao.mission import Mission
 from .propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
 from .propulsion.fuel_propulsion.rubber_engine.constants import RUBBER_ENGINE_DESCRIPTION
 
-# Performance #################################################################
-RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)(Mission)
 
 # Propulsion ##################################################################
 RegisterOpenMDAOSystem(
