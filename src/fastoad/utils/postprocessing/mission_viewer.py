@@ -83,8 +83,10 @@ class MissionViewer:
         key = list(self.missions)[0]
         keys = self.missions[key].keys()
 
-        self._x_widget = widgets.Dropdown(value=keys[0], options=keys)
+        # By default ground distance
+        self._x_widget = widgets.Dropdown(value=keys[2], options=keys)
         self._x_widget.observe(self.display, "value")
+        # By default altitude
         self._y_widget = widgets.Dropdown(value=keys[1], options=keys)
         self._y_widget.observe(self.display, "value")
 
