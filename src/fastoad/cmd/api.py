@@ -230,6 +230,7 @@ def list_systems(
         description = RegisterOpenMDAOSystem.get_provider_description(identifier)
         component = RegisterOpenMDAOSystem.get_system(identifier)
         component.options.undeclare("assembled_jac_type")
+        component.options.undeclare("distributed")
         if description is None:
             description = ""
         out_file.write("  IDENTIFIER:   %s\n" % identifier)
@@ -237,7 +238,7 @@ def list_systems(
         out_file.write("  DOMAIN:       %s\n" % domain.value)
         out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
         if len(list(component.options.items())) > 0:
-            out_file.write(component.options.to_table(fmt="fancy_grid"))
+            out_file.write(component.options.to_table(fmt="grid"))
             out_file.write("\n")
         out_file.write("-" * 100 + "\n")
     out_file.write("=" * 100 + "\n")
