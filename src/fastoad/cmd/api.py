@@ -48,6 +48,9 @@ _LOGGER = logging.getLogger(__name__)
 SAMPLE_FILENAME = "fastoad.yml"
 MAX_TABLE_WIDTH = 200  # For variable list text output
 
+# Used for test purposes only
+_PROBLEM_CONFIGURATOR = None
+
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
     """
@@ -87,6 +90,7 @@ def generate_inputs(
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
     """
     conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
 
     input_file_path = conf.input_file_path
     if not overwrite and pth.exists(conf.input_file_path):
@@ -136,6 +140,7 @@ def list_variables(
         out = sys.stdout
 
     conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
     problem = conf.get_problem()
     problem.setup()
 
@@ -208,6 +213,7 @@ def list_systems(
 
     if configuration_file_path:
         conf = FASTOADProblemConfigurator(configuration_file_path)
+        conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
         conf.load(configuration_file_path)
     # As the problem has been configured, BundleLoader now knows additional registered systems
 
@@ -277,7 +283,9 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
         )
 
     make_parent_dir(n2_file_path)
-    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
+    conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
+    problem = conf.get_problem()
     problem.setup()
     problem.final_setup()
 
@@ -316,7 +324,9 @@ def write_xdsm(
 
     make_parent_dir(xdsm_file_path)
 
-    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
+    conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
+    problem = conf.get_problem()
     problem.setup()
     problem.final_setup()
 
@@ -366,9 +376,9 @@ def _run_problem(
     :return: the OpenMDAO problem after run
     """
 
-    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem(
-        read_inputs=True, auto_scaling=auto_scaling
-    )
+    conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
+    problem = conf.get_problem(read_inputs=True, auto_scaling=auto_scaling)
 
     outputs_path = pth.normpath(problem.output_file_path)
     if not overwrite and pth.exists(outputs_path):
@@ -431,9 +441,10 @@ def optimization_viewer(configuration_file_path: str):
     :param configuration_file_path: problem definition
     :return: display of the OptimizationViewer
     """
-    problem_configuration = FASTOADProblemConfigurator(configuration_file_path)
+    conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
     viewer = OptimizationViewer()
-    viewer.load(problem_configuration)
+    viewer.load(conf)
 
     return viewer.display()
 

@@ -237,8 +237,8 @@ def run_non_regression_test(
         assert np.all(df.abs_rel_delta < tolerance)
 
 
-def test_api_eval(cleanup):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval")
+def test_api_eval_breguet(cleanup):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval_breguet")
     configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
 
     # Generation of configuration file ----------------------------------------
@@ -284,6 +284,68 @@ def test_api_eval(cleanup):
     assert_allclose(problem["data:geometry:vertical_tail:area"], 28.47, atol=1e-2)
     assert_allclose(problem["data:geometry:horizontal_tail:area"], 36.99, atol=1e-2)
     assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20837, atol=1)
+
+
+class MissionConfigurator(_IConfigurationModifier):
+    """Modifies configuration to activate mission computation."""
+
+    def modify(self, problem: om.Problem):
+        problem.model.subgroup.nonlinear_solver = om.NonlinearBlockGS(
+            maxiter=100, atol=1e-2, iprint=0
+        )
+        problem.model.subgroup.linear_solver: om.DirectSolver()
+        problem.model.performance._OPTIONS["mission_file_path"] = "::sizing_mission"
+
+
+def test_api_eval_mission(cleanup):
+    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval_mission")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
+    api._PROBLEM_CONFIGURATOR = MissionConfigurator()
+
+    # Generation of configuration file ----------------------------------------
+    api.generate_configuration_file(configuration_file_path, True)
+
+    # Generation of inputs ----------------------------------------------------
+    # We get the same inputs as in tutorial notebook
+    source_xml = pth.join(
+        root_folder_path, "src", "fastoad", "notebooks", "tutorial", "data", "CeRAS01_baseline.xml"
+    )
+    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
+
+    # Run model ---------------------------------------------------------------
+    problem = api.evaluate_problem(configuration_file_path, True)
+    api._PROBLEM_CONFIGURATOR = None
+
+    # Check that weight-performances loop correctly converged
+    assert_allclose(
+        problem["data:weight:aircraft:OWE"],
+        problem["data:weight:airframe:mass"]
+        + problem["data:weight:propulsion:mass"]
+        + problem["data:weight:systems:mass"]
+        + problem["data:weight:furniture:mass"]
+        + problem["data:weight:crew:mass"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MZFW"],
+        problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:max_payload"],
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:weight:aircraft:MTOW"],
+        problem["data:weight:aircraft:OWE"]
+        + problem["data:weight:aircraft:payload"]
+        + problem["data:mission:sizing:needed_block_fuel"],
+        atol=1,
+    )
+
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.07, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 75692, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 127.28, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.57, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.90, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19845, atol=1)
 
 
 def test_api_optim(cleanup):
