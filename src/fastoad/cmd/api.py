@@ -24,7 +24,6 @@ from typing import IO, Union
 import openmdao.api as om
 import requests
 from IPython import InteractiveShell
-from IPython.display import HTML, display
 from tabulate import tabulate
 from whatsopt.show_utils import generate_xdsm_html
 from whatsopt.whatsopt_client import PROD_URL, WhatsOpt
@@ -107,10 +106,10 @@ def generate_inputs(
 
 def list_variables(
     configuration_file_path: str,
-    tablefmt: str = "grid",
     out: Union[IO, str] = None,
     overwrite: bool = False,
     force_text_output: bool = False,
+    tablefmt: str = "grid",
 ):
     """
     Writes list of variables for the :class:`FASTOADProblem` specified in configuration_file_path.
@@ -121,14 +120,14 @@ def list_variables(
     - force_text_output == False
 
     :param configuration_file_path:
-    :param tablefmt: The formatting of the requested table. Options are the same as those available
-                     to the tabulate package. See tabulate.tabulate_formats for a complete list.
     :param out: the output stream or a path for the output file (None means sys.stdout)
     :param overwrite: if True and out parameter is a file path, the file will be written even if one
                       already exists
     :param force_text_output: if True, list will be written as text, even if command is used in an
                               interactive IPython shell (Jupyter notebook). Has no effect in other
                               shells or if out parameter is not sys.stdout
+    :param tablefmt: The formatting of the requested table. Options are the same as those available
+                     to the tabulate package. See tabulate.tabulate_formats for a complete list.
     :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
                                 exists
     """
@@ -191,11 +190,15 @@ def list_variables(
         _LOGGER.info("Output list written in %s", out_file)
 
 
-def list_systems(
+from IPython.core.display import display, HTML
+
+
+def list_modules(
     configuration_file_path: str = None,
-    out: Union[IO, str] = sys.stdout,
+    out: Union[IO, str] = None,
     overwrite: bool = False,
-    detailed=True,
+    verbose: bool = False,
+    force_text_output: bool = False,
 ):
     """
     Writes list of available systems.
@@ -203,15 +206,27 @@ def list_systems(
     they will be listed too.
 
     :param configuration_file_path:
-    :param out: the output stream or a path for the output file
+    :param out: the output stream or a path for the output file (None means sys.stdout)
     :param overwrite: if True and out is a file path, the file will be written even if one already
                       exists
-    :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
+    :param verbose: if True, shows detailed information for each system
+                    if False, shows only identifier and path of each system
+    :param force_text_output: if True, list will be written as text, even if command is used in an
+                              interactive IPython shell (Jupyter notebook). Has no effect in other
+                              shells or if out parameter is not sys.stdout
+   :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
     """
+    if out is None:
+        out = sys.stdout
 
     if configuration_file_path:
         FASTOADProblemConfigurator(configuration_file_path)
     # As the configuration has been loaded, BundleLoader now knows additional registered systems
+
+    if verbose:
+        cell_list = _get_detailed_system_list()
+    else:
+        cell_list = _get_simple_system_list()
 
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
@@ -224,14 +239,19 @@ def list_systems(
         make_parent_dir(out)
         out_file = open(out, "w")
     else:
+        if (
+            out == sys.stdout
+            and InteractiveShell.initialized()
+            and not force_text_output
+            and not verbose
+        ):
+            display(HTML(tabulate(cell_list, tablefmt="html")))
+            return
+
         out_file = out
 
-    if detailed:
-        cell_list = _get_detailed_system_list()
-    else:
-        cell_list = _get_simple_system_list()
-
     out_file.write(tabulate(cell_list, tablefmt="grid"))
+    out_file.write("\n")
 
     if isinstance(out, str):
         out_file.close()
@@ -239,12 +259,12 @@ def list_systems(
 
 
 def _get_simple_system_list():
-    cell_list = [["== AVAILABLE SYSTEM IDENTIFIERS ==", "MODULE PATH"]]
+    cell_list = [["   AVAILABLE MODULE IDENTIFIERS", "MODULE PATH"]]
     for identifier in sorted(RegisterOpenMDAOSystem.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         cell_list.append([identifier, path])
 
-    cell_list.append(["== AVAILABLE PROPULSION WRAPPER IDENTIFIERS =="])
+    cell_list.append(["   AVAILABLE PROPULSION WRAPPER IDENTIFIERS", "MODULE PATH"])
     for identifier in sorted(RegisterPropulsion.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         cell_list.append([identifier, path])
@@ -253,7 +273,7 @@ def _get_simple_system_list():
 
 
 def _get_detailed_system_list():
-    cell_list = [["== AVAILABLE SYSTEM IDENTIFIERS " + "=" * 68]]
+    cell_list = [["AVAILABLE MODULE IDENTIFIERS\n" "============================"]]
     for identifier in sorted(RegisterOpenMDAOSystem.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         domain = RegisterOpenMDAOSystem.get_provider_domain(identifier)
@@ -274,7 +294,9 @@ def _get_detailed_system_list():
             cell_content += component.options.to_table(fmt="grid") + "\n"
 
         cell_list.append([cell_content])
-    cell_list.append(["== AVAILABLE PROPULSION WRAPPER IDENTIFIERS " + "=" * 56])
+    cell_list.append(
+        ["AVAILABLE PROPULSION WRAPPER IDENTIFIERS\n" "========================================"]
+    )
     for identifier in sorted(RegisterPropulsion.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         description = RegisterPropulsion.get_provider_description(identifier)

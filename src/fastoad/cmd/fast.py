@@ -77,9 +77,12 @@ class Main:
                 print("No file written.")
 
     @staticmethod
-    def _list_systems(args):
+    def _list_modules(args):
         """Prints list of system identifiers."""
-        api.list_systems(args.conf_file)
+        api.list_modules(
+            args.conf_file, out=args.out_file, overwrite=args.force, verbose=args.verbose
+        )
+        print("\nDone. Use --verbose (-v) option for detailed information.")
 
     @staticmethod
     def _list_variables(args):
@@ -258,13 +261,21 @@ class Main:
         )
 
         # sub-command for listing registered systems -----------------------------------------------
-        parser_list_systems = subparsers.add_parser(
-            "list_systems",
+        parser_list_modules = subparsers.add_parser(
+            "list_modules",
             help="Provides the identifiers of available systems",
             description="Provides the identifiers of available systems",
         )
-        self._add_conf_file_argument(parser_list_systems, required=False)
-        parser_list_systems.set_defaults(func=self._list_systems)
+        self._add_conf_file_argument(parser_list_modules, required=False)
+        self._add_output_file_argument(parser_list_modules)
+        self._add_overwrite_argument(parser_list_modules)
+        parser_list_modules.add_argument(
+            "-v",
+            "--verbose",
+            action="store_true",
+            help="shows detailed information for each system",
+        )
+        parser_list_modules.set_defaults(func=self._list_modules)
 
         # sub-command for listing problem variables ------------------------------------------------
         parser_list_variables = subparsers.add_parser(
@@ -273,8 +284,8 @@ class Main:
             description="Lists the variables of the problem",
         )
         self._add_conf_file_argument(parser_list_variables)
-        self._add_overwrite_argument(parser_list_variables)
         self._add_output_file_argument(parser_list_variables)
+        self._add_overwrite_argument(parser_list_variables)
         parser_list_variables.set_defaults(func=self._list_variables)
 
         # sub-command for writing N2 diagram -------------------------------------------------------

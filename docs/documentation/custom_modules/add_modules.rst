@@ -7,7 +7,7 @@ How to add custom OpenMDAO modules to FAST-OAD
 With FAST-OAD, you can register any OpenMDAO system of your own so it can be
 used through the configuration file.
 
-To have your OpenMDAO system available in FAST-OAD, you should follow these steps:
+To have your OpenMDAO system available as a FAST-OAD module, you should follow these steps:
 
 .. contents::
    :local:
@@ -126,7 +126,7 @@ But it is possible to set your own bounds outside of OpenMDAO by following this 
 Register your system(s)
 ***********************
 
-Once your OpenMDAO system is ready, you have to register it to make it discoverable by FAST-OAD.
+Once your OpenMDAO system is ready, you have to register it to make it known as a FAST-OAD module.
 
 To do that, you just have to add the :class:`~fastoad.module_management.service_registry.RegisterOpenMDAOSystem`
 decorator to your OpenMDAO class like this:
@@ -166,11 +166,11 @@ in the :ref:`configuration-file`:
     [ ... ]
 
 Once this is done, (assuming your configuration file is named :code:`my_custom_conf.yml`)
-your custom, registered, system should appear in the list provided by the command line:
+your custom, registered, module should appear in the list provided by the command line:
 
 .. code:: shell-session
 
-      $ fastoad list_systems my_custom_conf.yml
+      $ fastoad list_modules my_custom_conf.yml
 
 
 Then your component can be used like any other using the id you have given.

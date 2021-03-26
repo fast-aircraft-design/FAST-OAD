@@ -179,12 +179,12 @@ Problem definition
       wing_area:
         id: fastoad.loop.wing_area
 
-Components of the model can be systems, or sub-groups. They are defined as a sub-section of
+Components of the model can be modules, or sub-groups. They are defined as a sub-section of
 `model:`. Unlike "model", which is the root element, the name of sub-components can be defined
 freely by user.
 
-Here above are defined systems. A system is defined by its "id" key, but additional keys can be
-uses, depending on the defined system. See :ref:`get-system-list`.
+Here above are defined modules. A module is defined by its "id" key, but additional keys can be
+uses, depending on the defined module. See :ref:`get-module-list`.
 
 Optimization settings
 =====================
@@ -287,27 +287,27 @@ FAST-OAD can provide a ready-to use configuration file with:
 This generates the file `my_conf.yml`
 
 
-.. _get-system-list:
+.. _get-module-list:
 
-How to get list of registered systems
+How to get list of registered modules
 =====================================
 
 If you want to change the list of components in the model in the configuration file,
-you need the list of available systems.
+you need the list of available modules.
 
-List of FAST-OAD systems can be obtained with:
+List of FAST-OAD modules can be obtained with:
 
 .. code:: shell-session
 
-    $ fastoad list_systems
+    $ fastoad list_modules
 
-If you added custom systems in your configuration file `my_conf.yml`
+If you added custom modules in your configuration file `my_conf.yml`
 (see `how to add custom OpenMDAO modules to FAST-OAD<Add modules>`),
-they can be listed along FAST-OAD systems with:
+they can be listed along FAST-OAD modules with:
 
 .. code:: shell-session
 
-    $ fastoad list_systems my_conf.yml
+    $ fastoad list_modules my_conf.yml
 
 
 .. _get-variable-list:
@@ -336,7 +336,7 @@ This input file can be generated with:
     $ fastoad gen_inputs my_conf.yml
 
 The generated file will be an XML file that contains needed inputs for your problem.
-Values will be the default values from system definitions, which means several ones
+Values will be the default values from module definitions, which means several ones
 will be "nan". Actual value must be filled before the process is run.
 
 If you already have a file that contains these values, you can use it to populate
