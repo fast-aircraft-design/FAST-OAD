@@ -20,22 +20,11 @@ distributed along the code.
 
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .loops.compute_wing_area import ComputeWingArea
-from .loops.compute_wing_position import ComputeWingPosition
-from .performances.mission.openmdao.link_mtow import ComputeMTOW
 from .performances.mission.openmdao.mission import Mission
 from .propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
 from .propulsion.fuel_propulsion.rubber_engine.constants import RUBBER_ENGINE_DESCRIPTION
 from .weight.weight import Weight
 
-
-# Loops #######################################################################
-RegisterOpenMDAOSystem("fastoad.loop.wing_area", domain=ModelDomain.OTHER)(ComputeWingArea)
-RegisterOpenMDAOSystem("fastoad.loop.wing_position", domain=ModelDomain.OTHER)(ComputeWingPosition)
-
-RegisterOpenMDAOSystem("fastoad.mass_performances.compute_MTOW", domain=ModelDomain.OTHER)(
-    ComputeMTOW
-)
 
 # Weight ######################################################################
 RegisterOpenMDAOSystem("fastoad.weight.legacy", domain=ModelDomain.WEIGHT)(Weight)
