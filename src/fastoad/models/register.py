@@ -23,11 +23,6 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .performances.mission.openmdao.mission import Mission
 from .propulsion.fuel_propulsion.rubber_engine import OMRubberEngineComponent
 from .propulsion.fuel_propulsion.rubber_engine.constants import RUBBER_ENGINE_DESCRIPTION
-from .weight.weight import Weight
-
-
-# Weight ######################################################################
-RegisterOpenMDAOSystem("fastoad.weight.legacy", domain=ModelDomain.WEIGHT)(Weight)
 
 # Performance #################################################################
 RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)(Mission)
