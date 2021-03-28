@@ -24,6 +24,7 @@ from typing import IO, Union
 import openmdao.api as om
 import requests
 from IPython import InteractiveShell
+from IPython.core.display import HTML, display
 from tabulate import tabulate
 from whatsopt.show_utils import generate_xdsm_html
 from whatsopt.whatsopt_client import PROD_URL, WhatsOpt
@@ -190,9 +191,6 @@ def list_variables(
         _LOGGER.info("Output list written in %s", out_file)
 
 
-from IPython.core.display import display, HTML
-
-
 def list_modules(
     configuration_file_path: str = None,
     out: Union[IO, str] = None,
@@ -273,7 +271,7 @@ def _get_simple_system_list():
 
 
 def _get_detailed_system_list():
-    cell_list = [["AVAILABLE MODULE IDENTIFIERS\n" "============================"]]
+    cell_list = [["AVAILABLE MODULE IDENTIFIERS\n============================"]]
     for identifier in sorted(RegisterOpenMDAOSystem.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         domain = RegisterOpenMDAOSystem.get_provider_domain(identifier)
@@ -295,7 +293,7 @@ def _get_detailed_system_list():
 
         cell_list.append([cell_content])
     cell_list.append(
-        ["AVAILABLE PROPULSION WRAPPER IDENTIFIERS\n" "========================================"]
+        ["AVAILABLE PROPULSION WRAPPER IDENTIFIERS\n========================================"]
     )
     for identifier in sorted(RegisterPropulsion.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
