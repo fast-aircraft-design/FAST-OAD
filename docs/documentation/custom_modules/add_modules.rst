@@ -43,6 +43,17 @@ Also keep in mind that the naming of your variable will decide of its location i
 Therefore, the way you name your new variables should be consistent with FAST-OAD convention, as explained in
 :ref:`variables`.
 
+Defining options
+================
+You may use the OpenMDAO way for adding :ref:`options to your system<openmdao:component_options>`.
+The options you add will be accessible from the FAST-OAD configuration file (see
+:ref:`configuration-file-problem-definition`).
+
+When declaring an option, the usage of the :code:`desc` field if strongly advised, as any description
+you provide will be printed along with module information with the
+:code:`list_modules` sub-command (see :ref:`get-module-list`).
+
+
 Definition of partial derivatives
 =================================
 Your OpenMDAO system is expected to provide partial derivatives for all its outputs in analytic or approximate way.

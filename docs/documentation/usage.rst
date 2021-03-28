@@ -141,6 +141,8 @@ For more details, please see the OpenMDAO documentation on
 and `linear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/linear/index.html>`_.
 
 
+.. _configuration-file-problem-definition:
+
 Problem definition
 ==================
 
@@ -180,11 +182,11 @@ Problem definition
         id: fastoad.loop.wing_area
 
 Components of the model can be modules, or sub-groups. They are defined as a sub-section of
-`model:`. Unlike "model", which is the root element, the name of sub-components can be defined
-freely by user.
+:code:`model:`. Sub-sections and sub-components can be freely named by user.
 
-Here above are defined modules. A module is defined by its "id" key, but additional keys can be
-uses, depending on the defined module. See :ref:`get-module-list`.
+Here above are defined modules. A module is defined by its :code:`id:` key, but additional keys can be
+used, depending on the options of the module. The list of available options of a module is
+available through the :code:`list_modules` sub-command (see :ref:`get-module-list`).
 
 Optimization settings
 =====================
@@ -301,14 +303,16 @@ List of FAST-OAD modules can be obtained with:
 
     $ fastoad list_modules
 
-If you added custom modules in your configuration file `my_conf.yml`
-(see `how to add custom OpenMDAO modules to FAST-OAD<Add modules>`),
+If you added custom modules in your configuration file :code:`my_conf.yml`
+(see :ref:`how to add custom OpenMDAO modules to FAST-OAD<add-modules>`),
 they can be listed along FAST-OAD modules with:
 
 .. code:: shell-session
 
     $ fastoad list_modules my_conf.yml
 
+You may also use the :code:`--verbose` option to get detailed information on each module, including
+the available options, if any.
 
 .. _get-variable-list:
 
