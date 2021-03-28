@@ -23,7 +23,7 @@ import pytest
 from .openmdao_sellar_example.disc1 import Disc1
 from .openmdao_sellar_example.disc2 import Disc2
 from .openmdao_sellar_example.functions import Functions
-from ..variables import VariableList, Variable
+from ..variables import Variable, VariableList
 
 
 def test_variables():
@@ -81,7 +81,7 @@ def test_variables():
     # .update()
     assert len(variables) == 2
     assert list(variables.names()) == ["a", "b"]
-    variables.update([n_var])  # does nothing
+    variables.update([n_var], add_variables=False)  # does nothing
     assert len(variables) == 2
     assert list(variables.names()) == ["a", "b"]
 
@@ -90,7 +90,9 @@ def test_variables():
     assert list(variables.names()) == ["a", "b", "n"]
     assert variables["a"].value == 42.0
 
-    variables.update([Variable("a", value=-10.0), Variable("not_added", value=0.0)])
+    variables.update(
+        [Variable("a", value=-10.0), Variable("not_added", value=0.0)], add_variables=False
+    )
     assert len(variables) == 3
     assert list(variables.names()) == ["a", "b", "n"]
     assert variables["a"].value == -10.0
