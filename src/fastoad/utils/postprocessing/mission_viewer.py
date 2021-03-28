@@ -64,9 +64,13 @@ class MissionViewer:
         :param mission_data: path of the mission file or Dataframe containing the mission data
         :param name: name to give to the mission
         """
-        if type(mission_data) == str and mission_data.endswith(".csv") and pth.exists(mission_data):
+        if (
+            isinstance(mission_data, str)
+            and mission_data.endswith(".csv")
+            and pth.exists(mission_data)
+        ):
             self.missions[name] = pd.read_csv(mission_data, index_col=0)
-        elif type(mission_data) == pd.DataFrame:
+        elif isinstance(mission_data, pd.DataFrame):
             self.missions[name] = mission_data
         else:
             raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
@@ -101,8 +105,9 @@ class MissionViewer:
         for name in self.missions:
             if self._fig is None:
                 self._fig = go.Figure()
-
+            # pylint: disable=invalid-name # that's a common naming
             x = self.missions[name][x_name]
+            # pylint: disable=invalid-name # that's a common naming
             y = self.missions[name][y_name]
 
             scatter = go.Scatter(x=x, y=y, mode="lines", name=name)
@@ -122,6 +127,7 @@ class MissionViewer:
             yaxis_title=y_name + " [" + y_unit + "]",
         )
 
+    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def display(self, change=None) -> display:
         """
         Display the user interface
@@ -132,6 +138,7 @@ class MissionViewer:
         toolbar = widgets.HBox(
             [widgets.Label(value="x:"), self._x_widget, widgets.Label(value="y:"), self._y_widget]
         )
+        # pylint: disable=invalid-name # that's a common naming
         ui = widgets.VBox([toolbar, self._fig])
         return display(ui)
 

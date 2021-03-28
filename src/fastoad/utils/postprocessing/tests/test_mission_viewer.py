@@ -20,7 +20,7 @@ from shutil import rmtree
 import pytest
 import pandas as pd
 
-from .. import MissionViewer
+from ..mission_viewer import MissionViewer
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
