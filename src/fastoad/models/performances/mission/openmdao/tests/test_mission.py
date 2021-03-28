@@ -23,7 +23,7 @@ from numpy.testing import assert_allclose
 from openmdao.core.component import Component
 from scipy.constants import foot, knot
 
-from fastoad.io import VariableIO
+from fastoad.io import DataFile
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, IOMPropulsionWrapper, IPropulsion
 from fastoad.module_management.service_registry import RegisterPropulsion
@@ -129,7 +129,7 @@ def plot_flight(flight_points, fig_filename):
 def test_mission_component(cleanup):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    ivc = VariableIO(input_file_path).read().to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         MissionComponent(
@@ -148,7 +148,7 @@ def test_mission_component(cleanup):
 def test_mission_component_breguet(cleanup):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    ivc = VariableIO(input_file_path).read().to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         MissionComponent(
@@ -166,8 +166,7 @@ def test_mission_component_breguet(cleanup):
 
 def test_mission_group_without_loop(cleanup):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    vars = VariableIO(input_file_path).read()
-    ivc = vars.to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     with pytest.raises(FastMissionFileMissingMissionNameError):
         run_system(
@@ -198,8 +197,7 @@ def test_mission_group_without_loop(cleanup):
 
 def test_mission_group_breguet_without_loop(cleanup):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    vars = VariableIO(input_file_path).read()
-    ivc = vars.to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         Mission(
@@ -218,7 +216,7 @@ def test_mission_group_breguet_without_loop(cleanup):
 def test_mission_group_with_loop(cleanup):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    vars = VariableIO(input_file_path).read()
+    vars = DataFile(input_file_path)
     del vars["data:mission:operational:TOW"]
     ivc = vars.to_ivc()
 
@@ -262,7 +260,7 @@ def test_mission_group_with_loop(cleanup):
 def test_mission_group_breguet_with_loop(cleanup):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    vars = VariableIO(input_file_path).read()
+    vars = DataFile(input_file_path)
     del vars["data:mission:operational:TOW"]
     ivc = vars.to_ivc()
 
