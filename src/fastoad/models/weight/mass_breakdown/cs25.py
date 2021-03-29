@@ -2,7 +2,7 @@
 Computation of load cases
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,7 +17,7 @@ Computation of load cases
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.utils.physics.atmosphere import Atmosphere
+from fastoad.model_base import Atmosphere
 
 
 class Loads(ExplicitComponent):

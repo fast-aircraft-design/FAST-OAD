@@ -17,10 +17,10 @@ Aero computation for landing phase
 import numpy as np
 import openmdao.api as om
 
+from fastoad.model_base import Atmosphere
 from fastoad.model_base.options import OpenMdaoOptionDispatcherGroup
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from fastoad.utils.physics import Atmosphere
 from .components.compute_max_cl_landing import ComputeMaxClLanding
 from .components.high_lift_aero import ComputeDeltaHighLift
 from .external.xfoil import XfoilPolar
@@ -123,10 +123,10 @@ class ComputeMachReynolds(om.ExplicitComponent):
         speed = inputs["data:TLAR:approach_speed"]
 
         atm = Atmosphere(0.0, 15.0)
-        mach = speed / atm.speed_of_sound
-        reynolds = atm.get_unitary_reynolds(mach) * l0_wing
+        atm.true_airspeed = speed
+        reynolds = atm.unitary_reynolds * l0_wing
 
-        outputs["data:aerodynamics:aircraft:landing:mach"] = mach
+        outputs["data:aerodynamics:aircraft:landing:mach"] = atm.mach
         outputs["data:aerodynamics:aircraft:landing:reynolds"] = reynolds
 
 

@@ -22,10 +22,9 @@ import pandas as pd
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
-from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
+from fastoad.model_base import AtmosphereSI, FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
-from fastoad.utils.physics import AtmosphereSI
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..polar import Polar
@@ -268,21 +267,20 @@ class FlightSegment(IFlightPart):
 
         if flight_point.true_airspeed is None:
             if flight_point.mach is not None:
-                flight_point.true_airspeed = flight_point.mach * atm.speed_of_sound
+                atm.mach = flight_point.mach
             elif flight_point.equivalent_airspeed is not None:
-                flight_point.true_airspeed = atm.get_true_airspeed(flight_point.equivalent_airspeed)
+                atm.equivalent_airspeed = flight_point.equivalent_airspeed
             else:
                 raise FastFlightSegmentIncompleteFlightPoint(
                     "Flight point should be defined for true_airspeed, "
                     "equivalent_airspeed, or mach."
                 )
-        if flight_point.mach is None:
-            flight_point.mach = flight_point.true_airspeed / atm.speed_of_sound
+            flight_point.true_airspeed = atm.true_airspeed
+        else:
+            atm.true_airspeed = flight_point.true_airspeed
 
-        if flight_point.equivalent_airspeed is None:
-            flight_point.equivalent_airspeed = atm.get_equivalent_airspeed(
-                flight_point.true_airspeed
-            )
+        flight_point.mach = atm.mach
+        flight_point.equivalent_airspeed = atm.equivalent_airspeed
 
     @staticmethod
     def _compute_next_altitude(next_point: FlightPoint, previous_point: FlightPoint):

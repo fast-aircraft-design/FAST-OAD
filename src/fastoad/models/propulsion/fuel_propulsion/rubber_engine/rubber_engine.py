@@ -14,32 +14,31 @@
 
 import logging
 import math
-from typing import Union, Sequence, Tuple, Optional
+from typing import Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
 
-from fastoad.base.flight_point import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
+from fastoad.model_base import Atmosphere, FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion
-from fastoad.utils.physics import Atmosphere
 from .constants import (
     ALPHA,
-    BETA,
-    A_MS,
-    B_MS,
-    C_MS,
-    E_MS,
-    D_MS,
-    A_FM,
-    D_FM,
-    E_FM,
-    B_FM,
-    C_FM,
-    MAX_SFC_RATIO_COEFF,
     ATM_SEA_LEVEL,
     ATM_TROPOPAUSE,
+    A_FM,
+    A_MS,
+    BETA,
+    B_FM,
+    B_MS,
+    C_FM,
+    C_MS,
+    D_FM,
+    D_MS,
+    E_FM,
+    E_MS,
+    MAX_SFC_RATIO_COEFF,
 )
 from .exceptions import FastRubberEngineInconsistentInputParametersError
 
