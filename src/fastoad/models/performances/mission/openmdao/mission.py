@@ -147,12 +147,10 @@ class Mission(om.Group):
             self.add_subsystem(
                 "TOW_computation", self._get_tow_component(mission_name), promotes=["*"]
             )
-        else:
-            self.add_subsystem(
-                "block_fuel_computation",
-                self._get_block_fuel_component(mission_name),
-                promotes=["*"],
-            )
+
+        self.add_subsystem(
+            "block_fuel_computation", self._get_block_fuel_component(mission_name), promotes=["*"],
+        )
 
         mission_options = dict(self.options.items())
         del mission_options["adjust_fuel"]
