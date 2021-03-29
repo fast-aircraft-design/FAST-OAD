@@ -17,10 +17,13 @@ Weight computation (mass and CG)
 import openmdao.api as om
 
 from fastoad.model_base.options import PAYLOAD_FROM_NPAX
-from fastoad.models.weight.cg.cg import CG
-from fastoad.models.weight.mass_breakdown import MassBreakdown
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from .cg.cg import CG
+from .mass_breakdown import MassBreakdown
 
 
+@RegisterOpenMDAOSystem("fastoad.weight.legacy", domain=ModelDomain.WEIGHT)
 class Weight(om.Group):
     """
     Computes masses and Centers of Gravity for each part of the empty operating aircraft, among
@@ -32,15 +35,16 @@ class Weight(om.Group):
 
     Consistency between OWE and MTOW can be achieved by cycling with a model that computes MTOW
     from OWE, which should come from a mission computation that will assess needed block fuel.
-
-    Options:
-    - payload_from_npax: If True (default), payload masses will be computed from NPAX.
-                         If False, design payload mass and maximum payload mass must be provided.
-
     """
 
     def initialize(self):
-        self.options.declare(PAYLOAD_FROM_NPAX, types=bool, default=True)
+        self.options.declare(
+            PAYLOAD_FROM_NPAX,
+            types=bool,
+            default=True,
+            desc="If True (default), payload masses will be computed from NPAX.\n"
+            "If False, design payload mass and maximum payload mass must be provided.",
+        )
 
     def setup(self):
         self.add_subsystem("cg", CG(), promotes=["*"])

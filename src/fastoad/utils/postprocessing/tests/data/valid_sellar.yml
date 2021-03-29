@@ -1,0 +1,26 @@
+title: Sellar
+module_folders: ./postproc_sellar_example
+input_file: ../results/inputs.xml
+output_file: ../results/outputs.xml
+driver: om.ScipyOptimizeDriver(optimizer='SLSQP')
+model:
+  cycle:
+    nonlinear_solver: om.NonlinearBlockGS(iprint=1)
+    linear_solver: om.ScipyKrylov()
+    disc1:
+      id: postproc_test.sellar.disc1
+    disc2:
+      id: postproc_test.sellar.disc2
+  functions:
+    id: postproc_test.sellar.functions
+optimization:
+  constraints:
+    - name: g1
+    - name: g2
+  design_variables:
+    - name: x
+      upper: 10.0
+    - name: z
+      upper: 10.0
+  objective:
+    - name: f

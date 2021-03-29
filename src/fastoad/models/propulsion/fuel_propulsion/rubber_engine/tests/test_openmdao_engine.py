@@ -2,7 +2,7 @@
 Test module for OpenMDAO versions of RubberEngine
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,7 +25,7 @@ from ..openmdao import OMRubberEngineComponent
 def test_OMRubberEngineComponent():
     """ Tests ManualRubberEngine component """
     # Same test as in test_rubber_engine.test_compute_flight_points
-    engine = OMRubberEngineComponent(flight_point_count=(2, 5))
+    engine = OMRubberEngineComponent()
 
     machs = [0, 0.3, 0.3, 0.8, 0.8]
     altitudes = [0, 0, 0, 10000, 13000]

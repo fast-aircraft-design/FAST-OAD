@@ -1,6 +1,6 @@
 """Command Line Interface."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,7 +17,7 @@ import os
 import os.path as pth
 import shutil
 import textwrap
-from argparse import ArgumentParser, RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, RawDescriptionHelpFormatter
 from distutils.util import strtobool
 
 import fastoad
@@ -26,7 +26,7 @@ from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.notebooks import tutorial
 from fastoad.utils.resource_management.copy import copy_resource_folder
 
-NOTEBOOK_FOLDER_NAME = "FAST_OAD_notebooks"
+NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
 
 
 # TODO: it has become a bit messy down here... Refactoring needed, maybe
@@ -50,7 +50,7 @@ class Main:
     # ACTIONS ======================================================================================
     @staticmethod
     def _generate_conf_file(args):
-        """Generates a sample TOML file."""
+        """Generates a sample configuration file."""
         try:
             api.generate_configuration_file(args.conf_file, args.force)
         except FastFileExistsError:
@@ -77,14 +77,17 @@ class Main:
                 print("No file written.")
 
     @staticmethod
-    def _list_systems(args):
+    def _list_modules(args):
         """Prints list of system identifiers."""
-        api.list_systems(args.conf_file)
+        api.list_modules(
+            args.conf_file, out=args.out_file, overwrite=args.force, verbose=args.verbose
+        )
+        print("\nDone. Use --verbose (-v) option for detailed information.")
 
     @staticmethod
     def _list_variables(args):
         """Prints list of system outputs."""
-        api.list_variables(args.conf_file)
+        api.list_variables(args.conf_file, out=args.out_file, overwrite=args.force)
 
     @staticmethod
     def _write_n2(args):
@@ -174,12 +177,23 @@ class Main:
         kwargs = {"type": str, "help": "the configuration file for setting the problem"}
         if not required:
             kwargs["nargs"] = "?"
+            kwargs["help"] += " (not required)"
         parser.add_argument("conf_file", **kwargs)
 
     @staticmethod
     def _add_overwrite_argument(parser: ArgumentParser):
         parser.add_argument(
             "-f", "--force", action="store_true", help="do not ask before overwriting files"
+        )
+
+    @staticmethod
+    def _add_output_file_argument(parser: ArgumentParser):
+        parser.add_argument(
+            "-o",
+            "--out_file",
+            type=str,
+            help="if provided, command output will be written in indicated file instead of being "
+            "printed in terminal.",
         )
 
     # ENTRY POINT ==================================================================================
@@ -199,24 +213,20 @@ class Main:
         # sub-command for generating sample configuration file -------------------------------------
         parser_gen_conf = subparsers.add_parser(
             "gen_conf",
-            formatter_class=ArgumentDefaultsHelpFormatter,
             help="generates a sample configuration file",
             description="generates the configuration file with sample data",
         )
         parser_gen_conf.help = parser_gen_conf.description
         parser_gen_conf.add_argument(
-            "conf_file", type=str, help="the name of configuration file " "to be written"
+            "conf_file", type=str, help="the name of configuration file to be written",
         )
         self._add_overwrite_argument(parser_gen_conf)
         parser_gen_conf.set_defaults(func=self._generate_conf_file)
 
         # sub-command for generating input file ----------------------------------------------------
-        class _CustomFormatter(RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter):
-            pass
-
         parser_gen_inputs = subparsers.add_parser(
             "gen_inputs",
-            formatter_class=_CustomFormatter,
+            formatter_class=RawDescriptionHelpFormatter,
             help="generates the input file",
             description="generates the input file (specified in the configuration file)"
             " with needed variables",
@@ -238,70 +248,83 @@ class Main:
             """\
             Examples:
             ---------
-            # For the problem defined in conf_file.toml, generates the input file with default 
+            # For the problem defined in conf_file.yml, generates the input file with default 
             # values (when default values are defined):
-                %(prog)s conf_file.toml
+                %(prog)s conf_file.yml
             
             # Same as above, except that values are taken from some_file.xml when possible:
-                %(prog)s conf_file.toml some_file.xml
+                %(prog)s conf_file.yml some_file.xml
 
             # Same as above, some_file.xml is in the legacy FAST schema
-                %(prog)s conf_file.toml some_file.xml --legacy
+                %(prog)s conf_file.yml some_file.xml --legacy
             """
         )
 
         # sub-command for listing registered systems -----------------------------------------------
-        parser_list_systems = subparsers.add_parser(
-            "list_systems",
-            formatter_class=ArgumentDefaultsHelpFormatter,
+        parser_list_modules = subparsers.add_parser(
+            "list_modules",
             help="Provides the identifiers of available systems",
             description="Provides the identifiers of available systems",
         )
-        self._add_conf_file_argument(parser_list_systems, required=False)
-        parser_list_systems.set_defaults(func=self._list_systems)
+        self._add_conf_file_argument(parser_list_modules, required=False)
+        self._add_output_file_argument(parser_list_modules)
+        self._add_overwrite_argument(parser_list_modules)
+        parser_list_modules.add_argument(
+            "-v",
+            "--verbose",
+            action="store_true",
+            help="shows detailed information for each system",
+        )
+        parser_list_modules.set_defaults(func=self._list_modules)
 
-        # sub-command for listing possible outputs -------------------------------------------------
+        # sub-command for listing problem variables ------------------------------------------------
         parser_list_variables = subparsers.add_parser(
             "list_variables",
-            formatter_class=ArgumentDefaultsHelpFormatter,
             help="Lists the variables of the problem",
             description="Lists the variables of the problem",
         )
         self._add_conf_file_argument(parser_list_variables)
+        self._add_output_file_argument(parser_list_variables)
+        self._add_overwrite_argument(parser_list_variables)
         parser_list_variables.set_defaults(func=self._list_variables)
 
         # sub-command for writing N2 diagram -------------------------------------------------------
         parser_n2 = subparsers.add_parser(
             "n2",
-            formatter_class=ArgumentDefaultsHelpFormatter,
             help="Writes the N2 diagram of the problem",
             description="Writes an HTML file that shows the N2 diagram of the problem",
         )
         self._add_conf_file_argument(parser_n2)
         self._add_overwrite_argument(parser_n2)
         parser_n2.add_argument(
-            "n2_file", nargs="?", default="n2.html", help="path of file to be written"
+            "n2_file",
+            nargs="?",
+            default="n2.html",
+            help="path of file to be written (default: %(default)s)",
         )
         parser_n2.set_defaults(func=self._write_n2)
 
         # sub-command for writing XDSM diagram -------------------------------------------------------
         parser_xdsm = subparsers.add_parser(
             "xdsm",
-            formatter_class=ArgumentDefaultsHelpFormatter,
             help="Writes the XDSM diagram of the problem",
             description="Writes an HTML file that shows the XDSM diagram of the problem",
         )
         self._add_conf_file_argument(parser_xdsm)
         self._add_overwrite_argument(parser_xdsm)
         parser_xdsm.add_argument(
-            "xdsm_file", nargs="?", default="xdsm.html", help="path of file to be written"
+            "xdsm_file",
+            nargs="?",
+            default="xdsm.html",
+            help="path of file to be written (default: %(default)s)",
         )
         parser_xdsm.add_argument(
             "--server",
             nargs="?",
             default=None,
             dest="wop_server",
-            help="WhatsOpt server URL. Needed only at first call",
+            help="WhatsOpt server URL. Needed only at first call "
+            "(default: ether.onera.fr/whatsopt)",
         )
         parser_xdsm.add_argument(
             "--depth", nargs="?", default=2, help="Depth of analysis", type=int,
@@ -310,10 +333,7 @@ class Main:
 
         # sub-command for running the model --------------------------------------------------------
         parser_run_model = subparsers.add_parser(
-            "eval",
-            formatter_class=ArgumentDefaultsHelpFormatter,
-            help="Runs the analysis",
-            description="Runs the analysis",
+            "eval", help="Runs the analysis", description="Runs the analysis",
         )
         self._add_conf_file_argument(parser_run_model)
         self._add_overwrite_argument(parser_run_model)
@@ -321,10 +341,7 @@ class Main:
 
         # sub-command for running the driver -------------------------------------------------------
         parser_run_driver = subparsers.add_parser(
-            "optim",
-            formatter_class=ArgumentDefaultsHelpFormatter,
-            help="Runs the optimization",
-            description="Runs the optimization",
+            "optim", help="Runs the optimization", description="Runs the optimization",
         )
         self._add_conf_file_argument(parser_run_driver)
         self._add_overwrite_argument(parser_run_driver)
@@ -333,11 +350,10 @@ class Main:
         # sub-command for running Jupyter notebooks ------------------------------------------------
         parser_notebooks = subparsers.add_parser(
             "notebooks",
-            formatter_class=ArgumentDefaultsHelpFormatter,
             help="Create ready-to-use notebooks",
-            description="Creates a %s/ folder with pre-configured Jupyter notebooks. "
-            "Please note that an existing FAST_OAD_notebooks/ will be erased"
-            % NOTEBOOK_FOLDER_NAME,
+            description="Creates a %(nb_folder)s/ folder with pre-configured Jupyter notebooks. "
+            "Please note that all content of an existing %(nb_folder)s/ will be overwritten."
+            % {"nb_folder": NOTEBOOK_FOLDER_NAME},
         )
 
         parser_notebooks.add_argument(

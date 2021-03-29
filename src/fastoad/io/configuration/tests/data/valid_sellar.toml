@@ -12,10 +12,10 @@ output_file = "../results/outputs.xml"
 
 driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 [model]
-    [[model.connection]]
+    [[model.connections]]
         source = "y1"
         target = "yy1"
-    [[model.connection]]
+    [[model.connections]]
         source = "y2"
         target = "yy2"
     [model.cycle]
@@ -29,20 +29,20 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
         id = "configuration_test.sellar.functions"
 
 [optimization]
-    [[optimization.design_var]]
+    [[optimization.design_variables]]
       name = "x"
       lower = 0
       upper = 10
-    [[optimization.design_var]]
+    [[optimization.design_variables]]
       name = "z"
       lower = 0
       upper = 10
 
-    [[optimization.constraint]]
+    [[optimization.constraints]]
       name = "g1"
       lower = -100
       upper = 0
-    [[optimization.constraint]]
+    [[optimization.constraints]]
       name = "g2"
       upper = 0
 

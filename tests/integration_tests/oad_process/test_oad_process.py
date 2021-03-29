@@ -52,7 +52,7 @@ def test_oad_process(cleanup):
     Test for the overall aircraft design process.
     """
 
-    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "oad_process.toml"))
+    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "oad_process.yml"))
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
@@ -97,7 +97,7 @@ def test_oad_process(cleanup):
 
 def test_non_regression_breguet(cleanup):
     run_non_regression_test(
-        "oad_process_breguet.toml",
+        "oad_process_breguet.yml",
         "CeRAS01_legacy_breguet_result.xml",
         "non_regression_breguet",
         use_xfoil=True,
@@ -106,7 +106,7 @@ def test_non_regression_breguet(cleanup):
 
 def test_non_regression_mission_only(cleanup):
     run_non_regression_test(
-        "oad_process_mission_only.toml",
+        "oad_process_mission_only.yml",
         "CeRAS01_legacy_mission_result.xml",
         "non_regression_mission_only",
         use_xfoil=False,
@@ -118,7 +118,7 @@ def test_non_regression_mission_only(cleanup):
 
 def test_non_regression_mission(cleanup):
     run_non_regression_test(
-        "oad_process_mission.toml",
+        "oad_process_mission.yml",
         "CeRAS01_legacy_mission_result.xml",
         "non_regression_mission",
         use_xfoil=False,
@@ -227,7 +227,6 @@ def run_non_regression_test(
     pd.set_option("display.max_columns", None)
     pd.set_option("display.width", 1000)
     pd.set_option("display.max_colwidth", 120)
-    print(df.sort_values(by=["abs_rel_delta"]))
 
     if vars_to_check is not None:
         for name in vars_to_check:
@@ -240,7 +239,7 @@ def run_non_regression_test(
 
 def test_api_eval(cleanup):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval")
-    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
 
     # Generation of configuration file ----------------------------------------
     api.generate_configuration_file(configuration_file_path, True)
@@ -278,18 +277,18 @@ def test_api_eval(cleanup):
         atol=1,
     )
 
-    assert_allclose(problem["data:handling_qualities:static_margin"], -0.071146, atol=1e-3)
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 16.0, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 76796, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 131.26, atol=1e-2)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.49, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 33.99, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20708, atol=1)
+    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.07, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 77103, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 131.84, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 28.47, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 36.99, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20837, atol=1)
 
 
 def test_api_optim(cleanup):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_optim")
-    configuration_file_path = pth.join(results_folder_path, "oad_process.toml")
+    configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
 
     # Generation of configuration file ----------------------------------------
     api.generate_configuration_file(configuration_file_path, True)
@@ -329,10 +328,10 @@ def test_api_optim(cleanup):
     )
 
     # Design Variable
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.076, atol=1e-3)
+    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 13.58, atol=1e-2)
 
     # Constraint
-    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, rtol=1e-5)
+    assert_allclose(problem["data:geometry:wing:span"], 44.02, rtol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20837, atol=1)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20363, atol=1)
