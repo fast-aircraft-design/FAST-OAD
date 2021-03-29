@@ -430,9 +430,12 @@ class MissionComponent(om.ExplicitComponent):
 
         # Final ================================================================
         end_of_mission = FlightPoint.create(self.flight_points.iloc[-1])
-        zfw = end_of_mission.mass - self._mission_wrapper.get_reserve(
+        reserve = self._mission_wrapper.get_reserve(
             self.flight_points, self.options["mission_name"]
         )
+        zfw = end_of_mission.mass - reserve
+        if self._mission_vars.RESERVE.value in outputs:
+            outputs[self._mission_vars.RESERVE.value] = reserve
         outputs[self._mission_vars.BLOCK_FUEL.value] = (
             inputs[self._mission_vars.TOW.value]
             + inputs[self._mission_vars.TAKEOFF_FUEL.value]

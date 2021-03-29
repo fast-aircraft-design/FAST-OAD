@@ -31,8 +31,9 @@ from ..mission_definition.schema import (
     MISSION_DEFINITION_TAG,
     PARTS_TAG,
     PHASE_TAG,
-    ROUTE_DEFINITIONS_TAG,
     ROUTE_TAG,
+    RESERVE_TAG,
+    ROUTE_DEFINITIONS_TAG,
 )
 
 BASE_UNITS = {
@@ -163,11 +164,16 @@ class MissionWrapper(MissionBuilder):
                     phase_name = part_definition[PHASE_TAG]
                     output_definition.update(self._add_vars(mission_name, route_name, phase_name))
                 output_definition.update(self._add_vars(mission_name, route_name, "cruise"))
+            elif RESERVE_TAG in part:
+                output_definition["data:mission:%s:reserve:fuel" % mission_name] = (
+                    "kg",
+                    'reserve fuel for mission "%s"' % mission_name,
+                )
 
         return output_definition
 
     @staticmethod
-    def _add_vars(mission_name, route_name=None, phase_name=None) -> dict:
+    def _add_vars(mission_name, route_name=None, phase_name=None, reserve=False) -> dict:
         """
         Builds names of OpenMDAO outputs for provided mission, route and phase names.
 
