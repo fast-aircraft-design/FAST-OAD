@@ -18,26 +18,8 @@ import os.path as pth
 from typing import Union
 import pandas as pd
 import ipywidgets as widgets
-import plotly
 import plotly.graph_objects as go
 from IPython.display import display, clear_output
-
-COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
-
-BASE_UNITS = {
-    "altitude": "m",
-    "true_airspeed": "m/s",
-    "equivalent_airspeed": "m/s",
-    "range": "m",
-    "time": "s",
-    "ground_distance": "m",
-    "mass": "kg",
-    "drag": "N",
-    "thrust": "N",
-    "sfc": "kg/N",
-    "slope_angle": "rad",
-    "acceleration": "m/s²",
-}
 
 
 class MissionViewer:
@@ -116,15 +98,8 @@ class MissionViewer:
 
             self._fig = go.FigureWidget(self._fig)
 
-        # If the variable has no unit we use "[-]"
-        x_unit = BASE_UNITS.get(x_name) if BASE_UNITS.get(x_name) else "-"
-        y_unit = BASE_UNITS.get(y_name) if BASE_UNITS.get(y_name) else "-"
-
         self._fig.update_layout(
-            title_text="Mission",
-            title_x=0.5,
-            xaxis_title=x_name + " [" + x_unit + "]",
-            yaxis_title=y_name + " [" + y_unit + "]",
+            title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name,
         )
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
