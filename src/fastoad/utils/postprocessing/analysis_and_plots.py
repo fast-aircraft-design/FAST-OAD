@@ -2,7 +2,7 @@
 Defines the analysis and plotting functions for postprocessing
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -291,7 +291,7 @@ def mass_breakdown_bar_plot(
         "data:weight:aircraft:MTOW": "kg",
         "data:weight:aircraft:OWE": "kg",
         "data:weight:aircraft:payload": "kg",
-        "data:weight:aircraft:sizing_block_fuel": "kg",
+        "data:weight:aircraft:sizing_loaded_fuel_at_takeoff": "kg",
     }
 
     # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
@@ -348,7 +348,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
         "data:weight:aircraft:MTOW": "kg",
         "data:weight:aircraft:OWE": "kg",
         "data:weight:aircraft:payload": "kg",
-        "data:weight:aircraft:sizing_block_fuel": "kg",
+        "data:weight:aircraft:sizing_loaded_fuel_at_takeoff": "kg",
     }
 
     # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
