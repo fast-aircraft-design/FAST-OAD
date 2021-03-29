@@ -1,7 +1,6 @@
 """
     FAST - Copyright (c) 2016 ONERA ISAE
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,36 +17,41 @@
 import openmdao.api as om
 
 from fastoad.model_base.options import CABIN_SIZING_OPTION
-from fastoad.models.geometry.compute_aero_center import ComputeAeroCenter
-from fastoad.models.geometry.geom_components import ComputeTotalArea
-from fastoad.models.geometry.geom_components.fuselage.compute_fuselage import (
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from .compute_aero_center import ComputeAeroCenter
+from .geom_components import ComputeTotalArea
+from .geom_components.fuselage.compute_fuselage import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizing,
 )
-from fastoad.models.geometry.geom_components.ht import ComputeHorizontalTailGeometry
-from fastoad.models.geometry.geom_components.nacelle_pylons.compute_nacelle_pylons import (
-    ComputeNacelleAndPylonsGeometry,
-)
-from fastoad.models.geometry.geom_components.vt import ComputeVerticalTailGeometry
-from fastoad.models.geometry.geom_components.wing.compute_wing import ComputeWingGeometry
+from .geom_components.ht import ComputeHorizontalTailGeometry
+from .geom_components.nacelle_pylons.compute_nacelle_pylons import ComputeNacelleAndPylonsGeometry
+from .geom_components.vt import ComputeVerticalTailGeometry
+from .geom_components.wing.compute_wing import ComputeWingGeometry
 
 
+@RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)
 class Geometry(om.Group):
     """
     Computes geometric characteristics of the (tube-wing) aircraft:
-      - fuselage size is computed from payload requirements
+      - fuselage size can be computed from payload requirements
       - wing dimensions are computed from global parameters (area, taper ratio...)
       - tail planes are dimensioned from HQ requirements
-
-    This module also computes centers of gravity and static margin
     """
 
     def initialize(self):
-        self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
+        self.options.declare(
+            CABIN_SIZING_OPTION,
+            types=bool,
+            default=True,
+            desc="If True, fuselage dimensions will be computed from cabin specifications."
+            "\nIf False, fuselage dimensions will be input data.",
+        )
 
     def setup(self):
 
-        if self.options[CABIN_SIZING_OPTION] == 1.0:
+        if self.options[CABIN_SIZING_OPTION]:
             self.add_subsystem(
                 "compute_fuselage", ComputeFuselageGeometryCabinSizing(), promotes=["*"]
             )

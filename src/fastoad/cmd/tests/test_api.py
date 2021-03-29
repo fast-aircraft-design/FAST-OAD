@@ -66,15 +66,20 @@ def test_generate_inputs(cleanup):
     assert pth.exists(input_file_path)
 
 
-def test_list_systems(cleanup):
+def test_list_modules(cleanup):
     # Run with stdout output (no test)
-    api.list_systems()
-    api.list_systems(CONFIGURATION_FILE_PATH)
+    api.list_modules()
+    api.list_modules(CONFIGURATION_FILE_PATH, verbose=True)
+    api.list_modules(CONFIGURATION_FILE_PATH, verbose=False)
 
     # Run with file output (test file existence)
-    out_file = pth.join(RESULTS_FOLDER_PATH, "list_systems.txt")
+    out_file = pth.join(RESULTS_FOLDER_PATH, "list_modules.txt")
     assert not pth.exists(out_file)
-    api.list_systems(CONFIGURATION_FILE_PATH, out_file)
+    api.list_modules(CONFIGURATION_FILE_PATH, out_file)
+    with pytest.raises(FastFileExistsError):
+        api.list_modules(CONFIGURATION_FILE_PATH, out_file)
+    api.list_modules(CONFIGURATION_FILE_PATH, out_file, overwrite=True)
+
     assert pth.exists(out_file)
 
 
@@ -86,6 +91,9 @@ def test_list_variables(cleanup):
     out_file_path = pth.join(RESULTS_FOLDER_PATH, "list_variables.txt")
     assert not pth.exists(out_file_path)
     api.list_variables(CONFIGURATION_FILE_PATH, out=out_file_path)
+    with pytest.raises(FastFileExistsError):
+        api.list_variables(CONFIGURATION_FILE_PATH, out=out_file_path)
+    api.list_variables(CONFIGURATION_FILE_PATH, out=out_file_path, overwrite=True)
     assert pth.exists(out_file_path)
 
     ref_file_path = pth.join(DATA_FOLDER_PATH, "ref_list_variables.txt")
