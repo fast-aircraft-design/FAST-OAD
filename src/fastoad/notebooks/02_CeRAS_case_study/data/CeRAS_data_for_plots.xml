@@ -80,9 +80,11 @@
                 </root>
                 <tip>
                     <chord units="m" is_input="False">
-                        1.48!--chord length at wing tip--></chord>
+                        1.48!--chord length at wing tip-->
+                    </chord>
                     <thickness_ratio is_input="False">
-                        0.11!--thickness ratio at wing tip--></thickness_ratio>
+                        0.11!--thickness ratio at wing tip-->
+                    </thickness_ratio>
                     <y units="m" is_input="False">17.04<!--Y-position of wing tip--></y>
                     <leading_edge>
                         <x>
@@ -119,8 +121,9 @@
                 <MZFW units="kg" is_input="False">62092.0<!--maximum zero fuel weight--></MZFW>
                 <OWE units="kg" is_input="False">42092.0<!--operating weight - empty--></OWE>
                 <payload units="kg" is_input="False">17000.0<!--design payload weight--></payload>
-                <sizing_block_fuel units="kg" is_input="False">18183
-                </sizing_block_fuel>
+                <sizing_block_fuel units="kg" is_input="False">18183</sizing_block_fuel>
+                <sizing_onboard_fuel_at_takeoff units="kg" is_input="False">17907
+                </sizing_onboard_fuel_at_takeoff>
             </aircraft>
             <aircraft_empty>
                 <mass units="kg" is_input="False">

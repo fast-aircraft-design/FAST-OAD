@@ -419,6 +419,10 @@
                         200.30793583937339<!--mass of consumed fuel during taxi-in phase in sizing mission--></fuel>
                 </taxi_in>
                 <taxi_out>
+                    <duration units="s" is_input="True">
+                        540.0<!--duration of taxi-out phase in sizing mission--></duration>
+                    <thrust_rate units="s" is_input="True">
+                        0.25<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
                     <fuel units="kg" is_input="True">
                         276.0<!--mass of consumed fuel during taxi-out phase in sizing mission--></fuel>
                 </taxi_out>
@@ -463,6 +467,10 @@
                         200.30793583937339<!--mass of consumed fuel during taxi-in phase in sizing mission--></fuel>
                 </taxi_in>
                 <taxi_out>
+                    <duration units="s" is_input="True">
+                        540.0<!--duration of taxi-out phase in sizing mission--></duration>
+                    <thrust_rate units="s" is_input="True">
+                        0.25<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
                     <fuel units="kg" is_input="True">
                         276.0<!--mass of consumed fuel during taxi-out phase in sizing mission--></fuel>
                 </taxi_out>
@@ -507,6 +515,10 @@
                         200.30793583937339<!--mass of consumed fuel during taxi-in phase in sizing mission--></fuel>
                 </taxi_in>
                 <taxi_out>
+                    <duration units="s" is_input="True">
+                        540.0<!--duration of taxi-out phase in sizing mission--></duration>
+                    <thrust_rate units="s" is_input="True">
+                        0.25<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
                     <fuel units="kg" is_input="True">
                         276.0<!--mass of consumed fuel during taxi-out phase in sizing mission--></fuel>
                 </taxi_out>
