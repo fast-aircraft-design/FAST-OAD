@@ -249,12 +249,13 @@
       <MTOW_mission>
         <TOW units="kg" is_input="False">77006.23356595443</TOW>
         <ZFW units="kg" is_input="False">59000.14667337339</ZFW>
+        <block_fuel units="kg" is_input="False">18006.086892581043</block_fuel>
         <distance units="m" is_input="False">5394809.366367122<!--covered ground distance during mission "MTOW_mission"--></distance>
         <duration units="s" is_input="False">25742.574333413646<!--duration of mission "MTOW_mission"--></duration>
         <fuel units="kg" is_input="False">17570.055119963457<!--burned fuel during mission "MTOW_mission"--></fuel>
-        <loaded_fuel_at_takeoff units="kg" is_input="True">18006.086897030727<!--_inp_data:mission:MTOW_mission:loaded_fuel_at_takeoff--></loaded_fuel_at_takeoff>
-        <needed_block_fuel units="kg" is_input="False">18368.035080093003<!--embarked fuel before taxi-out of mission "MTOW_mission"--></needed_block_fuel>
-        <needed_loaded_fuel_at_takeoff units="kg" is_input="False">18006.086897030727<!--embarked fuel at takeoff of mission "MTOW_mission"--></needed_loaded_fuel_at_takeoff>
+        <needed_block_fuel units="kg" is_input="False">18368.035080093003<!--loaded fuel before taxi-out of mission "MTOW_mission"--></needed_block_fuel>
+        <needed_onboard_fuel_at_takeoff units="kg" is_input="False">18006.086897030727<!--fuel load at instant of takeoff of mission "MTOW_mission"--></needed_onboard_fuel_at_takeoff>
+        <onboard_fuel_at_takeoff units="kg" is_input="True">18006.086897030727<!--_inp_data:mission:MTOW_mission:onboard_fuel_at_takeoff--></onboard_fuel_at_takeoff>
         <diversion>
           <distance units="nmi" is_input="True">200.0</distance>
           <duration units="s" is_input="False">2112.086349151403<!--duration of route "diversion" in mission "MTOW_mission"--></duration>
@@ -444,7 +445,7 @@
         <max_payload units="kg" is_input="True">19608.0<!--max payload weight--></max_payload>
         <payload units="kg" is_input="True">17000.0<!--design payload weight--></payload>
         <sizing_block_fuel units="kg" is_input="False">18368.035080093003</sizing_block_fuel>
-        <sizing_loaded_fuel_at_takeoff units="kg" is_input="False">18006.086897030727</sizing_loaded_fuel_at_takeoff>
+        <sizing_onboard_fuel_at_takeoff units="kg" is_input="False">18006.086897030727</sizing_onboard_fuel_at_takeoff>
         <CG>
           <aft>
             <MAC_position is_input="False">0.5085892897906568<!--most aft X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>
