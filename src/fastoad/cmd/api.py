@@ -326,10 +326,6 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     :param overwrite:
     """
 
-    if not n2_file_path:
-        n2_file_path = pth.join(pth.dirname(configuration_file_path), "n2.html")
-    n2_file_path = pth.abspath(n2_file_path)
-
     if not overwrite and pth.exists(n2_file_path):
         raise FastFileExistsError(
             "N2-diagram file %s not written because it already exists. "
