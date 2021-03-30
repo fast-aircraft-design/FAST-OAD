@@ -341,7 +341,7 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     problem.final_setup()
 
     om.n2(problem, outfile=n2_file_path, show_browser=False)
-    _LOGGER.info("N2 diagram written in %s", n2_file_path)
+    _LOGGER.info("N2 diagram written in %s", pth.abspath(n2_file_path))
 
 
 def write_xdsm(
