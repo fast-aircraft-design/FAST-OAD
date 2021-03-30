@@ -317,7 +317,7 @@ def _get_detailed_system_list():
     return cell_list
 
 
-def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
+def write_n2(configuration_file_path: str, n2_file_path: str = "n2.html", overwrite: bool = False):
     """
     Write the N2 diagram of the problem in file n2.html
 
