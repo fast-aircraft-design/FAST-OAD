@@ -30,7 +30,7 @@ class FunctionsBase(ExplicitComponent):
         self.add_input("y1", val=1.0, desc="")
         self.add_input("y2", val=1.0, desc="")
 
-        self.add_output("f", val=1.0, desc="")
+        self.add_output("f", val=1.0, desc="Objective")
 
         self.add_output("g1", val=1.0, desc="")
 

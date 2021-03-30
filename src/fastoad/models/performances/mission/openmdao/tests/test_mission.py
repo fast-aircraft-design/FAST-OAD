@@ -23,12 +23,12 @@ from numpy.testing import assert_allclose
 from openmdao.core.component import Component
 from scipy.constants import foot, knot
 
-from fastoad.base.flight_point import FlightPoint
 from fastoad.io import VariableIO
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, IOMPropulsionWrapper, IPropulsion
 from fastoad.module_management.service_registry import RegisterPropulsion
 from tests.testing_utilities import run_system
-from ..mission import MissionComponent, Mission
+from ..mission import Mission, MissionComponent
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
 
@@ -239,16 +239,23 @@ def test_mission_group_with_loop(cleanup):
         problem["data:mission:operational:TOW"],
         problem["data:mission:operational:OWE"]
         + problem["data:mission:operational:payload"]
-        + problem["data:mission:operational:block_fuel"],
+        + problem["data:mission:operational:onboard_fuel_at_takeoff"],
+        atol=1.0,
+    )
+    assert_allclose(
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"],
+        problem["data:mission:operational:onboard_fuel_at_takeoff"],
         atol=1.0,
     )
     assert_allclose(
         problem["data:mission:operational:needed_block_fuel"],
-        problem["data:mission:operational:block_fuel"],
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"]
+        + problem["data:mission:operational:taxi_out:fuel"]
+        + problem["data:mission:operational:takeoff:fuel"],
         atol=1.0,
     )
     assert_allclose(
-        problem["data:mission:operational:needed_block_fuel"], 5700.0, atol=1.0,
+        problem["data:mission:operational:needed_block_fuel"], 5682.0, atol=1.0,
     )
 
 
@@ -275,14 +282,21 @@ def test_mission_group_breguet_with_loop(cleanup):
         problem["data:mission:operational:TOW"],
         problem["data:mission:operational:OWE"]
         + problem["data:mission:operational:payload"]
-        + problem["data:mission:operational:block_fuel"],
+        + problem["data:mission:operational:onboard_fuel_at_takeoff"],
+        atol=1.0,
+    )
+    assert_allclose(
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"],
+        problem["data:mission:operational:onboard_fuel_at_takeoff"],
         atol=1.0,
     )
     assert_allclose(
         problem["data:mission:operational:needed_block_fuel"],
-        problem["data:mission:operational:block_fuel"],
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"]
+        + problem["data:mission:operational:taxi_out:fuel"]
+        + problem["data:mission:operational:takeoff:fuel"],
         atol=1.0,
     )
     assert_allclose(
-        problem["data:mission:operational:needed_block_fuel"], 5640.0, atol=1.0,
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"], 5430.0, atol=1.0,
     )

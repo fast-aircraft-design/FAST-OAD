@@ -18,25 +18,23 @@ import logging
 import os.path as pth
 import sys
 import textwrap as tw
-from shutil import get_terminal_size
 from time import time
 from typing import IO, Union
 
-import numpy as np
 import openmdao.api as om
-import pandas as pd
 import requests
 from IPython import InteractiveShell
-from IPython.display import display, HTML
+from IPython.core.display import HTML, display
+from tabulate import tabulate
 from whatsopt.show_utils import generate_xdsm_html
-from whatsopt.whatsopt_client import WhatsOpt, PROD_URL
+from whatsopt.whatsopt_client import PROD_URL, WhatsOpt
 
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.module_management import BundleLoader
-from fastoad.module_management.service_registry import RegisterPropulsion, RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
@@ -47,8 +45,11 @@ from . import resources
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
 
-SAMPLE_FILENAME = "fastoad.toml"
+SAMPLE_FILENAME = "fastoad.yml"
 MAX_TABLE_WIDTH = 200  # For variable list text output
+
+# Used for test purposes only
+_PROBLEM_CONFIGURATOR = None
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
@@ -89,6 +90,7 @@ def generate_inputs(
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
     """
     conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
 
     input_file_path = conf.input_file_path
     if not overwrite and pth.exists(conf.input_file_path):
@@ -109,9 +111,10 @@ def generate_inputs(
 
 def list_variables(
     configuration_file_path: str,
-    out: Union[IO, str] = sys.stdout,
+    out: Union[IO, str] = None,
     overwrite: bool = False,
     force_text_output: bool = False,
+    tablefmt: str = "grid",
 ):
     """
     Writes list of variables for the :class:`FASTOADProblem` specified in configuration_file_path.
@@ -122,16 +125,22 @@ def list_variables(
     - force_text_output == False
 
     :param configuration_file_path:
-    :param out: the output stream or a path for the output file
+    :param out: the output stream or a path for the output file (None means sys.stdout)
     :param overwrite: if True and out parameter is a file path, the file will be written even if one
                       already exists
     :param force_text_output: if True, list will be written as text, even if command is used in an
                               interactive IPython shell (Jupyter notebook). Has no effect in other
                               shells or if out parameter is not sys.stdout
+    :param tablefmt: The formatting of the requested table. Options are the same as those available
+                     to the tabulate package. See tabulate.tabulate_formats for a complete list.
     :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
                                 exists
     """
+    if out is None:
+        out = sys.stdout
+
     conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
     problem = conf.get_problem()
     problem.setup()
 
@@ -141,6 +150,17 @@ def list_variables(
     input_variables = VariableList([var for var in variables if var.is_input])
     output_variables = VariableList([var for var in variables if not var.is_input])
 
+    for var in input_variables:
+        var.metadata["I/O"] = "IN"
+    for var in output_variables:
+        var.metadata["I/O"] = "OUT"
+
+    variables_df = (
+        (input_variables + output_variables)
+        .to_dataframe()[["name", "I/O", "desc"]]
+        .rename(columns={"name": "NAME", "desc": "DESCRIPTION"})
+    )
+
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
             raise FastFileExistsError(
@@ -150,83 +170,38 @@ def list_variables(
             )
         make_parent_dir(out)
         out_file = open(out, "w")
-        table_width = MAX_TABLE_WIDTH
     else:
         if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
-            # Here we display the variable list as VariableViewer in a notebook
-            for var in input_variables:
-                var.metadata["I/O"] = "IN"
-            for var in output_variables:
-                var.metadata["I/O"] = "OUT"
-
-            df = (
-                (input_variables + output_variables)
-                .to_dataframe()[["I/O", "name", "desc"]]
-                .rename(columns={"name": "Name", "desc": "Description"})
-            )
-            display(HTML(df.to_html()))
+            display(HTML(variables_df.to_html(index=False)))
             return
 
         # Here we continue with text output
         out_file = out
-        table_width = min(get_terminal_size().columns, MAX_TABLE_WIDTH) - 1
 
-    pd.set_option("display.max_colwidth", 1000)
-    max_name_length = np.max(
-        [len(name) for name in input_variables.names() + output_variables.names()]
+        # For a terminal output, we limit width of NAME column
+        variables_df["NAME"] = variables_df["NAME"].apply(lambda s: "\n".join(tw.wrap(s, 50)))
+
+    # In any case, let's break descriptions that are too long
+    variables_df["DESCRIPTION"] = variables_df["DESCRIPTION"].apply(
+        lambda s: "\n".join(tw.wrap(s, 100,))
     )
-    description_text_width = table_width - max_name_length - 2
 
-    def _write_variables(out_f, variables):
-        """Writes variables and their description as a pandas DataFrame"""
-        df = variables.to_dataframe()
-
-        # Create a new Series where description are wrapped on several lines if needed.
-        # Each line becomes an element of the Series
-        df["desc"] = ["\n".join(tw.wrap(s, description_text_width)) for s in df["desc"]]
-        new_desc = df.desc.str.split("\n", expand=True).stack()
-
-        # Create a Series for name that will match new_desc Series. Variable name will be in front of
-        # first line of description. An empty string will be in front of other lines.
-        new_name = [df.name.loc[i] if j == 0 else "" for i, j in new_desc.index]
-
-        # Create the DataFrame that will be displayed
-        new_df = pd.DataFrame({"NAME": new_name, "DESCRIPTION": new_desc})
-
-        out_f.write(
-            new_df.to_string(
-                index=False,
-                columns=["NAME", "DESCRIPTION"],
-                justify="center",
-                formatters={  # Formatters are needed for enforcing left justification
-                    "NAME": ("{:%s}" % max_name_length).format,
-                    "DESCRIPTION": ("{:%s}" % description_text_width).format,
-                },
-            )
-        )
-        out_file.write("\n")
-
-    def _write_text_with_line(txt: str, line_length: int):
-        """ Writes a line of given length with provided text inside """
-        out_file.write("-" + txt + "-" * (line_length - 1 - len(txt)) + "\n")
-
-    # Inputs
-    _write_text_with_line(" INPUTS OF THE PROBLEM ", table_width)
-    _write_variables(out_file, input_variables)
-
-    # Outputs
+    out_file.write(
+        tabulate(variables_df, headers=variables_df.columns, showindex=False, tablefmt=tablefmt)
+    )
     out_file.write("\n")
-    _write_text_with_line(" OUTPUTS OF THE PROBLEM ", table_width)
-    _write_variables(out_file, output_variables)
-    _write_text_with_line("", table_width)
 
     if isinstance(out, str):
         out_file.close()
         _LOGGER.info("Output list written in %s", out_file)
 
 
-def list_systems(
-    configuration_file_path: str = None, out: Union[IO, str] = sys.stdout, overwrite: bool = False
+def list_modules(
+    configuration_file_path: str = None,
+    out: Union[IO, str] = None,
+    overwrite: bool = False,
+    verbose: bool = False,
+    force_text_output: bool = False,
 ):
     """
     Writes list of available systems.
@@ -234,16 +209,29 @@ def list_systems(
     they will be listed too.
 
     :param configuration_file_path:
-    :param out: the output stream or a path for the output file
+    :param out: the output stream or a path for the output file (None means sys.stdout)
     :param overwrite: if True and out is a file path, the file will be written even if one already
                       exists
-    :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
+    :param verbose: if True, shows detailed information for each system
+                    if False, shows only identifier and path of each system
+    :param force_text_output: if True, list will be written as text, even if command is used in an
+                              interactive IPython shell (Jupyter notebook). Has no effect in other
+                              shells or if out parameter is not sys.stdout
+   :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
     """
+    if out is None:
+        out = sys.stdout
 
     if configuration_file_path:
         conf = FASTOADProblemConfigurator(configuration_file_path)
+        conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
         conf.load(configuration_file_path)
     # As the problem has been configured, BundleLoader now knows additional registered systems
+
+    if verbose:
+        cell_list = _get_detailed_system_list()
+    else:
+        cell_list = _get_simple_system_list()
 
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
@@ -256,38 +244,77 @@ def list_systems(
         make_parent_dir(out)
         out_file = open(out, "w")
     else:
+        if (
+            out == sys.stdout
+            and InteractiveShell.initialized()
+            and not force_text_output
+            and not verbose
+        ):
+            display(HTML(tabulate(cell_list, tablefmt="html")))
+            return
+
         out_file = out
-    out_file.writelines(["== AVAILABLE SYSTEM IDENTIFIERS " + "=" * 68 + "\n", "-" * 100 + "\n"])
+
+    out_file.write(tabulate(cell_list, tablefmt="grid"))
+    out_file.write("\n")
+
+    if isinstance(out, str):
+        out_file.close()
+        _LOGGER.info("System list written in %s", out_file)
+
+
+def _get_simple_system_list():
+    cell_list = [["   AVAILABLE MODULE IDENTIFIERS", "MODULE PATH"]]
+    for identifier in sorted(RegisterOpenMDAOSystem.get_provider_ids()):
+        path = BundleLoader().get_factory_path(identifier)
+        cell_list.append([identifier, path])
+
+    cell_list.append(["   AVAILABLE PROPULSION WRAPPER IDENTIFIERS", "MODULE PATH"])
+    for identifier in sorted(RegisterPropulsion.get_provider_ids()):
+        path = BundleLoader().get_factory_path(identifier)
+        cell_list.append([identifier, path])
+
+    return cell_list
+
+
+def _get_detailed_system_list():
+    cell_list = [["AVAILABLE MODULE IDENTIFIERS\n============================"]]
     for identifier in sorted(RegisterOpenMDAOSystem.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         domain = RegisterOpenMDAOSystem.get_provider_domain(identifier)
         description = RegisterOpenMDAOSystem.get_provider_description(identifier)
         if description is None:
             description = ""
-        out_file.write("  IDENTIFIER:   %s\n" % identifier)
-        out_file.write("  PATH:         %s\n" % path)
-        out_file.write("  DOMAIN:       %s\n" % domain.value)
-        out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
-        out_file.write("-" * 100 + "\n")
-    out_file.write("=" * 100 + "\n")
 
-    out_file.writelines(
-        ["\n== AVAILABLE PROPULSION WRAPPER IDENTIFIERS " + "=" * 56 + "\n", "-" * 100 + "\n"]
+        # We remove OpenMDAO's native options from the description
+        component = RegisterOpenMDAOSystem.get_system(identifier)
+        component.options.undeclare("assembled_jac_type")
+        component.options.undeclare("distributed")
+
+        cell_content = (
+            "  IDENTIFIER:   %s\nPATH:         %s\nDOMAIN:       %s\nDESCRIPTION:  %s\n"
+            % (identifier, path, domain.value, tw.indent(tw.dedent(description), "    "))
+        )
+        if len(list(component.options.items())) > 0:
+            cell_content += component.options.to_table(fmt="grid") + "\n"
+
+        cell_list.append([cell_content])
+    cell_list.append(
+        ["AVAILABLE PROPULSION WRAPPER IDENTIFIERS\n========================================"]
     )
     for identifier in sorted(RegisterPropulsion.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         description = RegisterPropulsion.get_provider_description(identifier)
         if description is None:
             description = ""
-        out_file.write("  IDENTIFIER:   %s\n" % identifier)
-        out_file.write("  PATH:         %s\n" % path)
-        out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
-        out_file.write("-" * 100 + "\n")
-    out_file.write("=" * 100 + "\n")
 
-    if isinstance(out, str):
-        out_file.close()
-        _LOGGER.info("System list written in %s", out_file)
+        cell_content = "  IDENTIFIER:   %s\nPATH:         %s\nDESCRIPTION:  %s\n" % (
+            identifier,
+            path,
+            tw.indent(tw.dedent(description), "    "),
+        )
+        cell_list.append([cell_content])
+    return cell_list
 
 
 def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
@@ -311,7 +338,9 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
         )
 
     make_parent_dir(n2_file_path)
-    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
+    conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
+    problem = conf.get_problem()
     problem.setup()
     problem.final_setup()
 
@@ -350,7 +379,9 @@ def write_xdsm(
 
     make_parent_dir(xdsm_file_path)
 
-    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem()
+    conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
+    problem = conf.get_problem()
     problem.setup()
     problem.final_setup()
 
@@ -400,9 +431,9 @@ def _run_problem(
     :return: the OpenMDAO problem after run
     """
 
-    problem = FASTOADProblemConfigurator(configuration_file_path).get_problem(
-        read_inputs=True, auto_scaling=auto_scaling
-    )
+    conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
+    problem = conf.get_problem(read_inputs=True, auto_scaling=auto_scaling)
 
     outputs_path = pth.normpath(problem.output_file_path)
     if not overwrite and pth.exists(outputs_path):
@@ -465,9 +496,10 @@ def optimization_viewer(configuration_file_path: str):
     :param configuration_file_path: problem definition
     :return: display of the OptimizationViewer
     """
-    problem_configuration = FASTOADProblemConfigurator(configuration_file_path)
+    conf = FASTOADProblemConfigurator(configuration_file_path)
+    conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
     viewer = OptimizationViewer()
-    viewer.load(problem_configuration)
+    viewer.load(conf)
 
     return viewer.display()
 

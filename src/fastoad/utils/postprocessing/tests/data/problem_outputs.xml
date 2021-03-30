@@ -1,6 +1,6 @@
 <!--
   ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ Copyright (C) 2021 ONERA & ISAE-SUPAERO
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -292,7 +292,7 @@
         <additional_fuel_capacity units="kg">1.9001079635927454e-05<!--fuel mass capacity of wing that exceeds sizing mission requirement--></additional_fuel_capacity>
         <max_payload units="kg">19608.0<!--max payload weight--></max_payload>
         <payload units="kg">13608.0<!--design payload weight--></payload>
-        <sizing_block_fuel units="kg">20484.57180359991<!--consumed fuel mass during whole mission--></sizing_block_fuel>
+        <sizing_onboard_fuel_at_takeoff units="kg">20484.57180359991<!--consumed fuel mass during whole mission--></sizing_onboard_fuel_at_takeoff>
 
         <CG>
           <aft>

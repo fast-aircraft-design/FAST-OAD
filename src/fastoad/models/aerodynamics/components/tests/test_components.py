@@ -3,7 +3,7 @@ test module for modules in aerodynamics/components
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,7 +23,7 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from pytest import approx
 
 from fastoad.io import VariableIO
-from fastoad.utils.physics import Atmosphere
+from fastoad.model_base import Atmosphere
 from tests.testing_utilities import run_system
 from ..cd0 import CD0
 from ..cd_compressibility import CdCompressibility
@@ -144,7 +144,9 @@ def test_cd0():
     ]
 
     def get_cd0(alt, mach, cl, low_speed_aero):
-        reynolds = Atmosphere(alt).get_unitary_reynolds(mach)
+        atm = Atmosphere(alt)
+        atm.mach = mach
+        reynolds = atm.unitary_reynolds
 
         ivc = get_indep_var_comp(input_list)
         if low_speed_aero:

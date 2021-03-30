@@ -3,7 +3,7 @@ Constants for rubber engine analytical models
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +15,14 @@ Constants for rubber engine analytical models
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.utils.physics import AtmosphereSI
+from fastoad.model_base import AtmosphereSI
+
+RUBBER_ENGINE_DESCRIPTION = """
+Parametric engine model as OpenMDAO component.
+
+Implementation of E. Roux models for fuel consumption of low bypass ratio engines
+For more information, see RubberEngine class in FAST-OAD developer documentation.
+"""
 
 # Atmosphere at limits of troposhere
 ATM_SEA_LEVEL = AtmosphereSI(0)

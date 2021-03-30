@@ -1,0 +1,43 @@
+title: Sellar
+
+module_folders:
+  - conf_sellar_example
+  - d:/path/does/not/exist  # will only trigger a warning
+
+input_file: ../results/inputs.xml
+output_file: ../results/outputs.xml
+
+driver: om.ScipyOptimizeDriver(optimizer='SLSQP')
+model:
+  connections:
+    - source: y1
+      target: yy1
+    - source: y2
+      target: yy2
+  cycle:
+    nonlinear_solver: om.NonlinearBlockGS(iprint=1)
+    linear_solver: om.ScipyKrylov()
+    disc1:
+      id: configuration_test.sellar.disc1
+    disc2:
+      id: configuration_test.sellar.disc2
+  functions:
+    id: configuration_test.sellar.functions
+
+optimization:
+  design_variables:
+    - name: x
+      lower: 0
+      upper: 10
+    - name: z
+      lower: 0
+      upper: 10
+  constraints:
+    - name: g1
+      lower: -100
+      upper: 0
+    - name: g2
+      upper: 0
+  objective:
+    - name: f
+      scaler: 1e-1

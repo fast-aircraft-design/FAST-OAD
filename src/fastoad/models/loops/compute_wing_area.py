@@ -18,7 +18,11 @@ import numpy as np
 import openmdao.api as om
 from scipy.constants import g
 
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
+
+@RegisterOpenMDAOSystem("fastoad.loop.wing_area", domain=ModelDomain.OTHER)
 class ComputeWingArea(om.Group):
     """
     Computes needed wing area for:
@@ -44,7 +48,7 @@ class _ComputeWingArea(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
 
-        self.add_output("data:geometry:wing:area", val=10.0, units="m**2")
+        self.add_output("data:geometry:wing:area", val=100.0, units="m**2")
         self.declare_partials("data:geometry:wing:area", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

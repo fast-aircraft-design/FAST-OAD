@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://www.fast-oad.org/configuration.schema.json",
+  "title": "FAST-OAD configuration file",
+  "description": "Schema for FAST-OAD configuration files",
+  "type": "object",
+  "definitions": {
+    "component": {
+      "$comment": "Definition of an OpenMDAO component/FAST-OAD module",
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "group": {
+      "$comment": "Definition of an OpenMDAO group",
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/group"
+          },
+          {
+            "$ref": "#/definitions/component"
+          }
+        ]
+      },
+      "properties": {
+        "nonlinear_solver": {
+          "type": "string",
+          "default": "om.NonlinearBlockGS(maxiter=100)"
+        },
+        "linear_solver": {
+          "type": "string",
+          "default": "om.DirectSolver()"
+        },
+        "connections": {
+          "type": "array",
+          "required": [
+            "source",
+            "target"
+          ],
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "float_or_ndarray": {
+      "$comment": "Definition of value that accepts float or list of floats",
+      "type": [
+        "number",
+        "array"
+      ],
+      "items": {
+        "type": "number"
+      }
+    },
+    "variable": {
+      "$comment": "Definition of an optimization variable",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "units": {
+          "type": "string"
+        },
+        "upper": {
+          "$ref": "#/definitions/float_or_ndarray"
+        },
+        "lower": {
+          "$ref": "#/definitions/float_or_ndarray"
+        },
+        "scaler": {
+          "$ref": "#/definitions/float_or_ndarray"
+        },
+        "adder": {
+          "$ref": "#/definitions/float_or_ndarray"
+        },
+        "ref": {
+          "$ref": "#/definitions/float_or_ndarray"
+        },
+        "ref0": {
+          "$ref": "#/definitions/float_or_ndarray"
+        },
+        "index": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "module_folders": {
+      "type": [ "array", "string", "null" ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "input_file": {
+      "type": "string",
+      "default": "./inputs.xml"
+    },
+    "output_file": {
+      "type": "string",
+      "default": "./outputs.xml"
+    },
+    "driver": {
+      "type": "string",
+      "default": "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
+    },
+    "model": {
+      "$ref": "#/definitions/group"
+    },
+    "optimization": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "design_variables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/variable"
+          }
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/variable"
+          }
+        },
+        "objective": {
+          "type": "array",
+          "additionalItems": false,
+          "maxItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/variable"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "input_file",
+    "output_file",
+    "model"
+  ],
+  "additionalProperties": false
+}

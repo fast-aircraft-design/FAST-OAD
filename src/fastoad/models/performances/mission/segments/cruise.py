@@ -20,9 +20,9 @@ import numpy as np
 import pandas as pd
 from scipy.constants import foot, g
 
-from fastoad.base.flight_point import FlightPoint
+from fastoad.model_base import FlightPoint
 from .altitude_change import AltitudeChangeSegment
-from .base import RegulatedThrustSegment, FlightSegment
+from .base import FlightSegment, RegulatedThrustSegment
 from ..util import get_closest_flight_level
 
 
@@ -230,7 +230,7 @@ class BreguetCruiseSegment(CruiseSegment):
         end = deepcopy(start)
         end.mass = start.mass * cruise_mass_ratio
         end.ground_distance = start.ground_distance + self.target.ground_distance
-        end.time = start.time + end.ground_distance / end.true_airspeed
+        end.time = start.time + (end.ground_distance - start.ground_distance) / end.true_airspeed
         end.name = self.name
         self.complete_flight_point(end)
 

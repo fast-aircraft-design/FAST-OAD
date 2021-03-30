@@ -12,8 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass, asdict
-from typing import Mapping, Any, List
+from dataclasses import asdict, dataclass
+from typing import Any, List, Mapping
 
 import numpy as np
 import pandas as pd
@@ -36,7 +36,7 @@ class FlightPoint:
         A pandas DataFrame can be generated from a list of FlightPoint instances::
 
             >>> import pandas as pd
-            >>> from fastoad.base.flight_point import FlightPoint
+            >>> from fastoad.model_base import FlightPoint
 
             >>> fp1 = FlightPoint(mass=70000., altitude=0.)
             >>> fp2 = FlightPoint(mass=60000., altitude=10000.)

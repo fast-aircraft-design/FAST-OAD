@@ -7,7 +7,7 @@ How to add custom OpenMDAO modules to FAST-OAD
 With FAST-OAD, you can register any OpenMDAO system of your own so it can be
 used through the configuration file.
 
-To have your OpenMDAO system available in FAST-OAD, you should follow these steps:
+To have your OpenMDAO system available as a FAST-OAD module, you should follow these steps:
 
 .. contents::
    :local:
@@ -42,6 +42,17 @@ Nevertheless, you can create new variables for your system:
 Also keep in mind that the naming of your variable will decide of its location in the input and output files.
 Therefore, the way you name your new variables should be consistent with FAST-OAD convention, as explained in
 :ref:`variables`.
+
+Defining options
+================
+You may use the OpenMDAO way for adding :ref:`options to your system<openmdao:component_options>`.
+The options you add will be accessible from the FAST-OAD configuration file (see
+:ref:`configuration-file-problem-definition`).
+
+When declaring an option, the usage of the :code:`desc` field if strongly advised, as any description
+you provide will be printed along with module information with the
+:code:`list_modules` sub-command (see :ref:`get-module-list`).
+
 
 Definition of partial derivatives
 =================================
@@ -126,7 +137,7 @@ But it is possible to set your own bounds outside of OpenMDAO by following this 
 Register your system(s)
 ***********************
 
-Once your OpenMDAO system is ready, you have to register it to make it discoverable by FAST-OAD.
+Once your OpenMDAO system is ready, you have to register it to make it known as a FAST-OAD module.
 
 To do that, you just have to add the :class:`~fastoad.module_management.service_registry.RegisterOpenMDAOSystem`
 decorator to your OpenMDAO class like this:
@@ -138,7 +149,7 @@ decorator to your OpenMDAO class like this:
 
     @RegisterOpenMDAOSystem("my.custom.name")
     class MyOMClass(om.ExplicitComponent):
-        ...
+        [ ... ]
 
 .. note::
 
@@ -154,35 +165,37 @@ Modify the configuration file
 The folders that contain your Python files must be listed in :code:`module_folders`
 in the :ref:`configuration-file`:
 
-.. code-block:: TOML
+.. code-block:: yaml
 
-    title = "OAD Process with custom component"
+    title: OAD Process with custom component
 
     # List of folder paths where user added custom registered OpenMDAO components
-    module_folders = ["/path/to/my/custom/module/folder", "/another/path/"]
+    module_folders:
+      - /path/to/my/custom/module/folder
+      - /another/path/
 
-    ...
+    [ ... ]
 
-Once this is done, (assuming your configuration file is named :code:`my_custom_conf.toml`)
-your custom, registered, system should appear in the list provided by the command line:
+Once this is done, (assuming your configuration file is named :code:`my_custom_conf.yml`)
+your custom, registered, module should appear in the list provided by the command line:
 
 .. code:: shell-session
 
-      $ fastoad list_systems my_custom_conf.toml
+      $ fastoad list_modules my_custom_conf.yml
 
 
 Then your component can be used like any other using the id you have given.
 
-.. code-block:: TOML
+.. code-block:: yaml
 
     # Definition of OpenMDAO model
-    [model]
-        [ ... ]
+    model:
+      [ ... ]
 
-        [model.my_custom_model]
-            id = "my.custom.name"
+      my_custom_model:
+        id = "my.custom.name"
 
-        [ ... ]
+      [ ... ]
 
 .. Note::
 

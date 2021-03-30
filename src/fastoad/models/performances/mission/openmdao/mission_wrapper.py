@@ -21,18 +21,19 @@ import openmdao.api as om
 import pandas as pd
 from openmdao.vectors.vector import Vector
 
-from fastoad.base.flight_point import FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from ..base import FlightSequence
 from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.schema import (
+    CLIMB_PARTS_TAG,
+    DESCENT_PARTS_TAG,
     MISSION_DEFINITION_TAG,
     PARTS_TAG,
     PHASE_TAG,
     ROUTE_TAG,
+    RESERVE_TAG,
     ROUTE_DEFINITIONS_TAG,
-    CLIMB_PARTS_TAG,
-    DESCENT_PARTS_TAG,
 )
 
 BASE_UNITS = {
@@ -68,7 +69,7 @@ class MissionWrapper(MissionBuilder):
             mission_name = self.get_unique_mission_name()
         self.mission_name = mission_name
         input_definition = self.get_input_variables(mission_name)
-        output_definition = self._identify_outputs(mission_name)
+        output_definition = self._identify_outputs()
         output_definition = {
             name: value for name, value in output_definition.items() if name not in input_definition
         }
@@ -139,7 +140,14 @@ class MissionWrapper(MissionBuilder):
 
         return flight_points
 
-    def _identify_outputs(self, mission_name) -> Dict[str, Tuple[str, str]]:
+    def get_reserve_variable_name(self) -> str:
+        """
+        :return: the name of OpenMDAO variable for fuel reserve. This name is among the declared
+                 outputs in :meth:`setup`.
+        """
+        return "data:mission:%s:reserve:fuel" % self.mission_name
+
+    def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
         """
         Builds names of OpenMDAO outputs from names of mission, route and phases.
 
@@ -147,22 +155,29 @@ class MissionWrapper(MissionBuilder):
         """
         output_definition = {}
 
-        output_definition.update(self._add_vars(mission_name))
+        output_definition.update(self._add_vars(self.mission_name))
 
-        for part in self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG]:
+        for part in self.definition[MISSION_DEFINITION_TAG][self.mission_name][PARTS_TAG]:
             if PHASE_TAG in part:
                 phase_name = part[PHASE_TAG]
-                output_definition.update(self._add_vars(mission_name, phase_name=phase_name))
+                output_definition.update(self._add_vars(self.mission_name, phase_name=phase_name))
             elif ROUTE_TAG in part:
                 route_name = part[ROUTE_TAG]
-                output_definition.update(self._add_vars(mission_name, route_name))
+                output_definition.update(self._add_vars(self.mission_name, route_name))
                 route_definition = self.definition[ROUTE_DEFINITIONS_TAG][route_name]
                 for part_definition in list(
                     route_definition[CLIMB_PARTS_TAG] + route_definition[DESCENT_PARTS_TAG]
                 ):
                     phase_name = part_definition[PHASE_TAG]
-                    output_definition.update(self._add_vars(mission_name, route_name, phase_name))
-                output_definition.update(self._add_vars(mission_name, route_name, "cruise"))
+                    output_definition.update(
+                        self._add_vars(self.mission_name, route_name, phase_name)
+                    )
+                output_definition.update(self._add_vars(self.mission_name, route_name, "cruise"))
+            elif RESERVE_TAG in part:
+                output_definition[self.get_reserve_variable_name()] = (
+                    "kg",
+                    'reserve fuel for mission "%s"' % self.mission_name,
+                )
 
         return output_definition
 

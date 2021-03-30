@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,10 +13,13 @@
 
 import openmdao.api as om
 
-from fastoad.models.aerodynamics.components.compute_polar import ComputePolar, PolarType
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from .components.compute_polar import ComputePolar, PolarType
 from .components.high_lift_aero import ComputeDeltaHighLift
 
 
+@RegisterOpenMDAOSystem("fastoad.aerodynamics.takeoff.legacy", domain=ModelDomain.AERODYNAMICS)
 class AerodynamicsTakeoff(om.Group):
     """
     Computes aerodynamic characteristics at takeoff.

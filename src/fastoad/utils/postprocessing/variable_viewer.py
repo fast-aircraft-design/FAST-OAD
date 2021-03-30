@@ -2,7 +2,7 @@
 Defines the variable viewer for postprocessing
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -78,6 +78,9 @@ class VariableViewer:
 
         # The ui containing all the input/output selector
         self._io_selector = None
+
+        # The complete user interface
+        self._ui = None
 
         # A tag used to select all submodules
         self._all_tag = "--ALL--"
@@ -349,7 +352,7 @@ class VariableViewer:
 
         :return the display object
         """
-        clear_output(wait=True)
+        # clear_output(wait=True)
         self._update_items()
         self._update_variable_selector()
         self._update_sheet()
@@ -357,8 +360,13 @@ class VariableViewer:
             item.observe(self._render_ui, "value")
         self._sheet.layout.height = "400px"
         selectors = widgets.HBox([self._io_selector, self._variable_selector])
-        ui = widgets.VBox([self._save_load_buttons, selectors, self._sheet])
-        return display(ui)
+
+        if self._ui:
+            self._ui.children = [self._save_load_buttons, selectors, self._sheet]
+        else:
+            self._ui = widgets.VBox([self._save_load_buttons, selectors, self._sheet])
+
+        return display(self._ui)
 
     @staticmethod
     def _find_submodules(df: pd.DataFrame, modules: List[str] = None) -> Set[str]:
