@@ -204,14 +204,14 @@ Problem definition
 Components of the model can be modules, or sub-groups. They are defined as a sub-section of
 :code:`model:`. Sub-sections and sub-components can be freely named by user.
 
-A module is defined by its :code:`id:` key, but additional keys can be
-used, depending on the options of the module. The list of available options of a module is
-available through the :code:`list_modules` sub-command (see :ref:`get-module-list`).
-
-A sub-group can be set with its own solvers to resolve cycles it may contains.
+A sub-group gathers several modules and can be set with its own solvers to resolve cycles it may contains.
 
 Here above, a sub-group with geometric, weight, handling-qualities and aerodynamic modules is defined.
 Performance and wing area computation modules are set apart.
+
+A module is defined by its :code:`id:` key that refers to the module registered name, but additional keys can be
+used, depending on the options of the module. The list of available options of a module is
+available through the :code:`list_modules` sub-command (see :ref:`get-module-list`).
 
 
 Optimization settings
