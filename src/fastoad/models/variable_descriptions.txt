@@ -19,6 +19,7 @@ data:aerodynamics:aircraft:cruise:optimal_CD || drag coefficient at maximum lift
 data:aerodynamics:aircraft:cruise:optimal_CL || lift coefficient at maximum lift/drag ratio in cruise conditions
 data:aerodynamics:aircraft:landing:CL_max || maximum lift coefficient in landing conditions
 data:aerodynamics:aircraft:landing:CL_max_clean || maximum lift coefficient in landing conditions without high-lift devices
+data:aerodynamics:aircraft:landing:CL_max_clean_2D || maximum lift coefficient of 2D average profile in landing conditions without high-lift devices
 data:aerodynamics:aircraft:landing:additional_CL_capacity || at landing, is equal to (maximum lift coefficient)-(maximum required lift coefficient)
 data:aerodynamics:aircraft:landing:mach || considered Mach number for landing phase
 data:aerodynamics:aircraft:low_speed:CD || drag coefficient in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL
@@ -27,25 +28,34 @@ data:aerodynamics:aircraft:low_speed:CD:trim || increment of drag coefficient du
 data:aerodynamics:aircraft:low_speed:CL || scale of lift coefficient values for drag computations in low speed conditions
 data:aerodynamics:aircraft:low_speed:CL_alpha || derivative of lift coefficient with respect to angle of attack in low speed conditions
 data:aerodynamics:aircraft:low_speed:induced_drag_coefficient || multiply squared lift coefficient by this coefficient to get induced drag coefficient
+data:aerodynamics:aircraft:takeoff:CD || drag coefficient in takeoff conditions w.r.t. data:aerodynamics:aircraft:takeoff:CL
+data:aerodynamics:aircraft:takeoff:CL || scale of lift coefficient values for drag computations in takeoff conditions
 data:aerodynamics:aircraft:takeoff:CL0_clean || value of lift coefficient at angle of attack 0 in clean configuration at takeoff
 data:aerodynamics:aircraft:takeoff:CL_alpha || derivative of lift coefficient with respect to angle of attack in takeoff conditions
 data:aerodynamics:aircraft:takeoff:mach || considered Mach number for takeoff phase
 data:aerodynamics:cruise:neutral_point:x || X-position of neutral point - X-position of aircraft nose
 data:aerodynamics:fuselage:cruise:CD0 || profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL
+data:aerodynamics:fuselage:low_speed:CD0 || profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:low_speed:CL
 data:aerodynamics:fuselage:cruise:CnBeta || derivative of yawing moment against sideslip angle for fuselage in cruise conditions
 data:aerodynamics:high_lift_devices:landing:CD || increment of CD due to high-lift devices for landing phase
 data:aerodynamics:high_lift_devices:landing:CL || increment of CL due to high-lift devices for landing phase
 data:aerodynamics:high_lift_devices:takeoff:CD || increment of CD due to high-lift devices for takeoff phase
 data:aerodynamics:high_lift_devices:takeoff:CL || increment of CL due to high-lift devices for takeoff phase
-data:aerodynamics:horizontal_tail:cruise:CD0 || profile drag coefficient for horizontal tail
+data:aerodynamics:horizontal_tail:cruise:CD0 || profile drag coefficient for horizontal tail in cruise conditions
 data:aerodynamics:horizontal_tail:cruise:CL_alpha || derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions
-data:aerodynamics:nacelles:cruise:CD0 || profile drag coefficient for nacelles
-data:aerodynamics:pylons:cruise:CD0 || profile drag coefficient for pylons
-data:aerodynamics:vertical_tail:cruise:CD0 || profile drag coefficient for vertical tail
+data:aerodynamics:horizontal_tail:low_speed:CD0 || profile drag coefficient for horizontal tail in low speed conditions
+data:aerodynamics:nacelles:cruise:CD0 || profile drag coefficient for nacelles in cruise conditions
+data:aerodynamics:nacelles:low_speed:CD0 || profile drag coefficient for nacelles in low speed conditions
+data:aerodynamics:pylons:cruise:CD0 || profile drag coefficient for pylons in cruise conditions
+data:aerodynamics:pylons:low_speed:CD0 || profile drag coefficient for pylons in low speed conditions
+data:aerodynamics:vertical_tail:cruise:CD0 || profile drag coefficient for vertical tail in cruise conditions
 data:aerodynamics:vertical_tail:cruise:CL_alpha || derivative of lift coefficient of horizontal tail with respect to local "angle of attack" in cruise conditions
 data:aerodynamics:vertical_tail:cruise:CnBeta || derivative of yawing moment against sideslip angle for vertical tail in cruise conditions
+data:aerodynamics:vertical_tail:low_speed:CD0 || profile drag coefficient for vertical tail in low speed conditions
 data:aerodynamics:wing:cruise:CD0 || profile drag coefficient for wing w.r.t. data:aerodynamics:aircraft:cruise:CL
 data:aerodynamics:wing:cruise:reynolds || Reynolds number based on wing mean aerodynamic chord in cruise conditions
+data:aerodynamics:wing:landing:reynolds || Reynolds number based on wing mean aerodynamic chord in landing conditions
+data:aerodynamics:wing:low_speed:CD0 || profile drag coefficient for wing w.r.t. data:aerodynamics:aircraft:low_speed:CL
 data:aerodynamics:wing:low_speed:reynolds || Reynolds number based on wing mean aerodynamic chord in low speed conditions
 data:geometry:aircraft:wetted_area || total wetted area
 data:geometry:cabin:NPAX1 || number of passengers if there are only economical class seats
@@ -162,59 +172,6 @@ data:load_case:lc1:altitude || altitude for sizing load case 1 (gust with minimu
 data:load_case:lc2:U_gust || gust vertical speed for sizing load case 2 (gust with maximum aircraft mass)
 data:load_case:lc2:Vc_EAS || equivalent air speed for sizing load case 2 (gust with maximum aircraft mass)
 data:load_case:lc2:altitude || altitude for sizing load case 2 (gust with maximum aircraft mass)
-data:mission:operational:climb:thrust_rate || thrust rate (between 0.0 and 1.0) during climb phase in operational mission
-data:mission:operational:descent:thrust_rate || thrust rate (between 0.0 and 1.0) during descent phase in operational mission
-data:mission:operational:diversion:climb:duration || duration of diversion climb phase in operational mission
-data:mission:operational:diversion:climb:fuel || mass of consumed fuel during diversion climb phase in operational mission
-data:mission:operational:diversion:cruise:distance || travelled distance during diversion cruise phase in operational mission
-data:mission:operational:diversion:cruise:duration || duration of diversion cruise phase in operational mission
-data:mission:operational:diversion:cruise:fuel || mass of consumed fuel during diversion cruise phase in operational mission
-data:mission:operational:diversion:descent:duration || duration of diversion descent phase in operational mission
-data:mission:operational:diversion:descent:fuel || mass of consumed fuel during diversion descent phase in operational mission
-data:mission:operational:flight:duration || total flight time in operational mission
-data:mission:operational:flight:fuel || mass of total fuel consumed during flight in operational mission
-data:mission:operational:flight:range || total travelled distance during flight in operational mission
-data:mission:operational:holding:CAS || Calibrated Air Speed during holding phase in operational mission
-data:mission:operational:holding:altitude || altitude during holding phase in operational mission
-data:mission:operational:holding:duration || duration of holding phase in operational mission
-data:mission:operational:holding:fuel || mass of consumed fuel during holding phase in operational mission
-data:mission:operational:initial_climb:fuel || mass of consumed fuel during initial climb phase in operational mission
-data:mission:operational:landing:duration || duration of landing phase in operational mission
-data:mission:operational:landing:flap_angle || flap angle during landing phase in operational mission
-data:mission:operational:landing:friction_coefficient_brake || ground friction coefficient with full brakes in operational mission
-data:mission:operational:landing:fuel || mass of consumed fuel during landing phase in operational mission
-data:mission:operational:landing:length || runway length required for landing in operational mission
-data:mission:operational:landing:slat_angle || slat angle during landing phase in operational mission
-data:mission:operational:landing:thrust_rate || thrust rate (between 0.0 and 1.0) during landing phase in operational mission
-data:mission:operational:main_route:climb:duration || duration of climb phase in operational mission
-data:mission:operational:main_route:climb:fuel || mass of consumed fuel during climb phase in operational mission
-data:mission:operational:main_route:climb:max_climb_rate || maximum climb rate in operational mission
-data:mission:operational:main_route:cruise:altitude || altitude during cruise phase in operational mission
-data:mission:operational:main_route:cruise:duration || duration of cruise phase in operational mission
-data:mission:operational:main_route:cruise:fuel || mass of consumed fuel during cruise phase in operational mission
-data:mission:operational:main_route:cruise:mach || Mach number during cruise phase in operational mission
-data:mission:operational:main_route:descent:duration || duration of descent phase in operational mission
-data:mission:operational:main_route:descent:fuel || mass of consumed fuel during descent phase in operational mission
-data:mission:operational:takeoff:TOFL || TakeOff Field Length in operational mission
-data:mission:operational:takeoff:V2 || safety speed before reaching 35 feet height in operational mission
-data:mission:operational:takeoff:VLOF || lift-off speed in operational mission
-data:mission:operational:takeoff:VMCA || air minimum control speed in operational mission
-data:mission:operational:takeoff:VR || rotation speed in operational mission
-data:mission:operational:takeoff:altitude || altitude at takeoff in operational mission
-data:mission:operational:takeoff:delta_ISA || ISA temperature increment during takeoff phase in operational mission
-data:mission:operational:takeoff:duration || duration of takeoff phase in operational mission
-data:mission:operational:takeoff:flap_angle || flap angle during takeoff phase in operational mission
-data:mission:operational:takeoff:friction_coefficient_no_brake || ground friction coefficient with no brake in operational mission
-data:mission:operational:takeoff:fuel || mass of consumed fuel during takeoff phase in operational mission
-data:mission:operational:takeoff:slat_angle || slat angle during takeoff phase in operational mission
-data:mission:operational:taxi_in:duration || duration of taxi-in phase in operational mission
-data:mission:operational:taxi_in:fuel || mass of consumed fuel during taxi-in phase in operational mission
-data:mission:operational:taxi_in:speed || speed during taxi-in phase in operational mission
-data:mission:operational:taxi_in:thrust_rate || thrust rate (between 0.0 and 1.0) during taxi-in phase in operational mission
-data:mission:operational:taxi_out:duration || duration of taxi-out phase in operational mission
-data:mission:operational:taxi_out:fuel || mass of consumed fuel during taxi-out phase in operational mission
-data:mission:operational:taxi_out:speed || speed during taxi-out phase in operational mission
-data:mission:operational:taxi_out:thrust_rate || thrust rate (between 0.0 and 1.0) during taxi-out phase in operational mission
 data:mission:sizing:ZFW || aircraft mass with payload, without fuel, in sizing mission
 data:mission:sizing:block_fuel || total fuel mass at start
 data:mission:sizing:block_time || total duration of mission
@@ -313,6 +270,8 @@ data:weight:aircraft:load_case_3:CG:MAC_position || X-position of center of grav
 data:weight:aircraft:load_case_4:CG:MAC_position || X-position of center of gravity as ratio of mean aerodynamic chord for load case 4
 data:weight:aircraft:max_payload || max payload weight
 data:weight:aircraft:payload || design payload weight
+data:weight:aircraft:sizing_block_fuel || block fuel quantity (i.e. loaded before taxi-out) used for sizing process
+data:weight:aircraft:sizing_onboard_fuel_at_takeoff || fuel quantity at instant of takeoff used for computation of MTOW (Max. TakeOff Weight)
 data:weight:aircraft_empty:CG:x || X-position center of gravity of empty aircraft
 data:weight:aircraft_empty:mass || mass of empty aircraft (=OWE - mass of crew)
 data:weight:airframe:CG:x || airframe (A): X-position of center of gravity
@@ -406,7 +365,8 @@ settings:weight:airframe:wing:mass:k_mvo || 1.39 for Airbus type aircrafts
 settings:weight:airframe:wing:mass:k_voil || 1.00 if 4 engines / 1.05 if 2 or 3 engines / 1.10 if engines on fuselage
 settings:weight:systems:power:mass:k_elec || electricity coefficient: 1.00 if 2 engines (A300, A310 type) / (1.02 if 2 engines (DC9, Caravelle type) / 1.03 if 3 engines (B727 type) / 1.05 if 3 engines (DC10, L1011 type) / 1.08 if 4 engines (B747 type)
 test:test_variable || for testing (do not remove, keep first)
-tuning:aerodynamics:aircraft:cruise:CD:compressibility:ceiling || maximum authorized value for compressibility drag. Allows to prevent the model from overestimating the compressibility effect, especially for aircraft models after year 2000.
+tuning:aerodynamics:aircraft:cruise:CD:compressibility:max_value  || maximum authorized value for compressibility drag. Allows to prevent the model from overestimating the compressibility effect, especially for aircraft models after year 2000.
+tuning:aerodynamics:aircraft:cruise:CD:compressibility:characteristic_mach_increment || Increment to apply to the computed characteristic Mach (where compressibility drag is 20 d.c.)
 tuning:aerodynamics:aircraft:cruise:CD:k || correction ratio to apply to computed drag coefficient in cruise conditions
 tuning:aerodynamics:aircraft:cruise:CD:offset || correction offset to apply to computed drag coefficient in cruise conditions
 tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k || correction ratio to apply to computed induced drag coefficient in cruise conditions

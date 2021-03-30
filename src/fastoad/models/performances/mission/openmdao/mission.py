@@ -184,6 +184,7 @@ class Mission(om.Group):
             "data:mission:%s:ZFW" % mission_name,
             ["data:weight:aircraft:OWE", payload_var],
             units="kg",
+            desc='Zero Fuel Weight for mission "%s"' % mission_name,
         )
         return zfw_computation
 
@@ -202,6 +203,7 @@ class Mission(om.Group):
                 "data:mission:%s:onboard_fuel_at_takeoff" % mission_name,
             ],
             units="kg",
+            desc='TakeOff Weight for mission "%s"' % mission_name,
         )
         return tow_computation
 
@@ -223,6 +225,7 @@ class Mission(om.Group):
             ],
             units="kg",
             scaling_factors=[1, 1, 1, -1],
+            desc='Loaded fuel before taxi-out for mission "%s"' % mission_name,
         )
         return block_fuel_computation
 
@@ -319,7 +322,6 @@ class MissionComponent(om.ExplicitComponent):
             units="m/s",
             desc='takeoff safety speed for mission "%s"' % mission_name,
         )
-
         self.add_output(
             self._mission_vars.TAXI_OUT_FUEL.value,
             units="kg",
@@ -328,12 +330,12 @@ class MissionComponent(om.ExplicitComponent):
         self.add_output(
             self._mission_vars.NEEDED_BLOCK_FUEL.value,
             units="kg",
-            desc='loaded fuel before taxi-out of mission "%s"' % mission_name,
+            desc='Needed fuel to complete mission "%s", including reserve fuel' % mission_name,
         )
         self.add_output(
             self._mission_vars.NEEDED_FUEL_AT_TAKEOFF.value,
             units="kg",
-            desc='fuel load at instant of takeoff of mission "%s"' % mission_name,
+            desc='fuel quantity at instant of takeoff of mission "%s"' % mission_name,
         )
 
         if self.options["is_sizing"]:
