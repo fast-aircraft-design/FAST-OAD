@@ -24,7 +24,7 @@ from typing import IO, Union
 import openmdao.api as om
 import requests
 from IPython import InteractiveShell
-from IPython.display import HTML, display
+from IPython.core.display import HTML, display
 from tabulate import tabulate
 from whatsopt.show_utils import generate_xdsm_html
 from whatsopt.whatsopt_client import PROD_URL, WhatsOpt
@@ -111,10 +111,10 @@ def generate_inputs(
 
 def list_variables(
     configuration_file_path: str,
-    tablefmt: str = "grid",
     out: Union[IO, str] = None,
     overwrite: bool = False,
     force_text_output: bool = False,
+    tablefmt: str = "grid",
 ):
     """
     Writes list of variables for the :class:`FASTOADProblem` specified in configuration_file_path.
@@ -125,14 +125,14 @@ def list_variables(
     - force_text_output == False
 
     :param configuration_file_path:
-    :param tablefmt: The formatting of the requested table. Options are the same as those available
-                     to the tabulate package. See tabulate.tabulate_formats for a complete list.
     :param out: the output stream or a path for the output file (None means sys.stdout)
     :param overwrite: if True and out parameter is a file path, the file will be written even if one
                       already exists
     :param force_text_output: if True, list will be written as text, even if command is used in an
                               interactive IPython shell (Jupyter notebook). Has no effect in other
                               shells or if out parameter is not sys.stdout
+    :param tablefmt: The formatting of the requested table. Options are the same as those available
+                     to the tabulate package. See tabulate.tabulate_formats for a complete list.
     :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
                                 exists
     """
@@ -196,8 +196,12 @@ def list_variables(
         _LOGGER.info("Output list written in %s", out_file)
 
 
-def list_systems(
-    configuration_file_path: str = None, out: Union[IO, str] = sys.stdout, overwrite: bool = False
+def list_modules(
+    configuration_file_path: str = None,
+    out: Union[IO, str] = None,
+    overwrite: bool = False,
+    verbose: bool = False,
+    force_text_output: bool = False,
 ):
     """
     Writes list of available systems.
@@ -205,17 +209,29 @@ def list_systems(
     they will be listed too.
 
     :param configuration_file_path:
-    :param out: the output stream or a path for the output file
+    :param out: the output stream or a path for the output file (None means sys.stdout)
     :param overwrite: if True and out is a file path, the file will be written even if one already
                       exists
-    :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
+    :param verbose: if True, shows detailed information for each system
+                    if False, shows only identifier and path of each system
+    :param force_text_output: if True, list will be written as text, even if command is used in an
+                              interactive IPython shell (Jupyter notebook). Has no effect in other
+                              shells or if out parameter is not sys.stdout
+   :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
     """
+    if out is None:
+        out = sys.stdout
 
     if configuration_file_path:
         conf = FASTOADProblemConfigurator(configuration_file_path)
         conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
         conf.load(configuration_file_path)
     # As the problem has been configured, BundleLoader now knows additional registered systems
+
+    if verbose:
+        cell_list = _get_detailed_system_list()
+    else:
+        cell_list = _get_simple_system_list()
 
     if isinstance(out, str):
         if not overwrite and pth.exists(out):
@@ -228,38 +244,77 @@ def list_systems(
         make_parent_dir(out)
         out_file = open(out, "w")
     else:
+        if (
+            out == sys.stdout
+            and InteractiveShell.initialized()
+            and not force_text_output
+            and not verbose
+        ):
+            display(HTML(tabulate(cell_list, tablefmt="html")))
+            return
+
         out_file = out
-    out_file.writelines(["== AVAILABLE SYSTEM IDENTIFIERS " + "=" * 68 + "\n", "-" * 100 + "\n"])
+
+    out_file.write(tabulate(cell_list, tablefmt="grid"))
+    out_file.write("\n")
+
+    if isinstance(out, str):
+        out_file.close()
+        _LOGGER.info("System list written in %s", out_file)
+
+
+def _get_simple_system_list():
+    cell_list = [["   AVAILABLE MODULE IDENTIFIERS", "MODULE PATH"]]
+    for identifier in sorted(RegisterOpenMDAOSystem.get_provider_ids()):
+        path = BundleLoader().get_factory_path(identifier)
+        cell_list.append([identifier, path])
+
+    cell_list.append(["   AVAILABLE PROPULSION WRAPPER IDENTIFIERS", "MODULE PATH"])
+    for identifier in sorted(RegisterPropulsion.get_provider_ids()):
+        path = BundleLoader().get_factory_path(identifier)
+        cell_list.append([identifier, path])
+
+    return cell_list
+
+
+def _get_detailed_system_list():
+    cell_list = [["AVAILABLE MODULE IDENTIFIERS\n============================"]]
     for identifier in sorted(RegisterOpenMDAOSystem.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         domain = RegisterOpenMDAOSystem.get_provider_domain(identifier)
         description = RegisterOpenMDAOSystem.get_provider_description(identifier)
         if description is None:
             description = ""
-        out_file.write("  IDENTIFIER:   %s\n" % identifier)
-        out_file.write("  PATH:         %s\n" % path)
-        out_file.write("  DOMAIN:       %s\n" % domain.value)
-        out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
-        out_file.write("-" * 100 + "\n")
-    out_file.write("=" * 100 + "\n")
 
-    out_file.writelines(
-        ["\n== AVAILABLE PROPULSION WRAPPER IDENTIFIERS " + "=" * 56 + "\n", "-" * 100 + "\n"]
+        # We remove OpenMDAO's native options from the description
+        component = RegisterOpenMDAOSystem.get_system(identifier)
+        component.options.undeclare("assembled_jac_type")
+        component.options.undeclare("distributed")
+
+        cell_content = (
+            "  IDENTIFIER:   %s\nPATH:         %s\nDOMAIN:       %s\nDESCRIPTION:  %s\n"
+            % (identifier, path, domain.value, tw.indent(tw.dedent(description), "    "))
+        )
+        if len(list(component.options.items())) > 0:
+            cell_content += component.options.to_table(fmt="grid") + "\n"
+
+        cell_list.append([cell_content])
+    cell_list.append(
+        ["AVAILABLE PROPULSION WRAPPER IDENTIFIERS\n========================================"]
     )
     for identifier in sorted(RegisterPropulsion.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         description = RegisterPropulsion.get_provider_description(identifier)
         if description is None:
             description = ""
-        out_file.write("  IDENTIFIER:   %s\n" % identifier)
-        out_file.write("  PATH:         %s\n" % path)
-        out_file.write("  DESCRIPTION:  %s\n" % tw.indent(tw.dedent(description), "    "))
-        out_file.write("-" * 100 + "\n")
-    out_file.write("=" * 100 + "\n")
 
-    if isinstance(out, str):
-        out_file.close()
-        _LOGGER.info("System list written in %s", out_file)
+        cell_content = "  IDENTIFIER:   %s\nPATH:         %s\nDESCRIPTION:  %s\n" % (
+            identifier,
+            path,
+            tw.indent(tw.dedent(description), "    "),
+        )
+        cell_list.append([cell_content])
+    return cell_list
 
 
 def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):

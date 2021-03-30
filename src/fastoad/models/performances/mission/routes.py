@@ -2,7 +2,7 @@
 Classes for computation of routes (i.e. assemblies of climb, cruise and descent phases).
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,13 +15,13 @@ Classes for computation of routes (i.e. assemblies of climb, cruise and descent 
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from scipy.optimize import root_scalar
 
-from fastoad.base.flight_point import FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.base import FlightSequence, IFlightPart
 from fastoad.models.performances.mission.segments.base import FlightSegment
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment

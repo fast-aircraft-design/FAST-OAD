@@ -22,7 +22,7 @@ import pandas as pd
 from openmdao import api as om
 from openmdao.core.component import Component
 
-from fastoad.base.flight_point import FlightPoint
+from fastoad.model_base import FlightPoint
 
 
 class IPropulsion(ABC):
@@ -137,21 +137,23 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
     and implement :meth:`get_wrapper`.
     """
 
-    def initialize(self):
-        self.options.declare("flight_point_count", 1, types=(int, tuple))
-
     def setup(self):
-        shape = self.options["flight_point_count"]
-        self.add_input("data:propulsion:mach", np.nan, shape=shape)
-        self.add_input("data:propulsion:altitude", np.nan, shape=shape, units="m")
-        self.add_input("data:propulsion:engine_setting", np.nan, shape=shape)
-        self.add_input("data:propulsion:use_thrust_rate", np.nan, shape=shape)
-        self.add_input("data:propulsion:required_thrust_rate", np.nan, shape=shape)
-        self.add_input("data:propulsion:required_thrust", np.nan, shape=shape, units="N")
+        self.add_input("data:propulsion:mach", np.nan, shape_by_conn=True)
+        self.add_input("data:propulsion:altitude", np.nan, shape_by_conn=True, units="m")
+        self.add_input("data:propulsion:engine_setting", np.nan, shape_by_conn=True)
+        self.add_input("data:propulsion:use_thrust_rate", np.nan, shape_by_conn=True)
+        self.add_input("data:propulsion:required_thrust_rate", np.nan, shape_by_conn=True)
+        self.add_input("data:propulsion:required_thrust", np.nan, shape_by_conn=True, units="N")
 
-        self.add_output("data:propulsion:SFC", shape=shape, units="kg/s/N", ref=1e-4)
-        self.add_output("data:propulsion:thrust_rate", shape=shape, lower=0.0, upper=1.0)
-        self.add_output("data:propulsion:thrust", shape=shape, units="N", ref=1e5)
+        self.add_output(
+            "data:propulsion:SFC", copy_shape="data:propulsion:mach", units="kg/s/N", ref=1e-4
+        )
+        self.add_output(
+            "data:propulsion:thrust_rate", copy_shape="data:propulsion:mach", lower=0.0, upper=1.0
+        )
+        self.add_output(
+            "data:propulsion:thrust", copy_shape="data:propulsion:mach", units="N", ref=1e5
+        )
 
         self.declare_partials("*", "*", method="fd")
 

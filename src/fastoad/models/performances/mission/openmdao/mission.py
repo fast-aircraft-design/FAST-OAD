@@ -23,9 +23,10 @@ import openmdao.api as om
 import pandas as pd
 from scipy.constants import foot
 
-from fastoad.base.flight_point import FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet, IOMPropulsionWrapper
-from fastoad.module_management.service_registry import RegisterPropulsion
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from . import resources
 from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
@@ -35,52 +36,84 @@ from ..segments.cruise import BreguetCruiseSegment
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
+@RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)
 class Mission(om.Group):
     """
     Computes a mission as specified in mission input file.
-
-    Options:
-      - propulsion_id: (mandatory) the identifier of the propulsion wrapper.
-      - out_file: if provided, a csv file will be written at provided path with all computed
-                  flight points.
-      - mission_file_path: the path to file that defines the mission.
-                           If can also begin with two colons "::" to use pre-defined missions:
-                               - "::sizing_mission" : design mission for CeRAS-01
-                               - "::breguet" : a simple mission with Breguet formula for cruise, and
-                                               input coefficients for fuel reserve and fuel
-                                               consumption during climb and descent
-      - mission_name: the mission name. Required if mission file defines several missions.
-      - use_initializer_iteration: During first solver loop, a complete mission computation can
-                                   fail or consume useless CPU-time. When activated, this option
-                                   ensures the first iteration is done using a simple, dummy,
-                                   formula instead of the specified mission.
-                                   Set this option to False if you do expect this model to be
-                                   computed only once.
-      - adjust_fuel: if True, block fuel will fit fuel consumption during mission.
-      - compute_TOW: if True, TakeOff Weight will be computed from mission block fuel and ZFW.
-                     If False, block fuel will be computed from TOW and ZFW.
-                     Not used (actually forced to True) if adjust_fuel is True.
-      - add_solver: not used if compute_TOW is False. Otherwise, setting this option to False will
-                    deactivate the local solver. Useful if a global solver is used.
-      - is_sizing: if True, TOW will be considered equal to MTOW and mission payload will be
-                   considered equal to design payload.
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
-        self.options.declare("out_file", default="", types=str)
+        self.options.declare(
+            "propulsion_id",
+            default="",
+            types=str,
+            desc="(mandatory) The identifier of the propulsion wrapper.",
+        )
+        self.options.declare(
+            "out_file",
+            default="",
+            types=str,
+            desc="If provided, a csv file will be written at provided path with all computed "
+            "flight points.",
+        )
         self.options.declare(
             "mission_file_path",
             default="::sizing_mission",
             types=(str, MissionDefinition),
             allow_none=True,
+            desc="The path to file that defines the mission.\n"
+            'If can also begin with two colons "::" to use pre-defined missions:\n'
+            '  - "::sizing_mission" : design mission for CeRAS-01\n'
+            '  - "::breguet" : a simple mission with Breguet formula for cruise, and input\n'
+            "    coefficients for fuel reserve and fuel consumption during climb and descent",
         )
-        self.options.declare("mission_name", default=None, types=str, allow_none=True)
-        self.options.declare("use_initializer_iteration", default=True, types=bool)
-        self.options.declare("adjust_fuel", default=True, types=bool)
-        self.options.declare("compute_TOW", default=False, types=bool)
-        self.options.declare("add_solver", default=False, types=bool)
-        self.options.declare("is_sizing", default=False, types=bool)
+        self.options.declare(
+            "mission_name",
+            default=None,
+            types=str,
+            allow_none=True,
+            desc="The mission name. Required if mission file defines several missions.",
+        )
+        self.options.declare(
+            "use_initializer_iteration",
+            default=True,
+            types=bool,
+            desc="During first solver loop, a complete mission computation can fail or consume "
+            "useless CPU-time.\n"
+            "When activated, this option ensures the first iteration is done using a simple,\n"
+            "dummy, formula instead of the specified mission.\n"
+            "Set this option to False if you do expect this model to be computed only once.",
+        )
+        self.options.declare(
+            "adjust_fuel",
+            default=True,
+            types=bool,
+            desc="If True, block fuel will fit fuel consumption during mission.\n"
+            "If False, block fuel will be taken from input data.",
+        )
+        self.options.declare(
+            "compute_TOW",
+            default=False,
+            types=bool,
+            desc="If True, TakeOff Weight will be computed from mission block fuel and ZFW.\n"
+            "If False, block fuel will be computed from TOW and ZFW.\n"
+            "Not used (actually forced to True) if adjust_fuel is True.",
+        )
+        self.options.declare(
+            "add_solver",
+            default=False,
+            types=bool,
+            desc="Not used if compute_TOW is False.\n"
+            "Otherwise, setting this option to False will deactivate the local solver.\n"
+            "Useful if a global solver is used.",
+        )
+        self.options.declare(
+            "is_sizing",
+            default=False,
+            types=bool,
+            desc="If True, TOW will be considered equal to MTOW and mission payload will be "
+            "considered equal to design payload.",
+        )
 
     def setup(self):
         if "::" in self.options["mission_file_path"]:

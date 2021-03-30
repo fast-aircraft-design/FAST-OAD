@@ -2,7 +2,7 @@
 Computation of tail areas w.r.t. HQ criteria
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,10 +16,15 @@ Computation of tail areas w.r.t. HQ criteria
 
 import openmdao.api as om
 
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .compute_ht_area import ComputeHTArea
 from .compute_vt_area import ComputeVTArea
 
 
+@RegisterOpenMDAOSystem(
+    "fastoad.handling_qualities.tail_sizing", domain=ModelDomain.HANDLING_QUALITIES,
+)
 class ComputeTailAreas(om.Group):
     """
     Computes areas of vertical and horizontal tail.

@@ -18,31 +18,27 @@ from collections import OrderedDict
 from dataclasses import fields
 from enum import Enum
 from os import PathLike
-from typing import Union, Set
+from typing import Set, Union
 
 from ensure import Ensure
 from strictyaml import (
-    load,
+    Bool,
+    CommaSeparated,
+    Float,
     Map,
     MapPattern,
     Optional,
-    Str,
-    Float,
-    Bool,
-    Seq,
-    YAML,
-    CommaSeparated,
     ScalarValidator,
+    Seq,
+    Str,
     Validator,
+    YAML,
+    load,
 )
 
-from fastoad.base.flight_point import FlightPoint
+from fastoad.model_base import FlightPoint
 from ..segments.altitude_change import AltitudeChangeSegment
-from ..segments.cruise import (
-    OptimalCruiseSegment,
-    ClimbAndCruiseSegment,
-    BreguetCruiseSegment,
-)
+from ..segments.cruise import BreguetCruiseSegment, ClimbAndCruiseSegment, OptimalCruiseSegment
 from ..segments.hold import HoldSegment
 from ..segments.speed_change import SpeedChangeSegment
 from ..segments.taxi import TaxiSegment
