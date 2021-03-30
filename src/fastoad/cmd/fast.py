@@ -21,9 +21,9 @@ from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, RawDescripti
 from distutils.util import strtobool
 
 import fastoad
+from fastoad import notebooks
 from fastoad.cmd import api
 from fastoad.cmd.exceptions import FastFileExistsError
-from fastoad.notebooks import tutorial
 from fastoad.utils.resource_management.copy import copy_resource_folder
 
 NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
@@ -160,7 +160,7 @@ class Main:
             shutil.rmtree(target_path)
         os.makedirs(target_path)
 
-        copy_resource_folder(tutorial, target_path)
+        copy_resource_folder(notebooks, target_path)
         # Note: copy_resource_folder(tutorial, target_path) would fail because of IPython imports
 
         # Give info for running Jupyter
