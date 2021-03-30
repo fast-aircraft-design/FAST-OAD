@@ -440,7 +440,9 @@ def test_breguet_cruise(polar):
         reference_area=120.0,
         polar=polar,
     )
-    flight_points = segment.compute_from(FlightPoint(mass=70000.0, altitude=10000.0, mach=0.78))
+    flight_points = segment.compute_from(
+        FlightPoint(time=10000.0, mass=70000.0, altitude=10000.0, mach=0.78)
+    )
 
     print_dataframe(flight_points)
 
@@ -453,7 +455,7 @@ def test_breguet_cruise(polar):
 
     assert_allclose(last_point.ground_distance, 500000.0)
     assert_allclose(last_point.altitude, 10000.0)
-    assert_allclose(last_point.time, 2141.0, rtol=1e-2)
+    assert_allclose(last_point.time, 12141.0, rtol=1e-2)
     assert_allclose(last_point.true_airspeed, 233.6, atol=0.1)
     assert_allclose(last_point.mass, 69568.0, rtol=1e-4)
 

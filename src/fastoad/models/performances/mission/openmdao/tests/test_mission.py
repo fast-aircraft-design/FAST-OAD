@@ -239,16 +239,23 @@ def test_mission_group_with_loop(cleanup):
         problem["data:mission:operational:TOW"],
         problem["data:mission:operational:OWE"]
         + problem["data:mission:operational:payload"]
-        + problem["data:mission:operational:block_fuel"],
+        + problem["data:mission:operational:onboard_fuel_at_takeoff"],
+        atol=1.0,
+    )
+    assert_allclose(
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"],
+        problem["data:mission:operational:onboard_fuel_at_takeoff"],
         atol=1.0,
     )
     assert_allclose(
         problem["data:mission:operational:needed_block_fuel"],
-        problem["data:mission:operational:block_fuel"],
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"]
+        + problem["data:mission:operational:taxi_out:fuel"]
+        + problem["data:mission:operational:takeoff:fuel"],
         atol=1.0,
     )
     assert_allclose(
-        problem["data:mission:operational:needed_block_fuel"], 5700.0, atol=1.0,
+        problem["data:mission:operational:needed_block_fuel"], 5682.0, atol=1.0,
     )
 
 
@@ -275,14 +282,21 @@ def test_mission_group_breguet_with_loop(cleanup):
         problem["data:mission:operational:TOW"],
         problem["data:mission:operational:OWE"]
         + problem["data:mission:operational:payload"]
-        + problem["data:mission:operational:block_fuel"],
+        + problem["data:mission:operational:onboard_fuel_at_takeoff"],
+        atol=1.0,
+    )
+    assert_allclose(
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"],
+        problem["data:mission:operational:onboard_fuel_at_takeoff"],
         atol=1.0,
     )
     assert_allclose(
         problem["data:mission:operational:needed_block_fuel"],
-        problem["data:mission:operational:block_fuel"],
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"]
+        + problem["data:mission:operational:taxi_out:fuel"]
+        + problem["data:mission:operational:takeoff:fuel"],
         atol=1.0,
     )
     assert_allclose(
-        problem["data:mission:operational:needed_block_fuel"], 5640.0, atol=1.0,
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"], 5430.0, atol=1.0,
     )
