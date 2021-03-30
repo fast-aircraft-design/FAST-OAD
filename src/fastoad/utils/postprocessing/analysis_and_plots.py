@@ -291,7 +291,7 @@ def mass_breakdown_bar_plot(
         "data:weight:aircraft:MTOW": "kg",
         "data:weight:aircraft:OWE": "kg",
         "data:weight:aircraft:payload": "kg",
-        "data:weight:aircraft:sizing_loaded_fuel_at_takeoff": "kg",
+        "data:weight:aircraft:sizing_onboard_fuel_at_takeoff": "kg",
     }
 
     # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
@@ -348,17 +348,17 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
         "data:weight:aircraft:MTOW": "kg",
         "data:weight:aircraft:OWE": "kg",
         "data:weight:aircraft:payload": "kg",
-        "data:weight:aircraft:sizing_loaded_fuel_at_takeoff": "kg",
+        "data:weight:aircraft:sizing_onboard_fuel_at_takeoff": "kg",
     }
 
     # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
-    mtow, owe, payload, fuel_mission = _get_variable_values_with_new_units(
+    mtow, owe, payload, onboard_fuel_at_takeoff = _get_variable_values_with_new_units(
         variables, var_names_and_new_units
     )
 
     # TODO: Deal with this in a more generic manner ?
-    if round(mtow, 6) == round(owe + payload + fuel_mission, 6):
-        mtow = owe + payload + fuel_mission
+    if round(mtow, 6) == round(owe + payload + onboard_fuel_at_takeoff, 6):
+        mtow = owe + payload + onboard_fuel_at_takeoff
 
     fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]],)
 
@@ -372,11 +372,11 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
                 + " [kg] ("
                 + str(round(payload / mtow * 100, 1))
                 + "%)",
-                "fuel_mission"
+                "onboard_fuel_at_takeoff"
                 + "<br>"
-                + str(int(fuel_mission))
+                + str(int(onboard_fuel_at_takeoff))
                 + " [kg] ("
-                + str(round(fuel_mission / mtow * 100, 1))
+                + str(round(onboard_fuel_at_takeoff / mtow * 100, 1))
                 + "%)",
                 "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / mtow * 100, 1)) + "%)",
             ],
@@ -386,7 +386,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
                 "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
                 "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
             ],
-            values=[mtow, payload, fuel_mission, owe],
+            values=[mtow, payload, onboard_fuel_at_takeoff, owe],
             branchvalues="total",
         ),
         1,

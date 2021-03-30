@@ -36,7 +36,7 @@ class ComputeMTOW(om.AddSubtractComp):
             [
                 "data:weight:aircraft:OWE",
                 "data:weight:aircraft:payload",
-                "data:weight:aircraft:sizing_loaded_fuel_at_takeoff",
+                "data:weight:aircraft:sizing_onboard_fuel_at_takeoff",
             ],
             units="kg",
         )

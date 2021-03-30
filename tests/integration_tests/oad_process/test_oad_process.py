@@ -334,6 +334,6 @@ def _check_weight_performance_loop(problem):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:weight:aircraft:sizing_loaded_fuel_at_takeoff"],
+        + problem["data:weight:aircraft:sizing_onboard_fuel_at_takeoff"],
         atol=1,
     )
