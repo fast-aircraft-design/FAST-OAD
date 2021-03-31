@@ -27,10 +27,10 @@ import tomlkit
 from jsonschema import validate
 from ruamel import yaml
 
-from fastoad.io import IVariableIOFormatter, DataFile
+from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.openmdao._utils import get_unconnected_input_names
 from fastoad.openmdao.problem import FASTOADProblem
-from fastoad.openmdao.utils import get_unconnected_input_names
 from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
 from . import resources
