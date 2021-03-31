@@ -24,7 +24,7 @@ from typing import IO, Union
 import openmdao.api as om
 import requests
 from IPython import InteractiveShell
-from IPython.core.display import HTML, display
+from IPython.display import HTML, display, clear_output
 from tabulate import tabulate
 from whatsopt.show_utils import generate_xdsm_html
 from whatsopt.whatsopt_client import PROD_URL, WhatsOpt
@@ -317,7 +317,7 @@ def _get_detailed_system_list():
     return cell_list
 
 
-def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
+def write_n2(configuration_file_path: str, n2_file_path: str = "n2.html", overwrite: bool = False):
     """
     Write the N2 diagram of the problem in file n2.html
 
@@ -325,10 +325,6 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     :param n2_file_path:
     :param overwrite:
     """
-
-    if not n2_file_path:
-        n2_file_path = pth.join(pth.dirname(configuration_file_path), "n2.html")
-    n2_file_path = pth.abspath(n2_file_path)
 
     if not overwrite and pth.exists(n2_file_path):
         raise FastFileExistsError(
@@ -345,7 +341,8 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     problem.final_setup()
 
     om.n2(problem, outfile=n2_file_path, show_browser=False)
-    _LOGGER.info("N2 diagram written in %s", n2_file_path)
+    clear_output()
+    _LOGGER.info("N2 diagram written in %s", pth.abspath(n2_file_path))
 
 
 def write_xdsm(
