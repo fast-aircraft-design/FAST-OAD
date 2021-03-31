@@ -17,11 +17,18 @@ FAST-OAD allows easy switching between models for a same discipline, and
 also adding/removing disciplines to match the need of your study.
 
 Currently, FAST-OAD is bundled with models for commercial transport
-aircraft of years 1990-2000. Other models will come and you may create
+aircraft of years 1990-2000. Other models will come, and you may create
 your own models and use them instead of bundled ones.
 
 More details can be found in the [official
 documentation](https://fast-oad.readthedocs.io/).
+
+>**_Note_**:
+>
+> Since version 1.0, FAST-OAD aims at providing a stable core software to 
+> propose a safe base for development of custom models.
+>
+> Models in FAST-OAD are still a work in progress.
 
 Install
 -------
