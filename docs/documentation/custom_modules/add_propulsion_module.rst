@@ -38,29 +38,29 @@ The documentation of :class:`~fastoad.base.flight_point.FlightPoint` provides
 the list of available flight parameters, available as attributes.
 As FlightPoint is a dataclass, this list is available through Python using::
 
-    >>> from fastoad.base.flight_point import FlightPoint
+    >>> import fastoad.api as oad
     >>> from dataclasses import fields
 
-    >>> [f.name for f in fields(FlightPoint)]
+    >>> [f.name for f in fields(oad.FlightPoint)]
 
 Exchanges with pandas DataFrame
 ===============================
 A pandas DataFrame can be generated from a list of FlightPoint instances::
 
     >>> import pandas as pd
-    >>> from fastoad.base.flight_point import FlightPoint
+    >>> import fastoad.api as oad
 
-    >>> fp1 = FlightPoint(mass=70000., altitude=0.)
-    >>> fp2 = FlightPoint(mass=60000., altitude=10000.)
+    >>> fp1 = oad.FlightPoint(mass=70000., altitude=0.)
+    >>> fp2 = oad.FlightPoint(mass=60000., altitude=10000.)
     >>> df = pd.DataFrame([fp1, fp2])
 
 And FlightPoint instances can be created from DataFrame rows::
 
     # Get one FlightPoint instance from a DataFrame row
-    >>> fp1bis = FlightPoint.create(df.iloc[0])
+    >>> fp1bis = oad.FlightPoint.create(df.iloc[0])
 
     # Get a list of FlightPoint instances from the whole DataFrame
-    >>> flight_points = FlightPoint.create_list(df)
+    >>> flight_points = oad.FlightPoint.create_list(df)
 
 
 .. _flight_point_extensibility:
@@ -191,12 +191,11 @@ The registering is done using the
 :class:`~fastoad.module_management.service_registry.RegisterPropulsion`
 decorator::
 
-    from fastoad.models.propulsion import IOMPropulsionWrapper
-    from fastoad.module_management.service_registry import RegisterPropulsion
+    import fastoad.api as oad
 
 
-    @RegisterPropulsion("star.trek.propulsion")
-    class WarpDriveWrapper(IOMPropulsionWrapper):
+    @oad.RegisterPropulsion("star.trek.propulsion")
+    class WarpDriveWrapper(oad.IOMPropulsionWrapper):
 
         [ ... ]
 
