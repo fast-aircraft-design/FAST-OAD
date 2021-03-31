@@ -33,58 +33,70 @@ A quick tutorial for YAML (among many ones) is available
     output_file: ./problem_outputs.xml
 
     # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
-    driver: om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')
+    driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
     # Definition of OpenMDAO model
+    # Although "model" is a mandatory name for the top level of the model, its
+    # sub-components can be freely named by user
     model:
-      # Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
-      nonlinear_solver: om.NonlinearBlockGS(maxiter=100)
+
+      #  Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
+      nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2)
       linear_solver: om.DirectSolver()
 
-      # Although "model" is a mandatory name for the top level of the model, its
-      # sub-components can be freely named by user
-      geometry:
-        # An OpenMDAO component is identified by its "id"
-        id: fastoad.geometry.legacy
-      weight:
-        id: fastoad.weight.legacy
-      mtow:
-        id: fastoad.mass_performances.compute_MTOW
-      aerodynamics_highspeed:
-        id: fastoad.aerodynamics.highspeed.legacy
-      aerodynamics_lowspeed:
-        id: fastoad.aerodynamics.lowspeed.legacy
-      aerodynamics_takeoff:
-        id: fastoad.aerodynamics.takeoff.legacy
-      aerodynamics_landing:
-        id: fastoad.aerodynamics.landing.legacy
-        use_xfoil: no
+
+      # Components can be put in sub-groups
+      subgroup:
+
+        # A group can be set with its own solvers.
+
+        nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2, iprint=0)
+        linear_solver: om.DirectSolver()
+
+        geometry:
+          # An OpenMDAO component is identified by its "id"
+          id: fastoad.geometry.legacy
+        weight:
+          id: fastoad.weight.legacy
+        mtow:
+          id: fastoad.mass_performances.compute_MTOW
+        hq_tail_sizing:
+          id: fastoad.handling_qualities.tail_sizing
+        hq_static_margin:
+          id: fastoad.handling_qualities.static_margin
+        wing_position:
+          id: fastoad.loop.wing_position
+        aerodynamics_highspeed:
+          id: fastoad.aerodynamics.highspeed.legacy
+        aerodynamics_lowspeed:
+          id: fastoad.aerodynamics.lowspeed.legacy
+        aerodynamics_takeoff:
+          id: fastoad.aerodynamics.takeoff.legacy
+        aerodynamics_landing:
+          id: fastoad.aerodynamics.landing.legacy
+          use_xfoil: false
       performance:
         id: fastoad.performances.mission
         propulsion_id: fastoad.wrapper.propulsion.rubber_engine
-        mission_file_path: ::sizing_breguet
-        # mission_file_path: ::sizing_mission
-        out_file:  ./flight_points.csv
-        adjust_fuel: yes
-        is_sizing: yes
-      hq_tail_sizing:
-        id: fastoad.handling_qualities.tail_sizing
-      hq_static_margin:
-        id: fastoad.handling_qualities.static_margin
+        # mission_file_path: ::sizing_breguet
+        mission_file_path: ::sizing_mission
+        out_file: ./flight_points.csv
+        adjust_fuel: true
+        is_sizing: true
       wing_area:
         id: fastoad.loop.wing_area
 
-    optimization:  # This section is needed only if optimization process is run
-      design_var:
-        - name: data:geometry:wing:MAC:at25percent:x
-          lower: 16.0
+    optimization: # This section is needed only if optimization process is run
+      design_variables:
+        - name: data:geometry:wing:aspect_ratio
+          lower: 9.0
           upper: 18.0
-      constraint:
-        - name: data:handling_qualities:static_margin
-          lower: 0.05
-          upper: 0.1
+      constraints:
+        - name: data:geometry:wing:span
+          upper: 60.0
       objective:
-        - name: data:mission:sizing:fuel
+        - name: data:mission:sizing:needed_block_fuel
+          scaler: 1.e-4
 
 
 
@@ -115,7 +127,7 @@ Problem driver
 
 .. code:: yaml
 
-    driver: om.ScipyOptimizeDriver(tol=1e-6, optimizer='COBYLA')
+    driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
 This belongs the domain of the OpenMDAO framework and its utilization. This setting is needed for
 optimization problems. It is defined as in Python when assuming the OpenMDAO convention
@@ -129,7 +141,7 @@ Solvers
 .. code:: yaml
 
     model:
-      nonlinear_solver: om.NonlinearBlockGS(maxiter=100)
+      nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2)
       linear_solver: om.DirectSolver()
 
 This is the starting point for defining the model of the problem. The model is a group of
@@ -148,45 +160,59 @@ Problem definition
 
 .. code:: yaml
 
-      # Although "model" is a mandatory name for the top level of the model, its
-      # sub-components can be freely named by user
-      geometry:
-        # An OpenMDAO component is identified by its "id"
-        id: fastoad.geometry.legacy
-      weight:
-        id: fastoad.weight.legacy
-      mtow:
-        id: fastoad.mass_performances.compute_MTOW
-      aerodynamics_highspeed:
-        id: fastoad.aerodynamics.highspeed.legacy
-      aerodynamics_lowspeed:
-        id: fastoad.aerodynamics.lowspeed.legacy
-      aerodynamics_takeoff:
-        id: fastoad.aerodynamics.takeoff.legacy
-      aerodynamics_landing:
-        id: fastoad.aerodynamics.landing.legacy
-        use_xfoil: no
+      # Components can be put in sub-groups
+      subgroup:
+
+        # A group can be set with its own solvers.
+
+        nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2, iprint=0)
+        linear_solver: om.DirectSolver()
+
+        geometry:
+          # An OpenMDAO component is identified by its "id"
+          id: fastoad.geometry.legacy
+        weight:
+          id: fastoad.weight.legacy
+        mtow:
+          id: fastoad.mass_performances.compute_MTOW
+        hq_tail_sizing:
+          id: fastoad.handling_qualities.tail_sizing
+        hq_static_margin:
+          id: fastoad.handling_qualities.static_margin
+        wing_position:
+          id: fastoad.loop.wing_position
+        aerodynamics_highspeed:
+          id: fastoad.aerodynamics.highspeed.legacy
+        aerodynamics_lowspeed:
+          id: fastoad.aerodynamics.lowspeed.legacy
+        aerodynamics_takeoff:
+          id: fastoad.aerodynamics.takeoff.legacy
+        aerodynamics_landing:
+          id: fastoad.aerodynamics.landing.legacy
+          use_xfoil: false
       performance:
         id: fastoad.performances.mission
         propulsion_id: fastoad.wrapper.propulsion.rubber_engine
-        mission_file_path: ::sizing_breguet
-        # mission_file_path: ::sizing_mission
-        out_file:  ./flight_points.csv
-        adjust_fuel: yes
-        is_sizing: yes
-      hq_tail_sizing:
-        id: fastoad.handling_qualities.tail_sizing
-      hq_static_margin:
-        id: fastoad.handling_qualities.static_margin
+        # mission_file_path: ::sizing_breguet
+        mission_file_path: ::sizing_mission
+        out_file: ./flight_points.csv
+        adjust_fuel: true
+        is_sizing: true
       wing_area:
         id: fastoad.loop.wing_area
 
 Components of the model can be modules, or sub-groups. They are defined as a sub-section of
 :code:`model:`. Sub-sections and sub-components can be freely named by user.
 
-Here above are defined modules. A module is defined by its :code:`id:` key, but additional keys can be
+A sub-group gathers several modules and can be set with its own solvers to resolve cycles it may contains.
+
+Here above, a sub-group with geometric, weight, handling-qualities and aerodynamic modules is defined and
+internal solvers are activated. Performance and wing area computation modules are set apart.
+
+A module is defined by its :code:`id:` key that refers to the module registered name, but additional keys can be
 used, depending on the options of the module. The list of available options of a module is
 available through the :code:`list_modules` sub-command (see :ref:`get-module-list`).
+
 
 Optimization settings
 =====================

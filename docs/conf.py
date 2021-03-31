@@ -52,7 +52,7 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = "FAST-OAD"
-copyright = "2020, ONERA & ISAE-SUPAERO"
+copyright = "2021, ONERA & ISAE-SUPAERO"
 
 
 # -- General configuration ---------------------------------------------------
