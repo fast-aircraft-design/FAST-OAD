@@ -49,7 +49,7 @@ A quick tutorial for YAML (among many ones) is available
       subgroup:
 
         # A group can be set with its own solvers.
-        # Uncomment the 2 next lines for using the performance module with "mission_file_path: ::sizing_mission"
+
         nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2, iprint=0)
         linear_solver: om.DirectSolver()
 
@@ -79,7 +79,7 @@ A quick tutorial for YAML (among many ones) is available
         id: fastoad.performances.mission
         propulsion_id: fastoad.wrapper.propulsion.rubber_engine
         # mission_file_path: ::sizing_breguet
-        mission_file_path: ::sizing_mission  # Activate solvers in "subgroup" if you use this line.
+        mission_file_path: ::sizing_mission
         out_file: ./flight_points.csv
         adjust_fuel: true
         is_sizing: true
@@ -164,7 +164,7 @@ Problem definition
       subgroup:
 
         # A group can be set with its own solvers.
-        # Uncomment the 2 next lines for using the performance module with "mission_file_path: ::sizing_mission"
+
         nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2, iprint=0)
         linear_solver: om.DirectSolver()
 
@@ -194,7 +194,7 @@ Problem definition
         id: fastoad.performances.mission
         propulsion_id: fastoad.wrapper.propulsion.rubber_engine
         # mission_file_path: ::sizing_breguet
-        mission_file_path: ::sizing_mission  # Activate solvers in "subgroup" if you use this line.
+        mission_file_path: ::sizing_mission
         out_file: ./flight_points.csv
         adjust_fuel: true
         is_sizing: true
