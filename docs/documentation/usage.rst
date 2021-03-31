@@ -50,8 +50,8 @@ A quick tutorial for YAML (among many ones) is available
 
         # A group can be set with its own solvers.
         # Uncomment the 2 next lines for using the performance module with "mission_file_path: ::sizing_mission"
-        #nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2, iprint=0)
-        #linear_solver: om.DirectSolver()
+        nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2, iprint=0)
+        linear_solver: om.DirectSolver()
 
         geometry:
           # An OpenMDAO component is identified by its "id"
@@ -78,8 +78,8 @@ A quick tutorial for YAML (among many ones) is available
       performance:
         id: fastoad.performances.mission
         propulsion_id: fastoad.wrapper.propulsion.rubber_engine
-        mission_file_path: ::sizing_breguet
-        # mission_file_path: ::sizing_mission  # Activate solvers in "subgroup" if you use this line.
+        # mission_file_path: ::sizing_breguet
+        mission_file_path: ::sizing_mission  # Activate solvers in "subgroup" if you use this line.
         out_file: ./flight_points.csv
         adjust_fuel: true
         is_sizing: true
@@ -165,8 +165,8 @@ Problem definition
 
         # A group can be set with its own solvers.
         # Uncomment the 2 next lines for using the performance module with "mission_file_path: ::sizing_mission"
-        #nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2, iprint=0)
-        #linear_solver: om.DirectSolver()
+        nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2, iprint=0)
+        linear_solver: om.DirectSolver()
 
         geometry:
           # An OpenMDAO component is identified by its "id"
@@ -193,8 +193,8 @@ Problem definition
       performance:
         id: fastoad.performances.mission
         propulsion_id: fastoad.wrapper.propulsion.rubber_engine
-        mission_file_path: ::sizing_breguet
-        # mission_file_path: ::sizing_mission  # Activate solvers in "subgroup" if you use this line.
+        # mission_file_path: ::sizing_breguet
+        mission_file_path: ::sizing_mission  # Activate solvers in "subgroup" if you use this line.
         out_file: ./flight_points.csv
         adjust_fuel: true
         is_sizing: true
@@ -206,8 +206,8 @@ Components of the model can be modules, or sub-groups. They are defined as a sub
 
 A sub-group gathers several modules and can be set with its own solvers to resolve cycles it may contains.
 
-Here above, a sub-group with geometric, weight, handling-qualities and aerodynamic modules is defined.
-Performance and wing area computation modules are set apart.
+Here above, a sub-group with geometric, weight, handling-qualities and aerodynamic modules is defined and
+internal solvers are activated. Performance and wing area computation modules are set apart.
 
 A module is defined by its :code:`id:` key that refers to the module registered name, but additional keys can be
 used, depending on the options of the module. The list of available options of a module is
