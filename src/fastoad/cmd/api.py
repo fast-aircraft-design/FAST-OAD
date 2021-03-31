@@ -30,6 +30,7 @@ from whatsopt.show_utils import generate_xdsm_html
 from whatsopt.whatsopt_client import PROD_URL, WhatsOpt
 
 from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.gui import OptimizationViewer, VariableViewer
 from fastoad.io import IVariableIOFormatter
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.io.variable_io import DataFile
@@ -39,7 +40,6 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, R
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
-from fastoad.utils.postprocessing import OptimizationViewer, VariableViewer
 from fastoad.utils.resource_management.copy import copy_resource
 from . import resources
 

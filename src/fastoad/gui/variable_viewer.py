@@ -2,7 +2,7 @@
 Defines the variable viewer for postprocessing
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,14 +14,14 @@ Defines the variable viewer for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List, Set, Dict
+from typing import Dict, List, Set
 
 import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
-from IPython.display import display, clear_output
+from IPython.display import display
 
-from fastoad.io import VariableIO, IVariableIOFormatter
+from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.variables import VariableList
 
 pd.set_option("display.max_rows", None)

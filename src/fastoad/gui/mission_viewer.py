@@ -2,7 +2,7 @@
 Defines the analysis and plotting functions for postprocessing regarding the mission
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,10 +16,11 @@ Defines the analysis and plotting functions for postprocessing regarding the mis
 
 import os.path as pth
 from typing import Union
-import pandas as pd
+
 import ipywidgets as widgets
+import pandas as pd
 import plotly.graph_objects as go
-from IPython.display import display, clear_output
+from IPython.display import clear_output, display
 
 
 class MissionViewer:

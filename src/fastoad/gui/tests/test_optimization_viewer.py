@@ -15,7 +15,7 @@ Tests for FAST-OAD optimization viewer
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-from shutil import rmtree, copyfile
+from shutil import copyfile, rmtree
 
 import pytest
 

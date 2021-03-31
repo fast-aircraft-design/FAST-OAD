@@ -16,8 +16,7 @@
 import abc
 from typing import Type
 
-from openmdao.api import Group, IndepVarComp
-from openmdao.api import NonlinearBlockGS
+from openmdao.api import Group, IndepVarComp, NonlinearBlockGS
 
 from .disc1 import Disc1
 from .disc2 import Disc2

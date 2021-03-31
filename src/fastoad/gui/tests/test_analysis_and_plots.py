@@ -2,7 +2,7 @@
 Tests for analysis and plots functions
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,12 +16,12 @@ Tests for analysis and plots functions
 
 import os.path as pth
 
-from fastoad.utils.postprocessing.analysis_and_plots import (
-    wing_geometry_plot,
-    drag_polar_plot,
-    mass_breakdown_sun_plot,
+from .. import (
     aircraft_geometry_plot,
+    drag_polar_plot,
     mass_breakdown_bar_plot,
+    mass_breakdown_sun_plot,
+    wing_geometry_plot,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
