@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -32,7 +32,7 @@ def cleanup():
 
 def test_copy_resource_folder_from_str(cleanup):
     destination_folder = pth.join(RESULTS_FOLDER_PATH, "test_from_str")
-    copy_resource_folder("fastoad.utils.resource_management.tests.resources", destination_folder)
+    copy_resource_folder("fastoad._utils.resource_management.tests.resources", destination_folder)
     _check_files(destination_folder)
 
 
@@ -40,7 +40,7 @@ def test_copy_resource_folder_from_str_with_exclusion(cleanup):
     destination_folder = pth.join(RESULTS_FOLDER_PATH, "test_from_str_with_exclusion")
     excluded = ["__init__.py"]
     copy_resource_folder(
-        "fastoad.utils.resource_management.tests.resources", destination_folder, exclude=excluded,
+        "fastoad._utils.resource_management.tests.resources", destination_folder, exclude=excluded,
     )
     _check_files(destination_folder, excluded)
 

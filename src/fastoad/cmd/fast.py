@@ -22,9 +22,9 @@ from distutils.util import strtobool
 
 import fastoad
 from fastoad import notebooks
+from fastoad._utils.resource_management.copy import copy_resource_folder
 from fastoad.cmd import api
 from fastoad.cmd.exceptions import FastFileExistsError
-from fastoad.utils.resource_management.copy import copy_resource_folder
 
 NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
 

@@ -2,7 +2,7 @@
 Helper module for copying resources
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,12 +16,11 @@ Helper module for copying resources
 
 import os.path as pth
 import shutil
-from importlib.resources import Package, contents, is_resource
-from importlib.resources import path
+from importlib.resources import Package, contents, is_resource, path
 from types import ModuleType
 from typing import List
 
-from fastoad.utils.files import make_parent_dir
+from fastoad._utils.files import make_parent_dir
 
 
 def copy_resource(package: Package, resource: str, target_path):
