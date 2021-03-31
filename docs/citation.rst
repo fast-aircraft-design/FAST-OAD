@@ -12,7 +12,7 @@ IOP Conference Series: Materials Science and Engineering, vol. 1024, n. 1, DOI: 
 
 .. code:: bib
 
-    @article{David_2021,
+    @article{David2021,
 	doi = {10.1088/1757-899x/1024/1/012062},
 	url = {https://doi.org/10.1088/1757-899x/1024/1/012062},
 	year = 2021,
