@@ -16,7 +16,7 @@
 
 import openmdao.api as om
 
-from fastoad.model_base.options import CABIN_SIZING_OPTION
+from fastoad.models.constants import CABIN_SIZING_OPTION
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .compute_aero_center import ComputeAeroCenter

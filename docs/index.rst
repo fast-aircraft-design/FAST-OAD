@@ -28,7 +28,7 @@ Contents
    Citation <citation>
    Changelog <changelog>
    General documentation <documentation/index>
-   Module Reference <api/modules>
+   API Reference <api/modules>
 
 
 Indices and tables

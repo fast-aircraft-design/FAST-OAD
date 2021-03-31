@@ -11,19 +11,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-from pkg_resources import DistributionNotFound, get_distribution
-
-import fastoad.module_management._plugins
-from .cmd import api
-
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "FAST-OAD"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:
-    __version__ = "unknown"
-finally:
-    del get_distribution, DistributionNotFound
-
-fastoad.module_management._plugins.load_plugins()
+from .analysis_and_plots import (
+    aircraft_geometry_plot,
+    drag_polar_plot,
+    mass_breakdown_bar_plot,
+    mass_breakdown_sun_plot,
+    wing_geometry_plot,
+)
+from .mission_viewer import MissionViewer
+from .optimization_viewer import OptimizationViewer
+from .variable_viewer import VariableViewer

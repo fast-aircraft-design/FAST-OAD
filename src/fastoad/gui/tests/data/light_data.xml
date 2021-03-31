@@ -1,0 +1,35 @@
+<!--
+  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2021 ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<FASTOAD_model>
+  <data>
+    <geometry>
+      <cabin>
+        <seats>
+          <economical>
+            <width units="m" is_input="True">0.46<!--width of economical class seats--></width>
+            <length units="m" is_input="True">0.86<!--length of economical class seats--></length>
+          </economical>
+        </seats>
+        <aisle_width units="m" is_input="True">0.48<!--width of aisles--></aisle_width>
+      </cabin>
+      <propulsion>
+        <engine>
+          <count is_input="True">2.0<!--number of engines--></count>
+        </engine>
+      </propulsion>
+    </geometry>
+  </data>
+</FASTOAD_model>

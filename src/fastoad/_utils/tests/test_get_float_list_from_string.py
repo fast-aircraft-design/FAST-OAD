@@ -11,19 +11,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from ..strings import get_float_list_from_string
 
-from pkg_resources import DistributionNotFound, get_distribution
 
-import fastoad.module_management._plugins
-from .cmd import api
-
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "FAST-OAD"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:
-    __version__ = "unknown"
-finally:
-    del get_distribution, DistributionNotFound
-
-fastoad.module_management._plugins.load_plugins()
+def test_get_float_list_from_string():
+    assert [1.0, 2.0, 3.0] == get_float_list_from_string("[ 1, 2., 3]")
+    assert [[1.0, 2.0], [3.0, 4.0]] == get_float_list_from_string("[[ 1, 2.],[  3, 4]]")
+    assert [[1.0, 2.0], [3.0, 4.0]] == get_float_list_from_string("[[ 1,\n 2.],\n[  3, 4]]\n")
+    assert [1.0, 2.0, 3.0] == get_float_list_from_string(" 1, 2., 3")
+    assert [1.0, 2.0] == get_float_list_from_string(" 1 2 ")
+    assert [1.0] == get_float_list_from_string(" 1 dummy 2 ")
+    assert [1.0] == get_float_list_from_string(" 1     ")
+    assert get_float_list_from_string(" dummy ") is None
+    assert get_float_list_from_string("") is None

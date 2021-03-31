@@ -21,9 +21,9 @@ import pytest
 from openmdao.api import Problem, ScipyOptimizeDriver
 
 from .data.module_sellar_example.disc2.disc2 import Disc2
-from .data.module_sellar_example.sellar import Sellar, ISellarFactory
-from .. import BundleLoader
-from ..constants import SERVICE_OPENMDAO_SYSTEM, ModelDomain
+from .data.module_sellar_example.sellar import ISellarFactory, Sellar
+from .._bundle_loader import BundleLoader
+from ..constants import ModelDomain, SERVICE_OPENMDAO_SYSTEM
 from ..exceptions import (
     FastBadSystemOptionError,
     FastBundleLoaderUnknownFactoryNameError,

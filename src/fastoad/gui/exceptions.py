@@ -1,3 +1,6 @@
+"""
+Exception for GUI
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,19 +14,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fastoad.exceptions import FastError
 
-from pkg_resources import DistributionNotFound, get_distribution
 
-import fastoad.module_management._plugins
-from .cmd import api
-
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "FAST-OAD"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:
-    __version__ = "unknown"
-finally:
-    del get_distribution, DistributionNotFound
-
-fastoad.module_management._plugins.load_plugins()
+class FastMissingFile(FastError):
+    """Raised when a file does not exist"""

@@ -25,7 +25,7 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 
-from .utils import get_unconnected_input_names
+from ._utils import get_unconnected_input_names
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)

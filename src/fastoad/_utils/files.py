@@ -1,3 +1,7 @@
+"""
+Convenience functions for file and directories
+"""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,19 +15,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
+import os.path as pth
 
-from pkg_resources import DistributionNotFound, get_distribution
 
-import fastoad.module_management._plugins
-from .cmd import api
-
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "FAST-OAD"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:
-    __version__ = "unknown"
-finally:
-    del get_distribution, DistributionNotFound
-
-fastoad.module_management._plugins.load_plugins()
+def make_parent_dir(path: str):
+    """Ensures parent directory of provided path exists or is created"""
+    dirname = pth.abspath(pth.dirname(path))
+    if not pth.exists(dirname):
+        os.makedirs(dirname)

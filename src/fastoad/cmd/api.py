@@ -24,23 +24,23 @@ from typing import IO, Union
 import openmdao.api as om
 import requests
 from IPython import InteractiveShell
-from IPython.display import HTML, display, clear_output
+from IPython.display import HTML, clear_output, display
 from tabulate import tabulate
 from whatsopt.show_utils import generate_xdsm_html
 from whatsopt.whatsopt_client import PROD_URL, WhatsOpt
 
+from fastoad._utils.files import make_parent_dir
+from fastoad._utils.resource_management.copy import copy_resource
 from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.gui import OptimizationViewer, VariableViewer
 from fastoad.io import IVariableIOFormatter
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.io.variable_io import DataFile
 from fastoad.io.xml import VariableLegacy1XmlFormatter
-from fastoad.module_management import BundleLoader
+from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
-from fastoad.utils.files import make_parent_dir
-from fastoad.utils.postprocessing import OptimizationViewer, VariableViewer
-from fastoad.utils.resource_management.copy import copy_resource
 from . import resources
 
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"

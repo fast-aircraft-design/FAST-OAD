@@ -2,7 +2,7 @@
 Convenience functions for helping tests
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,17 +17,15 @@ Convenience functions for helping tests
 import logging
 
 import openmdao.api as om
+from openmdao.core.system import System
 
-from fastoad.openmdao.types import SystemSubclass
-
-# Logger for this module
 from fastoad.openmdao.variables import VariableList
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 def run_system(
-    component: SystemSubclass, input_vars: om.IndepVarComp, setup_mode="auto", add_solvers=False
+    component: System, input_vars: om.IndepVarComp, setup_mode="auto", add_solvers=False
 ):
     """ Runs and returns an OpenMDAO problem with provided component and data"""
     problem = om.Problem()
@@ -40,7 +38,6 @@ def run_system(
 
     problem.setup(mode=setup_mode)
     vars = VariableList.from_unconnected_inputs(problem)
-    # missing, _ = get_unconnected_input_names(problem, _LOGGER)
     assert not vars, "These inputs are not provided: %s" % vars.names()
 
     problem.run_model()
