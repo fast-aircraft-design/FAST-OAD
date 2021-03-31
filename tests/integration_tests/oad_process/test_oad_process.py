@@ -324,13 +324,13 @@ def test_api_optim(cleanup):
     _check_weight_performance_loop(problem)
 
     # Design Variable
-    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 13.58, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 14.52, atol=1e-2)
 
     # Constraint
-    assert_allclose(problem["data:geometry:wing:span"], 43.92, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:span"], 44.88, atol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 20220.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 18900.0, atol=1)
 
 
 def _check_weight_performance_loop(problem):
