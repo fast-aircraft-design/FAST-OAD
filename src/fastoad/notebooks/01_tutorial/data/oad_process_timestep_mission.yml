@@ -25,6 +25,12 @@ model:
     id: fastoad.weight.legacy
   mtow:
     id: fastoad.mass_performances.compute_MTOW
+  hq_tail_sizing:
+    id: fastoad.handling_qualities.tail_sizing
+  hq_static_margin:
+    id: fastoad.handling_qualities.static_margin
+  wing_position:
+    id: fastoad.loop.wing_position
   aerodynamics_highspeed:
     id: fastoad.aerodynamics.highspeed.legacy
   aerodynamics_lowspeed:
@@ -42,10 +48,6 @@ model:
     add_solver: false
     is_sizing: true
     use_initializer_iteration: true
-  hq_tail_sizing:
-    id: fastoad.handling_qualities.tail_sizing
-  hq_static_margin:
-    id: fastoad.handling_qualities.static_margin
   wing_area:
     id: fastoad.loop.wing_area
 
