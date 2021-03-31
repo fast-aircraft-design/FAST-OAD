@@ -348,7 +348,7 @@ class VariableList(list):
         else:
             super().append(var)
 
-    def update(self, other_var_list: "VariableList", add_variables: bool = False):
+    def update(self, other_var_list: "VariableList", add_variables: bool = True):
         """
         Uses variables in other_var_list to update the current VariableList instance.
 
@@ -359,12 +359,12 @@ class VariableList(list):
               add_variables==True
 
         :param other_var_list: source for new Variable data
-        :param add_variables: if True, variables can be added instead of just updated
+        :param add_variables: if True, unknown variables are also added
         """
 
         for var in other_var_list:
             if add_variables or var.name in self.names():
-                self.append(var)
+                self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:
         """
@@ -719,7 +719,7 @@ class VariableList(list):
                     self.append(Variable(key, **value))
             else:
                 raise TypeError(
-                    'VariableList can be set with a "string index" only if value is a '
+                    'VariableList can be set with "vars[key] = value" only if value is a '
                     "dict of metadata"
                 )
         elif not isinstance(value, Variable):

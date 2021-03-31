@@ -28,7 +28,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from fastoad import api
-from fastoad.io import VariableIO
+from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import (
     FASTOADProblemConfigurator,
     _IConfigurationModifier,
@@ -176,10 +176,10 @@ def run_non_regression_test(
     if check_weight_perfo_loop:
         _check_weight_performance_loop(problem)
 
-    ref_var_list = VariableIO(pth.join(DATA_FOLDER_PATH, legacy_result_file),).read()
+    ref_data = DataFile(pth.join(DATA_FOLDER_PATH, legacy_result_file))
 
     row_list = []
-    for ref_var in ref_var_list:
+    for ref_var in ref_data:
         try:
             value = problem.get_val(ref_var.name, units=ref_var.units)[0]
         except KeyError:

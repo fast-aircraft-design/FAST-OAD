@@ -27,8 +27,11 @@ import tomlkit
 from jsonschema import validate
 from ruamel import yaml
 
-from fastoad.io import IVariableIOFormatter, VariableIO
+from fastoad.io import IVariableIOFormatter, DataFile
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.openmdao.problem import FASTOADProblem
+from fastoad.openmdao.utils import get_unconnected_input_names
+from fastoad.openmdao.variables import VariableList
 from fastoad.utils.files import make_parent_dir
 from . import resources
 from .exceptions import (
@@ -36,9 +39,6 @@ from .exceptions import (
     FASTConfigurationBaseKeyBuildingError,
     FASTConfigurationNanInInputFile,
 )
-from ...module_management.service_registry import RegisterOpenMDAOSystem
-from ...openmdao.utils import get_unconnected_input_names
-from ...openmdao.variables import VariableList
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -209,14 +209,17 @@ class FASTOADProblemConfigurator:
         """
         problem = self.get_problem(read_inputs=False)
         problem.setup()
-        variables = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
+        variables = DataFile(self.input_file_path)
+        variables.update(
+            VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
+            add_variables=True,
+        )
         if source_file_path:
-            ref_vars = VariableIO(source_file_path, source_formatter).read()
+            ref_vars = DataFile(source_file_path, source_formatter)
             variables.update(ref_vars)
             for var in variables:
                 var.is_input = True
-        writer = VariableIO(problem.input_file_path)
-        writer.write(variables)
+        variables.save()
 
     def get_optimization_definition(self) -> Dict:
         """
@@ -412,8 +415,7 @@ class FASTOADProblemConfigurator:
         mandatory, optional = get_unconnected_input_names(problem, promoted_names=True)
         needed_variable_names = mandatory + optional
 
-        reader = VariableIO(self.input_file_path)
-        input_variables = reader.read()
+        input_variables = DataFile(self.input_file_path)
 
         unused_variables = VariableList(
             [var for var in input_variables if var.name not in needed_variable_names]

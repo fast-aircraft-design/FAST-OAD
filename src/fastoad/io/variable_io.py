@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,8 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os.path as pth
 from fnmatch import fnmatchcase
-from typing import Union, IO, List, Sequence
+from typing import IO, List, Sequence, Union
 
 from fastoad.openmdao.variables import VariableList
 from . import IVariableIOFormatter
@@ -26,12 +27,12 @@ class VariableIO:
     The file format is defined by the class provided as `formatter` argument.
 
     :param data_source: the I/O stream, or a file path, used for reading or writing data
-    :param formatter: a class that determines the file format to be used. Defaults to a VariableBasicXmlFormatter
-                      instance
+    :param formatter: a class that determines the file format to be used. Defaults to a
+                      VariableBasicXmlFormatter instance.
     """
 
     def __init__(self, data_source: Union[str, IO], formatter: IVariableIOFormatter = None):
-        self._data_source = data_source
+        self.data_source = data_source
         self.formatter: IVariableIOFormatter = (
             formatter if formatter else VariableXmlStandardFormatter()
         )
@@ -48,7 +49,7 @@ class VariableIO:
         :param ignore: List of variable names that should be ignored when reading.
         :return: an VariableList instance where outputs have been defined using provided source
         """
-        variables = self.formatter.read_variables(self._data_source)
+        variables = self.formatter.read_variables(self.data_source)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         return used_variables
 
@@ -70,7 +71,7 @@ class VariableIO:
         # alphanumeric order will be used.
         used_variables.sort(key=lambda var: "%02i_%s" % (len(var.name.split(":")), var.name))
 
-        self.formatter.write_variables(self._data_source, used_variables)
+        self.formatter.write_variables(self.data_source, used_variables)
 
     @staticmethod
     def _filter_variables(
@@ -117,3 +118,50 @@ class VariableIO:
             if var.name in used_var_names:
                 used_variables.append(var)
         return used_variables
+
+
+class DataFile(VariableList):
+    """
+    Class for managing FAST-OAD data files.
+
+    Behaves like :class:`~fastoad.openmdao.variables.VariableList` class but has :meth:`load` and
+    :meth:`save` methods.
+    """
+
+    def __init__(self, file_path: str, formatter: IVariableIOFormatter = None):
+        """
+        :param file_path: if file exists, it will be loaded.
+        :param formatter: a class that determines the file format to be used. Defaults to FAST-OAD
+                          native format. See :class:`VariableIO` for more information.
+        """
+        super().__init__()
+        self._variable_io = VariableIO(file_path, formatter)
+        if pth.exists(file_path):
+            self.load()
+
+    @property
+    def file_path(self) -> str:
+        """Path of data file."""
+        return self._variable_io.data_source
+
+    @file_path.setter
+    def file_path(self, value: str):
+        self._variable_io.data_source = value
+
+    @property
+    def formatter(self) -> IVariableIOFormatter:
+        """Class that defines the file format."""
+        return self._variable_io.formatter
+
+    @formatter.setter
+    def formatter(self, value: IVariableIOFormatter):
+        self._variable_io.formatter = value
+
+    def load(self):
+        """Loads file content."""
+        self.clear()
+        self.update(self._variable_io.read(), add_variables=True)
+
+    def save(self):
+        """Saves current state of variables in file."""
+        self._variable_io.write(self)
