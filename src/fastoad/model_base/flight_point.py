@@ -102,6 +102,33 @@ class FlightPoint:
     acceleration: float = None  #: Acceleration value in m/s**2.
     name: str = None  #: Name of current phase.
 
+    _units = dict(
+        time="s",
+        altitude="m",
+        ground_distance="m",
+        mass="kg",
+        true_airspeed="m/s",
+        equivalent_airspeed="m/s",
+        mach="-",
+        CL="-",
+        CD="-",
+        drag="N",
+        thrust="N",
+        thrust_rate="-",
+        sfc="kg/N/s",
+        slope_angle="rad",
+        acceleration="m/s**2",
+    )
+
+    @classmethod
+    def get_units(cls) -> dict:
+        """
+        Returns (field name, unit) dict for any field that has a defined unit.
+
+        A dimensionless physical quantity will have "-" as unit.
+        """
+        return cls._units
+
     @classmethod
     def create(cls, data: Mapping) -> "FlightPoint":
         """
@@ -125,7 +152,7 @@ class FlightPoint:
         return [cls.create(row) for row in data.iloc]
 
     @classmethod
-    def add_field(cls, name: str, annotation_type=float, default_value: Any = None):
+    def add_field(cls, name: str, annotation_type=float, default_value: Any = None, unit=None):
         """
         Adds the named field to FlightPoint class.
 
@@ -134,6 +161,8 @@ class FlightPoint:
         :param name: field name
         :param annotation_type: field type
         :param default_value: field default value
+        :param unit: expected unit for the added field ("-" should be provided for a dimensionless
+                     physical quantity)
         """
         cls.remove_field(name)
 
@@ -141,6 +170,8 @@ class FlightPoint:
         setattr(cls, name, default_value)
         cls.__annotations__[name] = annotation_type
         dataclass(cls)
+        if unit:
+            cls._units[name] = unit
 
     @classmethod
     def remove_field(cls, name):
@@ -154,6 +185,8 @@ class FlightPoint:
             delattr(cls, name)
             del cls.__annotations__[name]
             dataclass(cls)
+            if name in cls._units:
+                del cls._units[name]
 
     def scalarize(self):
         """

@@ -470,6 +470,12 @@ class MissionComponent(om.ExplicitComponent):
             return value
 
         self.flight_points = self.flight_points.applymap(as_scalar)
+        rename_dict = {
+            field_name: "%s [%s]" % (field_name, unit)
+            for field_name, unit in FlightPoint.get_units().items()
+        }
+        self.flight_points.rename(columns=rename_dict, inplace=True)
+
         if self.options["out_file"]:
             self.flight_points.to_csv(self.options["out_file"])
 
