@@ -16,7 +16,7 @@ Weight computation (mass and CG)
 
 import openmdao.api as om
 
-from fastoad.model_base.options import PAYLOAD_FROM_NPAX
+from fastoad.models.constants import PAYLOAD_FROM_NPAX
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .cg.cg import CG

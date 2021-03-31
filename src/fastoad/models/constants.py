@@ -14,25 +14,5 @@ Module for management of options and factorizing their definition.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 CABIN_SIZING_OPTION = "cabin_sizing"
 PAYLOAD_FROM_NPAX = "payload_from_npax"
-
-
-class OpenMdaoOptionDispatcherGroup(om.Group):
-    """
-    Helper class for transmitting option values to subsystems during self.configure()
-
-    Just create a group by inheriting of this class instead of om.Group. Any option that is
-    defined in the group will be transmitted to its immediate subsystems (no recursive
-    behaviour), if they have the same option.
-    """
-
-    def configure(self):
-        """ Update options for all subsystems """
-        for key in self.options:
-            value = self.options[key]
-            for subsystem in self.system_iter(recurse=False):
-                if key in subsystem.options:
-                    subsystem.options[key] = value

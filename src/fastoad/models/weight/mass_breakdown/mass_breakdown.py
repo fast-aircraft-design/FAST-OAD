@@ -14,15 +14,15 @@
 
 import openmdao.api as om
 
-from fastoad.model_base.options import PAYLOAD_FROM_NPAX
+from fastoad.models.constants import PAYLOAD_FROM_NPAX
 from .a_airframe import (
-    WingWeight,
-    FuselageWeight,
     EmpennageWeight,
     FlightControlsWeight,
+    FuselageWeight,
     LandingGearWeight,
-    PylonsWeight,
     PaintWeight,
+    PylonsWeight,
+    WingWeight,
 )
 from .b_propulsion import (
     EngineWeight,
@@ -30,20 +30,15 @@ from .b_propulsion import (
     UnconsumablesWeight,
 )
 from .c_systems import (
-    PowerSystemsWeight,
-    LifeSupportSystemsWeight,
-    NavigationSystemsWeight,
-    TransmissionSystemsWeight,
     FixedOperationalSystemsWeight,
     FlightKitWeight,
+    LifeSupportSystemsWeight,
+    NavigationSystemsWeight,
+    PowerSystemsWeight,
+    TransmissionSystemsWeight,
 )
 from .cs25 import Loads
-from .d_furniture import (
-    PassengerSeatsWeight,
-    FoodWaterWeight,
-    SecurityKitWeight,
-    ToiletsWeight,
-)
+from .d_furniture import FoodWaterWeight, PassengerSeatsWeight, SecurityKitWeight, ToiletsWeight
 from .e_crew import CrewWeight
 from .payload import ComputePayload
 from .update_mlw_and_mzfw import UpdateMLWandMZFW

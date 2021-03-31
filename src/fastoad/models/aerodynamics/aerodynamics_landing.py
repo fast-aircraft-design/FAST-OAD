@@ -18,17 +18,21 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.model_base import Atmosphere
-from fastoad.model_base.options import OpenMdaoOptionDispatcherGroup
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .components.compute_max_cl_landing import ComputeMaxClLanding
 from .components.high_lift_aero import ComputeDeltaHighLift
 from .external.xfoil import XfoilPolar
-from .external.xfoil.xfoil_polar import OPTION_XFOIL_EXE_PATH
+from .external.xfoil.xfoil_polar import (
+    OPTION_ALPHA_END,
+    OPTION_ALPHA_START,
+    OPTION_ITER_LIMIT,
+    OPTION_XFOIL_EXE_PATH,
+)
 
 
 @RegisterOpenMDAOSystem("fastoad.aerodynamics.landing.legacy", domain=ModelDomain.AERODYNAMICS)
-class AerodynamicsLanding(OpenMdaoOptionDispatcherGroup):
+class AerodynamicsLanding(om.Group):
     """
     Computes aerodynamic characteristics at landing.
 
@@ -86,10 +90,14 @@ class AerodynamicsLanding(OpenMdaoOptionDispatcherGroup):
             start = self.options["xfoil_alpha_min"]
             end = self.options["xfoil_alpha_max"]
             iter_limit = self.options["xfoil_iter_limit"]
+            kwargs = {
+                OPTION_ALPHA_START: start,
+                OPTION_ALPHA_END: end,
+                OPTION_ITER_LIMIT: iter_limit,
+                OPTION_XFOIL_EXE_PATH: self.options[OPTION_XFOIL_EXE_PATH],
+            }
             self.add_subsystem(
-                "xfoil_run",
-                XfoilPolar(alpha_start=start, alpha_end=end, iter_limit=iter_limit),
-                promotes=["data:geometry:wing:thickness_ratio"],
+                "xfoil_run", XfoilPolar(**kwargs), promotes=["data:geometry:wing:thickness_ratio"],
             )
         self.add_subsystem("CL_2D_to_3D", Compute3DMaxCL(), promotes=["*"])
         self.add_subsystem(
