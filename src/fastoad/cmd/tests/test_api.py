@@ -101,10 +101,6 @@ def test_list_variables(cleanup):
 
 
 def test_write_n2(cleanup):
-    default_n2_file_path = "n2.html"
-    api.write_n2(CONFIGURATION_FILE_PATH)
-    assert pth.exists(default_n2_file_path)
-    os.remove(default_n2_file_path)
 
     n2_file_path = pth.join(RESULTS_FOLDER_PATH, "other_n2.html")
     api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path)
