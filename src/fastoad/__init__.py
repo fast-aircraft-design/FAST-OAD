@@ -12,9 +12,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-from pkg_resources import get_distribution, DistributionNotFound
+from pkg_resources import DistributionNotFound, get_distribution
 
-from fastoad.module_management.plugins import load_plugins
+import fastoad.module_management._plugins
 from .cmd import api
 
 try:
@@ -26,5 +26,4 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-load_plugins()
-del load_plugins
+fastoad.module_management._plugins.load_plugins()

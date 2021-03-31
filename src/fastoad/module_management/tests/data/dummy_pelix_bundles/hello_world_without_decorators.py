@@ -16,7 +16,7 @@ Basic "Hello World" services without using iPOPO decorators
 
 
 # Define the component factory, with a given name
-from fastoad.module_management import BundleLoader
+from fastoad.module_management._bundle_loader import BundleLoader
 
 
 # Register factories without instantiating with our wrapping of iPOPO

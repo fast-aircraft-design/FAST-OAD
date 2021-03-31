@@ -14,18 +14,18 @@
 
 import logging
 from types import MethodType
-from typing import List, TypeVar, Type, Union, Any
+from typing import Any, List, Type, TypeVar, Union
 
 from openmdao.core.system import System
 
-from .bundle_loader import BundleLoader
+from ._bundle_loader import BundleLoader
 from .constants import (
-    SERVICE_PROPULSION_WRAPPER,
     DESCRIPTION_PROPERTY_NAME,
-    SERVICE_OPENMDAO_SYSTEM,
-    OPTION_PROPERTY_NAME,
     DOMAIN_PROPERTY_NAME,
     ModelDomain,
+    OPTION_PROPERTY_NAME,
+    SERVICE_OPENMDAO_SYSTEM,
+    SERVICE_PROPULSION_WRAPPER,
 )
 from .exceptions import FastBadSystemOptionError, FastIncompatibleServiceClassError
 from ..model_base.propulsion import IOMPropulsionWrapper

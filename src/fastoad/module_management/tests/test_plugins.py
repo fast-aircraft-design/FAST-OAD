@@ -16,8 +16,8 @@ import os.path as pth
 import pytest
 from pkg_resources import EntryPoint, get_distribution
 
+from .._plugins import MODEL_PLUGIN_ID, load_plugins
 from ..exceptions import FastBundleLoaderUnknownFactoryNameError
-from ..plugins import load_plugins, MODEL_PLUGIN_ID
 from ..service_registry import RegisterService
 from ...openmdao.variables import Variable
 

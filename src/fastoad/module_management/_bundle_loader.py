@@ -2,7 +2,7 @@
 Basis for registering and retrieving services
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,13 +16,13 @@ Basis for registering and retrieving services
 
 import logging
 import re
-from typing import List, Tuple, Set, Union, Optional, Any, Type, TypeVar, Dict
+from typing import Any, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 
 import pelix
-from pelix.framework import FrameworkFactory, Framework, Bundle, BundleContext
+from pelix.framework import Bundle, BundleContext, Framework, FrameworkFactory
 from pelix.internals.registry import ServiceReference
 from pelix.ipopo.constants import SERVICE_IPOPO, use_ipopo
-from pelix.ipopo.decorators import ComponentFactory, Provides, Property
+from pelix.ipopo.decorators import ComponentFactory, Property, Provides
 
 from .exceptions import (
     FastBundleLoaderDuplicateFactoryError,

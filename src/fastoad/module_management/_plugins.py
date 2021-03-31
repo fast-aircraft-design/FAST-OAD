@@ -20,7 +20,7 @@ from importlib.resources import contents
 from pkg_resources import iter_entry_points
 
 from fastoad.openmdao.variables import Variable
-from .bundle_loader import BundleLoader
+from ._bundle_loader import BundleLoader
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
