@@ -107,7 +107,7 @@ class AerodynamicsLanding(om.Group):
 
         if self.options["use_xfoil"]:
             self.connect("data:aerodynamics:aircraft:landing:mach", "xfoil_run.xfoil:mach")
-            self.connect("data:aerodynamics:aircraft:landing:reynolds", "xfoil_run.xfoil:reynolds")
+            self.connect("data:aerodynamics:wing:landing:reynolds", "xfoil_run.xfoil:reynolds")
             self.connect(
                 "xfoil_run.xfoil:CL_max_2D", "data:aerodynamics:aircraft:landing:CL_max_clean_2D"
             )
@@ -122,7 +122,7 @@ class ComputeMachReynolds(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:TLAR:approach_speed", val=np.nan, units="m/s")
         self.add_output("data:aerodynamics:aircraft:landing:mach")
-        self.add_output("data:aerodynamics:aircraft:landing:reynolds")
+        self.add_output("data:aerodynamics:wing:landing:reynolds")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -135,7 +135,7 @@ class ComputeMachReynolds(om.ExplicitComponent):
         reynolds = atm.unitary_reynolds * l0_wing
 
         outputs["data:aerodynamics:aircraft:landing:mach"] = atm.mach
-        outputs["data:aerodynamics:aircraft:landing:reynolds"] = reynolds
+        outputs["data:aerodynamics:wing:landing:reynolds"] = reynolds
 
 
 class Compute3DMaxCL(om.ExplicitComponent):

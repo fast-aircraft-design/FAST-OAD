@@ -31,9 +31,9 @@ from ..mission_definition.schema import (
     MISSION_DEFINITION_TAG,
     PARTS_TAG,
     PHASE_TAG,
-    ROUTE_TAG,
     RESERVE_TAG,
     ROUTE_DEFINITIONS_TAG,
+    ROUTE_TAG,
 )
 
 BASE_UNITS = {
@@ -73,11 +73,11 @@ class MissionWrapper(MissionBuilder):
         output_definition = {
             name: value for name, value in output_definition.items() if name not in input_definition
         }
-        for name, units in input_definition.items():
+        for name, (units, desc) in input_definition.items():
             if name.endswith(":CD") or name.endswith(":CL"):
-                component.add_input(name, np.nan, units=units, shape=POLAR_POINT_COUNT)
+                component.add_input(name, np.nan, shape=POLAR_POINT_COUNT, desc=desc)
             else:
-                component.add_input(name, np.nan, units=units)
+                component.add_input(name, np.nan, units=units, desc=desc)
 
         for name, (units, desc) in output_definition.items():
             component.add_output(name, units=units, desc=desc)

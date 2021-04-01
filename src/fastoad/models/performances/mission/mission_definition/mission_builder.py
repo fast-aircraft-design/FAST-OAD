@@ -16,7 +16,7 @@ Mission generator.
 
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import openmdao.api as om
 import pandas as pd
@@ -269,7 +269,10 @@ class MissionBuilder:
         return parts
 
     def _identify_inputs(
-        self, input_definition: Dict[str, str], struct: Union[OrderedDict, list], prefix: str = None
+        self,
+        input_definition: Dict[str, Tuple[str, str]],
+        struct: Union[OrderedDict, list],
+        prefix: str = None,
     ):
         """
         Identifies the OpenMDAO variables that are provided as parameter values.
@@ -284,8 +287,8 @@ class MissionBuilder:
         accordingly.
         If value is simply "~", the parameter name will be used.
 
-        :param input_definition: dictionary to be completed with variable names as keys and units
-                                 as values
+        :param input_definition: dictionary to be completed with variable names as keys and
+                                 (units, description) as values
         :param struct: any part of the structure dictionary.
         :param prefix:
 
@@ -302,7 +305,7 @@ class MissionBuilder:
                     suffix = key if value == "~" else value[1:]
                     value = prefix + prefix_addition + ":" + suffix
                 if isinstance(value, str) and ":" in value:
-                    input_definition[value] = BASE_UNITS.get(key)
+                    input_definition[value] = (BASE_UNITS.get(key), "Input defined by the mission.")
                     struct[key] = value
                 elif isinstance(value, (dict, list)):
                     self._identify_inputs(input_definition, value, prefix + prefix_addition)
