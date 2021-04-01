@@ -148,10 +148,6 @@ class Mission(om.Group):
                 "TOW_computation", self._get_tow_component(mission_name), promotes=["*"]
             )
 
-        self.add_subsystem(
-            "block_fuel_computation", self._get_block_fuel_component(mission_name), promotes=["*"],
-        )
-
         mission_options = dict(self.options.items())
         del mission_options["adjust_fuel"]
         del mission_options["compute_TOW"]
@@ -161,6 +157,10 @@ class Mission(om.Group):
         mission_options["mission_name"] = mission_name
         self.add_subsystem(
             "mission_computation", MissionComponent(**mission_options), promotes=["*"]
+        )
+
+        self.add_subsystem(
+            "block_fuel_computation", self._get_block_fuel_component(mission_name), promotes=["*"],
         )
 
     @property
@@ -215,9 +215,14 @@ class Mission(om.Group):
         block_fuel_computation = om.AddSubtractComp()
         block_fuel_computation.add_equation(
             "data:mission:%s:block_fuel" % mission_name,
-            ["data:mission:%s:TOW" % mission_name, "data:mission:%s:ZFW" % mission_name],
+            [
+                "data:mission:%s:TOW" % mission_name,
+                "data:mission:%s:taxi_out:fuel" % mission_name,
+                "data:mission:%s:takeoff:fuel" % mission_name,
+                "data:mission:%s:ZFW" % mission_name,
+            ],
             units="kg",
-            scaling_factors=[1, -1],
+            scaling_factors=[1, 1, 1, -1],
         )
         return block_fuel_computation
 

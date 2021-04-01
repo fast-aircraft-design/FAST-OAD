@@ -192,7 +192,7 @@ def test_mission_group_without_loop(cleanup):
         ivc,
     )
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6589.0, atol=1.0)
-    assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
 
 
 def test_mission_group_breguet_without_loop(cleanup):
@@ -210,7 +210,7 @@ def test_mission_group_breguet_without_loop(cleanup):
         ivc,
     )
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6353.0, atol=1.0)
-    assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
 
 
 def test_mission_group_with_loop(cleanup):
