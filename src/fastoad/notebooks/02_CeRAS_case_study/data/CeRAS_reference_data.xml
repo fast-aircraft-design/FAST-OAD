@@ -528,7 +528,7 @@
             <aircraft>
                 <MFW units="kg" is_input="False">18700.0<!--maximum fuel weight--></MFW>
                 <MLW units="kg" is_input="False">64500.0<!--maximum landing weight--></MLW>
-                <MTOW units="kg" is_input="False">74000.0<!--maximum takeoff weight--></MTOW>
+                <MTOW units="kg" is_input="False">77000.0<!--maximum takeoff weight--></MTOW>
                 <MZFW units="kg" is_input="False">62100.0<!--maximum zero fuel weight--></MZFW>
                 <OWE units="kg" is_input="False">42100.0<!--operating weight - empty--></OWE>
                 <additional_fuel_capacity units="kg" is_input="False">
