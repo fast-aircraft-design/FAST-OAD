@@ -144,10 +144,10 @@ decorator to your OpenMDAO class like this:
 
 .. code-block:: python
 
-    from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+    import fastoad.api as oad
     import openmdao.api as om
 
-    @RegisterOpenMDAOSystem("my.custom.name")
+    @oad.RegisterOpenMDAOSystem("my.custom.name")
     class MyOMClass(om.ExplicitComponent):
         [ ... ]
 

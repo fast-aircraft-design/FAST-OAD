@@ -27,7 +27,7 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
-from fastoad import api
+from fastoad.cmd import api
 from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import (
     FASTOADProblemConfigurator,

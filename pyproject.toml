@@ -75,6 +75,7 @@ sphinxcontrib-bibtex = "*"
 
 [tool.poetry.scripts]
 fastoad = "fastoad.cmd.fast:main"
+fast-oad = "fastoad.cmd.fast:main"
 
 [tool.poetry.plugins."fastoad_model"]
 "internal_models" = "fastoad.models"

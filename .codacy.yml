@@ -3,3 +3,4 @@ exclude_paths:
   - '**/tests/**'
   - 'tests/**'
   - 'docs/conf.py'
+  - 'src/fastoad/api.py'
