@@ -2,6 +2,37 @@
 Changelog
 =========
 
+Version 1.0.0
+=============
+- Core software:
+    - Changes:
+        - FAST-OAD configuration file is now in YAML format. (#277)
+        - Module declaration are now done using Python decorators directly on registered classes. (#259)
+        - FAST-OAD now supports custom modules as plugins. (#266)
+        - Added "fastoad.loop.wing_position" module for computing wing position from target static margin in MDA. (#268)
+        - NaN values in input data are now detected at computation start. (#273)
+        - Now api.generate_inputs() returns the path of generated file. (#254)
+        - `fastoad list_systems` is now `fastoad list_modules` and shows documentation for OpenMDAO options. (#287)
+        - Connection of OpenMDAO variables can now be done in configuration file. (#263)
+        - More generic code for mass breakdown plots to ease usage for custom weight models. (#250)
+        - DataFile class has been added for convenient interaction with FAST-OAD data files. (#293)
+        - Moved some part of code to private API. What is still public will be kept and maintained. (#295)
+    - Bug fixes:
+        - FAST-OAD was crashing when mpi4py was installed. (#272)
+        - Output of `fastoad list_variables` can now be redirected in a file. (#284)
+        - Activation of time-step mission computation in tutorial notebook is now functional. (#285)
+        - Variable viewer toolbar now works correctly in JupyterLab. (#288)
+        - N2 diagrams caused a 404 error in notebooks since OpenMDAO 3.7. (#289)
+- Models:
+    - Changes:
+        - A notebook has been added that shows how to compute CeRAS-01 aircraft. (#275)
+        - Unification of performance module. (#251)
+            - Breguet computations are now defined using the mission input file.
+            - A computed mission can now be integrated or not to the sizing process.
+        - Better management of speed parameters in Atmosphere class. (#281)
+        - More robust airfoil profile processing. (#256)
+        - Added tuner parameter in computation of compressibility. (#258)
+
 Version 0.5.4-beta
 ==================
 
