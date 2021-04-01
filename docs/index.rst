@@ -2,20 +2,28 @@
 Welcome to FAST-OAD
 ===================
 
+
+**For a quick overview of the way FAST-OAD works**, please go :ref:`here<overview>`.
+
+For a detailed description of the input files and the command line interface,
+check out the :ref:`usage section<usage>`.
+
+If you prefer to work with Python notebooks, you may go directly to the section
+:ref:`python-usage`.
+
+For a description of models used in FAST-OAD, you may see the
+:ref:`model documentations<fastoad.models package>`.
+
+If you want to add your own models, please check out :ref:`add-modules`.
+
 .. note::
 
-    For a quick overview of the way FAST-OAD works, please go :ref:`here<overview>`.
+    Since version 1.0, FAST-OAD aims at providing a stable core software to propose a
+    safe base for development of custom models.
 
-    For a detailed description of the input files and the command line interface,
-    check out the :ref:`usage section<usage>`.
+    Models in FAST-OAD are still a work in progress.
 
-    If you prefer to work with Python notebooks, you may go directly to the section 
-    :ref:`python-usage`.
 
-    For a description of models used in FAST-OAD, you may see the
-    :ref:`model documentations<fastoad.models package>` (still a work in progress).
-
-    If you want to add your own models, please check out :ref:`add-modules`.
 
 Contents
 ========

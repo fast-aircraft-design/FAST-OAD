@@ -7,6 +7,9 @@ How to add custom OpenMDAO modules to FAST-OAD
 With FAST-OAD, you can register any OpenMDAO system of your own so it can be
 used through the configuration file.
 
+It is therefore strongly advised to have at least a basic knowledge of
+`OpenMDAO <http://openmdao.org/twodocs/versions/latest>`_ to develop a module for FAST-OAD.
+
 To have your OpenMDAO system available as a FAST-OAD module, you should follow these steps:
 
 .. contents::
