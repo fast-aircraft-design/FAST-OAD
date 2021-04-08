@@ -19,7 +19,7 @@ from typing import Dict, List, Set
 import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
-from IPython.display import display
+from IPython.display import display, clear_output
 
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.variables import VariableList
@@ -352,7 +352,7 @@ class VariableViewer:
 
         :return the display object
         """
-        # clear_output(wait=True)
+        clear_output(wait=True)
         self._update_items()
         self._update_variable_selector()
         self._update_sheet()
