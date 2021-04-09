@@ -4,8 +4,9 @@ Changelog
 
 Version 1.0.1
 =============
-- Bug fix: in a jupyter notebook, each use of a filter in variable viewer caused the display
-  of a new variable viewer. (#301)
+- Bug fixes:
+    - In a jupyter notebook, each use of a filter in variable viewer caused the display of a new variable viewer. (#301)
+    - Wrong warning message was displayed when an incorrect path was provided for `module_folders` in the configuration file. (#303)
 
 Version 1.0.0
 =============
