@@ -58,10 +58,10 @@ class VariableViewer:
 
     def __init__(self):
 
-        # The path of the data file that will be viewed/edited
+        #: The path of the data file that will be viewed/edited
         self.file = None
 
-        # The dataframe which is the mirror of the self.file
+        #: The dataframe which is the mirror of self.file
         self.dataframe = pd.DataFrame()
 
         # The sheet which is the mirror of the dataframe

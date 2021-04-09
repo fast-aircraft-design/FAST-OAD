@@ -57,10 +57,10 @@ class OptimizationViewer:
 
     def __init__(self):
 
-        # Instance of the FAST-OAD problem configuration
+        #: Instance of the FAST-OAD problem configuration
         self.problem_configuration: FASTOADProblemConfigurator = None
 
-        # The dataframe which is the mirror of the self.file
+        #: The dataframe which is the mirror of self.file
         self.dataframe = pd.DataFrame()
 
         # The sheet which is the mirror of the design var sheet
