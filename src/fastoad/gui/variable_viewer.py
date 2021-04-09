@@ -19,7 +19,7 @@ from typing import Dict, List, Set
 import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
-from IPython.display import display, clear_output
+from IPython.display import display
 
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.variables import VariableList
@@ -354,7 +354,6 @@ class VariableViewer:
 
         :return the display object
         """
-        clear_output(wait=True)
         self._update_items()
         self._update_variable_selector()
         self._update_sheet()
@@ -363,11 +362,11 @@ class VariableViewer:
         self._sheet.layout.height = "400px"
         selectors = widgets.HBox([self._io_selector, self._variable_selector])
 
-        if self._ui:
+        if self._ui is not None:
             self._ui.children = [self._save_load_buttons, selectors, self._sheet]
-        else:
-            self._ui = widgets.VBox([self._save_load_buttons, selectors, self._sheet])
+            return None
 
+        self._ui = widgets.VBox([self._save_load_buttons, selectors, self._sheet])
         return display(self._ui)
 
     @staticmethod
