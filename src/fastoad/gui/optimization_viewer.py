@@ -31,7 +31,7 @@ from fastoad.io.configuration.configuration import (
     KEY_DESIGN_VARIABLES,
     KEY_OBJECTIVE,
 )
-from fastoad.openmdao.variables import VariableList
+from fastoad.openmdao.variables import Variable, VariableList
 from .exceptions import FastMissingFile
 
 pd.set_option("display.max_rows", None)
@@ -161,43 +161,11 @@ class OptimizationViewer:
         variables = self.get_variables()
         for variable in variables:
             name = variable.name
-            meta = variable.metadata
-            for input_var in input_variables:
-                if input_var.name == name:
-                    input_var.value = meta["initial_value"]
-            for output_var in output_variables:
-                if output_var.name == name:
-                    output_var.value = meta["value"]
-            if meta["type"] == "design_var":
-                # TODO: later it will be possible to add/remove design variables in the ui
-                if KEY_DESIGN_VARIABLES not in opt_def:
-                    opt_def[KEY_DESIGN_VARIABLES] = {}
-                if name not in opt_def[KEY_DESIGN_VARIABLES]:
-                    opt_def[KEY_DESIGN_VARIABLES][name] = {}
-                if meta["lower"] and not isnan(meta["lower"]):
-                    opt_def[KEY_DESIGN_VARIABLES][name].update({"lower": meta["lower"]})
-                else:
-                    opt_def[KEY_DESIGN_VARIABLES][name].pop("lower", None)
-                if meta["upper"] and not isnan(meta["upper"]):
-                    opt_def[KEY_DESIGN_VARIABLES][name].update({"upper": meta["upper"]})
-                else:
-                    opt_def[KEY_DESIGN_VARIABLES][name].pop("upper", None)
-            elif meta["type"] == "constraint":
-                # TODO: later it will be possible to add/remove constraints in the ui
-                if KEY_CONSTRAINTS not in opt_def:
-                    opt_def[KEY_CONSTRAINTS] = {}
-                if name not in opt_def[KEY_CONSTRAINTS]:
-                    opt_def[KEY_CONSTRAINTS][name] = {}
-                if meta["lower"] and not isnan(meta["lower"]):
-                    opt_def[KEY_CONSTRAINTS][name].update({"lower": meta["lower"]})
-                else:
-                    opt_def[KEY_CONSTRAINTS][name].pop("lower", None)
-                if meta["upper"] and not isnan(meta["upper"]):
-                    opt_def[KEY_CONSTRAINTS][name].update({"upper": meta["upper"]})
-                else:
-                    opt_def[KEY_CONSTRAINTS][name].pop("upper", None)
-            else:
-                pass
+            if name in input_variables.names():
+                input_variables[name].value = variable.metadata["initial_value"]
+            if name in output_variables.names():
+                output_variables[name].value = variable.metadata["value"]
+            self._update_optim_variable(variable, opt_def)
 
         # Saving modifications
         # Initial values
@@ -208,6 +176,39 @@ class OptimizationViewer:
         # Optimization definition
         conf.set_optimization_definition(opt_def)
         conf.save()
+
+    @staticmethod
+    def _update_optim_variable(variable: Variable, optim_definition: Dict):
+        """
+        Updates optim_definition with metadata of provided variable.
+
+        :param variable:
+        :param optim_definition:
+        """
+        name = variable.name
+        meta = variable.metadata
+
+        if meta["type"] == "design_var":
+            # TODO: later it will be possible to add/remove design variables in the ui
+            section_name = KEY_DESIGN_VARIABLES
+        elif meta["type"] == "constraint":
+            # TODO: later it will be possible to add/remove constraints in the ui
+            section_name = KEY_CONSTRAINTS
+        else:
+            return
+
+        if section_name not in optim_definition:
+            optim_definition[section_name] = {}
+        if name not in optim_definition[section_name]:
+            optim_definition[section_name][name] = {}
+        if meta["lower"] and not isnan(meta["lower"]):
+            optim_definition[section_name][name].update({"lower": meta["lower"]})
+        else:
+            optim_definition[section_name][name].pop("lower", None)
+        if meta["upper"] and not isnan(meta["upper"]):
+            optim_definition[section_name][name].update({"upper": meta["upper"]})
+        else:
+            optim_definition[section_name][name].pop("upper", None)
 
     def display(self):
         """
