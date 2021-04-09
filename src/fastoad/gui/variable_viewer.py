@@ -28,6 +28,7 @@ pd.set_option("display.max_rows", None)
 INPUT = "IN"
 OUTPUT = "OUT"
 NA = "N/A"
+TAG_ALL = "--ALL--"
 
 
 class VariableViewer:
@@ -46,8 +47,8 @@ class VariableViewer:
         df.display()  # renders a ui for reading/modifying the file
     """
 
-    # When getting a dataframe from a VariableList, the dictionary keys tell what columns are kept and
-    # the values tell what name will be displayed.
+    # When getting a dataframe from a VariableList, the dictionary keys tell
+    # what columns are kept and the values tell what name will be displayed.
     _DEFAULT_COLUMN_RENAMING = {
         "name": "Name",
         "value": "Value",
@@ -82,15 +83,13 @@ class VariableViewer:
         # The complete user interface
         self._ui = None
 
-        # A tag used to select all submodules
-        self._all_tag = "--ALL--"
-
     def load(self, file_path: str, file_formatter: IVariableIOFormatter = None):
         """
         Loads the file and stores its data.
 
         :param file_path: the path of file to interact with
-        :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
+        :param file_formatter: the formatter that defines file format. If not
+                               provided, default format will be assumed.
         """
 
         self.file = file_path
@@ -100,8 +99,10 @@ class VariableViewer:
         """
         Save the dataframe to the file.
 
-        :param file_path: the path of file to save. If not given, the initially read file will be overwritten.
-        :param file_formatter: the formatter that defines file format. If not provided, default format will be assumed.
+        :param file_path: the path of file to save. If not given, the initially
+                          read file will be overwritten.
+        :param file_formatter: the formatter that defines file format. If not
+                               provided, default format will be assumed.
         """
         if file_path is None:
             file_path = self.file
@@ -124,8 +125,9 @@ class VariableViewer:
         Loads provided variable list and replace current data set.
 
         :param variables: the variables to load
-        :param attribute_to_column: dictionary keys tell what variable attributes are kept and the values tell what
-                                     name will be displayed. If not provided, default translation will apply.
+        :param attribute_to_column: dictionary keys tell what variable attributes are kept
+                                    and the values tell what name will be displayed. If
+                                    not provided, default translation will apply.
         """
 
         if not attribute_to_column:
@@ -138,16 +140,16 @@ class VariableViewer:
         )
 
         self.dataframe["I/O"] = NA
-        self.dataframe.loc[self.dataframe["is_input"] == True, "I/O"] = INPUT
-        self.dataframe.loc[self.dataframe["is_input"] == False, "I/O"] = OUTPUT
+        self.dataframe.loc[self.dataframe["is_input"] == 1, "I/O"] = INPUT
+        self.dataframe.loc[self.dataframe["is_input"] == 0, "I/O"] = OUTPUT
         self.dataframe.drop(columns=["is_input"], inplace=True)
 
     def get_variables(self, column_to_attribute: Dict[str, str] = None) -> VariableList:
         """
 
-        :param column_to_attribute: dictionary keys tell what columns are kept and the values tell what
-                                     variable attribute it corresponds to. If not provided, default translation
-                                     will apply.
+        :param column_to_attribute: dictionary keys tell what columns are kept and the values
+                                    tell what variable attribute it corresponds to. If not
+                                    provided, default translation will apply.
         :return: a variable list from current data set
         """
         if not column_to_attribute:
@@ -155,14 +157,14 @@ class VariableViewer:
                 value: key for key, value in self._DEFAULT_COLUMN_RENAMING.items()
             }
 
-        df = self.dataframe.copy()
+        dataframe = self.dataframe.copy()
 
-        df["is_input"] = None
-        df.loc[df["I/O"] == INPUT, "is_input"] = True
-        df.loc[df["I/O"] == OUTPUT, "is_input"] = False
-        df.drop(columns=["I/O"], inplace=True)
+        dataframe["is_input"] = None
+        dataframe.loc[dataframe["I/O"] == INPUT, "is_input"] = True
+        dataframe.loc[dataframe["I/O"] == OUTPUT, "is_input"] = False
+        dataframe.drop(columns=["I/O"], inplace=True)
         variables = VariableList.from_dataframe(
-            df[column_to_attribute.keys()].rename(columns=column_to_attribute)
+            dataframe[column_to_attribute.keys()].rename(columns=column_to_attribute)
         )
         return variables
 
@@ -248,16 +250,16 @@ class VariableViewer:
                     # Check if the item exists already
                     if i == len(self._filter_widgets):
                         if len(modules_item) > 1:
-                            modules_item.insert(0, self._all_tag)
+                            modules_item.insert(0, TAG_ALL)
                         widget = widgets.Dropdown(options=modules_item)
                         widget.observe(self._update_items, "value")
                         widget.observe(self._update_variable_selector, "value")
                         self._filter_widgets.append(widget)
                     else:
-                        if (self._all_tag not in modules_item) and (
+                        if (TAG_ALL not in modules_item) and (
                             len(modules_item) > 1 or var_name in self.dataframe["Name"].values
                         ):
-                            modules_item.insert(0, self._all_tag)
+                            modules_item.insert(0, TAG_ALL)
                         self._filter_widgets[i].options = modules_item
                 else:
                     if i < len(self._filter_widgets):
@@ -280,7 +282,7 @@ class VariableViewer:
         The dropdown menu enables to selector only inputs, only outputs or all variables.
         """
         io_selector = widgets.Dropdown(
-            options=[self._all_tag, "Inputs", "Outputs"], layout=widgets.Layout(width="auto")
+            options=[TAG_ALL, "Inputs", "Outputs"], layout=widgets.Layout(width="auto")
         )
         io_selector.observe(self._render_ui, "value")
 
@@ -335,7 +337,7 @@ class VariableViewer:
         elif io_value == "Outputs":
             var_io_type = OUTPUT
         else:
-            var_io_type = self._all_tag
+            var_io_type = TAG_ALL
 
         filtered_var = self._filter_variables(self.dataframe, modules, var_io_type=var_io_type)
 
@@ -348,7 +350,7 @@ class VariableViewer:
     def _render_ui(self, change=None) -> display:
         """
         Renders the dropdown menus for the variable selector and the corresponding
-        ipysheet Sheet containing the variable infos.
+        ipysheet Sheet containing the variable info.
 
         :return the display object
         """
@@ -390,16 +392,17 @@ class VariableViewer:
             submodules = path.split(":")
             if len(modules) >= len(submodules) or submodules[: len(modules)] != modules:
                 return ""
-            else:
-                return submodules[len(modules)]
+
+            return submodules[len(modules)]
 
         submodules = var_names.applymap(get_next_module)
         submodules = submodules[submodules.Name != ""]
 
         return set(submodules["Name"].tolist())
 
+    @staticmethod
     def _filter_variables(
-        self, df: pd.DataFrame, modules: List[str], var_io_type: str = None
+        df: pd.DataFrame, modules: List[str], var_io_type: str = None
     ) -> pd.DataFrame:
         """
         Returns a filtered dataframe with respect to a set of modules and variable type.
@@ -413,16 +416,16 @@ class VariableViewer:
         :return the filtered dataframe
         """
         if var_io_type is None:
-            var_io_type = self._all_tag
+            var_io_type = TAG_ALL
         path = ""
         for _ in modules:
-            if modules[-1] == self._all_tag:
+            if modules[-1] == TAG_ALL:
                 path = ":".join(modules[:-1])
             else:
                 path = ":".join(modules)
 
         path_filter = [True] * len(df) if path == "" else df.Name.str.startswith(path)
-        io_filter = [True] * len(df) if var_io_type == self._all_tag else df["I/O"] == var_io_type
+        io_filter = [True] * len(df) if var_io_type == TAG_ALL else df["I/O"] == var_io_type
 
         filtered_df = df[path_filter & io_filter]
 
