@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.0.1
+=============
+- Bug fix: in a jupyter notebook, each use of a filter in variable viewer caused the display
+  of a new variable viewer. (#301)
+
 Version 1.0.0
 =============
 - Core software:
