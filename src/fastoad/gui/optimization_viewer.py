@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 from IPython.display import clear_output, display
 
-from fastoad.io import VariableIO
+from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import (
     FASTOADProblemConfigurator,
     KEY_CONSTRAINTS,
@@ -85,18 +85,18 @@ class OptimizationViewer:
         """
 
         self.problem_configuration = problem_configuration
-        problem = self.problem_configuration.get_problem()
-        problem.setup()
 
         if pth.isfile(self.problem_configuration.input_file_path):
-            input_variables = VariableIO(self.problem_configuration.input_file_path).read()
+            input_variables = DataFile(self.problem_configuration.input_file_path)
         else:
             # TODO: generate the input file by default ?
             raise FastMissingFile("Please generate input file before using the optimization viewer")
 
-        if pth.isfile(problem.output_file_path):
-            output_variables = VariableIO(problem.output_file_path).read()
+        if pth.isfile(self.problem_configuration.output_file_path):
+            output_variables = DataFile(self.problem_configuration.output_file_path)
         else:
+            problem = self.problem_configuration.get_problem()
+            problem.setup()
             output_variables = VariableList.from_problem(problem)
 
         optimization_variables = VariableList()
@@ -180,8 +180,8 @@ class OptimizationViewer:
             - the output file (values)
         """
         conf = self.problem_configuration
-        input_variables = VariableIO(self.problem_configuration.input_file_path, None).read()
-        output_variables = VariableIO(self.problem_configuration.output_file_path, None).read()
+        input_variables = DataFile(self.problem_configuration.input_file_path, None)
+        output_variables = DataFile(self.problem_configuration.output_file_path, None)
         opt_def = conf.get_optimization_definition()
 
         variables = self.get_variables()
@@ -227,9 +227,10 @@ class OptimizationViewer:
 
         # Saving modifications
         # Initial values
-        VariableIO(self.problem_configuration.input_file_path, None).write(input_variables)
+        input_variables.save()
         # Values
-        VariableIO(self.problem_configuration.output_file_path, None).write(output_variables)
+        output_variables.save()
+
         # Optimization definition
         conf.set_optimization_definition(opt_def)
         conf.save()
