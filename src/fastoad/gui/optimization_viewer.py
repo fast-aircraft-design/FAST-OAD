@@ -104,68 +104,42 @@ class OptimizationViewer:
         # Design Variables
         if KEY_DESIGN_VARIABLES in opt_def:
             for name, design_var in opt_def[KEY_DESIGN_VARIABLES].items():
-                initial_value = input_variables[name].value
-                if "lower" in design_var:
-                    lower = design_var["lower"]
-                else:
-                    lower = None
-                value = output_variables[name].value
-                if "upper" in design_var:
-                    upper = design_var["upper"]
-                else:
-                    upper = None
-                units = input_variables[name].units
-                desc = input_variables[name].description
                 metadata = {
                     "type": "design_var",
-                    "initial_value": initial_value,
-                    "lower": lower,
-                    "value": value,
-                    "upper": upper,
-                    "units": units,
-                    "desc": desc,
+                    "initial_value": input_variables[name].value,
+                    "lower": design_var.get("lower"),
+                    "value": output_variables[name].value,
+                    "upper": design_var.get("upper"),
+                    "units": input_variables[name].units,
+                    "desc": input_variables[name].description,
                 }
                 optimization_variables[name] = metadata
 
         # Constraints
         if KEY_CONSTRAINTS in opt_def:
             for name, constr in opt_def[KEY_CONSTRAINTS].items():
-                if "lower" in constr:
-                    lower = constr["lower"]
-                else:
-                    lower = None
-                value = output_variables[name].value
-                if "upper" in constr:
-                    upper = constr["upper"]
-                else:
-                    upper = None
-                units = output_variables[name].units
-                desc = output_variables[name].description
                 metadata = {
                     "type": "constraint",
                     "initial_value": None,
-                    "lower": lower,
-                    "value": value,
-                    "upper": upper,
-                    "units": units,
-                    "desc": desc,
+                    "lower": constr.get("lower"),
+                    "value": output_variables[name].value,
+                    "upper": constr.get("upper"),
+                    "units": output_variables[name].units,
+                    "desc": output_variables[name].description,
                 }
                 optimization_variables[name] = metadata
 
         # Objectives
         if KEY_OBJECTIVE in opt_def:
             for name in opt_def[KEY_OBJECTIVE]:
-                value = output_variables[name].value
-                units = output_variables[name].units
-                desc = output_variables[name].description
                 metadata = {
                     "type": "objective",
                     "initial_value": None,
                     "lower": None,
-                    "value": value,
+                    "value": output_variables[name].value,
                     "upper": None,
-                    "units": units,
-                    "desc": desc,
+                    "units": output_variables[name].units,
+                    "desc": output_variables[name].description,
                 }
                 optimization_variables[name] = metadata
 
