@@ -196,7 +196,7 @@ Then your component can be used like any other using the id you have given.
       [ ... ]
 
       my_custom_model:
-        id = "my.custom.name"
+        id: "my.custom.name"
 
       [ ... ]
 
