@@ -3,7 +3,16 @@ name: Watchman Tests
 # of the locked one.
 # It will warn developers if the update of a dependency broke something.
 
-on: [push]
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'pyproject.toml'
 
 jobs:
 
@@ -13,8 +22,8 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]')"
     strategy:
       matrix:
-        python-version: [3.8]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [ 3.8 ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
       - uses: actions/checkout@v2
