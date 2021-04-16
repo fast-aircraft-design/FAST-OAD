@@ -15,7 +15,9 @@ Interface for AVL geometry generation
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
+
 import numpy as np
+
 from fastoad.models.geometry.profiles.get_profile import get_profile
 
 
@@ -80,7 +82,7 @@ class AvlWingGeom(IAvlComponentGenerator):
             comp_lines += [
                 "SURFACE \n",
                 surf_name + "\n",
-                str(c_space) + " 1.0 " + "5 -1.1 \n",
+                str(c_space) + " 1.0 " + "5 0.0 \n",
                 "COMPONENT\n",
                 str(self.index) + "\n",
             ]
