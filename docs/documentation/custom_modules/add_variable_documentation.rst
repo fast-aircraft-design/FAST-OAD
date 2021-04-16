@@ -6,7 +6,7 @@ How to document your variables
 
 FAST-OAD can associate a description to each variable. Such description will be put as
 comment in datafiles, or displayed along with other variable information, like in command line
-(see :ref:`_get-variable-list`).
+(see :ref:`get-variable-list`).
 
 The description of a variable can be defined in two ways:
 
