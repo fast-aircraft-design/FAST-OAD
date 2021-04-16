@@ -67,9 +67,9 @@ class MissionBuilder:
 
         :param mission_definition: as file path or MissionDefinition instance
         :param propulsion: if not provided, the property :attr:`propulsion` must be
-                           set before calling :meth:`compute`
+                           set before calling :meth:`build`
         :param reference_area: if not provided, the property :attr:`reference_area` must be
-                               set before calling :meth:`compute`
+                               set before calling :meth:`build`
         """
         super().__init__()
         self.definition = mission_definition

@@ -52,7 +52,8 @@ class IPropulsion(ABC):
         """
         Computes Specific Fuel Consumption according to provided conditions.
 
-        See :class:`FlightPoint` for available fields that may be used for computation.
+        See :class:`~fastoad.model_base.flight_point.FlightPoint` for available fields that may be
+        used for computation.
         If a DataFrame instance is provided, it is expected that its columns match
         field names of FlightPoint (actually, the DataFrame instance should be
         generated from a list of FlightPoint instances).
@@ -103,8 +104,9 @@ class IOMPropulsionWrapper:
     :class:`IPropulsion` subclass in :meth:`setup` and use them for instantiation in
     :meth:`get_model`
 
-    see :class:`~fastoad.models.propulsion.fuel_propulsion.rubber_engine.OMRubberEngineWrapper` for
-    an example of implementation.
+    See
+    :class:`~fastoad.models.propulsion.fuel_propulsion.rubber_engine.openmdao.OMRubberEngineWrapper`
+    for an example of implementation.
     """
 
     @abstractmethod
@@ -131,7 +133,7 @@ class IOMPropulsionWrapper:
 
 class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
     """
-    Base class for OpenMDAO wrapping of subclasses of :class:`IEngineForOpenMDAO`.
+    Base class for creating an OpenMDAO component from subclasses of :class:`IOMPropulsionWrapper`.
 
     Classes that implements this interface should add their own inputs in setup()
     and implement :meth:`get_wrapper`.
@@ -178,7 +180,8 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
     @abstractmethod
     def get_wrapper() -> IOMPropulsionWrapper:
         """
-        This method defines the used :class:`IOMPropulsionWrapper` instance.
+        This method defines the used :class:`~fastoad.model_base.propulsion.IOMPropulsionWrapper`
+        instance.
 
         :return: an instance of OpenMDAO wrapper for propulsion model
         """

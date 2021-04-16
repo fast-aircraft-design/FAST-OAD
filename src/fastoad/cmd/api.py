@@ -81,7 +81,7 @@ def generate_inputs(
     overwrite: bool = False,
 ) -> str:
     """
-    Generates input file for the :class:`FASTOADProblem` specified in configuration_file_path.
+    Generates input file for the problem specified in configuration_file_path.
 
     :param configuration_file_path: where the path of input file to write is set
     :param source_path: path of file data will be taken from
@@ -118,7 +118,7 @@ def list_variables(
     tablefmt: str = "grid",
 ):
     """
-    Writes list of variables for the :class:`FASTOADProblem` specified in configuration_file_path.
+    Writes list of variables for the problem specified in configuration_file_path.
 
     List is generally written as text. It can be displayed as a scrollable table view if:
     - function is used in an interactive IPython shell

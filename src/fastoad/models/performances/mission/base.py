@@ -34,7 +34,7 @@ class IFlightPart(ABC):
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
         :return: a pandas DataFrame where columns names match fields of
-                 :meth:`fastoad.base.flight_point.FlightPoint`
+                 :class:`~fastoad.model_base.flight_point.FlightPoint`
         """
 
 

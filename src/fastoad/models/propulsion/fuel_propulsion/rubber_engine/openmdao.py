@@ -31,8 +31,9 @@ class OMRubberEngineWrapper(IOMPropulsionWrapper):
     """
     Wrapper class of for rubber engine model.
 
-    It is made to allow a direct call to :class:`~.rubber_engine.RubberEngine` in an OpenMDAO
-    component.
+    It is made to allow a direct call to
+    :class:`~fastoad.models.propulsion.fuel_propulsion.rubber_engine.rubber_engine.RubberEngine`
+    in an OpenMDAO component.
 
     Example of usage of this class::
 
@@ -99,7 +100,8 @@ class OMRubberEngineWrapper(IOMPropulsionWrapper):
         """
 
         :param inputs: input parameters that define the engine
-        :return: an :class:`RubberEngine` instance
+        :return: a :class:`~fastoad.models.propulsion.fuel_propulsion.rubber_engine.rubber_engine.RubberEngine`
+                 instance
         """
         engine_params = {
             "bypass_ratio": inputs["data:propulsion:rubber_engine:bypass_ratio"],
@@ -149,7 +151,9 @@ class OMRubberEngineComponent(BaseOMPropulsionComponent):
     """
     Parametric engine model as OpenMDAO component
 
-    See :class:`RubberEngine` for more information.
+    See
+    :class:`~fastoad.models.propulsion.fuel_propulsion.rubber_engine.rubber_engine.RubberEngine`
+    for more information.
     """
 
     def setup(self):
