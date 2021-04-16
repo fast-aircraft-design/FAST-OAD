@@ -129,6 +129,7 @@
     <aerostructural>
       <load_case>
         <weight units="kg">81513.403820</weight>
+        <d_isa>0.0</d_isa>
         <mach>0.78</mach>
         <altitude units="ft">35000.0</altitude>
         <load_factor>1.0</load_factor>

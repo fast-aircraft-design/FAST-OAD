@@ -13,13 +13,13 @@
 
 import openmdao.api as om
 
-from fastoad.models.aerostructure.mesh.structure_mesh import StructureMesh
+from fastoad.models.aerostructure.aerodynamic.external.AVL.avl import AVL
 from fastoad.models.aerostructure.mesh.aerodynamic_mesh import AerodynamicMesh
-from fastoad.models.aerostructure.transfer.transfer_matrices import TransferMatrices
+from fastoad.models.aerostructure.mesh.structure_mesh import StructureMesh
+from fastoad.models.aerostructure.structure.external.mystran.mystran_static import MystranStatic
 from fastoad.models.aerostructure.transfer.displacements_transfer import DisplacementsTransfer
 from fastoad.models.aerostructure.transfer.forces_transfer import ForcesTransfer
-from fastoad.models.aerostructure.structure.external.mystran.mystran_static import MystranStatic
-from fastoad.models.aerostructure.aerodynamic.external.AVL.avl import AVL
+from fastoad.models.aerostructure.transfer.transfer_matrices import TransferMatrices
 from fastoad.models.options import OpenMdaoOptionDispatcherGroup as OmOptGrp
 
 
@@ -135,5 +135,5 @@ class _AerostructuralLoop(OmOptGrp):
             promotes=["*"],
         )
 
-        self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, iprint=1, rtol=1e-3, atol=1e-9)
+        self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, iprint=1, rtol=1e-3, atol=1e-4)
         self.linear_solver = om.DirectSolver()

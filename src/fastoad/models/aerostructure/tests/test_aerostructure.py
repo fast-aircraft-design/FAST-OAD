@@ -12,16 +12,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import os.path as pth
 from platform import system
 
 import numpy as np
-import os.path as pth
 import pytest
 
 from fastoad.io import VariableIO
-
-from tests.testing_utilities import run_system
 from fastoad.models.aerostructure.static_solver import StaticSolver
+from tests.testing_utilities import run_system
 
 
 def get_indep_var_comp(var_names):
@@ -90,6 +89,7 @@ def test_aerostructure():
         "data:geometry:fuselage:rear_length",
         "data:geometry:fuselage:length",
         "data:aerostructural:load_case:mach",
+        "data:aerostructural:load_case:d_isa",
         "data:aerostructural:load_case:weight",
         "data:aerostructural:load_case:altitude",
     ]
