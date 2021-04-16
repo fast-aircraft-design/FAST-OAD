@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.0.2
+=============
+- FAST-OAD now requires a lower version of `ruamel.yaml`. It should prevent Anaconda to try and fail to update its
+  "clone" of `ruamel.yaml`. (#308)
+
 Version 1.0.1
 =============
 - Bug fixes:

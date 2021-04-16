@@ -15,7 +15,6 @@
 from pkg_resources import DistributionNotFound, get_distribution
 
 import fastoad.module_management._plugins
-from .cmd import api
 
 try:
     # Change here if project is renamed and does not equal the package name
