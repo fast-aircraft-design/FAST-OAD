@@ -245,7 +245,7 @@ class FASTOADProblemConfigurator:
 
         Keys of the dictionary are: "design_var", "constraint", "objective".
 
-        Configuration file will not be modified until :meth:`write` is used.
+        Configuration file will not be modified until :meth:`save` is used.
 
         :param optimization_definition: dict containing the optimization problem definition
         """

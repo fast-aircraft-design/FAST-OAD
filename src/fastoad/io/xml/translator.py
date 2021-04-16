@@ -14,13 +14,13 @@ Conversion from OpenMDAO variables to XPath
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Sequence, Union, IO, Set
+from typing import IO, Sequence, Set, Union
 
 import numpy as np
 
 from fastoad.io.xml.exceptions import (
-    FastXpathTranslatorInconsistentLists,
     FastXpathTranslatorDuplicates,
+    FastXpathTranslatorInconsistentLists,
     FastXpathTranslatorVariableError,
     FastXpathTranslatorXPathError,
 )
@@ -108,7 +108,7 @@ class VarXpathTranslator:
 
         :param var_name: OpenMDAO variable name
         :return: XPath that matches var_name
-        :raise VariableError: if var_name is unknown
+        :raise FastXpathTranslatorVariableError: if var_name is unknown
         """
         if var_name in self._variable_names:
             i = self._variable_names.index(var_name)

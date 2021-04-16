@@ -239,7 +239,7 @@ Segment target
 The target of a flight segment is a set of parameters that drives the end of the segment simulation.
 
 Possible target parameters are the available fields of
-:class:`~fastoad.base.flight_point.FlightPoint`. The actually useful parameters depend on the
+:class:`~fastoad.model_base.flight_point.FlightPoint`. The actually useful parameters depend on the
 segment.
 
 Each parameter can be set the :ref:`usual way<setting-values>`, generally with a numeric value or

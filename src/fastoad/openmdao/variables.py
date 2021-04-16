@@ -72,7 +72,7 @@ class Variable(Hashable):
     `here <http://openmdao.org/twodocs/versions/latest/_srcdocs/packages/core/
     component.html#openmdao.core.component.Component.add_output>`_.
 
-    These keys can be listed with class method :meth:`get_authorized_keys`.
+    These keys can be listed with class method :meth:`get_openmdao_keys`.
     **Any other key in kwargs will be silently ignored.**
 
     Special behaviour: :meth:`description` will return the content of kwargs['desc']
@@ -386,7 +386,7 @@ class VariableList(list):
         """
         Creates a DataFrame instance from a VariableList instance.
 
-        Column names are "name" + the keys returned by :meth:`Variable.get_authorized_keys`.
+        Column names are "name" + the keys returned by :meth:`Variable.get_openmdao_keys`.
         Values in Series "value" are floats or lists (numpy arrays are converted).
 
         :return: a pandas DataFrame instance with all variables from current list
@@ -474,7 +474,7 @@ class VariableList(list):
         Creates a VariableList instance from a pandas DataFrame instance.
 
         The DataFrame instance is expected to have column names "name" + some keys among the ones given by
-        :meth:`Variable.get_authorized_keys`.
+        :meth:`Variable.get_openmdao_keys`.
 
         :param df: a DataFrame instance
         :return: a VariableList instance

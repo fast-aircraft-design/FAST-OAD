@@ -48,7 +48,9 @@ BASE_UNITS = {
 
 class MissionWrapper(MissionBuilder):
     """
-    Wrapper around :class:`MissionBuilder` for using with OpenMDAO
+    Wrapper around
+    :class:`~fastoad.models.performances.mission.mission_definition.mission_builder.MissionBuilder`
+    for using with OpenMDAO.
     """
 
     def __init__(self, *args, **kwargs):
@@ -95,8 +97,8 @@ class MissionWrapper(MissionBuilder):
         :param inputs: the input vector of the OpenMDAO component
         :param outputs: the output vector of the OpenMDAO component
         :param start_flight_point: the starting flight point just after takeoff
-        :return: a pandas DataFrame where columns names match
-                 :meth:`fastoad.base.flight_point.FlightPoint.get_attribute_keys`
+        :return: a pandas DataFrame where columns names match fields of
+                 :class:`~fastoad.model_base.flight_point.FlightPoint`
         """
         mission = self.build(inputs, self.mission_name)
 

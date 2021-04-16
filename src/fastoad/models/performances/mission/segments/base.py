@@ -22,12 +22,13 @@ import pandas as pd
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
+import fastoad.model_base
 from fastoad.constants import EngineSetting
 from fastoad.model_base import AtmosphereSI, FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
+from fastoad.models.performances.mission.polar import Polar
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
-from ..polar import Polar
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -43,16 +44,17 @@ class FlightSegment(IFlightPart):
     """
 
     #: A FlightPoint instance that provides parameter values that should all be reached at the
-    #: end of :meth:`compute_from`. Possible parameters depend on the current segment. A parameter
-    #: can also be set to :attr:`CONSTANT_VALUE` to tell that initial value should be kept during
-    #: all segment.
-    target: FlightPoint
+    #: end of :meth:`~fastoad.models.performances.mission.segments.base.FlightSegment.compute_from`.
+    #: Possible parameters depend on the current segment. A parameter can also be set to
+    #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.CONSTANT_VALUE`
+    #: to tell that initial value should be kept during all segment.
+    target: fastoad.model_base.flight_point.FlightPoint
 
     #: A IPropulsion instance that will be called at each time step.
-    propulsion: IPropulsion
+    propulsion: fastoad.model_base.propulsion.IPropulsion
 
     #: The Polar instance that will provide drag data.
-    polar: Polar
+    polar: fastoad.models.performances.mission.polar.Polar
 
     #: The reference area, in m**2.
     reference_area: float
@@ -100,7 +102,7 @@ class FlightSegment(IFlightPart):
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
         :return: a pandas DataFrame where columns names match fields of
-                 :meth:`fastoad.base.flight_point.FlightPoint`
+                 :meth:`~fastoad.model_base.flight_point.FlightPoint`
         """
         if start.time is None:
             start.time = 0.0

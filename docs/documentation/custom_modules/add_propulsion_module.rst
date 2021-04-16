@@ -15,7 +15,7 @@ to access your engine parameters through FAST-OAD process.
 The FlightPoint class
 *********************
 
-The :class:`~fastoad.base.flight_point.FlightPoint` class is designed to store
+The :class:`~fastoad.model_base.flight_point.FlightPoint` class is designed to store
 flight parameters for one flight point.
 
 It is meant to be the class that performance modules will work with, and that
@@ -34,7 +34,7 @@ FlightPoint class is meant for:
 
 Available flight parameters
 ===========================
-The documentation of :class:`~fastoad.base.flight_point.FlightPoint` provides
+The documentation of :class:`~fastoad.model_base.flight_point.FlightPoint` provides
 the list of available flight parameters, available as attributes.
 As FlightPoint is a dataclass, this list is available through Python using::
 
@@ -72,7 +72,8 @@ assessment, but one might need additional fields.
 
 Python allows to add attributes to any instance at runtime, but for FlightPoint to run
 smoothly, especially when exchanging data with pandas, you have to work at class level.
-This can be done using :meth:`add_field`, preferably outside of any class or function::
+This can be done using :meth:`~fastoad.model_base.flight_point.FlightPoint.add_field`, preferably
+outside of any class or function::
 
     # Adds a float field with None as default value
     >>> FlightPoint.add_field("ion_drive_power")
@@ -92,14 +93,14 @@ The IPropulsion interface
 
 When developing your propulsion model, to ensure that it will work smoothly
 with current performances models, you have to do it in a class that
-implements the :class:`~fastoad.models.propulsion.propulsion.IPropulsion`
+implements the :class:`~fastoad.model_base.propulsion.IPropulsion`
 interface, meaning your class must have at least the 2 methods
-:meth:`~fastoad.models.propulsion.propulsion.IPropulsion.compute_flight_points`
-and :meth:`~fastoad.models.propulsion.propulsion.IPropulsion.get_consumed_mass`.
+:meth:`~fastoad.model_base.propulsion.IPropulsion.compute_flight_points`
+and :meth:`~fastoad.model_base.propulsion.IPropulsion.get_consumed_mass`.
 
 Computation of propulsion data
 ==============================
-:meth:`~fastoad.models.propulsion.propulsion.IPropulsion.compute_flight_points`
+:meth:`~fastoad.model_base.propulsion.IPropulsion.compute_flight_points`
 will modify the provided flight point(s) by adding propulsion-related parameters.
 A conventional fuel engine will rely on parameters like :code:`mach`,
 :code:`altitude` and will provide parameters like :code:`sfc` (Specific Fuel
@@ -110,7 +111,7 @@ Propulsion model inputs
 
 For your model to work with current performance models, your model is expected
 to rely on known flight parameters, i.e. the original parameters of
-:class:`~fastoad.base.flight_point.FlightPoint`.
+:class:`~fastoad.model_base.flight_point.FlightPoint`.
 
 .. note::
 
@@ -136,16 +137,16 @@ it to the FlightPoint class as described
 :ref:`above <flight_point_extensibility>`.
 
 The only requirement is that you have to implement
-:meth:`~fastoad.models.propulsion.propulsion.IPropulsion.get_consumed_mass`
+:meth:`~fastoad.model_base.propulsion.IPropulsion.get_consumed_mass`
 accordingly for the mission module to have a correct assessment of mass
 evolution.
 
 Computation of consumed mass
 ============================
-The :meth:`~fastoad.models.propulsion.propulsion.IPropulsion.get_consumed_mass`
+The :meth:`~fastoad.model_base.propulsion.IPropulsion.get_consumed_mass`
 simply provides the mass consumption over the provided time.
 It is meant to use the parameters computed in
-:meth:`~fastoad.models.propulsion.propulsion.IPropulsion.compute_flight_points`.
+:meth:`~fastoad.model_base.propulsion.IPropulsion.compute_flight_points`.
 
 
 ********************
@@ -159,11 +160,11 @@ Once your propulsion model is ready, you have to make a wrapper around it for:
 Defining the wrapper
 ====================
 Your wrapper class has to implement the
-:class:`~fastoad.models.propulsion.propulsion.IOMPropulsionWrapper` interface,
-meaning it should implement the 2 methods :meth:`~fastoad.models.propulsion.propulsion.IOMPropulsionWrapper.get_model`
-and :meth:`~fastoad.models.propulsion.propulsion.IOMPropulsionWrapper.setup`.
+:class:`~fastoad.model_base.propulsion.IOMPropulsionWrapper` interface,
+meaning it should implement the 2 methods :meth:`~fastoad.model_base.propulsion.IOMPropulsionWrapper.get_model`
+and :meth:`~fastoad.model_base.propulsion.IOMPropulsionWrapper.setup`.
 
-:meth:`~fastoad.models.propulsion.propulsion.IOMPropulsionWrapper.get_model` has
+:meth:`~fastoad.model_base.propulsion.IOMPropulsionWrapper.get_model` has
 to provide an instance of your model. If the constructor of your propulsion
 model class needs parameters, you may get them from :code:`inputs`, that will
 be the :code:`inputs` parameter that OpenMDAO will provide to the performance
@@ -172,7 +173,7 @@ module when calling :code:`compute()` method.
 Therefore, the performance module will have to define the inputs that your
 propulsion model needs in its :code:`setup` method, as required by OpenMDAO.
 To do this, the :code:`setup` method ot the performance module calls the
-:meth:`~fastoad.models.propulsion.propulsion.IOMPropulsionWrapper.setup` of
+:meth:`~fastoad.model_base.propulsion.IOMPropulsionWrapper.setup` of
 your wrapper, that is expected to define the needed input variables.
 
 For an example, please see the source code of
