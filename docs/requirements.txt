@@ -104,7 +104,6 @@ scipy==1.6.1; python_version >= "3.7"
 send2trash==1.5.0; python_version >= "3.6"
 six==1.15.0; python_full_version >= "3.6.1" and python_version >= "3.7" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.3.0") and (python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.3.0" and python_version >= "3.6") and (python_version >= "3.5" and python_full_version < "3.0.0" or python_full_version >= "3.3.0" and python_version >= "3.5") and (python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6") and (python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6")
 snowballstemmer==2.1.0; python_version >= "3.5"
-sphinx-rtd-theme==0.5.2
 sphinx==3.5.4; python_version >= "3.5"
 sphinxcontrib-applehelp==1.0.2; python_version >= "3.5"
 sphinxcontrib-bibtex==2.2.0; python_version >= "3.6"
