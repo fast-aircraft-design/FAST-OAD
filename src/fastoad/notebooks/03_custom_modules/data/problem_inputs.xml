@@ -1,0 +1,20 @@
+<FASTOAD_model>
+  <data>
+    <beam_problem>
+      <displacements>
+        <target is_input="True">0.02</target>
+      </displacements>
+      <forces>
+        <F is_input="True">1000.0</F>
+      </forces>
+      <geometry>
+        <L is_input="True">2.0</L>
+        <l is_input="True">0.3</l>
+      </geometry>
+      <material>
+        <E is_input="True">70.0e9</E>
+        <density is_input="True">2800.0</density>
+      </material>
+    </beam_problem>
+  </data>
+</FASTOAD_model>

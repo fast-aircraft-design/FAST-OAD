@@ -1,0 +1,18 @@
+<FASTOAD_model>
+  <data>
+    <beam_problem>
+      <forces>
+        <F is_input="True">1e5</F>
+      </forces>
+      <geometry>
+        <L is_input="True">10.0</L>
+        <l is_input="True">0.3</l>
+      </geometry>
+      <material>
+        <E is_input="True">70e9</E>
+        <density is_input="True">2800</density>
+        <yield_stress is_input="True">450e6</yield_stress>
+      </material>
+    </beam_problem>
+  </data>
+</FASTOAD_model>

@@ -1,0 +1,616 @@
+<?xml version="1.0" standalone="no"?>
+<svg
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns="http://www.w3.org/2000/svg" id="svgId" width="1381.025px" height="920.15px" transform="translate(0 0)">
+	<style title="svgStyle">rect {
+    stroke: #eee;
+}
+
+#tree &gt; g.output &gt; rect {
+    fill: #9FC4C6;
+    fill-opacity: .8;
+}
+
+#tree &gt; g.output_implicit &gt; rect {
+    fill: #C7D06D;
+    fill-opacity: .8;
+}
+
+#tree &gt; g.input &gt; rect {
+    fill: #30B0AD;
+    fill-opacity: .8;
+}
+
+#tree &gt; g.unconnected_input &gt; rect {
+    fill: #F42F0D;
+    fill-opacity: .8;
+}
+
+#tree &gt; g.subsystem &gt; rect {
+    cursor: pointer;
+    fill-opacity: .8;
+    fill: #6092B5;
+}
+
+#tree &gt; g.component &gt; rect {
+    cursor: pointer;
+    fill-opacity: .8;
+    fill: #02BFFF;
+}
+
+#tree &gt; g.input_group &gt; rect {
+    cursor: pointer;
+    fill-opacity: .8;
+    fill: Orchid;
+}
+
+#tree &gt; g.output_group &gt; rect {
+    cursor: pointer;
+    fill-opacity: .8;
+    fill: #888;
+}
+
+#tree &gt; g.minimized &gt; rect {
+    cursor: pointer;
+    fill-opacity: .8;
+    fill: #555555;
+}
+
+#tree &gt; g.minimized &gt; text {
+    fill: white;
+}
+
+#tree &gt; g.autoivc_input &gt; rect {
+    cursor: pointer;
+    fill-opacity: .8;
+    fill: #ff7000;
+}
+
+text {
+}
+
+#svgId g.partition_group &gt; text {
+    text-anchor: end;
+    pointer-events: none;
+    font-family: helvetica, sans-serif;
+    font-size: 11px;
+}
+
+text.offgridLabel {
+    font-family: helvetica, sans-serif;
+    font-size: 11px;
+}
+
+#svgId g.solver_group &gt; text {
+    text-anchor: end;
+    pointer-events: none;
+    font-family: helvetica, sans-serif;
+    font-size: 11px;
+}
+
+g.component_box &gt; rect {
+    stroke: #555;
+    stroke-width: 2;
+    fill: none;
+}
+
+.bordR1, .bordR2, .bordR3, .bordR4, .ssMid, .grpMid, .svMid, .vsMid, .vMid, .sgrpMid, .grpsMid {
+    stroke: none;
+    stroke-width: 0;
+    fill-opacity: 1;
+}
+
+[class^=n2_hover_elements] {
+    pointer-events: none;
+}
+
+.background {
+    fill: #eee;
+}
+
+.horiz_line, .vert_line {
+    stroke: white;
+}
+
+g.solver_none &gt; rect {
+    fill: #8dd3c7;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_ln_lnbj &gt; rect {
+    fill: #ffffb3;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_nl_nlbj &gt; rect {
+    fill: #ffffb3;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_ln_scipy &gt; rect {
+    fill: #bebada;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_ln_runonce &gt; rect {
+    fill: #fb8072;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_nl_runonce &gt; rect {
+    fill: #fb8072;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_ln_direct &gt; rect {
+    fill: #80b1d3;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_ln_petsckrylov &gt; rect {
+    fill: #fdb462;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_ln_lnbgs &gt; rect {
+    fill: #b3de69;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_nl_nlbgs &gt; rect {
+    fill: #b3de69;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_ln_user &gt; rect {
+    fill: #fccde5;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_nl_newton &gt; rect {
+    fill: #d9d9d9;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_broyden &gt; rect {
+    fill: #bc80bd;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_solve_linear &gt; rect {
+    fill: #ccebc5;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_solve_nonlinear &gt; rect {
+    fill: #ccebc5;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+g.solver_other &gt; rect {
+    fill: #ffed6f;
+    cursor: pointer;
+    fill-opacity: .8;
+}
+
+</style>
+	<defs>
+		<marker id="arrow" viewBox="0 -5 10 10" refX="5" refY="0" markerWidth="2" markerHeight="2" orient="auto">
+			<path d="M0,-5L10,0L0,5L0,-5" class="arrowHead"></path>
+		</marker>
+		<clipPath id="partitionTreeClip">
+			<rect id="tree-clip-rect" x="0" y="0" width="1200" height="890.15"></rect>
+		</clipPath>
+		<clipPath id="n2MatrixClip">
+			<rect id="matrix-clip-rect" x="-1" y="-1" width="892.15" height="892.15"></rect>
+		</clipPath>
+		<clipPath id="solverTreeClip">
+			<rect id="solver-clip-rect" x="0" y="0" width="1200" height="890.15"></rect>
+		</clipPath>
+		<g id="matrix-connector-arrow" width="10" height="10">
+			<path d="M0,3 h2 q5,0 5,5 h1 l-3,2 l-3,-2 h1 q0,-1 -1,-1 h-2 z"></path>
+		</g>
+		<g id="matrix-connector-square" width="10" height="10">
+			<rect x="2" y="2" width="6" height="6"></rect>
+		</g>
+	</defs>
+	<g id="tree" clip-path="url(#partitionTreeClip)" height="890.15" width="352.71875" transform="translate(0 15)">
+		<g class="partition_group output" transform="translate(133.359375, 0)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="_auto_ivc_v0" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:geometry:l</text>
+		</g>
+		<g class="partition_group output" transform="translate(133.359375, 46.849998474121094)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="_auto_ivc_v1" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:material:density</text>
+		</g>
+		<g class="partition_group output" transform="translate(133.359375, 93.69999694824219)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="_auto_ivc_v2" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:geometry:L</text>
+		</g>
+		<g class="partition_group output" transform="translate(133.359375, 140.5500030517578)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="_auto_ivc_v3" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:material:E</text>
+		</g>
+		<g class="partition_group output" transform="translate(133.359375, 187.39999389648438)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="_auto_ivc_v4" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:forces:F</text>
+		</g>
+		<g class="partition_group output" transform="translate(133.359375, 234.25)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="_auto_ivc_v5" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:displacements:target</text>
+		</g>
+		<g class="partition_group subsystem" transform="translate(0, 0)">
+			<rect width="46.53125" height="890.1500000000001" id="" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(38.53125, 445.07501220703125)" style="opacity: 1;">model</text>
+		</g>
+		<g class="partition_group component" transform="translate(46.53125, 0)">
+			<rect width="86.828125" height="281.0999999999999" id="_auto_ivc" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(78.828125, 140.5500030517578)" style="opacity: 1;">Auto-IVC</text>
+		</g>
+		<g class="partition_group component" transform="translate(46.53125, 281.1000061035156)">
+			<rect width="86.828125" height="140.55" id="geometry" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(78.828125, 70.2750015258789)" style="opacity: 1;">geometry</text>
+		</g>
+		<g class="partition_group autoivc_input" transform="translate(133.359375, 281.1000061035156)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="geometry_data_beam_problem_geometry_l" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:geometry:l</text>
+		</g>
+		<g class="partition_group input" transform="translate(133.359375, 327.95001220703125)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="geometry_data_beam_problem_geometry_Ixx" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:geometry:Ixx</text>
+		</g>
+		<g class="partition_group output" transform="translate(133.359375, 374.79998779296875)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="geometry_data_beam_problem_geometry_h" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:geometry:h</text>
+		</g>
+		<g class="partition_group component" transform="translate(46.53125, 421.6499938964844)">
+			<rect width="86.828125" height="187.39999999999998" id="weight" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(78.828125, 93.69999694824219)" style="opacity: 1;">weight</text>
+		</g>
+		<g class="partition_group autoivc_input" transform="translate(133.359375, 421.6499938964844)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="weight_data_beam_problem_geometry_l" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:geometry:l</text>
+		</g>
+		<g class="partition_group input" transform="translate(133.359375, 468.5)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="weight_data_beam_problem_geometry_h" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:geometry:h</text>
+		</g>
+		<g class="partition_group autoivc_input" transform="translate(133.359375, 515.3499755859375)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="weight_data_beam_problem_material_density" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:material:density</text>
+		</g>
+		<g class="partition_group output" transform="translate(133.359375, 562.2000122070312)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="weight_data_beam_problem_weigth_linear_weight" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:weigth:linear_weight</text>
+		</g>
+		<g class="partition_group component" transform="translate(46.53125, 609.0499877929688)">
+			<rect width="86.828125" height="281.1" id="displacements" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(78.828125, 140.5500030517578)" style="opacity: 1;">displacements</text>
+		</g>
+		<g class="partition_group autoivc_input" transform="translate(133.359375, 609.0499877929688)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="displacements_data_beam_problem_geometry_L" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:geometry:L</text>
+		</g>
+		<g class="partition_group autoivc_input" transform="translate(133.359375, 655.9000244140625)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="displacements_data_beam_problem_material_E" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:material:E</text>
+		</g>
+		<g class="partition_group autoivc_input" transform="translate(133.359375, 702.75)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="displacements_data_beam_problem_forces_F" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:forces:F</text>
+		</g>
+		<g class="partition_group input" transform="translate(133.359375, 749.5999755859375)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="displacements_data_beam_problem_weigth_linear_weight" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:weigth:linear_weight</text>
+		</g>
+		<g class="partition_group autoivc_input" transform="translate(133.359375, 796.4500122070312)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="displacements_data_beam_problem_displacements_target" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:displacements:target</text>
+		</g>
+		<g class="partition_group output" transform="translate(133.359375, 843.2999877929688)">
+			<rect width="219.35937499999997" height="46.849999999999994" id="displacements_data_beam_problem_geometry_Ixx" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(211.359375, 23.424999237060547)" style="opacity: 1;">data:beam_problem:geometry:Ixx</text>
+		</g>
+	</g>
+	<g id="highlight-bar" height="890.15" width="8" transform="translate(352.71875, 15)"></g>
+	<g id="solver_tree" clip-path="url(#solverTreeClip)" height="890.15" transform="translate(1272.8687744140625, 15)">
+		<g class="solver_ln_direct solver_group subsystem" transform="translate(42.296875, 0)">
+			<rect width="65.859375" height="890.1500000000001" id="" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(57.859375, 445.07501220703125)" style="opacity: 1;">LN: Direct</text>
+		</g>
+		<g class="solver_none solver_group component" transform="">
+			<rect width="42.296875" height="281.1" id="_auto_ivc" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(34.296875, 140.5500030517578)" style="opacity: 1;">None</text>
+		</g>
+		<g class="solver_none solver_group component" transform="translate(0, 281.1000061035156)">
+			<rect width="42.296875" height="140.55" id="geometry" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(34.296875, 70.2750015258789)" style="opacity: 1;">None</text>
+		</g>
+		<g class="solver_none solver_group component" transform="translate(0, 421.6499938964844)">
+			<rect width="42.296875" height="187.39999999999998" id="weight" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(34.296875, 93.69999694824219)" style="opacity: 1;">None</text>
+		</g>
+		<g class="solver_none solver_group component" transform="translate(0, 609.0499877929688)">
+			<rect width="42.296875" height="281.1" id="displacements" rx="12" ry="12"></rect>
+			<text dy=".35em" transform="translate(34.296875, 140.5500030517578)" style="opacity: 1;">None</text>
+		</g>
+	</g>
+	<g id="n2outer" height="920.15" width="920.15" transform="translate(352.71875, 0)">
+		<g id="n2inner" height="890.15" width="890.15" transform="translate(15, 15)">
+			<rect id="backgroundRect" class="background" width="890.15" height="890.15" transform="translate(0 0)"></rect>
+			<g id="n2background" clip-path="url(#n2MatrixClip)"></g>
+			<g id="n2gridlines" clip-path="url(#n2MatrixClip)">
+				<g class="horiz_line" transform="translate(0,0)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 46.849998474121094)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 93.69999694824219)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 140.5500030517578)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 187.39999389648438)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 234.25)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(0)rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(46.849998474121094, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(93.69999694824219, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(140.5500030517578, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(187.39999389648438, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(234.25, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 281.1000061035156)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 327.95001220703125)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 374.79998779296875)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 421.6499938964844)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 468.5)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 515.3499755859375)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 562.2000122070312)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 609.0499877929688)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 655.9000244140625)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 702.75)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 749.5999755859375)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 796.4500122070312)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="horiz_line" transform="translate(0, 843.2999877929688)">
+					<line x2="890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(281.1000061035156, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(327.95001220703125, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(374.79998779296875, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(421.6499938964844, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(468.5, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(515.3499755859375, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(562.2000122070312, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(609.0499877929688, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(655.9000244140625, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(702.75, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(749.5999755859375, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(796.4500122070312, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+				<g class="vert_line" transform="translate(843.2999877929688, 0) rotate(-90)">
+					<line x1="-890.15"></line>
+				</g>
+			</g>
+			<g id="n2elements" clip-path="url(#n2MatrixClip)">
+				<g class="n2cell" transform="translate(23.424999237060547, 23.424999237060547)">
+					<rect class="vMid" id="cellShape_node_2" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(159, 196, 198);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(304.5249938964844, 23.424999237060547)">
+					<use class="vMid" id="cellShape_conn_2_to_9" x="-5" y="-5" xlink:href="#matrix-connector-square" transform="scale(4.684999942779541,4.684999942779541)" style="fill: gray;"></use>
+				</g>
+				<g class="n2cell" transform="translate(445.07501220703125, 23.424999237060547)">
+					<use class="vMid" id="cellShape_conn_2_to_13" x="-5" y="-5" xlink:href="#matrix-connector-square" transform="scale(4.684999942779541,4.684999942779541)" style="fill: gray;"></use>
+				</g>
+				<g class="n2cell" transform="translate(70.2750015258789, 70.2750015258789)">
+					<rect class="vMid" id="cellShape_node_3" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(159, 196, 198);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(538.7750244140625, 70.2750015258789)">
+					<use class="vMid" id="cellShape_conn_3_to_15" x="-5" y="-5" xlink:href="#matrix-connector-square" transform="scale(4.684999942779541,4.684999942779541)" style="fill: gray;"></use>
+				</g>
+				<g class="n2cell" transform="translate(117.125, 117.125)">
+					<rect class="vMid" id="cellShape_node_4" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(159, 196, 198);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(632.4749755859375, 117.125)">
+					<use class="vMid" id="cellShape_conn_4_to_18" x="-5" y="-5" xlink:href="#matrix-connector-square" transform="scale(4.684999942779541,4.684999942779541)" style="fill: gray;"></use>
+				</g>
+				<g class="n2cell" transform="translate(163.97500610351562, 163.97500610351562)">
+					<rect class="vMid" id="cellShape_node_5" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(159, 196, 198);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(679.3250122070312, 163.97500610351562)">
+					<use class="vMid" id="cellShape_conn_5_to_19" x="-5" y="-5" xlink:href="#matrix-connector-square" transform="scale(4.684999942779541,4.684999942779541)" style="fill: gray;"></use>
+				</g>
+				<g class="n2cell" transform="translate(210.8249969482422, 210.8249969482422)">
+					<rect class="vMid" id="cellShape_node_6" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(159, 196, 198);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(726.1749877929688, 210.8249969482422)">
+					<use class="vMid" id="cellShape_conn_6_to_20" x="-5" y="-5" xlink:href="#matrix-connector-square" transform="scale(4.684999942779541,4.684999942779541)" style="fill: gray;"></use>
+				</g>
+				<g class="n2cell" transform="translate(257.67498779296875, 257.67498779296875)">
+					<rect class="vMid" id="cellShape_node_7" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(159, 196, 198);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(819.875, 257.67498779296875)">
+					<use class="vMid" id="cellShape_conn_7_to_22" x="-5" y="-5" xlink:href="#matrix-connector-square" transform="scale(4.684999942779541,4.684999942779541)" style="fill: gray;"></use>
+				</g>
+				<g class="n2cell" transform="translate(304.5249938964844, 304.5249938964844)">
+					<rect class="vMid" id="cellShape_node_9" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(255, 112, 0);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(398.2250061035156, 304.5249938964844)">
+					<rect class="vMid" id="cellShape_conn_9_to_11" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: black;"></rect>
+				</g>
+				<g class="n2cell" transform="translate(351.375, 351.375)">
+					<rect class="vMid" id="cellShape_node_10" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(48, 176, 173);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(398.2250061035156, 351.375)">
+					<rect class="vMid" id="cellShape_conn_10_to_11" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: black;"></rect>
+				</g>
+				<g class="n2cell" transform="translate(398.2250061035156, 398.2250061035156)">
+					<rect class="vMid" id="cellShape_node_11" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(159, 196, 198);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(491.92498779296875, 398.2250061035156)">
+					<use class="vMid" id="cellShape_conn_11_to_14" x="-5" y="-5" xlink:href="#matrix-connector-square" transform="scale(4.684999942779541,4.684999942779541)" style="fill: gray;"></use>
+				</g>
+				<g class="n2cell" transform="translate(445.07501220703125, 445.07501220703125)">
+					<rect class="vMid" id="cellShape_node_13" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(255, 112, 0);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(585.625, 445.07501220703125)">
+					<rect class="vMid" id="cellShape_conn_13_to_16" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: black;"></rect>
+				</g>
+				<g class="n2cell" transform="translate(491.92498779296875, 491.92498779296875)">
+					<rect class="vMid" id="cellShape_node_14" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(48, 176, 173);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(585.625, 491.92498779296875)">
+					<rect class="vMid" id="cellShape_conn_14_to_16" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: black;"></rect>
+				</g>
+				<g class="n2cell" transform="translate(538.7750244140625, 538.7750244140625)">
+					<rect class="vMid" id="cellShape_node_15" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(255, 112, 0);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(585.625, 538.7750244140625)">
+					<rect class="vMid" id="cellShape_conn_15_to_16" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: black;"></rect>
+				</g>
+				<g class="n2cell" transform="translate(585.625, 585.625)">
+					<rect class="vMid" id="cellShape_node_16" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(159, 196, 198);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(773.0250244140625, 585.625)">
+					<use class="vMid" id="cellShape_conn_16_to_21" x="-5" y="-5" xlink:href="#matrix-connector-square" transform="scale(4.684999942779541,4.684999942779541)" style="fill: gray;"></use>
+				</g>
+				<g class="n2cell" transform="translate(632.4749755859375, 632.4749755859375)">
+					<rect class="vMid" id="cellShape_node_18" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(255, 112, 0);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(866.7249755859375, 632.4749755859375)">
+					<rect class="vMid" id="cellShape_conn_18_to_23" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: black;"></rect>
+				</g>
+				<g class="n2cell" transform="translate(679.3250122070312, 679.3250122070312)">
+					<rect class="vMid" id="cellShape_node_19" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(255, 112, 0);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(866.7249755859375, 679.3250122070312)">
+					<rect class="vMid" id="cellShape_conn_19_to_23" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: black;"></rect>
+				</g>
+				<g class="n2cell" transform="translate(726.1749877929688, 726.1749877929688)">
+					<rect class="vMid" id="cellShape_node_20" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(255, 112, 0);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(866.7249755859375, 726.1749877929688)">
+					<rect class="vMid" id="cellShape_conn_20_to_23" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: black;"></rect>
+				</g>
+				<g class="n2cell" transform="translate(773.0250244140625, 773.0250244140625)">
+					<rect class="vMid" id="cellShape_node_21" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(48, 176, 173);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(866.7249755859375, 773.0250244140625)">
+					<rect class="vMid" id="cellShape_conn_21_to_23" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: black;"></rect>
+				</g>
+				<g class="n2cell" transform="translate(819.875, 819.875)">
+					<rect class="vMid" id="cellShape_node_22" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(255, 112, 0);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(866.7249755859375, 819.875)">
+					<rect class="vMid" id="cellShape_conn_22_to_23" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: black;"></rect>
+				</g>
+				<g class="n2cell" transform="translate(866.7249755859375, 866.7249755859375)">
+					<rect class="vMid" id="cellShape_node_23" x="-14.055" y="-14.055" width="28.11" height="28.11" style="fill: rgb(159, 196, 198);"></rect>
+				</g>
+				<g class="n2cell" transform="translate(351.375, 866.7249755859375)">
+					<use class="vMid" id="cellShape_conn_23_to_10" x="-5" y="-5" xlink:href="#matrix-connector-square" transform="rotate(180) scale(4.684999942779541,4.684999942779541)" style="fill: gray;"></use>
+				</g>
+			</g>
+			<g id="n2componentBoxes" clip-path="url(#n2MatrixClip)">
+				<g class="component_box" transform="translate(0,0)">
+					<rect width="281.1" height="281.1"></rect>
+				</g>
+				<g class="component_box" transform="translate(281.1000061035156, 281.1000061035156)">
+					<rect width="140.55" height="140.55"></rect>
+				</g>
+				<g class="component_box" transform="translate(421.6499938964844, 421.6499938964844)">
+					<rect width="187.39999999999998" height="187.39999999999998"></rect>
+				</g>
+				<g class="component_box" transform="translate(609.0499877929688, 609.0499877929688)">
+					<rect width="281.1" height="281.1"></rect>
+				</g>
+			</g>
+			<g id="n2arrows"></g>
+		</g>
+		<g id="n2top" class="offgridLabel" transform="translate(15 0)" width="890.15" height="13"></g>
+		<g id="n2left" class="offgridLabel"></g>
+		<g id="n2right" class="offgridLabel"></g>
+		<g id="n2bottom" class="offgridLabel" transform="translate(0 890.1513)" width="920.15" height="13"></g>
+	</g>
+	<g id="text-width-renderer" class="partition_group">
+		<text x="-200">displacements</text>
+	</g>
+</svg>
