@@ -2,7 +2,7 @@ title: Sample OAD Process
 
 # List of folder paths where user added custom registered OpenMDAO components
 module_folders:
-    - C:/Users/m.delavenne/Documents/FAST/Test_cases/Beam_Problem/modules
+    - ../modules
 
 # Input and output files
 input_file: ./problem_inputs.xml
