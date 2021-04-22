@@ -45,14 +45,17 @@ class AerodynamicTwistWing(om.ExplicitComponent):
 
     def compute(self, inputs, outputs):
         n_sects = self.options["number_of_sections"]
+        # No twist for the part of the wing within the fuselage if root y > 0.0
         y = [
             0.0,
+            inputs["data:geometry:wing:root:y"][0],
             inputs["data:geometry:wing:root:y"][0],
             inputs["data:geometry:wing:kink:y"][0],
             inputs["data:geometry:wing:tip:y"][0],
         ]
         twist = [
-            inputs["data:geometry:wing:root:twist"][0],
+            0.0,
+            0.0,
             inputs["data:geometry:wing:root:twist"][0],
             inputs["data:geometry:wing:kink:twist"][0],
             inputs["data:geometry:wing:tip:twist"][0],

@@ -50,11 +50,13 @@ class AerodynamicThicknessRatiosWing(om.ExplicitComponent):
         y = [
             0.0,
             inputs["data:geometry:wing:root:y"][0],
+            inputs["data:geometry:wing:root:y"][0],
             inputs["data:geometry:wing:kink:y"][0],
             inputs["data:geometry:wing:tip:y"][0],
         ]
         t_c = [
-            inputs["data:geometry:wing:root:thickness_ratio"][0],
+            0.0,
+            0.0,
             inputs["data:geometry:wing:root:thickness_ratio"][0],
             inputs["data:geometry:wing:kink:thickness_ratio"][0],
             inputs["data:geometry:wing:tip:thickness_ratio"][0],
