@@ -100,12 +100,13 @@ class AvlWingGeom(IAvlComponentGenerator):
                     + str(self.twist[idx + i] + self.d_twist[idx + i])
                     + "\n",
                 ]
-                profile = get_profile(
-                    file_name=self.profile, thickness_ratio=self.thickness_ratios[idx + i]
-                )
-                comp_lines += ["AIRFOIL X1 X2 \n"]
-                for point in profile.to_numpy():
-                    comp_lines += [str(point[0]) + " " + str(point[1]) + "\n"]
+                if self.thickness_ratios[idx + i] > 0.0:
+                    profile = get_profile(
+                        file_name=self.profile, thickness_ratio=self.thickness_ratios[idx + i]
+                    )
+                    comp_lines += ["AIRFOIL X1 X2 \n"]
+                    for point in profile.to_numpy():
+                        comp_lines += [str(point[0]) + " " + str(point[1]) + "\n"]
         return comp_lines
 
 

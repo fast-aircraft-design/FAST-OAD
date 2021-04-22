@@ -16,24 +16,23 @@ Module to launch Vortex Lattice Method computations via AVL
 
 import os
 import os.path as pth
-from tempfile import TemporaryDirectory
-from importlib.resources import path
 import shutil
+from importlib.resources import path
+from tempfile import TemporaryDirectory
 
-from openmdao.api import ExternalCodeComp
-from openmdao.utils.file_wrap import InputFileGenerator
-from openmdao.utils.file_wrap import FileParser
 import numpy as np
+from openmdao.api import ExternalCodeComp
+from openmdao.utils.file_wrap import FileParser
+from openmdao.utils.file_wrap import InputFileGenerator
 from scipy.constants import g, degree
 
-from fastoad.utils.physics import Atmosphere as Atm
-from fastoad.models.aerostructure.aerodynamic.external.AVL import avl336
 import fastoad.models.aerodynamics.external.xfoil.resources as xfoil_resources
+from fastoad.models.aerostructure.aerodynamic.external.AVL import avl336
+from fastoad.utils.physics import Atmosphere as Atm
 from fastoad.utils.resource_management.copy import copy_resource
 from . import ressources
 from .utils.avl_components_classes import AvlGeometryComponents
 from .utils.avl_components_dict import AVL_COMPONENT_NAMES
-
 
 OPTION_RESULT_AVL_FILENAME = "result_avl_filename"
 OPTION_RESULT_FOLDER_PATH = "result_folder_path"
@@ -114,6 +113,7 @@ class AVL(ExternalCodeComp):
         # self.add_output("data:aerostructural:aerodynamic:forces", val=np.nan, shape=(size, 6))
         self.add_output("data:aerostructural:aerodynamic:CDi", val=0.0)
         self.add_output("data:aerostructural:aerodynamic:CL", val=0.0)
+        self.add_output("data:aerostructural:aerodynamic:AoA", val=0.0)
         self.add_output("data:aerostructural:aerodynamic:Oswald_Coeff", val=0.0)
 
         self.declare_partials("*", "*", method="fd")
@@ -194,7 +194,7 @@ class AVL(ExternalCodeComp):
         parser_out = FileParser()
         parser_out.set_file(tmp_result_file)
         parser_out.mark_anchor("Alpha =")
-        aoa = parser_out.transfer_var(0, 3)
+        outputs["data:aerostructural:aerodynamic:AoA"] = parser_out.transfer_var(0, 3)
         parser_out.mark_anchor("CLtot =")
         outputs["data:aerostructural:aerodynamic:CL"] = parser_out.transfer_var(0, 3)
         parser_out.mark_anchor("CDind =")
@@ -216,7 +216,9 @@ class AVL(ExternalCodeComp):
             comp_coef[:, [3, 5]] *= q * s_ref * b_ref
             comp_coef[:, 4] *= q * s_ref * c_ref
             #  Change forces and moment from aerodynamic to body axis
-            r_mat = self._get_rotation_matrix(aoa * degree, axis="y")
+            r_mat = self._get_rotation_matrix(
+                outputs["data:aerostructural:aerodynamic:AoA"] * degree, axis="y"
+            )
             comp_coef[:, :3] = np.dot(comp_coef[:, :3], r_mat)
             comp_coef[:, 3:] = np.dot(comp_coef[:, 3:], r_mat)  # Moments in std axis ie X fwd
             outputs["data:aerostructural:aerodynamic:" + comp + ":forces"] = comp_coef
