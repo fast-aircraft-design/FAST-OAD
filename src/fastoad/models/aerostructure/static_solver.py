@@ -135,5 +135,5 @@ class _AerostructuralLoop(OmOptGrp):
             promotes=["*"],
         )
 
-        self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, iprint=1, rtol=1e-3, atol=1e-4)
+        self.nonlinear_solver = om.NonlinearBlockGS(maxiter=50, iprint=2, rtol=1e-9, atol=1e-9)
         self.linear_solver = om.DirectSolver()
