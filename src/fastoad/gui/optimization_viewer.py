@@ -24,14 +24,14 @@ import numpy as np
 import pandas as pd
 from IPython.display import clear_output, display
 
-from fastoad.io import VariableIO
+from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import (
     FASTOADProblemConfigurator,
     KEY_CONSTRAINTS,
     KEY_DESIGN_VARIABLES,
     KEY_OBJECTIVE,
 )
-from fastoad.openmdao.variables import VariableList
+from fastoad.openmdao.variables import Variable, VariableList
 from .exceptions import FastMissingFile
 
 pd.set_option("display.max_rows", None)
@@ -57,10 +57,10 @@ class OptimizationViewer:
 
     def __init__(self):
 
-        # Instance of the FAST-OAD problem configuration
+        #: Instance of the FAST-OAD problem configuration
         self.problem_configuration: FASTOADProblemConfigurator = None
 
-        # The dataframe which is the mirror of the self.file
+        #: The dataframe which is the mirror of self.file
         self.dataframe = pd.DataFrame()
 
         # The sheet which is the mirror of the design var sheet
@@ -82,23 +82,21 @@ class OptimizationViewer:
         Loads the FAST-OAD problem and stores its data.
 
         :param problem_configuration: the FASTOADProblem instance.
-        :param file_formatter: the formatter that defines file format. If not provided,
-               default format will be assumed.
         """
 
         self.problem_configuration = problem_configuration
-        problem = self.problem_configuration.get_problem()
-        problem.setup()
 
-        if pth.isfile(problem.input_file_path):
-            input_variables = VariableIO(problem.input_file_path).read()
+        if pth.isfile(self.problem_configuration.input_file_path):
+            input_variables = DataFile(self.problem_configuration.input_file_path)
         else:
             # TODO: generate the input file by default ?
             raise FastMissingFile("Please generate input file before using the optimization viewer")
 
-        if pth.isfile(problem.output_file_path):
-            output_variables = VariableIO(problem.output_file_path).read()
+        if pth.isfile(self.problem_configuration.output_file_path):
+            output_variables = DataFile(self.problem_configuration.output_file_path)
         else:
+            problem = self.problem_configuration.get_problem()
+            problem.setup()
             output_variables = VariableList.from_problem(problem)
 
         optimization_variables = VariableList()
@@ -106,68 +104,42 @@ class OptimizationViewer:
         # Design Variables
         if KEY_DESIGN_VARIABLES in opt_def:
             for name, design_var in opt_def[KEY_DESIGN_VARIABLES].items():
-                initial_value = input_variables[name].value
-                if "lower" in design_var:
-                    lower = design_var["lower"]
-                else:
-                    lower = None
-                value = output_variables[name].value
-                if "upper" in design_var:
-                    upper = design_var["upper"]
-                else:
-                    upper = None
-                units = input_variables[name].units
-                desc = input_variables[name].description
                 metadata = {
                     "type": "design_var",
-                    "initial_value": initial_value,
-                    "lower": lower,
-                    "value": value,
-                    "upper": upper,
-                    "units": units,
-                    "desc": desc,
+                    "initial_value": input_variables[name].value,
+                    "lower": design_var.get("lower"),
+                    "value": output_variables[name].value,
+                    "upper": design_var.get("upper"),
+                    "units": input_variables[name].units,
+                    "desc": input_variables[name].description,
                 }
                 optimization_variables[name] = metadata
 
         # Constraints
         if KEY_CONSTRAINTS in opt_def:
             for name, constr in opt_def[KEY_CONSTRAINTS].items():
-                if "lower" in constr:
-                    lower = constr["lower"]
-                else:
-                    lower = None
-                value = output_variables[name].value
-                if "upper" in constr:
-                    upper = constr["upper"]
-                else:
-                    upper = None
-                units = output_variables[name].units
-                desc = output_variables[name].description
                 metadata = {
                     "type": "constraint",
                     "initial_value": None,
-                    "lower": lower,
-                    "value": value,
-                    "upper": upper,
-                    "units": units,
-                    "desc": desc,
+                    "lower": constr.get("lower"),
+                    "value": output_variables[name].value,
+                    "upper": constr.get("upper"),
+                    "units": output_variables[name].units,
+                    "desc": output_variables[name].description,
                 }
                 optimization_variables[name] = metadata
 
         # Objectives
         if KEY_OBJECTIVE in opt_def:
             for name in opt_def[KEY_OBJECTIVE]:
-                value = output_variables[name].value
-                units = output_variables[name].units
-                desc = output_variables[name].description
                 metadata = {
                     "type": "objective",
                     "initial_value": None,
                     "lower": None,
-                    "value": value,
+                    "value": output_variables[name].value,
                     "upper": None,
-                    "units": units,
-                    "desc": desc,
+                    "units": output_variables[name].units,
+                    "desc": output_variables[name].description,
                 }
                 optimization_variables[name] = metadata
 
@@ -182,59 +154,61 @@ class OptimizationViewer:
             - the output file (values)
         """
         conf = self.problem_configuration
-        input_variables = VariableIO(self.problem_configuration.input_file_path, None).read()
-        output_variables = VariableIO(self.problem_configuration.output_file_path, None).read()
+        input_variables = DataFile(self.problem_configuration.input_file_path, None)
+        output_variables = DataFile(self.problem_configuration.output_file_path, None)
         opt_def = conf.get_optimization_definition()
 
         variables = self.get_variables()
         for variable in variables:
             name = variable.name
-            meta = variable.metadata
-            for input_var in input_variables:
-                if input_var.name == name:
-                    input_var.value = meta["initial_value"]
-            for output_var in output_variables:
-                if output_var.name == name:
-                    output_var.value = meta["value"]
-            if meta["type"] == "design_var":
-                # TODO: later it will be possible to add/remove design variables in the ui
-                if KEY_DESIGN_VARIABLES not in opt_def:
-                    opt_def[KEY_DESIGN_VARIABLES] = {}
-                if name not in opt_def[KEY_DESIGN_VARIABLES]:
-                    opt_def[KEY_DESIGN_VARIABLES][name] = {}
-                if meta["lower"] and not isnan(meta["lower"]):
-                    opt_def[KEY_DESIGN_VARIABLES][name].update({"lower": meta["lower"]})
-                else:
-                    opt_def[KEY_DESIGN_VARIABLES][name].pop("lower", None)
-                if meta["upper"] and not isnan(meta["upper"]):
-                    opt_def[KEY_DESIGN_VARIABLES][name].update({"upper": meta["upper"]})
-                else:
-                    opt_def[KEY_DESIGN_VARIABLES][name].pop("upper", None)
-            elif meta["type"] == "constraint":
-                # TODO: later it will be possible to add/remove constraints in the ui
-                if KEY_CONSTRAINTS not in opt_def:
-                    opt_def[KEY_CONSTRAINTS] = {}
-                if name not in opt_def[KEY_CONSTRAINTS]:
-                    opt_def[KEY_CONSTRAINTS][name] = {}
-                if meta["lower"] and not isnan(meta["lower"]):
-                    opt_def[KEY_CONSTRAINTS][name].update({"lower": meta["lower"]})
-                else:
-                    opt_def[KEY_CONSTRAINTS][name].pop("lower", None)
-                if meta["upper"] and not isnan(meta["upper"]):
-                    opt_def[KEY_CONSTRAINTS][name].update({"upper": meta["upper"]})
-                else:
-                    opt_def[KEY_CONSTRAINTS][name].pop("upper", None)
-            else:
-                pass
+            if name in input_variables.names():
+                input_variables[name].value = variable.metadata["initial_value"]
+            if name in output_variables.names():
+                output_variables[name].value = variable.metadata["value"]
+            self._update_optim_variable(variable, opt_def)
 
         # Saving modifications
         # Initial values
-        VariableIO(self.problem_configuration.input_file_path, None).write(input_variables)
+        input_variables.save()
         # Values
-        VariableIO(self.problem_configuration.output_file_path, None).write(output_variables)
+        output_variables.save()
+
         # Optimization definition
         conf.set_optimization_definition(opt_def)
         conf.save()
+
+    @staticmethod
+    def _update_optim_variable(variable: Variable, optim_definition: Dict):
+        """
+        Updates optim_definition with metadata of provided variable.
+
+        :param variable:
+        :param optim_definition:
+        """
+        name = variable.name
+        meta = variable.metadata
+
+        if meta["type"] == "design_var":
+            # TODO: later it will be possible to add/remove design variables in the ui
+            section_name = KEY_DESIGN_VARIABLES
+        elif meta["type"] == "constraint":
+            # TODO: later it will be possible to add/remove constraints in the ui
+            section_name = KEY_CONSTRAINTS
+        else:
+            return
+
+        if section_name not in optim_definition:
+            optim_definition[section_name] = {}
+        if name not in optim_definition[section_name]:
+            optim_definition[section_name][name] = {}
+        if meta["lower"] and not isnan(meta["lower"]):
+            optim_definition[section_name][name].update({"lower": meta["lower"]})
+        else:
+            optim_definition[section_name][name].pop("lower", None)
+        if meta["upper"] and not isnan(meta["upper"]):
+            optim_definition[section_name][name].update({"upper": meta["upper"]})
+        else:
+            optim_definition[section_name][name].pop("upper", None)
 
     def display(self):
         """
