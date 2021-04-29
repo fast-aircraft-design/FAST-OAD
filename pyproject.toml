@@ -69,7 +69,6 @@ black = { version = "19.10b0", allow-prereleases = true } # if version is change
 pylint = "*"
 nbval = "*"
 sphinx = "*"
-sphinx-rtd-theme = "*"
 sphinxcontrib-bibtex = "*"
 
 [tool.poetry.scripts]
