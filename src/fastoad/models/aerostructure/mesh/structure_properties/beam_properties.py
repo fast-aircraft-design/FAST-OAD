@@ -54,22 +54,43 @@ class Beam:
                 s2[idx] = np.sum(d2)
 
         self.a = 2 * (
-            (self.length * self.t_flange + self.height * self.t_web) + self.spars * self.a_spars
+            (self.length * self.t_flange + (self.height - 2 * self.t_flange) * self.t_web)
+            + self.spars * self.a_spars
         )
-        self.i1 = 2 * (
-            (self.t_web * self.height ** 3) / 12
-            + (self.t_flange * self.length * self.height ** 2) / 4
-            + (self.spars * self.a_spars * self.height ** 2) / 4
+        # self.i1 = 2 * (
+        #     (self.t_web * self.height ** 3) / 12
+        #     + (self.t_flange * self.length * self.height ** 2) / 4
+        #     + (self.spars * self.a_spars * self.height ** 2) / 4
+        # )
+        # self.i2 = 2 * (
+        #     (self.t_flange * self.length ** 3) / 12
+        #     + (self.t_web * self.height * self.length ** 2) / 4
+        #     + s2 * self.a_spars * self.spars
+        # )
+        self.i1 = (
+            (self.length * self.height ** 3) / 12
+            - (self.length - 2 * self.t_web) * (self.height - 2 * self.t_flange) ** 3 / 12
+            + (self.spars * self.a_spars * self.height ** 2) / 2
         )
-        self.i2 = 2 * (
-            (self.t_flange * self.length ** 3) / 12
-            + (self.t_web * self.height * self.length ** 2) / 4
-            + s2 * self.a_spars * self.spars
+        self.i2 = (
+            (self.height * self.length ** 3) / 12
+            - (self.height - 2 * self.t_flange) * (self.length - 2 * self.t_web) ** 3 / 12
+            + 2 * s2 * self.a_spars * self.spars
         )
         self.j = (
             2
-            * (self.length ** 2 * self.height ** 2 * self.t_flange * self.t_web)
-            / (self.length * self.t_web + self.height * self.t_flange)
+            * (
+                (self.length - self.t_web) ** 2
+                * (self.height - self.t_flange) ** 2
+                * self.t_flange
+                * self.t_web
+            )
+            / (
+                self.length * self.t_web
+                + self.height * self.t_flange
+                - self.t_web ** 2
+                - self.t_flange ** 2
+            )
         )
 
     def _tube_properties(self):
