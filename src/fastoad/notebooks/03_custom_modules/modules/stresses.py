@@ -21,22 +21,32 @@ import fastoad.api as oad
 class Stress(om.ExplicitComponent):
     def setup(self):
 
-        self.add_input("data:beam_problem:geometry:L", val=np.nan, desc="beam length")
-        self.add_input("data:beam_problem:geometry:h", val=np.nan, desc="Section height")
+        self.add_input("data:beam_problem:geometry:L", val=np.nan, desc="beam length", units="m")
+        self.add_input("data:beam_problem:geometry:h", val=np.nan, desc="Section height", units="m")
         self.add_input(
-            "data:beam_problem:forces:F", val=np.nan, desc="force applied at beam extremity"
+            "data:beam_problem:forces:F",
+            val=np.nan,
+            desc="force applied at beam extremity",
+            units="N",
         )
         self.add_input(
-            "data:beam_problem:weigth:linear_weight", val=np.nan, desc="beam linear weight"
+            "data:beam_problem:weight:linear_weight",
+            val=np.nan,
+            desc="beam linear weight",
+            units="kg/m",
         )
         self.add_input(
-            "data:beam_problem:material:yield_stress", val=np.nan, desc="material yield stress"
+            "data:beam_problem:material:yield_stress",
+            val=np.nan,
+            desc="material yield stress",
+            units="Pa",
         )
 
         self.add_output(
             "data:beam_problem:geometry:Ixx",
             val=1e-5,
             desc="Section second moment of area along w.r.t. x axis",
+            units="m**4",
         )
 
         self.declare_partials("*", "*", method="fd")
@@ -46,7 +56,7 @@ class Stress(om.ExplicitComponent):
         L = inputs["data:beam_problem:geometry:L"]
         h = inputs["data:beam_problem:geometry:h"]
         F = inputs["data:beam_problem:forces:F"]
-        w = inputs["data:beam_problem:weigth:linear_weight"]
+        w = inputs["data:beam_problem:weight:linear_weight"]
         s = inputs["data:beam_problem:material:yield_stress"]
 
         # Max bending location along the beam
@@ -55,5 +65,5 @@ class Stress(om.ExplicitComponent):
         else:
             y_max = 0
         outputs["data:beam_problem:geometry:Ixx"] = (
-            (L - y_max) * (F - 0.5 * w * (L - y_max)) * h / (2 * s)
+            (L - y_max) * (F - 0.5 * w * 9.81 * (L - y_max)) * h / (2 * s)
         )

@@ -24,13 +24,14 @@ import fastoad.api as oad
 class RectangularSection(om.ExplicitComponent):
     def setup(self):
 
-        self.add_input("data:beam_problem:geometry:l", val=np.nan, desc="Section width")
+        self.add_input("data:beam_problem:geometry:l", val=np.nan, desc="Section width", units="m")
         self.add_input(
             "data:beam_problem:geometry:Ixx",
             val=np.nan,
             desc="Section second moment of area along w.r.t. x axis",
+            units="m**4",
         )
-        self.add_output("data:beam_problem:geometry:h", val=0.01, desc="Section height")
+        self.add_output("data:beam_problem:geometry:h", val=0.01, desc="Section height", units="m")
 
         self.declare_partials("*", "*", method="fd")
 

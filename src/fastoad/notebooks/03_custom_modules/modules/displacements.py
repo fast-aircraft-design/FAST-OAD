@@ -26,20 +26,34 @@ import fastoad.api as oad
 class Displacements(om.ExplicitComponent):
     def setup(self):
 
-        self.add_input("data:beam_problem:geometry:L", val=np.nan, desc="beam length")
-        self.add_input("data:beam_problem:material:E", val=np.nan, desc="material Young's modulus")
+        self.add_input("data:beam_problem:geometry:L", val=np.nan, desc="beam length", units="m")
         self.add_input(
-            "data:beam_problem:forces:F", val=np.nan, desc="force applied at beam extremity"
+            "data:beam_problem:material:E", val=np.nan, desc="material Young's modulus", units="Pa"
         )
-        self.add_input("data:beam_problem:weigth:linear_weight", np.nan, desc="beam linear weight")
         self.add_input(
-            "data:beam_problem:displacements:target", np.nan, desc="target beam tip deflection"
+            "data:beam_problem:forces:F",
+            val=np.nan,
+            desc="force applied at beam extremity",
+            units="N",
+        )
+        self.add_input(
+            "data:beam_problem:weight:linear_weight",
+            np.nan,
+            desc="beam linear weight",
+            units="kg/m",
+        )
+        self.add_input(
+            "data:beam_problem:displacements:target",
+            np.nan,
+            desc="target beam tip deflection",
+            units="m",
         )
 
         self.add_output(
             "data:beam_problem:geometry:Ixx",
             val=1e-5,
             desc="Section second moment of area along w.r.t. x axis",
+            units="m**4",
         )
 
         self.declare_partials("*", "*", method="fd")
@@ -49,7 +63,7 @@ class Displacements(om.ExplicitComponent):
         L = inputs["data:beam_problem:geometry:L"]
         E = inputs["data:beam_problem:material:E"]
         F = inputs["data:beam_problem:forces:F"]
-        w = inputs["data:beam_problem:weigth:linear_weight"]
+        w = inputs["data:beam_problem:weight:linear_weight"]
         v = inputs["data:beam_problem:displacements:target"]
 
         outputs["data:beam_problem:geometry:Ixx"] = L ** 3 * (F / 3 - w * L / 8) / (E * v)

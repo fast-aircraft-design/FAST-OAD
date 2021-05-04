@@ -21,15 +21,23 @@ import fastoad.api as oad
 
 
 @oad.RegisterOpenMDAOSystem("fastoad.beam_problem.weight")
-class LinearWeigth(om.ExplicitComponent):
+class LinearWeight(om.ExplicitComponent):
     def setup(self):
 
-        self.add_input("data:beam_problem:geometry:l", val=np.nan, desc="Section width")
-        self.add_input("data:beam_problem:geometry:h", val=np.nan, desc="Section height")
-        self.add_input("data:beam_problem:material:density", val=np.nan, desc="material density")
+        self.add_input("data:beam_problem:geometry:l", val=np.nan, desc="Section width", units="m")
+        self.add_input("data:beam_problem:geometry:h", val=np.nan, desc="Section height", units="m")
+        self.add_input(
+            "data:beam_problem:material:density",
+            val=np.nan,
+            desc="material density",
+            units="kg/m**3",
+        )
 
         self.add_output(
-            "data:beam_problem:weigth:linear_weight", val=10.0, desc="beam linear weight"
+            "data:beam_problem:weight:linear_weight",
+            val=10.0,
+            desc="beam linear weight",
+            units="kg/m",
         )
 
         self.declare_partials("*", "*", method="fd")
@@ -40,4 +48,4 @@ class LinearWeigth(om.ExplicitComponent):
         h = inputs["data:beam_problem:geometry:h"]
         rho = inputs["data:beam_problem:material:density"]
 
-        outputs["data:beam_problem:weigth:linear_weight"] = l * h * rho
+        outputs["data:beam_problem:weight:linear_weight"] = l * h * rho
