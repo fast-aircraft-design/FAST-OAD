@@ -147,7 +147,7 @@
               toctree is empty. Skip building this for now.
             #}
             {% if 'singlehtml' not in builder %}
-              {% set global_toc = toctree(maxdepth=1,
+              {% set global_toc = toctree(maxdepth=theme_navigation_depth,
                                           collapse=theme_collapse_navigation|tobool,
                                           includehidden=theme_includehidden|tobool,
                                           titles_only=theme_titles_only|tobool) %}
@@ -222,14 +222,6 @@
             {% include "footer.html" %}
           </div>
         {%- endblock %}
-        </div>
-
-        <div class="pytorch-content-right" id="pytorch-content-right">
-          <div class="pytorch-right-menu" id="pytorch-right-menu">
-            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
-              {{ toc }}
-            </div>
-          </div>
         </div>
         </div>
       </section>
