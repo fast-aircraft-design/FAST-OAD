@@ -520,7 +520,7 @@ def variable_viewer(file_path: str, file_formatter: IVariableIOFormatter = None,
 
         handle = viewer.display()
     else:
-        variables = DataFile(file_path, file_formatter)
+        variables = DataFile(file_path, formatter=file_formatter)
         variables.sort(key=lambda var: var.name)
 
         table = variables.to_dataframe()[["name", "value", "units", "is_input", "desc"]].rename(
