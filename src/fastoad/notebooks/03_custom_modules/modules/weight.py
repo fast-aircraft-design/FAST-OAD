@@ -37,7 +37,7 @@ class LinearWeight(om.ExplicitComponent):
             "data:beam_problem:weight:linear_weight",
             val=10.0,
             desc="beam linear weight",
-            units="kg/m",
+            units="N/m",
         )
 
         self.declare_partials("*", "*", method="fd")
