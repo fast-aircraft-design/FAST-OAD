@@ -65,5 +65,5 @@ class Stress(om.ExplicitComponent):
         else:
             y_max = 0
         outputs["data:beam_problem:geometry:Ixx"] = (
-            (L - y_max) * (F - 0.5 * w * 9.81 * (L - y_max)) * h / (2 * s)
+            (L - y_max) * (F - 0.5 * w * (L - y_max)) * h / (2 * s)
         )

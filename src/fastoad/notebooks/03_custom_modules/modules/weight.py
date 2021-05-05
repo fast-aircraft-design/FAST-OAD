@@ -48,4 +48,4 @@ class LinearWeight(om.ExplicitComponent):
         h = inputs["data:beam_problem:geometry:h"]
         rho = inputs["data:beam_problem:material:density"]
 
-        outputs["data:beam_problem:weight:linear_weight"] = l * h * rho
+        outputs["data:beam_problem:weight:linear_weight"] = l * h * rho * 9.81
