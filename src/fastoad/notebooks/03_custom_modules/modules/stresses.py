@@ -33,7 +33,7 @@ class Stress(om.ExplicitComponent):
             "data:beam_problem:weight:linear_weight",
             val=np.nan,
             desc="beam linear weight",
-            units="kg/m",
+            units="N/m",
         )
         self.add_input(
             "data:beam_problem:material:yield_stress",
