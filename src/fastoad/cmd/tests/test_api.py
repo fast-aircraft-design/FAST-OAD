@@ -27,6 +27,7 @@ from fastoad.openmdao.variables import Variable
 from .. import api
 from ..api import SAMPLE_FILENAME
 from ..exceptions import FastFileExistsError
+from ...io import DataFile
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -55,15 +56,30 @@ def test_generate_configuration_file(cleanup):
 
 
 def test_generate_inputs(cleanup):
-    api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False)
+    input_file_path = api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False)
+    assert input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
+    assert pth.exists(input_file_path)
+    data = DataFile(input_file_path)
+    assert len(data) == 2
+    assert "x" in data.names() and "z" in data.names()
+
+    # Let's add another variable to ensure overwrite is correctly done (issue #328)
+    data["dummy_var"] = {"value": 0.0}
+    data.save()
+
     # Generating again without forcing overwrite will make it fail
     with pytest.raises(FastFileExistsError):
         api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False)
+
     input_file_path = api.generate_inputs(
         CONFIGURATION_FILE_PATH, pth.join(DATA_FOLDER_PATH, "inputs.xml"), overwrite=True
     )
+
     assert input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
     assert pth.exists(input_file_path)
+    data = DataFile(input_file_path)
+    assert len(data) == 2
+    assert "x" in data.names() and "z" in data.names()
 
 
 def test_list_modules(cleanup):
