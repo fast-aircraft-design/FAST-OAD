@@ -136,6 +136,6 @@ class _AerostructuralLoop(OmOptGrp):
         )
 
         self.nonlinear_solver = om.NonlinearBlockGS(
-            maxiter=100, iprint=2, rtol=1e-20, atol=1e-7, use_aitken=True
+            maxiter=100, iprint=2, rtol=1e-4, atol=1e-8, use_aitken=True
         )
         self.linear_solver = om.DirectSolver()
