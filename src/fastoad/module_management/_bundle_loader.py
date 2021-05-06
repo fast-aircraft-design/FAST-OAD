@@ -140,13 +140,6 @@ class BundleLoader:
         :raise FastDuplicateFactoryError:
         """
 
-        # Let's ensure the bundle is installed
-        bundle = self.context.install_bundle(component_class.__module__)
-
-        # If a factory is registered once the bundle is started, it will not be effective,
-        # so we stop the bundle to start it again after registering
-        bundle.stop()
-
         obj = Provides(service_names)(component_class)
         with use_ipopo(self.context) as ipopo:
             if ipopo.is_registered_factory(factory_name):
@@ -157,9 +150,6 @@ class BundleLoader:
                 obj = Property(field="_" + self._fieldify(key), name=key, value=value)(obj)
 
         factory = ComponentFactory(factory_name)(obj)
-
-        # Registering is done. Bundle can be (re)started.
-        bundle.start()
 
         return factory
 
