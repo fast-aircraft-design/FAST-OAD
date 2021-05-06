@@ -12,14 +12,24 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .disc2_base import Disc2Base
+import openmdao.api as om
 
 
-@RegisterOpenMDAOSystem("module_management_test.sellar.disc2", domain=ModelDomain.GEOMETRY)
-class Disc2(Disc2Base):
+# @RegisterOpenMDAOSystem("module_management_test.sellar.disc2", domain=ModelDomain.GEOMETRY)
+# Instead of being registered with the decorator above, this class is registered
+# in register_components.py to test this alternate way
+class Disc2(om.ExplicitComponent):
     """ An OpenMDAO component to encapsulate Disc2 discipline """
+
+    def initialize(self):
+        self.options.declare("answer", 42)
+
+    def setup(self):
+        self.add_input("z", val=[5, 2], desc="", units="m**2")  # for testing non-None units
+        self.add_input("y1", val=1.0, desc="")
+
+        self.add_output("y2", val=1.0, desc="")
+        self.declare_partials("*", "*", method="fd")
 
     # pylint: disable=invalid-name
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
