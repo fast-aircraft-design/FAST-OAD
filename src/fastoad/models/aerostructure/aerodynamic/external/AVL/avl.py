@@ -18,6 +18,7 @@ import os
 import os.path as pth
 import shutil
 from importlib.resources import path
+from math import cos, sin
 from tempfile import TemporaryDirectory
 
 import numpy as np
@@ -309,8 +310,8 @@ class AVL(ExternalCodeComp):
 
     @staticmethod
     def _get_rotation_matrix(angle, axis="y"):
-        c = np.cos(angle)
-        s = np.sin(angle)
+        c = cos(angle[0])
+        s = sin(angle[0])
         if axis == "x":
             r_mat = np.array([[1, 0, 0], [0, c, s], [0, -s, c]])
         elif axis == "y":
