@@ -13,6 +13,8 @@ authors = [
 packages = [
     { include = "fastoad", from = "src" },
 ]
+exclude = ["**/tests/**"]
+
 homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
 keywords = [
     "aircraft",
