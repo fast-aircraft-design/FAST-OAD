@@ -16,7 +16,9 @@ Plugin system for declaration of FAST-OAD models.
 
 import logging
 from importlib.resources import contents
+from typing import Set, Tuple
 
+from pelix.framework import Bundle
 from pkg_resources import iter_entry_points
 
 from fastoad.openmdao.variables import Variable
@@ -39,7 +41,7 @@ def load_plugins():
         Variable.read_variable_descriptions(module_name)
 
 
-def _recursive_load(package_name: str):
+def _recursive_load(package_name: str) -> Tuple[Set[Bundle], Set[str]]:
     """
     Recursively loads indicated package, which will register all classes that are decorated
     with an iPOPO decorator or a RegisterSystem.
