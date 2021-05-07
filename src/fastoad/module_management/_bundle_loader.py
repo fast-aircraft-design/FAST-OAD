@@ -16,9 +16,11 @@ Basis for registering and retrieving services
 
 import logging
 import re
+from importlib.resources import contents
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 
 import pelix
+from pelix.constants import BundleException
 from pelix.framework import Bundle, BundleContext, Framework, FrameworkFactory
 from pelix.internals.registry import ServiceReference
 from pelix.ipopo.constants import SERVICE_IPOPO, use_ipopo
@@ -71,26 +73,26 @@ class BundleLoader:
         """
         return self.framework.get_bundle_context()
 
-    def explore_folder(self, folder_path: str) -> Tuple[Set[Bundle], Set[str]]:
+    def explore_folder(
+        self, folder_path: str, is_package: bool = False
+    ) -> Tuple[Set[Bundle], Set[str]]:
         """
         Installs bundles found in *folder_path*.
 
-        Bundles that contain factories that are programmatically registered
-        will try to register them again if they are "started", which will
-        result in error log messages from iPOPO.
-        On the other side, bundles that define factories using iPOPO decorators
-        will need to be started for these factories to be registered.
-
         :param folder_path: The path of folder to scan
+        :param is_package: if True, folder_path should be a Python package name that will be
+                           scanned using importlib.resources
         :return: A 2-tuple, with the list of installed bundles
                  (:class:`~pelix.framework.Bundle`) and the list of the names
                  of the modules which import failed.
-        :raise ValueError: Invalid path
         """
 
         _LOGGER.info("Loading bundles from %s", folder_path)
 
-        bundles, failed = self.context.install_package(folder_path, True)
+        if is_package:
+            bundles, failed = self._install_python_package(folder_path)
+        else:
+            bundles, failed = self.framework.install_package(folder_path, True)
 
         for bundle in bundles:
             _LOGGER.info(
@@ -327,8 +329,36 @@ class BundleLoader:
             )
             _LOGGER.debug(ldap_filter)
 
-        references = self.context.get_all_service_references(service_name, ldap_filter)
+        references = self.framework.find_service_references(service_name, ldap_filter)
         return references
+
+    def _install_python_package(self, package_name: str) -> Tuple[Set[Bundle], Set[str]]:
+        """
+        Recursively loads indicated package.
+
+        :param package_name:
+        :return: A 2-tuple, with the list of installed bundles and the list
+                 of failed modules names
+        """
+        bundles = set()
+        failed = set()
+        try:
+            package_contents = list(contents(package_name))
+        except (TypeError, ModuleNotFoundError):
+            if package_name.endswith(".py"):
+                try:
+                    bundle = self.context.install_bundle(package_name[:-3])
+                    bundles.add(bundle)
+                except BundleException:
+                    failed.add(package_name)
+            return bundles, failed
+
+        for item in package_contents:
+            sub_bundles, sub_failed = self._install_python_package(".".join([package_name, item]))
+            bundles.update(sub_bundles)
+            failed.update(sub_failed)
+
+        return bundles, failed
 
     @staticmethod
     def _fieldify(name: str) -> str:
