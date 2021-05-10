@@ -226,7 +226,6 @@ def list_modules(
     if configuration_file_path:
         conf = FASTOADProblemConfigurator(configuration_file_path)
         conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
-        conf.load(configuration_file_path)
     # As the problem has been configured, BundleLoader now knows additional registered systems
 
     if verbose:
