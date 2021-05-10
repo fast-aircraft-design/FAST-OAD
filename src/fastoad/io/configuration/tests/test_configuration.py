@@ -24,6 +24,7 @@ import tomlkit
 from jsonschema import ValidationError
 from ruamel import yaml
 
+from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.module_management._plugins import load_plugins
@@ -124,8 +125,12 @@ def test_problem_definition_with_xml_ref(cleanup):
         result_folder_path = pth.join(RESULTS_FOLDER_PATH, "problem_definition_with_xml_ref")
         conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
         conf.output_file_path = pth.join(result_folder_path, "outputs.xml")
-        input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
-        conf.write_needed_inputs(input_data)
+        ref_input_data_path = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+        conf.write_needed_inputs(ref_input_data_path)
+        input_data = DataFile(conf.input_file_path)
+        assert len(input_data) == 2
+        assert "x" in input_data.names()
+        assert "z" in input_data.names()
 
         problem = conf.get_problem(read_inputs=True, auto_scaling=True)
         # runs evaluation without optimization loop to check that inputs are taken into account
