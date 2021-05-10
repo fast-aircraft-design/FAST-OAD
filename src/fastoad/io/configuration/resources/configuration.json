@@ -167,5 +167,5 @@
     "output_file",
     "model"
   ],
-  "additionalProperties": false
+  "additionalProperties": true
 }
