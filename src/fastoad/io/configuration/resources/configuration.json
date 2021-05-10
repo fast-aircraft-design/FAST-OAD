@@ -111,7 +111,11 @@
       "type": "string"
     },
     "module_folders": {
-      "type": [ "array", "string", "null" ],
+      "type": [
+        "array",
+        "string",
+        "null"
+      ],
       "items": {
         "type": "string"
       }
@@ -159,7 +163,8 @@
             ]
           }
         }
-      }
+      },
+      "required": ["design_variables", "objective"]
     }
   },
   "required": [
