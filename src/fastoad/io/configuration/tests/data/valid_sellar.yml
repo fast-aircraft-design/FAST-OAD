@@ -41,3 +41,6 @@ optimization:
   objective:
     - name: f
       scaler: 1e-1
+
+unknown_section:
+  foo: bar
