@@ -216,7 +216,7 @@ class FASTOADProblemConfigurator:
         )
         if source_file_path:
             ref_vars = DataFile(source_file_path, formatter=source_formatter)
-            variables.update(ref_vars)
+            variables.update(ref_vars, add_variables=False)
             for var in variables:
                 var.is_input = True
         variables.save()
