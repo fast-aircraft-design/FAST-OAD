@@ -1,4 +1,4 @@
-title: Sample OAD Process
+title: Tutorial Beam Problem
 
 # List of folder paths where user added custom registered OpenMDAO components
 module_folders:
@@ -21,10 +21,10 @@ model:
   linear_solver: om.DirectSolver()
   
   geometry:
-    id: "fastoad.beam_problem.geometry"
+    id: "tutorial.beam_problem.geometry"
     
   weight:
-    id: "fastoad.beam_problem.weight"
+    id: "tutorial.beam_problem.weight"
     
   displacements:
-    id: "fastoad.beam_problem.disp"
+    id: "tutorial.beam_problem.disp"
