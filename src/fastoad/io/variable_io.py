@@ -128,15 +128,16 @@ class DataFile(VariableList):
     :meth:`save` methods.
     """
 
-    def __init__(self, file_path: str, formatter: IVariableIOFormatter = None):
+    def __init__(self, file_path: str, formatter: IVariableIOFormatter = None, load_data=True):
         """
-        :param file_path: if file exists, it will be loaded.
+        :param file_path: the file path where data will be loaded and saved.
         :param formatter: a class that determines the file format to be used. Defaults to FAST-OAD
                           native format. See :class:`VariableIO` for more information.
+        :param load_data: if True and if file exists, its content will be loaded at instantiation.
         """
         super().__init__()
         self._variable_io = VariableIO(file_path, formatter)
-        if pth.exists(file_path):
+        if pth.exists(file_path) and load_data:
             self.load()
 
     @property

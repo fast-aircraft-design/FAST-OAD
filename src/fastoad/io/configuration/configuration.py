@@ -209,13 +209,13 @@ class FASTOADProblemConfigurator:
         """
         problem = self.get_problem(read_inputs=False)
         problem.setup()
-        variables = DataFile(self.input_file_path)
+        variables = DataFile(self.input_file_path, load_data=False)
         variables.update(
             VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
             add_variables=True,
         )
         if source_file_path:
-            ref_vars = DataFile(source_file_path, source_formatter)
+            ref_vars = DataFile(source_file_path, formatter=source_formatter)
             variables.update(ref_vars)
             for var in variables:
                 var.is_input = True
