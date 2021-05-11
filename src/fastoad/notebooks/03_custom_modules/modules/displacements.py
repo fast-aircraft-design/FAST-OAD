@@ -22,48 +22,26 @@ import openmdao.api as om
 import fastoad.api as oad
 
 
-@oad.RegisterOpenMDAOSystem("fastoad.beam_problem.disp")
+@oad.RegisterOpenMDAOSystem("tutorial.beam_problem.disp")
 class Displacements(om.ExplicitComponent):
     def setup(self):
 
-        self.add_input("data:beam_problem:geometry:L", val=np.nan, desc="beam length", units="m")
-        self.add_input(
-            "data:beam_problem:material:E", val=np.nan, desc="material Young's modulus", units="Pa"
-        )
-        self.add_input(
-            "data:beam_problem:forces:F",
-            val=np.nan,
-            desc="force applied at beam extremity",
-            units="N",
-        )
-        self.add_input(
-            "data:beam_problem:weight:linear_weight",
-            np.nan,
-            desc="beam linear weight",
-            units="N/m",
-        )
-        self.add_input(
-            "data:beam_problem:displacements:target",
-            np.nan,
-            desc="target beam tip deflection",
-            units="m",
-        )
+        self.add_input("data:geometry:L", val=np.nan, units="m")
+        self.add_input("data:material:E", val=np.nan, units="Pa")
+        self.add_input("data:forces:F", val=np.nan, units="N")
+        self.add_input("data:weight:linear_weight", val=np.nan, units="N/m")
+        self.add_input("data:displacements:target", val=np.nan, units="m")
 
-        self.add_output(
-            "data:beam_problem:geometry:Ixx",
-            val=1e-5,
-            desc="Section second moment of area along w.r.t. x axis",
-            units="m**4",
-        )
+        self.add_output("data:geometry:Ixx", val=1e-5, units="m**4")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
 
-        L = inputs["data:beam_problem:geometry:L"]
-        E = inputs["data:beam_problem:material:E"]
-        F = inputs["data:beam_problem:forces:F"]
-        w = inputs["data:beam_problem:weight:linear_weight"]
-        v = inputs["data:beam_problem:displacements:target"]
+        L = inputs["data:geometry:L"]
+        E = inputs["data:material:E"]
+        F = inputs["data:forces:F"]
+        w = inputs["data:weight:linear_weight"]
+        v = inputs["data:displacements:target"]
 
-        outputs["data:beam_problem:geometry:Ixx"] = L ** 3 * (F / 3 - w * L / 8) / (E * v)
+        outputs["data:geometry:Ixx"] = L ** 3 * (F / 3 - w * L / 8) / (E * v)

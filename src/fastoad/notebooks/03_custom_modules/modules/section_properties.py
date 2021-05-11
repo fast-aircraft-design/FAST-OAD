@@ -20,23 +20,18 @@ import openmdao.api as om
 import fastoad.api as oad
 
 
-@oad.RegisterOpenMDAOSystem("fastoad.beam_problem.geometry")
+@oad.RegisterOpenMDAOSystem("tutorial.beam_problem.geometry")
 class RectangularSection(om.ExplicitComponent):
     def setup(self):
 
-        self.add_input("data:beam_problem:geometry:l", val=np.nan, desc="Section width", units="m")
-        self.add_input(
-            "data:beam_problem:geometry:Ixx",
-            val=np.nan,
-            desc="Section second moment of area along w.r.t. x axis",
-            units="m**4",
-        )
-        self.add_output("data:beam_problem:geometry:h", val=0.01, desc="Section height", units="m")
+        self.add_input("data:geometry:l", val=np.nan, units="m")
+        self.add_input("data:geometry:Ixx", val=np.nan, units="m**4")
+        self.add_output("data:geometry:h", val=0.01, units="m")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        l = inputs["data:beam_problem:geometry:l"]
-        I_xx = inputs["data:beam_problem:geometry:Ixx"]
+        l = inputs["data:geometry:l"]
+        I_xx = inputs["data:geometry:Ixx"]
 
-        outputs["data:beam_problem:geometry:h"] = (12 * I_xx / l) ** (1 / 3)
+        outputs["data:geometry:h"] = (12 * I_xx / l) ** (1 / 3)
