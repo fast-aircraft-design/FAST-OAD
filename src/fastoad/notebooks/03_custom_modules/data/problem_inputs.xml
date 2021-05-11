@@ -1,20 +1,18 @@
 <FASTOAD_model>
   <data>
-    <beam_problem>
-      <displacements>
-        <target units="m" is_input="True">0.02</target>
-      </displacements>
-      <forces>
-        <F units="N" is_input="True">1000.0</F>
-      </forces>
-      <geometry>
-        <L units="m" is_input="True">2.0</L>
-        <l units="m" is_input="True">0.3</l>
-      </geometry>
-      <material>
-        <E units="Pa" is_input="True">70.0e9</E>
-        <density units="kg/m**3" is_input="True">2800.0</density>
-      </material>
-    </beam_problem>
+    <displacements>
+      <target units="m" is_input="True">0.02</target>
+    </displacements>
+    <forces>
+      <F units="N" is_input="True">1000.0</F>
+    </forces>
+    <geometry>
+      <L units="m" is_input="True">2.0</L>
+      <l units="m" is_input="True">0.3</l>
+    </geometry>
+    <material>
+      <E units="Pa" is_input="True">70.0e9</E>
+      <density units="kg/m**3" is_input="True">2800.0</density>
+    </material>
   </data>
 </FASTOAD_model>
