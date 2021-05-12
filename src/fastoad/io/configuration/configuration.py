@@ -29,7 +29,7 @@ from ruamel import yaml
 
 from fastoad._utils.files import make_parent_dir
 from fastoad.io import DataFile, IVariableIOFormatter
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.openmdao._utils import get_unconnected_input_names
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
@@ -48,6 +48,7 @@ KEY_OUTPUT_FILE = "output_file"
 KEY_COMPONENT_ID = "id"
 KEY_CONNECTION_ID = "connections"
 KEY_MODEL = "model"
+KEY_SUBMODELS = "submodels"
 KEY_DRIVER = "driver"
 KEY_OPTIMIZATION = "optimization"
 KEY_DESIGN_VARIABLES = "design_variables"
@@ -182,6 +183,11 @@ class FASTOADProblemConfigurator:
                 else:
                     RegisterOpenMDAOSystem.explore_folder(folder_path)
 
+        # Settings submodels
+        submodel_specs = self._serializer.data.get(KEY_SUBMODELS, {})
+        for submodel_requirement, submodel_id in submodel_specs.items():
+            RegisterSubmodel.active_models[submodel_requirement] = submodel_id
+
     def save(self, filename: str = None):
         """
         Saves the current configuration
@@ -269,7 +275,9 @@ class FASTOADProblemConfigurator:
         :return: the built model
         """
 
-        model = AutoUnitsDefaultGroup()
+        model = FASTOADModel()
+        model.active_submodels = self._serializer.data.get(KEY_SUBMODELS, {})
+
         if input_ivc:
             model.add_subsystem("fastoad_inputs", input_ivc, promotes=["*"])
 
@@ -455,7 +463,7 @@ def _om_eval(string_to_eval: str):
 class AutoUnitsDefaultGroup(om.Group):
     """
     OpenMDAO group that automatically use self.set_input_defaults() to resolve declaration
-    conflicts in variable units
+    conflicts in variable units.
     """
 
     def configure(self):
@@ -472,6 +480,26 @@ class AutoUnitsDefaultGroup(om.Group):
             )
         for name, units in var_units.items():
             self.set_input_defaults(name, units=units)
+
+
+class FASTOADModel(AutoUnitsDefaultGroup):
+    """
+    OpenMDAO group that defines active submodels after the initialization
+    of all its subsystems, and inherits from :class:`AutoUnitsDefaultGroup` for resolving
+    declaration conflicts in variable units.
+
+    It allows to have a submodel choice in the initialize() method of an FAST-OAD module, but
+    to possibly override it with the definition of :attr:`active_submodels` (i.e. from the
+    configuration file).
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        #: Definition of active submodels that will be applied during setup()
+        self.active_submodels = {}
+
+    def setup(self):
+        RegisterSubmodel.active_models.update(self.active_submodels)
 
 
 class _IDictSerializer(ABC):
