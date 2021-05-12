@@ -17,6 +17,7 @@ from fastoad.models.aerostructure.aerodynamic.external.AVL.avl import AVL
 from fastoad.models.aerostructure.mesh.aerodynamic_mesh import AerodynamicMesh
 from fastoad.models.aerostructure.mesh.structure_mesh import StructureMesh
 from fastoad.models.aerostructure.structure.external.mystran.mystran_static import MystranStatic
+from fastoad.models.aerostructure.structure.structural_weight import StructuralWeight
 from fastoad.models.aerostructure.transfer.displacements_transfer import DisplacementsTransfer
 from fastoad.models.aerostructure.transfer.forces_transfer import ForcesTransfer
 from fastoad.models.aerostructure.transfer.transfer_matrices import TransferMatrices
@@ -38,6 +39,7 @@ class StaticSolver(om.Group):
             ),
             promotes=["*"],
         )
+        self.add_subsystem("structural_weight", StructuralWeight(), promotes=["*"])
         self.add_subsystem(
             "aerodynamic_mesh",
             AerodynamicMesh(
