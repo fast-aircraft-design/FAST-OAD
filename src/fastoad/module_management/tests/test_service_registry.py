@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,11 +15,8 @@ import os.path as pth
 
 import pytest
 
-from fastoad.module_management.exceptions import (
-    FastBundleLoaderUnknownFactoryNameError,
-    FastIncompatibleServiceClassError,
-)
-from fastoad.module_management.service_registry import RegisterService
+from ..exceptions import FastBundleLoaderUnknownFactoryNameError, FastIncompatibleServiceClassError
+from ..service_registry import RegisterService
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
