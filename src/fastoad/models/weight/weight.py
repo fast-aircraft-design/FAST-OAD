@@ -1,8 +1,8 @@
 """
 Weight computation (mass and CG)
 """
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,9 +18,8 @@ import openmdao.api as om
 
 from fastoad.models.constants import PAYLOAD_FROM_NPAX
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .cg.cg import CG
-from .mass_breakdown import MassBreakdown
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
+from .constants import SERVICE_CENTERS_OF_GRAVITY, SERVICE_MASS_BREAKDOWN
 
 
 @RegisterOpenMDAOSystem("fastoad.weight.legacy", domain=ModelDomain.WEIGHT)
@@ -47,9 +46,13 @@ class Weight(om.Group):
         )
 
     def setup(self):
-        self.add_subsystem("cg", CG(), promotes=["*"])
+        self.add_subsystem(
+            "cg", RegisterSubmodel.get_submodel(SERVICE_CENTERS_OF_GRAVITY), promotes=["*"]
+        )
         self.add_subsystem(
             "mass_breakdown",
-            MassBreakdown(**{PAYLOAD_FROM_NPAX: self.options[PAYLOAD_FROM_NPAX]}),
+            RegisterSubmodel.get_submodel(
+                SERVICE_MASS_BREAKDOWN, {PAYLOAD_FROM_NPAX: self.options[PAYLOAD_FROM_NPAX]}
+            ),
             promotes=["*"],
         )

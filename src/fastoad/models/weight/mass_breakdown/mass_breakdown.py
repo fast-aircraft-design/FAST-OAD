@@ -1,6 +1,6 @@
 """Main components for mass breakdown."""
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,6 +15,7 @@
 import openmdao.api as om
 
 from fastoad.models.constants import PAYLOAD_FROM_NPAX
+from fastoad.module_management.service_registry import RegisterSubmodel
 from .a_airframe import (
     EmpennageWeight,
     FlightControlsWeight,
@@ -42,8 +43,10 @@ from .d_furniture import FoodWaterWeight, PassengerSeatsWeight, SecurityKitWeigh
 from .e_crew import CrewWeight
 from .payload import ComputePayload
 from .update_mlw_and_mzfw import UpdateMLWandMZFW
+from ..constants import SERVICE_MASS_BREAKDOWN
 
 
+@RegisterSubmodel(SERVICE_MASS_BREAKDOWN, "fastoad.submodel.weight.mass_breakdown.legacy")
 class MassBreakdown(om.Group):
     """
     Computes analytically the mass of each part of the aircraft, and the resulting sum,
