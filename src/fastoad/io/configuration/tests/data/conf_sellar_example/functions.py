@@ -14,13 +14,34 @@
 
 from math import exp
 
+import numpy as np
+import openmdao.api as om
+
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .functions_base import FunctionsBase
 
 
-@RegisterOpenMDAOSystem("configuration_test.sellar.functions", options={"best_doctor": 11})
-class Functions(FunctionsBase):
+@RegisterOpenMDAOSystem("configuration_test.sellar.functions")
+class Functions(om.Group):
+    def setup(self):
+        self.add_subsystem("f", FunctionF(), promotes=["*"])
+        self.add_subsystem("g1", FunctionG1(), promotes=["*"])
+        self.add_subsystem("g2", FunctionG2(), promotes=["*"])
+
+
+class FunctionF(om.ExplicitComponent):
     """ An OpenMDAO component to encapsulate Functions discipline """
+
+    def setup(self):
+        self.add_input("x", val=2, desc="")
+        self.add_input(
+            "z", val=[np.nan, np.nan], desc="", units="m**2"
+        )  # NaN as default for testing connection check
+        self.add_input("yy1", val=1.0, desc="")
+        self.add_input("yy2", val=1.0, desc="")
+
+        self.add_output("f", val=1.0, desc="")
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """ Functions computation """
@@ -31,5 +52,39 @@ class Functions(FunctionsBase):
         y2 = inputs["yy2"]
 
         outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2)
+
+
+class FunctionG1(om.ExplicitComponent):
+    """ An OpenMDAO component to encapsulate Functions discipline """
+
+    def setup(self):
+        self.add_input("yy1", val=1.0, desc="")
+
+        self.add_output("g1", val=1.0, desc="")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        """ Functions computation """
+
+        y1 = inputs["yy1"]
+
         outputs["g1"] = 3.16 - y1
+
+
+class FunctionG2(om.ExplicitComponent):
+    """ An OpenMDAO component to encapsulate Functions discipline """
+
+    def setup(self):
+        self.add_input("yy2", val=1.0, desc="")
+
+        self.add_output("g2", val=1.0, desc="")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        """ Functions computation """
+
+        y2 = inputs["yy2"]
+
         outputs["g2"] = y2 - 24.0

@@ -12,16 +12,26 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
+import openmdao.api as om
+
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .disc1_base import Disc1Base
 
 
 @RegisterOpenMDAOSystem(
     "configuration_test.sellar.disc1", domain=ModelDomain.OTHER, desc="some text"
 )
-class Disc1(Disc1Base):
+class Disc1(om.ExplicitComponent):
     """ An OpenMDAO component to encapsulate Disc1 discipline """
+
+    def setup(self):
+        self.add_input("x", val=np.nan, desc="")  # NaN as default for testing connexion check
+        self.add_input("z", val=[5, 2], desc="", units="m**2")  # for testing non-None units
+        self.add_input("y2", val=1.0, desc="")
+
+        self.add_output("y1", val=1.0, desc="")
+        self.declare_partials("*", "*", method="fd")
 
     # pylint: disable=invalid-name
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
