@@ -1,8 +1,8 @@
 """
 Payload mass computation
 """
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,7 +17,11 @@ Payload mass computation
 import numpy as np
 from openmdao import api as om
 
+from fastoad.models.weight.mass_breakdown.constants import SERVICE_PAYLOAD
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+
+@RegisterSubmodel(SERVICE_PAYLOAD, "fastoad.submodel.weight.mass_breakdown.payload.legacy")
 class ComputePayload(om.ExplicitComponent):
     """ Computes payload from NPAX """
 
