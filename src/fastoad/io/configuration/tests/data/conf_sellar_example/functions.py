@@ -17,17 +17,35 @@ from math import exp
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
+
+
+class RegisterFunctionF(RegisterSubmodel, service_id="service.function.f"):
+    pass
+
+
+class RegisterFunctionG1(RegisterSubmodel, service_id="service.function.g1"):
+    pass
+
+
+class RegisterFunctionG2(RegisterSubmodel, service_id="service.function.g2"):
+    pass
 
 
 @RegisterOpenMDAOSystem("configuration_test.sellar.functions")
 class Functions(om.Group):
+    def initialize(self):
+        # Defined the default "f" function. This choice can be overridden in
+        # configuration file
+        RegisterSubmodel.active_models[RegisterFunctionF.service_id] = "function.f.default"
+
     def setup(self):
-        self.add_subsystem("f", FunctionF(), promotes=["*"])
-        self.add_subsystem("g1", FunctionG1(), promotes=["*"])
-        self.add_subsystem("g2", FunctionG2(), promotes=["*"])
+        self.add_subsystem("f", RegisterFunctionF.get_submodel(), promotes=["*"])
+        self.add_subsystem("g1", RegisterFunctionG1.get_submodel(), promotes=["*"])
+        self.add_subsystem("g2", RegisterFunctionG2.get_submodel(), promotes=["*"])
 
 
+@RegisterFunctionF("function.f.default")
 class FunctionF(om.ExplicitComponent):
     """ An OpenMDAO component to encapsulate Functions discipline """
 
@@ -54,6 +72,34 @@ class FunctionF(om.ExplicitComponent):
         outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2)
 
 
+@RegisterFunctionF("function.f.alternate")
+class FunctionFAlt(om.ExplicitComponent):
+    """ An OpenMDAO component to encapsulate Functions discipline """
+
+    def setup(self):
+        self.add_input("x", val=2, desc="")
+        self.add_input(
+            "z", val=[np.nan, np.nan], desc="", units="m**2"
+        )  # NaN as default for testing connection check
+        self.add_input("yy1", val=1.0, desc="")
+        self.add_input("yy2", val=1.0, desc="")
+
+        self.add_output("f", val=1.0, desc="")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        """ Functions computation """
+
+        z2 = inputs["z"][1]
+        x1 = inputs["x"]
+        y1 = inputs["yy1"]
+        y2 = inputs["yy2"]
+
+        outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2) - 28.0
+
+
+@RegisterFunctionG1("function.g1.default")
 class FunctionG1(om.ExplicitComponent):
     """ An OpenMDAO component to encapsulate Functions discipline """
 
@@ -72,6 +118,7 @@ class FunctionG1(om.ExplicitComponent):
         outputs["g1"] = 3.16 - y1
 
 
+@RegisterFunctionG2("function.g2.default")
 class FunctionG2(om.ExplicitComponent):
     """ An OpenMDAO component to encapsulate Functions discipline """
 
