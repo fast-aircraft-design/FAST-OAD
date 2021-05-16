@@ -11,16 +11,19 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from typing import Sequence
 
 from fastoad.exceptions import FastError
 
 
 class FastBundleLoaderDuplicateFactoryError(FastError):
+    """
+    Raised when trying to register a factory with an already used name.
+    """
+
     def __init__(self, factory_name: str):
         """
-        Raised when trying to register a factory with an already used name.
-
         :param factory_name:
         """
         super().__init__('Name "%s" is already used.' % factory_name)
@@ -28,10 +31,12 @@ class FastBundleLoaderDuplicateFactoryError(FastError):
 
 
 class FastBundleLoaderUnknownFactoryNameError(FastError):
+    """
+    Raised when trying to instantiate a component from an unknown factory.
+    """
+
     def __init__(self, factory_name: str):
         """
-        Raised when trying to instantiate a component from an unknown factory.
-
         :param factory_name:
         """
         super().__init__('"%s" is not registered.' % factory_name)
@@ -39,10 +44,12 @@ class FastBundleLoaderUnknownFactoryNameError(FastError):
 
 
 class FastBadSystemOptionError(FastError):
+    """
+    Raised when some option name is not conform to OpenMDAO system definition.
+    """
+
     def __init__(self, identifier, option_names):
         """
-        Raised when some option name is not conform to OpenMDAO system definition.
-
         :param identifier: system identifier
         :param option_names: incorrect option names
         """
@@ -55,11 +62,13 @@ class FastBadSystemOptionError(FastError):
 
 
 class FastIncompatibleServiceClassError(FastError):
+    """
+    Raised when trying to register as service a class that does not implement
+    the specified interface.
+    """
+
     def __init__(self, registered_class: type, service_id: str, base_class: type):
         """
-        Raised when trying to register as service a class that does not implement
-        the specified interface.
-
         :param registered_class:
         :param service_id:
         :param base_class: the unmatched interface
@@ -74,10 +83,12 @@ class FastIncompatibleServiceClassError(FastError):
 
 
 class FastNoSubmodelFoundError(FastError):
+    """
+    Raised when a submodel is required, but none has been declared.
+    """
+
     def __init__(self, service_id: str):
         """
-        Raised when a submodel is required, but none has been declared.
-
         :param service_id:
         """
         super().__init__('No submodel found for requirement "%s"' % service_id)
@@ -85,11 +96,13 @@ class FastNoSubmodelFoundError(FastError):
 
 
 class FastTooManySubmodelsError(FastError):
+    """
+    Raised when several candidates are declared for a required submodel, but
+    none has been selected.
+    """
+
     def __init__(self, service_id: str, candidates: Sequence[str]):
         """
-        Raised when several candidates are declared for a required submodel, but
-        none has been selected.
-
         :param service_id:
         :param candidates:
         """
@@ -102,10 +115,12 @@ class FastTooManySubmodelsError(FastError):
 
 
 class FastUnknownSubmodelError(FastError):
+    """
+    Raised when a submodel identifier is unknown for given required service.
+    """
+
     def __init__(self, service_id: str, submodel_id: str, submodel_ids: str):
         """
-        Raised when a submodel identifier is unknown for given required service.
-
         :param service_id:
         :param submodel_id:
         :param submodel_ids:
