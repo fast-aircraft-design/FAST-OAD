@@ -16,15 +16,6 @@ import openmdao.api as om
 
 from fastoad.models.constants import PAYLOAD_FROM_NPAX
 from fastoad.module_management.service_registry import RegisterSubmodel
-from .a_airframe import (
-    EmpennageWeight,
-    FlightControlsWeight,
-    FuselageWeight,
-    LandingGearWeight,
-    PaintWeight,
-    PylonsWeight,
-    WingWeight,
-)
 from .b_propulsion import (
     EngineWeight,
     FuelLinesWeight,
@@ -47,7 +38,6 @@ from .constants import (
     SERVICE_PROPULSION_WEIGHT,
     SERVICE_SYSTEMS_WEIGHT,
 )
-from .cs25 import Loads
 from .d_furniture import FoodWaterWeight, PassengerSeatsWeight, SecurityKitWeight, ToiletsWeight
 from .update_mlw_and_mzfw import UpdateMLWandMZFW
 from ..constants import SERVICE_MASS_BREAKDOWN
@@ -87,46 +77,6 @@ class MassBreakdown(om.Group):
 
         self.linear_solver = om.LinearBlockGS()
         self.linear_solver.options["iprint"] = 0
-
-
-@RegisterSubmodel(SERVICE_AIRFRAME_WEIGHT, "fastoad.submodel.weight.mass_breakdown.airframe.legacy")
-class AirframeWeight(om.Group):
-    """
-    Computes mass of airframe.
-    """
-
-    def setup(self):
-        # Airframe
-        self.add_subsystem("loads", Loads(), promotes=["*"])
-        self.add_subsystem("wing_weight", WingWeight(), promotes=["*"])
-        self.add_subsystem("fuselage_weight", FuselageWeight(), promotes=["*"])
-        self.add_subsystem("empennage_weight", EmpennageWeight(), promotes=["*"])
-        self.add_subsystem("flight_controls_weight", FlightControlsWeight(), promotes=["*"])
-        self.add_subsystem("landing_gear_weight", LandingGearWeight(), promotes=["*"])
-        self.add_subsystem("pylons_weight", PylonsWeight(), promotes=["*"])
-        self.add_subsystem("paint_weight", PaintWeight(), promotes=["*"])
-
-        weight_sum = om.AddSubtractComp()
-        weight_sum.add_equation(
-            "data:weight:airframe:mass",
-            [
-                "data:weight:airframe:wing:mass",
-                "data:weight:airframe:fuselage:mass",
-                "data:weight:airframe:horizontal_tail:mass",
-                "data:weight:airframe:vertical_tail:mass",
-                "data:weight:airframe:flight_controls:mass",
-                "data:weight:airframe:landing_gear:main:mass",
-                "data:weight:airframe:landing_gear:front:mass",
-                "data:weight:airframe:pylon:mass",
-                "data:weight:airframe:paint:mass",
-            ],
-            units="kg",
-            desc="Mass of airframe",
-        )
-
-        self.add_subsystem(
-            "airframe_weight_sum", weight_sum, promotes=["*"],
-        )
 
 
 @RegisterSubmodel(
