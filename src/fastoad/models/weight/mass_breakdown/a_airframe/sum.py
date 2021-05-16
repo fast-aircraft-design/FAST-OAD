@@ -24,8 +24,7 @@ from .constants import (
     SERVICE_PYLONS_WEIGHT,
     SERVICE_WING_WEIGHT,
 )
-from ..constants import SERVICE_AIRFRAME_WEIGHT
-from ..cs25 import Loads
+from ..constants import SERVICE_AIRFRAME_WEIGHT, SERVICE_GUST_LOADS
 
 
 @RegisterSubmodel(SERVICE_AIRFRAME_WEIGHT, "fastoad.submodel.weight.mass_breakdown.airframe.legacy")
@@ -36,7 +35,9 @@ class AirframeWeight(om.Group):
 
     def setup(self):
         # Airframe
-        self.add_subsystem("loads", Loads(), promotes=["*"])
+        self.add_subsystem(
+            "loads", RegisterSubmodel.get_submodel(SERVICE_GUST_LOADS), promotes=["*"]
+        )
         self.add_subsystem(
             "wing_weight", RegisterSubmodel.get_submodel(SERVICE_WING_WEIGHT), promotes=["*"]
         )

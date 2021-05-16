@@ -1,8 +1,8 @@
 """
 Computation of load cases
 """
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,8 +18,11 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.model_base import Atmosphere
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_GUST_LOADS
 
 
+@RegisterSubmodel(SERVICE_GUST_LOADS, "fastoad.submodel.gust_loads")
 class Loads(ExplicitComponent):
     """
     Computes gust load cases
