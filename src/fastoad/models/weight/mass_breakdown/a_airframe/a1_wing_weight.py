@@ -1,8 +1,8 @@
 """
 Estimation of wing weight
 """
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,7 +17,13 @@ Estimation of wing weight
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_WING_WEIGHT
 
+
+@RegisterSubmodel(
+    SERVICE_WING_WEIGHT, "fastoad.submodel.weight.mass_breakdown.airframe.wing.legacy"
+)
 class WingWeight(om.ExplicitComponent):
     """
     Wing weight estimation
