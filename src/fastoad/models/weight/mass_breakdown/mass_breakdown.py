@@ -15,6 +15,7 @@
 import openmdao.api as om
 
 from fastoad.models.constants import PAYLOAD_FROM_NPAX
+from fastoad.module_management.service_registry import RegisterSubmodel
 from .a_airframe import (
     EmpennageWeight,
     FlightControlsWeight,
@@ -37,12 +38,47 @@ from .c_systems import (
     PowerSystemsWeight,
     TransmissionSystemsWeight,
 )
+from .constants import (
+    SERVICE_AIRFRAME_MASS,
+    SERVICE_CREW_MASS,
+    SERVICE_FURNITURE_MASS,
+    SERVICE_OWE,
+    SERVICE_PAYLOAD,
+    SERVICE_PROPULSION_MASS,
+    SERVICE_SYSTEMS_MASS,
+)
 from .cs25 import Loads
 from .d_furniture import FoodWaterWeight, PassengerSeatsWeight, SecurityKitWeight, ToiletsWeight
-from .e_crew import CrewWeight
-from .payload import ComputePayload
 from .update_mlw_and_mzfw import UpdateMLWandMZFW
 from ..weight import RegisterMassBreakdownModel
+
+
+class RegisterPayloadModel(RegisterSubmodel, service_id=SERVICE_PAYLOAD):
+    """Register models for computing payload mass."""
+
+
+class RegisterOWEModel(RegisterSubmodel, service_id=SERVICE_OWE):
+    """Register models for computing OWE."""
+
+
+class RegisterAirframeMassModel(RegisterSubmodel, service_id=SERVICE_AIRFRAME_MASS):
+    """Register models for computing mass of airframe."""
+
+
+class RegisterPropulsionMassModel(RegisterSubmodel, service_id=SERVICE_PROPULSION_MASS):
+    """Register models for computing mass of propulsion."""
+
+
+class RegisterSystemsMassModel(RegisterSubmodel, service_id=SERVICE_SYSTEMS_MASS):
+    """Register models for computing mass of systems."""
+
+
+class RegisterFurnitureMassModel(RegisterSubmodel, service_id=SERVICE_FURNITURE_MASS):
+    """Register models for computing mass of furniture."""
+
+
+class RegisterCrewMassModel(RegisterSubmodel, service_id=SERVICE_CREW_MASS):
+    """Register models for computing mass of crew."""
 
 
 @RegisterMassBreakdownModel("fastoad.submodel.weight.mass_breakdown.legacy")
@@ -66,8 +102,8 @@ class MassBreakdown(om.Group):
 
     def setup(self):
         if self.options[PAYLOAD_FROM_NPAX]:
-            self.add_subsystem("payload", ComputePayload(), promotes=["*"])
-        self.add_subsystem("owe", OperatingWeightEmpty(), promotes=["*"])
+            self.add_subsystem("payload", RegisterPayloadModel.get_submodel(), promotes=["*"])
+        self.add_subsystem("owe", RegisterOWEModel.get_submodel(), promotes=["*"])
         self.add_subsystem("update_mzfw_and_mlw", UpdateMLWandMZFW(), promotes=["*"])
 
         # Solvers setup
@@ -79,6 +115,7 @@ class MassBreakdown(om.Group):
         self.linear_solver.options["iprint"] = 0
 
 
+@RegisterAirframeMassModel("fastoad.submodel.weight.mass_breakdown.airframe.legacy")
 class AirframeWeight(om.Group):
     """
     Computes mass of airframe.
@@ -118,6 +155,7 @@ class AirframeWeight(om.Group):
         )
 
 
+@RegisterPropulsionMassModel("fastoad.submodel.weight.mass_breakdown.propulsion.legacy")
 class PropulsionWeight(om.Group):
     """
     Computes mass of propulsion.
@@ -146,6 +184,7 @@ class PropulsionWeight(om.Group):
         )
 
 
+@RegisterSystemsMassModel("fastoad.submodel.weight.mass_breakdown.systems.legacy")
 class SystemsWeight(om.Group):
     """
     Computes mass of systems.
@@ -194,6 +233,7 @@ class SystemsWeight(om.Group):
         )
 
 
+@RegisterFurnitureMassModel("fastoad.submodel.weight.mass_breakdown.furniture.legacy")
 class FurnitureWeight(om.Group):
     """
     Computes mass of furniture.
@@ -223,6 +263,7 @@ class FurnitureWeight(om.Group):
         )
 
 
+@RegisterOWEModel("fastoad.submodel.weight.mass_breakdown.owe.legacy")
 class OperatingWeightEmpty(om.Group):
     """Operating Empty Weight (OEW) estimation.
 
@@ -231,11 +272,19 @@ class OperatingWeightEmpty(om.Group):
 
     def setup(self):
         # Propulsion should be done before airframe, because it drives pylon mass.
-        self.add_subsystem("propulsion_weight", PropulsionWeight(), promotes=["*"])
-        self.add_subsystem("airframe_weight", AirframeWeight(), promotes=["*"])
-        self.add_subsystem("systems_weight", SystemsWeight(), promotes=["*"])
-        self.add_subsystem("furniture_weight", FurnitureWeight(), promotes=["*"])
-        self.add_subsystem("crew_weight", CrewWeight(), promotes=["*"])
+        self.add_subsystem(
+            "propulsion_weight", RegisterPropulsionMassModel.get_submodel(), promotes=["*"],
+        )
+        self.add_subsystem(
+            "airframe_weight", RegisterAirframeMassModel.get_submodel(), promotes=["*"],
+        )
+        self.add_subsystem(
+            "systems_weight", RegisterSystemsMassModel.get_submodel(), promotes=["*"]
+        )
+        self.add_subsystem(
+            "furniture_weight", RegisterFurnitureMassModel.get_submodel(), promotes=["*"],
+        )
+        self.add_subsystem("crew_weight", RegisterCrewMassModel.get_submodel(), promotes=["*"])
 
         weight_sum = om.AddSubtractComp()
         weight_sum.add_equation(
