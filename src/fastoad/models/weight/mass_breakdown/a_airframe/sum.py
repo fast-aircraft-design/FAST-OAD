@@ -24,7 +24,7 @@ from .constants import (
     SERVICE_PYLONS_MASS,
     SERVICE_WING_MASS,
 )
-from ..cs25 import Loads
+from ..cs25 import RegisterGustLoadsModel
 from ..mass_breakdown import RegisterAirframeMassModel
 
 
@@ -64,7 +64,7 @@ class AirframeWeight(om.Group):
 
     def setup(self):
         # Airframe
-        self.add_subsystem("loads", Loads(), promotes=["*"])
+        self.add_subsystem("loads", RegisterGustLoadsModel.get_submodel(), promotes=["*"])
         self.add_subsystem("wing_weight", RegisterWingMassModel.get_submodel(), promotes=["*"])
         self.add_subsystem(
             "fuselage_weight", RegisterFuselageMassModel.get_submodel(), promotes=["*"]

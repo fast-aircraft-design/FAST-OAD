@@ -18,8 +18,15 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.model_base import Atmosphere
+from fastoad.models.weight.mass_breakdown.constants import SERVICE_GUST_LOADS
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 
+class RegisterGustLoadsModel(RegisterSubmodel, service_id=SERVICE_GUST_LOADS):
+    """Register models for computing sizing gust loads."""
+
+
+@RegisterGustLoadsModel("fastoad.submodel.gust_loads")
 class Loads(ExplicitComponent):
     """
     Computes gust load cases
