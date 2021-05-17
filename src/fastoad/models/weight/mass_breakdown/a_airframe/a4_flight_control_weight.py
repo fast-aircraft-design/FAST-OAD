@@ -2,7 +2,7 @@
 Estimation of flight controls weight
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,7 +17,12 @@ Estimation of flight controls weight
 import numpy as np
 import openmdao.api as om
 
+from .sum import RegisterFlightControlsMassModel
 
+
+@RegisterFlightControlsMassModel(
+    "fastoad.submodel.weight.mass_breakdown.airframe.flight_control.legacy",
+)
 class FlightControlsWeight(om.ExplicitComponent):
     """
     Flight controls weight estimation
