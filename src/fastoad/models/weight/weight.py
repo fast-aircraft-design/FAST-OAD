@@ -18,9 +18,16 @@ import openmdao.api as om
 
 from fastoad.models.constants import PAYLOAD_FROM_NPAX
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .cg.cg import CG
-from .mass_breakdown import MassBreakdown
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
+from .constants import SERVICE_CENTERS_OF_GRAVITY, SERVICE_MASS_BREAKDOWN
+
+
+class RegisterCGModel(RegisterSubmodel, service_id=SERVICE_CENTERS_OF_GRAVITY):
+    """Register models for computing centers of gravity of all parts of aircraft."""
+
+
+class RegisterMassBreakdownModel(RegisterSubmodel, service_id=SERVICE_MASS_BREAKDOWN):
+    """Register models for computing complete mass breakdown of aircraft."""
 
 
 @RegisterOpenMDAOSystem("fastoad.weight.legacy", domain=ModelDomain.WEIGHT)
@@ -47,9 +54,11 @@ class Weight(om.Group):
         )
 
     def setup(self):
-        self.add_subsystem("cg", CG(), promotes=["*"])
+        self.add_subsystem("cg", RegisterCGModel.get_submodel(), promotes=["*"])
         self.add_subsystem(
             "mass_breakdown",
-            MassBreakdown(**{PAYLOAD_FROM_NPAX: self.options[PAYLOAD_FROM_NPAX]}),
+            RegisterMassBreakdownModel.get_submodel(
+                {PAYLOAD_FROM_NPAX: self.options[PAYLOAD_FROM_NPAX]}
+            ),
             promotes=["*"],
         )

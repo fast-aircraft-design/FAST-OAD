@@ -42,8 +42,10 @@ from .d_furniture import FoodWaterWeight, PassengerSeatsWeight, SecurityKitWeigh
 from .e_crew import CrewWeight
 from .payload import ComputePayload
 from .update_mlw_and_mzfw import UpdateMLWandMZFW
+from ..weight import RegisterMassBreakdownModel
 
 
+@RegisterMassBreakdownModel("fastoad.submodel.weight.mass_breakdown.legacy")
 class MassBreakdown(om.Group):
     """
     Computes analytically the mass of each part of the aircraft, and the resulting sum,
