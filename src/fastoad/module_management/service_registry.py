@@ -27,7 +27,13 @@ from .constants import (
     SERVICE_OPENMDAO_SYSTEM,
     SERVICE_PROPULSION_WRAPPER,
 )
-from .exceptions import FastBadSystemOptionError, FastIncompatibleServiceClassError
+from .exceptions import (
+    FastBadSystemOptionError,
+    FastIncompatibleServiceClassError,
+    FastNoSubmodelFoundError,
+    FastTooManySubmodelsError,
+    FastUnknownSubmodelError,
+)
 from ..model_base.propulsion import IOMPropulsionWrapper
 from ..openmdao.variables import Variable
 
@@ -69,6 +75,7 @@ class RegisterService:
                            set.
         :param domain: a category that can be associated to the registered service
         """
+        print("SUBCLASS RegisterService: %s" % cls.__name__)
 
         cls._base_class = base_class
 
@@ -254,6 +261,43 @@ class RegisterOpenMDAOSystem(
 
         decorated_system = _option_decorator(system)
         return decorated_system
+
+
+class RegisterSubmodel(_RegisterOpenMDAOService, base_class=System):
+    """
+    Decorator class for registering an sub-model.
+    """
+
+    active_models = {}
+
+    @classmethod
+    def get_submodel(cls, options: dict = None):
+        """
+
+        :param options:
+        :return:
+        """
+        submodel_ids = cls._loader.get_factory_names(cls.service_id)
+
+        if cls.service_id in cls.active_models and cls.active_models[cls.service_id]:
+            submodel_id = cls.active_models[cls.service_id]
+            if submodel_id not in submodel_ids:
+                raise FastUnknownSubmodelError(cls.service_id, submodel_id, submodel_ids)
+        else:
+            if len(submodel_ids) == 0:
+                raise FastNoSubmodelFoundError(cls.service_id)
+            if len(submodel_ids) > 1:
+                raise FastTooManySubmodelsError(cls.service_id, submodel_ids)
+
+            submodel_id = submodel_ids[0]
+
+        properties = {
+            OPTION_PROPERTY_NAME: options if options else {},
+        }
+
+        instance = cls._loader.instantiate_component(submodel_id, properties)
+
+        return instance
 
 
 def _option_decorator(instance: System) -> System:
