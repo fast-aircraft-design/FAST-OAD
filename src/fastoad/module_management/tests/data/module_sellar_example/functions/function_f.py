@@ -12,12 +12,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from math import exp
+
 import numpy as np
-from openmdao.api import ExplicitComponent
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 
-class FunctionsBase(ExplicitComponent):
-    """ An OpenMDAO base component to encapsulate Functions discipline """
+@RegisterOpenMDAOSystem(
+    "module_management_test.sellar.function_f", desc="computation of f", options={"best_doctor": 11}
+)
+class FunctionF(om.ExplicitComponent):
+    """ An OpenMDAO component to encapsulate Functions discipline """
 
     def initialize(self):
         self.options.declare("best_doctor", 10)
@@ -32,7 +39,14 @@ class FunctionsBase(ExplicitComponent):
 
         self.add_output("f", val=1.0, desc="")
 
-        self.add_output("g1", val=1.0, desc="")
-
-        self.add_output("g2", val=1.0, desc="")
         self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        """ Functions computation """
+
+        z2 = inputs["z"][1]
+        x1 = inputs["x"]
+        y1 = inputs["y1"]
+        y2 = inputs["y2"]
+
+        outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2)

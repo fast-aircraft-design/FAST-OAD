@@ -15,9 +15,8 @@ The main way would be to use the decorator directly on class definition.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .functions import Functions
+from .disc2.disc2 import Disc2
 
-RegisterOpenMDAOSystem(
-    "module_management_test.sellar.functions", desc="some text", options={"best_doctor": 11}
-)(Functions)
+RegisterOpenMDAOSystem("module_management_test.sellar.disc2", domain=ModelDomain.GEOMETRY)(Disc2)

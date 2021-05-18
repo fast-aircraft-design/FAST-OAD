@@ -16,12 +16,11 @@
 import abc
 from typing import Type
 
-from openmdao.api import Group, IndepVarComp
-from openmdao.api import NonlinearBlockGS
+import openmdao.api as om
 
 from .disc1.disc1 import Disc1
 from .disc2.disc2 import Disc2
-from .functions import Functions
+from .functions import function_f, functions_g
 
 
 class ISellarFactory(abc.ABC):
@@ -60,10 +59,15 @@ class StandardSellarFactory(ISellarFactory):
 
     @staticmethod
     def create_functions():
-        return Functions()
+        functions = om.Group()
+        functions.add_subsystem("function_f", function_f.FunctionF(), promotes=["*"])
+        functions.add_subsystem("function_g1", functions_g.FunctionG1(), promotes=["*"])
+        functions.add_subsystem("function_g2", functions_g.FunctionG2(), promotes=["*"])
+
+        return functions
 
 
-class Sellar(Group):
+class Sellar(om.Group):
     """ An OpenMDAO base component to encapsulate Sellar MDA """
 
     def __init__(self, sellar_factory: Type[ISellarFactory] = StandardSellarFactory, **kwargs):
@@ -77,7 +81,7 @@ class Sellar(Group):
         super(Sellar, self).__init__(**kwargs)
 
         self._sellar_factory = sellar_factory
-        self.nonlinear_solver = NonlinearBlockGS()
+        self.nonlinear_solver = om.NonlinearBlockGS()
         self.nonlinear_solver.options["atol"] = 1.0e-10
         self.nonlinear_solver.options["rtol"] = 1.0e-10
         self.nonlinear_solver.options["maxiter"] = 10
@@ -85,7 +89,7 @@ class Sellar(Group):
         self.nonlinear_solver.options["iprint"] = 1
 
     def setup(self):
-        indeps = self.add_subsystem("indeps", IndepVarComp(), promotes=["*"])
+        indeps = self.add_subsystem("indeps", om.IndepVarComp(), promotes=["*"])
         indeps.add_output("x", 2)
         indeps.add_output("z", [5, 2])
         self.add_subsystem(

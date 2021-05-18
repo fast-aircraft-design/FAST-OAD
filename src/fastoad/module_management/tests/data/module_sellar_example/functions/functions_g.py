@@ -1,4 +1,4 @@
-"""Sellar discipline 1"""
+"""Sellar functions"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,36 +12,48 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 
-@RegisterOpenMDAOSystem(
-    "module_management_test.sellar.disc1", desc="some text", domain=ModelDomain.OTHER
-)
-class Disc1(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Disc1 discipline """
+@RegisterOpenMDAOSystem("module_management_test.sellar.function_g1", desc="computation of g1")
+class FunctionG1(om.ExplicitComponent):
+    """ An OpenMDAO component to encapsulate Functions discipline """
+
+    def initialize(self):
+        self.options.declare("best_doctor", 10)
 
     def setup(self):
-        self.add_input("x", val=np.nan, desc="")  # NaN as default for testing connexion check
-        self.add_input("z", val=[5, 2], desc="", units="m**2")  # for testing non-None units
-        self.add_input("y2", val=1.0, desc="")
+        self.add_input("y1", val=1.0, desc="")
 
-        self.add_output("y1", val=1.0, desc="This description should not apply")
+        self.add_output("g1", val=1.0, desc="")
         self.declare_partials("*", "*", method="fd")
 
-    # pylint: disable=invalid-name
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """
-        Evaluates the equation
-        y1 = z1**2 + z2 + x1 - 0.2*y2
-        """
-        z1 = inputs["z"][0]
-        z2 = inputs["z"][1]
-        x1 = inputs["x"]
+        """ Functions computation """
+
+        y1 = inputs["y1"]
+
+        outputs["g1"] = 3.16 - y1
+
+
+@RegisterOpenMDAOSystem("module_management_test.sellar.function_g2", desc="computation of g2")
+class FunctionG2(om.ExplicitComponent):
+    """ An OpenMDAO component to encapsulate Functions discipline """
+
+    def initialize(self):
+        self.options.declare("best_doctor", 10)
+
+    def setup(self):
+        self.add_input("y2", val=1.0, desc="")
+
+        self.add_output("g2", val=1.0, desc="")
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        """ Functions computation """
+
         y2 = inputs["y2"]
 
-        outputs["y1"] = z1 ** 2 + z2 + x1 - 0.2 * y2
+        outputs["g2"] = y2 - 24.0

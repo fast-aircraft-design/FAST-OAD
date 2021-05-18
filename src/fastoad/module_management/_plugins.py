@@ -15,7 +15,6 @@ Plugin system for declaration of FAST-OAD models.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from importlib.resources import contents
 
 from pkg_resources import iter_entry_points
 
@@ -34,31 +33,6 @@ def load_plugins():
     for entry_point in iter_entry_points(MODEL_PLUGIN_ID):
         plugin_name = entry_point.name
         module_name = entry_point.module_name
-        _recursive_load(module_name)
-        _LOGGER.info("Loaded FAST-OAD plugin %s", plugin_name)
+        _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
+        BundleLoader().explore_folder(module_name, is_package=True)
         Variable.read_variable_descriptions(module_name)
-
-
-def _recursive_load(package_name: str):
-    """
-    Recursively loads indicated package, which will register all classes that are decorated
-    with an iPOPO decorator or a RegisterSystem.
-
-    :param package_name:
-    """
-    try:
-        package_contents = contents(package_name)
-    except (TypeError, ModuleNotFoundError):
-        if package_name.endswith(".py"):
-            try:
-                bundle = BundleLoader().context.install_bundle(package_name[:-3])
-                bundle.stop()
-                bundle.start()
-                _LOGGER.info("Loaded %s", package_name)
-            except:  # There can be plenty of good reasons to fail, so we just log it.
-                _LOGGER.info("Ignored %s", package_name)
-
-        return
-
-    for item in package_contents:
-        _recursive_load(".".join([package_name, item]))

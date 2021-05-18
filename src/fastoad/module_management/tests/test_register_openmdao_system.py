@@ -17,6 +17,7 @@ Test module for openmdao_system_registry.py
 import logging
 import os.path as pth
 
+import openmdao.api as om
 import pytest
 from openmdao.api import Problem, ScipyOptimizeDriver
 
@@ -115,14 +116,14 @@ def test_get_system(load):
     # Tests the transmission of options at registration
     with pytest.raises(FastBadSystemOptionError):
         functions_component = RegisterOpenMDAOSystem.get_system(
-            "module_management_test.sellar.functions", options={"not_declared": -1}
+            "module_management_test.sellar.function_f", options={"not_declared": -1}
         )
 
     functions_component = RegisterOpenMDAOSystem.get_system(
-        "module_management_test.sellar.functions"
+        "module_management_test.sellar.function_f"
     )
     assert (
-        RegisterOpenMDAOSystem.get_provider_domain("module_management_test.sellar.functions").value
+        RegisterOpenMDAOSystem.get_provider_domain("module_management_test.sellar.function_f").value
         == ModelDomain.UNSPECIFIED.value
     )
     assert (
@@ -188,7 +189,24 @@ def test_sellar(load):
 
         @staticmethod
         def create_functions():
-            return RegisterOpenMDAOSystem.get_system("module_management_test.sellar.functions")
+            functions = om.Group()
+            functions.add_subsystem(
+                "function_f",
+                RegisterOpenMDAOSystem.get_system("module_management_test.sellar.function_f"),
+                promotes=["*"],
+            )
+            functions.add_subsystem(
+                "function_g1",
+                RegisterOpenMDAOSystem.get_system("module_management_test.sellar.function_g1"),
+                promotes=["*"],
+            )
+            functions.add_subsystem(
+                "function_g2",
+                RegisterOpenMDAOSystem.get_system("module_management_test.sellar.function_g2"),
+                promotes=["*"],
+            )
+
+            return functions
 
     classical_problem = sellar_setup(Sellar())  # Reference
     fastoad_problem = sellar_setup(
