@@ -165,6 +165,10 @@ class FASTOADProblemConfigurator:
         with open_text(resources, JSON_SCHEMA_NAME) as json_file:
             json_schema = json.loads(json_file.read())
         validate(self._serializer.data, json_schema)
+        # Issue a simple warning for unknown keys at root level
+        for key in self._serializer.data:
+            if key not in json_schema["properties"].keys():
+                _LOGGER.warning('Configuration file: "%s" is not a FAST-OAD key.', key)
 
         # Looking for modules to register
         module_folder_paths = self._serializer.data.get(KEY_FOLDERS)
