@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.0.3
+=============
+- Changes:
+    - Configuration files can now contain unknown sections (at root level) to allow these files to be used by other tools. (#333)
+- Bug fixes:
+    - Importing, in a `__init__.py`, some classes that were registered as FAST-OAD modules could make that the register process fails. (#331)
+    - When generating an input file using a data source, the whole data source was copied instead of just keeping the needed variables. (#332)
+    - Instead of overwriting an existing input files, variables of previous file were kept. (#330)
+    - Fixed broken links in Sphinx documentation, including docstrings. (#315)
+
 Version 1.0.2
 =============
 - FAST-OAD now requires a lower version of `ruamel.yaml`. It should prevent Anaconda to try and fail to update its
