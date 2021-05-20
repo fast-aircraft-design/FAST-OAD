@@ -584,3 +584,28 @@ def test_variables_from_unconnected_inputs_with_sellar_problem():
     _test_and_check_from_unconnected_inputs(
         problem, expected_mandatory_vars, expected_optional_vars
     )
+
+
+def test_get_variables_from_problem_sellar_with_promotion_and_connect():
+    group = om.Group()
+    indeps = group.add_subsystem("indeps", om.IndepVarComp(), promotes=["*"])
+    indeps.add_output("x", 1.0)
+    indeps.add_output("z", [5.0, 2.0])
+    group.add_subsystem("disc1", Disc1(), promotes=["x", "z"])
+    group.add_subsystem("disc2", Disc2(), promotes=["z"])
+    group.add_subsystem("functions", Functions(), promotes=["*"])
+
+    # Connections
+    group.connect("disc1.y1", "disc2.y1")
+    group.connect("disc2.y2", "disc1.y2")
+    group.connect("disc1.y1", "y1")
+    group.connect("disc2.y2", "y2")
+
+    problem = om.Problem(group)
+    problem.setup()
+
+    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
+
+    # y1 and y2 should be outputs
+    assert not vars["y1"].is_input
+    assert not vars["y2"].is_input
