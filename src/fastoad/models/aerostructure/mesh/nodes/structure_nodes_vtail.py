@@ -15,8 +15,8 @@ This module computes structure nodes coordinates for Vertical tail plane
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 from scipy.interpolate import interp1d as interp
 
 
