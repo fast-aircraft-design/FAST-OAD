@@ -47,6 +47,8 @@ class StructureNodesHtail(om.ExplicitComponent):
             shape=((n_secs + 1) * 2, 3),
         )
 
+        self.declare_partials("*", "*", method="fd")
+
     def compute(self, inputs, outputs):
 
         n_secs = self.options["number_of_sections"]

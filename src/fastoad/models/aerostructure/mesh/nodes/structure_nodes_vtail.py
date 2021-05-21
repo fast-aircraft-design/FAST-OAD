@@ -43,6 +43,7 @@ class StructureNodesVtail(om.ExplicitComponent):
         self.add_output(
             "data:aerostructural:structure:vertical_tail:nodes", val=np.nan, shape=(n_secs + 1, 3)
         )
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
         n_secs = self.options["number_of_sections"]
