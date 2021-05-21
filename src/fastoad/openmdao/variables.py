@@ -638,13 +638,6 @@ class VariableList(list):
                 if prom_name not in promoted_inputs:
                     promoted_outputs[prom_name] = metadata
 
-            # # Remove from inputs the variables that are outputs of some other component
-            # promoted_inputs = {
-            #     metadata["prom_name"]: dict(metadata, is_input=True)
-            #     for metadata in inputs.values()
-            #     if metadata["prom_name"] not in promoted_outputs
-            # }
-
             final_inputs = promoted_inputs
             final_outputs = promoted_outputs
 
