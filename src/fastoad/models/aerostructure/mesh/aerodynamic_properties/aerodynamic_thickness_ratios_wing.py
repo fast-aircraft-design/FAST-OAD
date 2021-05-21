@@ -14,8 +14,8 @@ Compute wing thickness ratios for each section
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 from scipy.interpolate import interp1d as interp
 
 
@@ -45,14 +45,26 @@ class AerodynamicThicknessRatiosWing(om.ExplicitComponent):
             shape=((n_sects + 1) * 2),
         )
 
+        self.declare_partials("*", "*", method="fd")
+
     def compute(self, inputs, outputs):
         n_sects = self.options["number_of_sections"]
+        y_max = (
+            inputs["data:geometry:wing:tip:thickness_ratio"][0]
+            * inputs["data:geometry:wing:kink:y"][0]
+            - inputs["data:geometry:wing:kink:thickness_ratio"][0]
+            * inputs["data:geometry:wing:tip:y"][0]
+        ) / (
+            inputs["data:geometry:wing:tip:thickness_ratio"][0]
+            - inputs["data:geometry:wing:kink:thickness_ratio"][0]
+        )
         y = [
             0.0,
             inputs["data:geometry:wing:root:y"][0],
             inputs["data:geometry:wing:root:y"][0],
             inputs["data:geometry:wing:kink:y"][0],
             inputs["data:geometry:wing:tip:y"][0],
+            y_max,
         ]
         t_c = [
             0.0,
@@ -60,6 +72,7 @@ class AerodynamicThicknessRatiosWing(om.ExplicitComponent):
             inputs["data:geometry:wing:root:thickness_ratio"][0],
             inputs["data:geometry:wing:kink:thickness_ratio"][0],
             inputs["data:geometry:wing:tip:thickness_ratio"][0],
+            0.0,
         ]
         nodes = inputs["data:aerostructural:aerodynamic:wing:nodes"]
         y_i = nodes[: n_sects + 1, 1]

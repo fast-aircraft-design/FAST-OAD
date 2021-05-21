@@ -92,6 +92,14 @@ class Beam:
                 - self.t_flange ** 2
             )
         )
+        self.y1 = self.height / 2
+        self.z1 = self.length / 2
+        self.y2 = -self.height / 2
+        self.z2 = self.length / 2
+        self.y3 = -self.height / 2
+        self.z3 = -self.length / 2
+        self.y4 = self.height / 2
+        self.z4 = -self.length / 2
 
     def _tube_properties(self):
         pass

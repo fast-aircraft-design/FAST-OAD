@@ -14,8 +14,8 @@ Computes Aerodynamic wing mesh sections length
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 from scipy.interpolate import interp1d as interp
 
 
@@ -44,7 +44,6 @@ class AerodynamicChordsWing(om.ExplicitComponent):
             "data:aerostructural:aerodynamic:wing:chords", val=np.nan, shape=((n_secs + 1) * 2),
         )
 
-    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
@@ -57,9 +56,10 @@ class AerodynamicChordsWing(om.ExplicitComponent):
         root_chord = inputs["data:geometry:wing:root:chord"][0]
         kink_chord = inputs["data:geometry:wing:kink:chord"][0]
         tip_chord = inputs["data:geometry:wing:tip:chord"][0]
+        y_max = (y_kink * tip_chord - y_tip * kink_chord) / (tip_chord - kink_chord)
 
-        y_interp = [0.0, y_root, y_kink, y_tip]
-        chord_interp = [root_chord, root_chord, kink_chord, tip_chord]
+        y_interp = [0.0, y_root, y_kink, y_tip, y_max]
+        chord_interp = [root_chord, root_chord, kink_chord, tip_chord, 0.0]
         f_c = interp(y_interp, chord_interp)
 
         #  Chords interpolation --------------------------------------------------------------------

@@ -99,6 +99,15 @@ def get_props_cards(comp_name, props, id_basis):
         i_1 = convert_8digit_nastran(props[i, 1])
         i_2 = convert_8digit_nastran(props[i, 2])
         j = convert_8digit_nastran(props[i, 3])
+        y1 = convert_8digit_nastran(props[i, 4])
+        z1 = convert_8digit_nastran(props[i, 5])
+        y2 = convert_8digit_nastran(props[i, 6])
+        z2 = convert_8digit_nastran(props[i, 7])
+        y3 = convert_8digit_nastran(props[i, 8])
+        z3 = convert_8digit_nastran(props[i, 9])
+        y4 = convert_8digit_nastran(props[i, 10])
+        z4 = convert_8digit_nastran(props[i, 11])
+
         strg.append(
             "CBAR,"
             + b_ids
@@ -117,7 +126,26 @@ def get_props_cards(comp_name, props, id_basis):
             + "\n"
         )
         strg.append(
-            "PBAR," + p_ids + "," + p_mat + "," + area + "," + i_1 + "," + i_2 + "," + j + "\n"
+            "PBAR," + p_ids + "," + p_mat + "," + area + "," + i_1 + "," + i_2 + "," + j + ",,+\n"
+        )
+        strg.append(
+            "+,"
+            + y1
+            + ","
+            + z1
+            + ","
+            + y2
+            + ","
+            + z2
+            + ","
+            + y3
+            + ","
+            + z3
+            + ","
+            + y4
+            + ","
+            + z4
+            + "\n"
         )
     return strg
 

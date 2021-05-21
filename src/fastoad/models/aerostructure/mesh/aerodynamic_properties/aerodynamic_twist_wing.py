@@ -14,8 +14,8 @@ Compute wing twist for each section
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 from scipy.interpolate import interp1d as interp
 
 
@@ -43,6 +43,8 @@ class AerodynamicTwistWing(om.ExplicitComponent):
             "data:aerostructural:aerodynamic:wing:twist", val=0.0, shape=((n_sects + 1) * 2)
         )
 
+        self.declare_partials("*", "*", method="fd")
+
     def compute(self, inputs, outputs):
         n_sects = self.options["number_of_sections"]
         # No twist for the part of the wing within the fuselage if root y > 0.0
@@ -52,6 +54,7 @@ class AerodynamicTwistWing(om.ExplicitComponent):
             inputs["data:geometry:wing:root:y"][0],
             inputs["data:geometry:wing:kink:y"][0],
             inputs["data:geometry:wing:tip:y"][0],
+            inputs["data:geometry:wing:tip:y"][0] + 10,
         ]
         twist = [
             0.0,
@@ -59,6 +62,7 @@ class AerodynamicTwistWing(om.ExplicitComponent):
             inputs["data:geometry:wing:root:twist"][0],
             inputs["data:geometry:wing:kink:twist"][0],
             inputs["data:geometry:wing:tip:twist"][0],
+            0.0,
         ]
         nodes = inputs["data:aerostructural:aerodynamic:wing:nodes"]
         y_i = nodes[: n_sects + 1, 1]
