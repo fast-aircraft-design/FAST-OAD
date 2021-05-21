@@ -13,8 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 from scipy.interpolate import interp1d as interp
 
 from fastoad.models.aerostructure.mesh.structure_properties.beam_properties import Beam
@@ -56,7 +56,9 @@ class WingBeamProps(om.ExplicitComponent):
         self.add_input("settings:aerostructural:wing:n_spar", val=0.0)
 
         # Outputs ----------------------------------------------------------------------------------
-        self.add_output("data:aerostructural:structure:wing:beam_properties", shape=(n_secs * 2, 4))
+        self.add_output(
+            "data:aerostructural:structure:wing:beam_properties", shape=(n_secs * 2, 12)
+        )
 
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
@@ -138,7 +140,16 @@ class WingBeamProps(om.ExplicitComponent):
         i1 = beam_box.i1.reshape((n_secs, 1))
         i2 = beam_box.i2.reshape((n_secs, 1))
         j = beam_box.j.reshape((n_secs, 1))
-        props = np.hstack((a_beam, i1, i2, j))
+        y1 = beam_box.y1.reshape((n_secs, 1))
+        y2 = beam_box.y2.reshape((n_secs, 1))
+        y3 = beam_box.y3.reshape((n_secs, 1))
+        y4 = beam_box.y4.reshape((n_secs, 1))
+        z1 = beam_box.z1.reshape((n_secs, 1))
+        z2 = beam_box.z2.reshape((n_secs, 1))
+        z3 = beam_box.z3.reshape((n_secs, 1))
+        z4 = beam_box.z4.reshape((n_secs, 1))
+
+        props = np.hstack((a_beam, i1, i2, j, y1, z1, y2, z2, y3, z3, y4, z4))
 
         #  Symmetry --------------------------------------------------------------------------------
         outputs["data:aerostructural:structure:wing:beam_properties"] = np.tile(props, (2, 1))
