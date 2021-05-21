@@ -576,6 +576,16 @@ class VariableList(list):
                 if "." not in metadata["prom_name"]
             }
 
+            if get_promoted_names:
+                # Check connections
+                for name, metadata in inputs.copy().items():
+                    source_name = problem.model.get_source(name)
+                    if not source_name.startswith("_auto_ivc.") and source_name != name:
+                        # This variable is connected to another variable of the problem: it is
+                        # not an actual problem input. Let's move it to outputs.
+                        del inputs[name]
+                        outputs[name] = metadata
+
         # Add "is_input" field
         for metadata in inputs.values():
             metadata["is_input"] = True
@@ -587,6 +597,13 @@ class VariableList(list):
             final_inputs = inputs
             final_outputs = outputs
         else:
+            # Remove from inputs the variables that are outputs of some other component
+            promoted_inputs = {
+                metadata["prom_name"]: dict(metadata, is_input=True)
+                for metadata in inputs.values()
+                # if metadata["prom_name"] not in promoted_outputs
+            }
+
             promoted_outputs = {}
             for metadata in outputs.values():
                 prom_name = metadata["prom_name"]
@@ -618,15 +635,8 @@ class VariableList(list):
                         # We already have a non-NaN value and current variable provides no unit.
                         # No need for using the current variable.
                         continue
-
-                promoted_outputs[prom_name] = metadata
-
-            # Remove from inputs the variables that are outputs of some other component
-            promoted_inputs = {
-                metadata["prom_name"]: dict(metadata, is_input=True)
-                for metadata in inputs.values()
-                if metadata["prom_name"] not in promoted_outputs
-            }
+                if prom_name not in promoted_inputs:
+                    promoted_outputs[prom_name] = metadata
 
             final_inputs = promoted_inputs
             final_outputs = promoted_outputs
