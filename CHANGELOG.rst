@@ -10,6 +10,7 @@ Version 1.0.3
     - Importing, in a `__init__.py`, some classes that were registered as FAST-OAD modules could make that the register process fails. (#331)
     - When generating an input file using a data source, the whole data source was copied instead of just keeping the needed variables. (#332)
     - Instead of overwriting an existing input files, variables of previous file were kept. (#330)
+    - A variable that was connected to an output could be incorrectly labelled as input when listing problem variables. (#341)
     - Fixed broken links in Sphinx documentation, including docstrings. (#315)
 
 Version 1.0.2
