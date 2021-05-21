@@ -580,8 +580,9 @@ class VariableList(list):
                 # Check connections
                 for name, metadata in inputs.copy().items():
                     source_name = problem.model.get_source(name)
-                    # If an local input is connected to a promoted output
                     if not source_name.startswith("_auto_ivc.") and source_name != name:
+                        # This variable is connected to another variable of the problem: it is
+                        # not an actual problem input. Let's move it to outputs.
                         del inputs[name]
                         outputs[name] = metadata
 
