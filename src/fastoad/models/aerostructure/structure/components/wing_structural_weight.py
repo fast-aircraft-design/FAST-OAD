@@ -28,6 +28,8 @@ class WingStructuralWeight(om.ExplicitComponent):
 
         self.declare_partials("*", "*", method="fd")
 
+        self.declare_partials("*", "*", method="fd")
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nodes = inputs["data:aerostructural:structure:wing:nodes"]
         area = inputs["data:aerostructural:structure:wing:beam_properties"][:, 0]
