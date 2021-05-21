@@ -14,28 +14,27 @@
 
 import os
 import os.path as pth
-from tempfile import TemporaryDirectory
 import shutil
+from tempfile import TemporaryDirectory
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 from scipy.constants import degree
 
-from fastoad.models.aerostructure.structure.external.mystran.utils.read_f06 import readf06
+from fastoad.models.aerostructure.structure.external.mystran import mystran112
+from fastoad.models.aerostructure.structure.external.mystran.utils.constant import basis_id
+from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_forces_cards
+from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_nastran_bdf
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import (
     get_nodes_cards,
     get_props_cards,
     get_mat_cards,
     get_rbe_junction_cards,
 )
-from fastoad.models.aerostructure.structure.external.mystran.utils.constant import basis_id
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_forces_cards
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_rbe_cards
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_spc_cards
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_nastran_bdf
+from fastoad.models.aerostructure.structure.external.mystran.utils.read_f06 import readf06
 from fastoad.utils.resource_management.copy import copy_resource
-
-from fastoad.models.aerostructure.structure.external.mystran import mystran112
 
 OPTION_MYSTRAN_EXE_PATH = "mystran_exe_path"
 OPTION_RESULT_FOLDER_PATH = "result_folder_path"
@@ -103,9 +102,7 @@ class MystranStatic(om.ExternalCodeComp):
                 shape=(n_nodes, 6),
             )
 
-            self.add_output(
-                "data:aerostructural:structure:" + comp + ":stresses", val=0.0, shape=(n_props, 4)
-            )
+            self.add_output("data:aerostructural:structure:" + comp + ":stresses", val=0.0)
 
             # Initialisation of the MYSTRAN (NASTRAN) input file (.dat) ----------------------------
         self.input_file = ""
@@ -188,7 +185,9 @@ class MystranStatic(om.ExternalCodeComp):
                 outputs["data:aerostructural:aerodynamic:wing:d_twist"] = (
                     split_displacements[i][:, 4] / degree
                 )
-            outputs["data:aerostructural:structure:" + comp + ":stresses"] = split_stresses[i]
+            outputs["data:aerostructural:structure:" + comp + ":stresses"] = np.max(
+                split_stresses[i]
+            )
 
         # Getting output files if needed ----------------------------------------------------------
         if self.options[OPTION_RESULT_FOLDER_PATH]:
