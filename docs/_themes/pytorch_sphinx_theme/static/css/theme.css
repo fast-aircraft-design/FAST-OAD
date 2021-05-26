@@ -11680,12 +11680,6 @@ article.pytorch-article .tutorials-callout-container .btn.callout-button a {
     float: left;
   }
 }
-@media screen and (min-width: 1600px) {
-  .pytorch-content-left {
-    width: 100%;
-    margin-left: 30px;
-  }
-}
 .pytorch-content-left .main-content {
   padding-top: 0.9375rem;
 }
@@ -11721,42 +11715,23 @@ article.pytorch-article .tutorials-callout-container .btn.callout-button a {
   .pytorch-side-scroll {
     position: relative;
     overflow-x: hidden;
-    overflow-y: scroll;
     height: 100%;
-  }
-}
-
-.pytorch-menu-vertical {
-  padding: 1.25rem 1.875rem 2.5rem 1.875rem;
-}
-@media screen and (min-width: 1101px) {
-  .pytorch-menu-vertical {
-    display: block;
-    padding-top: 0;
-    padding-right: 13.5%;
-    padding-bottom: 5.625rem;
-  }
-}
-@media screen and (min-width: 1600px) {
-  .pytorch-menu-vertical {
-    padding-left: 0;
-    padding-right: 1.5625rem;
   }
 }
 
 .pytorch-left-menu {
   display: none;
+  position: relative;
+  flex-direction: column;
   background-color: #f3f4f7;
   color: #262626;
-  overflow: scroll;
 }
 @media screen and (min-width: 1101px) {
   .pytorch-left-menu {
-    display: block;
+    display: flex;
+    flex-direction: column;
     overflow-x: hidden;
     overflow-y: hidden;
-    padding-bottom: 110px;
-    padding: 0 1.875rem 0 0;
     width: 25%;
     z-index: 200;
     float: left;
@@ -11771,7 +11746,7 @@ article.pytorch-article .tutorials-callout-container .btn.callout-button a {
 }
 @media screen and (min-width: 1600px) {
   .pytorch-left-menu {
-    padding: 0 0 0 1.875rem;
+    padding: 0;
     width: 350px;
   }
 }
@@ -11842,15 +11817,16 @@ article.pytorch-article .tutorials-callout-container .btn.callout-button a {
   outline: 0;
 }
 
-@media screen and (min-width: 1101px) {
-  .pytorch-left-menu .pytorch-side-scroll {
-    width: 120%;
-  }
-}
 @media screen and (min-width: 1600px) {
   .pytorch-left-menu .pytorch-side-scroll {
     width: 340px;
   }
+}
+
+.pytorch-left-menu .pytorch-side-scroll {
+  padding-top: 30px;
+  padding-left: 30px;
+  padding-right: 30px;
 }
 
 .pytorch-right-menu {
@@ -11897,7 +11873,10 @@ article.pytorch-article .tutorials-callout-container .btn.callout-button a {
 .pytorch-right-menu ul {
   list-style-type: none;
   padding-left: 0;
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
+}
+.pytorch-left-menu ul li:last-child {
+  padding-bottom: 1rem;
 }
 .pytorch-left-menu > ul,
 .pytorch-right-menu > ul {
@@ -12096,11 +12075,8 @@ article.pytorch-article .tutorials-callout-container .btn.callout-button a {
 
 .pytorch-right-menu .pytorch-side-scroll {
   padding-top: 20px;
-}
-@media screen and (min-width: 1101px) {
-  .pytorch-right-menu .pytorch-side-scroll {
-    width: 120%;
-  }
+  padding-left: 30px;
+  padding-right: 30px;
 }
 @media screen and (min-width: 1600px) {
   .pytorch-right-menu .pytorch-side-scroll {
@@ -12429,23 +12405,49 @@ article.pytorch-article .tutorials-callout-container .btn.callout-button a {
 
 /*rst-versions*/
 
-.pytorch-body .rst-versions.rst-badge {
+.pytorch-body .pytorch-left-menu .rst-versions, .pytorch-body .pytorch-left-menu .rst-versions.rst-badge {
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 300px;
   color: #fcfcfc;
   background: #1f1d1d;
   z-index: 400;
+  width: 25%;
+  max-width: 100%;
+}
+@media screen and (min-width: 1600px) {
+  .pytorch-body .pytorch-left-menu .rst-versions, .pytorch-body .pytorch-left-menu .rst-versions.rst-badge {
+    width: 350px;
+    max-width: 100%;
+  }
+}
+@media screen and (max-width: 1101px) {
+  .pytorch-body .pytorch-left-menu .rst-versions, .pytorch-body .pytorch-left-menu .rst-versions.rst-badge {
+    position: absolute;
+    width: 100%;
+    max-width: 100%;
+    display: block;
+  }
+
+  .pytorch-body .pytorch-left-menu .rst-versions.shift-up, .pytorch-body .pytorch-left-menu .rst-versions.rst-badge.shift-up {
+    position: relative;
+    width: 100%;
+    margin-top: -1.4rem;
+    max-width: 100%;
+  }
+
+  .pytorch-body .pytorch-left-menu .injected .rst-versions .rst-other-versions {
+    padding: 0;
+    margin-top: 30px;
+  }
 }
 
-.pytorch-body .rst-versions.shift-up {
+.pytorch-body .pytorch-left-menu .rst-versions.shift-up, .pytorch-body .pytorch-left-menu .rst-versions.rst-badge.shift-up {
   height: auto;
   max-height: 100%;
-  overflow-y: auto;
 }
 
-.pytorch-body .rst-versions .rst-current-version {
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version {
   padding: 12px;
   background-color: #272525;
   display: flex;
@@ -12456,97 +12458,104 @@ article.pytorch-article .tutorials-callout-container .btn.callout-button a {
   color: #27ae60;
   *zoom: 1;
 }
-.pytorch-body .rst-versions.rst-badge.shift-up .rst-current-version {
+.pytorch-body .pytorch-left-menu .rst-versions.shift-up .rst-current-version {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   padding: 12px;
 }
 
-.pytorch-body .rst-versions .rst-current-version .fa.fa-book {
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .fa.fa-book {
   position: absolute;
   left: 12px;
 }
-.pytorch-body .rst-versions.rst-badge.shift-up .rst-current-version .fa-book {
+.pytorch-body .pytorch-left-menu .rst-versions.shift-up .rst-current-version .fa-book {
   position: absolute;
   left: 12px;
 }
-.pytorch-body .rst-versions.rst-badge.shift-up .rst-current-version .fa-book::after {
+.pytorch-body .pytorch-left-menu .injected .rst-versions .rst-current-version .fa-book::after {
   content: "Read the docs";
 }
 
-.pytorch-body .rst-versions .fa.fa-caret-down {
+.pytorch-body .pytorch-left-menu .rst-versions .fa.fa-caret-down {
   margin-left: 6px;
 }
 
-.pytorch-body .rst-versions.shift-up .fa.fa-caret-down {
+.pytorch-body .pytorch-left-menu .rst-versions.shift-up .fa.fa-caret-down {
   margin-left: 6px;
 }
 
-.pytorch-body .rst-versions .rst-current-version:after, .pytorch-body .rst-versions .rst-current-version:before {
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version:after,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version:before {
   display: table;
   content: "";
 }
 
-.pytorch-body .rst-versions.shift-up .rst-other-versions {
+.pytorch-body .pytorch-left-menu .rst-versions.shift-up .rst-other-versions {
   display: block;
 }
 
-.pytorch-body .rst-versions .rst-other-versions {
+.pytorch-body .pytorch-left-menu .rst-versions .rst-other-versions {
   font-size: 90%;
   padding: 12px;
   color: grey;
   display: none;
 }
-.pytorch-body .rst-other-versions {
+.pytorch-body .pytorch-left-menu .rst-other-versions {
   text-align: left;
 }
-.pytorch-body .rst-other-versions dl {
+.pytorch-body .pytorch-left-menu .rst-other-versions dl {
   margin: 0;
 }
-.pytorch-body .rst-versions .rst-other-versions dd {
+.pytorch-body .pytorch-left-menu .rst-versions .rst-other-versions dd {
   display: inline-block;
   margin: 0;
 }
-.pytorch-body .rst-versions .rst-other-versions dd a {
+.pytorch-body .pytorch-left-menu .rst-versions .rst-other-versions dd a {
   display: inline-block;
   padding: 6px;
   color: #fcfcfc;
 }
-.pytorch-body .fa.fa-book {
+.pytorch-body .pytorch-left-menu .fa.fa-book {
   font-family: Open Sans, Arial, Helvetica, sans-serif;
 }
-.pytorch-body .rst-content .code-block-caption .rst-versions .rst-current-version .headerlink,
-.pytorch-body .rst-content .rst-versions .rst-current-version .admonition-title,
-.pytorch-body .rst-content code.download .rst-versions .rst-current-version span:first-child,
-.pytorch-body .rst-content dl dt .rst-versions .rst-current-version .headerlink,
-.pytorch-body .rst-content h1 .rst-versions .rst-current-version .headerlink,
-.pytorch-body .rst-content h2 .rst-versions .rst-current-version .headerlink,
-.pytorch-body .rst-content h3 .rst-versions .rst-current-version .headerlink,
-.pytorch-body .rst-content h4 .rst-versions .rst-current-version .headerlink,
-.pytorch-body .rst-content h5 .rst-versions .rst-current-version .headerlink,
-.pytorch-body .rst-content h6 .rst-versions .rst-current-version .headerlink,
-.pytorch-body .rst-content p.caption .rst-versions .rst-current-version .headerlink,
-.pytorch-body .rst-content table>caption .rst-versions .rst-current-version .headerlink,
-.pytorch-body .rst-content tt.download .rst-versions .rst-current-version span:first-child,
-.pytorch-body .rst-versions .rst-current-version .fa,
-.pytorch-body .rst-versions .rst-current-version .icon,
-.pytorch-body .rst-versions .rst-current-version .rst-content .admonition-title,
-.pytorch-body .rst-versions .rst-current-version .rst-content .code-block-caption .headerlink,
-.pytorch-body .rst-versions .rst-current-version .rst-content code.download span:first-child,
-.pytorch-body .rst-versions .rst-current-version .rst-content dl dt .headerlink,
-.pytorch-body .rst-versions .rst-current-version .rst-content h1 .headerlink,
-.pytorch-body .rst-versions .rst-current-version .rst-content h2 .headerlink,
-.pytorch-body .rst-versions .rst-current-version .rst-content h3 .headerlink,
-.pytorch-body .rst-versions .rst-current-version .rst-content h4 .headerlink,
-.pytorch-body .rst-versions .rst-current-version .rst-content h5 .headerlink,
-.pytorch-body .rst-versions .rst-current-version .rst-content h6 .headerlink,
-.pytorch-body .rst-versions .rst-current-version .rst-content p.caption .headerlink,
-.pytorch-body .rst-versions .rst-current-version .rst-content table>caption .headerlink,
-.pytorch-body .rst-versions .rst-current-version .rst-content tt.download span:first-child,
-.pytorch-body .rst-versions .rst-current-version .wy-menu-vertical li span.toctree-expand,
-.pytorch-body .wy-menu-vertical li .rst-versions .rst-current-version span.toctree-expand {
+.pytorch-body .pytorch-left-menu .rst-content .code-block-caption .rst-versions .rst-current-version .headerlink,
+.pytorch-body .pytorch-left-menu .rst-content .rst-versions .rst-current-version .admonition-title,
+.pytorch-body .pytorch-left-menu .rst-content code.download .rst-versions .rst-current-version span:first-child,
+.pytorch-body .pytorch-left-menu .rst-content dl dt .rst-versions .rst-current-version .headerlink,
+.pytorch-body .pytorch-left-menu .rst-content h1 .rst-versions .rst-current-version .headerlink,
+.pytorch-body .pytorch-left-menu .rst-content h2 .rst-versions .rst-current-version .headerlink,
+.pytorch-body .pytorch-left-menu .rst-content h3 .rst-versions .rst-current-version .headerlink,
+.pytorch-body .pytorch-left-menu .rst-content h4 .rst-versions .rst-current-version .headerlink,
+.pytorch-body .pytorch-left-menu .rst-content h5 .rst-versions .rst-current-version .headerlink,
+.pytorch-body .pytorch-left-menu .rst-content h6 .rst-versions .rst-current-version .headerlink,
+.pytorch-body .pytorch-left-menu .rst-content p.caption .rst-versions .rst-current-version .headerlink,
+.pytorch-body .pytorch-left-menu .rst-content table>caption .rst-versions .rst-current-version .headerlink,
+.pytorch-body .pytorch-left-menu .rst-content tt.download .rst-versions .rst-current-version span:first-child,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .fa,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .icon,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content .admonition-title,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content .code-block-caption .headerlink,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content code.download span:first-child,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content dl dt .headerlink,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content h1 .headerlink,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content h2 .headerlink,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content h3 .headerlink,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content h4 .headerlink,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content h5 .headerlink,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content h6 .headerlink,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content p.caption .headerlink,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content table>caption .headerlink,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .rst-content tt.download span:first-child,
+.pytorch-body .pytorch-left-menu .rst-versions .rst-current-version .wy-menu-vertical li span.toctree-expand,
+.pytorch-body .pytorch-left-menu .wy-menu-vertical li .rst-versions .rst-current-version span.toctree-expand {
   color: #fcfcfc;
+}
+
+@media screen and (max-width: 1101px) {
+  .pytorch-body .pytorch-left-menu .injected .rst-versions.shift-up .rst-current-version {
+    display: none;
+  }
 }
 
 /*# sourceMappingURL=theme.css.map */
