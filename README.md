@@ -7,7 +7,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/fast-aircraft-design/FAST-OAD.git/test-binder?filepath=src%2Ffastoad%2Fnotebooks)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/fast-aircraft-design/FAST-OAD.git/latest-release?filepath=src%2Ffastoad%2Fnotebooks)
 
 
 FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design
@@ -34,6 +34,13 @@ documentation](https://fast-oad.readthedocs.io/).
 > propose a safe base for development of custom models.
 >
 > Models in FAST-OAD are still a work in progress.
+
+
+Want to try quickly ?
+---------------------
+You can run FAST-OAD tutorials **without installation** using our
+[Binder-hosted Jupyter notebooks](https://mybinder.org/v2/gh/fast-aircraft-design/FAST-OAD.git/latest-release?filepath=src%2Ffastoad%2Fnotebooks).
+
 
 Install
 -------
