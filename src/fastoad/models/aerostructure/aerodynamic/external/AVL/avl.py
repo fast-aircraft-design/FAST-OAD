@@ -57,10 +57,12 @@ class AVL(ExternalCodeComp):
         self.options.declare(OPTION_RESULT_AVL_FILENAME, default="results.out", types=str)
         self.options.declare(OPTION_RESULT_FOLDER_PATH, default="", types=str)
         self.options.declare(OPTION_AVL_EXE_PATH, default="", types=str, allow_none=True)
+        self.options.declare("coupling_iterations", types=bool, default=True)
 
     def setup(self):
         comps = self.options["components"]
         sects = self.options["components_sections"]
+        coupling = self.options["coupling_iterations"]
         self.add_input("data:geometry:wing:area", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan)
         self.add_input("data:geometry:wing:MAC:length", val=np.nan)
@@ -98,7 +100,10 @@ class AVL(ExternalCodeComp):
                     "data:aerostructural:aerodynamic:wing:twist", val=np.nan, shape_by_conn=True
                 )
                 self.add_input(
-                    "data:aerostructural:aerodynamic:wing:d_twist", val=np.nan, shape_by_conn=True
+                    "data:aerostructural:aerodynamic:wing:d_twist",
+                    val=np.nan,
+                    shape_by_conn=True,
+                    units="deg",
                 )
 
             size = n_sect  # Default number of section for non symmetrical components
@@ -108,19 +113,24 @@ class AVL(ExternalCodeComp):
                 size = 4
 
             self.add_output(
-                "data:aerostructural:aerodynamic:" + comp + ":forces", val=0.0, shape=(size, 6)
+                "data:aerostructural:aerodynamic:" + comp + ":forces",
+                val=0.0,
+                shape=(size, 6),
+                res_ref=1e2,
             )
 
         # self.add_output("data:aerostructural:aerodynamic:forces", val=np.nan, shape=(size, 6))
-        self.add_output("data:aerostructural:aerodynamic:CDi", val=0.0)
-        self.add_output("data:aerostructural:aerodynamic:CL", val=0.0)
-        self.add_output("data:aerostructural:aerodynamic:AoA", val=0.0)
-        self.add_output("data:aerostructural:aerodynamic:Oswald_Coeff", val=0.0)
+        if not coupling:
+            self.add_output("data:aerostructural:aerodynamic:CDi", val=0.0)
+            self.add_output("data:aerostructural:aerodynamic:CL", val=0.0)
+            self.add_output("data:aerostructural:aerodynamic:AoA", val=0.0)
+            self.add_output("data:aerostructural:aerodynamic:Oswald_Coeff", val=0.0)
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
 
+        coupling = self.options["coupling_iterations"]
         # Results Folder creation if needed --------------------------------------------------------
         result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
         if result_folder_path != "":
@@ -194,13 +204,16 @@ class AVL(ExternalCodeComp):
         # Gather results ---------------------------------------------------------------------------
         parser_out = FileParser()
         parser_out.set_file(tmp_result_file)
+
         parser_out.mark_anchor("Alpha =")
-        outputs["data:aerostructural:aerodynamic:AoA"] = parser_out.transfer_var(0, 3)
-        parser_out.mark_anchor("CLtot =")
-        outputs["data:aerostructural:aerodynamic:CL"] = parser_out.transfer_var(0, 3)
-        parser_out.mark_anchor("CDind =")
-        outputs["data:aerostructural:aerodynamic:CDi"] = parser_out.transfer_var(0, 6)
-        outputs["data:aerostructural:aerodynamic:Oswald_Coeff"] = parser_out.transfer_var(2, 6)
+        aoa = parser_out.transfer_var(0, 3)
+        if not coupling:
+            outputs["data:aerostructural:aerodynamic:AoA"] = aoa
+            parser_out.mark_anchor("CLtot =")
+            outputs["data:aerostructural:aerodynamic:CL"] = parser_out.transfer_var(0, 3)
+            parser_out.mark_anchor("CDind =")
+            outputs["data:aerostructural:aerodynamic:CDi"] = parser_out.transfer_var(0, 6)
+            outputs["data:aerostructural:aerodynamic:Oswald_Coeff"] = parser_out.transfer_var(2, 6)
         for (comp, sect) in zip(self.options["components"], self.options["components_sections"]):
             size = sect  # default number of section for non symmetric components
             if comp in ("wing", "horizontal_tail", "strut"):
@@ -217,9 +230,7 @@ class AVL(ExternalCodeComp):
             comp_coef[:, [3, 5]] *= q * s_ref * b_ref
             comp_coef[:, 4] *= q * s_ref * c_ref
             #  Change forces and moment from aerodynamic to body axis
-            r_mat = self._get_rotation_matrix(
-                outputs["data:aerostructural:aerodynamic:AoA"] * degree, axis="y"
-            )
+            r_mat = self._get_rotation_matrix(aoa * degree, axis="y")
             comp_coef[:, :3] = np.dot(comp_coef[:, :3], r_mat)
             comp_coef[:, 3:] = np.dot(comp_coef[:, 3:], r_mat)  # Moments in std axis ie X fwd
             outputs["data:aerostructural:aerodynamic:" + comp + ":forces"] = comp_coef
@@ -310,8 +321,8 @@ class AVL(ExternalCodeComp):
 
     @staticmethod
     def _get_rotation_matrix(angle, axis="y"):
-        c = cos(angle[0])
-        s = sin(angle[0])
+        c = cos(angle)
+        s = sin(angle)
         if axis == "x":
             r_mat = np.array([[1, 0, 0], [0, c, s], [0, -s, c]])
         elif axis == "y":

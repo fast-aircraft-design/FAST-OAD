@@ -19,7 +19,6 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 import openmdao.api as om
-from scipy.constants import degree
 
 from fastoad.models.aerostructure.structure.external.mystran import mystran112
 from fastoad.models.aerostructure.structure.external.mystran.utils.constant import basis_id
@@ -57,11 +56,12 @@ class MystranStatic(om.ExternalCodeComp):
         self.options.declare("components_sections", types=list)
         self.options.declare(OPTION_MYSTRAN_EXE_PATH, default="", types=str, allow_none=True)
         self.options.declare(OPTION_RESULT_FOLDER_PATH, default="", types=str, allow_none=True)
+        self.options.declare("coupling_iterations", types=bool, default=True)
 
     def setup(self):
         comps = self.options["components"]
         nsects = self.options["components_sections"]
-
+        coupling = self.options["coupling_iterations"]
         # System inputs ---------------------------------------------------------------------------
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
         self.add_input("data:aerostructural:load_case:load_factor", val=1.0)
@@ -94,15 +94,25 @@ class MystranStatic(om.ExternalCodeComp):
             )
 
             self.add_output(
-                "data:aerostructural:aerodynamic:" + comp + ":d_twist", val=0.0, shape=(n_nodes)
+                "data:aerostructural:aerodynamic:" + comp + ":d_twist",
+                val=0.0,
+                shape=n_nodes,
+                units="rad",
             )
             self.add_output(
                 "data:aerostructural:structure:" + comp + ":displacements",
                 val=0.0,
                 shape=(n_nodes, 6),
+                ref=1e-2,
+                res_ref=1e-5,
             )
 
-            self.add_output("data:aerostructural:structure:" + comp + ":stresses", val=0.0)
+            self.add_output(
+                "data:aerostructural:structure:" + comp + ":stresses",
+                val=0.0,
+                units="Pa",
+                ref=100e6,
+            )
 
             # Initialisation of the MYSTRAN (NASTRAN) input file (.dat) ----------------------------
         self.input_file = ""
@@ -111,6 +121,7 @@ class MystranStatic(om.ExternalCodeComp):
 
     def compute(self, inputs, outputs):
         result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
+        coupling = self.options["coupling_iterations"]
         if result_folder_path != "":
             os.makedirs(result_folder_path, exist_ok=True)
 
@@ -182,9 +193,10 @@ class MystranStatic(om.ExternalCodeComp):
                 "data:aerostructural:structure:" + comp + ":displacements"
             ] = split_displacements[i]
             if comp == "wing":
-                outputs["data:aerostructural:aerodynamic:wing:d_twist"] = (
-                    split_displacements[i][:, 4] / degree
-                )
+                outputs["data:aerostructural:aerodynamic:wing:d_twist"] = split_displacements[i][
+                    :, 4
+                ]
+
             outputs["data:aerostructural:structure:" + comp + ":stresses"] = np.max(
                 split_stresses[i]
             )

@@ -40,6 +40,7 @@ class StaticSolver(om.Group):
             promotes=["*"],
         )
         self.add_subsystem("structural_weight", StructuralWeight(), promotes=["*"])
+
         self.add_subsystem(
             "aerodynamic_mesh",
             AerodynamicMesh(
@@ -67,21 +68,23 @@ class StaticSolver(om.Group):
             ),
             promotes=["*"],
         )
+
         # self.add_subsystem(
-        #     "displacement_transfer",
+        #     "displacement_transfer2",
         #     DisplacementsTransfer(components=self.options["components"]),
         #     promotes=["*"],
         # )
         # self.add_subsystem(
-        #     "Aerodynamic_solver",
+        #     "Aerodynamic_solver2",
         #     AVL(
         #         components=self.options["components"],
         #         components_sections=self.options["components_sections"],
+        #         coupling_iterations=False
         #     ),
         #     promotes=["*"],
         # )
         # self.add_subsystem(
-        #     "Forces_transfer",
+        #     "Forces_transfer2",
         #     ForcesTransfer(
         #         components=self.options["components"],
         #         components_sections=self.options["components_sections"],
@@ -89,10 +92,11 @@ class StaticSolver(om.Group):
         #     promotes=["*"],
         # )
         # self.add_subsystem(
-        #     "static_structure_solver",
+        #     "static_structure_solver2",
         #     MystranStatic(
         #         components=self.options["components"],
         #         components_sections=self.options["components_sections"],
+        #         coupling_iterations=False
         #     ),
         #     promotes=["*"],
         # )
@@ -138,6 +142,6 @@ class _AerostructuralLoop(OmOptGrp):
         )
 
         self.nonlinear_solver = om.NonlinearBlockGS(
-            maxiter=15, iprint=2, rtol=1e-4, atol=1e-8, use_aitken=True
+            maxiter=15, iprint=2, rtol=1e-4, atol=1e-8, use_aitken=True, err_on_non_converge=True
         )
         self.linear_solver = om.DirectSolver()
