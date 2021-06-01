@@ -93,27 +93,46 @@
           "parts": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "route": {
-                  "type": "string"
-                },
-                "phase": {
-                  "type": "string"
-                },
-                "reserve": {
+              "oneOf": [
+                {
                   "type": "object",
+                  "additionalProperties": false,
                   "properties": {
-                    "ref": {
+                    "route": {
                       "type": "string"
-                    },
-                    "multiplier": {
-                      "type": "number"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "phase": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "reserve": {
+                      "type": "object",
+                      "properties": {
+                        "ref": {
+                          "type": "string"
+                        },
+                        "multiplier": {
+                          "type": [
+                            "number",
+                            "string"
+                          ]
+                        }
+                      }
                     }
                   }
                 }
-              },
-              "additionalProperties": false
+              ]
             }
           }
         },
