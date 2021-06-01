@@ -190,16 +190,16 @@ def _get_expected_dict():
                 ]
             },
             "taxi_out": {
-                "parts": [{"segment": "taxi", "thrust_rate": "~", "target": {"time": "~duration"}}]
+                "parts": [{"segment": "taxi", "thrust_rate": None, "target": {"time": "~duration"}}]
             },
             "taxi_in": {
-                "thrust_rate": "~",
+                "thrust_rate": None,
                 "parts": [{"segment": "taxi", "target": {"time": "~duration"}}],
             },
         },
         "routes": {
             "main": {
-                "range": "~",
+                "range": None,
                 "climb_parts": [{"phase": "initial_climb"}, {"phase": "climb"}],
                 "cruise_part": {
                     "segment": "optimal_cruise",
@@ -212,7 +212,7 @@ def _get_expected_dict():
                 "descent_parts": [{"phase": "descent"}],
             },
             "diversion": {
-                "range": "~",
+                "range": None,
                 "climb_parts": [{"phase": "diversion_climb"}],
                 "cruise_part": {
                     "segment": "cruise",
