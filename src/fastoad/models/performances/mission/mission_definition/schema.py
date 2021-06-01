@@ -13,14 +13,17 @@ Schema for mission definition files.
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import json
 from collections import OrderedDict
 from dataclasses import fields
 from enum import Enum
+from importlib.resources import open_text
 from os import PathLike
 from typing import Set, Union
 
 from ensure import Ensure
+from jsonschema import validate
+from ruamel.yaml import YAML
 from strictyaml import (
     Bool,
     CommaSeparated,
@@ -32,17 +35,18 @@ from strictyaml import (
     Seq,
     Str,
     Validator,
-    YAML,
-    load,
 )
 
 from fastoad.model_base import FlightPoint
+from . import resources
 from ..segments.altitude_change import AltitudeChangeSegment
 from ..segments.cruise import BreguetCruiseSegment, ClimbAndCruiseSegment, OptimalCruiseSegment
 from ..segments.hold import HoldSegment
 from ..segments.speed_change import SpeedChangeSegment
 from ..segments.taxi import TaxiSegment
 from ..segments.transition import DummyTransitionSegment
+
+JSON_SCHEMA_NAME = "mission_schema.json"
 
 # Tags
 SEGMENT_TAG = "segment"
@@ -82,14 +86,20 @@ class MissionDefinition(dict):
         :param file_path: path of YAML file to read.
         """
         self.clear()
-        with open(file_path) as yaml_file:
-            content = load(yaml_file.read(), self._get_schema())
+        yaml = YAML()
 
-        self._validate(content)
-        self.update(content.data)
+        with open(file_path) as yaml_file:
+            data = yaml.load(yaml_file)
+
+        with open_text(resources, JSON_SCHEMA_NAME) as json_file:
+            json_schema = json.loads(json_file.read())
+        validate(data, json_schema)
+
+        self._validate(data)
+        self.update(data)
 
     @classmethod
-    def _validate(cls, content: YAML):
+    def _validate(cls, content: dict):
         """
         Does a second pass validation of file content.
 
@@ -136,13 +146,13 @@ class MissionDefinition(dict):
                 Ensure(part_type).equals(RESERVE_TAG)
 
     @staticmethod
-    def _process_polar_definition(struct: YAML):
+    def _process_polar_definition(struct: dict):
         """
         If "foo:bar:baz" is provided as value for the "polar" key in provided dictionary, it is
         replaced by the dict {"CL":"foo:bar:baz:CL", "CD":"foo:bar:baz:CD"}
         """
         if POLAR_TAG in struct:
-            polar_def = struct[POLAR_TAG].value
+            polar_def = struct[POLAR_TAG]
             if isinstance(polar_def, str) and ":" in polar_def:
                 struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
 
