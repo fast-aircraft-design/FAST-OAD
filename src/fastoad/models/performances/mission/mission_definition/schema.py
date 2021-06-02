@@ -16,10 +16,10 @@ Schema for mission definition files.
 
 from collections import OrderedDict
 from dataclasses import fields
-from enum import Enum
 from os import PathLike
-from typing import Set, Union
+from typing import Union
 
+from aenum import Enum, extend_enum
 from ensure import Ensure
 from strictyaml import (
     Bool,
@@ -244,41 +244,23 @@ class SegmentNames(Enum):
     """
     Class that lists available flight segments.
 
-    Enum values are linked to matching implementation with :meth:`get_segment_class`.
+    Enum values are matching segment classes.
     """
 
-    ALTITUDE_CHANGE = "altitude_change"
-    TRANSITION = "transition"
-    CRUISE = "cruise"
-    OPTIMAL_CRUISE = "optimal_cruise"
-    BREGUET = "breguet"
-    SPEED_CHANGE = "speed_change"
-    HOLDING = "holding"
-    TAXI = "taxi"
+    pass
 
-    @classmethod
-    def string_values(cls) -> Set[str]:
-        """
 
-        :return: the list of available segments as strings
-        """
-        return {part.value for part in cls}
+segment_definition = {
+    "altitude_change": AltitudeChangeSegment,
+    "speed_change": SpeedChangeSegment,
+    "cruise": ClimbAndCruiseSegment,
+    "optimal_cruise": OptimalCruiseSegment,
+    "holding": HoldSegment,
+    "taxi": TaxiSegment,
+    "transition": DummyTransitionSegment,
+    "breguet": BreguetCruiseSegment,
+}
 
-    @classmethod
-    def get_segment_class(cls, value: Union["SegmentNames", str]) -> type:
-        """
 
-        :param value: a SegmentNames instance or a string among possible values of SegmentNames
-        :return: the matching implementation class
-        """
-        segments = {
-            cls.ALTITUDE_CHANGE.value: AltitudeChangeSegment,
-            cls.TRANSITION.value: DummyTransitionSegment,
-            cls.CRUISE.value: ClimbAndCruiseSegment,
-            cls.OPTIMAL_CRUISE.value: OptimalCruiseSegment,
-            cls.BREGUET.value: BreguetCruiseSegment,
-            cls.SPEED_CHANGE.value: SpeedChangeSegment,
-            cls.HOLDING.value: HoldSegment,
-            cls.TAXI.value: TaxiSegment,
-        }
-        return segments[value]
+for segment_name, segment_class in segment_definition.items():
+    extend_enum(SegmentNames, segment_name, segment_class)

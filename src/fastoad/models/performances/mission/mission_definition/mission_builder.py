@@ -413,7 +413,7 @@ class MissionBuilder:
         :param tag: the expected tag for specifying the segment type
         :return: the FlightSegment instance
         """
-        segment_class = SegmentNames.get_segment_class(segment_definition[tag])
+        segment_class = SegmentNames[segment_definition[tag]].value
         part_kwargs = kwargs.copy()
         part_kwargs.update(
             {name: value for name, value in segment_definition.items() if name != tag}
