@@ -1,6 +1,6 @@
 """Definition of globally used constants."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from enum import Enum, IntEnum
+from aenum import Enum, IntEnum, extend_enum
 
 
 class FlightPhase(Enum):
@@ -35,11 +35,6 @@ class EngineSetting(IntEnum):
     Enumeration of engine settings.
     """
 
-    TAKEOFF = 1
-    CLIMB = 2
-    CRUISE = 3
-    IDLE = 4
-
     def __eq__(self, other):
         if isinstance(other, str):
             return self.name.lower() == other.lower()
@@ -60,6 +55,14 @@ class EngineSetting(IntEnum):
                 return instance
 
         return None
+
+
+# Using the extensibility of EngineSetting is not needed here, but it allows to
+# test it.
+extend_enum(EngineSetting, "TAKEOFF")
+extend_enum(EngineSetting, "CLIMB")
+extend_enum(EngineSetting, "CRUISE")
+extend_enum(EngineSetting, "IDLE")
 
 
 class RangeCategory(Enum):
