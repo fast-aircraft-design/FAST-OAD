@@ -90,7 +90,7 @@ pyparsing==2.4.7; python_version >= "3.7" and python_full_version < "3.0.0" or p
 pyrsistent==0.17.3; python_version >= "3.5"
 pytest-cov==2.12.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
 pytest==6.2.4; python_version >= "3.6"
-python-dateutil==2.8.1; python_full_version >= "3.6.1" and python_version >= "3.7" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.3.0")
+python-dateutil==2.8.1; python_full_version >= "3.6.1" and python_version >= "3.7"
 pytz==2021.1; python_full_version >= "3.6.1" and python_version >= "3.6"
 pywin32==301; sys_platform == "win32" and python_version >= "3.6"
 pywinpty==1.1.1; os_name == "nt" and python_version >= "3.6"
@@ -114,7 +114,6 @@ sphinxcontrib-htmlhelp==2.0.0; python_version >= "3.6"
 sphinxcontrib-jsmath==1.0.1; python_version >= "3.6"
 sphinxcontrib-qthelp==1.0.3; python_version >= "3.6"
 sphinxcontrib-serializinghtml==1.1.5; python_version >= "3.6"
-strictyaml==1.4.0
 tabulate==0.8.9
 terminado==0.10.0; python_version >= "3.6"
 testpath==0.5.0; python_version >= "3.6"

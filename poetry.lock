@@ -1410,18 +1410,6 @@ lint = ["flake8", "mypy", "docutils-stubs"]
 test = ["pytest"]
 
 [[package]]
-name = "strictyaml"
-version = "1.4.0"
-description = "Strict, typed YAML parser"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-python-dateutil = ">=2.6.0"
-"ruamel.yaml" = ">=0.14.2"
-
-[[package]]
 name = "tabulate"
 version = "0.8.9"
 description = "Pretty-print tabular data"
@@ -1620,7 +1608,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "be4675cba2c40c1a1a59c319a236ee9952176c5dae64f163b4b3881f614b5bda"
+content-hash = "8ad7b598b0bd2b04e1d97f899535bf4cf12fb1b6bf573b61960dc844544ffc94"
 
 [metadata.files]
 alabaster = [
@@ -2542,9 +2530,6 @@ sphinxcontrib-qthelp = [
 sphinxcontrib-serializinghtml = [
     {file = "sphinxcontrib-serializinghtml-1.1.5.tar.gz", hash = "sha256:aa5f6de5dfdf809ef505c4895e51ef5c9eac17d0f287933eb49ec495280b6952"},
     {file = "sphinxcontrib_serializinghtml-1.1.5-py2.py3-none-any.whl", hash = "sha256:352a9a00ae864471d3a7ead8d7d79f5fc0b57e8b3f95e9867eb9eb28999b92fd"},
-]
-strictyaml = [
-    {file = "strictyaml-1.4.0.tar.gz", hash = "sha256:9f4e5814f96e17e82044a7dbbb8a0976048f2841b073e8114c2a2c025e7f81b9"},
 ]
 tabulate = [
     {file = "tabulate-0.8.9-py3-none-any.whl", hash = "sha256:d7c013fe7abbc5e491394e10fa845f8f32fe54f8dc60c6622c6cf482d25d47e4"},
