@@ -142,6 +142,12 @@
         "type": "number"
       }
     },
+    "target": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/parameter_value_with_unit"
+      }
+    },
     "polar": {
       "type": [
         "string",
@@ -206,7 +212,7 @@
               "type": "string"
             },
             "target": {
-              "type": "object"
+              "$ref": "#/definitions/target"
             }
           },
           "required": [
@@ -277,6 +283,44 @@
       ],
       "additionalProperties": false
     },
+    "mission_phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "phase": {
+          "type": "string"
+        }
+      }
+    },
+    "mission_route": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "route": {
+          "type": "string"
+        }
+      }
+    },
+    "mission_reserve": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reserve": {
+          "type": "object",
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "multiplier": {
+              "type": [
+                "number",
+                "string"
+              ]
+            }
+          }
+        }
+      }
+    },
     "mission": {
       "type": "object",
       "properties": {
@@ -285,42 +329,13 @@
           "items": {
             "oneOf": [
               {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "route": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/definitions/mission_phase"
               },
               {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "phase": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/definitions/mission_route"
               },
               {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "reserve": {
-                    "type": "object",
-                    "properties": {
-                      "ref": {
-                        "type": "string"
-                      },
-                      "multiplier": {
-                        "type": [
-                          "number",
-                          "string"
-                        ]
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/definitions/mission_reserve"
               }
             ]
           }
