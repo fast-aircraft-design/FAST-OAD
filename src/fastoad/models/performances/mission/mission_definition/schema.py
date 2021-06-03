@@ -37,12 +37,7 @@ from strictyaml import (
 )
 
 from fastoad.model_base import FlightPoint
-from ..segments.altitude_change import AltitudeChangeSegment
-from ..segments.cruise import BreguetCruiseSegment, ClimbAndCruiseSegment, OptimalCruiseSegment
-from ..segments.hold import HoldSegment
-from ..segments.speed_change import SpeedChangeSegment
-from ..segments.taxi import TaxiSegment
-from ..segments.transition import DummyTransitionSegment
+from ..segments.base import FlightSegment
 
 # Tags
 SEGMENT_TAG = "segment"
@@ -240,27 +235,35 @@ class MissionDefinition(dict):
         }
 
 
-class SegmentNames(Enum):
+class SegmentDefinitions(Enum):
     """
-    Class that lists available flight segments.
-
-    Enum values are matching segment classes.
+    Class that associates segment names (mission file keywords) and their implementation.
     """
 
-    pass
+    @classmethod
+    def add_segment(cls, segment_name: str, segment_class: type):
+        """
+        Adds a segment definition.
 
+        :param segment_name: segment names (mission file keyword)
+        :param segment_class: segment implementation (derived of
+                              :class:`~fastoad.models.performances.mission.segments.base.FlightSegment`)
+        """
+        if issubclass(segment_class, FlightSegment):
+            extend_enum(cls, segment_name, segment_class)
+        else:
+            raise RuntimeWarning(
+                '"%s" is ignored as segment name because its associated class '
+                "does not derive from FlightSegment." % segment_name
+            )
 
-segment_definition = {
-    "altitude_change": AltitudeChangeSegment,
-    "speed_change": SpeedChangeSegment,
-    "cruise": ClimbAndCruiseSegment,
-    "optimal_cruise": OptimalCruiseSegment,
-    "holding": HoldSegment,
-    "taxi": TaxiSegment,
-    "transition": DummyTransitionSegment,
-    "breguet": BreguetCruiseSegment,
-}
+    @classmethod
+    def get_segment_class(cls, segment_name) -> type:
+        """
+        Provides the segment implementation for provided name.
 
-
-for segment_name, segment_class in segment_definition.items():
-    extend_enum(SegmentNames, segment_name, segment_class)
+        :param segment_name:
+        :return: the segment implementation (derived of
+                 :class:`~fastoad.models.performances.mission.segments.base.FlightSegment`)
+        """
+        return cls[segment_name].value

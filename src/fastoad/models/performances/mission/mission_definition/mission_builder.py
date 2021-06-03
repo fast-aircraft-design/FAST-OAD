@@ -37,7 +37,7 @@ from .schema import (
     RESERVE_TAG,
     ROUTE_DEFINITIONS_TAG,
     SEGMENT_TAG,
-    SegmentNames,
+    SegmentDefinitions,
 )
 from ..base import FlightSequence, IFlightPart
 from ..polar import Polar
@@ -413,7 +413,7 @@ class MissionBuilder:
         :param tag: the expected tag for specifying the segment type
         :return: the FlightSegment instance
         """
-        segment_class = SegmentNames[segment_definition[tag]].value
+        segment_class = SegmentDefinitions.get_segment_class(segment_definition[tag])
         part_kwargs = kwargs.copy()
         part_kwargs.update(
             {name: value for name, value in segment_definition.items() if name != tag}
