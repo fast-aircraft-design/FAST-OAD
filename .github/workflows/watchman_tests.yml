@@ -13,6 +13,10 @@ on:
       - 'src/**'
       - 'tests/**'
       - 'pyproject.toml'
+      - '.github/workflows/**'
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
 

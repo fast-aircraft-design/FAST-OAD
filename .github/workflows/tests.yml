@@ -10,6 +10,10 @@ on:
       - 'src/**'
       - 'tests/**'
       - 'poetry.lock'
+      - '.github/workflows/**'
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
 
