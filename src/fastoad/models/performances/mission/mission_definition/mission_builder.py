@@ -37,12 +37,11 @@ from .schema import (
     RESERVE_TAG,
     ROUTE_DEFINITIONS_TAG,
     SEGMENT_TAG,
-    SegmentDefinitions,
 )
 from ..base import FlightSequence, IFlightPart
 from ..polar import Polar
 from ..routes import RangedRoute
-from ..segments.base import FlightSegment
+from ..segments.base import FlightSegment, SegmentDefinitions
 
 BASE_UNITS = {
     "altitude": "m",

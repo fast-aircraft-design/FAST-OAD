@@ -19,7 +19,6 @@ from dataclasses import fields
 from os import PathLike
 from typing import Union
 
-from aenum import Enum, extend_enum
 from ensure import Ensure
 from strictyaml import (
     Bool,
@@ -37,7 +36,6 @@ from strictyaml import (
 )
 
 from fastoad.model_base import FlightPoint
-from ..segments.base import FlightSegment
 
 # Tags
 SEGMENT_TAG = "segment"
@@ -233,37 +231,3 @@ class MissionDefinition(dict):
             Optional("reserve_mass_ratio", default=None): cls._get_value_schema(has_unit=False),
             Optional("use_max_lift_drag_ratio", default=None): cls._get_value_schema(Bool(), False),
         }
-
-
-class SegmentDefinitions(Enum):
-    """
-    Class that associates segment names (mission file keywords) and their implementation.
-    """
-
-    @classmethod
-    def add_segment(cls, segment_name: str, segment_class: type):
-        """
-        Adds a segment definition.
-
-        :param segment_name: segment names (mission file keyword)
-        :param segment_class: segment implementation (derived of
-                              :class:`~fastoad.models.performances.mission.segments.base.FlightSegment`)
-        """
-        if issubclass(segment_class, FlightSegment):
-            extend_enum(cls, segment_name, segment_class)
-        else:
-            raise RuntimeWarning(
-                '"%s" is ignored as segment name because its associated class '
-                "does not derive from FlightSegment." % segment_name
-            )
-
-    @classmethod
-    def get_segment_class(cls, segment_name) -> type:
-        """
-        Provides the segment implementation for provided name.
-
-        :param segment_name:
-        :return: the segment implementation (derived of
-                 :class:`~fastoad.models.performances.mission.segments.base.FlightSegment`)
-        """
-        return cls[segment_name].value
