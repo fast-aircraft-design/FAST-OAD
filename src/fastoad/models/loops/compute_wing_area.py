@@ -49,6 +49,8 @@ class _ComputeWingArea(om.ExplicitComponent):
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
 
         self.add_output("data:geometry:wing:area", val=100.0, units="m**2")
+
+    def setup_partials(self):
         self.declare_partials("data:geometry:wing:area", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -84,6 +86,7 @@ class _ComputeWingAreaConstraints(om.ExplicitComponent):
         self.add_output("data:weight:aircraft:additional_fuel_capacity", units="kg")
         self.add_output("data:aerodynamics:aircraft:landing:additional_CL_capacity")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:aircraft:additional_fuel_capacity",
             ["data:weight:aircraft:MFW", "data:weight:aircraft:sizing_block_fuel"],

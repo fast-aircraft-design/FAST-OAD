@@ -2,7 +2,7 @@
     FAST - Copyright (c) 2016 ONERA ISAE
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -105,6 +105,7 @@ class ComputePolar(ExplicitComponent):
             self.add_output("data:aerodynamics:aircraft:cruise:optimal_CL")
             self.add_output("data:aerodynamics:aircraft:cruise:optimal_CD")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):

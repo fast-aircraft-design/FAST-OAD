@@ -2,7 +2,7 @@
 Estimation of power systems weight
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -53,6 +53,7 @@ class PowerSystemsWeight(ExplicitComponent):
         self.add_output("data:weight:systems:power:electric_systems:mass", units="kg")
         self.add_output("data:weight:systems:power:hydraulic_systems:mass", units="kg")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     # pylint: disable=too-many-locals

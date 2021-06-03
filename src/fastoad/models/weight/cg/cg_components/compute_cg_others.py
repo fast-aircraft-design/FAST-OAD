@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -65,6 +65,7 @@ class ComputeOthersCG(ExplicitComponent):
         self.add_output("data:weight:payload:rear_fret:CG:x", units="m")
         self.add_output("data:weight:payload:front_fret:CG:x", units="m")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length", method="fd"
         )

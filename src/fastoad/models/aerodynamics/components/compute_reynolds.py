@@ -37,6 +37,7 @@ class ComputeReynolds(ExplicitComponent):
             self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
             self.add_output("data:aerodynamics:wing:cruise:reynolds")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):

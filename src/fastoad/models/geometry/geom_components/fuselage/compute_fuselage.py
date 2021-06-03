@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -39,6 +39,7 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         self.add_output("data:geometry:fuselage:wetted_area", units="m**2")
         self.add_output("data:geometry:cabin:crew_count:commercial")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:systems:flight_kit:CG:x",
             ["data:geometry:fuselage:front_length", "data:geometry:fuselage:PAX_length"],
@@ -123,6 +124,7 @@ class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
         self.add_output("data:geometry:fuselage:wetted_area", units="m**2")
         self.add_output("data:geometry:cabin:crew_count:commercial")
 
+    def setup_partials(self):
         self.declare_partials("data:geometry:cabin:NPAX1", ["data:TLAR:NPAX"], method="fd")
         self.declare_partials(
             "data:geometry:fuselage:maximum_width",

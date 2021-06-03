@@ -52,6 +52,7 @@ class ComputeHTArea(om.ExplicitComponent):
         self.add_output("data:geometry:horizontal_tail:wetted_area", units="m**2", ref=100.0)
         self.add_output("data:geometry:horizontal_tail:area", units="m**2", ref=50.0)
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
         self.declare_partials(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",

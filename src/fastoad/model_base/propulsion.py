@@ -157,6 +157,7 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
             "data:propulsion:thrust", copy_shape="data:propulsion:mach", units="N", ref=1e5
         )
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

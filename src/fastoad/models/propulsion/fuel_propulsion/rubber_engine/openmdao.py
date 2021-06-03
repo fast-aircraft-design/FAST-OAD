@@ -160,6 +160,9 @@ class OMRubberEngineComponent(BaseOMPropulsionComponent):
         super().setup()
         self.get_wrapper().setup(self)
 
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="fd")
+
     @staticmethod
     def get_wrapper() -> OMRubberEngineWrapper:
         return OMRubberEngineWrapper()

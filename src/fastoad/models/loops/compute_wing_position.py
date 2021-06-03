@@ -36,6 +36,7 @@ class ComputeWingPosition(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:MAC:at25percent:x", val=17.0, units="m")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
