@@ -48,5 +48,6 @@ jobs:
         shell: bash
 
       - name: Notebook tests
+        if: "${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[test nb]')}}"
         run: pytest --no-cov --nbval-lax -p no:python src
         shell: bash
