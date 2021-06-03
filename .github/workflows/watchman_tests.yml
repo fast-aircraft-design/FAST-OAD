@@ -15,6 +15,7 @@ on:
       - 'pyproject.toml'
       - '.github/workflows/**'
   pull_request:
+    types: [ready_for_review, closed]
     branches:
       - '**'
 
