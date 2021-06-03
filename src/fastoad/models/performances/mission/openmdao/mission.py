@@ -342,7 +342,8 @@ class MissionComponent(om.ExplicitComponent):
             self.add_output("data:weight:aircraft:sizing_block_fuel", units="kg")
             self.add_output("data:weight:aircraft:sizing_onboard_fuel_at_takeoff", units="kg")
 
-        self.declare_partials(["*"], ["*"])
+    def setup_partials(self):
+        self.declare_partials(["*"], ["*"], method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         iter_count = self.iter_count_without_approx
