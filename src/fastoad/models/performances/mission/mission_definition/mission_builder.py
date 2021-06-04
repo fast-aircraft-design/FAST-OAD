@@ -37,12 +37,11 @@ from .schema import (
     RESERVE_TAG,
     ROUTE_DEFINITIONS_TAG,
     SEGMENT_TAG,
-    SegmentNames,
 )
 from ..base import FlightSequence, IFlightPart
 from ..polar import Polar
 from ..routes import RangedRoute
-from ..segments.base import FlightSegment
+from ..segments.base import FlightSegment, SegmentDefinitions
 
 BASE_UNITS = {
     "altitude": "m",
@@ -416,7 +415,7 @@ class MissionBuilder:
         :param tag: the expected tag for specifying the segment type
         :return: the FlightSegment instance
         """
-        segment_class = SegmentNames.get_segment_class(segment_definition[tag])
+        segment_class = SegmentDefinitions.get_segment_class(segment_definition[tag])
         part_kwargs = kwargs.copy()
         part_kwargs.update(
             {name: value for name, value in segment_definition.items() if name != tag}

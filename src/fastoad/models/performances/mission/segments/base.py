@@ -19,6 +19,7 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
+from aenum import Enum, extend_enum
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
@@ -35,12 +36,59 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 DEFAULT_TIME_STEP = 0.2
 
 
+class SegmentDefinitions(Enum):
+    """
+    Class that associates segment names (mission file keywords) and their implementation.
+    """
+
+    @classmethod
+    def add_segment(cls, segment_name: str, segment_class: type):
+        """
+        Adds a segment definition.
+
+        :param segment_name: segment names (mission file keyword)
+        :param segment_class: segment implementation (derived of :class:`~FlightSegment`)
+        """
+        if issubclass(segment_class, FlightSegment):
+            extend_enum(cls, segment_name, segment_class)
+        else:
+            raise RuntimeWarning(
+                '"%s" is ignored as segment name because its associated class '
+                "does not derive from FlightSegment." % segment_name
+            )
+
+    @classmethod
+    def get_segment_class(cls, segment_name) -> type:
+        """
+        Provides the segment implementation for provided name.
+
+        :param segment_name:
+        :return: the segment implementation (derived of :class:`~FlightSegment`)
+        """
+        return cls[segment_name].value
+
+
 @dataclass
 class FlightSegment(IFlightPart):
     """
     Base class for flight path segment.
 
     As a dataclass, attributes can be set at instantiation.
+
+    When subclassing this class, the attribute "mission_file_keyword" can be set,
+    so that the segment can be used in mission file definition with this keyword:
+
+        >>> class NewSegment(FlightSegment, mission_file_keyword="new_segment")
+        >>>     ...
+
+    Then in mission definition:
+
+    .. code-block:: yaml
+
+        phases:
+            my_phase:
+                parts:
+                    - segment: new_segment
     """
 
     #: A FlightPoint instance that provides parameter values that should all be reached at the
@@ -84,6 +132,11 @@ class FlightSegment(IFlightPart):
 
     #: Using this value will tell to keep the associated parameter constant.
     CONSTANT_VALUE = "constant"  # pylint: disable=invalid-name # used as constant
+
+    @classmethod
+    def __init_subclass__(cls, *, mission_file_keyword=""):
+        if mission_file_keyword:
+            SegmentDefinitions.add_segment(mission_file_keyword, cls)
 
     def __post_init__(self):
         # Ensure target fields are not numpy arrays

@@ -22,7 +22,7 @@ from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-class SpeedChangeSegment(ManualThrustSegment):
+class SpeedChangeSegment(ManualThrustSegment, mission_file_keyword="speed_change"):
     """
     Computes a flight path segment where speed is modified with no change in altitude.
 

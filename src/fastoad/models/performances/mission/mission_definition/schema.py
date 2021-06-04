@@ -16,22 +16,15 @@ Schema for mission definition files.
 
 import json
 from collections import OrderedDict
-from enum import Enum
 from importlib.resources import open_text
 from os import PathLike
-from typing import Set, Union
+from typing import Union
 
 from ensure import Ensure
 from jsonschema import validate
 from ruamel.yaml import YAML
 
 from . import resources
-from ..segments.altitude_change import AltitudeChangeSegment
-from ..segments.cruise import BreguetCruiseSegment, ClimbAndCruiseSegment, OptimalCruiseSegment
-from ..segments.hold import HoldSegment
-from ..segments.speed_change import SpeedChangeSegment
-from ..segments.taxi import TaxiSegment
-from ..segments.transition import DummyTransitionSegment
 
 JSON_SCHEMA_NAME = "mission_schema.json"
 
@@ -142,47 +135,3 @@ class MissionDefinition(dict):
             polar_def = struct[POLAR_TAG]
             if isinstance(polar_def, str) and ":" in polar_def:
                 struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
-
-
-class SegmentNames(Enum):
-    """
-    Class that lists available flight segments.
-
-    Enum values are linked to matching implementation with :meth:`get_segment_class`.
-    """
-
-    ALTITUDE_CHANGE = "altitude_change"
-    TRANSITION = "transition"
-    CRUISE = "cruise"
-    OPTIMAL_CRUISE = "optimal_cruise"
-    BREGUET = "breguet"
-    SPEED_CHANGE = "speed_change"
-    HOLDING = "holding"
-    TAXI = "taxi"
-
-    @classmethod
-    def string_values(cls) -> Set[str]:
-        """
-
-        :return: the list of available segments as strings
-        """
-        return {part.value for part in cls}
-
-    @classmethod
-    def get_segment_class(cls, value: Union["SegmentNames", str]) -> type:
-        """
-
-        :param value: a SegmentNames instance or a string among possible values of SegmentNames
-        :return: the matching implementation class
-        """
-        segments = {
-            cls.ALTITUDE_CHANGE.value: AltitudeChangeSegment,
-            cls.TRANSITION.value: DummyTransitionSegment,
-            cls.CRUISE.value: ClimbAndCruiseSegment,
-            cls.OPTIMAL_CRUISE.value: OptimalCruiseSegment,
-            cls.BREGUET.value: BreguetCruiseSegment,
-            cls.SPEED_CHANGE.value: SpeedChangeSegment,
-            cls.HOLDING.value: HoldSegment,
-            cls.TAXI.value: TaxiSegment,
-        }
-        return segments[value]

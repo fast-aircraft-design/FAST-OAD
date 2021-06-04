@@ -25,7 +25,7 @@ from fastoad.models.performances.mission.segments.base import FlightSegment
 
 
 @dataclass
-class DummyTransitionSegment(FlightSegment):
+class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
     """
     Computes a transient flight part in a very quick and dummy way.
 
