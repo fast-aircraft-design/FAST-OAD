@@ -297,8 +297,8 @@ A basic example would be:
 
     segment: cruise
     polar:
-      CL: 0.0, 0.5, 1.0
-      CD: 0.01, 0.03, 0.12
+      CL: [0.0, 0.5, 1.0]
+      CD: [0.01, 0.03, 0.12]
 
 But generally, polar values will be obtained through variable names, because they
 will be computed during the process, or provided in the input file. This should give:

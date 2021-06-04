@@ -11,7 +11,9 @@ on:
       - 'tests/**'
       - 'poetry.lock'
       - '.github/workflows/**'
+      - 'CHANGELOG.rst'  # To ensure CI runs when merging release branch
   pull_request:
+    types: [ready_for_review]
     branches:
       - '**'
 
@@ -20,7 +22,7 @@ jobs:
   tests:
 
     runs-on: ${{ matrix.os }}
-    if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]')"
+    if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
         python-version: [3.7, 3.8]
@@ -42,13 +44,13 @@ jobs:
         shell: bash
 
       - uses: actions/cache@v2
-        if: startsWith(runner.os, 'Linux')
+        if: ${{ startsWith(runner.os, 'Linux') }}
         with:
           path: ~/.cache/pypoetry
           key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
 
       - uses: actions/cache@v2
-        if: startsWith(runner.os, 'macOS')
+        if: ${{ startsWith(runner.os, 'macOS') }}
         with:
           path: ~/Library/Caches/pypoetry
           key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
@@ -71,13 +73,13 @@ jobs:
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'  # This action runs only on Linux
+        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.7' }} # This action runs only on Linux
         with:
           project-token: ${{ secrets.codacy }}
           coverage-reports: coverage.xml
 
       - uses: codecov/codecov-action@v1
-        if: runner.os == 'Windows' && matrix.python-version == '3.7'  # Using Windows for covering XFOIL calls
+        if: ${{ runner.os == 'Windows' && matrix.python-version == '3.7' }} # Using Windows for covering XFOIL calls
         with:
 #          flags: unittests  # optional
           name: codecov-FAST-OAD  # optional
@@ -88,5 +90,6 @@ jobs:
         shell: bash
 
       - name: Notebook tests
+        if: ${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[test nb]') || github.ref == 'refs/heads/master' }}
         run: poetry run pytest --no-cov --nbval-lax -p no:python src
         shell: bash
