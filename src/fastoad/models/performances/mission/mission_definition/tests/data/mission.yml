@@ -2,8 +2,8 @@ phases:
   initial_climb:
     engine_setting: takeoff
     polar:
-      CL: 0.0, 0.5, 1.0
-      CD: 0., 0.03, 0.12
+      CL: [ 0.0, 0.5, 1.0 ]
+      CD: [ 0., 0.03, 0.12 ]
     thrust_rate:
       value: 1.0
     parts:

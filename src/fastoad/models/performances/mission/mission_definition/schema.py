@@ -14,35 +14,26 @@ Schema for mission definition files.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import json
 from collections import OrderedDict
-from dataclasses import fields
 from enum import Enum
+from importlib.resources import open_text
 from os import PathLike
 from typing import Set, Union
 
 from ensure import Ensure
-from strictyaml import (
-    Bool,
-    CommaSeparated,
-    Float,
-    Map,
-    MapPattern,
-    Optional,
-    ScalarValidator,
-    Seq,
-    Str,
-    Validator,
-    YAML,
-    load,
-)
+from jsonschema import validate
+from ruamel.yaml import YAML
 
-from fastoad.model_base import FlightPoint
+from . import resources
 from ..segments.altitude_change import AltitudeChangeSegment
 from ..segments.cruise import BreguetCruiseSegment, ClimbAndCruiseSegment, OptimalCruiseSegment
 from ..segments.hold import HoldSegment
 from ..segments.speed_change import SpeedChangeSegment
 from ..segments.taxi import TaxiSegment
 from ..segments.transition import DummyTransitionSegment
+
+JSON_SCHEMA_NAME = "mission_schema.json"
 
 # Tags
 SEGMENT_TAG = "segment"
@@ -82,14 +73,20 @@ class MissionDefinition(dict):
         :param file_path: path of YAML file to read.
         """
         self.clear()
-        with open(file_path) as yaml_file:
-            content = load(yaml_file.read(), self._get_schema())
+        yaml = YAML()
 
-        self._validate(content)
-        self.update(content.data)
+        with open(file_path) as yaml_file:
+            data = yaml.load(yaml_file)
+
+        with open_text(resources, JSON_SCHEMA_NAME) as json_file:
+            json_schema = json.loads(json_file.read())
+        validate(data, json_schema)
+
+        self._validate(data)
+        self.update(data)
 
     @classmethod
-    def _validate(cls, content: YAML):
+    def _validate(cls, content: dict):
         """
         Does a second pass validation of file content.
 
@@ -136,108 +133,15 @@ class MissionDefinition(dict):
                 Ensure(part_type).equals(RESERVE_TAG)
 
     @staticmethod
-    def _process_polar_definition(struct: YAML):
+    def _process_polar_definition(struct: dict):
         """
         If "foo:bar:baz" is provided as value for the "polar" key in provided dictionary, it is
         replaced by the dict {"CL":"foo:bar:baz:CL", "CD":"foo:bar:baz:CD"}
         """
         if POLAR_TAG in struct:
-            polar_def = struct[POLAR_TAG].value
+            polar_def = struct[POLAR_TAG]
             if isinstance(polar_def, str) and ":" in polar_def:
                 struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
-
-    @classmethod
-    def _get_schema(cls):
-        """Schema of the whole mission file."""
-        return Map(
-            {
-                PHASE_DEFINITIONS_TAG: MapPattern(Str(), cls._get_phase_schema()),
-                ROUTE_DEFINITIONS_TAG: MapPattern(Str(), cls._get_route_schema()),
-                MISSION_DEFINITION_TAG: MapPattern(Str(), cls._get_mission_schema()),
-            }
-        )
-
-    @classmethod
-    def _get_phase_schema(cls) -> Map:
-        """Schema of the phase section."""
-        phase_map = {Optional(PARTS_TAG, default=None): Seq(cls._get_segment_schema())}
-        phase_map.update(cls._get_base_part_mapping())
-        return Map(phase_map)
-
-    @classmethod
-    def _get_route_schema(cls) -> Map:
-        """Schema of the route section."""
-        return Map(
-            {
-                Optional("range", default=None): cls._get_value_schema(),
-                Optional(CLIMB_PARTS_TAG, default=None): Seq(Map({PHASE_TAG: Str()})),
-                CRUISE_PART_TAG: cls._get_segment_schema(),
-                Optional(DESCENT_PARTS_TAG, default=None): Seq(Map({PHASE_TAG: Str()})),
-            }
-        )
-
-    @classmethod
-    def _get_mission_schema(cls) -> Map:
-        """Schema of the mission section."""
-        return Map(
-            {
-                PARTS_TAG: Seq(
-                    Map(
-                        {
-                            Optional(ROUTE_TAG, default=None): Str(),
-                            Optional(PHASE_TAG, default=None): Str(),
-                            Optional(RESERVE_TAG, default=None): Map(
-                                {"ref": Str(), "multiplier": Float() | Str()}
-                            ),
-                        }
-                    )
-                ),
-            }
-        )
-
-    @classmethod
-    def _get_segment_schema(cls, tag=SEGMENT_TAG) -> Map:
-        """Schema for a segment."""
-        segment_map = {tag: Str()}
-        segment_map.update(cls._get_base_part_mapping())
-        return Map(segment_map)
-
-    @classmethod
-    def _get_value_schema(cls, value_type: ScalarValidator = Float(), has_unit=True) -> Validator:
-        """Schema for parameter value."""
-        map_dict = {"value": Float() | Str()}
-        if has_unit:
-            map_dict[Optional("unit", default=None)] = Str()
-
-        return value_type | Str() | Map(map_dict)
-
-    @classmethod
-    def _get_target_schema(cls) -> Map:
-        """Schema for segment target."""
-        target_schema_map = {}
-        for key in [f.name for f in fields(FlightPoint)]:
-            target_schema_map[Optional(key, default=None)] = cls._get_value_schema()
-        return Map(target_schema_map)
-
-    @classmethod
-    def _get_base_part_mapping(cls) -> dict:
-        """Base mapping for segment/phase schemas."""
-        polar_coeff_schema = CommaSeparated(Float()) | Str()
-        polar_schema = Map({"CL": polar_coeff_schema, "CD": polar_coeff_schema}) | Str()
-        return {
-            # TODO: this mapping covers all possible segments, but some options are relevant
-            #  only for some segments. A better check could be done in second-pass validation.
-            Optional("target", default=None): cls._get_target_schema(),
-            Optional("engine_setting", default=None): cls._get_value_schema(Str(), False),
-            Optional(POLAR_TAG, default=None): polar_schema,
-            Optional("thrust_rate", default=None): cls._get_value_schema(has_unit=False),
-            Optional("climb_thrust_rate", default=None): cls._get_value_schema(has_unit=False),
-            Optional("time_step", default=None): cls._get_value_schema(),
-            Optional("maximum_flight_level", default=None): cls._get_value_schema(has_unit=False),
-            Optional("mass_ratio", default=None): cls._get_value_schema(has_unit=False),
-            Optional("reserve_mass_ratio", default=None): cls._get_value_schema(has_unit=False),
-            Optional("use_max_lift_drag_ratio", default=None): cls._get_value_schema(Bool(), False),
-        }
 
 
 class SegmentNames(Enum):
