@@ -1,0 +1,19 @@
+title: Template
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+# Input and output files
+input_file: input_file
+output_file: output_file
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: driver
+
+# Definition of OpenMDAO model
+# Although "model" is a mandatory name for the top level of the model, its
+# sub-components can be freely named by user
+model:
+  nonlinear_solver: nl_solver
+  linear_solver: l_solver
+
