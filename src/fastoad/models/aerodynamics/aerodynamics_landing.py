@@ -124,6 +124,7 @@ class ComputeMachReynolds(om.ExplicitComponent):
         self.add_output("data:aerodynamics:aircraft:landing:mach")
         self.add_output("data:aerodynamics:wing:landing:reynolds")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -149,6 +150,7 @@ class Compute3DMaxCL(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:aircraft:landing:CL_max_clean")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

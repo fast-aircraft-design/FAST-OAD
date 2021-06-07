@@ -2,7 +2,7 @@
     Estimation of vertical tail chords and span
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -32,6 +32,7 @@ class ComputeVTChords(ExplicitComponent):
         self.add_output("data:geometry:vertical_tail:root:chord", units="m")
         self.add_output("data:geometry:vertical_tail:tip:chord", units="m")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:geometry:vertical_tail:span",
             ["data:geometry:vertical_tail:aspect_ratio", "data:geometry:vertical_tail:area"],

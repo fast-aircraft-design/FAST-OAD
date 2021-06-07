@@ -48,6 +48,7 @@ class Loads(ExplicitComponent):
         self.add_output("data:mission:sizing:cs25:sizing_load_1", units="kg")
         self.add_output("data:mission:sizing:cs25:sizing_load_2", units="kg")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     # pylint: disable=too-many-locals

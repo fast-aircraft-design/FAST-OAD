@@ -104,6 +104,7 @@ class ComputePolar(ExplicitComponent):
             self.add_output("data:aerodynamics:aircraft:cruise:optimal_CL")
             self.add_output("data:aerodynamics:aircraft:cruise:optimal_CD")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):

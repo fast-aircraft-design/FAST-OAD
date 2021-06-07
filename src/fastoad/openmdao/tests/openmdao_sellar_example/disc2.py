@@ -23,6 +23,8 @@ class Disc2(om.ExplicitComponent):
         self.add_input("y1", val=1.0, desc="")
 
         self.add_output("y2", val=1.0, desc="")
+
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

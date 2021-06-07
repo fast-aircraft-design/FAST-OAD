@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -42,6 +42,7 @@ class Cd0HorizontalTail(ExplicitComponent):
             self.add_input("data:TLAR:cruise_mach", val=np.nan)
             self.add_output("data:aerodynamics:horizontal_tail:cruise:CD0")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
