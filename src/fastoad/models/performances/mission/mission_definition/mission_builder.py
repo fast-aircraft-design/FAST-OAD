@@ -37,12 +37,11 @@ from .schema import (
     RESERVE_TAG,
     ROUTE_DEFINITIONS_TAG,
     SEGMENT_TAG,
-    SegmentNames,
 )
 from ..base import FlightSequence, IFlightPart
 from ..polar import Polar
 from ..routes import RangedRoute
-from ..segments.base import FlightSegment
+from ..segments.base import FlightSegment, SegmentDefinitions
 
 BASE_UNITS = {
     "altitude": "m",
@@ -301,8 +300,11 @@ class MissionBuilder:
                 name = struct.get("mission", "") + struct.get("route", "") + struct.get("phase", "")
                 prefix_addition = ":" + name if name else ""
 
-                if isinstance(value, str) and value.startswith("~"):
-                    suffix = key if value == "~" else value[1:]
+                if isinstance(value, str) and value.startswith("~") or value is None:
+                    # "~" alone is interpreted as "null" by the yaml parser
+                    # In that case, the parameter name in the mission file is used as suffix.
+                    # Otherwise, the string after the "~" is used as suffix.
+                    suffix = key if value is None else value[1:]
                     value = prefix + prefix_addition + ":" + suffix
                 if isinstance(value, str) and ":" in value:
                     input_definition[value] = (BASE_UNITS.get(key), "Input defined by the mission.")
@@ -413,7 +415,7 @@ class MissionBuilder:
         :param tag: the expected tag for specifying the segment type
         :return: the FlightSegment instance
         """
-        segment_class = SegmentNames.get_segment_class(segment_definition[tag])
+        segment_class = SegmentDefinitions.get_segment_class(segment_definition[tag])
         part_kwargs = kwargs.copy()
         part_kwargs.update(
             {name: value for name, value in segment_definition.items() if name != tag}

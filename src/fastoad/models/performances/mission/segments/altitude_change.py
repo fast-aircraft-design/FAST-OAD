@@ -29,7 +29,7 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @dataclass
-class AltitudeChangeSegment(ManualThrustSegment):
+class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_change"):
     """
     Computes a flight path segment where altitude is modified with constant speed.
 

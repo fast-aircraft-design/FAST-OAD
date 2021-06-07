@@ -2,7 +2,7 @@
     Estimation of center of gravity ratio with aft
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -109,6 +109,7 @@ class ComputeCG(om.ExplicitComponent):
         self.add_output("data:weight:aircraft_empty:mass", units="kg")
         self.add_output("data:weight:aircraft_empty:CG:x", units="m")
 
+    def setup_partials(self):
         self.declare_partials("data:weight:aircraft_empty:mass", "*", method="fd")
         self.declare_partials("data:weight:aircraft_empty:CG:x", "*", method="fd")
 
@@ -130,6 +131,9 @@ class CGRatio(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
 
         self.add_output("data:weight:aircraft:empty:CG:MAC_position")
+
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         x_cg_all = inputs["data:weight:aircraft_empty:CG:x"]

@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -34,6 +34,7 @@ class ComputeB50(ExplicitComponent):
 
         self.add_output("data:geometry:wing:b_50", units="m")
 
+    def setup_partials(self):
         self.declare_partials("data:geometry:wing:b_50", "*", method="fd")
 
     def compute(self, inputs, outputs):

@@ -21,7 +21,7 @@ from ..polar import Polar
 
 
 @dataclass
-class TaxiSegment(ManualThrustSegment, FixedDurationSegment):
+class TaxiSegment(ManualThrustSegment, FixedDurationSegment, mission_file_keyword="taxi"):
     """
     Class for computing Taxi phases.
 

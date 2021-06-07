@@ -1,4 +1,3 @@
-"""Class for simulating hold segment."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,16 +10,3 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from .base import RegulatedThrustSegment, FixedDurationSegment
-
-
-class HoldSegment(RegulatedThrustSegment, FixedDurationSegment, mission_file_keyword="holding"):
-    """
-    Class for computing hold flight segment.
-
-    Mach is considered constant, equal to Mach at starting point.
-    Altitude is constant.
-    Target is a specified time. The target definition indicates
-    the time duration of the segment, independently of the initial time value.
-    """

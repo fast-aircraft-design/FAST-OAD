@@ -57,15 +57,17 @@ plotly = "^4.5.0"
 wop = "^1.12.0"
 lxml = "^4.6.3"
 tomlkit = ">=0.5.3 <1"
-"ruamel.yaml" = ">=0.15.78 <0.17.5"
+"ruamel.yaml" = ">=0.15.78 <0.18"
 jsonschema = "^3.2.0"
-strictyaml = "^1.1.0"
 ensure = "^1.0.0"
 tabulate = "^0.8.9"
+aenum = "^3.1.0"
+
 jupyterlab = {version = "^2", optional = true}
 
 [tool.poetry.extras]
 jupyterlab = ["jupyterlab"]
+
 
 [tool.poetry.dev-dependencies]
 pytest = ">=5.2"

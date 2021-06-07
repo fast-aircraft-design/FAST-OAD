@@ -59,7 +59,7 @@ class CruiseSegment(RegulatedThrustSegment):
 
 
 @dataclass
-class OptimalCruiseSegment(CruiseSegment):
+class OptimalCruiseSegment(CruiseSegment, mission_file_keyword="optimal_cruise"):
     """
     Class for computing cruise flight segment at maximum lift/drag ratio.
 
@@ -82,7 +82,7 @@ class OptimalCruiseSegment(CruiseSegment):
 
 
 @dataclass
-class ClimbAndCruiseSegment(CruiseSegment):
+class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
     """
     Class for computing cruise flight segment at constant altitude.
 
@@ -199,7 +199,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
 
 
 @dataclass
-class BreguetCruiseSegment(CruiseSegment):
+class BreguetCruiseSegment(CruiseSegment, mission_file_keyword="breguet"):
     """
     Class for computing cruise flight segment at constant altitude using Breguet-Leduc formula.
 

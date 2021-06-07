@@ -25,7 +25,7 @@ import numpy as np
 import openmdao.api as om
 import tomlkit
 from jsonschema import validate
-from ruamel import yaml
+from ruamel.yaml import YAML
 
 from fastoad._utils.files import make_parent_dir
 from fastoad.io import DataFile, IVariableIOFormatter
@@ -529,12 +529,15 @@ class _YAMLSerializer(_IDictSerializer):
         return self._data
 
     def read(self, file_path: str):
+        yaml = YAML(typ="safe")
         with open(file_path) as yaml_file:
-            self._data = yaml.safe_load(yaml_file.read())
+            self._data = yaml.load(yaml_file)
 
     def write(self, file_path: str):
+        yaml = YAML()
+        yaml.default_flow_style = False
         with open(file_path, "w") as file:
-            yaml.round_trip_dump(self._data, file)
+            yaml.dump(self._data, file)
 
 
 class _IConfigurationModifier(ABC):

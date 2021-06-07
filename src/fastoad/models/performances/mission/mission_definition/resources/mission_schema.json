@@ -1,0 +1,376 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/product.schema.json",
+  "title": "FAST-OAD mission files",
+  "description": "Schema for FAST-OAD mission files",
+  "type": "object",
+  "definitions": {
+    "inline_string_value": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "inline_number_value": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/inline_string_value"
+        },
+        {
+          "type": "number"
+        }
+      ]
+    },
+    "inline_boolean_value": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/inline_string_value"
+        },
+        {
+          "type": "boolean"
+        }
+      ]
+    },
+    "string_parameter_value": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/inline_string_value"
+        },
+        {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "value": {
+              "$ref": "#/definitions/inline_string_value"
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "boolean_parameter_value": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/inline_boolean_value"
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/string_parameter_value"
+            },
+            {
+              "type": [
+                "object"
+              ],
+              "properties": {
+                "value": {
+                  "$ref": "#/definitions/inline_boolean_value"
+                }
+              },
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      ]
+    },
+    "parameter_value_without_unit": {
+      "anyOf": [
+        {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/inline_number_value"
+            },
+            {
+              "type": [
+                "object"
+              ],
+              "properties": {
+                "value": {
+                  "$ref": "#/definitions/inline_number_value"
+                }
+              },
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      ]
+    },
+    "parameter_value_with_unit": {
+      "anyOf": [
+        {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/inline_number_value"
+            },
+            {
+              "type": [
+                "object"
+              ],
+              "properties": {
+                "value": {
+                  "$ref": "#/definitions/inline_number_value"
+                },
+                "unit": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      ]
+    },
+    "CL_CD": {
+      "type": [
+        "string",
+        "array"
+      ],
+      "items": {
+        "type": "number"
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/parameter_value_with_unit"
+      }
+    },
+    "polar": {
+      "type": [
+        "string",
+        "object"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "CL",
+        "CD"
+      ],
+      "properties": {
+        "CL": {
+          "$ref": "#/definitions/CL_CD"
+        },
+        "CD": {
+          "$ref": "#/definitions/CL_CD"
+        }
+      }
+    },
+    "base_part": {
+      "type": "object",
+      "properties": {
+        "engine_setting": {
+          "$ref": "#/definitions/string_parameter_value"
+        },
+        "polar": {
+          "$ref": "#/definitions/polar"
+        },
+        "thrust_rate": {
+          "$ref": "#/definitions/parameter_value_without_unit"
+        },
+        "climb_thrust_rate": {
+          "$ref": "#/definitions/parameter_value_without_unit"
+        },
+        "time_step": {
+          "$ref": "#/definitions/parameter_value_with_unit"
+        },
+        "maximum_flight_level": {
+          "$ref": "#/definitions/parameter_value_without_unit"
+        },
+        "mass_ratio": {
+          "$ref": "#/definitions/parameter_value_without_unit"
+        },
+        "reserve_mass_ratio": {
+          "$ref": "#/definitions/parameter_value_without_unit"
+        },
+        "use_max_lift_drag_ratio": {
+          "$ref": "#/definitions/boolean_parameter_value"
+        }
+      }
+    },
+    "segment": {
+      "description": "Specification of a flight segment",
+      "allOf": [
+        {
+          "$ref": "#/definitions/base_part"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "segment": {
+              "type": "string"
+            },
+            "target": {
+              "$ref": "#/definitions/target"
+            }
+          },
+          "required": [
+            "segment"
+          ]
+        }
+      ]
+    },
+    "phase": {
+      "description": "Specification of a flight phase",
+      "allOf": [
+        {
+          "$ref": "#/definitions/base_part"
+        },
+        {
+          "type": "object",
+          "description": "Specification of a flight phase",
+          "properties": {
+            "parts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/segment"
+              }
+            }
+          },
+          "required": [
+            "parts"
+          ]
+        }
+      ]
+    },
+    "route_parts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "route_cruise_part": {
+      "$ref": "#/definitions/segment"
+    },
+    "route": {
+      "type": "object",
+      "properties": {
+        "range": {
+          "$ref": "#/definitions/parameter_value_with_unit"
+        },
+        "climb_parts": {
+          "description": "Flight phases before cruise",
+          "$ref": "#/definitions/route_parts"
+        },
+        "cruise_part": {
+          "description": "Flight segment for cruise",
+          "$ref": "#/definitions/route_cruise_part"
+        },
+        "descent_parts": {
+          "description": "Flight phases after cruise",
+          "$ref": "#/definitions/route_parts"
+        }
+      },
+      "required": [
+        "range"
+      ],
+      "additionalProperties": false
+    },
+    "mission_phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "phase": {
+          "type": "string"
+        }
+      }
+    },
+    "mission_route": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "route": {
+          "type": "string"
+        }
+      }
+    },
+    "mission_reserve": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reserve": {
+          "type": "object",
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "multiplier": {
+              "type": [
+                "number",
+                "string"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "mission": {
+      "type": "object",
+      "properties": {
+        "parts": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/mission_phase"
+              },
+              {
+                "$ref": "#/definitions/mission_route"
+              },
+              {
+                "$ref": "#/definitions/mission_reserve"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "parts"
+      ]
+    }
+  },
+  "properties": {
+    "missions": {
+      "description": "Section where missions are defined.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/mission"
+      }
+    },
+    "routes": {
+      "description": "Section where flight routes are defined.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/route"
+      }
+    },
+    "phases": {
+      "description": "Section where flight phases are defined.",
+      "additionalProperties": {
+        "$ref": "#/definitions/phase"
+      }
+    }
+  },
+  "required": [
+    "missions",
+    "routes"
+  ],
+  "additionalProperties": false
+}
