@@ -1,12 +1,40 @@
-name: Build
+name: Build PyPI package and Binder image
 
 on:
   release:
     types: [published]
 
 jobs:
-  build:
+  delete-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete tag
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.git.deleteRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "tags/latest-release",
+            })
 
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create tag
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/latest-release",
+              sha: context.sha
+            })
+
+  build-publish-package:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
