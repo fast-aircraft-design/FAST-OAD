@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.0.4
+=============
+- Changes:
+    - Enum classes in FAST-OAD models are now extensible by using `aenum` instead of `enum`. (#345)
+- Bug fixes:
+    - Incompatibility with `ruamel.yaml` 0.17.5 and above has been fixed. (#344)
+    - Computation of partial derivatives for OpenMDAO was incorrectly declared in some components.
+      MDA, or MDO with COBYLA solver, were not affected. (#347)
+    - Errors in custom modules are no more hidden. (#348)
+
 Version 1.0.3
 =============
 - Changes:
