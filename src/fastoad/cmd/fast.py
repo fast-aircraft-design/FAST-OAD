@@ -367,10 +367,7 @@ class Main:
 
         # Parse ------------------------------------------------------------------------------------
         args = self.parser.parse_args()
-        try:
-            args.func(args)
-        except AttributeError:
-            self.parser.print_help()
+        args.func(args)
 
 
 def _query_yes_no(question):
