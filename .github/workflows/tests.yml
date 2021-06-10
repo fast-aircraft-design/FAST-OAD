@@ -12,21 +12,16 @@ on:
       - 'poetry.lock'
       - '.github/workflows/**'
       - 'CHANGELOG.rst'  # To ensure CI runs when merging release branch
-  pull_request:
-    types: [ready_for_review]
-    branches:
-      - '**'
+
 
 jobs:
-
   tests:
-
     runs-on: ${{ matrix.os }}
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
-        python-version: [3.7, 3.8]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [ 3.7, 3.8 ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
       - uses: actions/checkout@v2
@@ -81,7 +76,7 @@ jobs:
       - uses: codecov/codecov-action@v1
         if: ${{ runner.os == 'Windows' && matrix.python-version == '3.7' }} # Using Windows for covering XFOIL calls
         with:
-#          flags: unittests  # optional
+          #          flags: unittests  # optional
           name: codecov-FAST-OAD  # optional
           fail_ci_if_error: false  # optional (default = false)
 
