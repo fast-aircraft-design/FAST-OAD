@@ -356,7 +356,9 @@ window.mobileTOC = {
         });
       } else {
         $parent.addClass("is-open");
-        $(".pytorch-left-menu").slideDown(200);
+        $(".pytorch-left-menu").slideDown(200, function() {
+          $(this).css({display: "flex"});
+        });
       }
     });
   }
