@@ -58,8 +58,8 @@ class RubberEngine(AbstractFuelPropulsion):
         design_altitude: float,
         delta_t4_climb: float = -50,
         delta_t4_cruise: float = -100,
-        k1_sfc: float = 1.0,
-        k2_sfc: float = 1.0,
+        k_sfc_sl: float = 1.0,
+        k_sfc_cr: float = 1.0,
     ):
         """
         Parametric turbofan engine.
@@ -79,6 +79,8 @@ class RubberEngine(AbstractFuelPropulsion):
         :param design_altitude: (unit=m)
         :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4
         :param delta_t4_cruise: (unit=K) difference between T4 during cruise and design T4
+        :param k_sfc_sl: SFC correction at sea level and below
+        :param k_sfc_cr: SFC correction at 43000ft and above in cruise
         """
         # pylint: disable=too-many-arguments  # they define the engine
 
@@ -88,8 +90,8 @@ class RubberEngine(AbstractFuelPropulsion):
         self.f_0 = mto_thrust
         self.mach_max = maximum_mach
         self.design_alt = design_altitude
-        self.k1_sfc = k1_sfc
-        self.k2_sfc = k2_sfc
+        self.k_sfc_sl = k_sfc_sl
+        self.k_sfc_cr = k_sfc_cr
 
         # This dictionary is expected to have a dT4 value for all EngineSetting values
         self.dt4_values = {
@@ -124,7 +126,8 @@ class RubberEngine(AbstractFuelPropulsion):
 
         # SFC correction for NEO engines dependent on altitude.
         f = interp1d(
-            [-50000.0, 0.0, 12192.0, 100000.0], np.hstack((1.0, self.k1_sfc, self.k2_sfc, 1.0))
+            [-1000.0, 0.0, 13106.4, 20000.0],
+            np.hstack((self.k_sfc_sl, self.k_sfc_sl, self.k_sfc_cr, self.k_sfc_cr)),
         )
         k_sfc = f(flight_points.altitude)
 
