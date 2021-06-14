@@ -15,15 +15,10 @@ on:
       - 'pyproject.toml'
       - '.github/workflows/**'
       - 'CHANGELOG.rst'   # To ensure CI runs when merging release branch
-  pull_request:
-    types: [ready_for_review]
-    branches:
-      - '**'
+
 
 jobs:
-
   tests:
-
     runs-on: ${{ matrix.os }}
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:

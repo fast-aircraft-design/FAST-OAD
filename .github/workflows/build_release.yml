@@ -79,3 +79,13 @@ jobs:
         run: |
           poetry config pypi-token.pypi "$TOKEN"
           poetry publish
+
+  build-binder-image:
+    needs: build-publish-package
+    runs-on: ubuntu-latest
+    steps:
+      - name: cache binder build on mybinder.org
+        uses: jupyterhub/repo2docker-action@master
+        with:
+          NO_PUSH: true
+          MYBINDERORG_TAG: latest-release

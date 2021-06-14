@@ -1,9 +1,14 @@
 ![Tests](https://github.com/fast-aircraft-design/FAST-OAD/workflows/Tests/badge.svg)
-[![codecov](https://codecov.io/gh/fast-aircraft-design/FAST-OAD/branch/master/graph/badge.svg)](https://codecov.io/gh/fast-aircraft-design/FAST-OAD)
 [![Documentation Status](https://readthedocs.org/projects/fast-oad/badge/?version=latest)](https://fast-oad.readthedocs.io/en/latest/?badge=latest)
+
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/9691f1d1430c45cf9c94bc342b4c6122)](https://www.codacy.com/gh/fast-aircraft-design/FAST-OAD?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fast-aircraft-design/FAST-OAD&amp;utm_campaign=Badge_Grade)
+[![codecov](https://codecov.io/gh/fast-aircraft-design/FAST-OAD/branch/master/graph/badge.svg)](https://codecov.io/gh/fast-aircraft-design/FAST-OAD)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/fast-aircraft-design/FAST-OAD.git/latest-release?urlpath=lab%2Ftree%2Fsrc%2Ffastoad%2Fnotebooks)
+
 
 FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design
 ===============================================================
@@ -29,6 +34,13 @@ documentation](https://fast-oad.readthedocs.io/).
 > propose a safe base for development of custom models.
 >
 > Models in FAST-OAD are still a work in progress.
+
+
+Want to try quickly?
+--------------------
+You can run FAST-OAD tutorials **without installation** using our
+[Binder-hosted Jupyter notebooks](https://mybinder.org/v2/gh/fast-aircraft-design/FAST-OAD.git/latest-release?filepath=src%2Ffastoad%2Fnotebooks).
+
 
 Install
 -------

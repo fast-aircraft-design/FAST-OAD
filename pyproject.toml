@@ -63,6 +63,12 @@ ensure = "^1.0.0"
 tabulate = "^0.8.9"
 aenum = "^3.1.0"
 
+jupyterlab = {version = "^2", optional = true}
+
+[tool.poetry.extras]
+jupyterlab = ["jupyterlab"]
+
+
 [tool.poetry.dev-dependencies]
 pytest = ">=5.2"
 pytest-cov = "*"
