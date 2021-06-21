@@ -22,8 +22,6 @@ from fastoad._utils.files import make_parent_dir
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
-DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
-
 
 def write_xdsm(
     problem: om.Problem,
@@ -50,15 +48,15 @@ def write_xdsm(
         ok = wop_session.login(api_key=api_key, echo=False)
     except requests.exceptions.ConnectionError:
 
-        if not wop_server_url and wop_session.url == wop.PROD_URL:
+        if not wop_server_url and wop_session.url == wop.INTRANET_SERVER_URL:
             used_url = wop_session.url
             # If connection failed while attempting to reach the wop default URL,
             # that is the internal ONERA server, try with the external server
             try:
-                wop_session = wop.WhatsOpt(url=DEFAULT_WOP_URL)
+                wop_session = wop.WhatsOpt(url=wop.EXTRANET_SERVER_URL)
                 ok = wop_session.login(api_key=api_key, echo=False)
             except requests.exceptions.ConnectionError:
-                _LOGGER.warning("Failed to connect to %s and %s", used_url, DEFAULT_WOP_URL)
+                _LOGGER.warning("Failed to connect to %s and %s", used_url, wop.EXTRANET_SERVER_URL)
                 return
         else:
             _LOGGER.warning("Failed to connect to %s", wop_session.url)
