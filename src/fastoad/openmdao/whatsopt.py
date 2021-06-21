@@ -15,7 +15,6 @@
 import logging
 
 import openmdao.api as om
-import requests
 import whatsopt.whatsopt_client as wop
 
 from fastoad._utils.files import make_parent_dir
@@ -24,49 +23,25 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 def write_xdsm(
-    problem: om.Problem,
-    xdsm_file_path: str = None,
-    depth: int = 2,
-    wop_server_url=None,
-    api_key=None,
+    problem: om.Problem, xdsm_file_path: str = None, depth: int = 2, wop_server_url=None,
 ):
     """
-    Makes WhatsOpt generate an XDSM in HTML file.
+    Makes WhatsOpt generate a XDSM in HTML file.
 
     :param problem: a Problem instance. final_setup() must have been run.
     :param xdsm_file_path: the path for HTML file to be written (will overwrite if needed)
     :param depth: the depth analysis for WhatsOpt
-    :param wop_server_url: URL of WhatsOpt server
-    :param api_key: the API key to connect to WhatsOpt server
+    :param wop_server_url: URL of WhatsOpt server (if None, ether.onera.fr/whatsopt will be used)
     """
 
     make_parent_dir(xdsm_file_path)
 
+    if not wop_server_url:
+        wop_server_url = wop.EXTRANET_SERVER_URL
+
     wop_session = wop.WhatsOpt(url=wop_server_url, login=False)
 
-    try:
-        ok = wop_session.login(api_key=api_key, echo=False)
-    except requests.exceptions.ConnectionError:
-
-        if not wop_server_url and wop_session.url == wop.INTRANET_SERVER_URL:
-            used_url = wop_session.url
-            # If connection failed while attempting to reach the wop default URL,
-            # that is the internal ONERA server, try with the external server
-            try:
-                wop_session = wop.WhatsOpt(url=wop.EXTRANET_SERVER_URL)
-                ok = wop_session.login(api_key=api_key, echo=False)
-            except requests.exceptions.ConnectionError:
-                _LOGGER.warning("Failed to connect to %s and %s", used_url, wop.EXTRANET_SERVER_URL)
-                return
-        else:
-            _LOGGER.warning("Failed to connect to %s", wop_session.url)
-            return
-
-    if ok:
-        xdsm = wop_session.push_mda(
-            problem, {"--xdsm": True, "--name": None, "--dry-run": False, "--depth": depth}
-        )
-        wop.generate_xdsm_html(xdsm=xdsm, outfilename=xdsm_file_path)
-    else:
-        wop_session.logout()
-        _LOGGER.warning("Could not login to %s", wop_session.url)
+    xdsm = wop_session.push_mda(
+        problem, {"--xdsm": True, "--name": None, "--dry-run": False, "--depth": depth}
+    )
+    wop.generate_xdsm_html(problem, xdsm=xdsm, outfilename=xdsm_file_path)

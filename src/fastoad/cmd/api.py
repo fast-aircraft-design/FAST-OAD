@@ -349,7 +349,6 @@ def write_xdsm(
     overwrite: bool = False,
     depth: int = 2,
     wop_server_url=None,
-    api_key=None,
 ):
     """
 
@@ -358,7 +357,6 @@ def write_xdsm(
     :param overwrite:
     :param depth:
     :param wop_server_url:
-    :param api_key:
     :return:
     """
     if not xdsm_file_path:
@@ -380,7 +378,7 @@ def write_xdsm(
     problem.setup()
     problem.final_setup()
 
-    fastoad.openmdao.whatsopt.write_xdsm(problem, xdsm_file_path, depth, wop_server_url, api_key)
+    fastoad.openmdao.whatsopt.write_xdsm(problem, xdsm_file_path, depth, wop_server_url)
 
 
 def _run_problem(
