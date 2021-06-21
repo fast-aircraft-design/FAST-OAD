@@ -29,7 +29,7 @@ def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-# @pytest.mark.skip("This test requires access to the WhatsOpt server")
+@pytest.mark.skip("This test requires access to the WhatsOpt server")
 def test_write_xdsm(cleanup):
 
     problem = FASTOADProblem()

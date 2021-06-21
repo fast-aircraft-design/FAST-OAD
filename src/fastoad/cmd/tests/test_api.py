@@ -127,7 +127,7 @@ def test_write_n2(cleanup):
     assert pth.exists(n2_file_path)
 
 
-# @pytest.mark.skip("This test requires access to the WhatsOpt server")
+@pytest.mark.skip("This test requires access to the WhatsOpt server")
 def test_write_xdsm(cleanup):
     # By default, XDSM file will be generated in same fodler as configuration file
     default_xdsm_file_path = pth.join(DATA_FOLDER_PATH, "xdsm.html")
