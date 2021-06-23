@@ -24,8 +24,8 @@ For GUI-related bugs, you may add add screenshots to show the unwanted result.
 
 **Environment**
 - Operating System: <e.g. macOS 11.4, Windows 10, Ubuntu 20.04.2>
-- Python environment: <e.g. Anaconda Python 3.7.1>
-- Packages: <versions of FAST-OAD, and other pertinent Python packages like OpenMDAO. You can just paste the output of `pip freeze` or `conda list` here.>
+- Python environment: <e.g. Anaconda Python 3.8.5>
+- Packages: <versions of FAST-OAD, and other pertinent Python packages like OpenMDAO. You can just paste the output of `pip list --format=freeze` here.>
 
 **Additional context**
 Add any other context about the problem here.
