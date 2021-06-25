@@ -24,6 +24,7 @@ import numpy as np
 from lxml import etree
 from lxml.etree import (
     XPathEvalError,
+    _Comment,
     _Element,
 )  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.vectors.vector import Vector
@@ -98,11 +99,17 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
     def read_variables(self, data_source: Union[str, IO]) -> VariableList:
 
         variables = VariableList()
+        # If there is a comment, it will be used as description if the previous
+        # element described a variable.
+        previous_variable_name = None
 
-        parser = etree.XMLParser(remove_blank_text=True, remove_comments=True)
+        parser = etree.XMLParser(remove_blank_text=True, remove_comments=False)
         tree = etree.parse(data_source, parser)
         root = tree.getroot()
         for elem in root.iter():
+            if isinstance(elem, _Comment) and previous_variable_name is not None:
+                variables[previous_variable_name].description = elem.text.strip()
+                continue
             units = elem.attrib.get(self.xml_unit_attribute, None)
             is_input = elem.attrib.get(self.xml_io_attribute, None)
             if units:
@@ -114,6 +121,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             if elem.text:
                 value = get_float_list_from_string(elem.text)
 
+            previous_variable_name = None
             if value is not None:
                 try:
                     path_tags = [ancestor.tag for ancestor in elem.iterancestors()]
@@ -134,6 +142,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                         is_input = is_input == "True"
 
                     variables[name] = {"value": value, "units": units, "is_input": is_input}
+                    previous_variable_name = name
                 else:
                     raise FastXmlFormatterDuplicateVariableError(
                         "Variable %s is defined in more than one place in file %s"

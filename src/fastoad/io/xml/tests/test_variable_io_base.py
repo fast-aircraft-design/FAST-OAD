@@ -2,7 +2,7 @@
 Tests custom XML serializer for OpenMDAO variables
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -54,6 +54,7 @@ def _check_basic2_vars(outputs: VariableList):
 
     assert outputs["geometry:wing:chord"].value == approx([5.0, 3.5, 2.0])
     assert outputs["geometry:wing:chord"].units == "m"
+    assert outputs["geometry:wing:chord"].description == "test with multiple values"
 
     assert outputs["geometry:fuselage:length"].value == approx([40.0])
     assert outputs["geometry:fuselage:length"].units == "m"
