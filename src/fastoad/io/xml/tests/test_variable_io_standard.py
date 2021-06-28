@@ -45,11 +45,11 @@ def _check_basic_vars(vars: VariableList):
     # are different (lists, tuples, numpy arrays)
     assert_allclose(780.3, vars["geometry:total_surface"].value)
     assert vars["geometry:total_surface"].units == "m**2"
-    assert vars["geometry:total_surface"].description == ""
+    assert vars["geometry:total_surface"].description == "scalar 1"
 
     assert_allclose(42, vars["geometry:wing:span"].value)
     assert vars["geometry:wing:span"].units == "m"
-    assert vars["geometry:wing:span"].description == ""
+    assert vars["geometry:wing:span"].description == "scalar 2"
 
     assert_allclose(9.8, vars["geometry:wing:aspect_ratio"].value)
     assert vars["geometry:wing:aspect_ratio"].units is None
@@ -98,8 +98,8 @@ def test_basic_xml_read_and_write_from_vars(cleanup):
 
     # Check write hand-made component
     vars = VariableList()
-    vars["geometry/total_surface"] = {"value": [780.3], "units": "m**2"}
-    vars["geometry/wing/span"] = {"value": 42.0, "units": "m"}
+    vars["geometry/total_surface"] = {"value": [780.3], "units": "m**2", "desc": "scalar 1"}
+    vars["geometry/wing/span"] = {"value": 42.0, "units": "m", "desc": "scalar 2"}
     vars["geometry/wing/aspect_ratio"] = {"value": [9.8]}
     vars["geometry/fuselage/length"] = {"value": 40.0, "units": "m"}
     vars["constants"] = {"value": [-42.0], "desc": "value with children tags"}

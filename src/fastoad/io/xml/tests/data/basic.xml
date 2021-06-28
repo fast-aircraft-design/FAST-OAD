@@ -21,9 +21,9 @@
 -->
 <aircraft>
     <geometry>
-        <total_surface units="m**2">780.3</total_surface>
+        <total_surface units="m**2">780.3</total_surface> <!-- scalar 1 --> <!-- This second comment should be ignored-->
         <wing>
-            <span units="m">42</span>
+            <span units="m">42<!--scalar 2--></span> <!-- Now the description is inside the tags -->
             <aspect_ratio>9.8</aspect_ratio>
         </wing>
         <fuselage>
