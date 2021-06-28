@@ -23,7 +23,11 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 def write_xdsm(
-    problem: om.Problem, xdsm_file_path: str = None, depth: int = 2, wop_server_url=None,
+    problem: om.Problem,
+    xdsm_file_path: str = None,
+    depth: int = 2,
+    wop_server_url: str = None,
+    dry_run: bool = False,
 ):
     """
     Makes WhatsOpt generate a XDSM in HTML file.
@@ -32,6 +36,8 @@ def write_xdsm(
     :param xdsm_file_path: the path for HTML file to be written (will overwrite if needed)
     :param depth: the depth analysis for WhatsOpt
     :param wop_server_url: URL of WhatsOpt server (if None, ether.onera.fr/whatsopt will be used)
+    :param dry_run: if True, will run wop without sending any request to the server. Generated
+                    XDSM will be empty. (for test purpose only)
     """
 
     make_parent_dir(xdsm_file_path)
@@ -42,6 +48,6 @@ def write_xdsm(
     wop_session = wop.WhatsOpt(url=wop_server_url, login=False)
 
     xdsm = wop_session.push_mda(
-        problem, {"--xdsm": True, "--name": None, "--dry-run": False, "--depth": depth}
+        problem, {"--xdsm": True, "--name": None, "--depth": depth, "--dry-run": dry_run}
     )
     wop.generate_xdsm_html(problem, xdsm=xdsm, outfilename=xdsm_file_path)

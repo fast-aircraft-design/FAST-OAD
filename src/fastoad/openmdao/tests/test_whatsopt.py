@@ -29,7 +29,6 @@ def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-@pytest.mark.skip("This test requires access to the WhatsOpt server")
 def test_write_xdsm(cleanup):
 
     problem = FASTOADProblem()
@@ -39,5 +38,5 @@ def test_write_xdsm(cleanup):
     problem.final_setup()
 
     xdsm_file_path = pth.join(RESULTS_FOLDER_PATH, "xdsm.html")
-    write_xdsm(problem, xdsm_file_path)
+    write_xdsm(problem, xdsm_file_path, dry_run=True)
     assert pth.exists(xdsm_file_path)
