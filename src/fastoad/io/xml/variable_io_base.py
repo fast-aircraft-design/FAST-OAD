@@ -99,6 +99,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
     def read_variables(self, data_source: Union[str, IO]) -> VariableList:
 
         variables = VariableList()
+
         # If there is a comment, it will be used as description if the previous
         # element described a variable.
         previous_variable_name = None
@@ -109,7 +110,9 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         for elem in root.iter():
             if isinstance(elem, _Comment) and previous_variable_name is not None:
                 variables[previous_variable_name].description = elem.text.strip()
+                previous_variable_name = None
                 continue
+
             units = elem.attrib.get(self.xml_unit_attribute, None)
             is_input = elem.attrib.get(self.xml_io_attribute, None)
             if units:
