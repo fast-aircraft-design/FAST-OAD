@@ -70,8 +70,15 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
 
     def __init__(self, translator: VarXpathTranslator):
         self._translator = translator
+
+        #: The XML attribute key for specifying units
         self.xml_unit_attribute = DEFAULT_UNIT_ATTRIBUTE
+
+        #: The XML attribute key for specifying I/O status
         self.xml_io_attribute = DEFAULT_IO_ATTRIBUTE
+
+        #: Used for converting read units in units recognized by OpenMDAO.
+        #  Regular expressions can be used in dict keys.
         self.unit_translation = {
             "²": "**2",
             "³": "**3",
@@ -80,10 +87,6 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             "kt": "kn",
             "\bin\b": "inch",
         }
-        """
-        Used for converting read units in units recognized by OpenMDAO
-        Dict keys can use regular expressions.
-        """
 
     def set_translator(self, translator: VarXpathTranslator):
         """
@@ -97,7 +100,6 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         self._translator = translator
 
     def read_variables(self, data_source: Union[str, IO]) -> VariableList:
-
         variables = VariableList()
 
         # If there is a comment, it will be used as description if the previous
