@@ -17,7 +17,6 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 import json
 import logging
 import re
-import warnings
 from typing import IO, Union
 
 import numpy as np
@@ -87,17 +86,6 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             "kt": "kn",
             "\bin\b": "inch",
         }
-
-    def set_translator(self, translator: VarXpathTranslator):
-        """
-        Sets the VarXpathTranslator() instance that rules how OpenMDAO variable are matched to
-        XML Path.
-
-        :param translator:
-        """
-        warnings.warn("provide translator at instantiation", DeprecationWarning)
-
-        self._translator = translator
 
     def read_variables(self, data_source: Union[str, IO]) -> VariableList:
         variables = VariableList()
