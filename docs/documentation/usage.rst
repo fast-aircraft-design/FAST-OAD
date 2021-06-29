@@ -408,14 +408,12 @@ XDSM
 ----
 
 Using `WhatsOpt <https://github.com/OneraHub/WhatsOpt>`_ as web service, FAST-OAD
-can provide a `XDSM <http://mdolab.engin.umich.edu/content/xdsm-overview>`_.
+can provide a `XDSM <https://mdolab.engin.umich.edu/wiki/xdsm-overview>`_.
 
 XDSM offers a more synthetic view than N2 diagram.
 
-As it uses a web service, see `WhatsOpt documentation <https://github.com/OneraHub/WhatsOpt-Doc>`_
-for how to gain access to the online WhatsOpt server,
-or see `WhatsOpt developer documentation <https://whatsopt.readthedocs.io/en/latest/install/>`_ to
-run your own server.
+As it uses a web service, you need an internet access for this command, but you do not need
+to be a registered user on the WhatsOpt server.
 
 You can create a :code:`xdsm.html` file with:
 
@@ -424,6 +422,15 @@ You can create a :code:`xdsm.html` file with:
     $ fastoad xdsm my_conf.yml
 
 *Note: it may take a couple of minutes*
+
+Also, you may see `WhatsOpt developer documentation <https://whatsopt.readthedocs.io/en/latest/install.html>`_
+to run your own server.
+In such case, you will address your server by using the :code:`--server` option:
+
+.. code:: shell-session
+
+    $ fastoad xdsm my_conf.yml --server https://the/address/of/my/WhatsOpt/server
+
 
 .. _run-problem:
 
