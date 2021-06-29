@@ -6,12 +6,6 @@ on:
       - '**'
     tags-ignore:
       - '**'
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'poetry.lock'
-      - '.github/workflows/**'
-      - 'CHANGELOG.rst'  # To ensure CI runs when merging release branch
 
 
 jobs:
@@ -20,7 +14,7 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
-        python-version: [ 3.7, 3.8 ]
+        python-version: [ 3.7, 3.8, 3.9 ]
         os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:

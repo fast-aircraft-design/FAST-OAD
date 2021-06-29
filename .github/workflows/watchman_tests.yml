@@ -9,12 +9,6 @@ on:
       - '**'
     tags-ignore:
       - '**'
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'pyproject.toml'
-      - '.github/workflows/**'
-      - 'CHANGELOG.rst'   # To ensure CI runs when merging release branch
 
 
 jobs:
