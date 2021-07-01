@@ -719,7 +719,7 @@ class VariableList(list):
         # other.
         processed_prom_names = []
 
-        io_metadata = model.get_io_metadata(metadata_keys=["val", "units"], return_rel_names=False)
+        io_metadata = model.get_io_metadata(metadata_keys=["val", "units", "desc"], return_rel_names=False)
 
         def _add_outputs(unconnected_names):
             """ Fills ivc with data associated to each provided var"""
