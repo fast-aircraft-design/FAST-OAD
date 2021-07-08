@@ -377,6 +377,10 @@ tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:k || ratio to apply to def
 tuning:aerodynamics:aircraft:cruise:CL:winglet_effect:offset || offset to apply to defined cl range (which goes by default from 0.0 to 1.5) in cruise polar computation
 tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:k || correction ratio to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
 tuning:aerodynamics:aircraft:landing:CL_max:landing_gear_effect:offset || correction offset to apply to computed maximum lift coefficient in landing conditions to take into account effect of landing gear
+tuning:aerodynamics:high_lift_devices:landing:CD:multi_slotted_flap_effect:k || correction ratio to apply to computed additional drag from flap to take into account multiple slots flaps
+tuning:aerodynamics:high_lift_devices:landing:CL:multi_slotted_flap_effect:k || correction ratio to apply to computed additional lift from flap to take into account multiple slots flaps
+tuning:propulsion:rubber_engine:SFC:k_sl || correction ratio to apply to the computed SFC at sea level
+tuning:propulsion:rubber_engine:SFC:k_cr || correction ratio to apply to the computed SFC at cruise ceiling
 tuning:weight:airframe:flight_controls:mass:k || flight controls (A4): correction ratio to be applied on computed mass
 tuning:weight:airframe:flight_controls:mass:offset || flight controls (A4): correction offset to be applied on computed mass
 tuning:weight:airframe:fuselage:mass:k || fuselage (A2): correction ratio to be applied on computed mass
