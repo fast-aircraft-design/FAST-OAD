@@ -125,11 +125,11 @@ class RubberEngine(AbstractFuelPropulsion):
                     flight_points.insert(len(flight_points.columns), name, value=np.nan)
 
         # SFC correction for NEO engines dependent on altitude.
-        f = interp1d(
+        k_sfc_alt = interp1d(
             [-1000.0, 0.0, 13106.4, 20000.0],
             np.hstack((self.k_sfc_sl, self.k_sfc_sl, self.k_sfc_cr, self.k_sfc_cr)),
         )
-        k_sfc = f(flight_points.altitude)
+        k_sfc = k_sfc_alt(flight_points.altitude)
 
         flight_points.sfc = sfc * k_sfc
         flight_points.thrust_rate = thrust_rate
