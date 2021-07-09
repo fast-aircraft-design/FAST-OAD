@@ -2,7 +2,7 @@
 Tests basic XML serializer for OpenMDAO variables
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -45,36 +45,47 @@ def _check_basic_vars(vars: VariableList):
     # are different (lists, tuples, numpy arrays)
     assert_allclose(780.3, vars["geometry:total_surface"].value)
     assert vars["geometry:total_surface"].units == "m**2"
+    assert vars["geometry:total_surface"].description == "scalar 1"
 
     assert_allclose(42, vars["geometry:wing:span"].value)
     assert vars["geometry:wing:span"].units == "m"
+    assert vars["geometry:wing:span"].description == "scalar 2"
 
     assert_allclose(9.8, vars["geometry:wing:aspect_ratio"].value)
     assert vars["geometry:wing:aspect_ratio"].units is None
+    assert vars["geometry:wing:aspect_ratio"].description == ""
 
     assert_allclose(40.0, vars["geometry:fuselage:length"].value)
     assert vars["geometry:fuselage:length"].units == "m"
+    assert vars["geometry:fuselage:length"].description == ""
 
     assert_allclose(-42.0, vars["constants"].value)
     assert vars["constants"].units is None
+    assert vars["constants"].description == "value with children tags"
 
     assert_allclose([1.0, 2.0, 3.0], vars["constants:k1"].value)
     assert vars["constants:k1"].units == "kg"
+    assert vars["constants:k1"].description == ""
 
     assert_allclose([10.0, 20.0], vars["constants:k2"].value)
     assert vars["constants:k2"].units is None
+    assert vars["constants:k2"].description == ""
 
     assert_allclose([100.0, 200.0, 300.0, 400.0], vars["constants:k3"].value)
     assert vars["constants:k3"].units == "m/s"
+    assert vars["constants:k3"].description == "value list, space-separated"
 
     assert_allclose([-1, -2, -3], vars["constants:k4"].value)
     assert vars["constants:k4"].units is None
+    assert vars["constants:k4"].description == "value list, brackets + comma-separated"
 
     assert_allclose([100, 200, 400, 500, 600], vars["constants:k5"].value)
     assert vars["constants:k5"].units is None
+    assert vars["constants:k5"].description == "value list, comma-separated"
 
     assert_allclose([[1e2, 3.4e5], [5.4e3, 2.1]], vars["constants:k8"].value)
     assert vars["constants:k8"].units is None
+    assert vars["constants:k8"].description == "2D list"
 
     assert len(vars) == 11
 
@@ -87,17 +98,27 @@ def test_basic_xml_read_and_write_from_vars(cleanup):
 
     # Check write hand-made component
     vars = VariableList()
-    vars["geometry/total_surface"] = {"value": [780.3], "units": "m**2"}
-    vars["geometry/wing/span"] = {"value": 42.0, "units": "m", "description": "span of the wing"}
+    vars["geometry/total_surface"] = {"value": [780.3], "units": "m**2", "desc": "scalar 1"}
+    vars["geometry/wing/span"] = {"value": 42.0, "units": "m", "desc": "scalar 2"}
     vars["geometry/wing/aspect_ratio"] = {"value": [9.8]}
     vars["geometry/fuselage/length"] = {"value": 40.0, "units": "m"}
-    vars["constants"] = {"value": [-42.0], "description": "the answer"}
+    vars["constants"] = {"value": [-42.0], "desc": "value with children tags"}
     vars["constants/k1"] = {"value": [1.0, 2.0, 3.0], "units": "kg"}
-    vars["constants/k2"] = {"value": [10.0, 20.0], "description": "Geronimo!"}
-    vars["constants/k3"] = {"value": np.array([100.0, 200.0, 300.0, 400.0]), "units": "m/s"}
-    vars["constants/k4"] = {"value": [-1.0, -2.0, -3.0]}
-    vars["constants/k5"] = {"value": [100.0, 200.0, 400.0, 500.0, 600.0]}
-    vars["constants/k8"] = {"value": [[1e2, 3.4e5], [5.4e3, 2.1]]}
+    vars["constants/k2"] = {"value": [10.0, 20.0]}
+    vars["constants/k3"] = {
+        "value": np.array([100.0, 200.0, 300.0, 400.0]),
+        "units": "m/s",
+        "desc": "value list, space-separated",
+    }
+    vars["constants/k4"] = {
+        "value": [-1.0, -2.0, -3.0],
+        "desc": "value list, brackets + comma-separated",
+    }
+    vars["constants/k5"] = {
+        "value": [100.0, 200.0, 400.0, 500.0, 600.0],
+        "desc": "value list, comma-separated",
+    }
+    vars["constants/k8"] = {"value": [[1e2, 3.4e5], [5.4e3, 2.1]], "desc": "2D list"}
 
     # Try writing with non-existing folder
     assert not pth.exists(result_folder)
@@ -106,7 +127,7 @@ def test_basic_xml_read_and_write_from_vars(cleanup):
     xml_write.path_separator = "/"
     xml_write.write(vars)
 
-    # check (read another IndepVarComp instance from  xml)
+    # check (read another IndepVarComp instance from xml)
     xml_check = VariableIO(filename, formatter=VariableXmlStandardFormatter())
     xml_check.path_separator = ":"
     new_vars = xml_check.read()

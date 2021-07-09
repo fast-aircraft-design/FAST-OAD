@@ -17,13 +17,13 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 import json
 import logging
 import re
-import warnings
 from typing import IO, Union
 
 import numpy as np
 from lxml import etree
 from lxml.etree import (
     XPathEvalError,
+    _Comment,
     _Element,
 )  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.vectors.vector import Vector
@@ -69,8 +69,15 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
 
     def __init__(self, translator: VarXpathTranslator):
         self._translator = translator
+
+        #: The XML attribute key for specifying units
         self.xml_unit_attribute = DEFAULT_UNIT_ATTRIBUTE
+
+        #: The XML attribute key for specifying I/O status
         self.xml_io_attribute = DEFAULT_IO_ATTRIBUTE
+
+        #: Used for converting read units in units recognized by OpenMDAO.
+        #  Regular expressions can be used in dict keys.
         self.unit_translation = {
             "²": "**2",
             "³": "**3",
@@ -79,30 +86,23 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             "kt": "kn",
             "\bin\b": "inch",
         }
-        """
-        Used for converting read units in units recognized by OpenMDAO
-        Dict keys can use regular expressions.
-        """
-
-    def set_translator(self, translator: VarXpathTranslator):
-        """
-        Sets the VarXpathTranslator() instance that rules how OpenMDAO variable are matched to
-        XML Path.
-
-        :param translator:
-        """
-        warnings.warn("provide translator at instantiation", DeprecationWarning)
-
-        self._translator = translator
 
     def read_variables(self, data_source: Union[str, IO]) -> VariableList:
-
         variables = VariableList()
 
-        parser = etree.XMLParser(remove_blank_text=True, remove_comments=True)
+        # If there is a comment, it will be used as description if the previous
+        # element described a variable.
+        previous_variable_name = None
+
+        parser = etree.XMLParser(remove_blank_text=True, remove_comments=False)
         tree = etree.parse(data_source, parser)
         root = tree.getroot()
         for elem in root.iter():
+            if isinstance(elem, _Comment) and previous_variable_name is not None:
+                variables[previous_variable_name].description = elem.text.strip()
+                previous_variable_name = None
+                continue
+
             units = elem.attrib.get(self.xml_unit_attribute, None)
             is_input = elem.attrib.get(self.xml_io_attribute, None)
             if units:
@@ -114,6 +114,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             if elem.text:
                 value = get_float_list_from_string(elem.text)
 
+            previous_variable_name = None
             if value is not None:
                 try:
                     path_tags = [ancestor.tag for ancestor in elem.iterancestors()]
@@ -134,6 +135,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                         is_input = is_input == "True"
 
                     variables[name] = {"value": value, "units": units, "is_input": is_input}
+                    previous_variable_name = name
                 else:
                     raise FastXmlFormatterDuplicateVariableError(
                         "Variable %s is defined in more than one place in file %s"
