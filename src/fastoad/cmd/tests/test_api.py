@@ -127,10 +127,10 @@ def test_write_n2(cleanup):
     assert pth.exists(n2_file_path)
 
 
-@pytest.mark.skip("This test requires access to the WhatsOpt server")
 def test_write_xdsm(cleanup):
+    # By default, XDSM file will be generated in same folder as configuration file
     default_xdsm_file_path = pth.join(DATA_FOLDER_PATH, "xdsm.html")
-    api.write_xdsm(CONFIGURATION_FILE_PATH)
+    api.write_xdsm(CONFIGURATION_FILE_PATH, overwrite=True, dry_run=True)
     assert pth.exists(default_xdsm_file_path)
     os.remove(default_xdsm_file_path)
 
@@ -138,8 +138,8 @@ def test_write_xdsm(cleanup):
     api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path)
     # Running again without forcing overwrite of outputs will make it fail
     with pytest.raises(FastFileExistsError):
-        api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path, False)
-    api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path, True)
+        api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path, overwrite=False, dry_run=True)
+    api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path, overwrite=True, dry_run=True)
     assert pth.exists(xdsm_file_path)
 
 

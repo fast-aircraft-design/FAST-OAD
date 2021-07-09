@@ -22,13 +22,11 @@ from time import time
 from typing import IO, Union
 
 import openmdao.api as om
-import requests
 from IPython import InteractiveShell
 from IPython.display import HTML, clear_output, display
 from tabulate import tabulate
-from whatsopt.show_utils import generate_xdsm_html
-from whatsopt.whatsopt_client import PROD_URL, WhatsOpt
 
+import fastoad.openmdao.whatsopt
 from fastoad._utils.files import make_parent_dir
 from fastoad._utils.resource_management.copy import copy_resource
 from fastoad.cmd.exceptions import FastFileExistsError
@@ -350,17 +348,18 @@ def write_xdsm(
     xdsm_file_path: str = None,
     overwrite: bool = False,
     depth: int = 2,
-    wop_server_url=None,
-    api_key=None,
+    wop_server_url: str = None,
+    dry_run: bool = False,
 ):
     """
 
     :param configuration_file_path:
-    :param xdsm_file_path:
-    :param overwrite:
-    :param depth:
-    :param wop_server_url:
-    :param api_key:
+    :param xdsm_file_path: the path for HTML file to be written (will overwrite if needed)
+    :param overwrite: if False, will raise an error if file already exists.
+    :param depth: the depth analysis for WhatsOpt
+    :param wop_server_url: URL of WhatsOpt server (if None, ether.onera.fr/whatsopt will be used)
+    :param dry_run: if True, will run wop without sending any request to the server. Generated
+                    XDSM will be empty. (for test purpose only)
     :return:
     """
     if not xdsm_file_path:
@@ -382,34 +381,7 @@ def write_xdsm(
     problem.setup()
     problem.final_setup()
 
-    wop = WhatsOpt(url=wop_server_url, login=False)
-
-    try:
-        ok = wop.login(api_key=api_key, echo=False)
-    except requests.exceptions.ConnectionError:
-
-        if not wop_server_url and wop.url == PROD_URL:
-            used_url = wop.url
-            # If connection failed while attempting to reach the wop default URL,
-            # that is the internal ONERA server, try with the external server
-            try:
-                wop = WhatsOpt(url=DEFAULT_WOP_URL)
-                ok = wop.login(api_key=api_key, echo=False)
-            except requests.exceptions.ConnectionError:
-                _LOGGER.warning("Failed to connect to %s and %s", used_url, DEFAULT_WOP_URL)
-                return
-        else:
-            _LOGGER.warning("Failed to connect to %s", wop.url)
-            return
-
-    if ok:
-        xdsm = wop.push_mda(
-            problem, {"--xdsm": True, "--name": None, "--dry-run": False, "--depth": depth}
-        )
-        generate_xdsm_html(xdsm, xdsm_file_path)
-    else:
-        wop.logout()
-        _LOGGER.warning("Could not login to %s", wop.url)
+    fastoad.openmdao.whatsopt.write_xdsm(problem, xdsm_file_path, depth, wop_server_url, dry_run)
 
 
 def _run_problem(

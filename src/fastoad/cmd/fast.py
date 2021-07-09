@@ -319,15 +319,14 @@ class Main:
             help="path of file to be written (default: %(default)s)",
         )
         parser_xdsm.add_argument(
+            "--depth", nargs="?", default=2, help="Depth of analysis", type=int,
+        )
+        parser_xdsm.add_argument(
             "--server",
             nargs="?",
             default=None,
             dest="wop_server",
-            help="WhatsOpt server URL. Needed only at first call "
-            "(default: ether.onera.fr/whatsopt)",
-        )
-        parser_xdsm.add_argument(
-            "--depth", nargs="?", default=2, help="Depth of analysis", type=int,
+            help="URL of WhatsOpt server. For advanced users only.",
         )
         parser_xdsm.set_defaults(func=self._write_xdsm)
 
