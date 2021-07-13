@@ -155,10 +155,10 @@ def test_speed_conversions():
         [270, 266.0652, 150.4692],
         [400, 394.1707, 222.9173],
     ]
-    expected_CAS = [  # currently unused
+    expected_CAS = [
         [100.0, 98.5799, 56.3313],
         [200.0, 197.3624, 116.1973],
-        [270, 161.8971, 266.6984],
+        [270, 266.6984, 161.8971],
         [400, 395.5782, 252.6355],
     ]
     expected_Mach = [
@@ -179,21 +179,32 @@ def test_speed_conversions():
     assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-3)
     assert_allclose(atm.mach, expected_Mach, rtol=2e-3)
     assert_allclose(atm.unitary_reynolds, expected_Re1, rtol=2e-3)
+    assert_allclose(atm.calibrated_airspeed, expected_CAS, rtol=2e-2)
 
     atm = Atmosphere(altitudes)
     atm.equivalent_airspeed = expected_EAS
     assert_allclose(atm.true_airspeed, TAS, rtol=2e-3)
     assert_allclose(atm.mach, expected_Mach, rtol=2e-3)
     assert_allclose(atm.unitary_reynolds, expected_Re1, rtol=2e-3)
+    assert_allclose(atm.calibrated_airspeed, expected_CAS, rtol=2.5e-2)
 
     atm = Atmosphere(altitudes)
     atm.mach = expected_Mach
     assert_allclose(atm.true_airspeed, TAS, rtol=2e-3)
     assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-3)
     assert_allclose(atm.unitary_reynolds, expected_Re1, rtol=2.5e-3)
+    assert_allclose(atm.calibrated_airspeed, expected_CAS, rtol=2e-2)
 
     atm = Atmosphere(altitudes)
     atm.unitary_reynolds = expected_Re1
     assert_allclose(atm.true_airspeed, TAS, rtol=2e-3)
     assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-3)
     assert_allclose(atm.mach, expected_Mach, rtol=2.5e-3)
+    assert_allclose(atm.calibrated_airspeed, expected_CAS, rtol=2.5e-2)
+
+    atm = Atmosphere(altitudes)
+    atm.calibrated_airspeed = expected_CAS
+    assert_allclose(atm.true_airspeed, TAS, rtol=2e-2)
+    assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-2)
+    assert_allclose(atm.mach, expected_Mach, rtol=2e-2)
+    assert_allclose(atm.unitary_reynolds, expected_Re1, rtol=2e-2)

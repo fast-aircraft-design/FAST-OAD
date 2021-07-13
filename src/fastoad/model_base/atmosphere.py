@@ -91,6 +91,7 @@ class Atmosphere:
         self._equivalent_airspeed = None
         self._true_airspeed = None
         self._unitary_reynolds = None
+        self._calibrated_airspeed = None
 
     def get_altitude(self, altitude_in_feet: bool = True) -> Union[float, Sequence[float]]:
         """
@@ -182,6 +183,23 @@ class Atmosphere:
                 )
             if self._unitary_reynolds is not None:
                 self._true_airspeed = self._unitary_reynolds * self.kinematic_viscosity
+            if self._calibrated_airspeed is not None:
+                sea_level = Atmosphere(0)
+                current_level = Atmosphere(self._altitude, altitude_in_feet=False)
+                impact_pressure = sea_level.pressure * (
+                    (
+                        (np.asarray(self._calibrated_airspeed) / sea_level.speed_of_sound) ** 2.0
+                        / 5.0
+                        + 1.0
+                    )
+                    ** 3.5
+                    - 1.0
+                )
+                total_pressure = current_level.pressure + impact_pressure
+                sigma_0 = total_pressure / current_level.pressure
+                gamma = 1.4
+                mach = (2.0 / (gamma - 1.0) * (sigma_0 ** ((gamma - 1.0) / gamma) - 1.0)) ** 0.5
+                self._true_airspeed = mach * current_level.speed_of_sound
         return self._return_value(self._true_airspeed)
 
     @property
@@ -200,6 +218,37 @@ class Atmosphere:
         if self._unitary_reynolds is None and self.true_airspeed is not None:
             self._unitary_reynolds = self.true_airspeed / self.kinematic_viscosity
         return self._return_value(self._unitary_reynolds)
+
+    @property
+    def calibrated_airspeed(self) -> Union[float, Sequence[float]]:
+        """Calibrated airspeed (CAS) in m/s."""
+        if self._calibrated_airspeed is None:
+            if self._true_airspeed is not None:
+                sea_level = Atmosphere(0)
+                current_level = Atmosphere(self._altitude, altitude_in_feet=False)
+                mach = np.asarray(self._true_airspeed) / current_level.speed_of_sound
+                gamma = 1.4
+                sigma_0 = (1.0 + (gamma - 1.0) / 2.0 * mach ** 2.0) ** (gamma / (gamma - 1.0))
+                total_pressure = sigma_0 * current_level.pressure
+                impact_pressure = total_pressure - current_level.pressure
+                self._calibrated_airspeed = (
+                        sea_level.speed_of_sound
+                        * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0))
+                        ** 0.5
+                )
+            if self._mach is not None:
+                sea_level = Atmosphere(0)
+                current_level = Atmosphere(self._altitude, altitude_in_feet=False)
+                gamma = 1.4
+                sigma_0 = (1.0 + (gamma - 1.0) / 2.0 * np.array(self._mach) ** 2.0) ** (gamma / (gamma - 1.0))
+                total_pressure = sigma_0 * current_level.pressure
+                impact_pressure = total_pressure - current_level.pressure
+                self._calibrated_airspeed = (
+                        sea_level.speed_of_sound
+                        * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0))
+                        ** 0.5
+                )
+        return self._return_value(self._calibrated_airspeed)
 
     @mach.setter
     def mach(self, value: Union[float, Sequence[float]]):
@@ -221,12 +270,18 @@ class Atmosphere:
         self._reset_speeds()
         self._unitary_reynolds = value
 
+    @calibrated_airspeed.setter
+    def calibrated_airspeed(self, value: Union[float, Sequence[float]]):
+        self._reset_speeds()
+        self._calibrated_airspeed = value
+
     def _reset_speeds(self):
         """To be used before setting a new speed value as private attribute."""
         self._mach = None
         self._true_airspeed = None
         self._equivalent_airspeed = None
         self._unitary_reynolds = None
+        self._calibrated_airspeed = None
 
     def _return_value(self, value):
         """
