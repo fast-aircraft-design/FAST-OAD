@@ -16,7 +16,7 @@ import os.path as pth
 import pytest
 
 from ..exceptions import FastBundleLoaderUnknownFactoryNameError, FastIncompatibleServiceClassError
-from ..service_registry import RegisterService
+from ..service_registry import RegisterSpecializedService
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
@@ -27,11 +27,13 @@ class DummyBase:
         return self.__class__.__name__
 
 
-class RegisterDummyServiceA(RegisterService, base_class=DummyBase):
+class RegisterDummyServiceA(RegisterSpecializedService, base_class=DummyBase):
     pass
 
 
-class RegisterDummyServiceB(RegisterService, base_class=DummyBase, service_id="dummy.service.B"):
+class RegisterDummyServiceB(
+    RegisterSpecializedService, base_class=DummyBase, service_id="dummy.service.B"
+):
     pass
 
 
@@ -39,7 +41,7 @@ class RegisterDummyServiceB(RegisterService, base_class=DummyBase, service_id="d
 @pytest.fixture(scope="module")
 def load():
     """ Loads components """
-    RegisterService.explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_services"))
+    RegisterSpecializedService.explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_services"))
 
 
 def test_get_provider_ids_without_explore_folders():

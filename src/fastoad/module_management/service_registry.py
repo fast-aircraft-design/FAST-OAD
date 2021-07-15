@@ -35,7 +35,7 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 T = TypeVar("T")
 
 
-class RegisterService:
+class RegisterSpecializedService:
     """
     Decorator class that allows to register a service, associated to a base class (or interface).
 
@@ -176,7 +176,7 @@ class RegisterService:
         return cls._loader.get_instance_property(instance_or_id, property_name)
 
 
-class _RegisterOpenMDAOService(RegisterService):
+class _RegisterOpenMDAOService(RegisterSpecializedService):
     """
     Base class for registering OpenMDAO-related classes.
 
@@ -234,7 +234,7 @@ class RegisterOpenMDAOSystem(
     @classmethod
     def get_system(cls, identifier: str, options: dict = None) -> System:
         """
-        Specialized version of :meth:`RegisterService.get_provider` that allows to
+        Specialized version of :meth:`RegisterSpecializedService.get_provider` that allows to
         define OpenMDAO options on-the-fly.
 
         :param identifier: identifier of the registered class
