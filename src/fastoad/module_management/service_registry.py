@@ -35,6 +35,73 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 T = TypeVar("T")
 
 
+class RegisterService:
+    """
+    Decorator class that allows to register services and associated providers.
+
+    The basic registering of a class is done with::
+
+        @RegisterService("my.service", "id.of.the.provider")
+        class MyService:
+            ...
+
+    """
+
+    _loader = BundleLoader()
+
+    def __init__(self, service_id: str, provider_id: str, desc=None):
+        """
+        :param service_id: the identifier of the provided service
+        :param provider_id: the identifier of the service provider to register
+        :param desc: description of the service provider. If not provided, the docstring
+                     of decorated class will be used.
+        """
+        self._service_id = service_id
+        self._id = provider_id
+        self._desc = desc
+
+    def __call__(self, service_class: Type[T]) -> Type[T]:
+        return self._loader.register_factory(
+            service_class, self._id, self._service_id, self.get_properties(service_class)
+        )
+
+    def get_properties(self, service_class: Type[T]) -> dict:
+        """
+        Override this method to modify the properties that will be associated to
+        the registered service provider.
+
+        This basic version ensures the associated description property is the one
+        provided when instantiating this decorator class, if it is provided. Otherwise,
+        it will be the docstring of the decorated class.
+
+        :param service_class: the class that will be registered as service provider
+        :return: the dictionary of properties that will be associated to the registered
+                 service provider
+        """
+        return {
+            DESCRIPTION_PROPERTY_NAME: self._desc if self._desc else service_class.__doc__,
+        }
+
+    @classmethod
+    def explore_folder(cls, folder_path: str):
+        """
+        Explores provided folder and looks for service providers to register.
+
+        :param folder_path:
+        """
+        Variable.read_variable_descriptions(folder_path)
+
+        cls._loader.explore_folder(folder_path)
+
+    @classmethod
+    def get_provider_ids(cls, service_id: str) -> List[str]:
+        """
+        :param service_id:
+        :return: the list of identifiers of providers of the service.
+        """
+        return cls._loader.get_factory_names(service_id)
+
+
 class RegisterSpecializedService:
     """
     Decorator class that allows to register a service, associated to a base class (or interface).
