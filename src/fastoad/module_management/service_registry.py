@@ -101,99 +101,6 @@ class RegisterService:
         """
         return cls._loader.get_factory_names(service_id)
 
-
-class RegisterSpecializedService:
-    """
-    Decorator class that allows to register a service, associated to a base class (or interface).
-
-    The registered class must inherit from this base class.
-
-    The definition of the base class is done by subclassing, e.g.::
-
-        class RegisterSomeService( RegisterService, base_class=ISomeService):
-            "Allows to register classes that implement interface ISomeService."
-
-
-    Then basic registering of a class is done with::
-
-        @RegisterSomeService("my.particularservice")
-        class ParticularService(ISomeService):
-            ...
-    """
-
-    _base_class: type
-    service_id: str
-    _loader = BundleLoader()
-
-    @classmethod
-    def __init_subclass__(
-        cls, *, base_class: type = object, service_id: str = None, domain: ModelDomain = None,
-    ):
-        """
-
-        :param base_class: the base class that shall be parent to all registered classes
-        :param service_id: the identifier of the service. If not provided, it will be automatically
-                           set.
-        :param domain: a category that can be associated to the registered service
-        """
-
-        cls._base_class = base_class
-
-        if service_id:
-            cls.service_id = service_id
-        else:
-            cls.service_id = "%s.%s" % (__name__, cls.__name__)
-
-        cls._domain = domain
-
-    def __init__(
-        self, provider_id: str, desc=None, domain: ModelDomain = None, options: dict = None
-    ):
-        """
-        :param provider_id: the identifier of the service provider to register
-        :param desc: description of the service. If not provided, the docstring will be used.
-        :param domain: a category for the registered service provider
-        :param options: a dictionary of options that can be associated to the service provider
-        """
-        self._id = provider_id
-        self._desc = desc
-        self._options = options
-        if domain:
-            self._domain = domain
-
-    def __call__(self, service_class: Type[T]) -> Type[T]:
-
-        if not issubclass(service_class, self._base_class):
-            raise FastIncompatibleServiceClassError(
-                service_class, self.service_id, self._base_class
-            )
-
-        properties = {
-            DOMAIN_PROPERTY_NAME: self._domain if self._domain else ModelDomain.UNSPECIFIED,
-            DESCRIPTION_PROPERTY_NAME: self._desc if self._desc else service_class.__doc__,
-            OPTION_PROPERTY_NAME: self._options if self._options else {},
-        }
-
-        return self._loader.register_factory(service_class, self._id, self.service_id, properties)
-
-    @classmethod
-    def explore_folder(cls, folder_path: str):
-        """
-        Explores provided folder and looks for service providers to register.
-
-        :param folder_path:
-        """
-        Variable.read_variable_descriptions(folder_path)
-
-        cls._loader.explore_folder(folder_path)
-
-    @classmethod
-    def get_provider_ids(cls) -> List[str]:
-        """
-        :return: the list of identifiers of providers of the service.
-        """
-        return cls._loader.get_factory_names(cls.service_id)
-
     @classmethod
     def get_provider(cls, service_provider_id: str, options: dict = None) -> Any:
         """
@@ -241,6 +148,90 @@ class RegisterSpecializedService:
             return cls._loader.get_factory_property(instance_or_id, property_name)
 
         return cls._loader.get_instance_property(instance_or_id, property_name)
+
+
+class RegisterSpecializedService(RegisterService):
+    """
+    Decorator class that allows to register a service, associated to a base class (or interface).
+
+    The registered class must inherit from this base class.
+
+    The definition of the base class is done by subclassing, e.g.::
+
+        class RegisterSomeService( RegisterService, base_class=ISomeService):
+            "Allows to register classes that implement interface ISomeService."
+
+
+    Then basic registering of a class is done with::
+
+        @RegisterSomeService("my.particularservice")
+        class ParticularService(ISomeService):
+            ...
+    """
+
+    _base_class: type
+    service_id: str
+
+    @classmethod
+    def __init_subclass__(
+        cls, *, base_class: type = object, service_id: str = None, domain: ModelDomain = None,
+    ):
+        """
+
+        :param base_class: the base class that shall be parent to all registered classes
+        :param service_id: the identifier of the service. If not provided, it will be automatically
+                           set.
+        :param domain: a category that can be associated to the registered service
+        """
+
+        cls._base_class = base_class
+
+        if service_id:
+            cls.service_id = service_id
+        else:
+            cls.service_id = "%s.%s" % (__name__, cls.__name__)
+
+        cls._domain = domain
+
+    def __init__(
+        self, provider_id: str, desc=None, domain: ModelDomain = None, options: dict = None
+    ):
+        """
+        :param provider_id: the identifier of the service provider to register
+        :param desc: description of the service. If not provided, the docstring will be used.
+        :param domain: a category for the registered service provider
+        :param options: a dictionary of options that can be associated to the service provider
+        """
+        super().__init__(self.__class__.service_id, provider_id, desc)
+        self._options = options
+        if domain:
+            self._domain = domain
+
+    def __call__(self, service_class: Type[T]) -> Type[T]:
+
+        if not issubclass(service_class, self._base_class):
+            raise FastIncompatibleServiceClassError(
+                service_class, self.service_id, self._base_class
+            )
+
+        return super().__call__(service_class)
+
+    def get_properties(self, service_class: Type[T]) -> dict:
+        properties = super().get_properties(service_class)
+        properties.update(
+            {
+                DOMAIN_PROPERTY_NAME: self._domain if self._domain else ModelDomain.UNSPECIFIED,
+                OPTION_PROPERTY_NAME: self._options if self._options else {},
+            }
+        )
+        return properties
+
+    @classmethod
+    def get_provider_ids(cls) -> List[str]:
+        """
+        :return: the list of identifiers of providers of the service.
+        """
+        return super().get_provider_ids(cls.service_id)
 
 
 class _RegisterOpenMDAOService(RegisterSpecializedService):
