@@ -1,6 +1,6 @@
 """Module for managing sub-models registration and usage"""
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,25 +12,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Dict, Type, TypeVar
+from typing import Dict, TypeVar
 
-from ._bundle_loader import BundleLoader
-from .constants import (
-    DESCRIPTION_PROPERTY_NAME,
-    DOMAIN_PROPERTY_NAME,
-    ModelDomain,
-    OPTION_PROPERTY_NAME,
-)
 from .exceptions import (
     FastNoSubmodelFoundError,
     FastTooManySubmodelsError,
     FastUnknownSubmodelError,
 )
+from .service_registry import RegisterOpenMDAOService
 
 T = TypeVar("T")
 
 
-class RegisterSubmodel:
+class RegisterSubmodel(RegisterOpenMDAOService):
     """
     Decorator class that allows to register services and associated providers.
 
@@ -42,29 +36,6 @@ class RegisterSubmodel:
     """
 
     active_models: Dict[str, str] = {}
-    _loader = BundleLoader()
-
-    def __init__(self, service_id: str, provider_id: str, desc=None, domain: ModelDomain = None):
-        """
-        :param service_id: the identifier of the provided service
-        :param provider_id: the identifier of the service provider to register
-        :param desc: description of the service. If not provided, the docstring
-                     of decorated class will be used.
-        :param domain: a category for the registered service provider
-        """
-        self._service_id = service_id
-        self._id = provider_id
-        self._desc = desc
-        self._domain = None
-        self._domain = domain
-
-    def __call__(self, service_class: Type[T]) -> Type[T]:
-        properties = {
-            DOMAIN_PROPERTY_NAME: self._domain if self._domain else ModelDomain.UNSPECIFIED,
-            DESCRIPTION_PROPERTY_NAME: self._desc if self._desc else service_class.__doc__,
-        }
-
-        return self._loader.register_factory(service_class, self._id, self._service_id, properties)
 
     @classmethod
     def get_submodel(cls, service_id: str, options: dict = None):
@@ -88,10 +59,6 @@ class RegisterSubmodel:
 
             submodel_id = submodel_ids[0]
 
-        properties = {
-            OPTION_PROPERTY_NAME: options if options else {},
-        }
-
-        instance = cls._loader.instantiate_component(submodel_id, properties)
+        instance = super().get_system(submodel_id, options)
 
         return instance

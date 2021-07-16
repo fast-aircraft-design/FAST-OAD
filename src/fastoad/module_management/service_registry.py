@@ -1,6 +1,6 @@
 """Module for registering services."""
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -148,6 +148,72 @@ class RegisterService:
             return cls._loader.get_factory_property(instance_or_id, property_name)
 
         return cls._loader.get_instance_property(instance_or_id, property_name)
+
+
+class RegisterOpenMDAOService(RegisterService):
+    """
+    Base class for registering OpenMDAO-related classes.
+
+    This class ensures that variable_descriptions.txt files that are at the
+    same package level as the decorated class are loaded.
+
+    It also allows to define model domain and component options when defining
+    the decorator or when retrieving the service provider.
+    """
+
+    def __init__(
+        self, service_id: str, provider_id: str, desc=None, options: dict = None,
+    ):
+        """
+        :param service_id: the identifier of the provided service
+        :param provider_id: the identifier of the service provider to register
+        :param desc: description of the service. If not provided, the docstring will be used.
+        :param options: a dictionary of options that can be associated to the service provider
+        """
+        super().__init__(service_id, provider_id, desc)
+        self._options = options
+
+    def get_properties(self, service_class: Type[T]) -> dict:
+        properties = super().get_properties(service_class)
+        properties.update(
+            {OPTION_PROPERTY_NAME: self._options if self._options else {},}
+        )
+        return properties
+
+    def __call__(self, service_class: Type[T]) -> Type[T]:
+
+        # service_class.__module__ provides the name for the .py file, but
+        # we want just the parent package name.
+        package_name = ".".join(service_class.__module__.split(".")[:-1])
+
+        Variable.read_variable_descriptions(package_name)
+
+        # and now the actual call
+        return super().__call__(service_class)
+
+    @classmethod
+    def get_system(cls, identifier: str, options: dict = None) -> System:
+        """
+        Specialized version of :meth:`RegisterSpecializedService.get_provider` that allows to
+        define OpenMDAO options on-the-fly.
+
+        :param identifier: identifier of the registered class
+        :param options: option values at system instantiation
+        :return: an OpenMDAO system instantiated from the registered class
+        """
+
+        system = super().get_provider(identifier, options)
+
+        # Before making the system available to get options from OPTION_PROPERTY_NAME,
+        # check that options are valid to avoid failure at setup()
+        options = getattr(system, "_" + OPTION_PROPERTY_NAME, None)
+        if options:
+            invalid_options = [name for name in options if name not in system.options]
+            if invalid_options:
+                raise FastBadSystemOptionError(identifier, invalid_options)
+
+        decorated_system = _option_decorator(system)
+        return decorated_system
 
 
 class RegisterSpecializedService(RegisterService):
