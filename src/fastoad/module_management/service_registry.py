@@ -1,6 +1,6 @@
 """Module for registering services."""
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -41,13 +41,26 @@ class RegisterService:
 
     The basic registering of a class is done with::
 
-        @RegisterService("my.service", "id.of.the.provider")
+        @RegisterService("my.service.id", "id.of.the.provider")
         class MyService:
             ...
 
+    This class also provides class methods for getting service providers and
+    information about them.
     """
 
     _loader = BundleLoader()
+
+    @classmethod
+    def __init_subclass__(
+        cls, *, base_class: type = object,
+    ):
+        """
+
+        :param base_class: the base class that shall be parent to all registered classes
+        """
+
+        cls._base_class = base_class
 
     def __init__(self, service_id: str, provider_id: str, desc=None):
         """
@@ -61,6 +74,11 @@ class RegisterService:
         self._desc = desc
 
     def __call__(self, service_class: Type[T]) -> Type[T]:
+        if not issubclass(service_class, self._base_class):
+            raise FastIncompatibleServiceClassError(
+                service_class, self._service_id, self._base_class
+            )
+
         return self._loader.register_factory(
             service_class, self._id, self._service_id, self.get_properties(service_class)
         )
@@ -89,8 +107,6 @@ class RegisterService:
 
         :param folder_path:
         """
-        Variable.read_variable_descriptions(folder_path)
-
         cls._loader.explore_folder(folder_path)
 
     @classmethod
@@ -150,7 +166,7 @@ class RegisterService:
         return cls._loader.get_instance_property(instance_or_id, property_name)
 
 
-class RegisterOpenMDAOService(RegisterService):
+class RegisterOpenMDAOService(RegisterService, base_class=System):
     """
     Base class for registering OpenMDAO-related classes.
 
@@ -190,6 +206,16 @@ class RegisterOpenMDAOService(RegisterService):
 
         # and now the actual call
         return super().__call__(service_class)
+
+    @classmethod
+    def explore_folder(cls, folder_path: str):
+        """
+        Explores provided folder and looks for service providers to register.
+
+        :param folder_path:
+        """
+        Variable.read_variable_descriptions(folder_path)
+        super().explore_folder(folder_path)
 
     @classmethod
     def get_system(cls, identifier: str, options: dict = None) -> System:
@@ -250,7 +276,7 @@ class RegisterSpecializedService(RegisterService):
         :param domain: a category that can be associated to the registered service
         """
 
-        cls._base_class = base_class
+        super(RegisterSpecializedService, cls).__init_subclass__(base_class=base_class)
 
         if service_id:
             cls.service_id = service_id
@@ -273,15 +299,6 @@ class RegisterSpecializedService(RegisterService):
         if domain:
             self._domain = domain
 
-    def __call__(self, service_class: Type[T]) -> Type[T]:
-
-        if not issubclass(service_class, self._base_class):
-            raise FastIncompatibleServiceClassError(
-                service_class, self.service_id, self._base_class
-            )
-
-        return super().__call__(service_class)
-
     def get_properties(self, service_class: Type[T]) -> dict:
         properties = super().get_properties(service_class)
         properties.update(
@@ -300,7 +317,7 @@ class RegisterSpecializedService(RegisterService):
         return super().get_provider_ids(cls.service_id)
 
 
-class _RegisterOpenMDAOService(RegisterSpecializedService):
+class _RegisterSpecializedOpenMDAOService(RegisterSpecializedService, RegisterOpenMDAOService):
     """
     Base class for registering OpenMDAO-related classes.
 
@@ -308,20 +325,9 @@ class _RegisterOpenMDAOService(RegisterSpecializedService):
     same package level as the decorated class are loaded.
     """
 
-    def __call__(self, service_class: Type[T]) -> Type[T]:
-
-        # service_class.__module__ provides the name for the .py file, but
-        # we want just the parent package name.
-        package_name = ".".join(service_class.__module__.split(".")[:-1])
-
-        Variable.read_variable_descriptions(package_name)
-
-        # and now the actual call
-        return super().__call__(service_class)
-
 
 class RegisterPropulsion(
-    _RegisterOpenMDAOService,
+    _RegisterSpecializedOpenMDAOService,
     base_class=IOMPropulsionWrapper,
     service_id=SERVICE_PROPULSION_WRAPPER,
     domain=ModelDomain.PROPULSION,
@@ -332,7 +338,7 @@ class RegisterPropulsion(
 
 
 class RegisterOpenMDAOSystem(
-    _RegisterOpenMDAOService, base_class=System, service_id=SERVICE_OPENMDAO_SYSTEM
+    _RegisterSpecializedOpenMDAOService, base_class=System, service_id=SERVICE_OPENMDAO_SYSTEM
 ):
     """
     Decorator class for registering an OpenMDAO system for use in FAST-OAD configuration.
@@ -340,44 +346,6 @@ class RegisterOpenMDAOSystem(
     If a variable_descriptions.txt file is in the same folder as the class module, its
     content is loaded (once, even if several classes are registered at the same level).
     """
-
-    @classmethod
-    def explore_folder(cls, folder_path: str):
-        """
-        Explores provided folder and looks for OpenMDAO systems to register.
-
-        Also, if there is a file for variable description at root of provided folder,
-        it is read.
-
-        :param folder_path:
-        """
-        Variable.read_variable_descriptions(folder_path)
-
-        super().explore_folder(folder_path)
-
-    @classmethod
-    def get_system(cls, identifier: str, options: dict = None) -> System:
-        """
-        Specialized version of :meth:`RegisterSpecializedService.get_provider` that allows to
-        define OpenMDAO options on-the-fly.
-
-        :param identifier: identifier of the registered class
-        :param options: option values at system instantiation
-        :return: an OpenMDAO system instantiated from the registered class
-        """
-
-        system = super().get_provider(identifier, options)
-
-        # Before making the system available to get options from OPTION_PROPERTY_NAME,
-        # check that options are valid to avoid failure at setup()
-        options = getattr(system, "_" + OPTION_PROPERTY_NAME, None)
-        if options:
-            invalid_options = [name for name in options if name not in system.options]
-            if invalid_options:
-                raise FastBadSystemOptionError(identifier, invalid_options)
-
-        decorated_system = _option_decorator(system)
-        return decorated_system
 
 
 def _option_decorator(instance: System) -> System:
