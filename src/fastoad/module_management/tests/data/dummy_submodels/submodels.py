@@ -13,7 +13,7 @@
 
 import openmdao.api as om
 
-from fastoad.module_management.submodel_registry import RegisterSubmodel
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 
 @RegisterSubmodel("requirement.1", "req.1.submodel")

@@ -21,7 +21,7 @@ from ..exceptions import (
     FastTooManySubmodelsError,
     FastUnknownSubmodelError,
 )
-from ..submodel_registry import RegisterSubmodel
+from ..service_registry import RegisterSubmodel
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 

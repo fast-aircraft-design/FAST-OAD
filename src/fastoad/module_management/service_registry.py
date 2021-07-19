@@ -14,7 +14,7 @@
 
 import logging
 from types import MethodType
-from typing import Any, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union
 
 from openmdao.core.system import System
 
@@ -27,7 +27,13 @@ from .constants import (
     SERVICE_OPENMDAO_SYSTEM,
     SERVICE_PROPULSION_WRAPPER,
 )
-from .exceptions import FastBadSystemOptionError, FastIncompatibleServiceClassError
+from .exceptions import (
+    FastBadSystemOptionError,
+    FastIncompatibleServiceClassError,
+    FastNoSubmodelFoundError,
+    FastTooManySubmodelsError,
+    FastUnknownSubmodelError,
+)
 from ..model_base.propulsion import IOMPropulsionWrapper
 from ..openmdao.variables import Variable
 
@@ -238,8 +244,60 @@ class RegisterOpenMDAOService(RegisterService, base_class=System):
             if invalid_options:
                 raise FastBadSystemOptionError(identifier, invalid_options)
 
-        decorated_system = _option_decorator(system)
+        decorated_system = cls._option_decorator(system)
         return decorated_system
+
+    @staticmethod
+    def _option_decorator(instance: System) -> System:
+        """
+        Decorates provided OpenMDAO instance so that instance.options are populated
+        using iPOPO property named after OPTION_PROPERTY_NAME constant.
+
+        :param instance: the instance to decorate
+        :return: the decorated instance
+        """
+
+        # Rationale:
+        #   The idea here is to populate the options at `setup()` time while keeping
+        #   all the operations that are in the original `setup()` of the class.
+        #
+        #   This could have been done by making all our OpenMDAO classes inherit from
+        #   a base class where the option values are retrieved, but modifying each
+        #   OpenMDAO class looks overkill. Moreover, it would add to them a dependency
+        #   to FAST-OAD after having avoided to introduce dependencies outside OpenMDAO.
+        #   Last but not least, we would need future contributor to stick to this practice
+        #   of inheritance.
+        #
+        #   Therefore, the most obvious alternative is a decorator. In this decorator, we
+        #   could have produced a new instance of the same class that has its own `setup()`
+        #   that calls the original `setup()` (i.e. the original Decorator pattern AIUI)
+        #   but the new instance would be out of iPOPO's scope.
+        #   So we just modify the original instance where we need to "replace"
+        #   the `setup()` method to have our code called automagically, without losing the
+        #   initial code of `setup()` where there is probably important things. So the trick
+        #   is to rename the original `setup()` as `_setup_before_option_decorator()`, and create a
+        #   new `setup()` that does its job and then calls `_setup_before_option_decorator()`.
+
+        def setup(self):
+            """ Will replace the original setup() method"""
+
+            # Use values from iPOPO option properties
+            option_dict = getattr(self, "_" + OPTION_PROPERTY_NAME, None)
+            if option_dict:
+                for name, value in option_dict.items():
+                    self.options[name] = value
+
+            # Call the original setup method
+            self._setup_before_option_decorator()
+
+        # Move the (already bound) method "setup" to "_setup_before_option_decorator"
+        setattr(instance, "_setup_before_option_decorator", instance.setup)
+
+        # Create and bind the new "setup" method
+        setup_method = MethodType(setup, instance)
+        setattr(instance, "setup", setup_method)
+
+        return instance
 
 
 class RegisterSpecializedService(RegisterService):
@@ -348,53 +406,41 @@ class RegisterOpenMDAOSystem(
     """
 
 
-def _option_decorator(instance: System) -> System:
+class RegisterSubmodel(RegisterOpenMDAOService):
     """
-    Decorates provided OpenMDAO instance so that instance.options are populated
-    using iPOPO property named after OPTION_PROPERTY_NAME constant.
+    Decorator class that allows to register services and associated providers.
 
-    :param instance: the instance to decorate
-    :return: the decorated instance
+    Then basic registering of a class is done with::
+
+        @RegisterSubmodel("my.service", "id.of.the.provider")
+        class MyService:
+            ...
     """
 
-    # Rationale:
-    #   The idea here is to populate the options at `setup()` time while keeping
-    #   all the operations that are in the original `setup()` of the class.
-    #
-    #   This could have been done by making all our OpenMDAO classes inherit from
-    #   a base class where the option values are retrieved, but modifying each
-    #   OpenMDAO class looks overkill. Moreover, it would add to them a dependency
-    #   to FAST-OAD after having avoided to introduce dependencies outside OpenMDAO.
-    #   Last but not least, we would need future contributor to stick to this practice
-    #   of inheritance.
-    #
-    #   Therefore, the most obvious alternative is a decorator. In this decorator, we
-    #   could have produced a new instance of the same class that has its own `setup()`
-    #   that calls the original `setup()` (i.e. the original Decorator pattern AIUI)
-    #   but the new instance would be out of iPOPO's scope.
-    #   So we just modify the original instance where we need to "replace"
-    #   the `setup()` method to have our code called automagically, without losing the
-    #   initial code of `setup()` where there is probably important things. So the trick
-    #   is to rename the original `setup()` as `__setup_before_option_decorator()`, and create a
-    #   new `setup()` that does its job and then calls `__setup_before_option_decorator()`.
+    active_models: Dict[str, str] = {}
 
-    def setup(self):
-        """ Will replace the original setup() method"""
+    @classmethod
+    def get_submodel(cls, service_id: str, options: dict = None):
+        """
 
-        # Use values from iPOPO option properties
-        option_dict = getattr(self, "_" + OPTION_PROPERTY_NAME, None)
-        if option_dict:
-            for name, value in option_dict.items():
-                self.options[name] = value
+        :param service_id:
+        :param options:
+        :return:
+        """
+        submodel_ids = cls._loader.get_factory_names(service_id)
 
-        # Call the original setup method
-        self.__setup_before_option_decorator()
+        if service_id in cls.active_models and cls.active_models[service_id]:
+            submodel_id = cls.active_models[service_id]
+            if submodel_id not in submodel_ids:
+                raise FastUnknownSubmodelError(service_id, submodel_id, submodel_ids)
+        else:
+            if len(submodel_ids) == 0:
+                raise FastNoSubmodelFoundError(service_id)
+            if len(submodel_ids) > 1:
+                raise FastTooManySubmodelsError(service_id, submodel_ids)
 
-    # Move the (already bound) method "setup" to "__setup_before_option_decorator"
-    setattr(instance, "__setup_before_option_decorator", instance.setup)
+            submodel_id = submodel_ids[0]
 
-    # Create and bind the new "setup" method
-    setup_method = MethodType(setup, instance)
-    setattr(instance, "setup", setup_method)
+        instance = super().get_system(submodel_id, options)
 
-    return instance
+        return instance

@@ -29,7 +29,7 @@ from ruamel.yaml import YAML
 
 from fastoad._utils.files import make_parent_dir
 from fastoad.io import DataFile, IVariableIOFormatter
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.openmdao._utils import get_unconnected_input_names
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
@@ -39,7 +39,6 @@ from .exceptions import (
     FASTConfigurationBaseKeyBuildingError,
     FASTConfigurationNanInInputFile,
 )
-from ...module_management.submodel_registry import RegisterSubmodel
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 

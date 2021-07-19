@@ -17,8 +17,7 @@ from math import exp
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from fastoad.module_management.submodel_registry import RegisterSubmodel
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 
 SERVICE_FUNCTION_F = "service.function.f"
 SERVICE_FUNCTION_G1 = "service.function.g1"
