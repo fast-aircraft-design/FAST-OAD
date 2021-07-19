@@ -44,11 +44,11 @@ def get_unconnected_input_names(
     optional_unconnected = set()
 
     for abs_name, metadata in model.get_io_metadata(
-        "input", metadata_keys=["value"], return_rel_names=False
+        "input", metadata_keys=["val"], return_rel_names=False
     ).items():
         name = metadata["prom_name"] if promoted_names else abs_name
         if model.get_source(abs_name).startswith("_auto_ivc."):
-            if np.all(np.isnan(metadata["value"])):
+            if np.all(np.isnan(metadata["val"])):
                 mandatory_unconnected.add(name)
             else:
                 optional_unconnected.add(name)
