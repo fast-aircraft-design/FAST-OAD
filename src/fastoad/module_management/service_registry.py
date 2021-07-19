@@ -408,15 +408,23 @@ class RegisterOpenMDAOSystem(
 
 class RegisterSubmodel(RegisterOpenMDAOService):
     """
-    Decorator class that allows to register services and associated providers.
+    Decorator class that allows to submodels.
 
-    Then basic registering of a class is done with::
+    Submodels are OpenMDAO systems that fulfill a requirement (service id) in a FAST-OAD module.
+
+    If the requirement is fulfilled by one known submodel, it is used. If several
+    submodels are declared as fulfilling the requirement, the :attr:`active_models`
+    must define the submodel that should be used.
+
+    The registering of a class is done with::
 
         @RegisterSubmodel("my.service", "id.of.the.provider")
         class MyService:
             ...
     """
 
+    #: Dictionary (key = service id, value=provider id) that defines submodels to
+    #: be used for associated services.
     active_models: Dict[str, str] = {}
 
     @classmethod
