@@ -1,5 +1,5 @@
 title: Sellar
-module_folders: ./postproc_sellar_example
+module_folders: ../data/postproc_sellar_example
 input_file: ../results/inputs.xml
 output_file: ../results/outputs.xml
 driver: om.ScipyOptimizeDriver(optimizer='SLSQP')
