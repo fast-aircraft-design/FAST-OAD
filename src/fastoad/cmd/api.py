@@ -494,8 +494,8 @@ def variable_viewer(file_path: str, file_formatter: IVariableIOFormatter = None,
         variables = DataFile(file_path, formatter=file_formatter)
         variables.sort(key=lambda var: var.name)
 
-        table = variables.to_dataframe()[["name", "value", "units", "is_input", "desc"]].rename(
-            columns={"name": "Name", "value": "Value", "units": "Unit", "desc": "Description"}
+        table = variables.to_dataframe()[["name", "val", "units", "is_input", "desc"]].rename(
+            columns={"name": "Name", "val": "Value", "units": "Unit", "desc": "Description"}
         )
         table["I/O"] = "OUT"
         table["I/O"].loc[table["is_input"]] = "IN"

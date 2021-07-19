@@ -51,7 +51,7 @@ class VariableViewer:
     # what columns are kept and the values tell what name will be displayed.
     _DEFAULT_COLUMN_RENAMING = {
         "name": "Name",
-        "value": "Value",
+        "val": "Value",
         "units": "Unit",
         "desc": "Description",
         "is_input": "is_input",
