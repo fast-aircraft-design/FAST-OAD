@@ -30,15 +30,15 @@ def test_variables():
     """ Tests features of Variable and VariableList class"""
 
     # Test description overloading
-    x = Variable("test:test_variable", value=500)
+    x = Variable("test:test_variable", val=500)
     assert x.description == "for testing (do not remove, keep first)"
 
     # Initialization
     variables = VariableList()
-    a_var = Variable("a", value=0.0)
-    b_var = Variable("b", value=1.0)
-    n_var = Variable("n", value=np.array(np.nan))
-    variables["a"] = {"value": 0.0}  # Tests VariableList.__setitem__ with dict input
+    a_var = Variable("a", val=0.0)
+    b_var = Variable("b", val=1.0)
+    n_var = Variable("n", val=np.array(np.nan))
+    variables["a"] = {"val": 0.0}  # Tests VariableList.__setitem__ with dict input
     variables.append(b_var)  # Tests VariableList.append()
     with pytest.raises(TypeError):
         variables["z"] = 5.0  # error when value is not a dict
@@ -60,7 +60,7 @@ def test_variables():
     assert a_var.units is None
     assert a_var.description == ""
 
-    assert n_var == Variable("n", value=np.array(np.nan))  # tests __eq__ with nan value
+    assert n_var == Variable("n", val=np.array(np.nan))  # tests __eq__ with nan value
 
     #   __getitem___
     assert variables["a"] == a_var
@@ -72,7 +72,7 @@ def test_variables():
     # Tests adding variable with existing name
     assert len(variables) == 2
     assert variables["a"].value == 0.0
-    variables.append(Variable("a", value=5.0))
+    variables.append(Variable("a", val=5.0))
     assert len(variables) == 2
     assert variables["a"].value == 5.0
     variables["a"] = {"value": 42.0}
@@ -91,7 +91,7 @@ def test_variables():
     assert variables["a"].value == 42.0
 
     variables.update(
-        [Variable("a", value=-10.0), Variable("not_added", value=0.0)], add_variables=False
+        [Variable("a", val=-10.0), Variable("not_added", val=0.0)], add_variables=False
     )
     assert len(variables) == 3
     assert list(variables.names()) == ["a", "b", "n"]
@@ -128,13 +128,13 @@ def test_df_from_to_variables():
     Tests VariableList.to_dataframe() and VariableList.from_dataframe()
     """
     vars = VariableList()
-    vars["a"] = {"value": 5}
-    vars["b"] = {"value": np.array([1.0, 2.0, 3.0]), "units": "m"}
-    vars["c"] = {"value": [1.0, 2.0, 3.0], "units": "kg/s", "desc": "some test"}
+    vars["a"] = {"val": 5}
+    vars["b"] = {"val": np.array([1.0, 2.0, 3.0]), "units": "m"}
+    vars["c"] = {"val": [1.0, 2.0, 3.0], "units": "kg/s", "desc": "some test"}
 
     df = vars.to_dataframe()
     assert np.all(df["name"] == ["a", "b", "c"])
-    assert np.all(df["value"] == [5, [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
+    assert np.all(df["val"] == [5, [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
     assert np.all(df["units"].to_list() == [None, "m", "kg/s"])
     assert np.all(df["desc"].to_list() == ["", "", "some test"])
 
@@ -164,10 +164,10 @@ def test_get_variables_from_problem_with_an_explicit_component():
     problem.setup()
 
     expected_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True),
-        Variable(name="y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="y1", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="x", val=np.array([np.nan]), units=None, is_input=True),
+        Variable(name="y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="y1", val=np.array([1.0]), units=None, is_input=False),
     ]
 
     vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
@@ -182,10 +182,10 @@ def test_get_variables_from_problem_with_a_group():
     problem.setup()
 
     expected_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True),
-        Variable(name="y1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="x", val=np.array([np.nan]), units=None, is_input=True),
+        Variable(name="y1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="y2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
     ]
 
     vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
@@ -205,50 +205,50 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
     problem.setup()
 
     expected_vars_promoted = [
-        Variable(name="x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="y1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="g1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="g2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="f", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="y1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="y2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="g2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="f", val=np.array([1.0]), units=None, is_input=False),
     ]
     expected_vars_non_promoted = [
-        Variable(name="indeps.x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.x", value=np.array([np.nan]), units=None, is_input=True),
-        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.y1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="disc1.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc2.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", value=np.array([2]), units=None, is_input=True),
-        Variable(name="functions.z", value=np.array([np.nan, np.nan]), units="m**2", is_input=True),
-        Variable(name="functions.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.g1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.g2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.f", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.y1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="disc1.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.x", val=np.array([2]), units=None, is_input=True),
+        Variable(name="functions.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
+        Variable(name="functions.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.g2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.f", val=np.array([1.0]), units=None, is_input=False),
     ]
     # Even without computation, not using initial value will unify values of connected variables.
     expected_vars_non_promoted_computed = [
-        Variable(name="indeps.x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.x", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.y1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="disc1.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc2.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="functions.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.g1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.g2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.f", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.x", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.y1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="disc1.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.x", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="functions.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.g2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.f", val=np.array([1.0]), units=None, is_input=False),
     ]
 
     vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=True)
@@ -277,58 +277,58 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
     problem.setup()
 
     expected_vars_promoted_initial = [
-        Variable(name="x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="y1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="g1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="g2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="f", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="y1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="y2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="g2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="f", val=np.array([1.0]), units=None, is_input=False),
     ]
     expected_vars_promoted_computed = [
-        Variable(name="x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="y1", value=np.array([25.58830237]), units=None, is_input=False),
-        Variable(name="y2", value=np.array([12.05848815]), units=None, is_input=False),
-        Variable(name="f", value=np.array([28.58830817]), units=None, is_input=False),
-        Variable(name="g1", value=np.array([-22.42830237]), units=None, is_input=False),
-        Variable(name="g2", value=np.array([-11.94151185]), units=None, is_input=False),
+        Variable(name="x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="y1", val=np.array([25.58830237]), units=None, is_input=False),
+        Variable(name="y2", val=np.array([12.05848815]), units=None, is_input=False),
+        Variable(name="f", val=np.array([28.58830817]), units=None, is_input=False),
+        Variable(name="g1", val=np.array([-22.42830237]), units=None, is_input=False),
+        Variable(name="g2", val=np.array([-11.94151185]), units=None, is_input=False),
     ]
     expected_vars_non_promoted_initial = [
-        Variable(name="indeps.x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.x", value=np.array([np.nan]), units=None, is_input=True),
-        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.y1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="disc1.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc2.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", value=np.array([2]), units=None, is_input=True),
-        Variable(name="functions.z", value=np.array([np.nan, np.nan]), units="m**2", is_input=True),
-        Variable(name="functions.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.g1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.g2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.f", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.y1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="disc1.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.x", val=np.array([2]), units=None, is_input=True),
+        Variable(name="functions.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
+        Variable(name="functions.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.g2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.f", val=np.array([1.0]), units=None, is_input=False),
     ]
     expected_vars_non_promoted_computed = [
-        Variable(name="indeps.x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.x", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.y1", value=np.array([25.58830237]), units=None, is_input=False),
-        Variable(name="disc1.y2", value=np.array([12.05848815]), units=None, is_input=True),
-        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc2.y1", value=np.array([25.58830237]), units=None, is_input=True),
-        Variable(name="disc2.y2", value=np.array([12.05848815]), units=None, is_input=False),
-        Variable(name="functions.x", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="functions.y1", value=np.array([25.58830237]), units=None, is_input=True),
-        Variable(name="functions.y2", value=np.array([12.05848815]), units=None, is_input=True),
-        Variable(name="functions.g1", value=np.array([-22.42830237]), units=None, is_input=False),
-        Variable(name="functions.g2", value=np.array([-11.94151185]), units=None, is_input=False),
-        Variable(name="functions.f", value=np.array([28.58830817]), units=None, is_input=False),
+        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.x", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.y1", val=np.array([25.58830237]), units=None, is_input=False),
+        Variable(name="disc1.y2", val=np.array([12.05848815]), units=None, is_input=True),
+        Variable(name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc2.y1", val=np.array([25.58830237]), units=None, is_input=True),
+        Variable(name="disc2.y2", val=np.array([12.05848815]), units=None, is_input=False),
+        Variable(name="functions.x", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="functions.y1", val=np.array([25.58830237]), units=None, is_input=True),
+        Variable(name="functions.y2", val=np.array([12.05848815]), units=None, is_input=True),
+        Variable(name="functions.g1", val=np.array([-22.42830237]), units=None, is_input=False),
+        Variable(name="functions.g2", val=np.array([-11.94151185]), units=None, is_input=False),
+        Variable(name="functions.f", val=np.array([28.58830817]), units=None, is_input=False),
     ]
 
     problem.run_model()
@@ -369,42 +369,42 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
     problem.setup()
 
     expected_vars_initial = [
-        Variable(name="indeps.x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.x", value=np.array([np.nan]), units=None, is_input=True),
-        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.y1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="disc1.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc2.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", value=np.array([2]), units=None, is_input=True),
-        Variable(name="functions.z", value=np.array([np.nan, np.nan]), units="m**2", is_input=True),
-        Variable(name="functions.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.g1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.g2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.f", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.y1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="disc1.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.x", val=np.array([2]), units=None, is_input=True),
+        Variable(name="functions.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
+        Variable(name="functions.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.g2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.f", val=np.array([1.0]), units=None, is_input=False),
     ]
 
     # Even without computation, not using initial value will unify values of connected variables.
     expected_vars_computed = [
-        Variable(name="indeps.x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.x", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.y1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="disc1.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc2.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="functions.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.g1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.g2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.f", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.x", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.y1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="disc1.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.x", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="functions.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.g2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.f", val=np.array([1.0]), units=None, is_input=False),
     ]
 
     vars = VariableList.from_problem(
@@ -456,40 +456,40 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
     problem.setup()
 
     expected_vars_initial = [
-        Variable(name="indeps.x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.x", value=np.array([np.nan]), units=None, is_input=True),
-        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.y1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="disc1.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc2.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc2.y2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", value=np.array([2]), units=None, is_input=True),
-        Variable(name="functions.z", value=np.array([np.nan, np.nan]), units="m**2", is_input=True),
-        Variable(name="functions.y1", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.y2", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.g1", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.g2", value=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.f", value=np.array([1.0]), units=None, is_input=False),
+        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.y1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="disc1.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.x", val=np.array([2]), units=None, is_input=True),
+        Variable(name="functions.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
+        Variable(name="functions.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.g2", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="functions.f", val=np.array([1.0]), units=None, is_input=False),
     ]
     expected_vars_computed = [
-        Variable(name="indeps.x", value=np.array([1.0]), units="Pa", is_input=True),
-        Variable(name="indeps.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.x", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="disc1.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc1.y1", value=np.array([25.58830237]), units=None, is_input=False),
-        Variable(name="disc1.y2", value=np.array([12.05848815]), units=None, is_input=True),
-        Variable(name="disc2.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="disc2.y1", value=np.array([25.58830237]), units=None, is_input=True),
-        Variable(name="disc2.y2", value=np.array([12.05848815]), units=None, is_input=False),
-        Variable(name="functions.x", value=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.z", value=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="functions.y1", value=np.array([25.58830237]), units=None, is_input=True),
-        Variable(name="functions.y2", value=np.array([12.05848815]), units=None, is_input=True),
-        Variable(name="functions.g1", value=np.array([-22.42830237]), units=None, is_input=False),
-        Variable(name="functions.g2", value=np.array([-11.94151185]), units=None, is_input=False),
-        Variable(name="functions.f", value=np.array([28.58830817]), units=None, is_input=False),
+        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.x", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc1.y1", val=np.array([25.58830237]), units=None, is_input=False),
+        Variable(name="disc1.y2", val=np.array([12.05848815]), units=None, is_input=True),
+        Variable(name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="disc2.y1", val=np.array([25.58830237]), units=None, is_input=True),
+        Variable(name="disc2.y2", val=np.array([12.05848815]), units=None, is_input=False),
+        Variable(name="functions.x", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="functions.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="functions.y1", val=np.array([25.58830237]), units=None, is_input=True),
+        Variable(name="functions.y2", val=np.array([12.05848815]), units=None, is_input=True),
+        Variable(name="functions.g1", val=np.array([-22.42830237]), units=None, is_input=False),
+        Variable(name="functions.g2", val=np.array([-11.94151185]), units=None, is_input=False),
+        Variable(name="functions.f", val=np.array([28.58830817]), units=None, is_input=False),
     ]
     problem.run_model()
 
@@ -538,11 +538,11 @@ def test_variables_from_unconnected_inputs_with_an_explicit_component():
     problem = om.Problem(group)
 
     expected_mandatory_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True, prom_name="x")
+        Variable(name="x", val=np.array([np.nan]), units=None, is_input=True, prom_name="x")
     ]
     expected_optional_vars = [
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True, prom_name="z"),
-        Variable(name="y2", value=np.array([1.0]), units=None, is_input=True, prom_name="y2"),
+        Variable(name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, prom_name="z"),
+        Variable(name="y2", val=np.array([1.0]), units=None, is_input=True, prom_name="y2"),
     ]
     _test_and_check_from_unconnected_inputs(
         problem, expected_mandatory_vars, expected_optional_vars
@@ -556,10 +556,10 @@ def test_variables_from_unconnected_inputs_with_a_group():
     problem = om.Problem(group)
 
     expected_mandatory_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True, prom_name="x")
+        Variable(name="x", val=np.array([np.nan]), units=None, is_input=True, prom_name="x")
     ]
     expected_optional_vars = [
-        Variable(name="z", value=np.array([5.0, 2.0]), units="m**2", is_input=True, prom_name="z")
+        Variable(name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, prom_name="z")
     ]
     _test_and_check_from_unconnected_inputs(
         problem, expected_mandatory_vars, expected_optional_vars
@@ -575,9 +575,9 @@ def test_variables_from_unconnected_inputs_with_sellar_problem():
     problem = om.Problem(group)
 
     expected_mandatory_vars = [
-        Variable(name="x", value=np.array([np.nan]), units=None, is_input=True, prom_name="x"),
+        Variable(name="x", val=np.array([np.nan]), units=None, is_input=True, prom_name="x"),
         Variable(
-            name="z", value=np.array([np.nan, np.nan]), units="m**2", is_input=True, prom_name="z"
+            name="z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True, prom_name="z"
         ),
     ]
     expected_optional_vars = []
