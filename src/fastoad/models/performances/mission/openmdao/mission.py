@@ -316,7 +316,7 @@ class MissionComponent(om.ExplicitComponent):
         self.add_input(
             self._mission_vars.TAXI_OUT_THRUST_RATE,
             np.nan,
-            units="s",
+            units=None,
             desc='thrust rate during taxi-out in mission "%s"' % mission_name,
         )
         self.add_input(
