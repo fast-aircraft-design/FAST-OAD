@@ -121,12 +121,14 @@ phases:
     parts:
       - segment: taxi
         thrust_rate: ~
+        true_airspeed: 0.
         target:
           time: ~duration
   taxi_in:
     thrust_rate: ~
     parts:
       - segment: taxi
+        true_airspeed: 0.
         target:
           time: ~duration
 
