@@ -1,6 +1,6 @@
 """Module for registering services."""
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,8 +14,9 @@
 
 import logging
 from types import MethodType
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, Optional
 
+import openmdao.api as om
 from openmdao.core.system import System
 
 from ._bundle_loader import BundleLoader
@@ -30,9 +31,9 @@ from .constants import (
 from .exceptions import (
     FastBadSystemOptionError,
     FastIncompatibleServiceClassError,
-    FastNoSubmodelFoundError,
     FastTooManySubmodelsError,
     FastUnknownSubmodelError,
+    FastNoSubmodelFoundError,
 )
 from ..model_base.propulsion import IOMPropulsionWrapper
 from ..openmdao.variables import Variable
@@ -412,34 +413,55 @@ class RegisterSubmodel(RegisterOpenMDAOService):
 
     Submodels are OpenMDAO systems that fulfill a requirement (service id) in a FAST-OAD module.
 
-    If the requirement is fulfilled by one known submodel, it is used. If several
-    submodels are declared as fulfilling the requirement, the :attr:`active_models`
-    must define the submodel that should be used.
+    :attr:`active_models` defines the submodel to be used for any service identifier
+    it has as key. See :meth:`get_submodel` for more details.
 
     The registering of a class is done with::
 
         @RegisterSubmodel("my.service", "id.of.the.provider")
         class MyService:
             ...
+
+    Then the submodel can be instantiated and used with::
+
+        submodel_instance = RegisterSubmodel.get_submodel("my.service")
+        some_model.add_subsystem("my_submodel", submodel_instance, promotes=["*"])
+        ...
     """
 
     #: Dictionary (key = service id, value=provider id) that defines submodels to
     #: be used for associated services.
-    active_models: Dict[str, str] = {}
+    active_models: Dict[str, Optional[str]] = {}
 
     @classmethod
     def get_submodel(cls, service_id: str, options: dict = None):
         """
+        Provides a submodel for the given service identifier.
+
+        If :attr:`active_models` has `service_id` as key:
+            - if the associated value is a string, a submodel will be instantiated with this string
+              as submodel identifier. If the submodel identifier matches nothing, an error will be
+              raised.
+            - if the associated value is None, an empty submodel (om.Group()) will be instantiated.
+              You may see it as a way to deactivate a particular submodel.
+
+        If :attr:`active_models` has `service_id` has NOT as key:
+            - if no submodel is declared for this `service_id`, an error will be raised.
+            - if one and only one submodel is declared for this `service_id`, it will be
+              instantiated.
+            - if several submodels are declared for this `service_id`, an error will be raised.
+
+        If an actual (not empty) submodel is defined, provided options will be used.
 
         :param service_id:
         :param options:
-        :return:
+        :return: the instantiated submodel
         """
         submodel_ids = cls._loader.get_factory_names(service_id)
 
-        if service_id in cls.active_models and cls.active_models[service_id]:
+        if service_id in cls.active_models:
             submodel_id = cls.active_models[service_id]
-            if submodel_id not in submodel_ids:
+            if submodel_id is not None and submodel_id not in submodel_ids:
                 raise FastUnknownSubmodelError(service_id, submodel_id, submodel_ids)
         else:
             if len(submodel_ids) == 0:
@@ -449,6 +471,9 @@ class RegisterSubmodel(RegisterOpenMDAOService):
 
             submodel_id = submodel_ids[0]
 
-        instance = super().get_system(submodel_id, options)
+        if submodel_id:
+            instance = super().get_system(submodel_id, options)
+        else:
+            instance = om.Group()
 
         return instance

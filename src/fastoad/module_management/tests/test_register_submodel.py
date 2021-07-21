@@ -1,5 +1,5 @@
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -42,6 +42,10 @@ def test_get_submodel_one_match(load):
     obj = RegisterSubmodel.get_submodel("requirement.1")
     assert obj.__class__.__name__ == "UniqueSubmodelForRequirement1"
 
+    RegisterSubmodel.active_models["requirement.1"] = None
+    obj = RegisterSubmodel.get_submodel("requirement.1")
+    assert obj.__class__.__name__ == "Group"
+
 
 def test_get_submodel_several_matches(load):
     with pytest.raises(FastTooManySubmodelsError):
@@ -58,3 +62,7 @@ def test_get_submodel_several_matches(load):
     RegisterSubmodel.active_models["requirement.2"] = "req.2.submodel.B"
     obj = RegisterSubmodel.get_submodel("requirement.2")
     assert obj.__class__.__name__ == "SubmodelBForRequirement2"
+
+    RegisterSubmodel.active_models["requirement.2"] = None
+    obj = RegisterSubmodel.get_submodel("requirement.2")
+    assert obj.__class__.__name__ == "Group"
