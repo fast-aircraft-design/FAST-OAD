@@ -612,10 +612,10 @@ def test_climb_and_cruise_at_optimal_flight_level_with_start_at_exact_flight_lev
 def test_taxi():
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
-    segment = TaxiSegment(target=FlightPoint(time=500.0), propulsion=propulsion, thrust_rate=0.1)
-    flight_points = segment.compute_from(
-        FlightPoint(altitude=10.0, true_airspeed=10.0, mass=50000.0, time=10000.0),
+    segment = TaxiSegment(
+        target=FlightPoint(time=500.0), propulsion=propulsion, thrust_rate=0.1, true_airspeed=10.0
     )
+    flight_points = segment.compute_from(FlightPoint(altitude=10.0, mass=50000.0, time=10000.0),)
 
     last_point = flight_points.iloc[-1]
     assert_allclose(last_point.altitude, 10.0, atol=1.0)

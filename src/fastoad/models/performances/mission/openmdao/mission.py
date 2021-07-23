@@ -238,6 +238,7 @@ _MissionVariables = namedtuple(
         "NEEDED_FUEL_AT_TAKEOFF",
         "TAXI_OUT_DURATION",
         "TAXI_OUT_THRUST_RATE",
+        "TAXI_OUT_DISTANCE",
         "TAXI_OUT_FUEL",
         "TAKEOFF_FUEL",
         "TAKEOFF_ALTITUDE",
@@ -293,6 +294,7 @@ class MissionComponent(om.ExplicitComponent):
             NEEDED_FUEL_AT_TAKEOFF="data:mission:%s:needed_onboard_fuel_at_takeoff" % mission_name,
             TAXI_OUT_DURATION="data:mission:%s:taxi_out:duration" % mission_name,
             TAXI_OUT_THRUST_RATE="data:mission:%s:taxi_out:thrust_rate" % mission_name,
+            TAXI_OUT_DISTANCE="data:mission:%s:taxi_out:distance" % mission_name,
             TAXI_OUT_FUEL="data:mission:%s:taxi_out:fuel" % mission_name,
             TAKEOFF_FUEL="data:mission:%s:takeoff:fuel" % mission_name,
             TAKEOFF_ALTITUDE="data:mission:%s:takeoff:altitude" % mission_name,
@@ -316,7 +318,7 @@ class MissionComponent(om.ExplicitComponent):
         self.add_input(
             self._mission_vars.TAXI_OUT_THRUST_RATE,
             np.nan,
-            units="s",
+            units=None,
             desc='thrust rate during taxi-out in mission "%s"' % mission_name,
         )
         self.add_input(
@@ -336,6 +338,11 @@ class MissionComponent(om.ExplicitComponent):
             np.nan,
             units="m/s",
             desc='takeoff safety speed for mission "%s"' % mission_name,
+        )
+        self.add_output(
+            self._mission_vars.TAXI_OUT_DISTANCE,
+            units="m",
+            desc='distance during taxi-out of mission "%s"' % mission_name,
         )
         self.add_output(
             self._mission_vars.TAXI_OUT_FUEL,
@@ -519,6 +526,9 @@ class MissionComponent(om.ExplicitComponent):
         )
         flight_points = taxi_segment.compute_from(start_of_taxi_out)
         end_of_taxi_out = flight_points.iloc[-1]
+        outputs[self._mission_vars.TAXI_OUT_DISTANCE] = (
+            end_of_taxi_out.ground_distance - start_of_taxi_out.ground_distance
+        )
         outputs[self._mission_vars.TAXI_OUT_FUEL] = start_of_taxi_out.mass - end_of_taxi_out.mass
 
     def _get_engine_wrapper(self) -> IOMPropulsionWrapper:

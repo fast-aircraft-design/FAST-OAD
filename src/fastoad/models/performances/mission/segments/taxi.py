@@ -14,7 +14,11 @@
 
 from dataclasses import dataclass
 from typing import Tuple
+from copy import deepcopy
 
+import pandas as pd
+
+from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.segments.base import FixedDurationSegment
 from .base import ManualThrustSegment
 from ..polar import Polar
@@ -32,6 +36,15 @@ class TaxiSegment(ManualThrustSegment, FixedDurationSegment, mission_file_keywor
     polar: Polar = None
     reference_area: float = 1.0
     time_step: float = 60.0
+    true_airspeed: float = 0.0
 
     def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
         return 0.0, 0.0
+
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        new_start = deepcopy(start)
+        new_start.mach = None
+        new_start.equivalent_airspeed = None
+        new_start.true_airspeed = self.true_airspeed
+
+        return super().compute_from(new_start)

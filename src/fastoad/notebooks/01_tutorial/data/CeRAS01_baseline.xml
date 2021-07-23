@@ -475,7 +475,7 @@
                         276.0<!--mass of consumed fuel during taxi-out phase in sizing mission--></fuel>
                     <duration units="s" is_input="True">
                         540<!--duration of taxi-out phase in sizing mission--></duration>
-                    <thrust_rate units="s" is_input="True">
+                    <thrust_rate is_input="True">
                         0.25<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
                 </taxi_out>
             </sizing>

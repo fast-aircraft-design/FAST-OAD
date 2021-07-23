@@ -111,6 +111,7 @@ phases:
     parts:
       - segment: taxi
         thrust_rate: data:mission:sizing:taxi_in:thrust_rate
+        true_airspeed: 0.
         target:
           time: data:mission:sizing:taxi_in:duration
 
