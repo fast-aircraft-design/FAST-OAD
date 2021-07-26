@@ -14,6 +14,7 @@ Module for managing OpenMDAO variables
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import itertools
 import logging
 import os.path as pth
 from builtins import isinstance
@@ -626,17 +627,10 @@ class VariableList(list):
             final_inputs = inputs
             final_outputs = outputs
         else:
-            # Remove from inputs the variables that are outputs of some other component and check
-            # if a description is available for this variable and keep the first found (issue # 319)
-            promoted_inputs = {}
-            for metadata in inputs.values():
-                prom_name = metadata["prom_name"]
-                if prom_name in promoted_inputs:
-                    if not promoted_inputs[prom_name]["desc"]:
-                        if metadata["desc"]:
-                            promoted_inputs[prom_name]["desc"] = metadata["desc"]
-                if prom_name not in promoted_inputs:
-                    promoted_inputs[prom_name] = dict(metadata, is_input=True)
+            # Remove from inputs the variables that are outputs of some other component
+            promoted_inputs = {
+                metadata["prom_name"]: dict(metadata, is_input=True) for metadata in inputs.values()
+            }
 
             promoted_outputs = {}
             for metadata in outputs.values():
@@ -647,22 +641,10 @@ class VariableList(list):
                 # ever defined, the first non-NaN value is kept.
                 # A non-NaN value with no units will be retained against a NaN value with
                 # defined units.
-                # Similarly, the description of the variable may appear in one component and not
-                # the other. If it is not in a dedicated variable_descriptions.txt file no
-                # description is returned. Then the first non-empty "desc" field is retained
-                # (issue # 319).
 
                 if prom_name in promoted_outputs:
                     # prom_name has already been encountered.
                     # Note: the succession of "if" is to help understanding, hopefully :)
-
-                    if not promoted_outputs[prom_name]["desc"]:
-                        # We store the first description we found for the considered promoted name
-                        if metadata["desc"]:
-                            promoted_outputs[prom_name]["desc"] = metadata["desc"]
-                            continue
-                    else:
-                        continue
 
                     if not np.all(np.isnan(promoted_outputs[prom_name]["val"])):
                         if promoted_outputs[prom_name]["units"] is not None:
@@ -684,17 +666,20 @@ class VariableList(list):
                 if prom_name not in promoted_inputs:
                     promoted_outputs[prom_name] = metadata
 
-                if prom_name in promoted_inputs:
-                    # For inputs read from input files, descriptions are empty except a
-                    # variable_descriptions.txt exists with a description for the considered
-                    # variable. If they are connected to variable whose "desc" kwarg is not empty
-                    # they inherit from the first description found (issue # 319)
-                    if not promoted_inputs[prom_name]["desc"]:
-                        if metadata["desc"]:
-                            promoted_inputs[prom_name]["desc"] = metadata["desc"]
-
             final_inputs = promoted_inputs
             final_outputs = promoted_outputs
+
+            # When variables are promoted, we may have retained a definition of the variable
+            # that does not have any description, whereas a description is available in
+            # another related definition (issue #319).
+            # Therefore, we iterate again through original variable definitions to find
+            # possible descriptions.
+            for metadata in itertools.chain(inputs.values(), outputs.values()):
+                prom_name = metadata["prom_name"]
+                if metadata["desc"]:
+                    for final in final_inputs, final_outputs:
+                        if prom_name in final and not final[prom_name]["desc"]:
+                            final[prom_name]["desc"] = metadata["desc"]
 
         # Conversion to VariableList instances
         input_vars = VariableList.from_dict(final_inputs)
