@@ -196,7 +196,7 @@ def list_variables(
 
 
 def list_modules(
-    configuration_file_path: str = None,
+    source_path: str = None,
     out: Union[IO, str] = None,
     overwrite: bool = False,
     verbose: bool = False,
@@ -204,10 +204,10 @@ def list_modules(
 ):
     """
     Writes list of available systems.
-    If configuration_file_path is given and if it defines paths where there are registered systems,
+    If source_path is given and if it defines paths where there are registered systems,
     they will be listed too.
 
-    :param configuration_file_path:
+    :param source_path: either a configuration file path, folder path, or list of folder path
     :param out: the output stream or a path for the output file (None means sys.stdout)
     :param overwrite: if True and out is a file path, the file will be written even if one already
                       exists
@@ -221,10 +221,20 @@ def list_modules(
     if out is None:
         out = sys.stdout
 
-    if configuration_file_path:
-        conf = FASTOADProblemConfigurator(configuration_file_path)
-        conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
-    # As the problem has been configured, BundleLoader now knows additional registered systems
+    if source_path:
+        if isinstance(source_path, str) and pth.isfile(source_path):
+            conf = FASTOADProblemConfigurator(source_path)
+            conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
+            # As the problem has been configured,
+            # BundleLoader now knows additional registered systems
+        elif isinstance(source_path, str) and pth.isdir(source_path):
+            RegisterOpenMDAOSystem.explore_folder(source_path)
+        elif any(pth.isdir(x) for x in source_path):
+            for folder_path in source_path:
+                if not pth.exists(folder_path):
+                    _LOGGER.warning("SKIPPED %s: it does not exist.", folder_path)
+                else:
+                    RegisterOpenMDAOSystem.explore_folder(folder_path)
 
     if verbose:
         cell_list = _get_detailed_system_list()
