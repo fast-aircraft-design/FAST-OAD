@@ -55,14 +55,10 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         self.add_input("data:geometry:slat:chord_ratio", val=np.nan)
         self.add_input("data:geometry:slat:span_ratio", val=np.nan)
         self.add_input(
-            "tuning:aerodynamics:high_lift_devices:landing:CD:multi_slotted_flap_effect:k",
-            val=1.0,
-            desc="correction ratio to apply to computed additional drag from flap to take into account multiple slots flaps",
+            "tuning:aerodynamics:high_lift_devices:landing:CD:multi_slotted_flap_effect:k", val=1.0
         )
         self.add_input(
-            "tuning:aerodynamics:high_lift_devices:landing:CL:multi_slotted_flap_effect:k",
-            val=1.0,
-            desc="correction ratio to apply to computed additional lift from flap to take into account multiple slots flaps",
+            "tuning:aerodynamics:high_lift_devices:landing:CL:multi_slotted_flap_effect:k", val=1.0
         )
 
     def setup_partials(self):
