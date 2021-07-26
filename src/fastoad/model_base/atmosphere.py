@@ -232,21 +232,23 @@ class Atmosphere:
                 total_pressure = sigma_0 * current_level.pressure
                 impact_pressure = total_pressure - current_level.pressure
                 self._calibrated_airspeed = (
-                        sea_level.speed_of_sound
-                        * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0))
-                        ** 0.5
+                    sea_level.speed_of_sound
+                    * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0))
+                    ** 0.5
                 )
             if self._mach is not None:
                 sea_level = Atmosphere(0)
                 current_level = Atmosphere(self._altitude, altitude_in_feet=False)
                 gamma = 1.4
-                sigma_0 = (1.0 + (gamma - 1.0) / 2.0 * np.array(self._mach) ** 2.0) ** (gamma / (gamma - 1.0))
+                sigma_0 = (1.0 + (gamma - 1.0) / 2.0 * np.array(self._mach) ** 2.0) ** (
+                    gamma / (gamma - 1.0)
+                )
                 total_pressure = sigma_0 * current_level.pressure
                 impact_pressure = total_pressure - current_level.pressure
                 self._calibrated_airspeed = (
-                        sea_level.speed_of_sound
-                        * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0))
-                        ** 0.5
+                    sea_level.speed_of_sound
+                    * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0))
+                    ** 0.5
                 )
         return self._return_value(self._calibrated_airspeed)
 
