@@ -98,6 +98,28 @@ def test_list_modules(cleanup):
 
     assert pth.exists(out_file)
 
+    #
+    # Run with file output (test file existence)
+    source_folder = pth.join(DATA_FOLDER_PATH, "cmd_sellar_example")
+
+    # Run with file output with folders (test file existence)
+    out_file = pth.join(RESULTS_FOLDER_PATH, "list_modules_with_folder.txt")
+    assert not pth.exists(out_file)
+    api.list_modules(source_folder, out_file)
+    with pytest.raises(FastFileExistsError):
+        api.list_modules(source_folder, out_file)
+
+    # Testing with single folder
+    api.list_modules(source_folder, out_file, overwrite=True)
+
+    assert pth.exists(out_file)
+
+    # Testing with list of folders
+    source_folder = [source_folder]
+    api.list_modules(source_folder, out_file, overwrite=True)
+
+    assert pth.exists(out_file)
+
 
 def test_list_variables(cleanup):
     # Run with stdout output (no test)
