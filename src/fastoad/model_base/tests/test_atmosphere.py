@@ -179,7 +179,7 @@ def test_speed_conversions():
     assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-3)
     assert_allclose(atm.mach, expected_Mach, rtol=2e-3)
     assert_allclose(atm.unitary_reynolds, expected_Re1, rtol=2e-3)
-    assert_allclose(atm.calibrated_airspeed, expected_CAS, rtol=2e-2)
+    assert_allclose(atm.calibrated_airspeed, expected_CAS, rtol=3e-2)
 
     atm = Atmosphere(altitudes)
     atm.equivalent_airspeed = expected_EAS
@@ -193,14 +193,14 @@ def test_speed_conversions():
     assert_allclose(atm.true_airspeed, TAS, rtol=2e-3)
     assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-3)
     assert_allclose(atm.unitary_reynolds, expected_Re1, rtol=2.5e-3)
-    assert_allclose(atm.calibrated_airspeed, expected_CAS, rtol=2e-2)
+    assert_allclose(atm.calibrated_airspeed, expected_CAS, rtol=3e-2)
 
     atm = Atmosphere(altitudes)
     atm.unitary_reynolds = expected_Re1
     assert_allclose(atm.true_airspeed, TAS, rtol=2e-3)
     assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-3)
     assert_allclose(atm.mach, expected_Mach, rtol=2.5e-3)
-    assert_allclose(atm.calibrated_airspeed, expected_CAS, rtol=2.5e-2)
+    assert_allclose(atm.calibrated_airspeed, expected_CAS, rtol=3e-2)
 
     atm = Atmosphere(altitudes)
     atm.calibrated_airspeed = expected_CAS
