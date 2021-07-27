@@ -75,6 +75,9 @@ class OptimizationViewer:
         # The ui containing save and load buttons
         self._save_load_buttons = None
 
+        # True if in the absence of an output file
+        self._MISSING_OUTPUT_FILE = None
+
     def load(
         self, problem_configuration: FASTOADProblemConfigurator,
     ):
@@ -93,8 +96,10 @@ class OptimizationViewer:
             raise FastMissingFile("Please generate input file before using the optimization viewer")
 
         if pth.isfile(self.problem_configuration.output_file_path):
+            self._MISSING_OUTPUT_FILE = False
             output_variables = DataFile(self.problem_configuration.output_file_path)
         else:
+            self._MISSING_OUTPUT_FILE = True
             problem = self.problem_configuration.get_problem()
             problem.setup()
             output_variables = VariableList.from_problem(problem)
@@ -282,6 +287,11 @@ class OptimizationViewer:
                         # TODO: make the number of decimals depend on the module ?
                         # or chosen in the ui by the user
                         numeric_format = "0.000"
+
+                    # If no output file is provided make it clearer for the user
+                    if c == "Value" and self._MISSING_OUTPUT_FILE:
+                        value = "-"
+
                     cells.append(
                         sh.Cell(
                             value=value,
