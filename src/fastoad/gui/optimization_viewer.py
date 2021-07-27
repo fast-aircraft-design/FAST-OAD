@@ -266,7 +266,7 @@ class OptimizationViewer:
             rows = df.index.tolist()
             cells = []
 
-            read_only_cells = ["Name", "Unit", "Description"]
+            read_only_cells = ["Name", "Unit", "Description", "Value"]
 
             style = self._cell_styling(df)
             row_idx = 0
