@@ -155,7 +155,6 @@ class OptimizationViewer:
         """
         conf = self.problem_configuration
         input_variables = DataFile(self.problem_configuration.input_file_path, None)
-        output_variables = DataFile(self.problem_configuration.output_file_path, None)
         opt_def = conf.get_optimization_definition()
 
         variables = self.get_variables()
@@ -163,15 +162,11 @@ class OptimizationViewer:
             name = variable.name
             if name in input_variables.names():
                 input_variables[name].value = variable.metadata["initial_value"]
-            if name in output_variables.names():
-                output_variables[name].value = variable.metadata["value"]
             self._update_optim_variable(variable, opt_def)
 
         # Saving modifications
         # Initial values
         input_variables.save()
-        # Values
-        output_variables.save()
 
         # Optimization definition
         conf.set_optimization_definition(opt_def)
