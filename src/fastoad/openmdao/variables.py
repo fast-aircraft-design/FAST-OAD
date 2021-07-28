@@ -538,19 +538,31 @@ class VariableList(list):
         """
 
         # Get inputs and outputs
-        metadata_keys = (
-            "value",
-            "units",
-            "shape",
-            "size",
-            "desc",
-            "ref",
-            "ref0",
-            "lower",
-            "upper",
-            "tags",
-        )
-        inputs = problem.model.get_io_metadata("input", metadata_keys=metadata_keys)
+        try:
+            metadata_keys = (
+                "value",
+                "units",
+                "shape",
+                "size",
+                "desc",
+                "ref",
+                "ref0",
+                "lower",
+                "upper",
+                "tags",
+            )
+            inputs = problem.model.get_io_metadata("input", metadata_keys=metadata_keys)
+        except RuntimeError:
+            metadata_keys = (
+                "units",
+                "desc",
+                "ref",
+                "ref0",
+                "lower",
+                "upper",
+                "tags",
+            )
+            inputs = problem.model.get_io_metadata("input", metadata_keys=metadata_keys)
         outputs = problem.model.get_io_metadata(
             "output", metadata_keys=metadata_keys, excludes="_auto_ivc.*"
         )
@@ -637,6 +649,12 @@ class VariableList(list):
                         continue
                 if prom_name not in promoted_inputs:
                     promoted_outputs[prom_name] = metadata
+                    # Create NaN value and None units if keys are not available (problem setup partially failed
+                    # possibly because of shape_by_conn variables
+                    if "value" not in metadata_keys:
+                        promoted_outputs[prom_name]["value"] = np.NaN
+                    if "units" not in metadata_keys:
+                        promoted_outputs[prom_name]["units"] = None
 
             final_inputs = promoted_inputs
             final_outputs = promoted_outputs

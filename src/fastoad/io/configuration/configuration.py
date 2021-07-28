@@ -16,6 +16,7 @@ Module for building OpenMDAO problem from configuration file
 
 import json
 import logging
+import copy
 import os.path as pth
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
@@ -116,8 +117,27 @@ class FASTOADProblemConfigurator:
 
         if read_inputs:
             problem_with_no_inputs = self.get_problem(auto_scaling=auto_scaling)
-            problem_with_no_inputs.setup()
+            try:
+                problem_with_no_inputs.setup()
+            except RuntimeError:
+                _LOGGER.info(
+                    "Some problem occured while setting-up the problem without input file probably "
+                    "because shape_by_conn variables exist!"
+                )
             input_ivc, unused_variables = self._get_problem_inputs(problem_with_no_inputs)
+            local_problem = om.Problem()
+            model = local_problem.model
+            for my_model in problem_with_no_inputs.model._proc_info.keys():
+                model.add_subsystem(
+                    my_model,
+                    problem_with_no_inputs.model.__getattribute__(my_model),
+                    promotes=["*"],
+                )
+            model.add_subsystem("inputs", input_ivc, promotes=["*"])
+            try:
+                local_problem.setup()
+            except:
+                input_ivc = unused_variables = None
         else:
             input_ivc = unused_variables = None
 
@@ -212,18 +232,67 @@ class FASTOADProblemConfigurator:
                                  not provided, expected format will be the default one.
         """
         problem = self.get_problem(read_inputs=False)
-        problem.setup()
         variables = DataFile(self.input_file_path, load_data=False)
-        variables.update(
-            VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
-            add_variables=True,
-        )
-        if source_file_path:
-            ref_vars = DataFile(source_file_path, formatter=source_formatter)
-            variables.update(ref_vars, add_variables=False)
-            for var in variables:
-                var.is_input = True
-        variables.save()
+        if source_file_path is None:
+            problem.setup()
+            variables.update(
+                VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
+                add_variables=True,
+            )
+            variables.save()
+        else:
+            try:
+                problem.setup()
+                variables.update(
+                    VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
+                    add_variables=True,
+                )
+                ref_vars = DataFile(source_file_path, formatter=source_formatter)
+                variables.update(ref_vars, add_variables=False)
+                for var in variables:
+                    var.is_input = True
+                variables.save()
+            except RuntimeError:
+                # The most probable error occuring while doing setup is the use of shape_by_conn, therefore we are
+                # gonna try to load default values/units for inputs and make an update with input file
+                variables_all = VariableList.from_problem(problem, use_initial_values=True)
+                inputs = copy.deepcopy(variables_all)
+                for idx in range(len(variables_all)):
+                    metadata = variables_all[idx].metadata
+                    if not metadata["is_input"]:  # or not metadata["is_input"]:
+                        inputs.remove(variables_all[idx])
+                # Check connections
+                for idx in range(len(inputs)):
+                    name = inputs[idx].name
+                    source_name = problem.model.get_source(name)
+                    if not source_name.startswith("_auto_ivc.") and source_name != name:
+                        # This variable is connected to another variable of the problem: it is
+                        # not an actual problem input. Let's remove it from inputs.
+                        inputs.remove(name)
+                ref_vars = DataFile(source_file_path, formatter=source_formatter)
+                ref_vars_names = [ref_var.name for ref_var in ref_vars]
+                for specific_input in inputs.copy():
+                    if not (specific_input.name in ref_vars_names):
+                        inputs.remove(specific_input)
+                # Remove non-common variables
+                variables.update(inputs, add_variables=True)
+                variables.update(ref_vars, add_variables=False)
+                for var in variables:
+                    var.is_input = True
+                # Then we are adding the IVC to the problem to try again the setup
+                local_problem = om.Problem()
+                model = local_problem.model
+                for my_model in problem.model._proc_info.keys():
+                    model.add_subsystem(
+                        my_model, problem.model.__getattribute__(my_model), promotes=["*"]
+                    )
+                model.add_subsystem("inputs", variables.to_ivc(), promotes=["*"])
+                try:
+                    local_problem.setup()
+                    variables.save()
+                except RuntimeError:
+                    # FIXME: raise a specific error
+                    print("Error because probably using shape_by_conn and not in input file")
 
     def get_optimization_definition(self) -> Dict:
         """
@@ -427,9 +496,14 @@ class FASTOADProblemConfigurator:
         for name in unused_variables.names():
             del input_variables[name]
 
-        nan_variable_names = [var.name for var in input_variables if np.all(np.isnan(var.value))]
-        if nan_variable_names:
-            raise FASTConfigurationNanInInputFile(self.input_file_path, nan_variable_names)
+        try:
+            nan_variable_names = [
+                var.name for var in input_variables if np.all(np.isnan(var.value))
+            ]
+            if nan_variable_names:
+                raise FASTConfigurationNanInInputFile(self.input_file_path, nan_variable_names)
+        except RuntimeError:
+            pass
 
         input_ivc = input_variables.to_ivc()
         return input_ivc, unused_variables

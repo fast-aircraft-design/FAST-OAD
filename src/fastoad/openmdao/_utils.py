@@ -43,15 +43,24 @@ def get_unconnected_input_names(
     mandatory_unconnected = set()
     optional_unconnected = set()
 
-    for abs_name, metadata in model.get_io_metadata(
-        "input", metadata_keys=["value"], return_rel_names=False
-    ).items():
-        name = metadata["prom_name"] if promoted_names else abs_name
-        if model.get_source(abs_name).startswith("_auto_ivc."):
-            if np.all(np.isnan(metadata["value"])):
-                mandatory_unconnected.add(name)
-            else:
-                optional_unconnected.add(name)
+    try:
+        for abs_name, metadata in model.get_io_metadata(
+            "input", metadata_keys=["value"], return_rel_names=False
+        ).items():
+            name = metadata["prom_name"] if promoted_names else abs_name
+            if model.get_source(abs_name).startswith("_auto_ivc."):
+                if np.all(np.isnan(metadata["value"])):
+                    mandatory_unconnected.add(name)
+                else:
+                    optional_unconnected.add(name)
+    except:
+        # Code failure may be due to shape_by_conn variables and uncomplete setup with no acces to value
+        # then return all parameters as mandatory
+        for abs_name, metadata in model.get_io_metadata(
+            "input", metadata_keys=[], return_rel_names=False
+        ).items():
+            name = metadata["prom_name"] if promoted_names else abs_name
+            mandatory_unconnected.add(name)
 
     # If a promoted variable is defined both with NaN and non-NaN value, it is
     # considered as mandatory
