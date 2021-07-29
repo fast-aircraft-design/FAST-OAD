@@ -2,32 +2,27 @@ name: Build PyPI package and Binder image
 
 on:
   release:
-    types: [published]
+    types: [ published ]
 
 jobs:
   delete-tag:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete tag
+      - name: Move tag
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.git.deleteRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: "tags/latest-release",
-            })
-
-  create-tag:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create tag
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.git.createRef({
+            try {
+              await github.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: "tags/latest-release",
+              })
+            } catch (e) {
+              console.log("Tag does not exist." + e)
+            }
+            await github.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: "refs/tags/latest-release",
@@ -38,8 +33,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.8]
-        os: [ubuntu-latest]
+        python-version: [ 3.8 ]
+        os: [ ubuntu-latest ]
 
     steps:
       - uses: actions/checkout@v2
@@ -75,7 +70,7 @@ jobs:
       - name: publish to PyPI
         env:
           TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would
-                                     # write it plainly in the log
+          # write it plainly in the log
         run: |
           poetry config pypi-token.pypi "$TOKEN"
           poetry publish
