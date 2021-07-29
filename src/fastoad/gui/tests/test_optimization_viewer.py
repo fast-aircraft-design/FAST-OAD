@@ -15,6 +15,7 @@ Tests for FAST-OAD optimization viewer
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
+from os import makedirs
 from shutil import copyfile, rmtree
 
 import pytest
@@ -31,6 +32,7 @@ RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    makedirs(RESULTS_FOLDER_PATH)
 
 
 def test_optimization_viewer_load(cleanup):

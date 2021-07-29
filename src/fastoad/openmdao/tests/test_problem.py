@@ -38,22 +38,22 @@ def test_write_outputs():
     problem.write_outputs()
     variables = VariableIO(problem.output_file_path).read()
     assert variables == [
-        Variable(name="f", value=1.0),
-        Variable(name="g1", value=1.0),
-        Variable(name="g2", value=1.0),
-        Variable(name="x", value=2),
-        Variable(name="y2", value=1.0),
-        Variable(name="z", value=[5.0, 2.0], units="m**2"),
+        Variable(name="f", val=1.0),
+        Variable(name="g1", val=1.0),
+        Variable(name="g2", val=1.0),
+        Variable(name="x", val=2),
+        Variable(name="y2", val=1.0),
+        Variable(name="z", val=[5.0, 2.0], units="m**2"),
     ]
 
     problem.run_model()
     problem.write_outputs()
     variables = VariableIO(problem.output_file_path).read()
     assert variables == [
-        Variable(name="f", value=32.569100892077444),
-        Variable(name="g1", value=-23.409095627564167),
-        Variable(name="g2", value=-11.845478137832359),
-        Variable(name="x", value=2),
-        Variable(name="y2", value=12.154521862167641),
-        Variable(name="z", value=[5.0, 2.0], units="m**2"),
+        Variable(name="f", val=32.569100892077444),
+        Variable(name="g1", val=-23.409095627564167),
+        Variable(name="g2", val=-11.845478137832359),
+        Variable(name="x", val=2),
+        Variable(name="y2", val=12.154521862167641),
+        Variable(name="z", val=[5.0, 2.0], units="m**2"),
     ]

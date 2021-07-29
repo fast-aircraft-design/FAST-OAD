@@ -134,7 +134,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                     if is_input is not None:
                         is_input = is_input == "True"
 
-                    variables[name] = {"value": value, "units": units, "is_input": is_input}
+                    variables[name] = {"val": value, "units": units, "is_input": is_input}
                     previous_variable_name = name
                 else:
                     raise FastXmlFormatterDuplicateVariableError(

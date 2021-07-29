@@ -110,7 +110,7 @@ class Variable(Hashable):
             metadata = comp.add_output(name="a")
 
             self.__class__._base_metadata = metadata
-            self.__class__._base_metadata["value"] = 1.0
+            self.__class__._base_metadata["val"] = 1.0
             self.__class__._base_metadata["tags"] = set()
             self.__class__._base_metadata["shape"] = None
         # Done with class attributes ------------------------------------------
@@ -127,6 +127,12 @@ class Variable(Hashable):
                 if not isinstance(value, str) or value != "Unavailable"
             }
         )
+
+        if "value" in self.metadata:
+            self.metadata["val"] = self.metadata.pop("value")
+        if "description" in self.metadata:
+            self.metadata["desc"] = self.metadata.pop("description")
+
         self._set_default_shape()
 
         # If no description, use the one from self._variable_descriptions, if available
@@ -216,17 +222,26 @@ class Variable(Hashable):
 
     @property
     def value(self):
-        """ value of the variable"""
-        return self.metadata.get("value")
+        """value of the variable"""
+        return self.metadata.get("val")
 
     @value.setter
     def value(self, value):
-        self.metadata["value"] = value
+        self.metadata["val"] = value
         self._set_default_shape()
 
     @property
+    def val(self):
+        """value of the variable (alias of property "value")"""
+        return self.value
+
+    @val.setter
+    def val(self, value):
+        self.value = value
+
+    @property
     def units(self):
-        """ units associated to value (or None if not found) """
+        """units associated to value (or None if not found)"""
         return self.metadata.get("units")
 
     @units.setter
@@ -235,7 +250,7 @@ class Variable(Hashable):
 
     @property
     def description(self):
-        """ description of the variable (or None if not found) """
+        """description of the variable (or None if not found)"""
         return self.metadata.get("desc")
 
     @description.setter
@@ -243,8 +258,18 @@ class Variable(Hashable):
         self.metadata["desc"] = value
 
     @property
+    def desc(self):
+        """description of the variable (or None if not found) (alias of property "description")"""
+        return self.description
+
+    @desc.setter
+    def desc(self, value):
+        self.description = value
+
+    @property
     def is_input(self):
-        """ I/O status of the variable.
+        """
+        I/O status of the variable.
 
         - True if variable is a problem input
         - False if it is an output
@@ -257,7 +282,7 @@ class Variable(Hashable):
         self.metadata["is_input"] = value
 
     def _set_default_shape(self):
-        """ Automatically sets shape if not set"""
+        """Automatically sets shape if not set"""
         if self.metadata["shape"] is None:
             shape = np.shape(self.value)
             if not shape:
@@ -268,8 +293,8 @@ class Variable(Hashable):
         # same arrays with nan are declared non equals, so we need a workaround
         my_metadata = dict(self.metadata)
         other_metadata = dict(other.metadata)
-        my_value = np.asarray(my_metadata.pop("value"))
-        other_value = np.asarray(other_metadata.pop("value"))
+        my_value = np.asarray(my_metadata.pop("val"))
+        other_value = np.asarray(other_metadata.pop("val"))
 
         # Let's also ignore unimportant keys
         for key in METADATA_TO_IGNORE:
@@ -373,7 +398,7 @@ class VariableList(list):
         ivc = om.IndepVarComp()
         for variable in self:
             attributes = variable.metadata.copy()
-            value = attributes.pop("value")
+            value = attributes.pop("val")
             # Some attributes are not compatible with add_output
             for attr in METADATA_TO_IGNORE:
                 if attr in attributes:
@@ -408,11 +433,11 @@ class VariableList(list):
             value = _check_shape(variable.value)
             var_dict["name"].append(variable.name)
             for metadata_name in self.metadata_keys():
-                if metadata_name == "value":
-                    var_dict["value"].append(value)
+                if metadata_name == "val":
+                    var_dict["val"].append(value)
                 else:
                     # TODO: make this more generic
-                    if metadata_name in ["value", "initial_value", "lower", "upper"]:
+                    if metadata_name in ["val", "initial_value", "lower", "upper"]:
                         metadata = _check_shape(variable.metadata[metadata_name])
                     else:
                         metadata = variable.metadata[metadata_name]
@@ -453,17 +478,17 @@ class VariableList(list):
         om.Problem(ivc).setup()  # Need setup to have get_io_metadata working
 
         for name, metadata in ivc.get_io_metadata(
-            metadata_keys=["value", "units", "upper", "lower"]
+            metadata_keys=["val", "units", "upper", "lower"]
         ).items():
             metadata = metadata.copy()
-            value = metadata.pop("value")
+            value = metadata.pop("val")
             if np.shape(value) == (1,):
                 value = float(value[0])
             elif np.shape(value) == ():
                 pass
             else:
                 value = np.asarray(value)
-            metadata.update({"value": value})
+            metadata.update({"val": value})
             variables[name] = metadata
 
         return variables
@@ -499,7 +524,7 @@ class VariableList(list):
             var_as_dict = {key: val for key, val in zip(column_names, row)}
             # TODO: make this more generic
             for key, val in var_as_dict.items():
-                if key in ["value", "initial_value", "lower", "upper"]:
+                if key in ["val", "initial_value", "lower", "upper"]:
                     var_as_dict[key] = _check_shape(val)
                 else:
                     pass
@@ -539,7 +564,7 @@ class VariableList(list):
 
         # Get inputs and outputs
         metadata_keys = (
-            "value",
+            "val",
             "units",
             "shape",
             "size",
@@ -618,18 +643,18 @@ class VariableList(list):
                     # prom_name has already been encountered.
                     # Note: the succession of "if" is to help understanding, hopefully :)
 
-                    if not np.all(np.isnan(promoted_outputs[prom_name]["value"])):
+                    if not np.all(np.isnan(promoted_outputs[prom_name]["val"])):
                         if promoted_outputs[prom_name]["units"] is not None:
                             # We already have a non-NaN value with defined units for current
                             # promoted name. No need for using the current variable.
                             continue
-                        if np.all(np.isnan(metadata["value"])):
+                        if np.all(np.isnan(metadata["val"])):
                             # We already have a non-NaN value and current variable has a NaN value,
                             # so it can only add information about units. We keep the non-NaN value
                             continue
 
                     if (
-                        np.all(np.isnan(promoted_outputs[prom_name]["value"]))
+                        np.all(np.isnan(promoted_outputs[prom_name]["val"]))
                         and metadata["units"] is None
                     ):
                         # We already have a non-NaN value and current variable provides no unit.
@@ -694,9 +719,7 @@ class VariableList(list):
         # other.
         processed_prom_names = []
 
-        io_metadata = model.get_io_metadata(
-            metadata_keys=["value", "units"], return_rel_names=False
-        )
+        io_metadata = model.get_io_metadata(metadata_keys=["val", "units"], return_rel_names=False)
 
         def _add_outputs(unconnected_names):
             """ Fills ivc with data associated to each provided var"""
@@ -723,10 +746,11 @@ class VariableList(list):
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, dict):
+                variable = Variable(key, **value)
                 if key in self.names():
-                    self[key].metadata = deepcopy(value)
+                    self[key].metadata = variable.metadata
                 else:
-                    self.append(Variable(key, **value))
+                    self.append(variable)
             else:
                 raise TypeError(
                     'VariableList can be set with "vars[key] = value" only if value is a '

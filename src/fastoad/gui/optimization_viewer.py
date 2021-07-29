@@ -49,7 +49,7 @@ class OptimizationViewer:
         "name": "Name",
         "initial_value": "Initial Value",
         "lower": "Lower",
-        "value": "Value",
+        "val": "Value",
         "upper": "Upper",
         "units": "Unit",
         "desc": "Description",
