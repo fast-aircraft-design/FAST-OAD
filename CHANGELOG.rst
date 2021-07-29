@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.0.5
+=============
+- Changes:
+    - Now using the new WhatsOpt feature that allows to generate XDSM files without being registered on server. (#361)
+    - Optimization viewer does no allow anymore to modify output values. (#372)
+- Bug fixes:
+    - Compatibility with OpenMDAO 3.10 (which becomes the minimal required version). (#375)
+    - Variable descriptions can now be read from comment of XML data files, which fixes the missing descriptions in variable viewer. (#359)
+    - Performance model: the computed taxi-in distance was irrelevant. (#368)
+
 Version 1.0.4
 =============
 - Changes:
