@@ -185,44 +185,37 @@ class Atmosphere:
                 self._true_airspeed = self._unitary_reynolds * self.kinematic_viscosity
             if self._calibrated_airspeed is not None:
                 cas = np.array(self._calibrated_airspeed)
-                self._true_airspeed = np.zeros(np.size(cas))
                 sea_level = Atmosphere(0)
-                current_level = Atmosphere(self._altitude.flatten(), altitude_in_feet=False)
-                for idx in range(len(self._true_airspeed)):
-                    delta = current_level.pressure[idx] / sea_level.pressure
-                    gamma = sea_level.density / current_level.density[idx]
-                    speed_of_sound = current_level.speed_of_sound[idx]
-                    altitude = current_level.get_altitude(altitude_in_feet=True)[idx]
-                    coeff = [
-                        3.0
-                        / 640.0
-                        * (1.0 - 10.0 * delta + 9 * delta ** 2)
-                        * 1
-                        / speed_of_sound ** 4
-                        * gamma ** 2,
-                        0,
-                        1.0 / 8.0 * (1.0 - delta) * 1 / speed_of_sound ** 2 * gamma,
-                        0,
-                        1.0,
-                        -cas.flatten()[idx],
-                    ]
-                    real_positive_roots = np.array(
-                        [np.real(x) for x in np.roots(coeff) if np.isreal(x) and x > 0.0]
-                    )
-                    if len(real_positive_roots) > 1:
-                        dumb_tas = cas.flatten()[idx] * (1.0 + 0.02 * (altitude / 1000.0))
-                        self._true_airspeed[idx] = (
-                            real_positive_roots[
-                                (np.abs(real_positive_roots * gamma ** 0.5 - dumb_tas)).argmin()
-                            ]
-                            * gamma ** 0.5
+                current_level = Atmosphere(self._altitude, altitude_in_feet=False)
+                gamma = 1.4
+                self._true_airspeed = (
+                    2
+                    * gamma
+                    / (gamma - 1.0)
+                    * current_level.pressure
+                    / current_level.density
+                    * (
+                        (
+                            1.0
+                            + sea_level.pressure
+                            / current_level.pressure
+                            * (
+                                (
+                                    1.0
+                                    + (gamma - 1.0)
+                                    / (2.0 * gamma)
+                                    * sea_level.density
+                                    / sea_level.pressure
+                                    * cas ** 2.0
+                                )
+                                ** (gamma / (gamma - 1.0))
+                                - 1.0
+                            )
                         )
-                    else:
-                        self._true_airspeed[idx] = real_positive_roots[0] * gamma ** 0.5
-                if np.size(self._true_airspeed) != 1:
-                    self._true_airspeed = self._true_airspeed.reshape(np.shape(cas))
-                else:
-                    self._true_airspeed = self._true_airspeed[0]
+                        ** ((gamma - 1.0) / gamma)
+                        - 1.0
+                    )
+                ) ** 0.5
         return self._return_value(self._true_airspeed)
 
     @property
@@ -248,20 +241,41 @@ class Atmosphere:
         if self._calibrated_airspeed is None:
             sea_level = Atmosphere(0)
             current_level = Atmosphere(self._altitude, altitude_in_feet=False)
-            delta = current_level.pressure / sea_level.pressure
+            gamma = 1.4
             if self._true_airspeed is not None:
-                current_level.true_airspeed = self._true_airspeed
-                eas = current_level.equivalent_airspeed
-                mach = current_level.mach
+                tas = np.array(self._true_airspeed)
             if self._mach is not None:
                 current_level.mach = self._mach
-                eas = current_level.equivalent_airspeed
-                mach = np.array(self._mach)
-            self._calibrated_airspeed = eas * (
-                1.0
-                + 1.0 / 8.0 * (1.0 - delta) * mach ** 2.0
-                + 3.0 / 640.0 * (1.0 - 10.0 * delta + 9.0 * delta ** 2) * mach ** 4.0
-            )
+                tas = current_level.true_airspeed
+
+            self._calibrated_airspeed = (
+                2.0
+                * gamma
+                / (gamma - 1.0)
+                * sea_level.pressure
+                / sea_level.density
+                * (
+                    (
+                        1
+                        + current_level.pressure
+                        / sea_level.pressure
+                        * (
+                            (
+                                1.0
+                                + (gamma - 1.0)
+                                / (2.0 * gamma)
+                                * current_level.density
+                                / current_level.pressure
+                                * tas ** 2.0
+                            )
+                            ** (gamma / (gamma - 1.0))
+                            - 1.0
+                        )
+                    )
+                    ** ((gamma - 1.0) / gamma)
+                    - 1.0
+                )
+            ) ** 0.5
         return self._return_value(self._calibrated_airspeed)
 
     @mach.setter
