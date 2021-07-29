@@ -1,0 +1,5 @@
+<FASTOAD_model>
+  <toto is_input="True">1</toto>
+  <tata is_input="False">3.0<!--output2--></tata>
+  <titi is_input="False">2.0<!--output1--></titi>
+</FASTOAD_model>

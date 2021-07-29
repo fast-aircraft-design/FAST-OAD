@@ -1,0 +1,22 @@
+title: test
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+  - ./
+
+# Input and output files
+input_file: ./test.xml
+output_file: ./test_outputs.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
+
+# Definition of OpenMDAO model
+# Although "model" is a mandatory name for the top level of the model, its
+# sub-components can be freely named by user
+model:
+
+  #  Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
+  toto:
+    # An OpenMDAO component is identified by its "id"
+    id: my.toto.test
