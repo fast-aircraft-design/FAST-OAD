@@ -75,6 +75,9 @@ class OptimizationViewer:
         # The ui containing save and load buttons
         self._save_load_buttons = None
 
+        # True if in the absence of an output file
+        self._MISSING_OUTPUT_FILE = None
+
     def load(
         self, problem_configuration: FASTOADProblemConfigurator,
     ):
@@ -93,8 +96,10 @@ class OptimizationViewer:
             raise FastMissingFile("Please generate input file before using the optimization viewer")
 
         if pth.isfile(self.problem_configuration.output_file_path):
+            self._MISSING_OUTPUT_FILE = False
             output_variables = DataFile(self.problem_configuration.output_file_path)
         else:
+            self._MISSING_OUTPUT_FILE = True
             problem = self.problem_configuration.get_problem()
             problem.setup()
             output_variables = VariableList.from_problem(problem)
@@ -155,7 +160,6 @@ class OptimizationViewer:
         """
         conf = self.problem_configuration
         input_variables = DataFile(self.problem_configuration.input_file_path, None)
-        output_variables = DataFile(self.problem_configuration.output_file_path, None)
         opt_def = conf.get_optimization_definition()
 
         variables = self.get_variables()
@@ -163,15 +167,11 @@ class OptimizationViewer:
             name = variable.name
             if name in input_variables.names():
                 input_variables[name].value = variable.metadata["initial_value"]
-            if name in output_variables.names():
-                output_variables[name].value = variable.metadata["value"]
             self._update_optim_variable(variable, opt_def)
 
         # Saving modifications
         # Initial values
         input_variables.save()
-        # Values
-        output_variables.save()
 
         # Optimization definition
         conf.set_optimization_definition(opt_def)
@@ -271,7 +271,7 @@ class OptimizationViewer:
             rows = df.index.tolist()
             cells = []
 
-            read_only_cells = ["Name", "Unit", "Description"]
+            read_only_cells = ["Name", "Unit", "Description", "Value"]
 
             style = self._cell_styling(df)
             row_idx = 0
@@ -287,6 +287,11 @@ class OptimizationViewer:
                         # TODO: make the number of decimals depend on the module ?
                         # or chosen in the ui by the user
                         numeric_format = "0.000"
+
+                    # If no output file is provided make it clearer for the user
+                    if c == "Value" and self._MISSING_OUTPUT_FILE:
+                        value = "-"
+
                     cells.append(
                         sh.Cell(
                             value=value,
