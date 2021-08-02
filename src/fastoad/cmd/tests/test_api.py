@@ -19,15 +19,18 @@ import os.path as pth
 import shutil
 from filecmp import cmp
 from shutil import rmtree
+import warnings
 
 import pytest
 
 import fastoad.models
+from fastoad.models import geometry
 from fastoad.openmdao.variables import Variable
 from .. import api
 from ..api import SAMPLE_FILENAME
 from ..exceptions import FastFileExistsError
 from ...io import DataFile
+from .dummy_classes import Disc1, Disc2
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -196,3 +199,193 @@ def test_variable_viewer(cleanup):
     api.variable_viewer(file_path)
 
     api.variable_viewer(file_path, editable=False)
+
+
+def test_variable_descriptions_auto_gen(cleanup):
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+
+        api.generate_variables_description(geometry.__path__[0], True)
+
+        # Check that there is 1 warning consisting of an empty descriptions file
+        counter = 0
+        if len(w) != 0:
+            for warning_message in w:
+                print(warning_message.message)
+                if not issubclass(warning_message.category, DeprecationWarning):
+                    counter += 1
+
+        assert counter == 1
+
+        # Remove generated file
+        os.remove(pth.join(geometry.__path__[0], 'variable_descriptions.txt'))
+
+
+def test_simple_working(cleanup):
+
+    complete_xml_file = pth.join(pth.dirname(__file__), "data", "complete.xml")
+    var_inputs = []
+
+    test_generate_block_analysis = api.generate_block_analysis(
+        Disc1(), var_inputs, complete_xml_file, False
+    )
+    input_dict = {}
+    output_dict = test_generate_block_analysis(input_dict)
+    value = output_dict.get("data:geometry:variable_4")[0]
+    assert value == pytest.approx(14.0, abs=1e-3)
+
+
+def test_input_vars_working(cleanup):
+
+    missing_input_xml_file = pth.join(pth.dirname(__file__), "data/missing_one_input.xml")
+    var_inputs = ["data:geometry:variable_1"]
+
+    test_generate_block_analysis = api.generate_block_analysis(
+        Disc1(), var_inputs, missing_input_xml_file, False
+    )
+    input_dict = {"data:geometry:variable_1": (4.0, None)}
+    output_dict = test_generate_block_analysis(input_dict)
+    value = output_dict.get("data:geometry:variable_4")[0]
+    assert value == pytest.approx(17.0, abs=1e-3)
+
+
+def test_ivc_working(cleanup):
+    missing_input_xml_file = pth.join(pth.dirname(__file__), "data/missing_one_input.xml")
+
+    var_inputs = []
+
+    test_generate_block_analysis = api.generate_block_analysis(
+        Disc2(), var_inputs, missing_input_xml_file, False
+    )
+    input_dict = {}
+    output_dict = test_generate_block_analysis(input_dict)
+    value = output_dict.get("data:geometry:variable_4")[0]
+    assert value == pytest.approx(19.0, abs=1e-3)
+
+
+def test_supernumerary_inputs(cleanup):
+    """ Tests if the various errors implemented in the function handling are caught """
+
+    xml_file = pth.join(pth.dirname(__file__), "data/supernumerary_inputs.xml")
+
+    var_inputs = ["data:geometry:variable_3", "data:geometry:variable_error"]
+
+    # noinspection PyBroadException
+    try:
+        # noinspection PyUnusedLocal
+        test_generate_block_analysis = api.generate_block_analysis(
+            Disc1(), var_inputs, xml_file, False
+        )
+        function_generated = True
+        right_error = False
+
+    except Exception as error:
+
+        function_generated = False
+
+        if error.args[0] == "The input list contains name(s) out of component/group input list!":
+            right_error = True
+        else:
+            right_error = False
+
+    assert not function_generated
+    assert right_error
+
+
+def test_empty_xml(cleanup):
+    """ Tests if the various errors implemented in the function handling are caught """
+
+    missing_xml = pth.join(pth.dirname(__file__), "data/missing.xml")
+
+    var_inputs = ["data:geometry:variable_3"]
+
+    # First try with no xml file, should fail
+    # noinspection PyBroadException
+    try:
+        # noinspection PyUnusedLocal
+        test_generate_block_analysis = api.generate_block_analysis(
+            Disc1(), var_inputs, missing_xml, False
+        )
+        function_generated = True
+        right_error = False
+
+    except Exception as error:
+
+        function_generated = False
+
+        if (
+            error.args[0]
+            == "Input .xml file not found, a default file has been created with default NaN values, "
+            "but no function is returned!\nConsider defining proper values before second execution!"
+        ):
+            right_error = True
+        else:
+            right_error = False
+
+    assert not function_generated
+    assert right_error
+
+    if os.path.exists(missing_xml):
+        os.remove(missing_xml)
+
+    # Then test with empty xml file but var_inputs is contains all the necessary data, should succeed
+
+    var_inputs = [
+        "data:geometry:variable_1",
+        "data:geometry:variable_2",
+        "data:geometry:variable_3",
+    ]
+
+    # noinspection PyBroadException
+    # noinspection PyUnusedLocal
+    try:
+        test_generate_block_analysis = api.generate_block_analysis(
+            Disc1(), var_inputs, missing_xml, False
+        )
+        function_generated = True
+        input_dict = {
+            "data:geometry:variable_1": (1.0, None),
+            "data:geometry:variable_2": ([3.0, 5.0], "m**2"),
+            "data:geometry:variable_3": (2.0, None),
+        }
+        output_dict = test_generate_block_analysis(input_dict)
+        value = output_dict.get("data:geometry:variable_4")[0]
+
+    except Exception as error:
+
+        function_generated = False
+        value = 0.0
+
+    assert function_generated
+    assert value == pytest.approx(14.0, abs=1e-3)
+
+    if os.path.exists(missing_xml):
+        os.remove(missing_xml)
+
+
+def test_missing_inputs_in_xml(cleanup):
+
+    missing_inputs_xml_file = pth.join(pth.dirname(__file__), "data/missing_two_input.xml")
+    var_inputs = ["data:geometry:variable_2"]
+
+    # noinspection PyBroadException
+    try:
+        # noinspection PyUnusedLocal
+        test_generate_block_analysis = api.generate_block_analysis(
+            Disc1(), var_inputs, missing_inputs_xml_file, False
+        )
+        function_generated = True
+        right_error = False
+
+    except Exception as error:
+
+        function_generated = False
+
+        if "The following inputs are missing in .xml file:" in error.args[0]:
+            right_error = True
+        else:
+            right_error = False
+
+    assert not function_generated
+    assert right_error

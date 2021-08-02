@@ -23,6 +23,7 @@ from typing import Dict, Hashable, Iterable, List, Mapping, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
+from openmdao.core.system import System
 import pandas as pd
 
 from ._utils import get_unconnected_input_names
@@ -564,7 +565,7 @@ class VariableList(list):
 
         # Get inputs and outputs
         metadata_keys = (
-            "val",
+            "value",
             "units",
             "shape",
             "size",
@@ -772,3 +773,34 @@ class VariableList(list):
             return VariableList(super().__add__(other))
         else:
             return super().__add__(other)
+
+    @classmethod
+    def from_system(cls, local_system: System) -> "VariableList":
+        """
+        Creates a VariableList instance containing inputs and outputs of a an OpenMDAO System.
+        The inputs (is_input=True) correspond to the variables of IndepVarComp
+        components and all the unconnected variables.
+
+        Warning: setup() must NOT have been called.
+
+        In the case of a group, if variables are promoted, the promoted name
+        will be used. Otherwise, the absolute name will be used.
+
+        :param local_system: OpenMDAO Component instance to inspect
+        :return: VariableList instance
+        """
+
+        problem = om.Problem()
+        if isinstance(local_system, om.Group):
+            problem.model = deepcopy(local_system)
+        else:
+            # problem.model has to be a group
+            problem.model.add_subsystem("comp", deepcopy(local_system), promotes=["*"])
+        try:
+            problem.setup()
+        except RuntimeError:
+            _LOGGER.info(
+                "Some problem occurred while setting-up the problem without input file probably "
+                "because shape_by_conn variables exist!"
+            )
+        return VariableList.from_problem(problem, use_initial_values=True)
