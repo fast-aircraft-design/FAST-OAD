@@ -30,6 +30,7 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 
 [submodels]
     "service.function.f" = "function.f.alternate"
+    "service.function.g1" = ""
 
 [optimization]
     [[optimization.design_variables]]
@@ -41,10 +42,6 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
       lower = 0
       upper = 10
 
-    [[optimization.constraints]]
-      name = "g1"
-      lower = -100
-      upper = 0
     [[optimization.constraints]]
       name = "g2"
       upper = 0

@@ -488,7 +488,7 @@ class FASTOADModel(AutoUnitsDefaultGroup):
     of all its subsystems, and inherits from :class:`AutoUnitsDefaultGroup` for resolving
     declaration conflicts in variable units.
 
-    It allows to have a submodel choice in the initialize() method of an FAST-OAD module, but
+    It allows to have a submodel choice in the initialize() method of a FAST-OAD module, but
     to possibly override it with the definition of :attr:`active_submodels` (i.e. from the
     configuration file).
     """

@@ -153,6 +153,9 @@ def test_problem_definition_with_xml_ref(cleanup):
         alt_problem.write_outputs()
 
         assert alt_problem["f"] == pytest.approx(0.58830817, abs=1e-6)
+        assert alt_problem["g2"] == pytest.approx(-11.94151185, abs=1e-6)
+        with pytest.raises(KeyError):
+            alt_problem["g1"]  # submodel for g1 computation has been deactivated.
 
 
 def test_problem_definition_with_custom_xml(cleanup):

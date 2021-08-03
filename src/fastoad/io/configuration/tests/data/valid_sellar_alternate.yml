@@ -26,6 +26,7 @@ model:
 
 submodels:
   service.function.f: function.f.alternate
+  service.function.g1: null
 
 optimization:
   design_variables:
@@ -36,9 +37,6 @@ optimization:
       lower: 0
       upper: 10
   constraints:
-    - name: g1
-      lower: -100
-      upper: 0
     - name: g2
       upper: 0
   objective:

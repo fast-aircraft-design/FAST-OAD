@@ -1,6 +1,6 @@
 """Module for registering services."""
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,7 +14,7 @@
 
 import logging
 from types import MethodType
-from typing import Any, Dict, List, Type, TypeVar, Union, Optional
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 import openmdao.api as om
 from openmdao.core.system import System
@@ -31,9 +31,9 @@ from .constants import (
 from .exceptions import (
     FastBadSystemOptionError,
     FastIncompatibleServiceClassError,
+    FastNoSubmodelFoundError,
     FastTooManySubmodelsError,
     FastUnknownSubmodelError,
-    FastNoSubmodelFoundError,
 )
 from ..model_base.propulsion import IOMPropulsionWrapper
 from ..openmdao.variables import Variable
@@ -439,9 +439,9 @@ class RegisterSubmodel(RegisterOpenMDAOService):
         Provides a submodel for the given service identifier.
 
         If :attr:`active_models` has `service_id` as key:
-            - if the associated value is a string, a submodel will be instantiated with this string
-              as submodel identifier. If the submodel identifier matches nothing, an error will be
-              raised.
+            - if the associated value is a non-empty string, a submodel will be instantiated with
+              this string as submodel identifier. If the submodel identifier matches nothing, an
+              error will be raised.
             - if the associated value is None, an empty submodel (om.Group()) will be instantiated.
               You may see it as a way to deactivate a particular submodel.
 
@@ -461,7 +461,7 @@ class RegisterSubmodel(RegisterOpenMDAOService):
 
         if service_id in cls.active_models:
             submodel_id = cls.active_models[service_id]
-            if submodel_id is not None and submodel_id not in submodel_ids:
+            if submodel_id and submodel_id not in submodel_ids:
                 raise FastUnknownSubmodelError(service_id, submodel_id, submodel_ids)
         else:
             if len(submodel_ids) == 0:

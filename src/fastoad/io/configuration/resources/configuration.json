@@ -137,7 +137,7 @@
     },
     "submodels": {
       "additionalProperties": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "optimization": {
