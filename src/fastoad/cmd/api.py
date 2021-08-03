@@ -584,6 +584,7 @@ def _list_all_subsystem(model, model_address, dict_subsystems):
                 getattr(model, subsystem), model_address + "." + subsystem, dict_subsystems
             )
     except:
+
         def get_type(local_model):
             raw_type = local_model.msginfo.split("<")[-1]
             type_alone = raw_type.split(" ")[-1]
@@ -718,9 +719,9 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
 
         # Explore subpackage models and find the output variables and store them in a dictionary
         dict_to_be_saved = {}
-        main_package_name = ''
+        main_package_name = ""
         for root, dirs, files in os.walk(subpackage_path, topdown=False):
-            if main_package_name == '':
+            if main_package_name == "":
                 if system() != "Windows":
                     main_package_name = root.split("/")[root.split("/").index("src") + 1]
                 else:
@@ -752,10 +753,10 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                             # noinspection PyUnboundLocalVariable pth.split(
                             retrieve_original_file(tmp_folder, pth.join(root, name))
                         if system() != "Windows":
-                            root_lib = ".".join(root.split("/")[root.split("/").index("src")+1:])
+                            root_lib = ".".join(root.split("/")[root.split("/").index("src") + 1 :])
                         else:
                             root_lib = ".".join(
-                                root.split("\\")[root.split("\\").index("src")+1:]
+                                root.split("\\")[root.split("\\").index("src") + 1 :]
                             )
                         root_lib += "." + name.replace(".py", "")
                         for class_name in class_list:
@@ -882,7 +883,11 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
         else:
             if len(dict_to_be_saved.keys()) != 0:
                 file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
-                file.write("# Documentation of variables used in {} models\n".format(main_package_name.upper()))
+                file.write(
+                    "# Documentation of variables used in {} models\n".format(
+                        main_package_name.upper()
+                    )
+                )
                 file.write("# Each line should be like:\n")
                 file.write(
                     "# my:variable||The description of my:variable, as long as needed, but on one line.\n"
@@ -1033,8 +1038,8 @@ def generate_block_analysis(
                     ivc_local = reader.to_ivc()
                 else:
                     ivc_local = IndepVarComp()
-                    for name, value in inputs_dict.items():
-                        ivc_local.add_output(name, value[0], units=value[1])
+                for name, value in inputs_dict.items():
+                    ivc_local.add_output(name, value[0], units=value[1])
                 group_local = AutoUnitsDefaultGroup()
                 group_local.add_subsystem("system", local_system, promotes=["*"])
                 group_local.add_subsystem("ivc", ivc_local, promotes=["*"])

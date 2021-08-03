@@ -565,7 +565,7 @@ class VariableList(list):
 
         # Get inputs and outputs
         metadata_keys = (
-            "value",
+            "val",
             "units",
             "shape",
             "size",

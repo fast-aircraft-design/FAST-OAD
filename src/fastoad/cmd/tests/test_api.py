@@ -219,7 +219,7 @@ def test_variable_descriptions_auto_gen(cleanup):
         assert counter == 1
 
         # Remove generated file
-        os.remove(pth.join(geometry.__path__[0], 'variable_descriptions.txt'))
+        os.remove(pth.join(geometry.__path__[0], "variable_descriptions.txt"))
 
 
 def test_simple_working(cleanup):
