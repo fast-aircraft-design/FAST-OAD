@@ -103,7 +103,7 @@ class AvlWingGeom(IAvlComponentGenerator):
                 if self.thickness_ratios[idx + i] > 0.0:
                     profile = get_profile(
                         file_name=self.profile, thickness_ratio=self.thickness_ratios[idx + i]
-                    )
+                    ).get_sides()
                     comp_lines += ["AIRFOIL X1 X2 \n"]
                     for point in profile.to_numpy():
                         comp_lines += [str(point[0]) + " " + str(point[1]) + "\n"]

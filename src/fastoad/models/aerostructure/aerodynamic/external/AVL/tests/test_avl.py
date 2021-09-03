@@ -19,16 +19,14 @@ import os.path as pth
 import shutil
 from platform import system
 
-
 import numpy as np
-
 import pytest
 from pytest import approx
+
 from fastoad.io import VariableIO
 from fastoad.models.aerostructure.aerodynamic.external.AVL.avl import AVL
-from tests.testing_utilities import run_system
 from tests.avl_exe.get_avl import get_avl_path
-
+from tests.testing_utilities import run_system
 
 AVL_RESULTS = pth.join(pth.dirname(__file__), "results")
 AVL_PATH = None if system() == "Windows" else get_avl_path()
@@ -137,7 +135,9 @@ def get_ivc_for_components(
             twist[1 : sect + 1] = twist[sect + 2 :] = np.linspace(3, -1, sect)
             t_c[0] = t_c[sect + 1] = 0.12
             t_c[1 : sect + 1] = t_c[sect + 2 :] = np.linspace(0.12, 0.1, sect)
+            d_twist = np.zeros((sect + 1) * 2)
             ivc.add_output("data:aerostructural:aerodynamic:wing:twist", twist)
+            ivc.add_output("data:aerostructural:aerodynamic:wing:d_twist", d_twist)
             ivc.add_output("data:aerostructural:aerodynamic:wing:thickness_ratios", t_c)
     return ivc
 
@@ -166,18 +166,18 @@ def test_avl_design():
     sections = [12]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
-    avl_comp = AVL(components=components, components_sections=sections)
+    avl_comp = AVL(components=components, components_sections=sections, coupling_iterations=False)
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
-    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0056713, abs=1e-5)
-    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.9524, abs=1e-4)
+    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0057634, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.9357, abs=1e-4)
     assert not pth.exists(pth.join(pth.dirname(__file__), "results"))
     # Test for complete aircraft (wing and tails) --------------------------------------------------
     components = ["wing", "horizontal_tail", "vertical_tail"]
     sections = [12, 11, 5]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
-    avl_comp = AVL(components=components, components_sections=sections)
+    avl_comp = AVL(components=components, components_sections=sections, coupling_iterations=False)
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
     assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0060361, abs=1e-5)
@@ -189,7 +189,10 @@ def test_avl_design():
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
     avl_comp = AVL(
-        components=components, components_sections=sections, result_folder_path=AVL_RESULTS
+        components=components,
+        components_sections=sections,
+        result_folder_path=AVL_RESULTS,
+        coupling_iterations=False,
     )
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
