@@ -102,6 +102,85 @@ def wing_geometry_plot(
     return fig
 
 
+def wingbox_geometry_plot(
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+) -> go.FigureWidget:
+    """
+    Returns a figure plot of the top view of the wing.
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
+
+    :param aircraft_file_path: path of data file
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
+    :return: wing plot figure
+    """
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
+
+    wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
+    wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x:local"].value[0]
+    wing_root_y = variables["data:geometry:wing:root:y"].value[0]
+    wing_kink_y = variables["data:geometry:wing:kink:y"].value[0]
+    wing_tip_y = variables["data:geometry:wing:tip:y"].value[0]
+    wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
+    wing_kink_chord = variables["data:geometry:wing:kink:chord"].value[0]
+    wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
+    wing_root_front_spar = variables["data:geometry:wing:spar_ratio:front:root"].value[0]
+    wing_root_rear_spar = variables["data:geometry:wing:spar_ratio:rear:root"].value[0]
+    wing_kink_front_spar = variables["data:geometry:wing:spar_ratio:front:kink"].value[0]
+    wing_kink_rear_spar = variables["data:geometry:wing:spar_ratio:rear:kink"].value[0]
+    wing_tip_front_spar = variables["data:geometry:wing:spar_ratio:front:tip"].value[0]
+    wing_tip_rear_spar = variables["data:geometry:wing:spar_ratio:rear:tip"].value[0]
+
+    mean_aerodynamic_chord = variables["data:geometry:wing:MAC:length"].value[0]
+    mac25_x_position = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
+    distance_root_mac_chords = variables["data:geometry:wing:MAC:leading_edge:x:local"].value[0]
+    # pylint: disable=invalid-name # that's a common naming
+    y = np.array(
+        [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
+    )
+    # pylint: disable=invalid-name # that's a common naming
+    y = np.concatenate((-y, y))
+
+    # pylint: disable=invalid-name # that's a common naming
+    x = np.array(
+        [
+            0 + wing_root_front_spar * wing_root_chord,
+            0 + wing_root_front_spar * wing_root_chord,
+            wing_kink_leading_edge_x + wing_kink_front_spar * wing_kink_chord,
+            wing_tip_leading_edge_x + wing_tip_front_spar * wing_tip_chord,
+            wing_tip_leading_edge_x + wing_tip_rear_spar * wing_tip_chord,
+            wing_kink_leading_edge_x + wing_kink_rear_spar * wing_kink_chord,
+            wing_root_rear_spar * wing_root_chord,
+            wing_root_rear_spar * wing_root_chord,
+            0 + wing_root_front_spar * wing_root_chord,
+        ]
+    )
+
+    x = x + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    # pylint: disable=invalid-name # that's a common naming
+    x = np.concatenate((x, x))
+
+    if fig is None:
+        fig = go.Figure()
+
+    scatter = go.Scatter(x=y, y=x, mode="lines+markers", name=name)
+
+    fig.add_trace(scatter)
+
+    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+
+    fig = go.FigureWidget(fig)
+
+    fig.update_layout(
+        title_text="Wingbox Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x",
+    )
+
+    return fig
+
+
 # pylint: disable-msg=too-many-locals
 def aircraft_geometry_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
