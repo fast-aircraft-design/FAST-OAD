@@ -20,6 +20,7 @@ from tempfile import TemporaryDirectory
 import numpy as np
 import openmdao.api as om
 
+from fastoad._utils.resource_management.copy import copy_resource
 from fastoad.models.aerostructure.structure.external.mystran import mystran112
 from fastoad.models.aerostructure.structure.external.mystran.utils.constant import basis_id
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_forces_cards
@@ -33,7 +34,6 @@ from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards imp
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_rbe_cards
 from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_spc_cards
 from fastoad.models.aerostructure.structure.external.mystran.utils.read_f06 import readf06
-from fastoad.utils.resource_management.copy import copy_resource
 
 OPTION_MYSTRAN_EXE_PATH = "mystran_exe_path"
 OPTION_RESULT_FOLDER_PATH = "result_folder_path"
@@ -189,13 +189,13 @@ class MystranStatic(om.ExternalCodeComp):
         )
         split_stresses = self._get_component_matrix(stresses, components, nsects, type="element")
         for i, comp in enumerate(components):
-            outputs[
-                "data:aerostructural:structure:" + comp + ":displacements"
-            ] = split_displacements[i]
+            outputs["data:aerostructural:structure:" + comp + ":displacements"] = np.round(
+                split_displacements[i], decimals=5
+            )
             if comp == "wing":
-                outputs["data:aerostructural:aerodynamic:wing:d_twist"] = split_displacements[i][
-                    :, 4
-                ]
+                outputs["data:aerostructural:aerodynamic:wing:d_twist"] = np.round(
+                    split_displacements[i][:, 4], decimals=5
+                )
 
             outputs["data:aerostructural:structure:" + comp + ":stresses"] = np.max(
                 split_stresses[i]

@@ -16,16 +16,21 @@ Defines classes for dynamic call of structure properties classes for structure m
 
 
 from enum import Enum
-from fastoad.models.aerostructure.mesh.structure_properties.structure_beam_wing import WingBeamProps
+
 from fastoad.models.aerostructure.mesh.structure_properties.structure_beam_htail import (
     HtailBeamProps,
+)
+from fastoad.models.aerostructure.mesh.structure_properties.structure_beam_strut import (
+    StrutBeamProps,
 )
 from fastoad.models.aerostructure.mesh.structure_properties.structure_beam_vtail import (
     VtailBeamProps,
 )
+from fastoad.models.aerostructure.mesh.structure_properties.structure_beam_wing import WingBeamProps
 
 
 class BeamPropertiesClass(Enum):
     WING = WingBeamProps
     HORIZONTAL_TAIL = HtailBeamProps
     VERTICAL_TAIL = VtailBeamProps
+    STRUT = StrutBeamProps

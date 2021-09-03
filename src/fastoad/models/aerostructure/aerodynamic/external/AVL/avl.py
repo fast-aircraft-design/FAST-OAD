@@ -28,10 +28,10 @@ from openmdao.utils.file_wrap import InputFileGenerator
 from scipy.constants import g, degree
 
 import fastoad.models.aerodynamics.external.xfoil.resources as xfoil_resources
+from fastoad._utils.resource_management.copy import copy_resource
+from fastoad.model_base.atmosphere import Atmosphere as Atm
 from fastoad.models.aerostructure.aerodynamic.external.AVL import avl336
-from fastoad.utils.physics import Atmosphere as Atm
-from fastoad.utils.resource_management.copy import copy_resource
-from . import ressources
+from . import resources
 from .utils.avl_components_classes import AvlGeometryComponents
 from .utils.avl_components_dict import AVL_COMPONENT_NAMES
 
@@ -72,6 +72,7 @@ class AVL(ExternalCodeComp):
         self.add_input("data:aerostructural:load_case:weight", val=np.nan)
         self.add_input("data:aerostructural:load_case:load_factor", val=1.0)
         self.add_input("data:aerostructural:load_case:altitude", val=np.nan, units="ft")
+        self.add_input("data:aerostructural:load_case:d_isa", val=0.0)
         self.add_input("tuning:aerostructural:aerodynamic:chordwise_spacing:k", val=1.0)
 
         for comp, n_sect in zip(comps, sects):
@@ -162,8 +163,9 @@ class AVL(ExternalCodeComp):
         c_ref = inputs["data:geometry:wing:MAC:length"]
         mach = inputs["data:aerostructural:load_case:mach"]
         alt = inputs["data:aerostructural:load_case:altitude"]
-        rho = Atm(alt).density
-        vtas = Atm(alt).speed_of_sound * mach
+        d_isa = inputs["data:aerostructural:load_case:d_isa"]
+        rho = Atm(alt, delta_t=d_isa).density
+        vtas = Atm(alt, delta_t=d_isa).speed_of_sound * mach
         q = 0.5 * rho * vtas ** 2
 
         m_lc = inputs["data:aerostructural:load_case:weight"]
@@ -172,7 +174,7 @@ class AVL(ExternalCodeComp):
 
         tmp_result_file = pth.join(tmp_dir.name, self.options[OPTION_RESULT_AVL_FILENAME])
         parser = InputFileGenerator()
-        with path(ressources, _STDIN_FILE_NANE) as stdin_template:
+        with path(resources, _STDIN_FILE_NANE) as stdin_template:
             parser.set_template_file(stdin_template)
             parser.set_generated_file(self.stdin)
 
@@ -233,7 +235,9 @@ class AVL(ExternalCodeComp):
             r_mat = self._get_rotation_matrix(aoa * degree, axis="y")
             comp_coef[:, :3] = np.dot(comp_coef[:, :3], r_mat)
             comp_coef[:, 3:] = np.dot(comp_coef[:, 3:], r_mat)  # Moments in std axis ie X fwd
-            outputs["data:aerostructural:aerodynamic:" + comp + ":forces"] = comp_coef
+            outputs["data:aerostructural:aerodynamic:" + comp + ":forces"] = np.round(
+                comp_coef, decimals=0
+            )
         # outputs["data:aerostructural:aerodynamic:forces"] = q * s_ref * surface_coef
 
         # Store input and result files if necessary ------------------------------------------------

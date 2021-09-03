@@ -21,9 +21,10 @@ from fastoad.models.aerostructure.structure.structural_weight import StructuralW
 from fastoad.models.aerostructure.transfer.displacements_transfer import DisplacementsTransfer
 from fastoad.models.aerostructure.transfer.forces_transfer import ForcesTransfer
 from fastoad.models.aerostructure.transfer.transfer_matrices import TransferMatrices
-from fastoad.models.options import OpenMdaoOptionDispatcherGroup as OmOptGrp
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 
+@RegisterOpenMDAOSystem("fastoad.aerostructure.static")
 class StaticSolver(om.Group):
     def initialize(self):
         self.options.declare("components", types=list, allow_none=False)
@@ -102,7 +103,7 @@ class StaticSolver(om.Group):
         # )
 
 
-class _AerostructuralLoop(OmOptGrp):
+class _AerostructuralLoop(om.Group):
     def initialize(self):
         self.options.declare("components", types=list)
         self.options.declare("components_sections", types=list)
@@ -142,6 +143,6 @@ class _AerostructuralLoop(OmOptGrp):
         )
 
         self.nonlinear_solver = om.NonlinearBlockGS(
-            maxiter=15, iprint=2, rtol=1e-4, atol=1e-8, use_aitken=True, err_on_non_converge=True
+            maxiter=20, iprint=2, rtol=1e-4, atol=1e-8, use_aitken=True
         )
         self.linear_solver = om.DirectSolver()

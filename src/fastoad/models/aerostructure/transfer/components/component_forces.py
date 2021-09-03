@@ -14,8 +14,8 @@ This module computes nodal forces from aerodynamic forces from AVL
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 
 class ComponentForces(om.ExplicitComponent):
@@ -82,9 +82,12 @@ class ComponentForces(om.ExplicitComponent):
                 idx = idx + 1
             n_a1 = n_a[idx, :]
             n_a2 = n_a[idx + 1, :]
-            n_cp = np.array(
-                [x_ref[0] - f[4] / f[2], 0.5 * (n_a1[1] + n_a2[1]), 0.5 * (n_a1[2] + n_a2[2])]
-            )
+            if f[2] != 0.0:
+                n_cp = np.array(
+                    [x_ref[0] - f[4] / f[2], 0.5 * (n_a1[1] + n_a2[1]), 0.5 * (n_a1[2] + n_a2[2])]
+                )
+            else:
+                n_cp = np.array([x_ref[0], 0.5 * (n_a1[1] + n_a2[1]), 0.5 * (n_a1[2] + n_a2[2])])
             r_s1 = n_cp - n_s[idx, :]
             r_s2 = n_cp - n_s[idx + 1]
             f_s[idx, :3] += f[:3] * 0.5

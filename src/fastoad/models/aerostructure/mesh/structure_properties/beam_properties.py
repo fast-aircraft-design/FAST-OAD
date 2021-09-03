@@ -67,6 +67,7 @@ class Beam:
         #     + (self.t_web * self.height * self.length ** 2) / 4
         #     + s2 * self.a_spars * self.spars
         # )
+
         self.i1 = (
             (self.length * self.height ** 3) / 12
             - (self.length - 2 * self.t_web) * (self.height - 2 * self.t_flange) ** 3 / 12
