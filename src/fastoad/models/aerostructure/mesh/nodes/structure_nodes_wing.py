@@ -27,6 +27,7 @@ class StructureNodesWing(om.ExplicitComponent):
 
     def initialize(self):
         self.options.declare("number_of_sections", types=int)
+        self.options.declare("has_strut", types=bool)
 
     def setup(self):
         n_secs = self.options["number_of_sections"]
@@ -51,10 +52,16 @@ class StructureNodesWing(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
         self.add_input("data:geometry:wing:MAC:length", val=np.nan)
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan)
-        # self.add_input("settings:aerostructural:wing:struct_sections", val=np.nan)
-        self.add_output(
-            "data:aerostructural:structure:wing:nodes", val=np.nan, shape=((n_secs + 1) * 2, 3)
-        )
+
+        if self.options["has_strut"]:
+            self.add_input("data:geometry:strut:tip:y", val=np.nan)
+            self.add_output(
+                "data:aerostructural:structure:wing:nodes", val=np.nan, shape=((n_secs + 2) * 2, 3)
+            )
+        else:
+            self.add_output(
+                "data:aerostructural:structure:wing:nodes", val=np.nan, shape=((n_secs + 1) * 2, 3)
+            )
 
         self.declare_partials("*", "*", method="fd")
 
@@ -85,6 +92,8 @@ class StructureNodesWing(om.ExplicitComponent):
         root_chord = inputs["data:geometry:wing:root:chord"][0]
         kink_chord = inputs["data:geometry:wing:kink:chord"][0]
         tip_chord = inputs["data:geometry:wing:tip:chord"][0]
+        if self.options["has_strut"]:
+            y_strut = inputs["data:geometry:strut:tip:y"]
 
         #  Wing box centers locations --------------------------------------------------------------
         x_box_root = (root_rear_spar_ratio + root_front_spar_ratio) * root_chord * 0.5 + x_root
@@ -120,6 +129,8 @@ class StructureNodesWing(om.ExplicitComponent):
 
         #  Gathering sections locations
         y_box = np.hstack((y_secs_belly, y_secs_kink, y_secs_tip)).reshape((n_secs + 1, 1))
+        if self.options["has_strut"]:
+            y_box = np.sort(np.append(y_box, y_strut))
 
         #  Nodes coordinates interpolation ---------------------------------------------------------
         x_box = f_x(y_box)

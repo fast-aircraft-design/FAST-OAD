@@ -18,6 +18,7 @@ import openmdao.api as om
 class StrutBeamProps(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("number_of_sections", types=int)
+        self.options.declare("has_vertical_strut", types=bool)
 
     def setup(self):
         n_secs = self.options["number_of_sections"]
@@ -34,9 +35,14 @@ class StrutBeamProps(om.ExplicitComponent):
         self.add_input("data:geometry:strut:tip:web_thickness", val=0.002, units="m")
         self.add_input("data:aerostructural:structure:strut:nodes", shape_by_conn=True)
 
-        self.add_output(
-            "data:aerostructural:structure:strut:beam_properties", shape=(n_secs * 2, 6)
-        )
+        if self.options["has_vertical_strut"]:
+            self.add_output(
+                "data:aerostructural:structure:strut:beam_properties", shape=((n_secs + 1) * 2, 6)
+            )
+        else:
+            self.add_output(
+                "data:aerostructural:structure:strut:beam_properties", shape=(n_secs * 2, 6)
+            )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         n_secs = self.options["number_of_sections"]
