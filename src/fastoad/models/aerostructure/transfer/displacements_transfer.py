@@ -13,6 +13,7 @@
 
 
 import openmdao.api as om
+
 from fastoad.models.aerostructure.transfer.components.component_displacements import (
     ComponentDisplacements,
 )
@@ -20,10 +21,10 @@ from fastoad.models.aerostructure.transfer.components.component_displacements im
 
 class DisplacementsTransfer(om.Group):
     def initialize(self):
-        self.options.declare("components", types=list)
+        self.options.declare("coupled_components", types=list)
 
     def setup(self):
-        comps = self.options["components"]
+        comps = self.options["coupled_components"]
 
         for idx, comp in enumerate(comps):
             self.add_subsystem(

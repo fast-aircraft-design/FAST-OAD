@@ -15,20 +15,21 @@ Module generating aerodynamic mesh for VLM computations
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-from .nodes.nodes_classes import AerodynamicNodesClasses
-from .aerodynamic_properties.properties_classes import AerodynamicChordsClasses
-from .aerodynamic_properties.aerodynamic_twist_wing import AerodynamicTwistWing
+
 from .aerodynamic_properties.aerodynamic_thickness_ratios_wing import AerodynamicThicknessRatiosWing
+from .aerodynamic_properties.aerodynamic_twist_wing import AerodynamicTwistWing
+from .aerodynamic_properties.properties_classes import AerodynamicChordsClasses
+from .nodes.nodes_classes import AerodynamicNodesClasses
 
 
 class AerodynamicMesh(om.Group):
     def initialize(self):
-        self.options.declare("components_sections", types=list)
-        self.options.declare("components", types=list)
+        self.options.declare("aerodynamic_components_sections", types=list)
+        self.options.declare("aerodynamic_components", types=list)
 
     def setup(self):
-        comps = self.options["components"]
-        n_sections = self.options["components_sections"]
+        comps = self.options["aerodynamic_components"]
+        n_sections = self.options["aerodynamic_components_sections"]
         if len(n_sections) != len(comps):
             msg = "Each element (wing, fuselage, ...) should have an associated number of sections"
             raise ValueError(msg)

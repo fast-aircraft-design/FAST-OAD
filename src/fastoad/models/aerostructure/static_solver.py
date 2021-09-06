@@ -27,16 +27,52 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 @RegisterOpenMDAOSystem("fastoad.aerostructure.static")
 class StaticSolver(om.Group):
     def initialize(self):
-        self.options.declare("components", types=list, allow_none=False)
-        self.options.declare("components_sections", types=list, allow_none=False)
-        self.options.declare("components_interp", types=list, allow_none=False)
+        self.options.declare(
+            "coupled_components",
+            types=list,
+            allow_none=False,
+            desc="List of components considered for aerostructural loop",
+        )
+        self.options.declare(
+            "additional_aerodynamic_components",
+            types=list,
+            default=[],
+            desc="List of components considered for aerodynamic computations "
+            "but not considered for aerostructural loop",
+        )
+        self.options.declare(
+            "additional_structural_components",
+            types=list,
+            default=[],
+            desc="List of components considered for structural computations "
+            "but not considered for aerostructural loop",
+        )
+        self.options.declare(
+            "aerodynamic_components_sections",
+            types=list,
+            allow_none=False,
+            desc="List with the number of slices for each aerodynamic component",
+        )
+        self.options.declare(
+            "structural_components_sections",
+            types=list,
+            allow_none=False,
+            desc="List with the number of slices for each aerodynamic component",
+        )
+        self.options.declare(
+            "coupled_components_interpolations",
+            types=list,
+            allow_none=False,
+            desc="List of interpolation methods to be applied for each coupled component",
+        )
 
     def setup(self):
         self.add_subsystem(
             "structure_mesh",
             StructureMesh(
-                components=self.options["components"],
-                components_sections=self.options["components_sections"],
+                structural_components=self.options["coupled_components"]
+                + self.options["additional_structural_components"],
+                structural_components_sections=self.options["structural_components_sections"],
             ),
             promotes=["*"],
         )
@@ -45,17 +81,19 @@ class StaticSolver(om.Group):
         self.add_subsystem(
             "aerodynamic_mesh",
             AerodynamicMesh(
-                components=self.options["components"],
-                components_sections=self.options["components_sections"],
+                components=self.options["coupled_components"]
+                + self.options["additional_aerodynamic_components"],
+                components_sections=self.options["aerodynamic_components_sections"],
             ),
             promotes=["*"],
         )
         self.add_subsystem(
             "displacement_transfer_matrices",
             TransferMatrices(
-                components=self.options["components"],
-                components_sections=self.options["components_sections"],
-                components_interp=self.options["components_interp"],
+                components=self.options["coupled_components"],
+                structural_components_sections=self.options["structural_components_sections"],
+                aerodynamic_components_sections=self.options["aerodynamic_components_sections"],
+                coupled_components_interpolations=self.options["coupled_components_interpolations"],
             ),
             promotes=["*"],
         )
@@ -63,9 +101,13 @@ class StaticSolver(om.Group):
         self.add_subsystem(
             "aerostructural_loop",
             _AerostructuralLoop(
-                components=self.options["components"],
-                components_sections=self.options["components_sections"],
-                components_interp=self.options["components_interp"],
+                coupled_components=self.options["coupled_components"],
+                additional_aerodynamic_components=self.options[
+                    "addditional_aerodynamic_components"
+                ],
+                additional_structural_components=self.options["addditional_structural_components"],
+                structural_components_sections=self.options["structural_components_sections"],
+                aerodynamic_components_sections=self.options["aerodynamic_components_sections"],
             ),
             promotes=["*"],
         )
@@ -105,40 +147,44 @@ class StaticSolver(om.Group):
 
 class _AerostructuralLoop(om.Group):
     def initialize(self):
-        self.options.declare("components", types=list)
-        self.options.declare("components_sections", types=list)
-        self.options.declare("components_interp", types=list)
+        self.options.declare("coupled_components", types=list)
+        self.options.declare("additional_aerodynamic_components", types=list)
+        self.options.declare("additional_structural_components", types=list)
+        self.options.declare("aerodynamic_components_sections", types=list)
+        self.options.declare("structural_components_sections", types=list)
 
     def setup(self):
 
         self.add_subsystem(
             "Aerodynamic_solver",
             AVL(
-                components=self.options["components"],
-                components_sections=self.options["components_sections"],
+                components=self.options["coupled_components"]
+                + self.options["additional_aerodynamic_components"],
+                components_sections=self.options["aerodynamic_components_sections"],
             ),
             promotes=["*"],
         )
         self.add_subsystem(
             "Forces_transfer",
             ForcesTransfer(
-                components=self.options["components"],
-                components_sections=self.options["components_sections"],
+                components=self.options["coupled_components"],
+                structural_components_sections=self.options["structural_components_sections"],
             ),
             promotes=["*"],
         )
         self.add_subsystem(
             "static_structure_solver",
             MystranStatic(
-                components=self.options["components"],
-                components_sections=self.options["components_sections"],
+                components=self.options["coupled_components"]
+                + self.options["additional_structural_components"],
+                structural_components_sections=self.options["structural_components_sections"],
             ),
             promotes=["*"],
         )
 
         self.add_subsystem(
             "displacement_transfer",
-            DisplacementsTransfer(components=self.options["components"]),
+            DisplacementsTransfer(components=self.options["coupled_components"]),
             promotes=["*"],
         )
 

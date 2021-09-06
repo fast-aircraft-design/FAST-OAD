@@ -25,11 +25,11 @@ class ComponentForces(om.ExplicitComponent):
 
     def initialize(self):
         self.options.declare("component", types=str)
-        self.options.declare("number_of_sections", types=int)
+        self.options.declare("number_of_structural_sections", types=int)
 
     def setup(self):
         comp = self.options["component"]
-        sect = self.options["number_of_sections"]
+        sect = self.options["number_of_structural_sections"]
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
         self.add_input(
             "data:aerostructural:aerodynamic:" + comp + ":nodes", val=np.nan, shape_by_conn=True

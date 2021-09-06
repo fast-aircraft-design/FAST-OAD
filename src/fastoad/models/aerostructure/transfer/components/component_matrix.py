@@ -13,26 +13,28 @@
 
 
 import numpy as np
-
 import openmdao.api as om
+
 from .interpolation import InterpolationMatrix
 
 
 class ComponentMatrix(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("interpolation_method", types=str, default="linear")
-        self.options.declare("number_of_sections", types=int)
+        self.options.declare("number_of_aerodynamic_sections", types=int)
+        self.options.declare("number_of_structural_sections", types=int)
         self.options.declare("component", types=str)
 
     def setup(self):
-        n_sects = self.options["number_of_sections"]
+        aero_sections = self.options["number_of_aerodynamic_sections"]
+        struct_sections = self.options["number_of_structural_sections"]
         comp = self.options["component"]
         if comp in ["wing", "horizontal_tail", "strut"]:
             k = 2
         else:
             k = 1
-        s_1 = (n_sects + 1) * k * 3  # number of aerodynamic displacements for symmetric wing
-        s_2 = (n_sects + 1) * k * 6  # number of structural displacements for symmetric wing
+        s_1 = (aero_sections + 1) * k * 3  # number of aerodynamic displacements
+        s_2 = (struct_sections + 1) * k * 6  # number of structural displacements
 
         #  Fuselage modelling in AVL based on 12 leading edge points no longitudinal discretization
         if comp == "fuselage":

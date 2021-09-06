@@ -13,18 +13,19 @@
 
 
 from openmdao.core.group import Group
+
 from .nodes.nodes_classes import StructureNodesClasses
 from .structure_properties.properties_classes import BeamPropertiesClass
 
 
 class StructureMesh(Group):
     def initialize(self):
-        self.options.declare("components_sections", types=list)
-        self.options.declare("components", types=list)
+        self.options.declare("structural_components_sections", types=list)
+        self.options.declare("structural_components", types=list)
 
     def setup(self):
-        comps = self.options["components"]
-        n_sections = self.options["components_sections"]
+        comps = self.options["structural_components"]
+        n_sections = self.options["structural_components_sections"]
         if n_sections is not None and len(n_sections) != len(comps):
             msg = "Number of components and number of associated sections must correspond"
             raise ValueError(msg)

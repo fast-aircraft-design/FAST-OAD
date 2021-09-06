@@ -13,21 +13,22 @@
 
 
 import openmdao.api as om
+
 from fastoad.models.aerostructure.transfer.components.component_forces import ComponentForces
 
 
 class ForcesTransfer(om.Group):
     def initialize(self):
-        self.options.declare("components", types=list)
-        self.options.declare("components_sections", types=list)
+        self.options.declare("coupled_components", types=list)
+        self.options.declare("structural_components_sections", types=list)
 
     def setup(self):
-        comps = self.options["components"]
-        sects = self.options["components_sections"]
+        comps = self.options["coupled_components"]
+        sects = self.options["structural_components_sections"][: len(comps)]
 
         for sect, comp in zip(sects, comps):
             self.add_subsystem(
                 comp + "Forces_Transfer",
-                ComponentForces(component=comp, number_of_sections=sect),
+                ComponentForces(component=comp, number_of_strutural_sections=sect),
                 promotes=["*"],
             )
