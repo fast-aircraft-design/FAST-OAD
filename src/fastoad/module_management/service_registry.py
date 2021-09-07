@@ -12,6 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 import logging
 from types import MethodType
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
@@ -46,14 +47,22 @@ class RegisterService:
     """
     Decorator class that allows to register services and associated providers.
 
+    This class also provides class methods for getting service providers and
+    information about them.
+
     The basic registering of a class is done with::
 
         @RegisterService("my.service.id", "id.of.the.provider")
         class MyService:
             ...
 
-    This class also provides class methods for getting service providers and
-    information about them.
+    A child of this class may define a particular base class or interface
+    that should be parent to all registered service providers.
+
+    The definition of the base class is done when subclassing, e.g.::
+
+        class RegisterSomeService( RegisterService, base_class=ISomeService):
+            "Allows to register classes that implement interface ISomeService."
     """
 
     _loader = BundleLoader()
@@ -175,13 +184,14 @@ class RegisterService:
 
 class RegisterOpenMDAOService(RegisterService, base_class=System):
     """
-    Base class for registering OpenMDAO-related classes.
+    Base class for registering OpenMDAO systems.
 
     This class ensures that variable_descriptions.txt files that are at the
     same package level as the decorated class are loaded.
 
-    It also allows to define model domain and component options when defining
-    the decorator or when retrieving the service provider.
+    It also ensures that, when the OpenMDAO system is instantiated, its options
+    are fed with provided values, that can be provided when instantiating this class,
+    or when instantiating the system with :class:`get_system`.
     """
 
     def __init__(
@@ -191,7 +201,7 @@ class RegisterOpenMDAOService(RegisterService, base_class=System):
         :param service_id: the identifier of the provided service
         :param provider_id: the identifier of the service provider to register
         :param desc: description of the service. If not provided, the docstring will be used.
-        :param options: a dictionary of options that can be associated to the service provider
+        :param options: a dictionary of options that will be defaults when instantiating the system
         """
         super().__init__(service_id, provider_id, desc)
         self._options = options
@@ -303,19 +313,25 @@ class RegisterOpenMDAOService(RegisterService, base_class=System):
 
 class RegisterSpecializedService(RegisterService):
     """
-    Decorator class that allows to register a service, associated to a base class (or interface).
+    Base class for decorator classes that allow to register a particular service.
 
-    The registered class must inherit from this base class.
+    The service may be associated to a base class (or interface). The registered class must
+    inherit from this base class.
+
+    Unlike :class:`RegisterService`, this class has to be subclassed, because the service
+    identifier is defined when subclassing.
 
     The definition of the base class is done by subclassing, e.g.::
 
-        class RegisterSomeService( RegisterService, base_class=ISomeService):
+        class RegisterSomeService( RegisterSpecializedService,
+                                   base_class=ISomeService,
+                                   service_id="my.particularservice"):
             "Allows to register classes that implement interface ISomeService."
 
 
     Then basic registering of a class is done with::
 
-        @RegisterSomeService("my.particularservice")
+        @RegisterSomeService("my.particularservice.provider")
         class ParticularService(ISomeService):
             ...
     """
@@ -378,10 +394,13 @@ class RegisterSpecializedService(RegisterService):
 
 class _RegisterSpecializedOpenMDAOService(RegisterSpecializedService, RegisterOpenMDAOService):
     """
-    Base class for registering OpenMDAO-related classes.
+    Base class for specialized decorator classes for registering OpenMDAO systems.
 
-    This class just ensures that variable_descriptions.txt files that are at the
-    same package level as the decorated class are loaded.
+    This class ensures that:
+
+      - variable_descriptions.txt files that are at the same package level as the decorated class
+        are loaded.
+      - OpenMDAO options can be provided (see :class:`RegisterOpenMDAOService` for details)
     """
 
 
