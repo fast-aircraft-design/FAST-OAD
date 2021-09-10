@@ -52,15 +52,15 @@ class MystranStatic(om.ExternalCodeComp):
     """
 
     def initialize(self):
-        self.options.declare("components", types=list)
-        self.options.declare("components_sections", types=list)
+        self.options.declare("structural_components", types=list)
+        self.options.declare("structural_components_sections", types=list)
         self.options.declare(OPTION_MYSTRAN_EXE_PATH, default="", types=str, allow_none=True)
         self.options.declare(OPTION_RESULT_FOLDER_PATH, default="", types=str, allow_none=True)
         self.options.declare("coupling_iterations", types=bool, default=True)
 
     def setup(self):
-        comps = self.options["components"]
-        nsects = self.options["components_sections"]
+        comps = self.options["structural_components"]
+        nsects = self.options["structural_components_sections"]
         coupling = self.options["coupling_iterations"]
         # System inputs ---------------------------------------------------------------------------
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
@@ -93,12 +93,12 @@ class MystranStatic(om.ExternalCodeComp):
                 "data:aerostructural:structure:" + comp + ":material:density", val=2810.0
             )
 
-            self.add_output(
-                "data:aerostructural:aerodynamic:" + comp + ":d_twist",
-                val=0.0,
-                shape=n_nodes,
-                units="rad",
-            )
+            # self.add_output(
+            #     "data:aerostructural:aerodynamic:" + comp + ":d_twist",
+            #     val=0.0,
+            #     shape=n_nodes,
+            #     units="rad",
+            # )
             self.add_output(
                 "data:aerostructural:structure:" + comp + ":displacements",
                 val=0.0,
@@ -192,10 +192,10 @@ class MystranStatic(om.ExternalCodeComp):
             outputs["data:aerostructural:structure:" + comp + ":displacements"] = np.round(
                 split_displacements[i], decimals=5
             )
-            if comp == "wing":
-                outputs["data:aerostructural:aerodynamic:wing:d_twist"] = np.round(
-                    split_displacements[i][:, 4], decimals=5
-                )
+            # if comp == "wing":
+            #     outputs["data:aerostructural:aerodynamic:wing:d_twist"] = np.round(
+            #         split_displacements[i][:, 4], decimals=5
+            #     )
 
             outputs["data:aerostructural:structure:" + comp + ":stresses"] = np.max(
                 split_stresses[i]

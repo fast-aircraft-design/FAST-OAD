@@ -158,9 +158,9 @@ class _AerostructuralLoop(om.Group):
         self.add_subsystem(
             "Aerodynamic_solver",
             AVL(
-                components=self.options["coupled_components"]
+                aerodynamic_components=self.options["coupled_components"]
                 + self.options["additional_aerodynamic_components"],
-                components_sections=self.options["aerodynamic_components_sections"],
+                aerodynamic_components_sections=self.options["aerodynamic_components_sections"],
             ),
             promotes=["*"],
         )
@@ -175,7 +175,7 @@ class _AerostructuralLoop(om.Group):
         self.add_subsystem(
             "static_structure_solver",
             MystranStatic(
-                components=self.options["coupled_components"]
+                structural_components=self.options["coupled_components"]
                 + self.options["additional_structural_components"],
                 structural_components_sections=self.options["structural_components_sections"],
             ),
