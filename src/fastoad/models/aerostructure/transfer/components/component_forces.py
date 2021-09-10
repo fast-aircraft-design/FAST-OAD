@@ -52,18 +52,32 @@ class ComponentForces(om.ExplicitComponent):
 
     def compute(self, inputs, outputs):
         comp = self.options["component"]
-        n_a = inputs["data:aerostructural:aerodynamic:" + comp + ":nodes"]
-        n_s = inputs["data:aerostructural:structure:" + comp + ":nodes"]
-        f_a = inputs["data:aerostructural:aerodynamic:" + comp + ":forces"]
+        aero_nodes = inputs["data:aerostructural:aerodynamic:" + comp + ":nodes"]
+        struct_nodes = inputs["data:aerostructural:structure:" + comp + ":nodes"]
+        aero_forces = inputs["data:aerostructural:aerodynamic:" + comp + ":forces"]
         x_ref = inputs["data:geometry:wing:MAC:at25percent:x"]
         if comp in ("wing", "horizontal_tail", "strut"):
-            outputs[
-                "data:aerostructural:structure:" + comp + ":forces"
-            ] = self._transpose_forces_moments(n_s, n_a, f_a, x_ref, sym_comp=True)
+            pressure_centers = _compute_pressure_centers(
+                aero_nodes, aero_forces, x_ref, sym_comp=True
+            )
+            struct_forces = self._nearest_neighbour_force_transfer(
+                struct_nodes, pressure_centers, aero_forces
+            )
+            outputs["data:aerostructural:structure:" + comp + ":forces"] = struct_forces
+            # outputs[
+            #     "data:aerostructural:structure:" + comp + ":forces"
+            # ] = self._transpose_forces_moments(struct_nodes, aero_nodes, aero_forces, x_ref, sym_comp=True)
         else:
-            outputs[
-                "data:aerostructural:structure:" + comp + ":forces"
-            ] = self._transpose_forces_moments(n_s, n_a, f_a, x_ref, sym_comp=False)
+            pressure_centers = _compute_pressure_centers(
+                aero_nodes, aero_forces, x_ref, sym_comp=False
+            )
+            struct_forces = self._nearest_neighbour_force_transfer(
+                struct_nodes, pressure_centers, aero_forces
+            )
+            outputs["data:aerostructural:structure:" + comp + ":forces"] = struct_forces
+            # outputs[
+            #     "data:aerostructural:structure:" + comp + ":forces"
+            # ] = self._transpose_forces_moments(struct_nodes, aero_nodes, aero_forces, x_ref, sym_comp=False)
 
     @staticmethod
     def _transpose_forces_moments(n_s, n_a, f_a, x_ref, sym_comp=False):
@@ -77,22 +91,90 @@ class ComponentForces(om.ExplicitComponent):
         :return f_s: structural nodal forces and moments
         """
         f_s = np.zeros((np.size(n_s, axis=0), 6))
+        n_cp = _compute_pressure_centers(n_a, f_a, x_ref, sym_comp=sym_comp)
+
         for idx, f in enumerate(f_a):
-            if idx >= 0.5 * np.size(f_a, axis=0) and sym_comp:
-                idx = idx + 1
-            n_a1 = n_a[idx, :]
-            n_a2 = n_a[idx + 1, :]
-            if f[2] != 0.0:
-                n_cp = np.array(
-                    [x_ref[0] - f[4] / f[2], 0.5 * (n_a1[1] + n_a2[1]), 0.5 * (n_a1[2] + n_a2[2])]
-                )
-            else:
-                n_cp = np.array([x_ref[0], 0.5 * (n_a1[1] + n_a2[1]), 0.5 * (n_a1[2] + n_a2[2])])
-            r_s1 = n_cp - n_s[idx, :]
-            r_s2 = n_cp - n_s[idx + 1]
+            r_s1 = n_cp[idx] - n_s[idx, :]
+            r_s2 = n_cp[idx] - n_s[idx + 1]
             f_s[idx, :3] += f[:3] * 0.5
             f_s[idx + 1, :3] += f[:3] * 0.5
             f_s[idx, 3:] += np.cross(r_s1, 0.5 * f[:3])
             f_s[idx + 1, 3:] += np.cross(r_s2, 0.5 * f[:3])
 
         return f_s
+
+    @staticmethod
+    def _nearest_neighbour_force_transfer(strut_nodes, aero_nodes, aero_forces):
+
+        f_s = np.zeros((np.size(strut_nodes, axis=0), 6))
+        nearest_sets = _nearest_set(strut_nodes, aero_nodes)
+        for idx, n_strut in enumerate(strut_nodes):
+            idx_nn = nearest_sets[idx]
+            f_s[idx, :3] = np.sum(aero_forces[idx_nn, :3], axis=0)
+            lever_arms = aero_nodes[idx_nn] - n_strut
+            f_s[idx, 3:] = np.sum(
+                np.cross(lever_arms, aero_forces[idx_nn, :3]) + aero_forces[idx_nn, 3:], axis=0
+            )
+        return f_s
+
+
+def _compute_pressure_centers(n_a, f_a, x_ref, sym_comp=False):
+    """
+    :param n_a: aerodynamic nodes
+    :param f_a: aerodynamic forces and moment respect to n_ref
+    :param x_ref: reference node for aerodynamic moments computation
+    :param sym_comp: True if the component is geometrically symmetric e.g. wing
+    :return n_cp: pressure centers coordinates
+    """
+    n_cp = []
+    for idx, f in enumerate(f_a):
+        if idx >= 0.5 * np.size(f_a, axis=0) and sym_comp:
+            idx = idx + 1
+        n_a1 = n_a[idx, :]
+        n_a2 = n_a[idx + 1, :]
+        if f[2] != 0.0:
+            n_cp.append(
+                [x_ref[0] - f[4] / f[2], 0.5 * (n_a1[1] + n_a2[1]), 0.5 * (n_a1[2] + n_a2[2]),]
+            )
+
+        else:
+            n_cp.append([x_ref[0], 0.5 * (n_a1[1] + n_a2[1]), 0.5 * (n_a1[2] + n_a2[2])])
+
+    return np.array(n_cp)
+
+
+def _nearest_neighbour(ref_point, set_points):
+    i_nearest = 0
+    distance = np.linalg.norm(ref_point - set_points[0, :])
+    for idx, point in enumerate(set_points):
+        distance_tmp = np.linalg.norm(ref_point - point)
+        if distance_tmp < distance:
+            distance = distance_tmp
+            i_nearest = idx
+
+        else:
+            continue
+    return set_points[i_nearest], i_nearest
+
+
+def _nearest_set(ref_set, neighbour_set):
+    """
+    For each ref point in ref_set returns indices of points in neighbour_set
+     the ref point for which is the nearest neighbour
+    :param ref_set: reference set of points
+    :param neighbour_set: set of points in which to search nearest neighbours
+    :return:
+    """
+    idx_nearest_neighbours = []
+    for idx, neighbour in enumerate(neighbour_set):
+        idx_nearest_neighbours.append(_nearest_neighbour(neighbour, ref_set)[1])
+
+    nearest_sets = []
+    for idx_ref, ref_point in enumerate(ref_set):
+        nearest_set = []
+        for idx, idx_nn in enumerate(idx_nearest_neighbours):
+            if idx_nn == idx_ref:
+                nearest_set.append(idx)
+        nearest_sets.append(nearest_set)
+
+    return nearest_sets

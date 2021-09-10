@@ -15,11 +15,10 @@ Test for forces and displacement transfer at component level
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import openmdao.api as om
 import numpy as np
-
-
+import openmdao.api as om
 from pytest import approx
+
 from tests.testing_utilities import run_system
 from ..component_displacements import ComponentDisplacements
 from ..component_forces import ComponentForces
@@ -265,41 +264,31 @@ def test_forces_transfer():
             [14.0, -17.0, 0.0],
         ]
     )
-    f_a = np.hstack((np.ones((10, 3)), np.zeros((10, 3))))  #  Unitary forces
-    f_a[5:10, 1] = -1.0  # symmetrisation
+    f_a = np.zeros((10, 6))
+    f_a[:, 2] = 1  #  Unitary vertical forces
     ivc.add_output("data:aerostructural:structure:wing:nodes", val=n_s)
     ivc.add_output("data:aerostructural:aerodynamic:wing:nodes", val=n_a)
     ivc.add_output("data:aerostructural:aerodynamic:wing:forces", val=f_a)
     ivc.add_output("data:geometry:wing:MAC:at25percent:x", val=15.0)
-    problem = run_system(ComponentForces(component="wing", number_of_sections=5), ivc)
+    problem = run_system(ComponentForces(component="wing", number_of_structural_sections=5), ivc)
     f_s = problem["data:aerostructural:structure:wing:forces"]
-    for idx, line in enumerate(f_s[:6, :]):
-        if idx not in (0, 5):
-            for i in [0, 1, 2, 4]:
-                assert line[i] == approx(1.0, abs=1e-5)
-            assert line[5] == approx(-1, abs=1e-5)
-        else:
-            for i in [0, 1, 2]:
-                assert line[i] == approx(0.5, abs=1e-5)
-            assert line[4] == approx(0.5, abs=1e-5)
-            if idx == 0:
-                assert line[5] == approx(-1.25, abs=1e-5)
-            else:
-                assert line[5] == approx(0.25, abs=1e-5)
-    for idx, line in enumerate(f_s[6:, :]):
-        if idx not in (0, 5):
-            for i in [0, 2, 4, 5]:
-                assert line[i] == approx(1.0, abs=1e-5)
-            assert line[1] == approx(-1, abs=1e-5)
-        else:
-            for i in [0, 2]:
-                assert line[i] == approx(0.5, abs=1e-5)
-            assert line[1] == approx(-0.5, abs=1e-5)
-            assert line[4] == approx(0.5, abs=1e-5)
-            if idx == 0:
-                assert line[5] == approx(1.25, abs=1e-5)
-            else:
-                assert line[5] == approx(-0.25, abs=1e-5)
+    f_s_test = np.array(
+        [
+            [0.0, 0.0, 1.0, 1.5, 1.0, 0.0],
+            [0.0, 0.0, 1.0, 1.5, 1.0, 0.0],
+            [0.0, 0.0, 1.0, 1.5, 1.0, 0.0],
+            [0.0, 0.0, 1.0, 1.5, 1.0, 0.0],
+            [0.0, 0.0, 1.0, 1.5, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, -1.5, 1.0, 0.0],
+            [0.0, 0.0, 1.0, -1.5, 1.0, 0.0],
+            [0.0, 0.0, 1.0, -1.5, 1.0, 0.0],
+            [0.0, 0.0, 1.0, -1.5, 1.0, 0.0],
+            [0.0, 0.0, 1.0, -1.5, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        ]
+    )
+    assert f_s == approx(f_s_test, abs=1e-5)
 
     #  Swept wing
     ivc = om.IndepVarComp()
@@ -335,19 +324,28 @@ def test_forces_transfer():
             [21.5, -17.0, 0.0],
         ]
     )
-    f_a = np.hstack((np.ones((10, 3)), np.zeros((10, 3))))  # Unitary forces
-    f_a[5:10, 1] = -1.0  # symmetrisation
+    f_a = np.zeros((10, 6))
+    f_a[:, 2] = 1  # Unitary vertical forces
     ivc.add_output("data:aerostructural:structure:wing:nodes", val=n_s)
     ivc.add_output("data:aerostructural:aerodynamic:wing:nodes", val=n_a)
     ivc.add_output("data:aerostructural:aerodynamic:wing:forces", val=f_a)
     ivc.add_output("data:geometry:wing:MAC:at25percent:x", val=15.0)
-    problem = run_system(ComponentForces(component="wing", number_of_sections=5), ivc)
+    problem = run_system(ComponentForces(component="wing", number_of_structural_sections=5), ivc)
     f_s = problem["data:aerostructural:structure:wing:forces"]
-    assert f_s[:6, 0] == approx(np.array([0.5, 1.0, 1.0, 1.0, 1.0, 0.5]), abs=1e-5)
-    assert f_s[:6, 1] == approx(np.array([0.5, 1.0, 1.0, 1.0, 1.0, 0.5]), abs=1e-5)
-    assert f_s[:6, 2] == approx(np.array([0.5, 1.0, 1.0, 1.0, 1.0, 0.5]), abs=1e-5)
-    assert f_s[6:, 0] == approx(np.array([0.5, 1.0, 1.0, 1.0, 1.0, 0.5]), abs=1e-5)
-    assert f_s[6:, 1] == approx(np.array([-0.5, -1.0, -1.0, -1.0, -1.0, -0.5]), abs=1e-5)
-    assert f_s[6:, 2] == approx(np.array([0.5, 1.0, 1.0, 1.0, 1.0, 0.5]), abs=1e-5)
-    assert f_s[:6, 4] == approx(np.array([0.5, 2.5, 4.0, 5.5, 7.0, 4.25]), abs=1e-5)
-    assert f_s[:6, 5] == approx(np.array([-1.25, -2.5, -4.0, -5.5, -7.0, -3.5]), abs=1e-5)
+    f_s_test = np.array(
+        [
+            [0.0, 0.0, 1.0, 1.5, 1.0, 0.0],
+            [0.0, 0.0, 1.0, 1.5, 2.5, 0.0],
+            [0.0, 0.0, 1.0, 1.5, 4.0, 0.0],
+            [0.0, 0.0, 2.0, 6.0, 11.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, -1.5, 1.0, 0.0],
+            [0.0, 0.0, 1.0, -1.5, 2.5, 0.0],
+            [0.0, 0.0, 1.0, -1.5, 4.0, 0.0],
+            [0.0, 0.0, 2.0, -6.0, 11.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        ]
+    )
+    assert f_s == approx(f_s_test, abs=1e-5)
