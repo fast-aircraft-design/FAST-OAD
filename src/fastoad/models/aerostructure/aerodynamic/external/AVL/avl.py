@@ -52,17 +52,18 @@ class AVL(ExternalCodeComp):
     """
 
     def initialize(self):
-        self.options.declare("components", types=list)
-        self.options.declare("components_sections", types=list)
+        self.options.declare("aerodynamic_components", types=list)
+        self.options.declare("aerodynamic_components_sections", types=list)
         self.options.declare(OPTION_RESULT_AVL_FILENAME, default="results.out", types=str)
         self.options.declare(OPTION_RESULT_FOLDER_PATH, default="", types=str)
         self.options.declare(OPTION_AVL_EXE_PATH, default="", types=str, allow_none=True)
         self.options.declare("coupling_iterations", types=bool, default=True)
 
     def setup(self):
-        comps = self.options["components"]
-        sects = self.options["components_sections"]
+        comps = self.options["aerodynamic_components"]
+        sects = self.options["aerodynamic_components_sections"]
         coupling = self.options["coupling_iterations"]
+
         self.add_input("data:geometry:wing:area", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan)
         self.add_input("data:geometry:wing:MAC:length", val=np.nan)
@@ -91,6 +92,12 @@ class AVL(ExternalCodeComp):
                 val=np.nan,
                 shape_by_conn=True,
             )
+            self.add_input(
+                "data:aerostructural:aerodynamic:" + comp + ":d_twist",
+                val=np.nan,
+                shape_by_conn=True,
+                units="deg",
+            )
             if comp == "wing":
                 self.add_input(
                     "data:aerostructural:aerodynamic:wing:thickness_ratios",
@@ -99,12 +106,6 @@ class AVL(ExternalCodeComp):
                 )
                 self.add_input(
                     "data:aerostructural:aerodynamic:wing:twist", val=np.nan, shape_by_conn=True
-                )
-                self.add_input(
-                    "data:aerostructural:aerodynamic:wing:d_twist",
-                    val=np.nan,
-                    shape_by_conn=True,
-                    units="deg",
                 )
 
             size = n_sect  # Default number of section for non symmetrical components
@@ -216,7 +217,9 @@ class AVL(ExternalCodeComp):
             parser_out.mark_anchor("CDind =")
             outputs["data:aerostructural:aerodynamic:CDi"] = parser_out.transfer_var(0, 6)
             outputs["data:aerostructural:aerodynamic:Oswald_Coeff"] = parser_out.transfer_var(2, 6)
-        for (comp, sect) in zip(self.options["components"], self.options["components_sections"]):
+        for (comp, sect) in zip(
+            self.options["aerodynamic_components"], self.options["aerodynamic_components_sections"]
+        ):
             size = sect  # default number of section for non symmetric components
             if comp in ("wing", "horizontal_tail", "strut"):
                 size = sect * 2  # number of sections doubled for symmetric components
@@ -275,7 +278,7 @@ class AVL(ExternalCodeComp):
             count = 0
             k_chords = inputs["tuning:aerostructural:aerodynamic:chordwise_spacing:k"][0]
 
-            for comp in self.options["components"]:
+            for comp in self.options["aerodynamic_components"]:
                 count += 1
                 geom_gen_class = AvlGeometryComponents[comp.upper()].value
                 geom_gen = geom_gen_class()

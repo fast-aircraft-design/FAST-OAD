@@ -114,6 +114,8 @@ def get_ivc_for_components(
                 "data:aerostructural:aerodynamic:" + comp + ":displacements",
                 np.zeros(((sect + 1) * 2, 3)),
             )
+            d_twist = np.zeros((sect + 1) * 2)
+            ivc.add_output("data:aerostructural:aerodynamic:" + comp + ":d_twist", d_twist)
         elif comp == "vertical_tail":
             ivc.add_output(
                 "data:aerostructural:aerodynamic:" + comp + ":displacements",
@@ -166,7 +168,11 @@ def test_avl_design():
     sections = [12]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
-    avl_comp = AVL(components=components, components_sections=sections, coupling_iterations=False)
+    avl_comp = AVL(
+        aerodynamic_components=components,
+        aerodynamic_components_sections=sections,
+        coupling_iterations=False,
+    )
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
     assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0057634, abs=1e-5)
@@ -177,7 +183,11 @@ def test_avl_design():
     sections = [12, 11, 5]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
-    avl_comp = AVL(components=components, components_sections=sections, coupling_iterations=False)
+    avl_comp = AVL(
+        aerodynamic_components=components,
+        aerodynamic_components_sections=sections,
+        coupling_iterations=False,
+    )
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
     assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0060361, abs=1e-5)
@@ -189,8 +199,8 @@ def test_avl_design():
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
     avl_comp = AVL(
-        components=components,
-        components_sections=sections,
+        aerodynamic_components=components,
+        aerodynamic_components_sections=sections,
         result_folder_path=AVL_RESULTS,
         coupling_iterations=False,
     )
@@ -225,7 +235,7 @@ def test_avl_sizing():
     components = ["wing"]
     sections = [12]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
-    avl_comp = AVL(components=components, components_sections=sections)
+    avl_comp = AVL(aerodynamic_components=components, aerodynamic_omponents_sections=sections)
     problem = run_system(avl_comp, ivc)
 
     forces_test = np.loadtxt(
@@ -241,7 +251,7 @@ def test_avl_sizing():
     sections = [12, 11, 5]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
-    avl_comp = AVL(components=components, components_sections=sections)
+    avl_comp = AVL(aerodynamic_components=components, aerodynamic_components_sections=sections)
     problem = run_system(avl_comp, ivc)
     forces_test = np.loadtxt(
         pth.join(pth.dirname(__file__), "data", "forces_results_full_2p5g"), skiprows=1
@@ -282,7 +292,7 @@ def test_avl_path():
     sections = [11]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
-    avl_comp = AVL(components=components, components_sections=sections)
+    avl_comp = AVL(aerodynamic_components=components, aerodynamic_components_sections=sections)
 
     avl_comp.options["avl_exe_path"] = "Dummy"  # bad name
     with pytest.raises(ValueError):
