@@ -121,6 +121,8 @@ def get_ivc_for_components(
                 "data:aerostructural:aerodynamic:" + comp + ":displacements",
                 np.zeros((sect + 1, 3)),
             )
+            d_twist = np.zeros(sect + 1)
+            ivc.add_output("data:aerostructural:aerodynamic:" + comp + ":d_twist", d_twist)
         elif comp == "wing":
             ivc.add_output(
                 "data:aerostructural:aerodynamic:" + comp + ":displacements",
@@ -190,8 +192,8 @@ def test_avl_design():
     )
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
-    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0060361, abs=1e-5)
-    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.9454, abs=1e-4)
+    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0061803, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.9173, abs=1e-4)
     assert not pth.exists(pth.join(pth.dirname(__file__), "results"))
     # Test with results directory provided ---------------------------------------------------------
     components = ["wing", "horizontal_tail", "vertical_tail"]
@@ -206,8 +208,8 @@ def test_avl_design():
     )
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"][0] == approx(0.37, abs=1e-3)
-    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0060361, abs=1e-5)
-    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.9454, abs=1e-4)
+    assert problem["data:aerostructural:aerodynamic:CDi"][0] == approx(0.0061803, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"][0] == approx(0.9173, abs=1e-4)
     assert pth.exists(AVL_RESULTS)
     assert pth.exists(pth.join(AVL_RESULTS, "results.out"))
 
@@ -235,7 +237,7 @@ def test_avl_sizing():
     components = ["wing"]
     sections = [12]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
-    avl_comp = AVL(aerodynamic_components=components, aerodynamic_omponents_sections=sections)
+    avl_comp = AVL(aerodynamic_components=components, aerodynamic_components_sections=sections)
     problem = run_system(avl_comp, ivc)
 
     forces_test = np.loadtxt(
@@ -243,7 +245,7 @@ def test_avl_sizing():
     )
 
     np.testing.assert_allclose(
-        problem["data:aerostructural:aerodynamic:wing:forces"], forces_test, rtol=1e-3
+        problem["data:aerostructural:aerodynamic:wing:forces"], forces_test, rtol=5e-3
     )
 
     # Test for complete aircraft (wing, fuselage, tails) -------------------------------------------
@@ -264,7 +266,7 @@ def test_avl_sizing():
             problem["data:aerostructural:aerodynamic:vertical_tail:forces"],
         )
     )
-    np.testing.assert_allclose(forces_fast, forces_test)
+    np.testing.assert_allclose(forces_fast, forces_test, rtol=5e-3)
 
 
 @pytest.mark.skipif(
@@ -289,10 +291,14 @@ def test_avl_path():
     # Test with only wing and fuselage -------------------------------------------------------------
     load_case = {"weight": 60000, "altitude": 35000, "mach": 0.78, "load_factor": 1.0}
     components = ["wing"]
-    sections = [11]
+    sections = [12]
     ivc = get_ivc_for_components(components, sections, input_list, load_case)
 
-    avl_comp = AVL(aerodynamic_components=components, aerodynamic_components_sections=sections)
+    avl_comp = AVL(
+        aerodynamic_components=components,
+        aerodynamic_components_sections=sections,
+        coupling_iterations=False,
+    )
 
     avl_comp.options["avl_exe_path"] = "Dummy"  # bad name
     with pytest.raises(ValueError):
@@ -303,5 +309,5 @@ def test_avl_path():
     )
     problem = run_system(avl_comp, ivc)
     assert problem["data:aerostructural:aerodynamic:CL"] == approx(0.37, abs=1e-3)
-    assert problem["data:aerostructural:aerodynamic:CDi"] == approx(0.0056713, abs=1e-5)
-    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"] == approx(0.9524, abs=1e-4)
+    assert problem["data:aerostructural:aerodynamic:CDi"] == approx(0.0057634, abs=1e-5)
+    assert problem["data:aerostructural:aerodynamic:Oswald_Coeff"] == approx(0.9357, abs=1e-4)
