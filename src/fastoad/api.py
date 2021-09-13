@@ -41,6 +41,7 @@ from fastoad.module_management.service_registry import (
     RegisterOpenMDAOSystem,
     RegisterPropulsion,
     RegisterSpecializedService,
+    RegisterSubmodel,
 )
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
