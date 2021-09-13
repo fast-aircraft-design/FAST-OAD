@@ -182,7 +182,7 @@ class RegisterService:
         return cls._loader.get_instance_property(instance_or_id, property_name)
 
 
-class RegisterOpenMDAOService(RegisterService, base_class=System):
+class _RegisterOpenMDAOService(RegisterService, base_class=System):
     """
     Base class for registering OpenMDAO systems.
 
@@ -392,7 +392,7 @@ class RegisterSpecializedService(RegisterService):
         return super().get_provider_ids(cls.service_id)
 
 
-class _RegisterSpecializedOpenMDAOService(RegisterSpecializedService, RegisterOpenMDAOService):
+class _RegisterSpecializedOpenMDAOService(RegisterSpecializedService, _RegisterOpenMDAOService):
     """
     Base class for specialized decorator classes for registering OpenMDAO systems.
 
@@ -426,7 +426,7 @@ class RegisterOpenMDAOSystem(
     """
 
 
-class RegisterSubmodel(RegisterOpenMDAOService):
+class RegisterSubmodel(_RegisterOpenMDAOService):
     """
     Decorator class that allows to submodels.
 
