@@ -95,26 +95,47 @@ def test_aerostructure():
     ]
     comps = ["wing"]
     sects = [5]
-    interp = ["linear", "linear", "linear", "rigid"]
+    interp = ["linear"]
     ivc = get_indep_var_comp(input_list)
     problem = run_system(
-        StaticSolver(components=comps, components_sections=sects, components_interp=interp), ivc
+        StaticSolver(
+            coupled_components=comps,
+            aerodynamic_components_sections=sects,
+            structural_components_sections=sects,
+            coupled_components_interpolations=interp,
+        ),
+        ivc,
     )
-    tz_test = np.array([0, 0.132, 0.452, 0.874, 1.336, 1.806, 0, 0.132, 0.452, 0.874, 1.336, 1.806])
+    tz_test = np.array(
+        [
+            0,
+            0.27501,
+            1.00444,
+            2.03933,
+            3.23936,
+            4.48776,
+            0,
+            0.27501,
+            1.00444,
+            2.03933,
+            3.23936,
+            4.48776,
+        ]
+    )
     ry_test = np.array(
         [
             0.0,
-            -1.38e-3,
-            -2.628e-3,
-            -3.678e-3,
-            -4.415e-3,
-            -4.689e-3,
+            -0.01241,
+            -0.02202,
+            -0.02848,
+            -0.03150,
+            -0.03150,
             0.0,
-            -1.38e-3,
-            -2.628e-3,
-            -3.678e-3,
-            -4.415e-3,
-            -4.689e-3,
+            -0.01241,
+            -0.02202,
+            -0.02848,
+            -0.03150,
+            -0.03150,
         ]
     )
     np.testing.assert_allclose(

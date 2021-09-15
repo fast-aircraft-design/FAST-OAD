@@ -1,0 +1,82 @@
+<!--
+  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2021 ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+<FASTOAD_model>
+  <data>
+      <geometry>
+          <wing>
+              <MAC>
+                  <at25percent>
+                      <x>0.0</x>
+                  </at25percent>
+              </MAC>
+          </wing>
+      </geometry>
+      <aerostructural>
+          <load_case>
+              <load_factor>1.0</load_factor>
+          </load_case>
+          <structure>
+              <wing>
+                  <nodes>[[1.0, 0.0, 0.0], [1.0, 5.0, 0.0], [1.0, 10.0, 0.0], [1.0, 15.0, 0.0],[1.0, 0.0, 0.0], [1.0, -5.0, 0.0], [1.0, -10.0, 0.0], [1.0, -15.0, 0.0]]</nodes>
+                  <forces>
+                      [[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,100000.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,100000.,0.,0.,0.]]
+                  </forces>
+                  <beam_properties>[[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5]]</beam_properties>
+                  <material>
+                      <E>78e9</E>
+                      <mu>0.31</mu>
+                      <density>2780.0</density>
+                  </material>
+              </wing>
+              <strut>
+                  <nodes>[[1.0, 0.0, -2.0], [1.0, 5.0, -1.2], [1.0, 10.0, -0.4], [1.0, 12.5, 0.0],[1.0, 0.0, -2.0], [1.0, -5.0, -1.2], [1.0, -10.0, -0.4], [1.0, -12.5, 0.0]]</nodes>
+                  <forces>
+                      [[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.]]
+                  </forces>
+                  <beam_properties>[[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5]]</beam_properties>
+                  <material>
+                      <E>78e9</E>
+                      <mu>0.31</mu>
+                      <density>2780.0</density>
+                  </material>
+              </strut>
+              <horizontal_tail>
+                  <nodes>[[15, 0.0, 0.0], [15.0, 2.5, 0.0], [15.0, 5.0, 0.0], [15.0, 0.0, 0.0], [15.0, -2.5, 0.], [15.0, -5.0, 0.0]]</nodes>
+                  <forces>
+                      [[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,-1000.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.],[0.,0.,-1000.,0.,0.,0.]]
+                  </forces>
+                  <beam_properties>[[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5]]</beam_properties>
+                  <material>
+                      <E>78e9</E>
+                      <mu>0.31</mu>
+                      <density>2780.0</density>
+                  </material>
+              </horizontal_tail>
+              <vertical_tail>
+                  <nodes>[[14, 0.0, 0.0], [14.0, 0.0, 2.5], [14.0, 0.0, 5.0]]</nodes>
+                  <forces>
+                      [[0.,0.,0.,0.,0.,0.],[0.,0.,0.,0.,0.,0.]]
+                  </forces>
+                  <beam_properties>[[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5],[0.02268, 9.196e-4, 8.802e-3, 2.763e-3, 0.05, 0.5, -0.05, 0.5, -0.05, -0.5, 0.05, -0.5]]</beam_properties>
+                  <material>
+                      <E>78e9</E>
+                      <mu>0.31</mu>
+                      <density>2780.0</density>
+                  </material>
+              </vertical_tail>
+          </structure>
+      </aerostructural>
+  </data>
+</FASTOAD_model>

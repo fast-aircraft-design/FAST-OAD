@@ -27,7 +27,7 @@ class StructureNodesWing(om.ExplicitComponent):
 
     def initialize(self):
         self.options.declare("number_of_sections", types=int)
-        self.options.declare("has_strut", types=bool)
+        self.options.declare("has_strut", types=bool, default=False)
 
     def setup(self):
         n_secs = self.options["number_of_sections"]
@@ -130,7 +130,7 @@ class StructureNodesWing(om.ExplicitComponent):
         #  Gathering sections locations
         y_box = np.hstack((y_secs_belly, y_secs_kink, y_secs_tip)).reshape((n_secs + 1, 1))
         if self.options["has_strut"]:
-            y_box = np.sort(np.append(y_box, y_strut))
+            y_box = np.sort(np.append(y_box, [y_strut], axis=0), axis=0)
 
         #  Nodes coordinates interpolation ---------------------------------------------------------
         x_box = f_x(y_box)

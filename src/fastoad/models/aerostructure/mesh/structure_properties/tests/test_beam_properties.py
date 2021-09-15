@@ -15,17 +15,16 @@ Test module for structure beam properties computation
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import openmdao.api as om
 import os.path as pth
+
 import numpy as np
+from pytest import approx
 
 from fastoad.io import VariableIO
-from ..structure_beam_wing import WingBeamProps
+from tests.testing_utilities import run_system
 from ..structure_beam_htail import HtailBeamProps
 from ..structure_beam_vtail import VtailBeamProps
-from tests.testing_utilities import run_system
-
-from pytest import approx
+from ..structure_beam_wing import WingBeamProps
 
 
 def get_indep_var_comp(var_names):
@@ -73,13 +72,13 @@ def test_wing_props_no_spar_no_thickness():
     i2 = problem["data:aerostructural:structure:wing:beam_properties"][:, 2]
     j = problem["data:aerostructural:structure:wing:beam_properties"][:, 3]
 
-    assert a[[0, 4, 11]] == approx(np.array([0.03841, 0.02278, 0.00887]), abs=1e-5)
+    assert a[[0, 4, 11]] == approx(np.array([0.03831, 0.02268, 0.00877]), abs=1e-5)
     assert a[:12] == approx(a[12:], abs=1e-9)
-    assert i1[[0, 4, 11]] == approx(np.array([7.7583e-3, 9.4418e-4, 8.9943e-05]), abs=1e-7)
+    assert i1[[0, 4, 11]] == approx(np.array([7.6639e-3, 9.196e-4, 8.52e-05]), abs=1e-7)
     assert i1[:12] == approx(i1[12:], abs=1e-9)
-    assert i2[[0, 4, 11]] == approx(np.array([3.9451e-2, 8.9066e-3, 4.9127e-4]), abs=1e-6)
+    assert i2[[0, 4, 11]] == approx(np.array([3.9178e-2, 8.802e-3, 4.77e-4]), abs=1e-6)
     assert i2[:12] == approx(i2[12:], abs=1e-9)
-    assert j[[0, 4, 11]] == approx(np.array([2.0669e-2, 2.830e-3, 2.43e-4]), abs=1e-6)
+    assert j[[0, 4, 11]] == approx(np.array([2.0442e-2, 2.763e-3, 2.32e-4]), abs=1e-6)
     assert j[:12] == approx(j[12:], abs=1e-9)
 
 
@@ -132,9 +131,9 @@ def test_wing_props_no_spar():
     i2 = problem["data:aerostructural:structure:wing:beam_properties"][:, 2]
     j = problem["data:aerostructural:structure:wing:beam_properties"][:, 3]
     assert a[[0, 4, 11]] == approx(np.array([7.682e-3, 4.556e-3, 1.774e-3]), abs=1e-5)
-    assert i1[[0, 4, 11]] == approx(np.array([1.5517e-3, 1.8884e-4, 1.7987e-05]), abs=1e-7)
-    assert i2[[0, 4, 11]] == approx(np.array([7.8902e-3, 1.7813e-3, 9.8254e-5]), abs=1e-6)
-    assert j[[0, 4, 11]] == approx(np.array([4.1338e-3, 5.6600e-4, 4.86e-5]), abs=1e-6)
+    assert i1[[0, 4, 11]] == approx(np.array([1.5479e-3, 1.878e-4, 1.78e-05]), abs=1e-7)
+    assert i2[[0, 4, 11]] == approx(np.array([7.879e-3, 1.777e-3, 9.8e-5]), abs=1e-6)
+    assert j[[0, 4, 11]] == approx(np.array([4.125e-3, 5.63e-4, 4.8e-5]), abs=1e-6)
 
 
 def test_wing_props_spar():
@@ -181,10 +180,10 @@ def test_wing_props_spar():
     i1 = problem["data:aerostructural:structure:wing:beam_properties"][:, 1]
     i2 = problem["data:aerostructural:structure:wing:beam_properties"][:, 2]
     j = problem["data:aerostructural:structure:wing:beam_properties"][:, 3]
-    assert a[[0, 4, 11]] == approx(np.array([0.03841, 0.02278, 0.00887]) + 6e-4, abs=1e-5)
-    assert i1[[0, 4, 11]] == approx(np.array([7.9046e-3, 9.7269e-4, 9.7238e-05]), abs=1e-7)
-    assert i2[[0, 4, 11]] == approx(np.array([4.1893e-2, 9.9245e-3, 6.2446e-4]), abs=1e-6)
-    assert j[[0, 4, 11]] == approx(np.array([2.0669e-2, 2.830e-3, 2.43e-4]), abs=1e-6)
+    assert a[[0, 4, 11]] == approx(np.array([0.03891, 0.02328, 0.00937]), abs=1e-5)
+    assert i1[[0, 4, 11]] == approx(np.array([7.8102e-3, 9.481e-4, 9.25e-05]), abs=1e-7)
+    assert i2[[0, 4, 11]] == approx(np.array([4.1620e-2, 9.8205e-3, 6.10e-4]), abs=1e-6)
+    assert j[[0, 4, 11]] == approx(np.array([2.0442e-2, 2.763e-3, 2.32e-4]), abs=1e-6)
 
 
 def test_htp_props():
@@ -206,10 +205,10 @@ def test_htp_props():
     i2 = problem["data:aerostructural:structure:horizontal_tail:beam_properties"][:, 2]
     j = problem["data:aerostructural:structure:horizontal_tail:beam_properties"][:, 3]
 
-    assert a[:2] == approx(np.array([2.6435e-2, 1.7183e-2]), abs=1e-5)
-    assert i1[:2] == approx(np.array([1.1403e-3, 3.1315e-4]), abs=1e-6)
-    assert i2[:2] == approx(np.array([1.4254e-2, 3.9144e-3]), abs=1e-6)
-    assert j[:2] == approx(np.array([3.5634e-3, 9.7860e-4]), abs=1e-6)
+    assert a[:2] == approx(np.array([2.633e-2, 1.708e-2]), abs=1e-5)
+    assert i1[:2] == approx(np.array([1.111e-3, 3.01e-4]), abs=1e-6)
+    assert i2[:2] == approx(np.array([1.4109e-2, 3.853e-3]), abs=1e-6)
+    assert j[:2] == approx(np.array([3.48e-3, 9.44e-4]), abs=1e-6)
 
 
 def test_vtp_props():
@@ -230,7 +229,7 @@ def test_vtp_props():
     i1 = problem["data:aerostructural:structure:vertical_tail:beam_properties"][:, 1]
     i2 = problem["data:aerostructural:structure:vertical_tail:beam_properties"][:, 2]
     j = problem["data:aerostructural:structure:vertical_tail:beam_properties"][:, 3]
-    assert a[:2] == approx(np.array([3.6514e-2, 2.3734e-2]), abs=1e-5)
-    assert i1[:2] == approx(np.array([3.0052e-3, 8.253e-4]), abs=1e-6)
-    assert i2[:2] == approx(np.array([3.7565e-2, 1.0316e-2]), abs=1e-6)
-    assert j[:2] == approx(np.array([9.3913e-3, 2.5791e-3]), abs=1e-6)
+    assert a[:2] == approx(np.array([3.6414e-2, 2.3634e-2]), abs=1e-5)
+    assert i1[:2] == approx(np.array([2.950e-3, 8.02e-4]), abs=1e-6)
+    assert i2[:2] == approx(np.array([3.7288e-2, 1.0199e-2]), abs=1e-6)
+    assert j[:2] == approx(np.array([9.233e-3, 2.512e-3]), abs=1e-6)

@@ -37,7 +37,7 @@ def readf06(file):
                     line = lines[i].split()
                     nodes.append(int(line[0]))
                     d6tmp = []
-                    for j in range(2, 8):
+                    for j in [0] + list(range(2, 8)):
                         d6tmp.append(float(line[j]))
                     disp_mat.append(d6tmp)
                 else:
@@ -54,7 +54,13 @@ def readf06(file):
                         line2 = lines[i + 1].split()
                         elems.append(int(line1[0]))
                         stresses.append(
-                            [float(line1[6]), float(line1[7]), float(line2[4]), float(line2[5])]
+                            [
+                                float(line1[0]),
+                                float(line1[6]),
+                                float(line1[7]),
+                                float(line2[4]),
+                                float(line2[5]),
+                            ]
                         )
                     else:
                         continue

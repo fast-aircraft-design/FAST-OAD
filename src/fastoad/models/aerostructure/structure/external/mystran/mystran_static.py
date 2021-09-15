@@ -57,6 +57,7 @@ class MystranStatic(om.ExternalCodeComp):
         self.options.declare(OPTION_MYSTRAN_EXE_PATH, default="", types=str, allow_none=True)
         self.options.declare(OPTION_RESULT_FOLDER_PATH, default="", types=str, allow_none=True)
         self.options.declare("coupling_iterations", types=bool, default=True)
+        self.options.declare("has_vertical_strut", types=bool, default=False)
 
     def setup(self):
         comps = self.options["structural_components"]
@@ -66,15 +67,10 @@ class MystranStatic(om.ExternalCodeComp):
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
         self.add_input("data:aerostructural:load_case:load_factor", val=1.0)
         for comp, nsect in zip(comps, nsects):
-            # if comp == "wing":
-            #     n_nodes = (nsect + 1) * 2
-            #     n_props = nsect * 2
             if comp in ("wing", "horizontal_tail", "strut"):
                 n_nodes = (nsect + 1) * 2
-                n_props = nsect * 2
             else:
                 n_nodes = nsect + 1
-                n_props = nsect
 
             self.add_input(
                 "data:aerostructural:structure:" + comp + ":nodes", val=np.nan, shape_by_conn=True
@@ -93,12 +89,6 @@ class MystranStatic(om.ExternalCodeComp):
                 "data:aerostructural:structure:" + comp + ":material:density", val=2810.0
             )
 
-            # self.add_output(
-            #     "data:aerostructural:aerodynamic:" + comp + ":d_twist",
-            #     val=0.0,
-            #     shape=n_nodes,
-            #     units="rad",
-            # )
             self.add_output(
                 "data:aerostructural:structure:" + comp + ":displacements",
                 val=0.0,
@@ -125,8 +115,8 @@ class MystranStatic(om.ExternalCodeComp):
         if result_folder_path != "":
             os.makedirs(result_folder_path, exist_ok=True)
 
-        components = self.options["components"]
-        nsects = self.options["components_sections"]
+        components = self.options["structural_components"]
+        nsects = self.options["structural_components_sections"]
 
         # Prepare input file ----------------------------------------------------------------------
         cg_loc = inputs["data:geometry:wing:MAC:at25percent:x"]
@@ -142,7 +132,9 @@ class MystranStatic(om.ExternalCodeComp):
             mat_prop[1] = inputs["data:aerostructural:structure:" + comp + ":material:mu"]
             mat_prop[2] = inputs["data:aerostructural:structure:" + comp + ":material:density"]
             strg += get_nodes_cards(comp, nodes, basis_id[comp])
-            strg += get_props_cards(comp, props, basis_id[comp])
+            strg += get_props_cards(
+                comp, props, basis_id[comp], vertical_strut=self.options["has_vertical_strut"]
+            )
             strg += get_mat_cards(mat_prop, basis_id[comp])
             strg += get_rbe_junction_cards(comp, nodes, basis_id[comp])
             strg += get_forces_cards(comp, forces, basis_id[comp])
@@ -184,21 +176,25 @@ class MystranStatic(om.ExternalCodeComp):
         # Post-processing -------------------------------------------------------------------------
         displacements, stresses = readf06(result_file)
         # split displacements and stresses matrices for each component
-        split_displacements = self._get_component_matrix(
-            displacements, components, nsects, type="grid"
-        )
-        split_stresses = self._get_component_matrix(stresses, components, nsects, type="element")
+        #  split_displacements = self._get_component_matrix(
+        #     displacements, components, nsects, type="grid"
+        # )
+        # split_stresses = self._get_component_matrix(stresses, components, nsects, type="element")
         for i, comp in enumerate(components):
-            outputs["data:aerostructural:structure:" + comp + ":displacements"] = np.round(
-                split_displacements[i], decimals=5
-            )
+            outputs[
+                "data:aerostructural:structure:" + comp + ":displacements"
+            ] = self._get_component_matrix(displacements, basis_id[comp])
+
+            # np.round(
+            #     split_displacements[i], decimals=5
+            # )
             # if comp == "wing":
             #     outputs["data:aerostructural:aerodynamic:wing:d_twist"] = np.round(
             #         split_displacements[i][:, 4], decimals=5
             #     )
 
             outputs["data:aerostructural:structure:" + comp + ":stresses"] = np.max(
-                split_stresses[i]
+                self._get_component_matrix(stresses, basis_id[comp])
             )
 
         # Getting output files if needed ----------------------------------------------------------
@@ -214,7 +210,24 @@ class MystranStatic(om.ExternalCodeComp):
         tmp_dir.cleanup()
 
     @staticmethod
-    def _get_component_matrix(matrix, comps, nsects, type="grid"):
+    def _get_component_matrix(matrix, basis_id):
+        """
+        This function split a FEM results matrix into structural component matrices e.g.
+        displacements for the wing.
+        :param matrix: FEM results matrix
+        :param comps: list of structural components
+        :param nsects: number of section (elements) per components
+        :param type: "grid" or "element" whether the results is grid-wise or element-wise.
+        :return:
+        """
+        indices_component_sup = np.where(basis_id <= matrix[:, 0])
+        indices_component_inf = np.where(basis_id + 1000000 > matrix[:, 0])
+        indices_component = np.intersect1d(indices_component_inf, indices_component_sup)
+        matrix_comp = matrix[indices_component, 1:]
+        return matrix_comp
+
+    @staticmethod
+    def _get_component_matrix_old(matrix, comps, nsects, type="grid"):
         """
         This function split a FEM results matrix into structural component matrices e.g.
         displacements for the wing.

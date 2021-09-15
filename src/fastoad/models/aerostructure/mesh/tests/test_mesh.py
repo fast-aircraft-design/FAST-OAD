@@ -15,15 +15,13 @@ Test for aerodynamic and structural mesh computations
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-import openmdao.api as om
-import numpy as np
 
-import pytest
+import numpy as np
 from pytest import approx
+
 from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
 from ..aerodynamic_mesh import AerodynamicMesh
-from ..structure_mesh import StructureMesh
 
 
 def get_indep_var_comp(var_names):
@@ -82,7 +80,9 @@ def test_aerodynamic_mesh():
     ivc = get_indep_var_comp(input_list)
     comps = ["wing", "fuselage", "horizontal_tail", "vertical_tail"]
     sections = [12, 12, 12, 12]
-    problem = run_system(AerodynamicMesh(components=comps, components_sections=sections), ivc)
+    problem = run_system(
+        AerodynamicMesh(aerodynamic_components=comps, aerodynamic_components_sections=sections), ivc
+    )
     wing_nodes = problem["data:aerostructural:aerodynamic:wing:nodes"]
     htp_nodes = problem["data:aerostructural:aerodynamic:horizontal_tail:nodes"]
     vtp_nodes = problem["data:aerostructural:aerodynamic:vertical_tail:nodes"]
@@ -95,7 +95,9 @@ def test_aerodynamic_mesh():
     assert np.size(vtp_nodes, axis=1) == approx(3, abs=1)
 
     sections = [24, 12, 10, 5]
-    problem = run_system(AerodynamicMesh(components=comps, components_sections=sections), ivc)
+    problem = run_system(
+        AerodynamicMesh(aerodynamic_components=comps, aerodynamic_components_sections=sections), ivc
+    )
     wing_nodes = problem["data:aerostructural:aerodynamic:wing:nodes"]
     htp_nodes = problem["data:aerostructural:aerodynamic:horizontal_tail:nodes"]
     vtp_nodes = problem["data:aerostructural:aerodynamic:vertical_tail:nodes"]

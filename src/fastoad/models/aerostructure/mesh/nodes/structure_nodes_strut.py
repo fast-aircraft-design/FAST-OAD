@@ -27,7 +27,7 @@ class StructureNodesStrut(om.ExplicitComponent):
         n_secs = self.options["number_of_sections"]
 
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
-        self.add_input("data:geometry:wing:root:chord", val=np.nan)
+        self.add_input("data:geometry:strut:root:chord", val=np.nan)
         self.add_input("data:geometry:strut:spar_ratio:root", val=np.nan)
         self.add_input(
             "data:geometry:strut:root:leading_edge:x:from_wingMAC25",
@@ -35,10 +35,10 @@ class StructureNodesStrut(om.ExplicitComponent):
             desc="longitudinal location of the strut root leading edge with respect to wing 25% MAC location",
         )
         self.add_input("data:geometry:strut:root:z", val=np.nan)
-        self.add_input("data:geometry:wing:tip:chord", val=np.nan)
+        self.add_input("data:geometry:strut:tip:chord", val=np.nan)
         self.add_input("data:geometry:strut:spar_ratio:tip", val=np.nan)
         self.add_input(
-            "data:geometry:strut:root:leading_edge:x:local",
+            "data:geometry:strut:tip:leading_edge:x:local",
             val=np.nan,
             desc="longitudinal location of the strut tip leading edge with respect to root",
         )
@@ -62,13 +62,13 @@ class StructureNodesStrut(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         x_wing_mac25 = inputs["data:geometry:wing:MAC:at25percent:x"][0]
-        root_chord = inputs["data:geometry:wing:root:chord"][0]
+        root_chord = inputs["data:geometry:strut:root:chord"][0]
         root_spar_ratio = inputs["data:geometry:strut:spar_ratio:root"][0]
         x_root_le_mac25 = inputs["data:geometry:strut:root:leading_edge:x:from_wingMAC25"][0]
         z_root = inputs["data:geometry:strut:root:z"][0]
-        tip_chord = inputs["data:geometry:wing:tip:chord"]
+        tip_chord = inputs["data:geometry:strut:tip:chord"]
         tip_spar_ratio = inputs["data:geometry:strut:spar_ratio:tip"]
-        x_tip_local = inputs["data:geometry:strut:root:leading_edge:x:local"]
+        x_tip_local = inputs["data:geometry:strut:tip:leading_edge:x:local"]
         y_tip = inputs["data:geometry:strut:tip:y"]
         z_tip = inputs["data:geometry:strut:tip:z"]
 
@@ -88,7 +88,9 @@ class StructureNodesStrut(om.ExplicitComponent):
 
         x = x_root_box + y * (x_tip_box - x_root_box) / y_tip
         z = z_root + y * (z_tip - z_root) / y_tip
-        if self.options["has_vertival_strut"]:
+        if self.options["has_vertical_strut"]:
             z[-1] = z[-1] + height_vertical_strut
 
-        outputs["data:aerostructural:structure:strut:nodes"] = np.hstack((x, y, z))
+        outputs["data:aerostructural:structure:strut:nodes"] = np.vstack(
+            (np.hstack((x, y, z)), np.hstack((x, -y, z)))
+        )

@@ -60,10 +60,28 @@ class ComponentForces(om.ExplicitComponent):
             pressure_centers = _compute_pressure_centers(
                 aero_nodes, aero_forces, x_ref, sym_comp=True
             )
-            struct_forces = self._nearest_neighbour_force_transfer(
-                struct_nodes, pressure_centers, aero_forces
+            # Split nodes into right and left parts
+            struct_nodes_right, struct_nodes_left = (
+                np.split(struct_nodes, 2)[0],
+                np.split(struct_nodes, 2)[1],
             )
-            outputs["data:aerostructural:structure:" + comp + ":forces"] = struct_forces
+            pressure_centers_right, pressure_centers_left = (
+                np.split(pressure_centers, 2)[0],
+                np.split(pressure_centers, 2)[1],
+            )
+            aero_forces_right, aero_forces_left = (
+                np.split(aero_forces, 2)[0],
+                np.split(aero_forces, 2)[1],
+            )
+            struct_forces_right = self._nearest_neighbour_force_transfer(
+                struct_nodes_right, pressure_centers_right, aero_forces_right
+            )
+            struct_forces_left = self._nearest_neighbour_force_transfer(
+                struct_nodes_left, pressure_centers_left, aero_forces_left
+            )
+            outputs["data:aerostructural:structure:" + comp + ":forces"] = np.vstack(
+                (struct_forces_right, struct_forces_left)
+            )
             # outputs[
             #     "data:aerostructural:structure:" + comp + ":forces"
             # ] = self._transpose_forces_moments(struct_nodes, aero_nodes, aero_forces, x_ref, sym_comp=True)
@@ -151,7 +169,6 @@ def _nearest_neighbour(ref_point, set_points):
         if distance_tmp < distance:
             distance = distance_tmp
             i_nearest = idx
-
         else:
             continue
     return set_points[i_nearest], i_nearest

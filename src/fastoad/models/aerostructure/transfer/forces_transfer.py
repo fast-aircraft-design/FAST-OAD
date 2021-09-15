@@ -29,6 +29,6 @@ class ForcesTransfer(om.Group):
         for sect, comp in zip(sects, comps):
             self.add_subsystem(
                 comp + "Forces_Transfer",
-                ComponentForces(component=comp, number_of_strutural_sections=sect),
+                ComponentForces(component=comp, number_of_structural_sections=sect),
                 promotes=["*"],
             )

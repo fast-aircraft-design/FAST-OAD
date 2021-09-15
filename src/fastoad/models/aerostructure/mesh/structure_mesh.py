@@ -22,6 +22,8 @@ class StructureMesh(Group):
     def initialize(self):
         self.options.declare("structural_components_sections", types=list)
         self.options.declare("structural_components", types=list)
+        self.options.declare("has_strut", types=bool, default=False)
+        self.options.declare("has_vertical_strut", types=bool, default=False)
 
     def setup(self):
         comps = self.options["structural_components"]

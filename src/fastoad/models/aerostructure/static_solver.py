@@ -65,8 +65,34 @@ class StaticSolver(om.Group):
             allow_none=False,
             desc="List of interpolation methods to be applied for each coupled component",
         )
+        self.options.declare(
+            "has_strut",
+            types=bool,
+            default=False,
+            desc="True if strut-braced wing configuration should be considered",
+        )
+        self.options.declare(
+            "has_vertical_strut",
+            types=bool,
+            default=False,
+            desc="True if a strut-braced wing and strut composed of vertical + horizontal parts",
+        )
 
     def setup(self):
+        if (
+            "strut"
+            in self.options["coupled_components"]
+            + self.options["additional_structural_components"]
+            + self.options["additional_aerodynamic_components"]
+        ):
+            self.options["has_strut"] = True
+        if self.options["has_vertical_strut"] and not self.options["has_strut"]:
+            raise (
+                ValueError(
+                    "Option 'has_strut' must be True or 'strut' in components lists to use option 'has_vertical_strut'"
+                )
+            )
+
         self.add_subsystem(
             "structure_mesh",
             StructureMesh(
@@ -81,16 +107,16 @@ class StaticSolver(om.Group):
         self.add_subsystem(
             "aerodynamic_mesh",
             AerodynamicMesh(
-                components=self.options["coupled_components"]
+                aerodynamic_components=self.options["coupled_components"]
                 + self.options["additional_aerodynamic_components"],
-                components_sections=self.options["aerodynamic_components_sections"],
+                aerodynamic_components_sections=self.options["aerodynamic_components_sections"],
             ),
             promotes=["*"],
         )
         self.add_subsystem(
             "displacement_transfer_matrices",
             TransferMatrices(
-                components=self.options["coupled_components"],
+                coupled_components=self.options["coupled_components"],
                 structural_components_sections=self.options["structural_components_sections"],
                 aerodynamic_components_sections=self.options["aerodynamic_components_sections"],
                 coupled_components_interpolations=self.options["coupled_components_interpolations"],
@@ -102,10 +128,8 @@ class StaticSolver(om.Group):
             "aerostructural_loop",
             _AerostructuralLoop(
                 coupled_components=self.options["coupled_components"],
-                additional_aerodynamic_components=self.options[
-                    "addditional_aerodynamic_components"
-                ],
-                additional_structural_components=self.options["addditional_structural_components"],
+                additional_aerodynamic_components=self.options["additional_aerodynamic_components"],
+                additional_structural_components=self.options["additional_structural_components"],
                 structural_components_sections=self.options["structural_components_sections"],
                 aerodynamic_components_sections=self.options["aerodynamic_components_sections"],
             ),
@@ -167,7 +191,7 @@ class _AerostructuralLoop(om.Group):
         self.add_subsystem(
             "Forces_transfer",
             ForcesTransfer(
-                components=self.options["coupled_components"],
+                coupled_components=self.options["coupled_components"],
                 structural_components_sections=self.options["structural_components_sections"],
             ),
             promotes=["*"],
@@ -184,11 +208,14 @@ class _AerostructuralLoop(om.Group):
 
         self.add_subsystem(
             "displacement_transfer",
-            DisplacementsTransfer(components=self.options["coupled_components"]),
+            DisplacementsTransfer(
+                coupled_components=self.options["coupled_components"],
+                aerodynamic_components_sections=self.options["aerodynamic_components_sections"],
+            ),
             promotes=["*"],
         )
 
         self.nonlinear_solver = om.NonlinearBlockGS(
-            maxiter=20, iprint=2, rtol=1e-4, atol=1e-8, use_aitken=True
+            maxiter=20, iprint=1, rtol=1e-4, atol=1e-8, use_aitken=True
         )
         self.linear_solver = om.DirectSolver()

@@ -14,11 +14,13 @@
 import numpy as np
 import openmdao.api as om
 
+from fastoad.models.aerostructure.mesh.structure_properties.beam_properties import Beam
+
 
 class StrutBeamProps(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("number_of_sections", types=int)
-        self.options.declare("has_vertical_strut", types=bool)
+        self.options.declare("has_vertical_strut", types=bool, default=False)
 
     def setup(self):
         n_secs = self.options["number_of_sections"]
@@ -28,7 +30,7 @@ class StrutBeamProps(om.ExplicitComponent):
         self.add_input("data:geometry:strut:thickness_ratio", val=np.nan, units="m")
         self.add_input("data:geometry:strut:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:strut:tip:chord", val=np.nan, units="m")
-        self.add_input("settings:geometry:strut:flange_ratio", val=0.1)
+        self.add_input("settings:geometry:strut:box_ratio", val=0.5)
         self.add_input("data:geometry:strut:root:flange_thickness", val=0.002, units="m")
         self.add_input("data:geometry:strut:root:web_thickness", val=0.002, units="m")
         self.add_input("data:geometry:strut:tip:flange_thickness", val=0.002, units="m")
@@ -55,30 +57,49 @@ class StrutBeamProps(om.ExplicitComponent):
         tip_flange_thickness = inputs["data:geometry:strut:tip:flange_thickness"]
         root_web_thickness = inputs["data:geometry:strut:root:web_thickness"]
         tip_web_thickness = inputs["data:geometry:strut:tip:web_thickness"]
-        k_flange = inputs["settings:geometry:strut:flange_ratio"]
+        box_ratio = inputs["settings:geometry:strut:box_ratio"]
 
         # Beam properties are computed with geometric values corresponding to the inner point
         # This choice is conservative from a mass point of view.
-        y_nodes = inputs["data:aerostructural:structure:strut:nodes"][:n_secs, 1]
+        if not self.options["has_vertical_strut"]:
+            y_nodes = inputs["data:aerostructural:structure:strut:nodes"][:n_secs, 1]
+        else:
+            y_nodes = inputs["data:aerostructural:structure:strut:nodes"][: n_secs + 1, 1]
 
         # Spar height
-        pbarl_dim1 = (
+        box_height = (
             thickness_ratio * root_chord
             + y_nodes * thickness_ratio * (tip_chord - root_chord) / tip_y
         )
 
         # Spar flanges width
-        pbarl_dim2 = k_flange * root_chord + y_nodes * k_flange * (tip_chord - root_chord) / tip_y
-        pbarl_dim3 = pbarl_dim2
+        box_chord = box_ratio * root_chord + y_nodes * box_ratio * (tip_chord - root_chord) / tip_y
 
         # Spar web thickness
-        pbarl_dim4 = root_web_thickness + y_nodes * (tip_web_thickness - root_web_thickness) / tip_y
+        web_thickness = (
+            root_web_thickness + y_nodes * (tip_web_thickness - root_web_thickness) / tip_y
+        )
 
         # Spar flanges thickness
-        pbarl_dim5 = (
+        flange_thickness = (
             root_flange_thickness + y_nodes * (tip_flange_thickness - root_flange_thickness) / tip_y
         )
-        pbarl_dim6 = pbarl_dim5
+        beam_box = Beam(
+            box_chord, box_height, flange_thickness, web_thickness, 0.0, 0.0, type="box"
+        )
+        beam_box.compute_section_properties()
+        a_beam = beam_box.a.reshape((n_secs, 1))
+        i1 = beam_box.i1.reshape((n_secs, 1))
+        i2 = beam_box.i2.reshape((n_secs, 1))
+        j = beam_box.j.reshape((n_secs, 1))
+        y1 = beam_box.y1.reshape((n_secs, 1))
+        y2 = beam_box.y2.reshape((n_secs, 1))
+        y3 = beam_box.y3.reshape((n_secs, 1))
+        y4 = beam_box.y4.reshape((n_secs, 1))
+        z1 = beam_box.z1.reshape((n_secs, 1))
+        z2 = beam_box.z2.reshape((n_secs, 1))
+        z3 = beam_box.z3.reshape((n_secs, 1))
+        z4 = beam_box.z4.reshape((n_secs, 1))
 
-        props = np.hstack(pbarl_dim1, pbarl_dim2, pbarl_dim3, pbarl_dim4, pbarl_dim5, pbarl_dim6)
-        outputs["data:aerostructural:structure:strut:beam_properties"] = np.tile(props)
+        props = np.hstack((a_beam, i1, i2, j, y1, z1, y2, z2, y3, z3, y4, z4))
+        outputs["data:aerostructural:structure:strut:beam_properties"] = np.tile(props, (2, 1))

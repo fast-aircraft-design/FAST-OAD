@@ -119,6 +119,31 @@
           </rear>
         </spar_ratio>
       </wing>
+      <strut>
+        <root>
+          <chord>2.0</chord>
+          <z>-3.5</z>
+          <leading_edge>
+            <x>
+              <from_wingMAC25>-2.0<!--X-position of leading edge of strut root chord w.r.t. leading edge of root chord--></from_wingMAC25>
+            </x>
+          </leading_edge>
+        </root>
+        <tip>
+          <chord>2.0</chord>
+          <y>8.784</y>
+          <z>0.0</z>
+          <leading_edge>
+            <x>
+              <local>3.488<!--X-position of leading edge at wing tip w.r.t. leading edge of root chord--></local>
+            </x>
+          </leading_edge>
+        </tip>
+        <spar_ratio>
+          <root>0.5</root>
+          <tip>0.5</tip>
+        </spar_ratio>
+      </strut>
     </geometry>
   </data>
 </FASTOAD_model>

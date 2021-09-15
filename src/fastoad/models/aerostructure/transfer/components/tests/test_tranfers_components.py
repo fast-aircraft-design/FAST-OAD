@@ -69,7 +69,14 @@ def test_transfer_matrix():
     ivc.add_output("data:aerostructural:aerodynamic:wing:nodes", val=n_a)
     comp = "wing"
     n_sects = 5
-    problem = run_system(ComponentMatrix(component=comp, number_of_sections=n_sects), ivc)
+    problem = run_system(
+        ComponentMatrix(
+            component=comp,
+            number_of_aerodynamic_sections=n_sects,
+            number_of_structural_sections=n_sects,
+        ),
+        ivc,
+    )
     t_mat = problem["data:aerostructural:transfer:wing:matrix"]
     for idx in range(n_sects):
         assert t_mat[idx * 3, idx * 6] == approx(1.0)
@@ -117,7 +124,14 @@ def test_transfer_matrix():
     ivc.add_output("data:aerostructural:aerodynamic:wing:nodes", val=n_a)
     comp = "wing"
     n_sects = 5
-    problem = run_system(ComponentMatrix(component=comp, number_of_sections=n_sects), ivc)
+    problem = run_system(
+        ComponentMatrix(
+            component=comp,
+            number_of_aerodynamic_sections=n_sects,
+            number_of_structural_sections=n_sects,
+        ),
+        ivc,
+    )
     t_mat = problem["data:aerostructural:transfer:wing:matrix"]
     for idx in range(1, n_sects + 1):
         assert t_mat[idx * 3, idx * 6] == approx(0.73333, abs=1e-5)

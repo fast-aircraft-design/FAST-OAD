@@ -15,21 +15,19 @@ Test module for aerostructural groups
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-import openmdao.api as om
-import numpy as np
 
+import numpy as np
 from pytest import approx
+
 from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
-
 from ..aerodynamic_nodes_htail import AerodynamicNodesHtail
-from ..aerodynamic_nodes_wing import AerodynamicNodesWing
 from ..aerodynamic_nodes_vtail import AerodynamicNodesVtail
-from ..aerodynamic_nodes_fuselage import AerodynamicNodesFuselage
-
-from ..structure_nodes_wing import StructureNodesWing
+from ..aerodynamic_nodes_wing import AerodynamicNodesWing
 from ..structure_nodes_htail import StructureNodesHtail
+from ..structure_nodes_strut import StructureNodesStrut
 from ..structure_nodes_vtail import StructureNodesVtail
+from ..structure_nodes_wing import StructureNodesWing
 
 
 def get_indep_var_comp(var_names):
@@ -61,10 +59,10 @@ def test_wing_nodes():
     problem = run_system(component, ivc)
     nodes = problem["data:aerostructural:aerodynamic:wing:nodes"]
 
-    assert nodes[0, 0] == approx(12.83803, abs=1e-5)
-    assert nodes[12, 0] == approx(20.81736, abs=1e-5)
-    assert (nodes[1, 1] - nodes[0, 1]) == approx(1.95994, abs=1e-5)
-    assert (nodes[5, 1] - nodes[4, 1]) == approx(1.31764, abs=1e-5)
+    assert nodes[0, 0] == approx(12.83803, abs=1e-4)
+    assert nodes[12, 0] == approx(20.81736, abs=1e-4)
+    assert (nodes[1, 1] - nodes[0, 1]) == approx(1.95994, abs=1e-4)
+    assert (nodes[5, 1] - nodes[4, 1]) == approx(1.31764, abs=1e-4)
 
 
 def test_htail_nodes():
@@ -83,9 +81,9 @@ def test_htail_nodes():
     problem = run_system(component, ivc)
     nodes = problem["data:aerostructural:aerodynamic:horizontal_tail:nodes"]
 
-    assert nodes[0, 0] == approx(31.60418, abs=1e-5)
-    assert nodes[12, 0] == approx(35.63968, abs=1e-5)
-    assert (nodes[5, 1] - nodes[4, 1]) == approx(0.51163, abs=1e-5)
+    assert nodes[0, 0] == approx(31.60418, abs=1e-4)
+    assert nodes[12, 0] == approx(35.63968, abs=1e-4)
+    assert (nodes[5, 1] - nodes[4, 1]) == approx(0.51163, abs=1e-4)
 
 
 def test_vtail_nodes():
@@ -104,10 +102,10 @@ def test_vtail_nodes():
     problem = run_system(component, ivc)
     nodes = problem["data:aerostructural:aerodynamic:vertical_tail:nodes"]
 
-    assert nodes[0, 0] == approx(29.41577, abs=1e-5)
-    assert nodes[-1, 0] == approx(35.31307, abs=1e-5)
-    assert nodes[5, 2] - nodes[4, 2] == approx(0.57510, abs=1e-5)
-    assert nodes[-1, 2] == approx(8.93118, abs=1e-5)
+    assert nodes[0, 0] == approx(29.41577, abs=1e-4)
+    assert nodes[-1, 0] == approx(35.31307, abs=1e-4)
+    assert nodes[5, 2] - nodes[4, 2] == approx(0.57510, abs=1e-4)
+    assert nodes[-1, 2] == approx(8.93118, abs=1e-4)
 
 
 def test_structure_wing_nodes():
@@ -133,18 +131,41 @@ def test_structure_wing_nodes():
         "data:geometry:wing:MAC:at25percent:x",
         "data:geometry:wing:MAC:length",
         "data:geometry:wing:MAC:leading_edge:x:local",
+        "data:geometry:strut:root:chord",
+        "data:geometry:strut:root:z",
+        "data:geometry:strut:root:leading_edge:x:from_wingMAC25",
+        "data:geometry:strut:spar_ratio:root",
+        "data:geometry:wing:tip:chord",
+        "data:geometry:strut:tip:leading_edge:x:local",
+        "data:geometry:strut:tip:y",
+        "data:geometry:strut:tip:z",
+        "data:geometry:strut:spar_ratio:tip",
     ]
 
+    # Without strut
     ivc = get_indep_var_comp(input_list)
-    problem = run_system(StructureNodesWing(number_of_sections=4), ivc)
+    problem = run_system(StructureNodesWing(number_of_sections=4, has_strut=False), ivc)
     assert problem["data:aerostructural:structure:wing:nodes"][:5, 1] == approx(
-        np.array([0.0, 1.95994, 7.0274095, 12.29797, 17.56852]), abs=1e-5
+        np.array([0.0, 1.95994, 7.0274095, 12.29797, 17.56852]), abs=1e-4
     )
     assert problem["data:aerostructural:structure:wing:nodes"][5:, 1] == approx(
-        np.array([-0.0, -1.95994, -7.0274095, -12.29797, -17.56852]), abs=1e-5
+        np.array([-0.0, -1.95994, -7.0274095, -12.29797, -17.56852]), abs=1e-4
     )
     assert problem["data:aerostructural:structure:wing:nodes"][:5, 0] == approx(
-        np.array([14.94685, 14.94685, 16.89139, 19.210949, 21.53049]), abs=1e-5
+        np.array([14.94685, 14.94685, 16.89139, 19.210949, 21.53049]), abs=1e-4
+    )
+
+    # With strut
+    ivc = get_indep_var_comp(input_list)
+    problem = run_system(StructureNodesWing(number_of_sections=4, has_strut=True), ivc)
+    assert problem["data:aerostructural:structure:wing:nodes"][:6, 1] == approx(
+        np.array([0.0, 1.95994, 7.0274095, 8.784, 12.29797, 17.56852]), abs=1e-4
+    )
+    assert problem["data:aerostructural:structure:wing:nodes"][6:, 1] == approx(
+        np.array([-0.0, -1.95994, -7.0274095, -8.784, -12.29797, -17.56852]), abs=1e-4
+    )
+    assert problem["data:aerostructural:structure:wing:nodes"][:6, 0] == approx(
+        np.array([14.94685, 14.94685, 16.89139, 17.6644, 19.210949, 21.53049]), abs=1e-4
     )
 
 
@@ -164,13 +185,13 @@ def test_structure_htail_nodes():
     ivc = get_indep_var_comp(input_list)
     problem = run_system(StructureNodesHtail(number_of_sections=4), ivc)
     assert problem["data:aerostructural:structure:horizontal_tail:nodes"][:5, 1] == approx(
-        np.array([0.0, 1.5349, 3.06980, 4.6047, 6.1396]), abs=1e-5
+        np.array([0.0, 1.5349, 3.06980, 4.6047, 6.1396]), abs=1e-4
     )
     assert problem["data:aerostructural:structure:horizontal_tail:nodes"][5:, 1] == approx(
-        np.array([-0.0, -1.5349, -3.06980, -4.6047, -6.1396]), abs=1e-5
+        np.array([-0.0, -1.5349, -3.06980, -4.6047, -6.1396]), abs=1e-4
     )
     assert problem["data:aerostructural:structure:horizontal_tail:nodes"][:5, 0] == approx(
-        np.array([34.59222, 35.21558, 35.83895, 36.46232, 37.08568]), abs=1e-5
+        np.array([34.59222, 35.21558, 35.83895, 36.46232, 37.08568]), abs=1e-4
     )
 
 
@@ -192,4 +213,38 @@ def test_structure_vtail_nodes():
     )
     assert problem["data:aerostructural:structure:vertical_tail:nodes"][:, 2] == approx(
         np.array([2.02994, 3.75525, 5.48056, 7.20587, 8.93118])
+    )
+
+
+def test_structure_strut_nodes():
+    input_list = [
+        "data:geometry:wing:MAC:at25percent:x",
+        "data:geometry:strut:root:chord",
+        "data:geometry:strut:root:z",
+        "data:geometry:strut:root:leading_edge:x:from_wingMAC25",
+        "data:geometry:strut:spar_ratio:root",
+        "data:geometry:strut:tip:chord",
+        "data:geometry:strut:tip:leading_edge:x:local",
+        "data:geometry:strut:tip:y",
+        "data:geometry:strut:tip:z",
+        "data:geometry:strut:spar_ratio:tip",
+    ]
+    ivc = get_indep_var_comp(input_list)
+    problem = run_system(StructureNodesStrut(number_of_sections=4), ivc)
+    strut_nodes_test = np.array(
+        [
+            [15.5, 0, -3.5],
+            [16.372, 2.196, -2.625],
+            [17.244, 4.392, -1.75],
+            [18.116, 6.588, -0.875],
+            [18.988, 8.784, -0.0],
+            [15.5, -0, -3.5],
+            [16.372, -2.196, -2.625],
+            [17.244, -4.392, -1.75],
+            [18.116, -6.588, -0.875],
+            [18.988, -8.784, -0.0],
+        ]
+    )
+    np.testing.assert_allclose(
+        problem["data:aerostructural:structure:strut:nodes"], strut_nodes_test, rtol=1e-3
     )

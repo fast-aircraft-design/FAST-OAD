@@ -26,7 +26,7 @@ class ComponentRotations(om.ExplicitComponent):
 
     def setup(self):
         comp = self.options["component"]
-        nb_sections = self.options["number_of_structural_sections"]
+        nb_sections = self.options["number_of_aerodynamic_sections"]
 
         self.add_input(
             "data:aerostructural:structure:" + comp + ":displacements",
@@ -40,10 +40,15 @@ class ComponentRotations(om.ExplicitComponent):
             "data:aerostructural:structure:" + comp + ":nodes", val=np.nan, shape_by_conn=True
         )
 
+        if comp in ["wing", "horizontal_tail", "strut"]:
+            shape_dtwist = (nb_sections + 1) * 2
+        else:
+            shape_dtwist = nb_sections + 1
+
         self.add_output(
             "data:aerostructural:aerodynamic:" + comp + ":d_twist",
             units="rad",
-            shape=nb_sections,
+            shape=shape_dtwist,
             val=0.0,
         )
 
@@ -57,11 +62,11 @@ class ComponentRotations(om.ExplicitComponent):
         struct_nodes_z = inputs["data:aerostructural:structure:" + comp + ":nodes"][:, 2]
 
         if comp in ["wing", "horizontal_tail", "strut"]:
-            interp_rotatation = interp1d(struct_nodes_y, rotations[:, 0])
-            dtwist = interp_rotatation(aero_nodes_y)
+            interp_rotation = interp1d(struct_nodes_y, rotations[:, 0])
+            dtwist = interp_rotation(aero_nodes_y)
 
         if comp in ["vertical_tail"]:
-            interp_rotatation = interp1d(struct_nodes_z, rotations[:, 1])
-            dtwist = interp_rotatation(aero_nodes_z)
+            interp_rotation = interp1d(struct_nodes_z, rotations[:, 1])
+            dtwist = interp_rotation(aero_nodes_z)
 
         outputs["data:aerostructural:aerodynamic:" + comp + ":d_twist"] = dtwist

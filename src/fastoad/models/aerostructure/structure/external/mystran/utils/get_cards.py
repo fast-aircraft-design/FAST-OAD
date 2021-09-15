@@ -13,6 +13,8 @@
 
 import numpy as np
 
+from .constant import basis_id
+
 
 def convert_8digit_nastran(value):
     if isinstance(value, (np.ndarray, list)) and len(value) == 1:
@@ -71,13 +73,13 @@ def get_nodes_cards(comp_name, nodes, id_basis):
     return strg
 
 
-def get_props_cards(comp_name, props, id_basis):
+def get_props_cards(comp_name, props, id_basis, vertical_strut=False):
     strg = ["$$ Beams definition and properties:  \n"]
     for i in range(np.size(props, axis=0)):
         b_ids = convert_8digit_nastran(id_basis + i + 1000)
         p_ids = convert_8digit_nastran(id_basis + i + 11000)
         p_mat = convert_8digit_nastran(id_basis + 111000)
-        if comp_name == "wing" or comp_name == "horizontal_tail" or comp_name == "strut":
+        if comp_name in ["wing", "horizontal_tail", "strut"]:
             if i < np.size(props, axis=0) / 2:
                 id1 = convert_8digit_nastran(id_basis + i)
                 id2 = convert_8digit_nastran(id_basis + i + 1)
@@ -92,6 +94,14 @@ def get_props_cards(comp_name, props, id_basis):
             v_2 = convert_8digit_nastran(0.0)
             v_3 = convert_8digit_nastran(1.0)
         else:
+            v_1 = convert_8digit_nastran(0.0)
+            v_2 = convert_8digit_nastran(1.0)
+            v_3 = convert_8digit_nastran(0.0)
+        if (
+            comp_name == "strut"
+            and vertical_strut
+            and i in [np.size(props, axis=0) / 2 - 1, np.size(props, axis=0) - 1]
+        ):
             v_1 = convert_8digit_nastran(0.0)
             v_2 = convert_8digit_nastran(1.0)
             v_3 = convert_8digit_nastran(0.0)
@@ -198,52 +208,31 @@ def get_spc_cards(spc_id, dof, id_basis):
     return strg
 
 
-def get_rbe_cards(component_name, master_name, master_nodes, slave_nodes, loc_cg):
+def get_rbe_cards(component_name, ref_name, ref_nodes, dependent_nodes, loc_cg):
     strg = []
-    if master_name == "fuselage":
-        ids = np.arange(0, np.size(master_nodes, axis=0)) + 2000000
+    if ref_name == "fuselage":
+        ids = np.arange(0, np.size(ref_nodes, axis=0)) + basis_id["fuselage"]
         if component_name != "fuselage":
-            dist = slave_nodes[0, 0] - master_nodes[:, 0]
+            dist = dependent_nodes[0, 0] - ref_nodes[:, 0]
         else:
-            dist = master_nodes[:, 0] - loc_cg
-    if master_name == "wing" and component_name == "strut":
-        ids = np.arange(0, np.size(master_nodes, axis=0), dtype=int) + 1000000
-        dist = slave_nodes[-1, 1] - master_nodes[:, 1]
-    ind_sup = np.where(dist >= 0)
-    ind_inf = np.where(dist <= 0)
-    ind_min = np.where(dist[ind_sup] == np.min(dist[ind_sup]))
-    ind_max = np.where(dist[ind_inf] == np.max(dist[ind_inf]))
-    sew_id1 = convert_8digit_nastran(ids[ind_sup][ind_min][0])
-    sew_id2 = convert_8digit_nastran(ids[ind_inf][ind_max][0])
-    d_1 = dist[ind_sup][ind_min][0]
-    d_2 = abs(dist[ind_inf][ind_max][0])
-    if d_1 < d_2:
-        sew_id = sew_id1
-    else:
-        sew_id = sew_id2
+            dist = ref_nodes[:, 0] - loc_cg
+    if ref_name == "wing" and component_name == "strut":
+        ids = np.arange(0, np.size(ref_nodes, axis=0), dtype=int) + basis_id["wing"]
+        id_connect_right = np.where(ref_nodes[:, 1] == -dependent_nodes[-1, 1])
+        id_connect_left = np.where(ref_nodes[:, 1] == dependent_nodes[-1, 1])
+    id_independent1 = convert_8digit_nastran(ids[id_connect_right][0])
+    id_independent2 = convert_8digit_nastran(ids[id_connect_left][0])
 
-    if component_name == "wing" and master_name != "wing":
-        strg.append("\n$$ sewing fuselage / wings \n")
-        strg.append("RBE2,91000001," + sew_id + ",123456,1000000 \n")
-
-    if component_name == "horizontal_tail":
-        strg.append("RBE2,93000001," + sew_id + ",123456,3000000 \n")
-        strg.append("\n$$ sewing fuselage / htails \n")
-
-    if component_name == "vertical_tail":
-        strg.append("\n$$ sewing fuselage / vtails \n")
-        strg.append("RBE2,94000001," + sew_id + ",123456,4000000 \n")
-
-    if component_name == "strut" and master_name == "fuselage":
+    if component_name == "strut" and ref_name == "wing":
+        id_dependent1 = int(basis_id["strut"] + np.size(dependent_nodes, axis=0) / 2 - 1)
+        id_dependent2 = int(basis_id["strut"] + np.size(dependent_nodes, axis=0) - 1)
         strg.append("\n$$ sewing fuselage / strut \n")
-        strg.append("RBE2,95000001," + sew_id + ",123456,5000000 \n")
-    if component_name == "strut" and master_name == "wing":
-        id_slave1 = int(5000000 + np.size(slave_nodes, axis=0) / 2)
-        id_slave2 = int(5000000 + np.size(slave_nodes, axis=0))
-        sew_id1 = int(sew_id - np.size(master_nodes, axis=0) / 2)
-        strg.append("\n$$ sewing fuselage / strut \n")
-        strg.append("RBE2,95000002," + sew_id1 + ",123456," + id_slave1 + " \n")
-        strg.append("RBE2,95000003," + sew_id + ",123456," + id_slave2 + " \n")
+        strg.append(
+            "RBE2,95000002," + str(id_independent1) + ",123456," + str(id_dependent1) + " \n"
+        )
+        strg.append(
+            "RBE2,95000003," + str(id_independent2) + ",123456," + str(id_dependent2) + " \n"
+        )
 
     return strg
 

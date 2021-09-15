@@ -29,14 +29,14 @@ class DisplacementsTransfer(om.Group):
         comps = self.options["coupled_components"]
         aerodynamic_sections = self.options["aerodynamic_components_sections"]
 
-        for aero_sections, comp in zip(comps, aerodynamic_sections):
+        for aero_sections, comp in zip(aerodynamic_sections, comps):
             self.add_subsystem(
-                comp + "Displacements_Transfer",
+                comp + "_Displacements_Transfer",
                 ComponentDisplacements(component=comp),
                 promotes=["*"],
             )
             self.add_subsystem(
-                comp + "Rotations_Transfer",
+                comp + "_Rotations_Transfer",
                 ComponentRotations(component=comp, number_of_aerodynamic_sections=aero_sections),
                 promotes=["*"],
             )

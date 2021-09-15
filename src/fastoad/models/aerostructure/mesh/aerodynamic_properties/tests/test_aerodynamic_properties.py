@@ -14,21 +14,21 @@ Test module for aerodynamic sections properties (chords, twist, t/c)
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import os.path as pth
 
-from ...nodes.aerodynamic_nodes_htail import AerodynamicNodesHtail
-from ...nodes.aerodynamic_nodes_wing import AerodynamicNodesWing
-from ...nodes.aerodynamic_nodes_vtail import AerodynamicNodesVtail
+import openmdao.api as om
+from pytest import approx
+
+from fastoad.io import VariableIO
+from tests.testing_utilities import run_system
 from ..aerodynamic_chords_htail import AerodynamicChordsHtail
 from ..aerodynamic_chords_vtail import AerodynamicChordsVtail
 from ..aerodynamic_chords_wing import AerodynamicChordsWing
-from ..aerodynamic_twist_wing import AerodynamicTwistWing
 from ..aerodynamic_thickness_ratios_wing import AerodynamicThicknessRatiosWing
-from fastoad.io import VariableIO
-from tests.testing_utilities import run_system
-
-from pytest import approx
+from ..aerodynamic_twist_wing import AerodynamicTwistWing
+from ...nodes.aerodynamic_nodes_htail import AerodynamicNodesHtail
+from ...nodes.aerodynamic_nodes_vtail import AerodynamicNodesVtail
+from ...nodes.aerodynamic_nodes_wing import AerodynamicNodesWing
 
 
 def get_indep_var_comp(var_names):
@@ -157,7 +157,7 @@ def test_wing_twist():
     problem = run_system(group, ivc)
     twist = problem["data:aerostructural:aerodynamic:wing:twist"]
 
-    assert twist[0] == approx(3.5, abs=1e-5)  # Check root twist
+    assert twist[1] == approx(3.5, abs=1e-5)  # Check root twist
     assert twist[2] == approx(2.5, abs=1e-5)  # Check intermediate inner twist
     assert twist[4] == approx(0.5, abs=1e-5)  # Check kink twist
     assert twist[10] == approx(0.35, abs=1e-5)  # Check intermediate outer twist
@@ -195,7 +195,7 @@ def test_wing_thickness_ratio():
     problem = run_system(group, ivc)
     t_c = problem["data:aerostructural:aerodynamic:wing:thickness_ratios"]
 
-    assert t_c[0] == approx(0.15921, abs=1e-5)  # Check root twist
+    assert t_c[1] == approx(0.15921, abs=1e-5)  # Check root twist
     assert t_c[2] == approx(0.14637, abs=1e-5)  # Check intermediate inner twist
     assert t_c[4] == approx(0.12069, abs=1e-5)  # Check kink twist
     assert t_c[10] == approx(0.11299, abs=1e-5)  # Check intermediate outer twist
