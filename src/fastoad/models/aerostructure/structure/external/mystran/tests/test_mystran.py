@@ -13,12 +13,17 @@
 
 
 import os.path as pth
+from platform import system
 
 import numpy as np
+import pytest
 
 from fastoad.io import VariableIO
+from tests.mystran_exe.get_mystran import get_mystran_path
 from tests.testing_utilities import run_system
 from ..mystran_static import MystranStatic
+
+MYSTRAN_PATH = None if system() == "Windows" else get_mystran_path()
 
 
 def get_indep_var_comp(var_names):
@@ -29,6 +34,9 @@ def get_indep_var_comp(var_names):
     return ivc
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and MYSTRAN_PATH is None, reason="No MYSTRAN executable available"
+)
 def test_simple_wing():
     input_list = [
         "data:aerostructural:structure:wing:nodes",
@@ -56,6 +64,9 @@ def test_simple_wing():
     )
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and MYSTRAN_PATH is None, reason="No MYSTRAN executable available"
+)
 def test_strut_braced_wing():
     input_list = [
         "data:geometry:wing:MAC:at25percent:x",
@@ -209,6 +220,9 @@ def test_strut_braced_wing():
     )
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and MYSTRAN_PATH is None, reason="No MYSTRAN executable available"
+)
 def test_complete_aircraft():
     input_list = [
         "data:geometry:wing:MAC:at25percent:x",
@@ -395,6 +409,9 @@ def test_complete_aircraft():
     )
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and MYSTRAN_PATH is None, reason="No MYSTRAN executable available"
+)
 def test_complete_aircraft_vertical_strut():
     input_list = [
         "data:geometry:wing:MAC:at25percent:x",

@@ -31,7 +31,7 @@ def get_indep_var_comp(var_names):
     return ivc
 
 
-@pytest.mark.skipif(system() != "Windows", reason="No AVL executable available")
+@pytest.mark.skipif(system() != "Windows", reason="No AVL nor MYSTRAN executable available")
 def test_aerostructure():
     input_list = [
         "data:geometry:wing:MAC:length",
