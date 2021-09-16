@@ -382,6 +382,9 @@ class VariableList(list):
               in other_var_list
             - if not, Variable instance from other_var_list will be added only if
               add_variables==True
+            - The Variable instance description property is replaced by the property of the
+              the Variable instance in other_var_list if this latter is not empty.
+            - Otherwise, the description property is kept from the current Variable instance.
 
         :param other_var_list: source for new Variable data
         :param add_variables: if True, unknown variables are also added
