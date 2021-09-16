@@ -379,12 +379,10 @@ class VariableList(list):
 
         For each Variable instance in other_var_list:
             - if a Variable instance with same name exists, it is replaced by the one
-              in other_var_list
+              in other_var_list (special case: if one in other_var_list has an empty description,
+              the original description is kept)
             - if not, Variable instance from other_var_list will be added only if
               add_variables==True
-            - The Variable instance description property is replaced by the property of the
-              the Variable instance in other_var_list if this latter is not empty.
-            - Otherwise, the description property is kept from the current Variable instance.
 
         :param other_var_list: source for new Variable data
         :param add_variables: if True, unknown variables are also added
@@ -737,7 +735,9 @@ class VariableList(list):
         # other.
         processed_prom_names = []
 
-        io_metadata = model.get_io_metadata(metadata_keys=["val", "units", "desc"], return_rel_names=False)
+        io_metadata = model.get_io_metadata(
+            metadata_keys=["val", "units", "desc"], return_rel_names=False
+        )
 
         def _add_outputs(unconnected_names):
             """ Fills ivc with data associated to each provided var"""
