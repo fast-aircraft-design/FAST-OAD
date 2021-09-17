@@ -19,7 +19,7 @@ import os.path as pth
 import sys
 import textwrap as tw
 from time import time
-from typing import IO, Union
+from typing import IO, Union, List
 
 import openmdao.api as om
 from IPython import InteractiveShell
@@ -196,7 +196,7 @@ def list_variables(
 
 
 def list_modules(
-    source_path: str = None,
+    source_path: Union[List[str], str] = None,
     out: Union[IO, str] = None,
     overwrite: bool = False,
     verbose: bool = False,
