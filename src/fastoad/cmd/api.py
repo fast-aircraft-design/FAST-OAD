@@ -221,20 +221,24 @@ def list_modules(
     if out is None:
         out = sys.stdout
 
-    if source_path:
-        if isinstance(source_path, str) and pth.isfile(source_path):
+    if isinstance(source_path, str):
+        if pth.isfile(source_path):
             conf = FASTOADProblemConfigurator(source_path)
             conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
             # As the problem has been configured,
             # BundleLoader now knows additional registered systems
-        elif isinstance(source_path, str) and pth.isdir(source_path):
+        elif pth.isdir(source_path):
             RegisterOpenMDAOSystem.explore_folder(source_path)
-        elif any(pth.isdir(x) for x in source_path):
-            for folder_path in source_path:
-                if not pth.exists(folder_path):
-                    _LOGGER.warning("SKIPPED %s: it does not exist.", folder_path)
-                else:
-                    RegisterOpenMDAOSystem.explore_folder(folder_path)
+        else:
+            raise FileNotFoundError("Could not find %s" % source_path)
+    elif isinstance(source_path, list):
+        for folder_path in source_path:
+            if not pth.isdir(folder_path):
+                _LOGGER.warning("SKIPPED %s: folder does not exist.", folder_path)
+            else:
+                RegisterOpenMDAOSystem.explore_folder(folder_path)
+    elif source_path is not None:
+        raise RuntimeError("Unexpected type for source_path")
 
     if verbose:
         cell_list = _get_detailed_system_list()
