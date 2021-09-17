@@ -215,7 +215,7 @@
                     0.319732377799903<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>
                 <sweep_25 units="deg" is_input="True">
                     24.54<!--sweep angle at 25% chord of wing--></sweep_25>
-                <taper_ratio is_input="True">0.313<!--taper ratio of wing--></taper_ratio>
+                <virtual_taper_ratio is_input="True">0.313<!--taper ratio of wing computed from virtual chord--></virtual_taper_ratio>
                 <thickness_ratio is_input="False">
                     0.12839840880979247<!--mean thickness ratio of wing--></thickness_ratio>
                 <wetted_area units="m**2" is_input="False">
