@@ -447,7 +447,7 @@ def test_geometry_wing_l1_l4(input_xml):
         "data:geometry:wing:kink:y",
         "data:geometry:wing:span",
         "data:geometry:fuselage:maximum_width",
-        "data:geometry:wing:taper_ratio",
+        "data:geometry:wing:virtual_taper_ratio",
         "data:geometry:wing:sweep_25",
     ]
 
@@ -469,7 +469,7 @@ def test_geometry_wing_l2_l3(input_xml):
     input_list = [
         "data:geometry:wing:span",
         "data:geometry:fuselage:maximum_width",
-        "data:geometry:wing:taper_ratio",
+        "data:geometry:wing:virtual_taper_ratio",
         "data:geometry:wing:sweep_25",
         "data:geometry:wing:root:virtual_chord",
         "data:geometry:wing:tip:chord",
@@ -488,6 +488,8 @@ def test_geometry_wing_l2_l3(input_xml):
     assert wing_l2 == pytest.approx(6.26, abs=1e-2)
     wing_l3 = problem["data:geometry:wing:kink:chord"]
     assert wing_l3 == pytest.approx(3.985, abs=1e-3)
+    taper_ratio = problem["data:geometry:wing:taper_ratio"]
+    assert taper_ratio == pytest.approx(0.301, abs=1e-3)
 
 
 def test_geometry_wing_mac(input_xml):
