@@ -32,11 +32,12 @@ class ComputeL2AndL3Wing(ExplicitComponent):
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:virtual_taper_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
 
         self.add_output("data:geometry:wing:root:chord", units="m")
         self.add_output("data:geometry:wing:kink:chord", units="m")
+        self.add_output("data:geometry:wing:taper_ratio")
 
     def setup_partials(self):
         self.declare_partials(
@@ -45,7 +46,7 @@ class ComputeL2AndL3Wing(ExplicitComponent):
                 "data:geometry:wing:root:virtual_chord",
                 "data:geometry:wing:root:y",
                 "data:geometry:wing:kink:y",
-                "data:geometry:wing:taper_ratio",
+                "data:geometry:wing:virtual_taper_ratio",
                 "data:geometry:wing:span",
                 "data:geometry:fuselage:maximum_width",
                 "data:geometry:wing:sweep_25",
@@ -72,15 +73,16 @@ class ComputeL2AndL3Wing(ExplicitComponent):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         span = inputs["data:geometry:wing:span"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
-        taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+        virtual_taper_ratio = inputs["data:geometry:wing:virtual_taper_ratio"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
 
         l2_wing = l1_wing + (y3_wing - y2_wing) * (
             math.tan(sweep_25 / 180.0 * math.pi)
-            - 3.0 / 2.0 * (1.0 - taper_ratio) / (span - width_max) * l1_wing
+            - 3.0 / 2.0 * (1.0 - virtual_taper_ratio) / (span - width_max) * l1_wing
         )
 
         l3_wing = l4_wing + (l1_wing - l4_wing) * (y4_wing - y3_wing) / (y4_wing - y2_wing)
 
         outputs["data:geometry:wing:root:chord"] = l2_wing
         outputs["data:geometry:wing:kink:chord"] = l3_wing
+        outputs["data:geometry:wing:taper_ratio"] = l4_wing / l2_wing
