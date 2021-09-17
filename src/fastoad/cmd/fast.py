@@ -276,7 +276,7 @@ class Main:
         )
         parser_list_modules.add_argument(
             "source_path",
-            nargs="?",
+            nargs="*",
             default=None,
             help="either a configuration file path, folder path, or list of folder path",
         )
