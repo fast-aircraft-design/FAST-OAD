@@ -19,7 +19,7 @@ import os.path as pth
 import sys
 import textwrap as tw
 from time import time
-from typing import IO, Union
+from typing import IO, Union, List
 
 import openmdao.api as om
 from IPython import InteractiveShell
@@ -196,7 +196,7 @@ def list_variables(
 
 
 def list_modules(
-    configuration_file_path: str = None,
+    source_path: Union[List[str], str] = None,
     out: Union[IO, str] = None,
     overwrite: bool = False,
     verbose: bool = False,
@@ -204,10 +204,10 @@ def list_modules(
 ):
     """
     Writes list of available systems.
-    If configuration_file_path is given and if it defines paths where there are registered systems,
+    If source_path is given and if it defines paths where there are registered systems,
     they will be listed too.
 
-    :param configuration_file_path:
+    :param source_path: either a configuration file path, folder path, or list of folder path
     :param out: the output stream or a path for the output file (None means sys.stdout)
     :param overwrite: if True and out is a file path, the file will be written even if one already
                       exists
@@ -221,10 +221,24 @@ def list_modules(
     if out is None:
         out = sys.stdout
 
-    if configuration_file_path:
-        conf = FASTOADProblemConfigurator(configuration_file_path)
-        conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
-    # As the problem has been configured, BundleLoader now knows additional registered systems
+    if isinstance(source_path, str):
+        if pth.isfile(source_path):
+            conf = FASTOADProblemConfigurator(source_path)
+            conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
+            # As the problem has been configured,
+            # BundleLoader now knows additional registered systems
+        elif pth.isdir(source_path):
+            RegisterOpenMDAOSystem.explore_folder(source_path)
+        else:
+            raise FileNotFoundError("Could not find %s" % source_path)
+    elif isinstance(source_path, list):
+        for folder_path in source_path:
+            if not pth.isdir(folder_path):
+                _LOGGER.warning("SKIPPED %s: folder does not exist.", folder_path)
+            else:
+                RegisterOpenMDAOSystem.explore_folder(folder_path)
+    elif source_path is not None:
+        raise RuntimeError("Unexpected type for source_path")
 
     if verbose:
         cell_list = _get_detailed_system_list()

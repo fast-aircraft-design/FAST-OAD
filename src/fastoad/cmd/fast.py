@@ -80,7 +80,7 @@ class Main:
     def _list_modules(args):
         """Prints list of system identifiers."""
         api.list_modules(
-            args.conf_file, out=args.out_file, overwrite=args.force, verbose=args.verbose
+            args.source_path, out=args.out_file, overwrite=args.force, verbose=args.verbose
         )
         print("\nDone. Use --verbose (-v) option for detailed information.")
 
@@ -266,7 +266,6 @@ class Main:
             help="Provides the identifiers of available systems",
             description="Provides the identifiers of available systems",
         )
-        self._add_conf_file_argument(parser_list_modules, required=False)
         self._add_output_file_argument(parser_list_modules)
         self._add_overwrite_argument(parser_list_modules)
         parser_list_modules.add_argument(
@@ -274,6 +273,12 @@ class Main:
             "--verbose",
             action="store_true",
             help="shows detailed information for each system",
+        )
+        parser_list_modules.add_argument(
+            "source_path",
+            nargs="*",
+            default=None,
+            help="either a configuration file path, folder path, or list of folder path",
         )
         parser_list_modules.set_defaults(func=self._list_modules)
 
