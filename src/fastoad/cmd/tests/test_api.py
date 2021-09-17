@@ -81,6 +81,15 @@ def test_generate_inputs(cleanup):
     assert len(data) == 2
     assert "x" in data.names() and "z" in data.names()
 
+    # We test without source file to see if variable description in "desc" kwargs
+    # is captured (issue #319)
+    input_file_path = api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=True)
+    assert input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
+    assert pth.exists(input_file_path)
+    data = DataFile(input_file_path)
+    assert len(data) == 2
+    assert "x" in data.names() and "z" in data.names()
+
 
 def test_list_modules(cleanup):
     # Run with stdout output (no test)

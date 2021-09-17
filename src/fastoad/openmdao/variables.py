@@ -14,6 +14,7 @@ Module for managing OpenMDAO variables
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import itertools
 import logging
 import os.path as pth
 from builtins import isinstance
@@ -268,8 +269,7 @@ class Variable(Hashable):
 
     @property
     def is_input(self):
-        """
-        I/O status of the variable.
+        """I/O status of the variable.
 
         - True if variable is a problem input
         - False if it is an output
@@ -379,7 +379,8 @@ class VariableList(list):
 
         For each Variable instance in other_var_list:
             - if a Variable instance with same name exists, it is replaced by the one
-              in other_var_list
+              in other_var_list (special case: if one in other_var_list has an empty description,
+              the original description is kept)
             - if not, Variable instance from other_var_list will be added only if
               add_variables==True
 
@@ -389,6 +390,11 @@ class VariableList(list):
 
         for var in other_var_list:
             if add_variables or var.name in self.names():
+                # To avoid to lose variables description when the variable list is updated with a
+                # list without descriptions (issue # 319)
+                if var.name in self.names():
+                    if self[var.name].description and not var.description:
+                        var.description = self[var.name].description
                 self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:
@@ -624,9 +630,7 @@ class VariableList(list):
         else:
             # Remove from inputs the variables that are outputs of some other component
             promoted_inputs = {
-                metadata["prom_name"]: dict(metadata, is_input=True)
-                for metadata in inputs.values()
-                # if metadata["prom_name"] not in promoted_outputs
+                metadata["prom_name"]: dict(metadata, is_input=True) for metadata in inputs.values()
             }
 
             promoted_outputs = {}
@@ -665,6 +669,18 @@ class VariableList(list):
 
             final_inputs = promoted_inputs
             final_outputs = promoted_outputs
+
+            # When variables are promoted, we may have retained a definition of the variable
+            # that does not have any description, whereas a description is available in
+            # another related definition (issue #319).
+            # Therefore, we iterate again through original variable definitions to find
+            # possible descriptions.
+            for metadata in itertools.chain(inputs.values(), outputs.values()):
+                prom_name = metadata["prom_name"]
+                if metadata["desc"]:
+                    for final in final_inputs, final_outputs:
+                        if prom_name in final and not final[prom_name]["desc"]:
+                            final[prom_name]["desc"] = metadata["desc"]
 
         # Conversion to VariableList instances
         input_vars = VariableList.from_dict(final_inputs)
@@ -719,7 +735,9 @@ class VariableList(list):
         # other.
         processed_prom_names = []
 
-        io_metadata = model.get_io_metadata(metadata_keys=["val", "units"], return_rel_names=False)
+        io_metadata = model.get_io_metadata(
+            metadata_keys=["val", "units", "desc"], return_rel_names=False
+        )
 
         def _add_outputs(unconnected_names):
             """ Fills ivc with data associated to each provided var"""
@@ -730,6 +748,8 @@ class VariableList(list):
                     metadata = deepcopy(io_metadata[abs_name])
                     metadata.update({"is_input": True})
                     variables[prom_name] = metadata
+                elif not variables[prom_name].description and io_metadata[abs_name]["desc"]:
+                    variables[prom_name].description = io_metadata[abs_name]["desc"]
 
         _add_outputs(mandatory_unconnected)
         if with_optional_inputs:
