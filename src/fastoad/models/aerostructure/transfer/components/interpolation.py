@@ -82,11 +82,8 @@ class InterpolationMatrix:
         sym = _symmetry_test(nodes1)
         for i, n1 in enumerate(nodes1):
             if sym and i >= np.size(nodes1, axis=0) / 2:
-                idx, clst = (
-                    find_closest(n1, nodes2[int(np.size(nodes1, axis=0) / 2) :, :])[0]
-                    + int(np.size(nodes1, axis=0) / 2),
-                    find_closest(n1, nodes2[int(np.size(nodes1, axis=0) / 2) :, :])[1],
-                )
+                idx, clst = find_closest(n1, nodes2[int(np.size(nodes2, axis=0) / 2) :, :],)
+                idx += int(np.size(nodes2, axis=0) / 2)
             else:
                 idx, clst = find_closest(n1, nodes2)
             n21 = clst[0]
@@ -102,10 +99,10 @@ class InterpolationMatrix:
             proj_mat = np.hstack((np.identity(6) * (1 - k_p), np.identity(6) * k_p))
             rot_mat = np.hstack((np.identity(3), np.cross(np.identity(3), d_p)))
 
-            linear_mat[3 * i : 3 * i + 3, 6 * idx[0] : 6 * idx[0] + 6] = np.dot(rot_mat, proj_mat)[
+            linear_mat[3 * i : 3 * i + 3, 6 * idx[0] : 6 * idx[0] + 6] += np.dot(rot_mat, proj_mat)[
                 :, :6
             ]
-            linear_mat[3 * i : 3 * i + 3, 6 * idx[1] : 6 * idx[1] + 6] = np.dot(rot_mat, proj_mat)[
+            linear_mat[3 * i : 3 * i + 3, 6 * idx[1] : 6 * idx[1] + 6] += np.dot(rot_mat, proj_mat)[
                 :, 6:
             ]
         return linear_mat

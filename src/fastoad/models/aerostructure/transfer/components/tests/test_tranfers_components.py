@@ -151,6 +151,68 @@ def test_transfer_matrix():
             assert t_mat[(idx + 1) * 3 + 2, idx * 6 + 4] == approx(-0.42666, abs=1e-5)
 
 
+def test_transfer_matrix_no_equal_sections():
+    ivc = om.IndepVarComp()
+
+    #  Rectangular wing
+    n_s = np.array(
+        [
+            [16.0, 0.0, 0.0],
+            [16.0, 2.0, 0.0],
+            [16.0, 5.0, 0.0],
+            [16.0, 8.0, 0.0],
+            [16.0, 11.0, 0.0],
+            [16.0, 14.0, 0.0],
+            [16.0, 17.0, 0.0],
+            [16.0, 0.0, 0.0],
+            [16.0, -2.0, 0.0],
+            [16.0, -5.0, 0.0],
+            [16.0, -8.0, 0.0],
+            [16.0, -11.0, 0.0],
+            [16.0, -14.0, 0.0],
+            [16.0, -17.0, 0.0],
+        ]
+    )
+    n_a = np.array(
+        [
+            [14.0, 0.0, 0.0],
+            [14.0, 2.0, 0.0],
+            [14.0, 3.5, 0.0],
+            [14.0, 5.0, 0.0],
+            [14.0, 6.5, 0.0],
+            [14.0, 8.0, 0.0],
+            [14.0, 9.5, 0.0],
+            [14.0, 11.0, 0.0],
+            [14.0, 12.5, 0.0],
+            [14.0, 14.0, 0.0],
+            [14.0, 15.5, 0.0],
+            [14.0, 17.0, 0.0],
+            [14.0, 0.0, 0.0],
+            [14.0, -2.0, 0.0],
+            [14.0, -3.5, 0.0],
+            [14.0, -5.0, 0.0],
+            [14.0, -6.5, 0.0],
+            [14.0, -8.0, 0.0],
+            [14.0, -9.5, 0.0],
+            [14.0, -11.0, 0.0],
+            [14.0, -12.5, 0.0],
+            [14.0, -14.0, 0.0],
+            [14.0, -15.5, 0.0],
+            [14.0, -17.0, 0.0],
+        ]
+    )
+    ivc.add_output("data:aerostructural:structure:wing:nodes", val=n_s)
+    ivc.add_output("data:aerostructural:aerodynamic:wing:nodes", val=n_a)
+    comp = "wing"
+    problem = run_system(
+        ComponentMatrix(
+            component=comp, number_of_aerodynamic_sections=11, number_of_structural_sections=6,
+        ),
+        ivc,
+    )
+    t_mat = problem["data:aerostructural:transfer:wing:matrix"]
+
+
 def test_displacement_transfer():
     """
     Test displacements transfer from structure to aerodynamic at component level

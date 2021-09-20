@@ -83,8 +83,10 @@ class ComponentForces(om.ExplicitComponent):
                 (struct_forces_right, struct_forces_left)
             )
             # outputs[
-            #     "data:aerostructural:structure:" + comp + ":forces"
-            # ] = self._transpose_forces_moments(struct_nodes, aero_nodes, aero_forces, x_ref, sym_comp=True)
+            #     "data:aerostructural:structure:" + comp + ":forces_alternative"
+            # ] = self._transpose_forces_moments(
+            #     struct_nodes, aero_nodes, aero_forces, x_ref, sym_comp=True
+            # )
         else:
             pressure_centers = _compute_pressure_centers(
                 aero_nodes, aero_forces, x_ref, sym_comp=False
@@ -94,8 +96,10 @@ class ComponentForces(om.ExplicitComponent):
             )
             outputs["data:aerostructural:structure:" + comp + ":forces"] = struct_forces
             # outputs[
-            #     "data:aerostructural:structure:" + comp + ":forces"
-            # ] = self._transpose_forces_moments(struct_nodes, aero_nodes, aero_forces, x_ref, sym_comp=False)
+            #     "data:aerostructural:structure:" + comp + ":forces_alternative"
+            # ] = self._transpose_forces_moments(
+            #     struct_nodes, aero_nodes, aero_forces, x_ref, sym_comp=False
+            # )
 
     @staticmethod
     def _transpose_forces_moments(n_s, n_a, f_a, x_ref, sym_comp=False):
@@ -130,9 +134,7 @@ class ComponentForces(om.ExplicitComponent):
             idx_nn = nearest_sets[idx]
             f_s[idx, :3] = np.sum(aero_forces[idx_nn, :3], axis=0)
             lever_arms = aero_nodes[idx_nn] - n_strut
-            f_s[idx, 3:] = np.sum(
-                np.cross(lever_arms, aero_forces[idx_nn, :3]) + aero_forces[idx_nn, 3:], axis=0
-            )
+            f_s[idx, 3:] = np.sum(np.cross(lever_arms, aero_forces[idx_nn, :3]), axis=0)
         return f_s
 
 
