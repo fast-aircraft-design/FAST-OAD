@@ -77,6 +77,39 @@ class StaticSolver(om.Group):
             default=False,
             desc="True if a strut-braced wing and strut composed of vertical + horizontal parts",
         )
+        self.options.declare(
+            "result_avl_filename",
+            default="results.out",
+            types=str,
+            desc="Name of the AVL results results file to be stored",
+        )
+        self.options.declare(
+            "result_avl_folder_path",
+            default="",
+            types=str,
+            desc="Path to AVL results storage folder",
+        )
+        self.options.declare(
+            "avl_exe_path",
+            default="",
+            types=str,
+            allow_none=True,
+            desc="Path to AVL local executable",
+        )
+        self.options.declare(
+            "mystran_exe_path",
+            default="",
+            types=str,
+            allow_none=True,
+            desc="Path to Mystran local executable",
+        )
+        self.options.declare(
+            "result_mystran_folder_path",
+            default="",
+            types=str,
+            allow_none=True,
+            desc="Path to Mystran results storage folder",
+        )
 
     def setup(self):
         if (
@@ -132,6 +165,11 @@ class StaticSolver(om.Group):
                 additional_structural_components=self.options["additional_structural_components"],
                 structural_components_sections=self.options["structural_components_sections"],
                 aerodynamic_components_sections=self.options["aerodynamic_components_sections"],
+                result_avl_filename=self.options["result_avl_filename"],
+                result_avl_folder_path=self.options["result_avl_folder_path"],
+                avl_exe_path=self.options["avl_exe_path"],
+                mystran_exe_path=self.options["mystran_exe_path"],
+                result_mystran_folder_path=self.options["result_mystran_folder_path"],
             ),
             promotes=["*"],
         )
@@ -176,6 +214,11 @@ class _AerostructuralLoop(om.Group):
         self.options.declare("additional_structural_components", types=list)
         self.options.declare("aerodynamic_components_sections", types=list)
         self.options.declare("structural_components_sections", types=list)
+        self.options.declare("result_avl_filename", default="results.out", types=str)
+        self.options.declare("result_avl_folder_path", default="", types=str)
+        self.options.declare("avl_exe_path", default="", types=str, allow_none=True)
+        self.options.declare("mystran_exe_path", default="", types=str, allow_none=True)
+        self.options.declare("result_mystran_folder_path", default="", types=str, allow_none=True)
 
     def setup(self):
 
@@ -185,6 +228,9 @@ class _AerostructuralLoop(om.Group):
                 aerodynamic_components=self.options["coupled_components"]
                 + self.options["additional_aerodynamic_components"],
                 aerodynamic_components_sections=self.options["aerodynamic_components_sections"],
+                result_avl_filename=self.options["result_avl_filename"],
+                result_folder_path=self.options["result_avl_folder_path"],
+                avl_exe_path=self.options["avl_exe_path"],
             ),
             promotes=["*"],
         )
@@ -202,6 +248,8 @@ class _AerostructuralLoop(om.Group):
                 structural_components=self.options["coupled_components"]
                 + self.options["additional_structural_components"],
                 structural_components_sections=self.options["structural_components_sections"],
+                mystran_exe_path=self.options["mystran_exe_path"],
+                result_folder_path=self.options["result_mystran_folder_path"],
             ),
             promotes=["*"],
         )
