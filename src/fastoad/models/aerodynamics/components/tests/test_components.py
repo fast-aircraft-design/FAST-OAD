@@ -54,7 +54,7 @@ def test_high_lift_aero():
         "data:geometry:slat:span_ratio",
     ]
 
-    def get_cl_cd(slat_angle, flap_angle, mach, landing_flag):
+    def get_cl_cd(slat_angle, flap_angle, mach, landing_flag, multi_slot_flag):
         ivc = get_indep_var_comp(input_list)
         if landing_flag:
             ivc.add_output("data:mission:sizing:landing:slat_angle", slat_angle, units="deg")
@@ -64,6 +64,13 @@ def test_high_lift_aero():
             ivc.add_output("data:mission:sizing:takeoff:slat_angle", slat_angle, units="deg")
             ivc.add_output("data:mission:sizing:takeoff:flap_angle", flap_angle, units="deg")
             ivc.add_output("data:aerodynamics:aircraft:takeoff:mach", mach)
+        if multi_slot_flag:
+            ivc.add_output(
+                "tuning:aerodynamics:high_lift_devices:landing:CL:multi_slotted_flap_effect:k", 1.1
+            )
+            ivc.add_output(
+                "tuning:aerodynamics:high_lift_devices:landing:CD:multi_slotted_flap_effect:k", 1.01
+            )
         component = ComputeDeltaHighLift()
         component.options["landing_flag"] = landing_flag
         problem = run_system(component, ivc)
@@ -78,17 +85,25 @@ def test_high_lift_aero():
             problem["data:aerodynamics:high_lift_devices:takeoff:CD"],
         )
 
-    cl, cd = get_cl_cd(18, 10, 0.2, False)
+    cl, cd = get_cl_cd(18, 10, 0.2, False, False)
     assert cl == approx(0.516, abs=1e-3)
     assert cd == approx(0.01430, abs=1e-5)
 
-    cl, cd = get_cl_cd(27, 35, 0.4, False)
+    cl, cd = get_cl_cd(27, 35, 0.4, False, False)
     assert cl == approx(1.431, abs=1e-3)
     assert cd == approx(0.04644, abs=1e-5)
 
-    cl, cd = get_cl_cd(22, 20, 0.2, True)
+    cl, cd = get_cl_cd(27, 35, 0.4, False, True)
+    assert cl == approx(1.564, abs=1e-3)
+    assert cd == approx(0.04675, abs=1e-5)
+
+    cl, cd = get_cl_cd(22, 20, 0.2, True, False)
     assert cl == approx(0.935, abs=1e-3)
     assert cd == approx(0.02220, abs=1e-5)
+
+    cl, cd = get_cl_cd(22, 20, 0.2, True, True)
+    assert cl == approx(1.021, abs=1e-3)
+    assert cd == approx(0.02230, abs=1e-5)
 
 
 def test_oswald():

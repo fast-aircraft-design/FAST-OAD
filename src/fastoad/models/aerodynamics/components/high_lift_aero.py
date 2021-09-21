@@ -54,6 +54,12 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         self.add_input("data:geometry:flap:span_ratio", val=np.nan)
         self.add_input("data:geometry:slat:chord_ratio", val=np.nan)
         self.add_input("data:geometry:slat:span_ratio", val=np.nan)
+        self.add_input(
+            "tuning:aerodynamics:high_lift_devices:landing:CD:multi_slotted_flap_effect:k", val=1.0
+        )
+        self.add_input(
+            "tuning:aerodynamics:high_lift_devices:landing:CL:multi_slotted_flap_effect:k", val=1.0
+        )
 
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
@@ -69,6 +75,12 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
             slat_angle = inputs["data:mission:sizing:takeoff:slat_angle"]
             mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
 
+        k_cd_slot = inputs[
+            "tuning:aerodynamics:high_lift_devices:landing:CD:multi_slotted_flap_effect:k"
+        ]
+        k_cl_slot = inputs[
+            "tuning:aerodynamics:high_lift_devices:landing:CL:multi_slotted_flap_effect:k"
+        ]
         le_sweep_angle = inputs["data:geometry:wing:sweep_0"]
         te_sweep_angle = inputs["data:geometry:wing:sweep_100_outer"]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
@@ -87,9 +99,10 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
                 mach,
                 le_sweep_angle,
                 te_sweep_angle,
+                k_cl_slot,
             )
             outputs["data:aerodynamics:high_lift_devices:landing:CD"] = self._get_delta_cd(
-                slat_angle, flap_angle, slat_span_ratio, flap_span_ratio
+                slat_angle, flap_angle, slat_span_ratio, flap_span_ratio, k_cd_slot
             )
         else:
             outputs["data:aerodynamics:high_lift_devices:takeoff:CL"] = self._get_delta_cl(
@@ -102,9 +115,10 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
                 mach,
                 le_sweep_angle,
                 te_sweep_angle,
+                k_cl_slot,
             )
             outputs["data:aerodynamics:high_lift_devices:takeoff:CD"] = self._get_delta_cd(
-                slat_angle, flap_angle, slat_span_ratio, flap_span_ratio
+                slat_angle, flap_angle, slat_span_ratio, flap_span_ratio, k_cd_slot
             )
 
     def _get_delta_cl(
@@ -118,6 +132,7 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         mach,
         le_sweep_angle,
         te_sweep_angle,
+        k_cl_slot,
     ):
         """
         Method based on Roskam book and Raymer book
@@ -131,6 +146,7 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         :param mach:
         :param le_sweep_angle: sweep angle at leading edge
         :param te_sweep_angle: sweep angle at trailing edge
+        :param k_cl_slot: multiple slotted flap correction factor
         :return: increment of lift coefficient
         """
 
@@ -144,7 +160,13 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
 
         # cl created by the flap in 2D
         delta_cl_flap = (
-            2.0 * np.pi / np.sqrt(1 - mach ** 2) * ratio_c_flap * alpha_flap * flap_angle
+            2.0
+            * np.pi
+            / np.sqrt(1 - mach ** 2)
+            * ratio_c_flap
+            * alpha_flap
+            * flap_angle
+            * k_cl_slot
         )
 
         # ratio of chord with slat extended compared to clean chord
@@ -176,13 +198,14 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
 
         return delta_cl_total
 
-    def _get_delta_cd(self, slat_angle, flap_angle, slat_span_ratio, flap_span_ratio):
+    def _get_delta_cd(self, slat_angle, flap_angle, slat_span_ratio, flap_span_ratio, k_cd_slot):
         """
 
         :param slat_angle: in degrees
         :param flap_angle: in degrees
         :param slat_span_ratio: the ratio of the part of wing which is equipped with slat
         :param flap_span_ratio: the ratio of the part of wing which is equipped with flap
+        :param k_cd_slot: multiple slotted flap correction factor
         :return: increment of drag coefficient
         """
 
@@ -209,6 +232,7 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
                 - 9.53201e-4 * flap_angle ** 2
                 + 7.5972e-5 * flap_angle ** 3
             )
+            * k_cd_slot
             * flap_span_ratio
             / 100
         )

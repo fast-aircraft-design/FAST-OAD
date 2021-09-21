@@ -18,6 +18,7 @@ from typing import Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
+from scipy.interpolate.interpolate import interp1d
 
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
@@ -57,6 +58,8 @@ class RubberEngine(AbstractFuelPropulsion):
         design_altitude: float,
         delta_t4_climb: float = -50,
         delta_t4_cruise: float = -100,
+        k_sfc_sl: float = 1.0,
+        k_sfc_cr: float = 1.0,
     ):
         """
         Parametric turbofan engine.
@@ -76,6 +79,8 @@ class RubberEngine(AbstractFuelPropulsion):
         :param design_altitude: (unit=m)
         :param delta_t4_climb: (unit=K) difference between T4 during climb and design T4
         :param delta_t4_cruise: (unit=K) difference between T4 during cruise and design T4
+        :param k_sfc_sl: SFC correction at sea level and below
+        :param k_sfc_cr: SFC correction at 43000ft and above in cruise
         """
         # pylint: disable=too-many-arguments  # they define the engine
 
@@ -85,6 +90,8 @@ class RubberEngine(AbstractFuelPropulsion):
         self.f_0 = mto_thrust
         self.mach_max = maximum_mach
         self.design_alt = design_altitude
+        self.k_sfc_sl = k_sfc_sl
+        self.k_sfc_cr = k_sfc_cr
 
         # This dictionary is expected to have a dT4 value for all EngineSetting values
         self.dt4_values = {
@@ -117,7 +124,14 @@ class RubberEngine(AbstractFuelPropulsion):
                 if name not in new_column_names:
                     flight_points.insert(len(flight_points.columns), name, value=np.nan)
 
-        flight_points.sfc = sfc
+        # SFC correction for NEO engines dependent on altitude.
+        k_sfc_alt = interp1d(
+            [-1000.0, 0.0, 13106.4, 20000.0],
+            np.hstack((self.k_sfc_sl, self.k_sfc_sl, self.k_sfc_cr, self.k_sfc_cr)),
+        )
+        k_sfc = k_sfc_alt(flight_points.altitude)
+
+        flight_points.sfc = sfc * k_sfc
         flight_points.thrust_rate = thrust_rate
         flight_points.thrust = thrust
 
