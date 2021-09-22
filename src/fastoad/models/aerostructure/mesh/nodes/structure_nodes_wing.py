@@ -58,9 +58,19 @@ class StructureNodesWing(om.ExplicitComponent):
             self.add_output(
                 "data:aerostructural:structure:wing:nodes", val=np.nan, shape=((n_secs + 2) * 2, 3)
             )
+            self.add_output(
+                "data:aerostructural:structure:wing:aeroelastic_nodes",
+                val=np.nan,
+                shape=((n_secs + 2) * 4, 3),
+            )
         else:
             self.add_output(
                 "data:aerostructural:structure:wing:nodes", val=np.nan, shape=((n_secs + 1) * 2, 3)
+            )
+            self.add_output(
+                "data:aerostructural:structure:wing:aeroelastic_nodes",
+                val=np.nan,
+                shape=((n_secs + 1) * 2, 6),
             )
 
         self.declare_partials("*", "*", method="fd")
@@ -100,13 +110,6 @@ class StructureNodesWing(om.ExplicitComponent):
         x_box_kink = (kink_rear_spar_ratio + kink_front_spar_ratio) * kink_chord * 0.5 + x_kink
         x_box_tip = (tip_rear_spar_ratio + tip_front_spar_ratio) * tip_chord * 0.5 + x_tip
 
-        y_interp = [0.0, y_root, y_kink, y_tip]
-        x_interp = [x_box_root, x_box_root, x_box_kink, x_box_tip]
-        z_interp = [z_root, z_root, z_kink, z_tip]
-
-        f_x = interp(y_interp, x_interp)
-        f_z = interp(y_interp, z_interp)
-
         #  Number of section (cuts) for each wing geometric section (belly, kink, tip) -------------
         belly_ratio = y_root / y_tip
         kink_ratio = (y_kink - y_root) / y_tip
@@ -133,9 +136,33 @@ class StructureNodesWing(om.ExplicitComponent):
             y_box = np.sort(np.append(y_box, [y_strut], axis=0), axis=0)
 
         #  Nodes coordinates interpolation ---------------------------------------------------------
+        y_interp = [0.0, y_root, y_kink, y_tip]
+        x_interp = [x_box_root, x_box_root, x_box_kink, x_box_tip]
+        x_le_interp = [x_root, x_root, x_kink, x_tip]
+        z_interp = [z_root, z_root, z_kink, z_tip]
+
+        chord_interp = [root_chord, root_chord, kink_chord, tip_chord]
+
+        f_x = interp(y_interp, x_interp)
+        f_x_le = interp(y_interp, x_le_interp)
+        f_z = interp(y_interp, z_interp)
+
+        f_chord = interp(y_interp, chord_interp)
+
         x_box = f_x(y_box)
+        x_le = f_x_le(y_box)
+        x_te = x_le + f_chord(y_box)
         z_box = f_z(y_box)
         xyz_r = np.hstack((x_box, y_box, z_box))
         xyz_l = np.hstack((x_box, -y_box, z_box))
+        xyz_le_r = np.hstack((x_le, y_box, z_box))
+        xyz_le_l = np.hstack((x_le, -y_box, z_box))
+        xyz_te_r = np.hstack((x_te, y_box, z_box))
+        xyz_te_l = np.hstack((x_te, -y_box, z_box))
+        xyz_le = np.vstack((xyz_le_r, xyz_le_l))
+        xyz_te = np.vstack((xyz_te_r, xyz_te_l))
 
         outputs["data:aerostructural:structure:wing:nodes"] = np.vstack((xyz_r, xyz_l))
+        outputs["data:aerostructural:structure:wing:aeroelastic_nodes"] = np.hstack(
+            (xyz_le, xyz_te)
+        )
