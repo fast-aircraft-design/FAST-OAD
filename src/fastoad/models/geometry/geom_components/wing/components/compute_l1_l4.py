@@ -30,7 +30,7 @@ class ComputeL1AndL4Wing(ExplicitComponent):
         self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:virtual_taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
 
         self.add_output("data:geometry:wing:root:virtual_chord", units="m")
@@ -47,19 +47,19 @@ class ComputeL1AndL4Wing(ExplicitComponent):
         y3_wing = inputs["data:geometry:wing:kink:y"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
-        taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+        virtual_taper_ratio = inputs["data:geometry:wing:virtual_taper_ratio"]
 
         l1_wing = (
             wing_area
             - (y3_wing - y2_wing) * (y3_wing + y2_wing) * math.tan(sweep_25 / 180.0 * math.pi)
         ) / (
-            (1.0 + taper_ratio) / 2.0 * (span - width_max)
+            (1.0 + virtual_taper_ratio) / 2.0 * (span - width_max)
             + width_max
-            - (3.0 * (1.0 - taper_ratio) * (y3_wing - y2_wing) * (y3_wing + y2_wing))
+            - (3.0 * (1.0 - virtual_taper_ratio) * (y3_wing - y2_wing) * (y3_wing + y2_wing))
             / (2.0 * (span - width_max))
         )
 
-        l4_wing = l1_wing * taper_ratio
+        l4_wing = l1_wing * virtual_taper_ratio
 
         outputs["data:geometry:wing:root:virtual_chord"] = l1_wing
         outputs["data:geometry:wing:tip:chord"] = l4_wing

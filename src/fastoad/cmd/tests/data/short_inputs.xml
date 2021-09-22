@@ -70,7 +70,7 @@
       <wing>
         <aspect_ratio is_input="True">9.48<!--wing aspect ratio--></aspect_ratio>
         <sweep_25 units="deg" is_input="True">25.0<!--sweep angle at 25% chord of wing--></sweep_25>
-        <taper_ratio is_input="True">0.38<!--taper ratio of wing--></taper_ratio>
+        <virtual_taper_ratio is_input="True">0.38<!--taper ratio of wing--></virtual_taper_ratio>
         <kink>
           <span_ratio is_input="True">0.4<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
         </kink>

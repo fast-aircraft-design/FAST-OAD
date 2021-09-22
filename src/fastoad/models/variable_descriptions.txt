@@ -158,6 +158,7 @@ data:geometry:wing:sweep_0 || sweep angle at leading edge of wing
 data:geometry:wing:sweep_100_inner || sweep angle at trailing edge of wing (inner side of the kink)
 data:geometry:wing:sweep_100_outer || sweep angle at trailing edge of wing (outer side of the kink)
 data:geometry:wing:sweep_25 || sweep angle at 25% chord of wing
+data:geometry:wing:virtual_taper_ratio || taper ratio of wing computed from virtual root chord
 data:geometry:wing:taper_ratio || taper ratio of wing
 data:geometry:wing:thickness_ratio || mean thickness ratio of wing
 data:geometry:wing:tip:chord || chord length at wing tip
