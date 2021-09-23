@@ -30,6 +30,8 @@ class LinearWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:linear_weight", val=10.0, units="N/m")
 
+    def setup_partials(self):
+
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):

@@ -29,6 +29,8 @@ class Stress(om.ExplicitComponent):
 
         self.add_output("data:geometry:Ixx", val=1e-5, units="m**4")
 
+    def setup_partials(self):
+
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
