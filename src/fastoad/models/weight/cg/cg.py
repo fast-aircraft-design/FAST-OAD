@@ -1,8 +1,8 @@
 """
     FAST - Copyright (c) 2016 ONERA ISAE
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,18 +17,17 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.models.weight.cg.cg_components import (
-    ComputeControlSurfacesCG,
-    ComputeGlobalCG,
-    ComputeHTcg,
-    ComputeOthersCG,
-    ComputeTanksCG,
-    ComputeVTcg,
-    ComputeWingCG,
-    UpdateMLG,
-)
-from fastoad.models.weight.constants import SERVICE_CENTERS_OF_GRAVITY
 from fastoad.module_management.service_registry import RegisterSubmodel
+from .cg_components import ComputeGlobalCG, UpdateMLG
+from .constants import (
+    SERVICE_FLIGHT_CONTROLS_CG,
+    SERVICE_HORIZONTAL_TAIL_CG,
+    SERVICE_OTHERS_CG,
+    SERVICE_TANKS_CG,
+    SERVICE_VERTICAL_TAIL_CG,
+    SERVICE_WING_CG,
+)
+from ..constants import SERVICE_CENTERS_OF_GRAVITY
 
 
 @RegisterSubmodel(SERVICE_CENTERS_OF_GRAVITY, "fastoad.submodel.weight.cg.legacy")
@@ -36,12 +35,27 @@ class CG(om.Group):
     """ Model that computes the global center of gravity """
 
     def setup(self):
-        self.add_subsystem("ht_cg", ComputeHTcg(), promotes=["*"])
-        self.add_subsystem("vt_cg", ComputeVTcg(), promotes=["*"])
-        self.add_subsystem("compute_cg_wing", ComputeWingCG(), promotes=["*"])
-        self.add_subsystem("compute_cg_control_surface", ComputeControlSurfacesCG(), promotes=["*"])
-        self.add_subsystem("compute_cg_tanks", ComputeTanksCG(), promotes=["*"])
-        self.add_subsystem("compute_cg_others", ComputeOthersCG(), promotes=["*"])
+
+        self.add_subsystem(
+            "ht_cg", RegisterSubmodel.get_submodel(SERVICE_HORIZONTAL_TAIL_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vt_cg", RegisterSubmodel.get_submodel(SERVICE_VERTICAL_TAIL_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "compute_cg_wing", RegisterSubmodel.get_submodel(SERVICE_WING_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "compute_cg_control_surface",
+            RegisterSubmodel.get_submodel(SERVICE_FLIGHT_CONTROLS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_cg_tanks", RegisterSubmodel.get_submodel(SERVICE_TANKS_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "compute_cg_others", RegisterSubmodel.get_submodel(SERVICE_OTHERS_CG), promotes=["*"]
+        )
         self.add_subsystem("compute_cg", ComputeGlobalCG(), promotes=["*"])
         self.add_subsystem("update_mlg", UpdateMLG(), promotes=["*"])
         self.add_subsystem("aircraft", ComputeAircraftCG(), promotes=["*"])

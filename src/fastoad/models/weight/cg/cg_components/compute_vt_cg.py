@@ -1,7 +1,6 @@
 """
     Estimation of vertical tail center of gravity
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,12 +13,17 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import math
 
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_VERTICAL_TAIL_CG
 
+
+@RegisterSubmodel(SERVICE_VERTICAL_TAIL_CG, "fastoad.submodel.weight.cg.vertical_tail.legacy")
 class ComputeVTcg(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail center of gravity estimation """
