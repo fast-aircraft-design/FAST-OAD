@@ -1,7 +1,6 @@
 """
     Estimation of center of gravity for load case 1
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,14 +13,16 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from fastoad.models.weight.cg.cg_components.compute_cg_loadcase import AbstractComputeCGLoadCase
+
+from .compute_cg_loadcase import ComputeCGLoadCase
 
 
-class ComputeCGLoadCase1(AbstractComputeCGLoadCase):
-    # TODO: Document equations. Cite sources
+class ComputeCGLoadCase1(ComputeCGLoadCase):
     """ Center of gravity estimation for load case 1 """
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        outputs[self.output_name] = self.compute_cg_ratio(
-            inputs, weight_per_pax=80.0, weight_front_fret=0.0, weight_rear_fret=0.0
-        )
+    def setup(self):
+        self.options["case_number"] = 1
+        self.options["weight_per_pax"] = 80.0
+        self.options["weight_front_fret_per_pax"] = 0.0
+        self.options["weight_rear_fret_per_pax"] = 0.0
+        return super().setup()

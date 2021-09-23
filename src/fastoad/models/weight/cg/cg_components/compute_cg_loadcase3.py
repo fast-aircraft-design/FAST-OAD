@@ -15,21 +15,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.models.weight.cg.cg_components.compute_cg_loadcase import AbstractComputeCGLoadCase
+from .compute_cg_loadcase import ComputeCGLoadCase
 
 
-class ComputeCGLoadCase3(AbstractComputeCGLoadCase):
-    # TODO: Document equations. Cite sources
+class ComputeCGLoadCase3(ComputeCGLoadCase):
     """ Center of gravity estimation for load case 3 """
 
     def setup(self):
         self.options["case_number"] = 3
+        self.options["weight_per_pax"] = 90.0
+        self.options["weight_front_fret_per_pax"] = 0.0
+        self.options["weight_rear_fret_per_pax"] = 10.0
         return super().setup()
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        outputs[self.output_name] = self.compute_cg_ratio(
-            inputs,
-            weight_per_pax=90.0,
-            weight_front_fret=0.0,
-            weight_rear_fret=inputs["data:TLAR:NPAX"] * 10.0,
-        )
