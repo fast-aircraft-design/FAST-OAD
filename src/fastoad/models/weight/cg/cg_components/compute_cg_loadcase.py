@@ -11,15 +11,22 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from abc import ABC, abstractmethod
-
 import numpy as np
 import openmdao.api as om
 
 
-class AbstractComputeCGLoadCase(om.ExplicitComponent, ABC):
+class ComputeCGLoadCase(om.ExplicitComponent):
+    """
+    Base class for computing load cases for CG calculations.
+    """
+
+    # TODO: Document equations. Cite sources
     def initialize(self):
         self.options.declare("case_number", 1, types=int)
+        self.options.declare("weight_per_pax", 80.0, types=float)
+        self.options.declare("weight_front_fret_per_pax", 0.0, types=float)
+        self.options.declare("weight_rear_fret_per_pax", 0.0, types=float)
+        self.options.declare("weight_fuel_variable", "", types=str, allow_none=True)
 
     def setup(self):
         self.output_name = (
@@ -35,21 +42,32 @@ class AbstractComputeCGLoadCase(om.ExplicitComponent, ABC):
         self.add_input("data:weight:aircraft_empty:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:mass", val=np.nan, units="kg")
 
+        if self.options["weight_fuel_variable"]:
+            self.add_input(self.options["weight_fuel_variable"], val=np.nan, units="kg")
+            self.add_input("data:weight:fuel_tank:CG:x", val=np.nan, units="m")
+
         self.add_output(self.output_name)
 
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
-    @abstractmethod
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """
-        This method is expected to set the value of output with name provided by
-        :attr:`output_name`.
 
-        Hence it should end with::
+        if self.options["weight_fuel_variable"]:
+            weight_fuel = inputs[self.options["weight_fuel_variable"]]
+            cg_fuel = inputs["data:weight:fuel_tank:CG:x"]
+        else:
+            weight_fuel = 0.0
+            cg_fuel = 0.0
 
-            outputs[self.output_name] = self.compute_cg_ratio(...)
-        """
+        outputs[self.output_name] = self.compute_cg_ratio(
+            inputs,
+            weight_per_pax=self.options["weight_per_pax"],
+            weight_front_fret=inputs["data:TLAR:NPAX"] * self.options["weight_front_fret_per_pax"],
+            weight_rear_fret=inputs["data:TLAR:NPAX"] * self.options["weight_rear_fret_per_pax"],
+            weight_fuel=weight_fuel,
+            cg_fuel=cg_fuel,
+        )
 
     @staticmethod
     def compute_cg_ratio(
@@ -74,6 +92,7 @@ class AbstractComputeCGLoadCase(om.ExplicitComponent, ABC):
         npax = inputs["data:TLAR:NPAX"]
         x_cg_plane_aft = inputs["data:weight:aircraft_empty:CG:x"]
         x_cg_plane_down = inputs["data:weight:aircraft_empty:mass"]
+
         x_cg_plane_up = x_cg_plane_aft * x_cg_plane_down
         weight_pax = npax * weight_per_pax
         weight_pl = weight_pax + weight_rear_fret + weight_front_fret + weight_fuel
