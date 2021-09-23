@@ -24,10 +24,9 @@ class ComputeMaxCGratio(ExplicitComponent):
 
     def setup(self):
         self.add_input("data:weight:aircraft:empty:CG:MAC_position", val=np.nan)
-        self.add_input("data:weight:aircraft:load_case_1:CG:MAC_position", val=np.nan)
-        self.add_input("data:weight:aircraft:load_case_2:CG:MAC_position", val=np.nan)
-        self.add_input("data:weight:aircraft:load_case_3:CG:MAC_position", val=np.nan)
-        self.add_input("data:weight:aircraft:load_case_4:CG:MAC_position", val=np.nan)
+        self.add_input(
+            "data:weight:aircraft:load_cases:CG:MAC_position", val=np.nan, shape_by_conn=True
+        )
         self.add_input(
             "settings:weight:aircraft:CG:aft:MAC_position:margin",
             val=0.05,
@@ -43,10 +42,9 @@ class ComputeMaxCGratio(ExplicitComponent):
     def compute(self, inputs, outputs):
         outputs["data:weight:aircraft:CG:aft:MAC_position"] = inputs[
             "settings:weight:aircraft:CG:aft:MAC_position:margin"
-        ] + max(
-            inputs["data:weight:aircraft:empty:CG:MAC_position"],
-            inputs["data:weight:aircraft:load_case_1:CG:MAC_position"],
-            inputs["data:weight:aircraft:load_case_2:CG:MAC_position"],
-            inputs["data:weight:aircraft:load_case_3:CG:MAC_position"],
-            inputs["data:weight:aircraft:load_case_4:CG:MAC_position"],
+        ] + np.nanmax(
+            [
+                inputs["data:weight:aircraft:empty:CG:MAC_position"],
+                np.nanmax(inputs["data:weight:aircraft:load_cases:CG:MAC_position"]),
+            ]
         )
