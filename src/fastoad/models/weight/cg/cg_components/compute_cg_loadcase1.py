@@ -23,5 +23,5 @@ class ComputeCGLoadCase1(AbstractComputeCGLoadCase):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs[self.output_name] = self.compute_cg_ratio(
-            inputs, weight_per_pax=80.0, weight_front_fret=0.0, weight_rear_fret=1.0
+            inputs, weight_per_pax=80.0, weight_front_fret=0.0, weight_rear_fret=0.0
         )

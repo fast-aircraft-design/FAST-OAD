@@ -2,7 +2,7 @@
 Test module for geometry functions of cg components
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,17 +21,19 @@ import pytest
 from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
 from ..cg import ComputeAircraftCG
-from ..cg_components import ComputeCGLoadCase1
-from ..cg_components import ComputeCGLoadCase2
-from ..cg_components import ComputeCGLoadCase3
-from ..cg_components import ComputeCGLoadCase4
-from ..cg_components import ComputeCGRatioAft
-from ..cg_components import ComputeControlSurfacesCG
-from ..cg_components import ComputeGlobalCG
-from ..cg_components import ComputeMaxCGratio
-from ..cg_components import ComputeOthersCG
-from ..cg_components import ComputeTanksCG
-from ..cg_components import ComputeWingCG
+from ..cg_components import (
+    ComputeCGLoadCase1,
+    ComputeCGLoadCase2,
+    ComputeCGLoadCase3,
+    ComputeCGLoadCase4,
+    ComputeCGRatioAft,
+    ComputeControlSurfacesCG,
+    ComputeGlobalCG,
+    ComputeMaxCGratio,
+    ComputeOthersCG,
+    ComputeTanksCG,
+    ComputeWingCG,
+)
 
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
@@ -87,7 +89,7 @@ def test_compute_cg_loadcase1(input_xml):
     problem = run_system(ComputeCGLoadCase1(), input_vars)
 
     cg_ratio_lc1 = problem["data:weight:aircraft:load_case_1:CG:MAC_position"]
-    assert cg_ratio_lc1 == pytest.approx(0.364924, abs=1e-6)
+    assert cg_ratio_lc1 == pytest.approx(0.364907, abs=1e-6)
 
 
 def test_compute_cg_loadcase2(input_xml):
