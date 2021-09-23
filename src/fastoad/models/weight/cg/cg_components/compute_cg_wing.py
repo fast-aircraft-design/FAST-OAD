@@ -1,7 +1,6 @@
 """
     Estimation of wing center of gravity
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,10 +13,15 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_WING_CG
 
+
+@RegisterSubmodel(SERVICE_WING_CG, "fastoad.submodel.weight.cg.wing.legacy")
 class ComputeWingCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing center of gravity estimation """
