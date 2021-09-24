@@ -15,14 +15,22 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 from .compute_cg_loadcase import ComputeCGLoadCase
 
 
+CASE_NUMBER = 3
+
+
+@RegisterSubmodel(
+    f"service.cg.load_case.{CASE_NUMBER}",
+    f"fastoad.submodel.weight.cg.load_case.legacy.{CASE_NUMBER}",
+)
 class ComputeCGLoadCase3(ComputeCGLoadCase):
     """ Center of gravity estimation for load case 3 """
 
     def setup(self):
-        self.options["case_number"] = 3
+        self.options["case_number"] = CASE_NUMBER
         self.options["weight_per_pax"] = 90.0
         self.options["weight_front_fret_per_pax"] = 0.0
         self.options["weight_rear_fret_per_pax"] = 10.0

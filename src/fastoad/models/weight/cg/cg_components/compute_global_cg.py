@@ -16,12 +16,10 @@
 
 import openmdao.api as om
 
-from fastoad.models.weight.cg.cg_components import ComputeCGLoadCase1
-from fastoad.models.weight.cg.cg_components.compute_cg_loadcase2 import ComputeCGLoadCase2
-from fastoad.models.weight.cg.cg_components.compute_cg_loadcase3 import ComputeCGLoadCase3
-from fastoad.models.weight.cg.cg_components.compute_cg_loadcase4 import ComputeCGLoadCase4
-from fastoad.models.weight.cg.cg_components.compute_cg_ratio_aft import ComputeCGRatioAft
-from fastoad.models.weight.cg.cg_components.compute_max_cg_ratio import ComputeMaxCGratio
+from fastoad.module_management.exceptions import FastNoSubmodelFoundError
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .compute_cg_ratio_aft import ComputeCGRatioAft
+from .compute_max_cg_ratio import ComputeMaxCGratio
 
 
 class ComputeGlobalCG(om.Group):
@@ -30,20 +28,38 @@ class ComputeGlobalCG(om.Group):
 
     def setup(self):
         self.add_subsystem("cg_ratio_aft", ComputeCGRatioAft(), promotes=["*"])
-        self.add_subsystem("cg_ratio_lc1", ComputeCGLoadCase1(), promotes_inputs=["*"])
-        self.add_subsystem("cg_ratio_lc2", ComputeCGLoadCase2(), promotes_inputs=["*"])
-        self.add_subsystem("cg_ratio_lc3", ComputeCGLoadCase3(), promotes_inputs=["*"])
-        self.add_subsystem("cg_ratio_lc4", ComputeCGLoadCase4(), promotes_inputs=["*"])
-        cg_ratio_aggregator = self.add_subsystem("cg_ratio_aggregator", om.MuxComp(vec_size=4))
+        self.add_subsystem("cg_ratio_aggregator", self._cg_ratios_for_load_cases())
         self.add_subsystem("cg_ratio_max", ComputeMaxCGratio(), promotes=["*"])
+
+    def _cg_ratios_for_load_cases(self) -> om.MuxComp:
+        """
+        Adds a component that aggregates all CG ratios computed for specific load cases.
+        :return:
+        """
+        # We add in our group all the components for declared services that provide CG ratio
+        # for specific load_cases
+        load_case_count = 0
+        found = True
+        while found:
+            try:
+                system = RegisterSubmodel.get_submodel(
+                    f"service.cg.load_case.{load_case_count + 1}"
+                )
+            except FastNoSubmodelFoundError:
+                found = False
+                continue
+            self.add_subsystem(f"cg_ratio_lc{load_case_count + 1}", system, promotes_inputs=["*"])
+            load_case_count += 1
+        cg_ratio_aggregator = om.MuxComp(vec_size=load_case_count)
 
         # This part aggregates all CG ratios values in one vector variable.
         cg_ratio_aggregator.add_var("cg_ratios", shape=(1,), axis=0)
-        for i in range(4):
+        for i in range(load_case_count):
             self.connect(
-                f"cg_ratio_lc{i+1}.data:weight:aircraft:load_case_{i+1}:CG:MAC_position",
+                f"cg_ratio_lc{i + 1}.data:weight:aircraft:load_case_{i + 1}:CG:MAC_position",
                 f"cg_ratio_aggregator.cg_ratios_{i}",
             )
         self.connect(
             "cg_ratio_aggregator.cg_ratios", "data:weight:aircraft:load_cases:CG:MAC_position"
         )
+        return cg_ratio_aggregator
