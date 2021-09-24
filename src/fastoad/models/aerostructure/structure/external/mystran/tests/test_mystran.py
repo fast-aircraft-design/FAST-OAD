@@ -40,6 +40,7 @@ def get_indep_var_comp(var_names):
 def test_simple_wing():
     input_list = [
         "data:aerostructural:structure:wing:nodes",
+        "data:aerostructural:structure:wing:aeroelastic_nodes",
         "data:aerostructural:structure:wing:forces",
         "data:geometry:wing:MAC:at25percent:x",
         "data:aerostructural:load_case:load_factor",
