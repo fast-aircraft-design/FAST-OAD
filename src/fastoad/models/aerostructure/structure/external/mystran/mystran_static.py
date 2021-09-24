@@ -19,6 +19,7 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 import openmdao.api as om
+from pyNastran.bdf.bdf import BDF, CaseControlDeck
 
 from fastoad._utils.resource_management.copy import copy_resource
 from fastoad.models.aerostructure.structure.external.mystran import mystran112
@@ -76,6 +77,11 @@ class MystranStatic(om.ExternalCodeComp):
                 "data:aerostructural:structure:" + comp + ":nodes", val=np.nan, shape_by_conn=True
             )
             self.add_input(
+                "data:aerostructural:structure:" + comp + ":aeroelastic_nodes",
+                val=np.nan,
+                shape_by_conn=True,
+            )
+            self.add_input(
                 "data:aerostructural:structure:" + comp + ":beam_properties",
                 val=np.nan,
                 shape_by_conn=True,
@@ -84,7 +90,7 @@ class MystranStatic(om.ExternalCodeComp):
                 "data:aerostructural:structure:" + comp + ":forces", val=np.nan, shape_by_conn=True,
             )
             self.add_input("data:aerostructural:structure:" + comp + ":material:E", val=70e9)
-            self.add_input("data:aerostructural:structure:" + comp + ":material:mu", val=0.33)
+            self.add_input("data:aerostructural:structure:" + comp + ":material:nu", val=0.33)
             self.add_input(
                 "data:aerostructural:structure:" + comp + ":material:density", val=2810.0
             )
@@ -126,10 +132,14 @@ class MystranStatic(om.ExternalCodeComp):
         for idx, comp in enumerate(components):
             mat_prop = np.zeros(3)
             nodes = inputs["data:aerostructural:structure:" + comp + ":nodes"]
+            if comp == "wing":
+                aeroelastic_nodes = inputs[
+                    "data:aerostructural:structure:" + comp + ":aeroelastic_nodes"
+                ]
             props = inputs["data:aerostructural:structure:" + comp + ":beam_properties"]
             forces = inputs["data:aerostructural:structure:" + comp + ":forces"]
             mat_prop[0] = inputs["data:aerostructural:structure:" + comp + ":material:E"]
-            mat_prop[1] = inputs["data:aerostructural:structure:" + comp + ":material:mu"]
+            mat_prop[1] = inputs["data:aerostructural:structure:" + comp + ":material:nu"]
             mat_prop[2] = inputs["data:aerostructural:structure:" + comp + ":material:density"]
             strg += get_nodes_cards(comp, nodes, basis_id[comp])
             strg += get_props_cards(
@@ -164,6 +174,8 @@ class MystranStatic(om.ExternalCodeComp):
 
         # Input BDF file generation ---------------------------------------------------------------
         get_nastran_bdf(self.input_file, strg, sol="static", nz=nz)
+        bdf_file = pth.join(tmp_dir.name, "run.bdf")
+        self._prepare_bdf(inputs, components, bdf_file)
         self.sderr = pth.join(tmp_dir.name, _STDERR_FILE_NAME)
         self.stdout = pth.join(tmp_dir.name, _STDOUT_FILE_NAME)
         # Run MYSTRAN -----------------------------------------------------------------------------
@@ -272,3 +284,140 @@ class MystranStatic(om.ExternalCodeComp):
             else:
                 split_sections[idx] = int(n_nodes)
         return np.split(stress_matrix, split_sections)
+
+    @staticmethod
+    def _prepare_bdf(inputs, components, bdf_filename):
+        bdf = BDF()
+        bdf.sol = 1  # corresponds to SOL101 in Nastran (Linear static solution)
+        case_control = CaseControlDeck(
+            [
+                "TITLE = STATIC WING SIZING",
+                "DISP = ALL",
+                "STRESS = ALL",
+                "SPCFORCE = ALL",
+                "SPC = 1",
+                "LOAD = 2",
+            ]
+        )
+        bdf.case_control_deck = case_control
+
+        nz = inputs["data:aerostructural:load_case:load_factor"][0]
+
+        for i, comp in enumerate(components):
+            comp_id = (i + 1) * 1000000
+            if comp == "strut":
+                id_strut = comp_id
+            if comp == "wing":
+                id_wing = comp_id
+            nodes = inputs["data:aerostructural:structure:" + comp + ":nodes"]
+            properties = inputs["data:aerostructural:structure:" + comp + ":beam_properties"]
+            forces = inputs["data:aerostructural:structure:" + comp + ":forces"]
+            material_E = inputs["data:aerostructural:structure:" + comp + ":material:E"][0]
+            material_nu = inputs["data:aerostructural:structure:" + comp + ":material:nu"][0]
+            material_rho = inputs["data:aerostructural:structure:" + comp + ":material:density"][0]
+            material_G = material_E / (2 + 2 * material_nu)
+            mat_id = basis_id[comp] + 111000
+            ident_matrix = np.identity(6)
+
+            # Mat card -----------------------------------------------------------------------------
+            bdf.add_mat1(mat_id, material_E, material_G, material_nu, rho=material_rho)
+
+            # GRID FORCE and MOMENT cards ----------------------------------------------------------
+            for idx, node in enumerate(nodes):
+                bdf.add_grid(comp_id + idx, node)
+                if comp == "wing":
+                    bdf.add_grid(
+                        comp_id + idx + 200,
+                        inputs["data:aerostructural:structure:wing:aeroelastic_nodes"][idx, :3],
+                    )
+                    bdf.add_grid(
+                        comp_id + idx + 300,
+                        inputs["data:aerostructural:structure:wing:aeroelastic_nodes"][idx, 3:],
+                    )
+                    bdf.add_rbe2(
+                        comp_id + idx + 2000000,
+                        comp_id + idx,
+                        "123456",
+                        [comp_id + idx + 200, comp_id + idx + 300],
+                    )
+
+                # RBE card to join symmetric parts
+                if (
+                    comp in ["wing", "strut", "horizontal_tail"]
+                    and idx == np.size(nodes, axis=0) / 2
+                ):
+                    bdf.add_rbe2(comp_id + 10000000, comp_id, "123456", [comp_id + idx])
+
+                # FORCE and MOMENT cards
+                for j in [0, 1, 2]:
+                    bdf.add_force(11, comp_id + idx, forces[idx, j], ident_matrix[j, :3])
+                    bdf.add_moment(11, comp_id + idx, forces[idx, j + 3], ident_matrix[j + 3, 3:])
+
+            # CBAR and PBAR cards ------------------------------------------------------------------
+            for idx, prop in enumerate(properties):
+                id1 = idx
+                id2 = idx + 1
+                elem_id = idx + 1000 + comp_id
+                prop_id = idx + 11000 + comp_id
+
+                if (
+                    comp in ["wing", "horizontal_tail, strut"]
+                    and idx >= np.size(properties, axis=0) / 2
+                ):
+                    id1 = idx + 1
+                    id2 = idx + 2
+
+                dir_vect = nodes[id2, :] - nodes[id1, :]  # Direction vector of the beam element
+                normal_vect = list(
+                    np.cross(np.array([1.0, 0.0, 0.0]), dir_vect)
+                )  # Normal vector to (x, dir_vect) plan
+                bdf.add_cbar(
+                    elem_id, prop_id, [id1 + comp_id, id2 + comp_id], x=normal_vect, g0=None
+                )
+
+                # PBAR cards
+                bdf.add_pbar(
+                    prop_id,
+                    mat_id,
+                    A=prop[0],
+                    i1=prop[1],
+                    i2=prop[2],
+                    j=prop[3],
+                    c1=prop[4],
+                    c2=prop[5],
+                    d1=prop[6],
+                    d2=prop[7],
+                    e1=prop[8],
+                    e2=prop[9],
+                    f1=prop[10],
+                    f2=prop[11],
+                )
+
+            # Clamping card ------------------------------------------------------------------------
+            bdf.add_spc1(i + 2, "123456", comp_id)
+
+        # GRAV card --------------------------------------------------------------------------------
+        bdf.add_grav(12, 9.806, [0.0, 0.0, -1.0])
+
+        # LOAD card --------------------------------------------------------------------------------
+        bdf.add_load(2, 1.0, [1.0, nz], [11, 12])
+
+        # SPCADD card (to create problem boundary conditions) --------------------------------------
+        bdf.add_spcadd(1, np.arange(2, 2 + len(components), 1, dtype=int))
+
+        # Joining strut and wing if a strut exist --------------------------------------------------
+        if "strut" in components:
+            strut_nodes = inputs["data:aerostructural:structure:strut:nodes"]
+            wing_nodes = inputs["data:aerostructural:structure:wing:nodes"]
+            id_connect_right = np.where(wing_nodes[:, 1] == -strut_nodes[-1, 1])
+            id_connect_left = np.where(wing_nodes[:, 1] == strut_nodes[-1, 1])
+            bdf.add_rbe2(
+                id_strut + 10000001,
+                id_wing + id_connect_left,
+                "123456",
+                [id_strut + np.size(strut_nodes, axis=0)],
+            )
+            bdf.add_rbe2(
+                id_strut + 10000002, id_wing + id_connect_right, "123456", [id_strut],
+            )
+        bdf.write_bdf(bdf_filename, enddata=True)
