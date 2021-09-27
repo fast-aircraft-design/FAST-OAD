@@ -17,7 +17,11 @@ Estimation of security kit weight
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_SECURITY_KIT_MASS
 
+
+@RegisterSubmodel(SERVICE_SECURITY_KIT_MASS, "service.mass.furniture.security_kit.legacy")
 class SecurityKitWeight(om.ExplicitComponent):
     """
     Weight estimation for security kit
