@@ -27,6 +27,7 @@ from .constants import (
     SERVICE_WING_CG,
     SERVICE_GLOBAL_CG,
     SERVICE_MLG_CG,
+    SERVICE_AIRCRAFT_CG,
 )
 from ..constants import SERVICE_CENTERS_OF_GRAVITY
 
@@ -63,7 +64,9 @@ class CG(om.Group):
         self.add_subsystem(
             "update_mlg", RegisterSubmodel.get_submodel(SERVICE_MLG_CG), promotes=["*"]
         )
-        self.add_subsystem("aircraft", ComputeAircraftCG(), promotes=["*"])
+        self.add_subsystem(
+            "aircraft", RegisterSubmodel.get_submodel(SERVICE_AIRCRAFT_CG), promotes=["*"]
+        )
 
         # Solvers setup
         self.nonlinear_solver = om.NonlinearBlockGS()
@@ -74,6 +77,7 @@ class CG(om.Group):
         self.linear_solver.options["iprint"] = 0
 
 
+@RegisterSubmodel(SERVICE_AIRCRAFT_CG, "fastoad.submodel.weight.cg.aircraft.legacy")
 class ComputeAircraftCG(om.ExplicitComponent):
     """ Compute position of aircraft CG from CG ratio """
 
