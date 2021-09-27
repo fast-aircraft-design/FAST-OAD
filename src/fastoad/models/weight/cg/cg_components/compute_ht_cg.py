@@ -17,14 +17,14 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 from ..constants import SERVICE_HORIZONTAL_TAIL_CG
 
 
 @RegisterSubmodel(SERVICE_HORIZONTAL_TAIL_CG, "fastoad.submodel.weight.cg.horizontal_tail.legacy")
-class ComputeHTcg(ExplicitComponent):
+class ComputeHTcg(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Horizontal tail center of gravity estimation """
 

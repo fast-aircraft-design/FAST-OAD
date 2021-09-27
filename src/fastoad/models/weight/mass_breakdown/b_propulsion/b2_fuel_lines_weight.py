@@ -15,7 +15,7 @@ Estimation of fuel lines weight
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 from .constants import SERVICE_FUEL_LINES_MASS
@@ -24,7 +24,7 @@ from .constants import SERVICE_FUEL_LINES_MASS
 @RegisterSubmodel(
     SERVICE_FUEL_LINES_MASS, "fastoad.submodel.weight.mass.propulsion.fuel_lines.legacy"
 )
-class FuelLinesWeight(ExplicitComponent):
+class FuelLinesWeight(om.ExplicitComponent):
     """
     Weight estimation for fuel lines
 
