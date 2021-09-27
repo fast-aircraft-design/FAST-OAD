@@ -20,8 +20,10 @@ from fastoad.module_management.exceptions import FastNoSubmodelFoundError
 from fastoad.module_management.service_registry import RegisterSubmodel
 from .compute_cg_ratio_aft import ComputeCGRatioAft
 from .compute_max_cg_ratio import ComputeMaxCGratio
+from ..constants import SERVICE_GLOBAL_CG
 
 
+@RegisterSubmodel(SERVICE_GLOBAL_CG, "fastoad.submodel.weight.cg.global.legacy")
 class ComputeGlobalCG(om.Group):
     # TODO: Document equations. Cite sources
     """ Global center of gravity estimation """
