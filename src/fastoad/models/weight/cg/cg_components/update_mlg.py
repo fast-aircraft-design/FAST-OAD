@@ -18,7 +18,11 @@
 import numpy as np
 import openmdao.api as om
 
+from fastoad.models.weight.cg.constants import SERVICE_MLG_CG
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+
+@RegisterSubmodel(SERVICE_MLG_CG, "fastoad.submodel.weight.cg.main_landing_gear")
 class UpdateMLG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Main landing gear center of gravity estimation """

@@ -18,7 +18,6 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
-from .cg_components import UpdateMLG
 from .constants import (
     SERVICE_FLIGHT_CONTROLS_CG,
     SERVICE_HORIZONTAL_TAIL_CG,
@@ -27,6 +26,7 @@ from .constants import (
     SERVICE_VERTICAL_TAIL_CG,
     SERVICE_WING_CG,
     SERVICE_GLOBAL_CG,
+    SERVICE_MLG_CG,
 )
 from ..constants import SERVICE_CENTERS_OF_GRAVITY
 
@@ -60,7 +60,9 @@ class CG(om.Group):
         self.add_subsystem(
             "compute_cg", RegisterSubmodel.get_submodel(SERVICE_GLOBAL_CG), promotes=["*"]
         )
-        self.add_subsystem("update_mlg", UpdateMLG(), promotes=["*"])
+        self.add_subsystem(
+            "update_mlg", RegisterSubmodel.get_submodel(SERVICE_MLG_CG), promotes=["*"]
+        )
         self.add_subsystem("aircraft", ComputeAircraftCG(), promotes=["*"])
 
         # Solvers setup
