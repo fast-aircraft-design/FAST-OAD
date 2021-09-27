@@ -18,12 +18,10 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
-from .constants import SERVICE_EMPENNAGE_WEIGHT
+from .constants import SERVICE_EMPENNAGE_MASS
 
 
-@RegisterSubmodel(
-    SERVICE_EMPENNAGE_WEIGHT, "fastoad.submodel.weight.mass_breakdown.airframe.empennage.legacy"
-)
+@RegisterSubmodel(SERVICE_EMPENNAGE_MASS, "fastoad.submodel.weight.mass.airframe.empennage.legacy")
 class EmpennageWeight(om.ExplicitComponent):
     """
     Weight estimation for tail planes

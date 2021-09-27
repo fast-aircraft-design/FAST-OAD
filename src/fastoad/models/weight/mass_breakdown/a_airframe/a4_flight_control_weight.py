@@ -18,12 +18,11 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
-from .constants import SERVICE_FLIGHT_CONTROLS_WEIGHT
+from .constants import SERVICE_FLIGHT_CONTROLS_MASS
 
 
 @RegisterSubmodel(
-    SERVICE_FLIGHT_CONTROLS_WEIGHT,
-    "fastoad.submodel.weight.mass_breakdown.airframe.flight_control.legacy",
+    SERVICE_FLIGHT_CONTROLS_MASS, "fastoad.submodel.weight.mass.airframe.flight_control.legacy",
 )
 class FlightControlsWeight(om.ExplicitComponent):
     """

@@ -18,12 +18,10 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
-from .constants import SERVICE_FUSELAGE_WEIGHT
+from .constants import SERVICE_FUSELAGE_MASS
 
 
-@RegisterSubmodel(
-    SERVICE_FUSELAGE_WEIGHT, "fastoad.submodel.weight.mass_breakdown.airframe.fuselage.legacy"
-)
+@RegisterSubmodel(SERVICE_FUSELAGE_MASS, "fastoad.submodel.weight.mass.airframe.fuselage.legacy")
 class FuselageWeight(om.ExplicitComponent):
     """
     Fuselage weight estimation

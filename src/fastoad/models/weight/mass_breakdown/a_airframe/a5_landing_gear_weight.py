@@ -18,12 +18,11 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
-from .constants import SERVICE_LANDING_GEARS_WEIGHT
+from .constants import SERVICE_LANDING_GEARS_MASS
 
 
 @RegisterSubmodel(
-    SERVICE_LANDING_GEARS_WEIGHT,
-    "fastoad.submodel.weight.mass_breakdown.airframe.landing_gears.legacy",
+    SERVICE_LANDING_GEARS_MASS, "fastoad.submodel.weight.mass.airframe.landing_gears.legacy",
 )
 class LandingGearWeight(om.ExplicitComponent):
     """

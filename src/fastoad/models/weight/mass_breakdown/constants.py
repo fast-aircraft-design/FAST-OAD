@@ -11,12 +11,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SERVICE_OWE = "service.weight.owe"
-SERVICE_PAYLOAD = "service.weight.payload"
-SERVICE_AIRFRAME_WEIGHT = "service.weight.airframe"
-SERVICE_PROPULSION_WEIGHT = "service.weight.propulsion"
-SERVICE_SYSTEMS_WEIGHT = "service.weight.systems"
-SERVICE_FURNITURE_WEIGHT = "service.weight.furniture"
-SERVICE_CREW_WEIGHT = "service.weight.crew"
+SERVICE_OWE = "service.mass.owe"
+SERVICE_PAYLOAD_MASS = "service.mass.payload"
+SERVICE_AIRFRAME_MASS = "service.mass.airframe"
+SERVICE_PROPULSION_MASS = "service.mass.propulsion"
+SERVICE_SYSTEMS_MASS = "service.mass.systems"
+SERVICE_FURNITURE_MASS = "service.mass.furniture"
+SERVICE_CREW_MASS = "service.mass.crew"
 
 SERVICE_GUST_LOADS = "service.gust_loads"
