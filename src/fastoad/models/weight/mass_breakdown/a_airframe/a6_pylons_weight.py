@@ -18,12 +18,10 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
-from .constants import SERVICE_PYLONS_WEIGHT
+from .constants import SERVICE_PYLONS_MASS
 
 
-@RegisterSubmodel(
-    SERVICE_PYLONS_WEIGHT, "fastoad.submodel.weight.mass_breakdown.airframe.pylons.legacy"
-)
+@RegisterSubmodel(SERVICE_PYLONS_MASS, "fastoad.submodel.weight.mass.airframe.pylons.legacy")
 class PylonsWeight(om.ExplicitComponent):
     """
     Weight estimation for pylons
