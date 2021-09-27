@@ -17,7 +17,11 @@ Estimation of food water weight
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_FOOD_WATER_MASS
 
+
+@RegisterSubmodel(SERVICE_FOOD_WATER_MASS, "service.mass.furniture.food_water.legacy")
 class FoodWaterWeight(om.ExplicitComponent):
     """
     Weight estimation for food and water

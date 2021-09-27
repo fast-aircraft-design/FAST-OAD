@@ -25,7 +25,6 @@ from .constants import (
     SERVICE_PROPULSION_MASS,
     SERVICE_SYSTEMS_MASS,
 )
-from .d_furniture import FoodWaterWeight, PassengerSeatsWeight, SecurityKitWeight, ToiletsWeight
 from .update_mlw_and_mzfw import UpdateMLWandMZFW
 from ..constants import SERVICE_MASS_BREAKDOWN
 
@@ -64,36 +63,6 @@ class MassBreakdown(om.Group):
 
         self.linear_solver = om.LinearBlockGS()
         self.linear_solver.options["iprint"] = 0
-
-
-@RegisterSubmodel(SERVICE_FURNITURE_MASS, "fastoad.submodel.weight.mass.furniture.legacy")
-class FurnitureWeight(om.Group):
-    """
-    Computes mass of furniture.
-    """
-
-    def setup(self):
-        self.add_subsystem("passenger_seats_weight", PassengerSeatsWeight(), promotes=["*"])
-        self.add_subsystem("food_water_weight", FoodWaterWeight(), promotes=["*"])
-        self.add_subsystem("security_kit_weight", SecurityKitWeight(), promotes=["*"])
-        self.add_subsystem("toilets_weight", ToiletsWeight(), promotes=["*"])
-
-        weight_sum = om.AddSubtractComp()
-        weight_sum.add_equation(
-            "data:weight:furniture:mass",
-            [
-                "data:weight:furniture:passenger_seats:mass",
-                "data:weight:furniture:food_water:mass",
-                "data:weight:furniture:security_kit:mass",
-                "data:weight:furniture:toilets:mass",
-            ],
-            units="kg",
-            desc="Mass of aircraft furniture",
-        )
-
-        self.add_subsystem(
-            "furniture_weight_sum", weight_sum, promotes=["*"],
-        )
 
 
 @RegisterSubmodel(SERVICE_OWE, "fastoad.submodel.weight.mass.owe.legacy")
