@@ -17,7 +17,11 @@ Estimation of power systems weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_POWER_SYSTEMS_MASS
 
+
+@RegisterSubmodel(SERVICE_POWER_SYSTEMS_MASS, "fastoad.submodel.weight.mass.systems.power.legacy")
 class PowerSystemsWeight(ExplicitComponent):
     """
     Weight estimation for power systems (generation and distribution)

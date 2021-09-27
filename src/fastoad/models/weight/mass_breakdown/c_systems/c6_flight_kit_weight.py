@@ -18,8 +18,11 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.constants import RangeCategory
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_FLIGHT_KIT_MASS
 
 
+@RegisterSubmodel(SERVICE_FLIGHT_KIT_MASS, "fastoad.submodel.weight.mass.systems.flight_kit.legacy")
 class FlightKitWeight(om.ExplicitComponent):
     """
     Weight estimation for flight kit (tools that are always on board)
