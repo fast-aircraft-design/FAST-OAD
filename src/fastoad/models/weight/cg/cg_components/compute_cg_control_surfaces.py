@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 from ..constants import SERVICE_FLIGHT_CONTROLS_CG
@@ -24,7 +24,7 @@ from ..constants import SERVICE_FLIGHT_CONTROLS_CG
 @RegisterSubmodel(
     SERVICE_FLIGHT_CONTROLS_CG, "fastoad.submodel.weight.cg.wing.control_surfaces.legacy"
 )
-class ComputeControlSurfacesCG(ExplicitComponent):
+class ComputeControlSurfacesCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Control surfaces center of gravity estimation """
 

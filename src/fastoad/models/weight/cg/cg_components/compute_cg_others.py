@@ -15,14 +15,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 from ..constants import SERVICE_OTHERS_CG
 
 
 @RegisterSubmodel(SERVICE_OTHERS_CG, "fastoad.submodel.weight.cg.others.legacy")
-class ComputeOthersCG(ExplicitComponent):
+class ComputeOthersCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Other components center of gravities estimation """
 

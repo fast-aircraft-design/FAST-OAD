@@ -17,14 +17,14 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 from ..constants import SERVICE_VERTICAL_TAIL_CG
 
 
 @RegisterSubmodel(SERVICE_VERTICAL_TAIL_CG, "fastoad.submodel.weight.cg.vertical_tail.legacy")
-class ComputeVTcg(ExplicitComponent):
+class ComputeVTcg(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail center of gravity estimation """
 

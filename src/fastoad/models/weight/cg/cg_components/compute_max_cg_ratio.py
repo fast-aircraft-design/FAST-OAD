@@ -1,7 +1,6 @@
 """
     Estimation of maximum center of gravity ratio
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,11 +13,12 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeMaxCGratio(ExplicitComponent):
+class ComputeMaxCGratio(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Maximum center of gravity ratio estimation """
 

@@ -18,8 +18,8 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.models.weight.cg.constants import SERVICE_MLG_CG
 from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_MLG_CG
 
 
 @RegisterSubmodel(SERVICE_MLG_CG, "fastoad.submodel.weight.cg.main_landing_gear")
