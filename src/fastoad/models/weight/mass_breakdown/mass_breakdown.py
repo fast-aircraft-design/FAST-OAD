@@ -16,11 +16,6 @@ import openmdao.api as om
 
 from fastoad.models.constants import PAYLOAD_FROM_NPAX
 from fastoad.module_management.service_registry import RegisterSubmodel
-from .b_propulsion import (
-    EngineWeight,
-    FuelLinesWeight,
-    UnconsumablesWeight,
-)
 from .c_systems import (
     FixedOperationalSystemsWeight,
     FlightKitWeight,
@@ -77,35 +72,6 @@ class MassBreakdown(om.Group):
 
         self.linear_solver = om.LinearBlockGS()
         self.linear_solver.options["iprint"] = 0
-
-
-@RegisterSubmodel(SERVICE_PROPULSION_MASS, "fastoad.submodel.weight.mass.propulsion.legacy")
-class PropulsionWeight(om.Group):
-    """
-    Computes mass of propulsion.
-    """
-
-    def setup(self):
-        # Engine have to be computed before pylons
-        self.add_subsystem("engines_weight", EngineWeight(), promotes=["*"])
-        self.add_subsystem("fuel_lines_weight", FuelLinesWeight(), promotes=["*"])
-        self.add_subsystem("unconsumables_weight", UnconsumablesWeight(), promotes=["*"])
-
-        weight_sum = om.AddSubtractComp()
-        weight_sum.add_equation(
-            "data:weight:propulsion:mass",
-            [
-                "data:weight:propulsion:engine:mass",
-                "data:weight:propulsion:fuel_lines:mass",
-                "data:weight:propulsion:unconsumables:mass",
-            ],
-            units="kg",
-            desc="Mass of the propulsion system",
-        )
-
-        self.add_subsystem(
-            "propulsion_weight_sum", weight_sum, promotes=["*"],
-        )
 
 
 @RegisterSubmodel(SERVICE_SYSTEMS_MASS, "fastoad.submodel.weight.mass.systems.legacy")

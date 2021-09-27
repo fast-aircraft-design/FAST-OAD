@@ -17,7 +17,13 @@ Estimation of fuel lines weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_UNCONSUMABLES_MASS
 
+
+@RegisterSubmodel(
+    SERVICE_UNCONSUMABLES_MASS, "fastoad.submodel.weight.mass.propulsion.unconsumables.legacy"
+)
 class UnconsumablesWeight(ExplicitComponent):
     """
     Weight estimation for oil and unusable fuel
