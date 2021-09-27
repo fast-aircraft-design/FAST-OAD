@@ -24,9 +24,7 @@ class ComputeMaxCGratio(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:weight:aircraft:empty:CG:MAC_position", val=np.nan)
-        self.add_input(
-            "data:weight:aircraft:load_cases:CG:MAC_position", val=np.nan, shape_by_conn=True
-        )
+        self.add_input("data:weight:aircraft:load_cases:CG:MAC_position:maximum", val=np.nan)
         self.add_input(
             "settings:weight:aircraft:CG:aft:MAC_position:margin",
             val=0.05,
@@ -45,6 +43,6 @@ class ComputeMaxCGratio(om.ExplicitComponent):
         ] + np.nanmax(
             [
                 inputs["data:weight:aircraft:empty:CG:MAC_position"],
-                np.nanmax(inputs["data:weight:aircraft:load_cases:CG:MAC_position"]),
+                inputs["data:weight:aircraft:load_cases:CG:MAC_position:maximum"],
             ]
         )
