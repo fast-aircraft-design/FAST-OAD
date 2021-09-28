@@ -1,5 +1,5 @@
 """Exceptions for module_management package."""
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -12,14 +12,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import Sequence, List
+
 from fastoad.exceptions import FastError
 
 
 class FastBundleLoaderDuplicateFactoryError(FastError):
+    """
+    Raised when trying to register a factory with an already used name.
+    """
+
     def __init__(self, factory_name: str):
         """
-        Raised when trying to register a factory with an already used name.
-
         :param factory_name:
         """
         super().__init__('Name "%s" is already used.' % factory_name)
@@ -27,10 +31,12 @@ class FastBundleLoaderDuplicateFactoryError(FastError):
 
 
 class FastBundleLoaderUnknownFactoryNameError(FastError):
+    """
+    Raised when trying to instantiate a component from an unknown factory.
+    """
+
     def __init__(self, factory_name: str):
         """
-        Raised when trying to instantiate a component from an unknown factory.
-
         :param factory_name:
         """
         super().__init__('"%s" is not registered.' % factory_name)
@@ -38,10 +44,12 @@ class FastBundleLoaderUnknownFactoryNameError(FastError):
 
 
 class FastBadSystemOptionError(FastError):
+    """
+    Raised when some option name is not conform to OpenMDAO system definition.
+    """
+
     def __init__(self, identifier, option_names):
         """
-        Raised when some option name is not conform to OpenMDAO system definition.
-
         :param identifier: system identifier
         :param option_names: incorrect option names
         """
@@ -54,11 +62,13 @@ class FastBadSystemOptionError(FastError):
 
 
 class FastIncompatibleServiceClassError(FastError):
+    """
+    Raised when trying to register as service a class that does not implement
+    the specified interface.
+    """
+
     def __init__(self, registered_class: type, service_id: str, base_class: type):
         """
-        Raised when trying to register as service a class that does not implement
-        the specified interface.
-
         :param registered_class:
         :param service_id:
         :param base_class: the unmatched interface
@@ -70,3 +80,54 @@ class FastIncompatibleServiceClassError(FastError):
         self.registered_class = registered_class
         self.service_id = service_id
         self.base_class = base_class
+
+
+class FastNoSubmodelFoundError(FastError):
+    """
+    Raised when a submodel is required, but none has been declared.
+    """
+
+    def __init__(self, service_id: str):
+        """
+        :param service_id:
+        """
+        super().__init__('No submodel found for requirement "%s"' % service_id)
+        self.service_id = service_id
+
+
+class FastTooManySubmodelsError(FastError):
+    """
+    Raised when several candidates are declared for a required submodel, but
+    none has been selected.
+    """
+
+    def __init__(self, service_id: str, candidates: Sequence[str]):
+        """
+        :param service_id:
+        :param candidates:
+        """
+        super().__init__(
+            'Submodel requirement "%s" needs a choice among following candidates: %s'
+            % (service_id, candidates)
+        )
+        self.service_id = service_id
+        self.candidates = candidates
+
+
+class FastUnknownSubmodelError(FastError):
+    """
+    Raised when a submodel identifier is unknown for given required service.
+    """
+
+    def __init__(self, service_id: str, submodel_id: str, submodel_ids: List[str]):
+        """
+        :param service_id:
+        :param submodel_id:
+        :param submodel_ids:
+        """
+
+        msg = '"%s" is not a submodel identifier for requirement "%s"' % (submodel_id, service_id)
+        msg += "\nValid identifiers are %s" % submodel_ids
+        super().__init__(msg)
+        self.service_id = service_id
+        self.submodel_id = submodel_id

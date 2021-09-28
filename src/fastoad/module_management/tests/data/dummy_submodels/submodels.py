@@ -1,5 +1,3 @@
-"""Sellar discipline 2"""
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,20 +10,22 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from openmdao.api import ExplicitComponent
+
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 
-class Disc2Base(ExplicitComponent):
-    """ An OpenMDAO base component to encapsulate Disc2 discipline """
+@RegisterSubmodel("requirement.1", "req.1.submodel")
+class UniqueSubmodelForRequirement1(om.ExplicitComponent):
+    pass
 
-    def initialize(self):
-        self.options.declare("answer", 42)
 
-    def setup(self):
-        self.add_input("z", val=[5, 2], desc="", units="m**2")  # for testing non-None units
-        self.add_input("y1", val=1.0, desc="")
+@RegisterSubmodel("requirement.2", "req.2.submodel.A")
+class SubmodelAForRequirement2(om.ExplicitComponent):
+    pass
 
-        self.add_output("y2", val=1.0, desc="")
 
-    def setup_partials(self):
-        self.declare_partials("*", "*", method="fd")
+@RegisterSubmodel("requirement.2", "req.2.submodel.B")
+class SubmodelBForRequirement2(om.ExplicitComponent):
+    pass

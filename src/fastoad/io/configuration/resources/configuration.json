@@ -135,6 +135,11 @@
     "model": {
       "$ref": "#/definitions/group"
     },
+    "submodels": {
+      "additionalProperties": {
+        "type": ["string", "null"]
+      }
+    },
     "optimization": {
       "type": "object",
       "additionalProperties": false,

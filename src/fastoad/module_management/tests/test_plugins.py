@@ -18,7 +18,7 @@ from pkg_resources import EntryPoint, get_distribution
 
 from .._plugins import MODEL_PLUGIN_ID, load_plugins
 from ..exceptions import FastBundleLoaderUnknownFactoryNameError
-from ..service_registry import RegisterService
+from ..service_registry import RegisterSpecializedService
 from ...openmdao.variables import Variable
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -30,7 +30,7 @@ class DummyBase:
         return self.__class__.__name__
 
 
-class RegisterDummyService(RegisterService, base_class=DummyBase):
+class RegisterDummyService(RegisterSpecializedService, base_class=DummyBase):
     pass
 
 

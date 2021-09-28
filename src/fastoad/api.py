@@ -40,7 +40,8 @@ from fastoad.model_base import Atmosphere, AtmosphereSI, FlightPoint
 from fastoad.module_management.service_registry import (
     RegisterOpenMDAOSystem,
     RegisterPropulsion,
-    RegisterService,
+    RegisterSpecializedService,
+    RegisterSubmodel,
 )
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.openmdao.validity_checker import ValidityDomainChecker

@@ -29,9 +29,8 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
         id = "configuration_test.sellar.functions"
 
 [submodels]
-    "service.function.f" = "function.f.default"
-    "service.function.g1" = "function.g1.default"
-    "service.function.g2" = "function.g2.default"
+    "service.function.f" = "function.f.alternate"
+    "service.function.g1" = ""
 
 [optimization]
     [[optimization.design_variables]]
@@ -43,10 +42,6 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
       lower = 0
       upper = 10
 
-    [[optimization.constraints]]
-      name = "g1"
-      lower = -100
-      upper = 0
     [[optimization.constraints]]
       name = "g2"
       upper = 0

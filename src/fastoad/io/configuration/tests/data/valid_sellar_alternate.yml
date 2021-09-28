@@ -25,9 +25,8 @@ model:
     id: configuration_test.sellar.functions
 
 submodels:
-  service.function.f: function.f.default
-  service.function.g1: function.g1.default
-  service.function.g2: function.g2.default
+  service.function.f: function.f.alternate
+  service.function.g1: null
 
 optimization:
   design_variables:
@@ -38,14 +37,8 @@ optimization:
       lower: 0
       upper: 10
   constraints:
-    - name: g1
-      lower: -100
-      upper: 0
     - name: g2
       upper: 0
   objective:
     - name: f
       scaler: 1e-1
-
-unknown_section:
-  foo: bar

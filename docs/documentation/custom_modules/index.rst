@@ -11,3 +11,4 @@ Here you will find information about custom modules in FAST-OAD.
     Adding a propulsion module <add_propulsion_module>
     Documenting variables <add_variable_documentation>
     Sharing your modules as a FAST-OAD plugin <add_plugin>
+    Using submodels (experimental) <add_submodels>
