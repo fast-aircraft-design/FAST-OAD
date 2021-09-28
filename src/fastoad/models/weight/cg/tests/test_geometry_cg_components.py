@@ -34,6 +34,7 @@ from ..cg_components import (
     ComputeTanksCG,
     ComputeWingCG,
 )
+from ..cg_components.compute_global_cg import CGRatiosForLoadCases
 
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures
@@ -47,7 +48,7 @@ def input_xml() -> VariableIO:
 
 
 def test_compute_cg_control_surfaces(input_xml):
-    """ Tests computation of control surfaces center of gravity """
+    """Tests computation of control surfaces center of gravity"""
 
     input_list = [
         "data:geometry:wing:MAC:leading_edge:x:local",
@@ -69,31 +70,8 @@ def test_compute_cg_control_surfaces(input_xml):
     assert x_cg_a4 == pytest.approx(19.24, abs=1e-2)
 
 
-def test_compute_cg_loadcase1(input_xml):
-    """ Tests computation of center of gravity for load case 1 """
-
-    input_list = [
-        "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:at25percent:x",
-        "data:weight:payload:PAX:CG:x",
-        "data:weight:payload:rear_fret:CG:x",
-        "data:weight:payload:front_fret:CG:x",
-        "data:TLAR:NPAX",
-    ]
-
-    input_vars = input_xml.read(only=input_list).to_ivc()
-
-    input_vars.add_output("data:weight:aircraft_empty:CG:x", 699570.01 / 40979.11)
-    input_vars.add_output("data:weight:aircraft_empty:mass", 40979.11)
-
-    problem = run_system(ComputeCGLoadCase1(), input_vars)
-
-    cg_ratio_lc1 = problem["data:weight:aircraft:load_case_1:CG:MAC_position"]
-    assert cg_ratio_lc1 == pytest.approx(0.364907, abs=1e-6)
-
-
-def test_compute_cg_loadcase2(input_xml):
-    """ Tests computation of center of gravity for load case 2 """
+def test_compute_cg_loadcases(input_xml):
+    """Tests computation of center of gravity for load case 2"""
 
     input_list = [
         "data:geometry:wing:MAC:length",
@@ -111,60 +89,29 @@ def test_compute_cg_loadcase2(input_xml):
     input_vars.add_output("data:weight:aircraft_empty:CG:x", 699570.01 / 40979.11)
     input_vars.add_output("data:weight:aircraft_empty:mass", 40979.11)
 
-    problem = run_system(ComputeCGLoadCase2(), input_vars)
+    # Testing each load case independently -------------
+    classes = [ComputeCGLoadCase1, ComputeCGLoadCase2, ComputeCGLoadCase3, ComputeCGLoadCase4]
+    cg_ratio_lc = [0.0]  # dummy first item to ensure cg_ratio_lc[i] is for load case i
+    for i, cg_class in enumerate(classes):
+        problem = run_system(cg_class(), input_vars)
+        cg_ratio_lc.append(problem[f"data:weight:aircraft:load_case_{i+1}:CG:MAC_position"])
 
-    cg_ratio_lc2 = problem["data:weight:aircraft:load_case_2:CG:MAC_position"]
-    assert cg_ratio_lc2 == pytest.approx(0.285139, abs=1e-6)
+    assert cg_ratio_lc[1] == pytest.approx(0.364907, abs=1e-6)
+    assert cg_ratio_lc[2] == pytest.approx(0.285139, abs=1e-6)
+    assert cg_ratio_lc[3] == pytest.approx(0.386260, abs=1e-6)
+    assert cg_ratio_lc[4] == pytest.approx(0.388971, abs=1e-6)
 
+    # Testing the aggregated load cases -------------
+    problem = run_system(CGRatiosForLoadCases(), input_vars)
+    cg_ratios = problem["data:weight:aircraft:load_cases:CG:MAC_position"]
+    max_cg_ratios = problem["data:weight:aircraft:load_cases:CG:MAC_position:maximum"]
 
-def test_compute_cg_loadcase3(input_xml):
-    """ Tests computation of center of gravity for load case 3 """
-
-    input_list = [
-        "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:at25percent:x",
-        "data:weight:payload:PAX:CG:x",
-        "data:weight:payload:rear_fret:CG:x",
-        "data:weight:payload:front_fret:CG:x",
-        "data:TLAR:NPAX",
-    ]
-
-    input_vars = input_xml.read(only=input_list).to_ivc()
-
-    input_vars.add_output("data:weight:aircraft_empty:CG:x", 699570.01 / 40979.11)
-    input_vars.add_output("data:weight:aircraft_empty:mass", 40979.11)
-
-    problem = run_system(ComputeCGLoadCase3(), input_vars)
-
-    cg_ratio_lc3 = problem["data:weight:aircraft:load_case_3:CG:MAC_position"]
-    assert cg_ratio_lc3 == pytest.approx(0.386260, abs=1e-6)
-
-
-def test_compute_cg_loadcase4(input_xml):
-    """ Tests computation of center of gravity for load case 4 """
-
-    input_list = [
-        "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:at25percent:x",
-        "data:weight:payload:PAX:CG:x",
-        "data:weight:payload:rear_fret:CG:x",
-        "data:weight:payload:front_fret:CG:x",
-        "data:TLAR:NPAX",
-    ]
-
-    input_vars = input_xml.read(only=input_list).to_ivc()
-
-    input_vars.add_output("data:weight:aircraft_empty:CG:x", 699570.01 / 40979.11)
-    input_vars.add_output("data:weight:aircraft_empty:mass", 40979.11)
-
-    problem = run_system(ComputeCGLoadCase4(), input_vars)
-
-    cg_ratio_lc4 = problem["data:weight:aircraft:load_case_4:CG:MAC_position"]
-    assert cg_ratio_lc4 == pytest.approx(0.388971, abs=1e-6)
+    assert cg_ratios == pytest.approx([0.364907, 0.285139, 0.386260, 0.388971], abs=1e-6)
+    assert max_cg_ratios == pytest.approx(0.388971, abs=1e-6)
 
 
 def test_compute_cg_others(input_xml):
-    """ Tests computation of other components center of gravity """
+    """Tests computation of other components center of gravity"""
 
     input_list = [
         "data:geometry:wing:MAC:leading_edge:x:local",
@@ -244,7 +191,7 @@ def test_compute_cg_others(input_xml):
 
 
 def test_compute_cg_ratio_aft(input_xml):
-    """ Tests computation of center of gravity with aft estimation """
+    """Tests computation of center of gravity with aft estimation"""
 
     input_list = [
         "data:weight:airframe:wing:CG:x",
@@ -324,7 +271,7 @@ def test_compute_cg_ratio_aft(input_xml):
 
 
 def test_compute_cg_tanks(input_xml):
-    """ Tests computation of tanks center of gravity """
+    """Tests computation of tanks center of gravity"""
 
     input_list = [
         "data:geometry:wing:spar_ratio:front:root",
@@ -356,7 +303,7 @@ def test_compute_cg_tanks(input_xml):
 
 
 def test_compute_cg_wing(input_xml):
-    """ Tests computation of wing center of gravity """
+    """Tests computation of wing center of gravity"""
 
     input_list = [
         "data:geometry:wing:kink:span_ratio",
@@ -389,7 +336,7 @@ def test_compute_cg_wing(input_xml):
 
 
 def test_compute_global_cg(input_xml):
-    """ Tests computation of global center of gravity """
+    """Tests computation of global center of gravity"""
 
     input_list = [
         "data:geometry:wing:MAC:length",
@@ -473,7 +420,7 @@ def test_compute_global_cg(input_xml):
 
 
 def test_compute_max_cg_ratio(input_xml):
-    """ Tests computation of maximum center of gravity ratio """
+    """Tests computation of maximum center of gravity ratio"""
 
     input_list = []
 
@@ -489,7 +436,7 @@ def test_compute_max_cg_ratio(input_xml):
 
 
 def test_compute_aircraft_cg(input_xml):
-    """ Tests computation of static margin """
+    """Tests computation of static margin"""
 
     input_list = [
         "data:geometry:wing:MAC:length",
