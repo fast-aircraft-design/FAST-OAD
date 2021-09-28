@@ -20,9 +20,9 @@ FAST-OAD modules are generally associated to a discipline, and do all the relate
 For example, the native weight module computes the masses and the centers of gravity of each
 aircraft part and of the whole aircraft.
 
-Now, let's say we want to modify the computation of wing mass. Then, we could a new weight module
-where the only difference will be in the wing mass computation. This is not satisfactory because
-it would makes us copy all the code that is not related to wing mass.
+Now, let's say we want to modify the computation of wing mass. Then, we could add a new weight
+module where the only difference will be in the wing mass computation. This is not satisfactory
+because it would makes us copy all the code that is not related to wing mass.
 
 To solve this problem, one solution would be to make smaller, more specific modules, and have
 them assembled in the configuration file. But it would result in very complex configuration
@@ -70,7 +70,7 @@ look like:
 
 In the above implementation, someone that would want to provide an alternate method to count
 atoms in the wing, while keeping your method for fuselage, would have to provide its own FAST-OAD
-module, ideally by reusing your :code:`CountFuselageAtoms`class, but possibly by needlessly
+module, ideally by reusing your :code:`CountFuselageAtoms` class, but possibly by needlessly
 copying it in its own code.
 
 To allow a simpler replacement of your submodels, you will need to use the
@@ -212,9 +212,9 @@ It is also possible to deactivate a submodel:
 
     oad.RegisterSubmodel.active_models["atom_counter.wing"] = None  # The empty string "" is also possible
 
-Then no computation will be done when the "atom_counter.wing" submodel will be called. Of course,
-one has to correctly know which variables will be missing with such setting and what consequences
-it will have on the whole problem.
+Then nothing will be done when the "atom_counter.wing" submodel will be called. Of course, one
+has to correctly know which variables will be missing with such setting and what consequences it
+will have on the whole problem.
 
 From the configuration file, it can be done with:
 
