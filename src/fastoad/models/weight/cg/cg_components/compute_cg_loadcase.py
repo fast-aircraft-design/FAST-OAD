@@ -21,19 +21,19 @@ class ComputeCGLoadCase(om.ExplicitComponent):
     Base class for computing load cases for CG calculations.
     """
 
-    # TODO: Document equations. Cite sources
+    @property
+    def output_name(self):
+        """Builds name of the unique output from option "case_number"."""
+        return "data:weight:aircraft:load_case_%i:CG:MAC_position" % self.options["case_number"]
+
     def initialize(self):
         self.options.declare("case_number", 1, types=int)
-        self.options.declare("weight_per_pax", 80.0, types=float)
-        self.options.declare("weight_front_fret_per_pax", 0.0, types=float)
-        self.options.declare("weight_rear_fret_per_pax", 0.0, types=float)
-        self.options.declare("weight_fuel_variable", "", types=str, allow_none=True)
+        self.options.declare("mass_per_pax", 80.0, types=float)
+        self.options.declare("mass_front_fret_per_pax", 0.0, types=float)
+        self.options.declare("mass_rear_fret_per_pax", 0.0, types=float)
+        self.options.declare("fuel_mass_variable", "", types=str, allow_none=True)
 
     def setup(self):
-        self.output_name = (
-            "data:weight:aircraft:load_case_%i:CG:MAC_position" % self.options["case_number"]
-        )
-
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:weight:payload:PAX:CG:x", val=np.nan, units="m")
@@ -43,8 +43,8 @@ class ComputeCGLoadCase(om.ExplicitComponent):
         self.add_input("data:weight:aircraft_empty:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:mass", val=np.nan, units="kg")
 
-        if self.options["weight_fuel_variable"]:
-            self.add_input(self.options["weight_fuel_variable"], val=np.nan, units="kg")
+        if self.options["fuel_mass_variable"]:
+            self.add_input(self.options["fuel_mass_variable"], val=np.nan, units="kg")
             self.add_input("data:weight:fuel_tank:CG:x", val=np.nan, units="m")
 
         self.add_output(self.output_name)
@@ -55,32 +55,47 @@ class ComputeCGLoadCase(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
+        x_cg_aircraft_empty = inputs["data:weight:aircraft_empty:CG:x"]
+        mass_aircraft_empty = inputs["data:weight:aircraft_empty:mass"]
+
+        mass_payload, x_cg_payload = self._get_payload_mass_and_cg(inputs)
+
+        x_cg_aircraft_with_payload = (
+            mass_aircraft_empty * x_cg_aircraft_empty + mass_payload * x_cg_payload
+        ) / (mass_aircraft_empty + mass_payload)
+        cg_ratio_aircraft_with_payload = (
+            x_cg_aircraft_with_payload - fa_length + 0.25 * l0_wing
+        ) / l0_wing
+        outputs[self.output_name] = cg_ratio_aircraft_with_payload
+
+    def _get_payload_mass_and_cg(self, inputs):
+        """
+
+        :param inputs:
+        :return: tuple (payload mass, X-position of payload CG)
+        """
+
         cg_pax = inputs["data:weight:payload:PAX:CG:x"]
         cg_rear_fret = inputs["data:weight:payload:rear_fret:CG:x"]
         cg_front_fret = inputs["data:weight:payload:front_fret:CG:x"]
         npax = inputs["data:TLAR:NPAX"]
-        x_cg_plane_aft = inputs["data:weight:aircraft_empty:CG:x"]
-        x_cg_plane_down = inputs["data:weight:aircraft_empty:mass"]
 
-        weight_per_pax = self.options["weight_per_pax"]
-        weight_front_fret = inputs["data:TLAR:NPAX"] * self.options["weight_front_fret_per_pax"]
-        weight_rear_fret = inputs["data:TLAR:NPAX"] * self.options["weight_rear_fret_per_pax"]
-        if self.options["weight_fuel_variable"]:
-            weight_fuel = inputs[self.options["weight_fuel_variable"]]
+        mass_pax = npax * self.options["mass_per_pax"]
+        mass_front_fret = inputs["data:TLAR:NPAX"] * self.options["mass_front_fret_per_pax"]
+        mass_rear_fret = inputs["data:TLAR:NPAX"] * self.options["mass_rear_fret_per_pax"]
+        if self.options["fuel_mass_variable"]:
+            mass_fuel = inputs[self.options["fuel_mass_variable"]]
             cg_fuel = inputs["data:weight:fuel_tank:CG:x"]
         else:
-            weight_fuel = 0.0
+            mass_fuel = 0.0
             cg_fuel = 0.0
 
-        x_cg_plane_up = x_cg_plane_aft * x_cg_plane_down
-        weight_pax = npax * weight_per_pax
-        weight_pl = weight_pax + weight_rear_fret + weight_front_fret + weight_fuel
-        x_cg_pl = (
-            weight_pax * cg_pax
-            + weight_rear_fret * cg_rear_fret
-            + weight_front_fret * cg_front_fret
-            + weight_fuel * cg_fuel
-        ) / weight_pl
-        x_cg_plane_pl = (x_cg_plane_up + weight_pl * x_cg_pl) / (x_cg_plane_down + weight_pl)
-        cg_ratio_pl = (x_cg_plane_pl - fa_length + 0.25 * l0_wing) / l0_wing
-        outputs[self.output_name] = cg_ratio_pl
+        mass_payload = mass_pax + mass_rear_fret + mass_front_fret + mass_fuel
+        x_cg_payload = (
+            mass_pax * cg_pax
+            + mass_rear_fret * cg_rear_fret
+            + mass_front_fret * cg_front_fret
+            + mass_fuel * cg_fuel
+        ) / mass_payload
+
+        return mass_payload, x_cg_payload

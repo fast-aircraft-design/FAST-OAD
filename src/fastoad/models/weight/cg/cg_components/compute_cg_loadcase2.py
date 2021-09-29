@@ -30,8 +30,8 @@ class ComputeCGLoadCase2(ComputeCGLoadCase):
 
     def setup(self):
         self.options["case_number"] = CASE_NUMBER
-        self.options["weight_per_pax"] = 90.0
-        self.options["weight_front_fret_per_pax"] = 20.0
-        self.options["weight_rear_fret_per_pax"] = 20.0
-        self.options["weight_fuel_variable"] = "data:weight:aircraft:MFW"
+        self.options["mass_per_pax"] = 90.0
+        self.options["mass_front_fret_per_pax"] = 20.0
+        self.options["mass_rear_fret_per_pax"] = 20.0
+        self.options["fuel_mass_variable"] = "data:weight:aircraft:MFW"
         return super().setup()

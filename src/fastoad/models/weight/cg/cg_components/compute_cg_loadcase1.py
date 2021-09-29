@@ -30,7 +30,7 @@ class ComputeCGLoadCase1(ComputeCGLoadCase):
 
     def setup(self):
         self.options["case_number"] = CASE_NUMBER
-        self.options["weight_per_pax"] = 80.0
-        self.options["weight_front_fret_per_pax"] = 0.0
-        self.options["weight_rear_fret_per_pax"] = 0.0
+        self.options["mass_per_pax"] = 80.0
+        self.options["mass_front_fret_per_pax"] = 0.0
+        self.options["mass_rear_fret_per_pax"] = 0.0
         return super().setup()
