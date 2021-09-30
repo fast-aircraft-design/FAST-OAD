@@ -2,7 +2,7 @@
 Test module for geometry functions of cg components
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,12 +14,13 @@ Test module for geometry functions of cg components
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=redefined-outer-name  # needed for pytest fixtures
+
 import os.path as pth
 
 import pytest
 
 from fastoad.io import VariableIO
-from fastoad.models.weight.cg.cg_components import ComputeHTcg, ComputeVTcg, UpdateMLG
 from tests.testing_utilities import run_system
 from ..geom_components import ComputeTotalArea
 from ..geom_components.fuselage import (
@@ -28,18 +29,18 @@ from ..geom_components.fuselage import (
 )
 from ..geom_components.fuselage.compute_cnbeta_fuselage import ComputeCnBetaFuselage
 from ..geom_components.ht.components import (
-    ComputeHTMAC,
     ComputeHTChord,
     ComputeHTClalpha,
+    ComputeHTMAC,
     ComputeHTSweep,
 )
 from ..geom_components.nacelle_pylons.compute_nacelle_pylons import ComputeNacelleAndPylonsGeometry
 from ..geom_components.vt.components import (
-    ComputeVTMAC,
     ComputeVTChords,
     ComputeVTClalpha,
-    ComputeVTSweep,
     ComputeVTDistance,
+    ComputeVTMAC,
+    ComputeVTSweep,
 )
 from ..geom_components.wing.components import (
     ComputeB50,
@@ -56,7 +57,6 @@ from ..geom_components.wing.components import (
 )
 
 
-# pylint: disable=redefined-outer-name  # needed for pytest fixtures
 @pytest.fixture(scope="module")
 def input_xml() -> VariableIO:
     """
@@ -136,28 +136,6 @@ def test_compute_fuselage_basic(input_xml):
     assert fuselage_wet_area == pytest.approx(401.962, abs=1e-3)
     pnc = problem["data:geometry:cabin:crew_count:commercial"]
     assert pnc == pytest.approx(4, abs=1)
-
-
-def test_compute_ht_cg(input_xml):
-    """ Tests computation of the horizontal tail center of gravity """
-
-    input_list = [
-        "data:geometry:horizontal_tail:root:chord",
-        "data:geometry:horizontal_tail:tip:chord",
-        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-        "data:geometry:horizontal_tail:span",
-        "data:geometry:wing:MAC:at25percent:x",
-        "data:geometry:horizontal_tail:sweep_25",
-        "data:geometry:horizontal_tail:MAC:length",
-    ]
-
-    input_vars = input_xml.read(only=input_list).to_ivc()
-    input_vars.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:local", 1.656, units="m")
-
-    problem = run_system(ComputeHTcg(), input_vars)
-
-    cg_a31 = problem["data:weight:airframe:horizontal_tail:CG:x"]
-    assert cg_a31 == pytest.approx(34.58, abs=1e-2)
 
 
 def test_compute_ht_mac(input_xml):
@@ -261,31 +239,6 @@ def test_compute_fuselage_cnbeta(input_xml):
 
     cn_beta = problem["data:aerodynamics:fuselage:cruise:CnBeta"]
     assert cn_beta == pytest.approx(-0.117901, abs=1e-6)
-
-
-def test_compute_vt_cg(input_xml):
-    """ Tests computation of the vertical tail center of gravity """
-
-    input_list = [
-        "data:geometry:vertical_tail:root:chord",
-        "data:geometry:vertical_tail:tip:chord",
-        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-        "data:geometry:vertical_tail:span",
-        "data:geometry:wing:MAC:at25percent:x",
-        "data:geometry:vertical_tail:sweep_25",
-        "data:geometry:vertical_tail:MAC:length",
-    ]
-
-    input_vars = input_xml.read(only=input_list).to_ivc()
-
-    input_vars.add_output("data:geometry:vertical_tail:MAC:at25percent:x:local", 2.321, units="m")
-
-    component = ComputeVTcg()
-
-    problem = run_system(component, input_vars)
-
-    cg_a32 = problem["data:weight:airframe:vertical_tail:CG:x"]
-    assert cg_a32 == pytest.approx(34.265, abs=1e-3)
 
 
 def test_compute_vt_mac(input_xml):
@@ -730,22 +683,3 @@ def test_geometry_total_area(input_xml):
 
     total_surface = problem["data:geometry:aircraft:wetted_area"]
     assert total_surface == pytest.approx(783.997, abs=1e-3)
-
-
-def test_geometry_update_mlg(input_xml):
-    """ Tests computation of the main landing gear """
-
-    input_list = [
-        "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:at25percent:x",
-    ]
-
-    input_vars = input_xml.read(only=input_list).to_ivc()
-
-    input_vars.add_output("data:weight:aircraft:CG:aft:MAC_position", 0.364924)
-    input_vars.add_output("data:weight:airframe:landing_gear:front:CG:x", 5.07)
-
-    problem = run_system(UpdateMLG(), input_vars)
-
-    cg_a51 = problem["data:weight:airframe:landing_gear:main:CG:x"]
-    assert cg_a51 == pytest.approx(18.00, abs=1e-2)

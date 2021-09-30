@@ -14,6 +14,8 @@ Test module for geometry functions of cg components
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=redefined-outer-name  # needed for pytest fixtures
+
 import os.path as pth
 
 import pytest
@@ -21,23 +23,23 @@ import pytest
 from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
 from ..cg import ComputeAircraftCG
-from ..cg_components import (
-    ComputeCGLoadCase1,
-    ComputeCGLoadCase2,
-    ComputeCGLoadCase3,
-    ComputeCGLoadCase4,
-    ComputeCGRatioAft,
-    ComputeControlSurfacesCG,
-    ComputeGlobalCG,
-    ComputeMaxCGratio,
-    ComputeOthersCG,
-    ComputeTanksCG,
-    ComputeWingCG,
-)
-from ..cg_components.compute_cg_loadcases import CGRatiosForLoadCases
+from ..cg_components.compute_cg_control_surfaces import ComputeControlSurfacesCG
+from ..cg_components.compute_cg_others import ComputeOthersCG
+from ..cg_components.compute_cg_ratio_aft import ComputeCGRatioAft
+from ..cg_components.compute_cg_tanks import ComputeTanksCG
+from ..cg_components.compute_cg_wing import ComputeWingCG
+from ..cg_components.compute_global_cg import ComputeGlobalCG
+from ..cg_components.compute_ht_cg import ComputeHTcg
+from ..cg_components.compute_max_cg_ratio import ComputeMaxCGratio
+from ..cg_components.compute_vt_cg import ComputeVTcg
+from ..cg_components.load_cases.compute_cg_loadcase1 import ComputeCGLoadCase1
+from ..cg_components.load_cases.compute_cg_loadcase2 import ComputeCGLoadCase2
+from ..cg_components.load_cases.compute_cg_loadcase3 import ComputeCGLoadCase3
+from ..cg_components.load_cases.compute_cg_loadcase4 import ComputeCGLoadCase4
+from ..cg_components.load_cases.compute_cg_loadcases import CGRatiosForLoadCases
+from ..cg_components.update_mlg import UpdateMLG
 
 
-# pylint: disable=redefined-outer-name  # needed for pytest fixtures
 @pytest.fixture(scope="module")
 def input_xml() -> VariableIO:
     """
@@ -450,3 +452,69 @@ def test_compute_aircraft_cg(input_xml):
 
     cg_global = problem["data:weight:aircraft:CG:aft:x"]
     assert cg_global == pytest.approx(17.1, abs=1e-1)
+
+
+def test_compute_ht_cg(input_xml):
+    """Tests computation of the horizontal tail center of gravity"""
+
+    input_list = [
+        "data:geometry:horizontal_tail:root:chord",
+        "data:geometry:horizontal_tail:tip:chord",
+        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+        "data:geometry:horizontal_tail:span",
+        "data:geometry:wing:MAC:at25percent:x",
+        "data:geometry:horizontal_tail:sweep_25",
+        "data:geometry:horizontal_tail:MAC:length",
+    ]
+
+    input_vars = input_xml.read(only=input_list).to_ivc()
+    input_vars.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:local", 1.656, units="m")
+
+    problem = run_system(ComputeHTcg(), input_vars)
+
+    cg_a31 = problem["data:weight:airframe:horizontal_tail:CG:x"]
+    assert cg_a31 == pytest.approx(34.58, abs=1e-2)
+
+
+def test_compute_vt_cg(input_xml):
+    """Tests computation of the vertical tail center of gravity"""
+
+    input_list = [
+        "data:geometry:vertical_tail:root:chord",
+        "data:geometry:vertical_tail:tip:chord",
+        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+        "data:geometry:vertical_tail:span",
+        "data:geometry:wing:MAC:at25percent:x",
+        "data:geometry:vertical_tail:sweep_25",
+        "data:geometry:vertical_tail:MAC:length",
+    ]
+
+    input_vars = input_xml.read(only=input_list).to_ivc()
+
+    input_vars.add_output("data:geometry:vertical_tail:MAC:at25percent:x:local", 2.321, units="m")
+
+    component = ComputeVTcg()
+
+    problem = run_system(component, input_vars)
+
+    cg_a32 = problem["data:weight:airframe:vertical_tail:CG:x"]
+    assert cg_a32 == pytest.approx(34.265, abs=1e-3)
+
+
+def test_geometry_update_mlg(input_xml):
+    """Tests computation of the main landing gear"""
+
+    input_list = [
+        "data:geometry:wing:MAC:length",
+        "data:geometry:wing:MAC:at25percent:x",
+    ]
+
+    input_vars = input_xml.read(only=input_list).to_ivc()
+
+    input_vars.add_output("data:weight:aircraft:CG:aft:MAC_position", 0.364924)
+    input_vars.add_output("data:weight:airframe:landing_gear:front:CG:x", 5.07)
+
+    problem = run_system(UpdateMLG(), input_vars)
+
+    cg_a51 = problem["data:weight:airframe:landing_gear:main:CG:x"]
+    assert cg_a51 == pytest.approx(18.00, abs=1e-2)
