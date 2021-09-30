@@ -1,0 +1,5 @@
+plugins:
+  pylint:
+    enabled: true
+  sonar-python:
+    enabled: true
