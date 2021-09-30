@@ -36,6 +36,7 @@ htmlcov/*
 junit.xml
 coverage.xml
 .pytest_cache/
+.coverage..nbval
 
 # Profiling
 prof/

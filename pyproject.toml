@@ -4,13 +4,29 @@ line-length = 100
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--cov fastoad --cov-report term-missing --cov-report html --verbose"
-testpaths = [
-    "src",
-    "tests",
-]
-norecursedirs = ["dist",
-    "build",
-    ".tox"
+testpaths = ["src", "tests"]
+norecursedirs = ["dist", "build", ".tox"]
+
+[tool.coverage.run]
+branch = true
+source = ["fastoad"]
+omit = ["*/test/*", "*/tests/*"]
+[tool.coverage.paths]
+source = ["src/", "*/site-packages/"]
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    "pragma: no cover",
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self.debug",
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ = = .__main__.:"
 ]
 
 [tool.poetry]
@@ -85,6 +101,7 @@ jupyterlab = ["jupyterlab"]
 [tool.poetry.dev-dependencies]
 pytest = ">=5.2"
 pytest-cov = "*"
+coverage = { extras = ["toml"], version = "^5.5" }
 pre-commit = "*"
 black = { version = "19.10b0", allow-prereleases = true } # if version is changed, please change it also in .pre-commit-config.yaml file.
 pylint = "*"
