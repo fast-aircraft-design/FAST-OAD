@@ -17,7 +17,11 @@
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_EMPTY_AIRCRAFT_CG
 
+
+@RegisterSubmodel(SERVICE_EMPTY_AIRCRAFT_CG, "fastoad.submodel.weight.cg.empty_aircraft.legacy")
 class ComputeCGRatioAft(om.Group):
     def setup(self):
         self.add_subsystem("cg_all", ComputeCG(), promotes=["*"])

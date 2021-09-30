@@ -34,7 +34,7 @@ from ..cg_components import (
     ComputeTanksCG,
     ComputeWingCG,
 )
-from ..cg_components.compute_global_cg import CGRatiosForLoadCases
+from ..cg_components.compute_cg_loadcases import CGRatiosForLoadCases
 
 
 # pylint: disable=redefined-outer-name  # needed for pytest fixtures

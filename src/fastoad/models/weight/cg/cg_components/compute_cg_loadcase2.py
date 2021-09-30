@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastoad.module_management.service_registry import RegisterSubmodel
-from .compute_cg_loadcase import ComputeCGLoadCase
+from .compute_cg_loadcase_base import ComputeCGLoadCase
 
 
 CASE_NUMBER = 2
