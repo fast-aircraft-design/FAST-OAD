@@ -1,6 +1,18 @@
 [tool.black]
 line-length = 100
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov fastoad --cov-report term-missing --cov-report html --verbose"
+testpaths = [
+    "src",
+    "tests",
+]
+norecursedirs = ["dist",
+    "build",
+    ".tox"
+]
+
 [tool.poetry]
 name = "FAST-OAD"
 version = "0.0.0"
