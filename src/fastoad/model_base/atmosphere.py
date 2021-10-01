@@ -232,9 +232,14 @@ class Atmosphere:
         """
         :returns: a float when needed. Otherwise, returns the value itself.
         """
-        if value is not None and self._float_expected:
-            return float(value)
-
+        if self._float_expected and value is not None:
+            try:
+                # It's faster to try... catch than to test np.size(value).
+                # (but float(value) is slow to fail if value is None, so
+                #  it is why we test it before)
+                return float(value)
+            except TypeError:
+                pass
         return value
 
 
