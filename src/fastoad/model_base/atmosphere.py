@@ -68,7 +68,7 @@ class Atmosphere:
                                  it should be provided in meters.
         """
 
-        self._delta_t = delta_t
+        self.delta_t = delta_t
 
         # Floats will be provided as output if altitude is a scalar
         self._float_expected = isinstance(altitude, Number)
@@ -109,7 +109,7 @@ class Atmosphere:
 
     @delta_t.setter
     def delta_t(self, value: Union[float, Sequence[float]]):
-        self._delta_t = value
+        self._delta_t = np.asarray(value)
 
     @property
     def temperature(self) -> Union[float, Sequence[float]]:
@@ -177,8 +177,8 @@ class Atmosphere:
                 self._true_airspeed = self._mach * self.speed_of_sound
             if self._equivalent_airspeed is not None:
                 sea_level = Atmosphere(0)
-                self._true_airspeed = self._return_value(
-                    self._equivalent_airspeed * np.sqrt(sea_level.density / self.density)
+                self._true_airspeed = self._equivalent_airspeed * np.sqrt(
+                    sea_level.density / self.density
                 )
             if self._unitary_reynolds is not None:
                 self._true_airspeed = self._unitary_reynolds * self.kinematic_viscosity
@@ -189,9 +189,10 @@ class Atmosphere:
         """Equivalent airspeed (EAS) in m/s."""
         if self._equivalent_airspeed is None and self.true_airspeed is not None:
             sea_level = Atmosphere(0)
-            self._equivalent_airspeed = self._return_value(
-                self.true_airspeed / np.sqrt(sea_level.density / self.density)
+            self._equivalent_airspeed = self.true_airspeed / np.sqrt(
+                sea_level.density / self.density
             )
+
         return self._return_value(self._equivalent_airspeed)
 
     @property
@@ -204,22 +205,22 @@ class Atmosphere:
     @mach.setter
     def mach(self, value: Union[float, Sequence[float]]):
         self._reset_speeds()
-        self._mach = value
+        self._mach = np.asarray(value)
 
     @true_airspeed.setter
     def true_airspeed(self, value: Union[float, Sequence[float]]):
         self._reset_speeds()
-        self._true_airspeed = value
+        self._true_airspeed = np.asarray(value)
 
     @equivalent_airspeed.setter
     def equivalent_airspeed(self, value: Union[float, Sequence[float]]):
         self._reset_speeds()
-        self._equivalent_airspeed = value
+        self._equivalent_airspeed = np.asarray(value)
 
     @unitary_reynolds.setter
     def unitary_reynolds(self, value: Union[float, Sequence[float]]):
         self._reset_speeds()
-        self._unitary_reynolds = value
+        self._unitary_reynolds = np.asarray(value)
 
     def _reset_speeds(self):
         """To be used before setting a new speed value as private attribute."""
