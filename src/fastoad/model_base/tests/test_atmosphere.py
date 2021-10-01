@@ -197,3 +197,10 @@ def test_speed_conversions():
     assert_allclose(atm.true_airspeed, TAS, rtol=2e-3)
     assert_allclose(atm.equivalent_airspeed, expected_EAS, rtol=2e-3)
     assert_allclose(atm.mach, expected_Mach, rtol=2.5e-3)
+
+    # Check with one altitude value, but several speed values
+    atm = Atmosphere(35000)
+    atm.true_airspeed = np.array(TAS)[:, 2]
+    assert_allclose(atm.equivalent_airspeed, np.array(expected_EAS)[:, 2], rtol=2e-3)
+    assert_allclose(atm.mach, np.array(expected_Mach)[:, 2], rtol=2e-3)
+    assert_allclose(atm.unitary_reynolds, np.array(expected_Re1)[:, 2], rtol=2e-3)
