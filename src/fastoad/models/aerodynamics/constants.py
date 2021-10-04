@@ -18,3 +18,4 @@ SERVICE_INDUCED_DRAG_COEFFICIENT = "service.aerodynamics.induced_drag_coefficien
 SERVICE_REYNOLDS_COEFFICIENT = "service.aerodynamics.reynolds_coefficient"
 SERVICE_INITIALIZE_CL = "service.aerodynamics.initialize_CL"
 SERVICE_CD0_WING = "service.aerodynamics.CD0.wing"
+SERVICE_CD0_FUSELAGE = "service.aerodynamics.CD0.fuselage"
