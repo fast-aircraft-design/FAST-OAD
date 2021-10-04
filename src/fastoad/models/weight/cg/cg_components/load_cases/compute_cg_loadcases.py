@@ -11,6 +11,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from itertools import count
 
 import numpy as np
 from openmdao import api as om
@@ -28,18 +29,14 @@ class CGRatiosForLoadCases(om.Group):
 
         # We add in our group all the components for declared services that provide CG ratio
         # for specific load_cases
-        load_case_count = 0
-        found = True
-        while found:
+        for load_case_count in count():
             try:
                 system = RegisterSubmodel.get_submodel(
                     f"service.cg.load_case.{load_case_count + 1}"
                 )
             except FastNoSubmodelFoundError:
-                found = False
-                continue
+                break
             self.add_subsystem(f"cg_ratio_lc{load_case_count + 1}", system, promotes_inputs=["*"])
-            load_case_count += 1
 
         cg_ratio_aggregator = self.add_subsystem(
             "cg_ratio_aggregator",
