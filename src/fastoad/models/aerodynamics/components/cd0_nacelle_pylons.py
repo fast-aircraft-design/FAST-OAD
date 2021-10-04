@@ -1,7 +1,6 @@
 """
     FAST - Copyright (c) 2016 ONERA ISAE
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,20 +14,22 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_CD0_NACELLES_PYLONS
 
 
-class Cd0NacelleAndPylons(ExplicitComponent):
+@RegisterSubmodel(
+    SERVICE_CD0_NACELLES_PYLONS, "fastoad.submodel.aerodynamics.CD0.nacelles_pylons.legacy"
+)
+class Cd0NacelleAndPylons(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.low_speed_aero = self.options["low_speed_aero"]
-
-        if self.low_speed_aero:
+        if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:reynolds", val=np.nan)
             self.add_input("data:aerodynamics:aircraft:takeoff:mach", val=np.nan)
             self.add_output("data:aerodynamics:nacelles:low_speed:CD0")
@@ -50,7 +51,7 @@ class Cd0NacelleAndPylons(ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         pylon_length = inputs["data:geometry:propulsion:pylon:length"]
         nac_length = inputs["data:geometry:propulsion:nacelle:length"]
         wet_area_pylon = inputs["data:geometry:propulsion:pylon:wetted_area"]
@@ -58,7 +59,7 @@ class Cd0NacelleAndPylons(ExplicitComponent):
         n_engines = inputs["data:geometry:propulsion:engine:count"]
         fan_length = inputs["data:geometry:propulsion:fan:length"]
         wing_area = inputs["data:geometry:wing:area"]
-        if self.low_speed_aero:
+        if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
             reynolds = inputs["data:aerodynamics:wing:low_speed:reynolds"]
         else:
@@ -66,10 +67,10 @@ class Cd0NacelleAndPylons(ExplicitComponent):
             reynolds = inputs["data:aerodynamics:wing:cruise:reynolds"]
 
         cf_pylon = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds * pylon_length)) ** 2.58
+            (1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds * pylon_length)) ** 2.58
         )
         cf_nac = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds * nac_length)) ** 2.58
+            (1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds * nac_length)) ** 2.58
         )
 
         # cd0 Pylon
@@ -83,7 +84,7 @@ class Cd0NacelleAndPylons(ExplicitComponent):
         cd0_int_nac = 0.0002
         cd0_nac = n_engines * (kn_cd0_nac * cf_nac * wet_area_nac / wing_area + cd0_int_nac)
 
-        if self.low_speed_aero:
+        if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:pylons:low_speed:CD0"] = cd0_pylon
             outputs["data:aerodynamics:nacelles:low_speed:CD0"] = cd0_nac
         else:
