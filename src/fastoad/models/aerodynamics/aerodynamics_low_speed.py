@@ -27,9 +27,12 @@ from .components.cd0_wing import Cd0Wing
 from .components.cd_trim import CdTrim
 from .components.compute_low_speed_aero import ComputeAerodynamicsLowSpeed
 from .components.compute_polar import ComputePolar, PolarType
-from .components.compute_reynolds import ComputeReynolds
 from .components.initialize_cl import InitializeClPolar
-from .constants import SERVICE_OSWALD_COEFFICIENT, SERVICE_INDUCED_DRAG_COEFFICIENT
+from .constants import (
+    SERVICE_OSWALD_COEFFICIENT,
+    SERVICE_INDUCED_DRAG_COEFFICIENT,
+    SERVICE_REYNOLDS_COEFFICIENT,
+)
 
 
 @RegisterOpenMDAOSystem("fastoad.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
@@ -54,7 +57,11 @@ class AerodynamicsLowSpeed(om.Group):
             RegisterSubmodel.get_submodel(SERVICE_INDUCED_DRAG_COEFFICIENT, options),
             promotes=["*"],
         )
-        self.add_subsystem("comp_re", ComputeReynolds(low_speed_aero=True), promotes=["*"])
+        self.add_subsystem(
+            "comp_re",
+            RegisterSubmodel.get_submodel(SERVICE_REYNOLDS_COEFFICIENT, options),
+            promotes=["*"],
+        )
         self.add_subsystem("initialize_cl", InitializeClPolar(low_speed_aero=True), promotes=["*"])
         self.add_subsystem("cd0_wing", Cd0Wing(low_speed_aero=True), promotes=["*"])
         self.add_subsystem("cd0_fuselage", Cd0Fuselage(low_speed_aero=True), promotes=["*"])

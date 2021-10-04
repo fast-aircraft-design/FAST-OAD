@@ -1,7 +1,6 @@
 """
     FAST - Copyright (c) 2016 ONERA ISAE
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -20,16 +19,19 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.model_base import AtmosphereSI
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_REYNOLDS_COEFFICIENT
 
 
+@RegisterSubmodel(
+    SERVICE_REYNOLDS_COEFFICIENT, "fastoad.submodel.aerodynamics.reynolds_coefficient.legacy"
+)
 class ComputeReynolds(ExplicitComponent):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.low_speed_aero = self.options["low_speed_aero"]
-
-        if self.low_speed_aero:
+        if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:aircraft:takeoff:mach", val=np.nan)
             self.add_output("data:aerodynamics:wing:low_speed:reynolds")
         else:
@@ -40,8 +42,8 @@ class ComputeReynolds(ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs):
-        if self.low_speed_aero:
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
             altitude = 0.0
         else:
@@ -52,7 +54,7 @@ class ComputeReynolds(ExplicitComponent):
         atm.mach = mach
         reynolds = atm.unitary_reynolds
 
-        if self.low_speed_aero:
+        if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:wing:low_speed:reynolds"] = reynolds
         else:
             outputs["data:aerodynamics:wing:cruise:reynolds"] = reynolds
