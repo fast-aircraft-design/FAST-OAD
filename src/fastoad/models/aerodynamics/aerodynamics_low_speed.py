@@ -20,7 +20,6 @@ from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .components.cd0_nacelle_pylons import Cd0NacelleAndPylons
 from .components.cd0_total import Cd0Total
-from .components.cd0_vt import Cd0VerticalTail
 from .components.cd_trim import CdTrim
 from .components.compute_low_speed_aero import ComputeAerodynamicsLowSpeed
 from .components.compute_polar import ComputePolar, PolarType
@@ -32,6 +31,7 @@ from .constants import (
     SERVICE_CD0_WING,
     SERVICE_CD0_FUSELAGE,
     SERVICE_CD0_HORIZONTAL_TAIL,
+    SERVICE_CD0_VERTICAL_TAIL,
 )
 
 
@@ -80,7 +80,11 @@ class AerodynamicsLowSpeed(om.Group):
             RegisterSubmodel.get_submodel(SERVICE_CD0_HORIZONTAL_TAIL, options),
             promotes=["*"],
         )
-        self.add_subsystem("cd0_vt", Cd0VerticalTail(low_speed_aero=True), promotes=["*"])
+        self.add_subsystem(
+            "cd0_vt",
+            RegisterSubmodel.get_submodel(SERVICE_CD0_VERTICAL_TAIL, options),
+            promotes=["*"],
+        )
         self.add_subsystem(
             "cd0_nac_pylons", Cd0NacelleAndPylons(low_speed_aero=True), promotes=["*"]
         )

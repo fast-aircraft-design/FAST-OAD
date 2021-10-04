@@ -17,9 +17,14 @@
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 from .utils.cd0_lifting_surface import LiftingSurfaceGeometry, compute_cd0_lifting_surface
+from ..constants import SERVICE_CD0_VERTICAL_TAIL
 
 
+@RegisterSubmodel(
+    SERVICE_CD0_VERTICAL_TAIL, "fastoad.submodel.aerodynamics.CD0.vertical_tail.legacy"
+)
 class Cd0VerticalTail(om.ExplicitComponent):
     """
     Computation of CD0 for Vertical Tail Plane.
