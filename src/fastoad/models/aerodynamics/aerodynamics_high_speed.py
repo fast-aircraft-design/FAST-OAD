@@ -18,7 +18,6 @@ import openmdao.api as om
 
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
-from .components.cd0_total import Cd0Total
 from .components.cd_compressibility import CdCompressibility
 from .components.cd_trim import CdTrim
 from .components.compute_polar import ComputePolar
@@ -26,6 +25,7 @@ from .constants import (
     SERVICE_CD0_FUSELAGE,
     SERVICE_CD0_HORIZONTAL_TAIL,
     SERVICE_CD0_NACELLES_PYLONS,
+    SERVICE_CD0_SUM,
     SERVICE_CD0_VERTICAL_TAIL,
     SERVICE_CD0_WING,
     SERVICE_INDUCED_DRAG_COEFFICIENT,
@@ -78,7 +78,9 @@ class AerodynamicsHighSpeed(om.Group):
             RegisterSubmodel.get_submodel(SERVICE_CD0_NACELLES_PYLONS),
             promotes=["*"],
         )
-        self.add_subsystem("cd0_total", Cd0Total(), promotes=["*"])
+        self.add_subsystem(
+            "cd0_total", RegisterSubmodel.get_submodel(SERVICE_CD0_SUM), promotes=["*"]
+        )
         self.add_subsystem("cd_comp", CdCompressibility(), promotes=["*"])
         self.add_subsystem("cd_trim", CdTrim(), promotes=["*"])
         self.add_subsystem("get_polar", ComputePolar(), promotes=["*"])
