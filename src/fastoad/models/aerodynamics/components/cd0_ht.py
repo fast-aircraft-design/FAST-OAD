@@ -29,7 +29,7 @@ class Cd0HorizontalTail(om.ExplicitComponent):
     """
     Computation of CD0 for Horizontal Tail Plane.
 
-    Formula from :cite:`supaero:2014`
+    See :meth:`~fastoad.models.aerodynamics.components.utils.cd0_lifting_surface` for used method.
     """
 
     def initialize(self):

@@ -22,15 +22,10 @@ class LiftingSurfaceGeometry:
     """Minimum geometry data for computation of CD0 of lifting surfaces."""
 
     thickness_ratio: float  #: average thickness ratio
-
     MAC_length: float  #: length of Mean Aerodynamic Chord
-
     sweep_angle_25: float  #: sweep angle at 25% chord, in degrees
-
     cambered: bool  #: True if airfoil is cambered
-
     wet_area: float  #: wet surface area of the lifting surface
-
     interaction_coeff: float  #: ratio of additional drag due to interaction effects
 
 
@@ -49,10 +44,10 @@ def compute_cd0_lifting_surface(
 
     :param geometry: definition of lifting surface geometry
     :param mach: Mach number
-    :param reynolds:
-    :param wing_area:
-    :param lift_coefficient:
-    :return:
+    :param reynolds: Reynolds number
+    :param wing_area: wing area (will be used for getting CD specific to wing area
+    :param lift_coefficient: needed if wing is cambered
+    :return: CD0 value
     """
     # Drag coefficient for flat plate (
     cf = 0.455 / (
