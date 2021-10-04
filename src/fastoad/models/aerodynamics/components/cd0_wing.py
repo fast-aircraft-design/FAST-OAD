@@ -15,17 +15,19 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_CD0_WING
 
 
-class Cd0Wing(ExplicitComponent):
+@RegisterSubmodel(SERVICE_CD0_WING, "fastoad.submodel.aerodynamics.CD0.wing.legacy")
+class Cd0Wing(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.low_speed_aero = self.options["low_speed_aero"]
-
-        if self.low_speed_aero:
+        if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:reynolds", val=np.nan)
             self.add_input(
                 "data:aerodynamics:aircraft:low_speed:CL", shape_by_conn=True, val=np.nan
@@ -53,13 +55,13 @@ class Cd0Wing(ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_area = inputs["data:geometry:wing:area"]
         wet_area_wing = inputs["data:geometry:wing:wetted_area"]
         el_aero = inputs["data:geometry:wing:thickness_ratio"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        if self.low_speed_aero:
+        if self.options["low_speed_aero"]:
             cl = inputs["data:aerodynamics:aircraft:low_speed:CL"]
             mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
             reynolds = inputs["data:aerodynamics:wing:low_speed:reynolds"]
@@ -91,7 +93,7 @@ class Cd0Wing(ExplicitComponent):
             / wing_area
         )
 
-        if self.low_speed_aero:
+        if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:wing:low_speed:CD0"] = cd0_wing
         else:
             outputs["data:aerodynamics:wing:cruise:CD0"] = cd0_wing

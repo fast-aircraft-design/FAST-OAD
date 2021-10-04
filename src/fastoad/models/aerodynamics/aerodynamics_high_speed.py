@@ -23,7 +23,6 @@ from .components.cd0_ht import Cd0HorizontalTail
 from .components.cd0_nacelle_pylons import Cd0NacelleAndPylons
 from .components.cd0_total import Cd0Total
 from .components.cd0_vt import Cd0VerticalTail
-from .components.cd0_wing import Cd0Wing
 from .components.cd_compressibility import CdCompressibility
 from .components.cd_trim import CdTrim
 from .components.compute_polar import ComputePolar
@@ -32,6 +31,7 @@ from .constants import (
     SERVICE_INDUCED_DRAG_COEFFICIENT,
     SERVICE_REYNOLDS_COEFFICIENT,
     SERVICE_INITIALIZE_CL,
+    SERVICE_CD0_WING,
 )
 
 
@@ -61,7 +61,9 @@ class AerodynamicsHighSpeed(om.Group):
         self.add_subsystem(
             "initialize_cl", RegisterSubmodel.get_submodel(SERVICE_INITIALIZE_CL), promotes=["*"]
         )
-        self.add_subsystem("cd0_wing", Cd0Wing(), promotes=["*"])
+        self.add_subsystem(
+            "cd0_wing", RegisterSubmodel.get_submodel(SERVICE_CD0_WING), promotes=["*"]
+        )
         self.add_subsystem("cd0_fuselage", Cd0Fuselage(), promotes=["*"])
         self.add_subsystem("cd0_ht", Cd0HorizontalTail(), promotes=["*"])
         self.add_subsystem("cd0_vt", Cd0VerticalTail(), promotes=["*"])
