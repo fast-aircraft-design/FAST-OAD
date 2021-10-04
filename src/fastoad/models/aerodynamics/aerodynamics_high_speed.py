@@ -18,7 +18,6 @@ import openmdao.api as om
 
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
-from .components.cd0_ht import Cd0HorizontalTail
 from .components.cd0_nacelle_pylons import Cd0NacelleAndPylons
 from .components.cd0_total import Cd0Total
 from .components.cd0_vt import Cd0VerticalTail
@@ -32,6 +31,7 @@ from .constants import (
     SERVICE_INITIALIZE_CL,
     SERVICE_CD0_WING,
     SERVICE_CD0_FUSELAGE,
+    SERVICE_CD0_HORIZONTAL_TAIL,
 )
 
 
@@ -67,7 +67,9 @@ class AerodynamicsHighSpeed(om.Group):
         self.add_subsystem(
             "cd0_fuselage", RegisterSubmodel.get_submodel(SERVICE_CD0_FUSELAGE), promotes=["*"]
         )
-        self.add_subsystem("cd0_ht", Cd0HorizontalTail(), promotes=["*"])
+        self.add_subsystem(
+            "cd0_ht", RegisterSubmodel.get_submodel(SERVICE_CD0_HORIZONTAL_TAIL), promotes=["*"]
+        )
         self.add_subsystem("cd0_vt", Cd0VerticalTail(), promotes=["*"])
         self.add_subsystem("cd0_nac_pylons", Cd0NacelleAndPylons(), promotes=["*"])
         self.add_subsystem("cd0_total", Cd0Total(), promotes=["*"])
