@@ -18,6 +18,7 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
+from .utils.cd0_lifting_surface import LiftingSurfaceGeometry, compute_cd0_lifting_surface
 from ..constants import SERVICE_CD0_HORIZONTAL_TAIL
 
 
@@ -25,17 +26,22 @@ from ..constants import SERVICE_CD0_HORIZONTAL_TAIL
     SERVICE_CD0_HORIZONTAL_TAIL, "fastoad.submodel.aerodynamics.CD0.horizontal_tail.legacy"
 )
 class Cd0HorizontalTail(om.ExplicitComponent):
+    """
+    Computation of CD0 for Horizontal Tail Plane.
+
+    Formula from :cite:`supaero:2014`
+    """
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.low_speed_aero = self.options["low_speed_aero"]
-
         self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:horizontal_tail:wetted_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("settings:aerodynamics:wing:CD:fuselage_interaction", val=0.04)
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:reynolds", val=np.nan)
             self.add_input("data:aerodynamics:aircraft:takeoff:mach", val=np.nan)
@@ -49,10 +55,14 @@ class Cd0HorizontalTail(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        el_ht = inputs["data:geometry:horizontal_tail:thickness_ratio"]
-        ht_length = inputs["data:geometry:horizontal_tail:MAC:length"]
-        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
-        wet_area_ht = inputs["data:geometry:horizontal_tail:wetted_area"]
+        ht_geometry = LiftingSurfaceGeometry(
+            thickness_ratio=inputs["data:geometry:horizontal_tail:thickness_ratio"],
+            MAC_length=inputs["data:geometry:horizontal_tail:MAC:length"],
+            sweep_angle_25=inputs["data:geometry:horizontal_tail:sweep_25"],
+            wet_area=inputs["data:geometry:horizontal_tail:wetted_area"],
+            cambered=False,
+            interaction_coeff=0.01,
+        )
         wing_area = inputs["data:geometry:wing:area"]
         if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
@@ -61,12 +71,7 @@ class Cd0HorizontalTail(om.ExplicitComponent):
             mach = inputs["data:TLAR:cruise_mach"]
             reynolds = inputs["data:aerodynamics:wing:cruise:reynolds"]
 
-        ki_arrow_cd0 = 0.04
-
-        cf_ht = 0.455 / ((1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds * ht_length)) ** 2.58)
-        ke_cd0_ht = 4.688 * el_ht ** 2 + 3.146 * el_ht
-        k_phi_cd0_ht = 1 - 0.000178 * sweep_25_ht ** 2 - 0.0065 * sweep_25_ht
-        cd0_ht = (ke_cd0_ht * k_phi_cd0_ht + ki_arrow_cd0 / 4 + 1) * cf_ht * wet_area_ht / wing_area
+        cd0_ht = compute_cd0_lifting_surface(ht_geometry, mach, reynolds, wing_area)
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:horizontal_tail:low_speed:CD0"] = cd0_ht

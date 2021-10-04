@@ -15,10 +15,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+
+from fastoad.models.aerodynamics.components.utils.cd0_lifting_surface import (
+    LiftingSurfaceGeometry,
+    compute_cd0_lifting_surface,
+)
 
 
 class Cd0VerticalTail(ExplicitComponent):
@@ -46,10 +49,14 @@ class Cd0VerticalTail(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        el_vt = inputs["data:geometry:vertical_tail:thickness_ratio"]
-        vt_length = inputs["data:geometry:vertical_tail:MAC:length"]
-        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
-        wet_area_vt = inputs["data:geometry:vertical_tail:wetted_area"]
+        vt_geometry = LiftingSurfaceGeometry(
+            thickness_ratio=inputs["data:geometry:vertical_tail:thickness_ratio"],
+            MAC_length=inputs["data:geometry:vertical_tail:MAC:length"],
+            sweep_angle_25=inputs["data:geometry:vertical_tail:sweep_25"],
+            wet_area=inputs["data:geometry:vertical_tail:wetted_area"],
+            cambered=False,
+            interaction_coeff=0.005,
+        )
         wing_area = inputs["data:geometry:wing:area"]
         if self.low_speed_aero:
             mach = inputs["data:aerodynamics:aircraft:takeoff:mach"]
@@ -58,14 +65,7 @@ class Cd0VerticalTail(ExplicitComponent):
             mach = inputs["data:TLAR:cruise_mach"]
             reynolds = inputs["data:aerodynamics:wing:cruise:reynolds"]
 
-        ki_arrow_cd0 = 0.04
-
-        cf_vt = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds * vt_length)) ** 2.58
-        )
-        ke_cd0_vt = 4.688 * el_vt ** 2 + 3.146 * el_vt
-        k_phi_cd0_vt = 1 - 0.000178 * sweep_25_vt ** 2 - 0.0065 * sweep_25_vt
-        cd0_vt = (ke_cd0_vt * k_phi_cd0_vt + ki_arrow_cd0 / 8 + 1) * cf_vt * wet_area_vt / wing_area
+        cd0_vt = compute_cd0_lifting_surface(vt_geometry, mach, reynolds, wing_area)
 
         if self.low_speed_aero:
             outputs["data:aerodynamics:vertical_tail:low_speed:CD0"] = cd0_vt
