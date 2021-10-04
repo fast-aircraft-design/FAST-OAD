@@ -16,3 +16,4 @@ POLAR_POINT_COUNT = 150
 SERVICE_OSWALD_COEFFICIENT = "service.aerodynamics.oswald_coefficient"
 SERVICE_INDUCED_DRAG_COEFFICIENT = "service.aerodynamics.induced_drag_coefficient"
 SERVICE_REYNOLDS_COEFFICIENT = "service.aerodynamics.reynolds_coefficient"
+SERVICE_INITIALIZE_CL = "service.aerodynamics.initialize_CL"
