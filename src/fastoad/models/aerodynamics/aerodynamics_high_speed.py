@@ -29,8 +29,7 @@ from .components.cd_trim import CdTrim
 from .components.compute_polar import ComputePolar
 from .components.compute_reynolds import ComputeReynolds
 from .components.initialize_cl import InitializeClPolar
-from .components.oswald import InducedDragCoefficient
-from .constants import SERVICE_OSWALD_COEFFICIENT
+from .constants import SERVICE_OSWALD_COEFFICIENT, SERVICE_INDUCED_DRAG_COEFFICIENT
 
 
 @RegisterOpenMDAOSystem("fastoad.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
@@ -48,7 +47,11 @@ class AerodynamicsHighSpeed(om.Group):
             RegisterSubmodel.get_submodel(SERVICE_OSWALD_COEFFICIENT),
             promotes=["*"],
         )
-        self.add_subsystem("compute_induced_drag_coeff", InducedDragCoefficient(), promotes=["*"])
+        self.add_subsystem(
+            "compute_induced_drag_coeff",
+            RegisterSubmodel.get_submodel(SERVICE_INDUCED_DRAG_COEFFICIENT),
+            promotes=["*"],
+        )
         self.add_subsystem("comp_re", ComputeReynolds(), promotes=["*"])
         self.add_subsystem("initialize_cl", InitializeClPolar(), promotes=["*"])
         self.add_subsystem("cd0_wing", Cd0Wing(), promotes=["*"])

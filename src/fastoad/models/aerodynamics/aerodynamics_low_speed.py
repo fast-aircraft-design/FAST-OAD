@@ -29,8 +29,7 @@ from .components.compute_low_speed_aero import ComputeAerodynamicsLowSpeed
 from .components.compute_polar import ComputePolar, PolarType
 from .components.compute_reynolds import ComputeReynolds
 from .components.initialize_cl import InitializeClPolar
-from .components.oswald import OswaldCoefficient, InducedDragCoefficient
-from .constants import SERVICE_OSWALD_COEFFICIENT
+from .constants import SERVICE_OSWALD_COEFFICIENT, SERVICE_INDUCED_DRAG_COEFFICIENT
 
 
 @RegisterOpenMDAOSystem("fastoad.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
@@ -52,7 +51,7 @@ class AerodynamicsLowSpeed(om.Group):
         )
         self.add_subsystem(
             "compute_induced_drag_coeff",
-            InducedDragCoefficient(low_speed_aero=True),
+            RegisterSubmodel.get_submodel(SERVICE_INDUCED_DRAG_COEFFICIENT, options),
             promotes=["*"],
         )
         self.add_subsystem("comp_re", ComputeReynolds(low_speed_aero=True), promotes=["*"])

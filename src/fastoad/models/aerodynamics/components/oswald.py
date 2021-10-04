@@ -17,10 +17,14 @@ Computation of Oswald coefficient
 import numpy as np
 import openmdao.api as om
 
-from fastoad.models.aerodynamics.constants import SERVICE_OSWALD_COEFFICIENT
 from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_OSWALD_COEFFICIENT, SERVICE_INDUCED_DRAG_COEFFICIENT
 
 
+@RegisterSubmodel(
+    SERVICE_INDUCED_DRAG_COEFFICIENT,
+    "fastoad.submodel.aerodynamics.induced_drag_coefficient.legacy",
+)
 class InducedDragCoefficient(om.ExplicitComponent):
     """Computes the coefficient that should be multiplied by CL**2 to get induced drag."""
 
