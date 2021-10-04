@@ -17,6 +17,9 @@ Computation of Oswald coefficient
 import numpy as np
 import openmdao.api as om
 
+from fastoad.models.aerodynamics.constants import SERVICE_OSWALD_COEFFICIENT
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 
 class InducedDragCoefficient(om.ExplicitComponent):
     """Computes the coefficient that should be multiplied by CL**2 to get induced drag."""
@@ -56,6 +59,9 @@ class InducedDragCoefficient(om.ExplicitComponent):
             outputs["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"] = coef_k
 
 
+@RegisterSubmodel(
+    SERVICE_OSWALD_COEFFICIENT, "fastoad.submodel.aerodynamics.oswald_coefficient.legacy"
+)
 class OswaldCoefficient(om.ExplicitComponent):
     # TODO: Document equations. Cite sources (M. Nita and D. Scholz)
     """ Computes Oswald efficiency number """

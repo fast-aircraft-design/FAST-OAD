@@ -1,7 +1,6 @@
 """
     FAST - Copyright (c) 2016 ONERA ISAE
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,7 +17,7 @@
 import openmdao.api as om
 
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .components.cd0_fuselage import Cd0Fuselage
 from .components.cd0_ht import Cd0HorizontalTail
 from .components.cd0_nacelle_pylons import Cd0NacelleAndPylons
@@ -31,6 +30,7 @@ from .components.compute_polar import ComputePolar, PolarType
 from .components.compute_reynolds import ComputeReynolds
 from .components.initialize_cl import InitializeClPolar
 from .components.oswald import OswaldCoefficient, InducedDragCoefficient
+from .constants import SERVICE_OSWALD_COEFFICIENT
 
 
 @RegisterOpenMDAOSystem("fastoad.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
@@ -40,11 +40,15 @@ class AerodynamicsLowSpeed(om.Group):
     """
 
     def setup(self):
+        options = {"low_speed_aero": True}
+
         self.add_subsystem("compute_low_speed_aero", ComputeAerodynamicsLowSpeed(), promotes=["*"])
         ivc = om.IndepVarComp("data:aerodynamics:aircraft:takeoff:mach", val=0.2)
         self.add_subsystem("mach_low_speed", ivc, promotes=["*"])
         self.add_subsystem(
-            "compute_oswald_coeff", OswaldCoefficient(low_speed_aero=True), promotes=["*"]
+            "compute_oswald_coeff",
+            RegisterSubmodel.get_submodel(SERVICE_OSWALD_COEFFICIENT, options),
+            promotes=["*"],
         )
         self.add_subsystem(
             "compute_induced_drag_coeff",

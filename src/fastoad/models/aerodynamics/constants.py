@@ -12,3 +12,5 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 POLAR_POINT_COUNT = 150
+
+SERVICE_OSWALD_COEFFICIENT = "service.aerodynamics.oswald_coefficient"
