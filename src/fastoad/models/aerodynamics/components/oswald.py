@@ -1,7 +1,6 @@
 """
 Computation of Oswald coefficient
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,15 +14,50 @@ Computation of Oswald coefficient
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class OswaldCoefficient(ExplicitComponent):
+class InducedDragCoefficient(om.ExplicitComponent):
+    """Computes the coefficient that should be multiplied by CL**2 to get induced drag."""
+
+    def initialize(self):
+        self.options.declare("low_speed_aero", default=False, types=bool)
+
+    def setup(self):
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:wing:span", val=np.nan, units="m")
+
+        if self.options["low_speed_aero"]:
+            self.add_input("data:aerodynamics:aircraft:low_speed:oswald_coefficient", val=np.nan)
+            self.add_output("data:aerodynamics:aircraft:low_speed:induced_drag_coefficient")
+        else:
+            self.add_input("data:aerodynamics:aircraft:cruise:oswald_coefficient", val=np.nan)
+            self.add_output("data:aerodynamics:aircraft:cruise:induced_drag_coefficient")
+
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        wing_area = inputs["data:geometry:wing:area"]
+        span = inputs["data:geometry:wing:span"] / np.cos(5.0 / 180 * np.pi)
+        aspect_ratio = span ** 2 / wing_area
+
+        if self.options["low_speed_aero"]:
+            coef_e = inputs["data:aerodynamics:aircraft:low_speed:oswald_coefficient"]
+        else:
+            coef_e = inputs["data:aerodynamics:aircraft:cruise:oswald_coefficient"]
+
+        coef_k = 1.0 / (np.pi * aspect_ratio * coef_e)
+
+        if self.options["low_speed_aero"]:
+            outputs["data:aerodynamics:aircraft:low_speed:induced_drag_coefficient"] = coef_k
+        else:
+            outputs["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"] = coef_k
+
+
+class OswaldCoefficient(om.ExplicitComponent):
     # TODO: Document equations. Cite sources (M. Nita and D. Scholz)
-    # FIXME: output the real Oswald coefficient (coef_e instead of coef_k)
     """ Computes Oswald efficiency number """
 
     def initialize(self):
@@ -40,17 +74,17 @@ class OswaldCoefficient(ExplicitComponent):
 
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:aircraft:takeoff:mach", val=np.nan)
-            self.add_output("data:aerodynamics:aircraft:low_speed:induced_drag_coefficient")
+            self.add_output("data:aerodynamics:aircraft:low_speed:oswald_coefficient")
         else:
             self.add_input("data:TLAR:cruise_mach", val=np.nan)
-            self.add_output("data:aerodynamics:aircraft:cruise:induced_drag_coefficient")
+            self.add_output("data:aerodynamics:aircraft:cruise:oswald_coefficient")
 
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_area = inputs["data:geometry:wing:area"]
-        span = inputs["data:geometry:wing:span"] / math.cos(5.0 / 180 * math.pi)
+        span = inputs["data:geometry:wing:span"] / np.cos(5.0 / 180 * np.pi)
         height_fus = inputs["data:geometry:fuselage:maximum_height"]
         width_fus = inputs["data:geometry:fuselage:maximum_width"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
@@ -62,9 +96,9 @@ class OswaldCoefficient(ExplicitComponent):
             mach = inputs["data:TLAR:cruise_mach"]
 
         aspect_ratio = span ** 2 / wing_area
-        df = math.sqrt(width_fus * height_fus)
+        df = np.sqrt(width_fus * height_fus)
         lamda = l4_wing / l2_wing
-        delta_lamda = -0.357 + 0.45 * math.exp(0.0375 * sweep_25 / 180.0 * math.pi)
+        delta_lamda = -0.357 + 0.45 * np.exp(0.0375 * sweep_25 / 180.0 * np.pi)
         lamda = lamda - delta_lamda
         f_lamda = (
             0.0524 * lamda ** 4 - 0.15 * lamda ** 3 + 0.1659 * lamda ** 2 - 0.0706 * lamda + 0.0119
@@ -78,9 +112,8 @@ class OswaldCoefficient(ExplicitComponent):
 
         ke_f = 1 - 2 * (df / span) ** 2
         coef_e = e_theory * ke_f * ke_m * 0.9
-        coef_k = 1.0 / (math.pi * aspect_ratio * coef_e)
 
         if self.options["low_speed_aero"]:
-            outputs["data:aerodynamics:aircraft:low_speed:induced_drag_coefficient"] = coef_k
+            outputs["data:aerodynamics:aircraft:low_speed:oswald_coefficient"] = coef_e
         else:
-            outputs["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"] = coef_k
+            outputs["data:aerodynamics:aircraft:cruise:oswald_coefficient"] = coef_e

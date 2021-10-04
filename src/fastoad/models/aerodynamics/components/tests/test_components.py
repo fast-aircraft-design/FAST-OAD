@@ -32,7 +32,7 @@ from ..compute_low_speed_aero import ComputeAerodynamicsLowSpeed
 from ..compute_polar import ComputePolar, PolarType
 from ..compute_reynolds import ComputeReynolds
 from ..high_lift_aero import ComputeDeltaHighLift
-from ..oswald import OswaldCoefficient
+from ..oswald import OswaldCoefficient, InducedDragCoefficient
 
 
 def get_indep_var_comp(var_names):
@@ -106,7 +106,7 @@ def test_high_lift_aero():
     assert cd == approx(0.02230, abs=1e-5)
 
 
-def test_oswald():
+def test_oswald_coefficient():
     """ Tests OswaldCoefficient """
     input_list = [
         "data:geometry:wing:area",
@@ -118,14 +118,46 @@ def test_oswald():
         "data:geometry:wing:sweep_25",
     ]
 
-    def get_coeff(mach):
+    def get_coeff(mach, low_speed_aero=False):
         ivc = get_indep_var_comp(input_list)
-        ivc.add_output("data:TLAR:cruise_mach", mach)
-        problem = run_system(OswaldCoefficient(), ivc)
-        return problem["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"]
+        if low_speed_aero:
+            ivc.add_output("data:aerodynamics:aircraft:takeoff:mach", mach)
+        else:
+            ivc.add_output("data:TLAR:cruise_mach", mach)
+        problem = run_system(OswaldCoefficient(low_speed_aero=low_speed_aero), ivc)
+        if low_speed_aero:
+            return problem["data:aerodynamics:aircraft:low_speed:oswald_coefficient"]
+        else:
+            return problem["data:aerodynamics:aircraft:cruise:oswald_coefficient"]
 
-    assert get_coeff(0.2) == approx(0.0465, abs=1e-4)
-    assert get_coeff(0.8) == approx(0.0530, abs=1e-4)
+    assert get_coeff(0.2, True) == approx(0.8490, abs=1e-4)
+    # FIXME: Obtained Oswald coeff is too low, especially for high speed.
+    assert get_coeff(0.8, False) == approx(0.7451, abs=1e-4)
+
+
+def test_induced_drag_coefficient():
+    """ Tests InducedDragCoefficient """
+    input_list = [
+        "data:geometry:wing:area",
+        "data:geometry:wing:span",
+        "data:aerodynamics:aircraft:low_speed:oswald_coefficient",
+        "data:aerodynamics:aircraft:cruise:oswald_coefficient",
+    ]
+
+    def get_coeff(mach, low_speed_aero=False):
+        ivc = get_indep_var_comp(input_list)
+        if low_speed_aero:
+            ivc.add_output("data:aerodynamics:aircraft:low_speed:oswald_coefficient", mach)
+        else:
+            ivc.add_output("data:aerodynamics:aircraft:cruise:oswald_coefficient", mach)
+        problem = run_system(InducedDragCoefficient(low_speed_aero=low_speed_aero), ivc)
+        if low_speed_aero:
+            return problem["data:aerodynamics:aircraft:low_speed:induced_drag_coefficient"]
+        else:
+            return problem["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"]
+
+    assert get_coeff(0.8490, True) == approx(0.0465, abs=1e-4)
+    assert get_coeff(0.7451, False) == approx(0.0530, abs=1e-4)
 
 
 def test_cd0():
@@ -288,6 +320,7 @@ def test_polar_high_speed():
     group = Group()
     group.add_subsystem("reynolds", ComputeReynolds(), promotes=["*"])
     group.add_subsystem("oswald", OswaldCoefficient(), promotes=["*"])
+    group.add_subsystem("induced_drag_coeff", InducedDragCoefficient(), promotes=["*"])
     group.add_subsystem("cd0", CD0(), promotes=["*"])
     group.add_subsystem("cd_compressibility", CdCompressibility(), promotes=["*"])
     group.add_subsystem("cd_trim", CdTrim(), promotes=["*"])
@@ -352,6 +385,9 @@ def test_polar_low_speed():
     group = Group()
     group.add_subsystem("reynolds", ComputeReynolds(low_speed_aero=True), promotes=["*"])
     group.add_subsystem("oswald", OswaldCoefficient(low_speed_aero=True), promotes=["*"])
+    group.add_subsystem(
+        "induced_drag_coeff", InducedDragCoefficient(low_speed_aero=True), promotes=["*"]
+    )
     group.add_subsystem("cd0", CD0(low_speed_aero=True), promotes=["*"])
     group.add_subsystem("cd_trim", CdTrim(low_speed_aero=True), promotes=["*"])
     group.add_subsystem("polar", ComputePolar(type=PolarType.LOW_SPEED), promotes=["*"])
@@ -412,6 +448,9 @@ def test_polar_high_lift():
     group = Group()
     group.add_subsystem("reynolds", ComputeReynolds(low_speed_aero=True), promotes=["*"])
     group.add_subsystem("oswald", OswaldCoefficient(low_speed_aero=True), promotes=["*"])
+    group.add_subsystem(
+        "induced_drag_coeff", InducedDragCoefficient(low_speed_aero=True), promotes=["*"]
+    )
     group.add_subsystem("cd0", CD0(low_speed_aero=True), promotes=["*"])
     group.add_subsystem("cd_trim", CdTrim(low_speed_aero=True), promotes=["*"])
     group.add_subsystem("polar", ComputePolar(type=PolarType.TAKEOFF), promotes=["*"])
