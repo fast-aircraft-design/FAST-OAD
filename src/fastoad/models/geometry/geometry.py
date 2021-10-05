@@ -28,6 +28,7 @@ SERVICE_HORIZONTAL_TAIL_GEOMETRY = "service.geometry.horizontal_tail"
 SERVICE_NACELLE_PYLON_GEOMETRY = "service.geometry.nacelle_and_pylon"
 SERVICE_VERTICAL_TAIL_GEOMETRY = "service.geometry.vertical_tail"
 SERVICE_WING_GEOMETRY = "service.geometry.wing"
+SERVICE_TOTAL_AREA_GEOMETRY = "service.geometry.total_area"
 
 
 @RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)
@@ -78,8 +79,12 @@ class Geometry(om.Group):
         )
         self.add_subsystem(
             "compute_vt",
-            RegisterSubmodel.get_submodel(SERVICE_VERTICAL_TAIL_GEOMETRY)(),
+            RegisterSubmodel.get_submodel(SERVICE_VERTICAL_TAIL_GEOMETRY),
             promotes=["*"],
         )
-        self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
+        self.add_subsystem(
+            "compute_total_area",
+            RegisterSubmodel.get_submodel(SERVICE_TOTAL_AREA_GEOMETRY),
+            promotes=["*"],
+        )
         self.add_subsystem("compute_aero_center", ComputeAeroCenter(), promotes=["*"])

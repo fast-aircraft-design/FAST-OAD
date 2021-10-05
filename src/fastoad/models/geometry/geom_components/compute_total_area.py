@@ -17,7 +17,12 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+import fastoad.api as oad
 
+SERVICE_TOTAL_AREA_GEOMETRY = "service.geometry.total_area"
+
+
+@oad.RegisterSubmodel(SERVICE_TOTAL_AREA_GEOMETRY, "geometry.total_area.legacy")
 class ComputeTotalArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Total aircraft wet area estimation """
