@@ -19,7 +19,13 @@ from math import sqrt
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+import fastoad.api as oad
 
+SERVICE_FUSELAGE_GEOMETRY_BASIC = "service.geometry.fuselage.basic"
+SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING = "service.geometry.fuselage.with_cabin_sizing"
+
+
+@oad.RegisterSubmodel(SERVICE_FUSELAGE_GEOMETRY_BASIC, "geometry.fuselage.basic.legacy")
 class ComputeFuselageGeometryBasic(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Geometry of fuselage part A - Cabin (Commercial) estimation """
@@ -97,6 +103,9 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         outputs["data:geometry:fuselage:wetted_area"] = wet_area_fus
 
 
+@oad.RegisterSubmodel(
+    SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING, "geometry.fuselage.with_cabin_sizing.legacy"
+)
 class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Geometry of fuselage part A - Cabin (Commercial) estimation """

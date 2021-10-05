@@ -18,17 +18,16 @@ import openmdao.api as om
 
 from fastoad.models.constants import CABIN_SIZING_OPTION
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .compute_aero_center import ComputeAeroCenter
 from .geom_components import ComputeTotalArea
-from .geom_components.fuselage.compute_fuselage import (
-    ComputeFuselageGeometryBasic,
-    ComputeFuselageGeometryCabinSizing,
-)
 from .geom_components.ht import ComputeHorizontalTailGeometry
 from .geom_components.nacelle_pylons.compute_nacelle_pylons import ComputeNacelleAndPylonsGeometry
 from .geom_components.vt import ComputeVerticalTailGeometry
 from .geom_components.wing.compute_wing import ComputeWingGeometry
+
+SERVICE_FUSELAGE_GEOMETRY_BASIC = "service.geometry.fuselage.basic"
+SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING = "service.geometry.fuselage.with_cabin_sizing"
 
 
 @RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)
@@ -53,10 +52,16 @@ class Geometry(om.Group):
 
         if self.options[CABIN_SIZING_OPTION]:
             self.add_subsystem(
-                "compute_fuselage", ComputeFuselageGeometryCabinSizing(), promotes=["*"]
+                "compute_fuselage",
+                RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING),
+                promotes=["*"],
             )
         else:
-            self.add_subsystem("compute_fuselage", ComputeFuselageGeometryBasic(), promotes=["*"])
+            self.add_subsystem(
+                "compute_fuselage",
+                RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_GEOMETRY_BASIC),
+                promotes=["*"],
+            )
 
         self.add_subsystem("compute_wing", ComputeWingGeometry(), promotes=["*"])
         self.add_subsystem(
