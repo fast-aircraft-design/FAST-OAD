@@ -17,19 +17,26 @@
 
 import openmdao.api as om
 
-from fastoad.models.geometry.geom_components.fuselage import ComputeCnBetaFuselage
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTChords
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTClalpha
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTDistance
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTMAC
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTSweep
 
+SERVICE_FUSELAGE_CNBETA = "service.geometry.fuselage.cnbeta"
+
 
 class ComputeVerticalTailGeometry(om.Group):
     """ Vertical tail geometry estimation """
 
     def setup(self):
-        self.add_subsystem("fuselage_cnbeta", ComputeCnBetaFuselage(), promotes=["*"])
+        self.add_subsystem(
+            "fuselage_cnbeta",
+            RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_CNBETA),
+            promotes=["*"],
+        )
         self.add_subsystem("vt_aspect_ratio", ComputeVTDistance(), promotes=["*"])
         self.add_subsystem("vt_clalpha", ComputeVTClalpha(), promotes=["*"])
         self.add_subsystem("vt_chords", ComputeVTChords(), promotes=["*"])
