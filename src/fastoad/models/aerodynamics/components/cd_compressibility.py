@@ -1,7 +1,6 @@
 """
 Compressibility drag computation.
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,15 +15,22 @@ Compressibility drag computation.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_CD0_COMPRESSIBILITY
 
 
-class CdCompressibility(ExplicitComponent):
+@RegisterSubmodel(
+    SERVICE_CD0_COMPRESSIBILITY, "fastoad.submodel.aerodynamics.CD0.compressibility.legacy"
+)
+class CdCompressibility(om.ExplicitComponent):
     """
     Computation of drag increment due to compressibility effects.
 
     Formula from §4.2.4 of :cite:`supaero:2014`. This formula can be used for aircraft
     before year 2000.
+    
     Earlier aircraft have more optimized wing profiles that are expected to limit the
     compressibility drag below 2 drag counts. Until a better model can be provided, the
     variable `tuning:aerodynamics:aircraft:cruise:CD:compressibility:characteristic_mach_increment`
@@ -51,7 +57,7 @@ class CdCompressibility(ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cl = inputs["data:aerodynamics:aircraft:cruise:CL"]
         m = inputs["data:TLAR:cruise_mach"]
         max_cd_comp = inputs["tuning:aerodynamics:aircraft:cruise:CD:compressibility:max_value"]
