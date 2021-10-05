@@ -28,6 +28,7 @@ from .geom_components.wing.compute_wing import ComputeWingGeometry
 
 SERVICE_FUSELAGE_GEOMETRY_BASIC = "service.geometry.fuselage.basic"
 SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING = "service.geometry.fuselage.with_cabin_sizing"
+SERVICE_HORIZONTAL_TAIL_GEOMETRY = "service.geometry.horizontal_tail"
 
 
 @RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)
@@ -67,7 +68,11 @@ class Geometry(om.Group):
         self.add_subsystem(
             "compute_engine_nacelle", ComputeNacelleAndPylonsGeometry(), promotes=["*"]
         )
-        self.add_subsystem("compute_ht", ComputeHorizontalTailGeometry(), promotes=["*"])
+        self.add_subsystem(
+            "compute_ht",
+            RegisterSubmodel.get_submodel(SERVICE_HORIZONTAL_TAIL_GEOMETRY),
+            promotes=["*"],
+        )
         self.add_subsystem("compute_vt", ComputeVerticalTailGeometry(), promotes=["*"])
         self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
         self.add_subsystem("compute_aero_center", ComputeAeroCenter(), promotes=["*"])

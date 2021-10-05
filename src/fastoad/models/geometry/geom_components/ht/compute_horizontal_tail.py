@@ -21,7 +21,12 @@ from fastoad.models.geometry.geom_components.ht.components import ComputeHTClalp
 from fastoad.models.geometry.geom_components.ht.components import ComputeHTMAC
 from fastoad.models.geometry.geom_components.ht.components import ComputeHTSweep
 
+import fastoad.api as oad
 
+SERVICE_HORIZONTAL_TAIL_GEOMETRY = "service.geometry.horizontal_tail"
+
+
+@oad.RegisterSubmodel(SERVICE_HORIZONTAL_TAIL_GEOMETRY, "geometry.horizontal_tail.legacy")
 class ComputeHorizontalTailGeometry(om.Group):
     """ Horizontal tail geometry estimation """
 
