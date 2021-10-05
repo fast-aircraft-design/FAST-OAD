@@ -21,13 +21,13 @@ from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .compute_aero_center import ComputeAeroCenter
 from .geom_components import ComputeTotalArea
-from .geom_components.wing.compute_wing import ComputeWingGeometry
 
 SERVICE_FUSELAGE_GEOMETRY_BASIC = "service.geometry.fuselage.basic"
 SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING = "service.geometry.fuselage.with_cabin_sizing"
 SERVICE_HORIZONTAL_TAIL_GEOMETRY = "service.geometry.horizontal_tail"
 SERVICE_NACELLE_PYLON_GEOMETRY = "service.geometry.nacelle_and_pylon"
 SERVICE_VERTICAL_TAIL_GEOMETRY = "service.geometry.vertical_tail"
+SERVICE_WING_GEOMETRY = "service.geometry.wing"
 
 
 @RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)
@@ -63,7 +63,9 @@ class Geometry(om.Group):
                 promotes=["*"],
             )
 
-        self.add_subsystem("compute_wing", ComputeWingGeometry(), promotes=["*"])
+        self.add_subsystem(
+            "compute_wing", RegisterSubmodel.get_submodel(SERVICE_WING_GEOMETRY), promotes=["*"]
+        )
         self.add_subsystem(
             "compute_engine_nacelle",
             RegisterSubmodel.get_submodel(SERVICE_NACELLE_PYLON_GEOMETRY),

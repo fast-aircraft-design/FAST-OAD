@@ -33,7 +33,12 @@ from fastoad.models.geometry.geom_components.wing.components.compute_wet_area_wi
 from fastoad.models.geometry.geom_components.wing.components.compute_x_wing import ComputeXWing
 from fastoad.models.geometry.geom_components.wing.components.compute_y_wing import ComputeYWing
 
+import fastoad.api as oad
 
+SERVICE_WING_GEOMETRY = "service.geometry.wing"
+
+
+@oad.RegisterSubmodel(SERVICE_WING_GEOMETRY, "geometry.wing.legacy")
 class ComputeWingGeometry(Group):
     # TODO: Document equations. Cite sources
     """ Wing geometry estimation """
