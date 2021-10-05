@@ -25,9 +25,13 @@ from fastoad.models.geometry.geom_components.vt.components import ComputeVTDista
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTMAC
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTSweep
 
+import fastoad.api as oad
+
 SERVICE_FUSELAGE_CNBETA = "service.geometry.fuselage.cnbeta"
+SERVICE_VERTICAL_TAIL_GEOMETRY = "service.geometry.vertical_tail"
 
 
+@oad.RegisterSubmodel(SERVICE_VERTICAL_TAIL_GEOMETRY, "geometry.vertical_tail.legacy")
 class ComputeVerticalTailGeometry(om.Group):
     """ Vertical tail geometry estimation """
 
