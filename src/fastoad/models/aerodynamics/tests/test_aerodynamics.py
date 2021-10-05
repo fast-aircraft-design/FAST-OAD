@@ -2,7 +2,7 @@
 Test module for aerodynamics groups
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,11 +21,11 @@ import pytest
 from pytest import approx
 
 from fastoad.io import VariableIO
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from tests.testing_utilities import run_system
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 from ..aerodynamics_high_speed import AerodynamicsHighSpeed
 from ..aerodynamics_landing import AerodynamicsLanding
-from ..aerodynamics_low_speed import AerodynamicsLowSpeed
 
 xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
@@ -213,7 +213,12 @@ def test_aerodynamics_low_speed():
     ]
 
     ivc = get_indep_var_comp(input_list)
-    problem = run_system(AerodynamicsLowSpeed(), ivc)
+    # A direct call to class AerodynamicsLowSpeed results in the enum class PolarType not
+    # matching itself, probably because of a "double import" due to the registering mechanism.
+    # Calling through the registering system allows to work around that.
+    problem = run_system(
+        RegisterOpenMDAOSystem.get_system("fastoad.aerodynamics.lowspeed.legacy"), ivc
+    )
 
     cd = problem["data:aerodynamics:aircraft:low_speed:CD"]
     cl = problem["data:aerodynamics:aircraft:low_speed:CL"]
