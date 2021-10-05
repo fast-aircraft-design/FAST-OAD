@@ -19,7 +19,7 @@ import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .components.compute_low_speed_aero import ComputeAerodynamicsLowSpeed
-from .components.compute_polar import ComputePolar, PolarType
+from .components.compute_polar import PolarType
 from .constants import (
     SERVICE_CD0_FUSELAGE,
     SERVICE_CD0_HORIZONTAL_TAIL,
@@ -31,6 +31,7 @@ from .constants import (
     SERVICE_INDUCED_DRAG_COEFFICIENT,
     SERVICE_INITIALIZE_CL,
     SERVICE_OSWALD_COEFFICIENT,
+    SERVICE_POLAR,
     SERVICE_REYNOLDS_COEFFICIENT,
 )
 
@@ -96,4 +97,8 @@ class AerodynamicsLowSpeed(om.Group):
         self.add_subsystem(
             "cd_trim", RegisterSubmodel.get_submodel(SERVICE_CD_TRIM, options), promotes=["*"]
         )
-        self.add_subsystem("get_polar", ComputePolar(type=PolarType.LOW_SPEED), promotes=["*"])
+        self.add_subsystem(
+            "get_polar",
+            RegisterSubmodel.get_submodel(SERVICE_POLAR, {"type": PolarType.LOW_SPEED}),
+            promotes=["*"],
+        )

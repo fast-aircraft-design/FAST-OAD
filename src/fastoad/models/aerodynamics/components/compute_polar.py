@@ -15,8 +15,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 from aenum import Enum
-from openmdao.core.explicitcomponent import ExplicitComponent
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_POLAR
 
 
 class PolarType(Enum):
@@ -26,7 +29,8 @@ class PolarType(Enum):
     LANDING = "landing"
 
 
-class ComputePolar(ExplicitComponent):
+@RegisterSubmodel(SERVICE_POLAR, "fastoad.submodel.aerodynamics.polar.legacy")
+class ComputePolar(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("type", default=PolarType.HIGH_SPEED, types=PolarType)
 
@@ -107,7 +111,7 @@ class ComputePolar(ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         k_cd = inputs["tuning:aerodynamics:aircraft:cruise:CD:k"]
         offset_cd = inputs["tuning:aerodynamics:aircraft:cruise:CD:offset"]
         k_winglet_cd = inputs["tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k"]

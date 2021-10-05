@@ -14,9 +14,9 @@
 import openmdao.api as om
 
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .components.compute_polar import ComputePolar, PolarType
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .components.high_lift_aero import ComputeDeltaHighLift
+from .constants import PolarType, SERVICE_POLAR
 
 
 @RegisterOpenMDAOSystem("fastoad.aerodynamics.takeoff.legacy", domain=ModelDomain.AERODYNAMICS)
@@ -29,4 +29,9 @@ class AerodynamicsTakeoff(om.Group):
 
     def setup(self):
         self.add_subsystem("delta_cl_cd", ComputeDeltaHighLift(landing_flag=False), promotes=["*"])
-        self.add_subsystem("polar", ComputePolar(type=PolarType.TAKEOFF), promotes=["*"])
+
+        self.add_subsystem(
+            "polar",
+            RegisterSubmodel.get_submodel(SERVICE_POLAR, {"type": PolarType.LOW_SPEED}),
+            promotes=["*"],
+        )
