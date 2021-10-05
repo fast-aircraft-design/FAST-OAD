@@ -30,8 +30,9 @@ class AerodynamicsTakeoff(om.Group):
     def setup(self):
         self.add_subsystem("delta_cl_cd", ComputeDeltaHighLift(landing_flag=False), promotes=["*"])
 
+        polar_type_option = {"polar_type": PolarType.TAKEOFF}
         self.add_subsystem(
             "polar",
-            RegisterSubmodel.get_submodel(SERVICE_POLAR, {"type": PolarType.LOW_SPEED}),
+            RegisterSubmodel.get_submodel(SERVICE_POLAR, polar_type_option),
             promotes=["*"],
         )

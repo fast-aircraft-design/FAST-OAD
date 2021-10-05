@@ -19,8 +19,8 @@ import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .components.compute_low_speed_aero import ComputeAerodynamicsLowSpeed
-from .components.compute_polar import PolarType
 from .constants import (
+    PolarType,
     SERVICE_CD0_FUSELAGE,
     SERVICE_CD0_HORIZONTAL_TAIL,
     SERVICE_CD0_NACELLES_PYLONS,
@@ -43,62 +43,69 @@ class AerodynamicsLowSpeed(om.Group):
     """
 
     def setup(self):
-        options = {"low_speed_aero": True}
+        low_speed_option = {"low_speed_aero": True}
 
         self.add_subsystem("compute_low_speed_aero", ComputeAerodynamicsLowSpeed(), promotes=["*"])
         ivc = om.IndepVarComp("data:aerodynamics:aircraft:takeoff:mach", val=0.2)
         self.add_subsystem("mach_low_speed", ivc, promotes=["*"])
         self.add_subsystem(
             "compute_oswald_coeff",
-            RegisterSubmodel.get_submodel(SERVICE_OSWALD_COEFFICIENT, options),
+            RegisterSubmodel.get_submodel(SERVICE_OSWALD_COEFFICIENT, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_induced_drag_coeff",
-            RegisterSubmodel.get_submodel(SERVICE_INDUCED_DRAG_COEFFICIENT, options),
+            RegisterSubmodel.get_submodel(SERVICE_INDUCED_DRAG_COEFFICIENT, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "comp_re",
-            RegisterSubmodel.get_submodel(SERVICE_REYNOLDS_COEFFICIENT, options),
+            RegisterSubmodel.get_submodel(SERVICE_REYNOLDS_COEFFICIENT, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "initialize_cl",
-            RegisterSubmodel.get_submodel(SERVICE_INITIALIZE_CL, options),
+            RegisterSubmodel.get_submodel(SERVICE_INITIALIZE_CL, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
-            "cd0_wing", RegisterSubmodel.get_submodel(SERVICE_CD0_WING, options), promotes=["*"],
+            "cd0_wing",
+            RegisterSubmodel.get_submodel(SERVICE_CD0_WING, low_speed_option),
+            promotes=["*"],
         )
         self.add_subsystem(
             "cd0_fuselage",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_FUSELAGE, options),
+            RegisterSubmodel.get_submodel(SERVICE_CD0_FUSELAGE, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "cd0_ht",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_HORIZONTAL_TAIL, options),
+            RegisterSubmodel.get_submodel(SERVICE_CD0_HORIZONTAL_TAIL, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "cd0_vt",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_VERTICAL_TAIL, options),
+            RegisterSubmodel.get_submodel(SERVICE_CD0_VERTICAL_TAIL, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "cd0_nac_pylons",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_NACELLES_PYLONS, options),
+            RegisterSubmodel.get_submodel(SERVICE_CD0_NACELLES_PYLONS, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
-            "cd0_total", RegisterSubmodel.get_submodel(SERVICE_CD0_SUM, options), promotes=["*"]
+            "cd0_total",
+            RegisterSubmodel.get_submodel(SERVICE_CD0_SUM, low_speed_option),
+            promotes=["*"],
         )
         self.add_subsystem(
-            "cd_trim", RegisterSubmodel.get_submodel(SERVICE_CD_TRIM, options), promotes=["*"]
+            "cd_trim",
+            RegisterSubmodel.get_submodel(SERVICE_CD_TRIM, low_speed_option),
+            promotes=["*"],
         )
+        polar_type_option = {"polar_type": PolarType.LOW_SPEED}
         self.add_subsystem(
             "get_polar",
-            RegisterSubmodel.get_submodel(SERVICE_POLAR, {"type": PolarType.LOW_SPEED}),
+            RegisterSubmodel.get_submodel(SERVICE_POLAR, polar_type_option),
             promotes=["*"],
         )

@@ -29,10 +29,11 @@ from ..cd0 import CD0
 from ..cd_compressibility import CdCompressibility
 from ..cd_trim import CdTrim
 from ..compute_low_speed_aero import ComputeAerodynamicsLowSpeed
-from ..compute_polar import ComputePolar, PolarType
+from ..compute_polar import ComputePolar
 from ..compute_reynolds import ComputeReynolds
 from ..high_lift_aero import ComputeDeltaHighLift
-from ..oswald import OswaldCoefficient, InducedDragCoefficient
+from ..oswald import InducedDragCoefficient, OswaldCoefficient
+from ...constants import PolarType
 
 
 def get_indep_var_comp(var_names):
@@ -390,7 +391,7 @@ def test_polar_low_speed():
     )
     group.add_subsystem("cd0", CD0(low_speed_aero=True), promotes=["*"])
     group.add_subsystem("cd_trim", CdTrim(low_speed_aero=True), promotes=["*"])
-    group.add_subsystem("polar", ComputePolar(type=PolarType.LOW_SPEED), promotes=["*"])
+    group.add_subsystem("polar", ComputePolar(polar_type=PolarType.LOW_SPEED), promotes=["*"])
 
     ivc = get_indep_var_comp(input_list)
     ivc.add_output("data:aerodynamics:aircraft:low_speed:CL", np.arange(0.0, 1.5, 0.01))
@@ -453,7 +454,7 @@ def test_polar_high_lift():
     )
     group.add_subsystem("cd0", CD0(low_speed_aero=True), promotes=["*"])
     group.add_subsystem("cd_trim", CdTrim(low_speed_aero=True), promotes=["*"])
-    group.add_subsystem("polar", ComputePolar(type=PolarType.TAKEOFF), promotes=["*"])
+    group.add_subsystem("polar", ComputePolar(polar_type=PolarType.TAKEOFF), promotes=["*"])
 
     ivc = get_indep_var_comp(input_list)
     ivc.add_output("data:aerodynamics:aircraft:low_speed:CL", np.arange(0.0, 1.5, 0.01))

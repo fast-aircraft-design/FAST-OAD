@@ -1,3 +1,4 @@
+"""Constants for aerodynamics models."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -10,6 +11,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+from aenum import Enum
 
 POLAR_POINT_COUNT = 150
 
@@ -26,3 +29,10 @@ SERVICE_CD0_SUM = "service.aerodynamics.CD0.sum"
 SERVICE_CD0_COMPRESSIBILITY = "service.aerodynamics.CD0.compressibility"
 SERVICE_CD_TRIM = "service.aerodynamics.CD.trim"
 SERVICE_POLAR = "service.aerodynamics.polar"
+
+
+class PolarType(Enum):
+    HIGH_SPEED = "high_speed"
+    LOW_SPEED = "low_speed"
+    TAKEOFF = "takeoff"
+    LANDING = "landing"
