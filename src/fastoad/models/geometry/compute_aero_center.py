@@ -17,7 +17,12 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+import fastoad.api as oad
 
+SERVICE_AERO_CENTER_GEOMETRY = "service.geometry.aero_center"
+
+
+@oad.RegisterSubmodel(SERVICE_AERO_CENTER_GEOMETRY, "geometry.aero_center.legacy")
 class ComputeAeroCenter(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Aerodynamic center estimation """

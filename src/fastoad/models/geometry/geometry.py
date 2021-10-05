@@ -19,8 +19,6 @@ import openmdao.api as om
 from fastoad.models.constants import CABIN_SIZING_OPTION
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
-from .compute_aero_center import ComputeAeroCenter
-from .geom_components import ComputeTotalArea
 
 SERVICE_FUSELAGE_GEOMETRY_BASIC = "service.geometry.fuselage.basic"
 SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING = "service.geometry.fuselage.with_cabin_sizing"
@@ -29,6 +27,7 @@ SERVICE_NACELLE_PYLON_GEOMETRY = "service.geometry.nacelle_and_pylon"
 SERVICE_VERTICAL_TAIL_GEOMETRY = "service.geometry.vertical_tail"
 SERVICE_WING_GEOMETRY = "service.geometry.wing"
 SERVICE_TOTAL_AREA_GEOMETRY = "service.geometry.total_area"
+SERVICE_AERO_CENTER_GEOMETRY = "service.geometry.aero_center"
 
 
 @RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)
@@ -87,4 +86,8 @@ class Geometry(om.Group):
             RegisterSubmodel.get_submodel(SERVICE_TOTAL_AREA_GEOMETRY),
             promotes=["*"],
         )
-        self.add_subsystem("compute_aero_center", ComputeAeroCenter(), promotes=["*"])
+        self.add_subsystem(
+            "compute_aero_center",
+            RegisterSubmodel.get_submodel(SERVICE_AERO_CENTER_GEOMETRY),
+            promotes=["*"],
+        )
