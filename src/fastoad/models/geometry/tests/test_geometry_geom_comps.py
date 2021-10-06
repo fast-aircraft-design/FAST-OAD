@@ -22,8 +22,8 @@ import pytest
 
 from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
-from ..geom_components import ComputeTotalArea
-from ..geom_components.fuselage import (
+from ..geom_components.compute_total_area import ComputeTotalArea
+from ..geom_components.fuselage.compute_fuselage import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizing,
 )

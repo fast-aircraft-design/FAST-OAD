@@ -13,6 +13,3 @@ Estimation of fuselage geometry
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from .compute_cnbeta_fuselage import ComputeCnBetaFuselage
-from .compute_fuselage import ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizing
