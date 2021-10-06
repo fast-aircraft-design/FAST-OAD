@@ -22,7 +22,7 @@ import fastoad.api as oad
 from .constants import SERVICE_AERO_CENTER_GEOMETRY
 
 
-@oad.RegisterSubmodel(SERVICE_AERO_CENTER_GEOMETRY, "geometry.aero_center.legacy")
+@oad.RegisterSubmodel(SERVICE_AERO_CENTER_GEOMETRY, "fastoad.submodel.geometry.aero_center.legacy")
 class ComputeAeroCenter(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Aerodynamic center estimation """

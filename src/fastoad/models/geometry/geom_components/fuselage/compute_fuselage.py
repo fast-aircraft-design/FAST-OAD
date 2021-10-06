@@ -27,7 +27,9 @@ from ...constants import (
 )
 
 
-@oad.RegisterSubmodel(SERVICE_FUSELAGE_GEOMETRY_BASIC, "geometry.fuselage.basic.legacy")
+@oad.RegisterSubmodel(
+    SERVICE_FUSELAGE_GEOMETRY_BASIC, "fastoad.submodel.geometry.fuselage.basic.legacy"
+)
 class ComputeFuselageGeometryBasic(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Geometry of fuselage part A - Cabin (Commercial) estimation """

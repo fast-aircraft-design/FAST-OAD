@@ -22,7 +22,7 @@ import fastoad.api as oad
 from ..constants import SERVICE_TOTAL_AREA_GEOMETRY
 
 
-@oad.RegisterSubmodel(SERVICE_TOTAL_AREA_GEOMETRY, "geometry.total_area.legacy")
+@oad.RegisterSubmodel(SERVICE_TOTAL_AREA_GEOMETRY, "fastoad.submodel.geometry.total_area.legacy")
 class ComputeTotalArea(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Total aircraft wet area estimation """

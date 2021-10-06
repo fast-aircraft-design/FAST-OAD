@@ -24,7 +24,7 @@ import fastoad.api as oad
 from ...constants import SERVICE_FUSELAGE_CNBETA
 
 # TODO: This belongs more to aerodynamics than geometry
-@oad.RegisterSubmodel(SERVICE_FUSELAGE_CNBETA, "geometry.fuselage.cnbeta.legacy")
+@oad.RegisterSubmodel(SERVICE_FUSELAGE_CNBETA, "fastoad.submodel.geometry.fuselage.cnbeta.legacy")
 class ComputeCnBetaFuselage(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Yawing moment due to sideslip estimation """

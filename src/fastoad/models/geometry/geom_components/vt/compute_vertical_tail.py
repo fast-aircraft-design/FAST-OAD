@@ -30,7 +30,9 @@ import fastoad.api as oad
 from ...constants import SERVICE_FUSELAGE_CNBETA, SERVICE_VERTICAL_TAIL_GEOMETRY
 
 
-@oad.RegisterSubmodel(SERVICE_VERTICAL_TAIL_GEOMETRY, "geometry.vertical_tail.legacy")
+@oad.RegisterSubmodel(
+    SERVICE_VERTICAL_TAIL_GEOMETRY, "fastoad.submodel.geometry.vertical_tail.legacy"
+)
 class ComputeVerticalTailGeometry(om.Group):
     """ Vertical tail geometry estimation """
 

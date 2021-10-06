@@ -38,7 +38,7 @@ import fastoad.api as oad
 from ...constants import SERVICE_WING_GEOMETRY
 
 
-@oad.RegisterSubmodel(SERVICE_WING_GEOMETRY, "geometry.wing.legacy")
+@oad.RegisterSubmodel(SERVICE_WING_GEOMETRY, "fastoad.submodel.geometry.wing.legacy")
 class ComputeWingGeometry(om.Group):
     # TODO: Document equations. Cite sources
     """ Wing geometry estimation """

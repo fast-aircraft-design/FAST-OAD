@@ -26,7 +26,9 @@ import fastoad.api as oad
 from ...constants import SERVICE_HORIZONTAL_TAIL_GEOMETRY
 
 
-@oad.RegisterSubmodel(SERVICE_HORIZONTAL_TAIL_GEOMETRY, "geometry.horizontal_tail.legacy")
+@oad.RegisterSubmodel(
+    SERVICE_HORIZONTAL_TAIL_GEOMETRY, "fastoad.submodel.geometry.horizontal_tail.legacy"
+)
 class ComputeHorizontalTailGeometry(om.Group):
     """ Horizontal tail geometry estimation """
 
