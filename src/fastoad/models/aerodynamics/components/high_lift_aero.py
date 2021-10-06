@@ -20,11 +20,14 @@ import numpy as np
 import openmdao.api as om
 from scipy import interpolate
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 from . import resources
+from ..constants import SERVICE_HIGH_LIFT
 
 LIFT_EFFECTIVENESS_FILENAME = "interpolation of lift effectiveness.txt"
 
 
+@RegisterSubmodel(SERVICE_HIGH_LIFT, "fastoad.submodel.aerodynamics.high_lift.legacy")
 class ComputeDeltaHighLift(om.ExplicitComponent):
     """
     Provides lift and drag increments due to high-lift devices

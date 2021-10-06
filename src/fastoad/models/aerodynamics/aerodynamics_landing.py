@@ -19,9 +19,9 @@ import openmdao.api as om
 
 from fastoad.model_base import Atmosphere
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .components.compute_max_cl_landing import ComputeMaxClLanding
-from .components.high_lift_aero import ComputeDeltaHighLift
+from .constants import SERVICE_HIGH_LIFT
 from .external.xfoil import XfoilPolar
 from .external.xfoil.xfoil_polar import (
     OPTION_ALPHA_END,
@@ -100,9 +100,14 @@ class AerodynamicsLanding(om.Group):
                 "xfoil_run", XfoilPolar(**kwargs), promotes=["data:geometry:wing:thickness_ratio"],
             )
         self.add_subsystem("CL_2D_to_3D", Compute3DMaxCL(), promotes=["*"])
+
+        landing_flag_option = {"landing_flag": True}
         self.add_subsystem(
-            "delta_cl_landing", ComputeDeltaHighLift(landing_flag=True), promotes=["*"]
+            "delta_cl_landing",
+            RegisterSubmodel.get_submodel(SERVICE_HIGH_LIFT, landing_flag_option),
+            promotes=["*"],
         )
+
         self.add_subsystem("compute_max_cl_landing", ComputeMaxClLanding(), promotes=["*"])
 
         if self.options["use_xfoil"]:
