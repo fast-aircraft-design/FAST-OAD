@@ -35,7 +35,7 @@ from fastoad.models.geometry.geom_components.wing.components.compute_y_wing impo
 
 import fastoad.api as oad
 
-SERVICE_WING_GEOMETRY = "service.geometry.wing"
+from ...constants import SERVICE_WING_GEOMETRY
 
 
 @oad.RegisterSubmodel(SERVICE_WING_GEOMETRY, "geometry.wing.legacy")

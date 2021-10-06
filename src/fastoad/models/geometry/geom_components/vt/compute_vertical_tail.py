@@ -27,8 +27,7 @@ from fastoad.models.geometry.geom_components.vt.components import ComputeVTSweep
 
 import fastoad.api as oad
 
-SERVICE_FUSELAGE_CNBETA = "service.geometry.fuselage.cnbeta"
-SERVICE_VERTICAL_TAIL_GEOMETRY = "service.geometry.vertical_tail"
+from ...constants import SERVICE_FUSELAGE_CNBETA, SERVICE_VERTICAL_TAIL_GEOMETRY
 
 
 @oad.RegisterSubmodel(SERVICE_VERTICAL_TAIL_GEOMETRY, "geometry.vertical_tail.legacy")

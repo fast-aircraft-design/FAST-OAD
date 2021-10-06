@@ -21,8 +21,10 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 import fastoad.api as oad
 
-SERVICE_FUSELAGE_GEOMETRY_BASIC = "service.geometry.fuselage.basic"
-SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING = "service.geometry.fuselage.with_cabin_sizing"
+from ...constants import (
+    SERVICE_FUSELAGE_GEOMETRY_BASIC,
+    SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING,
+)
 
 
 @oad.RegisterSubmodel(SERVICE_FUSELAGE_GEOMETRY_BASIC, "geometry.fuselage.basic.legacy")

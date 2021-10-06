@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 import fastoad.api as oad
 
-SERVICE_FUSELAGE_CNBETA = "service.geometry.fuselage.cnbeta"
+from ...constants import SERVICE_FUSELAGE_CNBETA
 
 # TODO: This belongs more to aerodynamics than geometry
 @oad.RegisterSubmodel(SERVICE_FUSELAGE_CNBETA, "geometry.fuselage.cnbeta.legacy")

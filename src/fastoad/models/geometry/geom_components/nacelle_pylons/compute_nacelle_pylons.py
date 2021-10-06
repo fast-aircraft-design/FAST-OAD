@@ -21,7 +21,7 @@ import openmdao.api as om
 
 import fastoad.api as oad
 
-SERVICE_NACELLE_PYLON_GEOMETRY = "service.geometry.nacelle_and_pylon"
+from ...constants import SERVICE_NACELLE_PYLON_GEOMETRY
 
 
 @oad.RegisterSubmodel(SERVICE_NACELLE_PYLON_GEOMETRY, "geometry.nacelle_and_pylon.legacy")

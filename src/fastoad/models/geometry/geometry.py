@@ -20,14 +20,16 @@ from fastoad.models.constants import CABIN_SIZING_OPTION
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 
-SERVICE_FUSELAGE_GEOMETRY_BASIC = "service.geometry.fuselage.basic"
-SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING = "service.geometry.fuselage.with_cabin_sizing"
-SERVICE_HORIZONTAL_TAIL_GEOMETRY = "service.geometry.horizontal_tail"
-SERVICE_NACELLE_PYLON_GEOMETRY = "service.geometry.nacelle_and_pylon"
-SERVICE_VERTICAL_TAIL_GEOMETRY = "service.geometry.vertical_tail"
-SERVICE_WING_GEOMETRY = "service.geometry.wing"
-SERVICE_TOTAL_AREA_GEOMETRY = "service.geometry.total_area"
-SERVICE_AERO_CENTER_GEOMETRY = "service.geometry.aero_center"
+from .constants import (
+    SERVICE_FUSELAGE_GEOMETRY_BASIC,
+    SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING,
+    SERVICE_HORIZONTAL_TAIL_GEOMETRY,
+    SERVICE_NACELLE_PYLON_GEOMETRY,
+    SERVICE_VERTICAL_TAIL_GEOMETRY,
+    SERVICE_WING_GEOMETRY,
+    SERVICE_TOTAL_AREA_GEOMETRY,
+    SERVICE_AERO_CENTER_GEOMETRY,
+)
 
 
 @RegisterOpenMDAOSystem("fastoad.geometry.legacy", domain=ModelDomain.GEOMETRY)

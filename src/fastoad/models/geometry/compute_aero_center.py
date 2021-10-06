@@ -19,7 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 import fastoad.api as oad
 
-SERVICE_AERO_CENTER_GEOMETRY = "service.geometry.aero_center"
+from .constants import SERVICE_AERO_CENTER_GEOMETRY
 
 
 @oad.RegisterSubmodel(SERVICE_AERO_CENTER_GEOMETRY, "geometry.aero_center.legacy")

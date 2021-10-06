@@ -19,7 +19,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 import fastoad.api as oad
 
-SERVICE_TOTAL_AREA_GEOMETRY = "service.geometry.total_area"
+from ..constants import SERVICE_TOTAL_AREA_GEOMETRY
 
 
 @oad.RegisterSubmodel(SERVICE_TOTAL_AREA_GEOMETRY, "geometry.total_area.legacy")

@@ -23,7 +23,7 @@ from fastoad.models.geometry.geom_components.ht.components import ComputeHTSweep
 
 import fastoad.api as oad
 
-SERVICE_HORIZONTAL_TAIL_GEOMETRY = "service.geometry.horizontal_tail"
+from ...constants import SERVICE_HORIZONTAL_TAIL_GEOMETRY
 
 
 @oad.RegisterSubmodel(SERVICE_HORIZONTAL_TAIL_GEOMETRY, "geometry.horizontal_tail.legacy")
