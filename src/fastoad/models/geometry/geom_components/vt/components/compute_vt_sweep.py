@@ -17,11 +17,11 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
 # TODO: HT and VT components are similar --> factorize
-class ComputeVTSweep(ExplicitComponent):
+class ComputeVTSweep(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail sweeps estimation """
 

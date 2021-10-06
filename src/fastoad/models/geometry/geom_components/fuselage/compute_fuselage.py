@@ -17,7 +17,7 @@
 from math import sqrt
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 import fastoad.api as oad
 
@@ -28,7 +28,7 @@ from ...constants import (
 
 
 @oad.RegisterSubmodel(SERVICE_FUSELAGE_GEOMETRY_BASIC, "geometry.fuselage.basic.legacy")
-class ComputeFuselageGeometryBasic(ExplicitComponent):
+class ComputeFuselageGeometryBasic(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Geometry of fuselage part A - Cabin (Commercial) estimation """
 
@@ -108,7 +108,7 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
 @oad.RegisterSubmodel(
     SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING, "geometry.fuselage.with_cabin_sizing.legacy"
 )
-class ComputeFuselageGeometryCabinSizing(ExplicitComponent):
+class ComputeFuselageGeometryCabinSizing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Geometry of fuselage part A - Cabin (Commercial) estimation """
 

@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 import fastoad.api as oad
 
@@ -23,7 +23,7 @@ from ..constants import SERVICE_TOTAL_AREA_GEOMETRY
 
 
 @oad.RegisterSubmodel(SERVICE_TOTAL_AREA_GEOMETRY, "geometry.total_area.legacy")
-class ComputeTotalArea(ExplicitComponent):
+class ComputeTotalArea(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Total aircraft wet area estimation """
 

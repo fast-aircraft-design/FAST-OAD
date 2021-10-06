@@ -17,11 +17,11 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
 # TODO: computes relative thickness and generates profiles --> decompose
-class ComputeToCWing(ExplicitComponent):
+class ComputeToCWing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing ToC estimation """
 

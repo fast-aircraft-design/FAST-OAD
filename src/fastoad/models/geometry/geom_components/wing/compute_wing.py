@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.api import Group
+import openmdao.api as om
 
 from fastoad.models.geometry.geom_components.wing.components.compute_b_50 import ComputeB50
 from fastoad.models.geometry.geom_components.wing.components.compute_cl_alpha import ComputeCLalpha
@@ -39,7 +39,7 @@ from ...constants import SERVICE_WING_GEOMETRY
 
 
 @oad.RegisterSubmodel(SERVICE_WING_GEOMETRY, "geometry.wing.legacy")
-class ComputeWingGeometry(Group):
+class ComputeWingGeometry(om.Group):
     # TODO: Document equations. Cite sources
     """ Wing geometry estimation """
 
