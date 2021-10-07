@@ -30,6 +30,7 @@ SERVICE_CD0_COMPRESSIBILITY = "service.aerodynamics.CD0.compressibility"
 SERVICE_CD_TRIM = "service.aerodynamics.CD.trim"
 SERVICE_POLAR = "service.aerodynamics.polar"
 SERVICE_HIGH_LIFT = "service.aerodynamics.high_lift"
+SERVICE_XFOIL = "service.aerodynamics.xfoil"
 
 
 class PolarType(Enum):

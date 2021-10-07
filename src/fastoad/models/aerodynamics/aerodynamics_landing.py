@@ -21,8 +21,7 @@ from fastoad.model_base import Atmosphere
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .components.compute_max_cl_landing import ComputeMaxClLanding
-from .constants import SERVICE_HIGH_LIFT
-from .external.xfoil import XfoilPolar
+from .constants import SERVICE_HIGH_LIFT, SERVICE_XFOIL
 from .external.xfoil.xfoil_polar import (
     OPTION_ALPHA_END,
     OPTION_ALPHA_START,
@@ -90,14 +89,16 @@ class AerodynamicsLanding(om.Group):
             start = self.options["xfoil_alpha_min"]
             end = self.options["xfoil_alpha_max"]
             iter_limit = self.options["xfoil_iter_limit"]
-            kwargs = {
+            xfoil_options = {
                 OPTION_ALPHA_START: start,
                 OPTION_ALPHA_END: end,
                 OPTION_ITER_LIMIT: iter_limit,
                 OPTION_XFOIL_EXE_PATH: self.options[OPTION_XFOIL_EXE_PATH],
             }
             self.add_subsystem(
-                "xfoil_run", XfoilPolar(**kwargs), promotes=["data:geometry:wing:thickness_ratio"],
+                "xfoil_run",
+                RegisterSubmodel.get_submodel(SERVICE_XFOIL, xfoil_options),
+                promotes=["data:geometry:wing:thickness_ratio"],
             )
         self.add_subsystem("CL_2D_to_3D", Compute3DMaxCL(), promotes=["*"])
 
