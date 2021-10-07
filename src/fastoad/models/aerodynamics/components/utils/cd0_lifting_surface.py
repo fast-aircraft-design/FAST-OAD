@@ -16,6 +16,10 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from fastoad.models.aerodynamics.components.utils.friction_drag import (
+    get_flat_plate_friction_drag_coefficient,
+)
+
 
 @dataclass
 class LiftingSurfaceGeometry:
@@ -50,9 +54,7 @@ def compute_cd0_lifting_surface(
     :return: CD0 value
     """
     # Drag coefficient for flat plate (
-    cf = 0.455 / (
-        (1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds * geometry.MAC_length)) ** 2.58
-    )
+    cf = get_flat_plate_friction_drag_coefficient(geometry.MAC_length, mach, reynolds)
 
     # Contribution of relative thickness
     thickness_contribution = (

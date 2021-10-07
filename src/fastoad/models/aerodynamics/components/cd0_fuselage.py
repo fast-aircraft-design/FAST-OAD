@@ -18,6 +18,7 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
+from .utils.friction_drag import get_flat_plate_friction_drag_coefficient
 from ..constants import SERVICE_CD0_FUSELAGE
 
 
@@ -72,9 +73,7 @@ class Cd0Fuselage(om.ExplicitComponent):
             mach = inputs["data:TLAR:cruise_mach"]
             reynolds = inputs["data:aerodynamics:wing:cruise:reynolds"]
 
-        cf_fus = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds * fus_length)) ** 2.58
-        )
+        cf_fus = get_flat_plate_friction_drag_coefficient(fus_length, mach, reynolds)
 
         cd0_friction_fus = (
             (0.98 + 0.745 * np.sqrt(height_max * width_max) / fus_length)

@@ -18,6 +18,7 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
+from .utils.friction_drag import get_flat_plate_friction_drag_coefficient
 from ..constants import SERVICE_CD0_NACELLES_PYLONS
 
 
@@ -68,12 +69,8 @@ class Cd0NacellesAndPylons(om.ExplicitComponent):
             mach = inputs["data:TLAR:cruise_mach"]
             reynolds = inputs["data:aerodynamics:wing:cruise:reynolds"]
 
-        cf_pylon = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds * pylon_length)) ** 2.58
-        )
-        cf_nac = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds * nac_length)) ** 2.58
-        )
+        cf_pylon = get_flat_plate_friction_drag_coefficient(pylon_length, mach, reynolds)
+        cf_nac = get_flat_plate_friction_drag_coefficient(nac_length, mach, reynolds)
 
         # cd0 Pylon
         el_pylon = 0.06
