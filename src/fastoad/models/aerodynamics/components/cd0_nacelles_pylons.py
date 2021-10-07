@@ -24,7 +24,9 @@ from ..constants import SERVICE_CD0_NACELLES_PYLONS
 @RegisterSubmodel(
     SERVICE_CD0_NACELLES_PYLONS, "fastoad.submodel.aerodynamics.CD0.nacelles_pylons.legacy"
 )
-class Cd0NacelleAndPylons(om.ExplicitComponent):
+class Cd0NacellesAndPylons(om.ExplicitComponent):
+    """Computation of form drag for nacelles and pylons."""
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 

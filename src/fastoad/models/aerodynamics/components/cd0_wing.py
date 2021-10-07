@@ -25,7 +25,7 @@ from ..constants import SERVICE_CD0_WING
 @RegisterSubmodel(SERVICE_CD0_WING, "fastoad.submodel.aerodynamics.CD0.wing.legacy")
 class Cd0Wing(om.ExplicitComponent):
     """
-    Computation of CD0 for wing.
+    Computation of form drag for wing.
 
     See :meth:`~fastoad.models.aerodynamics.components.utils.cd0_lifting_surface` for used method.
     """

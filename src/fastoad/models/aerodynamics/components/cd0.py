@@ -27,6 +27,8 @@ from ..constants import (
 
 @RegisterSubmodel(SERVICE_CD0, "fastoad.submodel.aerodynamics.CD0.legacy")
 class CD0(om.Group):
+    """Computation of form drag for whole aircraft."""
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 

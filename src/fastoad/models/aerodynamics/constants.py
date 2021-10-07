@@ -38,6 +38,8 @@ SERVICE_LANDING_MACH_REYNOLDS = "service.aerodynamics.landing.mach_reynolds"
 
 
 class PolarType(Enum):
+    """Enumeration of polar types to be computed."""
+
     HIGH_SPEED = "high_speed"
     LOW_SPEED = "low_speed"
     TAKEOFF = "takeoff"

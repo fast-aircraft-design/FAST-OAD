@@ -27,6 +27,8 @@ from ..constants import SERVICE_REYNOLDS_COEFFICIENT
     SERVICE_REYNOLDS_COEFFICIENT, "fastoad.submodel.aerodynamics.reynolds_coefficient.legacy"
 )
 class ComputeReynolds(ExplicitComponent):
+    """Computation of Reynolds number"""
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 

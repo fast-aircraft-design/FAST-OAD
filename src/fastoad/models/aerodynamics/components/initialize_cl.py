@@ -23,6 +23,8 @@ from ..constants import POLAR_POINT_COUNT, SERVICE_INITIALIZE_CL
 
 @RegisterSubmodel(SERVICE_INITIALIZE_CL, "fastoad.submodel.aerodynamics.initialize_CL.legacy")
 class InitializeClPolar(om.ExplicitComponent):
+    """Initialization of CL vector."""
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 

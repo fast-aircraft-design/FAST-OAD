@@ -27,7 +27,7 @@ from ..constants import SERVICE_CD0_HORIZONTAL_TAIL
 )
 class Cd0HorizontalTail(om.ExplicitComponent):
     """
-    Computation of CD0 for Horizontal Tail Plane.
+    Computation of form drag for Horizontal Tail Plane.
 
     See :meth:`~fastoad.models.aerodynamics.components.utils.cd0_lifting_surface` for used method.
     """

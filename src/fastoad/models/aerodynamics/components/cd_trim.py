@@ -23,6 +23,8 @@ from ..constants import SERVICE_CD_TRIM
 
 @RegisterSubmodel(SERVICE_CD_TRIM, "fastoad.submodel.aerodynamics.CD.trim.legacy")
 class CdTrim(om.ExplicitComponent):
+    """Computation of trim drag."""
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 

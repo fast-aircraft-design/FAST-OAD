@@ -30,7 +30,7 @@ class CdCompressibility(om.ExplicitComponent):
 
     Formula from §4.2.4 of :cite:`supaero:2014`. This formula can be used for aircraft
     before year 2000.
-    
+
     Earlier aircraft have more optimized wing profiles that are expected to limit the
     compressibility drag below 2 drag counts. Until a better model can be provided, the
     variable `tuning:aerodynamics:aircraft:cruise:CD:compressibility:characteristic_mach_increment`

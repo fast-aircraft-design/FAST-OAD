@@ -23,8 +23,9 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 class ComputeAerodynamicsLowSpeed(ExplicitComponent):
     """
     Czalpha from Raymer Eq 12.6
-    TODO: complete source
     """
+
+    # TODO: complete source
 
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")

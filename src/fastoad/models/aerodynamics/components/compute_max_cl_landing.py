@@ -24,6 +24,8 @@ from ..constants import SERVICE_LANDING_MAX_CL
 
 @RegisterSubmodel(SERVICE_LANDING_MAX_CL, "fastoad.submodel.aerodynamics.landing.max_CL.legacy")
 class ComputeMaxClLanding(ExplicitComponent):
+    """Computation of max CL in landing conditions."""
+
     def setup(self):
         self.add_input("data:aerodynamics:aircraft:landing:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:high_lift_devices:landing:CL", val=np.nan)

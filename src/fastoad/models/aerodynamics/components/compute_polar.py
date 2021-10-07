@@ -23,6 +23,8 @@ from ..constants import PolarType, SERVICE_POLAR
 
 @RegisterSubmodel(SERVICE_POLAR, "fastoad.submodel.aerodynamics.polar.legacy")
 class ComputePolar(om.ExplicitComponent):
+    """Computation of CL and CD for whole aircraft."""
+
     def initialize(self):
         self.options.declare("polar_type", default=PolarType.HIGH_SPEED, types=PolarType)
 

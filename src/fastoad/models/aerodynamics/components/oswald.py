@@ -18,7 +18,7 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
-from ..constants import SERVICE_OSWALD_COEFFICIENT, SERVICE_INDUCED_DRAG_COEFFICIENT
+from ..constants import SERVICE_INDUCED_DRAG_COEFFICIENT, SERVICE_OSWALD_COEFFICIENT
 
 
 @RegisterSubmodel(
@@ -67,8 +67,9 @@ class InducedDragCoefficient(om.ExplicitComponent):
     SERVICE_OSWALD_COEFFICIENT, "fastoad.submodel.aerodynamics.oswald_coefficient.legacy"
 )
 class OswaldCoefficient(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources (M. Nita and D. Scholz)
     """ Computes Oswald efficiency number """
+
+    # TODO: Document equations. Cite sources (M. Nita and D. Scholz)
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)

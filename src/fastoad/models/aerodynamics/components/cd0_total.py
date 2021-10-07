@@ -23,6 +23,8 @@ from ..constants import SERVICE_CD0_SUM
 
 @RegisterSubmodel(SERVICE_CD0_SUM, "fastoad.submodel.aerodynamics.CD0.sum.legacy")
 class Cd0Total(om.ExplicitComponent):
+    """Sum of form drags from aircraft components."""
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 

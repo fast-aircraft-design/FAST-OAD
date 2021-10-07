@@ -23,6 +23,8 @@ from ..constants import SERVICE_CD0_FUSELAGE
 
 @RegisterSubmodel(SERVICE_CD0_FUSELAGE, "fastoad.submodel.aerodynamics.CD0.fuselage.legacy")
 class Cd0Fuselage(om.ExplicitComponent):
+    """Computation of form drag for fuselage."""
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
