@@ -20,7 +20,13 @@ import openmdao.api as om
 from fastoad.model_base import Atmosphere
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
-from .constants import SERVICE_HIGH_LIFT, SERVICE_MAX_CL_3D, SERVICE_MAX_CL_LANDING, SERVICE_XFOIL
+from .constants import (
+    SERVICE_HIGH_LIFT,
+    SERVICE_MACH_REYNOLDS_LANDING,
+    SERVICE_MAX_CL_3D,
+    SERVICE_MAX_CL_LANDING,
+    SERVICE_XFOIL,
+)
 from .external.xfoil.xfoil_polar import (
     OPTION_ALPHA_END,
     OPTION_ALPHA_START,
@@ -83,7 +89,12 @@ class AerodynamicsLanding(om.Group):
         )
 
     def setup(self):
-        self.add_subsystem("mach_reynolds", ComputeMachReynolds(), promotes=["*"])
+        self.add_subsystem(
+            "mach_reynolds",
+            RegisterSubmodel.get_submodel(SERVICE_MACH_REYNOLDS_LANDING),
+            promotes=["*"],
+        )
+
         if self.options["use_xfoil"]:
             start = self.options["xfoil_alpha_min"]
             end = self.options["xfoil_alpha_max"]
@@ -99,6 +110,7 @@ class AerodynamicsLanding(om.Group):
                 RegisterSubmodel.get_submodel(SERVICE_XFOIL, xfoil_options),
                 promotes=["data:geometry:wing:thickness_ratio"],
             )
+
         self.add_subsystem(
             "CL_2D_to_3D", RegisterSubmodel.get_submodel(SERVICE_MAX_CL_3D), promotes=["*"]
         )
@@ -124,6 +136,9 @@ class AerodynamicsLanding(om.Group):
             )
 
 
+@RegisterSubmodel(
+    SERVICE_MACH_REYNOLDS_LANDING, "fastoad.submodel.aerodynamics.mach_reynolds_landing.legacy"
+)
 class ComputeMachReynolds(om.ExplicitComponent):
     """
     Mach and Reynolds computation
