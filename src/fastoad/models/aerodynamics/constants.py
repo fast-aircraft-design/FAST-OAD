@@ -31,9 +31,9 @@ SERVICE_CD_TRIM = "service.aerodynamics.CD.trim"
 SERVICE_POLAR = "service.aerodynamics.polar"
 SERVICE_HIGH_LIFT = "service.aerodynamics.high_lift"
 SERVICE_XFOIL = "service.aerodynamics.xfoil"
-SERVICE_MAX_CL_3D = "service.aerodynamics.max_CL_3D"
-SERVICE_MAX_CL_LANDING = "service.aerodynamics.max_CL_landing"
-SERVICE_MACH_REYNOLDS_LANDING = "service.aerodynamics.mach_reynolds_landing"
+SERVICE_LANDING_MAX_CL_CLEAN = "service.aerodynamics.landing.max_CL_clean"
+SERVICE_LANDING_MAX_CL = "service.aerodynamics.landing.max_CL"
+SERVICE_LANDING_MACH_REYNOLDS = "service.aerodynamics.landing.mach_reynolds"
 
 
 class PolarType(Enum):
