@@ -1,0 +1,30 @@
+title: Tutorial Beam Problem
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+    - ../modules
+
+# Input and output files
+input_file: ./problem_inputs.xml
+output_file: ../workdir/problem_outputs.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
+
+# Definition of OpenMDAO model
+# Although "model" is a mandatory name for the top level of the model, its
+# sub-components can be freely named by user
+model:
+
+  #  Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
+  nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2, iprint=1)
+  linear_solver: om.DirectSolver()
+  
+  geometry:
+    id: "tutorial.beam_problem.geometry"
+    
+  weight:
+    id: "tutorial.beam_problem.weight"
+    
+  displacements:
+    id: "tutorial.beam_problem.disp"
