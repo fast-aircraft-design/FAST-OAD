@@ -21,12 +21,7 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, R
 from .components.compute_low_speed_aero import ComputeAerodynamicsLowSpeed
 from .constants import (
     PolarType,
-    SERVICE_CD0_FUSELAGE,
-    SERVICE_CD0_HORIZONTAL_TAIL,
-    SERVICE_CD0_NACELLES_PYLONS,
-    SERVICE_CD0_SUM,
-    SERVICE_CD0_VERTICAL_TAIL,
-    SERVICE_CD0_WING,
+    SERVICE_CD0,
     SERVICE_CD_TRIM,
     SERVICE_INDUCED_DRAG_COEFFICIENT,
     SERVICE_INITIALIZE_CL,
@@ -70,32 +65,7 @@ class AerodynamicsLowSpeed(om.Group):
         )
         self.add_subsystem(
             "cd0_wing",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_WING, low_speed_option),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cd0_fuselage",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_FUSELAGE, low_speed_option),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cd0_ht",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_HORIZONTAL_TAIL, low_speed_option),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cd0_vt",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_VERTICAL_TAIL, low_speed_option),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cd0_nac_pylons",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_NACELLES_PYLONS, low_speed_option),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cd0_total",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_SUM, low_speed_option),
+            RegisterSubmodel.get_submodel(SERVICE_CD0, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(

@@ -19,13 +19,8 @@ import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .constants import (
-    SERVICE_CD0_COMPRESSIBILITY,
-    SERVICE_CD0_FUSELAGE,
-    SERVICE_CD0_HORIZONTAL_TAIL,
-    SERVICE_CD0_NACELLES_PYLONS,
-    SERVICE_CD0_SUM,
-    SERVICE_CD0_VERTICAL_TAIL,
-    SERVICE_CD0_WING,
+    SERVICE_CD0,
+    SERVICE_CD_COMPRESSIBILITY,
     SERVICE_CD_TRIM,
     SERVICE_INDUCED_DRAG_COEFFICIENT,
     SERVICE_INITIALIZE_CL,
@@ -61,28 +56,9 @@ class AerodynamicsHighSpeed(om.Group):
         self.add_subsystem(
             "initialize_cl", RegisterSubmodel.get_submodel(SERVICE_INITIALIZE_CL), promotes=["*"]
         )
+        self.add_subsystem("cd0_wing", RegisterSubmodel.get_submodel(SERVICE_CD0), promotes=["*"])
         self.add_subsystem(
-            "cd0_wing", RegisterSubmodel.get_submodel(SERVICE_CD0_WING), promotes=["*"]
-        )
-        self.add_subsystem(
-            "cd0_fuselage", RegisterSubmodel.get_submodel(SERVICE_CD0_FUSELAGE), promotes=["*"]
-        )
-        self.add_subsystem(
-            "cd0_ht", RegisterSubmodel.get_submodel(SERVICE_CD0_HORIZONTAL_TAIL), promotes=["*"]
-        )
-        self.add_subsystem(
-            "cd0_vt", RegisterSubmodel.get_submodel(SERVICE_CD0_VERTICAL_TAIL), promotes=["*"]
-        )
-        self.add_subsystem(
-            "cd0_nac_pylons",
-            RegisterSubmodel.get_submodel(SERVICE_CD0_NACELLES_PYLONS),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cd0_total", RegisterSubmodel.get_submodel(SERVICE_CD0_SUM), promotes=["*"]
-        )
-        self.add_subsystem(
-            "cd_comp", RegisterSubmodel.get_submodel(SERVICE_CD0_COMPRESSIBILITY), promotes=["*"]
+            "cd_comp", RegisterSubmodel.get_submodel(SERVICE_CD_COMPRESSIBILITY), promotes=["*"]
         )
         self.add_subsystem(
             "cd_trim", RegisterSubmodel.get_submodel(SERVICE_CD_TRIM), promotes=["*"]

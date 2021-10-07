@@ -18,11 +18,11 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
-from ..constants import SERVICE_CD0_COMPRESSIBILITY
+from ..constants import SERVICE_CD_COMPRESSIBILITY
 
 
 @RegisterSubmodel(
-    SERVICE_CD0_COMPRESSIBILITY, "fastoad.submodel.aerodynamics.CD0.compressibility.legacy"
+    SERVICE_CD_COMPRESSIBILITY, "fastoad.submodel.aerodynamics.CD.compressibility.legacy"
 )
 class CdCompressibility(om.ExplicitComponent):
     """
