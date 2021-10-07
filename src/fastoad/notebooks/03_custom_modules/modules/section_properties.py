@@ -1,5 +1,5 @@
 """
-This module aims to compute section properties of a beam given width and height
+Computation of section properties.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
@@ -22,6 +22,10 @@ import fastoad.api as oad
 
 @oad.RegisterOpenMDAOSystem("tutorial.beam_problem.geometry")
 class RectangularSection(om.ExplicitComponent):
+    """
+    Computes section properties of a beam given width and height.
+    """
+
     def setup(self):
 
         self.add_input("data:geometry:l", val=np.nan, units="m")

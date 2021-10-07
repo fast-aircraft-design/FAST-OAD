@@ -1,3 +1,6 @@
+"""
+Computation of beam section that leads to yield stress.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -19,6 +22,11 @@ import fastoad.api as oad
 
 @oad.RegisterOpenMDAOSystem("tutorial.beam_problem.stresses")
 class Stress(om.ExplicitComponent):
+    """
+    Computes needed beam section second moment of area that leads to yield stress, given force and
+    material properties.
+    """
+
     def setup(self):
 
         self.add_input("data:geometry:L", val=np.nan, units="m")

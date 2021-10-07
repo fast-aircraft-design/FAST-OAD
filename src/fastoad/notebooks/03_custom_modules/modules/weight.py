@@ -1,5 +1,5 @@
 """
-This module aims to compute beam linear weight given its dimensions
+Computation of beam linear weight.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
@@ -22,6 +22,10 @@ import fastoad.api as oad
 
 @oad.RegisterOpenMDAOSystem("tutorial.beam_problem.weight")
 class LinearWeight(om.ExplicitComponent):
+    """
+    Computes beam linear weight given its dimensions.
+    """
+
     def setup(self):
 
         self.add_input("data:geometry:l", val=np.nan, units="m")

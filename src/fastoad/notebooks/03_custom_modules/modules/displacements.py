@@ -1,6 +1,5 @@
 """
-This module compute needed beam section second moment of area given a target deflection, force and
-material properties.
+Computation of needed beam section for a target deflection.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
@@ -24,6 +23,11 @@ import fastoad.api as oad
 
 @oad.RegisterOpenMDAOSystem("tutorial.beam_problem.disp")
 class Displacements(om.ExplicitComponent):
+    """
+    Computes needed beam section second moment of area given a target deflection, force and
+    material properties.
+    """
+
     def setup(self):
 
         self.add_input("data:geometry:L", val=np.nan, units="m")
