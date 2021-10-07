@@ -21,7 +21,7 @@ from fastoad.model_base import Atmosphere
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .components.compute_max_cl_landing import ComputeMaxClLanding
-from .constants import SERVICE_HIGH_LIFT, SERVICE_XFOIL
+from .constants import SERVICE_HIGH_LIFT, SERVICE_MAX_CL_3D, SERVICE_XFOIL
 from .external.xfoil.xfoil_polar import (
     OPTION_ALPHA_END,
     OPTION_ALPHA_START,
@@ -100,7 +100,9 @@ class AerodynamicsLanding(om.Group):
                 RegisterSubmodel.get_submodel(SERVICE_XFOIL, xfoil_options),
                 promotes=["data:geometry:wing:thickness_ratio"],
             )
-        self.add_subsystem("CL_2D_to_3D", Compute3DMaxCL(), promotes=["*"])
+        self.add_subsystem(
+            "CL_2D_to_3D", RegisterSubmodel.get_submodel(SERVICE_MAX_CL_3D), promotes=["*"]
+        )
 
         landing_flag_option = {"landing_flag": True}
         self.add_subsystem(
@@ -145,6 +147,7 @@ class ComputeMachReynolds(om.ExplicitComponent):
         outputs["data:aerodynamics:wing:landing:reynolds"] = reynolds
 
 
+@RegisterSubmodel(SERVICE_MAX_CL_3D, "fastoad.submodel.aerodynamics.max_CL_3D.legacy")
 class Compute3DMaxCL(om.ExplicitComponent):
     """
     Computes 3D max CL from 2D CL (XFOIL-computed) and sweep angle
