@@ -17,31 +17,56 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.models.weight.cg.cg_components import (
-    ComputeControlSurfacesCG,
-    ComputeGlobalCG,
-    ComputeHTcg,
-    ComputeOthersCG,
-    ComputeTanksCG,
-    ComputeVTcg,
-    ComputeWingCG,
-    UpdateMLG,
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import (
+    SERVICE_FLIGHT_CONTROLS_CG,
+    SERVICE_HORIZONTAL_TAIL_CG,
+    SERVICE_OTHERS_CG,
+    SERVICE_TANKS_CG,
+    SERVICE_VERTICAL_TAIL_CG,
+    SERVICE_WING_CG,
+    SERVICE_GLOBAL_CG,
+    SERVICE_MLG_CG,
+    SERVICE_AIRCRAFT_CG,
 )
+from ..constants import SERVICE_CENTERS_OF_GRAVITY
 
 
+@RegisterSubmodel(SERVICE_CENTERS_OF_GRAVITY, "fastoad.submodel.weight.cg.legacy")
 class CG(om.Group):
     """ Model that computes the global center of gravity """
 
     def setup(self):
-        self.add_subsystem("ht_cg", ComputeHTcg(), promotes=["*"])
-        self.add_subsystem("vt_cg", ComputeVTcg(), promotes=["*"])
-        self.add_subsystem("compute_cg_wing", ComputeWingCG(), promotes=["*"])
-        self.add_subsystem("compute_cg_control_surface", ComputeControlSurfacesCG(), promotes=["*"])
-        self.add_subsystem("compute_cg_tanks", ComputeTanksCG(), promotes=["*"])
-        self.add_subsystem("compute_cg_others", ComputeOthersCG(), promotes=["*"])
-        self.add_subsystem("compute_cg", ComputeGlobalCG(), promotes=["*"])
-        self.add_subsystem("update_mlg", UpdateMLG(), promotes=["*"])
-        self.add_subsystem("aircraft", ComputeAircraftCG(), promotes=["*"])
+
+        self.add_subsystem(
+            "ht_cg", RegisterSubmodel.get_submodel(SERVICE_HORIZONTAL_TAIL_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vt_cg", RegisterSubmodel.get_submodel(SERVICE_VERTICAL_TAIL_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "compute_cg_wing", RegisterSubmodel.get_submodel(SERVICE_WING_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "compute_cg_control_surface",
+            RegisterSubmodel.get_submodel(SERVICE_FLIGHT_CONTROLS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_cg_tanks", RegisterSubmodel.get_submodel(SERVICE_TANKS_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "compute_cg_others", RegisterSubmodel.get_submodel(SERVICE_OTHERS_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "compute_cg", RegisterSubmodel.get_submodel(SERVICE_GLOBAL_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "update_mlg", RegisterSubmodel.get_submodel(SERVICE_MLG_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "aircraft", RegisterSubmodel.get_submodel(SERVICE_AIRCRAFT_CG), promotes=["*"]
+        )
 
         # Solvers setup
         self.nonlinear_solver = om.NonlinearBlockGS()
@@ -52,6 +77,7 @@ class CG(om.Group):
         self.linear_solver.options["iprint"] = 0
 
 
+@RegisterSubmodel(SERVICE_AIRCRAFT_CG, "fastoad.submodel.weight.cg.aircraft.legacy")
 class ComputeAircraftCG(om.ExplicitComponent):
     """ Compute position of aircraft CG from CG ratio """
 

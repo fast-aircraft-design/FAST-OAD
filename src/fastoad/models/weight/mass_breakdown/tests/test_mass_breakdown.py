@@ -2,7 +2,7 @@
 Test module for mass breakdown functions
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -26,12 +26,12 @@ from ..a_airframe import (
     EmpennageWeight,
     FlightControlsWeight,
     FuselageWeight,
+    LandingGearWeight,
     PaintWeight,
     PylonsWeight,
     WingWeight,
-    LandingGearWeight,
 )
-from ..b_propulsion import FuelLinesWeight, UnconsumablesWeight, EngineWeight
+from ..b_propulsion import EngineWeight, FuelLinesWeight, UnconsumablesWeight
 from ..c_systems import (
     FixedOperationalSystemsWeight,
     FlightKitWeight,
@@ -43,10 +43,10 @@ from ..c_systems import (
 from ..cs25 import Loads
 from ..d_furniture import (
     CargoConfigurationWeight,
-    PassengerSeatsWeight,
     FoodWaterWeight,
-    ToiletsWeight,
+    PassengerSeatsWeight,
     SecurityKitWeight,
+    ToiletsWeight,
 )
 from ..e_crew import CrewWeight
 from ..mass_breakdown import MassBreakdown, OperatingWeightEmpty
@@ -117,6 +117,8 @@ def test_compute_wing_weight():
         "data:geometry:wing:outer_area",
         "data:weight:aircraft:MTOW",
         "data:weight:aircraft:MLW",
+        "data:geometry:propulsion:engine:count",
+        "data:geometry:propulsion:layout",
         "tuning:weight:airframe:wing:mass:k",
         "tuning:weight:airframe:wing:mass:offset",
         "tuning:weight:airframe:wing:bending_sizing:mass:k",
@@ -129,7 +131,6 @@ def test_compute_wing_weight():
         "tuning:weight:airframe:wing:reinforcements:mass:offset",
         "tuning:weight:airframe:wing:secondary_parts:mass:k",
         "tuning:weight:airframe:wing:secondary_parts:mass:offset",
-        "settings:weight:airframe:wing:mass:k_voil",
         "settings:weight:airframe:wing:mass:k_mvo",
     ]
 

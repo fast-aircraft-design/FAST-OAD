@@ -15,10 +15,17 @@ Estimation of fixed operational systems weight
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_FIXED_OPERATIONAL_SYSTEMS_MASS
 
 
-class FixedOperationalSystemsWeight(ExplicitComponent):
+@RegisterSubmodel(
+    SERVICE_FIXED_OPERATIONAL_SYSTEMS_MASS,
+    "fastoad.submodel.weight.mass.systems.fixed_operational.legacy",
+)
+class FixedOperationalSystemsWeight(om.ExplicitComponent):
     """
     Weight estimation for fixed operational systems (weather radar, flight recorder, ...)
 

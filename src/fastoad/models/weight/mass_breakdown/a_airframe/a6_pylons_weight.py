@@ -17,7 +17,11 @@ Estimation of pylons weight
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_PYLONS_MASS
 
+
+@RegisterSubmodel(SERVICE_PYLONS_MASS, "fastoad.submodel.weight.mass.airframe.pylons.legacy")
 class PylonsWeight(om.ExplicitComponent):
     """
     Weight estimation for pylons

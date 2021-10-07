@@ -15,11 +15,15 @@ Estimation of engine weight
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_ENGINE_MASS
 
 
 # TODO:  this is also provided by class RubberEngine
-class EngineWeight(ExplicitComponent):
+@RegisterSubmodel(SERVICE_ENGINE_MASS, "fastoad.submodel.weight.mass.propulsion.engine.legacy")
+class EngineWeight(om.ExplicitComponent):
     """
     Engine weight estimation
 

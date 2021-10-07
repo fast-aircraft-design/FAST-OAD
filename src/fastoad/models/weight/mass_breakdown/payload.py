@@ -17,7 +17,11 @@ Payload mass computation
 import numpy as np
 from openmdao import api as om
 
+from fastoad.models.weight.mass_breakdown.constants import SERVICE_PAYLOAD_MASS
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+
+@RegisterSubmodel(SERVICE_PAYLOAD_MASS, "fastoad.submodel.weight.mass.payload.legacy")
 class ComputePayload(om.ExplicitComponent):
     """ Computes payload from NPAX """
 

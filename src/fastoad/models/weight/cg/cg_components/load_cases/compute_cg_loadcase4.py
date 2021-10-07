@@ -1,5 +1,5 @@
 """
-    Estimation of global center of gravity
+    Estimation of center of gravity for load case 4
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
@@ -14,27 +14,23 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 from fastoad.module_management.service_registry import RegisterSubmodel
-from .compute_max_cg_ratio import ComputeMaxCGratio
-from ..constants import SERVICE_EMPTY_AIRCRAFT_CG, SERVICE_GLOBAL_CG, SERVICE_LOAD_CASES_CG
+from .compute_cg_loadcase_base import ComputeCGLoadCase
+from .compute_cg_loadcases import SERVICE_LOAD_CASE_CG_PREFIX
+
+CASE_NUMBER = 4
 
 
-@RegisterSubmodel(SERVICE_GLOBAL_CG, "fastoad.submodel.weight.cg.global.legacy")
-class ComputeGlobalCG(om.Group):
-    # TODO: Document equations. Cite sources
-    """ Global center of gravity estimation """
+@RegisterSubmodel(
+    f"{SERVICE_LOAD_CASE_CG_PREFIX}.{CASE_NUMBER}",
+    f"fastoad.submodel.weight.cg.load_case.legacy.{CASE_NUMBER}",
+)
+class ComputeCGLoadCase4(ComputeCGLoadCase):
+    """ Center of gravity estimation for load case"""
 
     def setup(self):
-        self.add_subsystem(
-            "cg_ratio_empty",
-            RegisterSubmodel.get_submodel(SERVICE_EMPTY_AIRCRAFT_CG),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cg_ratio_load_cases",
-            RegisterSubmodel.get_submodel(SERVICE_LOAD_CASES_CG),
-            promotes=["*"],
-        )
-        self.add_subsystem("cg_ratio_max", ComputeMaxCGratio(), promotes=["*"])
+        self.options["case_number"] = CASE_NUMBER
+        self.options["mass_per_pax"] = 90.0
+        self.options["mass_front_fret_per_pax"] = 10.0
+        self.options["mass_rear_fret_per_pax"] = 30.0
+        return super().setup()

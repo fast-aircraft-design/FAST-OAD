@@ -1,7 +1,6 @@
 """
     Estimation of tanks center of gravity
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,13 +17,16 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 from scipy import interpolate
 
 from fastoad.models.geometry.profiles import get_profile
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_TANKS_CG
 
 
-class ComputeTanksCG(ExplicitComponent):
+@RegisterSubmodel(SERVICE_TANKS_CG, "fastoad.submodel.weight.cg.tanks.legacy")
+class ComputeTanksCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Tanks center of gravity estimation """
 

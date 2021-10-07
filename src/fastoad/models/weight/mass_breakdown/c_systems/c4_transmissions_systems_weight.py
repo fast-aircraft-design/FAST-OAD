@@ -18,8 +18,13 @@ import numpy as np
 import openmdao.api as om
 
 from fastoad.constants import RangeCategory
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SERVICE_TRANSMISSION_SYSTEMS_MASS
 
 
+@RegisterSubmodel(
+    SERVICE_TRANSMISSION_SYSTEMS_MASS, "fastoad.submodel.weight.mass.systems.transmission.legacy"
+)
 class TransmissionSystemsWeight(om.ExplicitComponent):
     """
     Weight estimation for transmission systems

@@ -1,7 +1,6 @@
 """
-    Estimation of other components center of gravities
+    Estimation centers of gravity of other components
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,11 +13,16 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_OTHERS_CG
 
 
-class ComputeOthersCG(ExplicitComponent):
+@RegisterSubmodel(SERVICE_OTHERS_CG, "fastoad.submodel.weight.cg.others.legacy")
+class ComputeOthersCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Other components center of gravities estimation """
 
