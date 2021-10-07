@@ -18,7 +18,11 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_MAX_CL_LANDING
 
+
+@RegisterSubmodel(SERVICE_MAX_CL_LANDING, "fastoad.submodel.aerodynamics.max_CL_landing.legacy")
 class ComputeMaxClLanding(ExplicitComponent):
     def setup(self):
         self.add_input("data:aerodynamics:aircraft:landing:CL_max_clean", val=np.nan)

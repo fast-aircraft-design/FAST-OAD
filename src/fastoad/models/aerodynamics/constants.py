@@ -32,6 +32,7 @@ SERVICE_POLAR = "service.aerodynamics.polar"
 SERVICE_HIGH_LIFT = "service.aerodynamics.high_lift"
 SERVICE_XFOIL = "service.aerodynamics.xfoil"
 SERVICE_MAX_CL_3D = "service.aerodynamics.max_CL_3D"
+SERVICE_MAX_CL_LANDING = "service.aerodynamics.max_CL_landing"
 
 
 class PolarType(Enum):
