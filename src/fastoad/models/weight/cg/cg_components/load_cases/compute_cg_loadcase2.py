@@ -16,13 +16,13 @@
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 from .compute_cg_loadcase_base import ComputeCGLoadCase
-
+from .compute_cg_loadcases import SERVICE_LOAD_CASE_CG_PREFIX
 
 CASE_NUMBER = 2
 
 
 @RegisterSubmodel(
-    f"service.cg.load_case.{CASE_NUMBER}",
+    f"{SERVICE_LOAD_CASE_CG_PREFIX}.{CASE_NUMBER}",
     f"fastoad.submodel.weight.cg.load_case.legacy.{CASE_NUMBER}",
 )
 class ComputeCGLoadCase2(ComputeCGLoadCase):

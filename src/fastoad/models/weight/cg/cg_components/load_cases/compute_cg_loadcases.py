@@ -20,6 +20,8 @@ from fastoad.models.weight.cg.constants import SERVICE_LOAD_CASES_CG
 from fastoad.module_management.exceptions import FastNoSubmodelFoundError
 from fastoad.module_management.service_registry import RegisterSubmodel
 
+SERVICE_LOAD_CASE_CG_PREFIX = "service.cg.load_case"
+
 
 @RegisterSubmodel(SERVICE_LOAD_CASES_CG, "fastoad.submodel.weight.cg.load_cases.legacy")
 class CGRatiosForLoadCases(om.Group):
@@ -32,7 +34,7 @@ class CGRatiosForLoadCases(om.Group):
         for load_case_count in count():
             try:
                 system = RegisterSubmodel.get_submodel(
-                    f"service.cg.load_case.{load_case_count + 1}"
+                    f"{SERVICE_LOAD_CASE_CG_PREFIX}.{load_case_count + 1}"
                 )
             except FastNoSubmodelFoundError:
                 break
