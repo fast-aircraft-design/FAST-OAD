@@ -1,3 +1,4 @@
+"""Computation of form drag for whole aircraft."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -27,7 +28,12 @@ from ..constants import (
 
 @RegisterSubmodel(SERVICE_CD0, "fastoad.submodel.aerodynamics.CD0.legacy")
 class CD0(om.Group):
-    """Computation of form drag for whole aircraft."""
+    """
+    Computation of form drag for whole aircraft.
+
+    Computes and sums the drag coefficients of all components.
+    Interaction drag is assumed to be taken into account at component level.
+    """
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)

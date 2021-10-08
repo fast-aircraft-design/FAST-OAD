@@ -1,6 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE
-"""
+"""Sum of form drags from aircraft components."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -23,7 +21,7 @@ from ..constants import SERVICE_CD0_SUM
 
 @RegisterSubmodel(SERVICE_CD0_SUM, "fastoad.submodel.aerodynamics.CD0.sum.legacy")
 class Cd0Total(om.ExplicitComponent):
-    """Sum of form drags from aircraft components."""
+    """Computes the sum of form drags from aircraft components."""
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
