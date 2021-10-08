@@ -1,6 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE
-"""
+"""Computation of aerodynamic polar in low speed conditions."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,7 +16,6 @@ import openmdao.api as om
 
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
-from .components.compute_low_speed_aero import ComputeAerodynamicsLowSpeed
 from .constants import (
     PolarType,
     SERVICE_CD0,
@@ -28,6 +25,7 @@ from .constants import (
     SERVICE_OSWALD_COEFFICIENT,
     SERVICE_POLAR,
     SERVICE_REYNOLDS_COEFFICIENT,
+    SERVICE_LOW_SPEED_CL_AOA,
 )
 
 
@@ -40,9 +38,14 @@ class AerodynamicsLowSpeed(om.Group):
     def setup(self):
         low_speed_option = {"low_speed_aero": True}
 
-        self.add_subsystem("compute_low_speed_aero", ComputeAerodynamicsLowSpeed(), promotes=["*"])
+        self.add_subsystem(
+            "compute_low_speed_aero",
+            RegisterSubmodel.get_submodel(SERVICE_LOW_SPEED_CL_AOA),
+            promotes=["*"],
+        )
         ivc = om.IndepVarComp("data:aerodynamics:aircraft:takeoff:mach", val=0.2)
         self.add_subsystem("mach_low_speed", ivc, promotes=["*"])
+
         self.add_subsystem(
             "compute_oswald_coeff",
             RegisterSubmodel.get_submodel(SERVICE_OSWALD_COEFFICIENT, low_speed_option),
