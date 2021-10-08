@@ -19,10 +19,14 @@ import openmdao.api as om
 
 from fastoad.model_base import Atmosphere
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .components.compute_max_cl_landing import ComputeMaxClLanding
-from .components.high_lift_aero import ComputeDeltaHighLift
-from .external.xfoil import XfoilPolar
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
+from .constants import (
+    SERVICE_HIGH_LIFT,
+    SERVICE_LANDING_MACH_REYNOLDS,
+    SERVICE_LANDING_MAX_CL,
+    SERVICE_LANDING_MAX_CL_CLEAN,
+    SERVICE_XFOIL,
+)
 from .external.xfoil.xfoil_polar import (
     OPTION_ALPHA_END,
     OPTION_ALPHA_START,
@@ -85,25 +89,46 @@ class AerodynamicsLanding(om.Group):
         )
 
     def setup(self):
-        self.add_subsystem("mach_reynolds", ComputeMachReynolds(), promotes=["*"])
+        self.add_subsystem(
+            "mach_reynolds",
+            RegisterSubmodel.get_submodel(SERVICE_LANDING_MACH_REYNOLDS),
+            promotes=["*"],
+        )
+
         if self.options["use_xfoil"]:
             start = self.options["xfoil_alpha_min"]
             end = self.options["xfoil_alpha_max"]
             iter_limit = self.options["xfoil_iter_limit"]
-            kwargs = {
+            xfoil_options = {
                 OPTION_ALPHA_START: start,
                 OPTION_ALPHA_END: end,
                 OPTION_ITER_LIMIT: iter_limit,
                 OPTION_XFOIL_EXE_PATH: self.options[OPTION_XFOIL_EXE_PATH],
             }
             self.add_subsystem(
-                "xfoil_run", XfoilPolar(**kwargs), promotes=["data:geometry:wing:thickness_ratio"],
+                "xfoil_run",
+                RegisterSubmodel.get_submodel(SERVICE_XFOIL, xfoil_options),
+                promotes=["data:geometry:wing:thickness_ratio"],
             )
-        self.add_subsystem("CL_2D_to_3D", Compute3DMaxCL(), promotes=["*"])
+
         self.add_subsystem(
-            "delta_cl_landing", ComputeDeltaHighLift(landing_flag=True), promotes=["*"]
+            "CL_2D_to_3D",
+            RegisterSubmodel.get_submodel(SERVICE_LANDING_MAX_CL_CLEAN),
+            promotes=["*"],
         )
-        self.add_subsystem("compute_max_cl_landing", ComputeMaxClLanding(), promotes=["*"])
+
+        landing_flag_option = {"landing_flag": True}
+        self.add_subsystem(
+            "delta_cl_landing",
+            RegisterSubmodel.get_submodel(SERVICE_HIGH_LIFT, landing_flag_option),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "compute_max_cl_landing",
+            RegisterSubmodel.get_submodel(SERVICE_LANDING_MAX_CL),
+            promotes=["*"],
+        )
 
         if self.options["use_xfoil"]:
             self.connect("data:aerodynamics:aircraft:landing:mach", "xfoil_run.xfoil:mach")
@@ -113,6 +138,9 @@ class AerodynamicsLanding(om.Group):
             )
 
 
+@RegisterSubmodel(
+    SERVICE_LANDING_MACH_REYNOLDS, "fastoad.submodel.aerodynamics.landing.mach_reynolds.legacy"
+)
 class ComputeMachReynolds(om.ExplicitComponent):
     """
     Mach and Reynolds computation
@@ -139,6 +167,9 @@ class ComputeMachReynolds(om.ExplicitComponent):
         outputs["data:aerodynamics:wing:landing:reynolds"] = reynolds
 
 
+@RegisterSubmodel(
+    SERVICE_LANDING_MAX_CL_CLEAN, "fastoad.submodel.aerodynamics.landing.max_CL_clean.legacy"
+)
 class Compute3DMaxCL(om.ExplicitComponent):
     """
     Computes 3D max CL from 2D CL (XFOIL-computed) and sweep angle

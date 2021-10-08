@@ -1,6 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE
-"""
+"""Computation of CL characteristics at low speed."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,17 +12,22 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from math import pi, sqrt, tan
-
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_LOW_SPEED_CL_AOA
 
 
-class ComputeAerodynamicsLowSpeed(ExplicitComponent):
+@RegisterSubmodel(SERVICE_LOW_SPEED_CL_AOA, "fastoad.submodel.aerodynamics.low_speed.AoA.legacy")
+class ComputeAerodynamicsLowSpeed(om.ExplicitComponent):
     """
-    Czalpha from Raymer Eq 12.6
-    TODO: complete source
+    Computes CL gradient and CL at low speed.
+
+    CL gradient from :cite:`raymer:1999` Eq 12.6
     """
+
+    # TODO: complete source
 
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -43,7 +46,7 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         width_max = inputs["data:geometry:fuselage:maximum_width"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]
         span = inputs["data:geometry:wing:span"]
@@ -56,27 +59,27 @@ class ComputeAerodynamicsLowSpeed(ExplicitComponent):
 
         mach = 0.2
 
-        beta = sqrt(1 - mach ** 2)
-        d_f = sqrt(width_max * height_max)
-        fact_F = 1.07 * (1 + d_f / span) ** 2
+        beta = np.sqrt(1 - mach ** 2)
+        d_f = np.sqrt(width_max * height_max)
+        fuselage_lift_factor = 1.07 * (1 + d_f / span) ** 2
         lambda_wing_eff = lambda_wing * (1 + 1.9 * l4_wing * el_ext / span)
         cl_alpha_wing_low = (
             2
-            * pi
+            * np.pi
             * lambda_wing_eff
             / (
                 2
-                + sqrt(
+                + np.sqrt(
                     4
                     + lambda_wing_eff ** 2
                     * beta ** 2
                     / 0.95 ** 2
-                    * (1 + (tan(sweep_25 / 180.0 * pi)) ** 2 / beta ** 2)
+                    * (1 + (np.tan(sweep_25 / 180.0 * np.pi)) ** 2 / beta ** 2)
                 )
             )
             * (wing_area - l2_wing * width_max)
             / wing_area
-            * fact_F
+            * fuselage_lift_factor
         )
 
         outputs["data:aerodynamics:aircraft:takeoff:CL_alpha"] = cl_alpha_wing_low

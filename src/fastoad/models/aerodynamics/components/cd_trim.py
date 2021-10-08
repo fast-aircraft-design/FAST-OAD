@@ -1,7 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE
-"""
-
+"""Computation of trim drag."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,17 +13,21 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_CD_TRIM
 
 
-class CdTrim(ExplicitComponent):
+@RegisterSubmodel(SERVICE_CD_TRIM, "fastoad.submodel.aerodynamics.CD.trim.legacy")
+class CdTrim(om.ExplicitComponent):
+    """Computation of trim drag."""
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.low_speed_aero = self.options["low_speed_aero"]
-
-        if self.low_speed_aero:
+        if self.options["low_speed_aero"]:
             self.add_input(
                 "data:aerodynamics:aircraft:low_speed:CL", shape_by_conn=True, val=np.nan
             )
@@ -44,8 +45,8 @@ class CdTrim(ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs):
-        if self.low_speed_aero:
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        if self.options["low_speed_aero"]:
             cl = inputs["data:aerodynamics:aircraft:low_speed:CL"]
         else:
             cl = inputs["data:aerodynamics:aircraft:cruise:CL"]
@@ -55,7 +56,7 @@ class CdTrim(ExplicitComponent):
         for cl_val in cl:
             cd_trim.append(5.89 * pow(10, -4) * cl_val)
 
-        if self.low_speed_aero:
+        if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:aircraft:low_speed:CD:trim"] = cd_trim
         else:
             outputs["data:aerodynamics:aircraft:cruise:CD:trim"] = cd_trim

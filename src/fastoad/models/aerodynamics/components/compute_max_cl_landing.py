@@ -1,7 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE
-"""
-
+"""Computation of max CL in landing conditions."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,8 +15,14 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import SERVICE_LANDING_MAX_CL
 
+
+@RegisterSubmodel(SERVICE_LANDING_MAX_CL, "fastoad.submodel.aerodynamics.landing.max_CL.legacy")
 class ComputeMaxClLanding(ExplicitComponent):
+    """Computation of max CL in landing conditions."""
+
     def setup(self):
         self.add_input("data:aerodynamics:aircraft:landing:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:high_lift_devices:landing:CL", val=np.nan)

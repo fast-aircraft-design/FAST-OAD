@@ -1,6 +1,6 @@
 """ Test module for profile.py """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,13 +12,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=redefined-outer-name  # false positive on pytest fixtures
+
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-# pylint: disable=redefined-outer-name  # false positive on pytest fixtures
-from ..get_profile import get_profile
 from ..profile import Profile
+from ..profile_getter import get_profile
 
 
 @pytest.fixture()

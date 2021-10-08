@@ -1,5 +1,6 @@
+"""Computation of form drag for whole aircraft."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,40 +14,59 @@
 
 import openmdao.api as om
 
-from .cd0_fuselage import Cd0Fuselage
-from .cd0_ht import Cd0HorizontalTail
-from .cd0_nacelle_pylons import Cd0NacelleAndPylons
-from .cd0_total import Cd0Total
-from .cd0_vt import Cd0VerticalTail
-from .cd0_wing import Cd0Wing
+from fastoad.module_management.service_registry import RegisterSubmodel
+from ..constants import (
+    SERVICE_CD0,
+    SERVICE_CD0_FUSELAGE,
+    SERVICE_CD0_HORIZONTAL_TAIL,
+    SERVICE_CD0_NACELLES_PYLONS,
+    SERVICE_CD0_SUM,
+    SERVICE_CD0_VERTICAL_TAIL,
+    SERVICE_CD0_WING,
+)
 
 
+@RegisterSubmodel(SERVICE_CD0, "fastoad.submodel.aerodynamics.CD0.legacy")
 class CD0(om.Group):
+    """
+    Computation of form drag for whole aircraft.
+
+    Computes and sums the drag coefficients of all components.
+    Interaction drag is assumed to be taken into account at component level.
+    """
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
+        low_speed_option = {"low_speed_aero": self.options["low_speed_aero"]}
         self.add_subsystem(
-            "cd0_wing", Cd0Wing(low_speed_aero=self.options["low_speed_aero"]), promotes=["*"]
+            "cd0_wing",
+            RegisterSubmodel.get_submodel(SERVICE_CD0_WING, low_speed_option),
+            promotes=["*"],
         )
         self.add_subsystem(
             "cd0_fuselage",
-            Cd0Fuselage(low_speed_aero=self.options["low_speed_aero"]),
+            RegisterSubmodel.get_submodel(SERVICE_CD0_FUSELAGE, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "cd0_ht",
-            Cd0HorizontalTail(low_speed_aero=self.options["low_speed_aero"]),
+            RegisterSubmodel.get_submodel(SERVICE_CD0_HORIZONTAL_TAIL, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
-            "cd0_vt", Cd0VerticalTail(low_speed_aero=self.options["low_speed_aero"]), promotes=["*"]
+            "cd0_vt",
+            RegisterSubmodel.get_submodel(SERVICE_CD0_VERTICAL_TAIL, low_speed_option),
+            promotes=["*"],
         )
         self.add_subsystem(
             "cd0_nac_pylons",
-            Cd0NacelleAndPylons(low_speed_aero=self.options["low_speed_aero"]),
+            RegisterSubmodel.get_submodel(SERVICE_CD0_NACELLES_PYLONS, low_speed_option),
             promotes=["*"],
         )
         self.add_subsystem(
-            "cd0_total", Cd0Total(low_speed_aero=self.options["low_speed_aero"]), promotes=["*"]
+            "cd0_total",
+            RegisterSubmodel.get_submodel(SERVICE_CD0_SUM, low_speed_option),
+            promotes=["*"],
         )

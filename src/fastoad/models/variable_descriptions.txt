@@ -8,15 +8,19 @@ data:TLAR:cruise_mach || top-level requirement: cruise Mach number
 data:TLAR:max_TOFL || top-level requirement: maximum takeoff field length
 data:TLAR:range || top-level requirement: design range
 data:aerodynamics:aircraft:cruise:CD || drag coefficient in cruise conditions w.r.t. data:aerodynamics:aircraft:cruise:CL
-data:aerodynamics:aircraft:cruise:CD0 || profile drag coefficient for whole aircraft w.r.t. data:aerodynamics:aircraft:cruise:CL
+data:aerodynamics:aircraft:cruise:CD0 || profile drag coefficient for whole aircraft in cruise conditions w.r.t. data:aerodynamics:aircraft:cruise:CL
+data:aerodynamics:aircraft:cruise:CD0:clean || like data:aerodynamics:aircraft:cruise:CD0 but without parasitic drag
+data:aerodynamics:aircraft:cruise:CD0:parasitic || estimated parasitic drag for whole aircraft in cruise conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL
 data:aerodynamics:aircraft:cruise:CD:compressibility || increment of drag coefficient due to compressibility effects (shock waves) w.r.t. data:aerodynamics:aircraft:cruise:CL
 data:aerodynamics:aircraft:cruise:CD:trim || increment of drag coefficient due to aircraft trim w.r.t. data:aerodynamics:aircraft:cruise:CL
+data:aerodynamics:aircraft:cruise:CL || scale of lift coefficient values for drag computations in cruise conditions
 data:aerodynamics:aircraft:cruise:CL || scale of lift coefficient values for drag computations in cruise conditions
 data:aerodynamics:aircraft:cruise:CL_alpha || derivative of lift coefficient with respect to angle of attack in cruise conditions
 data:aerodynamics:aircraft:cruise:L_D_max || max lift/drag ratio in cruise conditions
 data:aerodynamics:aircraft:cruise:induced_drag_coefficient || multiply squared lift coefficient by this coefficient to get induced drag coefficient
 data:aerodynamics:aircraft:cruise:optimal_CD || drag coefficient at maximum lift/drag ratio in cruise conditions
 data:aerodynamics:aircraft:cruise:optimal_CL || lift coefficient at maximum lift/drag ratio in cruise conditions
+data:aerodynamics:aircraft:cruise:oswald_coefficient || Oswald coefficient for cruise conditions
 data:aerodynamics:aircraft:landing:CL_max || maximum lift coefficient in landing conditions
 data:aerodynamics:aircraft:landing:CL_max_clean || maximum lift coefficient in landing conditions without high-lift devices
 data:aerodynamics:aircraft:landing:CL_max_clean_2D || maximum lift coefficient of 2D average profile in landing conditions without high-lift devices
@@ -24,10 +28,13 @@ data:aerodynamics:aircraft:landing:additional_CL_capacity || at landing, is equa
 data:aerodynamics:aircraft:landing:mach || considered Mach number for landing phase
 data:aerodynamics:aircraft:low_speed:CD || drag coefficient in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL
 data:aerodynamics:aircraft:low_speed:CD0 || profile drag coefficient for whole aircraft in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL
+data:aerodynamics:aircraft:low_speed:CD0:clean || like data:aerodynamics:aircraft:low_speed:CD0 but without parasitic drag
+data:aerodynamics:aircraft:low_speed:CD0:parasitic || estimated parasitic drag for whole aircraft in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL
 data:aerodynamics:aircraft:low_speed:CD:trim || increment of drag coefficient due to aircraft trim in low speed conditions (no high-lift) w.r.t. data:aerodynamics:aircraft:low_speed:CL
 data:aerodynamics:aircraft:low_speed:CL || scale of lift coefficient values for drag computations in low speed conditions
 data:aerodynamics:aircraft:low_speed:CL_alpha || derivative of lift coefficient with respect to angle of attack in low speed conditions
 data:aerodynamics:aircraft:low_speed:induced_drag_coefficient || multiply squared lift coefficient by this coefficient to get induced drag coefficient
+data:aerodynamics:aircraft:low_speed:oswald_coefficient || Oswald coefficient for low speed conditions
 data:aerodynamics:aircraft:takeoff:CD || drag coefficient in takeoff conditions w.r.t. data:aerodynamics:aircraft:takeoff:CL
 data:aerodynamics:aircraft:takeoff:CL || scale of lift coefficient values for drag computations in takeoff conditions
 data:aerodynamics:aircraft:takeoff:CL0_clean || value of lift coefficient at angle of attack 0 in clean configuration at takeoff
