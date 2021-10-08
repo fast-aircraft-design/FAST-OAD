@@ -2,6 +2,17 @@
 Changelog
 =========
 
+Version 1.1.0
+=============
+- Changes:
+    - Implemented the submodel feature in the aerodynamic module. (#388)
+    - Implemented the submodel feature in the geometry module. (#387)
+    - Implemented the submodel feature in the weight module. (#385)
+    - Added new submodel feature to enable a more modular approach. (#379)
+- Bug fixes:
+    - Fixed the naming and description of the virtual taper ratio used in the wing geometry. (#383)
+    - Fixed some wrong file links and typos in CeRAS notebook. (#375)
+
 Version 1.0.5
 =============
 - Changes:
