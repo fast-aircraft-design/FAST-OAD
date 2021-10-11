@@ -103,7 +103,7 @@ pytest = ">=5.2"
 pytest-cov = "*"
 coverage = { extras = ["toml"], version = "^5.5" }
 pre-commit = "*"
-black = { version = "19.10b0", allow-prereleases = true } # if version is changed, please change it also in .pre-commit-config.yaml file.
+black = { version = "21.9b0", allow-prereleases = true } # if version is changed, please change it also in .pre-commit-config.yaml file.
 pylint = "*"
 nbval = "*"
 sphinx = "*"
