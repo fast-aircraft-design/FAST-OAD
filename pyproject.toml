@@ -62,7 +62,7 @@ jsonschema = "^3.2.0"
 ensure = "^1.0.0"
 tabulate = "^0.8.9"
 aenum = "^3.1.0"
-jupyter-client = "<7"  # temporary fix for issue #381
+jupyter-client = "!=7.0.0,!=7.0.1,!=7.0.2,!=7.0.3,!=7.0.4,!=7.0.5"  # v7.0.6 fixes issue #381
 
 jupyterlab = {version = "^2", optional = true}
 
