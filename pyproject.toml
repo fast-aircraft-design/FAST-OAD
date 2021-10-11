@@ -103,7 +103,7 @@ pytest = ">=5.2"
 pytest-cov = "*"
 coverage = { extras = ["toml"], version = "^5.5" }
 pre-commit = "*"
-black = { version = "21.9b0", allow-prereleases = true }
+black = { version = "21.9b0", extras = ["jupyter"], allow-prereleases = true }
 pylint = "*"
 nbval = "*"
 sphinx = "*"

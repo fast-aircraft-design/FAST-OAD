@@ -38,7 +38,7 @@ ipopo==1.0.1
 ipykernel==6.4.1; python_version >= "3.7"
 ipysheet==0.4.4
 ipython-genutils==0.2.0; python_version >= "3.7"
-ipython==7.25.0; python_version >= "3.7"
+ipython==7.25.0; python_full_version >= "3.6.2" and python_version >= "3.7"
 ipywidgets==7.6.3
 isort==5.9.3; python_full_version >= "3.6.1" and python_version < "4.0" and python_version >= "3.6"
 jedi==0.18.0; python_version >= "3.7"
@@ -125,14 +125,14 @@ sphinxcontrib-serializinghtml==1.1.5; python_version >= "3.6"
 tabulate==0.8.9
 terminado==0.10.1; python_version >= "3.6"
 testpath==0.5.0; python_version >= "3.7"
+tokenize-rt==4.1.0; python_full_version >= "3.6.2"
 toml==0.10.2; python_full_version >= "3.6.1" and python_version >= "3.6" and python_version < "4" and (python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4.0" or python_version >= "3.6" and python_version < "4.0" and python_full_version >= "3.3.0") and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version < "4") and (python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6")
 tomli==1.2.1; python_version >= "3.6" and python_full_version >= "3.6.2"
 tomlkit==0.7.2; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
 tornado==6.1; python_version >= "3.7" and python_full_version >= "3.6.1"
 traitlets==5.0.5; python_version >= "3.7" and python_full_version >= "3.6.1"
 typed-ast==1.4.3; python_version < "3.8" and python_full_version >= "3.6.2" and implementation_name == "cpython" and python_version >= "3.6"
-typing-extensions==3.10.0.0; python_version < "3.8" and python_full_version >= "3.6.2" and python_version >= "3.6"
-typing-extensions==3.10.0.2; python_version >= "3.10" and python_full_version >= "3.6.2"
+typing-extensions==3.10.0.2
 urllib3==1.26.6; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version < "4" and python_version >= "3.6"
 virtualenv==20.6.0; python_full_version >= "3.6.1"
 wcwidth==0.2.5; python_full_version >= "3.6.1" and python_version >= "3.7"
