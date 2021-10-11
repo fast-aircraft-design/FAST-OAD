@@ -20,10 +20,10 @@ from .functions_base import FunctionsBase
 
 @RegisterOpenMDAOSystem("postproc_test.sellar.functions", options={"best_doctor": 11})
 class Functions(FunctionsBase):
-    """ An OpenMDAO component to encapsulate Functions discipline """
+    """An OpenMDAO component to encapsulate Functions discipline"""
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """ Functions computation """
+        """Functions computation"""
 
         z2 = inputs["z"][1]
         x1 = inputs["x"]

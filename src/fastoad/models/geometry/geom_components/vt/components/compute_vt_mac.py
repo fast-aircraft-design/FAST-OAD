@@ -23,7 +23,7 @@ import openmdao.api as om
 # TODO: it would be good to have a function to compute MAC for HT, VT and WING
 class ComputeVTMAC(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Vertical tail mean aerodynamic chord estimation """
+    """Vertical tail mean aerodynamic chord estimation"""
 
     def setup(self):
         self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")

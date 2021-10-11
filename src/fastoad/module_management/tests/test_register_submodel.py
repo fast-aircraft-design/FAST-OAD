@@ -29,7 +29,7 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 # Tests ####################################
 @pytest.fixture(scope="module")
 def load():
-    """ Loads components """
+    """Loads components"""
     BundleLoader().explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_submodels"))
 
 

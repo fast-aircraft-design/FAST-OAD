@@ -25,7 +25,7 @@ import openmdao.api as om
 
 class ComputeVTClalpha(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Vertical tail lift coefficient estimation """
+    """Vertical tail lift coefficient estimation"""
 
     def setup(self):
         self.add_input("data:TLAR:cruise_mach", val=np.nan)

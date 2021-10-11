@@ -135,9 +135,9 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
 
     total_distance = 2.0e6
 
-    kwargs = dict(propulsion=propulsion, reference_area=120.0,)
+    kwargs = dict(propulsion=propulsion, reference_area=120.0)
     initial_climb = InitialClimbPhase(
-        **kwargs, polar=low_speed_polar, thrust_rate=1.0, name="initial_climb", time_step=0.2,
+        **kwargs, polar=low_speed_polar, thrust_rate=1.0, name="initial_climb", time_step=0.2
     )
     climb = ClimbPhase(
         **kwargs,
@@ -168,7 +168,7 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     assert flight_calculator.cruise_speed == ("mach", 0.78)
 
     start = FlightPoint(
-        true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0, ground_distance=100000.0,
+        true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0, ground_distance=100000.0
     )
     flight_points = flight_calculator.compute_from(start)
 
@@ -304,7 +304,7 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
                 **self.segment_kwargs,
             ),
             SpeedChangeSegment(
-                target=FlightPoint(equivalent_airspeed=300.0 * knot), **self.segment_kwargs,
+                target=FlightPoint(equivalent_airspeed=300.0 * knot), **self.segment_kwargs
             ),
             AltitudeChangeSegment(
                 target=FlightPoint(equivalent_airspeed="constant", mach=self.maximum_mach),
@@ -351,7 +351,7 @@ class DescentPhase(AbstractManualThrustFlightPhase):
                 **self.segment_kwargs,
             ),
             SpeedChangeSegment(
-                target=FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs,
+                target=FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs
             ),
             AltitudeChangeSegment(
                 target=FlightPoint(altitude=self.target_altitude, equivalent_airspeed="constant"),

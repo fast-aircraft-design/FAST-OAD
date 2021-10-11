@@ -67,9 +67,7 @@ class AerodynamicsLowSpeed(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "cd0_wing",
-            RegisterSubmodel.get_submodel(SERVICE_CD0, low_speed_option),
-            promotes=["*"],
+            "cd0_wing", RegisterSubmodel.get_submodel(SERVICE_CD0, low_speed_option), promotes=["*"]
         )
         self.add_subsystem(
             "cd_trim",

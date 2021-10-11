@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -34,7 +34,7 @@ def input_xml() -> VariableIO:
 
 
 def test_compute_ht_area(input_xml):
-    """ Tests computation of the horizontal tail area """
+    """Tests computation of the horizontal tail area"""
 
     input_list = [
         "data:geometry:has_T_tail",
@@ -60,7 +60,7 @@ def test_compute_ht_area(input_xml):
 
 
 def test_compute_vt_area(input_xml):
-    """ Tests computation of the vertical tail area """
+    """Tests computation of the vertical tail area"""
 
     input_list = [
         "data:TLAR:cruise_mach",

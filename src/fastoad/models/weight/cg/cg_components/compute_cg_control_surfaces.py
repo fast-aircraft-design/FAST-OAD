@@ -26,7 +26,7 @@ from ..constants import SERVICE_FLIGHT_CONTROLS_CG
 )
 class ComputeControlSurfacesCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Control surfaces center of gravity estimation """
+    """Control surfaces center of gravity estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")

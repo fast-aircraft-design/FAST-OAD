@@ -455,7 +455,7 @@ class VariableList(list):
 
     @classmethod
     def from_dict(
-        cls, var_dict: Union[Mapping[str, dict], Iterable[Tuple[str, dict]]],
+        cls, var_dict: Union[Mapping[str, dict], Iterable[Tuple[str, dict]]]
     ) -> "VariableList":
         """
         Creates a VariableList instance from a dict-like object.
@@ -504,8 +504,8 @@ class VariableList(list):
         """
         Creates a VariableList instance from a pandas DataFrame instance.
 
-        The DataFrame instance is expected to have column names "name" + some keys among the ones given by
-        :meth:`Variable.get_openmdao_keys`.
+        The DataFrame instance is expected to have column names "name" + some keys among the ones
+        given by :meth:`Variable.get_openmdao_keys`.
 
         :param df: a DataFrame instance
         :return: a VariableList instance
@@ -740,7 +740,7 @@ class VariableList(list):
         )
 
         def _add_outputs(unconnected_names):
-            """ Fills ivc with data associated to each provided var"""
+            """Fills ivc with data associated to each provided var"""
             for abs_name in unconnected_names:
                 prom_name = io_metadata[abs_name]["prom_name"]
                 if prom_name not in processed_prom_names:

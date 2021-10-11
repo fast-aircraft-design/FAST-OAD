@@ -28,7 +28,7 @@ from ..constants import SERVICE_TANKS_CG
 @RegisterSubmodel(SERVICE_TANKS_CG, "fastoad.submodel.weight.cg.tanks.legacy")
 class ComputeTanksCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Tanks center of gravity estimation """
+    """Tanks center of gravity estimation"""
 
     def initialize(self):
         self.options.declare("ratio", default=0.2, types=float)

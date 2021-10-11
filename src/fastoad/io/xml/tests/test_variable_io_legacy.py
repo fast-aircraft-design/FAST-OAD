@@ -2,7 +2,7 @@
 Test module for variable_io_legacy.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -35,7 +35,7 @@ def cleanup():
 
 
 def test_legacy1(cleanup):
-    """ Tests class OMLegacy1XmlIO """
+    """Tests class OMLegacy1XmlIO"""
     result_folder = pth.join(RESULTS_FOLDER_PATH, "legacy1_xml")
 
     # test read ---------------------------------------------------------------

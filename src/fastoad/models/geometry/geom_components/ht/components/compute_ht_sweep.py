@@ -22,7 +22,7 @@ import openmdao.api as om
 
 class ComputeHTSweep(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Horizontal tail sweeps estimation """
+    """Horizontal tail sweeps estimation"""
 
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")

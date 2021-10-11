@@ -14,8 +14,8 @@
 import os.path as pth
 
 import pytest
-from fastoad.io import VariableIO
 
+from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
 from ..compute_aero_center import ComputeAeroCenter
 
@@ -35,7 +35,7 @@ def input_xml() -> VariableIO:
 
 
 def test_compute_aero_center(input_xml):
-    """ Tests computation of aerodynamic center """
+    """Tests computation of aerodynamic center"""
 
     input_list = [
         "data:geometry:wing:MAC:leading_edge:x:local",

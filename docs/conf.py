@@ -40,9 +40,7 @@ def run_apidoc(_):
     cur_dir = os.path.abspath(os.path.dirname(__file__))
     output_dir = os.path.join(cur_dir, "api")
     module = os.path.join(cur_dir, "..", "src", "fastoad")
-    apidoc.main(
-        ["-d", "1", "-e", "-o", output_dir, module, "--force",]
-    )
+    apidoc.main(["-d", "1", "-e", "-o", output_dir, module, "--force"])
 
 
 def setup(app):

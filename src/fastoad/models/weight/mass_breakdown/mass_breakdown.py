@@ -80,7 +80,7 @@ class OperatingWeightEmpty(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "airframe_weight", RegisterSubmodel.get_submodel(SERVICE_AIRFRAME_MASS), promotes=["*"],
+            "airframe_weight", RegisterSubmodel.get_submodel(SERVICE_AIRFRAME_MASS), promotes=["*"]
         )
         self.add_subsystem(
             "systems_weight", RegisterSubmodel.get_submodel(SERVICE_SYSTEMS_MASS), promotes=["*"]

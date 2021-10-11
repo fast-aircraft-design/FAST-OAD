@@ -40,7 +40,7 @@ def test_copy_resource_folder_from_str_with_exclusion(cleanup):
     destination_folder = pth.join(RESULTS_FOLDER_PATH, "test_from_str_with_exclusion")
     excluded = ["__init__.py"]
     copy_resource_folder(
-        "fastoad._utils.resource_management.tests.resources", destination_folder, exclude=excluded,
+        "fastoad._utils.resource_management.tests.resources", destination_folder, exclude=excluded
     )
     _check_files(destination_folder, excluded)
 

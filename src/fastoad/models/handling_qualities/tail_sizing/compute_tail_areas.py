@@ -23,7 +23,7 @@ from .compute_vt_area import ComputeVTArea
 
 
 @RegisterOpenMDAOSystem(
-    "fastoad.handling_qualities.tail_sizing", domain=ModelDomain.HANDLING_QUALITIES,
+    "fastoad.handling_qualities.tail_sizing", domain=ModelDomain.HANDLING_QUALITIES
 )
 class ComputeTailAreas(om.Group):
     """

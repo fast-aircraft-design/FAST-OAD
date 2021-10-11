@@ -23,7 +23,7 @@ import openmdao.api as om
 # TODO: This belongs more to aerodynamics than geometry
 class ComputeCLalpha(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing lift coefficient estimation """
+    """Wing lift coefficient estimation"""
 
     def setup(self):
         self.add_input("data:TLAR:cruise_mach", val=np.nan)

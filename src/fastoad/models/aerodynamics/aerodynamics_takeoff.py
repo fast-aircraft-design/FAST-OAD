@@ -37,7 +37,5 @@ class AerodynamicsTakeoff(om.Group):
 
         polar_type_option = {"polar_type": PolarType.TAKEOFF}
         self.add_subsystem(
-            "polar",
-            RegisterSubmodel.get_submodel(SERVICE_POLAR, polar_type_option),
-            promotes=["*"],
+            "polar", RegisterSubmodel.get_submodel(SERVICE_POLAR, polar_type_option), promotes=["*"]
         )

@@ -42,7 +42,7 @@ class AirframeWeight(om.Group):
             "wing_weight", RegisterSubmodel.get_submodel(SERVICE_WING_MASS), promotes=["*"]
         )
         self.add_subsystem(
-            "fuselage_weight", RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_MASS), promotes=["*"],
+            "fuselage_weight", RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_MASS), promotes=["*"]
         )
         self.add_subsystem(
             "empennage_weight",
@@ -84,6 +84,4 @@ class AirframeWeight(om.Group):
             desc="Mass of airframe",
         )
 
-        self.add_subsystem(
-            "airframe_weight_sum", weight_sum, promotes=["*"],
-        )
+        self.add_subsystem("airframe_weight_sum", weight_sum, promotes=["*"])

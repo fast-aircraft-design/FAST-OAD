@@ -195,7 +195,7 @@ def test_sfc_at_max_thrust():
 
 
 def test_sfc_ratio():
-    """    Checks SFC ratio model    """
+    """Checks SFC ratio model"""
     design_alt = 10000
     engine = RubberEngine(0, 0, 0, 0, 0, design_alt)
 

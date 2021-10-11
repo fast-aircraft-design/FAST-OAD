@@ -37,7 +37,7 @@ from ...constants import PolarType
 
 
 def get_indep_var_comp(var_names):
-    """ Reads required input data and returns an IndepVarcomp() instance"""
+    """Reads required input data and returns an IndepVarcomp() instance"""
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", "aerodynamics_inputs.xml"))
     reader.path_separator = ":"
     ivc = reader.read(only=var_names).to_ivc()
@@ -45,7 +45,7 @@ def get_indep_var_comp(var_names):
 
 
 def test_high_lift_aero():
-    """ Tests ComputeDeltaHighLift """
+    """Tests ComputeDeltaHighLift"""
     input_list = [
         "data:geometry:wing:sweep_0",
         "data:geometry:wing:sweep_100_outer",
@@ -108,7 +108,7 @@ def test_high_lift_aero():
 
 
 def test_oswald_coefficient():
-    """ Tests OswaldCoefficient """
+    """Tests OswaldCoefficient"""
     input_list = [
         "data:geometry:wing:area",
         "data:geometry:wing:span",
@@ -137,7 +137,7 @@ def test_oswald_coefficient():
 
 
 def test_induced_drag_coefficient():
-    """ Tests InducedDragCoefficient """
+    """Tests InducedDragCoefficient"""
     input_list = [
         "data:geometry:wing:area",
         "data:geometry:wing:span",
@@ -162,7 +162,7 @@ def test_induced_drag_coefficient():
 
 
 def test_cd0():
-    """ Tests CD0 (test of the group for comparison to legacy) """
+    """Tests CD0 (test of the group for comparison to legacy)"""
     input_list = [
         "data:geometry:fuselage:maximum_height",
         "data:geometry:fuselage:length",
@@ -220,7 +220,7 @@ def test_cd0():
 
 
 def test_cd_compressibility():
-    """ Tests CdCompressibility """
+    """Tests CdCompressibility"""
 
     def get_cd_compressibility(mach, cl, sweep, thickness_ratio, delta_charac_mach=0.0):
         ivc = IndepVarComp()
@@ -262,7 +262,7 @@ def test_cd_compressibility():
 
 
 def test_cd_trim():
-    """ Tests CdTrim """
+    """Tests CdTrim"""
 
     def get_cd_trim(cl):
         ivc = IndepVarComp()
@@ -277,7 +277,7 @@ def test_cd_trim():
 
 
 def test_polar_high_speed():
-    """ Tests ComputePolar """
+    """Tests ComputePolar"""
 
     # Need to plug Cd modules, Reynolds and Oswald
 
@@ -345,7 +345,7 @@ def test_polar_high_speed():
 
 
 def test_polar_low_speed():
-    """ Tests ComputePolar """
+    """Tests ComputePolar"""
 
     # Need to plug Cd modules, Reynolds and Oswald
 
@@ -406,7 +406,7 @@ def test_polar_low_speed():
 
 
 def test_polar_high_lift():
-    """ Tests ComputePolar """
+    """Tests ComputePolar"""
 
     # Need to plug Cd modules, Reynolds and Oswald
 
@@ -469,7 +469,7 @@ def test_polar_high_lift():
 
 
 def test_low_speed_aero():
-    """ Tests group ComputeAerodynamicsLowSpeed """
+    """Tests group ComputeAerodynamicsLowSpeed"""
     input_list = [
         "data:geometry:fuselage:maximum_width",
         "data:geometry:fuselage:maximum_height",

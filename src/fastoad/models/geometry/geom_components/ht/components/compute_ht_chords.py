@@ -22,7 +22,7 @@ import openmdao.api as om
 # TODO: is an OpenMDAO component required for this simple calculation ?
 class ComputeHTChord(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Horizontal tail chords and span estimation """
+    """Horizontal tail chords and span estimation"""
 
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)

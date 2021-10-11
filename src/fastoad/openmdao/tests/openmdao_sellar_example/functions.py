@@ -19,7 +19,7 @@ import openmdao.api as om
 
 
 class Functions(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Functions discipline """
+    """An OpenMDAO component to encapsulate Functions discipline"""
 
     def setup(self):
         self.add_input("x", val=2, desc="")
@@ -39,7 +39,7 @@ class Functions(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """ Functions computation """
+        """Functions computation"""
 
         z2 = inputs["z"][1]
         x1 = inputs["x"]

@@ -16,7 +16,7 @@ from openmdao.api import ExplicitComponent
 
 
 class Disc2Base(ExplicitComponent):
-    """ An OpenMDAO base component to encapsulate Disc2 discipline """
+    """An OpenMDAO base component to encapsulate Disc2 discipline"""
 
     def initialize(self):
         self.options.declare("answer", 42)

@@ -31,17 +31,17 @@ class ISellarFactory(abc.ABC):
     @staticmethod
     @abc.abstractmethod
     def create_disc1():
-        """ Provides an instance for discipline 1 """
+        """Provides an instance for discipline 1"""
 
     @staticmethod
     @abc.abstractmethod
     def create_disc2():
-        """ Provides an instance for discipline 2 """
+        """Provides an instance for discipline 2"""
 
     @staticmethod
     @abc.abstractmethod
     def create_functions():
-        """ Provides an instance for functions """
+        """Provides an instance for functions"""
 
 
 class StandardSellarFactory(ISellarFactory):
@@ -63,7 +63,7 @@ class StandardSellarFactory(ISellarFactory):
 
 
 class Sellar(Group):
-    """ An OpenMDAO base component to encapsulate Sellar MDA """
+    """An OpenMDAO base component to encapsulate Sellar MDA"""
 
     def __init__(self, sellar_factory: Type[ISellarFactory] = StandardSellarFactory, **kwargs):
         """

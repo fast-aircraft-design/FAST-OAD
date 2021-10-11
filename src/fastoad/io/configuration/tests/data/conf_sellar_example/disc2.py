@@ -20,7 +20,7 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 @RegisterOpenMDAOSystem("configuration_test.sellar.disc2", domain=ModelDomain.GEOMETRY)
 class Disc2(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Disc2 discipline """
+    """An OpenMDAO component to encapsulate Disc2 discipline"""
 
     def setup(self):
         self.add_input("z", val=[5, 2], desc="", units="m**2")  # for testing non-None units

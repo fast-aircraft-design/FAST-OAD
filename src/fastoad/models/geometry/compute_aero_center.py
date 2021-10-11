@@ -2,8 +2,6 @@
     Estimation of aerodynamic center
 """
 
-import fastoad.api as oad
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -19,6 +17,7 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
+import fastoad.api as oad
 from .constants import SERVICE_AIRCRAFT_AERODYNAMIC_CENTER
 
 
@@ -28,7 +27,7 @@ from .constants import SERVICE_AIRCRAFT_AERODYNAMIC_CENTER
 )
 class ComputeAeroCenter(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Aerodynamic center estimation """
+    """Aerodynamic center estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")

@@ -34,7 +34,7 @@ from ..constants import SERVICE_CENTERS_OF_GRAVITY
 
 @RegisterSubmodel(SERVICE_CENTERS_OF_GRAVITY, "fastoad.submodel.weight.cg.legacy")
 class CG(om.Group):
-    """ Model that computes the global center of gravity """
+    """Model that computes the global center of gravity"""
 
     def setup(self):
 
@@ -79,7 +79,7 @@ class CG(om.Group):
 
 @RegisterSubmodel(SERVICE_AIRCRAFT_CG, "fastoad.submodel.weight.cg.aircraft.legacy")
 class ComputeAircraftCG(om.ExplicitComponent):
-    """ Compute position of aircraft CG from CG ratio """
+    """Compute position of aircraft CG from CG ratio"""
 
     def setup(self):
         self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)

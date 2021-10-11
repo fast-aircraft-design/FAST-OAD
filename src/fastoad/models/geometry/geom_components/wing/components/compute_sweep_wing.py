@@ -22,7 +22,7 @@ import openmdao.api as om
 
 class ComputeSweepWing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing sweeps estimation """
+    """Wing sweeps estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:kink:leading_edge:x:local", val=np.nan, units="m")

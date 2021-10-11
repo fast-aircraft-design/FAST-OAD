@@ -15,8 +15,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import openmdao.api as om
+
+import fastoad.api as oad
 from fastoad.models.geometry.geom_components.wing.components.compute_b_50 import ComputeB50
 from fastoad.models.geometry.geom_components.wing.components.compute_cl_alpha import ComputeCLalpha
 from fastoad.models.geometry.geom_components.wing.components.compute_l1_l4 import ComputeL1AndL4Wing
@@ -32,14 +33,13 @@ from fastoad.models.geometry.geom_components.wing.components.compute_wet_area_wi
 )
 from fastoad.models.geometry.geom_components.wing.components.compute_x_wing import ComputeXWing
 from fastoad.models.geometry.geom_components.wing.components.compute_y_wing import ComputeYWing
-
 from ...constants import SERVICE_WING_GEOMETRY
 
 
 @oad.RegisterSubmodel(SERVICE_WING_GEOMETRY, "fastoad.submodel.geometry.wing.legacy")
 class ComputeWingGeometry(om.Group):
     # TODO: Document equations. Cite sources
-    """ Wing geometry estimation """
+    """Wing geometry estimation"""
 
     def setup(self):
         self.add_subsystem("y_wing", ComputeYWing(), promotes=["*"])

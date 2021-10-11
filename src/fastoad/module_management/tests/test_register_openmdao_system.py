@@ -25,10 +25,7 @@ from .data.module_sellar_example.disc2.disc2 import Disc2
 from .data.module_sellar_example.sellar import ISellarFactory, Sellar
 from .._bundle_loader import BundleLoader
 from ..constants import ModelDomain, SERVICE_OPENMDAO_SYSTEM
-from ..exceptions import (
-    FastBadSystemOptionError,
-    FastBundleLoaderUnknownFactoryNameError,
-)
+from ..exceptions import FastBadSystemOptionError, FastBundleLoaderUnknownFactoryNameError
 from ..service_registry import RegisterOpenMDAOSystem
 from ...openmdao.variables import Variable
 
@@ -38,7 +35,7 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 @pytest.fixture(scope="module")
 def load():
-    """ Loads components """
+    """Loads components"""
     RegisterOpenMDAOSystem.explore_folder(pth.join(DATA_FOLDER_PATH, "module_sellar_example"))
 
 

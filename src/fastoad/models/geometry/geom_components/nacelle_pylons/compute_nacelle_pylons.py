@@ -20,7 +20,6 @@ import numpy as np
 import openmdao.api as om
 
 import fastoad.api as oad
-
 from ...constants import SERVICE_NACELLE_PYLON_GEOMETRY
 
 
@@ -29,7 +28,7 @@ from ...constants import SERVICE_NACELLE_PYLON_GEOMETRY
 )
 class ComputeNacelleAndPylonsGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Nacelle and pylon geometry estimation """
+    """Nacelle and pylon geometry estimation"""
 
     def setup(self):
 

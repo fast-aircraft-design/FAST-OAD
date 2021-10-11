@@ -20,14 +20,14 @@ import numpy as np
 import openmdao.api as om
 
 import fastoad.api as oad
-
 from ...constants import SERVICE_FUSELAGE_CNBETA
+
 
 # TODO: This belongs more to aerodynamics than geometry
 @oad.RegisterSubmodel(SERVICE_FUSELAGE_CNBETA, "fastoad.submodel.geometry.fuselage.cnbeta.legacy")
 class ComputeCnBetaFuselage(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Yawing moment due to sideslip estimation """
+    """Yawing moment due to sideslip estimation"""
 
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")

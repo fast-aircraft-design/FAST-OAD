@@ -23,7 +23,7 @@ import openmdao.api as om
 # TODO: computes relative thickness and generates profiles --> decompose
 class ComputeToCWing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing ToC estimation """
+    """Wing ToC estimation"""
 
     def setup(self):
         self.add_input("data:TLAR:cruise_mach", val=np.nan)

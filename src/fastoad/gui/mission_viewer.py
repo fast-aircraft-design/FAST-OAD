@@ -100,7 +100,7 @@ class MissionViewer:
             self._fig = go.FigureWidget(self._fig)
 
         self._fig.update_layout(
-            title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name,
+            title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
         )
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work

@@ -22,7 +22,7 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 
 @RegisterOpenMDAOSystem(
-    "fastoad.handling_qualities.static_margin", domain=ModelDomain.HANDLING_QUALITIES,
+    "fastoad.handling_qualities.static_margin", domain=ModelDomain.HANDLING_QUALITIES
 )
 class ComputeStaticMargin(om.ExplicitComponent):
     """

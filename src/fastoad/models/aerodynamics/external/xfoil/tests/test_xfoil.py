@@ -2,7 +2,7 @@
 Test module for XFOIL component
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -36,7 +36,7 @@ xfoil_path = None if system() == "Windows" else get_xfoil_path()
     system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available"
 )
 def test_compute():
-    """ Tests a simple XFOIL run"""
+    """Tests a simple XFOIL run"""
 
     if pth.exists(XFOIL_RESULTS):
         shutil.rmtree(XFOIL_RESULTS)
@@ -84,7 +84,7 @@ def test_compute():
     system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available"
 )
 def test_compute_with_provided_path():
-    """ Test that option "use_exe_path" works """
+    """Test that option "use_exe_path" works"""
     ivc = IndepVarComp()
     ivc.add_output("xfoil:reynolds", 18000000)
     ivc.add_output("xfoil:mach", 0.20)

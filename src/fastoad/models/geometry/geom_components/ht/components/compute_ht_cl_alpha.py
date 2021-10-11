@@ -23,7 +23,7 @@ import openmdao.api as om
 # TODO: This belongs more to aerodynamics than geometry
 class ComputeHTClalpha(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Horizontal tail lift coefficient estimation """
+    """Horizontal tail lift coefficient estimation"""
 
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)

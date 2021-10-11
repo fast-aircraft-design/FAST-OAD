@@ -22,7 +22,7 @@ import openmdao.api as om
 
 class ComputeL1AndL4Wing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing chords (l1 and l4) estimation """
+    """Wing chords (l1 and l4) estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")

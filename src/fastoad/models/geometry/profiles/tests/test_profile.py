@@ -24,7 +24,7 @@ from ..profile_getter import get_profile
 
 @pytest.fixture()
 def point_set():
-    """ Defines a test profile """
+    """Defines a test profile"""
     return np.array(
         [
             [1, 0.00095],
@@ -131,7 +131,7 @@ def point_set():
 
 
 def test_set_points(point_set):
-    """ test of Profile.set_points() """
+    """test of Profile.set_points()"""
 
     x = point_set[:, 0]  # pylint:disable=invalid-name
     z = point_set[:, 1]  # pylint:disable=invalid-name

@@ -29,7 +29,7 @@ xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 
 def get_indep_var_comp(var_names):
-    """ Reads required input data and returns an IndepVarcomp() instance"""
+    """Reads required input data and returns an IndepVarcomp() instance"""
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", "aerodynamics_inputs.xml"))
     reader.path_separator = ":"
     ivc = reader.read(only=var_names).to_ivc()
@@ -40,7 +40,7 @@ def get_indep_var_comp(var_names):
     system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available"
 )
 def test_aerodynamics_landing_with_xfoil():
-    """ Tests AerodynamicsHighSpeed """
+    """Tests AerodynamicsHighSpeed"""
     input_list = [
         "data:TLAR:approach_speed",
         "data:mission:sizing:landing:flap_angle",
@@ -67,7 +67,7 @@ def test_aerodynamics_landing_with_xfoil():
 
 
 def test_aerodynamics_landing_without_xfoil():
-    """ Tests AerodynamicsHighSpeed """
+    """Tests AerodynamicsHighSpeed"""
     input_list = [
         "data:TLAR:approach_speed",
         "data:mission:sizing:landing:flap_angle",

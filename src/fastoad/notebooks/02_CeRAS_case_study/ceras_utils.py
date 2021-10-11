@@ -19,7 +19,7 @@ from scipy.constants import foot, nautical_mile
 
 
 def read_ceras_df(csv_file_path):
-    df = pd.read_csv(csv_file_path, sep=";", index_col=False,)
+    df = pd.read_csv(csv_file_path, sep=";", index_col=False)
 
     df.rename(
         columns={

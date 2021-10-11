@@ -41,7 +41,7 @@ class FASTConfigurationBaseKeyBuildingError(FastError):
     """
 
     def __init__(self, original_exception: Exception, key: str, value=None):
-        """ Constructor """
+        """Constructor"""
 
         self.key = None
         """
@@ -75,7 +75,7 @@ class FASTConfigurationBaseKeyBuildingError(FastError):
 
 
 class FASTConfigurationBadOpenMDAOInstructionError(FASTConfigurationBaseKeyBuildingError):
-    """ Class for managing errors that result from trying to set an attribute by eval."""
+    """Class for managing errors that result from trying to set an attribute by eval."""
 
 
 class FASTConfigurationNanInInputFile(FastError):

@@ -218,7 +218,7 @@ class Main:
         )
         parser_gen_conf.help = parser_gen_conf.description
         parser_gen_conf.add_argument(
-            "conf_file", type=str, help="the name of configuration file to be written",
+            "conf_file", type=str, help="the name of configuration file to be written"
         )
         self._add_overwrite_argument(parser_gen_conf)
         parser_gen_conf.set_defaults(func=self._generate_conf_file)
@@ -248,10 +248,10 @@ class Main:
             """\
             Examples:
             ---------
-            # For the problem defined in conf_file.yml, generates the input file with default 
+            # For the problem defined in conf_file.yml, generates the input file with default
             # values (when default values are defined):
                 %(prog)s conf_file.yml
-            
+
             # Same as above, except that values are taken from some_file.xml when possible:
                 %(prog)s conf_file.yml some_file.xml
 
@@ -309,7 +309,7 @@ class Main:
         )
         parser_n2.set_defaults(func=self._write_n2)
 
-        # sub-command for writing XDSM diagram -------------------------------------------------------
+        # sub-command for writing XDSM diagram -----------------------------------------------------
         parser_xdsm = subparsers.add_parser(
             "xdsm",
             help="Writes the XDSM diagram of the problem",
@@ -324,7 +324,7 @@ class Main:
             help="path of file to be written (default: %(default)s)",
         )
         parser_xdsm.add_argument(
-            "--depth", nargs="?", default=2, help="Depth of analysis", type=int,
+            "--depth", nargs="?", default=2, help="Depth of analysis", type=int
         )
         parser_xdsm.add_argument(
             "--server",
@@ -337,7 +337,7 @@ class Main:
 
         # sub-command for running the model --------------------------------------------------------
         parser_run_model = subparsers.add_parser(
-            "eval", help="Runs the analysis", description="Runs the analysis",
+            "eval", help="Runs the analysis", description="Runs the analysis"
         )
         self._add_conf_file_argument(parser_run_model)
         self._add_overwrite_argument(parser_run_model)
@@ -345,7 +345,7 @@ class Main:
 
         # sub-command for running the driver -------------------------------------------------------
         parser_run_driver = subparsers.add_parser(
-            "optim", help="Runs the optimization", description="Runs the optimization",
+            "optim", help="Runs the optimization", description="Runs the optimization"
         )
         self._add_conf_file_argument(parser_run_driver)
         self._add_overwrite_argument(parser_run_driver)

@@ -95,9 +95,7 @@ def wing_geometry_plot(
 
     fig = go.FigureWidget(fig)
 
-    fig.update_layout(
-        title_text="Wing Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x",
-    )
+    fig.update_layout(title_text="Wing Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x")
 
     return fig
 
@@ -223,9 +221,7 @@ def aircraft_geometry_plot(
 
     fig = go.FigureWidget(fig)
 
-    fig.update_layout(
-        title_text="Aircraft Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x",
-    )
+    fig.update_layout(title_text="Aircraft Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x")
 
     return fig
 
@@ -265,9 +261,7 @@ def drag_polar_plot(
 
     fig = go.FigureWidget(fig)
 
-    fig.update_layout(
-        title_text="Drag Polar", title_x=0.5, xaxis_title="Cd", yaxis_title="Cl",
-    )
+    fig.update_layout(title_text="Drag Polar", title_x=0.5, xaxis_title="Cd", yaxis_title="Cl")
 
     return fig
 
@@ -362,7 +356,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     if round(mtow, 6) == round(owe + payload + onboard_fuel_at_takeoff, 6):
         mtow = owe + payload + onboard_fuel_at_takeoff
 
-    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]],)
+    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]])
 
     fig.add_trace(
         go.Sunburst(
@@ -430,10 +424,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     # Plot figure
     fig.add_trace(
         go.Sunburst(
-            labels=figure_labels,
-            parents=figure_parents,
-            values=figure_values,
-            branchvalues="total",
+            labels=figure_labels, parents=figure_parents, values=figure_values, branchvalues="total"
         ),
         1,
         2,
@@ -458,7 +449,7 @@ def _get_variable_values_with_new_units(
     new_values = []
     for variable_name, unit in var_names_and_new_units.items():
         new_values.append(
-            convert_units(variables[variable_name].value[0], variables[variable_name].units, unit,)
+            convert_units(variables[variable_name].value[0], variables[variable_name].units, unit)
         )
 
     return new_values

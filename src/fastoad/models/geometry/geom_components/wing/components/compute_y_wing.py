@@ -22,7 +22,7 @@ import openmdao.api as om
 
 class ComputeYWing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing Ys estimation """
+    """Wing Ys estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)

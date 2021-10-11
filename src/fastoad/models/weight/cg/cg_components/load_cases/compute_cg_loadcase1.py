@@ -26,7 +26,7 @@ CASE_NUMBER = 1
     f"fastoad.submodel.weight.cg.load_case.legacy.{CASE_NUMBER}",
 )
 class ComputeCGLoadCase1(ComputeCGLoadCase):
-    """ Center of gravity estimation for load case 1 """
+    """Center of gravity estimation for load case 1"""
 
     def setup(self):
         self.options["case_number"] = CASE_NUMBER

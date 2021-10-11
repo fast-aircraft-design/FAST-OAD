@@ -67,7 +67,7 @@ class InducedDragCoefficient(om.ExplicitComponent):
     SERVICE_OSWALD_COEFFICIENT, "fastoad.submodel.aerodynamics.oswald_coefficient.legacy"
 )
 class OswaldCoefficient(om.ExplicitComponent):
-    """ Computes Oswald efficiency number """
+    """Computes Oswald efficiency number"""
 
     # TODO: Document equations. Cite sources (M. Nita and D. Scholz)
 

@@ -26,7 +26,7 @@ from ..constants import SERVICE_VERTICAL_TAIL_CG
 @RegisterSubmodel(SERVICE_VERTICAL_TAIL_CG, "fastoad.submodel.weight.cg.vertical_tail.legacy")
 class ComputeVTcg(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Vertical tail center of gravity estimation """
+    """Vertical tail center of gravity estimation"""
 
     def setup(self):
         self.add_input("data:geometry:vertical_tail:MAC:length", val=np.nan, units="m")

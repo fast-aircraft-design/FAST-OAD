@@ -20,7 +20,7 @@ import openmdao.api as om
 
 class ComputeWetAreaWing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing wet area estimation """
+    """Wing wet area estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")

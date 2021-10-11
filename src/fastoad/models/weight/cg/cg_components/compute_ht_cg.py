@@ -26,7 +26,7 @@ from ..constants import SERVICE_HORIZONTAL_TAIL_CG
 @RegisterSubmodel(SERVICE_HORIZONTAL_TAIL_CG, "fastoad.submodel.weight.cg.horizontal_tail.legacy")
 class ComputeHTcg(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Horizontal tail center of gravity estimation """
+    """Horizontal tail center of gravity estimation"""
 
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")

@@ -160,7 +160,7 @@ class Mission(om.Group):
         )
 
         self.add_subsystem(
-            "block_fuel_computation", self._get_block_fuel_component(mission_name), promotes=["*"],
+            "block_fuel_computation", self._get_block_fuel_component(mission_name), promotes=["*"]
         )
 
     @property
@@ -520,7 +520,7 @@ class MissionComponent(om.ExplicitComponent):
             mass=inputs[self._mission_vars.TOW],
         )
         taxi_segment = TaxiSegment(
-            target=FlightPoint(time=inputs[self._mission_vars.TAXI_OUT_DURATION],),
+            target=FlightPoint(time=inputs[self._mission_vars.TAXI_OUT_DURATION]),
             thrust_rate=inputs[self._mission_vars.TAXI_OUT_THRUST_RATE],
             propulsion=propulsion_model,
         )

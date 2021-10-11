@@ -19,7 +19,7 @@ import openmdao.api as om
 # Instead of being registered with the decorator above, this class is registered
 # in register_components.py to test this alternate way
 class Disc2(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Disc2 discipline """
+    """An OpenMDAO component to encapsulate Disc2 discipline"""
 
     def initialize(self):
         self.options.declare("answer", 42)

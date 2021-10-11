@@ -21,7 +21,7 @@ import openmdao.api as om
 
 class ComputeVTDistance(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Vertical tail distance estimation """
+    """Vertical tail distance estimation"""
 
     def setup(self):
 

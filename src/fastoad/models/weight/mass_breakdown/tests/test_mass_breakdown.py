@@ -54,7 +54,7 @@ from ..payload import ComputePayload
 
 
 def get_indep_var_comp(var_names):
-    """ Reads required input data and returns an IndepVarcomp() instance"""
+    """Reads required input data and returns an IndepVarcomp() instance"""
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ":"
     ivc = reader.read(only=var_names).to_ivc()
@@ -80,7 +80,7 @@ def test_compute_payload():
 
 
 def test_compute_loads():
-    """ Tests computation of sizing loads """
+    """Tests computation of sizing loads"""
     input_list = [
         "data:geometry:wing:area",
         "data:geometry:wing:span",
@@ -105,7 +105,7 @@ def test_compute_loads():
 
 
 def test_compute_wing_weight():
-    """ Tests wing weight computation from sample XML data """
+    """Tests wing weight computation from sample XML data"""
     input_list = [
         "data:geometry:wing:area",
         "data:geometry:wing:span",
@@ -145,7 +145,7 @@ def test_compute_wing_weight():
 
 
 def test_compute_fuselage_weight():
-    """ Tests fuselage weight computation from sample XML data """
+    """Tests fuselage weight computation from sample XML data"""
     input_list = [
         "data:geometry:fuselage:wetted_area",
         "data:geometry:fuselage:maximum_width",
@@ -166,7 +166,7 @@ def test_compute_fuselage_weight():
 
 
 def test_compute_empennage_weight():
-    """ Tests empennage weight computation from sample XML data """
+    """Tests empennage weight computation from sample XML data"""
     input_list = [
         "data:geometry:has_T_tail",
         "data:geometry:horizontal_tail:area",
@@ -187,7 +187,7 @@ def test_compute_empennage_weight():
 
 
 def test_compute_flight_controls_weight():
-    """ Tests flight controls weight computation from sample XML data """
+    """Tests flight controls weight computation from sample XML data"""
     input_list = [
         "data:geometry:fuselage:length",
         "data:geometry:wing:b_50",
@@ -205,7 +205,7 @@ def test_compute_flight_controls_weight():
 
 
 def test_compute_landing_gear_weight():
-    """ Tests landing gear weight computation from sample XML data """
+    """Tests landing gear weight computation from sample XML data"""
     input_list = [
         "data:weight:aircraft:MTOW",
         "tuning:weight:airframe:landing_gear:mass:k",
@@ -221,7 +221,7 @@ def test_compute_landing_gear_weight():
 
 
 def test_compute_pylons_weight():
-    """ Tests pylons weight computation from sample XML data """
+    """Tests pylons weight computation from sample XML data"""
     input_list = [
         "data:geometry:propulsion:pylon:wetted_area",
         "data:geometry:propulsion:engine:count",
@@ -238,7 +238,7 @@ def test_compute_pylons_weight():
 
 
 def test_compute_paint_weight():
-    """ Tests paint weight computation from sample XML data """
+    """Tests paint weight computation from sample XML data"""
     input_list = [
         "data:geometry:aircraft:wetted_area",
         "tuning:weight:airframe:paint:mass:k",
@@ -252,7 +252,7 @@ def test_compute_paint_weight():
 
 
 def test_compute_engine_weight():
-    """ Tests engine weight computation from sample XML data """
+    """Tests engine weight computation from sample XML data"""
     input_list = [
         "data:propulsion:MTO_thrust",
         "data:geometry:propulsion:engine:count",
@@ -267,7 +267,7 @@ def test_compute_engine_weight():
 
 
 def test_compute_fuel_lines_weight():
-    """ Tests fuel lines weight computation from sample XML data """
+    """Tests fuel lines weight computation from sample XML data"""
     input_list = [
         "data:geometry:wing:b_50",
         "data:weight:aircraft:MFW",
@@ -283,7 +283,7 @@ def test_compute_fuel_lines_weight():
 
 
 def test_compute_unconsumables_weight():
-    """ Tests "unconsumables" weight computation from sample XML data """
+    """Tests "unconsumables" weight computation from sample XML data"""
     input_list = [
         "data:geometry:propulsion:engine:count",
         "data:weight:aircraft:MFW",
@@ -298,7 +298,7 @@ def test_compute_unconsumables_weight():
 
 
 def test_compute_power_systems_weight():
-    """ Tests power systems weight computation from sample XML data """
+    """Tests power systems weight computation from sample XML data"""
     input_list = [
         "data:weight:aircraft:MTOW",
         "tuning:weight:systems:power:auxiliary_power_unit:mass:k",
@@ -323,7 +323,7 @@ def test_compute_power_systems_weight():
 
 
 def test_compute_life_support_systems_weight():
-    """ Tests life support systems weight computation from sample XML data """
+    """Tests life support systems weight computation from sample XML data"""
     input_list = [
         "data:TLAR:range",
         "data:geometry:fuselage:maximum_width",
@@ -372,7 +372,7 @@ def test_compute_life_support_systems_weight():
 
 
 def test_compute_navigation_systems_weight():
-    """ Tests navigation systems weight computation from sample XML data """
+    """Tests navigation systems weight computation from sample XML data"""
     input_list = [
         "data:geometry:fuselage:length",
         "data:geometry:wing:b_50",
@@ -408,7 +408,7 @@ def test_compute_navigation_systems_weight():
 
 
 def test_compute_transmissions_systems_weight():
-    """ Tests transmissions weight computation from sample XML data """
+    """Tests transmissions weight computation from sample XML data"""
     input_list = [
         "tuning:weight:systems:transmission:mass:k",
         "tuning:weight:systems:transmission:mass:offset",
@@ -467,7 +467,7 @@ def test_compute_fixed_operational_systems_weight():
 
 
 def test_compute_flight_kit_weight():
-    """ Tests flight kit weight computation from sample XML data """
+    """Tests flight kit weight computation from sample XML data"""
     input_list = [
         "tuning:weight:systems:flight_kit:mass:k",
         "tuning:weight:systems:flight_kit:mass:offset",
@@ -486,7 +486,7 @@ def test_compute_flight_kit_weight():
 
 
 def test_compute_cargo_configuration_weight():
-    """ Tests cargo configuration weight computation from sample XML data """
+    """Tests cargo configuration weight computation from sample XML data"""
     input_list = [
         "data:geometry:cabin:containers:count",
         "data:geometry:cabin:pallet_count",
@@ -504,7 +504,7 @@ def test_compute_cargo_configuration_weight():
 
 
 def test_compute_passenger_seats_weight():
-    """ Tests passenger seats weight computation from sample XML data """
+    """Tests passenger seats weight computation from sample XML data"""
     input_list = [
         "data:TLAR:range",
         "data:TLAR:NPAX",
@@ -521,7 +521,7 @@ def test_compute_passenger_seats_weight():
 
 
 def test_compute_food_water_weight():
-    """ Tests food water weight computation from sample XML data """
+    """Tests food water weight computation from sample XML data"""
     input_list = [
         "data:TLAR:range",
         "data:TLAR:NPAX",
@@ -538,7 +538,7 @@ def test_compute_food_water_weight():
 
 
 def test_compute_security_kit_weight():
-    """ Tests security kit weight computation from sample XML data """
+    """Tests security kit weight computation from sample XML data"""
     input_list = [
         "data:TLAR:range",
         "data:TLAR:NPAX",
@@ -555,7 +555,7 @@ def test_compute_security_kit_weight():
 
 
 def test_compute_toilets_weight():
-    """ Tests toilets weight computation from sample XML data """
+    """Tests toilets weight computation from sample XML data"""
     input_list = [
         "data:TLAR:range",
         "data:TLAR:NPAX",
@@ -572,7 +572,7 @@ def test_compute_toilets_weight():
 
 
 def test_compute_crew_weight():
-    """ Tests crew weight computation from sample XML data """
+    """Tests crew weight computation from sample XML data"""
     input_list = [
         "data:geometry:cabin:crew_count:technical",
         "data:geometry:cabin:crew_count:commercial",
@@ -620,7 +620,7 @@ def test_loop_compute_oew():
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", "mass_breakdown_inputs.xml"))
     reader.path_separator = ":"
     input_vars = reader.read(
-        ignore=["data:weight:aircraft:MLW", "data:weight:aircraft:MZFW",]
+        ignore=["data:weight:aircraft:MLW", "data:weight:aircraft:MZFW"]
     ).to_ivc()
     mass_computation = run_system(MassBreakdown(payload_from_npax=False), input_vars)
     oew = mass_computation["data:weight:aircraft:OWE"]
