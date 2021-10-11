@@ -3,7 +3,7 @@
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.api import Group
-
+import fastoad.api as oad
+import openmdao.api as om
 from fastoad.models.geometry.geom_components.wing.components.compute_b_50 import ComputeB50
 from fastoad.models.geometry.geom_components.wing.components.compute_cl_alpha import ComputeCLalpha
 from fastoad.models.geometry.geom_components.wing.components.compute_l1_l4 import ComputeL1AndL4Wing
@@ -33,8 +33,11 @@ from fastoad.models.geometry.geom_components.wing.components.compute_wet_area_wi
 from fastoad.models.geometry.geom_components.wing.components.compute_x_wing import ComputeXWing
 from fastoad.models.geometry.geom_components.wing.components.compute_y_wing import ComputeYWing
 
+from ...constants import SERVICE_WING_GEOMETRY
 
-class ComputeWingGeometry(Group):
+
+@oad.RegisterSubmodel(SERVICE_WING_GEOMETRY, "fastoad.submodel.geometry.wing.legacy")
+class ComputeWingGeometry(om.Group):
     # TODO: Document equations. Cite sources
     """ Wing geometry estimation """
 

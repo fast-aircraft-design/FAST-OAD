@@ -17,11 +17,11 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
 # TODO: it would be good to have a function to compute MAC for HT, VT and WING
-class ComputeVTMAC(ExplicitComponent):
+class ComputeVTMAC(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail mean aerodynamic chord estimation """
 

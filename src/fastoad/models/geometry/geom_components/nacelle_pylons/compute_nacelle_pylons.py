@@ -19,7 +19,14 @@ from math import sqrt
 import numpy as np
 import openmdao.api as om
 
+import fastoad.api as oad
 
+from ...constants import SERVICE_NACELLE_PYLON_GEOMETRY
+
+
+@oad.RegisterSubmodel(
+    SERVICE_NACELLE_PYLON_GEOMETRY, "fastoad.submodel.geometry.nacelle_and_pylon.legacy"
+)
 class ComputeNacelleAndPylonsGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Nacelle and pylon geometry estimation """

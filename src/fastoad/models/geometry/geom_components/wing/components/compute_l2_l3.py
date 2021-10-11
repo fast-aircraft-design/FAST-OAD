@@ -17,10 +17,10 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeL2AndL3Wing(ExplicitComponent):
+class ComputeL2AndL3Wing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing chords (l2 and l3) estimation """
 

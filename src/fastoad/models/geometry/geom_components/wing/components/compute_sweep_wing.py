@@ -17,10 +17,10 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeSweepWing(ExplicitComponent):
+class ComputeSweepWing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing sweeps estimation """
 

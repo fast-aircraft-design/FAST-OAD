@@ -19,15 +19,15 @@ Test module for geometry functions of cg components
 import os.path as pth
 
 import pytest
-
 from fastoad.io import VariableIO
+
 from tests.testing_utilities import run_system
-from ..geom_components import ComputeTotalArea
-from ..geom_components.fuselage import (
+from ..geom_components.compute_wetted_area import ComputeWettedArea
+from ..geom_components.fuselage.compute_cnbeta_fuselage import ComputeCnBetaFuselage
+from ..geom_components.fuselage.compute_fuselage import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizing,
 )
-from ..geom_components.fuselage.compute_cnbeta_fuselage import ComputeCnBetaFuselage
 from ..geom_components.ht.components import (
     ComputeHTChord,
     ComputeHTClalpha,
@@ -677,7 +677,7 @@ def test_geometry_total_area(input_xml):
 
     input_vars = input_xml.read(only=input_list).to_ivc()
 
-    component = ComputeTotalArea()
+    component = ComputeWettedArea()
 
     problem = run_system(component, input_vars)
 

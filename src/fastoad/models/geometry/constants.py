@@ -1,6 +1,4 @@
-"""
-Estimation of horizontal tail geometry (global)
-"""
+"""Constants for geometry submodels."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,3 +11,13 @@ Estimation of horizontal tail geometry (global)
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+SERVICE_FUSELAGE_GEOMETRY_BASIC = "service.geometry.fuselage.basic"
+SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING = "service.geometry.fuselage.with_cabin_sizing"
+SERVICE_FUSELAGE_CNBETA = "service.geometry.fuselage.cnbeta"
+SERVICE_HORIZONTAL_TAIL_GEOMETRY = "service.geometry.horizontal_tail"
+SERVICE_NACELLE_PYLON_GEOMETRY = "service.geometry.nacelle_and_pylon"
+SERVICE_VERTICAL_TAIL_GEOMETRY = "service.geometry.vertical_tail"
+SERVICE_WING_GEOMETRY = "service.geometry.wing"
+SERVICE_AIRCRAFT_WETTED_AREA = "service.geometry.aircraft.wetted_area"
+SERVICE_AIRCRAFT_AERODYNAMIC_CENTER = "service.geometry.aircraft.aerodynamic_center"

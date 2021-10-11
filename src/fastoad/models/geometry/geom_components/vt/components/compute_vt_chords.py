@@ -16,10 +16,10 @@
 
 import numpy as np
 
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeVTChords(ExplicitComponent):
+class ComputeVTChords(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Vertical tail chords and span estimation """
 

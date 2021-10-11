@@ -17,10 +17,10 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeB50(ExplicitComponent):
+class ComputeB50(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Wing B50 estimation """
 

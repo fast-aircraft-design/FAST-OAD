@@ -17,11 +17,15 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
+import fastoad.api as oad
+
+from ...constants import SERVICE_FUSELAGE_CNBETA
 
 # TODO: This belongs more to aerodynamics than geometry
-class ComputeCnBetaFuselage(ExplicitComponent):
+@oad.RegisterSubmodel(SERVICE_FUSELAGE_CNBETA, "fastoad.submodel.geometry.fuselage.cnbeta.legacy")
+class ComputeCnBetaFuselage(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Yawing moment due to sideslip estimation """
 

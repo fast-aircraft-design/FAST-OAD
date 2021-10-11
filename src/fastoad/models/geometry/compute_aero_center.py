@@ -2,6 +2,8 @@
     Estimation of aerodynamic center
 """
 
+import fastoad.api as oad
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,10 +17,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+
+from .constants import SERVICE_AIRCRAFT_AERODYNAMIC_CENTER
 
 
-class ComputeAeroCenter(ExplicitComponent):
+@oad.RegisterSubmodel(
+    SERVICE_AIRCRAFT_AERODYNAMIC_CENTER,
+    "fastoad.submodel.geometry.aircraft.aerodynamic_center.legacy",
+)
+class ComputeAeroCenter(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Aerodynamic center estimation """
 

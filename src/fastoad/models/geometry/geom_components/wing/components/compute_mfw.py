@@ -15,10 +15,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 # TODO: This belongs more to mass breakdown than geometry
-class ComputeMFW(ExplicitComponent):
+class ComputeMFW(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Max fuel weight estimation """
 

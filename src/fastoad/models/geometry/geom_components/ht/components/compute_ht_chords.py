@@ -16,11 +16,11 @@
 
 import numpy as np
 
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
 # TODO: is an OpenMDAO component required for this simple calculation ?
-class ComputeHTChord(ExplicitComponent):
+class ComputeHTChord(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """ Horizontal tail chords and span estimation """
 
