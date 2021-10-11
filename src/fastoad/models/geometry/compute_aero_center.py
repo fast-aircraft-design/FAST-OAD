@@ -23,7 +23,8 @@ from .constants import SERVICE_AIRCRAFT_AERODYNAMIC_CENTER
 
 
 @oad.RegisterSubmodel(
-    SERVICE_AIRCRAFT_AERODYNAMIC_CENTER, "fastoad.submodel.geometry.aero_center.legacy"
+    SERVICE_AIRCRAFT_AERODYNAMIC_CENTER,
+    "fastoad.submodel.geometry.aircraft.aerodynamic_center.legacy",
 )
 class ComputeAeroCenter(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
