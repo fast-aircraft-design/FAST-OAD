@@ -15,7 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
 from fastoad.models.constants import CABIN_SIZING_OPTION
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
@@ -27,8 +26,8 @@ from .constants import (
     SERVICE_NACELLE_PYLON_GEOMETRY,
     SERVICE_VERTICAL_TAIL_GEOMETRY,
     SERVICE_WING_GEOMETRY,
-    SERVICE_TOTAL_AREA_GEOMETRY,
-    SERVICE_AERO_CENTER_GEOMETRY,
+    SERVICE_AIRCRAFT_WETTED_AREA,
+    SERVICE_AIRCRAFT_AERODYNAMIC_CENTER,
 )
 
 
@@ -85,11 +84,11 @@ class Geometry(om.Group):
         )
         self.add_subsystem(
             "compute_total_area",
-            RegisterSubmodel.get_submodel(SERVICE_TOTAL_AREA_GEOMETRY),
+            RegisterSubmodel.get_submodel(SERVICE_AIRCRAFT_WETTED_AREA),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_aero_center",
-            RegisterSubmodel.get_submodel(SERVICE_AERO_CENTER_GEOMETRY),
+            RegisterSubmodel.get_submodel(SERVICE_AIRCRAFT_AERODYNAMIC_CENTER),
             promotes=["*"],
         )
