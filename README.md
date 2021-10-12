@@ -1,5 +1,5 @@
 ![Tests](https://github.com/fast-aircraft-design/FAST-OAD/workflows/Tests/badge.svg)
-[![Documentation Status](https://readthedocs.org/projects/fast-oad/badge/?version=latest)](https://fast-oad.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/fast-oad/badge)](https://fast-oad.readthedocs.io/)
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/9691f1d1430c45cf9c94bc342b4c6122)](https://www.codacy.com/gh/fast-aircraft-design/FAST-OAD?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fast-aircraft-design/FAST-OAD&amp;utm_campaign=Badge_Grade)
 [![codecov](https://codecov.io/gh/fast-aircraft-design/FAST-OAD/branch/master/graph/badge.svg)](https://codecov.io/gh/fast-aircraft-design/FAST-OAD)
