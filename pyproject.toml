@@ -99,16 +99,16 @@ jupyterlab = ["jupyterlab"]
 
 
 [tool.poetry.dev-dependencies]
-pytest = ">=5.2"
-pytest-cov = "*"
+pytest = "^6.2"
+pytest-cov = "^3.0"
 coverage = { extras = ["toml"], version = "^5.5" }
-pre-commit = "*"
+pre-commit = "^2.14.1"
 black = { version = "21.9b0", extras = ["jupyter"], allow-prereleases = true }
-pylint = "*"
-nbval = "*"
-sphinx = "*"
-sphinx-rtd-theme = "*"
-sphinxcontrib-bibtex = "*"
+pylint = "^2.10.2"
+nbval = "^0.9.6"
+sphinx = "^4.1.2"
+sphinx-rtd-theme = "^1.0"
+sphinxcontrib-bibtex = "^2.3.0"
 flake8 = "^4.0.1"
 
 [tool.poetry.scripts]
