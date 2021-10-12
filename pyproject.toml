@@ -109,7 +109,7 @@ nbval = "*"
 sphinx = "*"
 sphinx-rtd-theme = "*"
 sphinxcontrib-bibtex = "*"
-flake8 = "^3.9.2"
+flake8 = "^4.0.1"
 
 [tool.poetry.scripts]
 fastoad = "fastoad.cmd.fast:main"
