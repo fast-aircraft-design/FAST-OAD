@@ -2,6 +2,22 @@
 Changelog
 =========
 
+Version 1.1.0
+=============
+- Changes:
+    - Added new submodel feature to enable a more modular approach. (#379)
+    - Implemented the submodel feature in the aerodynamic module. (#388)
+    - Implemented the submodel feature in the geometry module. (#387)
+    - Implemented the submodel feature in the weight module. (#385)
+    - Added the possibility to list custom modules. (#369)
+    - Updated high lift aerodynamics and rubber engine models. (#352)
+    - Added custom modules tutorial notebook. (#317)
+- Bug fixes:
+    - Fixed incompatible versions of jupyter-client. (#390)
+    - Fixed the naming and description of the virtual taper ratio used in the wing geometry. (#383)
+    - Fixed some wrong file links and typos in CeRAS notebook. (#380)
+    - Fixed issues with variable descriptions in xml file. (#364)
+
 Version 1.0.5
 =============
 - Changes:
