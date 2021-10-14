@@ -17,7 +17,7 @@ from openmdao.api import ExplicitComponent
 
 
 class FunctionsBase(ExplicitComponent):
-    """ An OpenMDAO base component to encapsulate Functions discipline """
+    """An OpenMDAO base component to encapsulate Functions discipline"""
 
     def initialize(self):
         self.options.declare("best_doctor", 10)

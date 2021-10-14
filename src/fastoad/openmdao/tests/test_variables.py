@@ -35,7 +35,7 @@ def cleanup():
 
 
 def test_variables():
-    """ Tests features of Variable and VariableList class"""
+    """Tests features of Variable and VariableList class"""
 
     # Test description overloading
     x = Variable("test:test_variable", val=500)
@@ -248,7 +248,7 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
-        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True,),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(
             name="disc1.y1", val=np.array([1.0]), units=None, is_input=False, desc="variable y1"
         ),
@@ -256,11 +256,7 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
             name="disc1.y2", val=np.array([1.0]), units=None, is_input=True, desc="variable y2"
         ),
         Variable(
-            name="disc2.z",
-            val=np.array([5.0, 2.0]),
-            units="m**2",
-            is_input=True,
-            desc="variable z",
+            name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
         ),
         Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
@@ -277,7 +273,7 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([1.0]), units=None, is_input=True, desc="input x"),
-        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True,),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(
             name="disc1.y1", val=np.array([1.0]), units=None, is_input=False, desc="variable y1"
         ),
@@ -285,11 +281,7 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
             name="disc1.y2", val=np.array([1.0]), units=None, is_input=True, desc="variable y2"
         ),
         Variable(
-            name="disc2.z",
-            val=np.array([5.0, 2.0]),
-            units="m**2",
-            is_input=True,
-            desc="variable z",
+            name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
         ),
         Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
@@ -357,7 +349,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
-        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True,),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(
             name="disc1.y1", val=np.array([1.0]), units=None, is_input=False, desc="variable y1"
         ),
@@ -365,11 +357,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
             name="disc1.y2", val=np.array([1.0]), units=None, is_input=True, desc="variable y2"
         ),
         Variable(
-            name="disc2.z",
-            val=np.array([5.0, 2.0]),
-            units="m**2",
-            is_input=True,
-            desc="variable z",
+            name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
         ),
         Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
@@ -385,7 +373,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([1.0]), units=None, is_input=True, desc="input x"),
-        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True,),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(
             name="disc1.y1",
             val=np.array([25.58830237]),
@@ -401,11 +389,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
             desc="variable y2",
         ),
         Variable(
-            name="disc2.z",
-            val=np.array([5.0, 2.0]),
-            units="m**2",
-            is_input=True,
-            desc="variable z",
+            name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
         ),
         Variable(name="disc2.y1", val=np.array([25.58830237]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([12.05848815]), units=None, is_input=False),
@@ -459,7 +443,7 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
-        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True,),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(
             name="disc1.y1", val=np.array([1.0]), units=None, is_input=False, desc="variable y1"
         ),
@@ -467,11 +451,7 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
             name="disc1.y2", val=np.array([1.0]), units=None, is_input=True, desc="variable y2"
         ),
         Variable(
-            name="disc2.z",
-            val=np.array([5.0, 2.0]),
-            units="m**2",
-            is_input=True,
-            desc="variable z",
+            name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
         ),
         Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
@@ -489,7 +469,7 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([1.0]), units=None, is_input=True, desc="input x"),
-        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True,),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(
             name="disc1.y1", val=np.array([1.0]), units=None, is_input=False, desc="variable y1"
         ),
@@ -497,11 +477,7 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
             name="disc1.y2", val=np.array([1.0]), units=None, is_input=True, desc="variable y2"
         ),
         Variable(
-            name="disc2.z",
-            val=np.array([5.0, 2.0]),
-            units="m**2",
-            is_input=True,
-            desc="variable z",
+            name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
         ),
         Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
@@ -566,7 +542,7 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
-        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True,),
+        Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(
             name="disc1.y1", val=np.array([1.0]), units=None, is_input=False, desc="variable y1"
         ),
@@ -574,11 +550,7 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
             name="disc1.y2", val=np.array([1.0]), units=None, is_input=True, desc="variable y2"
         ),
         Variable(
-            name="disc2.z",
-            val=np.array([5.0, 2.0]),
-            units="m**2",
-            is_input=True,
-            desc="variable z",
+            name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
         ),
         Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
@@ -610,11 +582,7 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
             desc="variable y2",
         ),
         Variable(
-            name="disc2.z",
-            val=np.array([5.0, 2.0]),
-            units="m**2",
-            is_input=True,
-            desc="variable z",
+            name="disc2.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
         ),
         Variable(name="disc2.y1", val=np.array([25.58830237]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([12.05848815]), units=None, is_input=False),

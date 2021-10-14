@@ -3,7 +3,7 @@ Conversion from OpenMDAO variables to XPath
 """
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -95,12 +95,12 @@ class VarXpathTranslator:
 
     @property
     def variable_names(self) -> Sequence[str]:
-        """ List of variable names as set in :meth:`set`"""
+        """List of variable names as set in :meth:`set`"""
         return self._variable_names
 
     @property
     def xpaths(self) -> Sequence[str]:
-        """ List of XPaths as set in :meth:`set`"""
+        """List of XPaths as set in :meth:`set`"""
         return self._xpaths
 
     def get_xpath(self, var_name: str) -> str:

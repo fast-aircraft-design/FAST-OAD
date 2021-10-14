@@ -19,7 +19,7 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 @RegisterOpenMDAOSystem("module_management_test.sellar.function_g1", desc="computation of g1")
 class FunctionG1(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Functions discipline """
+    """An OpenMDAO component to encapsulate Functions discipline"""
 
     def initialize(self):
         self.options.declare("best_doctor", 10)
@@ -33,7 +33,7 @@ class FunctionG1(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """ Functions computation """
+        """Functions computation"""
 
         y1 = inputs["y1"]
 
@@ -42,7 +42,7 @@ class FunctionG1(om.ExplicitComponent):
 
 @RegisterOpenMDAOSystem("module_management_test.sellar.function_g2", desc="computation of g2")
 class FunctionG2(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Functions discipline """
+    """An OpenMDAO component to encapsulate Functions discipline"""
 
     def initialize(self):
         self.options.declare("best_doctor", 10)
@@ -56,7 +56,7 @@ class FunctionG2(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """ Functions computation """
+        """Functions computation"""
 
         y2 = inputs["y2"]
 

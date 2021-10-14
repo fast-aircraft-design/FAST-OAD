@@ -92,7 +92,7 @@ def _test_problem(
     expected_missing_optional_variables,
     get_promoted_names,
 ):
-    """ Tests get_unconnected_inputs for provided problem """
+    """Tests get_unconnected_inputs for provided problem"""
 
     problem.setup()
 

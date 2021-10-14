@@ -241,9 +241,7 @@ class Atmosphere:
 class AtmosphereSI(Atmosphere):
     """Same as :class:`Atmosphere` except that altitudes are always in meters."""
 
-    def __init__(
-        self, altitude: Union[float, Sequence[float]], delta_t: float = 0.0,
-    ):
+    def __init__(self, altitude: Union[float, Sequence[float]], delta_t: float = 0.0):
         """
         :param altitude: altitude in meters
         :param delta_t: temperature increment (°C) applied to whole temperature profile

@@ -21,7 +21,7 @@ import openmdao.api as om
 # TODO: it would be good to have a function to compute MAC for HT, VT and WING
 class ComputeMACWing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing mean aerodynamic chord estimation """
+    """Wing mean aerodynamic chord estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")

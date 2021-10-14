@@ -24,7 +24,7 @@ from ..constants import SERVICE_EMPTY_AIRCRAFT_CG, SERVICE_GLOBAL_CG, SERVICE_LO
 @RegisterSubmodel(SERVICE_GLOBAL_CG, "fastoad.submodel.weight.cg.global.legacy")
 class ComputeGlobalCG(om.Group):
     # TODO: Document equations. Cite sources
-    """ Global center of gravity estimation """
+    """Global center of gravity estimation"""
 
     def setup(self):
         self.add_subsystem(

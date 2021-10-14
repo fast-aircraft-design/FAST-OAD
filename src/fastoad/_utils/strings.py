@@ -77,7 +77,7 @@ def get_float_list_from_string(text: str):
 
 
 class FastCouldNotParseStringToArrayError(FastError):
-    """ Raised when a conversion from string to array failed. """
+    """Raised when a conversion from string to array failed."""
 
     def __init__(self, parsed_text, original_exception):
         super().__init__()

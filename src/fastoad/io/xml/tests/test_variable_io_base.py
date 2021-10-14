@@ -37,7 +37,7 @@ def cleanup():
 
 
 def _check_basic2_vars(outputs: VariableList):
-    """ Checks that provided IndepVarComp instance matches content of data/custom.xml file """
+    """Checks that provided IndepVarComp instance matches content of data/custom.xml file"""
 
     assert len(outputs) == 5
 

@@ -43,7 +43,7 @@ class Profile:
         self._rel_mean_line_and_thickness = pd.DataFrame(columns=[X, Z, THICKNESS])
         """
         Data of mean line and thickness, computed after inputs of :meth:`set_points`_.
-        
+
         DataFrame keys are 'x', 'z' and 'thickness'.
         - 'x' and 'z' are relative to chord_length
         - 'thickness' is relative to max thickness (and given according to 'x')
@@ -57,7 +57,7 @@ class Profile:
 
     @property
     def thickness_ratio(self) -> float:
-        """ thickness-to-chord ratio """
+        """thickness-to-chord ratio"""
         return self._max_relative_thickness
 
     @thickness_ratio.setter
@@ -190,7 +190,7 @@ class Profile:
 
     @staticmethod
     def _create_upper_lower_sides(x: Sequence, z: Sequence) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        """ returns upper side points and lower side points using provided x and z """
+        """returns upper side points and lower side points using provided x and z"""
         # FIXME: leading and trailing edges are located roughly.
         i_leading_edge = np.argmin(x)
         i_trailing_edge = np.argmax(x)

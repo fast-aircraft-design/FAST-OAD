@@ -88,6 +88,4 @@ class SystemsWeight(om.Group):
             desc="Mass of aircraft systems",
         )
 
-        self.add_subsystem(
-            "systems_weight_sum", weight_sum, promotes=["*"],
-        )
+        self.add_subsystem("systems_weight_sum", weight_sum, promotes=["*"])

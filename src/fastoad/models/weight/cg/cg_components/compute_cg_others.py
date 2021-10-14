@@ -24,7 +24,7 @@ from ..constants import SERVICE_OTHERS_CG
 @RegisterSubmodel(SERVICE_OTHERS_CG, "fastoad.submodel.weight.cg.others.legacy")
 class ComputeOthersCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Other components center of gravities estimation """
+    """Other components center of gravities estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")

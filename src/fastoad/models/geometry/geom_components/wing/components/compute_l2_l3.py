@@ -22,7 +22,7 @@ import openmdao.api as om
 
 class ComputeL2AndL3Wing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing chords (l2 and l3) estimation """
+    """Wing chords (l2 and l3) estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")

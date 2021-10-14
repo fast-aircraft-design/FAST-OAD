@@ -22,7 +22,7 @@ import openmdao.api as om
 
 class ComputeXWing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing Xs estimation """
+    """Wing Xs estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")

@@ -68,9 +68,7 @@ class RegisterService:
     _loader = BundleLoader()
 
     @classmethod
-    def __init_subclass__(
-        cls, *, base_class: type = object,
-    ):
+    def __init_subclass__(cls, *, base_class: type = object):
         """
 
         :param base_class: the base class that shall be parent to all registered classes
@@ -112,9 +110,7 @@ class RegisterService:
         :return: the dictionary of properties that will be associated to the registered
                  service provider
         """
-        return {
-            DESCRIPTION_PROPERTY_NAME: self._desc if self._desc else service_class.__doc__,
-        }
+        return {DESCRIPTION_PROPERTY_NAME: self._desc if self._desc else service_class.__doc__}
 
     @classmethod
     def explore_folder(cls, folder_path: str):
@@ -194,9 +190,7 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
     or when instantiating the system with :class:`get_system`.
     """
 
-    def __init__(
-        self, service_id: str, provider_id: str, desc=None, options: dict = None,
-    ):
+    def __init__(self, service_id: str, provider_id: str, desc=None, options: dict = None):
         """
         :param service_id: the identifier of the provided service
         :param provider_id: the identifier of the service provider to register
@@ -208,9 +202,7 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
 
     def get_properties(self, service_class: Type[T]) -> dict:
         properties = super().get_properties(service_class)
-        properties.update(
-            {OPTION_PROPERTY_NAME: self._options if self._options else {},}
-        )
+        properties.update({OPTION_PROPERTY_NAME: self._options if self._options else {}})
         return properties
 
     def __call__(self, service_class: Type[T]) -> Type[T]:
@@ -290,7 +282,7 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
         #   new `setup()` that does its job and then calls `_setup_before_option_decorator()`.
 
         def setup(self):
-            """ Will replace the original setup() method"""
+            """Will replace the original setup() method"""
 
             # Use values from iPOPO option properties
             option_dict = getattr(self, "_" + OPTION_PROPERTY_NAME, None)
@@ -341,7 +333,7 @@ class RegisterSpecializedService(RegisterService):
 
     @classmethod
     def __init_subclass__(
-        cls, *, base_class: type = object, service_id: str = None, domain: ModelDomain = None,
+        cls, *, base_class: type = object, service_id: str = None, domain: ModelDomain = None
     ):
         """
 

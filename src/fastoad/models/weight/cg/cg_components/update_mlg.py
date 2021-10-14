@@ -25,7 +25,7 @@ from ..constants import SERVICE_MLG_CG
 @RegisterSubmodel(SERVICE_MLG_CG, "fastoad.submodel.weight.cg.main_landing_gear")
 class UpdateMLG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Main landing gear center of gravity estimation """
+    """Main landing gear center of gravity estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")

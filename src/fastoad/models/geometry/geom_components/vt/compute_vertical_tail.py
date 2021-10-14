@@ -15,15 +15,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import fastoad.api as oad
 import openmdao.api as om
+
+import fastoad.api as oad
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTChords
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTClalpha
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTDistance
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTMAC
 from fastoad.models.geometry.geom_components.vt.components import ComputeVTSweep
 from fastoad.module_management.service_registry import RegisterSubmodel
-
 from ...constants import SERVICE_FUSELAGE_CNBETA, SERVICE_VERTICAL_TAIL_GEOMETRY
 
 
@@ -31,7 +31,7 @@ from ...constants import SERVICE_FUSELAGE_CNBETA, SERVICE_VERTICAL_TAIL_GEOMETRY
     SERVICE_VERTICAL_TAIL_GEOMETRY, "fastoad.submodel.geometry.vertical_tail.legacy"
 )
 class ComputeVerticalTailGeometry(om.Group):
-    """ Vertical tail geometry estimation """
+    """Vertical tail geometry estimation"""
 
     def setup(self):
         self.add_subsystem(

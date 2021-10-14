@@ -19,8 +19,8 @@ Test module for geometry functions of cg components
 import os.path as pth
 
 import pytest
-from fastoad.io import VariableIO
 
+from fastoad.io import VariableIO
 from tests.testing_utilities import run_system
 from ..geom_components.compute_wetted_area import ComputeWettedArea
 from ..geom_components.fuselage.compute_cnbeta_fuselage import ComputeCnBetaFuselage
@@ -67,7 +67,7 @@ def input_xml() -> VariableIO:
 
 
 def test_compute_fuselage_cabin_sizing(input_xml):
-    """ Tests computation of the fuselage with cabin sizing """
+    """Tests computation of the fuselage with cabin sizing"""
 
     input_list = [
         "data:geometry:cabin:seats:economical:width",
@@ -110,7 +110,7 @@ def test_compute_fuselage_cabin_sizing(input_xml):
 
 
 def test_compute_fuselage_basic(input_xml):
-    """ Tests computation of the fuselage with no cabin sizing """
+    """Tests computation of the fuselage with no cabin sizing"""
 
     input_list = [
         "data:geometry:cabin:NPAX1",
@@ -139,7 +139,7 @@ def test_compute_fuselage_basic(input_xml):
 
 
 def test_compute_ht_mac(input_xml):
-    """ Tests computation of the horizontal tail mac """
+    """Tests computation of the horizontal tail mac"""
 
     input_list = [
         "data:geometry:horizontal_tail:root:chord",
@@ -161,7 +161,7 @@ def test_compute_ht_mac(input_xml):
 
 
 def test_compute_ht_chord(input_xml):
-    """ Tests computation of the horizontal tail chords """
+    """Tests computation of the horizontal tail chords"""
 
     input_list = [
         "data:geometry:horizontal_tail:aspect_ratio",
@@ -182,7 +182,7 @@ def test_compute_ht_chord(input_xml):
 
 
 def test_compute_ht_cl(input_xml):
-    """ Tests computation of the horizontal tail lift coefficient """
+    """Tests computation of the horizontal tail lift coefficient"""
 
     input_list = [
         "data:geometry:horizontal_tail:aspect_ratio",
@@ -199,7 +199,7 @@ def test_compute_ht_cl(input_xml):
 
 
 def test_compute_ht_sweep(input_xml):
-    """ Tests computation of the horizontal tail sweep """
+    """Tests computation of the horizontal tail sweep"""
 
     input_list = [
         "data:geometry:horizontal_tail:root:chord",
@@ -219,7 +219,7 @@ def test_compute_ht_sweep(input_xml):
 
 
 def test_compute_fuselage_cnbeta(input_xml):
-    """ Tests computation of the yawing moment due to sideslip """
+    """Tests computation of the yawing moment due to sideslip"""
 
     input_list = [
         "data:geometry:fuselage:length",
@@ -242,7 +242,7 @@ def test_compute_fuselage_cnbeta(input_xml):
 
 
 def test_compute_vt_mac(input_xml):
-    """ Tests computation of the vertical tail mac """
+    """Tests computation of the vertical tail mac"""
 
     input_list = [
         "data:geometry:vertical_tail:root:chord",
@@ -266,7 +266,7 @@ def test_compute_vt_mac(input_xml):
 
 
 def test_compute_vt_chords(input_xml):
-    """ Tests computation of the vertical tail chords """
+    """Tests computation of the vertical tail chords"""
 
     input_list = [
         "data:geometry:vertical_tail:aspect_ratio",
@@ -289,7 +289,7 @@ def test_compute_vt_chords(input_xml):
 
 
 def test_compute_vt_sweep(input_xml):
-    """ Tests computation of the vertical tail sweep """
+    """Tests computation of the vertical tail sweep"""
 
     input_list = [
         "data:geometry:vertical_tail:root:chord",
@@ -311,7 +311,7 @@ def test_compute_vt_sweep(input_xml):
 
 
 def test_compute_vt_distance(input_xml):
-    """ Tests computation of the vertical tail distance """
+    """Tests computation of the vertical tail distance"""
 
     input_list = [
         "data:geometry:fuselage:length",
@@ -327,7 +327,7 @@ def test_compute_vt_distance(input_xml):
 
 
 def test_compute_vt_cl(input_xml):
-    """ Tests computation of the vertical tail lift coefficient """
+    """Tests computation of the vertical tail lift coefficient"""
 
     input_list = [
         "data:TLAR:cruise_mach",
@@ -344,7 +344,7 @@ def test_compute_vt_cl(input_xml):
 
 
 def test_geometry_wing_b50(input_xml):
-    """ Tests computation of the wing B50 """
+    """Tests computation of the wing B50"""
 
     input_list = [
         "data:geometry:wing:tip:leading_edge:x:local",
@@ -366,7 +366,7 @@ def test_geometry_wing_b50(input_xml):
 
 
 def test_geometry_wing_cl_alpha(input_xml):
-    """ Tests computation of the wing lift coefficient """
+    """Tests computation of the wing lift coefficient"""
 
     input_list = [
         "data:TLAR:cruise_mach",
@@ -392,7 +392,7 @@ def test_geometry_wing_cl_alpha(input_xml):
 
 
 def test_geometry_wing_l1_l4(input_xml):
-    """ Tests computation of the wing chords (l1 and l4) """
+    """Tests computation of the wing chords (l1 and l4)"""
 
     input_list = [
         "data:geometry:wing:area",
@@ -417,7 +417,7 @@ def test_geometry_wing_l1_l4(input_xml):
 
 
 def test_geometry_wing_l2_l3(input_xml):
-    """ Tests computation of the wing chords (l2 and l3) """
+    """Tests computation of the wing chords (l2 and l3)"""
 
     input_list = [
         "data:geometry:wing:span",
@@ -446,7 +446,7 @@ def test_geometry_wing_l2_l3(input_xml):
 
 
 def test_geometry_wing_mac(input_xml):
-    """ Tests computation of the wing mean aerodynamic chord """
+    """Tests computation of the wing mean aerodynamic chord"""
 
     input_list = [
         "data:geometry:wing:area",
@@ -475,7 +475,7 @@ def test_geometry_wing_mac(input_xml):
 
 
 def test_geometry_wing_mfw(input_xml):
-    """ Tests computation of the wing max fuel weight """
+    """Tests computation of the wing max fuel weight"""
 
     input_list = [
         "data:geometry:wing:area",
@@ -495,7 +495,7 @@ def test_geometry_wing_mfw(input_xml):
 
 
 def test_geometry_wing_sweep(input_xml):
-    """ Tests computation of the wing sweeps """
+    """Tests computation of the wing sweeps"""
 
     input_list = [
         "data:geometry:wing:kink:leading_edge:x:local",
@@ -523,7 +523,7 @@ def test_geometry_wing_sweep(input_xml):
 
 
 def test_geometry_wing_toc(input_xml):
-    """ Tests computation of the wing ToC (Thickness of Chord) """
+    """Tests computation of the wing ToC (Thickness of Chord)"""
 
     input_list = ["data:TLAR:cruise_mach", "data:geometry:wing:sweep_25"]
 
@@ -544,7 +544,7 @@ def test_geometry_wing_toc(input_xml):
 
 
 def test_geometry_wing_wet_area(input_xml):
-    """ Tests computation of the wing wet area """
+    """Tests computation of the wing wet area"""
 
     input_list = [
         "data:geometry:wing:root:chord",
@@ -566,7 +566,7 @@ def test_geometry_wing_wet_area(input_xml):
 
 
 def test_geometry_wing_x(input_xml):
-    """ Tests computation of the wing Xs """
+    """Tests computation of the wing Xs"""
 
     input_list = [
         "data:geometry:wing:root:virtual_chord",
@@ -591,7 +591,7 @@ def test_geometry_wing_x(input_xml):
 
 
 def test_geometry_wing_y(input_xml):
-    """ Tests computation of the wing Ys """
+    """Tests computation of the wing Ys"""
 
     input_list = [
         "data:geometry:wing:aspect_ratio",
@@ -617,7 +617,7 @@ def test_geometry_wing_y(input_xml):
 
 
 def test_geometry_nacelle_pylons(input_xml):
-    """ Tests computation of the nacelle and pylons component """
+    """Tests computation of the nacelle and pylons component"""
 
     input_list = [
         "data:propulsion:MTO_thrust",
@@ -663,7 +663,7 @@ def test_geometry_nacelle_pylons(input_xml):
 
 
 def test_geometry_total_area(input_xml):
-    """ Tests computation of the total area """
+    """Tests computation of the total area"""
 
     input_list = [
         "data:geometry:wing:wetted_area",

@@ -16,7 +16,7 @@ import openmdao.api as om
 
 
 class Disc2(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Disc2 discipline """
+    """An OpenMDAO component to encapsulate Disc2 discipline"""
 
     def setup(self):
         self.add_input(

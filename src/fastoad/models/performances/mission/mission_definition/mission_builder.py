@@ -84,9 +84,7 @@ class MissionBuilder:
         return self._definition
 
     @definition.setter
-    def definition(
-        self, mission_definition: Union[str, MissionDefinition],
-    ):
+    def definition(self, mission_definition: Union[str, MissionDefinition]):
         if isinstance(mission_definition, str):
             self._definition = MissionDefinition(mission_definition)
         else:
@@ -112,7 +110,7 @@ class MissionBuilder:
     def reference_area(self, reference_area: float):
         self._base_kwargs["reference_area"] = reference_area
 
-    def build(self, inputs: Optional[Mapping] = None, mission_name: str = None,) -> FlightSequence:
+    def build(self, inputs: Optional[Mapping] = None, mission_name: str = None) -> FlightSequence:
         """
         Builds the flight sequence from definition file.
 
@@ -477,7 +475,7 @@ class MissionBuilder:
             for key, value in definition.items():
                 if isinstance(value, dict) and "value" in value.keys():
                     definition[key] = om.convert_units(
-                        value["value"], value.get("unit"), BASE_UNITS.get(key),
+                        value["value"], value.get("unit"), BASE_UNITS.get(key)
                     )
                 else:
                     cls._parse_values_and_units(value)

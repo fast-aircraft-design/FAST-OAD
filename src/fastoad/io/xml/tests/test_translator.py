@@ -2,7 +2,7 @@
 Test module for translator.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +28,7 @@ from ..translator import VarXpathTranslator
 
 
 def test_translator_with_set():
-    """ Tests VarXpathTranslator using set() for providing translation data"""
+    """Tests VarXpathTranslator using set() for providing translation data"""
 
     translator = VarXpathTranslator()
     indices = range(10)
@@ -78,7 +78,7 @@ def test_translator_with_set():
 
 
 def test_translator_with_read():
-    """ Tests VarXpathTranslator using read() for providing translation data"""
+    """Tests VarXpathTranslator using read() for providing translation data"""
 
     data_file = pth.join(pth.dirname(__file__), "data", "custom_translation.txt")
     translator = VarXpathTranslator()

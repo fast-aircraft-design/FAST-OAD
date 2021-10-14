@@ -117,7 +117,7 @@ def test_problem_definition_correct_configuration(cleanup):
 
 
 def test_problem_definition_with_xml_ref(cleanup):
-    """ Tests what happens when writing inputs using data from existing XML file"""
+    """Tests what happens when writing inputs using data from existing XML file"""
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
         conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension))
@@ -159,7 +159,7 @@ def test_problem_definition_with_xml_ref(cleanup):
 
 
 def test_problem_definition_with_custom_xml(cleanup):
-    """ Tests what happens when writing inputs using existing XML with some unwanted var"""
+    """Tests what happens when writing inputs using existing XML with some unwanted var"""
     conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
 
     result_folder_path = pth.join(RESULTS_FOLDER_PATH, "problem_definition_with_custom_xml")
@@ -179,7 +179,7 @@ def test_problem_definition_with_custom_xml(cleanup):
 
 
 def test_problem_definition_with_nan_inputs(cleanup):
-    """ Tests what happens when writing inputs using existing XML with some unwanted var"""
+    """Tests what happens when writing inputs using existing XML with some unwanted var"""
     conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
 
     input_data_path = pth.join(DATA_FOLDER_PATH, "nan_inputs.xml")

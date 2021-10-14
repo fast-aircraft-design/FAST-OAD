@@ -27,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 def run_system(
     component: System, input_vars: om.IndepVarComp, setup_mode="auto", add_solvers=False
 ):
-    """ Runs and returns an OpenMDAO problem with provided component and data"""
+    """Runs and returns an OpenMDAO problem with provided component and data"""
     problem = om.Problem()
     model = problem.model
     model.add_subsystem("inputs", input_vars, promotes=["*"])

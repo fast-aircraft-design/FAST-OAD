@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -36,7 +36,7 @@ def input_xml() -> VariableIO:
 
 
 def test_compute_static_margin(input_xml):
-    """ Tests computation of static margin """
+    """Tests computation of static margin"""
 
     input_vars = om.IndepVarComp()
     input_vars.add_output("data:weight:aircraft:CG:aft:MAC_position", 0.438971)

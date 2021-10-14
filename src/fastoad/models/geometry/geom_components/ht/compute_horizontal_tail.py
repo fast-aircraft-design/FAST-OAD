@@ -14,13 +14,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import openmdao.api as om
+
+import fastoad.api as oad
 from fastoad.models.geometry.geom_components.ht.components import ComputeHTChord
 from fastoad.models.geometry.geom_components.ht.components import ComputeHTClalpha
 from fastoad.models.geometry.geom_components.ht.components import ComputeHTMAC
 from fastoad.models.geometry.geom_components.ht.components import ComputeHTSweep
-
 from ...constants import SERVICE_HORIZONTAL_TAIL_GEOMETRY
 
 
@@ -28,7 +28,7 @@ from ...constants import SERVICE_HORIZONTAL_TAIL_GEOMETRY
     SERVICE_HORIZONTAL_TAIL_GEOMETRY, "fastoad.submodel.geometry.horizontal_tail.legacy"
 )
 class ComputeHorizontalTailGeometry(om.Group):
-    """ Horizontal tail geometry estimation """
+    """Horizontal tail geometry estimation"""
 
     def setup(self):
         self.add_subsystem("ht_chord", ComputeHTChord(), promotes=["*"])

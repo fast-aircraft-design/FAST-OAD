@@ -37,7 +37,7 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 @pytest.fixture()
 def delete_framework():
-    """ Ensures framework is deleted before and after running tests"""
+    """Ensures framework is deleted before and after running tests"""
     if FrameworkFactory.is_framework_running():
         FrameworkFactory.get_framework().delete(True)
 

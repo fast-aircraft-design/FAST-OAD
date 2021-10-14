@@ -36,7 +36,7 @@ class ComputeWingArea(om.Group):
 
 
 class _ComputeWingArea(om.ExplicitComponent):
-    """ Computation of wing area from needed approach speed and mission fuel """
+    """Computation of wing area from needed approach speed and mission fuel"""
 
     def setup(self):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)

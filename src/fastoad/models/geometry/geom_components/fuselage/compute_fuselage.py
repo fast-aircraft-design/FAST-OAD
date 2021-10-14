@@ -20,7 +20,6 @@ import numpy as np
 import openmdao.api as om
 
 import fastoad.api as oad
-
 from ...constants import (
     SERVICE_FUSELAGE_GEOMETRY_BASIC,
     SERVICE_FUSELAGE_GEOMETRY_WITH_CABIN_SIZING,
@@ -32,7 +31,7 @@ from ...constants import (
 )
 class ComputeFuselageGeometryBasic(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Geometry of fuselage part A - Cabin (Commercial) estimation """
+    """Geometry of fuselage part A - Cabin (Commercial) estimation"""
 
     def setup(self):
         self.add_input("data:geometry:cabin:NPAX1", val=np.nan)
@@ -112,7 +111,7 @@ class ComputeFuselageGeometryBasic(om.ExplicitComponent):
 )
 class ComputeFuselageGeometryCabinSizing(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Geometry of fuselage part A - Cabin (Commercial) estimation """
+    """Geometry of fuselage part A - Cabin (Commercial) estimation"""
 
     def setup(self):
 

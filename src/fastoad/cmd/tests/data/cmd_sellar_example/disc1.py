@@ -19,7 +19,7 @@ from .disc1_base import Disc1Base
 
 @RegisterOpenMDAOSystem("cmd_test.sellar.disc1", domain=ModelDomain.OTHER, desc="some text")
 class Disc1(Disc1Base):
-    """ An OpenMDAO component to encapsulate Disc1 discipline """
+    """An OpenMDAO component to encapsulate Disc1 discipline"""
 
     # pylint: disable=invalid-name
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

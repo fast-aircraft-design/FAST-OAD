@@ -1,6 +1,6 @@
 """Aerodynamic polar data."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,9 +18,7 @@ from scipy.optimize import fmin
 
 
 class Polar:
-    def __init__(
-        self, cl: ndarray, cd: ndarray,
-    ):
+    def __init__(self, cl: ndarray, cd: ndarray):
 
         """
         Class for managing aerodynamic polar data.

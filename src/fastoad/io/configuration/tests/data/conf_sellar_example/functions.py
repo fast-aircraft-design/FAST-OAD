@@ -39,7 +39,7 @@ class Functions(om.Group):
 
 @RegisterSubmodel(SERVICE_FUNCTION_F, "function.f.default")
 class FunctionF(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Functions discipline """
+    """An OpenMDAO component to encapsulate Functions discipline"""
 
     def setup(self):
         self.add_input("x", val=2, desc="")
@@ -54,7 +54,7 @@ class FunctionF(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """ Functions computation """
+        """Functions computation"""
 
         z2 = inputs["z"][1]
         x1 = inputs["x"]
@@ -66,7 +66,7 @@ class FunctionF(om.ExplicitComponent):
 
 @RegisterSubmodel(SERVICE_FUNCTION_F, "function.f.alternate")
 class FunctionFAlt(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Functions discipline """
+    """An OpenMDAO component to encapsulate Functions discipline"""
 
     def setup(self):
         self.add_input("x", val=2, desc="")
@@ -81,7 +81,7 @@ class FunctionFAlt(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """ Functions computation """
+        """Functions computation"""
 
         z2 = inputs["z"][1]
         x1 = inputs["x"]
@@ -93,7 +93,7 @@ class FunctionFAlt(om.ExplicitComponent):
 
 @RegisterSubmodel(SERVICE_FUNCTION_G1, "function.g1.default")
 class FunctionG1(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Functions discipline """
+    """An OpenMDAO component to encapsulate Functions discipline"""
 
     def setup(self):
         self.add_input("yy1", val=1.0, desc="")
@@ -103,7 +103,7 @@ class FunctionG1(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """ Functions computation """
+        """Functions computation"""
 
         y1 = inputs["yy1"]
 
@@ -112,7 +112,7 @@ class FunctionG1(om.ExplicitComponent):
 
 @RegisterSubmodel(SERVICE_FUNCTION_G2, "function.g2.default")
 class FunctionG2(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Functions discipline """
+    """An OpenMDAO component to encapsulate Functions discipline"""
 
     def setup(self):
         self.add_input("yy2", val=1.0, desc="")
@@ -122,7 +122,7 @@ class FunctionG2(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """ Functions computation """
+        """Functions computation"""
 
         y2 = inputs["yy2"]
 

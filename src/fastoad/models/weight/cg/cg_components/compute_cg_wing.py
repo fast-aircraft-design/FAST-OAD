@@ -24,7 +24,7 @@ from ..constants import SERVICE_WING_CG
 @RegisterSubmodel(SERVICE_WING_CG, "fastoad.submodel.weight.cg.wing.legacy")
 class ComputeWingCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing center of gravity estimation """
+    """Wing center of gravity estimation"""
 
     def setup(self):
 

@@ -202,7 +202,7 @@ class FASTOADProblemConfigurator:
         self._serializer.write(filename)
 
     def write_needed_inputs(
-        self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None,
+        self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None
     ):
         """
         Writes the input file of the problem with unconnected inputs of the

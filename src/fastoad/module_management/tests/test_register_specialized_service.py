@@ -40,7 +40,7 @@ class RegisterDummyServiceB(
 # Tests ####################################
 @pytest.fixture(scope="module")
 def load():
-    """ Loads components """
+    """Loads components"""
     RegisterSpecializedService.explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_services"))
 
 

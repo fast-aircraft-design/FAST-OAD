@@ -182,7 +182,7 @@ def list_variables(
 
     # In any case, let's break descriptions that are too long
     variables_df["DESCRIPTION"] = variables_df["DESCRIPTION"].apply(
-        lambda s: "\n".join(tw.wrap(s, 100,))
+        lambda s: "\n".join(tw.wrap(s, 100))
     )
 
     out_file.write(
@@ -203,20 +203,20 @@ def list_modules(
     force_text_output: bool = False,
 ):
     """
-    Writes list of available systems.
-    If source_path is given and if it defines paths where there are registered systems,
-    they will be listed too.
+     Writes list of available systems.
+     If source_path is given and if it defines paths where there are registered systems,
+     they will be listed too.
 
-    :param source_path: either a configuration file path, folder path, or list of folder path
-    :param out: the output stream or a path for the output file (None means sys.stdout)
-    :param overwrite: if True and out is a file path, the file will be written even if one already
-                      exists
-    :param verbose: if True, shows detailed information for each system
-                    if False, shows only identifier and path of each system
-    :param force_text_output: if True, list will be written as text, even if command is used in an
-                              interactive IPython shell (Jupyter notebook). Has no effect in other
-                              shells or if out parameter is not sys.stdout
-   :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
+     :param source_path: either a configuration file path, folder path, or list of folder path
+     :param out: the output stream or a path for the output file (None means sys.stdout)
+     :param overwrite: if True and out is a file path, the file will be written even if one already
+                       exists
+     :param verbose: if True, shows detailed information for each system
+                     if False, shows only identifier and path of each system
+     :param force_text_output: if True, list will be written as text, even if command is used in an
+                               interactive IPython shell (Jupyter notebook). Has no effect in other
+                               shells or if out parameter is not sys.stdout
+    :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
     """
     if out is None:
         out = sys.stdout
@@ -410,7 +410,8 @@ def _run_problem(
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
     :param mode: 'run_model' or 'run_driver'
-    :param auto_scaling: if True, automatic scaling is performed for design variables and constraints
+    :param auto_scaling: if True, automatic scaling is performed for design variables and
+                         constraints
     :return: the OpenMDAO problem after run
     """
 
@@ -466,7 +467,8 @@ def optimize_problem(
 
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
-    :param auto_scaling: if True, automatic scaling is performed for design variables and constraints
+    :param auto_scaling: if True, automatic scaling is performed for design variables and
+                         constraints
     :return: the OpenMDAO problem after run
     """
     return _run_problem(configuration_file_path, overwrite, "run_driver", auto_scaling=auto_scaling)

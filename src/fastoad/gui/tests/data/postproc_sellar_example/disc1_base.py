@@ -17,7 +17,7 @@ from openmdao.api import ExplicitComponent
 
 
 class Disc1Base(ExplicitComponent):
-    """ An OpenMDAO base component to encapsulate Disc1 discipline """
+    """An OpenMDAO base component to encapsulate Disc1 discipline"""
 
     def setup(self):
         self.add_input("x", val=np.nan, desc="")  # NaN as default for testing connexion check

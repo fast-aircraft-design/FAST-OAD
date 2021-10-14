@@ -65,6 +65,4 @@ class FurnitureWeight(om.Group):
             desc="Mass of aircraft furniture",
         )
 
-        self.add_subsystem(
-            "furniture_weight_sum", weight_sum, promotes=["*"],
-        )
+        self.add_subsystem("furniture_weight_sum", weight_sum, promotes=["*"])

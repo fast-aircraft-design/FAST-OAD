@@ -39,7 +39,7 @@ def test_plugins():
     # Declaring the plugin
     dist = get_distribution("FAST-OAD")
     dummy_plugin = EntryPoint(
-        "test_plugin", "fastoad.module_management.tests.data.dummy_plugin", dist=dist,
+        "test_plugin", "fastoad.module_management.tests.data.dummy_plugin", dist=dist
     )
     dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin"] = dummy_plugin
 

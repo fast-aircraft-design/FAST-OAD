@@ -205,17 +205,14 @@ class MissionWrapper(MissionBuilder):
                 mission_name,
             )
         elif route_name:
-            flight_part_desc = 'route "%s" in mission "%s"' % (route_name, mission_name,)
+            flight_part_desc = 'route "%s" in mission "%s"' % (route_name, mission_name)
         elif phase_name:
-            flight_part_desc = 'phase "%s" in mission "%s"' % (phase_name, mission_name,)
+            flight_part_desc = 'phase "%s" in mission "%s"' % (phase_name, mission_name)
         else:
             flight_part_desc = 'mission "%s"' % (mission_name,)
 
         output_definition[name_root + ":duration"] = ("s", "duration of %s" % flight_part_desc)
-        output_definition[name_root + ":fuel"] = (
-            "kg",
-            "burned fuel during %s" % flight_part_desc,
-        )
+        output_definition[name_root + ":fuel"] = ("kg", "burned fuel during %s" % flight_part_desc)
         output_definition[name_root + ":distance"] = (
             "m",
             "covered ground distance during %s" % flight_part_desc,

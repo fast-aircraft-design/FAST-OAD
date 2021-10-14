@@ -2,8 +2,6 @@
     Estimation of total aircraft wet area
 """
 
-import fastoad.api as oad
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -19,6 +17,7 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
+import fastoad.api as oad
 from ..constants import SERVICE_AIRCRAFT_WETTED_AREA
 
 
@@ -27,7 +26,7 @@ from ..constants import SERVICE_AIRCRAFT_WETTED_AREA
 )
 class ComputeWettedArea(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Total aircraft wet area estimation """
+    """Total aircraft wet area estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:wetted_area", val=np.nan, units="m**2")

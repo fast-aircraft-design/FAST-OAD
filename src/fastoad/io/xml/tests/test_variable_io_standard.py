@@ -39,7 +39,7 @@ def cleanup():
 
 
 def _check_basic_vars(vars: VariableList):
-    """ Checks that provided IndepVarComp instance matches content of data/basic.xml file """
+    """Checks that provided IndepVarComp instance matches content of data/basic.xml file"""
 
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)

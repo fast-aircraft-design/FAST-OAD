@@ -23,7 +23,7 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
     "module_management_test.sellar.disc1", desc="some text", domain=ModelDomain.OTHER
 )
 class Disc1(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Disc1 discipline """
+    """An OpenMDAO component to encapsulate Disc1 discipline"""
 
     def setup(self):
         self.add_input("x", val=np.nan, desc="")  # NaN as default for testing connexion check

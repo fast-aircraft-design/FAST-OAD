@@ -22,7 +22,7 @@ from .constants import SERVICE_LANDING_GEARS_MASS
 
 
 @RegisterSubmodel(
-    SERVICE_LANDING_GEARS_MASS, "fastoad.submodel.weight.mass.airframe.landing_gears.legacy",
+    SERVICE_LANDING_GEARS_MASS, "fastoad.submodel.weight.mass.airframe.landing_gears.legacy"
 )
 class LandingGearWeight(om.ExplicitComponent):
     """

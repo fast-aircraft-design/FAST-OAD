@@ -23,7 +23,7 @@ from fastoad.module_management.service_registry import RegisterSubmodel
 
 @RegisterSubmodel(SERVICE_PAYLOAD_MASS, "fastoad.submodel.weight.mass.payload.legacy")
 class ComputePayload(om.ExplicitComponent):
-    """ Computes payload from NPAX """
+    """Computes payload from NPAX"""
 
     def setup(self):
         self.add_input("data:TLAR:NPAX", val=np.nan)

@@ -21,7 +21,7 @@ import openmdao.api as om
 
 class ComputeVTChords(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Vertical tail chords and span estimation """
+    """Vertical tail chords and span estimation"""
 
     def setup(self):
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)

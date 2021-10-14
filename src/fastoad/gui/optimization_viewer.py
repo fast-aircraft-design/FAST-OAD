@@ -78,9 +78,7 @@ class OptimizationViewer:
         # True if in the absence of an output file
         self._MISSING_OUTPUT_FILE = None
 
-    def load(
-        self, problem_configuration: FASTOADProblemConfigurator,
-    ):
+    def load(self, problem_configuration: FASTOADProblemConfigurator):
         """
         Loads the FAST-OAD problem and stores its data.
 

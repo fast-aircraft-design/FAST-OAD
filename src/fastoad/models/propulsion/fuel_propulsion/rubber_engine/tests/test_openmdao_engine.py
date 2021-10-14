@@ -23,7 +23,7 @@ from ..openmdao import OMRubberEngineComponent
 
 
 def test_OMRubberEngineComponent():
-    """ Tests ManualRubberEngine component """
+    """Tests ManualRubberEngine component"""
     # Same test as in test_rubber_engine.test_compute_flight_points
     engine = OMRubberEngineComponent()
 
@@ -67,7 +67,7 @@ def test_OMRubberEngineComponent():
 
 
 def test_OMRubberEngineComponentWithSFCCorrections():
-    """ Tests ManualRubberEngine component """
+    """Tests ManualRubberEngine component"""
     # Same test as in test_rubber_engine.test_compute_flight_points
     engine = OMRubberEngineComponent()
 

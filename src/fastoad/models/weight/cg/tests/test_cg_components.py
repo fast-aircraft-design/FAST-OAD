@@ -440,10 +440,7 @@ def test_compute_max_cg_ratio(input_xml):
 def test_compute_aircraft_cg(input_xml):
     """Tests computation of static margin"""
 
-    input_list = [
-        "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:at25percent:x",
-    ]
+    input_list = ["data:geometry:wing:MAC:length", "data:geometry:wing:MAC:at25percent:x"]
 
     input_vars = input_xml.read(only=input_list).to_ivc()
     input_vars.add_output("data:weight:aircraft:CG:aft:MAC_position", 0.388971)
@@ -504,10 +501,7 @@ def test_compute_vt_cg(input_xml):
 def test_geometry_update_mlg(input_xml):
     """Tests computation of the main landing gear"""
 
-    input_list = [
-        "data:geometry:wing:MAC:length",
-        "data:geometry:wing:MAC:at25percent:x",
-    ]
+    input_list = ["data:geometry:wing:MAC:length", "data:geometry:wing:MAC:at25percent:x"]
 
     input_vars = input_xml.read(only=input_list).to_ivc()
 

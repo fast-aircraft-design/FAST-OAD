@@ -1,7 +1,6 @@
 """
     Estimation of max fuel weight
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,10 +16,11 @@
 import numpy as np
 import openmdao.api as om
 
+
 # TODO: This belongs more to mass breakdown than geometry
 class ComputeMFW(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Max fuel weight estimation """
+    """Max fuel weight estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
