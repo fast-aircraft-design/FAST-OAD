@@ -446,17 +446,15 @@ test = ["pytest (!=5.3.4)", "pytest-cov", "flaky", "nose", "ipyparallel"]
 
 [[package]]
 name = "ipysheet"
-version = "0.4.0"
-description = "Spreadsheet in the Jupyter notebook"
+version = "0.5.0"
+description = "Spreadsheet in the Jupyter notebook."
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 
 [package.dependencies]
-ipywidgets = ">=7.0.0"
-
-[package.extras]
-all = ["flexx"]
+ipywidgets = ">=7.5.0,<8.0"
+jupyter-server = ">=1.6,<2"
 
 [[package]]
 name = "ipython"
@@ -500,7 +498,7 @@ python-versions = "*"
 
 [[package]]
 name = "ipywidgets"
-version = "7.3.0"
+version = "7.5.0"
 description = "IPython HTML widgets for Jupyter"
 category = "main"
 optional = false
@@ -511,10 +509,10 @@ ipykernel = ">=4.5.1"
 ipython = {version = ">=4.0.0", markers = "python_version >= \"3.3\""}
 nbformat = ">=4.2.0"
 traitlets = ">=4.3.1"
-widgetsnbextension = ">=3.3.0,<3.4.0"
+widgetsnbextension = ">=3.5.0,<3.6.0"
 
 [package.extras]
-test = ["nose", "mock"]
+test = ["pytest (>=3.6.0)", "pytest-cov", "mock"]
 
 [[package]]
 name = "isort"
@@ -1734,7 +1732,7 @@ test = ["websockets"]
 
 [[package]]
 name = "widgetsnbextension"
-version = "3.3.1"
+version = "3.5.1"
 description = "IPython HTML widgets for Jupyter"
 category = "main"
 optional = false
@@ -1742,9 +1740,6 @@ python-versions = "*"
 
 [package.dependencies]
 notebook = ">=4.4.1"
-
-[package.extras]
-test = ["nose", "mock"]
 
 [[package]]
 name = "wop"
@@ -1794,7 +1789,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "9a73147ea5989eb8d8fd13d4f2ab0eaee3f9f3e41d3e1a9decff73c18e812e26"
+content-hash = "06e1c16f499d62cd647e9404fcd6407b800d2caf875de360fccb62c12544aa76"
 
 [metadata.files]
 aenum = [
@@ -2077,8 +2072,8 @@ ipykernel = [
     {file = "ipykernel-6.4.1.tar.gz", hash = "sha256:df3355e5eec23126bc89767a676c5f0abfc7f4c3497d118c592b83b316e8c0cd"},
 ]
 ipysheet = [
-    {file = "ipysheet-0.4.0-py2.py3-none-any.whl", hash = "sha256:0e297274e717b08dd909790268167d033877ff2e9ec356ed1131be18aa4e2a58"},
-    {file = "ipysheet-0.4.0.tar.gz", hash = "sha256:23f644f843024d1cf5edf24e15f5b4ae27705f26c36a0d57726a8ed4c30c617e"},
+    {file = "ipysheet-0.5.0-py2.py3-none-any.whl", hash = "sha256:d9b3827f163177e7c293e7f7d3eaf1bbc6984e75cacee3c1a763971f110c076a"},
+    {file = "ipysheet-0.5.0.tar.gz", hash = "sha256:714804a9e6e7e413ef8e74fce026587239a853c3912060c2fcf5f8dce0b7db6c"},
 ]
 ipython = [
     {file = "ipython-7.28.0-py3-none-any.whl", hash = "sha256:f16148f9163e1e526f1008d7c8d966d9c15600ca20d1a754287cf96d00ba6f1d"},
@@ -2089,8 +2084,8 @@ ipython-genutils = [
     {file = "ipython_genutils-0.2.0.tar.gz", hash = "sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8"},
 ]
 ipywidgets = [
-    {file = "ipywidgets-7.3.0-py2.py3-none-any.whl", hash = "sha256:eeb188429070aa3ce16e5e6e744437614e8315b5097d6cf31b0e83fb7a5a6342"},
-    {file = "ipywidgets-7.3.0.tar.gz", hash = "sha256:3ce93db970a94f06f38121da70757cdbcce884ecd14f79a4dd9bc49a47e0f33b"},
+    {file = "ipywidgets-7.5.0-py2.py3-none-any.whl", hash = "sha256:eab6060f20f7f10d91f6efc8d33f9fd22133406980fcaee2738d836a910402f4"},
+    {file = "ipywidgets-7.5.0.tar.gz", hash = "sha256:cb263c6974aca902d00a435711823bb4aaf6614a5f997f517e15fa84151e8fa2"},
 ]
 isort = [
     {file = "isort-5.9.3-py3-none-any.whl", hash = "sha256:e17d6e2b81095c9db0a03a8025a957f334d6ea30b26f9ec70805411e5c7c81f2"},
@@ -2899,8 +2894,8 @@ websocket-client = [
     {file = "websocket_client-1.2.1-py2.py3-none-any.whl", hash = "sha256:0133d2f784858e59959ce82ddac316634229da55b498aac311f1620567a710ec"},
 ]
 widgetsnbextension = [
-    {file = "widgetsnbextension-3.3.1-py2.py3-none-any.whl", hash = "sha256:8f8d79e18f36a434da32365169a50a4acbc5a454da38aeb96a66cd3191e297b5"},
-    {file = "widgetsnbextension-3.3.1.tar.gz", hash = "sha256:8ee8a4a1ab8492412a1411652127775c6d2841e9a8030c4b8c6c7ce7792918c6"},
+    {file = "widgetsnbextension-3.5.1-py2.py3-none-any.whl", hash = "sha256:bd314f8ceb488571a5ffea6cc5b9fc6cba0adaf88a9d2386b93a489751938bcd"},
+    {file = "widgetsnbextension-3.5.1.tar.gz", hash = "sha256:079f87d87270bce047512400efd70238820751a11d2d8cb137a5a5bdbaf255c7"},
 ]
 wop = [
     {file = "wop-1.16.1.1.tar.gz", hash = "sha256:b5a67cc642cd32300ca32c963589459241e8fa2a425afe94a1ba932487a8190c"},
