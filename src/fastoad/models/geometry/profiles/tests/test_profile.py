@@ -168,12 +168,20 @@ def test_set_points(point_set):
     assert_allclose(0.10070, np.max(relative_thickness["thickness"]), rtol=1e-4)
 
     # # Activate this part to get a visual check of the interpolation
-    # import matplotlib.pyplot as plt
-    # plt.axes(aspect='equal')
-    # plt.plot(profile.get_upper_side()['x'], profile.get_upper_side()['z'], 'o-')
-    # plt.plot(profile.get_lower_side()['x'], profile.get_lower_side()['z'], 'o-')
-    # plt.plot(profile.get_mean_line()['x'], profile.get_mean_line()['z'], 'o-')
-    # plt.show()
+    # import plotly.express as px
+    # import pandas as pd
+    #
+    # df = pd.concat(
+    #     (
+    #         profile.get_upper_side().assign(line="upper"),
+    #         profile.get_lower_side().assign(line="lower"),
+    #         profile.get_mean_line().assign(line="mean"),
+    #     )
+    # )
+    #
+    # fig = px.line(df, "x", "z", color="line", markers=True)
+    # fig.update_yaxes(scaleanchor="x", scaleratio=1)
+    # fig.show()
 
 
 def test_get_profile():

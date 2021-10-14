@@ -16,9 +16,7 @@ import os.path as pth
 from os import mkdir
 from shutil import rmtree
 
-import matplotlib.pyplot as plt
 import pytest
-from matplotlib.ticker import MultipleLocator
 from numpy.testing import assert_allclose
 from openmdao.core.component import Component
 from scipy.constants import foot, knot
@@ -85,45 +83,68 @@ def cleanup():
 
 
 def plot_flight(flight_points, fig_filename):
-    plt.figure(figsize=(12, 12))
-    ax1 = plt.subplot(2, 1, 1)
-    plt.plot(flight_points.ground_distance / 1000.0, flight_points.altitude / foot, "o-")
-    plt.xlabel("distance [km]")
-    plt.ylabel("altitude [ft]")
-    ax1.xaxis.set_minor_locator(MultipleLocator(50))
-    ax1.yaxis.set_minor_locator(MultipleLocator(500))
-    plt.grid(which="major", color="k")
-    plt.grid(which="minor")
+    from plotly.subplots import make_subplots
+    import plotly.graph_objects as go
 
-    ax2 = plt.subplot(2, 1, 2)
-    lines = []
-    lines += plt.plot(
-        flight_points.ground_distance / 1000.0, flight_points.true_airspeed, "b-", label="TAS [m/s]"
+    fig = make_subplots(
+        rows=2,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.02,
+        specs=[[{}], [{"secondary_y": True}]],
     )
-    lines += plt.plot(
-        flight_points.ground_distance / 1000.0,
-        flight_points.equivalent_airspeed / knot,
-        "g--",
-        label="EAS [kt]",
+
+    fig.add_trace(
+        go.Scatter(
+            x=flight_points["ground_distance [m]"] / 1000.0,
+            y=flight_points["altitude [m]"] / foot,
+            name="altitude [ft]",
+        ),
+        row=1,
+        col=1,
     )
-    plt.xlabel("distance [km]")
-    plt.ylabel("speed")
-    ax2.xaxis.set_minor_locator(MultipleLocator(50))
-    ax2.yaxis.set_minor_locator(MultipleLocator(5))
-    plt.grid(which="major", color="k")
-    plt.grid(which="minor")
 
-    plt.twinx(ax2)
-    lines += plt.plot(
-        flight_points.ground_distance / 1000.0, flight_points.mach, "r.-", label="Mach"
+    fig.add_trace(
+        go.Scatter(
+            x=flight_points["ground_distance [m]"] / 1000.0,
+            y=flight_points["true_airspeed [m/s]"],
+            name="TAS [m/s]",
+        ),
+        row=2,
+        col=1,
     )
-    plt.ylabel("Mach")
 
-    labels = [l.get_label() for l in lines]
-    plt.legend(lines, labels, loc=0)
+    fig.add_trace(
+        go.Scatter(
+            x=flight_points["ground_distance [m]"] / 1000.0,
+            y=flight_points["equivalent_airspeed [m/s]"] / knot,
+            name="EAS [kt]",
+        ),
+        row=2,
+        col=1,
+    )
 
-    plt.savefig(pth.join(RESULTS_FOLDER_PATH, fig_filename))
-    plt.close()
+    fig.add_trace(
+        go.Scatter(
+            x=flight_points["ground_distance [m]"] / 1000.0,
+            y=flight_points["mach [-]"],
+            name="Mach",
+        ),
+        row=2,
+        col=1,
+        secondary_y=True,
+    )
+
+    fig.update_layout(
+        height=800,
+        width=800,
+        title_text=fig_filename,
+    )
+    fig["layout"]["xaxis2"]["title"] = "distance [km]"
+    fig["layout"]["yaxis"]["title"] = "altitude [ft]"
+    fig["layout"]["yaxis2"]["title"] = "speed"
+    fig["layout"]["yaxis3"]["title"] = "Mach"
+    fig.write_image(pth.join(RESULTS_FOLDER_PATH, fig_filename))
 
 
 def test_mission_component(cleanup):

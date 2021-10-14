@@ -80,8 +80,7 @@ openmdao = "^3.10"
 ipopo = "^1.0.0"
 ipywidgets = "^7.5.0"
 ipysheet = ">=0.5.0, <1"
-matplotlib = "^3.1.2"
-plotly = "5.0.0"
+plotly = "^5.2.1"
 wop = "^1.16.1.1"
 lxml = "^4.6.3"
 tomlkit = ">=0.5.3, <1"
@@ -105,6 +104,7 @@ sphinx = "^4.1.2"
 sphinx-rtd-theme = "^1.0"
 sphinxcontrib-bibtex = "^2.3.0"
 flake8 = "^4.0.1"
+kaleido = "^0.2.1, !=0.2.1.post1" # Needed to write images from Plotly. Huge library, but only used in tests.
 
 [tool.poetry.scripts]
 fastoad = "fastoad.cmd.fast:main"
