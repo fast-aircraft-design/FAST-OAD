@@ -26,11 +26,9 @@ from os import mkdir
 from shutil import rmtree
 from typing import List, Union
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from matplotlib.ticker import MultipleLocator
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot
 
@@ -87,6 +85,9 @@ def low_speed_polar() -> Polar:
 
 
 def plot_flight(flight_points, fig_filename):
+    from matplotlib import pyplot as plt
+    from matplotlib.ticker import MultipleLocator
+
     plt.figure(figsize=(12, 12))
     ax1 = plt.subplot(2, 1, 1)
     plt.plot(flight_points.ground_distance / 1000.0, flight_points.altitude / foot, "o-")
@@ -172,7 +173,7 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     )
     flight_points = flight_calculator.compute_from(start)
 
-    plot_flight(flight_points, "test_ranged_flight.png")
+    # plot_flight(flight_points, "test_ranged_flight.png")
 
     assert_allclose(
         flight_points.iloc[-1].ground_distance,

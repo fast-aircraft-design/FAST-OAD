@@ -16,9 +16,7 @@ import os.path as pth
 from os import mkdir
 from shutil import rmtree
 
-import matplotlib.pyplot as plt
 import pytest
-from matplotlib.ticker import MultipleLocator
 from numpy.testing import assert_allclose
 from openmdao.core.component import Component
 from scipy.constants import foot, knot
@@ -85,9 +83,14 @@ def cleanup():
 
 
 def plot_flight(flight_points, fig_filename):
+    from matplotlib import pyplot as plt
+    from matplotlib.ticker import MultipleLocator
+
     plt.figure(figsize=(12, 12))
     ax1 = plt.subplot(2, 1, 1)
-    plt.plot(flight_points.ground_distance / 1000.0, flight_points.altitude / foot, "o-")
+    plt.plot(
+        flight_points["ground_distance [m]"] / 1000.0, flight_points["altitude [m]"] / foot, "o-"
+    )
     plt.xlabel("distance [km]")
     plt.ylabel("altitude [ft]")
     ax1.xaxis.set_minor_locator(MultipleLocator(50))
@@ -98,11 +101,14 @@ def plot_flight(flight_points, fig_filename):
     ax2 = plt.subplot(2, 1, 2)
     lines = []
     lines += plt.plot(
-        flight_points.ground_distance / 1000.0, flight_points.true_airspeed, "b-", label="TAS [m/s]"
+        flight_points["ground_distance [m]"] / 1000.0,
+        flight_points["true_airspeed [m/s]"],
+        "b-",
+        label="TAS [m/s]",
     )
     lines += plt.plot(
-        flight_points.ground_distance / 1000.0,
-        flight_points.equivalent_airspeed / knot,
+        flight_points["ground_distance [m]"] / 1000.0,
+        flight_points["equivalent_airspeed [m/s]"] / knot,
         "g--",
         label="EAS [kt]",
     )
@@ -115,7 +121,10 @@ def plot_flight(flight_points, fig_filename):
 
     plt.twinx(ax2)
     lines += plt.plot(
-        flight_points.ground_distance / 1000.0, flight_points.mach, "r.-", label="Mach"
+        flight_points["ground_distance [m]"] / 1000.0,
+        flight_points["mach [-]"],
+        "r.-",
+        label="Mach",
     )
     plt.ylabel("Mach")
 
