@@ -897,26 +897,29 @@ python-versions = "*"
 
 [[package]]
 name = "notebook"
-version = "5.2.2"
+version = "6.0.0"
 description = "A web-based notebook environment for interactive computing"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.5"
 
 [package.dependencies]
 ipykernel = "*"
 ipython-genutils = "*"
 jinja2 = "*"
-jupyter-client = "*"
-jupyter-core = "*"
+jupyter-client = ">=5.3.1"
+jupyter-core = ">=4.4.0"
 nbconvert = "*"
 nbformat = "*"
-terminado = {version = ">=0.3.3", markers = "sys_platform != \"win32\""}
-tornado = ">=4"
+prometheus-client = "*"
+pyzmq = ">=17"
+Send2Trash = "*"
+terminado = ">=0.8.1"
+tornado = ">=5.0"
 traitlets = ">=4.2.1"
 
 [package.extras]
-test = ["coverage", "nbval", "nose", "nose-warnings-filters", "requests", "mock", "nose-exclude"]
+test = ["nose", "coverage", "requests", "nose-warnings-filters", "nbval", "nose-exclude", "selenium", "pytest", "pytest-cov", "mock", "nose-exclude"]
 
 [[package]]
 name = "numpy"
@@ -1809,7 +1812,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "680ae72880ba768668b93bed2806dd5d247d8269d82f5f9e1acd5885473b32c7"
+content-hash = "86252cf6f77215505c8e36219caa0220926055af83228eb5727b634362aaf138"
 
 [metadata.files]
 aenum = [
@@ -2361,8 +2364,8 @@ nodeenv = [
     {file = "nodeenv-1.6.0.tar.gz", hash = "sha256:3ef13ff90291ba2a4a7a4ff9a979b63ffdd00a464dbe04acf0ea6471517a4c2b"},
 ]
 notebook = [
-    {file = "notebook-5.2.2-py2.py3-none-any.whl", hash = "sha256:8d63d3370800e41888e186af68a49ba7cfa1b2155a5de7fc167969c458872587"},
-    {file = "notebook-5.2.2.tar.gz", hash = "sha256:7bb54fb61b9c5426bc116f840541b973431198e00ea2896122d05fc122dbbd67"},
+    {file = "notebook-6.0.0-py3-none-any.whl", hash = "sha256:0be97e939cec73cde37fc4d2a606a6f497a9addf3afcf61a09a21b0c35e699c5"},
+    {file = "notebook-6.0.0.tar.gz", hash = "sha256:5c16dbf4fa824db19de43637ebfb24bcbd3b4f646e5d6a0414ed3a376d6bc951"},
 ]
 numpy = [
     {file = "numpy-1.19.3-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:942d2cdcb362739908c26ce8dd88db6e139d3fa829dd7452dd9ff02cba6b58b2"},
