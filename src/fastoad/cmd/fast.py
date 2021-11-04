@@ -79,9 +79,13 @@ class Main:
     @staticmethod
     def _list_modules(args):
         """Prints list of system identifiers."""
-        api.list_modules(
-            args.source_path, out=args.out_file, overwrite=args.force, verbose=args.verbose
-        )
+        # If a configuration file or a single path is provided make sure it is sent as a
+        # string not a list
+        if len(args.source_path) == 1:
+            source_path = args.source_path[0]
+        else:
+            source_path = args.source_path
+        api.list_modules(source_path, out=args.out_file, overwrite=args.force, verbose=args.verbose)
         print("\nDone. Use --verbose (-v) option for detailed information.")
 
     @staticmethod
@@ -266,7 +270,6 @@ class Main:
             help="Provides the identifiers of available systems",
             description="Provides the identifiers of available systems",
         )
-        self._add_conf_file_argument(parser_list_modules, required=False)
         self._add_output_file_argument(parser_list_modules)
         self._add_overwrite_argument(parser_list_modules)
         parser_list_modules.add_argument(
