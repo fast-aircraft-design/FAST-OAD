@@ -266,6 +266,7 @@ class Main:
             help="Provides the identifiers of available systems",
             description="Provides the identifiers of available systems",
         )
+        self._add_conf_file_argument(parser_list_modules, required=False)
         self._add_output_file_argument(parser_list_modules)
         self._add_overwrite_argument(parser_list_modules)
         parser_list_modules.add_argument(
