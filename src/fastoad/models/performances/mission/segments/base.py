@@ -22,9 +22,10 @@ import pandas as pd
 from aenum import Enum, extend_enum
 from scipy.constants import g
 from scipy.optimize import root_scalar
+from stdatm import AtmosphereSI
 
 from fastoad.constants import EngineSetting
-from fastoad.model_base import AtmosphereSI, FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
 from ..base import IFlightPart

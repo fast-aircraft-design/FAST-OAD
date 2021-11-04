@@ -16,8 +16,8 @@ Aero computation for landing phase
 
 import numpy as np
 import openmdao.api as om
+from stdatm import Atmosphere
 
-from fastoad.model_base import Atmosphere
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from .constants import (

@@ -19,10 +19,11 @@ from typing import Optional, Sequence, Tuple, Union
 import numpy as np
 import pandas as pd
 from scipy.interpolate.interpolate import interp1d
+from stdatm import Atmosphere
 
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
-from fastoad.model_base import Atmosphere, FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion
 from .constants import (
     ALPHA,
@@ -153,7 +154,8 @@ class RubberEngine(AbstractFuelPropulsion):
         :param altitude: (unit=m) altitude w.r.t. to sea level
         :param delta_t4: (unit=K) difference between operational and design values of
                          turbine inlet temperature in K
-        :param thrust_is_regulated: tells if thrust_rate or thrust should be used (works element-wise)
+        :param thrust_is_regulated: tells if thrust_rate or thrust should be used (works
+                                    element-wise)
         :param thrust_rate: thrust rate (unit=none)
         :param thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)

@@ -13,7 +13,7 @@ Simple implementation of International Standard Atmosphere.
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import warnings
 from numbers import Number
 from typing import Sequence, Union
 
@@ -27,7 +27,27 @@ SEA_LEVEL_TEMPERATURE = 288.15
 TROPOPAUSE = 11000
 
 
-class Atmosphere:
+def Atmosphere(*args, **kwargs):
+    warnings.warn(
+        "fastoad.model_base.Atmosphere is deprecated and will be removed in version 2.0 of "
+        "FAST-OAD. Please use stdatm.Atmosphere instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return AtmosphereOld(*args, **kwargs)
+
+
+def AtmosphereSI(*args, **kwargs):
+    warnings.warn(
+        "fastoad.model_base.AtmosphereSI is deprecated and will be removed in version 2.0 of "
+        "FAST-OAD. Please use stdatm.AtmosphereSI instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return AtmosphereSIOld(*args, **kwargs)
+
+
+class AtmosphereOld:
     """
     Simple implementation of International Standard Atmosphere
     for troposphere and stratosphere.
@@ -67,6 +87,12 @@ class Atmosphere:
         :param altitude_in_feet: if True, altitude should be provided in feet. Otherwise,
                                  it should be provided in meters.
         """
+        warnings.warn(
+            "fastoad.model_base.Atmosphere is deprecated and will be removed in version 2.0 of "
+            "FAST-OAD. Please use stdatm.Atmosphere instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
         self.delta_t = delta_t
 
@@ -244,7 +270,7 @@ class Atmosphere:
         return value
 
 
-class AtmosphereSI(Atmosphere):
+class AtmosphereSIOld(AtmosphereOld):
     """Same as :class:`Atmosphere` except that altitudes are always in meters."""
 
     def __init__(self, altitude: Union[float, Sequence[float]], delta_t: float = 0.0):

@@ -15,8 +15,8 @@
 
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+from stdatm import AtmosphereSI
 
-from fastoad.model_base import AtmosphereSI
 from fastoad.module_management.service_registry import RegisterSubmodel
 from ..constants import SERVICE_REYNOLDS_COEFFICIENT
 

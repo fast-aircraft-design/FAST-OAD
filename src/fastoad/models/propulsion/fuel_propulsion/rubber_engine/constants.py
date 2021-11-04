@@ -15,7 +15,7 @@ Constants for rubber engine analytical models
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.model_base import AtmosphereSI
+from stdatm import AtmosphereSI
 
 RUBBER_ENGINE_DESCRIPTION = """
 Parametric engine model as OpenMDAO component.

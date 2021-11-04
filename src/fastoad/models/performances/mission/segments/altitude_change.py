@@ -19,8 +19,9 @@ from typing import List, Tuple
 
 import pandas as pd
 from scipy.constants import foot, g
+from stdatm import AtmosphereSI
 
-from fastoad.model_base import AtmosphereSI, FlightPoint
+from fastoad.model_base import FlightPoint
 from .base import ManualThrustSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..util import get_closest_flight_level
