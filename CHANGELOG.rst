@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.1.1
+=============
+- Bug fixes:
+    - Fixed usage of list_modules with CLI. (#394)
+
 Version 1.1.0
 =============
 - Changes:
