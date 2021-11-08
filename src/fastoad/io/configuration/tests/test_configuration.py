@@ -27,7 +27,7 @@ from ruamel.yaml import YAML
 from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.module_management._plugins import load_plugins
+from fastoad.module_management._plugins import PluginManager
 from fastoad.module_management.exceptions import FastBundleLoaderUnknownFactoryNameError
 from ..exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
@@ -42,7 +42,7 @@ RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
     yield
-    load_plugins()
+    PluginManager.load()
 
 
 def clear_openmdao_registry():

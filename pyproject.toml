@@ -115,7 +115,9 @@ fastoad = "fastoad.cmd.cli:fast_oad"
 fast-oad = "fastoad.cmd.cli:fast_oad"
 
 [tool.poetry.plugins."fastoad_model"]
-"internal_models" = "fastoad.models"
+"cs-25" = "fastoad.models"
+"cs-25.notebooks" = "fastoad.notebooks"
+"cs-25.configurations" = "fastoad.configurations"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

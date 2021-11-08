@@ -16,7 +16,7 @@ import os.path as pth
 import pytest
 from pkg_resources import EntryPoint, get_distribution
 
-from .._plugins import MODEL_PLUGIN_ID, load_plugins
+from .._plugins import MODEL_PLUGIN_ID, PluginManager
 from ..exceptions import FastBundleLoaderUnknownFactoryNameError
 from ..service_registry import RegisterSpecializedService
 from ...openmdao.variables import Variable
@@ -38,10 +38,21 @@ class RegisterDummyService(RegisterSpecializedService, base_class=DummyBase):
 def test_plugins():
     # Declaring the plugin
     dist = get_distribution("FAST-OAD")
-    dummy_plugin = EntryPoint(
-        "test_plugin", "fastoad.module_management.tests.data.dummy_plugin", dist=dist
+    dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin"] = EntryPoint(
+        "test_plugin",
+        "fastoad.module_management.tests.data.dummy_plugin.models",
+        dist=dist,
     )
-    dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin"] = dummy_plugin
+    dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin.notebooks"] = EntryPoint(
+        "test_plugin.notebooks",
+        "fastoad.module_management.tests.data.dummy_plugin.notebooks",
+        dist=dist,
+    )
+    dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin.configurations"] = EntryPoint(
+        "test_plugin.configurations",
+        "fastoad.module_management.tests.data.dummy_plugin.confs",
+        dist=dist,
+    )
 
     # Before load_plugins(), services are not registered
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
@@ -49,7 +60,20 @@ def test_plugins():
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
         decorated_dummy_1 = RegisterDummyService.get_provider("test.plugin.decorated.1")
 
-    load_plugins()
+    PluginManager.read_entry_points()
+    PluginManager.load()
+    assert (
+        PluginManager.plugin_definitions["test_plugin"].module_path
+        == "fastoad.module_management.tests.data.dummy_plugin.models"
+    )
+    assert (
+        PluginManager.plugin_definitions["test_plugin"].notebook_path
+        == "fastoad.module_management.tests.data.dummy_plugin.notebooks"
+    )
+    assert (
+        PluginManager.plugin_definitions["test_plugin"].conf_file_path
+        == "fastoad.module_management.tests.data.dummy_plugin.confs"
+    )
 
     declared_dummy_1 = RegisterDummyService.get_provider("test.plugin.declared.1")
     assert declared_dummy_1.my_class() == "DeclaredDummy1"

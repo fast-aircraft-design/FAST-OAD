@@ -11,20 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from .declared_dummy_components import DeclaredDummy1, DeclaredDummy2
+from ....test_plugins import RegisterDummyService
 
-from pkg_resources import DistributionNotFound, get_distribution
-
-import fastoad.module_management._plugins
-
-try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "FAST-OAD"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:
-    __version__ = "unknown"
-finally:
-    del get_distribution, DistributionNotFound
-
-plugins = fastoad.module_management._plugins.PluginManager
-plugins.read_entry_points()
-plugins.load()
+RegisterDummyService("test.plugin.declared.1")(DeclaredDummy1)
+RegisterDummyService("test.plugin.declared.2")(DeclaredDummy2)

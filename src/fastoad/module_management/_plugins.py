@@ -15,6 +15,7 @@ Plugin system for declaration of FAST-OAD models.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from dataclasses import dataclass
 
 from pkg_resources import iter_entry_points
 
@@ -26,13 +27,51 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 MODEL_PLUGIN_ID = "fastoad_model"
 
 
-def load_plugins():
+@dataclass
+class PluginDefinition:
     """
-    Loads declared plugins.
+    Simple structure for storing plugin data.
     """
-    for entry_point in iter_entry_points(MODEL_PLUGIN_ID):
-        plugin_name = entry_point.name
-        module_name = entry_point.module_name
-        _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
-        BundleLoader().explore_folder(module_name, is_package=True)
-        Variable.read_variable_descriptions(module_name)
+
+    module_path: str = ""
+    notebook_path: str = ""
+    conf_file_path: str = ""
+
+
+class PluginManager:
+    """
+    Plugin manager for FAST-OAD.
+    """
+
+    plugin_definitions = {}
+
+    @classmethod
+    def read_entry_points(cls):
+        """
+        Reads definitions of declared plugins.
+        """
+        for entry_point in iter_entry_points(MODEL_PLUGIN_ID):
+            plugin_identifier = entry_point.name.split(".")
+
+            plugin_name = plugin_identifier[0]
+            if plugin_name not in cls.plugin_definitions:
+                cls.plugin_definitions[plugin_name] = PluginDefinition()
+
+            if len(plugin_identifier) == 1:
+                cls.plugin_definitions[plugin_name].module_path = entry_point.module_name
+            elif plugin_identifier[1] == "notebooks":
+                cls.plugin_definitions[plugin_name].notebook_path = entry_point.module_name
+            elif plugin_identifier[1] == "configurations":
+                cls.plugin_definitions[plugin_name].conf_file_path = entry_point.module_name
+            else:
+                raise RuntimeWarning(f"{plugin_name} is not a valid plugin declaration.")
+
+    @classmethod
+    def load(cls):
+        """
+        Loads models from declared plugins.
+        """
+        for plugin_name, plugin_def in cls.plugin_definitions.items():
+            _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
+            BundleLoader().explore_folder(plugin_def.module_path, is_package=True)
+            Variable.read_variable_descriptions(plugin_def.module_path)

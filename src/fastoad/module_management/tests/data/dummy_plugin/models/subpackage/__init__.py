@@ -1,6 +1,3 @@
-"""
-Module in a subpackage where services are declared with decorators
-"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,11 +10,3 @@ Module in a subpackage where services are declared with decorators
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
-from ...test_plugins import RegisterDummyService, DummyBase
-
-
-@RegisterDummyService("test.plugin.decorated.3")
-class DecoratedDummy3(DummyBase):
-    pass

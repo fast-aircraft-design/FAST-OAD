@@ -10,9 +10,3 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from .declared_dummy_components import DeclaredDummy1, DeclaredDummy2
-from ...test_plugins import RegisterDummyService
-
-RegisterDummyService("test.plugin.declared.1")(DeclaredDummy1)
-RegisterDummyService("test.plugin.declared.2")(DeclaredDummy2)
