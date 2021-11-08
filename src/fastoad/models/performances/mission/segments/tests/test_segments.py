@@ -17,6 +17,7 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot
 
+from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet
 from ..altitude_change import AltitudeChangeSegment
@@ -85,6 +86,7 @@ def test_climb_fixed_altitude_at_constant_TAS(polar):
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,
+        engine_setting=EngineSetting.CLIMB,
     )  # not constant TAS order, as it is the default
     segment.thrust_rate = 1.0
     segment.time_step = 2.0
@@ -99,6 +101,7 @@ def test_climb_fixed_altitude_at_constant_TAS(polar):
     assert_allclose(last_point.time, 143.5, rtol=1e-2)
     assert_allclose(last_point.mass, 69713.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20943.0, rtol=1e-3)
+    assert last_point.engine_setting == EngineSetting.CLIMB
 
 
 def test_climb_fixed_altitude_at_constant_EAS(polar):
@@ -111,6 +114,7 @@ def test_climb_fixed_altitude_at_constant_EAS(polar):
         polar=polar,
         thrust_rate=1.0,
         time_step=2.0,
+        engine_setting=EngineSetting.CRUISE,  # The engine model does not use this setting
     ).compute_from(FlightPoint(altitude=5000.0, mass=70000.0, equivalent_airspeed=100.0))
 
     first_point = flight_points.iloc[0]
@@ -123,6 +127,7 @@ def test_climb_fixed_altitude_at_constant_EAS(polar):
     assert_allclose(last_point.true_airspeed, 172.3, atol=0.1)
     assert_allclose(last_point.mass, 69710.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20915.0, rtol=1e-3)
+    assert last_point.engine_setting == EngineSetting.CRUISE
 
 
 def test_climb_optimal_altitude_at_fixed_TAS(polar):
@@ -311,6 +316,7 @@ def test_acceleration_to_TAS(polar):
         polar=polar,
         thrust_rate=1.0,
         time_step=0.2,
+        engine_setting=EngineSetting.CLIMB,  # The engine model does not use this setting
     )
     flight_points = segment.compute_from(
         FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0)
@@ -323,6 +329,7 @@ def test_acceleration_to_TAS(polar):
     assert_allclose(last_point.true_airspeed, 250.0)
     assert_allclose(last_point.mass, 69896.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 20697.0, rtol=1e-3)
+    assert last_point.engine_setting == EngineSetting.CLIMB
 
 
 def test_acceleration_to_EAS(polar):
@@ -335,6 +342,7 @@ def test_acceleration_to_EAS(polar):
         polar=polar,
         thrust_rate=1.0,
         time_step=0.2,
+        engine_setting=EngineSetting.CRUISE,  # The engine model does not use this setting
     ).compute_from(FlightPoint(altitude=1000.0, true_airspeed=150.0, mass=70000.0))
 
     last_point = flight_points.iloc[-1]
@@ -344,6 +352,7 @@ def test_acceleration_to_EAS(polar):
     assert_allclose(last_point.true_airspeed, 262.4, atol=1e-1)
     assert_allclose(last_point.mass, 69872.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 26868.0, rtol=1e-3)
+    assert last_point.engine_setting == EngineSetting.CRUISE
 
 
 def test_acceleration_to_mach(polar):
@@ -415,6 +424,7 @@ def test_cruise_at_constant_altitude(polar):
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,
+        engine_setting=EngineSetting.CRUISE,  # The engine model does not use this setting
     )
     flight_points = segment.compute_from(FlightPoint(mass=70000.0, altitude=10000.0, mach=0.78))
 
@@ -423,12 +433,14 @@ def test_cruise_at_constant_altitude(polar):
     # Note: reference values are obtained by running the process with 0.05s as time step
     assert_allclose(first_point.altitude, 10000.0)
     assert_allclose(first_point.true_airspeed, 233.6, atol=0.1)
+    assert first_point.engine_setting == EngineSetting.CRUISE
 
     assert_allclose(last_point.ground_distance, 500000.0)
     assert_allclose(last_point.altitude, 10000.0)
     assert_allclose(last_point.time, 2141.0, rtol=1e-2)
     assert_allclose(last_point.true_airspeed, 233.6, atol=0.1)
     assert_allclose(last_point.mass, 69568.0, rtol=1e-4)
+    assert last_point.engine_setting == EngineSetting.CRUISE
 
 
 def test_breguet_cruise(polar):
@@ -439,6 +451,7 @@ def test_breguet_cruise(polar):
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,
+        engine_setting=EngineSetting.CRUISE,  # The engine model does not use this setting
     )
     flight_points = segment.compute_from(
         FlightPoint(time=10000.0, mass=70000.0, altitude=10000.0, mach=0.78)
@@ -452,12 +465,14 @@ def test_breguet_cruise(polar):
     # time step
     assert_allclose(first_point.altitude, 10000.0)
     assert_allclose(first_point.true_airspeed, 233.6, atol=0.1)
+    assert first_point.engine_setting == EngineSetting.CRUISE
 
     assert_allclose(last_point.ground_distance, 500000.0)
     assert_allclose(last_point.altitude, 10000.0)
     assert_allclose(last_point.time, 12141.0, rtol=1e-2)
     assert_allclose(last_point.true_airspeed, 233.6, atol=0.1)
     assert_allclose(last_point.mass, 69568.0, rtol=1e-4)
+    assert last_point.engine_setting == EngineSetting.CRUISE
 
 
 def test_optimal_cruise(polar):
@@ -468,6 +483,7 @@ def test_optimal_cruise(polar):
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,
+        engine_setting=EngineSetting.CRUISE,
     )
     flight_points = segment.compute_from(
         FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78),
@@ -480,6 +496,8 @@ def test_optimal_cruise(polar):
     assert_allclose(first_point.altitude, 9156.0, atol=1.0)
     assert_allclose(first_point.true_airspeed, 236.4, atol=0.1)
     assert_allclose(first_point.CL, polar.optimal_cl)
+    assert_allclose(first_point.CL, polar.optimal_cl)
+    assert first_point.engine_setting == EngineSetting.CRUISE
 
     assert_allclose(last_point.ground_distance, 600000.0)
     assert_allclose(last_point.CL, polar.optimal_cl)
@@ -487,6 +505,7 @@ def test_optimal_cruise(polar):
     assert_allclose(last_point.time, 3115.0, rtol=1e-2)
     assert_allclose(last_point.true_airspeed, 236.3, atol=0.1)
     assert_allclose(last_point.mass, 69577.0, rtol=1e-4)
+    assert last_point.engine_setting == EngineSetting.CRUISE
 
 
 def test_climb_and_cruise_at_optimal_flight_level(polar):
@@ -500,12 +519,14 @@ def test_climb_and_cruise_at_optimal_flight_level(polar):
         propulsion=propulsion,
         reference_area=reference_area,
         polar=polar,
+        engine_setting=EngineSetting.CRUISE,
         climb_segment=AltitudeChangeSegment(
             target=FlightPoint(),
             propulsion=propulsion,
             reference_area=reference_area,
             polar=polar,
             thrust_rate=0.9,
+            engine_setting=EngineSetting.CLIMB,
         ),
     )
 
@@ -520,6 +541,7 @@ def test_climb_and_cruise_at_optimal_flight_level(polar):
     assert_allclose(first_point.altitude, 8000.0)
     assert_allclose(first_point.thrust_rate, 0.9)
     assert_allclose(first_point.true_airspeed, 240.3, atol=0.1)
+    assert first_point.engine_setting == EngineSetting.CLIMB
 
     assert_allclose(flight_points.mach, 0.78)
     assert_allclose(last_point.altitude, 9753.6)
@@ -527,6 +549,7 @@ def test_climb_and_cruise_at_optimal_flight_level(polar):
     assert_allclose(last_point.time, 42659.0, rtol=1e-3)
     assert_allclose(last_point.true_airspeed, 234.4, atol=0.1)
     assert_allclose(last_point.mass, 48874.0, rtol=1e-4)
+    assert last_point.engine_setting == EngineSetting.CRUISE
 
 
 def test_climb_and_cruise_at_optimal_flight_level_with_capped_flight_level(polar):
@@ -613,7 +636,11 @@ def test_taxi():
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = TaxiSegment(
-        target=FlightPoint(time=500.0), propulsion=propulsion, thrust_rate=0.1, true_airspeed=10.0
+        target=FlightPoint(time=500.0),
+        propulsion=propulsion,
+        thrust_rate=0.1,
+        true_airspeed=10.0,
+        engine_setting=EngineSetting.IDLE,  # The engine model does not use this setting
     )
     flight_points = segment.compute_from(FlightPoint(altitude=10.0, mass=50000.0, time=10000.0),)
 
@@ -623,13 +650,18 @@ def test_taxi():
     assert_allclose(last_point.true_airspeed, 10.0, atol=0.1)
     assert_allclose(last_point.mass, 49973.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 5000.0)
+    assert last_point.engine_setting == EngineSetting.IDLE
 
 
 def test_hold(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 2.0e-5), 2)
 
     segment = HoldSegment(
-        target=FlightPoint(time=3000.0), propulsion=propulsion, reference_area=120.0, polar=polar
+        target=FlightPoint(time=3000.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,  # The engine model does not use this setting
     )
     flight_points = segment.compute_from(
         FlightPoint(altitude=500.0, equivalent_airspeed=250.0, mass=60000.0),
@@ -641,6 +673,7 @@ def test_hold(polar):
     assert_allclose(last_point.equivalent_airspeed, 250.0, atol=0.1)
     assert_allclose(last_point.mass, 57776.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 768323.0, rtol=1.0e-3)
+    assert last_point.engine_setting == EngineSetting.CRUISE
 
 
 def test_dummy_climb():
