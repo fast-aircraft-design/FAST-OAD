@@ -23,7 +23,6 @@ from aenum import Enum, extend_enum
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
-import fastoad.model_base
 from fastoad.constants import EngineSetting
 from fastoad.model_base import AtmosphereSI, FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
@@ -96,13 +95,13 @@ class FlightSegment(IFlightPart):
     #: Possible parameters depend on the current segment. A parameter can also be set to
     #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.CONSTANT_VALUE`
     #: to tell that initial value should be kept during all segment.
-    target: fastoad.model_base.flight_point.FlightPoint
+    target: FlightPoint
 
     #: A IPropulsion instance that will be called at each time step.
-    propulsion: fastoad.model_base.propulsion.IPropulsion
+    propulsion: IPropulsion
 
     #: The Polar instance that will provide drag data.
-    polar: fastoad.models.performances.mission.polar.Polar
+    polar: Polar
 
     #: The reference area, in m**2.
     reference_area: float
@@ -368,7 +367,7 @@ class FlightSegment(IFlightPart):
             return (atm.density - optimal_air_density) * 100.0
 
         optimal_altitude = root_scalar(
-            distance_to_optimum, x0=altitude_guess, x1=altitude_guess - 1000.0,
+            distance_to_optimum, x0=altitude_guess, x1=altitude_guess - 1000.0
         ).root
 
         return optimal_altitude
@@ -433,8 +432,7 @@ class RegulatedThrustSegment(FlightSegment, ABC):
 
     time_step: float = 60.0
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __post_init__(self):
         self.target.mach = self.CONSTANT_VALUE
 
     def _compute_propulsion(self, flight_point: FlightPoint):

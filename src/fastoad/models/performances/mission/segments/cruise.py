@@ -120,6 +120,7 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
             reference_area=self.reference_area,
             polar=self.polar,
             name=self.name,
+            engine_setting=self.engine_setting,
         )
 
         if start.ground_distance:
