@@ -113,6 +113,7 @@ def list_variables(
     out: Union[IO, str] = None,
     overwrite: bool = False,
     force_text_output: bool = False,
+    variable_descriptions_format: bool = False,
     tablefmt: str = "grid",
 ):
     """
@@ -132,6 +133,8 @@ def list_variables(
                               shells or if out parameter is not sys.stdout
     :param tablefmt: The formatting of the requested table. Options are the same as those available
                      to the tabulate package. See tabulate.tabulate_formats for a complete list.
+    :param variable_descriptions_format: if True and the out parameter is a file path, the file will
+                    use the variable_descriptions.txt format.
     :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
                                 exists
     """
@@ -168,7 +171,7 @@ def list_variables(
                 out,
             )
         make_parent_dir(out)
-        out_file = open(out, "w")
+        out_file = open(out, "w+")
     else:
         if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
             display(HTML(variables_df.to_html(index=False)))
@@ -180,15 +183,22 @@ def list_variables(
         # For a terminal output, we limit width of NAME column
         variables_df["NAME"] = variables_df["NAME"].apply(lambda s: "\n".join(tw.wrap(s, 50)))
 
-    # In any case, let's break descriptions that are too long
-    variables_df["DESCRIPTION"] = variables_df["DESCRIPTION"].apply(
-        lambda s: "\n".join(tw.wrap(s, 100))
-    )
+    if variable_descriptions_format:
+        df_name_descriptions = variables_df[["NAME", "DESCRIPTION"]]
+        content = df_name_descriptions.to_csv(
+            sep="|", index=False, header=False, line_terminator="\n"
+        ).replace("|", " || ")
+        out_file.write(content)
+    else:
+        # In any other case, let's break descriptions that are too long
+        variables_df["DESCRIPTION"] = variables_df["DESCRIPTION"].apply(
+            lambda s: "\n".join(tw.wrap(s, 100))
+        )
 
-    out_file.write(
-        tabulate(variables_df, headers=variables_df.columns, showindex=False, tablefmt=tablefmt)
-    )
-    out_file.write("\n")
+        out_file.write(
+            tabulate(variables_df, headers=variables_df.columns, showindex=False, tablefmt=tablefmt)
+        )
+        out_file.write("\n")
 
     if isinstance(out, str):
         out_file.close()
