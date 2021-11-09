@@ -146,6 +146,19 @@ def test_list_variables(cleanup):
     ref_file_path = pth.join(DATA_FOLDER_PATH, "ref_list_variables.txt")
     assert cmp(ref_file_path, out_file_path)
 
+    # Test with variable_description.txt format
+    api.list_variables(
+        CONFIGURATION_FILE_PATH,
+        out=out_file_path,
+        overwrite=True,
+        variable_descriptions_format=True,
+    )
+    assert pth.exists(out_file_path)
+    ref_file_path = pth.join(
+        DATA_FOLDER_PATH, "ref_list_variables_with_variable_descriptions_format.txt"
+    )
+    assert cmp(ref_file_path, out_file_path)
+
 
 def test_write_n2(cleanup):
 
