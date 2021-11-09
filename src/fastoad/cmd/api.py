@@ -133,8 +133,8 @@ def list_variables(
                               shells or if out parameter is not sys.stdout
     :param tablefmt: The formatting of the requested table. Options are the same as those available
                      to the tabulate package. See tabulate.tabulate_formats for a complete list.
-    :param variable_descriptions_format: if True and the out parameter is a file path, the file will
-                    use the variable_descriptions.txt format.
+    :param variable_descriptions_format: if True the file will use the
+                                         variable_descriptions.txt format.
     :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
                                 exists
     """
