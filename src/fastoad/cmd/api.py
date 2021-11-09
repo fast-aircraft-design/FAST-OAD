@@ -171,7 +171,7 @@ def list_variables(
                 out,
             )
         make_parent_dir(out)
-        out_file = open(out, "w+")
+        out_file = open(out, "w")
     else:
         if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
             display(HTML(variables_df.to_html(index=False)))
