@@ -151,7 +151,7 @@ def test_list_variables(cleanup):
         CONFIGURATION_FILE_PATH,
         out=out_file_path,
         overwrite=True,
-        variable_descriptions_format=True,
+        tablefmt="var_desc",
     )
     assert pth.exists(out_file_path)
     ref_file_path = pth.join(

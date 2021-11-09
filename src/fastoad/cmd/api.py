@@ -113,7 +113,6 @@ def list_variables(
     out: Union[IO, str] = None,
     overwrite: bool = False,
     force_text_output: bool = False,
-    variable_descriptions_format: bool = False,
     tablefmt: str = "grid",
 ):
     """
@@ -133,8 +132,7 @@ def list_variables(
                               shells or if out parameter is not sys.stdout
     :param tablefmt: The formatting of the requested table. Options are the same as those available
                      to the tabulate package. See tabulate.tabulate_formats for a complete list.
-    :param variable_descriptions_format: if True the file will use the
-                                         variable_descriptions.txt format.
+                     If "var_desc" the file will use the variable_descriptions.txt format.
     :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
                                 exists
     """
@@ -183,7 +181,7 @@ def list_variables(
         # For a terminal output, we limit width of NAME column
         variables_df["NAME"] = variables_df["NAME"].apply(lambda s: "\n".join(tw.wrap(s, 50)))
 
-    if variable_descriptions_format:
+    if tablefmt == "var_desc":
         df_name_descriptions = variables_df[["NAME", "DESCRIPTION"]]
         content = df_name_descriptions.to_csv(
             sep="|", index=False, header=False, line_terminator="\n"
