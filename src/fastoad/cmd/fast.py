@@ -87,7 +87,12 @@ class Main:
     @staticmethod
     def _list_variables(args):
         """Prints list of system outputs."""
-        api.list_variables(args.conf_file, out=args.out_file, overwrite=args.force)
+        api.list_variables(
+            args.conf_file,
+            out=args.out_file,
+            overwrite=args.force,
+            tablefmt=args.format,
+        )
 
     @staticmethod
     def _write_n2(args):
@@ -291,6 +296,12 @@ class Main:
         self._add_conf_file_argument(parser_list_variables)
         self._add_output_file_argument(parser_list_variables)
         self._add_overwrite_argument(parser_list_variables)
+        parser_list_variables.add_argument(
+            "format",
+            nargs="?",
+            default="grid",
+            help="format of the list (default: %(default)s)",
+        )
         parser_list_variables.set_defaults(func=self._list_variables)
 
         # sub-command for writing N2 diagram -------------------------------------------------------
