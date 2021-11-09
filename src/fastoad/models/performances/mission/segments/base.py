@@ -432,8 +432,7 @@ class RegulatedThrustSegment(FlightSegment, ABC):
 
     time_step: float = 60.0
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __post_init__(self):
         self.target.mach = self.CONSTANT_VALUE
 
     def _compute_propulsion(self, flight_point: FlightPoint):

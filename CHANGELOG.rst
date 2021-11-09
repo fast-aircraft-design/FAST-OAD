@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.1.2
+=============
+- Bug fixes:
+    - Engine setting could be ignored for cruise segments. (#397)
+
 Version 1.1.1
 =============
 - Bug fixes:
