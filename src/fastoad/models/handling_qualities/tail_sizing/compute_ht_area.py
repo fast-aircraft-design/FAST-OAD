@@ -18,7 +18,7 @@ import numpy as np
 import openmdao.api as om
 from scipy.constants import g
 
-from fastoad.model_base import Atmosphere
+from stdatm import Atmosphere
 
 
 class ComputeHTArea(om.ExplicitComponent):

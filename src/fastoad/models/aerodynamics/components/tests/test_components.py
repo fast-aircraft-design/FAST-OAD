@@ -21,9 +21,9 @@ import numpy as np
 from openmdao.core.group import Group
 from openmdao.core.indepvarcomp import IndepVarComp
 from pytest import approx
+from stdatm import Atmosphere
 
 from fastoad.io import VariableIO
-from fastoad.model_base import Atmosphere
 from tests.testing_utilities import run_system
 from ..cd0 import CD0
 from ..cd_compressibility import CdCompressibility

@@ -18,9 +18,10 @@ Test module for rubber_engine.py
 import numpy as np
 import pandas as pd
 import pytest
+from stdatm import Atmosphere
 
 from fastoad.constants import EngineSetting
-from fastoad.model_base import Atmosphere, FlightPoint
+from fastoad.model_base import FlightPoint
 from ..rubber_engine import RubberEngine
 
 
