@@ -182,25 +182,34 @@ def list_variables(
         variables_df["NAME"] = variables_df["NAME"].apply(lambda s: "\n".join(tw.wrap(s, 50)))
 
     if tablefmt == "var_desc":
-        df_name_descriptions = variables_df[["NAME", "DESCRIPTION"]]
-        content = df_name_descriptions.to_csv(
-            sep="|", index=False, header=False, line_terminator="\n"
-        ).replace("|", " || ")
-        out_file.write(content)
+        content = _generate_var_desc_format(variables_df)
     else:
-        # In any other case, let's break descriptions that are too long
-        variables_df["DESCRIPTION"] = variables_df["DESCRIPTION"].apply(
-            lambda s: "\n".join(tw.wrap(s, 100))
-        )
+        content = _generate_table_format(variables_df, tablefmt=tablefmt)
 
-        out_file.write(
-            tabulate(variables_df, headers=variables_df.columns, showindex=False, tablefmt=tablefmt)
-        )
-        out_file.write("\n")
+    out_file.write(content)
 
     if isinstance(out, str):
         out_file.close()
         _LOGGER.info("Output list written in %s", out_file)
+
+
+def _generate_var_desc_format(variables_df):
+    df_name_descriptions = variables_df[["NAME", "DESCRIPTION"]]
+    content = df_name_descriptions.to_csv(
+        sep="|", index=False, header=False, line_terminator="\n"
+    ).replace("|", " || ")
+    return content
+
+
+def _generate_table_format(variables_df, tablefmt="grid"):
+    # In any other case, let's break descriptions that are too long
+    variables_df["DESCRIPTION"] = variables_df["DESCRIPTION"].apply(
+        lambda s: "\n".join(tw.wrap(s, 100))
+    )
+    content = tabulate(
+        variables_df, headers=variables_df.columns, showindex=False, tablefmt=tablefmt
+    )
+    return content + "\n"
 
 
 def list_modules(
