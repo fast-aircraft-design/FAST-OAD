@@ -194,9 +194,12 @@ def list_variables(
 
 
 def _generate_var_desc_format(variables_df):
-    df_name_descriptions = variables_df[["NAME", "DESCRIPTION"]]
-    content = df_name_descriptions.to_csv(
-        sep="|", index=False, header=False, line_terminator="\n"
+    content = variables_df.to_csv(
+        columns=["NAME", "DESCRIPTION"],
+        sep="|",
+        index=False,
+        header=False,
+        line_terminator="\n",
     ).replace("|", " || ")
     return content
 
