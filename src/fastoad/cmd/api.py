@@ -205,7 +205,7 @@ def _generate_var_desc_format(variables_df):
 
 
 def _generate_table_format(variables_df, tablefmt="grid"):
-    # In any other case, let's break descriptions that are too long
+    # Break descriptions that are too long
     variables_df["DESCRIPTION"] = variables_df["DESCRIPTION"].apply(
         lambda s: "\n".join(tw.wrap(s, 100))
     )
