@@ -19,6 +19,7 @@ import shutil
 import textwrap
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, RawDescriptionHelpFormatter
 from distutils.util import strtobool
+import tabulate
 
 import fastoad
 from fastoad import notebooks
@@ -297,10 +298,13 @@ class Main:
         self._add_output_file_argument(parser_list_variables)
         self._add_overwrite_argument(parser_list_variables)
         parser_list_variables.add_argument(
-            "format",
+            "--format",
             nargs="?",
             default="grid",
-            help="format of the list (default: %(default)s)",
+            help="format of the list. Available options are "
+            f"{['var_desc'] + tabulate.tabulate_formats}. "
+            '"var_desc" is the variable_descriptions.txt format. Other formats are part of the '
+            "tabulate package. (default: %(default)s)",
         )
         parser_list_variables.set_defaults(func=self._list_variables)
 
