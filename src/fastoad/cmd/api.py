@@ -178,9 +178,6 @@ def list_variables(
         # Here we continue with text output
         out_file = out
 
-        # For a terminal output, we limit width of NAME column
-        variables_df["NAME"] = variables_df["NAME"].apply(lambda s: "\n".join(tw.wrap(s, 50)))
-
     if tablefmt == "var_desc":
         content = _generate_var_desc_format(variables_df)
     else:
