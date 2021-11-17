@@ -24,16 +24,6 @@ from pyNastran.bdf.bdf import BDF, CaseControlDeck
 from fastoad._utils.resource_management.copy import copy_resource
 from fastoad.models.aerostructure.structure.external.mystran import mystran112
 from fastoad.models.aerostructure.structure.external.mystran.utils.constant import basis_id
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_forces_cards
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_nastran_bdf
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import (
-    get_nodes_cards,
-    get_props_cards,
-    get_mat_cards,
-    get_rbe_junction_cards,
-)
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_rbe_cards
-from fastoad.models.aerostructure.structure.external.mystran.utils.get_cards import get_spc_cards
 from fastoad.models.aerostructure.structure.external.mystran.utils.read_f06 import readf06
 
 OPTION_MYSTRAN_EXE_PATH = "mystran_exe_path"
@@ -41,6 +31,7 @@ OPTION_RESULT_FOLDER_PATH = "result_folder_path"
 
 _TMP_INPUT_FILE_NAME = "run.dat"
 _TMP_OUTPUT_FILE_NAME = "run.F06"
+_TMP_BDF_FILE_NAME = "run.bdf"
 _STDERR_FILE_NAME = "run.ERR"
 _STDOUT_FILE_NAME = "mystran.log"
 MYSTRAN_EXE_NAME = "MYSTRAN.exe"
@@ -77,11 +68,6 @@ class MystranStatic(om.ExternalCodeComp):
                 "data:aerostructural:structure:" + comp + ":nodes", val=np.nan, shape_by_conn=True
             )
             self.add_input(
-                "data:aerostructural:structure:" + comp + ":aeroelastic_nodes",
-                val=np.nan,
-                shape_by_conn=True,
-            )
-            self.add_input(
                 "data:aerostructural:structure:" + comp + ":beam_properties",
                 val=np.nan,
                 shape_by_conn=True,
@@ -110,7 +96,7 @@ class MystranStatic(om.ExternalCodeComp):
                 ref=100e6,
             )
 
-            # Initialisation of the MYSTRAN (NASTRAN) input file (.dat) ----------------------------
+            # Initialisation of the MYSTRAN (NASTRAN) input file ----------------------------
         self.input_file = ""
 
         self.declare_partials("*", "*", method="fd")
@@ -125,45 +111,8 @@ class MystranStatic(om.ExternalCodeComp):
         nsects = self.options["structural_components_sections"]
 
         # Prepare input file ----------------------------------------------------------------------
-        cg_loc = inputs["data:geometry:wing:MAC:at25percent:x"]
-        nz = inputs["data:aerostructural:load_case:load_factor"]
-        strg = []
-        spc_strg = "SPCADD, 1, "
-        for idx, comp in enumerate(components):
-            mat_prop = np.zeros(3)
-            nodes = inputs["data:aerostructural:structure:" + comp + ":nodes"]
-            if comp == "wing":
-                aeroelastic_nodes = inputs[
-                    "data:aerostructural:structure:" + comp + ":aeroelastic_nodes"
-                ]
-            props = inputs["data:aerostructural:structure:" + comp + ":beam_properties"]
-            forces = inputs["data:aerostructural:structure:" + comp + ":forces"]
-            mat_prop[0] = inputs["data:aerostructural:structure:" + comp + ":material:E"]
-            mat_prop[1] = inputs["data:aerostructural:structure:" + comp + ":material:nu"]
-            mat_prop[2] = inputs["data:aerostructural:structure:" + comp + ":material:density"]
-            strg += get_nodes_cards(comp, nodes, basis_id[comp])
-            strg += get_props_cards(
-                comp, props, basis_id[comp], vertical_strut=self.options["has_vertical_strut"]
-            )
-            strg += get_mat_cards(mat_prop, basis_id[comp])
-            strg += get_rbe_junction_cards(comp, nodes, basis_id[comp])
-            strg += get_forces_cards(comp, forces, basis_id[comp])
-            # if comp != "strut":
-            #     master = "fuselage"
-            #     master_nodes = inputs["data:aerostructural:structure:fuselage:nodes"]
-            #     strg += get_bc_cards(comp, master, master_nodes, nodes, cg_loc)
-            if comp == "strut":
-                master = "wing"
-                master_nodes = inputs["data:aerostructural:structure:wing:nodes"]
-                strg += get_rbe_cards(comp, master, master_nodes, nodes, cg_loc)
-                strg += get_spc_cards(idx + 2, "123", basis_id[comp])
-            else:
-                strg += get_spc_cards(idx + 2, "123456", basis_id[comp])
-            spc_strg += str(idx + 2) + ", "
-        strg += [spc_strg + "\n"]
-
         tmp_dir = TemporaryDirectory()
-        self.input_file = pth.join(tmp_dir.name, _TMP_INPUT_FILE_NAME)
+        self.input_file = pth.join(tmp_dir.name, _TMP_BDF_FILE_NAME)
         if self.options[OPTION_MYSTRAN_EXE_PATH]:
             # if a path for MYSTRAN has been provided, simply use it
             self.options["command"] = [self.options[OPTION_MYSTRAN_EXE_PATH], self.input_file]
@@ -173,40 +122,26 @@ class MystranStatic(om.ExternalCodeComp):
             self.options["command"] = [pth.join(tmp_dir.name, MYSTRAN_EXE_NAME), self.input_file]
 
         # Input BDF file generation ---------------------------------------------------------------
-        get_nastran_bdf(self.input_file, strg, sol="static", nz=nz)
-        bdf_file = pth.join(tmp_dir.name, "run.bdf")
+        # get_nastran_bdf(self.input_file, strg, sol="static", nz=nz)
+        bdf_file = pth.join(tmp_dir.name, _TMP_BDF_FILE_NAME)
         self._prepare_bdf(inputs, components, bdf_file)
         self.sderr = pth.join(tmp_dir.name, _STDERR_FILE_NAME)
         self.stdout = pth.join(tmp_dir.name, _STDOUT_FILE_NAME)
         # Run MYSTRAN -----------------------------------------------------------------------------
         result_file = pth.join(tmp_dir.name, _TMP_OUTPUT_FILE_NAME)
-        # self.options["external_input_files"] = [input_file]
-        # self.options["external_output_files"] = [result_file]
 
         super().compute(inputs, outputs)
 
         # Post-processing -------------------------------------------------------------------------
         displacements, stresses = readf06(result_file)
-        # split displacements and stresses matrices for each component
-        #  split_displacements = self._get_component_matrix(
-        #     displacements, components, nsects, type="grid"
-        # )
-        # split_stresses = self._get_component_matrix(stresses, components, nsects, type="element")
         for i, comp in enumerate(components):
+            comp_id = (i + 1) * 1000000
             outputs[
                 "data:aerostructural:structure:" + comp + ":displacements"
-            ] = self._get_component_matrix(displacements, basis_id[comp])
-
-            # np.round(
-            #     split_displacements[i], decimals=5
-            # )
-            # if comp == "wing":
-            #     outputs["data:aerostructural:aerodynamic:wing:d_twist"] = np.round(
-            #         split_displacements[i][:, 4], decimals=5
-            #     )
+            ] = self._get_component_matrix(displacements, comp_id)
 
             outputs["data:aerostructural:structure:" + comp + ":stresses"] = np.max(
-                self._get_component_matrix(stresses, basis_id[comp])
+                self._get_component_matrix(stresses, comp_id)
             )
 
         # Getting output files if needed ----------------------------------------------------------
@@ -218,6 +153,10 @@ class MystranStatic(om.ExternalCodeComp):
             if pth.exists(self.input_file):
                 bdf_file_path = pth.join(result_folder_path, _TMP_INPUT_FILE_NAME)
                 shutil.move(self.input_file, bdf_file_path)
+
+            if pth.exists(bdf_file):
+                bdf_file_path = pth.join(result_folder_path, _TMP_BDF_FILE_NAME)
+                shutil.move(bdf_file, bdf_file_path)
 
         tmp_dir.cleanup()
 
@@ -237,37 +176,6 @@ class MystranStatic(om.ExternalCodeComp):
         indices_component = np.intersect1d(indices_component_inf, indices_component_sup)
         matrix_comp = matrix[indices_component, 1:]
         return matrix_comp
-
-    @staticmethod
-    def _get_component_matrix_old(matrix, comps, nsects, type="grid"):
-        """
-        This function split a FEM results matrix into structural component matrices e.g.
-        displacements for the wing.
-        :param matrix: FEM results matrix
-        :param comps: list of structural components
-        :param nsects: number of section (elements) per components
-        :param type: "grid" or "element" whether the results is grid-wise or element-wise.
-        :return:
-        """
-        if type == "grid":
-            matrix_size_increment = 1
-        elif type == "element":
-            matrix_size_increment = 0
-        else:
-            msg = "extraction not possible for FEM entities different from grid or element"
-            raise ValueError(msg)
-        split_sections = np.zeros(len(nsects), dtype=int)
-
-        for idx, comp in enumerate(comps):
-            if comp in ("wing", "horizontal_tail", "strut"):
-                n_nodes = (nsects[idx] + matrix_size_increment) * 2
-            else:
-                n_nodes = nsects[idx] + matrix_size_increment
-            if idx != 0:
-                split_sections[idx] = int(n_nodes) + split_sections[idx - 1]
-            else:
-                split_sections[idx] = int(n_nodes)
-        return np.split(matrix, split_sections)
 
     @staticmethod
     def _get_component_stress(stress_matrix, comps, nsects):
@@ -325,22 +233,6 @@ class MystranStatic(om.ExternalCodeComp):
             # GRID FORCE and MOMENT cards ----------------------------------------------------------
             for idx, node in enumerate(nodes):
                 bdf.add_grid(comp_id + idx, node)
-                if comp == "wing":
-                    bdf.add_grid(
-                        comp_id + idx + 200,
-                        inputs["data:aerostructural:structure:wing:aeroelastic_nodes"][idx, :3],
-                    )
-                    bdf.add_grid(
-                        comp_id + idx + 300,
-                        inputs["data:aerostructural:structure:wing:aeroelastic_nodes"][idx, 3:],
-                    )
-                    bdf.add_rbe2(
-                        comp_id + idx + 2000000,
-                        comp_id + idx,
-                        "123456",
-                        [comp_id + idx + 200, comp_id + idx + 300],
-                    )
-
                 # RBE card to join symmetric parts
                 if (
                     comp in ["wing", "strut", "horizontal_tail"]
@@ -361,7 +253,7 @@ class MystranStatic(om.ExternalCodeComp):
                 prop_id = idx + 11000 + comp_id
 
                 if (
-                    comp in ["wing", "horizontal_tail, strut"]
+                    comp in ["wing", "horizontal_tail", "strut"]
                     and idx >= np.size(properties, axis=0) / 2
                 ):
                     id1 = idx + 1
@@ -409,15 +301,19 @@ class MystranStatic(om.ExternalCodeComp):
         if "strut" in components:
             strut_nodes = inputs["data:aerostructural:structure:strut:nodes"]
             wing_nodes = inputs["data:aerostructural:structure:wing:nodes"]
-            id_connect_right = np.where(wing_nodes[:, 1] == -strut_nodes[-1, 1])
-            id_connect_left = np.where(wing_nodes[:, 1] == strut_nodes[-1, 1])
+            id_connect_right = np.where(wing_nodes[:, 1] == -strut_nodes[-1, 1])[0][0]
+            id_connect_left = np.where(wing_nodes[:, 1] == strut_nodes[-1, 1])[0][0]
             bdf.add_rbe2(
                 id_strut + 10000001,
                 id_wing + id_connect_left,
                 "123456",
-                [id_strut + np.size(strut_nodes, axis=0)],
+                [id_strut + int(np.size(strut_nodes, axis=0) - 1)],
             )
             bdf.add_rbe2(
-                id_strut + 10000002, id_wing + id_connect_right, "123456", [id_strut],
+                id_strut + 10000002,
+                id_wing + id_connect_right,
+                "123456",
+                [id_strut + int(np.size(strut_nodes, axis=0) / 2 - 1)],
             )
+        bdf.add_param("GRIDSEQ", "GRID")
         bdf.write_bdf(bdf_filename, enddata=True)
