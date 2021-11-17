@@ -191,8 +191,8 @@ that should be chosen.
 .. code-block:: yaml
 
     submodels:
-        - atom_counter.wing: alternate.counter.wing
-        - atom_counter.fuselage: original.counter.fuselage
+        atom_counter.wing: alternate.counter.wing
+        atom_counter.fuselage: original.counter.fuselage
 
 In the above example, an alternate submodel is chosen for the "atom_counter.wing" requirement,
 whereas the original submodel is chosen for the "original.counter.fuselage" requirement (whether
@@ -221,5 +221,5 @@ From the configuration file, it can be done with:
 .. code-block:: yaml
 
     submodels:
-        - atom_counter.wing: null  # The empty string "" is also possible
+        atom_counter.wing: null  # The empty string "" is also possible
 
