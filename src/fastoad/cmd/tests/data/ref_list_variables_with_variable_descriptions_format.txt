@@ -1,0 +1,7 @@
+x || input x
+z || variable z
+f || Objective
+g1 || 
+g2 || 
+y1 || variable y1
+y2 || variable y2

@@ -132,6 +132,7 @@ def list_variables(
                               shells or if out parameter is not sys.stdout
     :param tablefmt: The formatting of the requested table. Options are the same as those available
                      to the tabulate package. See tabulate.tabulate_formats for a complete list.
+                     If "var_desc" the file will use the variable_descriptions.txt format.
     :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
                                 exists
     """
@@ -177,22 +178,38 @@ def list_variables(
         # Here we continue with text output
         out_file = out
 
-        # For a terminal output, we limit width of NAME column
-        variables_df["NAME"] = variables_df["NAME"].apply(lambda s: "\n".join(tw.wrap(s, 50)))
+    if tablefmt == "var_desc":
+        content = _generate_var_desc_format(variables_df)
+    else:
+        content = _generate_table_format(variables_df, tablefmt=tablefmt)
 
-    # In any case, let's break descriptions that are too long
-    variables_df["DESCRIPTION"] = variables_df["DESCRIPTION"].apply(
-        lambda s: "\n".join(tw.wrap(s, 100))
-    )
-
-    out_file.write(
-        tabulate(variables_df, headers=variables_df.columns, showindex=False, tablefmt=tablefmt)
-    )
-    out_file.write("\n")
+    out_file.write(content)
 
     if isinstance(out, str):
         out_file.close()
         _LOGGER.info("Output list written in %s", out_file)
+
+
+def _generate_var_desc_format(variables_df):
+    content = variables_df.to_csv(
+        columns=["NAME", "DESCRIPTION"],
+        sep="|",
+        index=False,
+        header=False,
+        line_terminator="\n",
+    ).replace("|", " || ")
+    return content
+
+
+def _generate_table_format(variables_df, tablefmt="grid"):
+    # Break descriptions that are too long
+    variables_df["DESCRIPTION"] = variables_df["DESCRIPTION"].apply(
+        lambda s: "\n".join(tw.wrap(s, 100))
+    )
+    content = tabulate(
+        variables_df, headers=variables_df.columns, showindex=False, tablefmt=tablefmt
+    )
+    return content + "\n"
 
 
 def list_modules(

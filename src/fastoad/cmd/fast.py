@@ -19,6 +19,7 @@ import shutil
 import textwrap
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, RawDescriptionHelpFormatter
 from distutils.util import strtobool
+import tabulate
 
 import fastoad
 from fastoad import notebooks
@@ -91,7 +92,12 @@ class Main:
     @staticmethod
     def _list_variables(args):
         """Prints list of system outputs."""
-        api.list_variables(args.conf_file, out=args.out_file, overwrite=args.force)
+        api.list_variables(
+            args.conf_file,
+            out=args.out_file,
+            overwrite=args.force,
+            tablefmt=args.format,
+        )
 
     @staticmethod
     def _write_n2(args):
@@ -295,6 +301,15 @@ class Main:
         self._add_conf_file_argument(parser_list_variables)
         self._add_output_file_argument(parser_list_variables)
         self._add_overwrite_argument(parser_list_variables)
+        parser_list_variables.add_argument(
+            "--format",
+            nargs="?",
+            default="grid",
+            help="format of the list. Available options are "
+            f"{['var_desc'] + tabulate.tabulate_formats}. "
+            '"var_desc" is the variable_descriptions.txt format. Other formats are part of the '
+            "tabulate package. (default: %(default)s)",
+        )
         parser_list_variables.set_defaults(func=self._list_variables)
 
         # sub-command for writing N2 diagram -------------------------------------------------------
