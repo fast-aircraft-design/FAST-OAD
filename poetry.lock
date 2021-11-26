@@ -1778,7 +1778,7 @@ notebook = ">=4.4.1"
 
 [[package]]
 name = "wop"
-version = "1.16.1.1"
+version = "1.20.0"
 description = "WhatsOpt web application command line client"
 category = "main"
 optional = false
@@ -1824,7 +1824,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "75c1c888c92995ca3c53d5c60da6f0880a0979579fcf20f1a70a1f87ab833461"
+content-hash = "c5cd0afa06c77a14706b73e31a5e8d5e1aa8a9a107557f56cd3afeef0bb520cb"
 
 [metadata.files]
 aenum = [
@@ -3040,7 +3040,7 @@ widgetsnbextension = [
     {file = "widgetsnbextension-3.5.1.tar.gz", hash = "sha256:079f87d87270bce047512400efd70238820751a11d2d8cb137a5a5bdbaf255c7"},
 ]
 wop = [
-    {file = "wop-1.16.1.1.tar.gz", hash = "sha256:b5a67cc642cd32300ca32c963589459241e8fa2a425afe94a1ba932487a8190c"},
+    {file = "wop-1.20.0.tar.gz", hash = "sha256:972125a9f909a3025f71eb14cf79203bcc26e0215558354a36e785a9ea85e6cf"},
 ]
 wrapt = [
     {file = "wrapt-1.12.1.tar.gz", hash = "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"},
