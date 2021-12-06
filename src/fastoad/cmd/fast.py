@@ -19,6 +19,7 @@ import shutil
 import textwrap
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, RawDescriptionHelpFormatter
 from distutils.util import strtobool
+
 import tabulate
 
 import fastoad
@@ -177,7 +178,7 @@ class Main:
         print("")
         print("Notebooks have been created in %s" % target_path)
         print("You may now run Jupyter with:")
-        print('   jupyter notebook "%s"' % target_path)
+        print('   jupyter lab "%s"' % target_path)
 
     # UTILITIES ====================================================================================
 
