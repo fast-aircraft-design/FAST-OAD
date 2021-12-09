@@ -23,6 +23,7 @@ cycler==0.10.0; python_version >= "3.7"
 debugpy==1.5.0; python_version >= "3.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.7"
 decorator==5.1.0; python_version >= "3.7"
 defusedxml==0.7.1; python_version >= "3.5" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.5"
+deprecated==1.2.13; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.4.0")
 distlib==0.3.3; python_full_version >= "3.6.1"
 docutils==0.17.1; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
 ensure==1.0.0
@@ -144,6 +145,6 @@ webencodings==0.5.1; python_version >= "3.6" and python_full_version < "3.0.0" o
 websocket-client==1.2.1; python_version >= "3.6"
 widgetsnbextension==3.5.1; python_version >= "3.6"
 wop==1.20.0; python_version >= "3.6"
-wrapt==1.12.1; python_version >= "3.6" and python_version < "4.0"
+wrapt==1.12.1; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4.0" or python_version >= "3.6" and python_version < "4.0" and python_full_version >= "3.4.0"
 xdsmjs==1.0.1; python_version >= "3.6"
 zipp==3.6.0; python_version >= "3.6" and python_version < "3.8"
