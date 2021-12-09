@@ -53,7 +53,7 @@ class CruiseSegment(RegulatedThrustSegment):
             self.target.ground_distance = self.target.ground_distance + start.ground_distance
         return super().compute_from(start)
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
         return self.target.ground_distance - current.ground_distance
 
