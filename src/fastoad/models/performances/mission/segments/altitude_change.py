@@ -164,6 +164,6 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
             "No valid target definition for altitude change."
         )
 
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
-        gamma = (thrust - drag) / mass / g
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+        gamma = (flight_point.thrust - flight_point.drag) / flight_point.mass / g
         return gamma, 0.0

@@ -310,7 +310,7 @@ class FlightSegment(IFlightPart):
 
         self.compute_propulsion(flight_point)
         flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
-            flight_point.mass, flight_point.drag, flight_point.thrust
+            flight_point
         )
 
     @staticmethod
@@ -388,24 +388,27 @@ class FlightSegment(IFlightPart):
         """
 
     @abstractmethod
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
-        """
-        Computes slope angle (gamma) and acceleration.
-
-        :param mass: in kg
-        :param drag: in N
-        :param thrust: in N
-        :return: slope angle in radians and acceleration in m**2/s
-        """
-
-    @abstractmethod
     def compute_propulsion(self, flight_point: FlightPoint):
         """
         Computes propulsion data.
 
         Provided flight point is modified in place.
 
+        Generally, this method should end with::
+
+            self.propulsion.compute_flight_points(flight_point)
+
         :param flight_point:
+        """
+
+    @abstractmethod
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+        """
+        Computes slope angle (gamma) and acceleration.
+
+        :param flight_point: parameters after propulsion model has been called
+                             (i.e. mass, thrust and drag are available)
+        :return: slope angle in radians and acceleration in m**2/s
         """
 
 
@@ -441,7 +444,7 @@ class RegulatedThrustSegment(FlightSegment, ABC):
         flight_point.thrust_is_regulated = True
         self.propulsion.compute_flight_points(flight_point)
 
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
 

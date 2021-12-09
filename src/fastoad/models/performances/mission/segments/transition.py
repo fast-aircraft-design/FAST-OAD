@@ -81,7 +81,7 @@ class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
 
         return pd.DataFrame(flight_points)
 
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
     # As we overloaded self.compute_from(), next abstract method are not used.

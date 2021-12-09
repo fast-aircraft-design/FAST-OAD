@@ -38,7 +38,7 @@ class TaxiSegment(ManualThrustSegment, FixedDurationSegment, mission_file_keywor
     time_step: float = 60.0
     true_airspeed: float = 0.0
 
-    def get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
