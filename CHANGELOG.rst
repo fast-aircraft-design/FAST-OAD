@@ -2,6 +2,17 @@
 Changelog
 =========
 
+Version 1.2.1
+=============
+- Changes:
+  - Updated dependency requirements. All used libraries are now compatible with Jupyter lab 3 without need for building extensions. (#392)
+  - Now Atmosphere class is part of the [stdatm](https://pypi.org/project/stdatm/) package (#398)
+  - For `list_variables` command, the output format can now be chosen, with the addition of the format of variables_description.txt (for custom modules now generate a variable descriptions. (#399)
+
+- Bug fixes:
+  - Minor fixes in Atmosphere class. (#386)
+
+
 Version 1.1.2
 =============
 - Bug fixes:

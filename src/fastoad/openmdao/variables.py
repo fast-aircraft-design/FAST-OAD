@@ -163,14 +163,15 @@ class Variable(Hashable):
         variable_descriptions = None
         description_file = None
 
-        if pth.isdir(file_parent):
-            file_path = pth.join(file_parent, DESCRIPTION_FILENAME)
-            if pth.isfile(file_path):
-                description_file = open(file_path)
-        else:
-            # Then it is a module name
-            if DESCRIPTION_FILENAME in contents(file_parent):
-                description_file = open_text(file_parent, DESCRIPTION_FILENAME)
+        if file_parent:
+            if pth.isdir(file_parent):
+                file_path = pth.join(file_parent, DESCRIPTION_FILENAME)
+                if pth.isfile(file_path):
+                    description_file = open(file_path)
+            else:
+                # Then it is a module name
+                if DESCRIPTION_FILENAME in contents(file_parent):
+                    description_file = open_text(file_parent, DESCRIPTION_FILENAME)
 
         if description_file is not None:
             try:
