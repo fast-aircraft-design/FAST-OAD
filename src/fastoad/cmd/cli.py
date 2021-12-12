@@ -14,6 +14,7 @@
 from distutils.util import strtobool
 
 import click
+import tabulate
 
 import fastoad
 from fastoad import api
@@ -47,6 +48,20 @@ def overwrite_option(func):
         is_flag=True,
         help="Do not ask before overwriting files.",
     )(func)
+
+
+def out_file_option(func):
+    """
+    Decorator for writing command output in a file.
+
+    Use `out_file` and `force` as argument of the function.
+    """
+    return click.option(
+        "-o",
+        "--out_file",
+        help="If provided, command output will be written in indicated file instead of "
+        "being printed in terminal.",
+    )(overwrite_option(func))
 
 
 def _query_yes_no(question):
@@ -123,13 +138,7 @@ def gen_inputs(conf_file, source_file, force, legacy):
 
 @fast_oad_subcommand
 @click.command(name="list_modules")
-@click.option(
-    "-o",
-    "--out_file",
-    help="If provided, command output will be written in indicated file instead of "
-    "being printed in terminal.",
-)
-@overwrite_option
+@out_file_option
 @click.option("-v", "--verbose", is_flag=True, help="Shows detailed information for each system.")
 @click.argument("source_path", nargs=-1)
 def list_modules(out_file, force, verbose, source_path):
@@ -156,9 +165,25 @@ def list_modules(out_file, force, verbose, source_path):
 
 @fast_oad_subcommand
 @click.command(name="list_variables")
-def list_variables():
-    """Lists the variables of the problem"""
-    pass
+@click.argument("conf_file", nargs=1)
+@out_file_option
+@click.option(
+    "--format",
+    default="grid",
+    show_default=True,
+    help=f"format of the list. Available options are {['var_desc'] + tabulate.tabulate_formats}. "
+    '"var_desc" is the variable_descriptions.txt format. Other formats are part of the '
+    "tabulate package.",
+)
+def list_variables(conf_file, out_file, force, format):
+    """Lists the variables of the problem."""
+    try:
+        api.list_variables(conf_file, out=out_file, overwrite=force, tablefmt=format)
+    except FastFileExistsError:
+        if _query_yes_no(f"Output file {out_file} already exists. Do you want to overwrite it?"):
+            api.list_variables(conf_file, out=out_file, overwrite=True, tablefmt=format)
+        else:
+            print("No file written.")
 
 
 @fast_oad_subcommand
