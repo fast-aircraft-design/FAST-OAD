@@ -74,12 +74,12 @@ def _query_yes_no(question):
 def gen_conf(conf_file, force):
     """Generates a sample configuration file with given argument as name."""
     try:
-        api.generate_configuration_file(conf_file, force)
+        api.generate_configuration_file(conf_file, overwrite=force)
     except FastFileExistsError:
         if _query_yes_no(
             f"Configuration file {conf_file} already exists. Do you want to overwrite it?"
         ):
-            api.generate_configuration_file(conf_file, True)
+            api.generate_configuration_file(conf_file, overwrite=True)
         else:
             print("No file written.")
 
@@ -113,19 +113,45 @@ def gen_inputs(conf_file, source_file, force, legacy):
     """
     schema = "legacy" if legacy else "native"
     try:
-        api.generate_inputs(conf_file, source_file, schema, force)
+        api.generate_inputs(conf_file, source_file, schema, overwrite=force)
     except FastFileExistsError as exc:
         if _query_yes_no(f"Input file {exc.args[1]} already exists. Do you want to overwrite it?"):
-            api.generate_inputs(conf_file, source_file, schema, True)
+            api.generate_inputs(conf_file, source_file, schema, overwrite=True)
         else:
             print("No file written.")
 
 
 @fast_oad_subcommand
 @click.command(name="list_modules")
-def list_modules():
-    """Provides the identifiers of available systems."""
-    pass
+@click.option(
+    "-o",
+    "--out_file",
+    help="If provided, command output will be written in indicated file instead of "
+    "being printed in terminal.",
+)
+@overwrite_option
+@click.option("-v", "--verbose", is_flag=True, help="Shows detailed information for each system.")
+@click.argument("source_path", nargs=-1)
+def list_modules(out_file, force, verbose, source_path):
+    """
+    Provides the identifiers of available systems.
+
+    SOURCE_PATH argument can be a configuration file, or a list of folders where
+    custom modules are declared.
+    """
+    # If a configuration file or a single path is provided make sure it is sent as a
+    # string not a list
+    if len(source_path) == 1:
+        source_path = source_path[0]
+    try:
+        api.list_modules(source_path, out=out_file, overwrite=force, verbose=verbose)
+    except FastFileExistsError:
+        if _query_yes_no(f"Output file {out_file} already exists. Do you want to overwrite it?"):
+            api.list_modules(source_path, out=out_file, overwrite=True, verbose=verbose)
+        else:
+            print("No file written.")
+
+    print("\nDone. Use --verbose (-v) option for detailed information.")
 
 
 @fast_oad_subcommand

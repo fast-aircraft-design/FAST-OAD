@@ -18,8 +18,9 @@ import logging
 import os.path as pth
 import sys
 import textwrap as tw
+from collections import Iterable
 from time import time
-from typing import IO, Union, List
+from typing import IO, List, Union
 
 import openmdao.api as om
 from IPython import InteractiveShell
@@ -248,7 +249,7 @@ def list_modules(
             RegisterOpenMDAOSystem.explore_folder(source_path)
         else:
             raise FileNotFoundError("Could not find %s" % source_path)
-    elif isinstance(source_path, list):
+    elif isinstance(source_path, Iterable):
         for folder_path in source_path:
             if not pth.isdir(folder_path):
                 _LOGGER.warning("SKIPPED %s: folder does not exist.", folder_path)
