@@ -11,10 +11,13 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from distutils.util import strtobool
 
 import click
 
 import fastoad
+from fastoad import api
+from fastoad.cmd.exceptions import FastFileExistsError
 
 
 @click.group(
@@ -33,6 +36,11 @@ def fast_oad_subcommand(func):
 
 
 def overwrite_option(func):
+    """
+    Decorator for adding the option for overwriting existing file.
+
+    Use `force` as argument of the function.
+    """
     return click.option(
         "-f",
         "--force",
@@ -41,13 +49,39 @@ def overwrite_option(func):
     )(func)
 
 
+def _query_yes_no(question):
+    """
+    Ask a yes/no question via input() and return its answer as boolean.
+
+    Keeps asking while answer is not similar to "yes" or "no"
+    The returned value is True for "yes" or False for "no".
+    """
+    answer = None
+    while answer is None:
+        raw_answer = input(question + "\n")
+        try:
+            answer = strtobool(raw_answer)
+        except ValueError:
+            pass
+
+    return answer == 1
+
+
 @fast_oad_subcommand
 @click.command(name="gen_conf")
 @click.argument("conf_file", nargs=1)
 @overwrite_option
 def gen_conf(conf_file, force):
     """Generates a sample configuration file with given argument as name."""
-    pass
+    try:
+        api.generate_configuration_file(conf_file, force)
+    except FastFileExistsError:
+        if _query_yes_no(
+            'Configuration file "%s" already exists. Do you want to overwrite it?' % conf_file
+        ):
+            api.generate_configuration_file(conf_file, True)
+        else:
+            print("No file written.")
 
 
 @fast_oad_subcommand
