@@ -45,7 +45,7 @@ def overwrite_option(func):
         "-f",
         "--force",
         is_flag=True,
-        help="do not ask before overwriting files.",
+        help="Do not ask before overwriting files.",
     )(func)
 
 
@@ -77,7 +77,7 @@ def gen_conf(conf_file, force):
         api.generate_configuration_file(conf_file, force)
     except FastFileExistsError:
         if _query_yes_no(
-            'Configuration file "%s" already exists. Do you want to overwrite it?' % conf_file
+            f"Configuration file {conf_file} already exists. Do you want to overwrite it?"
         ):
             api.generate_configuration_file(conf_file, True)
         else:
@@ -86,8 +86,13 @@ def gen_conf(conf_file, force):
 
 @fast_oad_subcommand
 @click.command(name="gen_inputs")
+@click.argument("conf_file", nargs=1)
+@click.argument("source_file", nargs=1, required=False)
 @overwrite_option
-def gen_inputs(force):
+@click.option(
+    "--legacy", is_flag=True, help="To be used if the source XML file is in legacy format."
+)
+def gen_inputs(conf_file, source_file, force, legacy):
     """
     Generates the input file (specified in the configuration file) with needed variables.
 
@@ -106,7 +111,14 @@ def gen_inputs(force):
     # Same as above, some_file.xml is formatted with the legacy FAST schema
         fastoad gen_inputs conf_file.yml some_file.xml --legacy
     """
-    pass
+    schema = "legacy" if legacy else "native"
+    try:
+        api.generate_inputs(conf_file, source_file, schema, force)
+    except FastFileExistsError as exc:
+        if _query_yes_no(f"Input file {exc.args[1]} already exists. Do you want to overwrite it?"):
+            api.generate_inputs(conf_file, source_file, schema, True)
+        else:
+            print("No file written.")
 
 
 @fast_oad_subcommand
