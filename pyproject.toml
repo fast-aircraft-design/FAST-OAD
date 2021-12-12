@@ -94,6 +94,7 @@ jupyter-client = "!=7.0.0, !=7.0.1, !=7.0.2, !=7.0.3, !=7.0.4, !=7.0.5"  # v7.0.
 notebook = "^6.0"
 stdatm = "^0.1.0"
 Deprecated = "^1.2.13"
+click = "^8.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
