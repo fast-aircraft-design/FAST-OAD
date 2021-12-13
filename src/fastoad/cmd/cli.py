@@ -15,8 +15,6 @@
 import os
 import os.path as pth
 import shutil
-from distutils.util import strtobool
-from typing import Callable
 
 import click
 import tabulate
@@ -24,7 +22,11 @@ import tabulate
 import fastoad
 from fastoad import api, notebooks
 from fastoad._utils.resource_management.copy import copy_resource_folder
-from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.cmd.cli_utils import (
+    manage_overwrite,
+    out_file_option,
+    overwrite_option,
+)
 
 NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
 
@@ -42,89 +44,6 @@ def fast_oad():
 def fast_oad_subcommand(func):
     """Decorator for adding a command as subcommand to `fast_oad`."""
     return fast_oad.add_command(func)
-
-
-def overwrite_option(func):
-    """
-    Decorator for adding the option for overwriting existing file.
-
-    Use `force` as argument of the function.
-    """
-    return click.option(
-        "-f",
-        "--force",
-        is_flag=True,
-        help="Do not ask before overwriting files.",
-    )(func)
-
-
-def out_file_option(func):
-    """
-    Decorator for writing command output in a file.
-
-    Use `out_file` and `force` as argument of the function.
-    """
-    return click.option(
-        "-o",
-        "--out_file",
-        help="If provided, command output will be written in indicated file instead of "
-        "being printed in terminal.",
-    )(overwrite_option(func))
-
-
-def _query_yes_no(question):
-    """
-    Ask a yes/no question via input() and return its answer as boolean.
-
-    Keeps asking while answer is not similar to "yes" or "no"
-    The returned value is True for "yes" or False for "no".
-    """
-    answer = None
-    while answer is None:
-        raw_answer = input(question + "\n")
-        try:
-            answer = strtobool(raw_answer)
-        except ValueError:
-            pass
-
-    return answer == 1
-
-
-def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
-    """
-    Runs `func`, that is expected to write a file, with provided keyword arguments `args`.
-
-    If the run throws FastFileExistsError, a question is displayed and user is
-    asked for a yes/no answer. If `yes` is given, arg["overwrite"] is set to True
-    and `func` is run again.
-
-    :param func: callable that will do the operation
-    :param filename_func: a function that provides the name of written file, given the
-                          value returned by func
-    :param kwargs: keyword arguments for func
-    :return: True if the file has been written,
-    """
-    written = False
-    result = None
-    try:
-        result = func(**kwargs)
-        written = True
-
-    except FastFileExistsError as exc:
-        if _query_yes_no(f'File "{exc.args[1]}" already exists. Do you want to overwrite it?'):
-            kwargs["overwrite"] = True
-            result = func(**kwargs)
-            written = True
-
-    if written:
-        if filename_func:
-            result = filename_func(result)
-        if result:
-            print(f'File "{result}" has been written.')
-    else:
-        print("No file written.")
-
-    return written
 
 
 @fast_oad_subcommand
