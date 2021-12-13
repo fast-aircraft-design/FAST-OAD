@@ -11,7 +11,9 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from distutils.util import strtobool
+from typing import Callable, Union
 
 import click
 import tabulate
@@ -82,21 +84,57 @@ def _query_yes_no(question):
     return answer == 1
 
 
+def manage_overwrite(func: Callable, filename: Union[str, Callable], **kwargs):
+    """
+    Runs `func`, that is expected to write `filename`, with provided keyword arguments `args`.
+
+    If the run throws FastFileExistsError, a question is displayed and user is
+    asked for a yes/no answer. If `yes` is given, arg["overwrite"] is set to True
+    and `func` is run again.
+
+    The asked question will contain provided `filename`.
+
+    If `filename` is callable, the displayed question will be the result of this
+    callable fed with the returned FastFileExistsError exception.
+
+    :param func: callable that will do the operation
+    :param filename: name of file that should be written
+    :param kwargs: keyword arguments for func
+    :return: True if the file has been written,
+    """
+    written = False
+    try:
+        func(**kwargs)
+        written = True
+
+    except FastFileExistsError as exc:
+        if callable(filename):
+            filename = filename(exc)
+        if _query_yes_no(f'File "{filename}" already exists. Do you want to overwrite it?'):
+            kwargs["overwrite"] = True
+            func(**kwargs)
+            written = True
+
+    if written:
+        print(f'File "{filename}" has been written.')
+    else:
+        print("No file written.")
+
+    return written
+
+
 @fast_oad_subcommand
 @click.command(name="gen_conf")
 @click.argument("conf_file", nargs=1)
 @overwrite_option
 def gen_conf(conf_file, force):
-    """Generates a sample configuration file with given argument as name."""
-    try:
-        api.generate_configuration_file(conf_file, overwrite=force)
-    except FastFileExistsError:
-        if _query_yes_no(
-            f'Configuration file "{conf_file}" already exists. Do you want to overwrite it?'
-        ):
-            api.generate_configuration_file(conf_file, overwrite=True)
-        else:
-            print("No file written.")
+    """Generate a sample configuration file with given argument as name."""
+    manage_overwrite(
+        api.generate_configuration_file,
+        conf_file,
+        configuration_file_path=conf_file,
+        overwrite=force,
+    )
 
 
 @fast_oad_subcommand
@@ -109,7 +147,7 @@ def gen_conf(conf_file, force):
 )
 def gen_inputs(conf_file, source_file, force, legacy):
     """
-    Generates the input file (specified in the configuration file) with needed variables.
+    Generate the input file (specified in the configuration file) with needed variables.
 
     \b
     Examples:
@@ -127,15 +165,14 @@ def gen_inputs(conf_file, source_file, force, legacy):
         fastoad gen_inputs conf_file.yml some_file.xml --legacy
     """
     schema = "legacy" if legacy else "native"
-    try:
-        api.generate_inputs(conf_file, source_file, schema, overwrite=force)
-    except FastFileExistsError as exc:
-        if _query_yes_no(
-            f'Input file "{exc.args[1]}" already exists. Do you want to overwrite it?'
-        ):
-            api.generate_inputs(conf_file, source_file, schema, overwrite=True)
-        else:
-            print("No file written.")
+    manage_overwrite(
+        api.generate_inputs,
+        lambda exc: exc.args[1],
+        configuration_file_path=conf_file,
+        source_path=source_file,
+        source_path_schema=schema,
+        overwrite=force,
+    )
 
 
 @fast_oad_subcommand
@@ -145,7 +182,7 @@ def gen_inputs(conf_file, source_file, force, legacy):
 @click.argument("source_path", nargs=-1)
 def list_modules(out_file, force, verbose, source_path):
     """
-    Provides the identifiers of available systems.
+    Provide the identifiers of available systems.
 
     SOURCE_PATH argument can be a configuration file, or a list of folders where
     custom modules are declared.
@@ -154,15 +191,16 @@ def list_modules(out_file, force, verbose, source_path):
     # string not a list
     if len(source_path) == 1:
         source_path = source_path[0]
-    try:
-        api.list_modules(source_path, out=out_file, overwrite=force, verbose=verbose)
-    except FastFileExistsError:
-        if _query_yes_no(f'Output file "{out_file}" already exists. Do you want to overwrite it?'):
-            api.list_modules(source_path, out=out_file, overwrite=True, verbose=verbose)
-        else:
-            print("No file written.")
 
-    print("\nDone. Use --verbose (-v) option for detailed information.")
+    if manage_overwrite(
+        api.list_modules,
+        out_file,
+        source_path=source_path,
+        out=out_file,
+        overwrite=force,
+        verbose=verbose,
+    ):
+        print("\nDone. Use --verbose (-v) option for detailed information.")
 
 
 @fast_oad_subcommand
@@ -178,61 +216,61 @@ def list_modules(out_file, force, verbose, source_path):
     "tabulate package.",
 )
 def list_variables(conf_file, out_file, force, format):
-    """Lists the variables of the problem."""
-    try:
-        api.list_variables(conf_file, out=out_file, overwrite=force, tablefmt=format)
-    except FastFileExistsError:
-        if _query_yes_no(f'Output file "{out_file}" already exists. Do you want to overwrite it?'):
-            api.list_variables(conf_file, out=out_file, overwrite=True, tablefmt=format)
-        else:
-            print("No file written.")
+    """List the variables of the problem."""
+    manage_overwrite(
+        api.list_variables,
+        out_file,
+        out=out_file,
+        overwrite=force,
+        tablefmt=format,
+    )
 
 
 @fast_oad_subcommand
 @click.command()
 @click.argument("conf_file", nargs=1)
-@click.argument("n2_file", nargs=1, required=False)
+@click.argument("n2_file", nargs=1, default="n2.html", required=False)
 @overwrite_option
 def n2(conf_file, n2_file, force):
     """
-    Writes the N2 diagram of the problem defined in CONF_FILE.
+    Write the N2 diagram of the problem defined in CONF_FILE.
 
-    The name of generated file is `n2.html`, or the given name for argument N2_FILE
+    The name of generated file is `n2.html`, or the given name for argument N2_FILE.
     """
-    try:
-        api.write_n2(conf_file, n2_file, force)
-    except FastFileExistsError:
-        if _query_yes_no(f'N2 file "{n2_file}" already exists. Do you want to overwrite it?'):
-            api.write_n2(conf_file, n2_file, True)
-        else:
-            print("No file written.")
+    manage_overwrite(
+        api.write_n2,
+        n2_file,
+        configuration_file_path=conf_file,
+        n2_file_path=n2_file,
+        overwrite=force,
+    )
 
 
 @fast_oad_subcommand
 @click.command()
 def xdsm():
-    """Writes the XDSM diagram of the problem"""
+    """Write the XDSM diagram of the problem"""
     pass
 
 
 @fast_oad_subcommand
 @click.command()
 def eval():
-    """Runs the analysis"""
+    """Run the analysis"""
     pass
 
 
 @fast_oad_subcommand
 @click.command()
 def optim():
-    """Runs the optimization"""
+    """Run the optimization"""
     pass
 
 
 @fast_oad_subcommand
 @click.command()
 def notebooks():
-    """Creates ready-to-use notebooks"""
+    """Create ready-to-use notebooks"""
     pass
 
 
