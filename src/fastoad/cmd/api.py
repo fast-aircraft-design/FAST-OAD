@@ -347,14 +347,17 @@ def _get_detailed_system_list():
     return cell_list
 
 
-def write_n2(configuration_file_path: str, n2_file_path: str = "n2.html", overwrite: bool = False):
+def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
     """
     Write the N2 diagram of the problem in file n2.html
 
     :param configuration_file_path:
-    :param n2_file_path:
+    :param n2_file_path: if None, will default to `n2.html`
     :param overwrite:
     """
+
+    if not n2_file_path:
+        n2_file_path = "n2.html"
 
     if not overwrite and pth.exists(n2_file_path):
         raise FastFileExistsError(
@@ -371,7 +374,8 @@ def write_n2(configuration_file_path: str, n2_file_path: str = "n2.html", overwr
     problem.final_setup()
 
     om.n2(problem, outfile=n2_file_path, show_browser=False)
-    clear_output()
+    if InteractiveShell.initialized():
+        clear_output()
     _LOGGER.info("N2 diagram written in %s", pth.abspath(n2_file_path))
 
 

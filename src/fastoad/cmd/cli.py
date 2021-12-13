@@ -92,7 +92,7 @@ def gen_conf(conf_file, force):
         api.generate_configuration_file(conf_file, overwrite=force)
     except FastFileExistsError:
         if _query_yes_no(
-            f"Configuration file {conf_file} already exists. Do you want to overwrite it?"
+            f'Configuration file "{conf_file}" already exists. Do you want to overwrite it?'
         ):
             api.generate_configuration_file(conf_file, overwrite=True)
         else:
@@ -130,7 +130,9 @@ def gen_inputs(conf_file, source_file, force, legacy):
     try:
         api.generate_inputs(conf_file, source_file, schema, overwrite=force)
     except FastFileExistsError as exc:
-        if _query_yes_no(f"Input file {exc.args[1]} already exists. Do you want to overwrite it?"):
+        if _query_yes_no(
+            f'Input file "{exc.args[1]}" already exists. Do you want to overwrite it?'
+        ):
             api.generate_inputs(conf_file, source_file, schema, overwrite=True)
         else:
             print("No file written.")
@@ -155,7 +157,7 @@ def list_modules(out_file, force, verbose, source_path):
     try:
         api.list_modules(source_path, out=out_file, overwrite=force, verbose=verbose)
     except FastFileExistsError:
-        if _query_yes_no(f"Output file {out_file} already exists. Do you want to overwrite it?"):
+        if _query_yes_no(f'Output file "{out_file}" already exists. Do you want to overwrite it?'):
             api.list_modules(source_path, out=out_file, overwrite=True, verbose=verbose)
         else:
             print("No file written.")
@@ -180,7 +182,7 @@ def list_variables(conf_file, out_file, force, format):
     try:
         api.list_variables(conf_file, out=out_file, overwrite=force, tablefmt=format)
     except FastFileExistsError:
-        if _query_yes_no(f"Output file {out_file} already exists. Do you want to overwrite it?"):
+        if _query_yes_no(f'Output file "{out_file}" already exists. Do you want to overwrite it?'):
             api.list_variables(conf_file, out=out_file, overwrite=True, tablefmt=format)
         else:
             print("No file written.")
@@ -188,9 +190,22 @@ def list_variables(conf_file, out_file, force, format):
 
 @fast_oad_subcommand
 @click.command()
-def n2():
-    """Writes the N2 diagram of the problem"""
-    pass
+@click.argument("conf_file", nargs=1)
+@click.argument("n2_file", nargs=1, required=False)
+@overwrite_option
+def n2(conf_file, n2_file, force):
+    """
+    Writes the N2 diagram of the problem defined in CONF_FILE.
+
+    The name of generated file is `n2.html`, or the given name for argument N2_FILE
+    """
+    try:
+        api.write_n2(conf_file, n2_file, force)
+    except FastFileExistsError:
+        if _query_yes_no(f'N2 file "{n2_file}" already exists. Do you want to overwrite it?'):
+            api.write_n2(conf_file, n2_file, True)
+        else:
+            print("No file written.")
 
 
 @fast_oad_subcommand
