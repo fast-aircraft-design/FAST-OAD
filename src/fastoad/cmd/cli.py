@@ -12,6 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
+import os.path as pth
+import shutil
 from distutils.util import strtobool
 from typing import Callable
 
@@ -19,8 +22,11 @@ import click
 import tabulate
 
 import fastoad
-from fastoad import api
+from fastoad import api, notebooks
+from fastoad._utils.resource_management.copy import copy_resource_folder
 from fastoad.cmd.exceptions import FastFileExistsError
+
+NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
 
 
 @click.group(
@@ -268,23 +274,57 @@ def xdsm(conf_file, xdsm_file, depth, server, force):
 
 @fast_oad_subcommand
 @click.command()
-def eval():
-    """Run the analysis"""
-    pass
+@click.argument("conf_file", nargs=1)
+@overwrite_option
+def eval(conf_file, force):
+    """Run the analysis for problem defined inf CONF_FILE."""
+    manage_overwrite(
+        api.evaluate_problem,
+        filename_func=lambda pb: pb.output_file_path,
+        configuration_file_path=conf_file,
+        overwrite=force,
+    )
 
 
 @fast_oad_subcommand
 @click.command()
-def optim():
-    """Run the optimization"""
-    pass
+@click.argument("conf_file", nargs=1)
+@overwrite_option
+def optim(conf_file, force):
+    """Run the optimization for problem defined inf CONF_FILE."""
+    manage_overwrite(
+        api.optimize_problem,
+        filename_func=lambda pb: pb.output_file_path,
+        configuration_file_path=conf_file,
+        overwrite=force,
+    )
 
 
 @fast_oad_subcommand
-@click.command()
-def notebooks():
-    """Create ready-to-use notebooks"""
-    pass
+@click.command(name="notebooks")
+@click.argument("path", nargs=1, default=".", required=False)
+def create_notebooks(path):
+    """
+    Creates a FAST-OAD_notebooks/ folder with pre-configured Jupyter notebooks.
+
+    If PATH is given, FAST-OAD_notebooks/ will be created in that folder.
+
+    Please note that all content of an existing FAST-OAD_notebooks/ will be overwritten.
+    """
+    # Create and copy folder
+    target_path = pth.abspath(pth.join(path, NOTEBOOK_FOLDER_NAME))
+    if pth.exists(target_path):
+        shutil.rmtree(target_path)
+    os.makedirs(target_path)
+
+    copy_resource_folder(notebooks, target_path)
+    # Note: copy_resource_folder(tutorial, target_path) would fail because of IPython imports
+
+    # Give info for running Jupyter
+    print("")
+    print("Notebooks have been created in %s" % target_path)
+    print("You may now run Jupyter with:")
+    print('   jupyter lab "%s"' % target_path)
 
 
 if __name__ == "__main__":
