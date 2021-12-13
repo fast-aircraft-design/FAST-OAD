@@ -248,9 +248,29 @@ def n2(conf_file, n2_file, force):
 
 @fast_oad_subcommand
 @click.command()
-def xdsm():
-    """Write the XDSM diagram of the problem"""
-    pass
+@click.argument("conf_file", nargs=1)
+@click.argument("xdsm_file", nargs=1, default="xdsm.html", required=False)
+@click.option("--depth", default=2, show_default=True, help="Depth of analysis.")
+@click.option(
+    "--server",
+    help="URL of WhatsOpt server. For advanced users only.",
+)
+@overwrite_option
+def xdsm(conf_file, xdsm_file, depth, server, force):
+    """
+    Write the XDSM diagram of the problem defined in CONF_FILE.
+
+    The name of generated file is `xdsm.html`, or the given name for argument XDSM_FILE.
+    """
+    manage_overwrite(
+        api.write_xdsm,
+        xdsm_file,
+        configuration_file_path=conf_file,
+        xdsm_file_path=xdsm_file,
+        overwrite=force,
+        depth=depth,
+        wop_server_url=server,
+    )
 
 
 @fast_oad_subcommand
