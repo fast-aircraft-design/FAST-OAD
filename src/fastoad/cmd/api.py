@@ -58,6 +58,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
     :param configuration_file_path: the path of file to be written
     :param overwrite: if True, the file will be written, even if it already exists
+    :return: path of generated file
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
     """
     if not overwrite and pth.exists(configuration_file_path):
@@ -71,6 +72,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
     copy_resource(resources, SAMPLE_FILENAME, configuration_file_path)
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
+    return configuration_file_path
 
 
 def generate_inputs(
@@ -134,8 +136,8 @@ def list_variables(
     :param tablefmt: The formatting of the requested table. Options are the same as those available
                      to the tabulate package. See tabulate.tabulate_formats for a complete list.
                      If "var_desc" the file will use the variable_descriptions.txt format.
-    :raise FastFileExistsError: if overwrite==False and out parameter is a file path and the file
-                                exists
+    :return: path of generated file, or None if no file was generated.
+    :raise FastFileExistsError: if `overwrite==False` and `out` is a file path and the file exists
     """
     if out is None:
         out = sys.stdout
@@ -163,6 +165,7 @@ def list_variables(
     )
 
     if isinstance(out, str):
+        out = pth.abspath(out)
         if not overwrite and pth.exists(out):
             raise FastFileExistsError(
                 "File %s not written because it already exists. "
@@ -188,7 +191,8 @@ def list_variables(
 
     if isinstance(out, str):
         out_file.close()
-        _LOGGER.info("Output list written in %s", out_file)
+        _LOGGER.info("Output list written in %s", out)
+        return out
 
 
 def _generate_var_desc_format(variables_df):
@@ -221,20 +225,21 @@ def list_modules(
     force_text_output: bool = False,
 ):
     """
-     Writes list of available systems.
-     If source_path is given and if it defines paths where there are registered systems,
-     they will be listed too.
+    Writes list of available systems.
+    If source_path is given and if it defines paths where there are registered systems,
+    they will be listed too.
 
-     :param source_path: either a configuration file path, folder path, or list of folder path
-     :param out: the output stream or a path for the output file (None means sys.stdout)
-     :param overwrite: if True and out is a file path, the file will be written even if one already
-                       exists
-     :param verbose: if True, shows detailed information for each system
-                     if False, shows only identifier and path of each system
-     :param force_text_output: if True, list will be written as text, even if command is used in an
-                               interactive IPython shell (Jupyter notebook). Has no effect in other
-                               shells or if out parameter is not sys.stdout
-    :raise FastFileExistsError: if overwrite==False and out is a file path and the file exists
+    :param source_path: either a configuration file path, folder path, or list of folder path
+    :param out: the output stream or a path for the output file (None means sys.stdout)
+    :param overwrite: if True and out is a file path, the file will be written even if one already
+                      exists
+    :param verbose: if True, shows detailed information for each system
+                    if False, shows only identifier and path of each system
+    :param force_text_output: if True, list will be written as text, even if command is used in an
+                              interactive IPython shell (Jupyter notebook). Has no effect in other
+                              shells or if out parameter is not sys.stdout
+    :return: path of generated file, or None if no file was generated.
+    :raise FastFileExistsError: if `overwrite==False` and `out` is a file path and the file exists
     """
     if out is None:
         out = sys.stdout
@@ -264,6 +269,7 @@ def list_modules(
         cell_list = _get_simple_system_list()
 
     if isinstance(out, str):
+        out = pth.abspath(out)
         if not overwrite and pth.exists(out):
             raise FastFileExistsError(
                 "File %s not written because it already exists. "
@@ -290,7 +296,8 @@ def list_modules(
 
     if isinstance(out, str):
         out_file.close()
-        _LOGGER.info("System list written in %s", out_file)
+        _LOGGER.info("System list written in %s", out)
+        return out
 
 
 def _get_simple_system_list():
@@ -354,10 +361,13 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     :param configuration_file_path:
     :param n2_file_path: if None, will default to `n2.html`
     :param overwrite:
+    :return: path of generated file.
+    :raise FastFileExistsError: if overwrite==False and n2_file_path already exists
     """
 
     if not n2_file_path:
         n2_file_path = "n2.html"
+    n2_file_path = pth.abspath(n2_file_path)
 
     if not overwrite and pth.exists(n2_file_path):
         raise FastFileExistsError(
@@ -377,6 +387,7 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     if InteractiveShell.initialized():
         clear_output()
     _LOGGER.info("N2 diagram written in %s", pth.abspath(n2_file_path))
+    return n2_file_path
 
 
 def write_xdsm(
@@ -396,7 +407,8 @@ def write_xdsm(
     :param wop_server_url: URL of WhatsOpt server (if None, ether.onera.fr/whatsopt will be used)
     :param dry_run: if True, will run wop without sending any request to the server. Generated
                     XDSM will be empty. (for test purpose only)
-    :return:
+    :return: path of generated file.
+    :raise FastFileExistsError: if overwrite==False and xdsm_file_path already exists
     """
     if not xdsm_file_path:
         xdsm_file_path = pth.join(pth.dirname(configuration_file_path), "xdsm.html")
@@ -418,6 +430,7 @@ def write_xdsm(
     problem.final_setup()
 
     fastoad.openmdao.whatsopt.write_xdsm(problem, xdsm_file_path, depth, wop_server_url, dry_run)
+    return xdsm_file_path
 
 
 def _run_problem(
@@ -435,6 +448,7 @@ def _run_problem(
     :param auto_scaling: if True, automatic scaling is performed for design variables and
                          constraints
     :return: the OpenMDAO problem after run
+    :raise FastFileExistsError: if overwrite==False and output data file of problem already exists
     """
 
     conf = FASTOADProblemConfigurator(configuration_file_path)
@@ -477,6 +491,7 @@ def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> F
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
     :return: the OpenMDAO problem after run
+    :raise FastFileExistsError: if overwrite==False and output data file of problem already exists
     """
     return _run_problem(configuration_file_path, overwrite, "run_model")
 
@@ -492,6 +507,7 @@ def optimize_problem(
     :param auto_scaling: if True, automatic scaling is performed for design variables and
                          constraints
     :return: the OpenMDAO problem after run
+    :raise FastFileExistsError: if overwrite==False and output data file of problem already exists
     """
     return _run_problem(configuration_file_path, overwrite, "run_driver", auto_scaling=auto_scaling)
 

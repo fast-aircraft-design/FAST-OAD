@@ -13,7 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from distutils.util import strtobool
-from typing import Callable, Union
+from typing import Callable
 
 import click
 import tabulate
@@ -84,39 +84,37 @@ def _query_yes_no(question):
     return answer == 1
 
 
-def manage_overwrite(func: Callable, filename: Union[str, Callable], **kwargs):
+def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
     """
-    Runs `func`, that is expected to write `filename`, with provided keyword arguments `args`.
+    Runs `func`, that is expected to write a file, with provided keyword arguments `args`.
 
     If the run throws FastFileExistsError, a question is displayed and user is
     asked for a yes/no answer. If `yes` is given, arg["overwrite"] is set to True
     and `func` is run again.
 
-    The asked question will contain provided `filename`.
-
-    If `filename` is callable, the displayed question will be the result of this
-    callable fed with the returned FastFileExistsError exception.
-
     :param func: callable that will do the operation
-    :param filename: name of file that should be written
+    :param filename_func: a function that provides the name of written file, given the
+                          value returned by func
     :param kwargs: keyword arguments for func
     :return: True if the file has been written,
     """
     written = False
+    result = None
     try:
-        func(**kwargs)
+        result = func(**kwargs)
         written = True
 
     except FastFileExistsError as exc:
-        if callable(filename):
-            filename = filename(exc)
-        if _query_yes_no(f'File "{filename}" already exists. Do you want to overwrite it?'):
+        if _query_yes_no(f'File "{exc.args[1]}" already exists. Do you want to overwrite it?'):
             kwargs["overwrite"] = True
-            func(**kwargs)
+            result = func(**kwargs)
             written = True
 
     if written:
-        print(f'File "{filename}" has been written.')
+        if filename_func:
+            result = filename_func(result)
+        if result:
+            print(f'File "{result}" has been written.')
     else:
         print("No file written.")
 
@@ -131,7 +129,6 @@ def gen_conf(conf_file, force):
     """Generate a sample configuration file with given argument as name."""
     manage_overwrite(
         api.generate_configuration_file,
-        conf_file,
         configuration_file_path=conf_file,
         overwrite=force,
     )
@@ -167,7 +164,6 @@ def gen_inputs(conf_file, source_file, force, legacy):
     schema = "legacy" if legacy else "native"
     manage_overwrite(
         api.generate_inputs,
-        lambda exc: exc.args[1],
         configuration_file_path=conf_file,
         source_path=source_file,
         source_path_schema=schema,
@@ -194,7 +190,6 @@ def list_modules(out_file, force, verbose, source_path):
 
     if manage_overwrite(
         api.list_modules,
-        out_file,
         source_path=source_path,
         out=out_file,
         overwrite=force,
@@ -219,7 +214,7 @@ def list_variables(conf_file, out_file, force, format):
     """List the variables of the problem."""
     manage_overwrite(
         api.list_variables,
-        out_file,
+        configuration_file_path=conf_file,
         out=out_file,
         overwrite=force,
         tablefmt=format,
@@ -239,7 +234,6 @@ def n2(conf_file, n2_file, force):
     """
     manage_overwrite(
         api.write_n2,
-        n2_file,
         configuration_file_path=conf_file,
         n2_file_path=n2_file,
         overwrite=force,
@@ -264,7 +258,6 @@ def xdsm(conf_file, xdsm_file, depth, server, force):
     """
     manage_overwrite(
         api.write_xdsm,
-        xdsm_file,
         configuration_file_path=conf_file,
         xdsm_file_path=xdsm_file,
         overwrite=force,
