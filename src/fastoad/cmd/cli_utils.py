@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from distutils.util import strtobool
 from typing import Callable
 
 import click
@@ -48,24 +47,6 @@ def out_file_option(func):
     )(overwrite_option(func))
 
 
-def _query_yes_no(question):
-    """
-    Ask a yes/no question via input() and return its answer as boolean.
-
-    Keeps asking while answer is not similar to "yes" or "no"
-    The returned value is True for "yes" or False for "no".
-    """
-    answer = None
-    while answer is None:
-        raw_answer = input(question + "\n")
-        try:
-            answer = strtobool(raw_answer)
-        except ValueError:
-            pass
-
-    return answer == 1
-
-
 def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
     """
     Runs `func`, that is expected to write a file, with provided keyword arguments `args`.
@@ -87,7 +68,7 @@ def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
         written = True
 
     except FastFileExistsError as exc:
-        if _query_yes_no(f'File "{exc.args[1]}" already exists. Do you want to overwrite it?'):
+        if click.confirm(f'File "{exc.args[1]}" already exists. Do you want to overwrite it?'):
             kwargs["overwrite"] = True
             result = func(**kwargs)
             written = True
@@ -96,8 +77,8 @@ def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
         if filename_func:
             result = filename_func(result)
         if result:
-            print(f'File "{result}" has been written.')
+            click.echo(f'File "{result}" has been written.')
     else:
-        print("No file written.")
+        click.echo("No file written.")
 
     return written
