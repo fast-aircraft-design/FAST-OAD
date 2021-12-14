@@ -136,7 +136,7 @@ def list_modules(out_file, force, verbose, source_path):
     "tabulate package.",
 )
 def list_variables(conf_file, out_file, force, format):
-    """List the variables of the problem."""
+    """List the variables of the problem defined in CONF_FILE."""
     manage_overwrite(
         api.list_variables,
         configuration_file_path=conf_file,
@@ -153,7 +153,7 @@ def list_variables(conf_file, out_file, force, format):
 @overwrite_option
 def n2(conf_file, n2_file, force):
     """
-    Write the N2 diagram of the problem defined in CONF_FILE.
+    Write an HTML file that shows the N2 diagram of the problem defined in CONF_FILE.
 
     The name of generated file is `n2.html`, or the given name for argument N2_FILE.
     """
@@ -169,15 +169,15 @@ def n2(conf_file, n2_file, force):
 @click.command()
 @click.argument("conf_file", nargs=1)
 @click.argument("xdsm_file", nargs=1, default="xdsm.html", required=False)
+@overwrite_option
 @click.option("--depth", default=2, show_default=True, help="Depth of analysis.")
 @click.option(
     "--server",
     help="URL of WhatsOpt server. For advanced users only.",
 )
-@overwrite_option
 def xdsm(conf_file, xdsm_file, depth, server, force):
     """
-    Write the XDSM diagram of the problem defined in CONF_FILE.
+    Write an HTML file that shows the XDSM diagram of the problem defined in CONF_FILE.
 
     The name of generated file is `xdsm.html`, or the given name for argument XDSM_FILE.
     """
@@ -196,7 +196,7 @@ def xdsm(conf_file, xdsm_file, depth, server, force):
 @click.argument("conf_file", nargs=1)
 @overwrite_option
 def eval(conf_file, force):
-    """Run the analysis for problem defined inf CONF_FILE."""
+    """Run the analysis for problem defined in CONF_FILE."""
     manage_overwrite(
         api.evaluate_problem,
         filename_func=lambda pb: pb.output_file_path,
@@ -210,7 +210,7 @@ def eval(conf_file, force):
 @click.argument("conf_file", nargs=1)
 @overwrite_option
 def optim(conf_file, force):
-    """Run the optimization for problem defined inf CONF_FILE."""
+    """Run the optimization for problem defined in CONF_FILE."""
     manage_overwrite(
         api.optimize_problem,
         filename_func=lambda pb: pb.output_file_path,
