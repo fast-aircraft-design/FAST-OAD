@@ -62,23 +62,24 @@ def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
     :return: True if the file has been written,
     """
     written = False
-    result = None
     try:
-        result = func(**kwargs)
-        written = True
+        written = _run_func(func, filename_func, **kwargs)
 
     except FastFileExistsError as exc:
         if click.confirm(f'File "{exc.args[1]}" already exists. Do you want to overwrite it?'):
             kwargs["overwrite"] = True
-            result = func(**kwargs)
-            written = True
-
-    if written:
-        if filename_func:
-            result = filename_func(result)
-        if result:
-            click.echo(f'File "{result}" has been written.')
-    else:
-        click.echo("No file written.")
+            written = _run_func(func, filename_func, **kwargs)
 
     return written
+
+
+def _run_func(func: Callable, filename_func: Callable = None, **kwargs):
+    result = func(**kwargs)
+    if result:
+        if filename_func:
+            result = filename_func(result)
+        click.echo(f'File "{result}" has been written.')
+        return True
+
+    click.echo("No file written.")
+    return False

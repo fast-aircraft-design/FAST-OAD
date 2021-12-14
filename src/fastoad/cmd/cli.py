@@ -129,29 +129,30 @@ def list_modules(out_file, force, verbose, source_path):
 @out_file_option
 @click.option(
     "--format",
+    "table_format",
     default="grid",
     show_default=True,
     help=f"format of the list. Available options are {['var_desc'] + tabulate.tabulate_formats}. "
     '"var_desc" is the variable_descriptions.txt format. Other formats are part of the '
     "tabulate package.",
 )
-def list_variables(conf_file, out_file, force, format):
+def list_variables(conf_file, out_file, force, table_format):
     """List the variables of the problem defined in CONF_FILE."""
     manage_overwrite(
         api.list_variables,
         configuration_file_path=conf_file,
         out=out_file,
         overwrite=force,
-        tablefmt=format,
+        tablefmt=table_format,
     )
 
 
 @fast_oad_subcommand
-@click.command()
+@click.command(name="n2")
 @click.argument("conf_file", nargs=1)
 @click.argument("n2_file", nargs=1, default="n2.html", required=False)
 @overwrite_option
-def n2(conf_file, n2_file, force):
+def write_n2(conf_file, n2_file, force):
     """
     Write an HTML file that shows the N2 diagram of the problem defined in CONF_FILE.
 
@@ -166,7 +167,7 @@ def n2(conf_file, n2_file, force):
 
 
 @fast_oad_subcommand
-@click.command()
+@click.command(name="xdsm")
 @click.argument("conf_file", nargs=1)
 @click.argument("xdsm_file", nargs=1, default="xdsm.html", required=False)
 @overwrite_option
@@ -175,7 +176,7 @@ def n2(conf_file, n2_file, force):
     "--server",
     help="URL of WhatsOpt server. For advanced users only.",
 )
-def xdsm(conf_file, xdsm_file, depth, server, force):
+def write_xdsm(conf_file, xdsm_file, depth, server, force):
     """
     Write an HTML file that shows the XDSM diagram of the problem defined in CONF_FILE.
 
@@ -192,10 +193,10 @@ def xdsm(conf_file, xdsm_file, depth, server, force):
 
 
 @fast_oad_subcommand
-@click.command()
+@click.command(name="eval")
 @click.argument("conf_file", nargs=1)
 @overwrite_option
-def eval(conf_file, force):
+def evaluate(conf_file, force):
     """Run the analysis for problem defined in CONF_FILE."""
     manage_overwrite(
         api.evaluate_problem,
@@ -206,10 +207,10 @@ def eval(conf_file, force):
 
 
 @fast_oad_subcommand
-@click.command()
+@click.command(name="optim")
 @click.argument("conf_file", nargs=1)
 @overwrite_option
-def optim(conf_file, force):
+def optimize(conf_file, force):
     """Run the optimization for problem defined in CONF_FILE."""
     manage_overwrite(
         api.optimize_problem,

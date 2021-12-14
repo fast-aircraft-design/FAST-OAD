@@ -61,6 +61,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     :return: path of generated file
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
     """
+    configuration_file_path = pth.abspath(configuration_file_path)
     if not overwrite and pth.exists(configuration_file_path):
         raise FastFileExistsError(
             "Configuration file %s not written because it already exists. "
@@ -177,7 +178,7 @@ def list_variables(
     else:
         if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
             display(HTML(variables_df.to_html(index=False)))
-            return
+            return None
 
         # Here we continue with text output
         out_file = out
@@ -193,6 +194,8 @@ def list_variables(
         out_file.close()
         _LOGGER.info("Output list written in %s", out)
         return out
+
+    return None
 
 
 def _generate_var_desc_format(variables_df):
@@ -287,7 +290,7 @@ def list_modules(
             and not verbose
         ):
             display(HTML(tabulate(cell_list, tablefmt="html")))
-            return
+            return None
 
         out_file = out
 
@@ -298,6 +301,8 @@ def list_modules(
         out_file.close()
         _LOGGER.info("System list written in %s", out)
         return out
+
+    return None
 
 
 def _get_simple_system_list():
