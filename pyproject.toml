@@ -111,7 +111,6 @@ flake8 = "^4.0.1"
 matplotlib = "^3.1.2"
 
 [tool.poetry.scripts]
-fastold = "fastoad.cmd.fast:main"
 fastoad = "fastoad.cmd.cli:fast_oad"
 fast-oad = "fastoad.cmd.cli:fast_oad"
 
