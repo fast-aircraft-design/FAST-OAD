@@ -14,7 +14,6 @@
 
 from pkg_resources import DistributionNotFound, get_distribution
 
-import fastoad.module_management._plugins
 
 try:
     # Change here if project is renamed and does not equal the package name
@@ -24,7 +23,3 @@ except DistributionNotFound:
     __version__ = "unknown"
 finally:
     del get_distribution, DistributionNotFound
-
-plugins = fastoad.module_management._plugins.PluginManager
-plugins.read_entry_points()
-plugins.load()

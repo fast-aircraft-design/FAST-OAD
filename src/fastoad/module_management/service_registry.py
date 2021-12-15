@@ -21,6 +21,7 @@ import openmdao.api as om
 from openmdao.core.system import System
 
 from ._bundle_loader import BundleLoader
+from ._plugins import FastoadLoader
 from .constants import (
     DESCRIPTION_PROPERTY_NAME,
     DOMAIN_PROPERTY_NAME,
@@ -65,8 +66,6 @@ class RegisterService:
             "Allows to register classes that implement interface ISomeService."
     """
 
-    _loader = BundleLoader()
-
     @classmethod
     def __init_subclass__(cls, *, base_class: type = object):
         """
@@ -93,7 +92,10 @@ class RegisterService:
                 service_class, self._service_id, self._base_class
             )
 
-        return self._loader.register_factory(
+        # Here we use BundleLoader instead of FastoadLoader, because FastoadLoader may
+        # trigger the exploration of the folder where the registration is currently done,
+        # leading to a circular import.
+        return BundleLoader().register_factory(
             service_class, self._id, self._service_id, self.get_properties(service_class)
         )
 
@@ -119,7 +121,7 @@ class RegisterService:
 
         :param folder_path:
         """
-        cls._loader.explore_folder(folder_path)
+        FastoadLoader().explore_folder(folder_path)
 
     @classmethod
     def get_provider_ids(cls, service_id: str) -> List[str]:
@@ -127,7 +129,7 @@ class RegisterService:
         :param service_id:
         :return: the list of identifiers of providers of the service.
         """
-        return cls._loader.get_factory_names(service_id)
+        return FastoadLoader().get_factory_names(service_id)
 
     @classmethod
     def get_provider(cls, service_provider_id: str, options: dict = None) -> Any:
@@ -139,13 +141,13 @@ class RegisterService:
         :return: the created instance
         """
 
-        properties = cls._loader.get_factory_properties(service_provider_id).copy()
+        properties = FastoadLoader().get_factory_properties(service_provider_id).copy()
 
         if options:
             properties[OPTION_PROPERTY_NAME] = properties[OPTION_PROPERTY_NAME].copy()
             properties[OPTION_PROPERTY_NAME].update(options)
 
-        return cls._loader.instantiate_component(service_provider_id, properties)
+        return FastoadLoader().instantiate_component(service_provider_id, properties)
 
     @classmethod
     def get_provider_description(cls, instance_or_id: Union[str, T]) -> str:
@@ -173,9 +175,9 @@ class RegisterService:
         """
 
         if isinstance(instance_or_id, str):
-            return cls._loader.get_factory_property(instance_or_id, property_name)
+            return FastoadLoader().get_factory_property(instance_or_id, property_name)
 
-        return cls._loader.get_instance_property(instance_or_id, property_name)
+        return FastoadLoader().get_instance_property(instance_or_id, property_name)
 
 
 class _RegisterOpenMDAOService(RegisterService, base_class=System):
@@ -468,7 +470,7 @@ class RegisterSubmodel(_RegisterOpenMDAOService):
         :param options:
         :return: the instantiated submodel
         """
-        submodel_ids = cls._loader.get_factory_names(service_id)
+        submodel_ids = FastoadLoader().get_factory_names(service_id)
 
         if service_id in cls.active_models:
             submodel_id = cls.active_models[service_id]

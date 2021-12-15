@@ -75,3 +75,16 @@ class PluginManager:
             _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
             BundleLoader().explore_folder(plugin_def.module_path, is_package=True)
             Variable.read_variable_descriptions(plugin_def.module_path)
+
+
+class FastoadLoader(BundleLoader):
+    """Specialized :class:`BundleLoader` that will load plugins at first instantiation."""
+
+    loaded = False
+
+    def __init__(self):
+        super().__init__()
+        if not self.__class__.loaded:
+            PluginManager.read_entry_points()
+            PluginManager.load()
+            self.__class__.loaded = True
