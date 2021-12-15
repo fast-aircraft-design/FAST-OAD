@@ -69,6 +69,8 @@ def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
         if click.confirm(f'File "{exc.args[1]}" already exists. Do you want to overwrite it?'):
             kwargs["overwrite"] = True
             written = _run_func(func, filename_func, **kwargs)
+        else:
+            click.echo("No file written.")
 
     return written
 
@@ -81,5 +83,4 @@ def _run_func(func: Callable, filename_func: Callable = None, **kwargs):
         click.echo(f'File "{result}" has been written.')
         return True
 
-    click.echo("No file written.")
     return False
