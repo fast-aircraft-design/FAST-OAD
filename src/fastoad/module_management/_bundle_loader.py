@@ -342,6 +342,8 @@ class BundleLoader:
         """
         bundles = set()
         failed = set()
+        package_contents = []
+
         try:
             package_contents = list(contents(package_name))
         except (TypeError, ModuleNotFoundError):
@@ -351,7 +353,10 @@ class BundleLoader:
                     bundles.add(bundle)
                 except BundleException:
                     failed.add(package_name)
-            return bundles, failed
+        except Exception:
+            # Here we catch any Python error that may happen when reading the loaded code.
+            # Thus, we ensure to not break the application if a module is incorrectly written.
+            failed.add(package_name)
 
         for item in package_contents:
             sub_bundles, sub_failed = self._install_python_package(".".join([package_name, item]))
