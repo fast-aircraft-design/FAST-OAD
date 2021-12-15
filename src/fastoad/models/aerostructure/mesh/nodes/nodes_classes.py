@@ -15,14 +15,15 @@ Defines classes for dynamic call of nodes and chords classes for aerodynamic and
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from enum import Enum
-from .aerodynamic_nodes_wing import AerodynamicNodesWing
+
+from .aerodynamic_nodes_fuselage import AerodynamicNodesFuselage
 from .aerodynamic_nodes_htail import AerodynamicNodesHtail
 from .aerodynamic_nodes_vtail import AerodynamicNodesVtail
-from .aerodynamic_nodes_fuselage import AerodynamicNodesFuselage
-
-from .structure_nodes_wing import StructureNodesWing
+from .aerodynamic_nodes_wing import AerodynamicNodesWing
 from .structure_nodes_htail import StructureNodesHtail
+from .structure_nodes_strut import StructureNodesStrut
 from .structure_nodes_vtail import StructureNodesVtail
+from .structure_nodes_wing import StructureNodesWing
 
 
 class AerodynamicNodesClasses(Enum):
@@ -36,3 +37,4 @@ class StructureNodesClasses(Enum):
     WING = StructureNodesWing
     HORIZONTAL_TAIL = StructureNodesHtail
     VERTICAL_TAIL = StructureNodesVtail
+    STRUT = StructureNodesStrut

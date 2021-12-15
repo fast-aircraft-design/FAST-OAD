@@ -72,8 +72,11 @@ class MystranStatic(om.ExternalCodeComp):
                 val=np.nan,
                 shape_by_conn=True,
             )
+            # By default no external loads are considered, to work for non coupled structural
+            # Components. The force will be non zero for coupled components as aero is computed
+            # first.
             self.add_input(
-                "data:aerostructural:structure:" + comp + ":forces", val=np.nan, shape_by_conn=True,
+                "data:aerostructural:structure:" + comp + ":forces", val=0.0, shape=(n_nodes, 6),
             )
             self.add_input("data:aerostructural:structure:" + comp + ":material:E", val=70e9)
             self.add_input("data:aerostructural:structure:" + comp + ":material:nu", val=0.33)

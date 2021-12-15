@@ -39,25 +39,25 @@ class StrutBeamProps(om.ExplicitComponent):
 
         if self.options["has_vertical_strut"]:
             self.add_output(
-                "data:aerostructural:structure:strut:beam_properties", shape=((n_secs + 1) * 2, 6)
+                "data:aerostructural:structure:strut:beam_properties", shape=((n_secs + 1) * 2, 12)
             )
         else:
             self.add_output(
-                "data:aerostructural:structure:strut:beam_properties", shape=(n_secs * 2, 6)
+                "data:aerostructural:structure:strut:beam_properties", shape=(n_secs * 2, 12)
             )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         n_secs = self.options["number_of_sections"]
 
-        tip_y = inputs["data:geometry:strut:tip:y"]
-        thickness_ratio = inputs["data:geometry:strut:thickness_ratio"]
-        root_chord = inputs["data:geometry:strut:root:chord"]
-        tip_chord = inputs["data:geometry:strut:tip:chord"]
-        root_flange_thickness = inputs["data:geometry:strut:root:flange_thickness"]
-        tip_flange_thickness = inputs["data:geometry:strut:tip:flange_thickness"]
-        root_web_thickness = inputs["data:geometry:strut:root:web_thickness"]
-        tip_web_thickness = inputs["data:geometry:strut:tip:web_thickness"]
-        box_ratio = inputs["settings:geometry:strut:box_ratio"]
+        tip_y = inputs["data:geometry:strut:tip:y"][0]
+        thickness_ratio = inputs["data:geometry:strut:thickness_ratio"][0]
+        root_chord = inputs["data:geometry:strut:root:chord"][0]
+        tip_chord = inputs["data:geometry:strut:tip:chord"][0]
+        root_flange_thickness = inputs["data:geometry:strut:root:flange_thickness"][0]
+        tip_flange_thickness = inputs["data:geometry:strut:tip:flange_thickness"][0]
+        root_web_thickness = inputs["data:geometry:strut:root:web_thickness"][0]
+        tip_web_thickness = inputs["data:geometry:strut:tip:web_thickness"][0]
+        box_ratio = inputs["settings:geometry:strut:box_ratio"][0]
 
         # Beam properties are computed with geometric values corresponding to the inner point
         # This choice is conservative from a mass point of view.

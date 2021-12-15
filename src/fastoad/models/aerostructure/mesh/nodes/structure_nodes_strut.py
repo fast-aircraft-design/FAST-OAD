@@ -27,7 +27,7 @@ class StructureNodesStrut(om.ExplicitComponent):
         n_secs = self.options["number_of_sections"]
 
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan)
-        self.add_input("data:geometry:strut:root:chord", val=np.nan)
+        self.add_input("data:geometry:strut:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:strut:spar_ratio:root", val=np.nan)
         self.add_input(
             "data:geometry:strut:root:leading_edge:x:from_wingMAC25",
@@ -35,15 +35,15 @@ class StructureNodesStrut(om.ExplicitComponent):
             desc="longitudinal location of the strut root leading edge with respect to wing 25% MAC location",
         )
         self.add_input("data:geometry:strut:root:z", val=np.nan)
-        self.add_input("data:geometry:strut:tip:chord", val=np.nan)
+        self.add_input("data:geometry:strut:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:strut:spar_ratio:tip", val=np.nan)
         self.add_input(
             "data:geometry:strut:tip:leading_edge:x:local",
             val=np.nan,
             desc="longitudinal location of the strut tip leading edge with respect to root",
         )
-        self.add_input("data:geometry:strut:tip:y", val=np.nan)
-        self.add_input("data:geometry:strut:tip:z", val=np.nan)
+        self.add_input("data:geometry:strut:tip:y", val=np.nan, units="m")
+        self.add_input("data:geometry:strut:tip:z", val=np.nan, units="m")
 
         if self.options["has_vertical_strut"]:
             self.add_input("data:geometry:strut:vertical_part_height", val=np.nan)
