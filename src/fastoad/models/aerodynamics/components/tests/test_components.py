@@ -23,8 +23,8 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from pytest import approx
 from stdatm import Atmosphere
 
+from fastoad._utils.testing import run_system
 from fastoad.io import VariableIO
-from tests.testing_utilities import run_system
 from ..cd0 import CD0
 from ..cd_compressibility import CdCompressibility
 from ..cd_trim import CdTrim

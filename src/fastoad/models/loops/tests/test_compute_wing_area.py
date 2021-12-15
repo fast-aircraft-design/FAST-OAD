@@ -2,7 +2,7 @@
 test module for wing area computation
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,7 +19,7 @@ import os.path as pth
 import openmdao.api as om
 from numpy.testing import assert_allclose
 
-from tests.testing_utilities import run_system
+from fastoad._utils.testing import run_system
 from ..compute_wing_area import ComputeWingArea
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")

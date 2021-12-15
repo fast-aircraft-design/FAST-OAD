@@ -20,8 +20,8 @@ import os.path as pth
 
 import pytest
 
+from fastoad._utils.testing import run_system
 from fastoad.io import VariableIO
-from tests.testing_utilities import run_system
 from ..geom_components.compute_wetted_area import ComputeWettedArea
 from ..geom_components.fuselage.compute_cnbeta_fuselage import ComputeCnBetaFuselage
 from ..geom_components.fuselage.compute_fuselage import (

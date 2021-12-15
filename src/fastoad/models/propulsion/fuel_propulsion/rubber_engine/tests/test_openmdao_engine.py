@@ -17,8 +17,8 @@ Test module for OpenMDAO versions of RubberEngine
 import numpy as np
 import openmdao.api as om
 
+from fastoad._utils.testing import run_system
 from fastoad.constants import EngineSetting
-from tests.testing_utilities import run_system
 from ..openmdao import OMRubberEngineComponent
 
 

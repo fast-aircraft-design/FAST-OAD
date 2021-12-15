@@ -15,8 +15,8 @@ import os.path as pth
 
 import pytest
 
+from fastoad._utils.testing import run_system
 from fastoad.io import VariableIO
-from tests.testing_utilities import run_system
 from ..tail_sizing.compute_ht_area import ComputeHTArea
 from ..tail_sizing.compute_vt_area import ComputeVTArea
 

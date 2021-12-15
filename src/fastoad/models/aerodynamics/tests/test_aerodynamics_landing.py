@@ -20,8 +20,8 @@ from platform import system
 import pytest
 from pytest import approx
 
+from fastoad._utils.testing import run_system
 from fastoad.io import VariableIO
-from tests.testing_utilities import run_system
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 from ..aerodynamics_landing import AerodynamicsLanding
 

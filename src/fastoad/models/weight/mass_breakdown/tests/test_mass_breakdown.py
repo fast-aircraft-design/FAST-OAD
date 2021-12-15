@@ -20,8 +20,8 @@ import os.path as pth
 import openmdao.api as om
 import pytest
 
+from fastoad._utils.testing import run_system
 from fastoad.io import VariableIO
-from tests.testing_utilities import run_system
 from ..a_airframe import (
     EmpennageWeight,
     FlightControlsWeight,
