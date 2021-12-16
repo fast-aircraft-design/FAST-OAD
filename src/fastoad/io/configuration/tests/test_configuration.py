@@ -23,6 +23,7 @@ import pytest
 import tomlkit
 from jsonschema import ValidationError
 from ruamel.yaml import YAML
+from filecmp import cmp
 
 from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
@@ -279,3 +280,18 @@ def test_set_optimization_definition(cleanup):
         conf_dict_opt = conf_dict["optimization"]
         # Should be equal
         assert optimization_conf == conf_dict_opt
+
+
+def test_problem_definition_correct_configuration_with_indep(cleanup):
+    for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
+        conf = FASTOADProblemConfigurator()
+        conf.load(pth.join(DATA_FOLDER_PATH, "valid_sellar_with_indep.%s" % extension))
+
+        result_folder_path = pth.join(RESULTS_FOLDER_PATH, "problem_definition_with_indep")
+        conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
+        input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+        conf.write_needed_inputs(input_data)
+        ref_input_data_with_indep = pth.join(DATA_FOLDER_PATH, "ref_inputs_with_indep.xml")
+
+        assert cmp(conf.input_file_path, ref_input_data_with_indep)

@@ -1,0 +1,6 @@
+<FASTOAD_model>
+  <z units="m**2" is_input="True">[5.0, 2.0]</z>
+  <system>
+    <x is_input="True">2</x>
+  </system>
+</FASTOAD_model>
