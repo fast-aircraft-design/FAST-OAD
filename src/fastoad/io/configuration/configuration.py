@@ -220,8 +220,17 @@ class FASTOADProblemConfigurator:
         problem = self.get_problem(read_inputs=False)
         problem.setup()
         variables = DataFile(self.input_file_path, load_data=False)
+
+        all_variables = VariableList.from_problem(
+            problem, use_initial_values=True, get_promoted_names=True, promoted_only=True
+        )
+        unconnected_inputs = VariableList()
+        for var in all_variables:
+            if var.is_input:
+                unconnected_inputs.append(var)
+
         variables.update(
-            VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
+            unconnected_inputs,
             add_variables=True,
         )
         if source_file_path:
