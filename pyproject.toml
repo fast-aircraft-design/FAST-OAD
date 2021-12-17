@@ -1,34 +1,3 @@
-[tool.black]
-line-length = 100
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "--cov fastoad --cov-report term-missing --cov-report html --verbose"
-testpaths = ["src", "tests"]
-norecursedirs = ["dist", "build", ".tox"]
-
-[tool.coverage.run]
-branch = true
-source = ["fastoad"]
-omit = ["*/test/*", "*/tests/*"]
-[tool.coverage.paths]
-source = ["src/", "*/site-packages/"]
-[tool.coverage.report]
-# Regexes for lines to exclude from consideration
-exclude_lines = [
-    # Have to re-enable the standard pragma
-    "pragma: no cover",
-    # Don't complain about missing debug-only code:
-    "def __repr__",
-    "if self.debug",
-    # Don't complain if tests don't hit defensive assertion code:
-    "raise AssertionError",
-    "raise NotImplementedError",
-    # Don't complain if non-runnable code isn't run:
-    "if 0:",
-    "if __name__ = = .__main__.:"
-]
-
 [tool.poetry]
 name = "FAST-OAD"
 version = "0.0.0"
@@ -62,6 +31,7 @@ classifiers = [
     "Operating System :: MacOS",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Topic :: Scientific/Engineering :: Physics"
 ]
 
@@ -82,7 +52,7 @@ ipywidgets = "^7.5.0"
 ipysheet = ">=0.5.0, <1"
 plotly = "^5.0.0"
 wop = "^1.20.0"
-lxml = "^4.6.3"
+lxml = "^4.6.5"
 tomlkit = ">=0.5.3, <1"
 "ruamel.yaml" = ">=0.15.78, <0.18"
 jsonschema = ">=3.2.0, <5"
@@ -115,10 +85,41 @@ fastoad = "fastoad.cmd.cli:fast_oad"
 fast-oad = "fastoad.cmd.cli:fast_oad"
 
 [tool.poetry.plugins."fastoad_model"]
-"cs-25" = "fastoad.models"
-"cs-25.notebooks" = "fastoad.notebooks"
-"cs-25.configurations" = "fastoad.configurations"
+"cs25" = "fastoad.models"
+"cs25.notebooks" = "fastoad.notebooks"
+"cs25.configurations" = "fastoad.configurations"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov fastoad --cov-report term-missing --cov-report html --verbose"
+testpaths = ["src", "tests"]
+norecursedirs = ["dist", "build", ".tox"]
+
+[tool.coverage.run]
+branch = true
+source = ["fastoad"]
+omit = ["*/test/*", "*/tests/*"]
+[tool.coverage.paths]
+source = ["src/", "*/site-packages/"]
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    "pragma: no cover",
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self.debug",
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ = = .__main__.:"
+]
