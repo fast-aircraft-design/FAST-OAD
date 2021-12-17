@@ -20,7 +20,6 @@ from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 import openmdao.api as om
 from openmdao.core.system import System
 
-from ._bundle_loader import BundleLoader
 from ._plugins import FastoadLoader
 from .constants import (
     DESCRIPTION_PROPERTY_NAME,
@@ -92,10 +91,7 @@ class RegisterService:
                 service_class, self._service_id, self._base_class
             )
 
-        # Here we use BundleLoader instead of FastoadLoader, because FastoadLoader may
-        # trigger the exploration of the folder where the registration is currently done,
-        # leading to a circular import.
-        return BundleLoader().register_factory(
+        return FastoadLoader().register_factory(
             service_class, self._id, self._service_id, self.get_properties(service_class)
         )
 

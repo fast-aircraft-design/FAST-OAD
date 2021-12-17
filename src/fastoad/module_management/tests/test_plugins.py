@@ -16,7 +16,7 @@ import os.path as pth
 import pytest
 from pkg_resources import EntryPoint, get_distribution
 
-from .._plugins import MODEL_PLUGIN_ID, PluginManager
+from .._plugins import FastoadLoader, MODEL_PLUGIN_ID
 from ..exceptions import FastBundleLoaderUnknownFactoryNameError
 from ..service_registry import RegisterSpecializedService
 from ...openmdao.variables import Variable
@@ -60,18 +60,18 @@ def test_plugins():
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
         decorated_dummy_1 = RegisterDummyService.get_provider("test.plugin.decorated.1")
 
-    PluginManager.read_entry_points()
-    PluginManager.load()
+    FastoadLoader._loaded = False  # Ensures first instantiation will trigger reloading
+
     assert (
-        PluginManager.plugin_definitions["test_plugin"].module_path
+        FastoadLoader().plugin_definitions["test_plugin"].module_path
         == "fastoad.module_management.tests.data.dummy_plugin.models"
     )
     assert (
-        PluginManager.plugin_definitions["test_plugin"].notebook_path
+        FastoadLoader().plugin_definitions["test_plugin"].notebook_path
         == "fastoad.module_management.tests.data.dummy_plugin.notebooks"
     )
     assert (
-        PluginManager.plugin_definitions["test_plugin"].conf_file_path
+        FastoadLoader().plugin_definitions["test_plugin"].conf_file_path
         == "fastoad.module_management.tests.data.dummy_plugin.confs"
     )
 

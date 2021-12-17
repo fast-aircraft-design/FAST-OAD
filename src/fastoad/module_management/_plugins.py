@@ -16,6 +16,7 @@ Plugin system for declaration of FAST-OAD models.
 
 import logging
 from dataclasses import dataclass
+from typing import Dict
 
 from pkg_resources import iter_entry_points
 
@@ -38,12 +39,27 @@ class PluginDefinition:
     conf_file_path: str = ""
 
 
-class PluginManager:
+class FastoadLoader(BundleLoader):
     """
-    Plugin manager for FAST-OAD.
+    Specialized :class:`BundleLoader` that will load plugins at first instantiation.
+
+    This class should be instantiated whenever plugins need to be loaded, which
+    also means whenever registered models need to be known.
     """
 
-    plugin_definitions = {}
+    #: Stores plugin definitions with plugin name as dict key.
+    plugin_definitions: Dict[str, PluginDefinition] = {}
+
+    _loaded = False
+
+    def __init__(self):
+        super().__init__()
+        if not self.__class__._loaded:
+            # Setting cls.loaded to True already ensures that a second instantiation
+            # during loading will not result in an import cycle.
+            self.__class__._loaded = True
+            self.read_entry_points()
+            self.load()
 
     @classmethod
     def read_entry_points(cls):
@@ -75,16 +91,3 @@ class PluginManager:
             _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
             BundleLoader().explore_folder(plugin_def.module_path, is_package=True)
             Variable.read_variable_descriptions(plugin_def.module_path)
-
-
-class FastoadLoader(BundleLoader):
-    """Specialized :class:`BundleLoader` that will load plugins at first instantiation."""
-
-    loaded = False
-
-    def __init__(self):
-        super().__init__()
-        if not self.__class__.loaded:
-            PluginManager.read_entry_points()
-            PluginManager.load()
-            self.__class__.loaded = True
