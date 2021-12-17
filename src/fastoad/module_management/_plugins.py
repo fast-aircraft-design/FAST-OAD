@@ -2,7 +2,7 @@
 Plugin system for declaration of FAST-OAD models.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +16,15 @@ Plugin system for declaration of FAST-OAD models.
 
 import logging
 import os.path as pth
+import warnings
 from dataclasses import dataclass, field
-from importlib.resources import contents
 from typing import Dict, Set
 
 from pkg_resources import iter_entry_points
 
 from fastoad.openmdao.variables import Variable
 from ._bundle_loader import BundleLoader
+from .._utils.resource_management.contents import PackageReader
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -79,13 +80,23 @@ class FastoadLoader(BundleLoader):
                 cls.plugin_definitions[plugin_name].dist_name = entry_point.dist.project_name
 
             if len(plugin_identifier) == 1:
+                # Location of models.
+                # The existence is checked later and more in details.
                 cls.plugin_definitions[plugin_name].module_package_name = entry_point.module_name
+            elif not PackageReader(entry_point.module_name).is_package:
+                # For other parts of the plugin, we check already the existence.
+                warnings.warn(
+                    f"{entry_point.module_name} (defined by library "
+                    f"{entry_point.dist.project_name}) is not a valid package name.",
+                    RuntimeWarning,
+                )
+                continue
             elif plugin_identifier[1] == "notebooks":
                 cls.plugin_definitions[plugin_name].notebook_package_name = entry_point.module_name
             elif plugin_identifier[1] == "configurations":
                 cls.plugin_definitions[plugin_name].conf_file_package_name = entry_point.module_name
             else:
-                raise RuntimeWarning(f"{plugin_name} is not a valid plugin declaration.")
+                warnings.warn(f"{plugin_name} is not a valid plugin declaration.", RuntimeWarning)
 
     @classmethod
     def load(cls):
@@ -108,9 +119,10 @@ class FastoadLoader(BundleLoader):
     @classmethod
     def _load_configurations(cls, plugin_definition: PluginDefinition):
         """Loads configurations from plugin."""
-        if plugin_definition.conf_file_package_name:
+        package = PackageReader(plugin_definition.conf_file_package_name)
+        if package.is_package:  # Checking it is not None
             _LOGGER.debug("   Loading configurations")
-            for file_name in contents(plugin_definition.conf_file_package_name):
+            for file_name in package.contents:
                 file_ext = pth.splitext(file_name)[-1]
                 if file_ext in [".yml", ".yaml"]:
                     plugin_definition.conf_files.add(file_name)
