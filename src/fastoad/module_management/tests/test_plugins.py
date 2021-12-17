@@ -63,15 +63,15 @@ def test_plugins():
     FastoadLoader._loaded = False  # Ensures first instantiation will trigger reloading
 
     assert (
-        FastoadLoader().plugin_definitions["test_plugin"].module_path
+        FastoadLoader().plugin_definitions["test_plugin"].module_package_name
         == "fastoad.module_management.tests.data.dummy_plugin.models"
     )
     assert (
-        FastoadLoader().plugin_definitions["test_plugin"].notebook_path
+        FastoadLoader().plugin_definitions["test_plugin"].notebook_package_name
         == "fastoad.module_management.tests.data.dummy_plugin.notebooks"
     )
     assert (
-        FastoadLoader().plugin_definitions["test_plugin"].conf_file_path
+        FastoadLoader().plugin_definitions["test_plugin"].conf_file_package_name
         == "fastoad.module_management.tests.data.dummy_plugin.confs"
     )
 
