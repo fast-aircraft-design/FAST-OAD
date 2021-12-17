@@ -345,7 +345,7 @@ class BundleLoader:
         package_contents = []
 
         try:
-            package_contents = list(contents(package_name))
+            package_contents = contents(package_name)
         except (TypeError, ModuleNotFoundError):
             if package_name.endswith(".py"):
                 try:
@@ -353,6 +353,8 @@ class BundleLoader:
                     bundles.add(bundle)
                 except BundleException:
                     failed.add(package_name)
+            else:
+                failed.add(package_name)
         except Exception:
             # Here we catch any Python error that may happen when reading the loaded code.
             # Thus, we ensure to not break the application if a module is incorrectly written.
