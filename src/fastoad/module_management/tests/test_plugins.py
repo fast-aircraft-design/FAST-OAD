@@ -34,8 +34,10 @@ class RegisterDummyService(RegisterSpecializedService, base_class=DummyBase):
     pass
 
 
-# Tests ####################################
-def test_plugins():
+@pytest.fixture
+def dummy_plugin_declaration():
+    FastoadLoader._loaded = True  # Ensures next instantiation will NOT trigger reloading
+
     # Declaring the plugin
     dist = get_distribution("FAST-OAD")
     dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin"] = EntryPoint(
@@ -44,13 +46,17 @@ def test_plugins():
         dist=dist,
     )
 
+
+# Tests ####################################
+def test_plugins(dummy_plugin_declaration):
+
     # Before load_plugins(), services are not registered
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
         declared_dummy_1 = RegisterDummyService.get_provider("test.plugin.declared.1")
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
         decorated_dummy_1 = RegisterDummyService.get_provider("test.plugin.decorated.1")
 
-    FastoadLoader._loaded = False  # Ensures first instantiation will trigger reloading
+    FastoadLoader._loaded = False  # Ensures next instantiation will trigger reloading
 
     assert (
         FastoadLoader().plugin_definitions["test_plugin"].subpackages["models"]
@@ -80,3 +86,11 @@ def test_plugins():
 
     # Checking variable description.
     assert Variable("dummy:variable").description == "Some dummy variable."
+
+
+def test_get_configuration_file_list(dummy_plugin_declaration):
+
+    FastoadLoader._loaded = False  # Ensures next instantiation will trigger reloading
+    file_list = FastoadLoader().get_configuration_file_list()
+    assert set(file_list.keys()) == {"cs25", "test_plugin"}
+    assert set(file_list["test_plugin"]) == {"dummy_conf_1.yml", "dummy_conf_2.yaml"}

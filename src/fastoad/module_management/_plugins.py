@@ -17,7 +17,7 @@ Plugin system for declaration of FAST-OAD models.
 import logging
 import os.path as pth
 from dataclasses import dataclass, field
-from typing import Dict, Set
+from typing import Dict, List, Set
 
 from pkg_resources import iter_entry_points
 
@@ -54,11 +54,12 @@ class FastoadLoader(BundleLoader):
     Specialized :class:`BundleLoader` that will load plugins at first instantiation.
 
     This class should be instantiated whenever plugins need to be loaded, which
-    also means whenever registered models need to be known.
+    also means whenever it is needed to know about registered models.
     """
 
-    #: Stores plugin definitions with plugin name as dict key.
-    plugin_definitions: Dict[str, PluginDefinition] = {}
+    # This class attribute is private and is accessed through a property to ensure
+    # that the class has been instantiated before the attribute is used.
+    _plugin_definitions: Dict[str, PluginDefinition] = {}
 
     _loaded = False
 
@@ -71,6 +72,13 @@ class FastoadLoader(BundleLoader):
             self.read_entry_points()
             self.load()
 
+    @property
+    def plugin_definitions(self) -> Dict[str, PluginDefinition]:
+        """
+        Stores plugin definitions with plugin name as dict keys.
+        """
+        return self._plugin_definitions
+
     @classmethod
     def read_entry_points(cls):
         """
@@ -82,24 +90,46 @@ class FastoadLoader(BundleLoader):
             plugin_definition.package_name = entry_point.module_name
             plugin_definition.subpackages["models"] = entry_point.module_name
             plugin_definition.dist_name = entry_point.dist.project_name
-            cls.plugin_definitions[plugin_name] = plugin_definition
+            cls._plugin_definitions[plugin_name] = plugin_definition
 
         for entry_point in iter_entry_points(MODEL_PLUGIN_ID):
             plugin_name = entry_point.name
             plugin_definition = PluginDefinition()
             plugin_definition.package_name = entry_point.module_name
             plugin_definition.detect_submodules()
-            cls.plugin_definitions[plugin_name] = plugin_definition
+            cls._plugin_definitions[plugin_name] = plugin_definition
 
     @classmethod
     def load(cls):
         """
         Loads declared plugins.
         """
-        for plugin_name, plugin_def in cls.plugin_definitions.items():
+        for plugin_name, plugin_def in cls._plugin_definitions.items():
             _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
             cls._load_models(plugin_def)
             cls._load_configurations(plugin_def)
+
+    @classmethod
+    def get_configuration_file_list(cls, plugin_name=None) -> Dict[str, List[str]]:
+        """
+        Builds the list of sample configuration files provided with plugins.
+
+        :param plugin_name: if provided, only files for this plugin will be returned
+        :return: a dict with plugin name as keys, and list of files as values
+        """
+        file_lists = {}
+        for name, plugin_definition in cls._plugin_definitions.items():
+            if plugin_name is None or plugin_name == name:
+                conf_files = [
+                    file
+                    for file in PackageReader(
+                        plugin_definition.subpackages["configurations"]
+                    ).contents
+                    if pth.splitext(file)[1] in [".yml", ".yaml"]
+                ]
+                file_lists[name] = conf_files
+
+        return file_lists
 
     @classmethod
     def _load_models(cls, plugin_definition: PluginDefinition):

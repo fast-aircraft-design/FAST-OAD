@@ -2,7 +2,7 @@
 API
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -37,10 +37,12 @@ from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.io.variable_io import DataFile
 from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.module_management._bundle_loader import BundleLoader
+from fastoad.module_management._plugins import FastoadLoader
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
-from . import resources
+
+# from . import resources
 
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
@@ -52,7 +54,12 @@ MAX_TABLE_WIDTH = 200  # For variable list text output
 _PROBLEM_CONFIGURATOR = None
 
 
-def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
+def generate_configuration_file(
+    configuration_file_path: str,
+    overwrite: bool = False,
+    plugin_name="cs25",
+    sample_file_name="cs25_base.yml",
+):
     """
     Generates a sample configuration file.
 
@@ -71,7 +78,10 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
     make_parent_dir(configuration_file_path)
 
-    copy_resource(resources, SAMPLE_FILENAME, configuration_file_path)
+    configuration_package = (
+        FastoadLoader().plugin_definitions[plugin_name].subpackages["configurations"]
+    )
+    copy_resource(configuration_package, sample_file_name, configuration_file_path)
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
     return configuration_file_path
 
