@@ -84,10 +84,8 @@ matplotlib = "^3.1.2"
 fastoad = "fastoad.cmd.cli:fast_oad"
 fast-oad = "fastoad.cmd.cli:fast_oad"
 
-[tool.poetry.plugins."fastoad_model"]
-"cs25" = "fastoad.models"
-"cs25.notebooks" = "fastoad.notebooks"
-"cs25.configurations" = "fastoad.configurations"
+[tool.poetry.plugins."fastoad"]
+"cs25" = "fastoad"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

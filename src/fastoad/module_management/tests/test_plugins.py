@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -40,17 +40,7 @@ def test_plugins():
     dist = get_distribution("FAST-OAD")
     dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin"] = EntryPoint(
         "test_plugin",
-        "fastoad.module_management.tests.data.dummy_plugin.models",
-        dist=dist,
-    )
-    dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin.notebooks"] = EntryPoint(
-        "test_plugin.notebooks",
-        "fastoad.module_management.tests.data.dummy_plugin.notebooks",
-        dist=dist,
-    )
-    dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin.configurations"] = EntryPoint(
-        "test_plugin.configurations",
-        "fastoad.module_management.tests.data.dummy_plugin.confs",
+        "fastoad.module_management.tests.data.dummy_plugin",
         dist=dist,
     )
 
@@ -63,16 +53,16 @@ def test_plugins():
     FastoadLoader._loaded = False  # Ensures first instantiation will trigger reloading
 
     assert (
-        FastoadLoader().plugin_definitions["test_plugin"].module_package_name
+        FastoadLoader().plugin_definitions["test_plugin"].subpackages["models"]
         == "fastoad.module_management.tests.data.dummy_plugin.models"
     )
     assert (
-        FastoadLoader().plugin_definitions["test_plugin"].notebook_package_name
+        FastoadLoader().plugin_definitions["test_plugin"].subpackages["notebooks"]
         == "fastoad.module_management.tests.data.dummy_plugin.notebooks"
     )
     assert (
-        FastoadLoader().plugin_definitions["test_plugin"].conf_file_package_name
-        == "fastoad.module_management.tests.data.dummy_plugin.confs"
+        FastoadLoader().plugin_definitions["test_plugin"].subpackages["configurations"]
+        == "fastoad.module_management.tests.data.dummy_plugin.configurations"
     )
 
     declared_dummy_1 = RegisterDummyService.get_provider("test.plugin.declared.1")

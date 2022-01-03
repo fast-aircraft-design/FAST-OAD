@@ -16,7 +16,6 @@ Plugin system for declaration of FAST-OAD models.
 
 import logging
 import os.path as pth
-import warnings
 from dataclasses import dataclass, field
 from typing import Dict, Set
 
@@ -28,7 +27,8 @@ from .._utils.resource_management.contents import PackageReader
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
-MODEL_PLUGIN_ID = "fastoad_model"
+OLD_MODEL_PLUGIN_ID = "fastoad_model"
+MODEL_PLUGIN_ID = "fastoad"
 
 
 @dataclass
@@ -37,11 +37,16 @@ class PluginDefinition:
     Simple structure for storing plugin data.
     """
 
-    module_package_name: str = ""
-    notebook_package_name: str = ""
-    conf_file_package_name: str = ""
+    package_name: str = ""
+    subpackages: Dict = field(default_factory=dict)
     conf_files: Set = field(default_factory=set)
     dist_name: str = ""
+
+    def detect_submodules(self):
+        package = PackageReader(self.package_name)
+        for subpackage_name in ["models", "notebooks", "configurations"]:
+            if subpackage_name in package.contents:
+                self.subpackages[subpackage_name] = ".".join([self.package_name, subpackage_name])
 
 
 class FastoadLoader(BundleLoader):
@@ -71,32 +76,20 @@ class FastoadLoader(BundleLoader):
         """
         Reads definitions of declared plugins.
         """
+        for entry_point in iter_entry_points(OLD_MODEL_PLUGIN_ID):
+            plugin_name = entry_point.name
+            plugin_definition = PluginDefinition()
+            plugin_definition.package_name = entry_point.module_name
+            plugin_definition.subpackages["models"] = entry_point.module_name
+            plugin_definition.dist_name = entry_point.dist.project_name
+            cls.plugin_definitions[plugin_name] = plugin_definition
+
         for entry_point in iter_entry_points(MODEL_PLUGIN_ID):
-            plugin_identifier = entry_point.name.split(".")
-
-            plugin_name = plugin_identifier[0]
-            if plugin_name not in cls.plugin_definitions:
-                cls.plugin_definitions[plugin_name] = PluginDefinition()
-                cls.plugin_definitions[plugin_name].dist_name = entry_point.dist.project_name
-
-            if len(plugin_identifier) == 1:
-                # Location of models.
-                # The existence is checked later and more in details.
-                cls.plugin_definitions[plugin_name].module_package_name = entry_point.module_name
-            elif not PackageReader(entry_point.module_name).is_package:
-                # For other parts of the plugin, we check already the existence.
-                warnings.warn(
-                    f"{entry_point.module_name} (defined by library "
-                    f"{entry_point.dist.project_name}) is not a valid package name.",
-                    RuntimeWarning,
-                )
-                continue
-            elif plugin_identifier[1] == "notebooks":
-                cls.plugin_definitions[plugin_name].notebook_package_name = entry_point.module_name
-            elif plugin_identifier[1] == "configurations":
-                cls.plugin_definitions[plugin_name].conf_file_package_name = entry_point.module_name
-            else:
-                warnings.warn(f"{plugin_name} is not a valid plugin declaration.", RuntimeWarning)
+            plugin_name = entry_point.name
+            plugin_definition = PluginDefinition()
+            plugin_definition.package_name = entry_point.module_name
+            plugin_definition.detect_submodules()
+            cls.plugin_definitions[plugin_name] = plugin_definition
 
     @classmethod
     def load(cls):
@@ -111,16 +104,16 @@ class FastoadLoader(BundleLoader):
     @classmethod
     def _load_models(cls, plugin_definition: PluginDefinition):
         """Loads models from plugin."""
-        if plugin_definition.module_package_name:
+        if plugin_definition.subpackages["models"]:
             _LOGGER.debug("   Loading models")
-            BundleLoader().explore_folder(plugin_definition.module_package_name, is_package=True)
-            Variable.read_variable_descriptions(plugin_definition.module_package_name)
+            BundleLoader().explore_folder(plugin_definition.subpackages["models"], is_package=True)
+            Variable.read_variable_descriptions(plugin_definition.subpackages["models"])
 
     @classmethod
     def _load_configurations(cls, plugin_definition: PluginDefinition):
         """Loads configurations from plugin."""
-        package = PackageReader(plugin_definition.conf_file_package_name)
-        if package.is_package:  # Checking it is not None
+        package = PackageReader(plugin_definition.subpackages["configurations"])
+        if package.is_package:
             _LOGGER.debug("   Loading configurations")
             for file_name in package.contents:
                 file_ext = pth.splitext(file_name)[-1]
