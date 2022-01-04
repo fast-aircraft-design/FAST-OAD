@@ -30,7 +30,12 @@ from tabulate import tabulate
 import fastoad.openmdao.whatsopt
 from fastoad._utils.files import make_parent_dir
 from fastoad._utils.resource_management.copy import copy_resource
-from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.cmd.exceptions import (
+    FastFileExistsError,
+    FastSeveralConfigurationFilesError,
+    FastUnknownConfigurationFileError,
+    FastUnknownPluginError,
+)
 from fastoad.gui import OptimizationViewer, VariableViewer
 from fastoad.io import IVariableIOFormatter
 from fastoad.io.configuration import FASTOADProblemConfigurator
@@ -58,31 +63,52 @@ def generate_configuration_file(
     configuration_file_path: str,
     overwrite: bool = False,
     plugin_name="cs25",
-    sample_file_name="cs25_base.yml",
+    sample_file_name=None,
 ):
     """
     Generates a sample configuration file.
 
     :param configuration_file_path: the path of file to be written
     :param overwrite: if True, the file will be written, even if it already exists
+    :param plugin_name: the name of plugin that provides the sample configuration file
+    :param sample_file_name: the name of the sample configuration file (can be omitted if
+                             the plugin provides only one configuration file)
     :return: path of generated file
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
+    :raise FastUnknownPluginError: if the specified plugin is not available
+    :raise FastSeveralConfigurationFilesError: if the specified plugin provides several sample
+                                               configuration files but `sample_configuration_file`
+                                               has not been provided
+    :raise FastUnknownConfigurationFileError: if the specified plugin does not provide specified
+                                              configuration file
     """
     configuration_file_path = pth.abspath(configuration_file_path)
     if not overwrite and pth.exists(configuration_file_path):
         raise FastFileExistsError(
-            "Configuration file %s not written because it already exists. "
-            "Use overwrite=True to bypass." % configuration_file_path,
+            f"Configuration file {configuration_file_path} not written because it already exists. "
+            "Use overwrite=True to bypass.",
             configuration_file_path,
         )
 
     make_parent_dir(configuration_file_path)
 
-    configuration_package = (
-        FastoadLoader().plugin_definitions[plugin_name].subpackages["configurations"]
-    )
+    loader = FastoadLoader()
+    plugin_definitions = loader.plugin_definitions
+    if plugin_name not in plugin_definitions:
+        raise FastUnknownPluginError(plugin_name)
+
+    conf_file_list = loader.get_plugin_configuration_file_list(plugin_name)
+    if sample_file_name is None:
+        if len(conf_file_list) > 1:
+            raise FastSeveralConfigurationFilesError(plugin_name)
+        else:
+            sample_file_name = conf_file_list[0]
+    elif sample_file_name not in conf_file_list:
+        raise FastUnknownConfigurationFileError(sample_file_name, plugin_name)
+
+    configuration_package = plugin_definitions[plugin_name].subpackages["configurations"]
     copy_resource(configuration_package, sample_file_name, configuration_file_path)
-    _LOGGER.info("Sample configuration written in %s", configuration_file_path)
+    _LOGGER.info(f"Sample configuration written in {configuration_file_path}")
     return configuration_file_path
 
 

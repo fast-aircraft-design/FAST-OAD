@@ -2,7 +2,7 @@
 Tests for basic API
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,6 @@ Tests for basic API
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import os
 import os.path as pth
 import shutil
@@ -21,13 +20,18 @@ from filecmp import cmp
 from shutil import rmtree
 
 import pytest
+from pkg_resources import EntryPoint, get_distribution
 
 import fastoad.models
 from fastoad.openmdao.variables import Variable
 from .. import api
-from ..api import SAMPLE_FILENAME
-from ..exceptions import FastFileExistsError
+from ..exceptions import (
+    FastFileExistsError,
+    FastSeveralConfigurationFilesError,
+    FastUnknownPluginError,
+)
 from ...io import DataFile
+from ...module_management._plugins import FastoadLoader, MODEL_PLUGIN_ID
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -42,16 +46,106 @@ def cleanup():
     Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
 
 
-def test_generate_configuration_file(cleanup):
-    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "new_process.yml")
+@pytest.fixture
+def dummy_plugin_declaration():
+    # Declaring the plugin
+    dist = get_distribution("FAST-OAD")
+    entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
+    entry_map["test_plugin_1"] = EntryPoint(
+        "test_plugin_1",
+        "fastoad.cmd.tests.data.dummy_plugin_1",
+        dist=dist,
+    )
+    entry_map["test_plugin_2"] = EntryPoint(
+        "test_plugin_2",
+        "fastoad.cmd.tests.data.dummy_plugin_2",
+        dist=dist,
+    )
 
-    api.generate_configuration_file(configuration_file_path, False)
+    # Ensure next instantiation of FastoadLoader will trigger reloading plugins
+    FastoadLoader._loaded = False
+
+    yield
+
+    # cleaning
+    del entry_map["test_plugin_1"]
+    del entry_map["test_plugin_2"]
+    FastoadLoader._loaded = False
+
+
+def test_generate_configuration_file_unknown_plugin(cleanup, dummy_plugin_declaration):
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "will not_be_written.yml")
+
+    # Providing a bad plugin name
+    with pytest.raises(FastUnknownPluginError):
+        api.generate_configuration_file(
+            configuration_file_path, overwrite=False, plugin_name="unknown_plugin"
+        )
+
+
+def test_generate_configuration_file_plugin_1(cleanup, dummy_plugin_declaration):
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
+
+    # No conf file specified because the plugin has only one
+    api.generate_configuration_file(
+        configuration_file_path, overwrite=False, plugin_name="test_plugin_1"
+    )
+    original_file = pth.join(
+        DATA_FOLDER_PATH, "dummy_plugin_1", "configurations", "dummy_conf_1.yml"
+    )
+    assert cmp(configuration_file_path, original_file)
+
     # Generating again without forcing overwrite will make it fail
     with pytest.raises(FastFileExistsError):
-        api.generate_configuration_file(configuration_file_path, False)
-    api.generate_configuration_file(configuration_file_path, True)
+        api.generate_configuration_file(
+            configuration_file_path, overwrite=False, plugin_name="test_plugin_1"
+        )
 
-    original_file = pth.join(pth.dirname(api.__file__), "resources", SAMPLE_FILENAME)
+    # Generating again with overwrite=True should be Ok
+    api.generate_configuration_file(
+        configuration_file_path, overwrite=True, plugin_name="test_plugin_1"
+    )
+
+
+def test_generate_configuration_file_plugin_2(cleanup, dummy_plugin_declaration):
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_2.yml")
+
+    # This plugin provides 2 conf files, so not specifying the conf file should
+    # raise an error
+    with pytest.raises(FastSeveralConfigurationFilesError):
+        api.generate_configuration_file(
+            configuration_file_path, overwrite=False, plugin_name="test_plugin_2"
+        )
+
+    api.generate_configuration_file(
+        configuration_file_path,
+        overwrite=True,
+        plugin_name="test_plugin_2",
+        sample_file_name="dummy_conf_2-1.yml",
+    )
+
+    original_file = pth.join(
+        DATA_FOLDER_PATH, "dummy_plugin_2", "configurations", "dummy_conf_2-1.yml"
+    )
+    assert cmp(configuration_file_path, original_file)
+
+    with pytest.raises(FastFileExistsError):
+        api.generate_configuration_file(
+            configuration_file_path,
+            overwrite=False,
+            plugin_name="test_plugin_2",
+            sample_file_name="dummy_conf_2-2.yaml",
+        )
+
+    api.generate_configuration_file(
+        configuration_file_path,
+        overwrite=True,
+        plugin_name="test_plugin_2",
+        sample_file_name="dummy_conf_2-2.yaml",
+    )
+    original_file = pth.join(
+        DATA_FOLDER_PATH, "dummy_plugin_2", "configurations", "dummy_conf_2-2.yaml"
+    )
     assert cmp(configuration_file_path, original_file)
 
 

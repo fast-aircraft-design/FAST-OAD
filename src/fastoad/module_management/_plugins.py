@@ -69,6 +69,7 @@ class FastoadLoader(BundleLoader):
             # Setting cls.loaded to True already ensures that a second instantiation
             # during loading will not result in an import cycle.
             self.__class__._loaded = True
+            self.__class__._plugin_definitions = {}
             self.read_entry_points()
             self.load()
 
@@ -118,23 +119,33 @@ class FastoadLoader(BundleLoader):
         :return: a dict with plugin name as keys, and list of files as values
         """
         file_lists = {}
-        for name, plugin_definition in cls._plugin_definitions.items():
-            if plugin_name is None or plugin_name == name:
-                conf_files = [
-                    file
-                    for file in PackageReader(
-                        plugin_definition.subpackages["configurations"]
-                    ).contents
-                    if pth.splitext(file)[1] in [".yml", ".yaml"]
-                ]
-                file_lists[name] = conf_files
+        if plugin_name:
+            file_lists[plugin_name] = cls.get_plugin_configuration_file_list(plugin_name)
+        else:
+            for name, plugin_definition in cls._plugin_definitions.items():
+                file_lists[name] = cls.get_plugin_configuration_file_list(name)
 
         return file_lists
 
     @classmethod
+    def get_plugin_configuration_file_list(cls, plugin_name) -> List[str]:
+        """
+
+        :param plugin_name:
+        :return: list of configuration files provided by named plugin
+        """
+        return [
+            file
+            for file in PackageReader(
+                cls._plugin_definitions[plugin_name].subpackages["configurations"]
+            ).contents
+            if pth.splitext(file)[1] in [".yml", ".yaml"]
+        ]
+
+    @classmethod
     def _load_models(cls, plugin_definition: PluginDefinition):
         """Loads models from plugin."""
-        if plugin_definition.subpackages["models"]:
+        if "models" in plugin_definition.subpackages:
             _LOGGER.debug("   Loading models")
             BundleLoader().explore_folder(plugin_definition.subpackages["models"], is_package=True)
             Variable.read_variable_descriptions(plugin_definition.subpackages["models"])
