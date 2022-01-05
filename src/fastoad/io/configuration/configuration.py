@@ -30,7 +30,6 @@ from ruamel.yaml import YAML
 from fastoad._utils.files import make_parent_dir
 from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
-from fastoad.openmdao._utils import get_unconnected_input_names
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
 from . import resources
@@ -442,13 +441,13 @@ class FASTOADProblemConfigurator:
         :param problem: problem with missing inputs. setup() must have been run.
         :return: IVC of needed input variables, VariableList with unused variables.
         """
-        mandatory, optional = get_unconnected_input_names(problem, promoted_names=True)
-        needed_variable_names = mandatory + optional
+        problem_variables = VariableList().from_problem(problem)
+        problem_inputs_names = [var.name for var in problem_variables if var.is_input]
 
         input_variables = DataFile(self.input_file_path)
 
         unused_variables = VariableList(
-            [var for var in input_variables if var.name not in needed_variable_names]
+            [var for var in input_variables if var.name not in problem_inputs_names]
         )
         for name in unused_variables.names():
             del input_variables[name]
