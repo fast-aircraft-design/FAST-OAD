@@ -118,11 +118,11 @@ class FASTOADProblemConfigurator:
         if read_inputs:
             problem_with_no_inputs = self.get_problem(auto_scaling=auto_scaling)
             problem_with_no_inputs.setup()
-            input_ivc, unused_variables = self._get_problem_inputs(problem_with_no_inputs)
+            _, unused_variables = self._get_problem_inputs(problem_with_no_inputs)
         else:
-            input_ivc = unused_variables = None
+            unused_variables = None
 
-        problem = FASTOADProblem(self._build_model(input_ivc))
+        problem = FASTOADProblem(self._build_model())
         problem.input_file_path = self.input_file_path
         problem.output_file_path = self.output_file_path
         problem.additional_variables = unused_variables
@@ -274,7 +274,17 @@ class FASTOADProblemConfigurator:
         subpart = {"optimization": subpart}
         self._serializer.data.update(subpart)
 
-    def _build_model(self, input_ivc: om.IndepVarComp = None) -> om.Group:
+    def set_initial_values(self, problem: FASTOADProblem):
+        """
+        Set initial values of inputs for the configure problem.
+
+        :param problem: problem. setup() must have been run.
+        """
+        input_variables, _ = self._get_problem_inputs(problem, ivc_output_format=False)
+        for input_var in input_variables:
+            problem.set_val(input_var.name, **input_var.metadata)
+
+    def _build_model(self) -> om.Group:
         """
         Builds the model as defined in the configuration file.
 
@@ -286,9 +296,6 @@ class FASTOADProblemConfigurator:
 
         model = FASTOADModel()
         model.active_submodels = self._serializer.data.get(KEY_SUBMODELS, {})
-
-        if input_ivc:
-            model.add_subsystem("fastoad_inputs", input_ivc, promotes=["*"])
 
         model_definition = self._serializer.data.get(KEY_MODEL)
 
@@ -423,7 +430,9 @@ class FASTOADProblemConfigurator:
                 design_var_table["ref"] = design_var_table["upper"]
             model.add_design_var(**design_var_table)
 
-    def _get_problem_inputs(self, problem: FASTOADProblem) -> Tuple[om.IndepVarComp, VariableList]:
+    def _get_problem_inputs(
+        self, problem: FASTOADProblem, ivc_output_format=True
+    ) -> Tuple[om.IndepVarComp, VariableList]:
         """
         Reads input file for the configure problem.
 
@@ -447,9 +456,11 @@ class FASTOADProblemConfigurator:
         nan_variable_names = [var.name for var in input_variables if np.all(np.isnan(var.value))]
         if nan_variable_names:
             raise FASTConfigurationNanInInputFile(self.input_file_path, nan_variable_names)
-
-        input_ivc = input_variables.to_ivc()
-        return input_ivc, unused_variables
+        if ivc_output_format:
+            inputs = input_variables.to_ivc()
+        else:
+            inputs = input_variables
+        return inputs, unused_variables
 
     def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
         self._configuration_modifier = modifier

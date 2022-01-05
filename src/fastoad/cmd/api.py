@@ -572,6 +572,10 @@ def _run_problem(
         )
 
     problem.setup()
+
+    # Set initial values for inputs
+    conf.set_initial_values(problem)
+
     start_time = time()
     if mode == "run_model":
         problem.run_model()
