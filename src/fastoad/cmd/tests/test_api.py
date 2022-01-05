@@ -13,6 +13,7 @@ Tests for basic API
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import os.path as pth
 import shutil
@@ -20,9 +21,9 @@ from filecmp import cmp
 from shutil import rmtree
 
 import pytest
-from pkg_resources import EntryPoint, get_distribution
 
 import fastoad.models
+from fastoad.io import DataFile
 from fastoad.openmdao.variables import Variable
 from .. import api
 from ..exceptions import (
@@ -31,8 +32,6 @@ from ..exceptions import (
     FastSeveralPluginsError,
     FastUnknownPluginError,
 )
-from ...io import DataFile
-from ...module_management._plugins import FastoadLoader, MODEL_PLUGIN_ID
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -47,62 +46,7 @@ def cleanup():
     Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
 
 
-@pytest.fixture
-def one_dummy_plugin_declaration():
-    # Declaring the plugin
-    dist = get_distribution("FAST-OAD")
-
-    original_entry_map = dist.get_entry_map(MODEL_PLUGIN_ID).copy()
-    entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
-    entry_map.clear()
-    entry_map["test_plugin_1"] = EntryPoint(
-        "test_plugin_1",
-        "fastoad.cmd.tests.data.dummy_plugin_1",
-        dist=dist,
-    )
-
-    # Ensure next instantiation of FastoadLoader will trigger reloading plugins
-    FastoadLoader._loaded = False
-
-    yield
-
-    # cleaning
-    entry_map.clear()
-    entry_map.update(original_entry_map)
-    FastoadLoader._loaded = False
-
-
-@pytest.fixture
-def two_dummy_plugins_declaration():
-    # Declaring the plugin
-    dist = get_distribution("FAST-OAD")
-
-    original_entry_map = dist.get_entry_map(MODEL_PLUGIN_ID).copy()
-    entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
-    entry_map.clear()
-    entry_map["test_plugin_1"] = EntryPoint(
-        "test_plugin_1",
-        "fastoad.cmd.tests.data.dummy_plugin_1",
-        dist=dist,
-    )
-    entry_map["test_plugin_2"] = EntryPoint(
-        "test_plugin_2",
-        "fastoad.cmd.tests.data.dummy_plugin_2",
-        dist=dist,
-    )
-
-    # Ensure next instantiation of FastoadLoader will trigger reloading plugins
-    FastoadLoader._loaded = False
-
-    yield
-
-    # cleaning
-    entry_map.clear()
-    entry_map.update(original_entry_map)
-    FastoadLoader._loaded = False
-
-
-def test_generate_configuration_file_unknown_plugin(cleanup, two_dummy_plugins_declaration):
+def test_generate_configuration_file_unknown_plugin(cleanup, two_dummy_plugins):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "will not_be_written.yml")
 
     # Providing a bad plugin name
@@ -112,7 +56,7 @@ def test_generate_configuration_file_unknown_plugin(cleanup, two_dummy_plugins_d
         )
 
 
-def test_generate_configuration_file_plugin_1(cleanup, two_dummy_plugins_declaration):
+def test_generate_configuration_file_plugin_1(cleanup, two_dummy_plugins, plugin_file_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
 
     # Not specifying plugin while 2 are declared should get an error
@@ -124,7 +68,7 @@ def test_generate_configuration_file_plugin_1(cleanup, two_dummy_plugins_declara
         configuration_file_path, overwrite=False, plugin_name="test_plugin_1"
     )
     original_file = pth.join(
-        DATA_FOLDER_PATH, "dummy_plugin_1", "configurations", "dummy_conf_1.yml"
+        plugin_file_path, "dummy_plugin_1", "configurations", "dummy_conf_1.yml"
     )
     assert cmp(configuration_file_path, original_file)
 
@@ -140,14 +84,14 @@ def test_generate_configuration_file_plugin_1(cleanup, two_dummy_plugins_declara
     )
 
 
-def test_generate_configuration_file_plugin_1_alone(cleanup, one_dummy_plugin_declaration):
+def test_generate_configuration_file_plugin_1_alone(cleanup, one_dummy_plugin):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
 
     # No plugin specified only one plugin is available
     api.generate_configuration_file(configuration_file_path, overwrite=True)
 
 
-def test_generate_configuration_file_plugin_2(cleanup, two_dummy_plugins_declaration):
+def test_generate_configuration_file_plugin_2(cleanup, two_dummy_plugins, plugin_file_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_2.yml")
 
     # This plugin provides 2 conf files, so not specifying the conf file should
@@ -165,7 +109,7 @@ def test_generate_configuration_file_plugin_2(cleanup, two_dummy_plugins_declara
     )
 
     original_file = pth.join(
-        DATA_FOLDER_PATH, "dummy_plugin_2", "configurations", "dummy_conf_2-1.yml"
+        plugin_file_path, "dummy_plugin_2", "configurations", "dummy_conf_2-1.yml"
     )
     assert cmp(configuration_file_path, original_file)
 
@@ -184,7 +128,7 @@ def test_generate_configuration_file_plugin_2(cleanup, two_dummy_plugins_declara
         sample_file_name="dummy_conf_2-2.yaml",
     )
     original_file = pth.join(
-        DATA_FOLDER_PATH, "dummy_plugin_2", "configurations", "dummy_conf_2-2.yaml"
+        plugin_file_path, "dummy_plugin_2", "configurations", "dummy_conf_2-2.yaml"
     )
     assert cmp(configuration_file_path, original_file)
 

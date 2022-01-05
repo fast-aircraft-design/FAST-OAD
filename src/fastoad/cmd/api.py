@@ -18,7 +18,7 @@ import logging
 import os.path as pth
 import sys
 import textwrap as tw
-from collections import Iterable
+from collections.abc import Iterable
 from time import time
 from typing import IO, List, Union
 
