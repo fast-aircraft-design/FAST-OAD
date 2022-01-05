@@ -89,14 +89,15 @@ class FastoadLoader(BundleLoader):
             plugin_name = entry_point.name
             plugin_definition = PluginDefinition()
             plugin_definition.package_name = entry_point.module_name
-            plugin_definition.subpackages["models"] = entry_point.module_name
             plugin_definition.dist_name = entry_point.dist.project_name
+            plugin_definition.subpackages["models"] = entry_point.module_name
             cls._plugin_definitions[plugin_name] = plugin_definition
 
         for entry_point in iter_entry_points(MODEL_PLUGIN_ID):
             plugin_name = entry_point.name
             plugin_definition = PluginDefinition()
             plugin_definition.package_name = entry_point.module_name
+            plugin_definition.dist_name = entry_point.dist.project_name
             plugin_definition.detect_submodules()
             cls._plugin_definitions[plugin_name] = plugin_definition
 
@@ -117,13 +118,17 @@ class FastoadLoader(BundleLoader):
         :param plugin_name:
         :return: list of configuration files provided by named plugin
         """
-        return [
-            file
-            for file in PackageReader(
-                cls._plugin_definitions[plugin_name].subpackages["configurations"]
-            ).contents
-            if pth.splitext(file)[1] in [".yml", ".yaml"]
-        ]
+        plugin_definition = cls._plugin_definitions[plugin_name]
+        if "configurations" in plugin_definition.subpackages:
+            return [
+                file
+                for file in PackageReader(
+                    cls._plugin_definitions[plugin_name].subpackages["configurations"]
+                ).contents
+                if pth.splitext(file)[1] in [".yml", ".yaml"]
+            ]
+
+        return []
 
     @classmethod
     def _load_models(cls, plugin_definition: PluginDefinition):
@@ -136,9 +141,9 @@ class FastoadLoader(BundleLoader):
     @classmethod
     def _load_configurations(cls, plugin_definition: PluginDefinition):
         """Loads configurations from plugin."""
-        package = PackageReader(plugin_definition.subpackages["configurations"])
-        if package.is_package:
+        if "configurations" in plugin_definition.subpackages:
             _LOGGER.debug("   Loading configurations")
+            package = PackageReader(plugin_definition.subpackages["configurations"])
             for file_name in package.contents:
                 file_ext = pth.splitext(file_name)[-1]
                 if file_ext in [".yml", ".yaml"]:

@@ -20,7 +20,7 @@
 import os.path as pth
 
 import pytest
-from pkg_resources import EntryPoint, get_distribution
+from pkg_resources import Distribution, EntryPoint, get_distribution
 
 from fastoad.module_management._plugins import FastoadLoader, MODEL_PLUGIN_ID
 
@@ -50,7 +50,7 @@ def one_dummy_plugin():
     entry_map["test_plugin_1"] = EntryPoint(
         "test_plugin_1",
         "tests.dummy_plugins.dummy_plugin_1",
-        dist=dist,
+        dist=Distribution(project_name="dummy_1"),
     )
 
     # Ensure next instantiation of FastoadLoader will trigger reloading plugins
@@ -77,16 +77,13 @@ def two_dummy_plugins():
     original_entry_map = dist.get_entry_map(MODEL_PLUGIN_ID).copy()
     entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
     entry_map.clear()
-    entry_map["test_plugin_1"] = EntryPoint(
-        "test_plugin_1",
-        "tests.dummy_plugins.dummy_plugin_1",
-        dist=dist,
-    )
-    entry_map["test_plugin_2"] = EntryPoint(
-        "test_plugin_2",
-        "tests.dummy_plugins.dummy_plugin_2",
-        dist=dist,
-    )
+
+    for i in [1, 2, 3]:
+        entry_map[f"test_plugin_{i}"] = EntryPoint(
+            f"test_plugin_{i}",
+            f"tests.dummy_plugins.dummy_plugin_{i}",
+            dist=Distribution(project_name=f"dummy_{i}"),
+        )
 
     # Ensure next instantiation of FastoadLoader will trigger reloading plugins
     FastoadLoader._loaded = False
