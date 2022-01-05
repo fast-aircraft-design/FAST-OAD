@@ -28,6 +28,7 @@ from .. import api
 from ..exceptions import (
     FastFileExistsError,
     FastSeveralConfigurationFilesError,
+    FastSeveralPluginsError,
     FastUnknownPluginError,
 )
 from ...io import DataFile
@@ -47,10 +48,38 @@ def cleanup():
 
 
 @pytest.fixture
-def dummy_plugin_declaration():
+def one_dummy_plugin_declaration():
     # Declaring the plugin
     dist = get_distribution("FAST-OAD")
+
+    original_entry_map = dist.get_entry_map(MODEL_PLUGIN_ID).copy()
     entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
+    entry_map.clear()
+    entry_map["test_plugin_1"] = EntryPoint(
+        "test_plugin_1",
+        "fastoad.cmd.tests.data.dummy_plugin_1",
+        dist=dist,
+    )
+
+    # Ensure next instantiation of FastoadLoader will trigger reloading plugins
+    FastoadLoader._loaded = False
+
+    yield
+
+    # cleaning
+    entry_map.clear()
+    entry_map.update(original_entry_map)
+    FastoadLoader._loaded = False
+
+
+@pytest.fixture
+def two_dummy_plugins_declaration():
+    # Declaring the plugin
+    dist = get_distribution("FAST-OAD")
+
+    original_entry_map = dist.get_entry_map(MODEL_PLUGIN_ID).copy()
+    entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
+    entry_map.clear()
     entry_map["test_plugin_1"] = EntryPoint(
         "test_plugin_1",
         "fastoad.cmd.tests.data.dummy_plugin_1",
@@ -68,12 +97,12 @@ def dummy_plugin_declaration():
     yield
 
     # cleaning
-    del entry_map["test_plugin_1"]
-    del entry_map["test_plugin_2"]
+    entry_map.clear()
+    entry_map.update(original_entry_map)
     FastoadLoader._loaded = False
 
 
-def test_generate_configuration_file_unknown_plugin(cleanup, dummy_plugin_declaration):
+def test_generate_configuration_file_unknown_plugin(cleanup, two_dummy_plugins_declaration):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "will not_be_written.yml")
 
     # Providing a bad plugin name
@@ -83,8 +112,12 @@ def test_generate_configuration_file_unknown_plugin(cleanup, dummy_plugin_declar
         )
 
 
-def test_generate_configuration_file_plugin_1(cleanup, dummy_plugin_declaration):
+def test_generate_configuration_file_plugin_1(cleanup, two_dummy_plugins_declaration):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
+
+    # Not specifying plugin while 2 are declared should get an error
+    with pytest.raises(FastSeveralPluginsError):
+        api.generate_configuration_file(configuration_file_path, overwrite=True)
 
     # No conf file specified because the plugin has only one
     api.generate_configuration_file(
@@ -107,7 +140,14 @@ def test_generate_configuration_file_plugin_1(cleanup, dummy_plugin_declaration)
     )
 
 
-def test_generate_configuration_file_plugin_2(cleanup, dummy_plugin_declaration):
+def test_generate_configuration_file_plugin_1_alone(cleanup, one_dummy_plugin_declaration):
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
+
+    # No plugin specified only one plugin is available
+    api.generate_configuration_file(configuration_file_path, overwrite=True)
+
+
+def test_generate_configuration_file_plugin_2(cleanup, two_dummy_plugins_declaration):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_2.yml")
 
     # This plugin provides 2 conf files, so not specifying the conf file should

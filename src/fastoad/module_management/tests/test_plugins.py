@@ -38,6 +38,8 @@ class RegisterDummyService(RegisterSpecializedService, base_class=DummyBase):
 def dummy_plugin_declaration():
     # Declaring the plugin
     dist = get_distribution("FAST-OAD")
+
+    original_entry_map = dist.get_entry_map(MODEL_PLUGIN_ID).copy()
     entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
     entry_map["test_plugin"] = EntryPoint(
         "test_plugin",
@@ -51,7 +53,8 @@ def dummy_plugin_declaration():
     yield
 
     # cleaning
-    del entry_map["test_plugin"]
+    entry_map.clear()
+    entry_map.update(original_entry_map)
     FastoadLoader._loaded = False
 
 

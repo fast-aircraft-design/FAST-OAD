@@ -25,6 +25,13 @@ class FastFileExistsError(FastError):
         self.file_path = args[1]
 
 
+class FastSeveralPluginsError(FastError):
+    """Raised when no plugin has been specified but several plugins are available."""
+
+    def __init__(self):
+        super().__init__("Several plugins are available. One must be specified.")
+
+
 class FastUnknownPluginError(FastError):
     """Raised when a plugin name is not found."""
 

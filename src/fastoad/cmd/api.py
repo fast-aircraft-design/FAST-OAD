@@ -33,6 +33,7 @@ from fastoad._utils.resource_management.copy import copy_resource
 from fastoad.cmd.exceptions import (
     FastFileExistsError,
     FastSeveralConfigurationFilesError,
+    FastSeveralPluginsError,
     FastUnknownConfigurationFileError,
     FastUnknownPluginError,
 )
@@ -62,7 +63,7 @@ _PROBLEM_CONFIGURATOR = None
 def generate_configuration_file(
     configuration_file_path: str,
     overwrite: bool = False,
-    plugin_name="cs25",
+    plugin_name=None,
     sample_file_name=None,
 ):
     """
@@ -70,11 +71,14 @@ def generate_configuration_file(
 
     :param configuration_file_path: the path of file to be written
     :param overwrite: if True, the file will be written, even if it already exists
-    :param plugin_name: the name of plugin that provides the sample configuration file
+    :param plugin_name: the name of plugin that provides the sample configuration file (can
+                        be omitted if only one plugin is available)
     :param sample_file_name: the name of the sample configuration file (can be omitted if
                              the plugin provides only one configuration file)
     :return: path of generated file
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
+    :raise FastSeveralPluginsError: if several plugins are available but `plugin_name` has not
+                                    been provided
     :raise FastUnknownPluginError: if the specified plugin is not available
     :raise FastSeveralConfigurationFilesError: if the specified plugin provides several sample
                                                configuration files but `sample_configuration_file`
@@ -94,6 +98,12 @@ def generate_configuration_file(
 
     loader = FastoadLoader()
     plugin_definitions = loader.plugin_definitions
+    if plugin_name is None:
+        if len(plugin_definitions) == 1:
+            plugin_name = next(iter(plugin_definitions.keys()))
+        else:
+            raise FastSeveralPluginsError()
+
     if plugin_name not in plugin_definitions:
         raise FastUnknownPluginError(plugin_name)
 
