@@ -31,7 +31,7 @@ def cleanup():
     os.makedirs(RESULTS_FOLDER_PATH)  # needed for CliRunner.isolated_filesystem()
 
 
-def test_plugin_info(cleanup, two_dummy_plugins, plugin_file_path):
+def test_plugin_info(cleanup, dummy_plugins, plugin_file_path):
     runner = CliRunner()
     result = runner.invoke(fast_oad, ["plugin_info"])
 

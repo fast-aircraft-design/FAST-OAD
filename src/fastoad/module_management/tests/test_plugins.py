@@ -24,7 +24,7 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 
 # Tests ####################################
-def test_plugins(two_dummy_plugins):
+def test_plugins(dummy_plugins):
 
     FastoadLoader._loaded = True  # Ensures next instantiation will NOT trigger reloading
 
@@ -72,7 +72,7 @@ def test_plugins(two_dummy_plugins):
     assert Variable("dummy:variable").description == "Some dummy variable."
 
 
-def test_get_plugin_configuration_file_list(two_dummy_plugins):
+def test_get_plugin_configuration_file_list(dummy_plugins):
     file_list = FastoadLoader().get_plugin_configuration_file_list("test_plugin_1")
     assert set(file_list) == {"dummy_conf_1.yml"}
     file_list = FastoadLoader().get_plugin_configuration_file_list("test_plugin_2")

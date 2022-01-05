@@ -46,7 +46,7 @@ def cleanup():
     Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
 
 
-def test_generate_configuration_file_unknown_plugin(cleanup, two_dummy_plugins):
+def test_generate_configuration_file_unknown_plugin(cleanup, dummy_plugins):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "will not_be_written.yml")
 
     # Providing a bad plugin name
@@ -56,7 +56,7 @@ def test_generate_configuration_file_unknown_plugin(cleanup, two_dummy_plugins):
         )
 
 
-def test_generate_configuration_file_plugin_1(cleanup, two_dummy_plugins, plugin_file_path):
+def test_generate_configuration_file_plugin_1(cleanup, dummy_plugins, plugin_file_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
 
     # Not specifying plugin while 2 are declared should get an error
@@ -91,7 +91,7 @@ def test_generate_configuration_file_plugin_1_alone(cleanup, one_dummy_plugin):
     api.generate_configuration_file(configuration_file_path, overwrite=True)
 
 
-def test_generate_configuration_file_plugin_2(cleanup, two_dummy_plugins, plugin_file_path):
+def test_generate_configuration_file_plugin_2(cleanup, dummy_plugins, plugin_file_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_2.yml")
 
     # This plugin provides 2 conf files, so not specifying the conf file should

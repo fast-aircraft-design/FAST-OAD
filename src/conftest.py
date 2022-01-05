@@ -36,61 +36,75 @@ def plugin_file_path():
 
 
 @pytest.fixture
+def no_plugin():
+    """
+    Ensures that FAST-OAD has no plugin registered.
+
+    Any previous state of plugins is restored during teardown.
+    """
+    original_entry_map = _update_entry_map({})
+    yield
+    _restore_entry_map(original_entry_map)
+
+
+@pytest.fixture
 def one_dummy_plugin():
     """
     Ensures that FAST-OAD has only the dummy plugin 1 registered.
 
     Any previous state of plugins is restored during teardown.
     """
-    dist = get_distribution("FAST-OAD")
-
-    original_entry_map = dist.get_entry_map(MODEL_PLUGIN_ID).copy()
-    entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
-    entry_map.clear()
-    entry_map["test_plugin_1"] = EntryPoint(
-        "test_plugin_1",
-        "tests.dummy_plugins.dummy_plugin_1",
-        dist=Distribution(project_name="dummy_1"),
+    original_entry_map = _update_entry_map(
+        {
+            "test_plugin_1": EntryPoint(
+                "test_plugin_1",
+                "tests.dummy_plugins.dummy_plugin_1",
+                dist=Distribution(project_name="dummy_1"),
+            )
+        }
     )
-
-    # Ensure next instantiation of FastoadLoader will trigger reloading plugins
-    FastoadLoader._loaded = False
-
     yield
-
-    # cleaning
-    entry_map.clear()
-    entry_map.update(original_entry_map)
-    FastoadLoader._loaded = False
+    _restore_entry_map(original_entry_map)
 
 
 @pytest.fixture
-def two_dummy_plugins():
+def dummy_plugins():
     """
-    Ensures that FAST-OAD has only the two dummy plugins registered.
+    Ensures that FAST-OAD has only the dummy plugins registered.
 
     Any previous state of plugins is restored during teardown.
     """
+    original_entry_map = _update_entry_map(
+        {
+            f"test_plugin_{i}": EntryPoint(
+                f"test_plugin_{i}",
+                f"tests.dummy_plugins.dummy_plugin_{i}",
+                dist=Distribution(project_name=f"dummy_{i}"),
+            )
+            for i in [1, 2, 3]
+        }
+    )
+    yield
+    _restore_entry_map(original_entry_map)
 
+
+def _update_entry_map(new_entry_map) -> dict:
     dist = get_distribution("FAST-OAD")
 
     original_entry_map = dist.get_entry_map(MODEL_PLUGIN_ID).copy()
     entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
     entry_map.clear()
-
-    for i in [1, 2, 3]:
-        entry_map[f"test_plugin_{i}"] = EntryPoint(
-            f"test_plugin_{i}",
-            f"tests.dummy_plugins.dummy_plugin_{i}",
-            dist=Distribution(project_name=f"dummy_{i}"),
-        )
+    entry_map.update(new_entry_map)
 
     # Ensure next instantiation of FastoadLoader will trigger reloading plugins
     FastoadLoader._loaded = False
 
-    yield
+    return original_entry_map
 
-    # cleaning
+
+def _restore_entry_map(original_entry_map):
+    dist = get_distribution("FAST-OAD")
+    entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
     entry_map.clear()
     entry_map.update(original_entry_map)
     FastoadLoader._loaded = False
