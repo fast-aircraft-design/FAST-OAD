@@ -1,6 +1,6 @@
 """Command Line Interface."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,7 @@ import os.path as pth
 import shutil
 
 import click
+import pandas as pd
 import tabulate
 
 import fastoad
@@ -27,6 +28,7 @@ from fastoad.cmd.cli_utils import (
     out_file_option,
     overwrite_option,
 )
+from fastoad.module_management._plugins import FastoadLoader, PluginDefinition
 
 NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
 
@@ -44,6 +46,32 @@ def fast_oad():
 def fast_oad_subcommand(func):
     """Decorator for adding a command as subcommand to `fast_oad`."""
     return fast_oad.add_command(func)
+
+
+@fast_oad_subcommand
+@click.command(name="plugin_info")
+def plugin_info():
+    """Provides list of installed FAST-OAD plugins."""
+
+    plugin_definitions = FastoadLoader().plugin_definitions
+
+    table_dicts = [
+        _plugin_definition_to_dict(name, definition)
+        for name, definition in plugin_definitions.items()
+    ]
+
+    table = pd.DataFrame(table_dicts)
+    print(table.to_markdown(index=False))
+
+
+def _plugin_definition_to_dict(name: str, definition: PluginDefinition):
+    return dict(
+        plugin_name=name,
+        python_package=definition.dist_name,
+        has_model_folder="models" in definition.subpackages,
+        has_notebook_folder="notebooks" in definition.subpackages,
+        configurations=FastoadLoader().get_plugin_configuration_file_list(name),
+    )
 
 
 @fast_oad_subcommand
