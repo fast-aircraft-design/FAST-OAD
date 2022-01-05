@@ -17,6 +17,7 @@ Plugin system for declaration of FAST-OAD models.
 import logging
 import os.path as pth
 from dataclasses import dataclass, field
+from itertools import chain
 from typing import Dict, List, Set
 
 from pkg_resources import iter_entry_points
@@ -42,7 +43,7 @@ class PluginDefinition:
     conf_files: Set = field(default_factory=set)
     dist_name: str = ""
 
-    def detect_submodules(self):
+    def detect_subfolders(self):
         package = PackageReader(self.package_name)
         for subpackage_name in ["models", "notebooks", "configurations"]:
             if subpackage_name in package.contents:
@@ -85,21 +86,23 @@ class FastoadLoader(BundleLoader):
         """
         Reads definitions of declared plugins.
         """
-        for entry_point in iter_entry_points(OLD_MODEL_PLUGIN_ID):
+        for entry_point in chain(
+            iter_entry_points(OLD_MODEL_PLUGIN_ID),
+            iter_entry_points(MODEL_PLUGIN_ID),
+        ):
             plugin_name = entry_point.name
             plugin_definition = PluginDefinition()
             plugin_definition.package_name = entry_point.module_name
             plugin_definition.dist_name = entry_point.dist.project_name
-            plugin_definition.subpackages["models"] = entry_point.module_name
             cls._plugin_definitions[plugin_name] = plugin_definition
+
+        for entry_point in iter_entry_points(OLD_MODEL_PLUGIN_ID):
+            plugin_name = entry_point.name
+            cls._plugin_definitions[plugin_name].subpackages["models"] = entry_point.module_name
 
         for entry_point in iter_entry_points(MODEL_PLUGIN_ID):
             plugin_name = entry_point.name
-            plugin_definition = PluginDefinition()
-            plugin_definition.package_name = entry_point.module_name
-            plugin_definition.dist_name = entry_point.dist.project_name
-            plugin_definition.detect_submodules()
-            cls._plugin_definitions[plugin_name] = plugin_definition
+            cls._plugin_definitions[plugin_name].detect_subfolders()
 
     @classmethod
     def load(cls):
