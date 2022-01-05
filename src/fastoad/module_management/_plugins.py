@@ -111,23 +111,6 @@ class FastoadLoader(BundleLoader):
             cls._load_configurations(plugin_def)
 
     @classmethod
-    def get_configuration_file_list(cls, plugin_name=None) -> Dict[str, List[str]]:
-        """
-        Builds the list of sample configuration files provided with plugins.
-
-        :param plugin_name: if provided, only files for this plugin will be returned
-        :return: a dict with plugin name as keys, and list of files as values
-        """
-        file_lists = {}
-        if plugin_name:
-            file_lists[plugin_name] = cls.get_plugin_configuration_file_list(plugin_name)
-        else:
-            for name, plugin_definition in cls._plugin_definitions.items():
-                file_lists[name] = cls.get_plugin_configuration_file_list(name)
-
-        return file_lists
-
-    @classmethod
     def get_plugin_configuration_file_list(cls, plugin_name) -> List[str]:
         """
 

@@ -101,10 +101,8 @@ def test_plugins(two_dummy_plugins):
     assert Variable("dummy:variable").description == "Some dummy variable."
 
 
-def test_get_configuration_file_list(two_dummy_plugins):
-    file_list = FastoadLoader().get_configuration_file_list()
-    assert set(file_list.keys()) == {"test_plugin_1", "test_plugin_2"}
-    assert set(file_list["test_plugin_1"]) == {
-        "dummy_conf_1.yml",
-    }
-    assert set(file_list["test_plugin_2"]) == {"dummy_conf_2-1.yml", "dummy_conf_2-2.yaml"}
+def test_get_plugin_configuration_file_list(two_dummy_plugins):
+    file_list = FastoadLoader().get_plugin_configuration_file_list("test_plugin_1")
+    assert set(file_list) == {"dummy_conf_1.yml"}
+    file_list = FastoadLoader().get_plugin_configuration_file_list("test_plugin_2")
+    assert set(file_list) == {"dummy_conf_2-1.yml", "dummy_conf_2-2.yaml"}
