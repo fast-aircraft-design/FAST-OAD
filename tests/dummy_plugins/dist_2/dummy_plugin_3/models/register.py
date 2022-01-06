@@ -1,6 +1,3 @@
-"""
-Module where services are declared externally (in the __init__.py)
-"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,12 +11,8 @@ Module where services are declared externally (in the __init__.py)
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from ...base import DummyBase
+from .declared_dummy_components import DeclaredDummy1, DeclaredDummy2
+from ....base import RegisterDummyService
 
-
-class DeclaredDummy1(DummyBase):
-    pass
-
-
-class DeclaredDummy2(DummyBase):
-    pass
+RegisterDummyService("test.plugin.declared.1")(DeclaredDummy1)
+RegisterDummyService("test.plugin.declared.2")(DeclaredDummy2)

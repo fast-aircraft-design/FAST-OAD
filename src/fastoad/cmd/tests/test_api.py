@@ -52,7 +52,7 @@ def test_generate_configuration_file_unknown_plugin(cleanup, dummy_plugins):
     # Providing a bad plugin name
     with pytest.raises(FastUnknownPluginError):
         api.generate_configuration_file(
-            configuration_file_path, overwrite=False, plugin_name="unknown_plugin"
+            configuration_file_path, overwrite=False, distribution_name="unknown_dist"
         )
 
 
@@ -65,22 +65,22 @@ def test_generate_configuration_file_plugin_1(cleanup, dummy_plugins, plugin_fil
 
     # No conf file specified because the plugin has only one
     api.generate_configuration_file(
-        configuration_file_path, overwrite=False, plugin_name="test_plugin_1"
+        configuration_file_path, overwrite=False, distribution_name="dummy-dist-1"
     )
     original_file = pth.join(
-        plugin_file_path, "dummy_plugin_1", "configurations", "dummy_conf_1.yml"
+        plugin_file_path, "dist_1", "dummy_plugin_1", "configurations", "dummy_conf_1-1.yml"
     )
     assert cmp(configuration_file_path, original_file)
 
     # Generating again without forcing overwrite will make it fail
     with pytest.raises(FastFileExistsError):
         api.generate_configuration_file(
-            configuration_file_path, overwrite=False, plugin_name="test_plugin_1"
+            configuration_file_path, overwrite=False, distribution_name="dummy-dist-1"
         )
 
     # Generating again with overwrite=True should be Ok
     api.generate_configuration_file(
-        configuration_file_path, overwrite=True, plugin_name="test_plugin_1"
+        configuration_file_path, overwrite=True, distribution_name="dummy-dist-1"
     )
 
 
@@ -98,18 +98,18 @@ def test_generate_configuration_file_plugin_2(cleanup, dummy_plugins, plugin_fil
     # raise an error
     with pytest.raises(FastSeveralConfigurationFilesError):
         api.generate_configuration_file(
-            configuration_file_path, overwrite=False, plugin_name="test_plugin_2"
+            configuration_file_path, overwrite=False, distribution_name="dummy-dist-2"
         )
 
     api.generate_configuration_file(
         configuration_file_path,
         overwrite=True,
-        plugin_name="test_plugin_2",
+        distribution_name="dummy-dist-2",
         sample_file_name="dummy_conf_2-1.yml",
     )
 
     original_file = pth.join(
-        plugin_file_path, "dummy_plugin_2", "configurations", "dummy_conf_2-1.yml"
+        plugin_file_path, "dist_2", "dummy_plugin_2", "configurations", "dummy_conf_2-1.yml"
     )
     assert cmp(configuration_file_path, original_file)
 
@@ -117,18 +117,18 @@ def test_generate_configuration_file_plugin_2(cleanup, dummy_plugins, plugin_fil
         api.generate_configuration_file(
             configuration_file_path,
             overwrite=False,
-            plugin_name="test_plugin_2",
-            sample_file_name="dummy_conf_2-2.yaml",
+            distribution_name="dummy-dist-2",
+            sample_file_name="dummy_conf_3-2.yaml",
         )
 
     api.generate_configuration_file(
         configuration_file_path,
         overwrite=True,
-        plugin_name="test_plugin_2",
-        sample_file_name="dummy_conf_2-2.yaml",
+        distribution_name="dummy-dist-2",
+        sample_file_name="dummy_conf_3-2.yaml",
     )
     original_file = pth.join(
-        plugin_file_path, "dummy_plugin_2", "configurations", "dummy_conf_2-2.yaml"
+        plugin_file_path, "dist_2", "dummy_plugin_3", "configurations", "dummy_conf_3-2.yaml"
     )
     assert cmp(configuration_file_path, original_file)
 

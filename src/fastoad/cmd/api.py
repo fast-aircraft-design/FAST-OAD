@@ -63,7 +63,7 @@ _PROBLEM_CONFIGURATOR = None
 def generate_configuration_file(
     configuration_file_path: str,
     overwrite: bool = False,
-    plugin_name=None,
+    distribution_name=None,
     sample_file_name=None,
 ):
     """
@@ -71,8 +71,8 @@ def generate_configuration_file(
 
     :param configuration_file_path: the path of file to be written
     :param overwrite: if True, the file will be written, even if it already exists
-    :param plugin_name: the name of plugin that provides the sample configuration file (can
-                        be omitted if only one plugin is available)
+    :param distribution_name: the name of the Python library that provides the sample configuration
+                             file (can be omitted if only one plugin is available)
     :param sample_file_name: the name of the sample configuration file (can be omitted if
                              the plugin provides only one configuration file)
     :return: path of generated file
@@ -98,25 +98,33 @@ def generate_configuration_file(
 
     loader = FastoadLoader()
     plugin_definitions = loader.plugin_definitions
-    if plugin_name is None:
+    if distribution_name is None:
         if len(plugin_definitions) == 1:
-            plugin_name = next(iter(plugin_definitions.keys()))
+            distribution_name = next(iter(plugin_definitions.keys()))
         else:
             raise FastSeveralPluginsError()
 
-    if plugin_name not in plugin_definitions:
-        raise FastUnknownPluginError(plugin_name)
+    if distribution_name not in plugin_definitions:
+        raise FastUnknownPluginError(distribution_name)
 
-    conf_file_list = loader.get_plugin_configuration_file_list(plugin_name)
+    conf_file_list = loader.get_configuration_file_list(distribution_name)
     if sample_file_name is None:
         if len(conf_file_list) > 1:
-            raise FastSeveralConfigurationFilesError(plugin_name)
+            raise FastSeveralConfigurationFilesError(distribution_name)
         else:
-            sample_file_name = conf_file_list[0]
-    elif sample_file_name not in conf_file_list:
-        raise FastUnknownConfigurationFileError(sample_file_name, plugin_name)
+            sample_file_name, plugin_name = conf_file_list[0]
+    else:
+        matching_list = list(filter(lambda item: item[0] == sample_file_name, conf_file_list))
+        if len(matching_list) == 0:
+            raise FastUnknownConfigurationFileError(sample_file_name, distribution_name)
+        plugin_name = matching_list[0][1]
 
-    configuration_package = plugin_definitions[plugin_name].subpackages["configurations"]
+        if plugin_name is None:
+            raise FastUnknownConfigurationFileError(sample_file_name, distribution_name)
+
+    configuration_package = plugin_definitions[distribution_name][plugin_name].subpackages[
+        "configurations"
+    ]
     copy_resource(configuration_package, sample_file_name, configuration_file_path)
     _LOGGER.info(f"Sample configuration written in {configuration_file_path}")
     return configuration_file_path

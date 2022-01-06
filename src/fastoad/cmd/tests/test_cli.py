@@ -40,14 +40,15 @@ def test_plugin_info(cleanup, dummy_plugins, plugin_file_path):
 
     expected_info = pd.DataFrame(
         dict(
-            plugin_name=[f"test_plugin_{i}" for i in [1, 2, 3]],
-            python_package=[f"dummy-{i}" for i in [1, 2, 3]],
-            has_model_folder=[False, True, False],
-            has_notebook_folder=[False, True, True],
+            python_distribution=[f"dummy-dist-{i}" for i in [1, 1, 2, 2]],
+            plugin_name=[f"test_plugin_{i}" for i in [1, 4, 2, 3]],
+            has_model_folder=[False, False, False, True],
+            has_notebook_folder=[False, True, False, True],
             configurations=[
-                ["dummy_conf_1.yml"],
-                ["dummy_conf_2-1.yml", "dummy_conf_2-2.yaml"],
+                ["dummy_conf_1-1.yml"],
                 [],
+                ["dummy_conf_2-1.yml"],
+                ["dummy_conf_3-1.yml", "dummy_conf_3-2.yaml"],
             ],
         )
     )

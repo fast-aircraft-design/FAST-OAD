@@ -1,5 +1,5 @@
 """
-Module where services are declared with decorators
+Module in a subpackage where services are declared with decorators
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022 ONERA & ISAE-SUPAERO
@@ -14,15 +14,9 @@ Module where services are declared with decorators
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 from ....base import DummyBase, RegisterDummyService
 
 
-@RegisterDummyService("test.plugin.decorated.1")
-class DecoratedDummy1(DummyBase):
-    pass
-
-
-@RegisterDummyService("test.plugin.decorated.2")
-class DecoratedDummy2(DummyBase):
+@RegisterDummyService("test.plugin.decorated.3")
+class DecoratedDummy3(DummyBase):
     pass

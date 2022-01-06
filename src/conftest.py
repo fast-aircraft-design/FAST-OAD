@@ -56,10 +56,10 @@ def one_dummy_plugin():
     """
     original_entry_map = _update_entry_map(
         {
-            "test_plugin_1": EntryPoint(
-                "test_plugin_1",
-                "tests.dummy_plugins.dummy_plugin_1",
-                dist=Distribution(project_name="dummy_1"),
+            "test_plugin_2": EntryPoint(
+                "test_plugin_2",
+                "tests.dummy_plugins.dist_2.dummy_plugin_2",
+                dist=Distribution(project_name="dummy-dist-2"),
             )
         }
     )
@@ -76,12 +76,26 @@ def dummy_plugins():
     """
     original_entry_map = _update_entry_map(
         {
-            f"test_plugin_{i}": EntryPoint(
-                f"test_plugin_{i}",
-                f"tests.dummy_plugins.dummy_plugin_{i}",
-                dist=Distribution(project_name=f"dummy_{i}"),
-            )
-            for i in [1, 2, 3]
+            "test_plugin_1": EntryPoint(
+                "test_plugin_1",
+                "tests.dummy_plugins.dist_1.dummy_plugin_1",
+                dist=Distribution(project_name="dummy-dist-1"),
+            ),
+            "test_plugin_4": EntryPoint(
+                "test_plugin_4",
+                "tests.dummy_plugins.dist_1.dummy_plugin_4",
+                dist=Distribution(project_name="dummy-dist-1"),
+            ),
+            "test_plugin_2": EntryPoint(
+                "test_plugin_2",
+                "tests.dummy_plugins.dist_2.dummy_plugin_2",
+                dist=Distribution(project_name="dummy-dist-2"),
+            ),
+            "test_plugin_3": EntryPoint(
+                "test_plugin_3",
+                "tests.dummy_plugins.dist_2.dummy_plugin_3",
+                dist=Distribution(project_name="dummy-dist-2"),
+            ),
         }
     )
     yield

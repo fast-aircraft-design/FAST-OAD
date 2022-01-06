@@ -16,9 +16,10 @@ Plugin system for declaration of FAST-OAD models.
 
 import logging
 import os.path as pth
+from collections import defaultdict
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple, Union
 
 from pkg_resources import iter_entry_points
 
@@ -38,10 +39,11 @@ class PluginDefinition:
     Simple structure for storing plugin data.
     """
 
+    dist_name: str
+    plugin_name: str
     package_name: str = ""
     subpackages: Dict = field(default_factory=dict)
     conf_files: Set = field(default_factory=set)
-    dist_name: str = ""
 
     def detect_subfolders(self):
         package = PackageReader(self.package_name)
@@ -60,7 +62,7 @@ class FastoadLoader(BundleLoader):
 
     # This class attribute is private and is accessed through a property to ensure
     # that the class has been instantiated before the attribute is used.
-    _plugin_definitions: Dict[str, PluginDefinition] = {}
+    _plugin_definitions: Dict[str, Dict[str, PluginDefinition]] = defaultdict(dict)
 
     _loaded = False
 
@@ -70,12 +72,12 @@ class FastoadLoader(BundleLoader):
             # Setting cls.loaded to True already ensures that a second instantiation
             # during loading will not result in an import cycle.
             self.__class__._loaded = True
-            self.__class__._plugin_definitions = {}
+            self.__class__._plugin_definitions = defaultdict(dict)
             self.read_entry_points()
             self.load()
 
     @property
-    def plugin_definitions(self) -> Dict[str, PluginDefinition]:
+    def plugin_definitions(self) -> Dict[str, Dict[str, PluginDefinition]]:
         """
         Stores plugin definitions with plugin name as dict keys.
         """
@@ -86,52 +88,79 @@ class FastoadLoader(BundleLoader):
         """
         Reads definitions of declared plugins.
         """
+
         for entry_point in chain(
             iter_entry_points(OLD_MODEL_PLUGIN_ID),
             iter_entry_points(MODEL_PLUGIN_ID),
         ):
-            plugin_name = entry_point.name
-            plugin_definition = PluginDefinition()
+            plugin_definition = PluginDefinition(
+                dist_name=entry_point.dist.project_name,
+                plugin_name=entry_point.name,
+            )
             plugin_definition.package_name = entry_point.module_name
-            plugin_definition.dist_name = entry_point.dist.project_name
-            cls._plugin_definitions[plugin_name] = plugin_definition
+            cls._plugin_definitions[entry_point.dist.project_name][
+                entry_point.name
+            ] = plugin_definition
 
         for entry_point in iter_entry_points(OLD_MODEL_PLUGIN_ID):
-            plugin_name = entry_point.name
-            cls._plugin_definitions[plugin_name].subpackages["models"] = entry_point.module_name
+            cls._plugin_definitions[entry_point.dist.project_name][entry_point.name].subpackages[
+                "models"
+            ] = entry_point.module_name
 
         for entry_point in iter_entry_points(MODEL_PLUGIN_ID):
-            plugin_name = entry_point.name
-            cls._plugin_definitions[plugin_name].detect_subfolders()
+            cls._plugin_definitions[entry_point.dist.project_name][
+                entry_point.name
+            ].detect_subfolders()
 
     @classmethod
     def load(cls):
         """
         Loads declared plugins.
         """
-        for plugin_name, plugin_def in cls._plugin_definitions.items():
-            _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
-            cls._load_models(plugin_def)
-            cls._load_configurations(plugin_def)
+        for plugin_dist, dist_plugin_definitions in cls._plugin_definitions.items():
+            for plugin_name, plugin_def in dist_plugin_definitions.items():
+                _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
+                cls._load_models(plugin_def)
+                cls._load_configurations(plugin_def)
 
     @classmethod
-    def get_plugin_configuration_file_list(cls, plugin_name) -> List[str]:
+    def get_configuration_file_list(
+        cls, plugin_distribution: str, plugin_name: str = None, with_plugin_name: bool = True
+    ) -> List[Union[str, Tuple[str, str]]]:
         """
+        Returns the list of configuration files available for named distribution (the
+        Python library) and optionally the named plugin of this distribution.
 
-        :param plugin_name:
-        :return: list of configuration files provided by named plugin
+        :param plugin_distribution: the Python library to inspect
+        :param plugin_name: if provided, only the files for the defined plugin will be returned
+        :param with_plugin_name: if True, the returned list will be tuples (configuration file,
+                                 plugin name). If False, only configuration file names will be
+                                 returned
+        :return: list of configuration files provided by specified plugin,
+                 or an empty list if the specified plugin is not available
         """
-        plugin_definition = cls._plugin_definitions[plugin_name]
-        if "configurations" in plugin_definition.subpackages:
-            return [
-                file
-                for file in PackageReader(
-                    cls._plugin_definitions[plugin_name].subpackages["configurations"]
-                ).contents
-                if pth.splitext(file)[1] in [".yml", ".yaml"]
-            ]
+        dist_plugin_definitions = cls._plugin_definitions[plugin_distribution]
+        if plugin_name:
+            if plugin_name in dist_plugin_definitions:
+                dist_plugin_definitions = {plugin_name: dist_plugin_definitions.get(plugin_name)}
+            else:
+                dist_plugin_definitions = {}
 
-        return []
+        file_list = []
+        for plugin_definition in dist_plugin_definitions.values():
+            if "configurations" in plugin_definition.subpackages:
+                file_list += [
+                    (file, plugin_definition.plugin_name)
+                    for file in PackageReader(
+                        plugin_definition.subpackages["configurations"]
+                    ).contents
+                    if pth.splitext(file)[1] in [".yml", ".yaml"]
+                ]
+
+        if not with_plugin_name:
+            file_list = [file_name for file_name, _ in file_list]
+
+        return file_list
 
     @classmethod
     def _load_models(cls, plugin_definition: PluginDefinition):

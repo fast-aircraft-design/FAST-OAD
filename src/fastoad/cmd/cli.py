@@ -54,23 +54,26 @@ def plugin_info():
     """Provides list of installed FAST-OAD plugins."""
 
     plugin_definitions = FastoadLoader().plugin_definitions
-
-    table_dicts = [
-        _plugin_definition_to_dict(name, definition)
-        for name, definition in plugin_definitions.items()
-    ]
+    table_dicts = []
+    for dist_plugin_definitions in plugin_definitions.values():
+        table_dicts += [
+            _plugin_definition_to_dict(name, definition)
+            for name, definition in dist_plugin_definitions.items()
+        ]
 
     table = pd.DataFrame(table_dicts)
     print(table.to_markdown(index=False))
 
 
-def _plugin_definition_to_dict(name: str, definition: PluginDefinition):
+def _plugin_definition_to_dict(plugin_name: str, definition: PluginDefinition):
     return dict(
-        plugin_name=name,
-        python_package=definition.dist_name,
+        python_distribution=definition.dist_name,
+        plugin_name=plugin_name,
         has_model_folder="models" in definition.subpackages,
         has_notebook_folder="notebooks" in definition.subpackages,
-        configurations=FastoadLoader().get_plugin_configuration_file_list(name),
+        configurations=FastoadLoader().get_configuration_file_list(
+            definition.dist_name, plugin_name, with_plugin_name=False
+        ),
     )
 
 

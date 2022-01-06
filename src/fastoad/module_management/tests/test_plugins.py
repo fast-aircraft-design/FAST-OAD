@@ -36,23 +36,26 @@ def test_plugins(dummy_plugins):
 
     FastoadLoader._loaded = False  # Ensures next instantiation will trigger reloading
 
-    plugin1_definition = FastoadLoader().plugin_definitions["test_plugin_1"]
-    assert "models" not in plugin1_definition.subpackages
-    assert "notebooks" not in plugin1_definition.subpackages
+    plugin1_definition = FastoadLoader().plugin_definitions["dummy-dist-1"]
+    assert "models" not in plugin1_definition["test_plugin_1"].subpackages
+    assert "notebooks" not in plugin1_definition["test_plugin_1"].subpackages
 
-    plugin3_definition = FastoadLoader().plugin_definitions["test_plugin_3"]
-    assert "models" not in plugin3_definition.subpackages
-    assert "configurations" not in plugin3_definition.subpackages
+    plugin4_definition = FastoadLoader().plugin_definitions["dummy-dist-1"]
+    assert "models" not in plugin4_definition["test_plugin_4"].subpackages
+    assert "configurations" not in plugin4_definition["test_plugin_4"].subpackages
 
-    plugin2_definition = FastoadLoader().plugin_definitions["test_plugin_2"]
-    assert plugin2_definition.subpackages["models"] == "tests.dummy_plugins.dummy_plugin_2.models"
+    plugin3_definition = FastoadLoader().plugin_definitions["dummy-dist-2"]
     assert (
-        plugin2_definition.subpackages["notebooks"]
-        == "tests.dummy_plugins.dummy_plugin_2.notebooks"
+        plugin3_definition["test_plugin_3"].subpackages["models"]
+        == "tests.dummy_plugins.dist_2.dummy_plugin_3.models"
     )
     assert (
-        plugin2_definition.subpackages["configurations"]
-        == "tests.dummy_plugins.dummy_plugin_2.configurations"
+        plugin3_definition["test_plugin_3"].subpackages["notebooks"]
+        == "tests.dummy_plugins.dist_2.dummy_plugin_3.notebooks"
+    )
+    assert (
+        plugin3_definition["test_plugin_3"].subpackages["configurations"]
+        == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"
     )
 
     declared_dummy_1 = RegisterService.get_provider("test.plugin.declared.1")
@@ -73,9 +76,29 @@ def test_plugins(dummy_plugins):
 
 
 def test_get_plugin_configuration_file_list(dummy_plugins):
-    file_list = FastoadLoader().get_plugin_configuration_file_list("test_plugin_1")
-    assert set(file_list) == {"dummy_conf_1.yml"}
-    file_list = FastoadLoader().get_plugin_configuration_file_list("test_plugin_2")
-    assert set(file_list) == {"dummy_conf_2-1.yml", "dummy_conf_2-2.yaml"}
-    file_list = FastoadLoader().get_plugin_configuration_file_list("test_plugin_3")
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1")
+    assert set(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1", "test_plugin_1")
+    assert set(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1", "test_plugin_4")
+    assert set(file_list) == set()
+
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2")
+    assert set(file_list) == {
+        ("dummy_conf_2-1.yml", "test_plugin_2"),
+        ("dummy_conf_3-1.yml", "test_plugin_3"),
+        ("dummy_conf_3-2.yaml", "test_plugin_3"),
+    }
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2", "test_plugin_2")
+    assert set(file_list) == {("dummy_conf_2-1.yml", "test_plugin_2")}
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2", "test_plugin_3")
+    assert set(file_list) == {
+        ("dummy_conf_3-1.yml", "test_plugin_3"),
+        ("dummy_conf_3-2.yaml", "test_plugin_3"),
+    }
+
+    # improper names
+    file_list = FastoadLoader().get_configuration_file_list("unknown-dist-1")
+    assert set(file_list) == set()
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1", "unknown_plugin")
     assert set(file_list) == set()
