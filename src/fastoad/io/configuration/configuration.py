@@ -275,7 +275,7 @@ class FASTOADProblemConfigurator:
 
     def set_initial_values(self, problem: FASTOADProblem):
         """
-        Set initial values of inputs for the configure problem.
+        Set initial values of inputs for the configured problem.
 
         :param problem: problem. setup() must have been run.
         """
@@ -433,7 +433,7 @@ class FASTOADProblemConfigurator:
         self, problem: FASTOADProblem, ivc_output_format=True
     ) -> Tuple[om.IndepVarComp, VariableList]:
         """
-        Reads input file for the configure problem.
+        Reads input file for the configured problem.
 
         Needed variables are returned as an IndepVarComp instance while unused variables are
         returned as a VariableList instance.
