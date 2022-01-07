@@ -20,6 +20,7 @@ import os.path as pth
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
 from typing import Dict, Tuple
+import copy
 
 import numpy as np
 import openmdao.api as om
@@ -441,7 +442,9 @@ class FASTOADProblemConfigurator:
         :param problem: problem with missing inputs. setup() must have been run.
         :return: IVC of needed input variables, VariableList with unused variables.
         """
-        problem_variables = VariableList().from_problem(problem)
+        # TODO: shift this to from_problem
+        problem_copy = copy.deepcopy(problem)
+        problem_variables = VariableList().from_problem(problem_copy)
         problem_inputs_names = [var.name for var in problem_variables if var.is_input]
 
         input_variables = DataFile(self.input_file_path)
