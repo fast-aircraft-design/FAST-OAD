@@ -89,15 +89,6 @@ def generate_configuration_file(
                                               configuration file
     """
 
-    # Check on file overwrite
-    configuration_file_path = pth.abspath(configuration_file_path)
-    if not overwrite and pth.exists(configuration_file_path):
-        raise FastFileExistsError(
-            f"Configuration file {configuration_file_path} not written because it already exists. "
-            "Use overwrite=True to bypass.",
-            configuration_file_path,
-        )
-
     # Check on plugins
     loader = FastoadLoader()
     plugin_definitions = loader.plugin_definitions
@@ -113,6 +104,7 @@ def generate_configuration_file(
     if distribution_name not in plugin_definitions:
         raise FastUnknownPluginError(distribution_name)
 
+    # Check on configuration source file
     conf_file_list = loader.get_configuration_file_list(distribution_name)
     if sample_file_name is None:
         if len(conf_file_list) > 1:
@@ -128,6 +120,16 @@ def generate_configuration_file(
         if plugin_name is None:
             raise FastUnknownConfigurationFileError(sample_file_name, distribution_name)
 
+    # Check on file overwrite
+    configuration_file_path = pth.abspath(configuration_file_path)
+    if not overwrite and pth.exists(configuration_file_path):
+        raise FastFileExistsError(
+            f"Configuration file {configuration_file_path} not written because it already exists. "
+            "Use overwrite=True to bypass.",
+            configuration_file_path,
+        )
+
+    # Write file
     configuration_package = plugin_definitions[distribution_name][plugin_name].subpackages[
         "configurations"
     ]

@@ -56,10 +56,10 @@ def one_dummy_plugin():
     """
     original_entry_map = _update_entry_map(
         {
-            "test_plugin_2": EntryPoint(
-                "test_plugin_2",
-                "tests.dummy_plugins.dist_2.dummy_plugin_2",
-                dist=Distribution(project_name="dummy-dist-2"),
+            "test_plugin_1": EntryPoint(
+                "test_plugin_1",
+                "tests.dummy_plugins.dist_1.dummy_plugin_1",
+                dist=Distribution(project_name="dummy-dist-1"),
             )
         }
     )

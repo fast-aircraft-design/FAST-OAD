@@ -36,7 +36,7 @@ class FastNoPluginError(FastError):
     """Raised when no plugin is available."""
 
     def __init__(self):
-        super().__init__("This feature needs plugins, but no plugin available..")
+        super().__init__("This feature needs plugins, but no plugin available.")
 
 
 class FastUnknownPluginError(FastError):
@@ -44,7 +44,7 @@ class FastUnknownPluginError(FastError):
 
     def __init__(self, plugin_name):
         self.plugin_name = plugin_name
-        super().__init__(f'No plugin found with name "{plugin_name}"')
+        super().__init__(f'No plugin found with name "{plugin_name}".')
 
 
 class FastUnknownConfigurationFileError(FastError):
@@ -54,7 +54,7 @@ class FastUnknownConfigurationFileError(FastError):
         self.configuration_file = configuration_file
         self.plugin_name = plugin_name
         super().__init__(
-            f'Configuration file "{configuration_file}" not provided with plugin "{plugin_name}"'
+            f'Configuration file "{configuration_file}" not provided with plugin "{plugin_name}".'
         )
 
 
@@ -66,5 +66,5 @@ class FastSeveralConfigurationFilesError(FastError):
     def __init__(self, plugin_name):
         self.plugin_name = plugin_name
         super().__init__(
-            f'Plugin "{plugin_name}" provides several configuration files. One must be specified."'
+            f'Plugin "{plugin_name}" provides several configuration files. One must be specified.'
         )

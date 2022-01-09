@@ -28,28 +28,25 @@ from fastoad.cmd.cli_utils import (
     out_file_option,
     overwrite_option,
 )
+from fastoad.cmd.exceptions import (
+    FastNoPluginError,
+    FastSeveralConfigurationFilesError,
+    FastSeveralPluginsError,
+    FastUnknownConfigurationFileError,
+    FastUnknownPluginError,
+)
 from fastoad.module_management._plugins import FastoadLoader, PluginDefinition
 
 NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
 
 
-@click.group(
-    context_settings=dict(
-        help_option_names=["-h", "--help"],
-    )
-)
+@click.group(context_settings=dict(help_option_names=["-h", "--help"]))
 @click.version_option(fastoad.__version__, "-v", "--version")
 def fast_oad():
     """FAST-OAD main program"""
 
 
-def fast_oad_subcommand(func):
-    """Decorator for adding a command as subcommand to `fast_oad`."""
-    return fast_oad.add_command(func)
-
-
-@fast_oad_subcommand
-@click.command(name="plugin_info")
+@fast_oad.command(name="plugin_info")
 def plugin_info():
     """Provides list of installed FAST-OAD plugins."""
 
@@ -61,8 +58,11 @@ def plugin_info():
             for name, definition in dist_plugin_definitions.items()
         ]
 
-    table = pd.DataFrame(table_dicts)
-    print(table.to_markdown(index=False))
+    if table_dicts:
+        table = pd.DataFrame(table_dicts)
+        print(table.to_markdown(index=False))
+    else:
+        print("No available FAST-OAD plugin.")
 
 
 def _plugin_definition_to_dict(plugin_name: str, definition: PluginDefinition):
@@ -77,21 +77,43 @@ def _plugin_definition_to_dict(plugin_name: str, definition: PluginDefinition):
     )
 
 
-@fast_oad_subcommand
-@click.command(name="gen_conf")
+@fast_oad.command(name="gen_conf")
 @click.argument("conf_file", nargs=1)
+@click.option("-l", "--library", nargs=1, help="Name of Python library.")
+@click.option("-s", "--source", nargs=1, help="Name of source configuration file.")
 @overwrite_option
-def gen_conf(conf_file, force):
-    """Generate a sample configuration file with given argument as name."""
-    manage_overwrite(
-        api.generate_configuration_file,
-        configuration_file_path=conf_file,
-        overwrite=force,
-    )
+def gen_conf(conf_file, library, source, force):
+    """
+    Generate a sample configuration file with given argument as name.
+
+    If several FAST-OAD plugins are available, option "library" has to be used to specify
+    Python library that provides the source configuration file.
+
+    Option "source_name" has to be used if the targeted plugin provides several sample
+    configuration files.
+
+    Use "fastoad plugin_info" to get information about available plugins and sample
+    configuration files.
+    """
+    try:
+        manage_overwrite(
+            api.generate_configuration_file,
+            configuration_file_path=conf_file,
+            overwrite=force,
+            distribution_name=library,
+            sample_file_name=source,
+        )
+    except (
+        FastNoPluginError,
+        FastSeveralPluginsError,
+        FastUnknownPluginError,
+        FastSeveralConfigurationFilesError,
+        FastUnknownConfigurationFileError,
+    ) as exc:
+        click.echo(exc.args[0])
 
 
-@fast_oad_subcommand
-@click.command(name="gen_inputs")
+@fast_oad.command(name="gen_inputs")
 @click.argument("conf_file", nargs=1)
 @click.argument("source_file", nargs=1, required=False)
 @overwrite_option
@@ -127,8 +149,7 @@ def gen_inputs(conf_file, source_file, force, legacy):
     )
 
 
-@fast_oad_subcommand
-@click.command(name="list_modules")
+@fast_oad.command(name="list_modules")
 @out_file_option
 @click.option("-v", "--verbose", is_flag=True, help="Shows detailed information for each system.")
 @click.argument("source_path", nargs=-1)
@@ -154,8 +175,7 @@ def list_modules(out_file, force, verbose, source_path):
         print("\nDone. Use --verbose (-v) option for detailed information.")
 
 
-@fast_oad_subcommand
-@click.command(name="list_variables")
+@fast_oad.command(name="list_variables")
 @click.argument("conf_file", nargs=1)
 @out_file_option
 @click.option(
@@ -178,8 +198,7 @@ def list_variables(conf_file, out_file, force, table_format):
     )
 
 
-@fast_oad_subcommand
-@click.command(name="n2")
+@fast_oad.command(name="n2")
 @click.argument("conf_file", nargs=1)
 @click.argument("n2_file", nargs=1, default="n2.html", required=False)
 @overwrite_option
@@ -197,8 +216,7 @@ def write_n2(conf_file, n2_file, force):
     )
 
 
-@fast_oad_subcommand
-@click.command(name="xdsm")
+@fast_oad.command(name="xdsm")
 @click.argument("conf_file", nargs=1)
 @click.argument("xdsm_file", nargs=1, default="xdsm.html", required=False)
 @overwrite_option
@@ -223,8 +241,7 @@ def write_xdsm(conf_file, xdsm_file, depth, server, force):
     )
 
 
-@fast_oad_subcommand
-@click.command(name="eval")
+@fast_oad.command(name="eval")
 @click.argument("conf_file", nargs=1)
 @overwrite_option
 def evaluate(conf_file, force):
@@ -237,8 +254,7 @@ def evaluate(conf_file, force):
     )
 
 
-@fast_oad_subcommand
-@click.command(name="optim")
+@fast_oad.command(name="optim")
 @click.argument("conf_file", nargs=1)
 @overwrite_option
 def optimize(conf_file, force):
@@ -251,8 +267,7 @@ def optimize(conf_file, force):
     )
 
 
-@fast_oad_subcommand
-@click.command(name="notebooks")
+@fast_oad.command(name="notebooks")
 @click.argument("path", nargs=1, default=".", required=False)
 def create_notebooks(path):
     """
