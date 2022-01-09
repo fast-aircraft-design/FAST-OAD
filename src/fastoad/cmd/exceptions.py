@@ -32,6 +32,13 @@ class FastSeveralPluginsError(FastError):
         super().__init__("Several plugins are available. One must be specified.")
 
 
+class FastNoPluginError(FastError):
+    """Raised when no plugin is available."""
+
+    def __init__(self):
+        super().__init__("This feature needs plugins, but no plugin available..")
+
+
 class FastUnknownPluginError(FastError):
     """Raised when a plugin name is not found."""
 

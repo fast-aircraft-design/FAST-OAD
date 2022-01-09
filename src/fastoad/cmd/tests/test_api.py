@@ -28,6 +28,7 @@ from fastoad.openmdao.variables import Variable
 from .. import api
 from ..exceptions import (
     FastFileExistsError,
+    FastNoPluginError,
     FastSeveralConfigurationFilesError,
     FastSeveralPluginsError,
     FastUnknownPluginError,
@@ -44,6 +45,17 @@ def cleanup():
 
     # Need to clean up variable descriptions because it is manipulated in other tests.
     Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
+
+
+def test_generate_configuration_file_no_plugin(cleanup, no_plugin):
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "will not_be_written.yml")
+
+    # Providing a bad plugin name
+    with pytest.raises(FastNoPluginError):
+        api.generate_configuration_file(configuration_file_path, overwrite=False)
+
+    with pytest.raises(FastNoPluginError):
+        api.generate_configuration_file(configuration_file_path, distribution_name="unknown_dist")
 
 
 def test_generate_configuration_file_unknown_plugin(cleanup, dummy_plugins):

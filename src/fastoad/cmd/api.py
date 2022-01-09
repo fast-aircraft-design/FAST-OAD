@@ -32,6 +32,7 @@ from fastoad._utils.files import make_parent_dir
 from fastoad._utils.resource_management.copy import copy_resource
 from fastoad.cmd.exceptions import (
     FastFileExistsError,
+    FastNoPluginError,
     FastSeveralConfigurationFilesError,
     FastSeveralPluginsError,
     FastUnknownConfigurationFileError,
@@ -77,6 +78,7 @@ def generate_configuration_file(
                              the plugin provides only one configuration file)
     :return: path of generated file
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
+    :raise FastNoPluginsError: if no plugins is available.
     :raise FastSeveralPluginsError: if several plugins are available but `plugin_name` has not
                                     been provided
     :raise FastUnknownPluginError: if the specified plugin is not available
@@ -86,6 +88,8 @@ def generate_configuration_file(
     :raise FastUnknownConfigurationFileError: if the specified plugin does not provide specified
                                               configuration file
     """
+
+    # Check on file overwrite
     configuration_file_path = pth.abspath(configuration_file_path)
     if not overwrite and pth.exists(configuration_file_path):
         raise FastFileExistsError(
@@ -94,10 +98,12 @@ def generate_configuration_file(
             configuration_file_path,
         )
 
-    make_parent_dir(configuration_file_path)
-
+    # Check on plugins
     loader = FastoadLoader()
     plugin_definitions = loader.plugin_definitions
+    if len(plugin_definitions) == 0:
+        raise FastNoPluginError()
+
     if distribution_name is None:
         if len(plugin_definitions) == 1:
             distribution_name = next(iter(plugin_definitions.keys()))
@@ -125,6 +131,7 @@ def generate_configuration_file(
     configuration_package = plugin_definitions[distribution_name][plugin_name].subpackages[
         "configurations"
     ]
+    make_parent_dir(configuration_file_path)
     copy_resource(configuration_package, sample_file_name, configuration_file_path)
     _LOGGER.info(f"Sample configuration written in {configuration_file_path}")
     return configuration_file_path
