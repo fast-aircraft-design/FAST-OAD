@@ -43,3 +43,25 @@ def run_system(
     problem.run_model()
 
     return problem
+
+
+def file_content_compare(file1: str, file2: str):
+    """Compares the content of two files line by line"""
+    with open(file1) as f:
+        lines1 = f.readlines()
+    f.close()
+    with open(file2) as f:
+        lines2 = f.readlines()
+    f.close()
+
+    are_same = True
+    # If the number of lines are different then files are different
+    if len(lines1) == len(lines2):
+        # If one of the lines is different then files are different
+        differences = [i for i, j in zip(lines1, lines2) if i != j]
+        if len(differences) != 0:
+            are_same = False
+    else:
+        are_same = False
+
+    return are_same

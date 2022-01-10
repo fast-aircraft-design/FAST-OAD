@@ -30,6 +30,7 @@ from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.module_management._plugins import FastoadLoader
 from fastoad.module_management.exceptions import FastBundleLoaderUnknownFactoryNameError
+from tests.testing_utilities import file_content_compare
 from ..exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
     FASTConfigurationNanInInputFile,
@@ -299,4 +300,4 @@ def test_problem_definition_correct_configuration_with_indep(cleanup):
         conf.write_needed_inputs(input_data)
         ref_input_data_with_indep = pth.join(DATA_FOLDER_PATH, "ref_inputs_with_indep.xml")
 
-        assert cmp(conf.input_file_path, ref_input_data_with_indep, shallow=False)
+        assert file_content_compare(conf.input_file_path, ref_input_data_with_indep)
