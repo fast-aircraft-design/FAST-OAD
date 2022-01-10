@@ -32,7 +32,7 @@ def cleanup():
     os.makedirs(RESULTS_FOLDER_PATH)  # needed for CliRunner.isolated_filesystem()
 
 
-def test_plugin_info_no_plugin(no_plugin):
+def test_plugin_info_no_plugin(with_no_plugin):
     runner = CliRunner()
     result = runner.invoke(fast_oad, ["plugin_info"])
 
@@ -41,7 +41,7 @@ def test_plugin_info_no_plugin(no_plugin):
     assert result.output == "No available FAST-OAD plugin.\n"
 
 
-def test_plugin_info(dummy_plugins):
+def test_plugin_info(with_dummy_plugins):
     runner = CliRunner()
     result = runner.invoke(fast_oad, ["plugin_info"])
 
@@ -65,7 +65,7 @@ def test_plugin_info(dummy_plugins):
     assert result.output == expected_info.to_markdown(index=False) + "\n"
 
 
-def test_gen_conf_no_plugin(no_plugin):
+def test_gen_conf_no_plugin(with_no_plugin):
     runner = CliRunner()
     result = runner.invoke(fast_oad, ["gen_conf", "my_conf.yml"])
     assert not result.exception
@@ -73,42 +73,44 @@ def test_gen_conf_no_plugin(no_plugin):
     assert result.output == "This feature needs plugins, but no plugin available.\n"
 
 
-def test_gen_conf_one_plugin(cleanup, one_dummy_plugin, plugin_file_path):
+def test_gen_conf_one_plugin(cleanup, with_one_dummy_plugin, plugin_root_path):
     runner = CliRunner()
     with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        # Test minimal command =================================================
         result = runner.invoke(
             fast_oad,
             ["gen_conf", "my_conf.yml"],
         )
         original_file = pth.join(
-            plugin_file_path, "dist_1", "dummy_plugin_1", "configurations", "dummy_conf_1-1.yml"
+            plugin_root_path, "dist_1", "dummy_plugin_1", "configurations", "dummy_conf_1-1.yml"
         )
         assert cmp(pth.join(temp_dir, "my_conf.yml"), original_file)
-
         assert not result.exception
         assert result.exit_code == 0
         assert result.output.endswith("has been written.\n")
 
-        # Test overwrite prompt
+        # Test overwrite prompt ================================================
         result = runner.invoke(fast_oad, ["gen_conf", "my_conf.yml"], input="n")
         assert not result.exception
         assert result.exit_code == 0
         assert "Do you want to overwrite it? [y/N]:" in result.output
         assert result.output.endswith("No file written.\n")
 
+        # ----------------------------------------------------------------------
         result = runner.invoke(fast_oad, ["gen_conf", "my_conf.yml"], input="y")
         assert not result.exception
         assert result.exit_code == 0
         assert "Do you want to overwrite it? [y/N]:" in result.output
         assert result.output.endswith("has been written.\n")
 
+        # ----------------------------------------------------------------------
         result = runner.invoke(fast_oad, ["gen_conf", "my_conf.yml", "--force"])
         assert not result.exception
         assert result.exit_code == 0
         assert "Do you want to overwrite it? [y/N]:" not in result.output
         assert result.output.endswith("has been written.\n")
 
-        # Test plugin specification
+        # Test plugin specification ============================================
         result = runner.invoke(
             fast_oad, ["gen_conf", "my_conf.yml", "--library", "unknown-dist"], input="n"
         )
@@ -116,12 +118,13 @@ def test_gen_conf_one_plugin(cleanup, one_dummy_plugin, plugin_file_path):
         assert result.exit_code == 0
         assert result.output.endswith('No plugin found with name "unknown-dist".\n')
 
+        # ----------------------------------------------------------------------
         result = runner.invoke(fast_oad, ["gen_conf", "my_conf.yml", "-f", "-l", "dummy-dist-1"])
         assert not result.exception
         assert result.exit_code == 0
         assert result.output.endswith("has been written.\n")
 
-        # Test source file specification
+        # Test source file specification =======================================
         result = runner.invoke(
             fast_oad,
             ["gen_conf", "my_conf.yml", "-f", "-l", "dummy-dist-1", "-s", "dummy_conf_1-1.yml"],
@@ -130,6 +133,7 @@ def test_gen_conf_one_plugin(cleanup, one_dummy_plugin, plugin_file_path):
         assert result.exit_code == 0
         assert result.output.endswith("has been written.\n")
 
+        # ----------------------------------------------------------------------
         result = runner.invoke(
             fast_oad,
             ["gen_conf", "my_conf.yml", "-f", "--source", "dummy_conf_1-1.yml"],
@@ -138,6 +142,7 @@ def test_gen_conf_one_plugin(cleanup, one_dummy_plugin, plugin_file_path):
         assert result.exit_code == 0
         assert result.output.endswith("has been written.\n")
 
+        # ----------------------------------------------------------------------
         result = runner.invoke(
             fast_oad,
             ["gen_conf", "my_conf.yml", "-f", "--source", "unknown_conf.yml"],
@@ -149,10 +154,10 @@ def test_gen_conf_one_plugin(cleanup, one_dummy_plugin, plugin_file_path):
         )
 
 
-def test_gen_conf_several_plugin(cleanup, dummy_plugins, plugin_file_path):
+def test_gen_conf_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
     runner = CliRunner()
     with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
-        # Test errors
+        # Test errors ==========================================================
         result = runner.invoke(
             fast_oad,
             ["gen_conf", "my_conf.yml"],
@@ -161,6 +166,7 @@ def test_gen_conf_several_plugin(cleanup, dummy_plugins, plugin_file_path):
         assert result.exit_code == 0
         assert result.output.endswith("Several plugins are available. One must be specified.\n")
 
+        # ----------------------------------------------------------------------
         result = runner.invoke(
             fast_oad,
             ["gen_conf", "my_conf.yml", "-l", "dummy-dist-2"],
@@ -171,6 +177,7 @@ def test_gen_conf_several_plugin(cleanup, dummy_plugins, plugin_file_path):
             '"dummy-dist-2" provides several configuration files. One must be specified.\n'
         )
 
+        # ----------------------------------------------------------------------
         result = runner.invoke(
             fast_oad,
             ["gen_conf", "my_conf.yml", "-l", "dummy-dist-2", "-s", "unknown_conf.yml"],
@@ -181,7 +188,7 @@ def test_gen_conf_several_plugin(cleanup, dummy_plugins, plugin_file_path):
             '"unknown_conf.yml" not provided with plugin "dummy-dist-2".\n'
         )
 
-        # Test source file specification
+        # Test source file specification =======================================
         result = runner.invoke(
             fast_oad,
             ["gen_conf", "my_conf.yml", "-f", "-l", "dummy-dist-1", "-s", "dummy_conf_1-1.yml"],
@@ -190,10 +197,11 @@ def test_gen_conf_several_plugin(cleanup, dummy_plugins, plugin_file_path):
         assert result.exit_code == 0
         assert result.output.endswith("has been written.\n")
         original_file = pth.join(
-            plugin_file_path, "dist_1", "dummy_plugin_1", "configurations", "dummy_conf_1-1.yml"
+            plugin_root_path, "dist_1", "dummy_plugin_1", "configurations", "dummy_conf_1-1.yml"
         )
         assert cmp(pth.join(temp_dir, "my_conf.yml"), original_file)
 
+        # ----------------------------------------------------------------------
         result = runner.invoke(
             fast_oad,
             ["gen_conf", "my_conf.yml", "-f", "-l", "dummy-dist-2", "-s", "dummy_conf_3-2.yaml"],
@@ -202,6 +210,6 @@ def test_gen_conf_several_plugin(cleanup, dummy_plugins, plugin_file_path):
         assert result.exit_code == 0
         assert result.output.endswith("has been written.\n")
         original_file = pth.join(
-            plugin_file_path, "dist_2", "dummy_plugin_3", "configurations", "dummy_conf_3-2.yaml"
+            plugin_root_path, "dist_2", "dummy_plugin_3", "configurations", "dummy_conf_3-2.yaml"
         )
         assert cmp(pth.join(temp_dir, "my_conf.yml"), original_file)

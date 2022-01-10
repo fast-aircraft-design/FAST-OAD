@@ -47,7 +47,7 @@ def cleanup():
     Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
 
 
-def test_generate_configuration_file_no_plugin(cleanup, no_plugin):
+def test_generate_configuration_file_no_plugin(cleanup, with_no_plugin):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "will not_be_written.yml")
 
     # Providing a bad plugin name
@@ -58,7 +58,7 @@ def test_generate_configuration_file_no_plugin(cleanup, no_plugin):
         api.generate_configuration_file(configuration_file_path, distribution_name="unknown_dist")
 
 
-def test_generate_configuration_file_unknown_plugin(cleanup, dummy_plugins):
+def test_generate_configuration_file_unknown_plugin(cleanup, with_dummy_plugins):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "will not_be_written.yml")
 
     # Providing a bad plugin name
@@ -68,7 +68,7 @@ def test_generate_configuration_file_unknown_plugin(cleanup, dummy_plugins):
         )
 
 
-def test_generate_configuration_file_plugin_1(cleanup, dummy_plugins, plugin_file_path):
+def test_generate_configuration_file_plugin_1(cleanup, with_dummy_plugins, plugin_root_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
 
     # Not specifying plugin while 2 are declared should get an error
@@ -80,7 +80,7 @@ def test_generate_configuration_file_plugin_1(cleanup, dummy_plugins, plugin_fil
         configuration_file_path, overwrite=False, distribution_name="dummy-dist-1"
     )
     original_file = pth.join(
-        plugin_file_path, "dist_1", "dummy_plugin_1", "configurations", "dummy_conf_1-1.yml"
+        plugin_root_path, "dist_1", "dummy_plugin_1", "configurations", "dummy_conf_1-1.yml"
     )
     assert cmp(configuration_file_path, original_file)
 
@@ -96,14 +96,14 @@ def test_generate_configuration_file_plugin_1(cleanup, dummy_plugins, plugin_fil
     )
 
 
-def test_generate_configuration_file_plugin_1_alone(cleanup, one_dummy_plugin):
+def test_generate_configuration_file_plugin_1_alone(cleanup, with_one_dummy_plugin):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
 
     # No plugin specified only one plugin is available
     api.generate_configuration_file(configuration_file_path, overwrite=True)
 
 
-def test_generate_configuration_file_plugin_2(cleanup, dummy_plugins, plugin_file_path):
+def test_generate_configuration_file_plugin_2(cleanup, with_dummy_plugins, plugin_root_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_2.yml")
 
     # This plugin provides 2 conf files, so not specifying the conf file should
@@ -121,7 +121,7 @@ def test_generate_configuration_file_plugin_2(cleanup, dummy_plugins, plugin_fil
     )
 
     original_file = pth.join(
-        plugin_file_path, "dist_2", "dummy_plugin_2", "configurations", "dummy_conf_2-1.yml"
+        plugin_root_path, "dist_2", "dummy_plugin_2", "configurations", "dummy_conf_2-1.yml"
     )
     assert cmp(configuration_file_path, original_file)
 
@@ -140,7 +140,7 @@ def test_generate_configuration_file_plugin_2(cleanup, dummy_plugins, plugin_fil
         sample_file_name="dummy_conf_3-2.yaml",
     )
     original_file = pth.join(
-        plugin_file_path, "dist_2", "dummy_plugin_3", "configurations", "dummy_conf_3-2.yaml"
+        plugin_root_path, "dist_2", "dummy_plugin_3", "configurations", "dummy_conf_3-2.yaml"
     )
     assert cmp(configuration_file_path, original_file)
 

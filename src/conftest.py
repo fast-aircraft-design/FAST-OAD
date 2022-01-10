@@ -30,13 +30,13 @@ CONFIGURATION_FILE_PATH = pth.join(DATA_FOLDER_PATH, "sellar.yml")
 
 
 @pytest.fixture
-def plugin_file_path():
+def plugin_root_path():
     """Returns the path to dummy plugins, for check purpose."""
     return pth.abspath("tests/dummy_plugins")
 
 
 @pytest.fixture
-def no_plugin():
+def with_no_plugin():
     """
     Ensures that FAST-OAD has no plugin registered.
 
@@ -48,7 +48,7 @@ def no_plugin():
 
 
 @pytest.fixture
-def one_dummy_plugin():
+def with_one_dummy_plugin():
     """
     Ensures that FAST-OAD has only the dummy plugin 1 registered.
 
@@ -68,7 +68,7 @@ def one_dummy_plugin():
 
 
 @pytest.fixture
-def dummy_plugins():
+def with_dummy_plugins():
     """
     Ensures that FAST-OAD has only the dummy plugins registered.
 
