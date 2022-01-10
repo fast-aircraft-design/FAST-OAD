@@ -4,8 +4,8 @@ module_folders:
   - conf_sellar_example
   - d:/path/does/not/exist  # will only trigger a warning
 
-input_file: ../results/inputs.xml
-output_file: ../results/outputs.xml
+input_file: ../results/problem_definition_with_indep/inputs.xml
+output_file: ../results/problem_definition_with_indep/outputs.xml
 
 driver: om.ScipyOptimizeDriver(optimizer='SLSQP')
 model:
