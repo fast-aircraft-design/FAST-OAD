@@ -101,6 +101,12 @@ class DistributionPluginDefinition(dict):
             self[entry_point.name].detect_subfolders()
 
     def get_configuration_file_list(self, plugin_name=None):
+        """
+        :param plugin_name: If provided, only file names provided by the plugin in
+                            the distribution will be returned, or an empty list if
+                            the plugin is not in the distribution.
+        :return:  List of configuration file names that are provided by the distribution.
+        """
         file_list = []
         if plugin_name:
             if plugin_name in self:

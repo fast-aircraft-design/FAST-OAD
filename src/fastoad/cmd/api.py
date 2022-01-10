@@ -49,8 +49,6 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, R
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
 
-# from . import resources
-
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
 
@@ -109,8 +107,7 @@ def generate_configuration_file(
     if sample_file_name is None:
         if len(conf_file_list) > 1:
             raise FastSeveralConfigurationFilesError(distribution_name)
-        else:
-            sample_file_name, plugin_name = conf_file_list[0]
+        sample_file_name, plugin_name = conf_file_list[0]
     else:
         matching_list = list(filter(lambda item: item[0] == sample_file_name, conf_file_list))
         if len(matching_list) == 0:
@@ -135,7 +132,8 @@ def generate_configuration_file(
     ]
     make_parent_dir(configuration_file_path)
     copy_resource(configuration_package, sample_file_name, configuration_file_path)
-    _LOGGER.info(f"Sample configuration written in {configuration_file_path}")
+    _LOGGER.info('Sample configuration written in "%s".' % configuration_file_path)
+
     return configuration_file_path
 
 

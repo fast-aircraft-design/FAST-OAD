@@ -2,7 +2,7 @@
 Convenience functions for helping tests
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -37,8 +37,8 @@ def run_system(
         model.linear_solver = om.DirectSolver()
 
     problem.setup(mode=setup_mode)
-    vars = VariableList.from_unconnected_inputs(problem)
-    assert not vars, "These inputs are not provided: %s" % vars.names()
+    variables = VariableList.from_unconnected_inputs(problem)
+    assert not variables, "These inputs are not provided: %s" % variables.names()
 
     problem.run_model()
 
