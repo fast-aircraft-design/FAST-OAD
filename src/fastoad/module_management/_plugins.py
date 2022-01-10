@@ -30,7 +30,7 @@ from .._utils.resource_management.contents import PackageReader
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 OLD_MODEL_PLUGIN_ID = "fastoad_model"
-MODEL_PLUGIN_ID = "fastoad"
+MODEL_PLUGIN_ID = "fastoad.plugins"
 
 
 @dataclass
