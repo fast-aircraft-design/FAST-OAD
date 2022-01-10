@@ -20,6 +20,7 @@ import numpy as np
 import openmdao.api as om
 
 
+# TODO: evaluate pertinence of keeping this function
 def get_unconnected_input_names(
     problem: om.Problem, promoted_names=False
 ) -> Tuple[List[str], List[str]]:
