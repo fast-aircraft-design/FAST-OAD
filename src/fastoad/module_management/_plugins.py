@@ -18,10 +18,9 @@ import logging
 import os.path as pth
 from collections import defaultdict
 from dataclasses import dataclass, field
-from itertools import chain
 from typing import Dict, List, Set, Tuple, Union
 
-from pkg_resources import iter_entry_points
+from pkg_resources import iter_entry_points, EntryPoint
 
 from fastoad.openmdao.variables import Variable
 from ._bundle_loader import BundleLoader
@@ -36,7 +35,7 @@ MODEL_PLUGIN_ID = "fastoad.plugins"
 @dataclass
 class PluginDefinition:
     """
-    Simple structure for storing plugin data.
+    Stores and provides FAST-OAD plugin data.
     """
 
     dist_name: str
@@ -46,10 +45,71 @@ class PluginDefinition:
     conf_files: Set = field(default_factory=set)
 
     def detect_subfolders(self):
+        """
+        Scans plugin folders and populates :attr:`subpackages`.
+        """
         package = PackageReader(self.package_name)
         for subpackage_name in ["models", "notebooks", "configurations"]:
             if subpackage_name in package.contents:
                 self.subpackages[subpackage_name] = ".".join([self.package_name, subpackage_name])
+
+    def get_configuration_file_list(self) -> List[str]:
+        """
+        :return: List of configuration file names that are provided by the plugin.
+        """
+        if "configurations" in self.subpackages:
+            return [
+                file
+                for file in PackageReader(self.subpackages["configurations"]).contents
+                if pth.splitext(file)[1] in [".yml", ".yaml"]
+            ]
+
+        return []
+
+
+@dataclass()
+class DistributionPluginDefinition(dict):
+    """
+    Stores and provides data for FAST-OAD plugins provided by a Python distribution.
+    """
+
+    dist_name: str = None
+
+    def read_entry_point(self, entry_point: EntryPoint, group: str):
+        """
+        Adds plugin definition from provided entry point to
+
+        Does nothing if entry_point.dist.project_name is not equal to :attr:`dist_name`
+
+        :param entry_point:
+        :param group:
+        """
+        if self.dist_name != entry_point.dist.project_name:
+            return
+
+        plugin_definition = PluginDefinition(
+            dist_name=self.dist_name,
+            plugin_name=entry_point.name,
+        )
+        plugin_definition.package_name = entry_point.module_name
+        self[entry_point.name] = plugin_definition
+
+        if group == OLD_MODEL_PLUGIN_ID:
+            self[entry_point.name].subpackages["models"] = entry_point.module_name
+
+        if group == MODEL_PLUGIN_ID:
+            self[entry_point.name].detect_subfolders()
+
+    def get_configuration_file_list(self, plugin_name=None):
+        file_list = []
+        if plugin_name:
+            if plugin_name in self:
+                file_list = self[plugin_name].get_configuration_file_list()
+        else:
+            for plugin in self.values():
+                file_list += plugin.get_configuration_file_list()
+
+        return file_list
 
 
 class FastoadLoader(BundleLoader):
@@ -62,7 +122,7 @@ class FastoadLoader(BundleLoader):
 
     # This class attribute is private and is accessed through a property to ensure
     # that the class has been instantiated before the attribute is used.
-    _plugin_definitions: Dict[str, Dict[str, PluginDefinition]] = defaultdict(dict)
+    _plugin_definitions: Dict[str, DistributionPluginDefinition]
 
     _loaded = False
 
@@ -72,7 +132,7 @@ class FastoadLoader(BundleLoader):
             # Setting cls.loaded to True already ensures that a second instantiation
             # during loading will not result in an import cycle.
             self.__class__._loaded = True
-            self.__class__._plugin_definitions = defaultdict(dict)
+            self.__class__._plugin_definitions = defaultdict(DistributionPluginDefinition)
             self.read_entry_points()
             self.load()
 
@@ -88,29 +148,11 @@ class FastoadLoader(BundleLoader):
         """
         Reads definitions of declared plugins.
         """
-
-        for entry_point in chain(
-            iter_entry_points(OLD_MODEL_PLUGIN_ID),
-            iter_entry_points(MODEL_PLUGIN_ID),
-        ):
-            plugin_definition = PluginDefinition(
-                dist_name=entry_point.dist.project_name,
-                plugin_name=entry_point.name,
-            )
-            plugin_definition.package_name = entry_point.module_name
-            cls._plugin_definitions[entry_point.dist.project_name][
-                entry_point.name
-            ] = plugin_definition
-
-        for entry_point in iter_entry_points(OLD_MODEL_PLUGIN_ID):
-            cls._plugin_definitions[entry_point.dist.project_name][entry_point.name].subpackages[
-                "models"
-            ] = entry_point.module_name
-
-        for entry_point in iter_entry_points(MODEL_PLUGIN_ID):
-            cls._plugin_definitions[entry_point.dist.project_name][
-                entry_point.name
-            ].detect_subfolders()
+        for group in [OLD_MODEL_PLUGIN_ID, MODEL_PLUGIN_ID]:
+            for entry_point in iter_entry_points(group):
+                plugin_dist = cls._plugin_definitions[entry_point.dist.project_name]
+                plugin_dist.dist_name = entry_point.dist.project_name
+                plugin_dist.read_entry_point(entry_point, group)
 
     @classmethod
     def load(cls):
@@ -141,24 +183,21 @@ class FastoadLoader(BundleLoader):
         """
         dist_plugin_definitions = cls._plugin_definitions[plugin_distribution]
         if plugin_name:
-            if plugin_name in dist_plugin_definitions:
-                dist_plugin_definitions = {plugin_name: dist_plugin_definitions.get(plugin_name)}
-            else:
-                dist_plugin_definitions = {}
+            plugin_names = [plugin_name]
+        else:
+            plugin_names = dist_plugin_definitions.keys()
+
+        file_lists = {
+            plugin_name: dist_plugin_definitions.get_configuration_file_list(plugin_name)
+            for plugin_name in plugin_names
+        }
 
         file_list = []
-        for plugin_definition in dist_plugin_definitions.values():
-            if "configurations" in plugin_definition.subpackages:
-                file_list += [
-                    (file, plugin_definition.plugin_name)
-                    for file in PackageReader(
-                        plugin_definition.subpackages["configurations"]
-                    ).contents
-                    if pth.splitext(file)[1] in [".yml", ".yaml"]
-                ]
-
-        if not with_plugin_name:
-            file_list = [file_name for file_name, _ in file_list]
+        for plugin_name, files in file_lists.items():
+            if with_plugin_name:
+                file_list += [(file_name, plugin_name) for file_name in files]
+            else:
+                file_list += files
 
         return file_list
 
