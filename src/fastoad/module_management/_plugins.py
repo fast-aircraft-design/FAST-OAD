@@ -16,15 +16,19 @@ Plugin system for declaration of FAST-OAD models.
 
 import logging
 import os.path as pth
+import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Dict, List, Set, Tuple, Union
 
-from pkg_resources import iter_entry_points, EntryPoint
-
 from fastoad.openmdao.variables import Variable
 from ._bundle_loader import BundleLoader
 from .._utils.resource_management.contents import PackageReader
+
+if sys.version_info < (3, 10):
+    from importlib_metadata import entry_points, EntryPoint
+else:
+    from importlib.metadata import entry_points, EntryPoint
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -84,18 +88,18 @@ class DistributionPluginDefinition(dict):
         :param entry_point:
         :param group:
         """
-        if self.dist_name != entry_point.dist.project_name:
+        if self.dist_name != entry_point.dist.name:
             return
 
         plugin_definition = PluginDefinition(
             dist_name=self.dist_name,
             plugin_name=entry_point.name,
         )
-        plugin_definition.package_name = entry_point.module_name
+        plugin_definition.package_name = entry_point.module
         self[entry_point.name] = plugin_definition
 
         if group == OLD_MODEL_PLUGIN_ID:
-            self[entry_point.name].subpackages["models"] = entry_point.module_name
+            self[entry_point.name].subpackages["models"] = entry_point.module
 
         if group == MODEL_PLUGIN_ID:
             self[entry_point.name].detect_subfolders()
@@ -155,9 +159,9 @@ class FastoadLoader(BundleLoader):
         Reads definitions of declared plugins.
         """
         for group in [OLD_MODEL_PLUGIN_ID, MODEL_PLUGIN_ID]:
-            for entry_point in iter_entry_points(group):
-                plugin_dist = cls._plugin_definitions[entry_point.dist.project_name]
-                plugin_dist.dist_name = entry_point.dist.project_name
+            for entry_point in entry_points(group=group):
+                plugin_dist = cls._plugin_definitions[entry_point.dist.name]
+                plugin_dist.dist_name = entry_point.dist.name
                 plugin_dist.read_entry_point(entry_point, group)
 
     @classmethod

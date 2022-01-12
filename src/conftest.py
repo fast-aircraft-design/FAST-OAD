@@ -18,9 +18,16 @@
 # `pytest src` will run OK after a `pip install .`
 
 import os.path as pth
+import sys
+from typing import List
+from unittest.mock import Mock
 
 import pytest
-from pkg_resources import Distribution, EntryPoint, get_distribution
+
+if sys.version_info < (3, 10):
+    from importlib_metadata import EntryPoint, distribution, Distribution, EntryPoints
+else:
+    from importlib.metadata import EntryPoint, distribution, Distribution, EntryPoints
 
 from fastoad.module_management._plugins import FastoadLoader, MODEL_PLUGIN_ID
 
@@ -42,9 +49,9 @@ def with_no_plugin():
 
     Any previous state of plugins is restored during teardown.
     """
-    original_entry_map = _update_entry_map({})
+    _update_entry_map([])
     yield
-    _restore_entry_map(original_entry_map)
+    _teardown()
 
 
 @pytest.fixture
@@ -54,17 +61,18 @@ def with_one_dummy_plugin():
 
     Any previous state of plugins is restored during teardown.
     """
-    original_entry_map = _update_entry_map(
-        {
-            "test_plugin_1": EntryPoint(
-                "test_plugin_1",
-                "tests.dummy_plugins.dist_1.dummy_plugin_1",
-                dist=Distribution(project_name="dummy-dist-1"),
-            )
-        }
+    _setup()
+    dummy_dist_1 = Mock(Distribution)
+    dummy_dist_1.name = "dummy-dist-1"
+    ep1 = EntryPoint(
+        name="test_plugin_1",
+        value="tests.dummy_plugins.dist_1.dummy_plugin_1",
+        group=MODEL_PLUGIN_ID,
     )
+    ep1.dist = dummy_dist_1
+    _update_entry_map([ep1])
     yield
-    _restore_entry_map(original_entry_map)
+    _teardown()
 
 
 @pytest.fixture
@@ -74,51 +82,82 @@ def with_dummy_plugins():
 
     Any previous state of plugins is restored during teardown.
     """
-    original_entry_map = _update_entry_map(
-        {
-            "test_plugin_1": EntryPoint(
-                "test_plugin_1",
-                "tests.dummy_plugins.dist_1.dummy_plugin_1",
-                dist=Distribution(project_name="dummy-dist-1"),
-            ),
-            "test_plugin_4": EntryPoint(
-                "test_plugin_4",
-                "tests.dummy_plugins.dist_1.dummy_plugin_4",
-                dist=Distribution(project_name="dummy-dist-1"),
-            ),
-            "test_plugin_2": EntryPoint(
-                "test_plugin_2",
-                "tests.dummy_plugins.dist_2.dummy_plugin_2",
-                dist=Distribution(project_name="dummy-dist-2"),
-            ),
-            "test_plugin_3": EntryPoint(
-                "test_plugin_3",
-                "tests.dummy_plugins.dist_2.dummy_plugin_3",
-                dist=Distribution(project_name="dummy-dist-2"),
-            ),
-        }
-    )
+    _setup()
+    dummy_dist_1 = Mock(Distribution)
+    dummy_dist_1.name = "dummy-dist-1"
+    dummy_dist_2 = Mock(Distribution)
+    dummy_dist_2.name = "dummy-dist-2"
+    entry_points = [
+        EntryPoint(
+            name="test_plugin_1",
+            value="tests.dummy_plugins.dist_1.dummy_plugin_1",
+            group=MODEL_PLUGIN_ID,
+        ),
+        EntryPoint(
+            name="test_plugin_4",
+            value="tests.dummy_plugins.dist_1.dummy_plugin_4",
+            group=MODEL_PLUGIN_ID,
+        ),
+        EntryPoint(
+            name="test_plugin_2",
+            value="tests.dummy_plugins.dist_2.dummy_plugin_2",
+            group=MODEL_PLUGIN_ID,
+        ),
+        EntryPoint(
+            name="test_plugin_3",
+            value="tests.dummy_plugins.dist_2.dummy_plugin_3",
+            group=MODEL_PLUGIN_ID,
+        ),
+    ]
+    entry_points[0].dist = entry_points[1].dist = dummy_dist_1
+    entry_points[2].dist = entry_points[3].dist = dummy_dist_2
+
+    _update_entry_map(entry_points)
     yield
-    _restore_entry_map(original_entry_map)
+    _teardown()
 
 
-def _update_entry_map(new_entry_map) -> dict:
-    dist = get_distribution("FAST-OAD")
+ORIGINAL_ENTRY_POINTS_PROPERTY = Distribution.entry_points
+try:
+    ORIGINAL_ENTRY_POINT_SETATTR = Distribution.__setattr__
+except AttributeError:
+    ORIGINAL_ENTRY_POINT_SETATTR = None
 
-    original_entry_map = dist.get_entry_map(MODEL_PLUGIN_ID).copy()
-    entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
-    entry_map.clear()
-    entry_map.update(new_entry_map)
+
+def _update_entry_map(new_plugin_entry_points: List[EntryPoint]):
+    """
+    Modified plugin entry_points of FAST-OAD distribution.
+
+    This is done by replacing the entry_points property of Distribution class
+
+    :param new_plugin_entry_points:
+    """
+    dist: Distribution = distribution("FAST-OAD")
+
+    entry_points = EntryPoints(
+        [ep for ep in dist.entry_points if ep.group != MODEL_PLUGIN_ID] + new_plugin_entry_points
+    )
+
+    # Distribution.entry_points gets info directly from entry_points.txt.
+    # Therefore, the only way to modify the output of Distribution.entry_points
+    # is to replace the property.
+    setattr(Distribution, "entry_points", property(lambda self: entry_points))
 
     # Ensure next instantiation of FastoadLoader will trigger reloading plugins
     FastoadLoader._loaded = False
 
-    return original_entry_map
+
+def _setup():
+    # In last versions of importlib-metadata, EntryPoint overloads __setattr__ to
+    # prevent any attribute modification, but it does not suit our needs.
+    try:
+        delattr(EntryPoint, "__setattr__")
+    except AttributeError:
+        pass
 
 
-def _restore_entry_map(original_entry_map):
-    dist = get_distribution("FAST-OAD")
-    entry_map = dist.get_entry_map(MODEL_PLUGIN_ID)
-    entry_map.clear()
-    entry_map.update(original_entry_map)
+def _teardown():
+    if ORIGINAL_ENTRY_POINT_SETATTR:
+        setattr(EntryPoint, "__setattr__", ORIGINAL_ENTRY_POINT_SETATTR)
+    setattr(Distribution, "entry_points", ORIGINAL_ENTRY_POINTS_PROPERTY)
     FastoadLoader._loaded = False
