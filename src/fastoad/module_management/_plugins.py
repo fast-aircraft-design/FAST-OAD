@@ -19,7 +19,7 @@ import os.path as pth
 import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Tuple, Union
+from typing import Dict, List, Set
 
 from fastoad.openmdao.variables import Variable
 from ._bundle_loader import BundleLoader
@@ -34,6 +34,16 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 OLD_MODEL_PLUGIN_ID = "fastoad_model"
 MODEL_PLUGIN_ID = "fastoad.plugins"
+
+
+@dataclass
+class ConfigurationFileInfo:
+    """Class for storing information about configuration files provided by plugins."""
+
+    file_name: str
+    dist_name: str
+    plugin_name: str
+    package_name: str
 
 
 @dataclass
@@ -57,13 +67,18 @@ class PluginDefinition:
             if subpackage_name in package.contents:
                 self.subpackages[subpackage_name] = ".".join([self.package_name, subpackage_name])
 
-    def get_configuration_file_list(self) -> List[str]:
+    def get_configuration_file_list(self) -> List[ConfigurationFileInfo]:
         """
         :return: List of configuration file names that are provided by the plugin.
         """
         if "configurations" in self.subpackages:
             return [
-                file
+                ConfigurationFileInfo(
+                    file_name=file,
+                    dist_name=self.dist_name,
+                    plugin_name=self.plugin_name,
+                    package_name=self.subpackages["configurations"],
+                )
                 for file in PackageReader(self.subpackages["configurations"]).contents
                 if pth.splitext(file)[1] in [".yml", ".yaml"]
             ]
@@ -104,7 +119,7 @@ class DistributionPluginDefinition(dict):
         if group == MODEL_PLUGIN_ID:
             self[entry_point.name].detect_subfolders()
 
-    def get_configuration_file_list(self, plugin_name=None):
+    def get_configuration_file_list(self, plugin_name=None) -> List[ConfigurationFileInfo]:
         """
         :param plugin_name: If provided, only file names provided by the plugin in
                             the distribution will be returned, or an empty list if
@@ -177,37 +192,23 @@ class FastoadLoader(BundleLoader):
 
     @classmethod
     def get_configuration_file_list(
-        cls, plugin_distribution: str, plugin_name: str = None, with_plugin_name: bool = True
-    ) -> List[Union[str, Tuple[str, str]]]:
+        cls, plugin_distribution: str, plugin_name: str = None
+    ) -> List[ConfigurationFileInfo]:
         """
         Returns the list of configuration files available for named distribution (the
         Python library) and optionally the named plugin of this distribution.
 
         :param plugin_distribution: the Python library to inspect
         :param plugin_name: if provided, only the files for the defined plugin will be returned
-        :param with_plugin_name: if True, the returned list will be tuples (configuration file,
-                                 plugin name). If False, only configuration file names will be
-                                 returned
         :return: list of configuration files provided by specified plugin,
                  or an empty list if the specified plugin is not available
         """
         dist_plugin_definitions = cls._plugin_definitions[plugin_distribution]
-        if plugin_name:
-            plugin_names = [plugin_name]
-        else:
-            plugin_names = dist_plugin_definitions.keys()
 
-        file_lists = {
-            plugin_name: dist_plugin_definitions.get_configuration_file_list(plugin_name)
-            for plugin_name in plugin_names
-        }
-
-        file_list = []
-        for plugin_name, files in file_lists.items():
-            if with_plugin_name:
-                file_list += [(file_name, plugin_name) for file_name in files]
-            else:
-                file_list += files
+        file_list = [
+            file_info
+            for file_info in dist_plugin_definitions.get_configuration_file_list(plugin_name)
+        ]
 
         return file_list
 

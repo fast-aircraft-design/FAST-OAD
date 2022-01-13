@@ -76,29 +76,32 @@ def test_plugins(with_dummy_plugins):
 
 
 def test_get_plugin_configuration_file_list(with_dummy_plugins):
+    def extract_info(file_list):
+        return {(item.file_name, item.plugin_name) for item in file_list}
+
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1")
-    assert set(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
+    assert extract_info(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1", "test_plugin_1")
-    assert set(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
+    assert extract_info(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1", "test_plugin_4")
-    assert set(file_list) == set()
+    assert extract_info(file_list) == set()
 
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2")
-    assert set(file_list) == {
+    assert extract_info(file_list) == {
         ("dummy_conf_2-1.yml", "test_plugin_2"),
         ("dummy_conf_3-1.yml", "test_plugin_3"),
         ("dummy_conf_3-2.yaml", "test_plugin_3"),
     }
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2", "test_plugin_2")
-    assert set(file_list) == {("dummy_conf_2-1.yml", "test_plugin_2")}
+    assert extract_info(file_list) == {("dummy_conf_2-1.yml", "test_plugin_2")}
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2", "test_plugin_3")
-    assert set(file_list) == {
+    assert extract_info(file_list) == {
         ("dummy_conf_3-1.yml", "test_plugin_3"),
         ("dummy_conf_3-2.yaml", "test_plugin_3"),
     }
 
     # improper names
     file_list = FastoadLoader().get_configuration_file_list("unknown-dist-1")
-    assert set(file_list) == set()
+    assert extract_info(file_list) == set()
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1", "unknown_plugin")
-    assert set(file_list) == set()
+    assert extract_info(file_list) == set()

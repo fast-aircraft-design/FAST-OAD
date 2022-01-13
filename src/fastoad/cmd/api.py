@@ -107,15 +107,18 @@ def generate_configuration_file(
     if sample_file_name is None:
         if len(conf_file_list) > 1:
             raise FastSeveralConfigurationFilesError(distribution_name)
-        sample_file_name, plugin_name = conf_file_list[0]
+        file_info = conf_file_list[0]
     else:
-        matching_list = list(filter(lambda item: item[0] == sample_file_name, conf_file_list))
+        matching_list = list(
+            filter(lambda item: item.file_name == sample_file_name, conf_file_list)
+        )
         if len(matching_list) == 0:
             raise FastUnknownConfigurationFileError(sample_file_name, distribution_name)
-        plugin_name = matching_list[0][1]
 
-        if plugin_name is None:
-            raise FastUnknownConfigurationFileError(sample_file_name, distribution_name)
+        # Here we implicitly assume that plugin developers will ensure that there will be
+        # no duplicates in conf file names (possible if several plugins are in the
+        # same installed package, but such practice is discouraged).
+        file_info = matching_list[0]
 
     # Check on file overwrite
     configuration_file_path = pth.abspath(configuration_file_path)
@@ -127,11 +130,8 @@ def generate_configuration_file(
         )
 
     # Write file
-    configuration_package = plugin_definitions[distribution_name][plugin_name].subpackages[
-        "configurations"
-    ]
     make_parent_dir(configuration_file_path)
-    copy_resource(configuration_package, sample_file_name, configuration_file_path)
+    copy_resource(file_info.package_name, file_info.file_name, configuration_file_path)
     _LOGGER.info('Sample configuration written in "%s".' % configuration_file_path)
 
     return configuration_file_path

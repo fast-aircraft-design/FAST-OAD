@@ -71,9 +71,12 @@ def _plugin_definition_to_dict(plugin_name: str, definition: PluginDefinition):
         plugin_name=plugin_name,
         has_model_folder="models" in definition.subpackages,
         has_notebook_folder="notebooks" in definition.subpackages,
-        configurations=FastoadLoader().get_configuration_file_list(
-            definition.dist_name, plugin_name, with_plugin_name=False
-        ),
+        configurations=[
+            item.file_name
+            for item in FastoadLoader().get_configuration_file_list(
+                definition.dist_name, plugin_name
+            )
+        ],
     )
 
 
