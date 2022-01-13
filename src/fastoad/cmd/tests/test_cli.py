@@ -50,12 +50,13 @@ def test_plugin_info(with_dummy_plugins):
 
     expected_info = pd.DataFrame(
         dict(
-            installed_package=[f"dummy-dist-{i}" for i in [1, 2]],
-            has_models=[False, True],
-            has_notebooks=[True, False],
+            installed_package=[f"dummy-dist-{i}" for i in [1, 2, 3]],
+            has_models=[False, True, True],
+            has_notebooks=[True, False, True],
             configurations=[
                 ["dummy_conf_1-1.yml"],
                 ["dummy_conf_2-1.yml", "dummy_conf_3-1.yml", "dummy_conf_3-2.yaml"],
+                [],
             ],
         )
     )

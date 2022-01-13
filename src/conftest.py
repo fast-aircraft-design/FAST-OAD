@@ -87,6 +87,8 @@ def with_dummy_plugins():
     dummy_dist_1.name = "dummy-dist-1"
     dummy_dist_2 = Mock(Distribution)
     dummy_dist_2.name = "dummy-dist-2"
+    dummy_dist_3 = Mock(Distribution)
+    dummy_dist_3.name = "dummy-dist-3"
     entry_points = [
         EntryPoint(
             name="test_plugin_1",
@@ -108,9 +110,15 @@ def with_dummy_plugins():
             value="tests.dummy_plugins.dist_2.dummy_plugin_3",
             group=MODEL_PLUGIN_ID,
         ),
+        EntryPoint(
+            name="test_plugin_5",
+            value="tests.dummy_plugins.dist_3.dummy_plugin_5",
+            group=MODEL_PLUGIN_ID,
+        ),
     ]
     entry_points[0].dist = entry_points[1].dist = dummy_dist_1
     entry_points[2].dist = entry_points[3].dist = dummy_dist_2
+    entry_points[4].dist = dummy_dist_3
 
     _update_entry_map(entry_points)
     yield

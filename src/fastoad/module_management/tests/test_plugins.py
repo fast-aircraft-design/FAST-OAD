@@ -123,10 +123,6 @@ def test_get_plugin_configuration_file_list(with_dummy_plugins):
 
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1")
     assert extract_info(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
-    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1", "test_plugin_1")
-    assert extract_info(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
-    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1", "test_plugin_4")
-    assert extract_info(file_list) == set()
 
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2")
     assert extract_info(file_list) == {
@@ -134,18 +130,37 @@ def test_get_plugin_configuration_file_list(with_dummy_plugins):
         ("dummy_conf_3-1.yml", "test_plugin_3"),
         ("dummy_conf_3-2.yaml", "test_plugin_3"),
     }
-    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2", "test_plugin_2")
-    assert extract_info(file_list) == {("dummy_conf_2-1.yml", "test_plugin_2")}
-    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2", "test_plugin_3")
-    assert extract_info(file_list) == {
-        ("dummy_conf_3-1.yml", "test_plugin_3"),
-        ("dummy_conf_3-2.yaml", "test_plugin_3"),
+
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-3")
+    assert extract_info(file_list) == set()
+
+    # improper names
+    file_list = FastoadLoader().get_configuration_file_list("unknown-dist")
+    assert extract_info(file_list) == set()
+
+
+def test_get_plugin_notebook_folder_list(with_dummy_plugins):
+    def extract_info(folder_list):
+        return {(item.dist_name, item.package_name) for item in folder_list}
+
+    folder_list = FastoadLoader().get_notebook_folder_list()
+    assert extract_info(folder_list) == {
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
+        ("dummy-dist-3", "tests.dummy_plugins.dist_3.dummy_plugin_5.notebooks"),
+    }
+    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-1")
+    assert extract_info(folder_list) == {
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks")
+    }
+    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-2")
+    assert extract_info(folder_list) == set()
+    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-3")
+    assert extract_info(folder_list) == {
+        ("dummy-dist-3", "tests.dummy_plugins.dist_3.dummy_plugin_5.notebooks")
     }
 
     # improper names
-    file_list = FastoadLoader().get_configuration_file_list("unknown-dist-1")
-    assert extract_info(file_list) == set()
-    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1", "unknown_plugin")
+    file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
     assert extract_info(file_list) == set()
 
 

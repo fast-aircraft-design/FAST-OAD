@@ -20,7 +20,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List
+from typing import Callable, Dict, List
 
 import numpy as np
 
@@ -53,10 +53,10 @@ class SubPackageNames(Enum):
 
 
 @dataclass
-class ConfigurationFileInfo:
+class ResourceInfo:
     """Class for storing information about configuration files provided by plugins."""
 
-    file_name: str
+    name: str
     dist_name: str
     plugin_name: str
     package_name: str
@@ -84,14 +84,14 @@ class PluginDefinition:
                     [self.package_name, subpackage_name.value]
                 )
 
-    def get_configuration_file_list(self) -> List[ConfigurationFileInfo]:
+    def get_configuration_file_list(self) -> List[ResourceInfo]:
         """
-        :return: List of configuration file names that are provided by the plugin.
+        :return: List of configuration files that are provided by the distribution.
         """
         if SubPackageNames.CONFIGURATIONS in self.subpackages:
             return [
-                ConfigurationFileInfo(
-                    file_name=file,
+                ResourceInfo(
+                    name=file,
                     dist_name=self.dist_name,
                     plugin_name=self.plugin_name,
                     package_name=self.subpackages[SubPackageNames.CONFIGURATIONS],
@@ -136,12 +136,12 @@ class DistributionPluginDefinition(dict):
         if group == MODEL_PLUGIN_ID:
             self[entry_point.name].detect_subfolders()
 
-    def get_configuration_file_list(self, plugin_name=None) -> List[ConfigurationFileInfo]:
+    def get_configuration_file_list(self, plugin_name=None) -> List[ResourceInfo]:
         """
         :param plugin_name: If provided, only file names provided by the plugin in
                             the distribution will be returned, or an empty list if
                             the plugin is not in the distribution.
-        :return:  List of configuration file names that are provided by the distribution.
+        :return:  List of configuration file information that are provided by the distribution.
         """
         file_list = []
         if plugin_name:
@@ -153,9 +153,7 @@ class DistributionPluginDefinition(dict):
 
         return file_list
 
-    def get_configuration_file_info(
-        self, file_name=None, plugin_name=None
-    ) -> ConfigurationFileInfo:
+    def get_configuration_file_info(self, file_name=None, plugin_name=None) -> ResourceInfo:
         """
         :param file_name: can be None if only one configuration file is provided in the
                           distribution (or in the plugin if `plugin_name` is provided)
@@ -172,7 +170,7 @@ class DistributionPluginDefinition(dict):
                 raise FastSeveralConfigurationFilesError(self.dist_name)
             file_info = conf_file_list[0]
         else:
-            matching_list = list(filter(lambda item: item.file_name == file_name, conf_file_list))
+            matching_list = list(filter(lambda item: item.name == file_name, conf_file_list))
             if len(matching_list) == 0:
                 raise FastUnknownConfigurationFileError(file_name, self.dist_name)
 
@@ -182,6 +180,32 @@ class DistributionPluginDefinition(dict):
             file_info = matching_list[0]
 
         return file_info
+
+    def get_notebook_folder_list(self, plugin_name=None) -> List[ResourceInfo]:
+        """
+        :param plugin_name: If provided, only notebook folder provided by the plugin (if any)
+                            will be returned, or an empty list if the plugin is not in the
+                            distribution.
+        :return:  List of notebook folder information that are provided by the distribution.
+        """
+        if plugin_name:
+            plugin_names = [plugin_name] if plugin_name in self else []
+        else:
+            plugin_names = self.keys()
+
+        info = []
+        for plugin_name in plugin_names:
+            plugin_def = self[plugin_name]
+            if SubPackageNames.NOTEBOOKS in plugin_def.subpackages:
+                info.append(
+                    ResourceInfo(
+                        name=SubPackageNames.NOTEBOOKS.value,
+                        dist_name=self.dist_name,
+                        plugin_name=plugin_name,
+                        package_name=plugin_def.subpackages[SubPackageNames.NOTEBOOKS],
+                    )
+                )
+        return info
 
     def to_dict(self) -> Dict:
         """
@@ -256,26 +280,47 @@ class FastoadLoader(BundleLoader):
 
         return self._dist_plugin_definitions[dist_name]
 
-    def get_configuration_file_list(
-        self, dist_name: str, plugin_name: str = None
-    ) -> List[ConfigurationFileInfo]:
+    def get_configuration_file_list(self, dist_name: str) -> List[ResourceInfo]:
         """
-        Returns the list of configuration files available for named distribution
+        :param dist_name: the distribution to inspect
+        :return: list of configuration files available for named distribution,
+                 or an empty list if the specified distribution is not available
+        """
+        return self._get_resource_list(
+            DistributionPluginDefinition.get_configuration_file_list,
+            dist_name,
+        )
+
+    def get_notebook_folder_list(self, dist_name: str = None) -> List[ResourceInfo]:
+        """
+        Returns the list of notebook folders available for named distribution
         and optionally the named plugin of this distribution.
 
         :param dist_name: the distribution to inspect
-        :param plugin_name: if provided, only the files for the defined plugin will be returned
-        :return: list of configuration files provided by specified plugin,
-                 or an empty list if the specified plugin is not available
+        :return: list of notebook folders available for named distribution,
+                 or an empty list if the specified distribution is not available
         """
-        dist_plugin_definitions = self._dist_plugin_definitions[dist_name]
+        return self._get_resource_list(
+            DistributionPluginDefinition.get_notebook_folder_list,
+            dist_name,
+        )
 
-        file_list = [
-            file_info
-            for file_info in dist_plugin_definitions.get_configuration_file_list(plugin_name)
-        ]
+    def _get_resource_list(
+        self,
+        method: Callable,
+        dist_name: str = None,
+    ) -> List[ResourceInfo]:
+        infos = []
+        if dist_name:
+            dist_names = [dist_name]
+        else:
+            dist_names = self._dist_plugin_definitions.keys()
 
-        return file_list
+        for dist_name in dist_names:
+            dist_plugin_definitions = self._dist_plugin_definitions[dist_name]
+            infos += method(dist_plugin_definitions)
+
+        return infos
 
     @classmethod
     def read_entry_points(cls):

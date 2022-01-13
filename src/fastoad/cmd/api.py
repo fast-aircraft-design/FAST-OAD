@@ -88,7 +88,7 @@ def generate_configuration_file(
 
     # Write file
     make_parent_dir(configuration_file_path)
-    copy_resource(file_info.package_name, file_info.file_name, configuration_file_path)
+    copy_resource(file_info.package_name, file_info.name, configuration_file_path)
     _LOGGER.info('Sample configuration written in "%s".' % configuration_file_path)
 
     return configuration_file_path
