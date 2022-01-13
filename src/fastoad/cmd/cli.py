@@ -28,14 +28,14 @@ from fastoad.cmd.cli_utils import (
     out_file_option,
     overwrite_option,
 )
-from fastoad.cmd.exceptions import (
-    FastNoPluginError,
-    FastSeveralConfigurationFilesError,
-    FastSeveralPluginsError,
-    FastUnknownConfigurationFileError,
-    FastUnknownPluginError,
-)
 from fastoad.module_management._plugins import FastoadLoader, PluginDefinition
+from fastoad.module_management.exceptions import (
+    FastNoDistPluginError,
+    FastSeveralConfigurationFilesError,
+    FastSeveralDistPluginsError,
+    FastUnknownConfigurationFileError,
+    FastUnknownDistPluginError,
+)
 
 NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
 
@@ -50,7 +50,7 @@ def fast_oad():
 def plugin_info():
     """Provides list of installed FAST-OAD plugins."""
 
-    plugin_definitions = FastoadLoader().plugin_definitions
+    plugin_definitions = FastoadLoader().distribution_plugin_definitions
     table_dicts = []
     for dist_plugin_definitions in plugin_definitions.values():
         table_dicts += [
@@ -107,9 +107,9 @@ def gen_conf(conf_file, library, source, force):
             sample_file_name=source,
         )
     except (
-        FastNoPluginError,
-        FastSeveralPluginsError,
-        FastUnknownPluginError,
+        FastNoDistPluginError,
+        FastSeveralDistPluginsError,
+        FastUnknownDistPluginError,
         FastSeveralConfigurationFilesError,
         FastUnknownConfigurationFileError,
     ) as exc:

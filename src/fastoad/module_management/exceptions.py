@@ -1,6 +1,6 @@
 """Exceptions for module_management package."""
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Sequence, List
+from typing import List, Sequence
 
 from fastoad.exceptions import FastError
 
@@ -131,3 +131,58 @@ class FastUnknownSubmodelError(FastError):
         super().__init__(msg)
         self.service_id = service_id
         self.submodel_id = submodel_id
+
+
+class FastNoDistPluginError(FastError):
+    """Raised when no installed package with FAST-OAD plugin is available."""
+
+    def __init__(self):
+        super().__init__("This feature needs plugins, but no plugin available.")
+
+
+class FastUnknownDistPluginError(FastError):
+    """Raised when a distribution name is not found among distribution with FAST-OAD plugins."""
+
+    def __init__(self, dist_name):
+        self.dist_name = dist_name
+        super().__init__(
+            f'No installed package with FAST-OAD plugin found with name "{dist_name}".'
+        )
+
+
+class FastSeveralDistPluginsError(FastError):
+    """
+    Raised when no distribution name has been specified but several distribution
+    with FAST-OAD plugins are available.
+    """
+
+    def __init__(self):
+        super().__init__(
+            "Several installed packages with FAST-OAD plugins are available. "
+            "One must be specified."
+        )
+
+
+class FastUnknownConfigurationFileError(FastError):
+    """Raised when a configuration file is not found for named distribution."""
+
+    def __init__(self, configuration_file, dist_name):
+        self.configuration_file = configuration_file
+        self.dist_name = dist_name
+        super().__init__(
+            f'Configuration file "{configuration_file}" not provided with '
+            f'installed package "{dist_name}".'
+        )
+
+
+class FastSeveralConfigurationFilesError(FastError):
+    """
+    Raised when no configuration file has been specified but several configuration files are
+    provided with the distribution."""
+
+    def __init__(self, dist_name):
+        self.dist_name = dist_name
+        super().__init__(
+            f'Installed package "{dist_name}" provides several configuration files. '
+            "One must be specified."
+        )

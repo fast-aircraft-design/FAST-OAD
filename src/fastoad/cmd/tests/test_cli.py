@@ -116,7 +116,9 @@ def test_gen_conf_one_plugin(cleanup, with_one_dummy_plugin, plugin_root_path):
         )
         assert not result.exception
         assert result.exit_code == 0
-        assert result.output.endswith('No plugin found with name "unknown-dist".\n')
+        assert result.output.endswith(
+            'No installed package with FAST-OAD plugin found with name "unknown-dist".\n'
+        )
 
         # ----------------------------------------------------------------------
         result = runner.invoke(fast_oad, ["gen_conf", "my_conf.yml", "-f", "-l", "dummy-dist-1"])
@@ -150,7 +152,7 @@ def test_gen_conf_one_plugin(cleanup, with_one_dummy_plugin, plugin_root_path):
         assert not result.exception
         assert result.exit_code == 0
         assert result.output.endswith(
-            '"unknown_conf.yml" not provided with plugin "dummy-dist-1".\n'
+            '"unknown_conf.yml" not provided with installed package "dummy-dist-1".\n'
         )
 
 
@@ -164,7 +166,10 @@ def test_gen_conf_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
         )
         assert not result.exception
         assert result.exit_code == 0
-        assert result.output.endswith("Several plugins are available. One must be specified.\n")
+        assert result.output.endswith(
+            "Several installed packages with FAST-OAD plugins are available. "
+            "One must be specified.\n"
+        )
 
         # ----------------------------------------------------------------------
         result = runner.invoke(
@@ -185,7 +190,7 @@ def test_gen_conf_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
         assert not result.exception
         assert result.exit_code == 0
         assert result.output.endswith(
-            '"unknown_conf.yml" not provided with plugin "dummy-dist-2".\n'
+            '"unknown_conf.yml" not provided with installed package "dummy-dist-2".\n'
         )
 
         # Test source file specification =======================================

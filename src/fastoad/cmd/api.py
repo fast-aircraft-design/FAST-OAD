@@ -32,11 +32,6 @@ from fastoad._utils.files import make_parent_dir
 from fastoad._utils.resource_management.copy import copy_resource
 from fastoad.cmd.exceptions import (
     FastFileExistsError,
-    FastNoPluginError,
-    FastSeveralConfigurationFilesError,
-    FastSeveralPluginsError,
-    FastUnknownConfigurationFileError,
-    FastUnknownPluginError,
 )
 from fastoad.gui import OptimizationViewer, VariableViewer
 from fastoad.io import IVariableIOFormatter
@@ -76,49 +71,11 @@ def generate_configuration_file(
                              the plugin provides only one configuration file)
     :return: path of generated file
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
-    :raise FastNoPluginsError: if no plugins is available.
-    :raise FastSeveralPluginsError: if several plugins are available but `plugin_name` has not
-                                    been provided
-    :raise FastUnknownPluginError: if the specified plugin is not available
-    :raise FastSeveralConfigurationFilesError: if the specified plugin provides several sample
-                                               configuration files but `sample_configuration_file`
-                                               has not been provided
-    :raise FastUnknownConfigurationFileError: if the specified plugin does not provide specified
-                                              configuration file
     """
 
     # Check on plugins
-    loader = FastoadLoader()
-    plugin_definitions = loader.plugin_definitions
-    if len(plugin_definitions) == 0:
-        raise FastNoPluginError()
-
-    if distribution_name is None:
-        if len(plugin_definitions) == 1:
-            distribution_name = next(iter(plugin_definitions.keys()))
-        else:
-            raise FastSeveralPluginsError()
-
-    if distribution_name not in plugin_definitions:
-        raise FastUnknownPluginError(distribution_name)
-
-    # Check on configuration source file
-    conf_file_list = loader.get_configuration_file_list(distribution_name)
-    if sample_file_name is None:
-        if len(conf_file_list) > 1:
-            raise FastSeveralConfigurationFilesError(distribution_name)
-        file_info = conf_file_list[0]
-    else:
-        matching_list = list(
-            filter(lambda item: item.file_name == sample_file_name, conf_file_list)
-        )
-        if len(matching_list) == 0:
-            raise FastUnknownConfigurationFileError(sample_file_name, distribution_name)
-
-        # Here we implicitly assume that plugin developers will ensure that there will be
-        # no duplicates in conf file names (possible if several plugins are in the
-        # same installed package, but such practice is discouraged).
-        file_info = matching_list[0]
+    dist_definition = FastoadLoader().get_distribution_plugin_definition(distribution_name)
+    file_info = dist_definition.get_configuration_file_info(sample_file_name)
 
     # Check on file overwrite
     configuration_file_path = pth.abspath(configuration_file_path)

@@ -23,6 +23,13 @@ from typing import Dict, List, Set
 
 from fastoad.openmdao.variables import Variable
 from ._bundle_loader import BundleLoader
+from .exceptions import (
+    FastNoDistPluginError,
+    FastSeveralConfigurationFilesError,
+    FastSeveralDistPluginsError,
+    FastUnknownConfigurationFileError,
+    FastUnknownDistPluginError,
+)
 from .._utils.resource_management.contents import PackageReader
 
 if sys.version_info < (3, 10):
@@ -136,18 +143,47 @@ class DistributionPluginDefinition(dict):
 
         return file_list
 
+    def get_configuration_file_info(
+        self, file_name=None, plugin_name=None
+    ) -> ConfigurationFileInfo:
+        """
+        :param file_name: can be None if only one configuration file is provided in the
+                          distribution (or in the plugin if `plugin_name` is provided)
+        :param plugin_name:
+        :return: information for specified configuration file name.
+        :raise FastSeveralConfigurationFilesError: if several configuration files are available
+                                                   but `file_name` has not been provided.
+        :raise FastUnknownConfigurationFileError: if the specified configuration file is not
+                                                  available.
+        """
+        conf_file_list = self.get_configuration_file_list(plugin_name)
+        if file_name is None:
+            if len(conf_file_list) > 1:
+                raise FastSeveralConfigurationFilesError(self.dist_name)
+            file_info = conf_file_list[0]
+        else:
+            matching_list = list(filter(lambda item: item.file_name == file_name, conf_file_list))
+            if len(matching_list) == 0:
+                raise FastUnknownConfigurationFileError(file_name, self.dist_name)
+
+            # Here we implicitly assume that plugin developers will ensure that there will be
+            # no duplicates in conf file names (possible if several plugins are in the
+            # same installed package, but such practice is discouraged).
+            file_info = matching_list[0]
+
+        return file_info
+
 
 class FastoadLoader(BundleLoader):
     """
     Specialized :class:`BundleLoader` that will load plugins at first instantiation.
 
-    This class should be instantiated whenever plugins need to be loaded, which
-    also means whenever it is needed to know about registered models.
+    I also provides data from available plugins
     """
 
     # This class attribute is private and is accessed through a property to ensure
     # that the class has been instantiated before the attribute is used.
-    _plugin_definitions: Dict[str, DistributionPluginDefinition]
+    _dist_plugin_definitions: Dict[str, DistributionPluginDefinition]
 
     _loaded = False
 
@@ -157,16 +193,61 @@ class FastoadLoader(BundleLoader):
             # Setting cls.loaded to True already ensures that a second instantiation
             # during loading will not result in an import cycle.
             self.__class__._loaded = True
-            self.__class__._plugin_definitions = defaultdict(DistributionPluginDefinition)
+            self.__class__._dist_plugin_definitions = defaultdict(DistributionPluginDefinition)
             self.read_entry_points()
             self.load()
 
     @property
-    def plugin_definitions(self) -> Dict[str, Dict[str, PluginDefinition]]:
+    def distribution_plugin_definitions(self) -> Dict[str, DistributionPluginDefinition]:
+        """Stores plugin definitions with distribution names as dict keys."""
+        return self._dist_plugin_definitions.copy()
+
+    def get_distribution_plugin_definition(
+        self, dist_name: str = None
+    ) -> DistributionPluginDefinition:
         """
-        Stores plugin definitions with plugin name as dict keys.
+        :param dist_name: needed if more than one distribution with FAST-OAD plugin is installed.
+        :return: the DistributionPluginDefinition instance that matches `dist_name`, if any
+        :raise FastNoDistPluginError: if no distribution with plugin is available.
+        :raise FastSeveralDistPluginsError: if several distributions are available but `dist_name`
+                                        has not been provided.
+        :raise FastUnknownDistPluginError: if the specified distribution is not available.
         """
-        return self._plugin_definitions
+
+        if len(self._dist_plugin_definitions) == 0:
+            raise FastNoDistPluginError()
+
+        if dist_name is None:
+            if len(self._dist_plugin_definitions) > 1:
+                raise FastSeveralDistPluginsError()
+            else:
+                return next(iter(self._dist_plugin_definitions.values()))
+
+        if dist_name not in self._dist_plugin_definitions:
+            raise FastUnknownDistPluginError(dist_name)
+
+        return self._dist_plugin_definitions[dist_name]
+
+    def get_configuration_file_list(
+        self, dist_name: str, plugin_name: str = None
+    ) -> List[ConfigurationFileInfo]:
+        """
+        Returns the list of configuration files available for named distribution
+        and optionally the named plugin of this distribution.
+
+        :param dist_name: the distribution to inspect
+        :param plugin_name: if provided, only the files for the defined plugin will be returned
+        :return: list of configuration files provided by specified plugin,
+                 or an empty list if the specified plugin is not available
+        """
+        dist_plugin_definitions = self._dist_plugin_definitions[dist_name]
+
+        file_list = [
+            file_info
+            for file_info in dist_plugin_definitions.get_configuration_file_list(plugin_name)
+        ]
+
+        return file_list
 
     @classmethod
     def read_entry_points(cls):
@@ -175,7 +256,7 @@ class FastoadLoader(BundleLoader):
         """
         for group in [OLD_MODEL_PLUGIN_ID, MODEL_PLUGIN_ID]:
             for entry_point in entry_points(group=group):
-                plugin_dist = cls._plugin_definitions[entry_point.dist.name]
+                plugin_dist = cls._dist_plugin_definitions[entry_point.dist.name]
                 plugin_dist.dist_name = entry_point.dist.name
                 plugin_dist.read_entry_point(entry_point, group)
 
@@ -184,33 +265,11 @@ class FastoadLoader(BundleLoader):
         """
         Loads declared plugins.
         """
-        for plugin_dist, dist_plugin_definitions in cls._plugin_definitions.items():
+        for plugin_dist, dist_plugin_definitions in cls._dist_plugin_definitions.items():
             for plugin_name, plugin_def in dist_plugin_definitions.items():
                 _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
                 cls._load_models(plugin_def)
                 cls._load_configurations(plugin_def)
-
-    @classmethod
-    def get_configuration_file_list(
-        cls, plugin_distribution: str, plugin_name: str = None
-    ) -> List[ConfigurationFileInfo]:
-        """
-        Returns the list of configuration files available for named distribution (the
-        Python library) and optionally the named plugin of this distribution.
-
-        :param plugin_distribution: the Python library to inspect
-        :param plugin_name: if provided, only the files for the defined plugin will be returned
-        :return: list of configuration files provided by specified plugin,
-                 or an empty list if the specified plugin is not available
-        """
-        dist_plugin_definitions = cls._plugin_definitions[plugin_distribution]
-
-        file_list = [
-            file_info
-            for file_info in dist_plugin_definitions.get_configuration_file_list(plugin_name)
-        ]
-
-        return file_list
 
     @classmethod
     def _load_models(cls, plugin_definition: PluginDefinition):

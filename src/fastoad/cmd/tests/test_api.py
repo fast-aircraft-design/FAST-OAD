@@ -28,10 +28,6 @@ from fastoad.openmdao.variables import Variable
 from .. import api
 from ..exceptions import (
     FastFileExistsError,
-    FastNoPluginError,
-    FastSeveralConfigurationFilesError,
-    FastSeveralPluginsError,
-    FastUnknownPluginError,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -47,35 +43,10 @@ def cleanup():
     Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
 
 
-def test_generate_configuration_file_no_plugin(cleanup, with_no_plugin):
-    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "will not_be_written.yml")
-
-    # Providing a bad plugin name
-    with pytest.raises(FastNoPluginError):
-        api.generate_configuration_file(configuration_file_path, overwrite=False)
-
-    with pytest.raises(FastNoPluginError):
-        api.generate_configuration_file(configuration_file_path, distribution_name="unknown_dist")
-
-
-def test_generate_configuration_file_unknown_plugin(cleanup, with_dummy_plugins):
-    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "will not_be_written.yml")
-
-    # Providing a bad plugin name
-    with pytest.raises(FastUnknownPluginError):
-        api.generate_configuration_file(
-            configuration_file_path, overwrite=False, distribution_name="unknown_dist"
-        )
-
-
 def test_generate_configuration_file_plugin_1(cleanup, with_dummy_plugins, plugin_root_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
 
-    # Not specifying plugin while 2 are declared should get an error
-    with pytest.raises(FastSeveralPluginsError):
-        api.generate_configuration_file(configuration_file_path, overwrite=True)
-
-    # No conf file specified because the plugin has only one
+    # No conf file specified because the dist has only one
     api.generate_configuration_file(
         configuration_file_path, overwrite=False, distribution_name="dummy-dist-1"
     )
@@ -105,13 +76,6 @@ def test_generate_configuration_file_plugin_1_alone(cleanup, with_one_dummy_plug
 
 def test_generate_configuration_file_plugin_2(cleanup, with_dummy_plugins, plugin_root_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_2.yml")
-
-    # This plugin provides 2 conf files, so not specifying the conf file should
-    # raise an error
-    with pytest.raises(FastSeveralConfigurationFilesError):
-        api.generate_configuration_file(
-            configuration_file_path, overwrite=False, distribution_name="dummy-dist-2"
-        )
 
     api.generate_configuration_file(
         configuration_file_path,
