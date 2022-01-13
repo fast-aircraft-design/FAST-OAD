@@ -28,7 +28,7 @@ from fastoad.cmd.cli_utils import (
     out_file_option,
     overwrite_option,
 )
-from fastoad.module_management._plugins import FastoadLoader, PluginDefinition
+from fastoad.module_management._plugins import FastoadLoader
 from fastoad.module_management.exceptions import (
     FastNoDistPluginError,
     FastSeveralConfigurationFilesError,
@@ -51,33 +51,15 @@ def plugin_info():
     """Provides list of installed FAST-OAD plugins."""
 
     plugin_definitions = FastoadLoader().distribution_plugin_definitions
-    table_dicts = []
-    for dist_plugin_definitions in plugin_definitions.values():
-        table_dicts += [
-            _plugin_definition_to_dict(name, definition)
-            for name, definition in dist_plugin_definitions.items()
-        ]
+    table_dicts = [
+        dist_plugin_definitions.to_dict() for dist_plugin_definitions in plugin_definitions.values()
+    ]
 
     if table_dicts:
         table = pd.DataFrame(table_dicts)
         print(table.to_markdown(index=False))
     else:
         print("No available FAST-OAD plugin.")
-
-
-def _plugin_definition_to_dict(plugin_name: str, definition: PluginDefinition):
-    return dict(
-        python_distribution=definition.dist_name,
-        plugin_name=plugin_name,
-        has_model_folder="models" in definition.subpackages,
-        has_notebook_folder="notebooks" in definition.subpackages,
-        configurations=[
-            item.file_name
-            for item in FastoadLoader().get_configuration_file_list(
-                definition.dist_name, plugin_name
-            )
-        ],
-    )
 
 
 @fast_oad.command(name="gen_conf")

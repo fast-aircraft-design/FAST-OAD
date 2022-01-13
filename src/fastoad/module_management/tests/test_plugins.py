@@ -16,7 +16,7 @@ import os.path as pth
 import pytest
 
 from fastoad.openmdao.variables import Variable
-from .._plugins import FastoadLoader
+from .._plugins import FastoadLoader, SubPackageNames
 from ..exceptions import (
     FastBundleLoaderUnknownFactoryNameError,
     FastNoDistPluginError,
@@ -43,25 +43,21 @@ def test_plugins(with_dummy_plugins):
 
     FastoadLoader._loaded = False  # Ensures next instantiation will trigger reloading
 
-    plugin1_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-1"]
-    assert "models" not in plugin1_definition["test_plugin_1"].subpackages
-    assert "notebooks" not in plugin1_definition["test_plugin_1"].subpackages
+    dist1_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-1"]
+    assert "models" not in dist1_definition["test_plugin_1"].subpackages
+    assert "notebooks" not in dist1_definition["test_plugin_1"].subpackages
 
-    plugin4_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-1"]
-    assert "models" not in plugin4_definition["test_plugin_4"].subpackages
-    assert "configurations" not in plugin4_definition["test_plugin_4"].subpackages
+    assert "models" not in dist1_definition["test_plugin_4"].subpackages
+    assert "configurations" not in dist1_definition["test_plugin_4"].subpackages
 
-    plugin3_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-2"]
+    dist2_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-2"]
     assert (
-        plugin3_definition["test_plugin_3"].subpackages["models"]
+        dist2_definition["test_plugin_3"].subpackages[SubPackageNames.MODELS]
         == "tests.dummy_plugins.dist_2.dummy_plugin_3.models"
     )
+    assert "notebooks" not in dist2_definition["test_plugin_3"].subpackages
     assert (
-        plugin3_definition["test_plugin_3"].subpackages["notebooks"]
-        == "tests.dummy_plugins.dist_2.dummy_plugin_3.notebooks"
-    )
-    assert (
-        plugin3_definition["test_plugin_3"].subpackages["configurations"]
+        dist2_definition["test_plugin_3"].subpackages[SubPackageNames.CONFIGURATIONS]
         == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"
     )
 
@@ -123,7 +119,7 @@ def test_get_distribution_plugin_definition_with_plugins(with_dummy_plugins):
 
 def test_get_plugin_configuration_file_list(with_dummy_plugins):
     def extract_info(file_list):
-        return {(item.file_name, item.plugin_name) for item in file_list}
+        return {(item.name, item.plugin_name) for item in file_list}
 
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1")
     assert extract_info(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
@@ -159,7 +155,7 @@ def test_get_configuration_file_info_with_1_plugin(with_one_dummy_plugin):
     with pytest.raises(FastUnknownConfigurationFileError):
         dist_def.get_configuration_file_info("unknown.yml")
     file_info = dist_def.get_configuration_file_info("dummy_conf_1-1.yml")
-    assert file_info.file_name == "dummy_conf_1-1.yml"
+    assert file_info.name == "dummy_conf_1-1.yml"
     assert file_info.dist_name == "dummy-dist-1"
     assert file_info.plugin_name == "test_plugin_1"
     assert file_info.package_name == "tests.dummy_plugins.dist_1.dummy_plugin_1.configurations"
@@ -174,7 +170,7 @@ def test_get_configuration_file_info_with_plugins(with_dummy_plugins):
     with pytest.raises(FastUnknownConfigurationFileError):
         dist_def.get_configuration_file_info("unknown.yml")
     file_info = dist_def.get_configuration_file_info("dummy_conf_1-1.yml")
-    assert file_info.file_name == "dummy_conf_1-1.yml"
+    assert file_info.name == "dummy_conf_1-1.yml"
     assert file_info.dist_name == "dummy-dist-1"
     assert file_info.plugin_name == "test_plugin_1"
     assert file_info.package_name == "tests.dummy_plugins.dist_1.dummy_plugin_1.configurations"
@@ -189,19 +185,19 @@ def test_get_configuration_file_info_with_plugins(with_dummy_plugins):
         dist_def.get_configuration_file_info()
 
     file_info = dist_def.get_configuration_file_info("dummy_conf_2-1.yml")
-    assert file_info.file_name == "dummy_conf_2-1.yml"
+    assert file_info.name == "dummy_conf_2-1.yml"
     assert file_info.dist_name == "dummy-dist-2"
     assert file_info.plugin_name == "test_plugin_2"
     assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_2.configurations"
 
     file_info = dist_def.get_configuration_file_info("dummy_conf_3-1.yml")
-    assert file_info.file_name == "dummy_conf_3-1.yml"
+    assert file_info.name == "dummy_conf_3-1.yml"
     assert file_info.dist_name == "dummy-dist-2"
     assert file_info.plugin_name == "test_plugin_3"
     assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"
 
     file_info = dist_def.get_configuration_file_info("dummy_conf_3-2.yaml")
-    assert file_info.file_name == "dummy_conf_3-2.yaml"
+    assert file_info.name == "dummy_conf_3-2.yaml"
     assert file_info.dist_name == "dummy-dist-2"
     assert file_info.plugin_name == "test_plugin_3"
     assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"

@@ -19,7 +19,10 @@ import os.path as pth
 import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Dict, List, Set
+from enum import Enum
+from typing import Dict, List
+
+import numpy as np
 
 from fastoad.openmdao.variables import Variable
 from ._bundle_loader import BundleLoader
@@ -43,6 +46,12 @@ OLD_MODEL_PLUGIN_ID = "fastoad_model"
 MODEL_PLUGIN_ID = "fastoad.plugins"
 
 
+class SubPackageNames(Enum):
+    MODELS = "models"
+    NOTEBOOKS = "notebooks"
+    CONFIGURATIONS = "configurations"
+
+
 @dataclass
 class ConfigurationFileInfo:
     """Class for storing information about configuration files provided by plugins."""
@@ -62,31 +71,32 @@ class PluginDefinition:
     dist_name: str
     plugin_name: str
     package_name: str = ""
-    subpackages: Dict = field(default_factory=dict)
-    conf_files: Set = field(default_factory=set)
+    subpackages: Dict[SubPackageNames, str] = field(default_factory=dict)
 
     def detect_subfolders(self):
         """
         Scans plugin folders and populates :attr:`subpackages`.
         """
         package = PackageReader(self.package_name)
-        for subpackage_name in ["models", "notebooks", "configurations"]:
-            if subpackage_name in package.contents:
-                self.subpackages[subpackage_name] = ".".join([self.package_name, subpackage_name])
+        for subpackage_name in SubPackageNames:
+            if subpackage_name.value in package.contents:
+                self.subpackages[subpackage_name] = ".".join(
+                    [self.package_name, subpackage_name.value]
+                )
 
     def get_configuration_file_list(self) -> List[ConfigurationFileInfo]:
         """
         :return: List of configuration file names that are provided by the plugin.
         """
-        if "configurations" in self.subpackages:
+        if SubPackageNames.CONFIGURATIONS in self.subpackages:
             return [
                 ConfigurationFileInfo(
                     file_name=file,
                     dist_name=self.dist_name,
                     plugin_name=self.plugin_name,
-                    package_name=self.subpackages["configurations"],
+                    package_name=self.subpackages[SubPackageNames.CONFIGURATIONS],
                 )
-                for file in PackageReader(self.subpackages["configurations"]).contents
+                for file in PackageReader(self.subpackages[SubPackageNames.CONFIGURATIONS]).contents
                 if pth.splitext(file)[1] in [".yml", ".yaml"]
             ]
 
@@ -121,7 +131,7 @@ class DistributionPluginDefinition(dict):
         self[entry_point.name] = plugin_definition
 
         if group == OLD_MODEL_PLUGIN_ID:
-            self[entry_point.name].subpackages["models"] = entry_point.module
+            self[entry_point.name].subpackages[SubPackageNames.MODELS] = entry_point.module
 
         if group == MODEL_PLUGIN_ID:
             self[entry_point.name].detect_subfolders()
@@ -172,6 +182,24 @@ class DistributionPluginDefinition(dict):
             file_info = matching_list[0]
 
         return file_info
+
+    def to_dict(self) -> Dict:
+        """
+        :return: a dict that contains plugin information
+        """
+        has_models = np.any(
+            [SubPackageNames.MODELS in definition.subpackages for definition in self.values()]
+        )
+        has_notebooks = np.any(
+            [SubPackageNames.NOTEBOOKS in definition.subpackages for definition in self.values()]
+        )
+        conf_files = [item.name for item in self.get_configuration_file_list()]
+        return dict(
+            installed_package=self.dist_name,
+            has_models=has_models,
+            has_notebooks=has_notebooks,
+            configurations=conf_files,
+        )
 
 
 class FastoadLoader(BundleLoader):
@@ -269,23 +297,15 @@ class FastoadLoader(BundleLoader):
             for plugin_name, plugin_def in dist_plugin_definitions.items():
                 _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
                 cls._load_models(plugin_def)
-                cls._load_configurations(plugin_def)
 
     @classmethod
     def _load_models(cls, plugin_definition: PluginDefinition):
         """Loads models from plugin."""
-        if "models" in plugin_definition.subpackages:
+        if SubPackageNames.MODELS in plugin_definition.subpackages:
             _LOGGER.debug("   Loading models")
-            BundleLoader().explore_folder(plugin_definition.subpackages["models"], is_package=True)
-            Variable.read_variable_descriptions(plugin_definition.subpackages["models"])
-
-    @classmethod
-    def _load_configurations(cls, plugin_definition: PluginDefinition):
-        """Loads configurations from plugin."""
-        if "configurations" in plugin_definition.subpackages:
-            _LOGGER.debug("   Loading configurations")
-            package = PackageReader(plugin_definition.subpackages["configurations"])
-            for file_name in package.contents:
-                file_ext = pth.splitext(file_name)[-1]
-                if file_ext in [".yml", ".yaml"]:
-                    plugin_definition.conf_files.add(file_name)
+            BundleLoader().explore_folder(
+                plugin_definition.subpackages[SubPackageNames.MODELS], is_package=True
+            )
+            Variable.read_variable_descriptions(
+                plugin_definition.subpackages[SubPackageNames.MODELS]
+            )
