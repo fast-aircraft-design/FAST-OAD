@@ -23,9 +23,10 @@ import textwrap as tw
 from collections import defaultdict
 from collections.abc import Iterable
 from time import time
-from typing import IO, List, Union
+from typing import Dict, IO, List, Union
 
 import openmdao.api as om
+import pandas as pd
 from IPython import InteractiveShell
 from IPython.display import HTML, clear_output, display
 from tabulate import tabulate
@@ -43,7 +44,7 @@ from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.io.variable_io import DataFile
 from fastoad.io.xml import VariableLegacy1XmlFormatter
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.module_management._plugins import FastoadLoader
+from fastoad.module_management._plugins import DistributionPluginDefinition, FastoadLoader
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
@@ -51,11 +52,32 @@ from fastoad.openmdao.variables import VariableList
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
 
-SAMPLE_FILENAME = "fastoad.yml"
-MAX_TABLE_WIDTH = 200  # For variable list text output
-
 # Used for test purposes only
 _PROBLEM_CONFIGURATOR = None
+
+
+def get_plugin_information(print_data=False) -> Dict[str, DistributionPluginDefinition]:
+    """
+    Provides information about available FAST-OAD plugins.
+
+    :param print_data: if True, plugin data are displayed.
+    :return: a dict with installed package names as keys and matching FAST-OAD
+             plugin definitions as values.
+    """
+    plugin_definitions = FastoadLoader().distribution_plugin_definitions
+    if print_data:
+        table_dicts = [plugin_def.to_dict() for plugin_def in plugin_definitions.values()]
+
+        if table_dicts:
+            table = pd.DataFrame(table_dicts)
+            if InteractiveShell.initialized():
+                display(HTML(table.to_html(index=False)))
+            else:
+                print(table.to_markdown(index=False))
+        else:
+            print("No available FAST-OAD plugin.")
+
+    return plugin_definitions
 
 
 def generate_notebooks(

@@ -1,6 +1,6 @@
 """This module gathers key FAST-OAD classes and functions for convenient import."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,8 @@
 
 
 from fastoad.cmd.api import (
+    get_plugin_information,
+    generate_notebooks,
     evaluate_problem,
     generate_configuration_file,
     generate_inputs,

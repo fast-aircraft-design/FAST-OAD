@@ -47,17 +47,7 @@ def fast_oad():
 @fast_oad.command(name="plugin_info")
 def plugin_info():
     """Provides list of installed FAST-OAD plugins."""
-
-    plugin_definitions = FastoadLoader().distribution_plugin_definitions
-    table_dicts = [
-        dist_plugin_definitions.to_dict() for dist_plugin_definitions in plugin_definitions.values()
-    ]
-
-    if table_dicts:
-        table = pd.DataFrame(table_dicts)
-        print(table.to_markdown(index=False))
-    else:
-        print("No available FAST-OAD plugin.")
+    api.get_plugin_information(print_data=True)
 
 
 @fast_oad.command(name="gen_conf")
