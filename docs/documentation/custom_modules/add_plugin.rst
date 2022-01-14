@@ -10,10 +10,60 @@ you may want to share them with other users, which can be done in two ways:
     - Providing your code so they can copy it on their computer and have them set their
       :code:`custom_modules` field accordingly in their :ref:`configuration-file`.
     - Packaging your code as a FAST-OAD plugin and have them install it through :code:`pip`
-      or equivalent.
+      or equivalent. This is the subject of current chapter.
 
-To declare your custom modules as a FAST-OAD plugin, you have to package them the usual way
-and declare them as a plugin with :code:`fastoad_model` as plugin group name.
+A FAST-OAD plugin can provide additional FAST-OAD modules, Jupyter notebooks and configuration files:
+
+    - plugin-provided FAST-OAD modules are usable in :ref:`configuration files <configuration-file>`
+      and can be listed ans used in the same way as native modules (see :ref:`get-module-list`).
+    - plugin-provided notebooks can be accessed using :ref:`dedicated command<python-usage>`.
+    - plugin-provided configuration files can be used with :ref:`dedicated command<generate-conf-file>`.
+
+Plugin structure
+################
+In your source folder, a typical plugin structure would be like this::
+
+    my_package/
+    ├── __init__.py
+    ├── configurations/
+    │   ├── __init__.py
+    │   ├── configuration_1.yaml
+    │   └── configuration_2.yaml
+    ├── models/
+    │   ├── __init__.py
+    │   ├── my_model.py
+    │   └── some_subpackage/
+    │       ├── __init__.py
+    │       └── some_more_code.py
+    └── notebooks/
+        ├── __init__.py
+        ├── any_data/
+        │   ├── __init__.py
+        │   └── some_data.xml
+        ├── awesome_notebook.ipynb
+        └── good_notebook.ipynb
+
+As shown above, the expected structure is composed of Python **packages**, i.e. every folder should
+contain a :code:`__init__.py` file.
+The root folder can be anywhere in your project structure, since plugin declaration will point to
+its location.
+Also, expected folders in a plugin package are:
+
+    - :code:`models`: contains Python code where FAST-OAD modules are :ref:`registered<add-modules>`.
+    - :code:`configurations`: contains only configuration files in YAML format. No sub-folder is
+      allowed. These configuration files will be usable through :ref:`command line<generate-conf-file>`
+      or API method :meth:`~fastoad.cmd.api.generate_configuration_file`.
+    - :code:`notebooks`: contains any number of Jupyter notebooks and associated data, that will
+      be made available to users through :ref:`command line<python-usage>`.
+
+Any of these folders is optional.
+
+
+Plugin packaging
+################
+
+To declare your package as a FAST-OAD plugin, you have to package it the usual way
+and declare it as a plugin with :code:`fastoad.plugins` as plugin group name.
 
 This can be done classically with `setuptools <https://packaging.python.org/guides/creating-and-discovering-plugins/#using-package-metadata>`_.
 It can also be done with `Poetry <https://python-poetry.org>`_, which is the way described below:
@@ -22,10 +72,10 @@ It can also be done with `Poetry <https://python-poetry.org>`_, which is the way
    :local:
    :depth: 1
 
-
 ******************************
 Plugin declaration
 ******************************
+
 
 Assuming you project contains the package :code:`start_trek.drives` that contains
 models you want to share, you can declare your plugin in your :code:`pyproject.toml`

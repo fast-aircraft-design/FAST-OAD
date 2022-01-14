@@ -325,20 +325,22 @@ FAST-OAD can provide a ready-to use configuration.
 
     $ fastoad gen_conf my_conf.yml --from_package my_plugin_package --source sample_configuration_1.yml
 
-This copies the file `sample_configuration_1.yml` provided by installed package `my_plugin_package`
-to file `my_conf.yml`.
+This copies the file :code:`sample_configuration_1.yml`provided by installed package
+:code:`my_plugin_package` to file :code:`my_conf.yml`.
 
-See :ref:`how to get plugin information<pluging-info>`for listing the values you can put for
-options `--from_package` and `--source`.
+See :ref:`how to get plugin information<plugin-info>` for listing the values you can put for
+options :code:`--from_package` and :code:`--source`.
 
-If only one package is available, option `--from_package` may be omitted.
-If the selected package provides only one configuration file, option `--source` may be omitted.
+If only one package is available, option :code:`--from_package` may be omitted.
+If the selected package provides only one configuration file, option :code:`--source` may be omitted.
 
 Hence with FAST-OAD installed (version below 2.0) without additional plugin, the command can be:
 
+.. code:: shell-session
+
     $ fastoad gen_conf my_conf.yml
 
-.. _get-module-list:
+.. _`get-module-list`:
 
 How to get list of registered modules
 =====================================
@@ -503,4 +505,3 @@ To do so, type this command **in your terminal**:
     $ fastoad notebooks
 
 Then run the Jupyter server as indicated in the obtained message.
-
