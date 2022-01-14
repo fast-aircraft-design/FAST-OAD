@@ -12,22 +12,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
 import os.path as pth
-import shutil
 
 import click
 import pandas as pd
 import tabulate
 
 import fastoad
-from fastoad import api
-from fastoad._utils.resource_management.copy import copy_resource_folder
 from fastoad.cmd.cli_utils import (
     manage_overwrite,
     out_file_option,
     overwrite_option,
 )
+from fastoad.cmd.exceptions import FastNoAvailableNotebookError
 from fastoad.module_management._plugins import FastoadLoader
 from fastoad.module_management.exceptions import (
     FastNoDistPluginError,
@@ -36,6 +33,7 @@ from fastoad.module_management.exceptions import (
     FastUnknownConfigurationFileError,
     FastUnknownDistPluginError,
 )
+from . import api
 
 NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
 
@@ -271,43 +269,24 @@ def create_notebooks(path, from_package):
 
     IMPORTANT: Please note that all content of an existing FAST-OAD_notebooks/ will be overwritten.
     """
-    # Check available notebooks
-    try:
-        folder_info_list = FastoadLoader().get_notebook_folder_list(from_package)
-    except FastUnknownDistPluginError as exc:
-        click.echo(exc.args[0])
-        return
 
-    if len(folder_info_list) == 0:
-        click.echo("No notebook available in FAST-OAD plugins.")
-        return
-
-    # Create and copy folder
     root_target_path = pth.abspath(pth.join(path, NOTEBOOK_FOLDER_NAME))
-    if pth.exists(root_target_path):
-        answer = click.confirm(
-            f'Folder "{root_target_path}" already exists. Do you want to erase it ?'
-        )
-        if not answer:
-            click.echo("Operation cancelled.")
-            return
-        shutil.rmtree(root_target_path)
-
-    # Write
-    if len(folder_info_list) == 1:
-        os.makedirs(root_target_path)
-        copy_resource_folder(folder_info_list[0].package_name, root_target_path)
-    else:
-        for folder_info in folder_info_list:
-            target_path = pth.join(root_target_path, folder_info.dist_name)
-            os.makedirs(target_path)
-            copy_resource_folder(folder_info.package_name, target_path)
-
-    # Give info for running Jupyter
-    click.echo("")
-    click.echo(f"Notebooks have been created in {root_target_path}")
-    click.echo("You may now run Jupyter with:")
-    click.echo(f'   jupyter lab "{root_target_path}"')
+    try:
+        if manage_overwrite(
+            api.generate_notebooks,
+            destination_path=root_target_path,
+            overwrite=False,
+            distribution_name=from_package,
+        ):
+            # Give info for running Jupyter
+            click.echo("You may now run Jupyter with:")
+            click.echo(f'   jupyter lab "{root_target_path}"')
+    except (
+        FastNoDistPluginError,
+        FastUnknownDistPluginError,
+        FastNoAvailableNotebookError,
+    ) as exc:
+        click.echo(exc.args[0])
 
 
 if __name__ == "__main__":

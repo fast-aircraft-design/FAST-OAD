@@ -1,6 +1,6 @@
 """Utility functions for CLI interface."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@ from typing import Callable
 
 import click
 
-from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.cmd.exceptions import FastPathExistsError
 
 
 def overwrite_option(func):
@@ -51,11 +51,12 @@ def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
     """
     Runs `func`, that is expected to write a file, with provided keyword arguments `args`.
 
-    If the run throws FastFileExistsError, a question is displayed and user is
+    If the run throws FastPathExistsError, a question is displayed and user is
     asked for a yes/no answer. If `yes` is given, arg["overwrite"] is set to True
     and `func` is run again.
 
-    :param func: callable that will do the operation
+    :param func: callable that will do the operation and is expected to return
+                 the path of written element.
     :param filename_func: a function that provides the name of written file, given the
                           value returned by func
     :param kwargs: keyword arguments for func
@@ -65,12 +66,12 @@ def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
     try:
         written = _run_func(func, filename_func, **kwargs)
 
-    except FastFileExistsError as exc:
-        if click.confirm(f'File "{exc.args[1]}" already exists. Do you want to overwrite it?'):
+    except FastPathExistsError as exc:
+        if click.confirm(f'"{exc.args[1]}" already exists. Do you want to overwrite it?'):
             kwargs["overwrite"] = True
             written = _run_func(func, filename_func, **kwargs)
         else:
-            click.echo("No file written.")
+            click.echo("Operation cancelled.")
 
     return written
 
@@ -80,7 +81,7 @@ def _run_func(func: Callable, filename_func: Callable = None, **kwargs):
     if result:
         if filename_func:
             result = filename_func(result)
-        click.echo(f'File "{result}" has been written.')
+        click.echo(f'"{result}" has been written.')
         return True
 
     return False

@@ -27,7 +27,8 @@ from fastoad.io import DataFile
 from fastoad.openmdao.variables import Variable
 from .. import api
 from ..exceptions import (
-    FastFileExistsError,
+    FastNoAvailableNotebookError,
+    FastPathExistsError,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -43,6 +44,57 @@ def cleanup():
     Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
 
 
+def test_generate_notebooks_with_no_notebook(cleanup, with_dummy_plugin_2, plugin_root_path):
+    target_path = pth.join(RESULTS_FOLDER_PATH, "notebooks_noplugin")
+
+    with pytest.raises(FastNoAvailableNotebookError):
+        api.generate_notebooks(target_path)
+
+
+def test_generate_notebooks_with_one_plugin(cleanup, with_dummy_plugin_1, plugin_root_path):
+    target_path = pth.join(RESULTS_FOLDER_PATH, "notebooks_1plugin")
+
+    api.generate_notebooks(target_path)
+    assert pth.isfile(pth.join(target_path, "notebook_1.ipynb"))
+
+
+def test_generate_notebooks_with_one_dist_plugin(
+    cleanup, with_dummy_plugin_distribution_1, plugin_root_path
+):
+    target_path = pth.join(RESULTS_FOLDER_PATH, "notebooks_1dist")
+
+    api.generate_notebooks(target_path)
+    assert pth.isfile(pth.join(target_path, "test_plugin_1", "notebook_1.ipynb"))
+    assert pth.isfile(pth.join(target_path, "test_plugin_4", "notebook_1.ipynb"))
+    assert pth.isdir(pth.join(target_path, "test_plugin_4", "data"))
+    assert pth.isfile(pth.join(target_path, "test_plugin_4", "data", "dummy_file.txt"))
+
+
+def test_generate_notebooks(cleanup, with_dummy_plugins, plugin_root_path):
+    target_path = pth.join(RESULTS_FOLDER_PATH, "notebooks")
+
+    # Test distribution specification
+    api.generate_notebooks(target_path, distribution_name="dummy-dist-3")
+    assert pth.isfile(pth.join(target_path, "notebook_2.ipynb"))
+
+    # Test overwrite
+    with pytest.raises(FastPathExistsError):
+        api.generate_notebooks(target_path)
+
+    # ... without specifying distribution
+    api.generate_notebooks(target_path, overwrite=True)
+    assert pth.isfile(pth.join(target_path, "dummy-dist-1", "test_plugin_1", "notebook_1.ipynb"))
+    assert pth.isfile(pth.join(target_path, "dummy-dist-1", "test_plugin_4", "notebook_1.ipynb"))
+    assert pth.isdir(pth.join(target_path, "dummy-dist-1", "test_plugin_4", "data"))
+    assert pth.isfile(
+        pth.join(target_path, "dummy-dist-1", "test_plugin_4", "data", "dummy_file.txt")
+    )
+
+    assert not pth.exists(pth.join(target_path, "dummy-dist-2"))
+
+    assert pth.isfile(pth.join(target_path, "dummy-dist-3", "notebook_2.ipynb"))
+
+
 def test_generate_configuration_file_plugin_1(cleanup, with_dummy_plugins, plugin_root_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
 
@@ -56,7 +108,7 @@ def test_generate_configuration_file_plugin_1(cleanup, with_dummy_plugins, plugi
     assert cmp(configuration_file_path, original_file)
 
     # Generating again without forcing overwrite will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.generate_configuration_file(
             configuration_file_path, overwrite=False, distribution_name="dummy-dist-1"
         )
@@ -89,7 +141,7 @@ def test_generate_configuration_file_plugin_2(cleanup, with_dummy_plugins, plugi
     )
     assert cmp(configuration_file_path, original_file)
 
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.generate_configuration_file(
             configuration_file_path,
             overwrite=False,
@@ -122,7 +174,7 @@ def test_generate_inputs(cleanup):
     data.save()
 
     # Generating again without forcing overwrite will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False)
 
     input_file_path = api.generate_inputs(
@@ -155,7 +207,7 @@ def test_list_modules(cleanup):
     out_file = pth.join(RESULTS_FOLDER_PATH, "list_modules.txt")
     assert not pth.exists(out_file)
     api.list_modules(CONFIGURATION_FILE_PATH, out_file)
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.list_modules(CONFIGURATION_FILE_PATH, out_file)
     api.list_modules(CONFIGURATION_FILE_PATH, out_file, overwrite=True)
 
@@ -169,7 +221,7 @@ def test_list_modules(cleanup):
     out_file = pth.join(RESULTS_FOLDER_PATH, "list_modules_with_folder.txt")
     assert not pth.exists(out_file)
     api.list_modules(source_folder, out_file)
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.list_modules(source_folder, out_file)
 
     # Testing with single folder
@@ -192,7 +244,7 @@ def test_list_variables(cleanup):
     out_file_path = pth.join(RESULTS_FOLDER_PATH, "list_variables.txt")
     assert not pth.exists(out_file_path)
     api.list_variables(CONFIGURATION_FILE_PATH, out=out_file_path)
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.list_variables(CONFIGURATION_FILE_PATH, out=out_file_path)
     api.list_variables(CONFIGURATION_FILE_PATH, out=out_file_path, overwrite=True)
     assert pth.exists(out_file_path)
@@ -219,7 +271,7 @@ def test_write_n2(cleanup):
     n2_file_path = pth.join(RESULTS_FOLDER_PATH, "other_n2.html")
     api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path)
     # Running again without forcing overwrite of outputs will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path, False)
     api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path, True)
     assert pth.exists(n2_file_path)
@@ -235,7 +287,7 @@ def test_write_xdsm(cleanup):
     xdsm_file_path = pth.join(RESULTS_FOLDER_PATH, "other_xdsm.html")
     api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path)
     # Running again without forcing overwrite of outputs will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path, overwrite=False, dry_run=True)
     api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path, overwrite=True, dry_run=True)
     assert pth.exists(xdsm_file_path)
@@ -247,7 +299,7 @@ def test_evaluate_problem(cleanup):
     )
     api.evaluate_problem(CONFIGURATION_FILE_PATH, False)
     # Running again without forcing overwrite of outputs will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.evaluate_problem(CONFIGURATION_FILE_PATH, False)
     problem = api.evaluate_problem(CONFIGURATION_FILE_PATH, True)
     assert problem["f"] == pytest.approx(32.56910089, abs=1e-8)
@@ -265,7 +317,7 @@ def test_optimize_problem(cleanup):
     )
     api.optimize_problem(CONFIGURATION_FILE_PATH, False)
     # Running again without forcing overwrite of outputs will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.optimize_problem(CONFIGURATION_FILE_PATH, False)
     problem = api.optimize_problem(CONFIGURATION_FILE_PATH, True)
 

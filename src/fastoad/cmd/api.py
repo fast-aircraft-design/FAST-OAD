@@ -15,9 +15,12 @@ API
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os
 import os.path as pth
+import shutil
 import sys
 import textwrap as tw
+from collections import defaultdict
 from collections.abc import Iterable
 from time import time
 from typing import IO, List, Union
@@ -29,9 +32,10 @@ from tabulate import tabulate
 
 import fastoad.openmdao.whatsopt
 from fastoad._utils.files import make_parent_dir
-from fastoad._utils.resource_management.copy import copy_resource
+from fastoad._utils.resource_management.copy import copy_resource, copy_resource_folder
 from fastoad.cmd.exceptions import (
-    FastFileExistsError,
+    FastNoAvailableNotebookError,
+    FastPathExistsError,
 )
 from fastoad.gui import OptimizationViewer, VariableViewer
 from fastoad.io import IVariableIOFormatter
@@ -54,6 +58,63 @@ MAX_TABLE_WIDTH = 200  # For variable list text output
 _PROBLEM_CONFIGURATOR = None
 
 
+def generate_notebooks(
+    destination_path: str,
+    overwrite: bool = False,
+    distribution_name=None,
+):
+    """
+    Copies notebook folder(s) from available plugin(s).
+
+    :param destination_path: the inner structure of the folders will depend on
+                             the number of installed package and the number of
+                             plugins they contain.
+    :param overwrite: if True and `destination_path` exists, it will be removed before writing.
+    :param distribution_name: the name of an installed package that provides notebooks
+    """
+    # Check available notebooks
+    folder_info_list = FastoadLoader().get_notebook_folder_list(distribution_name)
+
+    if len(folder_info_list) == 0:
+        raise FastNoAvailableNotebookError(distribution_name)
+
+    # Create and copy folder
+    destination_path = pth.abspath(destination_path)
+    if pth.exists(destination_path):
+        if overwrite:
+            shutil.rmtree(destination_path)
+        else:
+            raise FastPathExistsError(
+                f"Notebook folder {destination_path} not written because it already exists. "
+                "Use overwrite=True to bypass.",
+                destination_path,
+            )
+
+    # Write notebooks
+
+    # We organize folder_info_list as dict of dict to easily count how many distributions
+    # and plugin by distributions we have, which info is used for building target paths.
+    folder_info_dict = defaultdict(dict)
+    for folder_info in folder_info_list:
+        folder_info_dict[folder_info.dist_name][folder_info.plugin_name] = folder_info
+
+    only_one_dist = len(folder_info_dict) == 1
+    for dist_content in folder_info_dict.values():
+        only_one_plugin = len(dist_content) == 1
+        for folder_info in dist_content.values():
+            target_path_elements = [destination_path]
+            if not only_one_dist:
+                target_path_elements.append(folder_info.dist_name)
+            if not only_one_plugin:
+                target_path_elements.append(folder_info.plugin_name)
+
+            target_path = pth.join(*target_path_elements)
+            os.makedirs(target_path)
+            copy_resource_folder(folder_info.package_name, target_path)
+
+    return destination_path
+
+
 def generate_configuration_file(
     configuration_file_path: str,
     overwrite: bool = False,
@@ -61,16 +122,16 @@ def generate_configuration_file(
     sample_file_name=None,
 ):
     """
-    Generates a sample configuration file.
+    Copies a sample configuration file from an available plugin.
 
     :param configuration_file_path: the path of file to be written
     :param overwrite: if True, the file will be written, even if it already exists
-    :param distribution_name: the name of the Python library that provides the sample configuration
-                             file (can be omitted if only one plugin is available)
+    :param distribution_name: the name of the installed package that provides the sample
+                             configuration file (can be omitted if only one plugin is available)
     :param sample_file_name: the name of the sample configuration file (can be omitted if
                              the plugin provides only one configuration file)
     :return: path of generated file
-    :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
+    :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
 
     # Check on plugins
@@ -80,7 +141,7 @@ def generate_configuration_file(
     # Check on file overwrite
     configuration_file_path = pth.abspath(configuration_file_path)
     if not overwrite and pth.exists(configuration_file_path):
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             f"Configuration file {configuration_file_path} not written because it already exists. "
             "Use overwrite=True to bypass.",
             configuration_file_path,
@@ -108,14 +169,14 @@ def generate_inputs(
     :param source_path_schema: set to 'legacy' if the source file come from legacy FAST
     :param overwrite: if True, file will be written even if one already exists
     :return: path of generated file
-    :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
+    :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
     conf = FASTOADProblemConfigurator(configuration_file_path)
     conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
 
     input_file_path = conf.input_file_path
     if not overwrite and pth.exists(conf.input_file_path):
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             "Input file %s not written because it already exists. "
             "Use overwrite=True to bypass." % input_file_path,
             input_file_path,
@@ -156,7 +217,7 @@ def list_variables(
                      to the tabulate package. See tabulate.tabulate_formats for a complete list.
                      If "var_desc" the file will use the variable_descriptions.txt format.
     :return: path of generated file, or None if no file was generated.
-    :raise FastFileExistsError: if `overwrite==False` and `out` is a file path and the file exists
+    :raise FastPathExistsError: if `overwrite==False` and `out` is a file path and the file exists
     """
     if out is None:
         out = sys.stdout
@@ -186,7 +247,7 @@ def list_variables(
     if isinstance(out, str):
         out = pth.abspath(out)
         if not overwrite and pth.exists(out):
-            raise FastFileExistsError(
+            raise FastPathExistsError(
                 "File %s not written because it already exists. "
                 "Use overwrite=True to bypass." % out,
                 out,
@@ -260,7 +321,7 @@ def list_modules(
                               interactive IPython shell (Jupyter notebook). Has no effect in other
                               shells or if out parameter is not sys.stdout
     :return: path of generated file, or None if no file was generated.
-    :raise FastFileExistsError: if `overwrite==False` and `out` is a file path and the file exists
+    :raise FastPathExistsError: if `overwrite==False` and `out` is a file path and the file exists
     """
     if out is None:
         out = sys.stdout
@@ -292,7 +353,7 @@ def list_modules(
     if isinstance(out, str):
         out = pth.abspath(out)
         if not overwrite and pth.exists(out):
-            raise FastFileExistsError(
+            raise FastPathExistsError(
                 "File %s not written because it already exists. "
                 "Use overwrite=True to bypass." % out,
                 out,
@@ -385,7 +446,7 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     :param n2_file_path: if None, will default to `n2.html`
     :param overwrite:
     :return: path of generated file.
-    :raise FastFileExistsError: if overwrite==False and n2_file_path already exists
+    :raise FastPathExistsError: if overwrite==False and n2_file_path already exists
     """
 
     if not n2_file_path:
@@ -393,7 +454,7 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     n2_file_path = pth.abspath(n2_file_path)
 
     if not overwrite and pth.exists(n2_file_path):
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             "N2-diagram file %s not written because it already exists. "
             "Use overwrite=True to bypass." % n2_file_path,
             n2_file_path,
@@ -431,14 +492,14 @@ def write_xdsm(
     :param dry_run: if True, will run wop without sending any request to the server. Generated
                     XDSM will be empty. (for test purpose only)
     :return: path of generated file.
-    :raise FastFileExistsError: if overwrite==False and xdsm_file_path already exists
+    :raise FastPathExistsError: if overwrite==False and xdsm_file_path already exists
     """
     if not xdsm_file_path:
         xdsm_file_path = pth.join(pth.dirname(configuration_file_path), "xdsm.html")
     xdsm_file_path = pth.abspath(xdsm_file_path)
 
     if not overwrite and pth.exists(xdsm_file_path):
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             "XDSM-diagram file %s not written because it already exists. "
             "Use overwrite=True to bypass." % xdsm_file_path,
             xdsm_file_path,
@@ -471,7 +532,7 @@ def _run_problem(
     :param auto_scaling: if True, automatic scaling is performed for design variables and
                          constraints
     :return: the OpenMDAO problem after run
-    :raise FastFileExistsError: if overwrite==False and output data file of problem already exists
+    :raise FastPathExistsError: if overwrite==False and output data file of problem already exists
     """
 
     conf = FASTOADProblemConfigurator(configuration_file_path)
@@ -480,7 +541,7 @@ def _run_problem(
 
     outputs_path = pth.normpath(problem.output_file_path)
     if not overwrite and pth.exists(outputs_path):
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             "Problem not run because output file %s already exists. "
             "Use overwrite=True to bypass." % outputs_path,
             outputs_path,
@@ -514,7 +575,7 @@ def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> F
     :param configuration_file_path: problem definition
     :param overwrite: if True, output file will be overwritten
     :return: the OpenMDAO problem after run
-    :raise FastFileExistsError: if overwrite==False and output data file of problem already exists
+    :raise FastPathExistsError: if overwrite==False and output data file of problem already exists
     """
     return _run_problem(configuration_file_path, overwrite, "run_model")
 
@@ -530,7 +591,7 @@ def optimize_problem(
     :param auto_scaling: if True, automatic scaling is performed for design variables and
                          constraints
     :return: the OpenMDAO problem after run
-    :raise FastFileExistsError: if overwrite==False and output data file of problem already exists
+    :raise FastPathExistsError: if overwrite==False and output data file of problem already exists
     """
     return _run_problem(configuration_file_path, overwrite, "run_driver", auto_scaling=auto_scaling)
 

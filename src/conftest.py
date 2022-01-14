@@ -58,20 +58,46 @@ def with_no_plugin():
 def with_dummy_plugin_1():
     """
     Reduces plugin list to dummy-dist-1 with plugin test_plugin_1
-    (one configuration file, no models, no notebooks).
+    (one configuration file, no models, notebook folder).
 
     Any previous state of plugins is restored during teardown.
     """
     _setup()
     dummy_dist_1 = Mock(Distribution)
     dummy_dist_1.name = "dummy-dist-1"
-    ep1 = EntryPoint(
-        name="test_plugin_1",
-        value="tests.dummy_plugins.dist_1.dummy_plugin_1",
-        group=MODEL_PLUGIN_ID,
-    )
-    ep1.dist = dummy_dist_1
-    _update_entry_map([ep1])
+    entry_points = [
+        EntryPoint(
+            name="test_plugin_1",
+            value="tests.dummy_plugins.dist_1.dummy_plugin_1",
+            group=MODEL_PLUGIN_ID,
+        )
+    ]
+    entry_points[0].dist = dummy_dist_1
+    _update_entry_map(entry_points)
+    yield
+    _teardown()
+
+
+@pytest.fixture
+def with_dummy_plugin_2():
+    """
+    Reduces plugin list to dummy-dist-2 with plugin test_plugin_2
+    (one configuration file, model folder, no notebooks).
+
+    Any previous state of plugins is restored during teardown.
+    """
+    _setup()
+    dummy_dist_2 = Mock(Distribution)
+    dummy_dist_2.name = "dummy-dist-2"
+    entry_points = [
+        EntryPoint(
+            name="test_plugin_2",
+            value="tests.dummy_plugins.dist_2.dummy_plugin_2",
+            group=MODEL_PLUGIN_ID,
+        )
+    ]
+    entry_points[0].dist = dummy_dist_2
+    _update_entry_map(entry_points)
     yield
     _teardown()
 

@@ -1,6 +1,3 @@
-"""
-Exception for cmd package
-"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,27 +10,3 @@ Exception for cmd package
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from fastoad.exceptions import FastError
-
-
-class FastPathExistsError(FastError):
-    """Raised when asked for writing a file/folder that already exists."""
-
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.file_path = args[1]
-
-
-class FastNoAvailableNotebookError(FastError):
-    """Raised when no notebook is available for creation."""
-
-    def __init__(self, distribution_name=None):
-        msg = "No notebook available "
-        if distribution_name:
-            msg += f'in installed package "{distribution_name}".'
-        else:
-            msg += "in FAST-OAD plugins."
-
-        self.distribution_name = distribution_name
-        super().__init__(msg)

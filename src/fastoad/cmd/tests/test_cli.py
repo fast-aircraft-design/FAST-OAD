@@ -92,7 +92,7 @@ def test_gen_conf_one_plugin(cleanup, with_dummy_plugin_1, plugin_root_path):
         assert not result.exception
         assert result.exit_code == 0
         assert "Do you want to overwrite it? [y/N]:" in result.output
-        assert result.output.endswith("No file written.\n")
+        assert result.output.endswith("Operation cancelled.\n")
 
         # ----------------------------------------------------------------------
         result = runner.invoke(fast_oad, ["gen_conf", "my_conf.yml"], input="y")
@@ -218,7 +218,7 @@ def test_gen_conf_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
         assert cmp(pth.join(temp_dir, "my_conf.yml"), original_file)
 
 
-def test_create_notebooks_with_1_plugin(cleanup, with_dummy_plugin_1, plugin_root_path):
+def test_create_notebooks_with_no_notebook(cleanup, with_dummy_plugin_2, plugin_root_path):
     runner = CliRunner()
     with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH):
         result = runner.invoke(fast_oad, ["notebooks"])
@@ -232,24 +232,30 @@ def test_create_notebooks_with_1_distribution(
 ):
     runner = CliRunner()
     with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        notebook_folder = pth.join(temp_dir, NOTEBOOK_FOLDER_NAME)
+
         # Test basic run =======================================================
         result = runner.invoke(fast_oad, ["notebooks"])
         assert not result.exception
         assert result.exit_code == 0
-        assert result.output.startswith("\nNotebooks have been created")
-        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME))
-        assert pth.isfile(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "notebook_1.ipynb"))
-        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "data"))
+        assert result.output.startswith(f'"{notebook_folder}" has been written')
+        assert pth.isdir(notebook_folder)
+        assert pth.isfile(pth.join(notebook_folder, "test_plugin_1", "notebook_1.ipynb"))
+        assert pth.isfile(pth.join(notebook_folder, "test_plugin_4", "notebook_1.ipynb"))
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "test_plugin_4", "data"))
 
     with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        notebook_folder = pth.join(temp_dir, NOTEBOOK_FOLDER_NAME)
+
         # Test basic run with package specification ============================
         result = runner.invoke(fast_oad, ["notebooks", "--from_package", "dummy-dist-1"])
         assert not result.exception
         assert result.exit_code == 0
-        assert result.output.startswith("\nNotebooks have been created")
-        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME))
-        assert pth.isfile(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "notebook_1.ipynb"))
-        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "data"))
+        assert result.output.startswith(f'"{notebook_folder}" has been written')
+        assert pth.isdir(notebook_folder)
+        assert pth.isfile(pth.join(notebook_folder, "test_plugin_1", "notebook_1.ipynb"))
+        assert pth.isfile(pth.join(notebook_folder, "test_plugin_4", "notebook_1.ipynb"))
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "test_plugin_4", "data"))
 
         # ----------------------------------------------------------------------
         result = runner.invoke(fast_oad, ["notebooks", "--from_package", "unknown-dist"])
@@ -263,43 +269,59 @@ def test_create_notebooks_with_1_distribution(
         result = runner.invoke(fast_oad, ["notebooks"], input="n")
         assert not result.exception
         assert result.exit_code == 0
-        assert result.output.endswith("cancelled.\n")
+        assert result.output.endswith("Operation cancelled.\n")
 
         # ----------------------------------------------------------------------
         result = runner.invoke(fast_oad, ["notebooks"], input="y")
         assert not result.exception
         assert result.exit_code == 0
-        assert "Notebooks have been created" in result.output
+        assert f'"{notebook_folder}" has been written' in result.output
+
+        # Test path specification ==============================================
+        result = runner.invoke(fast_oad, ["notebooks", "my_path"])
+        assert not result.exception
+        assert result.exit_code == 0
+        assert (
+            f'"{pth.join(temp_dir, "my_path", NOTEBOOK_FOLDER_NAME)}" has been written'
+            in result.output
+        )
 
 
 def test_create_notebooks_with_plugins(cleanup, with_dummy_plugins, plugin_root_path):
     runner = CliRunner()
     with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        notebook_folder = pth.join(temp_dir, NOTEBOOK_FOLDER_NAME)
+
         # Test basic run =======================================================
         result = runner.invoke(fast_oad, ["notebooks"])
         assert not result.exception
         assert result.exit_code == 0
-        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME))
-        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-1"))
+        assert pth.isdir(notebook_folder)
         assert pth.isfile(
-            pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-1", "notebook_1.ipynb")
+            pth.join(notebook_folder, "dummy-dist-1", "test_plugin_1", "notebook_1.ipynb")
         )
-        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-1", "data"))
+        assert pth.isfile(
+            pth.join(notebook_folder, "dummy-dist-1", "test_plugin_4", "notebook_1.ipynb")
+        )
+        assert pth.isdir(
+            pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-1", "test_plugin_4", "data")
+        )
 
-        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-3"))
-        assert pth.isfile(
-            pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-3", "notebook_2.ipynb")
-        )
+        assert pth.isdir(pth.join(notebook_folder, "dummy-dist-3"))
+        assert pth.isfile(pth.join(notebook_folder, "dummy-dist-3", "notebook_2.ipynb"))
 
     with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        notebook_folder = pth.join(temp_dir, NOTEBOOK_FOLDER_NAME)
+
         # Test basic run with package specification ============================
         result = runner.invoke(fast_oad, ["notebooks", "-p", "dummy-dist-1"])
         assert not result.exception
         assert result.exit_code == 0
-        assert result.output.startswith("\nNotebooks have been created")
-        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME))
-        assert pth.isfile(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "notebook_1.ipynb"))
-        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "data"))
+        assert result.output.startswith(f'"{notebook_folder}" has been written')
+        assert pth.isdir(notebook_folder)
+        assert pth.isfile(pth.join(notebook_folder, "test_plugin_1", "notebook_1.ipynb"))
+        assert pth.isfile(pth.join(notebook_folder, "test_plugin_4", "notebook_1.ipynb"))
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "test_plugin_4", "data"))
 
         # ----------------------------------------------------------------------
         result = runner.invoke(fast_oad, ["notebooks", "-p", "unknown-dist"])

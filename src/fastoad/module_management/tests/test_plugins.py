@@ -139,31 +139,19 @@ def test_get_plugin_configuration_file_list(with_dummy_plugins):
         file_list = FastoadLoader().get_configuration_file_list("unknown-dist")
 
 
-def test_get_plugin_notebook_folder_list_with_no_notebooks(with_dummy_plugin_1):
-    def extract_info(folder_list):
-        return {(item.dist_name, item.package_name) for item in folder_list}
-
-    folder_list = FastoadLoader().get_notebook_folder_list()
-    assert extract_info(folder_list) == set()
-    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-1")
-    assert extract_info(folder_list) == set()
-
-    # improper name
-    with pytest.raises(FastUnknownDistPluginError):
-        file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
-
-
 def test_get_plugin_notebook_folder_list_with_one_plugin(with_dummy_plugin_distribution_1):
     def extract_info(folder_list):
         return {(item.dist_name, item.package_name) for item in folder_list}
 
     folder_list = FastoadLoader().get_notebook_folder_list()
     assert extract_info(folder_list) == {
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"),
         ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
     }
     folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-1")
     assert extract_info(folder_list) == {
-        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks")
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"),
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
     }
     # improper name
     with pytest.raises(FastUnknownDistPluginError):
@@ -176,12 +164,14 @@ def test_get_plugin_notebook_folder_list_with_plugins(with_dummy_plugins):
 
     folder_list = FastoadLoader().get_notebook_folder_list()
     assert extract_info(folder_list) == {
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"),
         ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
         ("dummy-dist-3", "tests.dummy_plugins.dist_3.dummy_plugin_5.notebooks"),
     }
     folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-1")
     assert extract_info(folder_list) == {
-        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks")
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"),
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
     }
     folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-2")
     assert extract_info(folder_list) == set()

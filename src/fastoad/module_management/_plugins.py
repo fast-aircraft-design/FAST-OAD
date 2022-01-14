@@ -311,6 +311,8 @@ class FastoadLoader(BundleLoader):
                 raise FastUnknownDistPluginError(dist_name)
             dist_names = [dist_name]
         else:
+            if len(self._dist_plugin_definitions) == 0:
+                raise FastNoDistPluginError()
             dist_names = self._dist_plugin_definitions.keys()
 
         for dist_name in dist_names:
