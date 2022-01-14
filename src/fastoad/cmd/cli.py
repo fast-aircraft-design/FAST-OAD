@@ -21,7 +21,7 @@ import pandas as pd
 import tabulate
 
 import fastoad
-from fastoad import api, notebooks
+from fastoad import api
 from fastoad._utils.resource_management.copy import copy_resource_folder
 from fastoad.cmd.cli_utils import (
     manage_overwrite,
@@ -64,17 +64,21 @@ def plugin_info():
 
 @fast_oad.command(name="gen_conf")
 @click.argument("conf_file", nargs=1)
-@click.option("-l", "--library", nargs=1, help="Name of Python library.")
+@click.option(
+    "-p",
+    "--from_package",
+    nargs=1,
+    help="Name of installed package that provides the sample configuration file.",
+)
 @click.option("-s", "--source", nargs=1, help="Name of source configuration file.")
 @overwrite_option
-def gen_conf(conf_file, library, source, force):
+def gen_conf(conf_file, from_package, source, force):
     """
     Generate a sample configuration file with given argument as name.
 
-    If several FAST-OAD plugins are available, option "library" has to be used to specify
-    Python library that provides the source configuration file.
+    Option "--from_package" has to be used if several FAST-OAD plugins are available.
 
-    Option "source_name" has to be used if the targeted plugin provides several sample
+    Option "--source_name" has to be used if the targeted plugin provides several sample
     configuration files.
 
     Use "fastoad plugin_info" to get information about available plugins and sample
@@ -85,7 +89,7 @@ def gen_conf(conf_file, library, source, force):
             api.generate_configuration_file,
             configuration_file_path=conf_file,
             overwrite=force,
-            distribution_name=library,
+            distribution_name=from_package,
             sample_file_name=source,
         )
     except (
@@ -254,28 +258,56 @@ def optimize(conf_file, force):
 
 @fast_oad.command(name="notebooks")
 @click.argument("path", nargs=1, default=".", required=False)
-def create_notebooks(path):
+@click.option(
+    "-p", "--from_package", nargs=1, help="Will use only notebooks from this installed package."
+)
+def create_notebooks(path, from_package):
     """
     Creates a FAST-OAD_notebooks/ folder with pre-configured Jupyter notebooks.
 
     If PATH is given, FAST-OAD_notebooks/ will be created in that folder.
 
-    Please note that all content of an existing FAST-OAD_notebooks/ will be overwritten.
-    """
-    # Create and copy folder
-    target_path = pth.abspath(pth.join(path, NOTEBOOK_FOLDER_NAME))
-    if pth.exists(target_path):
-        shutil.rmtree(target_path)
-    os.makedirs(target_path)
 
-    copy_resource_folder(notebooks, target_path)
-    # Note: copy_resource_folder(tutorial, target_path) would fail because of IPython imports
+
+    IMPORTANT: Please note that all content of an existing FAST-OAD_notebooks/ will be overwritten.
+    """
+    # Check available notebooks
+    try:
+        folder_info_list = FastoadLoader().get_notebook_folder_list(from_package)
+    except FastUnknownDistPluginError as exc:
+        click.echo(exc.args[0])
+        return
+
+    if len(folder_info_list) == 0:
+        click.echo("No notebook available in FAST-OAD plugins.")
+        return
+
+    # Create and copy folder
+    root_target_path = pth.abspath(pth.join(path, NOTEBOOK_FOLDER_NAME))
+    if pth.exists(root_target_path):
+        answer = click.confirm(
+            f'Folder "{root_target_path}" already exists. Do you want to erase it ?'
+        )
+        if not answer:
+            click.echo("Operation cancelled.")
+            return
+        shutil.rmtree(root_target_path)
+
+    # Write
+    if len(folder_info_list) == 1:
+        os.makedirs(root_target_path)
+        copy_resource_folder(folder_info_list[0].package_name, root_target_path)
+    else:
+        for folder_info in folder_info_list:
+            target_path = pth.join(root_target_path, folder_info.dist_name)
+            os.makedirs(target_path)
+            copy_resource_folder(folder_info.package_name, target_path)
 
     # Give info for running Jupyter
-    print("")
-    print("Notebooks have been created in %s" % target_path)
-    print("You may now run Jupyter with:")
-    print('   jupyter lab "%s"' % target_path)
+    click.echo("")
+    click.echo(f"Notebooks have been created in {root_target_path}")
+    click.echo("You may now run Jupyter with:")
+    click.echo(f'   jupyter lab "{root_target_path}"')
 
 
 if __name__ == "__main__":

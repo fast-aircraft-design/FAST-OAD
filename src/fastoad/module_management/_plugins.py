@@ -17,7 +17,6 @@ Plugin system for declaration of FAST-OAD models.
 import logging
 import os.path as pth
 import sys
-from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Callable, Dict, List
@@ -245,7 +244,7 @@ class FastoadLoader(BundleLoader):
             # Setting cls.loaded to True already ensures that a second instantiation
             # during loading will not result in an import cycle.
             self.__class__._loaded = True
-            self.__class__._dist_plugin_definitions = defaultdict(DistributionPluginDefinition)
+            self.__class__._dist_plugin_definitions = {}
             self.read_entry_points()
             self.load()
 
@@ -305,13 +304,11 @@ class FastoadLoader(BundleLoader):
             dist_name,
         )
 
-    def _get_resource_list(
-        self,
-        method: Callable,
-        dist_name: str = None,
-    ) -> List[ResourceInfo]:
+    def _get_resource_list(self, method: Callable, dist_name: str = None) -> List[ResourceInfo]:
         infos = []
         if dist_name:
+            if dist_name not in self._dist_plugin_definitions:
+                raise FastUnknownDistPluginError(dist_name)
             dist_names = [dist_name]
         else:
             dist_names = self._dist_plugin_definitions.keys()
@@ -329,6 +326,10 @@ class FastoadLoader(BundleLoader):
         """
         for group in [OLD_MODEL_PLUGIN_ID, MODEL_PLUGIN_ID]:
             for entry_point in entry_points(group=group):
+                if entry_point.dist.name not in cls._dist_plugin_definitions:
+                    cls._dist_plugin_definitions[
+                        entry_point.dist.name
+                    ] = DistributionPluginDefinition()
                 plugin_dist = cls._dist_plugin_definitions[entry_point.dist.name]
                 plugin_dist.dist_name = entry_point.dist.name
                 plugin_dist.read_entry_point(entry_point, group)

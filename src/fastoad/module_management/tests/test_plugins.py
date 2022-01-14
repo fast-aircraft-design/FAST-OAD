@@ -85,7 +85,7 @@ def test_get_distribution_plugin_definition_with_0_plugin(with_no_plugin):
         FastoadLoader().get_distribution_plugin_definition("anything")
 
 
-def test_get_distribution_plugin_definition_with_1_plugin(with_one_dummy_plugin):
+def test_get_distribution_plugin_definition_with_1_plugin(with_dummy_plugin_1):
     with pytest.raises(FastUnknownDistPluginError):
         FastoadLoader().get_distribution_plugin_definition("unknown")
 
@@ -134,12 +134,43 @@ def test_get_plugin_configuration_file_list(with_dummy_plugins):
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-3")
     assert extract_info(file_list) == set()
 
-    # improper names
-    file_list = FastoadLoader().get_configuration_file_list("unknown-dist")
-    assert extract_info(file_list) == set()
+    # improper name
+    with pytest.raises(FastUnknownDistPluginError):
+        file_list = FastoadLoader().get_configuration_file_list("unknown-dist")
 
 
-def test_get_plugin_notebook_folder_list(with_dummy_plugins):
+def test_get_plugin_notebook_folder_list_with_no_notebooks(with_dummy_plugin_1):
+    def extract_info(folder_list):
+        return {(item.dist_name, item.package_name) for item in folder_list}
+
+    folder_list = FastoadLoader().get_notebook_folder_list()
+    assert extract_info(folder_list) == set()
+    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-1")
+    assert extract_info(folder_list) == set()
+
+    # improper name
+    with pytest.raises(FastUnknownDistPluginError):
+        file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
+
+
+def test_get_plugin_notebook_folder_list_with_one_plugin(with_dummy_plugin_distribution_1):
+    def extract_info(folder_list):
+        return {(item.dist_name, item.package_name) for item in folder_list}
+
+    folder_list = FastoadLoader().get_notebook_folder_list()
+    assert extract_info(folder_list) == {
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
+    }
+    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-1")
+    assert extract_info(folder_list) == {
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks")
+    }
+    # improper name
+    with pytest.raises(FastUnknownDistPluginError):
+        file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
+
+
+def test_get_plugin_notebook_folder_list_with_plugins(with_dummy_plugins):
     def extract_info(folder_list):
         return {(item.dist_name, item.package_name) for item in folder_list}
 
@@ -159,12 +190,12 @@ def test_get_plugin_notebook_folder_list(with_dummy_plugins):
         ("dummy-dist-3", "tests.dummy_plugins.dist_3.dummy_plugin_5.notebooks")
     }
 
-    # improper names
-    file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
-    assert extract_info(file_list) == set()
+    # improper name
+    with pytest.raises(FastUnknownDistPluginError):
+        file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
 
 
-def test_get_configuration_file_info_with_1_plugin(with_one_dummy_plugin):
+def test_get_configuration_file_info_with_1_plugin(with_dummy_plugin_1):
     dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
 
     with pytest.raises(FastUnknownConfigurationFileError):

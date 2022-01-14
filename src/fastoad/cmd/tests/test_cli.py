@@ -20,7 +20,7 @@ import pandas as pd
 import pytest
 from click.testing import CliRunner
 
-from fastoad.cmd.cli import fast_oad
+from fastoad.cmd.cli import NOTEBOOK_FOLDER_NAME, fast_oad
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results", "cli")
@@ -71,7 +71,7 @@ def test_gen_conf_no_plugin(with_no_plugin):
     assert result.output == "This feature needs plugins, but no plugin available.\n"
 
 
-def test_gen_conf_one_plugin(cleanup, with_one_dummy_plugin, plugin_root_path):
+def test_gen_conf_one_plugin(cleanup, with_dummy_plugin_1, plugin_root_path):
     runner = CliRunner()
     with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
         # Test minimal command =================================================
@@ -110,7 +110,7 @@ def test_gen_conf_one_plugin(cleanup, with_one_dummy_plugin, plugin_root_path):
 
         # Test plugin specification ============================================
         result = runner.invoke(
-            fast_oad, ["gen_conf", "my_conf.yml", "--library", "unknown-dist"], input="n"
+            fast_oad, ["gen_conf", "my_conf.yml", "--from_package", "unknown-dist"], input="n"
         )
         assert not result.exception
         assert result.exit_code == 0
@@ -119,7 +119,7 @@ def test_gen_conf_one_plugin(cleanup, with_one_dummy_plugin, plugin_root_path):
         )
 
         # ----------------------------------------------------------------------
-        result = runner.invoke(fast_oad, ["gen_conf", "my_conf.yml", "-f", "-l", "dummy-dist-1"])
+        result = runner.invoke(fast_oad, ["gen_conf", "my_conf.yml", "-f", "-p", "dummy-dist-1"])
         assert not result.exception
         assert result.exit_code == 0
         assert result.output.endswith("has been written.\n")
@@ -127,7 +127,7 @@ def test_gen_conf_one_plugin(cleanup, with_one_dummy_plugin, plugin_root_path):
         # Test source file specification =======================================
         result = runner.invoke(
             fast_oad,
-            ["gen_conf", "my_conf.yml", "-f", "-l", "dummy-dist-1", "-s", "dummy_conf_1-1.yml"],
+            ["gen_conf", "my_conf.yml", "-f", "-p", "dummy-dist-1", "-s", "dummy_conf_1-1.yml"],
         )
         assert not result.exception
         assert result.exit_code == 0
@@ -172,7 +172,7 @@ def test_gen_conf_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
         # ----------------------------------------------------------------------
         result = runner.invoke(
             fast_oad,
-            ["gen_conf", "my_conf.yml", "-l", "dummy-dist-2"],
+            ["gen_conf", "my_conf.yml", "-p", "dummy-dist-2"],
         )
         assert not result.exception
         assert result.exit_code == 0
@@ -183,7 +183,7 @@ def test_gen_conf_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
         # ----------------------------------------------------------------------
         result = runner.invoke(
             fast_oad,
-            ["gen_conf", "my_conf.yml", "-l", "dummy-dist-2", "-s", "unknown_conf.yml"],
+            ["gen_conf", "my_conf.yml", "-p", "dummy-dist-2", "-s", "unknown_conf.yml"],
         )
         assert not result.exception
         assert result.exit_code == 0
@@ -194,7 +194,7 @@ def test_gen_conf_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
         # Test source file specification =======================================
         result = runner.invoke(
             fast_oad,
-            ["gen_conf", "my_conf.yml", "-f", "-l", "dummy-dist-1", "-s", "dummy_conf_1-1.yml"],
+            ["gen_conf", "my_conf.yml", "-f", "-p", "dummy-dist-1", "-s", "dummy_conf_1-1.yml"],
         )
         assert not result.exception
         assert result.exit_code == 0
@@ -207,7 +207,7 @@ def test_gen_conf_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
         # ----------------------------------------------------------------------
         result = runner.invoke(
             fast_oad,
-            ["gen_conf", "my_conf.yml", "-f", "-l", "dummy-dist-2", "-s", "dummy_conf_3-2.yaml"],
+            ["gen_conf", "my_conf.yml", "-f", "-p", "dummy-dist-2", "-s", "dummy_conf_3-2.yaml"],
         )
         assert not result.exception
         assert result.exit_code == 0
@@ -216,3 +216,95 @@ def test_gen_conf_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
             plugin_root_path, "dist_2", "dummy_plugin_3", "configurations", "dummy_conf_3-2.yaml"
         )
         assert cmp(pth.join(temp_dir, "my_conf.yml"), original_file)
+
+
+def test_create_notebooks_with_1_plugin(cleanup, with_dummy_plugin_1, plugin_root_path):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH):
+        result = runner.invoke(fast_oad, ["notebooks"])
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith("No notebook available in FAST-OAD plugins.\n")
+
+
+def test_create_notebooks_with_1_distribution(
+    cleanup, with_dummy_plugin_distribution_1, plugin_root_path
+):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        # Test basic run =======================================================
+        result = runner.invoke(fast_oad, ["notebooks"])
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.startswith("\nNotebooks have been created")
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME))
+        assert pth.isfile(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "notebook_1.ipynb"))
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "data"))
+
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        # Test basic run with package specification ============================
+        result = runner.invoke(fast_oad, ["notebooks", "--from_package", "dummy-dist-1"])
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.startswith("\nNotebooks have been created")
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME))
+        assert pth.isfile(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "notebook_1.ipynb"))
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "data"))
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(fast_oad, ["notebooks", "--from_package", "unknown-dist"])
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith(
+            'No installed package with FAST-OAD plugin found with name "unknown-dist".\n'
+        )
+
+        # Test overwrite =======================================================
+        result = runner.invoke(fast_oad, ["notebooks"], input="n")
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith("cancelled.\n")
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(fast_oad, ["notebooks"], input="y")
+        assert not result.exception
+        assert result.exit_code == 0
+        assert "Notebooks have been created" in result.output
+
+
+def test_create_notebooks_with_plugins(cleanup, with_dummy_plugins, plugin_root_path):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        # Test basic run =======================================================
+        result = runner.invoke(fast_oad, ["notebooks"])
+        assert not result.exception
+        assert result.exit_code == 0
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME))
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-1"))
+        assert pth.isfile(
+            pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-1", "notebook_1.ipynb")
+        )
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-1", "data"))
+
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-3"))
+        assert pth.isfile(
+            pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "dummy-dist-3", "notebook_2.ipynb")
+        )
+
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        # Test basic run with package specification ============================
+        result = runner.invoke(fast_oad, ["notebooks", "-p", "dummy-dist-1"])
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.startswith("\nNotebooks have been created")
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME))
+        assert pth.isfile(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "notebook_1.ipynb"))
+        assert pth.isdir(pth.join(temp_dir, NOTEBOOK_FOLDER_NAME, "data"))
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(fast_oad, ["notebooks", "-p", "unknown-dist"])
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith(
+            'No installed package with FAST-OAD plugin found with name "unknown-dist".\n'
+        )

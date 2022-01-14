@@ -67,7 +67,7 @@ def test_generate_configuration_file_plugin_1(cleanup, with_dummy_plugins, plugi
     )
 
 
-def test_generate_configuration_file_plugin_1_alone(cleanup, with_one_dummy_plugin):
+def test_generate_configuration_file_plugin_1_alone(cleanup, with_dummy_plugin_1):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
 
     # No plugin specified only one plugin is available

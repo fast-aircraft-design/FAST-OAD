@@ -55,9 +55,10 @@ def with_no_plugin():
 
 
 @pytest.fixture
-def with_one_dummy_plugin():
+def with_dummy_plugin_1():
     """
-    Ensures that FAST-OAD has only the dummy plugin 1 registered.
+    Reduces plugin list to dummy-dist-1 with plugin test_plugin_1
+    (one configuration file, no models, no notebooks).
 
     Any previous state of plugins is restored during teardown.
     """
@@ -76,9 +77,46 @@ def with_one_dummy_plugin():
 
 
 @pytest.fixture
+def with_dummy_plugin_distribution_1():
+    """
+    Reduces plugin list to dummy-dist-1 with plugins test_plugin_1 and test_plugin_4
+    (one configuration file, no models, notebook folder).
+
+    Any previous state of plugins is restored during teardown.
+    """
+    _setup()
+    dummy_dist_1 = Mock(Distribution)
+    dummy_dist_1.name = "dummy-dist-1"
+    entry_points = [
+        EntryPoint(
+            name="test_plugin_1",
+            value="tests.dummy_plugins.dist_1.dummy_plugin_1",
+            group=MODEL_PLUGIN_ID,
+        ),
+        EntryPoint(
+            name="test_plugin_4",
+            value="tests.dummy_plugins.dist_1.dummy_plugin_4",
+            group=MODEL_PLUGIN_ID,
+        ),
+    ]
+
+    entry_points[0].dist = entry_points[1].dist = dummy_dist_1
+
+    _update_entry_map(entry_points)
+    yield
+    _teardown()
+
+
+@pytest.fixture
 def with_dummy_plugins():
     """
-    Ensures that FAST-OAD has only the dummy plugins registered.
+    Reduces plugin list to:
+        - dummy-dist-1 with plugins test_plugin_1 and test_plugin_4
+          (one configuration file, no models, notebook folder).
+        - dummy-dist-2 with plugins test_plugin_2 and test_plugin_3
+          (3 configuration files, model folder, no notebooks).
+        - dummy-dist-3 with plugins test_plugin_5
+          (no configuration file, model folder, notebook folder).
 
     Any previous state of plugins is restored during teardown.
     """
