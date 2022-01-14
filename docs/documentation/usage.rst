@@ -300,20 +300,43 @@ inline help using
 
     $ fastoad <sub-command> -h
 
+.. _plugin-info:
+
+How to get information about available plugins
+==============================================
+
+FAST-OAD is built on a plugin architecture where each plugin can provide FAST-OAD modules,
+Jupyter notebooks and sample configuration files (see :ref:`plugin addition<add-plugins>`),
+
+A list of installed plugins can be obtained with:
+
+.. code:: shell-session
+
+    $ fastoad plugin_info
 
 .. _generate-conf-file:
 
 How to generate a configuration file
 ====================================
 
-FAST-OAD can provide a ready-to use configuration file with:
+FAST-OAD can provide a ready-to use configuration.
 
 .. code:: shell-session
 
+    $ fastoad gen_conf my_conf.yml --from_package my_plugin_package --source sample_configuration_1.yml
+
+This copies the file `sample_configuration_1.yml` provided by installed package `my_plugin_package`
+to file `my_conf.yml`.
+
+See :ref:`how to get plugin information<pluging-info>`for listing the values you can put for
+options `--from_package` and `--source`.
+
+If only one package is available, option `--from_package` may be omitted.
+If the selected package provides only one configuration file, option `--source` may be omitted.
+
+Hence with FAST-OAD installed (version below 2.0) without additional plugin, the command can be:
+
     $ fastoad gen_conf my_conf.yml
-
-This generates the file `my_conf.yml`
-
 
 .. _get-module-list:
 
@@ -412,8 +435,8 @@ can provide a `XDSM <https://mdolab.engin.umich.edu/wiki/xdsm-overview>`_.
 
 XDSM offers a more synthetic view than N2 diagram.
 
-As it uses a web service, you need an internet access for this command, but you do not need
-to be a registered user on the WhatsOpt server.
+As it uses a web service, you need an internet access for this command, but you do not need to be
+a registered user on the WhatsOpt server.
 
 You can create a :code:`xdsm.html` file with:
 
