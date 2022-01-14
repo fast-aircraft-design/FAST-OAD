@@ -21,12 +21,8 @@ class PackageReader:
     Wrapper of `importlib.resources.contents` which handles when `package_name` is
     not a package or does not exist.
 
-    :param package_name:
-    :return: An iterator if package exists, an empty SET {} if it does not exist, and None
-             if it is not a package
+    :param package_name: Name of package to inspect.
     """
-
-    package_name: str
 
     def __init__(self, package_name: str):
         """
@@ -36,7 +32,16 @@ class PackageReader:
         self.is_module = False
         self.has_error = False
         self._contents = []
+        self.package_name = package_name
 
+    @property
+    def package_name(self):
+        """Name of package to inspect."""
+        return self._package_name
+
+    @package_name.setter
+    def package_name(self, package_name):
+        self._package_name = package_name
         if package_name:
             try:
                 self._contents = list(contents(package_name))
@@ -45,7 +50,7 @@ class PackageReader:
                 self.is_module = True
             except ModuleNotFoundError:
                 pass
-            except Exception:
+            except Exception:  # pylint: disable = W0703
                 # Here we catch any Python error that may happen when reading the loaded code.
                 # Thus, we ensure to not break the application if a module is incorrectly written.
                 self.has_error = True

@@ -15,7 +15,6 @@
 import os.path as pth
 
 import click
-import pandas as pd
 import tabulate
 
 import fastoad
@@ -25,7 +24,6 @@ from fastoad.cmd.cli_utils import (
     overwrite_option,
 )
 from fastoad.cmd.exceptions import FastNoAvailableNotebookError
-from fastoad.module_management._plugins import FastoadLoader
 from fastoad.module_management.exceptions import (
     FastNoDistPluginError,
     FastSeveralConfigurationFilesError,

@@ -172,7 +172,7 @@ def generate_configuration_file(
     # Write file
     make_parent_dir(configuration_file_path)
     copy_resource(file_info.package_name, file_info.name, configuration_file_path)
-    _LOGGER.info('Sample configuration written in "%s".' % configuration_file_path)
+    _LOGGER.info('Sample configuration written in "%s".', configuration_file_path)
 
     return configuration_file_path
 
@@ -199,8 +199,8 @@ def generate_inputs(
     input_file_path = conf.input_file_path
     if not overwrite and pth.exists(conf.input_file_path):
         raise FastPathExistsError(
-            "Input file %s not written because it already exists. "
-            "Use overwrite=True to bypass." % input_file_path,
+            f"Input file {input_file_path} not written because it already exists. "
+            "Use overwrite=True to bypass.",
             input_file_path,
         )
 
@@ -270,12 +270,12 @@ def list_variables(
         out = pth.abspath(out)
         if not overwrite and pth.exists(out):
             raise FastPathExistsError(
-                "File %s not written because it already exists. "
-                "Use overwrite=True to bypass." % out,
+                f"File {out} not written because it already exists. "
+                "Use overwrite=True to bypass.",
                 out,
             )
         make_parent_dir(out)
-        out_file = open(out, "w")
+        out_file = open(out, "w", encoding="utf-8")
     else:
         if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
             display(HTML(variables_df.to_html(index=False)))
@@ -357,7 +357,7 @@ def list_modules(
         elif pth.isdir(source_path):
             RegisterOpenMDAOSystem.explore_folder(source_path)
         else:
-            raise FileNotFoundError("Could not find %s" % source_path)
+            raise FileNotFoundError(f"Could not find {source_path}")
     elif isinstance(source_path, Iterable):
         for folder_path in source_path:
             if not pth.isdir(folder_path):
@@ -376,13 +376,13 @@ def list_modules(
         out = pth.abspath(out)
         if not overwrite and pth.exists(out):
             raise FastPathExistsError(
-                "File %s not written because it already exists. "
-                "Use overwrite=True to bypass." % out,
+                f"File {out} not written because it already exists. "
+                "Use overwrite=True to bypass.",
                 out,
             )
 
         make_parent_dir(out)
-        out_file = open(out, "w")
+        out_file = open(out, "w", encoding="utf-8")
     else:
         if (
             out == sys.stdout
@@ -435,8 +435,10 @@ def _get_detailed_system_list():
         component.options.undeclare("distributed")
 
         cell_content = (
-            "  IDENTIFIER:   %s\nPATH:         %s\nDOMAIN:       %s\nDESCRIPTION:  %s\n"
-            % (identifier, path, domain.value, tw.indent(tw.dedent(description), "    "))
+            f"IDENTIFIER:   {identifier}\n"
+            f"PATH:         {path}\n"
+            f"DOMAIN:       {domain.value}\n"
+            f"DESCRIPTION:  {tw.indent(tw.dedent(description), '    ')}\n"
         )
         if len(list(component.options.items())) > 0:
             cell_content += component.options.to_table(fmt="grid") + "\n"
@@ -451,10 +453,10 @@ def _get_detailed_system_list():
         if description is None:
             description = ""
 
-        cell_content = "  IDENTIFIER:   %s\nPATH:         %s\nDESCRIPTION:  %s\n" % (
-            identifier,
-            path,
-            tw.indent(tw.dedent(description), "    "),
+        cell_content = (
+            f"IDENTIFIER:   {identifier}\n"
+            f"PATH:         {path}\n"
+            f"DESCRIPTION:  {tw.indent(tw.dedent(description), '    ')}\n"
         )
         cell_list.append([cell_content])
     return cell_list
@@ -477,8 +479,8 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
 
     if not overwrite and pth.exists(n2_file_path):
         raise FastPathExistsError(
-            "N2-diagram file %s not written because it already exists. "
-            "Use overwrite=True to bypass." % n2_file_path,
+            f"N2-diagram file {n2_file_path} not written because it already exists. "
+            "Use overwrite=True to bypass.",
             n2_file_path,
         )
 
@@ -564,8 +566,8 @@ def _run_problem(
     outputs_path = pth.normpath(problem.output_file_path)
     if not overwrite and pth.exists(outputs_path):
         raise FastPathExistsError(
-            "Problem not run because output file %s already exists. "
-            "Use overwrite=True to bypass." % outputs_path,
+            f"Problem not run because output file {outputs_path} already exists. "
+            "Use overwrite=True to bypass.",
             outputs_path,
         )
 
@@ -581,9 +583,9 @@ def _run_problem(
 
     problem.write_outputs()
     if problem.optim_failed:
-        _LOGGER.error("Optimization failed after " + str(computation_time) + " seconds")
+        _LOGGER.error("Optimization failed after %s seconds", computation_time)
     else:
-        _LOGGER.info("Computation finished after " + str(computation_time) + " seconds")
+        _LOGGER.info("Computation finished after %s seconds", computation_time)
 
     _LOGGER.info("Problem outputs written in %s", outputs_path)
 

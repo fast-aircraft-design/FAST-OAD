@@ -46,6 +46,8 @@ MODEL_PLUGIN_ID = "fastoad.plugins"
 
 
 class SubPackageNames(Enum):
+    """Enumeration of possible plugin subpackages."""
+
     MODELS = "models"
     NOTEBOOKS = "notebooks"
     CONFIGURATIONS = "configurations"
@@ -193,14 +195,14 @@ class DistributionPluginDefinition(dict):
             plugin_names = self.keys()
 
         info = []
-        for plugin_name in plugin_names:
-            plugin_def = self[plugin_name]
+        for name in plugin_names:
+            plugin_def = self[name]
             if SubPackageNames.NOTEBOOKS in plugin_def.subpackages:
                 info.append(
                     ResourceInfo(
                         name=SubPackageNames.NOTEBOOKS.value,
                         dist_name=self.dist_name,
-                        plugin_name=plugin_name,
+                        plugin_name=name,
                         package_name=plugin_def.subpackages[SubPackageNames.NOTEBOOKS],
                     )
                 )
@@ -221,7 +223,7 @@ class DistributionPluginDefinition(dict):
             installed_package=self.dist_name,
             has_models=has_models,
             has_notebooks=has_notebooks,
-            configurations=conf_files,
+            configurations=sorted(conf_files),
         )
 
 
@@ -271,8 +273,7 @@ class FastoadLoader(BundleLoader):
         if dist_name is None:
             if len(self._dist_plugin_definitions) > 1:
                 raise FastSeveralDistPluginsError()
-            else:
-                return next(iter(self._dist_plugin_definitions.values()))
+            return next(iter(self._dist_plugin_definitions.values()))
 
         if dist_name not in self._dist_plugin_definitions:
             raise FastUnknownDistPluginError(dist_name)
@@ -315,8 +316,8 @@ class FastoadLoader(BundleLoader):
                 raise FastNoDistPluginError()
             dist_names = self._dist_plugin_definitions.keys()
 
-        for dist_name in dist_names:
-            dist_plugin_definitions = self._dist_plugin_definitions[dist_name]
+        for name in dist_names:
+            dist_plugin_definitions = self._dist_plugin_definitions[name]
             infos += method(dist_plugin_definitions)
 
         return infos
@@ -341,7 +342,7 @@ class FastoadLoader(BundleLoader):
         """
         Loads declared plugins.
         """
-        for plugin_dist, dist_plugin_definitions in cls._dist_plugin_definitions.items():
+        for dist_plugin_definitions in cls._dist_plugin_definitions.values():
             for plugin_name, plugin_def in dist_plugin_definitions.items():
                 _LOGGER.info("Loading FAST-OAD plugin %s", plugin_name)
                 cls._load_models(plugin_def)
