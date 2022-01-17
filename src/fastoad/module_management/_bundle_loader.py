@@ -344,7 +344,7 @@ class BundleLoader:
         failed = set()
 
         package = PackageReader(package_name)
-        if package.has_error:
+        if package.has_error or not package.exists:
             failed.add(package_name)
         elif package.is_package:
             # It is a package, let's explore it.
@@ -362,9 +362,6 @@ class BundleLoader:
                     sub_bundles, sub_failed = self._install_python_package(item_package)
                     bundles.update(sub_bundles)
                     failed.update(sub_failed)
-        elif not package.is_module:
-            # Does not exist.
-            failed.add(package_name)
 
         return bundles, failed
 

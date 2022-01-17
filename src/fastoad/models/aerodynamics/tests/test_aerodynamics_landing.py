@@ -2,7 +2,7 @@
 Test module for aerodynamics groups
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,17 +15,13 @@ Test module for aerodynamics groups
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-from platform import system
 
 import pytest
 from pytest import approx
 
 from fastoad._utils.testing import run_system
 from fastoad.io import VariableIO
-from tests.xfoil_exe.get_xfoil import get_xfoil_path
 from ..aerodynamics_landing import AerodynamicsLanding
-
-xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 
 def get_indep_var_comp(var_names):
@@ -36,10 +32,8 @@ def get_indep_var_comp(var_names):
     return ivc
 
 
-@pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available"
-)
-def test_aerodynamics_landing_with_xfoil():
+@pytest.mark.skip_if_no_xfoil()
+def test_aerodynamics_landing_with_xfoil(xfoil_path):
     """Tests AerodynamicsHighSpeed"""
     input_list = [
         "data:TLAR:approach_speed",

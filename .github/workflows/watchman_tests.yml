@@ -34,7 +34,7 @@ jobs:
         shell: bash
 
       - name: Unit tests
-        run: pytest --no-cov src
+        run: pytest --no-cov src -c ./conftest.py
         shell: bash
 
       - name: Notebook tests

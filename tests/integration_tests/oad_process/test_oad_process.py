@@ -2,7 +2,7 @@
 Test module for Overall Aircraft Design process
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -34,12 +34,9 @@ from fastoad.io.configuration.configuration import (
     _IConfigurationModifier,
 )
 from tests import root_folder_path
-from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
-
-xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 
 @pytest.fixture(scope="module")
@@ -75,12 +72,13 @@ def test_oad_process(cleanup):
     _check_weight_performance_loop(problem)
 
 
-def test_non_regression_breguet(cleanup):
+def test_non_regression_breguet(cleanup, xfoil_path):
     run_non_regression_test(
         "oad_process_breguet.yml",
         "CeRAS01_legacy_breguet_result.xml",
         "non_regression_breguet",
         use_xfoil=True,
+        xfoil_path=xfoil_path,
     )
 
 
@@ -114,12 +112,13 @@ class XFOILConfigurator(_IConfigurationModifier):
     """Overwrite XFOIL usage setting of configuration file"""
 
     use_xfoil: bool
+    xfoil_path: str = None
 
     def modify(self, problem: om.Problem):
-        if self.use_xfoil and (system() == "Windows" or xfoil_path):
+        if self.use_xfoil and (system() == "Windows" or self.xfoil_path):
             problem.model.aerodynamics_landing._OPTIONS["use_xfoil"] = True
             if system() != "Windows":
-                problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = xfoil_path
+                problem.model.aerodynamics_landing._OPTIONS["xfoil_exe_path"] = self.xfoil_path
             # BTW we narrow computed alpha range for sake of CPU time
             problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_min"] = 16.0
             problem.model.aerodynamics_landing._OPTIONS["xfoil_alpha_max"] = 22.0
@@ -130,6 +129,7 @@ def run_non_regression_test(
     legacy_result_file,
     result_dir,
     use_xfoil=False,
+    xfoil_path=None,
     global_tolerance=1e-2,
     vars_to_check=None,
     specific_tolerance=5.0e-3,
@@ -141,6 +141,7 @@ def run_non_regression_test(
     :param legacy_result_file: reference data for inputs and outputs
     :param result_dir: relative name, folder will be in RESULTS_FOLDER_PATH
     :param use_xfoil: if True, XFOIL computation will be activated
+    :param xfoil_path: used if use_xfoil==True
     :param vars_to_check: variables that will be concerned by specific_tolerance
     :param specific_tolerance: test will fail if absolute relative error between computed and
                                reference values is beyond this value for variables in vars_to_check
@@ -155,7 +156,7 @@ def run_non_regression_test(
     api.generate_configuration_file(configuration_file_path)  # just ensure folders are created...
     shutil.copy(pth.join(DATA_FOLDER_PATH, conf_file), configuration_file_path)
     configurator = FASTOADProblemConfigurator(configuration_file_path)
-    configurator._set_configuration_modifier(XFOILConfigurator(use_xfoil))
+    configurator._set_configuration_modifier(XFOILConfigurator(use_xfoil, xfoil_path))
 
     # Generation of inputs ----------------------------------------
     ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
