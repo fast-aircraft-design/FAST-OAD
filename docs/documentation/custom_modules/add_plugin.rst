@@ -4,7 +4,7 @@
 How to add custom OpenMDAO modules to FAST-OAD as a plugin
 ##########################################################
 
-Once you have created your custom modules for FAST-OAD (see :ref:`add-modules`),
+Once you have :ref:`created your custom modules <add-modules>` for FAST-OAD,
 you may want to share them with other users, which can be done in two ways:
 
     - Providing your code so they can copy it on their computer and have them set their
@@ -14,10 +14,11 @@ you may want to share them with other users, which can be done in two ways:
 
 A FAST-OAD plugin can provide additional FAST-OAD modules, Jupyter notebooks and configuration files:
 
-    - plugin-provided FAST-OAD modules are usable in :ref:`configuration files <configuration-file>`
-      and can be listed ans used in the same way as native modules (see :ref:`get-module-list`).
-    - plugin-provided notebooks can be accessed using :ref:`dedicated command<python-usage>`.
-    - plugin-provided configuration files can be used with :ref:`dedicated command<generate-conf-file>`.
+    - plugin-provided FAST-OAD modules are usable in :ref:`configuration files <configuration-file>`,
+      and can be :ref:`listed<get-module-list>` and :ref:`used<configuration-file-problem-definition>`
+      in the same way as native modules.
+    - Command line can be used by users to retrieve :ref:`notebooks<python-usage>` and
+      :ref:`configuration files<generate-conf-file>`.
 
 Plugin structure
 ################
@@ -44,10 +45,12 @@ In your source folder, a typical plugin structure would be like this::
         └── good_notebook.ipynb
 
 As shown above, the expected structure is composed of Python **packages**, i.e. every folder should
-contain a :code:`__init__.py` file.
+contain a :code:`__init__.py` file, **even if it contains only non-Python files** (e.g. data for notebooks).
+
 The root folder can be anywhere in your project structure, since plugin declaration will point to
 its location.
-Also, expected folders in a plugin package are:
+
+Expected folders in a plugin package are:
 
     - :code:`models`: contains Python code where FAST-OAD modules are :ref:`registered<add-modules>`.
     - :code:`configurations`: contains only configuration files in YAML format. No sub-folder is
@@ -56,7 +59,7 @@ Also, expected folders in a plugin package are:
     - :code:`notebooks`: contains any number of Jupyter notebooks and associated data, that will
       be made available to users through :ref:`command line<python-usage>`.
 
-Any of these folders is optional.
+Any of these folders is optional. Any other folder will be ignored.
 
 
 Plugin packaging
@@ -65,8 +68,15 @@ Plugin packaging
 To declare your package as a FAST-OAD plugin, you have to package it the usual way
 and declare it as a plugin with :code:`fastoad.plugins` as plugin group name.
 
-This can be done classically with `setuptools <https://packaging.python.org/guides/creating-and-discovering-plugins/#using-package-metadata>`_.
-It can also be done with `Poetry <https://python-poetry.org>`_, which is the way described below:
+This page proposes a brief tutorial using `Poetry <https://python-poetry.org>`_.
+
+.. note::
+
+    If you prefer `setuptools <https://packaging.python.org/guides/creating-and-discovering-plugins/#using-package-metadata>`_, you may want to look at
+    the `Python tutorial for packaging projects <https://packaging.python.org/en/latest/tutorials/packaging-projects>`_.
+    The plugin declaration is demonstrated
+    `here <https://packaging.python.org/guides/creating-and-discovering-plugins/#using-package-metadata>`_.
+
 
 .. contents::
    :local:
@@ -76,8 +86,24 @@ It can also be done with `Poetry <https://python-poetry.org>`_, which is the way
 Plugin declaration
 ******************************
 
+For the example, let's consider that your project contains the package :code:`star_trek.drives`, and
+that your project structure contains::
 
-Assuming you project contains the package :code:`start_trek.drives` that contains
+    src/
+    ├── star_trek/
+    │   ├── __init__.py
+    │   ├── drives/
+    │   │   ├── __init__.py
+    │   │   ├── configurations/
+    │   │   ├── models/
+    │   │   └── notebooks/
+    │   └── ...
+    └── ...
+
+As previously stated, your folder :code:`src/star_trek/drives` does not have to contain all of the
+folders :code:`models`, :code:`configurations` nor :code:`notebooks`.
+
+Assuming you project contains the package :code:`star_trek.drives` that contains
 models you want to share, you can declare your plugin in your :code:`pyproject.toml`
 file with:
 
@@ -85,10 +111,24 @@ file with:
 
     ...
 
-    [tool.poetry.plugins."fastoad_model"]
-    "internal_models" = "start_trek.drives"
+    [tool.poetry]
+    # Tells location of sources
+    packages = [
+        { include = "star_trek", from = "src" },
+    ]
 
     ...
+
+    # Plugin declaration
+    [tool.poetry.plugins."fastoad.plugins"]
+    "ST_plugin" = "star_trek.drives"
+
+    ...
+
+.. note::
+
+    It is discouraged to declare several FAST-OAD plugins for a same project.
+
 Once your :code:`pyproject.toml` is set, you can do :code:`poetry install`. Besides
 installing your project dependencies, it will make your models **locally** available (i.e.
 you could use their identifiers in your FAST-OAD configuration file without setting
@@ -100,7 +140,7 @@ Building
 ******************************
 You can build your package with the command line :code:`poetry build`.
 Let's assume your :code:`pyproject.toml` file is configured so that your project name is
-:code:`STST_drive_models`, as below:
+:code:`ST_drive_models`, as below:
 
 .. code-block:: toml
 
@@ -110,10 +150,29 @@ Let's assume your :code:`pyproject.toml` file is configured so that your project
     name = "ST_drive_models"
     version = "1.0.0"
 
+    # Tells location of sources
+    packages = [
+        { include = "star_trek", from = "src" },
+    ]
+
     ...
 
-It will create a :code:`dist` folder with two files: :code:`ST_drive_models-1.0.0.tar.gz`
-and :code:`ST_drive_models-1.0.0-py3-none-any.whl` (or something like this).
+    # Specify that Poetry is used for building the package
+    [build-system]
+    requires = ["poetry-core>=1.0.0"]
+    build-backend = "poetry.core.masonry.api"
+
+    ...
+
+    # Plugin declaration
+    [tool.poetry.plugins."fastoad.plugins"]
+    "ST_plugin" = "star_trek.drives"
+    ...
+
+The command :code:`poetry build` will create a :code:`dist` folder with two files:
+
+:code:`ST_drive_models-1.0.0.tar.gz` and :code:`ST_drive_models-1.0.0-py3-none-any.whl`
+(or something like this).
 
 You may then have sent any of those two files to another user, who may then install your models
 using :code:`pip` with:
