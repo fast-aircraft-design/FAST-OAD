@@ -23,7 +23,6 @@ import pytest
 import tomlkit
 from jsonschema import ValidationError
 from ruamel.yaml import YAML
-from filecmp import cmp
 
 from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
@@ -136,7 +135,6 @@ def test_problem_definition_with_xml_ref(cleanup):
         problem = conf.get_problem(read_inputs=True, auto_scaling=True)
         # runs evaluation without optimization loop to check that inputs are taken into account
         problem.setup()
-        conf.set_initial_values(problem)
         problem.run_model()
         print(problem["x"])
         assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
@@ -151,7 +149,6 @@ def test_problem_definition_with_xml_ref(cleanup):
         alt_problem = alt_conf.get_problem(read_inputs=True, auto_scaling=True)
         # runs evaluation without optimization loop to check that inputs are taken into account
         alt_problem.setup()
-        alt_conf.set_initial_values(alt_problem)
         alt_problem.run_model()
         alt_problem.write_outputs()
 
@@ -175,7 +172,6 @@ def test_problem_definition_with_custom_xml(cleanup):
 
     problem = conf.get_problem(read_inputs=True, auto_scaling=True)
     problem.setup()
-    conf.set_initial_values(problem)
     problem.run_model()
 
     assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
@@ -192,6 +188,7 @@ def test_problem_definition_with_nan_inputs(cleanup):
 
     with pytest.raises(FASTConfigurationNanInInputFile) as exc:
         problem = conf.get_problem(read_inputs=True, auto_scaling=True)
+        problem.setup()
         assert exc.input_file_path == input_data_path
         assert exc.nan_variable_names == ["x"]
 
@@ -215,7 +212,6 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
         # Runs optimization problem with semi-analytic FD
         problem1 = conf.get_problem(read_inputs=True)
         problem1.setup()
-        conf.set_initial_values(problem1)
         problem1.run_model()
         assert problem1["f"] == pytest.approx(28.58830817, abs=1e-6)
         problem1.run_driver()
@@ -227,7 +223,6 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
         problem2 = conf.get_problem(read_inputs=True)
         problem2.model.approx_totals()
         problem2.setup()
-        conf.set_initial_values(problem2)
         problem2.run_model()  # checks problem has been reset
         assert problem2["f"] == pytest.approx(28.58830817, abs=1e-6)
         problem2.run_driver()

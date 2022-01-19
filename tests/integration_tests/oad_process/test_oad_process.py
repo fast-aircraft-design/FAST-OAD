@@ -58,7 +58,6 @@ def test_oad_process(cleanup):
     # Create problems with inputs
     problem = configurator.get_problem(read_inputs=True)
     problem.setup()
-    configurator.set_initial_values(problem)
     problem.run_model()
     problem.write_outputs()
 
@@ -166,7 +165,6 @@ def run_non_regression_test(
     # Get problem with inputs -------------------------------------
     problem = configurator.get_problem(read_inputs=True)
     problem.setup()
-    configurator.set_initial_values(problem)
 
     # Run model ---------------------------------------------------------------
     problem.run_model()

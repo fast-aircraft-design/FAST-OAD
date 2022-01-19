@@ -11,11 +11,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import Tuple
+import copy
+
+import numpy as np
 import openmdao.api as om
 
-from fastoad.io import VariableIO
+from fastoad.io import VariableIO, DataFile
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import VariableList
+from fastoad.io.configuration.exceptions import (
+    FASTConfigurationNanInInputFile,
+)
 
 INPUT_SYSTEM_NAME = "inputs"
 
@@ -31,11 +38,16 @@ class FASTOADProblem(om.Problem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        #: File path where :meth:`write_inputs` will write inputs
+        self.input_file_path = None
         #: File path where :meth:`write_outputs` will write outputs
         self.output_file_path = None
 
         #: Variables that are not part of the problem but that should be written in output file.
         self.additional_variables = None
+
+        #: If True inputs will be read after setup.
+        self._read_inputs_after_setup = False
 
     def run_model(self, case_prefix=None, reset_iter_counts=True):
         status = super().run_model(case_prefix, reset_iter_counts)
@@ -46,6 +58,11 @@ class FASTOADProblem(om.Problem):
         status = super().run_driver(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
         return status
+
+    def setup(self):
+        super().setup()
+        if self._read_inputs_after_setup:
+            self._read_inputs()
 
     def write_outputs(self):
         """
@@ -63,3 +80,55 @@ class FASTOADProblem(om.Problem):
                 VariableList.from_problem(self, promoted_only=True), add_variables=True
             )
             writer.write(variables)
+
+    def read_inputs(self):
+        """
+        Reads inputs.
+        """
+        if self._read_inputs_after_setup:
+            self._read_inputs()
+        else:
+            self._read_inputs_after_setup = True
+
+    def _get_problem_inputs(self, ivc_output_format=True) -> Tuple[om.IndepVarComp, VariableList]:
+        """
+        Reads input file for the configured problem.
+
+        Needed variables are returned as an IndepVarComp instance while unused variables are
+        returned as a VariableList instance.
+
+        :param problem: problem with missing inputs. setup() must have been run.
+        :return: IVC of needed input variables, VariableList with unused variables.
+        """
+        # TODO: shift this to from_problem
+        problem_copy = copy.deepcopy(self)
+        problem_variables = VariableList().from_problem(problem_copy)
+        problem_inputs_names = [var.name for var in problem_variables if var.is_input]
+
+        input_variables = DataFile(self.input_file_path)
+
+        unused_variables = VariableList(
+            [var for var in input_variables if var.name not in problem_inputs_names]
+        )
+        for name in unused_variables.names():
+            del input_variables[name]
+
+        nan_variable_names = [var.name for var in input_variables if np.all(np.isnan(var.value))]
+        if nan_variable_names:
+            raise FASTConfigurationNanInInputFile(self.input_file_path, nan_variable_names)
+        if ivc_output_format:
+            inputs = input_variables.to_ivc()
+        else:
+            inputs = input_variables
+        return inputs, unused_variables
+
+    def _read_inputs(self):
+        """
+        Set initial values of inputs for the configured problem.
+
+        :param problem: problem.setup() must have been run.
+        """
+        input_variables, unused_variables = self._get_problem_inputs(ivc_output_format=False)
+        self.additional_variables = unused_variables
+        for input_var in input_variables:
+            self.set_val(input_var.name, **input_var.metadata)
