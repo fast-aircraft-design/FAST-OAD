@@ -770,3 +770,6 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     # y1 and y2 should be outputs
     assert not vars["y1"].is_input
     assert not vars["y2"].is_input
+    # x and z as indeps should be inputs
+    assert vars["x"].is_input
+    assert vars["z"].is_input
