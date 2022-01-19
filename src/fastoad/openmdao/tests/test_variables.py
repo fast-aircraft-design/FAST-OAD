@@ -770,6 +770,50 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     # y1 and y2 should be outputs
     assert not vars["y1"].is_input
     assert not vars["y2"].is_input
+    # f, g1 and g2 should be outputs
+    assert not vars["f"].is_input
+    assert not vars["g1"].is_input
+    assert not vars["g2"].is_input
     # x and z as indeps should be inputs
     assert vars["x"].is_input
     assert vars["z"].is_input
+
+    # Test for io_status
+    # Check that all variables are returned
+    vars = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True, io_status="all"
+    )
+
+    assert "y1" in vars.names()
+    assert "y2" in vars.names()
+    assert "f" in vars.names()
+    assert "g1" in vars.names()
+    assert "g2" in vars.names()
+    assert "x" in vars.names()
+    assert "z" in vars.names()
+
+    # Check that only inputs are returned
+    vars = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True, io_status="inputs"
+    )
+
+    assert "y1" not in vars.names()
+    assert "y2" not in vars.names()
+    assert "f" not in vars.names()
+    assert "g1" not in vars.names()
+    assert "g2" not in vars.names()
+    assert "x" in vars.names()
+    assert "z" in vars.names()
+
+    # Check that only outputs are returned
+    vars = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True, io_status="outputs"
+    )
+
+    assert "y1" in vars.names()
+    assert "y2" in vars.names()
+    assert "f" in vars.names()
+    assert "g1" in vars.names()
+    assert "g2" in vars.names()
+    assert "x" not in vars.names()
+    assert "z" not in vars.names()
