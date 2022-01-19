@@ -546,6 +546,7 @@ class VariableList(list):
         use_initial_values: bool = False,
         get_promoted_names: bool = True,
         promoted_only: bool = True,
+        io_status: str = "all",
     ) -> "VariableList":
         """
         Creates a VariableList instance containing inputs and outputs of an OpenMDAO Problem.
@@ -566,6 +567,7 @@ class VariableList(list):
         :param get_promoted_names: if True, promoted names will be returned instead of absolute ones
                                    (if no promotion, absolute name will be returned)
         :param promoted_only: if True, only promoted variable names will be returned
+        :param io_status: to choose with type of variable we return ("all", "inputs, "inputs")
         :return: VariableList instance
         """
 
@@ -699,7 +701,16 @@ class VariableList(list):
                     # should be enough.
                     pass
 
-        return input_vars + output_vars
+        if io_status == "all":
+            variables = input_vars + output_vars
+        elif io_status == "inputs":
+            variables = input_vars
+        elif io_status == "outputs":
+            variables = output_vars
+        else:
+            raise TypeError("Unknown value for io_status")
+
+        return variables
 
     @classmethod
     def from_unconnected_inputs(
