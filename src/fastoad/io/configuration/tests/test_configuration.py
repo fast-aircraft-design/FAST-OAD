@@ -30,7 +30,6 @@ from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.module_management._plugins import FastoadLoader
 from fastoad.module_management.exceptions import FastBundleLoaderUnknownFactoryNameError
-from tests.testing_utilities import file_content_compare
 from ..exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
     FASTConfigurationNanInInputFile,
