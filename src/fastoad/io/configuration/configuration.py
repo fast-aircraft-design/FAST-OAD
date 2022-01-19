@@ -278,7 +278,7 @@ class FASTOADProblemConfigurator:
         """
         Set initial values of inputs for the configured problem.
 
-        :param problem: problem. setup() must have been run.
+        :param problem: problem.setup() must have been run.
         """
         input_variables, _ = self._get_problem_inputs(problem, ivc_output_format=False)
         for input_var in input_variables:
