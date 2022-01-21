@@ -82,7 +82,7 @@ class FASTOADProblem(om.Problem):
 
     def read_inputs(self):
         """
-        Reads inputs.
+        Reads inputs of the problem.
         """
         if self._read_inputs_after_setup:
             self._read_inputs()
@@ -96,8 +96,8 @@ class FASTOADProblem(om.Problem):
         Needed variables are returned as an IndepVarComp instance while unused variables are
         returned as a VariableList instance.
 
-        :param problem: problem with missing inputs. setup() must have been run.
-        :return: IVC of needed input variables, VariableList with unused variables.
+        :param ivc_output_format: if False needed variables are returned as VariableList.
+        :return: IVC or VariableList of needed input variables, VariableList with unused variables.
         """
 
         problem_variables = VariableList().from_problem(self)
@@ -123,8 +123,6 @@ class FASTOADProblem(om.Problem):
     def _read_inputs(self):
         """
         Set initial values of inputs for the configured problem.
-
-        :param problem: problem.setup() must have been run.
         """
         input_variables, unused_variables = self._get_problem_inputs(ivc_output_format=False)
         self.additional_variables = unused_variables
