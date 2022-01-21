@@ -12,7 +12,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from typing import Tuple
-import copy
 
 import numpy as np
 import openmdao.api as om
@@ -100,9 +99,8 @@ class FASTOADProblem(om.Problem):
         :param problem: problem with missing inputs. setup() must have been run.
         :return: IVC of needed input variables, VariableList with unused variables.
         """
-        # TODO: shift this to from_problem
-        problem_copy = copy.deepcopy(self)
-        problem_variables = VariableList().from_problem(problem_copy)
+
+        problem_variables = VariableList().from_problem(self)
         problem_inputs_names = [var.name for var in problem_variables if var.is_input]
 
         input_variables = DataFile(self.input_file_path)

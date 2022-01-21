@@ -571,6 +571,9 @@ class VariableList(list):
         :return: VariableList instance
         """
 
+        # from_problem affects integrity of problem instance
+        problem = deepcopy(problem)
+
         # Get inputs and outputs
         metadata_keys = (
             "val",
