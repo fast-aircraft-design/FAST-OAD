@@ -216,10 +216,7 @@ class FASTOADProblemConfigurator:
         all_variables = VariableList.from_problem(
             problem, use_initial_values=True, get_promoted_names=True, promoted_only=True
         )
-        unconnected_inputs = VariableList()
-        for var in all_variables:
-            if var.is_input:
-                unconnected_inputs.append(var)
+        unconnected_inputs = VariableList([var for var in all_variables if var.is_input])
 
         variables.update(
             unconnected_inputs,
