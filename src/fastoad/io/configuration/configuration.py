@@ -213,10 +213,13 @@ class FASTOADProblemConfigurator:
         problem.setup()
         variables = DataFile(self.input_file_path, load_data=False)
 
-        all_variables = VariableList.from_problem(
-            problem, use_initial_values=True, get_promoted_names=True, promoted_only=True
+        unconnected_inputs = VariableList.from_problem(
+            problem,
+            use_initial_values=True,
+            get_promoted_names=True,
+            promoted_only=True,
+            io_status="inputs",
         )
-        unconnected_inputs = VariableList([var for var in all_variables if var.is_input])
 
         variables.update(
             unconnected_inputs,
