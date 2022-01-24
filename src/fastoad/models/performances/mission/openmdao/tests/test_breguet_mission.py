@@ -15,7 +15,7 @@ import numpy as np
 import openmdao.api as om
 from numpy.testing import assert_allclose
 
-from tests.testing_utilities import run_system
+from fastoad._utils.testing import run_system
 from ..mission import Mission
 
 

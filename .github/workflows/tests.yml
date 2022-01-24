@@ -87,5 +87,5 @@ jobs:
 
       - name: Notebook tests
         if: ${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[test nb]') || github.ref == 'refs/heads/master' }}
-        run: poetry run pytest --no-cov --nbval-lax -p no:python src
+        run: poetry run pytest --no-cov --nbval-lax -p no:python src/fastoad/notebooks
         shell: bash

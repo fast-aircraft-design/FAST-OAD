@@ -21,11 +21,11 @@ from numpy.testing import assert_allclose
 from openmdao.core.component import Component
 from scipy.constants import foot, knot
 
+from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, IOMPropulsionWrapper, IPropulsion
 from fastoad.module_management.service_registry import RegisterPropulsion
-from tests.testing_utilities import run_system
 from ..mission import Mission, MissionComponent
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError

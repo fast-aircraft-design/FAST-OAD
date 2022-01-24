@@ -2,7 +2,7 @@
 Helper module for copying resources
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +16,12 @@ Helper module for copying resources
 
 import os.path as pth
 import shutil
-from importlib.resources import Package, contents, is_resource, path
+from importlib.resources import Package, is_resource, path
 from types import ModuleType
 from typing import List
 
-from fastoad._utils.files import make_parent_dir
+from .contents import PackageReader
+from ..files import make_parent_dir
 
 
 def copy_resource(package: Package, resource: str, target_path):
@@ -35,9 +36,6 @@ def copy_resource(package: Package, resource: str, target_path):
     :param target_path: file system path
     """
     make_parent_dir(target_path)
-
-    if pth.isdir(target_path):
-        target_path = pth.join(target_path, resource)
 
     with path(package, resource) as source_path:
         shutil.copy(source_path, target_path)
@@ -64,20 +62,22 @@ def copy_resource_folder(package: Package, destination_path: str, exclude: List[
     if exclude:
         exclusion_list += exclude
 
-    for resource_name in contents(package):
-        if resource_name in exclusion_list:
-            continue
-        if is_resource(package, resource_name):
-            destination_file_path = pth.join(destination_path, resource_name)
-            copy_resource(package, resource_name, destination_file_path)
-        else:
-            # In case of subfolders that are only declared in MANIFEST.in,
-            # getattr(package, "resource_name") will fail (is there another way?).
-            # So we fall back to using package name as as string.
-            if isinstance(package, ModuleType):
-                package_name = package.__name__
-            else:  # str
-                package_name = package
-            new_package_name = ".".join([package_name, resource_name])
-            new_destination_path = pth.join(destination_path, resource_name)
-            copy_resource_folder(new_package_name, new_destination_path, exclude=exclude)
+    package_contents = PackageReader(package).contents
+    if package_contents:
+        for resource_name in package_contents:
+            if resource_name in exclusion_list:
+                continue
+            if is_resource(package, resource_name):
+                destination_file_path = pth.join(destination_path, resource_name)
+                copy_resource(package, resource_name, destination_file_path)
+            else:
+                # In case of subfolders that are only declared in MANIFEST.in,
+                # getattr(package, "resource_name") will fail (is there another way?).
+                # So we fall back to using package name as as string.
+                if isinstance(package, ModuleType):
+                    package_name = package.__name__
+                else:  # str
+                    package_name = package
+                new_package_name = ".".join([package_name, resource_name])
+                new_destination_path = pth.join(destination_path, resource_name)
+                copy_resource_folder(new_package_name, new_destination_path, exclude=exclude)

@@ -2,7 +2,7 @@
 Basis for registering and retrieving services
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,6 @@ Basis for registering and retrieving services
 
 import logging
 import re
-from importlib.resources import contents
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 
 import pelix
@@ -30,6 +29,7 @@ from .exceptions import (
     FastBundleLoaderDuplicateFactoryError,
     FastBundleLoaderUnknownFactoryNameError,
 )
+from .._utils.resource_management.contents import PackageReader
 
 _LOGGER = logging.getLogger(__name__)
 """Logger for this module"""
@@ -342,21 +342,26 @@ class BundleLoader:
         """
         bundles = set()
         failed = set()
-        try:
-            package_contents = list(contents(package_name))
-        except (TypeError, ModuleNotFoundError):
-            if package_name.endswith(".py"):
-                try:
-                    bundle = self.context.install_bundle(package_name[:-3])
-                    bundles.add(bundle)
-                except BundleException:
-                    failed.add(package_name)
-            return bundles, failed
 
-        for item in package_contents:
-            sub_bundles, sub_failed = self._install_python_package(".".join([package_name, item]))
-            bundles.update(sub_bundles)
-            failed.update(sub_failed)
+        package = PackageReader(package_name)
+        if package.has_error or not package.exists:
+            failed.add(package_name)
+        elif package.is_package:
+            # It is a package, let's explore it.
+            for item in package.contents:
+                item_package = ".".join([package_name, item])
+                if "." in item:
+                    # A file. Considered only if it is a Python file. Ignored otherwise.
+                    if item.endswith(".py"):
+                        try:
+                            bundle = self.context.install_bundle(item_package[:-3])
+                            bundles.add(bundle)
+                        except BundleException:
+                            failed.add(package_name)
+                else:
+                    sub_bundles, sub_failed = self._install_python_package(item_package)
+                    bundles.update(sub_bundles)
+                    failed.update(sub_failed)
 
         return bundles, failed
 

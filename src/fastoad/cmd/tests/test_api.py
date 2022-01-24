@@ -2,7 +2,7 @@
 Tests for basic API
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,11 +23,13 @@ from shutil import rmtree
 import pytest
 
 import fastoad.models
+from fastoad.io import DataFile
 from fastoad.openmdao.variables import Variable
 from .. import api
-from ..api import SAMPLE_FILENAME
-from ..exceptions import FastFileExistsError
-from ...io import DataFile
+from ..exceptions import (
+    FastNoAvailableNotebookError,
+    FastPathExistsError,
+)
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -42,16 +44,120 @@ def cleanup():
     Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
 
 
-def test_generate_configuration_file(cleanup):
-    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "new_process.yml")
+def test_generate_notebooks_with_no_notebook(cleanup, with_dummy_plugin_2, plugin_root_path):
+    target_path = pth.join(RESULTS_FOLDER_PATH, "notebooks_noplugin")
 
-    api.generate_configuration_file(configuration_file_path, False)
+    with pytest.raises(FastNoAvailableNotebookError):
+        api.generate_notebooks(target_path)
+
+
+def test_generate_notebooks_with_one_plugin(cleanup, with_dummy_plugin_1, plugin_root_path):
+    target_path = pth.join(RESULTS_FOLDER_PATH, "notebooks_1plugin")
+
+    api.generate_notebooks(target_path)
+    assert pth.isfile(pth.join(target_path, "notebook_1.ipynb"))
+
+
+def test_generate_notebooks_with_one_dist_plugin(
+    cleanup, with_dummy_plugin_distribution_1, plugin_root_path
+):
+    target_path = pth.join(RESULTS_FOLDER_PATH, "notebooks_1dist")
+
+    api.generate_notebooks(target_path)
+    assert pth.isfile(pth.join(target_path, "test_plugin_1", "notebook_1.ipynb"))
+    assert pth.isfile(pth.join(target_path, "test_plugin_4", "notebook_1.ipynb"))
+    assert pth.isdir(pth.join(target_path, "test_plugin_4", "data"))
+    assert pth.isfile(pth.join(target_path, "test_plugin_4", "data", "dummy_file.txt"))
+
+
+def test_generate_notebooks(cleanup, with_dummy_plugins, plugin_root_path):
+    target_path = pth.join(RESULTS_FOLDER_PATH, "notebooks")
+
+    # Test distribution specification
+    api.generate_notebooks(target_path, distribution_name="dummy-dist-3")
+    assert pth.isfile(pth.join(target_path, "notebook_2.ipynb"))
+
+    # Test overwrite
+    with pytest.raises(FastPathExistsError):
+        api.generate_notebooks(target_path)
+
+    # ... without specifying distribution
+    api.generate_notebooks(target_path, overwrite=True)
+    assert pth.isfile(pth.join(target_path, "dummy-dist-1", "test_plugin_1", "notebook_1.ipynb"))
+    assert pth.isfile(pth.join(target_path, "dummy-dist-1", "test_plugin_4", "notebook_1.ipynb"))
+    assert pth.isdir(pth.join(target_path, "dummy-dist-1", "test_plugin_4", "data"))
+    assert pth.isfile(
+        pth.join(target_path, "dummy-dist-1", "test_plugin_4", "data", "dummy_file.txt")
+    )
+
+    assert not pth.exists(pth.join(target_path, "dummy-dist-2"))
+
+    assert pth.isfile(pth.join(target_path, "dummy-dist-3", "notebook_2.ipynb"))
+
+
+def test_generate_configuration_file_plugin_1(cleanup, with_dummy_plugins, plugin_root_path):
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
+
+    # No conf file specified because the dist has only one
+    api.generate_configuration_file(
+        configuration_file_path, overwrite=False, distribution_name="dummy-dist-1"
+    )
+    original_file = pth.join(
+        plugin_root_path, "dist_1", "dummy_plugin_1", "configurations", "dummy_conf_1-1.yml"
+    )
+    assert cmp(configuration_file_path, original_file)
+
     # Generating again without forcing overwrite will make it fail
-    with pytest.raises(FastFileExistsError):
-        api.generate_configuration_file(configuration_file_path, False)
-    api.generate_configuration_file(configuration_file_path, True)
+    with pytest.raises(FastPathExistsError):
+        api.generate_configuration_file(
+            configuration_file_path, overwrite=False, distribution_name="dummy-dist-1"
+        )
 
-    original_file = pth.join(pth.dirname(api.__file__), "resources", SAMPLE_FILENAME)
+    # Generating again with overwrite=True should be Ok
+    api.generate_configuration_file(
+        configuration_file_path, overwrite=True, distribution_name="dummy-dist-1"
+    )
+
+
+def test_generate_configuration_file_plugin_1_alone(cleanup, with_dummy_plugin_1):
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
+
+    # No plugin specified only one plugin is available
+    api.generate_configuration_file(configuration_file_path, overwrite=True)
+
+
+def test_generate_configuration_file_plugin_2(cleanup, with_dummy_plugins, plugin_root_path):
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_2.yml")
+
+    api.generate_configuration_file(
+        configuration_file_path,
+        overwrite=True,
+        distribution_name="dummy-dist-2",
+        sample_file_name="dummy_conf_2-1.yml",
+    )
+
+    original_file = pth.join(
+        plugin_root_path, "dist_2", "dummy_plugin_2", "configurations", "dummy_conf_2-1.yml"
+    )
+    assert cmp(configuration_file_path, original_file)
+
+    with pytest.raises(FastPathExistsError):
+        api.generate_configuration_file(
+            configuration_file_path,
+            overwrite=False,
+            distribution_name="dummy-dist-2",
+            sample_file_name="dummy_conf_3-2.yaml",
+        )
+
+    api.generate_configuration_file(
+        configuration_file_path,
+        overwrite=True,
+        distribution_name="dummy-dist-2",
+        sample_file_name="dummy_conf_3-2.yaml",
+    )
+    original_file = pth.join(
+        plugin_root_path, "dist_2", "dummy_plugin_3", "configurations", "dummy_conf_3-2.yaml"
+    )
     assert cmp(configuration_file_path, original_file)
 
 
@@ -68,7 +174,7 @@ def test_generate_inputs(cleanup):
     data.save()
 
     # Generating again without forcing overwrite will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False)
 
     input_file_path = api.generate_inputs(
@@ -101,7 +207,7 @@ def test_list_modules(cleanup):
     out_file = pth.join(RESULTS_FOLDER_PATH, "list_modules.txt")
     assert not pth.exists(out_file)
     api.list_modules(CONFIGURATION_FILE_PATH, out_file)
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.list_modules(CONFIGURATION_FILE_PATH, out_file)
     api.list_modules(CONFIGURATION_FILE_PATH, out_file, overwrite=True)
 
@@ -115,7 +221,7 @@ def test_list_modules(cleanup):
     out_file = pth.join(RESULTS_FOLDER_PATH, "list_modules_with_folder.txt")
     assert not pth.exists(out_file)
     api.list_modules(source_folder, out_file)
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.list_modules(source_folder, out_file)
 
     # Testing with single folder
@@ -138,7 +244,7 @@ def test_list_variables(cleanup):
     out_file_path = pth.join(RESULTS_FOLDER_PATH, "list_variables.txt")
     assert not pth.exists(out_file_path)
     api.list_variables(CONFIGURATION_FILE_PATH, out=out_file_path)
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.list_variables(CONFIGURATION_FILE_PATH, out=out_file_path)
     api.list_variables(CONFIGURATION_FILE_PATH, out=out_file_path, overwrite=True)
     assert pth.exists(out_file_path)
@@ -165,7 +271,7 @@ def test_write_n2(cleanup):
     n2_file_path = pth.join(RESULTS_FOLDER_PATH, "other_n2.html")
     api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path)
     # Running again without forcing overwrite of outputs will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path, False)
     api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path, True)
     assert pth.exists(n2_file_path)
@@ -181,7 +287,7 @@ def test_write_xdsm(cleanup):
     xdsm_file_path = pth.join(RESULTS_FOLDER_PATH, "other_xdsm.html")
     api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path)
     # Running again without forcing overwrite of outputs will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path, overwrite=False, dry_run=True)
     api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path, overwrite=True, dry_run=True)
     assert pth.exists(xdsm_file_path)
@@ -193,7 +299,7 @@ def test_evaluate_problem(cleanup):
     )
     api.evaluate_problem(CONFIGURATION_FILE_PATH, False)
     # Running again without forcing overwrite of outputs will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.evaluate_problem(CONFIGURATION_FILE_PATH, False)
     problem = api.evaluate_problem(CONFIGURATION_FILE_PATH, True)
     assert problem["f"] == pytest.approx(32.56910089, abs=1e-8)
@@ -211,7 +317,7 @@ def test_optimize_problem(cleanup):
     )
     api.optimize_problem(CONFIGURATION_FILE_PATH, False)
     # Running again without forcing overwrite of outputs will make it fail
-    with pytest.raises(FastFileExistsError):
+    with pytest.raises(FastPathExistsError):
         api.optimize_problem(CONFIGURATION_FILE_PATH, False)
     problem = api.optimize_problem(CONFIGURATION_FILE_PATH, True)
 

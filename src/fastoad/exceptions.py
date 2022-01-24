@@ -4,7 +4,7 @@ Module for custom Exception classes
 
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -53,3 +53,4 @@ class FastUnexpectedKeywordArgument(FastError):
 
     def __init__(self, bad_keyword):
         super().__init__("Unexpected keyword argument: %s" % bad_keyword)
+        self.bad_keyword = bad_keyword

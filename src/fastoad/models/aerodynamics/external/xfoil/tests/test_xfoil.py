@@ -2,7 +2,7 @@
 Test module for XFOIL component
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,24 +18,18 @@ Test module for XFOIL component
 
 import os.path as pth
 import shutil
-from platform import system
 
 import pytest
 from openmdao.core.indepvarcomp import IndepVarComp
 
-from tests.testing_utilities import run_system
-from tests.xfoil_exe.get_xfoil import get_xfoil_path
-from ..xfoil_polar import XfoilPolar, DEFAULT_2D_CL_MAX
+from fastoad._utils.testing import run_system
+from ..xfoil_polar import DEFAULT_2D_CL_MAX, XfoilPolar
 
 XFOIL_RESULTS = pth.join(pth.dirname(__file__), "results")
 
-xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
-
-@pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available"
-)
-def test_compute():
+@pytest.mark.skip_if_no_xfoil()
+def test_compute(xfoil_path):
     """Tests a simple XFOIL run"""
 
     if pth.exists(XFOIL_RESULTS):
@@ -80,10 +74,8 @@ def test_compute():
     assert pth.exists(pth.join(XFOIL_RESULTS, "polar_result.txt"))
 
 
-@pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available"
-)
-def test_compute_with_provided_path():
+@pytest.mark.skip_if_no_xfoil()
+def test_compute_with_provided_path(xfoil_path):
     """Test that option "use_exe_path" works"""
     ivc = IndepVarComp()
     ivc.add_output("xfoil:reynolds", 18000000)

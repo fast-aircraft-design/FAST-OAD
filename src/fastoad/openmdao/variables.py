@@ -2,7 +2,7 @@
 Module for managing OpenMDAO variables
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,17 +19,17 @@ import logging
 import os.path as pth
 from builtins import isinstance
 from copy import deepcopy
-from importlib.resources import contents, open_text
+from importlib.resources import open_text
 from typing import Dict, Hashable, Iterable, List, Mapping, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
 import pandas as pd
 
-from ._utils import get_unconnected_input_names
+from fastoad._utils.resource_management.contents import PackageReader
+from fastoad.openmdao._utils import get_unconnected_input_names
 
-# Logger for this module
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
 
@@ -170,7 +170,7 @@ class Variable(Hashable):
                     description_file = open(file_path)
             else:
                 # Then it is a module name
-                if DESCRIPTION_FILENAME in contents(file_parent):
+                if DESCRIPTION_FILENAME in PackageReader(file_parent).contents:
                     description_file = open_text(file_parent, DESCRIPTION_FILENAME)
 
         if description_file is not None:

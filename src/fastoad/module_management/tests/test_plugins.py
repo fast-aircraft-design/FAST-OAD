@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,55 +14,226 @@
 import os.path as pth
 
 import pytest
-from pkg_resources import EntryPoint, get_distribution
 
-from .._plugins import MODEL_PLUGIN_ID, load_plugins
-from ..exceptions import FastBundleLoaderUnknownFactoryNameError
-from ..service_registry import RegisterSpecializedService
-from ...openmdao.variables import Variable
+from fastoad.openmdao.variables import Variable
+from .._plugins import FastoadLoader, SubPackageNames
+from ..exceptions import (
+    FastBundleLoaderUnknownFactoryNameError,
+    FastNoDistPluginError,
+    FastSeveralConfigurationFilesError,
+    FastSeveralDistPluginsError,
+    FastUnknownConfigurationFileError,
+    FastUnknownDistPluginError,
+)
+from ..service_registry import RegisterService
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 
-# Initialization of services ###############
-class DummyBase:
-    def my_class(self):
-        return self.__class__.__name__
-
-
-class RegisterDummyService(RegisterSpecializedService, base_class=DummyBase):
-    pass
-
-
 # Tests ####################################
-def test_plugins():
-    # Declaring the plugin
-    dist = get_distribution("FAST-OAD")
-    dummy_plugin = EntryPoint(
-        "test_plugin", "fastoad.module_management.tests.data.dummy_plugin", dist=dist
+def test_plugins(with_dummy_plugins):
+
+    FastoadLoader._loaded = True  # Ensures next instantiation will NOT trigger reloading
+
+    # Before FastoadLoader.load(), services are not registered
+    with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
+        declared_dummy_1 = RegisterService.get_provider("test.plugin.declared.1")
+    with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
+        decorated_dummy_1 = RegisterService.get_provider("test.plugin.decorated.1")
+
+    FastoadLoader._loaded = False  # Ensures next instantiation will trigger reloading
+
+    dist1_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-1"]
+    assert "models" not in dist1_definition["test_plugin_1"].subpackages
+    assert "notebooks" not in dist1_definition["test_plugin_1"].subpackages
+
+    assert "models" not in dist1_definition["test_plugin_4"].subpackages
+    assert "configurations" not in dist1_definition["test_plugin_4"].subpackages
+
+    dist2_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-2"]
+    assert (
+        dist2_definition["test_plugin_3"].subpackages[SubPackageNames.MODELS]
+        == "tests.dummy_plugins.dist_2.dummy_plugin_3.models"
     )
-    dist.get_entry_map(MODEL_PLUGIN_ID)["test_plugin"] = dummy_plugin
+    assert "notebooks" not in dist2_definition["test_plugin_3"].subpackages
+    assert (
+        dist2_definition["test_plugin_3"].subpackages[SubPackageNames.CONFIGURATIONS]
+        == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"
+    )
 
-    # Before load_plugins(), services are not registered
-    with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
-        declared_dummy_1 = RegisterDummyService.get_provider("test.plugin.declared.1")
-    with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
-        decorated_dummy_1 = RegisterDummyService.get_provider("test.plugin.decorated.1")
-
-    load_plugins()
-
-    declared_dummy_1 = RegisterDummyService.get_provider("test.plugin.declared.1")
+    declared_dummy_1 = RegisterService.get_provider("test.plugin.declared.1")
     assert declared_dummy_1.my_class() == "DeclaredDummy1"
-    declared_dummy_2 = RegisterDummyService.get_provider("test.plugin.declared.2")
+    declared_dummy_2 = RegisterService.get_provider("test.plugin.declared.2")
     assert declared_dummy_2.my_class() == "DeclaredDummy2"
 
-    decorated_dummy_1 = RegisterDummyService.get_provider("test.plugin.decorated.1")
+    decorated_dummy_1 = RegisterService.get_provider("test.plugin.decorated.1")
     assert decorated_dummy_1.my_class() == "DecoratedDummy1"
-    decorated_dummy_2 = RegisterDummyService.get_provider("test.plugin.decorated.2")
+    decorated_dummy_2 = RegisterService.get_provider("test.plugin.decorated.2")
     assert decorated_dummy_2.my_class() == "DecoratedDummy2"
     # This one is in a subpackage
-    decorated_dummy_3 = RegisterDummyService.get_provider("test.plugin.decorated.3")
+    decorated_dummy_3 = RegisterService.get_provider("test.plugin.decorated.3")
     assert decorated_dummy_3.my_class() == "DecoratedDummy3"
 
     # Checking variable description.
     assert Variable("dummy:variable").description == "Some dummy variable."
+
+
+def test_get_distribution_plugin_definition_with_0_plugin(with_no_plugin):
+    with pytest.raises(FastNoDistPluginError):
+        FastoadLoader().get_distribution_plugin_definition()
+    with pytest.raises(FastNoDistPluginError):
+        FastoadLoader().get_distribution_plugin_definition("anything")
+
+
+def test_get_distribution_plugin_definition_with_1_plugin(with_dummy_plugin_1):
+    with pytest.raises(FastUnknownDistPluginError):
+        FastoadLoader().get_distribution_plugin_definition("unknown")
+
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
+    assert dist_def.dist_name == "dummy-dist-1"
+    assert set(dist_def.keys()) == {"test_plugin_1"}
+    assert dist_def["test_plugin_1"].package_name == "tests.dummy_plugins.dist_1.dummy_plugin_1"
+
+    dist_def_bis = FastoadLoader().get_distribution_plugin_definition()
+    assert dist_def == dist_def_bis
+
+
+def test_get_distribution_plugin_definition_with_plugins(with_dummy_plugins):
+    with pytest.raises(FastSeveralDistPluginsError):
+        FastoadLoader().get_distribution_plugin_definition()
+    with pytest.raises(FastUnknownDistPluginError):
+        FastoadLoader().get_distribution_plugin_definition("unknown")
+
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
+    assert dist_def.dist_name == "dummy-dist-1"
+    assert set(dist_def.keys()) == {"test_plugin_1", "test_plugin_4"}
+    assert dist_def["test_plugin_1"].package_name == "tests.dummy_plugins.dist_1.dummy_plugin_1"
+    assert dist_def["test_plugin_4"].package_name == "tests.dummy_plugins.dist_1.dummy_plugin_4"
+
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-2")
+    assert dist_def.dist_name == "dummy-dist-2"
+    assert set(dist_def.keys()) == {"test_plugin_2", "test_plugin_3"}
+    assert dist_def["test_plugin_2"].package_name == "tests.dummy_plugins.dist_2.dummy_plugin_2"
+    assert dist_def["test_plugin_3"].package_name == "tests.dummy_plugins.dist_2.dummy_plugin_3"
+
+
+def test_get_plugin_configuration_file_list(with_dummy_plugins):
+    def extract_info(file_list):
+        return {(item.name, item.plugin_name) for item in file_list}
+
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1")
+    assert extract_info(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
+
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2")
+    assert extract_info(file_list) == {
+        ("dummy_conf_2-1.yml", "test_plugin_2"),
+        ("dummy_conf_3-1.yml", "test_plugin_3"),
+        ("dummy_conf_3-2.yaml", "test_plugin_3"),
+    }
+
+    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-3")
+    assert extract_info(file_list) == set()
+
+    # improper name
+    with pytest.raises(FastUnknownDistPluginError):
+        file_list = FastoadLoader().get_configuration_file_list("unknown-dist")
+
+
+def test_get_plugin_notebook_folder_list_with_one_plugin(with_dummy_plugin_distribution_1):
+    def extract_info(folder_list):
+        return {(item.dist_name, item.package_name) for item in folder_list}
+
+    folder_list = FastoadLoader().get_notebook_folder_list()
+    assert extract_info(folder_list) == {
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"),
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
+    }
+    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-1")
+    assert extract_info(folder_list) == {
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"),
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
+    }
+    # improper name
+    with pytest.raises(FastUnknownDistPluginError):
+        file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
+
+
+def test_get_plugin_notebook_folder_list_with_plugins(with_dummy_plugins):
+    def extract_info(folder_list):
+        return {(item.dist_name, item.package_name) for item in folder_list}
+
+    folder_list = FastoadLoader().get_notebook_folder_list()
+    assert extract_info(folder_list) == {
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"),
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
+        ("dummy-dist-3", "tests.dummy_plugins.dist_3.dummy_plugin_5.notebooks"),
+    }
+    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-1")
+    assert extract_info(folder_list) == {
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"),
+        ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
+    }
+    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-2")
+    assert extract_info(folder_list) == set()
+    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-3")
+    assert extract_info(folder_list) == {
+        ("dummy-dist-3", "tests.dummy_plugins.dist_3.dummy_plugin_5.notebooks")
+    }
+
+    # improper name
+    with pytest.raises(FastUnknownDistPluginError):
+        file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
+
+
+def test_get_configuration_file_info_with_1_plugin(with_dummy_plugin_1):
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
+
+    with pytest.raises(FastUnknownConfigurationFileError):
+        dist_def.get_configuration_file_info("unknown.yml")
+    file_info = dist_def.get_configuration_file_info("dummy_conf_1-1.yml")
+    assert file_info.name == "dummy_conf_1-1.yml"
+    assert file_info.dist_name == "dummy-dist-1"
+    assert file_info.plugin_name == "test_plugin_1"
+    assert file_info.package_name == "tests.dummy_plugins.dist_1.dummy_plugin_1.configurations"
+
+    file_info_bis = dist_def.get_configuration_file_info()
+    assert file_info_bis == file_info
+
+
+def test_get_configuration_file_info_with_plugins(with_dummy_plugins):
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
+
+    with pytest.raises(FastUnknownConfigurationFileError):
+        dist_def.get_configuration_file_info("unknown.yml")
+    file_info = dist_def.get_configuration_file_info("dummy_conf_1-1.yml")
+    assert file_info.name == "dummy_conf_1-1.yml"
+    assert file_info.dist_name == "dummy-dist-1"
+    assert file_info.plugin_name == "test_plugin_1"
+    assert file_info.package_name == "tests.dummy_plugins.dist_1.dummy_plugin_1.configurations"
+
+    file_info_bis = dist_def.get_configuration_file_info()
+    assert file_info_bis == file_info
+
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-2")
+    with pytest.raises(FastUnknownConfigurationFileError):
+        dist_def.get_configuration_file_info("unknown.yml")
+    with pytest.raises(FastSeveralConfigurationFilesError):
+        dist_def.get_configuration_file_info()
+
+    file_info = dist_def.get_configuration_file_info("dummy_conf_2-1.yml")
+    assert file_info.name == "dummy_conf_2-1.yml"
+    assert file_info.dist_name == "dummy-dist-2"
+    assert file_info.plugin_name == "test_plugin_2"
+    assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_2.configurations"
+
+    file_info = dist_def.get_configuration_file_info("dummy_conf_3-1.yml")
+    assert file_info.name == "dummy_conf_3-1.yml"
+    assert file_info.dist_name == "dummy-dist-2"
+    assert file_info.plugin_name == "test_plugin_3"
+    assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"
+
+    file_info = dist_def.get_configuration_file_info("dummy_conf_3-2.yaml")
+    assert file_info.name == "dummy_conf_3-2.yaml"
+    assert file_info.dist_name == "dummy-dist-2"
+    assert file_info.plugin_name == "test_plugin_3"
+    assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"

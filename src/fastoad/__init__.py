@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,17 +12,18 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-from pkg_resources import DistributionNotFound, get_distribution
+import sys
 
-import fastoad.module_management._plugins
+if sys.version_info < (3, 10):
+    from importlib_metadata import distribution, PackageNotFoundError
+else:
+    from importlib.metadata import distribution, PackageNotFoundError
 
 try:
     # Change here if project is renamed and does not equal the package name
     dist_name = "FAST-OAD"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:
+    __version__ = distribution(dist_name).version
+except PackageNotFoundError:
     __version__ = "unknown"
 finally:
-    del get_distribution, DistributionNotFound
-
-fastoad.module_management._plugins.load_plugins()
+    del distribution
