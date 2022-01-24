@@ -68,7 +68,7 @@ Plugin packaging
 To make your custom modules usable as a FAST-OAD plugin, you have to package them
 and declare your package as a plugin with :code:`fastoad.plugins` as plugin group name.
 
-This page proposes a brief tutorial using `Poetry <https://python-poetry.org>`_.
+Here under is a brief tutorial about these operations using `Poetry <https://python-poetry.org>`_.
 
 .. note::
 
