@@ -65,17 +65,20 @@ Any of these folders is optional. Any other folder will be ignored.
 Plugin packaging
 ################
 
-To declare your package as a FAST-OAD plugin, you have to package it the usual way
-and declare it as a plugin with :code:`fastoad.plugins` as plugin group name.
+To make your custom modules usable as a FAST-OAD plugin, you have to package them
+and declare your package as a plugin with :code:`fastoad.plugins` as plugin group name.
 
 This page proposes a brief tutorial using `Poetry <https://python-poetry.org>`_.
 
 .. note::
 
-    If you prefer `setuptools <https://packaging.python.org/guides/creating-and-discovering-plugins/#using-package-metadata>`_, you may want to look at
-    the `Python tutorial for packaging projects <https://packaging.python.org/en/latest/tutorials/packaging-projects>`_.
-    The plugin declaration is demonstrated
-    `here <https://packaging.python.org/guides/creating-and-discovering-plugins/#using-package-metadata>`_.
+    If you are not familiar with Python packaging, it is recommended to look at this
+    `tutorial <https://packaging.python.org/en/latest/tutorials/packaging-projects/>`_ first.
+    It presents the important steps and notions of the packaging process, and the "classic" way
+    using `setuptools <https://setuptools.pypa.io/en/latest/>`_.
+    And if you want to stick to setuptools, check this
+    `page <https://packaging.python.org/guides/creating-and-discovering-plugins/#using-package-metadata>`_
+    for details about plugin declaration.
 
 
 .. contents::
@@ -187,6 +190,11 @@ Publishing
 Once you have built your package, you may publish it on a a package repository.
 :code:`poetry publish` will publish your package on `PyPI <https://pypi.org>`_,
 provided that you have correctly set your account.
+
+.. note::
+
+    Publishing on PyPI requires a valid account, and also that the chosen package name (defined by
+    `name` field in the `pyproject.toml` file) is unused, or already associated to your account.
 
 Poetry can also publish to another destination.
 
