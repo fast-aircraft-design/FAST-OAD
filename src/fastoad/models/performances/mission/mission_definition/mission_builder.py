@@ -801,7 +801,11 @@ class MissionBuilder:
         part_kwargs.update(self._base_kwargs)
         for key, value in part_kwargs.items():
             if key == "polar":
-                value = Polar(value["CL"].value, value["CD"].value)
+                polar = {}
+                for coeff in ["CL", "CD"]:
+                    polar[coeff] = value[coeff]
+                self._replace_by_inputs(polar, inputs)
+                value = Polar(polar["CL"], polar["CD"])
             elif key == "target":
                 if not isinstance(value, FlightPoint):
                     target_parameters = {

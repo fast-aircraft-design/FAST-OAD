@@ -11,14 +11,16 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import numpy as np
 from numpy import ndarray
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
 
 
 class Polar:
-    def __init__(self, cl: ndarray, cd: ndarray):
+    def __init__(self, cl: ndarray, cd: ndarray, span: float = None, lg_height: float = None,
+                 induced_drag_coef: float = None, k_winglet: float = None, k_cd: float = None,
+                 CL_alpha: float = None, CL_alpha0: float = None, CL_high_lift: float = None):
 
         """
         Class for managing aerodynamic polar data.
@@ -33,6 +35,22 @@ class Polar:
         """
         self._definition_CL = cl
         self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
+
+        #Add terms for ground effect if provided
+        if None not in [span, lg_height, induced_drag_coef, k_winglet, k_cd]:
+            self._span = span
+            self._lg_height = lg_height
+            self._induced_drag_coef = induced_drag_coef
+            self._k_winglet = k_winglet
+            self._k_cd = k_cd
+
+        #Add CL vs alpha curve with provided CL (containing high lift terms if any)
+        if None not in [CL_alpha0, CL_alpha, CL_high_lift]:
+            self._CL_alpha_0 = CL_alpha0
+            self._CL_alpha = CL_alpha
+            self._CL_high_lift = CL_high_lift
+            alpha_vector = (self._definition_CL - self._CL_alpha_0 - self._CL_high_lift)/self._CL_alpha
+            self._clvsalpha = interp1d( alpha_vector, self._definition_CL)
 
         def _negated_lift_drag_ratio(lift_coeff):
             """Returns -CL/CD."""
@@ -61,3 +79,19 @@ class Polar:
         if cl is None:
             return self._cd(self._definition_CL)
         return self._cd(cl)
+
+    def cd_ground(self, cl=None, altitude: float = 0):
+        # TO DO : document the model
+        if cl is None:
+            return self._cd(self._definition_CL)
+        else:
+            h_b = (self._span * 0.1 + self._lg_height + altitude) / self._span
+            k_ground = 33. * h_b**1.5 / (1+ 33. * h_b**1.5)
+            cd_ground = self._induced_drag_coef * cl**2 * self._k_winglet * self._k_cd * (k_ground-1) + self._cd(cl)
+            return cd_ground
+
+    def cl(self, alpha):
+        """
+        The lift coefficient corresponding to alpha (rad)
+        """
+        return self._clvsalpha(alpha)
