@@ -2,7 +2,7 @@
 OpenMDAO component for time-step computation of missions.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -24,7 +24,7 @@ import pandas as pd
 from scipy.constants import foot
 
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import FuelEngineSet, IOMPropulsionWrapper
+from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from . import resources
@@ -301,7 +301,6 @@ class MissionComponent(om.ExplicitComponent):
             TAKEOFF_V2="data:mission:%s:takeoff:V2" % mission_name,
         )
 
-        self.add_input("data:geometry:propulsion:engine:count", 2)
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
         self.add_input(
             self._mission_vars.TOW,
@@ -387,9 +386,7 @@ class MissionComponent(om.ExplicitComponent):
         :param inputs: OpenMDAO input vector
         :param outputs: OpenMDAO output vector
         """
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
 
         high_speed_polar = self._get_initial_polar(inputs)
         distance = np.asscalar(
@@ -446,10 +443,7 @@ class MissionComponent(om.ExplicitComponent):
         :param inputs: OpenMDAO input vector
         :param outputs: OpenMDAO output vector
         """
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
-
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         reference_area = inputs["data:geometry:wing:area"]
 
         self._mission_wrapper.propulsion = propulsion_model

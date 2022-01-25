@@ -1,6 +1,6 @@
 """OpenMDAO wrapping of RubberEngine."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,7 @@ from openmdao.core.component import Component
 
 from fastoad.model_base.propulsion import (
     BaseOMPropulsionComponent,
+    FuelEngineSet,
     IOMPropulsionWrapper,
     IPropulsion,
 )
@@ -96,14 +97,14 @@ class OMRubberEngineWrapper(IOMPropulsionWrapper):
         )
         component.add_input("tuning:propulsion:rubber_engine:SFC:k_sl", 1.0)
         component.add_input("tuning:propulsion:rubber_engine:SFC:k_cr", 1.0)
+        component.add_input("data:geometry:propulsion:engine:count", 2)
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
         """
 
         :param inputs: input parameters that define the engine
-        :return: a :class:`~fastoad.models.propulsion.fuel_propulsion.rubber_engine.rubber_engine.RubberEngine`
-                 instance
+        :return: a RubberEngine instance
         """
         engine_params = {
             "bypass_ratio": inputs["data:propulsion:rubber_engine:bypass_ratio"],
@@ -122,7 +123,9 @@ class OMRubberEngineWrapper(IOMPropulsionWrapper):
             "k_sfc_cr": inputs["tuning:propulsion:rubber_engine:SFC:k_cr"],
         }
 
-        return RubberEngine(**engine_params)
+        return FuelEngineSet(
+            RubberEngine(**engine_params), inputs["data:geometry:propulsion:engine:count"]
+        )
 
 
 @ValidityDomainChecker(

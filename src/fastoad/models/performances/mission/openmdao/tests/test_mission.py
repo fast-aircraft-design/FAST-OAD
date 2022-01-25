@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -24,7 +24,12 @@ from scipy.constants import foot, knot
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import AbstractFuelPropulsion, IOMPropulsionWrapper, IPropulsion
+from fastoad.model_base.propulsion import (
+    AbstractFuelPropulsion,
+    FuelEngineSet,
+    IOMPropulsionWrapper,
+    IPropulsion,
+)
 from fastoad.module_management.service_registry import RegisterPropulsion
 from ..mission import Mission, MissionComponent
 from ..mission_wrapper import MissionWrapper
@@ -66,7 +71,7 @@ class DummyEngineWrapper(IOMPropulsionWrapper):
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
-        return DummyEngine(1.2e5, 1.5e-5)
+        return FuelEngineSet(DummyEngine(1.2e5, 1.5e-5), 2)
 
 
 # Using the decorator directly on the class would prevent it from being available
