@@ -59,6 +59,9 @@ class FASTOADProblem(om.Problem):
         return status
 
     def setup(self):
+        """
+        Set up the problem before run.
+        """
         super().setup()
         if self._read_inputs_after_setup:
             self._read_inputs()
