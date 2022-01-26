@@ -31,7 +31,6 @@ from fastoad.module_management._plugins import FastoadLoader
 from fastoad.module_management.exceptions import FastBundleLoaderUnknownFactoryNameError
 from ..exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
-    FASTConfigurationNanInInputFile,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
