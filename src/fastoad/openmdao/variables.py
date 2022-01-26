@@ -21,6 +21,7 @@ from builtins import isinstance
 from copy import deepcopy
 from importlib.resources import open_text
 from typing import Dict, Hashable, Iterable, List, Mapping, Tuple, Union
+from deprecated import deprecated
 
 import numpy as np
 import openmdao.api as om
@@ -716,6 +717,9 @@ class VariableList(list):
         return variables
 
     @classmethod
+    @deprecated(
+        version="1.3.0", reason="Will be removed in version 2.0. Please use from_problem() instead"
+    )
     def from_unconnected_inputs(
         cls, problem: om.Problem, with_optional_inputs: bool = False
     ) -> "VariableList":
