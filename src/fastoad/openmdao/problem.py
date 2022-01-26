@@ -84,10 +84,11 @@ class FASTOADProblem(om.Problem):
         """
         Reads inputs of the problem.
         """
-        if self._read_inputs_after_setup:
+        if self._metadata is not None and self._metadata["setup_status"] > 0:
             self._read_inputs()
         else:
             self._read_inputs_after_setup = True
+            self._read_inputs()
 
     def _get_problem_inputs(self, ivc_output_format=True) -> Tuple[om.IndepVarComp, VariableList]:
         """
