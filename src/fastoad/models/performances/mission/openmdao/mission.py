@@ -228,11 +228,10 @@ class Mission(om.Group):
             [
                 f"data:mission:{mission_name}:TOW",
                 f"data:mission:{mission_name}:taxi_out:fuel",
-                f"data:mission:{mission_name}:takeoff:fuel",
                 f"data:mission:{mission_name}:ZFW",
             ],
             units="kg",
-            scaling_factors=[1, 1, 1, -1],
+            scaling_factors=[1, 1, -1],
             desc=f'Loaded fuel before taxi-out for mission "{mission_name}"',
         )
         return block_fuel_computation
@@ -465,7 +464,7 @@ class MissionComponent(om.ExplicitComponent):
         self._compute_taxi_out(inputs, outputs, propulsion_model)
         end_of_takeoff = FlightPoint(
             time=0.0,
-            mass=inputs[self._mission_vars.TOW],
+            mass=inputs[self._mission_vars.TOW] - inputs[self._mission_vars.TAKEOFF_FUEL],
             true_airspeed=inputs[self._mission_vars.TAKEOFF_V2],
             altitude=inputs[self._mission_vars.TAKEOFF_ALTITUDE] + 35 * foot,
             ground_distance=0.0,
@@ -483,14 +482,10 @@ class MissionComponent(om.ExplicitComponent):
         if reserve_name in outputs:
             outputs[reserve_name] = reserve
         outputs[self._mission_vars.NEEDED_BLOCK_FUEL] = (
-            inputs[self._mission_vars.TOW]
-            + inputs[self._mission_vars.TAKEOFF_FUEL]
-            + outputs[self._mission_vars.TAXI_OUT_FUEL]
-            - zfw
+            inputs[self._mission_vars.TOW] + outputs[self._mission_vars.TAXI_OUT_FUEL] - zfw
         )
         outputs[self._mission_vars.NEEDED_FUEL_AT_TAKEOFF] = (
             outputs[self._mission_vars.NEEDED_BLOCK_FUEL]
-            - inputs[self._mission_vars.TAKEOFF_FUEL]
             - outputs[self._mission_vars.TAXI_OUT_FUEL]
         )
         if self.options["is_sizing"]:
