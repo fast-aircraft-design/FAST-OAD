@@ -1,6 +1,6 @@
 """Classes for Taxi sequences."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -43,8 +43,16 @@ class TaxiSegment(ManualThrustSegment, FixedDurationSegment, mission_file_keywor
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         new_start = deepcopy(start)
+        if self.target.mass:
+            new_start.mass = self.target.mass
         new_start.mach = None
         new_start.equivalent_airspeed = None
         new_start.true_airspeed = self.true_airspeed
 
-        return super().compute_from(new_start)
+        flight_points = super().compute_from(new_start)
+
+        if self.target.mass:
+            consumed_fuel = new_start.mass - flight_points.mass.iloc[-1]
+            flight_points.mass += consumed_fuel
+
+        return flight_points
