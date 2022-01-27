@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,12 +11,23 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os.path as pth
+from shutil import rmtree
+
 import numpy as np
 import openmdao.api as om
+import pytest
 from numpy.testing import assert_allclose
 
 from fastoad._utils.testing import run_system
 from ..mission import Mission
+
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+
+
+@pytest.fixture(scope="module")
+def cleanup():
+    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 def test_breguet_with_rubber_engine():
@@ -53,6 +64,7 @@ def test_breguet_with_rubber_engine():
     problem = run_system(
         Mission(
             propulsion_id="fastoad.wrapper.propulsion.rubber_engine",
+            out_file=pth.join(RESULTS_FOLDER_PATH, "breguet_with_rubber_engine.csv"),
             use_initializer_iteration=False,
             mission_file_path="::sizing_breguet",
             adjust_fuel=False,
