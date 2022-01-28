@@ -2,7 +2,7 @@
 Mission wrapper.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,7 +23,6 @@ from openmdao.vectors.vector import Vector
 
 from fastoad.model_base import FlightPoint
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
-from ..base import FlightSequence
 from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.schema import (
     CLIMB_PARTS_TAG,
@@ -111,34 +110,27 @@ class MissionWrapper(MissionBuilder):
             if name_root + ":distance" in outputs:
                 outputs[name_root + ":distance"] = end.ground_distance - start.ground_distance
 
-        if not start_flight_point.name:
-            start_flight_point.name = mission.flight_sequence[0].name
-
-        current_flight_point = start_flight_point
         flight_points = mission.compute_from(start_flight_point)
-        for part in mission.flight_sequence:
-            var_name_root = "data:mission:%s" % part.name
-            part_end = FlightPoint.create(
-                flight_points.loc[flight_points.name.str.startswith(part.name)].iloc[-1]
+        flight_points.loc[0, "name"] = flight_points.loc[1, "name"]
+
+        nb_levels = np.max([len(n.split(":")) for n in flight_points["name"]])
+        for i in range(nb_levels):
+            flight_points["name2"] = [":".join(n.split(":")[: i + 1]) for n in flight_points.name]
+            grouped_points = flight_points.groupby("name2")
+
+            part_names = pd.unique(flight_points.name2)
+            for part_name1, part_name2 in zip(part_names[:-1], part_names[1:]):
+                part1 = grouped_points.get_group(part_name1)
+                part2 = grouped_points.get_group(part_name2)
+                _compute_vars(f"data:mission:{part_name2}", part1.iloc[-1], part2.iloc[-1])
+
+            start_part_name = part_names[0]
+            start_part = grouped_points.get_group(start_part_name)
+            _compute_vars(
+                f"data:mission:{start_part_name}", start_part.iloc[0], start_part.iloc[-1]
             )
-            _compute_vars(var_name_root, current_flight_point, part_end)
 
-            if isinstance(part, FlightSequence):
-                # In case of a route, outputs are computed for each phase in the route
-                phase_start = current_flight_point
-                for phase in part.flight_sequence:
-                    phase_points = flight_points.loc[flight_points.name == phase.name]
-                    if len(phase_points) > 0:
-                        phase_end = FlightPoint.create(phase_points.iloc[-1])
-                        var_name_root = "data:mission:%s" % phase.name
-                        _compute_vars(var_name_root, phase_start, phase_end)
-                        phase_start = phase_end
-
-            current_flight_point = part_end
-
-        # Outputs for the whole mission
-        var_name_root = "data:mission:%s" % mission.name
-        _compute_vars(var_name_root, start_flight_point, current_flight_point)
+        del flight_points["name2"]
 
         return flight_points
 
