@@ -439,7 +439,8 @@ class MissionBuilder:
             elif key == "target":
                 if not isinstance(value, FlightPoint):
                     self._replace_by_inputs(value, inputs)
-                    for field_name in value.keys():
+                    field_names = list(value.keys())  # Needed because loop will modify key list
+                    for field_name in field_names:
                         if field_name.startswith("delta_"):
                             new_field_name = field_name[6:]
                             delta_value = value[field_name]

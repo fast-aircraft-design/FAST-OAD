@@ -1,4 +1,22 @@
 phases:
+  taxi_out:
+    parts:
+      - segment: taxi
+        thrust_rate: data:mission:sizing:taxi_out:thrust_rate
+        true_airspeed: 0.
+        target:
+          time: data:mission:sizing:taxi_out:duration
+          mass: data:mission:sizing:TOW
+  takeoff:
+    parts:
+      - segment: transition
+        target:
+          delta_altitude:
+            value: 35
+            unit: ft
+          delta_mass: data:mission:sizing:takeoff:fuel
+          true_airspeed: data:mission:sizing:takeoff:V2
+
   initial_climb:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
@@ -150,6 +168,8 @@ routes:
 missions:
   sizing:
     parts:
+      - phase: taxi_out
+      - phase: takeoff
       - route: main_route
       - route: diversion
       - phase: holding

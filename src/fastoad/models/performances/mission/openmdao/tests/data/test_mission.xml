@@ -49,7 +49,7 @@
         <takeoff>
           <V2 units="m/s" is_input="True">80.0<!--safety speed before reaching 35 feet height in sizing mission--></V2>
           <altitude units="m" is_input="True">0.0<!--altitude at takeoff in sizing mission--></altitude>
-          <fuel units="kg">95.0<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
+          <fuel units="kg">-95.0<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
         </takeoff>
         <taxi_out>
           <thrust_rate>0.3</thrust_rate>
