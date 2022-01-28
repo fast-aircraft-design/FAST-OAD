@@ -23,7 +23,6 @@ from os import makedirs
 import numpy as np
 import openmdao.api as om
 import pandas as pd
-from scipy.constants import foot
 
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
@@ -34,7 +33,6 @@ from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
 from ..polar import Polar
 from ..segments.cruise import BreguetCruiseSegment
-from ..segments.taxi import TaxiSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -243,13 +241,7 @@ _MissionVariables = namedtuple(
         "TOW",
         "NEEDED_BLOCK_FUEL",
         "NEEDED_FUEL_AT_TAKEOFF",
-        "TAXI_OUT_DURATION",
-        "TAXI_OUT_THRUST_RATE",
-        "TAXI_OUT_DISTANCE",
         "TAXI_OUT_FUEL",
-        "TAKEOFF_FUEL",
-        "TAKEOFF_ALTITUDE",
-        "TAKEOFF_V2",
     ],
 )
 
@@ -304,62 +296,23 @@ class MissionComponent(om.ExplicitComponent):
             TOW=f"data:mission:{mission_name}:TOW",
             NEEDED_BLOCK_FUEL=f"data:mission:{mission_name}:needed_block_fuel",
             NEEDED_FUEL_AT_TAKEOFF=f"data:mission:{mission_name}:needed_onboard_fuel_at_takeoff",
-            TAXI_OUT_DURATION=f"data:mission:{mission_name}:taxi_out:duration",
-            TAXI_OUT_THRUST_RATE=f"data:mission:{mission_name}:taxi_out:thrust_rate",
-            TAXI_OUT_DISTANCE=f"data:mission:{mission_name}:taxi_out:distance",
             TAXI_OUT_FUEL=f"data:mission:{mission_name}:taxi_out:fuel",
-            TAKEOFF_FUEL=f"data:mission:{mission_name}:takeoff:fuel",
-            TAKEOFF_ALTITUDE=f"data:mission:{mission_name}:takeoff:altitude",
-            TAKEOFF_V2=f"data:mission:{mission_name}:takeoff:V2",
         )
+        try:
+            self.add_input(
+                self._mission_vars.TOW,
+                np.nan,
+                units="kg",
+                desc='TakeOff Weight for mission "%s"' % mission_name,
+            )
+        except ValueError:
+            pass
 
-        self.add_input(self.options["reference_area_variable"], np.nan, units="m**2")
-        self.add_input(
-            self._mission_vars.TOW,
-            np.nan,
-            units="kg",
-            desc=f'TakeOff Weight for mission "{mission_name}"',
-        )
-        self.add_input(
-            self._mission_vars.TAXI_OUT_DURATION,
-            np.nan,
-            units="s",
-            desc=f'duration of taxi-out in mission "{mission_name}"',
-        )
-        self.add_input(
-            self._mission_vars.TAXI_OUT_THRUST_RATE,
-            np.nan,
-            units=None,
-            desc=f'thrust rate during taxi-out in mission "{mission_name}"',
-        )
-        self.add_input(
-            self._mission_vars.TAKEOFF_ALTITUDE,
-            np.nan,
-            units="m",
-            desc=f'altitude of airport for mission "{mission_name}"',
-        )
-        self.add_input(
-            self._mission_vars.TAKEOFF_FUEL,
-            np.nan,
-            units="kg",
-            desc=f'burned fuel during takeoff phase of mission "{mission_name}"',
-        )
-        self.add_input(
-            self._mission_vars.TAKEOFF_V2,
-            np.nan,
-            units="m/s",
-            desc=f'takeoff safety speed for mission "{mission_name}"',
-        )
-        self.add_output(
-            self._mission_vars.TAXI_OUT_DISTANCE,
-            units="m",
-            desc=f'distance during taxi-out of mission "{mission_name}"',
-        )
-        self.add_output(
-            self._mission_vars.TAXI_OUT_FUEL,
-            units="kg",
-            desc=f'burned fuel during taxi-out of mission "{mission_name}"',
-        )
+        try:
+            self.add_input(self.options["reference_area_variable"], np.nan, units="m**2")
+        except ValueError:
+            pass
+
         self.add_output(
             self._mission_vars.NEEDED_BLOCK_FUEL,
             units="kg",
@@ -461,28 +414,19 @@ class MissionComponent(om.ExplicitComponent):
         self._mission_wrapper.propulsion = propulsion_model
         self._mission_wrapper.reference_area = reference_area
 
-        self._compute_taxi_out(inputs, outputs, propulsion_model)
-        end_of_takeoff = FlightPoint(
-            time=0.0,
-            mass=inputs[self._mission_vars.TOW] - inputs[self._mission_vars.TAKEOFF_FUEL],
-            true_airspeed=inputs[self._mission_vars.TAKEOFF_V2],
-            altitude=inputs[self._mission_vars.TAKEOFF_ALTITUDE] + 35 * foot,
-            ground_distance=0.0,
-        )
-
-        self.flight_points = self._mission_wrapper.compute(inputs, outputs, end_of_takeoff)
+        self.flight_points = self._mission_wrapper.compute(inputs, outputs)
 
         # Final ================================================================
+        start_of_mission = FlightPoint.create(self.flight_points.iloc[0])
         end_of_mission = FlightPoint.create(self.flight_points.iloc[-1])
         reserve = self._mission_wrapper.get_reserve(
             self.flight_points, self.options["mission_name"]
         )
-        zfw = end_of_mission.mass - reserve
         reserve_name = self._mission_wrapper.get_reserve_variable_name()
         if reserve_name in outputs:
             outputs[reserve_name] = reserve
         outputs[self._mission_vars.NEEDED_BLOCK_FUEL] = (
-            inputs[self._mission_vars.TOW] + outputs[self._mission_vars.TAXI_OUT_FUEL] - zfw
+            start_of_mission.mass - end_of_mission.mass + reserve
         )
         outputs[self._mission_vars.NEEDED_FUEL_AT_TAKEOFF] = (
             outputs[self._mission_vars.NEEDED_BLOCK_FUEL]
@@ -511,28 +455,6 @@ class MissionComponent(om.ExplicitComponent):
         if self.options["out_file"]:
             makedirs(pth.dirname(self.options["out_file"]), exist_ok=True)
             self.flight_points.to_csv(self.options["out_file"])
-
-    def _compute_taxi_out(self, inputs, outputs, propulsion_model):
-        """
-        Computes the taxi-out segment.
-        """
-        start_of_taxi_out = FlightPoint(
-            altitude=inputs[self._mission_vars.TAKEOFF_ALTITUDE],
-            true_airspeed=0.0,
-            # start mass is irrelevant here as long it does not get negative during computation.
-            mass=inputs[self._mission_vars.TOW],
-        )
-        taxi_segment = TaxiSegment(
-            target=FlightPoint(time=inputs[self._mission_vars.TAXI_OUT_DURATION]),
-            thrust_rate=inputs[self._mission_vars.TAXI_OUT_THRUST_RATE],
-            propulsion=propulsion_model,
-        )
-        flight_points = taxi_segment.compute_from(start_of_taxi_out)
-        end_of_taxi_out = flight_points.iloc[-1]
-        outputs[self._mission_vars.TAXI_OUT_DISTANCE] = (
-            end_of_taxi_out.ground_distance - start_of_taxi_out.ground_distance
-        )
-        outputs[self._mission_vars.TAXI_OUT_FUEL] = start_of_taxi_out.mass - end_of_taxi_out.mass
 
     def _get_engine_wrapper(self) -> IOMPropulsionWrapper:
         """
