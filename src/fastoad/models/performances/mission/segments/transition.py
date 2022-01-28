@@ -1,6 +1,6 @@
 """Class for very simple transition in some flight phases."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,6 +25,49 @@ from fastoad.models.performances.mission.segments.base import FlightSegment
 
 
 @dataclass
+class DummyTakeoffSegment(FlightSegment, mission_file_keyword="dummy_takeoff"):
+    safety_height: float = 10.668  # 35 feet
+    consumed_fuel: float = 0.0
+
+    #: Unused
+    propulsion: IPropulsion = None
+
+    #: Unused
+    reference_area: float = 1.0
+
+    #: Unused
+    polar: Polar = None
+
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        self.complete_flight_point(start)
+        end = deepcopy(start)
+
+        end.time = self.target.time + start.time
+        end.mass = start.mass - self.consumed_fuel
+        end.altitude = start.altitude + self.safety_height
+        end.mach = self.target.mach
+        end.true_airspeed = self.target.true_airspeed
+        end.equivalent_airspeed = self.target.equivalent_airspeed
+        end.name = self.name
+        self.complete_flight_point(end)
+
+        flight_points = [start, end]
+        return pd.DataFrame(flight_points)
+
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+        return 0.0, 0.0
+
+        # As we overloaded self.compute_from(), next abstract method are not used.
+        # We just need to implement them for Python to be happy.
+
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+        pass
+
+    def compute_propulsion(self, flight_point: FlightPoint):
+        pass
+
+
+@dataclass
 class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
     """
     Computes a transient flight part in a very quick and dummy way.
@@ -35,7 +78,7 @@ class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
     multiplied by :attr:`mass_ratio`. Other parameters are equal to those provided in
     :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.target`.
 
-    If :attr:`reserve_mass_ratio` is non-zero, a third flight point, with parameters equal
+    If :attr:`reserve_mass_ratio` is non-zero, a third flight point is added, with parameters equal
     to flight_point(2), except for mass where:
         mass(2) - reserve_mass_ratio * mass(3) = mass(3).
     In different words, mass(3) would be the Zero Fuel Weight (ZFW) and reserve can be

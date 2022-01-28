@@ -1,6 +1,6 @@
 """Structure for managing flight point data."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -80,7 +80,7 @@ class FlightPoint:
     time: float = 0.0  #: Time in seconds.
     altitude: float = None  #: Altitude in meters.
     ground_distance: float = 0.0  #: Covered ground distance in meters.
-    mass: float = None  #: Mass in kg.
+    mass: float = 0.0  #: Mass in kg.
     true_airspeed: float = None  #: True airspeed (TAS) in m/s.
     equivalent_airspeed: float = None  #: Equivalent airspeed (EAS) in m/s.
     mach: float = None  #: Mach number.
