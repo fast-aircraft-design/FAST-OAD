@@ -15,7 +15,24 @@
 from numpy.testing import assert_allclose
 
 from fastoad.model_base import FlightPoint
-from ..transition import DummyTransitionSegment
+from ..transition import DummyTakeoffSegment, DummyTransitionSegment
+
+
+def test_dummy_takeoff():
+    dummy_takeoff = DummyTakeoffSegment(
+        target=FlightPoint(time=45, true_airspeed=50.0), consumed_fuel=100.0, safety_height=10.0
+    )
+
+    flight_points = dummy_takeoff.compute_from(
+        FlightPoint(time=500, altitude=0.0, mass=50000, mach=0.0, ground_distance=100.0e3)
+    )
+
+    assert_allclose(flight_points.time, [500, 545])
+    assert_allclose(flight_points.mass, [50000, 49900])
+    assert_allclose(flight_points.altitude, [0.0, 10.0])
+    assert_allclose(flight_points.ground_distance, [100.0e3, 100.0e3])
+    assert_allclose(flight_points.true_airspeed, [0.0, 50.0])
+    assert_allclose(flight_points.mach, [0.0, 0.1469], rtol=1.0e-3)
 
 
 def test_dummy_climb():
