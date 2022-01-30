@@ -15,8 +15,10 @@ OpenMDAO component for time-step computation of missions.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os.path as pth
 from collections import namedtuple
 from importlib.resources import path
+from os import makedirs
 
 import numpy as np
 import openmdao.api as om
@@ -501,6 +503,7 @@ class MissionComponent(om.ExplicitComponent):
         self.flight_points.rename(columns=rename_dict, inplace=True)
 
         if self.options["out_file"]:
+            makedirs(pth.dirname(self.options["out_file"]), exist_ok=True)
             self.flight_points.to_csv(self.options["out_file"])
 
     def _compute_taxi_out(self, inputs, outputs, propulsion_model):
