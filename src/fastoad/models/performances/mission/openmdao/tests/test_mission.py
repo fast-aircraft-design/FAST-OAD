@@ -18,67 +18,16 @@ from shutil import rmtree
 
 import pytest
 from numpy.testing import assert_allclose
-from openmdao.core.component import Component
 from scipy.constants import foot, knot
 
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
-from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import (
-    AbstractFuelPropulsion,
-    FuelEngineSet,
-    IOMPropulsionWrapper,
-    IPropulsion,
-)
-from fastoad.module_management.service_registry import RegisterPropulsion
 from ..mission import Mission, MissionComponent
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
-
-
-# Propulsion definition --------------------------------------------------------
-class DummyEngine(AbstractFuelPropulsion):
-    def __init__(self, max_thrust, max_sfc):
-        """
-        Dummy engine model.
-
-        Max thrust does not depend on flight conditions.
-        SFC varies linearly with thrust_rate, from max_sfc/2. when thrust rate is 0.,
-        to max_sfc when thrust_rate is 1.0
-
-        :param max_thrust: thrust when thrust rate = 1.0
-        :param max_sfc: SFC when thrust rate = 1.0
-        """
-        self.max_thrust = max_thrust
-        self.max_sfc = max_sfc
-
-    def compute_flight_points(self, flight_point: FlightPoint):
-
-        if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
-            flight_point.thrust_rate = flight_point.thrust / self.max_thrust
-        else:
-            flight_point.thrust = self.max_thrust * flight_point.thrust_rate
-
-        flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0
-
-
-class DummyEngineWrapper(IOMPropulsionWrapper):
-    def setup(self, component: Component):
-        pass
-
-    @staticmethod
-    def get_model(inputs) -> IPropulsion:
-        return FuelEngineSet(DummyEngine(1.2e5, 1.5e-5), 2)
-
-
-# Using the decorator directly on the class would prevent it from being available
-# in this file.
-RegisterPropulsion("test.wrapper.propulsion.dummy_engine")(DummyEngineWrapper)
-
-# End of propulsion definition -------------------------------------------------
 
 
 @pytest.fixture(scope="module")
@@ -140,7 +89,7 @@ def plot_flight(flight_points, fig_filename):
     plt.close()
 
 
-def test_mission_component(cleanup):
+def test_mission_component(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
@@ -191,7 +140,7 @@ def test_mission_component(cleanup):
     )
 
 
-def test_mission_component_breguet(cleanup):
+def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
@@ -230,7 +179,7 @@ def test_mission_component_breguet(cleanup):
     )
 
 
-def test_mission_group_without_loop(cleanup):
+def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
@@ -261,7 +210,7 @@ def test_mission_group_without_loop(cleanup):
     assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
 
 
-def test_mission_group_breguet_without_loop(cleanup):
+def test_mission_group_breguet_without_loop(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
@@ -279,7 +228,7 @@ def test_mission_group_breguet_without_loop(cleanup):
     assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
 
 
-def test_mission_group_with_loop(cleanup):
+def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     vars = DataFile(input_file_path)
@@ -321,7 +270,7 @@ def test_mission_group_with_loop(cleanup):
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5682.0, atol=1.0)
 
 
-def test_mission_group_breguet_with_loop(cleanup):
+def test_mission_group_breguet_with_loop(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     vars = DataFile(input_file_path)
