@@ -137,6 +137,9 @@ class FlightSegment(IFlightPart):
     #: model.
     engine_setting: EngineSetting = EngineSetting.CLIMB
 
+    #: Friction coefficient considered for acceleration at take-off. The default value is representative of dry concrete/asphalte
+    friction_nobrake: float = 0.03
+
     #: Minimum and maximum authorized altitude values. If computed altitude gets beyond these
     #: limits, computation will be interrupted and a warning message will be issued in logger.
     altitude_bounds: tuple = (-500.0, 40000.0)

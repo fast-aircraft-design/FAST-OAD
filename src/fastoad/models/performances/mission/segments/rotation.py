@@ -41,7 +41,8 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
                    'alpha_dot': {'name': 'alpha_dot', 'unit': 'rad/s'},
                    'gamma_dot': {'name': 'gamma_dot', 'unit': 'rad/s'},
                    }
-    friction_nobrake = 0.05
+
+    # friction_nobrake: float = 0.03
 
     alpha_limit = 13.5/180*pi
 

@@ -69,7 +69,7 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
 
     """
 
-    time_step: float = 0.1
+    time_step: float = 0.05
 
     def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float

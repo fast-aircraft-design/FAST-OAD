@@ -38,7 +38,7 @@ class TakeoffSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="takeo
 
     time_step: float = 0.2
 
-    friction_nobrake = 0.05 #TO DO: give access to field type in mission file. (ex: field type = 'grass' or 'wet concrete')
+    # friction_nobrake: float = 0.03 # This doesn't work herewith or without default, the definition must go in parent class
 
     def complete_flight_point(self, flight_point: FlightPoint):
         """
