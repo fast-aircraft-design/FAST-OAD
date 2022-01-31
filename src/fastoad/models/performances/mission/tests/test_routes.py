@@ -8,7 +8,7 @@ why almost no numerical check is done here (such checks will be done in the
 non-regression tests).
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -34,17 +34,41 @@ from scipy.constants import foot, knot
 
 from fastoad.constants import EngineSetting, FlightPhase
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import FuelEngineSet, IPropulsion
+from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet, IPropulsion
 from fastoad.models.performances.mission.base import IFlightPart
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.performances.mission.routes import RangedRoute
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
-from fastoad.models.propulsion.fuel_propulsion.rubber_engine import RubberEngine
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+
+
+class DummyEngine(AbstractFuelPropulsion):
+    def __init__(self, max_thrust, max_sfc):
+        """
+        Dummy engine model.
+
+        Max thrust does not depend on flight conditions.
+        SFC varies linearly with thrust_rate, from max_sfc/2. when thrust rate is 0.,
+        to max_sfc when thrust_rate is 1.0
+
+        :param max_thrust: thrust when thrust rate = 1.0
+        :param max_sfc: SFC when thrust rate = 1.0
+        """
+        self.max_thrust = max_thrust
+        self.max_sfc = max_sfc
+
+    def compute_flight_points(self, flight_point: FlightPoint):
+
+        if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
+            flight_point.thrust_rate = flight_point.thrust / self.max_thrust
+        else:
+            flight_point.thrust = self.max_thrust * flight_point.thrust_rate
+
+        flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0
 
 
 @pytest.fixture(scope="module")
@@ -129,9 +153,9 @@ def plot_flight(flight_points, fig_filename):
     plt.close()
 
 
-def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
+def test_ranged_route(low_speed_polar, high_speed_polar, cleanup):
 
-    engine = RubberEngine(5.0, 30.0, 1500.0, 1.0e5, 0.95, 10000.0)
+    engine = DummyEngine(1e5, 2.0e-5)
     propulsion = FuelEngineSet(engine, 2)
 
     total_distance = 2.0e6
@@ -143,7 +167,7 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     climb = ClimbPhase(
         **kwargs,
         polar=high_speed_polar,
-        thrust_rate=0.93,
+        thrust_rate=0.8,
         target_altitude="mach",
         maximum_mach=0.78,
         name="climb",
@@ -159,7 +183,7 @@ def test_ranged_flight(low_speed_polar, high_speed_polar, cleanup):
     descent = DescentPhase(
         **kwargs,
         polar=high_speed_polar,
-        thrust_rate=0.2,
+        thrust_rate=0.05,
         target_altitude=1500.0 * foot,
         name=FlightPhase.DESCENT.value,
         time_step=5.0,
