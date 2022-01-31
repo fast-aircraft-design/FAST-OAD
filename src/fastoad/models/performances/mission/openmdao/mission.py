@@ -153,6 +153,8 @@ class Mission(om.Group):
             self.add_subsystem(
                 "TOW_computation", self._get_tow_component(mission_name), promotes=["*"]
             )
+        # Needed when TOW should be defined as input in the mission definition file:
+        self.set_input_defaults(f"data:mission:{mission_name}:TOW", np.nan, "kg")
 
         mission_options = dict(self.options.items())
         del mission_options["adjust_fuel"]
