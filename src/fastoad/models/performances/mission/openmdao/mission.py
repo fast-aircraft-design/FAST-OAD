@@ -144,8 +144,8 @@ class Mission(om.Group):
         if self.options["adjust_fuel"]:
             self.options["compute_TOW"] = True
             self.connect(
-                "data:mission:%s:needed_onboard_fuel_at_takeoff" % mission_name,
-                "data:mission:%s:onboard_fuel_at_takeoff" % mission_name,
+                f"data:mission:{mission_name}:needed_onboard_fuel_at_takeoff",
+                f"data:mission:{mission_name}:onboard_fuel_at_takeoff",
             )
             if self.options["add_solver"]:
                 self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4, iprint=0)
@@ -185,14 +185,14 @@ class Mission(om.Group):
         if self.options["is_sizing"]:
             payload_var = "data:weight:aircraft:payload"
         else:
-            payload_var = "data:mission:%s:payload" % mission_name
+            payload_var = f"data:mission:{mission_name}:payload"
 
         zfw_computation = om.AddSubtractComp()
         zfw_computation.add_equation(
-            "data:mission:%s:ZFW" % mission_name,
+            f"data:mission:{mission_name}:ZFW",
             ["data:weight:aircraft:OWE", payload_var],
             units="kg",
-            desc='Zero Fuel Weight for mission "%s"' % mission_name,
+            desc=f'Zero Fuel Weight for mission "{mission_name}"',
         )
         return zfw_computation
 
@@ -205,13 +205,13 @@ class Mission(om.Group):
         """
         tow_computation = om.AddSubtractComp()
         tow_computation.add_equation(
-            "data:mission:%s:TOW" % mission_name,
+            f"data:mission:{mission_name}:TOW",
             [
-                "data:mission:%s:ZFW" % mission_name,
-                "data:mission:%s:onboard_fuel_at_takeoff" % mission_name,
+                f"data:mission:{mission_name}:ZFW",
+                f"data:mission:{mission_name}:onboard_fuel_at_takeoff",
             ],
             units="kg",
-            desc='TakeOff Weight for mission "%s"' % mission_name,
+            desc=f'TakeOff Weight for mission "{mission_name}"',
         )
         return tow_computation
 
@@ -224,16 +224,16 @@ class Mission(om.Group):
         """
         block_fuel_computation = om.AddSubtractComp()
         block_fuel_computation.add_equation(
-            "data:mission:%s:block_fuel" % mission_name,
+            f"data:mission:{mission_name}:block_fuel",
             [
-                "data:mission:%s:TOW" % mission_name,
-                "data:mission:%s:taxi_out:fuel" % mission_name,
-                "data:mission:%s:takeoff:fuel" % mission_name,
-                "data:mission:%s:ZFW" % mission_name,
+                f"data:mission:{mission_name}:TOW",
+                f"data:mission:{mission_name}:taxi_out:fuel",
+                f"data:mission:{mission_name}:takeoff:fuel",
+                f"data:mission:{mission_name}:ZFW",
             ],
             units="kg",
             scaling_factors=[1, 1, 1, -1],
-            desc='Loaded fuel before taxi-out for mission "%s"' % mission_name,
+            desc=f'Loaded fuel before taxi-out for mission "{mission_name}"',
         )
         return block_fuel_computation
 
@@ -302,16 +302,16 @@ class MissionComponent(om.ExplicitComponent):
         mission_name = self.options["mission_name"]
 
         self._mission_vars = _MissionVariables(
-            TOW="data:mission:%s:TOW" % mission_name,
-            NEEDED_BLOCK_FUEL="data:mission:%s:needed_block_fuel" % mission_name,
-            NEEDED_FUEL_AT_TAKEOFF="data:mission:%s:needed_onboard_fuel_at_takeoff" % mission_name,
-            TAXI_OUT_DURATION="data:mission:%s:taxi_out:duration" % mission_name,
-            TAXI_OUT_THRUST_RATE="data:mission:%s:taxi_out:thrust_rate" % mission_name,
-            TAXI_OUT_DISTANCE="data:mission:%s:taxi_out:distance" % mission_name,
-            TAXI_OUT_FUEL="data:mission:%s:taxi_out:fuel" % mission_name,
-            TAKEOFF_FUEL="data:mission:%s:takeoff:fuel" % mission_name,
-            TAKEOFF_ALTITUDE="data:mission:%s:takeoff:altitude" % mission_name,
-            TAKEOFF_V2="data:mission:%s:takeoff:V2" % mission_name,
+            TOW=f"data:mission:{mission_name}:TOW",
+            NEEDED_BLOCK_FUEL=f"data:mission:{mission_name}:needed_block_fuel",
+            NEEDED_FUEL_AT_TAKEOFF=f"data:mission:{mission_name}:needed_onboard_fuel_at_takeoff",
+            TAXI_OUT_DURATION=f"data:mission:{mission_name}:taxi_out:duration",
+            TAXI_OUT_THRUST_RATE=f"data:mission:{mission_name}:taxi_out:thrust_rate",
+            TAXI_OUT_DISTANCE=f"data:mission:{mission_name}:taxi_out:distance",
+            TAXI_OUT_FUEL=f"data:mission:{mission_name}:taxi_out:fuel",
+            TAKEOFF_FUEL=f"data:mission:{mission_name}:takeoff:fuel",
+            TAKEOFF_ALTITUDE=f"data:mission:{mission_name}:takeoff:altitude",
+            TAKEOFF_V2=f"data:mission:{mission_name}:takeoff:V2",
         )
 
         self.add_input(self.options["reference_area_variable"], np.nan, units="m**2")
@@ -319,57 +319,57 @@ class MissionComponent(om.ExplicitComponent):
             self._mission_vars.TOW,
             np.nan,
             units="kg",
-            desc='TakeOff Weight for mission "%s"' % mission_name,
+            desc=f'TakeOff Weight for mission "{mission_name}"',
         )
         self.add_input(
             self._mission_vars.TAXI_OUT_DURATION,
             np.nan,
             units="s",
-            desc='duration of taxi-out in mission "%s"' % mission_name,
+            desc=f'duration of taxi-out in mission "{mission_name}"',
         )
         self.add_input(
             self._mission_vars.TAXI_OUT_THRUST_RATE,
             np.nan,
             units=None,
-            desc='thrust rate during taxi-out in mission "%s"' % mission_name,
+            desc=f'thrust rate during taxi-out in mission "{mission_name}"',
         )
         self.add_input(
             self._mission_vars.TAKEOFF_ALTITUDE,
             np.nan,
             units="m",
-            desc='altitude of airport for mission "%s"' % mission_name,
+            desc=f'altitude of airport for mission "{mission_name}"',
         )
         self.add_input(
             self._mission_vars.TAKEOFF_FUEL,
             np.nan,
             units="kg",
-            desc='burned fuel during takeoff phase of mission "%s"' % mission_name,
+            desc=f'burned fuel during takeoff phase of mission "{mission_name}"',
         )
         self.add_input(
             self._mission_vars.TAKEOFF_V2,
             np.nan,
             units="m/s",
-            desc='takeoff safety speed for mission "%s"' % mission_name,
+            desc=f'takeoff safety speed for mission "{mission_name}"',
         )
         self.add_output(
             self._mission_vars.TAXI_OUT_DISTANCE,
             units="m",
-            desc='distance during taxi-out of mission "%s"' % mission_name,
+            desc=f'distance during taxi-out of mission "{mission_name}"',
         )
         self.add_output(
             self._mission_vars.TAXI_OUT_FUEL,
             units="kg",
-            desc='burned fuel during taxi-out of mission "%s"' % mission_name,
+            desc=f'burned fuel during taxi-out of mission "{mission_name}"',
         )
         self.add_output(
             self._mission_vars.NEEDED_BLOCK_FUEL,
             units="kg",
-            desc='Needed fuel to complete mission "%s", including reserve fuel' % mission_name,
+            desc=f'Needed fuel to complete mission "{mission_name}", including reserve fuel',
         )
         self.add_output(
             self._mission_vars.NEEDED_FUEL_AT_TAKEOFF,
             units="kg",
-            desc='fuel quantity at instant of takeoff of mission "%s"' % mission_name,
+            desc=f'fuel quantity at instant of takeoff of mission "{mission_name}"',
         )
 
         if self.options["is_sizing"]:
@@ -381,7 +381,7 @@ class MissionComponent(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         iter_count = self.iter_count_without_approx
-        message_prefix = "Mission computation - iteration %i : " % iter_count
+        message_prefix = f"Mission computation - iteration {iter_count:d} : "
         if iter_count == 0 and self.options["use_initializer_iteration"]:
             _LOGGER.info(message_prefix + "Using initializer computation. OTHER ITERATIONS NEEDED.")
             self._compute_breguet(inputs, outputs)
@@ -508,7 +508,7 @@ class MissionComponent(om.ExplicitComponent):
 
         self.flight_points = self.flight_points.applymap(as_scalar)
         rename_dict = {
-            field_name: "%s [%s]" % (field_name, unit)
+            field_name: f"{field_name} [{unit}]"
             for field_name, unit in FlightPoint.get_units().items()
         }
         self.flight_points.rename(columns=rename_dict, inplace=True)
