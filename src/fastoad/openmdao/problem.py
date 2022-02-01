@@ -37,7 +37,7 @@ class FASTOADProblem(om.Problem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        #: File path where :meth:`write_inputs` will write inputs
+        #: File path where :meth:`read_inputs` will read inputs
         self.input_file_path = None
         #: File path where :meth:`write_outputs` will write outputs
         self.output_file_path = None
