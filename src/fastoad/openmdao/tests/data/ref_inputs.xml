@@ -1,0 +1,4 @@
+<FASTOAD_model>
+  <x is_input="True">2000.0</x>
+  <z units="m**2" is_input="True">[5000.0, 2000.0]</z>
+</FASTOAD_model>
