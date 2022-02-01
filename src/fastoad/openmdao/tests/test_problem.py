@@ -60,11 +60,10 @@ def test_write_outputs():
         Variable(name="x", val=2),
         Variable(name="y2", val=12.154521862167641),
         Variable(name="z", val=[5.0, 2.0], units="m**2"),
-    ]
 
 
-def test_problem_definition_with_nan_inputs(cleanup):
-    """Tests what happens when writing inputs using existing XML with some unwanted var"""
+def test_problem_read_inputs_with_nan_inputs(cleanup):
+    """Tests what happens when reading inputs using existing XML with some unwanted var"""
 
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", Sellar(), promotes=["*"])
