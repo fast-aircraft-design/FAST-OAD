@@ -117,6 +117,12 @@ class Mission(om.Group):
             desc="If True, TOW will be considered equal to MTOW and mission payload will be "
             "considered equal to design payload.",
         )
+        self.options.declare(
+            "reference_area_variable",
+            default="data:geometry:wing:area",
+            types=str,
+            desc="Defines the name of the variable for providing aircraft reference surface area.",
+        )
 
     def setup(self):
         if "::" in self.options["mission_file_path"]:
@@ -267,6 +273,8 @@ class MissionComponent(om.ExplicitComponent):
                                        computed only once.
           - is_sizing: if True, TOW will be considered equal to MTOW and mission payload will be
                        considered equal to design payload.
+          - reference_area_variable: Defines the name of the variable for providing aircraft
+                                     reference surface area.
         """
         super().__init__(**kwargs)
         self.flight_points = None
@@ -281,6 +289,9 @@ class MissionComponent(om.ExplicitComponent):
         self.options.declare("mission_wrapper", types=MissionWrapper)
         self.options.declare("mission_name", types=str)
         self.options.declare("is_sizing", default=False, types=bool)
+        self.options.declare(
+            "reference_area_variable", default="data:geometry:wing:area", types=str
+        )
 
     def setup(self):
         self._engine_wrapper = self._get_engine_wrapper()
@@ -303,7 +314,7 @@ class MissionComponent(om.ExplicitComponent):
             TAKEOFF_V2="data:mission:%s:takeoff:V2" % mission_name,
         )
 
-        self.add_input("data:geometry:wing:area", np.nan, units="m**2")
+        self.add_input(self.options["reference_area_variable"], np.nan, units="m**2")
         self.add_input(
             self._mission_vars.TOW,
             np.nan,
@@ -446,7 +457,7 @@ class MissionComponent(om.ExplicitComponent):
         :param outputs: OpenMDAO output vector
         """
         propulsion_model = self._engine_wrapper.get_model(inputs)
-        reference_area = inputs["data:geometry:wing:area"]
+        reference_area = inputs[self.options["reference_area_variable"]]
 
         self._mission_wrapper.propulsion = propulsion_model
         self._mission_wrapper.reference_area = reference_area

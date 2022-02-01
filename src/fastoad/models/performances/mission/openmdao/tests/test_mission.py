@@ -99,6 +99,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
             use_initializer_iteration=False,
             mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_mission.yml")),
             mission_name="operational",
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
@@ -150,6 +151,7 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
             use_initializer_iteration=False,
             mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_breguet.yml")),
             mission_name="operational",
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
@@ -189,6 +191,7 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
                 use_initializer_iteration=False,
                 mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
                 adjust_fuel=False,
+                reference_area_variable="data:geometry:aircraft:reference_area",
             ),
             ivc,
         )
@@ -201,6 +204,7 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
             mission_name="operational",
             adjust_fuel=False,
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
@@ -219,6 +223,7 @@ def test_mission_group_breguet_without_loop(cleanup, with_dummy_plugin_2):
             use_initializer_iteration=False,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
             adjust_fuel=False,
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
@@ -241,6 +246,7 @@ def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
             mission_name="operational",
             add_solver=True,
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
@@ -282,6 +288,7 @@ def test_mission_group_breguet_with_loop(cleanup, with_dummy_plugin_2):
             use_initializer_iteration=True,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
             add_solver=True,
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
