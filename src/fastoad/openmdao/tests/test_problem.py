@@ -93,8 +93,9 @@ def test_problem_read_inputs_with_nan_inputs(cleanup):
 
     problem.input_file_path = pth.join(DATA_FOLDER_PATH, "nan_inputs.xml")
 
+    problem.setup()
+
     with pytest.raises(FASTConfigurationNanInInputFile) as exc:
-        problem.setup()
         problem.read_inputs()
         assert exc.input_file_path == input_data_path
         assert exc.nan_variable_names == ["x"]
