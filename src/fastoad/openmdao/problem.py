@@ -94,15 +94,14 @@ class FASTOADProblem(om.Problem):
             self._read_inputs_after_setup = True
             self._read_inputs()
 
-    def _get_problem_inputs(self, ivc_output_format=True) -> Tuple[om.IndepVarComp, VariableList]:
+    def _get_problem_inputs(self) -> Tuple[om.IndepVarComp, VariableList]:
         """
         Reads input file for the configured problem.
 
-        Needed variables are returned as an IndepVarComp instance while unused variables are
+        Needed variables and unused variables are
         returned as a VariableList instance.
 
-        :param ivc_output_format: if False needed variables are returned as VariableList.
-        :return: IVC or VariableList of needed input variables, VariableList with unused variables.
+        :return: VariableList of needed input variables, VariableList with unused variables.
         """
 
         problem_variables = VariableList().from_problem(self)
@@ -119,17 +118,14 @@ class FASTOADProblem(om.Problem):
         nan_variable_names = [var.name for var in input_variables if np.all(np.isnan(var.value))]
         if nan_variable_names:
             raise FASTOpenMDAONanInInputFile(self.input_file_path, nan_variable_names)
-        if ivc_output_format:
-            inputs = input_variables.to_ivc()
-        else:
-            inputs = input_variables
-        return inputs, unused_variables
+
+        return input_variables, unused_variables
 
     def _read_inputs(self):
         """
         Set initial values of inputs for the configured problem.
         """
-        input_variables, unused_variables = self._get_problem_inputs(ivc_output_format=False)
+        input_variables, unused_variables = self._get_problem_inputs()
         self.additional_variables = unused_variables
         for input_var in input_variables:
             self.set_val(input_var.name, **input_var.metadata)
