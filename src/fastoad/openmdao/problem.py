@@ -58,11 +58,11 @@ class FASTOADProblem(om.Problem):
         ValidityDomainChecker.check_problem_variables(self)
         return status
 
-    def setup(self):
+    def setup(self, *args, **kwargs):
         """
         Set up the problem before run.
         """
-        super().setup()
+        super().setup(*args, **kwargs)
         if self._read_inputs_after_setup:
             self._read_inputs()
 
