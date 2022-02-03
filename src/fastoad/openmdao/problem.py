@@ -92,7 +92,6 @@ class FASTOADProblem(om.Problem):
             self._read_inputs()
         else:
             self._read_inputs_after_setup = True
-            self._read_inputs()
 
     def _get_problem_inputs(self) -> Tuple[om.IndepVarComp, VariableList]:
         """
