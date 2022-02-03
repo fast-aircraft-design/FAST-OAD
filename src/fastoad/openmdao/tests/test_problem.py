@@ -84,7 +84,7 @@ def test_problem_read_inputs_with_ref_inputs(cleanup):
 
 
 def test_problem_read_inputs_with_nan_inputs(cleanup):
-    """Tests what happens when reading inputs using existing XML with some unwanted var"""
+    """Tests that when reading inputs using existing XML with some nan values an exception is raised"""
 
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", Sellar(), promotes=["*"])
