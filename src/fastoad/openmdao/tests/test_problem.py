@@ -21,8 +21,8 @@ from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import Variable
 from .openmdao_sellar_example.sellar import Sellar
 from ...io import VariableIO
-from fastoad.io.configuration.exceptions import (
-    FASTConfigurationNanInInputFile,
+from fastoad.openmdao.exceptions import (
+    FASTOpenMDAONanInInputFile,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -95,7 +95,7 @@ def test_problem_read_inputs_with_nan_inputs(cleanup):
 
     problem.setup()
 
-    with pytest.raises(FASTConfigurationNanInInputFile) as exc:
+    with pytest.raises(FASTOpenMDAONanInInputFile) as exc:
         problem.read_inputs()
         assert exc.input_file_path == input_data_path
         assert exc.nan_variable_names == ["x"]

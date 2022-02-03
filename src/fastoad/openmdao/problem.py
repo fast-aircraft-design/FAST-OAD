@@ -20,8 +20,8 @@ from openmdao.core.constants import _SetupStatus
 from fastoad.io import VariableIO, DataFile
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import VariableList
-from fastoad.io.configuration.exceptions import (
-    FASTConfigurationNanInInputFile,
+from fastoad.openmdao.exceptions import (
+    FASTOpenMDAONanInInputFile,
 )
 
 INPUT_SYSTEM_NAME = "inputs"
@@ -118,7 +118,7 @@ class FASTOADProblem(om.Problem):
 
         nan_variable_names = [var.name for var in input_variables if np.all(np.isnan(var.value))]
         if nan_variable_names:
-            raise FASTConfigurationNanInInputFile(self.input_file_path, nan_variable_names)
+            raise FASTOpenMDAONanInInputFile(self.input_file_path, nan_variable_names)
         if ivc_output_format:
             inputs = input_variables.to_ivc()
         else:

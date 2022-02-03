@@ -14,7 +14,6 @@ Exceptions for package configuration
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List
 
 from fastoad.exceptions import FastError
 
@@ -76,18 +75,3 @@ class FASTConfigurationBaseKeyBuildingError(FastError):
 
 class FASTConfigurationBadOpenMDAOInstructionError(FASTConfigurationBaseKeyBuildingError):
     """Class for managing errors that result from trying to set an attribute by eval."""
-
-
-class FASTConfigurationNanInInputFile(FastError):
-    """Raised if NaN values are read in input data file."""
-
-    def __init__(self, input_file_path: str, nan_variable_names: List[str]):
-        self.input_file_path = input_file_path
-        self.nan_variable_names = nan_variable_names
-
-        msg = "NaN values found in input file (%s). Please check following variables: %s" % (
-            input_file_path,
-            nan_variable_names,
-        )
-
-        super().__init__(self, msg)
