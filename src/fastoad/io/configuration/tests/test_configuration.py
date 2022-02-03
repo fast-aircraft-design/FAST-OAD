@@ -135,7 +135,6 @@ def test_problem_definition_with_xml_ref(cleanup):
         # runs evaluation without optimization loop to check that inputs are taken into account
         problem.setup()
         problem.run_model()
-        print(problem["x"])
         assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
         problem.write_outputs()
 
