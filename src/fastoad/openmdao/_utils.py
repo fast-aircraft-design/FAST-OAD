@@ -15,12 +15,16 @@ Utility functions for OpenMDAO classes/instances
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from typing import List, Tuple
+from deprecated import deprecated
 
 import numpy as np
 import openmdao.api as om
 
 
-# TODO: evaluate pertinence of keeping this function
+@deprecated(
+    version="1.3.0",
+    reason="Will be removed in version 2.0. Please use VariableList.from_problem() instead",
+)
 def get_unconnected_input_names(
     problem: om.Problem, promoted_names=False
 ) -> Tuple[List[str], List[str]]:
