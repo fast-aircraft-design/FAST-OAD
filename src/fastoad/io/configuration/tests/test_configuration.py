@@ -156,6 +156,7 @@ def test_problem_definition_with_xml_ref(cleanup):
             alt_problem["g1"]  # submodel for g1 computation has been deactivated.
 
 
+# FIXME: this test should be reworked and moved to test_problem
 def test_problem_definition_with_custom_xml(cleanup):
     """Tests what happens when writing inputs using existing XML with some unwanted var"""
     conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
