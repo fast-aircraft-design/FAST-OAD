@@ -15,6 +15,7 @@ from typing import Tuple
 
 import numpy as np
 import openmdao.api as om
+from openmdao.core.constants import _SetupStatus
 
 from fastoad.io import VariableIO, DataFile
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
@@ -87,7 +88,7 @@ class FASTOADProblem(om.Problem):
         """
         Reads inputs of the problem.
         """
-        if self._metadata is not None and self._metadata["setup_status"] > 0:
+        if self._metadata is not None and self._metadata["setup_status"] == _SetupStatus.POST_SETUP:
             self._read_inputs()
         else:
             self._read_inputs_after_setup = True
