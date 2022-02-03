@@ -718,7 +718,8 @@ class VariableList(list):
 
     @classmethod
     @deprecated(
-        version="1.3.0", reason="Will be removed in version 2.0. Please use from_problem() instead"
+        version="1.3.0",
+        reason="Will be removed in version 2.0. Please use VariableList.from_problem() instead",
     )
     def from_unconnected_inputs(
         cls, problem: om.Problem, with_optional_inputs: bool = False
