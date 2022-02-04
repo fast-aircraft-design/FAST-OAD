@@ -31,7 +31,6 @@ from fastoad.module_management._plugins import FastoadLoader
 from fastoad.module_management.exceptions import FastBundleLoaderUnknownFactoryNameError
 from ..exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
-    FASTConfigurationNanInInputFile,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -136,7 +135,6 @@ def test_problem_definition_with_xml_ref(cleanup):
         # runs evaluation without optimization loop to check that inputs are taken into account
         problem.setup()
         problem.run_model()
-
         assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
         problem.write_outputs()
 
@@ -158,6 +156,7 @@ def test_problem_definition_with_xml_ref(cleanup):
             alt_problem["g1"]  # submodel for g1 computation has been deactivated.
 
 
+# FIXME: this test should be reworked and moved to test_problem
 def test_problem_definition_with_custom_xml(cleanup):
     """Tests what happens when writing inputs using existing XML with some unwanted var"""
     conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
@@ -176,20 +175,6 @@ def test_problem_definition_with_custom_xml(cleanup):
 
     assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
     problem.write_outputs()
-
-
-def test_problem_definition_with_nan_inputs(cleanup):
-    """Tests what happens when writing inputs using existing XML with some unwanted var"""
-    conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
-
-    input_data_path = pth.join(DATA_FOLDER_PATH, "nan_inputs.xml")
-    os.makedirs(RESULTS_FOLDER_PATH, exist_ok=True)
-    shutil.copy(input_data_path, conf.input_file_path)
-
-    with pytest.raises(FASTConfigurationNanInInputFile) as exc:
-        problem = conf.get_problem(read_inputs=True, auto_scaling=True)
-        assert exc.input_file_path == input_data_path
-        assert exc.nan_variable_names == ["x"]
 
 
 def test_problem_definition_with_xml_ref_run_optim(cleanup):

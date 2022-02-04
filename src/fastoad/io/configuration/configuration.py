@@ -19,9 +19,8 @@ import logging
 import os.path as pth
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
-from typing import Dict, Tuple
+from typing import Dict
 
-import numpy as np
 import openmdao.api as om
 import tomlkit
 from jsonschema import validate
@@ -30,14 +29,12 @@ from ruamel.yaml import YAML
 from fastoad._utils.files import make_parent_dir
 from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
-from fastoad.openmdao._utils import get_unconnected_input_names
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
 from . import resources
 from .exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
     FASTConfigurationBaseKeyBuildingError,
-    FASTConfigurationNanInInputFile,
 )
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -115,17 +112,12 @@ class FASTOADProblemConfigurator:
         if self._serializer.data is None:
             raise RuntimeError("read configuration file first")
 
-        if read_inputs:
-            problem_with_no_inputs = self.get_problem(auto_scaling=auto_scaling)
-            problem_with_no_inputs.setup()
-            input_ivc, unused_variables = self._get_problem_inputs(problem_with_no_inputs)
-        else:
-            input_ivc = unused_variables = None
-
-        problem = FASTOADProblem(self._build_model(input_ivc))
+        problem = FASTOADProblem(self._build_model())
         problem.input_file_path = self.input_file_path
         problem.output_file_path = self.output_file_path
-        problem.additional_variables = unused_variables
+
+        if read_inputs:
+            problem.read_inputs()
 
         driver = self._serializer.data.get(KEY_DRIVER, "")
         if driver:
@@ -220,8 +212,17 @@ class FASTOADProblemConfigurator:
         problem = self.get_problem(read_inputs=False)
         problem.setup()
         variables = DataFile(self.input_file_path, load_data=False)
+
+        unconnected_inputs = VariableList.from_problem(
+            problem,
+            use_initial_values=True,
+            get_promoted_names=True,
+            promoted_only=True,
+            io_status="inputs",
+        )
+
         variables.update(
-            VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
+            unconnected_inputs,
             add_variables=True,
         )
         if source_file_path:
@@ -265,7 +266,7 @@ class FASTOADProblemConfigurator:
         subpart = {"optimization": subpart}
         self._serializer.data.update(subpart)
 
-    def _build_model(self, input_ivc: om.IndepVarComp = None) -> om.Group:
+    def _build_model(self) -> om.Group:
         """
         Builds the model as defined in the configuration file.
 
@@ -277,9 +278,6 @@ class FASTOADProblemConfigurator:
 
         model = FASTOADModel()
         model.active_submodels = self._serializer.data.get(KEY_SUBMODELS, {})
-
-        if input_ivc:
-            model.add_subsystem("fastoad_inputs", input_ivc, promotes=["*"])
 
         model_definition = self._serializer.data.get(KEY_MODEL)
 
@@ -413,34 +411,6 @@ class FASTOADProblemConfigurator:
                 design_var_table["ref0"] = design_var_table["lower"]
                 design_var_table["ref"] = design_var_table["upper"]
             model.add_design_var(**design_var_table)
-
-    def _get_problem_inputs(self, problem: FASTOADProblem) -> Tuple[om.IndepVarComp, VariableList]:
-        """
-        Reads input file for the configure problem.
-
-        Needed variables are returned as an IndepVarComp instance while unused variables are
-        returned as a VariableList instance.
-
-        :param problem: problem with missing inputs. setup() must have been run.
-        :return: IVC of needed input variables, VariableList with unused variables.
-        """
-        mandatory, optional = get_unconnected_input_names(problem, promoted_names=True)
-        needed_variable_names = mandatory + optional
-
-        input_variables = DataFile(self.input_file_path)
-
-        unused_variables = VariableList(
-            [var for var in input_variables if var.name not in needed_variable_names]
-        )
-        for name in unused_variables.names():
-            del input_variables[name]
-
-        nan_variable_names = [var.name for var in input_variables if np.all(np.isnan(var.value))]
-        if nan_variable_names:
-            raise FASTConfigurationNanInInputFile(self.input_file_path, nan_variable_names)
-
-        input_ivc = input_variables.to_ivc()
-        return input_ivc, unused_variables
 
     def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
         self._configuration_modifier = modifier

@@ -21,6 +21,7 @@ from builtins import isinstance
 from copy import deepcopy
 from importlib.resources import open_text
 from typing import Dict, Hashable, Iterable, List, Mapping, Tuple, Union
+from deprecated import deprecated
 
 import numpy as np
 import openmdao.api as om
@@ -546,6 +547,7 @@ class VariableList(list):
         use_initial_values: bool = False,
         get_promoted_names: bool = True,
         promoted_only: bool = True,
+        io_status: str = "all",
     ) -> "VariableList":
         """
         Creates a VariableList instance containing inputs and outputs of an OpenMDAO Problem.
@@ -566,8 +568,12 @@ class VariableList(list):
         :param get_promoted_names: if True, promoted names will be returned instead of absolute ones
                                    (if no promotion, absolute name will be returned)
         :param promoted_only: if True, only promoted variable names will be returned
+        :param io_status: to choose with type of variable we return ("all", "inputs, "inputs")
         :return: VariableList instance
         """
+
+        # from_problem affects integrity of problem instance
+        problem = deepcopy(problem)
 
         # Get inputs and outputs
         metadata_keys = (
@@ -699,9 +705,22 @@ class VariableList(list):
                     # should be enough.
                     pass
 
-        return input_vars + output_vars
+        if io_status == "all":
+            variables = input_vars + output_vars
+        elif io_status == "inputs":
+            variables = input_vars
+        elif io_status == "outputs":
+            variables = output_vars
+        else:
+            raise TypeError("Unknown value for io_status")
+
+        return variables
 
     @classmethod
+    @deprecated(
+        version="1.3.0",
+        reason="Will be removed in version 2.0. Please use VariableList.from_problem() instead",
+    )
     def from_unconnected_inputs(
         cls, problem: om.Problem, with_optional_inputs: bool = False
     ) -> "VariableList":

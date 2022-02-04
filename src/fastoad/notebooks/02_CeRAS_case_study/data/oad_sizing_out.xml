@@ -323,7 +323,7 @@
         <taxi_out>
           <duration units="s" is_input="True">540.0</duration>
           <fuel units="kg" is_input="False">279.5481830622739<!--burned fuel during taxi-out of mission "MTOW_mission"--></fuel>
-          <thrust_rate units="s" is_input="True">0.25</thrust_rate>
+          <thrust_rate is_input="True">0.25</thrust_rate>
         </taxi_out>
       </MTOW_mission>
       <SPP_design>
@@ -367,7 +367,7 @@
         </taxi_in>
         <taxi_out>
           <duration units="s" is_input="True">540.0</duration>
-          <thrust_rate units="s" is_input="True">0.25</thrust_rate>
+          <thrust_rate is_input="True">0.25</thrust_rate>
         </taxi_out>
       </SPP_design>
       <SPP_study>
@@ -411,7 +411,7 @@
         </taxi_in>
         <taxi_out>
           <duration units="s" is_input="True">540.0</duration>
-          <thrust_rate units="s" is_input="True">0.25</thrust_rate>
+          <thrust_rate is_input="True">0.25</thrust_rate>
         </taxi_out>
       </SPP_study>
       <sizing>

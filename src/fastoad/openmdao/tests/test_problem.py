@@ -15,12 +15,17 @@ import os.path as pth
 from shutil import rmtree
 
 import pytest
+import numpy as np
 
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import Variable
 from .openmdao_sellar_example.sellar import Sellar
 from ...io import VariableIO
+from fastoad.openmdao.exceptions import (
+    FASTOpenMDAONanInInputFile,
+)
 
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results", "problem")
 
 
@@ -57,3 +62,40 @@ def test_write_outputs():
         Variable(name="y2", val=12.154521862167641),
         Variable(name="z", val=[5.0, 2.0], units="m**2"),
     ]
+
+
+def test_problem_read_inputs_with_ref_inputs(cleanup):
+    """Tests what happens when reading inputs using existing XML with correct var"""
+
+    problem = FASTOADProblem()
+    problem.model.add_subsystem("sellar", Sellar(), promotes=["*"])
+
+    problem.input_file_path = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+
+    problem.setup()
+
+    assert problem.get_val(name="x", units=None) == [2.0]
+    assert np.all(problem.get_val(name="z", units="m**2") == [5.0, 2.0])
+
+    problem.read_inputs()
+
+    assert problem.get_val(name="x", units=None) == [2000.0]
+    assert np.all(problem.get_val(name="z", units="m**2") == [5000.0, 2000.0])
+
+
+def test_problem_read_inputs_with_nan_inputs(cleanup):
+    """Tests that when reading inputs using existing XML with some nan values an exception is raised"""
+
+    problem = FASTOADProblem()
+    problem.model.add_subsystem("sellar", Sellar(), promotes=["*"])
+
+    input_data_path = pth.join(DATA_FOLDER_PATH, "nan_inputs.xml")
+
+    problem.input_file_path = pth.join(DATA_FOLDER_PATH, "nan_inputs.xml")
+
+    problem.setup()
+
+    with pytest.raises(FASTOpenMDAONanInInputFile) as exc:
+        problem.read_inputs()
+        assert exc.input_file_path == input_data_path
+        assert exc.nan_variable_names == ["x"]

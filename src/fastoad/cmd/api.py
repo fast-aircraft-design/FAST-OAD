@@ -572,6 +572,7 @@ def _run_problem(
         )
 
     problem.setup()
+
     start_time = time()
     if mode == "run_model":
         problem.run_model()
