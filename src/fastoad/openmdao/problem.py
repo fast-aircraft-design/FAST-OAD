@@ -93,7 +93,7 @@ class FASTOADProblem(om.Problem):
         else:
             self._read_inputs_after_setup = True
 
-    def _get_problem_inputs(self) -> Tuple[om.IndepVarComp, VariableList]:
+    def _get_problem_inputs(self) -> Tuple[VariableList, VariableList]:
         """
         Reads input file for the configured problem.
 
