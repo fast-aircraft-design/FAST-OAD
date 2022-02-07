@@ -156,7 +156,28 @@ def generate_configuration_file(
     :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
 
-    # Check on plugins
+    if distribution_name is None:
+        # If no distribution is specified, but only one contains configuration files, no need to
+        # specify the name
+        count_plugin_with_conf_file = 0
+        dist_with_conf_file = ""
+        plugin_config_files = {
+            name: [resource.name for resource in definition.get_configuration_file_list()]
+            for name, definition in get_plugin_information().items()
+        }
+        for plugin_name, conf_files in plugin_config_files.items():
+            # Plugin is retained if it contains conf files. Additionally, if sample_file_name
+            # is provided, plugin is retained only if sample_file_name is in provided conf files.
+            if len(conf_files) > 0 and (sample_file_name is None or sample_file_name in conf_files):
+                count_plugin_with_conf_file += 1
+                dist_with_conf_file = plugin_name
+            if count_plugin_with_conf_file > 1:
+                break
+
+        # If only one plugin has been retained, it can be used as automatically selected plugin.
+        if count_plugin_with_conf_file == 1:
+            distribution_name = dist_with_conf_file
+
     dist_definition = FastoadLoader().get_distribution_plugin_definition(distribution_name)
     file_info = dist_definition.get_configuration_file_info(sample_file_name)
 
