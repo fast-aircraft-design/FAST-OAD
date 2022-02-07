@@ -151,7 +151,7 @@ def test_mission_component(cleanup):
         ivc,
     )
     plot_flight(problem.model.component.flight_points, "test_mission.png")
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6674, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6579.6, atol=1.0)
     take_off_distance = problem["data:mission:operational:main_route:takeoff:distance"]
     assert_allclose(take_off_distance, 1580, atol=1.0)
     assert_allclose(problem["data:mission:operational:main_route:takeoff:fuel"], 115.8, atol=1e-1)
@@ -184,8 +184,8 @@ def test_mission_group_without_loop(cleanup):
         ),
         ivc,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6674.0, atol=1.0)
-    assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6579.6, atol=1.0)
+    assert_allclose(problem["data:mission:operational:block_fuel"], 15100.0, atol=1.0)
 
 
 def test_mission_group_with_loop(cleanup):
@@ -223,10 +223,10 @@ def test_mission_group_with_loop(cleanup):
     assert_allclose(
         problem["data:mission:operational:needed_block_fuel"],
         problem["data:mission:operational:needed_onboard_fuel_at_takeoff"]
-        + problem["data:mission:operational:taxi_out:fuel"]
-        + problem["data:mission:operational:takeoff:fuel"],
+        + problem["data:mission:operational:taxi_out:fuel"],
+        # + problem["data:mission:operational:takeoff:fuel"],
         atol=1.0,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5762.5, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5667.5, atol=1.0)
 
 
