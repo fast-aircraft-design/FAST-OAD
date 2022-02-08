@@ -166,11 +166,11 @@ class FlightSegment(IFlightPart):
 
         flight_points = [start]
 
-        previous_point_to_target = self._get_distance_to_target(flight_points)
+        previous_point_to_target = self.get_distance_to_target(flight_points)
         tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
         while np.abs(previous_point_to_target) > tol:
             self._add_new_flight_point(flight_points, self.time_step)
-            last_point_to_target = self._get_distance_to_target(flight_points)
+            last_point_to_target = self.get_distance_to_target(flight_points)
 
             if last_point_to_target * previous_point_to_target < 0.0:
 
@@ -190,12 +190,12 @@ class FlightSegment(IFlightPart):
                         time_step = time_step.item()
                     del flight_points[-1]
                     self._add_new_flight_point(flight_points, time_step)
-                    return self._get_distance_to_target(flight_points)
+                    return self.get_distance_to_target(flight_points)
 
                 root_scalar(
                     replace_last_point, x0=self.time_step, x1=self.time_step / 2.0, rtol=tol
                 )
-                last_point_to_target = self._get_distance_to_target(flight_points)
+                last_point_to_target = self.get_distance_to_target(flight_points)
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
@@ -308,9 +308,9 @@ class FlightSegment(IFlightPart):
             flight_point.CL = flight_point.CD = 0.0
         flight_point.drag = flight_point.CD * reference_force
 
-        self._compute_propulsion(flight_point)
-        flight_point.slope_angle, flight_point.acceleration = self._get_gamma_and_acceleration(
-            flight_point.mass, flight_point.drag, flight_point.thrust
+        self.compute_propulsion(flight_point)
+        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
+            flight_point
         )
 
     @staticmethod
@@ -374,7 +374,7 @@ class FlightSegment(IFlightPart):
         return optimal_altitude
 
     @abstractmethod
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         """
         Computes a "distance" from last flight point to target.
 
@@ -388,24 +388,27 @@ class FlightSegment(IFlightPart):
         """
 
     @abstractmethod
-    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
-        """
-        Computes slope angle (gamma) and acceleration.
-
-        :param mass: in kg
-        :param drag: in N
-        :param thrust: in N
-        :return: slope angle in radians and acceleration in m**2/s
-        """
-
-    @abstractmethod
-    def _compute_propulsion(self, flight_point: FlightPoint):
+    def compute_propulsion(self, flight_point: FlightPoint):
         """
         Computes propulsion data.
 
         Provided flight point is modified in place.
 
+        Generally, this method should end with::
+
+            self.propulsion.compute_flight_points(flight_point)
+
         :param flight_point:
+        """
+
+    @abstractmethod
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+        """
+        Computes slope angle (gamma) and acceleration.
+
+        :param flight_point: parameters after propulsion model has been called
+                             (i.e. mass, thrust and drag are available)
+        :return: slope angle in radians and acceleration in m**2/s
         """
 
 
@@ -419,7 +422,7 @@ class ManualThrustSegment(FlightSegment, ABC):
 
     thrust_rate: float = 1.0
 
-    def _compute_propulsion(self, flight_point: FlightPoint):
+    def compute_propulsion(self, flight_point: FlightPoint):
         flight_point.thrust_rate = self.thrust_rate
         flight_point.thrust_is_regulated = False
         self.propulsion.compute_flight_points(flight_point)
@@ -436,12 +439,12 @@ class RegulatedThrustSegment(FlightSegment, ABC):
     def __post_init__(self):
         self.target.mach = self.CONSTANT_VALUE
 
-    def _compute_propulsion(self, flight_point: FlightPoint):
+    def compute_propulsion(self, flight_point: FlightPoint):
         flight_point.thrust = flight_point.drag
         flight_point.thrust_is_regulated = True
         self.propulsion.compute_flight_points(flight_point)
 
-    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
 
@@ -462,6 +465,6 @@ class FixedDurationSegment(FlightSegment, ABC):
             self.target.time = self.target.time + start.time
         return super().compute_from(start)
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
         return self.target.time - current.time

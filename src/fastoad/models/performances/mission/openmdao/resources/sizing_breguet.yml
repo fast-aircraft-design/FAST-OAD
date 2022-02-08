@@ -19,7 +19,7 @@ phases:
             value: 250
             unit: km
         mass_ratio: settings:mission:sizing:breguet:descent:mass_ratio
-  reserve:
+  global_reserve:
     parts:
       - segment: transition
         target:
@@ -44,4 +44,4 @@ missions:
   sizing:
     parts:
       - route: main_route
-      - phase: reserve
+      - phase: global_reserve

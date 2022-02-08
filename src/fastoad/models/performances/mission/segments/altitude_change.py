@@ -89,7 +89,7 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
                 # of the original order in target CL, that is not used otherwise.
                 self.target.CL = self.target.altitude  # pylint: disable=invalid-name
                 # let's put a numerical, negative value in self.target.altitude to
-                # ensure there will be no problem in self._get_distance_to_target()
+                # ensure there will be no problem in self.get_distance_to_target()
                 self.target.altitude = -1000.0
                 self.interrupt_if_getting_further_from_target = False
             else:
@@ -108,7 +108,7 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
 
         return super().compute_from(start)
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
 
         # Max flight level is first priority
@@ -164,6 +164,6 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
             "No valid target definition for altitude change."
         )
 
-    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
-        gamma = (thrust - drag) / mass / g
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+        gamma = (flight_point.thrust - flight_point.drag) / flight_point.mass / g
         return gamma, 0.0

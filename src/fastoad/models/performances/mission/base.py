@@ -1,6 +1,6 @@
 """Base classes for mission computation."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -52,11 +52,21 @@ class FlightSequence(IFlightPart):
         part_start = start
         for part in self.flight_sequence:
             flight_points = part.compute_from(part_start)
-            if len(parts) > 0:
-                # First point of the segment is omitted, as it is the
-                # last of previous segment.
-                if len(flight_points) > 1:
-                    parts.append(flight_points.iloc[1:])
+            if len(parts) > 0 and len(flight_points) > 1:
+                # First point of the segment is omitted, as it is the last of previous segment.
+                #
+                # But sometimes (especially in the case of simplistic segments), the new first
+                # point may contain more information than the previous last one. In such case,
+                # it is interesting to complete the previous last one.
+                last_flight_points = parts[-1]
+                last_index = last_flight_points.index[-1]
+                for name in flight_points.columns:
+                    value = last_flight_points.loc[last_index, name]
+                    if not value:
+                        last_flight_points.loc[last_index, name] = flight_points.loc[0, name]
+
+                parts.append(flight_points.iloc[1:])
+
             else:
                 # But it is kept if the computed segment is the first one.
                 parts.append(flight_points)

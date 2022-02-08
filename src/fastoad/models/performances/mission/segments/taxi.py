@@ -12,9 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Tuple
-from copy import deepcopy
 
 import pandas as pd
 
@@ -38,7 +38,7 @@ class TaxiSegment(ManualThrustSegment, FixedDurationSegment, mission_file_keywor
     time_step: float = 60.0
     true_airspeed: float = 0.0
 
-    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:

@@ -30,7 +30,7 @@ class SpeedChangeSegment(ManualThrustSegment, mission_file_keyword="speed_change
     and mach.
     """
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         if self.target.true_airspeed is not None:
             return self.target.true_airspeed - flight_points[-1].true_airspeed
         if self.target.equivalent_airspeed is not None:
@@ -42,6 +42,6 @@ class SpeedChangeSegment(ManualThrustSegment, mission_file_keyword="speed_change
             "No valid target definition for altitude change."
         )
 
-    def _get_gamma_and_acceleration(self, mass, drag, thrust) -> Tuple[float, float]:
-        acceleration = (thrust - drag) / mass
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+        acceleration = (flight_point.thrust - flight_point.drag) / flight_point.mass
         return 0.0, acceleration

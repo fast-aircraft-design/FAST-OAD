@@ -2,7 +2,7 @@
 Test module for OpenMDAO versions of RubberEngine
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -47,6 +47,8 @@ def test_OMRubberEngineComponent():
     ivc.add_output("data:propulsion:MTO_thrust", 1, units="N")
     ivc.add_output("data:propulsion:rubber_engine:maximum_mach", 0.95)
     ivc.add_output("data:propulsion:rubber_engine:design_altitude", 10000, units="m")
+    ivc.add_output("data::rubber_engine:design_altitude", 10000, units="m")
+    ivc.add_output("data:geometry:propulsion:engine:count", 1)
 
     ivc.add_output("data:propulsion:mach", [machs, machs])
     ivc.add_output("data:propulsion:altitude", [altitudes, altitudes], units="m")
@@ -91,6 +93,7 @@ def test_OMRubberEngineComponentWithSFCCorrections():
     ivc.add_output("data:propulsion:MTO_thrust", 1, units="N")
     ivc.add_output("data:propulsion:rubber_engine:maximum_mach", 0.95)
     ivc.add_output("data:propulsion:rubber_engine:design_altitude", 10000, units="m")
+    ivc.add_output("data:geometry:propulsion:engine:count", 1)
 
     ivc.add_output("data:propulsion:mach", [machs, machs])
     ivc.add_output("data:propulsion:altitude", [altitudes, altitudes], units="m")

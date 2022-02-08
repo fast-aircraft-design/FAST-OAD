@@ -2,7 +2,7 @@
 OpenMDAO component for time-step computation of missions.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,8 +15,10 @@ OpenMDAO component for time-step computation of missions.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os.path as pth
 from collections import namedtuple
 from importlib.resources import path
+from os import makedirs
 
 import numpy as np
 import openmdao.api as om
@@ -24,7 +26,7 @@ import pandas as pd
 from scipy.constants import foot
 
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import FuelEngineSet, IOMPropulsionWrapper
+from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
 from . import resources
@@ -115,6 +117,12 @@ class Mission(om.Group):
             desc="If True, TOW will be considered equal to MTOW and mission payload will be "
             "considered equal to design payload.",
         )
+        self.options.declare(
+            "reference_area_variable",
+            default="data:geometry:wing:area",
+            types=str,
+            desc="Defines the name of the variable for providing aircraft reference surface area.",
+        )
 
     def setup(self):
         if "::" in self.options["mission_file_path"]:
@@ -136,8 +144,8 @@ class Mission(om.Group):
         if self.options["adjust_fuel"]:
             self.options["compute_TOW"] = True
             self.connect(
-                "data:mission:%s:needed_onboard_fuel_at_takeoff" % mission_name,
-                "data:mission:%s:onboard_fuel_at_takeoff" % mission_name,
+                f"data:mission:{mission_name}:needed_onboard_fuel_at_takeoff",
+                f"data:mission:{mission_name}:onboard_fuel_at_takeoff",
             )
             if self.options["add_solver"]:
                 self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4, iprint=0)
@@ -177,14 +185,14 @@ class Mission(om.Group):
         if self.options["is_sizing"]:
             payload_var = "data:weight:aircraft:payload"
         else:
-            payload_var = "data:mission:%s:payload" % mission_name
+            payload_var = f"data:mission:{mission_name}:payload"
 
         zfw_computation = om.AddSubtractComp()
         zfw_computation.add_equation(
-            "data:mission:%s:ZFW" % mission_name,
+            f"data:mission:{mission_name}:ZFW",
             ["data:weight:aircraft:OWE", payload_var],
             units="kg",
-            desc='Zero Fuel Weight for mission "%s"' % mission_name,
+            desc=f'Zero Fuel Weight for mission "{mission_name}"',
         )
         return zfw_computation
 
@@ -197,13 +205,13 @@ class Mission(om.Group):
         """
         tow_computation = om.AddSubtractComp()
         tow_computation.add_equation(
-            "data:mission:%s:TOW" % mission_name,
+            f"data:mission:{mission_name}:TOW",
             [
-                "data:mission:%s:ZFW" % mission_name,
-                "data:mission:%s:onboard_fuel_at_takeoff" % mission_name,
+                f"data:mission:{mission_name}:ZFW",
+                f"data:mission:{mission_name}:onboard_fuel_at_takeoff",
             ],
             units="kg",
-            desc='TakeOff Weight for mission "%s"' % mission_name,
+            desc=f'TakeOff Weight for mission "{mission_name}"',
         )
         return tow_computation
 
@@ -216,16 +224,16 @@ class Mission(om.Group):
         """
         block_fuel_computation = om.AddSubtractComp()
         block_fuel_computation.add_equation(
-            "data:mission:%s:block_fuel" % mission_name,
+            f"data:mission:{mission_name}:block_fuel",
             [
-                "data:mission:%s:TOW" % mission_name,
-                "data:mission:%s:taxi_out:fuel" % mission_name,
-                "data:mission:%s:takeoff:fuel" % mission_name,
-                "data:mission:%s:ZFW" % mission_name,
+                f"data:mission:{mission_name}:TOW",
+                f"data:mission:{mission_name}:taxi_out:fuel",
+                f"data:mission:{mission_name}:takeoff:fuel",
+                f"data:mission:{mission_name}:ZFW",
             ],
             units="kg",
             scaling_factors=[1, 1, 1, -1],
-            desc='Loaded fuel before taxi-out for mission "%s"' % mission_name,
+            desc=f'Loaded fuel before taxi-out for mission "{mission_name}"',
         )
         return block_fuel_computation
 
@@ -265,6 +273,8 @@ class MissionComponent(om.ExplicitComponent):
                                        computed only once.
           - is_sizing: if True, TOW will be considered equal to MTOW and mission payload will be
                        considered equal to design payload.
+          - reference_area_variable: Defines the name of the variable for providing aircraft
+                                     reference surface area.
         """
         super().__init__(**kwargs)
         self.flight_points = None
@@ -279,6 +289,9 @@ class MissionComponent(om.ExplicitComponent):
         self.options.declare("mission_wrapper", types=MissionWrapper)
         self.options.declare("mission_name", types=str)
         self.options.declare("is_sizing", default=False, types=bool)
+        self.options.declare(
+            "reference_area_variable", default="data:geometry:wing:area", types=str
+        )
 
     def setup(self):
         self._engine_wrapper = self._get_engine_wrapper()
@@ -289,75 +302,74 @@ class MissionComponent(om.ExplicitComponent):
         mission_name = self.options["mission_name"]
 
         self._mission_vars = _MissionVariables(
-            TOW="data:mission:%s:TOW" % mission_name,
-            NEEDED_BLOCK_FUEL="data:mission:%s:needed_block_fuel" % mission_name,
-            NEEDED_FUEL_AT_TAKEOFF="data:mission:%s:needed_onboard_fuel_at_takeoff" % mission_name,
-            TAXI_OUT_DURATION="data:mission:%s:taxi_out:duration" % mission_name,
-            TAXI_OUT_THRUST_RATE="data:mission:%s:taxi_out:thrust_rate" % mission_name,
-            TAXI_OUT_DISTANCE="data:mission:%s:taxi_out:distance" % mission_name,
-            TAXI_OUT_FUEL="data:mission:%s:taxi_out:fuel" % mission_name,
-            TAKEOFF_FUEL="data:mission:%s:takeoff:fuel" % mission_name,
-            TAKEOFF_ALTITUDE="data:mission:%s:takeoff:altitude" % mission_name,
-            TAKEOFF_V2="data:mission:%s:takeoff:V2" % mission_name,
+            TOW=f"data:mission:{mission_name}:TOW",
+            NEEDED_BLOCK_FUEL=f"data:mission:{mission_name}:needed_block_fuel",
+            NEEDED_FUEL_AT_TAKEOFF=f"data:mission:{mission_name}:needed_onboard_fuel_at_takeoff",
+            TAXI_OUT_DURATION=f"data:mission:{mission_name}:taxi_out:duration",
+            TAXI_OUT_THRUST_RATE=f"data:mission:{mission_name}:taxi_out:thrust_rate",
+            TAXI_OUT_DISTANCE=f"data:mission:{mission_name}:taxi_out:distance",
+            TAXI_OUT_FUEL=f"data:mission:{mission_name}:taxi_out:fuel",
+            TAKEOFF_FUEL=f"data:mission:{mission_name}:takeoff:fuel",
+            TAKEOFF_ALTITUDE=f"data:mission:{mission_name}:takeoff:altitude",
+            TAKEOFF_V2=f"data:mission:{mission_name}:takeoff:V2",
         )
 
-        self.add_input("data:geometry:propulsion:engine:count", 2)
-        self.add_input("data:geometry:wing:area", np.nan, units="m**2")
+        self.add_input(self.options["reference_area_variable"], np.nan, units="m**2")
         self.add_input(
             self._mission_vars.TOW,
             np.nan,
             units="kg",
-            desc='TakeOff Weight for mission "%s"' % mission_name,
+            desc=f'TakeOff Weight for mission "{mission_name}"',
         )
         self.add_input(
             self._mission_vars.TAXI_OUT_DURATION,
             np.nan,
             units="s",
-            desc='duration of taxi-out in mission "%s"' % mission_name,
+            desc=f'duration of taxi-out in mission "{mission_name}"',
         )
         self.add_input(
             self._mission_vars.TAXI_OUT_THRUST_RATE,
             np.nan,
             units=None,
-            desc='thrust rate during taxi-out in mission "%s"' % mission_name,
+            desc=f'thrust rate during taxi-out in mission "{mission_name}"',
         )
         self.add_input(
             self._mission_vars.TAKEOFF_ALTITUDE,
             np.nan,
             units="m",
-            desc='altitude of airport for mission "%s"' % mission_name,
+            desc=f'altitude of airport for mission "{mission_name}"',
         )
         self.add_input(
             self._mission_vars.TAKEOFF_FUEL,
             np.nan,
             units="kg",
-            desc='burned fuel during takeoff phase of mission "%s"' % mission_name,
+            desc=f'burned fuel during takeoff phase of mission "{mission_name}"',
         )
         self.add_input(
             self._mission_vars.TAKEOFF_V2,
             np.nan,
             units="m/s",
-            desc='takeoff safety speed for mission "%s"' % mission_name,
+            desc=f'takeoff safety speed for mission "{mission_name}"',
         )
         self.add_output(
             self._mission_vars.TAXI_OUT_DISTANCE,
             units="m",
-            desc='distance during taxi-out of mission "%s"' % mission_name,
+            desc=f'distance during taxi-out of mission "{mission_name}"',
         )
         self.add_output(
             self._mission_vars.TAXI_OUT_FUEL,
             units="kg",
-            desc='burned fuel during taxi-out of mission "%s"' % mission_name,
+            desc=f'burned fuel during taxi-out of mission "{mission_name}"',
         )
         self.add_output(
             self._mission_vars.NEEDED_BLOCK_FUEL,
             units="kg",
-            desc='Needed fuel to complete mission "%s", including reserve fuel' % mission_name,
+            desc=f'Needed fuel to complete mission "{mission_name}", including reserve fuel',
         )
         self.add_output(
             self._mission_vars.NEEDED_FUEL_AT_TAKEOFF,
             units="kg",
-            desc='fuel quantity at instant of takeoff of mission "%s"' % mission_name,
+            desc=f'fuel quantity at instant of takeoff of mission "{mission_name}"',
         )
 
         if self.options["is_sizing"]:
@@ -369,7 +381,7 @@ class MissionComponent(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         iter_count = self.iter_count_without_approx
-        message_prefix = "Mission computation - iteration %i : " % iter_count
+        message_prefix = f"Mission computation - iteration {iter_count:d} : "
         if iter_count == 0 and self.options["use_initializer_iteration"]:
             _LOGGER.info(message_prefix + "Using initializer computation. OTHER ITERATIONS NEEDED.")
             self._compute_breguet(inputs, outputs)
@@ -387,9 +399,7 @@ class MissionComponent(om.ExplicitComponent):
         :param inputs: OpenMDAO input vector
         :param outputs: OpenMDAO output vector
         """
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
 
         high_speed_polar = self._get_initial_polar(inputs)
         distance = np.asscalar(
@@ -446,11 +456,8 @@ class MissionComponent(om.ExplicitComponent):
         :param inputs: OpenMDAO input vector
         :param outputs: OpenMDAO output vector
         """
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
-
-        reference_area = inputs["data:geometry:wing:area"]
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+        reference_area = inputs[self.options["reference_area_variable"]]
 
         self._mission_wrapper.propulsion = propulsion_model
         self._mission_wrapper.reference_area = reference_area
@@ -501,12 +508,13 @@ class MissionComponent(om.ExplicitComponent):
 
         self.flight_points = self.flight_points.applymap(as_scalar)
         rename_dict = {
-            field_name: "%s [%s]" % (field_name, unit)
+            field_name: f"{field_name} [{unit}]"
             for field_name, unit in FlightPoint.get_units().items()
         }
         self.flight_points.rename(columns=rename_dict, inplace=True)
 
         if self.options["out_file"]:
+            makedirs(pth.dirname(self.options["out_file"]), exist_ok=True)
             self.flight_points.to_csv(self.options["out_file"])
 
     def _compute_taxi_out(self, inputs, outputs, propulsion_model):

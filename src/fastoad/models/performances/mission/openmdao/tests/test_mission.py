@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,19 +13,14 @@
 
 
 import os.path as pth
-from os import mkdir
 from shutil import rmtree
 
 import pytest
 from numpy.testing import assert_allclose
-from openmdao.core.component import Component
 from scipy.constants import foot, knot
 
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
-from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import AbstractFuelPropulsion, IOMPropulsionWrapper, IPropulsion
-from fastoad.module_management.service_registry import RegisterPropulsion
 from ..mission import Mission, MissionComponent
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
@@ -34,52 +29,9 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 
 
-# Propulsion definition --------------------------------------------------------
-class DummyEngine(AbstractFuelPropulsion):
-    def __init__(self, max_thrust, max_sfc):
-        """
-        Dummy engine model.
-
-        Max thrust does not depend on flight conditions.
-        SFC varies linearly with thrust_rate, from max_sfc/2. when thrust rate is 0.,
-        to max_sfc when thrust_rate is 1.0
-
-        :param max_thrust: thrust when thrust rate = 1.0
-        :param max_sfc: SFC when thrust rate = 1.0
-        """
-        self.max_thrust = max_thrust
-        self.max_sfc = max_sfc
-
-    def compute_flight_points(self, flight_point: FlightPoint):
-
-        if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
-            flight_point.thrust_rate = flight_point.thrust / self.max_thrust
-        else:
-            flight_point.thrust = self.max_thrust * flight_point.thrust_rate
-
-        flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0
-
-
-class DummyEngineWrapper(IOMPropulsionWrapper):
-    def setup(self, component: Component):
-        pass
-
-    @staticmethod
-    def get_model(inputs) -> IPropulsion:
-        return DummyEngine(1.2e5, 1.5e-5)
-
-
-# Using the decorator directly on the class would prevent it from being available
-# in this file.
-RegisterPropulsion("test.wrapper.propulsion.dummy_engine")(DummyEngineWrapper)
-
-# End of propulsion definition -------------------------------------------------
-
-
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
-    mkdir(RESULTS_FOLDER_PATH)
 
 
 def plot_flight(flight_points, fig_filename):
@@ -135,7 +87,7 @@ def plot_flight(flight_points, fig_filename):
     plt.close()
 
 
-def test_mission_component(cleanup):
+def test_mission_component(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
@@ -143,18 +95,51 @@ def test_mission_component(cleanup):
     problem = run_system(
         MissionComponent(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "test_mission.csv"),
+            out_file=pth.join(RESULTS_FOLDER_PATH, "mission.csv"),
             use_initializer_iteration=False,
             mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_mission.yml")),
             mission_name="operational",
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
     # plot_flight(problem.model.component.flight_points, "test_mission.png")
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6589.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6590.0, atol=1.0)
+
+    assert_allclose(
+        problem["data:mission:operational:main_route:initial_climb:duration"], 34.0, atol=1.0
+    )
+    assert_allclose(
+        problem["data:mission:operational:main_route:initial_climb:fuel"], 121.0, atol=1.0
+    )
+    assert_allclose(
+        problem["data:mission:operational:main_route:initial_climb:distance"], 3600.0, atol=1.0
+    )
+
+    assert_allclose(problem["data:mission:operational:main_route:climb:duration"], 236.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:main_route:climb:fuel"], 727.0, atol=1.0)
+    assert_allclose(
+        problem["data:mission:operational:main_route:climb:distance"], 43065.0, atol=1.0
+    )
+
+    assert_allclose(
+        problem["data:mission:operational:main_route:cruise:duration"], 14734.0, atol=1.0
+    )
+    assert_allclose(problem["data:mission:operational:main_route:cruise:fuel"], 5167.0, atol=1.0)
+    assert_allclose(
+        problem["data:mission:operational:main_route:cruise:distance"], 3392590.0, atol=1.0
+    )
+
+    assert_allclose(
+        problem["data:mission:operational:main_route:descent:duration"], 1424.0, atol=1.0
+    )
+    assert_allclose(problem["data:mission:operational:main_route:descent:fuel"], 192.0, atol=1.0)
+    assert_allclose(
+        problem["data:mission:operational:main_route:descent:distance"], 264451.0, atol=1.0
+    )
 
 
-def test_mission_component_breguet(cleanup):
+def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
@@ -162,18 +147,39 @@ def test_mission_component_breguet(cleanup):
     problem = run_system(
         MissionComponent(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "test_breguet.csv"),
+            out_file=pth.join(RESULTS_FOLDER_PATH, "breguet.csv"),
             use_initializer_iteration=False,
             mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_breguet.yml")),
             mission_name="operational",
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
     # plot_flight(problem.model.component.flight_points, "test_mission.png")
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6353.0, atol=1.0)
 
+    assert_allclose(problem["data:mission:operational:main_route:climb:duration"], 0.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:main_route:climb:fuel"], 840.0, atol=1.0)
+    assert_allclose(
+        problem["data:mission:operational:main_route:climb:distance"], 463000.0, atol=1.0
+    )
 
-def test_mission_group_without_loop(cleanup):
+    assert_allclose(
+        problem["data:mission:operational:main_route:cruise:duration"], 11956.0, atol=1.0
+    )
+    assert_allclose(problem["data:mission:operational:main_route:cruise:fuel"], 4294.0, atol=1.0)
+    assert_allclose(
+        problem["data:mission:operational:main_route:cruise:distance"], 2778000.0, atol=1.0
+    )
+
+    assert_allclose(problem["data:mission:operational:main_route:descent:duration"], 0.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:main_route:descent:fuel"], 1025.0, atol=1.0)
+    assert_allclose(
+        problem["data:mission:operational:main_route:descent:distance"], 463000.0, atol=1.0
+    )
+
+
+def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
@@ -181,10 +187,11 @@ def test_mission_group_without_loop(cleanup):
         run_system(
             Mission(
                 propulsion_id="test.wrapper.propulsion.dummy_engine",
-                out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
+                out_file=pth.join(RESULTS_FOLDER_PATH, "unlooped_mission_group.csv"),
                 use_initializer_iteration=False,
                 mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
                 adjust_fuel=False,
+                reference_area_variable="data:geometry:aircraft:reference_area",
             ),
             ivc,
         )
@@ -192,11 +199,12 @@ def test_mission_group_without_loop(cleanup):
     problem = run_system(
         Mission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
+            out_file=pth.join(RESULTS_FOLDER_PATH, "unlooped_mission_group.csv"),
             use_initializer_iteration=False,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
             mission_name="operational",
             adjust_fuel=False,
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
@@ -204,17 +212,18 @@ def test_mission_group_without_loop(cleanup):
     assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
 
 
-def test_mission_group_breguet_without_loop(cleanup):
+def test_mission_group_breguet_without_loop(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         Mission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
+            out_file=pth.join(RESULTS_FOLDER_PATH, "unlooped_breguet_mission_group.csv"),
             use_initializer_iteration=False,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
             adjust_fuel=False,
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
@@ -222,7 +231,7 @@ def test_mission_group_breguet_without_loop(cleanup):
     assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
 
 
-def test_mission_group_with_loop(cleanup):
+def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     vars = DataFile(input_file_path)
@@ -232,11 +241,12 @@ def test_mission_group_with_loop(cleanup):
     problem = run_system(
         Mission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "test_looped_mission_group.csv"),
+            out_file=pth.join(RESULTS_FOLDER_PATH, "looped_mission_group.csv"),
             use_initializer_iteration=True,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
             mission_name="operational",
             add_solver=True,
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
@@ -264,7 +274,7 @@ def test_mission_group_with_loop(cleanup):
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5682.0, atol=1.0)
 
 
-def test_mission_group_breguet_with_loop(cleanup):
+def test_mission_group_breguet_with_loop(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     vars = DataFile(input_file_path)
@@ -274,10 +284,11 @@ def test_mission_group_breguet_with_loop(cleanup):
     problem = run_system(
         Mission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "test_looped_mission_group.csv"),
+            out_file=pth.join(RESULTS_FOLDER_PATH, "looped_breguet_mission_group.csv"),
             use_initializer_iteration=True,
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
             add_solver=True,
+            reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
     )
@@ -302,6 +313,7 @@ def test_mission_group_breguet_with_loop(cleanup):
         + problem["data:mission:operational:takeoff:fuel"],
         atol=1.0,
     )
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5626.0, atol=1.0)
     assert_allclose(
         problem["data:mission:operational:needed_onboard_fuel_at_takeoff"], 5430.0, atol=1.0
     )
