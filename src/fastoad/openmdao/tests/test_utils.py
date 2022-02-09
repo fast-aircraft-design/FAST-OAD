@@ -2,7 +2,7 @@
 Test module for OpenMDAO checks
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -76,11 +76,13 @@ def test_get_unconnected_input_names_sellar_components():
 
 
 def test_get_unconnected_input_names_full_sellar():
-    expected_mandatory_variables = set()
-    expected_optional_variables = set()
+    expected_mandatory_variables = {"Functions.z"}
+    expected_optional_variables = {"Disc1.z", "Disc2.z"}
     _test_problem(
         om.Problem(Sellar()), expected_mandatory_variables, expected_optional_variables, False
     )
+    expected_mandatory_variables = {"z"}
+    expected_optional_variables = set()
     _test_problem(
         om.Problem(Sellar()), expected_mandatory_variables, expected_optional_variables, True
     )

@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,18 +11,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from copy import deepcopy
 from typing import Tuple
 
 import numpy as np
 import openmdao.api as om
 from openmdao.core.constants import _SetupStatus
 
-from fastoad.io import VariableIO, DataFile
-from fastoad.openmdao.validity_checker import ValidityDomainChecker
-from fastoad.openmdao.variables import VariableList
+from fastoad.io import DataFile, VariableIO
 from fastoad.openmdao.exceptions import (
     FASTOpenMDAONanInInputFile,
 )
+from fastoad.openmdao.validity_checker import ValidityDomainChecker
+from fastoad.openmdao.variables import VariableList
 
 INPUT_SYSTEM_NAME = "inputs"
 
@@ -65,7 +66,7 @@ class FASTOADProblem(om.Problem):
         """
         super().setup(*args, **kwargs)
         if self._read_inputs_after_setup:
-            self._read_inputs()
+            self._read_inputs_with_setup_done()
 
     def write_outputs(self):
         """
@@ -88,9 +89,12 @@ class FASTOADProblem(om.Problem):
         """
         Reads inputs of the problem.
         """
-        if self._metadata is not None and self._metadata["setup_status"] == _SetupStatus.POST_SETUP:
-            self._read_inputs()
+        if self._metadata and self._metadata["setup_status"] == _SetupStatus.POST_SETUP:
+            self._read_inputs_with_setup_done()
         else:
+            self._read_inputs_without_setup_done()
+            # Input reading still needs to be done after setup, to ensure that IVC values
+            # will be properly set by new inputs.
             self._read_inputs_after_setup = True
 
     def _get_problem_inputs(self) -> Tuple[VariableList, VariableList]:
@@ -120,11 +124,46 @@ class FASTOADProblem(om.Problem):
 
         return input_variables, unused_variables
 
-    def _read_inputs(self):
+    def _read_inputs_with_setup_done(self):
         """
-        Set initial values of inputs for the configured problem.
+        Set initial values of inputs. self.setup() must have been run.
         """
         input_variables, unused_variables = self._get_problem_inputs()
         self.additional_variables = unused_variables
         for input_var in input_variables:
+            # set_val() will crash if input_var.metadata["val"] is a list, so
+            # we ensure it is a numpy array
+            input_var.metadata["val"] = np.asarray(input_var.metadata["val"])
             self.set_val(input_var.name, **input_var.metadata)
+
+    def _read_inputs_without_setup_done(self):
+        """
+        Set initial values of inputs. self.setup() must have NOT been run.
+
+        Input values that match an existing IVC are not taken into account
+        """
+        input_variables, unused_variables = self._get_problem_inputs()
+        self.additional_variables = unused_variables
+        tmp_prob = deepcopy(self)
+        tmp_prob.setup()
+        ivc_vars = tmp_prob.model.get_io_metadata("output", tags="indep_var")
+        for meta in ivc_vars.values():
+            try:
+                del input_variables[meta["prom_name"]]
+            except ValueError:
+                pass
+        if input_variables:
+            self._insert_input_ivc(input_variables.to_ivc())
+
+    def _insert_input_ivc(self, ivc: om.IndepVarComp, subsystem_name="fastoad_inputs"):
+        tmp_prob = deepcopy(self)
+        tmp_prob.setup()
+
+        previous_order = [
+            system.name
+            for system in tmp_prob.model.system_iter(recurse=False)
+            if system.name != "_auto_ivc"
+        ]
+
+        self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
+        self.model.set_order([subsystem_name] + previous_order)
