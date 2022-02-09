@@ -301,7 +301,7 @@ class VariableList(list):
             "output", metadata_keys=metadata_keys, excludes="_auto_ivc.*"
         )
         indep_outputs = problem.model.get_io_metadata(
-            "output", metadata_keys=metadata_keys, tags="indep_var", excludes="_auto_ivc.*"
+            "output", metadata_keys=metadata_keys, tags="indep_var"
         )
 
         # Move outputs from IndepVarComps into inputs
@@ -326,7 +326,10 @@ class VariableList(list):
                 # Check connections
                 for name, metadata in inputs.copy().items():
                     source_name = problem.model.get_source(name)
-                    if not source_name.startswith("_auto_ivc.") and source_name != name:
+                    if (
+                        not (source_name in indep_outputs or source_name.startswith("_auto_ivc."))
+                        and source_name != name
+                    ):
                         # This variable is connected to another variable of the problem: it is
                         # not an actual problem input. Let's move it to outputs.
                         del inputs[name]
@@ -346,7 +349,7 @@ class VariableList(list):
             final_inputs = {
                 metadata["prom_name"]: dict(metadata, is_input=True) for metadata in inputs.values()
             }
-            final_outputs = cls._get_promoted_outputs(outputs, final_inputs)
+            final_outputs = cls._get_promoted_outputs(outputs)
 
             # When variables are promoted, we may have retained a definition of the variable
             # that does not have any description, whereas a description is available in
@@ -383,17 +386,16 @@ class VariableList(list):
         elif io_status == "outputs":
             variables = output_vars
         else:
-            raise TypeError("Unknown value for io_status")
+            raise ValueError("Unknown value for io_status")
 
         return variables
 
     @classmethod
-    def _get_promoted_outputs(cls, outputs: dict, promoted_inputs: dict) -> dict:
+    def _get_promoted_outputs(cls, outputs: dict) -> dict:
         """
 
-        :param outputs:
-        :param promoted_inputs:
-        :return: dict (name, metadata) with only promoted names as keys
+        :param outputs: dict (name, metadata) with non-promoted names as keys
+        :return: dict (name, metadata) with promoted names as keys
         """
         promoted_outputs = {}
         for metadata in outputs.values():
@@ -426,8 +428,8 @@ class VariableList(list):
                     # We already have a non-NaN value and current variable provides no unit.
                     # No need for using the current variable.
                     continue
-            if prom_name not in promoted_inputs:
-                promoted_outputs[prom_name] = metadata
+            promoted_outputs[prom_name] = metadata
+
         return promoted_outputs
 
     @classmethod
