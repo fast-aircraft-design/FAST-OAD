@@ -343,47 +343,10 @@ class VariableList(list):
             final_inputs = inputs
             final_outputs = outputs
         else:
-            # Remove from inputs the variables that are outputs of some other component
-            promoted_inputs = {
+            final_inputs = {
                 metadata["prom_name"]: dict(metadata, is_input=True) for metadata in inputs.values()
             }
-
-            promoted_outputs = {}
-            for metadata in outputs.values():
-                prom_name = metadata["prom_name"]
-                # In case we get promoted names, several variables can match the same
-                # promoted name, with possibly different declaration for default values.
-                # We retain the first non-NaN value with defined units. If no units is
-                # ever defined, the first non-NaN value is kept.
-                # A non-NaN value with no units will be retained against a NaN value with
-                # defined units.
-
-                if prom_name in promoted_outputs:
-                    # prom_name has already been encountered.
-                    # Note: the succession of "if" is to help understanding, hopefully :)
-
-                    if not np.all(np.isnan(promoted_outputs[prom_name]["val"])):
-                        if promoted_outputs[prom_name]["units"] is not None:
-                            # We already have a non-NaN value with defined units for current
-                            # promoted name. No need for using the current variable.
-                            continue
-                        if np.all(np.isnan(metadata["val"])):
-                            # We already have a non-NaN value and current variable has a NaN value,
-                            # so it can only add information about units. We keep the non-NaN value
-                            continue
-
-                    if (
-                        np.all(np.isnan(promoted_outputs[prom_name]["val"]))
-                        and metadata["units"] is None
-                    ):
-                        # We already have a non-NaN value and current variable provides no unit.
-                        # No need for using the current variable.
-                        continue
-                if prom_name not in promoted_inputs:
-                    promoted_outputs[prom_name] = metadata
-
-            final_inputs = promoted_inputs
-            final_outputs = promoted_outputs
+            final_outputs = cls._get_promoted_outputs(outputs, final_inputs)
 
             # When variables are promoted, we may have retained a definition of the variable
             # that does not have any description, whereas a description is available in
@@ -423,6 +386,49 @@ class VariableList(list):
             raise TypeError("Unknown value for io_status")
 
         return variables
+
+    @classmethod
+    def _get_promoted_outputs(cls, outputs: dict, promoted_inputs: dict) -> dict:
+        """
+
+        :param outputs:
+        :param promoted_inputs:
+        :return: dict (name, metadata) with only promoted names as keys
+        """
+        promoted_outputs = {}
+        for metadata in outputs.values():
+            prom_name = metadata["prom_name"]
+            # In case we get promoted names, several variables can match the same
+            # promoted name, with possibly different declaration for default values.
+            # We retain the first non-NaN value with defined units. If no units is
+            # ever defined, the first non-NaN value is kept.
+            # A non-NaN value with no units will be retained against a NaN value with
+            # defined units.
+
+            if prom_name in promoted_outputs:
+                # prom_name has already been encountered.
+                # Note: the succession of "if" is to help understanding, hopefully :)
+
+                if not np.all(np.isnan(promoted_outputs[prom_name]["val"])):
+                    if promoted_outputs[prom_name]["units"] is not None:
+                        # We already have a non-NaN value with defined units for current
+                        # promoted name. No need for using the current variable.
+                        continue
+                    if np.all(np.isnan(metadata["val"])):
+                        # We already have a non-NaN value and current variable has a NaN value,
+                        # so it can only add information about units. We keep the non-NaN value
+                        continue
+
+                if (
+                    np.all(np.isnan(promoted_outputs[prom_name]["val"]))
+                    and metadata["units"] is None
+                ):
+                    # We already have a non-NaN value and current variable provides no unit.
+                    # No need for using the current variable.
+                    continue
+            if prom_name not in promoted_inputs:
+                promoted_outputs[prom_name] = metadata
+        return promoted_outputs
 
     @classmethod
     @deprecated(
