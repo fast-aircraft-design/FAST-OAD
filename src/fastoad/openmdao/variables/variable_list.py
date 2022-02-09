@@ -22,6 +22,7 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 from deprecated import deprecated
+from openmdao.core.constants import _SetupStatus
 
 from fastoad.openmdao._utils import get_unconnected_input_names
 from .variable import METADATA_TO_IGNORE, Variable
@@ -260,10 +261,6 @@ class VariableList(list):
         """
         Creates a VariableList instance containing inputs and outputs of an OpenMDAO Problem.
 
-        .. warning::
-
-            problem.setup() must have been run.
-
         The inputs (is_input=True) correspond to the variables of IndepVarComp
         components and all the unconnected variables.
 
@@ -280,8 +277,9 @@ class VariableList(list):
         :return: VariableList instance
         """
 
-        # from_problem affects integrity of problem instance
         problem = deepcopy(problem)
+        if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
+            problem.setup()
 
         # Get inputs and outputs
         metadata_keys = (

@@ -2,7 +2,7 @@
 Module for testing VariableList.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -188,7 +188,13 @@ def _compare_variable_lists(vars: List[Variable], expected_vars: List[Variable])
 def test_get_variables_from_problem_with_an_explicit_component():
     problem = om.Problem()
     problem.model.add_subsystem("disc1", Disc1(), promotes=["*"])
+
+    vars_before_setup = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True
+    )
     problem.setup()
+    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
+    assert vars_before_setup == vars
 
     expected_vars = [
         Variable(name="x", val=np.array([np.nan]), units=None, desc="input x", is_input=True),
@@ -197,7 +203,6 @@ def test_get_variables_from_problem_with_an_explicit_component():
         Variable(name="y1", val=np.array([1.0]), units=None, is_input=False, desc="variable y1"),
     ]
 
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
     _compare_variable_lists(vars, expected_vars)
 
 
@@ -206,7 +211,12 @@ def test_get_variables_from_problem_with_a_group():
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
     problem = om.Problem(group)
+    vars_before_setup = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True
+    )
     problem.setup()
+    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
+    assert vars_before_setup == vars
 
     expected_vars = [
         Variable(name="x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
@@ -217,7 +227,6 @@ def test_get_variables_from_problem_with_a_group():
         ),
     ]
 
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
     _compare_variable_lists(vars, expected_vars)
 
 
@@ -763,9 +772,12 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     group.connect("disc2.y2", "y2")
 
     problem = om.Problem(group)
+    vars_before_setup = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True
+    )
     problem.setup()
-
     vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
+    assert vars_before_setup == vars
 
     # y1 and y2 should be outputs
     assert not vars["y1"].is_input
