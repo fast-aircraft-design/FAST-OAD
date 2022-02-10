@@ -35,3 +35,13 @@ class FASTOpenMDAONanInInputFile(FastError):
         )
 
         super().__init__(self, msg)
+
+
+class FASTOpenMDAODynamicShapeVariablesError(FastError):
+    """Used to identify dynamically shaped variables."""
+
+    def __init__(self, vars_metadata: dict):
+        self.vars_metadata = vars_metadata
+        super().__init__(
+            f"Found following variables with dynamic shapes: {list(vars_metadata.keys())}"
+        )

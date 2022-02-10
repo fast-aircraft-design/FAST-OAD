@@ -22,9 +22,13 @@ from fastoad.io import DataFile, VariableIO
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import VariableList
-from .exceptions import FASTOpenMDAONanInInputFile
+from .exceptions import FASTOpenMDAODynamicShapeVariablesError, FASTOpenMDAONanInInputFile
 
-INPUT_SYSTEM_NAME = "inputs"
+# Name of IVC that will contain input values
+INPUT_SYSTEM_NAME = "fastoad_inputs"
+
+# Name of IVC that will temporarily set shapes for dynamically shaped inputs
+SHAPER_SYSTEM_NAME = "fastoad_shaper"
 
 
 class FASTOADProblem(om.Problem):
@@ -65,7 +69,19 @@ class FASTOADProblem(om.Problem):
         """
         Set up the problem before run.
         """
+        problem_copy = deepcopy(self)
+        try:
+            problem_copy.model.options["check_dynamic_shapes"] = True
+            super(FASTOADProblem, problem_copy).setup(*args, **kwargs)
+        except FASTOpenMDAODynamicShapeVariablesError as exc:
+            vars_metadata = exc.vars_metadata
+            ivc = om.IndepVarComp()
+            for name, meta in vars_metadata.items():
+                ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
+            self.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
+
         super().setup(*args, **kwargs)
+
         if self._read_inputs_after_setup:
             self._read_inputs_with_setup_done()
 
@@ -147,7 +163,12 @@ class FASTOADProblem(om.Problem):
         self.additional_variables = unused_variables
         tmp_prob = deepcopy(self)
         tmp_prob.setup()
-        ivc_vars = tmp_prob.model.get_io_metadata("output", tags="indep_var")
+        # At this point, there may be non-fed dynamically shaped inputs, so the setup may
+        # create the "shaper" IVC, but we ignore it because we need to redefine these variables
+        # in input file.
+        ivc_vars = tmp_prob.model.get_io_metadata(
+            "output", tags="indep_var", excludes=f"{SHAPER_SYSTEM_NAME}.*"
+        )
         for meta in ivc_vars.values():
             try:
                 del input_variables[meta["prom_name"]]
@@ -156,14 +177,15 @@ class FASTOADProblem(om.Problem):
         if input_variables:
             self._insert_input_ivc(input_variables.to_ivc())
 
-    def _insert_input_ivc(self, ivc: om.IndepVarComp, subsystem_name="fastoad_inputs"):
+    def _insert_input_ivc(self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME):
         tmp_prob = deepcopy(self)
         tmp_prob.setup()
 
+        # We get order from copied problem, but we have to ignore the "shaper" and the auto IVCs.
         previous_order = [
             system.name
             for system in tmp_prob.model.system_iter(recurse=False)
-            if system.name != "_auto_ivc"
+            if system.name != "_auto_ivc" and system.name != SHAPER_SYSTEM_NAME
         ]
 
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
@@ -208,5 +230,34 @@ class FASTOADModel(AutoUnitsDefaultGroup):
         #: Definition of active submodels that will be applied during setup()
         self.active_submodels = {}
 
+    def initialize(self):
+        self.options.declare("check_dynamic_shapes", default=False, types=bool)
+
     def setup(self):
         RegisterSubmodel.active_models.update(self.active_submodels)
+
+    def configure(self):
+        if self.options["check_dynamic_shapes"]:
+
+            # First all outputs are identified. If a dynamically shaped input is fed by a matching
+            # output, its shaped will be determined.
+            output_var_names = []
+            for system in self.system_iter(recurse=False):
+                io_metadata = system.get_io_metadata("output")
+                output_var_names += [meta["prom_name"] for meta in io_metadata.values()]
+
+            dynamic_vars = {}
+            for system in self.system_iter(recurse=False):
+                io_metadata = system.get_io_metadata("input")
+                dynamic_vars.update(
+                    {
+                        meta["prom_name"]: meta
+                        for name, meta in io_metadata.items()
+                        if meta["shape"] is None and meta["prom_name"] not in output_var_names
+                    }
+                )
+
+            if len(dynamic_vars) > 0:
+                raise FASTOpenMDAODynamicShapeVariablesError(dynamic_vars)
+
+        super().configure()
