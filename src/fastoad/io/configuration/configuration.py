@@ -112,7 +112,8 @@ class FASTOADProblemConfigurator:
         if self._serializer.data is None:
             raise RuntimeError("read configuration file first")
 
-        problem = FASTOADProblem(self._build_model())
+        problem = FASTOADProblem()
+        self._build_model(problem)
         problem.input_file_path = self.input_file_path
         problem.output_file_path = self.output_file_path
 
@@ -266,17 +267,14 @@ class FASTOADProblemConfigurator:
         subpart = {"optimization": subpart}
         self._serializer.data.update(subpart)
 
-    def _build_model(self) -> om.Group:
+    def _build_model(self, problem: FASTOADProblem):
         """
-        Builds the model as defined in the configuration file.
+        Builds the problem model as defined in the configuration file.
 
-        The model is initialized as a new group and populated with subsystems
-        indicated in configuration file.
-
-        :return: the built model
+        The problem model is populated with subsystems indicated in configuration file.
         """
 
-        model = FASTOADModel()
+        model = problem.model
         model.active_submodels = self._serializer.data.get(KEY_SUBMODELS, {})
 
         model_definition = self._serializer.data.get(KEY_MODEL)
@@ -295,8 +293,6 @@ class FASTOADProblemConfigurator:
             log_err = err.__class__(err, KEY_MODEL)
             _LOGGER.error(log_err)
             raise log_err
-
-        return model
 
     def _parse_problem_table(self, group: om.Group, table: dict):
         """
@@ -428,48 +424,6 @@ def _om_eval(string_to_eval: str):
     if "__" in string_to_eval:
         raise ValueError("No double underscore allowed in evaluated string for security reasons")
     return eval(string_to_eval, {"__builtins__": {}}, {"om": om})
-
-
-class AutoUnitsDefaultGroup(om.Group):
-    """
-    OpenMDAO group that automatically use self.set_input_defaults() to resolve declaration
-    conflicts in variable units.
-    """
-
-    def configure(self):
-        var_units = {}
-        system: om.Group
-        for system in self.system_iter(recurse=False):
-            system_metadata = system.get_io_metadata("input", metadata_keys=["units"])
-            var_units.update(
-                {
-                    metadata["prom_name"]: metadata["units"]
-                    for name, metadata in system_metadata.items()
-                    if "." not in metadata["prom_name"]  # tells that var is promoted
-                }
-            )
-        for name, units in var_units.items():
-            self.set_input_defaults(name, units=units)
-
-
-class FASTOADModel(AutoUnitsDefaultGroup):
-    """
-    OpenMDAO group that defines active submodels after the initialization
-    of all its subsystems, and inherits from :class:`AutoUnitsDefaultGroup` for resolving
-    declaration conflicts in variable units.
-
-    It allows to have a submodel choice in the initialize() method of a FAST-OAD module, but
-    to possibly override it with the definition of :attr:`active_submodels` (i.e. from the
-    configuration file).
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        #: Definition of active submodels that will be applied during setup()
-        self.active_submodels = {}
-
-    def setup(self):
-        RegisterSubmodel.active_models.update(self.active_submodels)
 
 
 class _IDictSerializer(ABC):

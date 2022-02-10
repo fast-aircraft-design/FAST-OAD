@@ -19,11 +19,10 @@ import openmdao.api as om
 from openmdao.core.constants import _SetupStatus
 
 from fastoad.io import DataFile, VariableIO
-from fastoad.openmdao.exceptions import (
-    FASTOpenMDAONanInInputFile,
-)
+from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import VariableList
+from .exceptions import FASTOpenMDAONanInInputFile
 
 INPUT_SYSTEM_NAME = "inputs"
 
@@ -49,6 +48,8 @@ class FASTOADProblem(om.Problem):
 
         #: If True inputs will be read after setup.
         self._read_inputs_after_setup = False
+
+        self.model = FASTOADModel()
 
     def run_model(self, case_prefix=None, reset_iter_counts=True):
         status = super().run_model(case_prefix, reset_iter_counts)
@@ -167,3 +168,45 @@ class FASTOADProblem(om.Problem):
 
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
         self.model.set_order([subsystem_name] + previous_order)
+
+
+class AutoUnitsDefaultGroup(om.Group):
+    """
+    OpenMDAO group that automatically use self.set_input_defaults() to resolve declaration
+    conflicts in variable units.
+    """
+
+    def configure(self):
+        var_units = {}
+        system: om.Group
+        for system in self.system_iter(recurse=False):
+            system_metadata = system.get_io_metadata("input", metadata_keys=["units"])
+            var_units.update(
+                {
+                    metadata["prom_name"]: metadata["units"]
+                    for name, metadata in system_metadata.items()
+                    if "." not in metadata["prom_name"]  # tells that var is promoted
+                }
+            )
+        for name, units in var_units.items():
+            self.set_input_defaults(name, units=units)
+
+
+class FASTOADModel(AutoUnitsDefaultGroup):
+    """
+    OpenMDAO group that defines active submodels after the initialization
+    of all its subsystems, and inherits from :class:`AutoUnitsDefaultGroup` for resolving
+    declaration conflicts in variable units.
+
+    It allows to have a submodel choice in the initialize() method of a FAST-OAD module, but
+    to possibly override it with the definition of :attr:`active_submodels` (i.e. from the
+    configuration file).
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        #: Definition of active submodels that will be applied during setup()
+        self.active_submodels = {}
+
+    def setup(self):
+        RegisterSubmodel.active_models.update(self.active_submodels)
