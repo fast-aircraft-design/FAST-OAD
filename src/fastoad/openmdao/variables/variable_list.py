@@ -103,9 +103,8 @@ class VariableList(list):
             if add_variables or var.name in self.names():
                 # To avoid to lose variables description when the variable list is updated with a
                 # list without descriptions (issue # 319)
-                if var.name in self.names():
-                    if self[var.name].description and not var.description:
-                        var.description = self[var.name].description
+                if var.name in self.names() and self[var.name].description and not var.description:
+                    var.description = self[var.name].description
                 self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:
@@ -136,18 +135,8 @@ class VariableList(list):
         var_dict = {"name": []}
         var_dict.update({metadata_name: [] for metadata_name in self.metadata_keys()})
 
-        # To be able to edit floats and integer
-        def _check_shape(value):
-            if np.shape(value) == (1,):
-                value = float(value[0])
-            elif np.shape(value) == ():
-                pass
-            else:
-                value = np.asarray(value).tolist()
-            return value
-
         for variable in self:
-            value = _check_shape(variable.value)
+            value = self._as_list_or_float(variable.value)
             var_dict["name"].append(variable.name)
             for metadata_name in self.metadata_keys():
                 if metadata_name == "val":
@@ -155,7 +144,7 @@ class VariableList(list):
                 else:
                     # TODO: make this more generic
                     if metadata_name in ["val", "initial_value", "lower", "upper"]:
-                        metadata = _check_shape(variable.metadata[metadata_name])
+                        metadata = self._as_list_or_float(variable.metadata[metadata_name])
                     else:
                         metadata = variable.metadata[metadata_name]
                     var_dict[metadata_name].append(metadata)
@@ -199,16 +188,24 @@ class VariableList(list):
         ).items():
             metadata = metadata.copy()
             value = metadata.pop("val")
-            if np.shape(value) == (1,):
-                value = float(value[0])
-            elif np.shape(value) == ():
-                pass
-            else:
-                value = np.asarray(value)
+            value = cls._as_list_or_float(value)
             metadata.update({"val": value})
             variables[name] = metadata
 
         return variables
+
+    @classmethod
+    def _as_list_or_float(cls, value):
+        value = np.asarray(value)
+        if np.size(value) == 1:
+            value = value.item()
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                pass
+            return value
+
+        return value.tolist()
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "VariableList":
@@ -223,26 +220,12 @@ class VariableList(list):
         """
         column_names = [name for name in df.columns]
 
-        # To be able to edit floats and integer
-        def _check_shape(value):
-            if np.shape(value) == (1,):
-                value = float(value[0])
-            elif np.shape(value) == ():
-                if type(value) == str:
-                    value = float(value)
-                else:
-                    # Integer
-                    pass
-            else:
-                value = np.asarray(value).tolist()
-            return value
-
         def _get_variable(row):
             var_as_dict = {key: val for key, val in zip(column_names, row)}
             # TODO: make this more generic
             for key, val in var_as_dict.items():
                 if key in ["val", "initial_value", "lower", "upper"]:
-                    var_as_dict[key] = _check_shape(val)
+                    var_as_dict[key] = cls._as_list_or_float(val)
                 else:
                     pass
             return Variable(**var_as_dict)
