@@ -22,7 +22,7 @@ from fastoad.io import DataFile, VariableIO
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import VariableList
-from .exceptions import FASTOpenMDAODynamicShapeVariablesError, FASTOpenMDAONanInInputFile
+from .exceptions import FASTOpenMDAONanInInputFile
 
 # Name of IVC that will contain input values
 INPUT_SYSTEM_NAME = "fastoad_inputs"
@@ -71,14 +71,16 @@ class FASTOADProblem(om.Problem):
         """
         problem_copy = deepcopy(self)
         try:
-            problem_copy.model.options["check_dynamic_shapes"] = True
             super(FASTOADProblem, problem_copy).setup(*args, **kwargs)
-        except FASTOpenMDAODynamicShapeVariablesError as exc:
-            vars_metadata = exc.vars_metadata
-            ivc = om.IndepVarComp()
-            for name, meta in vars_metadata.items():
-                ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
-            self.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
+        except RuntimeError:
+            vars_metadata = self._get_undetermined_dynamic_vars_metadata(problem_copy)
+            if vars_metadata:
+                # If vars_metadata is empty, it means the RuntimeError was not because
+                # of dynamic shapes, and the incoming self.setup() will raise it.
+                ivc = om.IndepVarComp()
+                for name, meta in vars_metadata.items():
+                    ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
+                self.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
 
         super().setup(*args, **kwargs)
 
@@ -191,6 +193,35 @@ class FASTOADProblem(om.Problem):
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
         self.model.set_order([subsystem_name] + previous_order)
 
+    @staticmethod
+    def _get_undetermined_dynamic_vars_metadata(problem):
+        """
+        Provides dict (name, metadata) for dynamically shaped inputs that are not
+        fed by an existing output (assuming overall variable promotion).
+
+        Assumes problem.setup() has been run, at least partially.
+
+        :param problem:
+        """
+        # First all outputs are identified. If a dynamically shaped input is fed by a matching
+        # output, its shaped will be determined.
+        output_var_names = []
+        for system in problem.model.system_iter(recurse=False):
+            io_metadata = system.get_io_metadata("output")
+            output_var_names += [meta["prom_name"] for meta in io_metadata.values()]
+
+        dynamic_vars = {}
+        for system in problem.model.system_iter(recurse=False):
+            io_metadata = system.get_io_metadata("input")
+            dynamic_vars.update(
+                {
+                    meta["prom_name"]: meta
+                    for name, meta in io_metadata.items()
+                    if meta["shape_by_conn"] and meta["prom_name"] not in output_var_names
+                }
+            )
+        return dynamic_vars
+
 
 class AutoUnitsDefaultGroup(om.Group):
     """
@@ -230,34 +261,5 @@ class FASTOADModel(AutoUnitsDefaultGroup):
         #: Definition of active submodels that will be applied during setup()
         self.active_submodels = {}
 
-    def initialize(self):
-        self.options.declare("check_dynamic_shapes", default=False, types=bool)
-
     def setup(self):
         RegisterSubmodel.active_models.update(self.active_submodels)
-
-    def configure(self):
-        if self.options["check_dynamic_shapes"]:
-
-            # First all outputs are identified. If a dynamically shaped input is fed by a matching
-            # output, its shaped will be determined.
-            output_var_names = []
-            for system in self.system_iter(recurse=False):
-                io_metadata = system.get_io_metadata("output")
-                output_var_names += [meta["prom_name"] for meta in io_metadata.values()]
-
-            dynamic_vars = {}
-            for system in self.system_iter(recurse=False):
-                io_metadata = system.get_io_metadata("input")
-                dynamic_vars.update(
-                    {
-                        meta["prom_name"]: meta
-                        for name, meta in io_metadata.items()
-                        if meta["shape"] is None and meta["prom_name"] not in output_var_names
-                    }
-                )
-
-            if len(dynamic_vars) > 0:
-                raise FASTOpenMDAODynamicShapeVariablesError(dynamic_vars)
-
-        super().configure()

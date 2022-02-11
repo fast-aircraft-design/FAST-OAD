@@ -198,7 +198,7 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     assert_allclose(fastoad_problem["z"], [1.0, 2.0, 5.0])
 
     # --------------------------------------------------------------------------
-    # FIXME: In the case variables are shaped from an output, we know we fail:
+    # In the case variables are shaped from "downstream", OpenMDAO works OK.
     class MyComp3(om.ExplicitComponent):
         def setup(self):
             self.add_input("z", shape=(3,))
@@ -211,10 +211,13 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     fastoad_problem.model.add_subsystem("comp1", MyComp1(), promotes=["*"])
     fastoad_problem.model.add_subsystem("comp2", MyComp2(), promotes=["*"])
     fastoad_problem.model.add_subsystem("comp3", MyComp3(), promotes=["*"])
-    with pytest.raises(RuntimeError) as exc_info:
-        fastoad_problem.setup()
-        assert (
-            exc_info.value.args[0]
-            == "<model> <class FASTOADModel>: Shape mismatch,  (2,) vs. (3,) "
-            "for variable 'fastoad_shaper.x' during dynamic shape determination."
-        )
+
+    inputs = VariableList.from_problem(fastoad_problem, io_status="inputs")
+    assert inputs.names() == ["x"]
+    outputs = VariableList.from_problem(fastoad_problem, io_status="outputs")
+    assert outputs.names() == ["y", "z", "a"]
+    variables = VariableList.from_problem(fastoad_problem)
+    assert variables.names() == ["x", "y", "z", "a"]
+
+    fastoad_problem.setup()
+    fastoad_problem.run_model()
