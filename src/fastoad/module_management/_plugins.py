@@ -26,6 +26,7 @@ import numpy as np
 from fastoad.openmdao.variables import Variable
 from ._bundle_loader import BundleLoader
 from .exceptions import (
+    FastNoAvailableConfigurationFileError,
     FastNoDistPluginError,
     FastSeveralConfigurationFilesError,
     FastSeveralDistPluginsError,
@@ -166,6 +167,9 @@ class DistributionPluginDefinition(dict):
                                                   available.
         """
         conf_file_list = self.get_configuration_file_list(plugin_name)
+        if not conf_file_list:
+            raise FastNoAvailableConfigurationFileError()
+
         if file_name is None:
             if len(conf_file_list) > 1:
                 raise FastSeveralConfigurationFilesError(self.dist_name)

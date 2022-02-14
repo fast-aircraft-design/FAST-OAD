@@ -163,6 +163,13 @@ class FastSeveralDistPluginsError(FastError):
         )
 
 
+class FastNoAvailableConfigurationFileError(FastError):
+    """Raised when a configuration file is asked, but none is available in plugins."""
+
+    def __init__(self):
+        super().__init__("No configuration file provided with currently installed plugins.")
+
+
 class FastUnknownConfigurationFileError(FastError):
     """Raised when a configuration file is not found for named distribution."""
 

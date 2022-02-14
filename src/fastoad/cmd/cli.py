@@ -25,6 +25,7 @@ from fastoad.cmd.cli_utils import (
 )
 from fastoad.cmd.exceptions import FastNoAvailableNotebookError
 from fastoad.module_management.exceptions import (
+    FastNoAvailableConfigurationFileError,
     FastNoDistPluginError,
     FastSeveralConfigurationFilesError,
     FastSeveralDistPluginsError,
@@ -84,6 +85,7 @@ def gen_conf(conf_file, from_package, source, force):
         FastUnknownDistPluginError,
         FastSeveralConfigurationFilesError,
         FastUnknownConfigurationFileError,
+        FastNoAvailableConfigurationFileError,
     ) as exc:
         click.echo(exc.args[0])
 

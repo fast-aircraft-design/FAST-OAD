@@ -19,6 +19,7 @@ from fastoad.openmdao.variables import Variable
 from .._plugins import FastoadLoader, SubPackageNames
 from ..exceptions import (
     FastBundleLoaderUnknownFactoryNameError,
+    FastNoAvailableConfigurationFileError,
     FastNoDistPluginError,
     FastSeveralConfigurationFilesError,
     FastSeveralDistPluginsError,
@@ -198,6 +199,13 @@ def test_get_configuration_file_info_with_1_plugin(with_dummy_plugin_1):
 
     file_info_bis = dist_def.get_configuration_file_info()
     assert file_info_bis == file_info
+
+
+def test_get_configuration_file_info_without_conf_file_available(with_dummy_plugin_4):
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
+
+    with pytest.raises(FastNoAvailableConfigurationFileError):
+        dist_def.get_configuration_file_info("unknown.yml")
 
 
 def test_get_configuration_file_info_with_plugins(with_dummy_plugins):
