@@ -100,9 +100,9 @@ def test_takeoff_speed_change(polar):
     # Note: reference values are obtained by running the process with 0.01s as time step
     assert_allclose(last_point.altitude, 0.0)
     assert_allclose(last_point.true_airspeed, 75.0)
-    assert_allclose(last_point.time, 31.53, rtol=1e-2)
+    assert_allclose(last_point.time, 29.44, rtol=1e-2)
     assert_allclose(last_point.mass, 69936.0, rtol=1e-4)
-    assert_allclose(last_point.ground_distance, 1173, rtol=1e-3)
+    assert_allclose(last_point.ground_distance, 1100, rtol=1e-3)
     assert last_point.engine_setting == EngineSetting.CLIMB
 
 def test_rotation(polar):
@@ -124,10 +124,10 @@ def test_rotation(polar):
     last_point = flight_points.iloc[-1]
     # Note: reference values are obtained by running the process with 0.01s as time step
     assert_allclose(last_point.altitude, 0.0)
-    assert_allclose(last_point.true_airspeed, 81.09, rtol=1e-3)
+    assert_allclose(last_point.true_airspeed, 81.22, rtol=1e-3)
     assert_allclose(last_point.time, 32.58, rtol=1e-2)
     assert_allclose(last_point.mass, 69995.0, rtol=1e-4)
-    assert_allclose(last_point.ground_distance, 201.3, rtol=1e-3)
+    assert_allclose(last_point.ground_distance, 200.25, rtol=1e-3)
     assert last_point.engine_setting == EngineSetting.CLIMB
 
 
@@ -153,5 +153,5 @@ def test_end_of_takeoff(polar):
     assert_allclose(last_point.true_airspeed, 90.88, rtol=1e-3)
     assert_allclose(last_point.time, 38.46, rtol=1e-2)
     assert_allclose(last_point.mass, 69993.0, rtol=1e-4)
-    assert_allclose(last_point.ground_distance, 304.3, rtol=1e-3)
+    assert_allclose(last_point.ground_distance, 302.97, rtol=1e-3)
     assert last_point.engine_setting == EngineSetting.CLIMB

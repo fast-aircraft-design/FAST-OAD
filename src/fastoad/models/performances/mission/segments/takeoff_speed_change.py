@@ -81,7 +81,6 @@ class TakeoffSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="takeo
         flight_point.lift = flight_point.CL * reference_force
 
         self.compute_propulsion(flight_point)
-        self.get_gamma_and_acceleration(flight_point)
         flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
             flight_point
         )
