@@ -121,17 +121,17 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
                 + time_step * self.rotation_rate
         )
 
-    def get_gamma_and_acceleration(self, flight_points: FlightPoint):
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint):
 
-        mass = flight_points.mass
-        drag_aero = flight_points.drag
-        lift = flight_points.lift
-        thrust = flight_points.thrust
+        mass = flight_point.mass
+        drag_aero = flight_point.drag
+        lift = flight_point.lift
+        thrust = flight_point.thrust
 
         drag = drag_aero + (mass*g-lift)*self.friction_nobrake
 
-        # edit flight_points fields
-        flight_points.drag = drag
+        # edit flight_point fields
+        flight_point.drag = drag
 
         acceleration = (thrust - drag) / mass
 

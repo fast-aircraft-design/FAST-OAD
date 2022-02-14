@@ -132,7 +132,7 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
                 + time_step * previous_point.gamma_dot
         )
 
-    def get_gamma_and_acceleration(self, flight_points: FlightPoint):
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint):
         """
         Redefinition : computes slope angle derivative (gamma_dot) and x-acceleration.
 
@@ -140,15 +140,15 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
                              (i.e. mass, thrust and drag are available)
         :return: slope angle in radians and acceleration in m**2/s
         """
-        thrust = flight_points.thrust
-        drag = flight_points.drag
-        mass = flight_points.mass
-        airspeed = flight_points.true_airspeed
-        alpha = flight_points.alpha
-        gamma = flight_points.slope_angle
-        altitude = flight_points.altitude
+        thrust = flight_point.thrust
+        drag = flight_point.drag
+        mass = flight_point.mass
+        airspeed = flight_point.true_airspeed
+        alpha = flight_point.alpha
+        gamma = flight_point.slope_angle
+        altitude = flight_point.altitude
 
-        atm = AtmosphereSI(flight_points.altitude)
+        atm = AtmosphereSI(flight_point.altitude)
 
         CL = self.polar.cl(alpha)
         CD = self.polar.cd_ground(cl=CL, altitude=altitude)
@@ -157,6 +157,6 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         
         gamma_dot = (thrust*sin(alpha) + lift - mass*g*cos(gamma)) / mass / airspeed
         acceleration = (thrust*cos(alpha) - drag_aero - mass*g*sin(gamma))/mass
-        flight_points.acceleration = acceleration
-        flight_points.gamma_dot = gamma_dot
+        flight_point.acceleration = acceleration
+        flight_point.gamma_dot = gamma_dot
 
