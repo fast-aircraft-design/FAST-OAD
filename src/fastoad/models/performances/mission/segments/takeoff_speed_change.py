@@ -80,10 +80,13 @@ class TakeoffSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="takeo
         flight_point.drag = flight_point.CD * reference_force
         flight_point.lift = flight_point.CL * reference_force
 
-        self._compute_propulsion(flight_point)
-        self._get_gamma_and_acceleration(flight_point)
+        self.compute_propulsion(flight_point)
+        self.get_gamma_and_acceleration(flight_point)
+        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
+            flight_point
+        )
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         if self.target.true_airspeed is not None:
             return self.target.true_airspeed - flight_points[-1].true_airspeed
 
@@ -91,7 +94,7 @@ class TakeoffSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="takeo
             "No valid target definition for airspeed change at takeoff."
         )
 
-    def _get_gamma_and_acceleration(self, flight_points: List[FlightPoint]):
+    def get_gamma_and_acceleration(self, flight_points: List[FlightPoint]):
 
         mass = flight_points.mass
         drag_aero = flight_points.drag
@@ -105,5 +108,4 @@ class TakeoffSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="takeo
 
         acceleration = (thrust - drag) / mass
 
-        flight_points.slope_angle = 0.0
-        flight_points.acceleration = acceleration
+        return 0.0, acceleration

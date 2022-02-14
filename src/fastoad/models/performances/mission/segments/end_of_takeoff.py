@@ -33,39 +33,13 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 @dataclass
 class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeoff"):
     """
-    Computes a flight path segment where altitude is modified with constant speed.
-
-    .. note:: **Setting speed**
-
-        Constant speed may be:
-
-        - constant true airspeed (TAS)
-        - constant equivalent airspeed (EAS)
-        - constant Mach number
-
-        Target should have :code:`"constant"` as definition for one parameter among
-        :code:`true_airspeed`, :code:`equivalent_airspeed` or :code:`mach`.
-        All computed flight points will use the corresponding **start** value.
-        The two other speed values will be computed accordingly.
-
-        If not "constant" parameter is set, constant TAS is assumed.
+    Computes a flight path segment where altitude is modified with constant pitch angle.
+    As a result, the slope angle and angle of attack are changing through time.
+    Updates are based on longitudinal dynamics equations simplifies with the assumption of constant pitch angle.
 
     .. note:: **Setting target**
 
-        Target can be an altitude, or a speed:
-
-        - Target altitude can be a float value (in **meters**), or can be set to:
-
-            - :attr:`OPTIMAL_ALTITUDE`: in that case, the target altitude will be the altitude
-              where maximum lift/drag ratio is achieved for target speed, depending on current mass.
-            - :attr:`OPTIMAL_FLIGHT_LEVEL`: same as above, except that altitude will be rounded to
-              the nearest flight level (multiple of 100 feet).
-
-        - For a speed target, as explained above, one value  TAS, EAS or Mach must be
-          :code:`"constant"`. One of the two other ones can be set as target.
-
-        In any case, the achieved value will be capped so it respects
-        :attr:`maximum_flight_level`.
+        Target is the safety altitude, or a speed:
 
     """
 
@@ -87,7 +61,35 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         self.compute_next_gamma(next_point, previous)
         return next_point
 
-    def _get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def complete_flight_point(self, flight_point: FlightPoint):
+        """
+        Redefinition, computes data for provided flight point.
+
+        Assumes that it is already defined for time, altitude, mass,
+        ground distance and speed (TAS, EAS, or Mach).
+
+        :param flight_point: the flight point that will be completed in-place
+        """
+        flight_point.engine_setting = self.engine_setting
+
+        self._complete_speed_values(flight_point)
+
+        atm = AtmosphereSI(flight_point.altitude)
+        reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
+
+        if self.polar:
+            flight_point.CL = flight_point.mass * g / reference_force
+            flight_point.CD = self.polar.cd(flight_point.CL)
+        else:
+            flight_point.CL = flight_point.CD = 0.0
+        flight_point.drag = flight_point.CD * reference_force
+
+        self.compute_propulsion(flight_point)
+
+        #Calls modified method to add gamma_dot to flight points.
+        self.get_gamma_and_acceleration(flight_point)
+
+    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
 
         if self.target.altitude is not None:
@@ -99,6 +101,14 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
 
 
     def compute_next_alpha(self, next_point: FlightPoint, previous_point: FlightPoint):
+        """
+        Computes angle of attacke (alpha) based on gamma_dot, using constant pitch angle assumption
+
+        :param flight_point: parameters before propulsion model has been called
+
+        :return: angle of attack in radians
+
+        """
         time_step = next_point.time - previous_point.time
 
         #Constant pitch angle hypothesis
@@ -109,14 +119,27 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
 
 
     def compute_next_gamma(self, next_point: FlightPoint, previous_point: FlightPoint):
+        """
+        Computes slope angle (gamma) based on gamma_dot
+
+        :param flight_point: parameters before propulsion model has been called
+
+        :return: slope angle in radians
+        """
         time_step = next_point.time - previous_point.time
         next_point.slope_angle = (
                 previous_point.slope_angle
                 + time_step * previous_point.gamma_dot
         )
 
-    def _get_gamma_and_acceleration(self, flight_points: List[FlightPoint]):
+    def get_gamma_and_acceleration(self, flight_points: FlightPoint):
+        """
+        Redefinition : computes slope angle derivative (gamma_dot) and x-acceleration.
 
+        :param flight_point: parameters after propulsion model has been called
+                             (i.e. mass, thrust and drag are available)
+        :return: slope angle in radians and acceleration in m**2/s
+        """
         thrust = flight_points.thrust
         drag = flight_points.drag
         mass = flight_points.mass
