@@ -1,6 +1,6 @@
 """Base classes for simulating flight segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +15,7 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import Dict, List, Tuple, Type
 
 import numpy as np
 import pandas as pd
@@ -42,7 +42,7 @@ class SegmentDefinitions(Enum):
     """
 
     @classmethod
-    def add_segment(cls, segment_name: str, segment_class: type):
+    def add_segment(cls, segment_name: str, segment_class: Type["FlightSegment"]):
         """
         Adds a segment definition.
 
@@ -58,14 +58,20 @@ class SegmentDefinitions(Enum):
             )
 
     @classmethod
-    def get_segment_class(cls, segment_name) -> type:
+    def get_segment_class(cls, segment_name) -> Type["FlightSegment"]:
         """
         Provides the segment implementation for provided name.
 
         :param segment_name:
         :return: the segment implementation (derived of :class:`~FlightSegment`)
         """
-        return cls[segment_name].value
+        try:
+            enum = cls[segment_name]
+        except KeyError:
+            enum = None
+
+        if enum:
+            return enum.value
 
 
 @dataclass
@@ -133,10 +139,19 @@ class FlightSegment(IFlightPart):
     #: Using this value will tell to keep the associated parameter constant.
     CONSTANT_VALUE = "constant"  # pylint: disable=invalid-name # used as constant
 
+    _attribute_units = dict(reference_area="m**2", time_step="s")
+
     @classmethod
-    def __init_subclass__(cls, *, mission_file_keyword=""):
+    def __init_subclass__(cls, *, mission_file_keyword="", attribute_units: Dict[str, str] = None):
         if mission_file_keyword:
             SegmentDefinitions.add_segment(mission_file_keyword, cls)
+        cls._attribute_units = cls._attribute_units.copy()
+        if attribute_units:
+            cls._attribute_units.update(attribute_units)
+
+    @classmethod
+    def get_attribute_unit(cls, attribute_name: str) -> str:
+        return cls._attribute_units.get(attribute_name)
 
     def __post_init__(self):
         # Ensure target fields are not numpy arrays

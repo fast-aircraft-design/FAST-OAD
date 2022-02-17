@@ -25,7 +25,12 @@ from ..polar import Polar
 
 
 @dataclass
-class TaxiSegment(ManualThrustSegment, FixedDurationSegment, mission_file_keyword="taxi"):
+class TaxiSegment(
+    ManualThrustSegment,
+    FixedDurationSegment,
+    mission_file_keyword="taxi",
+    attribute_units=dict(true_airspeed="m/s"),
+):
     """
     Class for computing Taxi phases.
 

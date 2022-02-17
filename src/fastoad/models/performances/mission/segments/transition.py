@@ -25,7 +25,11 @@ from fastoad.models.performances.mission.segments.base import FlightSegment
 
 
 @dataclass
-class DummyTakeoffSegment(FlightSegment, mission_file_keyword="dummy_takeoff"):
+class DummyTakeoffSegment(
+    FlightSegment,
+    mission_file_keyword="dummy_takeoff",
+    attribute_units=dict(safety_height="m", consumed_fuel="kg"),
+):
     safety_height: float = 10.668  # 35 feet
     consumed_fuel: float = 0.0
 
