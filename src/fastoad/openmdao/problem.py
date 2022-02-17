@@ -79,6 +79,8 @@ class FASTOADProblem(om.Problem):
                 # of dynamic shapes, and the incoming self.setup() will raise it.
                 ivc = om.IndepVarComp()
                 for name, meta in vars_metadata.items():
+                    # We use a (2,)-shaped array as value here. This way, it will be easier to
+                    # identify dynamic-shaped data in an input file generated from current problem.
                     ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
                 self.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
 
