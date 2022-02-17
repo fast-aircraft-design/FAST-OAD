@@ -170,7 +170,7 @@ class FASTOADProblemConfigurator:
             module_folder_paths = [module_folder_paths]
         if module_folder_paths:
             for folder_path in module_folder_paths:
-                folder_path = pth.join(conf_dirname, str(folder_path))
+                folder_path = pth.normpath(pth.join(conf_dirname, str(folder_path)))
                 if not pth.exists(folder_path):
                     _LOGGER.warning("SKIPPED %s: it does not exist.", folder_path)
                 else:
