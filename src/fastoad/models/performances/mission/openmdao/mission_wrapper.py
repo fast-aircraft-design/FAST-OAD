@@ -22,7 +22,6 @@ import pandas as pd
 from openmdao.vectors.vector import Vector
 
 from fastoad.model_base import FlightPoint
-from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.schema import (
     CLIMB_PARTS_TAG,
@@ -76,7 +75,7 @@ class MissionWrapper(MissionBuilder):
         }
         for name, (units, desc) in input_definition.items():
             if name.endswith(":CD") or name.endswith(":CL"):
-                component.add_input(name, np.nan, shape=POLAR_POINT_COUNT, desc=desc)
+                component.add_input(name, np.nan, shape_by_conn=True, desc=desc)
             else:
                 component.add_input(name, np.nan, units=units, desc=desc)
 

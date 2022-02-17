@@ -1,5 +1,5 @@
 """
-Module for managing OpenMDAO variables
+Class for managing a list of OpenMDAO variables.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022 ONERA & ISAE-SUPAERO
@@ -15,308 +15,17 @@ Module for managing OpenMDAO variables
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import itertools
-import logging
-import os.path as pth
-from builtins import isinstance
 from copy import deepcopy
-from importlib.resources import open_text
-from typing import Dict, Hashable, Iterable, List, Mapping, Tuple, Union
-from deprecated import deprecated
+from typing import Iterable, List, Mapping, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
 import pandas as pd
+from deprecated import deprecated
+from openmdao.core.constants import _SetupStatus
 
-from fastoad._utils.resource_management.contents import PackageReader
 from fastoad.openmdao._utils import get_unconnected_input_names
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
-
-DESCRIPTION_FILENAME = "variable_descriptions.txt"
-
-# Metadata that will be ignore when checking variable equality and when adding variable
-# to an OpenMDAO component
-METADATA_TO_IGNORE = [
-    "is_input",
-    "tags",
-    "size",
-    "src_indices",
-    "src_slice",
-    "flat_src_indices",
-    "distributed",
-    "res_units",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
-    "lower",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
-    "upper",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
-    "ref",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
-    "ref0",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
-    "res_ref",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
-    "ref",  # deprecated in IndepVarComp.add_output() since OpenMDAO 3.2
-    "global_shape",
-    "global_size",
-    "discrete",  # currently inconsistent in openMDAO 3.4
-    "prom_name",
-    "desc",
-]
-
-
-class Variable(Hashable):
-    """
-    A class for storing data of OpenMDAO variables.
-
-    Instantiation is expected to be done through keyword arguments only.
-
-    Beside the mandatory parameter 'name, kwargs is expected to have keys
-    'value', 'units' and 'desc', that are accessible respectively through
-    properties :meth:`name`, :meth:`value`, :meth:`units` and :meth:`description`.
-
-    Other keys are possible. They match the definition of OpenMDAO's method
-    :meth:`Component.add_output` described
-    `here <http://openmdao.org/twodocs/versions/latest/_srcdocs/packages/core/
-    component.html#openmdao.core.component.Component.add_output>`_.
-
-    These keys can be listed with class method :meth:`get_openmdao_keys`.
-    **Any other key in kwargs will be silently ignored.**
-
-    Special behaviour: :meth:`description` will return the content of kwargs['desc']
-    unless these 2 conditions are met:
-     - kwargs['desc'] is None or 'desc' key is missing
-     - a description exists in FAST-OAD internal data for the variable name
-    Then, the internal description will be returned by :meth:`description`
-
-    :param kwargs: the attributes of the variable, as keyword arguments
-    """
-
-    # Will store content of description files
-    _variable_descriptions = {}
-
-    # The list of modules of path where description files have been read
-    _loaded_descriptions = set()
-
-    # Default metadata
-    _base_metadata = {}
-
-    def __init__(self, name, **kwargs):
-        super().__init__()
-
-        self.name = name
-        """ Name of the variable """
-
-        self.metadata: Dict = {}
-        """ Dictionary for metadata of the variable """
-
-        # Initialize class attributes once at first instantiation -------------
-        if not self._base_metadata:
-            # Get variable base metadata from an ExplicitComponent
-            comp = om.ExplicitComponent()
-            # get attributes
-            metadata = comp.add_output(name="a")
-
-            self.__class__._base_metadata = metadata
-            self.__class__._base_metadata["val"] = 1.0
-            self.__class__._base_metadata["tags"] = set()
-            self.__class__._base_metadata["shape"] = None
-        # Done with class attributes ------------------------------------------
-
-        # Feed self.metadata with kwargs, but remove first attributes with "Unavailable" as
-        # value, which is a value that can be provided by OpenMDAO.
-        self.metadata = self.__class__._base_metadata.copy()
-        self.metadata.update(
-            {
-                key: value
-                for key, value in kwargs.items()
-                # The isinstance check is needed if value is a numpy array. In this case, a
-                # FutureWarning is issued because it is compared to a scalar.
-                if not isinstance(value, str) or value != "Unavailable"
-            }
-        )
-
-        if "value" in self.metadata:
-            self.metadata["val"] = self.metadata.pop("value")
-        if "description" in self.metadata:
-            self.metadata["desc"] = self.metadata.pop("description")
-
-        self._set_default_shape()
-
-        # If no description, use the one from self._variable_descriptions, if available
-        if not self.description and self.name in self._variable_descriptions:
-            self.description = self._variable_descriptions[self.name]
-
-    @classmethod
-    def read_variable_descriptions(cls, file_parent: str, update_existing: bool = True):
-        """
-        Reads variable descriptions in indicated folder or package, if it contains some.
-
-        The file variable_descriptions.txt is looked for. Nothing is done if it is not
-        found (no error raised also).
-
-        Each line of the file should be formatted like::
-
-            my:variable||The description of my:variable, as long as needed, but on one line.
-
-        :param file_parent: the folder path or the package name that should contain the file
-        :param update_existing: if True, previous descriptions will be updated.
-                                if False, previous descriptions will be erased.
-        """
-        if not update_existing:
-            cls._variable_descriptions = {}
-            cls._loaded_descriptions = set()
-
-        variable_descriptions = None
-        description_file = None
-
-        if file_parent:
-            if pth.isdir(file_parent):
-                file_path = pth.join(file_parent, DESCRIPTION_FILENAME)
-                if pth.isfile(file_path):
-                    description_file = open(file_path)
-            else:
-                # Then it is a module name
-                if DESCRIPTION_FILENAME in PackageReader(file_parent).contents:
-                    description_file = open_text(file_parent, DESCRIPTION_FILENAME)
-
-        if description_file is not None:
-            try:
-                variable_descriptions = np.genfromtxt(
-                    description_file, delimiter="||", dtype=str, autostrip=True
-                )
-            except Exception as exc:
-                # Reading the file is not mandatory, so let's just log the error.
-                _LOGGER.error(
-                    "Could not read file %s in %s. Error log is:\n%s",
-                    DESCRIPTION_FILENAME,
-                    file_parent,
-                    exc,
-                )
-            description_file.close()
-
-        if variable_descriptions is not None:
-            if np.shape(variable_descriptions) == (2,):
-                # If the file contains only one line, np.genfromtxt() will return a (2,)-shaped
-                # array. We need a reshape for dict.update() to work correctly.
-                variable_descriptions = np.reshape(variable_descriptions, (1, 2))
-
-            cls._loaded_descriptions.add(file_parent)
-            cls.update_variable_descriptions(variable_descriptions)
-            _LOGGER.info("Loaded variable descriptions in %s", file_parent)
-
-    @classmethod
-    def update_variable_descriptions(
-        cls, variable_descriptions: Union[Mapping[str, str], Iterable[Tuple[str, str]]]
-    ):
-        """
-        Updates description of variables.
-
-        :param variable_descriptions: dict-like object with variable names as keys and descriptions
-                                      as values
-        """
-        cls._variable_descriptions.update(variable_descriptions)
-
-    @classmethod
-    def get_openmdao_keys(cls):
-        """
-
-        :return: the keys that are used in OpenMDAO variables
-        """
-        # As _base_metadata is initialized at first instantiation, we create an instance to
-        # ensure it has been done
-        cls("dummy")
-
-        return cls._base_metadata.keys()
-
-    @property
-    def value(self):
-        """value of the variable"""
-        return self.metadata.get("val")
-
-    @value.setter
-    def value(self, value):
-        self.metadata["val"] = value
-        self._set_default_shape()
-
-    @property
-    def val(self):
-        """value of the variable (alias of property "value")"""
-        return self.value
-
-    @val.setter
-    def val(self, value):
-        self.value = value
-
-    @property
-    def units(self):
-        """units associated to value (or None if not found)"""
-        return self.metadata.get("units")
-
-    @units.setter
-    def units(self, value):
-        self.metadata["units"] = value
-
-    @property
-    def description(self):
-        """description of the variable (or None if not found)"""
-        return self.metadata.get("desc")
-
-    @description.setter
-    def description(self, value):
-        self.metadata["desc"] = value
-
-    @property
-    def desc(self):
-        """description of the variable (or None if not found) (alias of property "description")"""
-        return self.description
-
-    @desc.setter
-    def desc(self, value):
-        self.description = value
-
-    @property
-    def is_input(self):
-        """I/O status of the variable.
-
-        - True if variable is a problem input
-        - False if it is an output
-        - None if information not found
-        """
-        return self.metadata.get("is_input")
-
-    @is_input.setter
-    def is_input(self, value):
-        self.metadata["is_input"] = value
-
-    def _set_default_shape(self):
-        """Automatically sets shape if not set"""
-        if self.metadata["shape"] is None:
-            shape = np.shape(self.value)
-            if not shape:
-                shape = (1,)
-            self.metadata["shape"] = shape
-
-    def __eq__(self, other):
-        # same arrays with nan are declared non equals, so we need a workaround
-        my_metadata = dict(self.metadata)
-        other_metadata = dict(other.metadata)
-        my_value = np.asarray(my_metadata.pop("val"))
-        other_value = np.asarray(other_metadata.pop("val"))
-
-        # Let's also ignore unimportant keys
-        for key in METADATA_TO_IGNORE:
-            if key in my_metadata:
-                del my_metadata[key]
-            if key in other_metadata:
-                del other_metadata[key]
-
-        return (
-            isinstance(other, Variable)
-            and self.name == other.name
-            and np.all(np.isclose(my_value, other_value, equal_nan=True))
-            and my_metadata == other_metadata
-        )
-
-    def __repr__(self):
-        return "Variable(name=%s, metadata=%s)" % (self.name, self.metadata)
-
-    def __hash__(self) -> int:
-        return hash("var=" + self.name)  # Name is normally unique
+from .variable import METADATA_TO_IGNORE, Variable
 
 
 class VariableList(list):
@@ -394,9 +103,8 @@ class VariableList(list):
             if add_variables or var.name in self.names():
                 # To avoid to lose variables description when the variable list is updated with a
                 # list without descriptions (issue # 319)
-                if var.name in self.names():
-                    if self[var.name].description and not var.description:
-                        var.description = self[var.name].description
+                if var.name in self.names() and self[var.name].description and not var.description:
+                    var.description = self[var.name].description
                 self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:
@@ -427,18 +135,8 @@ class VariableList(list):
         var_dict = {"name": []}
         var_dict.update({metadata_name: [] for metadata_name in self.metadata_keys()})
 
-        # To be able to edit floats and integer
-        def _check_shape(value):
-            if np.shape(value) == (1,):
-                value = float(value[0])
-            elif np.shape(value) == ():
-                pass
-            else:
-                value = np.asarray(value).tolist()
-            return value
-
         for variable in self:
-            value = _check_shape(variable.value)
+            value = self._as_list_or_float(variable.value)
             var_dict["name"].append(variable.name)
             for metadata_name in self.metadata_keys():
                 if metadata_name == "val":
@@ -446,7 +144,7 @@ class VariableList(list):
                 else:
                     # TODO: make this more generic
                     if metadata_name in ["val", "initial_value", "lower", "upper"]:
-                        metadata = _check_shape(variable.metadata[metadata_name])
+                        metadata = self._as_list_or_float(variable.metadata[metadata_name])
                     else:
                         metadata = variable.metadata[metadata_name]
                     var_dict[metadata_name].append(metadata)
@@ -490,16 +188,24 @@ class VariableList(list):
         ).items():
             metadata = metadata.copy()
             value = metadata.pop("val")
-            if np.shape(value) == (1,):
-                value = float(value[0])
-            elif np.shape(value) == ():
-                pass
-            else:
-                value = np.asarray(value)
+            value = cls._as_list_or_float(value)
             metadata.update({"val": value})
             variables[name] = metadata
 
         return variables
+
+    @classmethod
+    def _as_list_or_float(cls, value):
+        value = np.asarray(value)
+        if np.size(value) == 1:
+            value = value.item()
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                pass
+            return value
+
+        return value.tolist()
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "VariableList":
@@ -514,26 +220,12 @@ class VariableList(list):
         """
         column_names = [name for name in df.columns]
 
-        # To be able to edit floats and integer
-        def _check_shape(value):
-            if np.shape(value) == (1,):
-                value = float(value[0])
-            elif np.shape(value) == ():
-                if type(value) == str:
-                    value = float(value)
-                else:
-                    # Integer
-                    pass
-            else:
-                value = np.asarray(value).tolist()
-            return value
-
         def _get_variable(row):
             var_as_dict = {key: val for key, val in zip(column_names, row)}
             # TODO: make this more generic
             for key, val in var_as_dict.items():
                 if key in ["val", "initial_value", "lower", "upper"]:
-                    var_as_dict[key] = _check_shape(val)
+                    var_as_dict[key] = cls._as_list_or_float(val)
                 else:
                     pass
             return Variable(**var_as_dict)
@@ -552,10 +244,6 @@ class VariableList(list):
         """
         Creates a VariableList instance containing inputs and outputs of an OpenMDAO Problem.
 
-        .. warning::
-
-            problem.setup() must have been run.
-
         The inputs (is_input=True) correspond to the variables of IndepVarComp
         components and all the unconnected variables.
 
@@ -572,8 +260,9 @@ class VariableList(list):
         :return: VariableList instance
         """
 
-        # from_problem affects integrity of problem instance
         problem = deepcopy(problem)
+        if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
+            problem.setup()
 
         # Get inputs and outputs
         metadata_keys = (
@@ -593,7 +282,7 @@ class VariableList(list):
             "output", metadata_keys=metadata_keys, excludes="_auto_ivc.*"
         )
         indep_outputs = problem.model.get_io_metadata(
-            "output", metadata_keys=metadata_keys, tags="indep_var", excludes="_auto_ivc.*"
+            "output", metadata_keys=metadata_keys, tags="indep_var"
         )
 
         # Move outputs from IndepVarComps into inputs
@@ -618,7 +307,10 @@ class VariableList(list):
                 # Check connections
                 for name, metadata in inputs.copy().items():
                     source_name = problem.model.get_source(name)
-                    if not source_name.startswith("_auto_ivc.") and source_name != name:
+                    if (
+                        not (source_name in indep_outputs or source_name.startswith("_auto_ivc."))
+                        and source_name != name
+                    ):
                         # This variable is connected to another variable of the problem: it is
                         # not an actual problem input. Let's move it to outputs.
                         del inputs[name]
@@ -635,47 +327,10 @@ class VariableList(list):
             final_inputs = inputs
             final_outputs = outputs
         else:
-            # Remove from inputs the variables that are outputs of some other component
-            promoted_inputs = {
+            final_inputs = {
                 metadata["prom_name"]: dict(metadata, is_input=True) for metadata in inputs.values()
             }
-
-            promoted_outputs = {}
-            for metadata in outputs.values():
-                prom_name = metadata["prom_name"]
-                # In case we get promoted names, several variables can match the same
-                # promoted name, with possibly different declaration for default values.
-                # We retain the first non-NaN value with defined units. If no units is
-                # ever defined, the first non-NaN value is kept.
-                # A non-NaN value with no units will be retained against a NaN value with
-                # defined units.
-
-                if prom_name in promoted_outputs:
-                    # prom_name has already been encountered.
-                    # Note: the succession of "if" is to help understanding, hopefully :)
-
-                    if not np.all(np.isnan(promoted_outputs[prom_name]["val"])):
-                        if promoted_outputs[prom_name]["units"] is not None:
-                            # We already have a non-NaN value with defined units for current
-                            # promoted name. No need for using the current variable.
-                            continue
-                        if np.all(np.isnan(metadata["val"])):
-                            # We already have a non-NaN value and current variable has a NaN value,
-                            # so it can only add information about units. We keep the non-NaN value
-                            continue
-
-                    if (
-                        np.all(np.isnan(promoted_outputs[prom_name]["val"]))
-                        and metadata["units"] is None
-                    ):
-                        # We already have a non-NaN value and current variable provides no unit.
-                        # No need for using the current variable.
-                        continue
-                if prom_name not in promoted_inputs:
-                    promoted_outputs[prom_name] = metadata
-
-            final_inputs = promoted_inputs
-            final_outputs = promoted_outputs
+            final_outputs = cls._get_promoted_outputs(outputs)
 
             # When variables are promoted, we may have retained a definition of the variable
             # that does not have any description, whereas a description is available in
@@ -712,9 +367,51 @@ class VariableList(list):
         elif io_status == "outputs":
             variables = output_vars
         else:
-            raise TypeError("Unknown value for io_status")
+            raise ValueError("Unknown value for io_status")
 
         return variables
+
+    @classmethod
+    def _get_promoted_outputs(cls, outputs: dict) -> dict:
+        """
+
+        :param outputs: dict (name, metadata) with non-promoted names as keys
+        :return: dict (name, metadata) with promoted names as keys
+        """
+        promoted_outputs = {}
+        for metadata in outputs.values():
+            prom_name = metadata["prom_name"]
+            # In case we get promoted names, several variables can match the same
+            # promoted name, with possibly different declaration for default values.
+            # We retain the first non-NaN value with defined units. If no units is
+            # ever defined, the first non-NaN value is kept.
+            # A non-NaN value with no units will be retained against a NaN value with
+            # defined units.
+
+            if prom_name in promoted_outputs:
+                # prom_name has already been encountered.
+                # Note: the succession of "if" is to help understanding, hopefully :)
+
+                if not np.all(np.isnan(promoted_outputs[prom_name]["val"])):
+                    if promoted_outputs[prom_name]["units"] is not None:
+                        # We already have a non-NaN value with defined units for current
+                        # promoted name. No need for using the current variable.
+                        continue
+                    if np.all(np.isnan(metadata["val"])):
+                        # We already have a non-NaN value and current variable has a NaN value,
+                        # so it can only add information about units. We keep the non-NaN value
+                        continue
+
+                if (
+                    np.all(np.isnan(promoted_outputs[prom_name]["val"]))
+                    and metadata["units"] is None
+                ):
+                    # We already have a non-NaN value and current variable provides no unit.
+                    # No need for using the current variable.
+                    continue
+            promoted_outputs[prom_name] = metadata
+
+        return promoted_outputs
 
     @classmethod
     @deprecated(
