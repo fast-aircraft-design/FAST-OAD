@@ -43,10 +43,8 @@ from ..polar import Polar
 from ..routes import RangedRoute
 from ..segments.base import FlightSegment, SegmentDefinitions
 
+# FIXME: should be set in Route class
 BASE_UNITS = {
-    "altitude": "m",
-    "true_airspeed": "m/s",
-    "equivalent_airspeed": "m/s",
     "range": "m",
     "distance_accuracy": "m",
     "time": "s",
@@ -271,6 +269,7 @@ class MissionBuilder:
         input_definition: Dict[str, Tuple[str, str]],
         struct: Union[OrderedDict, list],
         prefix: str = None,
+        parent: str = None,
     ):
         """
         Identifies the OpenMDAO variables that are provided as parameter values.
@@ -306,14 +305,21 @@ class MissionBuilder:
                     suffix = key if value is None else value[1:]
                     value = prefix + prefix_addition + ":" + suffix
                 if isinstance(value, str) and ":" in value:
-                    input_definition[value] = (BASE_UNITS.get(key), "Input defined by the mission.")
+                    if SEGMENT_TAG in struct:
+                        parent = struct[SEGMENT_TAG]
+                    input_definition[value] = (
+                        self._get_base_unit(key, parent),
+                        "Input defined by the mission.",
+                    )
                     struct[key] = value
                 elif isinstance(value, (dict, list)):
-                    self._identify_inputs(input_definition, value, prefix + prefix_addition)
+                    self._identify_inputs(
+                        input_definition, value, prefix=prefix + prefix_addition, parent=key
+                    )
 
         elif isinstance(struct, list):
             for value in struct:
-                self._identify_inputs(input_definition, value, prefix)
+                self._identify_inputs(input_definition, value, prefix=prefix, parent=parent)
 
     def _build_mission(
         self, mission_structure: OrderedDict, inputs: Optional[Mapping] = None
@@ -464,7 +470,7 @@ class MissionBuilder:
                     subpart.name = part.name
 
     @classmethod
-    def _parse_values_and_units(cls, definition):
+    def _parse_values_and_units(cls, definition, parent=None):
         """
         Browse recursively provided dictionary and if a dictionary that has
         "value" and "unit" as only keys is found, it is transformed into a
@@ -479,13 +485,13 @@ class MissionBuilder:
             for key, value in definition.items():
                 if isinstance(value, dict) and "value" in value.keys():
                     definition[key] = om.convert_units(
-                        value["value"], value.get("unit"), BASE_UNITS.get(key)
+                        value["value"], value.get("unit"), cls._get_base_unit(key, parent)
                     )
                 else:
-                    cls._parse_values_and_units(value)
+                    cls._parse_values_and_units(value, parent=key)
         elif isinstance(definition, list):
             for value in definition:
-                cls._parse_values_and_units(value)
+                cls._parse_values_and_units(value, parent=parent)
 
     @staticmethod
     def _replace_by_inputs(parameter_definition: dict, inputs: Optional[Mapping]):
@@ -500,3 +506,23 @@ class MissionBuilder:
             for key, value in parameter_definition.items():
                 if isinstance(value, str) and value in inputs:
                     parameter_definition[key] = inputs[value]
+
+    @staticmethod
+    def _get_base_unit(attribute_name, parent_entity):
+        """
+        :param attribute_name:
+        :param parent_entity:
+        :return: units for attribute_name, based on parent_entity (a segment name, "target" or
+                 "route")
+        """
+        if parent_entity == "target":
+            unit = FlightPoint.get_units().get(attribute_name)
+        else:
+            segment_class = SegmentDefinitions.get_segment_class(parent_entity)
+            if segment_class:
+                unit = segment_class.get_attribute_unit(attribute_name)
+            else:
+                unit = BASE_UNITS.get(attribute_name)
+        if unit == "-":
+            unit = None
+        return unit
