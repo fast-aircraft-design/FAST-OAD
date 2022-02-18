@@ -28,10 +28,7 @@ from fastoad.models.performances.mission.segments.base import FlightSegment
 class DummyTakeoffSegment(
     FlightSegment,
     mission_file_keyword="dummy_takeoff",
-    attribute_units=dict(safety_height="m", consumed_fuel="kg"),
 ):
-    safety_height: float = 10.668  # 35 feet
-    consumed_fuel: float = 0.0
 
     #: Unused
     propulsion: IPropulsion = None
@@ -44,13 +41,12 @@ class DummyTakeoffSegment(
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         self.complete_flight_point(start)
-        end = deepcopy(start)
 
         self.make_target_absolute(start)
         self.complete_flight_point(self.target)
         self.target.name = self.name
 
-        flight_points = [start, end]
+        flight_points = [start, self.target]
         return pd.DataFrame(flight_points)
 
     def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
