@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -186,6 +186,10 @@ def test_get_flight_ranges():
         "data:mission:sizing:climb:thrust_rate": 0.9,
         "data:mission:sizing:descent:thrust_rate": 0.5,
         "data:mission:sizing:holding:duration": 2000.0,
+        "data:mission:operational:taxi_out:duration": 300.0,
+        "data:mission:operational:taxi_out:thrust_rate": 0.5,
+        "data:mission:operational:taxi_in:duration": 300.0,
+        "data:mission:operational:taxi_in:thrust_rate": 0.5,
         "data:mission:sizing:taxi_in:duration": 300.0,
         "data:mission:sizing:taxi_in:thrust_rate": 0.5,
     }

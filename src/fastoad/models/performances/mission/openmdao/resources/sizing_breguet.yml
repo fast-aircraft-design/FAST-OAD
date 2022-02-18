@@ -5,7 +5,7 @@ phases:
         target:
           altitude: data:mission:sizing:main_route:cruise:altitude
           mach: data:TLAR:cruise_mach
-          ground_distance:
+          delta_ground_distance:
             value: 250
             unit: km
         mass_ratio: settings:mission:sizing:breguet:climb:mass_ratio
@@ -15,7 +15,7 @@ phases:
         target:
           altitude: 0.
           mach: 0.
-          ground_distance:
+          delta_ground_distance:
             value: 250
             unit: km
         mass_ratio: settings:mission:sizing:breguet:descent:mass_ratio

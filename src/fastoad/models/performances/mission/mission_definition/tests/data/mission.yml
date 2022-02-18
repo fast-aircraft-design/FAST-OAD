@@ -116,21 +116,21 @@ phases:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
-          time: ~duration
+          delta_time: ~duration
   taxi_out:
     parts:
       - segment: taxi
         thrust_rate: ~
         true_airspeed: 0.
         target:
-          time: ~duration
+          delta_time: ~duration
   taxi_in:
     thrust_rate: ~
     parts:
       - segment: taxi
         true_airspeed: 0.
         target:
-          time: ~duration
+          delta_time: ~duration
 
 routes:
   main:

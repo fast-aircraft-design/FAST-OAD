@@ -14,7 +14,8 @@
 
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
+from numbers import Number
 from typing import Dict, List, Tuple, Type
 
 import numpy as np
@@ -34,6 +35,7 @@ from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 DEFAULT_TIME_STEP = 0.2
+RELATIVE_FIELD_FLAG = 1.0e6j
 
 
 class SegmentDefinitions(Enum):
@@ -187,10 +189,13 @@ class FlightSegment(IFlightPart):
         :return: a pandas DataFrame where column names match fields of
                  :meth:`~fastoad.model_base.flight_point.FlightPoint`
         """
+        start.scalarize()
         if start.time is None:
             start.time = 0.0
         if start.ground_distance is None:
             start.ground_distance = 0.0
+
+        self.make_target_absolute(start)
 
         self.complete_flight_point(start)
 
@@ -251,6 +256,30 @@ class FlightSegment(IFlightPart):
         flight_points_df = pd.DataFrame(flight_points)
 
         return flight_points_df
+
+    def make_target_absolute(self, start_point: FlightPoint):
+        """
+        For any field of self.target with a relative value (i.e. a complex value by convention),
+        uses start values to ensure all values of self.target are absolute.
+
+        Also, self.target.time and self.target.ground_distance are always assumed to be relative
+        to start point.
+
+        :param start_point:
+        """
+        start_point.scalarize()
+        self.target.scalarize()
+        for field in fields(FlightPoint):
+            start_value = getattr(start_point, field.name)
+            target_value = getattr(self.target, field.name)
+            if field.name in ["time", "ground_distance"]:
+                # target values for these fields are always considered relative.
+                target_value = np.real(target_value) + RELATIVE_FIELD_FLAG
+            if (
+                isinstance(target_value, Number)
+                and np.abs(np.imag(target_value - RELATIVE_FIELD_FLAG) / RELATIVE_FIELD_FLAG) < 1e-8
+            ):
+                setattr(self.target, field.name, start_value + np.real(target_value))
 
     def _check_values(self, flight_point: FlightPoint) -> str:
         """
@@ -482,18 +511,9 @@ class RegulatedThrustSegment(FlightSegment, ABC):
 class FixedDurationSegment(FlightSegment, ABC):
     """
     Class for computing phases where duration is fixed.
-
-    Target duration is provide as target.time.
-    When using :meth:`compute_from`, if start.time is not 0, end time will be
-    start.time + target.time.
     """
 
     time_step: float = 60.0
-
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        if start.time:
-            self.target.time = self.target.time + start.time
-        return super().compute_from(start)
 
     def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
