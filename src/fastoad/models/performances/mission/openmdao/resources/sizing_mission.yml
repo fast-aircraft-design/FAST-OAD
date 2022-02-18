@@ -106,14 +106,14 @@ phases:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
-          time: data:mission:sizing:holding:duration
+          delta_time: data:mission:sizing:holding:duration
   taxi_in:
     parts:
       - segment: taxi
         thrust_rate: data:mission:sizing:taxi_in:thrust_rate
         true_airspeed: 0.
         target:
-          time: data:mission:sizing:taxi_in:duration
+          delta_time: data:mission:sizing:taxi_in:duration
 
 routes:
   main_route:

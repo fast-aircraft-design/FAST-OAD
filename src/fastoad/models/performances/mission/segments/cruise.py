@@ -48,11 +48,6 @@ class CruiseSegment(RegulatedThrustSegment):
         ):
             self.target.mach = FlightSegment.CONSTANT_VALUE
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        if start.ground_distance:
-            self.target.ground_distance = self.target.ground_distance + start.ground_distance
-        return super().compute_from(start)
-
     def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
         return self.target.ground_distance - current.ground_distance
@@ -112,6 +107,7 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         climb_segment = deepcopy(self.climb_segment)
+        self.make_target_absolute(start)
         climb_segment.target = deepcopy(self.target)
 
         cruise_segment = CruiseSegment(
@@ -122,9 +118,6 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
             name=self.name,
             engine_setting=self.engine_setting,
         )
-
-        if start.ground_distance:
-            self.target.ground_distance = self.target.ground_distance + start.ground_distance
 
         if (
             self.target.altitude == AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL

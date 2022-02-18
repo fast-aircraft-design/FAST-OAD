@@ -46,14 +46,9 @@ class DummyTakeoffSegment(
         self.complete_flight_point(start)
         end = deepcopy(start)
 
-        end.time = self.target.time + start.time
-        end.mass = start.mass - self.consumed_fuel
-        end.altitude = start.altitude + self.safety_height
-        end.mach = self.target.mach
-        end.true_airspeed = self.target.true_airspeed
-        end.equivalent_airspeed = self.target.equivalent_airspeed
-        end.name = self.name
-        self.complete_flight_point(end)
+        self.make_target_absolute(start)
+        self.complete_flight_point(self.target)
+        self.target.name = self.name
 
         flight_points = [start, end]
         return pd.DataFrame(flight_points)

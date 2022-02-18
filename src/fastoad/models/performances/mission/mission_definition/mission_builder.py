@@ -41,7 +41,7 @@ from .schema import (
 from ..base import FlightSequence, IFlightPart
 from ..polar import Polar
 from ..routes import RangedRoute
-from ..segments.base import FlightSegment, SegmentDefinitions
+from ..segments.base import FlightSegment, RELATIVE_FIELD_FLAG, SegmentDefinitions
 
 # FIXME: should be set in Route class
 BASE_UNITS = {
@@ -439,6 +439,15 @@ class MissionBuilder:
             elif key == "target":
                 if not isinstance(value, FlightPoint):
                     self._replace_by_inputs(value, inputs)
+                    for field_name in value.keys():
+                        if field_name.startswith("delta_"):
+                            new_field_name = field_name[6:]
+                            delta_value = value[field_name]
+                            if new_field_name in FlightPoint.get_field_names() and not isinstance(
+                                delta_value, str
+                            ):
+                                value[new_field_name] = delta_value + RELATIVE_FIELD_FLAG
+                                del value[field_name]
                     value = FlightPoint(**value)
 
             part_kwargs[key] = value
@@ -508,7 +517,7 @@ class MissionBuilder:
                     parameter_definition[key] = inputs[value]
 
     @staticmethod
-    def _get_base_unit(attribute_name, parent_entity):
+    def _get_base_unit(attribute_name: str, parent_entity: str):
         """
         :param attribute_name:
         :param parent_entity:
@@ -517,6 +526,10 @@ class MissionBuilder:
         """
         if parent_entity == "target":
             unit = FlightPoint.get_units().get(attribute_name)
+            if attribute_name.startswith("delta_"):
+                new_attribute_name = attribute_name[6:]
+                if new_attribute_name in FlightPoint.get_field_names():
+                    unit = FlightPoint.get_units().get(new_attribute_name)
         else:
             segment_class = SegmentDefinitions.get_segment_class(parent_entity)
             if segment_class:
