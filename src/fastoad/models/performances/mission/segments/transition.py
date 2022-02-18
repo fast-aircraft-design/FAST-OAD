@@ -25,53 +25,17 @@ from fastoad.models.performances.mission.segments.base import FlightSegment
 
 
 @dataclass
-class DummyTakeoffSegment(
-    FlightSegment,
-    mission_file_keyword="dummy_takeoff",
-):
-
-    #: Unused
-    propulsion: IPropulsion = None
-
-    #: Unused
-    reference_area: float = 1.0
-
-    #: Unused
-    polar: Polar = None
-
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        self.complete_flight_point(start)
-
-        self.make_target_absolute(start)
-        self.complete_flight_point(self.target)
-        self.target.name = self.name
-
-        flight_points = [start, self.target]
-        return pd.DataFrame(flight_points)
-
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
-        return 0.0, 0.0
-
-        # As we overloaded self.compute_from(), next abstract method are not used.
-        # We just need to implement them for Python to be happy.
-
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
-        pass
-
-    def compute_propulsion(self, flight_point: FlightPoint):
-        pass
-
-
-@dataclass
 class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
     """
     Computes a transient flight part in a very quick and dummy way.
 
     :meth:`compute_from` will return only 2 or 3 flight points.
 
-    The second flight point is the end of transition and its mass is the start mass
-    multiplied by :attr:`mass_ratio`. Other parameters are equal to those provided in
-    :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.target`.
+    The second flight point is the end of transition. Its parameters are equal to those provided
+    in :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.target`.
+
+    There is an exception if target does not specify any mass (i.e. self.target.mass == 0). Then
+    the mass of the second flight point is the start mass multiplied by :attr:`mass_ratio`.
 
     If :attr:`reserve_mass_ratio` is non-zero, a third flight point is added, with parameters equal
     to flight_point(2), except for mass where:
@@ -97,17 +61,13 @@ class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
     polar: Polar = None
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-
         self.complete_flight_point(start)
-        end = deepcopy(start)
 
-        end.mass = start.mass * self.mass_ratio
-        end.altitude = self.target.altitude
-        end.ground_distance = start.ground_distance + self.target.ground_distance
-        end.mach = self.target.mach
-        end.true_airspeed = self.target.true_airspeed
-        end.equivalent_airspeed = self.target.equivalent_airspeed
+        self.make_target_absolute(start)
+        end = deepcopy(self.target)
         end.name = self.name
+        if end.mass == 0:
+            end.mass = start.mass * self.mass_ratio
         self.complete_flight_point(end)
 
         flight_points = [start, end]
