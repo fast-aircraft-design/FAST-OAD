@@ -149,13 +149,28 @@ class FlightSegment(IFlightPart):
         if attribute_units:
             cls._attribute_units.update(attribute_units)
 
+        # We want to have self.target as a property to ensure it gets always "scalarized".
+        # But properties and dataclasses do not mix very well. It would be possible to
+        # declare "target" as property, though it is a dataclass field, but it would then
+        # be considered as a field with defined default value (the default being the property
+        # object XD ). And since it is followed by fields without default, Python complains.
+        #
+        # The solution is to define the property afterwards, and since we are in an abstract class,
+        # it can be done when subclassing.
+        def _get_target(self) -> FlightPoint:
+            return self._target
+
+        def _set_target(self, value: FlightPoint):
+            value.scalarize()
+            # Initializing self._target elsewhere give bad results. Since target is mandatory
+            # in constructor, this initialization will happen.
+            self._target = value
+
+        cls.target = property(_get_target, _set_target)
+
     @classmethod
     def get_attribute_unit(cls, attribute_name: str) -> str:
         return cls._attribute_units.get(attribute_name)
-
-    def __post_init__(self):
-        # Ensure target fields are not numpy arrays
-        self.target.scalarize()
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
@@ -169,7 +184,7 @@ class FlightSegment(IFlightPart):
         :param start: the initial flight point, defined for `altitude`, `mass` and speed
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
-        :return: a pandas DataFrame where columns names match fields of
+        :return: a pandas DataFrame where column names match fields of
                  :meth:`~fastoad.model_base.flight_point.FlightPoint`
         """
         if start.time is None:
