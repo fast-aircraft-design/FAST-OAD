@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from typing import Any, List, Mapping
 
 import numpy as np
@@ -119,6 +119,10 @@ class FlightPoint:
         slope_angle="rad",
         acceleration="m/s**2",
     )
+
+    @classmethod
+    def get_field_names(cls):
+        return [field.name for field in fields(cls)]
 
     @classmethod
     def get_units(cls) -> dict:
