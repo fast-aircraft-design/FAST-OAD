@@ -37,7 +37,9 @@ def test_cruise_at_constant_altitude(polar):
         polar=polar,
         engine_setting=EngineSetting.CRUISE,  # The engine model does not use this setting
     )
-    flight_points = segment.compute_from(FlightPoint(mass=70000.0, altitude=10000.0, mach=0.78))
+    flight_points = segment.compute_from(
+        FlightPoint(mass=70000.0, altitude=10000.0, mach=0.78, ground_distance=1000.0)
+    )
 
     first_point = flight_points.iloc[0]
     last_point = flight_points.iloc[-1]
@@ -46,7 +48,7 @@ def test_cruise_at_constant_altitude(polar):
     assert_allclose(first_point.true_airspeed, 233.6, atol=0.1)
     assert first_point.engine_setting == EngineSetting.CRUISE
 
-    assert_allclose(last_point.ground_distance, 500000.0)
+    assert_allclose(last_point.ground_distance, 501000.0)
     assert_allclose(last_point.altitude, 10000.0)
     assert_allclose(last_point.time, 2141.0, rtol=1e-2)
     assert_allclose(last_point.true_airspeed, 233.6, atol=0.1)
@@ -154,8 +156,8 @@ def test_climb_and_cruise_at_optimal_flight_level(polar):
     assert first_point.engine_setting == EngineSetting.CLIMB
 
     assert_allclose(flight_points.mach, 0.78)
-    assert_allclose(last_point.altitude, 9753.6)
     assert_allclose(last_point.ground_distance, 11.0e6)
+    assert_allclose(last_point.altitude, 9753.6)
     assert_allclose(last_point.time, 42659.0, rtol=1e-3)
     assert_allclose(last_point.true_airspeed, 234.4, atol=0.1)
     assert_allclose(last_point.mass, 48874.0, rtol=1e-4)
@@ -196,8 +198,8 @@ def test_climb_and_cruise_at_optimal_flight_level_with_capped_flight_level(polar
     assert_allclose(first_point.true_airspeed, 240.3, atol=0.1)
 
     assert_allclose(flight_points.mach, 0.78)
-    assert_allclose(last_point.altitude, 9144.0)
     assert_allclose(last_point.ground_distance, 11.0e6)
+    assert_allclose(last_point.altitude, 9144.0)
     assert_allclose(last_point.time, 42287.0, rtol=1e-3)
     assert_allclose(last_point.true_airspeed, 236.5, atol=0.1)
     assert_allclose(last_point.mass, 48807.0, rtol=1e-4)

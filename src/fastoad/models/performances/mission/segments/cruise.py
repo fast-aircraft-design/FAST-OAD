@@ -39,6 +39,7 @@ class CruiseSegment(RegulatedThrustSegment):
     """
 
     def __post_init__(self):
+        super().__post_init__()
         # Constant speed at constant altitude is necessarily constant Mach, but
         # subclasses can be at variable altitude, so Mach is considered constant
         # if no other constant speed parameter is set to "constant".
@@ -107,11 +108,11 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         climb_segment = deepcopy(self.climb_segment)
-        self.make_target_absolute(start)
-        climb_segment.target = deepcopy(self.target)
+        self.target = self.target.make_absolute(start)
+        climb_segment.target = self.target
 
         cruise_segment = CruiseSegment(
-            target=deepcopy(self.target),
+            target=self.target,
             propulsion=self.propulsion,
             reference_area=self.reference_area,
             polar=self.polar,
@@ -184,9 +185,6 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
         climb_points = climb_segment.compute_from(start)
 
         cruise_start = FlightPoint.create(climb_points.iloc[-1])
-        cruise_segment.target.ground_distance = (
-            self.target.ground_distance - cruise_start.ground_distance
-        )
         cruise_points = cruise_segment.compute_from(cruise_start)
 
         return pd.concat([climb_points, cruise_points]).reset_index(drop=True)

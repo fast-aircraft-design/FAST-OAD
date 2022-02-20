@@ -15,19 +15,18 @@
 from numpy.testing import assert_allclose
 
 from fastoad.model_base import FlightPoint
-from ..base import RELATIVE_FIELD_FLAG
 from ..transition import DummyTransitionSegment
 
 
 def test_dummy_takeoff():
-    dummy_takeoff = DummyTransitionSegment(
-        target=FlightPoint(
-            time=45,
-            true_airspeed=50.0,
-            mass=-100 + RELATIVE_FIELD_FLAG,
-            altitude=10 + RELATIVE_FIELD_FLAG,
-        )
+    target = FlightPoint(
+        time=45,
+        true_airspeed=50.0,
+        mass=-100,
+        altitude=10,
     )
+    target.set_as_relative(["mass", "altitude"])
+    dummy_takeoff = DummyTransitionSegment(target=target)
 
     flight_points = dummy_takeoff.compute_from(
         FlightPoint(time=500, altitude=0.0, mass=50000, mach=0.0, ground_distance=100.0e3)

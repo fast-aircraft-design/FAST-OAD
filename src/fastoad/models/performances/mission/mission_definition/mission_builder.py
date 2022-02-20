@@ -41,14 +41,12 @@ from .schema import (
 from ..base import FlightSequence, IFlightPart
 from ..polar import Polar
 from ..routes import RangedRoute
-from ..segments.base import FlightSegment, RELATIVE_FIELD_FLAG, SegmentDefinitions
+from ..segments.base import FlightSegment, SegmentDefinitions
 
 # FIXME: should be set in Route class
 BASE_UNITS = {
     "range": "m",
     "distance_accuracy": "m",
-    "time": "s",
-    "ground_distance": "m",
 }
 
 
@@ -440,18 +438,24 @@ class MissionBuilder:
                 value = Polar(polar["CL"], polar["CD"])
             elif key == "target":
                 if not isinstance(value, FlightPoint):
-                    self._replace_by_inputs(value, inputs)
-                    field_names = list(value.keys())  # Needed because loop will modify key list
+                    target_parameters = value.copy()  # Copy needed, since we may modify this dict
+                    self._replace_by_inputs(target_parameters, inputs)
+                    field_names = list(
+                        target_parameters.keys()
+                    )  # Needed because loop will modify key list
+                    relative_fields = []
                     for field_name in field_names:
                         if field_name.startswith("delta_"):
                             new_field_name = field_name[6:]
-                            delta_value = value[field_name]
+                            relative_fields.append(new_field_name)
+                            delta_value = target_parameters[field_name]
                             if new_field_name in FlightPoint.get_field_names() and not isinstance(
                                 delta_value, str
                             ):
-                                value[new_field_name] = delta_value + RELATIVE_FIELD_FLAG
-                                del value[field_name]
-                    value = FlightPoint(**value)
+                                target_parameters[new_field_name] = delta_value
+                                del target_parameters[field_name]
+                    value = FlightPoint(**target_parameters)
+                    value.set_as_relative(relative_fields)
 
             part_kwargs[key] = value
 
