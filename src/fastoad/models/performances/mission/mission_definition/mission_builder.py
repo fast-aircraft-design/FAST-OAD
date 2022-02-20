@@ -16,8 +16,11 @@ Mission generator.
 
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Dict, List, Mapping, Optional, Tuple, Union
+from dataclasses import dataclass, field
+from numbers import Number
+from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
+import numpy as np
 import openmdao.api as om
 import pandas as pd
 
@@ -50,6 +53,126 @@ BASE_UNITS = {
 }
 
 
+@dataclass
+class InputDefinition:
+    """
+    Class for managing definition of mission inputs.
+
+    It stores value
+
+    """
+
+    #: The parameter this input is defined for
+    parameter_name: str
+
+    value: Union[str, Number, Iterable]
+
+    #: Unit used for defining value and/or default value.
+    unit: Optional[str] = None
+
+    #: Default value. Used if value is a variable name.
+    default_value: Optional[Number] = None
+    variable_name: Optional[str] = None
+    use_opposite: bool = False
+    is_relative: bool = False
+
+    #: Unit used for mission computation. Automatically determined from self.parameter_name,
+    #: mainly from unit definition for FlightPoint class.
+    default_unit: Optional[str] = field(default=None, init=False, repr=False)
+
+    _value: Union[str, Number] = field(default=None, init=False, repr=False)
+
+    def __post_init__(self):
+        if self.parameter_name.startswith("delta_"):
+            self.is_relative = True
+            self.parameter_name = self.parameter_name[6:]
+
+        self.default_unit = FlightPoint.get_units().get(self.parameter_name)
+        if self.default_unit is None:
+            self.default_unit = BASE_UNITS.get(self.parameter_name)
+        if self.default_unit == "-":
+            self.default_unit = None
+
+        if self.unit is None:
+            self.unit = self.default_unit
+
+        if isinstance(self.value, str) and ":" in self.value:
+            if self.value.startswith("-"):
+                self.use_opposite = True
+            self.variable_name = self.value.strip("- ")
+
+    @property
+    def value(self):
+        """
+        Value of variable in DEFAULT unit (unit used by mission calculation).
+
+        Exception: if defined value is a variable and self.set_variable_value() has been
+        called, the value should be the actual numeric value.
+        """
+        try:
+            return om.convert_units(self._value, self.unit, self.default_unit)
+        except TypeError:
+            return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
+
+    @classmethod
+    def from_dict(cls, parameter_name, definition_dict: dict):
+        """
+        Instantiates InputDefinition from definition_dict.
+
+        :param parameter_name:
+        :param definition_dict:
+        """
+        if "value" not in definition_dict:
+            return None
+
+        input_def = cls(
+            parameter_name,
+            value=definition_dict["value"],
+            unit=definition_dict.get("unit"),
+            default_value=definition_dict.get("default"),
+        )
+
+        return input_def
+
+    def set_variable_value(self, inputs: Mapping):
+        """
+        Sets self.value from OpenMDAO inputs.
+
+        OpenMDAO value is assumed to be provided with unit self.unit.
+
+        :param inputs:
+        """
+        if self.variable_name and self.variable_name in inputs:
+            if self.use_opposite:
+                self.value = -inputs[self.variable_name]
+            else:
+                self.value = inputs[self.variable_name]
+
+    def get_input_definition(self) -> Optional[Variable]:
+        """
+        Provides information for input definition in OpenMDAO.
+
+        :return: Variable instance with input definition, or None if no variable name was defined.
+        """
+        if self.variable_name:
+            shape_by_conn = self.variable_name.endswith(":CD") or self.variable_name.endswith(":CL")
+            return Variable(
+                name=self.variable_name,
+                val=np.nan,
+                shape_by_conn=shape_by_conn,
+                units=self.unit,
+                desc="Input defined by the mission.",
+            )
+        return None
+
+    def __str__(self):
+        return str(self.value)
+
+
 class MissionBuilder:
     def __init__(
         self,
@@ -67,7 +190,7 @@ class MissionBuilder:
         :param reference_area: if not provided, the property :attr:`reference_area` must be
                                set before calling :meth:`build`
         """
-        super().__init__()
+        self._input_definitions: Dict[str, List[InputDefinition]] = {}
         self.definition = mission_definition
         self._base_kwargs = {"reference_area": reference_area, "propulsion": propulsion}
 
@@ -88,6 +211,9 @@ class MissionBuilder:
             self._definition = mission_definition
 
         self._structure = self._build_structure()
+        for mission_name, mission_structure in self._structure.items():
+            self._input_definitions[mission_name] = []
+            self._parse_inputs(mission_name, mission_structure)
 
     @property
     def propulsion(self) -> IPropulsion:
@@ -116,11 +242,12 @@ class MissionBuilder:
         :param mission_name: mission name (can be omitted if only one mission is defined)
         :return:
         """
-        self._parse_values_and_units(self._structure)
-        self.get_input_variables(mission_name)  # Needed to process "contextual" variable names
+        for mission_input_list in self._input_definitions.values():
+            for input_def in mission_input_list:
+                input_def.set_variable_value(inputs)
         if mission_name is None:
             mission_name = self.get_unique_mission_name()
-        mission = self._build_mission(self._structure[mission_name], inputs)
+        mission = self._build_mission(self._structure[mission_name])
         self._propagate_name(mission, mission.name)
         return mission
 
@@ -152,8 +279,8 @@ class MissionBuilder:
 
         last_part_spec = self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG][-1]
         if RESERVE_TAG in last_part_spec:
-            ref_name = last_part_spec[RESERVE_TAG]["ref"]
-            multiplier = last_part_spec[RESERVE_TAG]["multiplier"]
+            ref_name = last_part_spec[RESERVE_TAG]["ref"].value
+            multiplier = last_part_spec[RESERVE_TAG]["multiplier"].value
 
             route_points = flight_points.loc[
                 flight_points.name.str.contains("%s:%s" % (mission_name, ref_name))
@@ -163,7 +290,7 @@ class MissionBuilder:
 
         return 0.0
 
-    def get_input_variables(self, mission_name=None) -> Dict[str, str]:
+    def get_input_variables(self, mission_name=None) -> Dict[str, Tuple[Optional[str], str]]:
         """
         Identify variables for a defined mission.
 
@@ -174,7 +301,12 @@ class MissionBuilder:
             mission_name = self.get_unique_mission_name()
 
         input_definition = {}
-        self._identify_inputs(input_definition, self._structure[mission_name])
+        for input_def in self._input_definitions[mission_name]:
+            if input_def.variable_name:
+                input_definition[input_def.variable_name] = (
+                    input_def.unit,
+                    "Input defined by the mission.",
+                )
 
         return input_definition
 
@@ -262,73 +394,11 @@ class MissionBuilder:
             parts.append(phase_structure)
         return parts
 
-    def _identify_inputs(
-        self,
-        input_definition: Dict[str, Tuple[str, str]],
-        struct: Union[OrderedDict, list],
-        prefix: str = None,
-        parent: str = None,
-    ):
-        """
-        Identifies the OpenMDAO variables that are provided as parameter values.
-
-        A value is considered an OpenMDAO variable as soon as it is a string that
-        contains a colon ":".
-
-        If a value starts with a tilde "~<some_name>", it will be considered contextual and the
-        actual name will be built as
-        "data:mission:<mission_name>:<route_name>:<phase_name>:<some_name>" (route and phase names
-        will be used only if applicable). The variable name in provided structure will be modified
-        accordingly.
-        If value is simply "~", the parameter name will be used.
-
-        :param input_definition: dictionary to be completed with variable names as keys and
-                                 (units, description) as values
-        :param struct: any part of the structure dictionary.
-        :param prefix:
-
-        """
-        if prefix is None:
-            prefix = "data:mission"
-
-        if isinstance(struct, dict):
-            for key, value in struct.items():
-                name = struct.get("mission", "") + struct.get("route", "") + struct.get("phase", "")
-                prefix_addition = ":" + name if name else ""
-
-                if isinstance(value, str) and value.startswith("~") or value is None:
-                    # "~" alone is interpreted as "null" by the yaml parser
-                    # In that case, the parameter name in the mission file is used as suffix.
-                    # Otherwise, the string after the "~" is used as suffix.
-                    suffix = key if value is None else value[1:]
-                    value = prefix + prefix_addition + ":" + suffix
-                    struct[key] = value
-                if isinstance(value, str) and ":" in value:
-                    if value.startswith("-"):
-                        value = value[1:]
-                    if SEGMENT_TAG in struct:
-                        parent = struct[SEGMENT_TAG]
-                    input_definition[value.strip(" -")] = (
-                        self._get_base_unit(key, parent),
-                        "Input defined by the mission.",
-                    )
-                elif isinstance(value, (dict, list)):
-                    self._identify_inputs(
-                        input_definition, value, prefix=prefix + prefix_addition, parent=key
-                    )
-
-        elif isinstance(struct, list):
-            for value in struct:
-                self._identify_inputs(input_definition, value, prefix=prefix, parent=parent)
-
-    def _build_mission(
-        self, mission_structure: OrderedDict, inputs: Optional[Mapping] = None
-    ) -> FlightSequence:
+    def _build_mission(self, mission_structure: OrderedDict) -> FlightSequence:
         """
         Builds mission instance from provided structure.
 
         :param mission_structure: structure of the mission to build
-        :param inputs: if provided, variable inputs will be replaced by their value.
         :return: the mission instance
         """
         mission = FlightSequence()
@@ -336,11 +406,11 @@ class MissionBuilder:
         mission.name = mission_structure["mission"]
         for part_spec in mission_structure[PARTS_TAG]:
             if "route" in part_spec:
-                part = self._build_route(part_spec, inputs)
+                part = self._build_route(part_spec)
             elif "phase" in part_spec:
-                part = self._build_phase(part_spec, inputs)
+                part = self._build_phase(part_spec)
             elif "segment" in part_spec:
-                part = self._build_segment(part_spec, {}, inputs)
+                part = self._build_segment(part_spec, {})
             else:  # reserve definition is used differently
                 continue
             part.name = list(part_spec.values())[0]
@@ -348,38 +418,34 @@ class MissionBuilder:
 
         return mission
 
-    def _build_route(self, route_structure: OrderedDict, inputs: Optional[Mapping] = None):
+    def _build_route(self, route_structure: OrderedDict):
         """
         Builds route instance.
 
         :param route_structure: structure of the route to build
-        :param inputs: if provided, variable inputs will be replaced by their value.
         :return: the route instance
         """
         climb_phases = []
         descent_phases = []
 
         for part_structure in route_structure[CLIMB_PARTS_TAG]:
-            phase = self._build_phase(part_structure, inputs)
+            phase = self._build_phase(part_structure)
             climb_phases.append(phase)
             phase.name = list(part_structure.values())[0]
 
         cruise_phase = self._build_segment(
             route_structure[CRUISE_PART_TAG],
             {"name": "cruise", "target": FlightPoint(ground_distance=0.0)},
-            inputs,
         )
         cruise_phase.name = "cruise"
 
         for part_structure in route_structure[DESCENT_PARTS_TAG]:
-            phase = self._build_phase(part_structure, inputs)
+            phase = self._build_phase(part_structure)
             descent_phases.append(phase)
             phase.name = list(part_structure.values())[0]
 
         if "range" in route_structure:
-            flight_range = route_structure["range"]
-            if isinstance(flight_range, str):
-                flight_range = inputs[route_structure["range"]]
+            flight_range = route_structure["range"].value
             route = RangedRoute(
                 climb_phases, cruise_phase, descent_phases, flight_distance=flight_range
             )
@@ -388,42 +454,40 @@ class MissionBuilder:
             route.flight_sequence.extend(climb_phases)
 
         if "distance_accuracy" in route_structure:
-            route.distance_accuracy = route_structure["distance_accuracy"]
+            route.distance_accuracy = route_structure["distance_accuracy"].value
 
         return route
 
-    def _build_phase(self, phase_structure, inputs: Optional[Mapping] = None):
+    def _build_phase(self, phase_structure):
         """
         Builds phase instance
 
         :param phase_structure: structure of the phase to build
-        :param inputs: if provided, variable inputs will be replaced by their value.
         :return: the phase instance
         """
         phase = FlightSequence()
         kwargs = {name: value for name, value in phase_structure.items() if name != PARTS_TAG}
+        self._replace_input_definitions_by_values(kwargs)
         del kwargs[PHASE_TAG]
 
         for part_structure in phase_structure[PARTS_TAG]:
-            segment = self._build_segment(part_structure, kwargs, inputs)
+            segment = self._build_segment(part_structure, kwargs)
             phase.flight_sequence.append(segment)
 
         return phase
 
     def _build_segment(
-        self, segment_definition: dict, kwargs: dict, inputs: Optional[Mapping], tag=SEGMENT_TAG
+        self, segment_definition: dict, kwargs: dict, tag=SEGMENT_TAG
     ) -> FlightSegment:
         """
         Builds a flight segment according to provided definition.
 
         :param segment_definition: the segment definition from mission file
         :param kwargs: a preset of keyword arguments for FlightSegment instantiation
-        :param inputs: if provided, any input parameter that is a string which matches
-                       a key of `inputs` will be replaced by the corresponding value
         :param tag: the expected tag for specifying the segment type
         :return: the FlightSegment instance
         """
-        segment_class = SegmentDefinitions.get_segment_class(segment_definition[tag])
+        segment_class = SegmentDefinitions.get_segment_class(str(segment_definition[tag]))
         part_kwargs = kwargs.copy()
         part_kwargs.update(
             {name: value for name, value in segment_definition.items() if name != tag}
@@ -431,41 +495,33 @@ class MissionBuilder:
         part_kwargs.update(self._base_kwargs)
         for key, value in part_kwargs.items():
             if key == "polar":
-                polar = {}
-                for coeff in ["CL", "CD"]:
-                    polar[coeff] = value[coeff]
-                self._replace_by_inputs(polar, inputs)
-                value = Polar(polar["CL"], polar["CD"])
+                value = Polar(value["CL"].value, value["CD"].value)
             elif key == "target":
                 if not isinstance(value, FlightPoint):
-                    target_parameters = value.copy()  # Copy needed, since we may modify this dict
-                    self._replace_by_inputs(target_parameters, inputs)
-                    field_names = list(
-                        target_parameters.keys()
-                    )  # Needed because loop will modify key list
-                    relative_fields = []
-                    for field_name in field_names:
-                        if field_name.startswith("delta_"):
-                            new_field_name = field_name[6:]
-                            relative_fields.append(new_field_name)
-                            delta_value = target_parameters[field_name]
-                            if new_field_name in FlightPoint.get_field_names() and not isinstance(
-                                delta_value, str
-                            ):
-                                target_parameters[new_field_name] = delta_value
-                                del target_parameters[field_name]
+                    target_parameters = {
+                        param.parameter_name: param.value for param in value.values()
+                    }
+                    relative_fields = [
+                        param.parameter_name for param in value.values() if param.is_relative
+                    ]
                     value = FlightPoint(**target_parameters)
                     value.set_as_relative(relative_fields)
 
             part_kwargs[key] = value
 
+        self._replace_input_definitions_by_values(part_kwargs)
+
         if "engine_setting" in part_kwargs:
             part_kwargs["engine_setting"] = EngineSetting.convert(part_kwargs["engine_setting"])
 
-        self._replace_by_inputs(part_kwargs, inputs)
-
         segment = segment_class(**part_kwargs)
         return segment
+
+    @staticmethod
+    def _replace_input_definitions_by_values(part_kwargs):
+        for key, input_def in part_kwargs.items():
+            if isinstance(input_def, InputDefinition):
+                part_kwargs[key] = input_def.value
 
     def _propagate_name(self, part: IFlightPart, new_name: str):
         """
@@ -481,76 +537,49 @@ class MissionBuilder:
         if isinstance(part, FlightSequence):
             for subpart in part.flight_sequence:
                 if subpart.name:
-                    self._propagate_name(subpart, ":".join([part.name, subpart.name]))
+                    self._propagate_name(subpart, ":".join([str(part.name), str(subpart.name)]))
                 else:
                     subpart.name = part.name
 
-    @classmethod
-    def _parse_values_and_units(cls, definition, parent=None):
-        """
-        Browse recursively provided dictionary and if a dictionary that has
-        "value" and "unit" as only keys is found, it is transformed into a
-        value in base units, as defined in BASE_UNITS.
-
-        Does nothing if definition is not a dict.
-
-        :param definition:
-        """
+    def _parse_inputs(self, mission_name, definition, parent=None, prefix=None):
+        if prefix is None:
+            prefix = "data:mission"
 
         if isinstance(definition, dict):
             for key, value in definition.items():
+                name = (
+                    str(definition.get("mission", ""))
+                    + str(definition.get("route", ""))
+                    + str(definition.get("phase", ""))
+                )
+                prefix_addition = ":" + name if name else ""
+
+                if isinstance(value, list):
+                    try:
+                        _ = np.array(value) + 1
+                        is_numeric_list = True
+                    except TypeError:
+                        is_numeric_list = False
+
                 if isinstance(value, dict) and "value" in value.keys():
-                    definition[key] = om.convert_units(
-                        value["value"], value.get("unit"), cls._get_base_unit(key, parent)
-                    )
+                    definition[key] = InputDefinition.from_dict(key, definition[key])
+                    self._input_definitions[mission_name].append(definition[key])
+                elif not isinstance(value, dict) and (
+                    not isinstance(value, list) or is_numeric_list
+                ):
+                    if (isinstance(value, str) and value.startswith("~")) or value is None:
+                        # "~" alone is interpreted as "null" by the yaml parser
+                        # In that case, the parameter name in the mission file is used as suffix.
+                        # Otherwise, the string after the "~" is used as suffix.
+                        suffix = key if value is None else value[1:]
+                        value = prefix + prefix_addition + ":" + suffix
+
+                    definition[key] = InputDefinition(key, value)
+                    self._input_definitions[mission_name].append(definition[key])
                 else:
-                    cls._parse_values_and_units(value, parent=key)
+                    self._parse_inputs(
+                        mission_name, value, parent=key, prefix=prefix + prefix_addition
+                    )
         elif isinstance(definition, list):
             for value in definition:
-                cls._parse_values_and_units(value, parent=parent)
-
-    @staticmethod
-    def _replace_by_inputs(parameter_definition: dict, inputs: Optional[Mapping]):
-        """
-        In provided dict, if a value is a string that matches a key of `inputs`, replaces
-        it by the value provided in `inputs`.
-
-        :param parameter_definition:
-        :param inputs:
-        """
-        if inputs:
-            for key, value in parameter_definition.items():
-                if isinstance(value, str):
-                    negative = False
-                    if value.startswith("-"):
-                        value = value.strip(" -")
-                        negative = True
-                    if value in inputs:
-                        if negative:
-                            parameter_definition[key] = -inputs[value]
-                        else:
-                            parameter_definition[key] = inputs[value]
-
-    @staticmethod
-    def _get_base_unit(attribute_name: str, parent_entity: str):
-        """
-        :param attribute_name:
-        :param parent_entity:
-        :return: units for attribute_name, based on parent_entity (a segment name, "target" or
-                 "route")
-        """
-        if parent_entity == "target":
-            unit = FlightPoint.get_units().get(attribute_name)
-            if attribute_name.startswith("delta_"):
-                new_attribute_name = attribute_name[6:]
-                if new_attribute_name in FlightPoint.get_field_names():
-                    unit = FlightPoint.get_units().get(new_attribute_name)
-        else:
-            segment_class = SegmentDefinitions.get_segment_class(parent_entity)
-            if segment_class:
-                unit = segment_class.get_attribute_unit(attribute_name)
-            else:
-                unit = BASE_UNITS.get(attribute_name)
-        if unit == "-":
-            unit = None
-        return unit
+                self._parse_inputs(mission_name, value, parent=parent, prefix=prefix)

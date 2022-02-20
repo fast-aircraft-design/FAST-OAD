@@ -28,10 +28,29 @@ from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 from ..exceptions import FastMissionFileMissingMissionNameError
-from ..mission_builder import MissionBuilder
+from ..mission_builder import InputDefinition, MissionBuilder
 from ..schema import MissionDefinition
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+
+
+def test_input_definition_units():
+    inp1 = InputDefinition("anything", value=1.0, unit="km")
+    assert inp1.value == 1.0
+
+    inp1.default_unit = "m"
+    assert inp1.value == 1000.0
+
+    # When parameter name is known, its default unit is automatically set.
+    inp2 = InputDefinition("ground_distance", value=1.0, unit="km")
+    assert inp2.value == 1000.0
+    assert not inp2.is_relative
+
+    inp3 = InputDefinition("delta_time", value=1.0, unit="h")
+    assert inp3.parameter_name == "time"
+    assert inp3.is_relative
+
+    assert inp3.value == 3600.0
 
 
 def test_initialization():
@@ -47,43 +66,155 @@ def test_initialization():
                 "sizing",
                 OrderedDict(
                     [
-                        ("mission", "sizing"),
+                        (
+                            "mission",
+                            InputDefinition(
+                                parameter_name="mission",
+                                value="sizing",
+                                unit=None,
+                                default_value=None,
+                                variable_name=None,
+                                use_opposite=False,
+                                is_relative=False,
+                            ),
+                        ),
                         (
                             "parts",
                             [
                                 OrderedDict(
                                     [
-                                        ("route", "main"),
-                                        ("range", None),
-                                        ("distance_accuracy", 500),
+                                        (
+                                            "route",
+                                            InputDefinition(
+                                                parameter_name="route",
+                                                value="main",
+                                                unit=None,
+                                                default_value=None,
+                                                variable_name=None,
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
+                                        (
+                                            "range",
+                                            InputDefinition(
+                                                parameter_name="range",
+                                                value="data:mission:sizing:main:range",
+                                                unit="m",
+                                                default_value=None,
+                                                variable_name="data:mission:sizing:main:range",
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
+                                        (
+                                            "distance_accuracy",
+                                            InputDefinition(
+                                                parameter_name="distance_accuracy",
+                                                value=500,
+                                                unit="m",
+                                                default_value=None,
+                                                variable_name=None,
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
                                         (
                                             "climb_parts",
                                             [
                                                 OrderedDict(
                                                     [
-                                                        ("phase", "initial_climb"),
-                                                        ("engine_setting", "takeoff"),
+                                                        (
+                                                            "phase",
+                                                            InputDefinition(
+                                                                parameter_name="phase",
+                                                                value="initial_climb",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "engine_setting",
+                                                            InputDefinition(
+                                                                parameter_name="engine_setting",
+                                                                value="takeoff",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "polar",
                                                             {
-                                                                "CD": [0.0, 0.03, 0.12],
-                                                                "CL": [0.0, 0.5, 1.0],
+                                                                "CD": InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    value=[0.0, 0.03, 0.12],
+                                                                    unit=None,
+                                                                    default_value=None,
+                                                                    variable_name=None,
+                                                                    use_opposite=False,
+                                                                    is_relative=False,
+                                                                ),
+                                                                "CL": InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    value=[0.0, 0.5, 1.0],
+                                                                    unit=None,
+                                                                    default_value=None,
+                                                                    variable_name=None,
+                                                                    use_opposite=False,
+                                                                    is_relative=False,
+                                                                ),
                                                             },
                                                         ),
-                                                        ("thrust_rate", {"value": 1.0}),
+                                                        (
+                                                            "thrust_rate",
+                                                            InputDefinition(
+                                                                parameter_name="thrust_rate",
+                                                                value=1.0,
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "parts",
                                                             [
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 400.0,
-                                                                        },
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=400.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
@@ -91,36 +222,100 @@ def test_initialization():
                                                                         [
                                                                             (
                                                                                 "CL",
-                                                                                "data:aerodynamics:aircraft:takeoff:CL",
+                                                                                InputDefinition(
+                                                                                    parameter_name="CL",
+                                                                                    value="data:aerodynamics:aircraft:takeoff:CL",
+                                                                                    unit=None,
+                                                                                    default_value=None,
+                                                                                    variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                                                    use_opposite=False,
+                                                                                    is_relative=False,
+                                                                                ),
                                                                             ),
                                                                             (
                                                                                 "CD",
-                                                                                "data:aerodynamics:aircraft:takeoff:CD",
+                                                                                InputDefinition(
+                                                                                    parameter_name="CD",
+                                                                                    value="data:aerodynamics:aircraft:takeoff:CD",
+                                                                                    unit=None,
+                                                                                    default_value=None,
+                                                                                    variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                                                    use_opposite=False,
+                                                                                    is_relative=False,
+                                                                                ),
                                                                             ),
                                                                         ]
                                                                     ),
-                                                                    "segment": "speed_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="speed_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 250,
-                                                                        }
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=250,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        )
                                                                     },
                                                                 },
                                                                 {
                                                                     "polar": {
-                                                                        "CD": "data:aerodynamics:aircraft:takeoff:CD",
-                                                                        "CL": "data:aerodynamics:aircraft:takeoff:CL",
+                                                                        "CD": InputDefinition(
+                                                                            parameter_name="CD",
+                                                                            value="data:aerodynamics:aircraft:takeoff:CD",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "CL": InputDefinition(
+                                                                            parameter_name="CL",
+                                                                            value="data:aerodynamics:aircraft:takeoff:CL",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 1500.0,
-                                                                        },
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=1500.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                             ],
@@ -129,65 +324,189 @@ def test_initialization():
                                                 ),
                                                 OrderedDict(
                                                     [
-                                                        ("phase", "climb"),
-                                                        ("engine_setting", "climb"),
+                                                        (
+                                                            "phase",
+                                                            InputDefinition(
+                                                                parameter_name="phase",
+                                                                value="climb",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "engine_setting",
+                                                            InputDefinition(
+                                                                parameter_name="engine_setting",
+                                                                value="climb",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "polar",
                                                             OrderedDict(
                                                                 [
                                                                     (
                                                                         "CL",
-                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                        InputDefinition(
+                                                                            parameter_name="CL",
+                                                                            value="data:aerodynamics:aircraft:cruise:CL",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                     (
                                                                         "CD",
-                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                        InputDefinition(
+                                                                            parameter_name="CD",
+                                                                            value="data:aerodynamics:aircraft:cruise:CD",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                 ]
                                                             ),
                                                         ),
                                                         (
                                                             "thrust_rate",
-                                                            "data:propulsion:climb:thrust_rate",
+                                                            InputDefinition(
+                                                                parameter_name="thrust_rate",
+                                                                value="data:propulsion:climb:thrust_rate",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:propulsion:climb:thrust_rate",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                         (
                                                             "parts",
                                                             [
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 10000.0,
-                                                                        },
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=10000.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "speed_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="speed_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 300.0,
-                                                                        }
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=300.0,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        )
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": "constant",
-                                                                        "mach": "data:TLAR:cruise_mach",
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "mach": InputDefinition(
+                                                                            parameter_name="mach",
+                                                                            value="data:TLAR:cruise_mach",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:TLAR:cruise_mach",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "value": -20000.0
-                                                                        },
-                                                                        "mach": "constant",
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=-20000.0,
+                                                                            unit="m",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "mach": InputDefinition(
+                                                                            parameter_name="mach",
+                                                                            value="constant",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                             ],
@@ -199,20 +518,52 @@ def test_initialization():
                                         (
                                             "cruise_part",
                                             {
-                                                "engine_setting": "cruise",
+                                                "engine_setting": InputDefinition(
+                                                    parameter_name="engine_setting",
+                                                    value="cruise",
+                                                    unit=None,
+                                                    default_value=None,
+                                                    variable_name=None,
+                                                    use_opposite=False,
+                                                    is_relative=False,
+                                                ),
                                                 "polar": OrderedDict(
                                                     [
                                                         (
                                                             "CL",
-                                                            "data:aerodynamics:aircraft:cruise:CL",
+                                                            InputDefinition(
+                                                                parameter_name="CL",
+                                                                value="data:aerodynamics:aircraft:cruise:CL",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                         (
                                                             "CD",
-                                                            "data:aerodynamics:aircraft:cruise:CD",
+                                                            InputDefinition(
+                                                                parameter_name="CD",
+                                                                value="data:aerodynamics:aircraft:cruise:CD",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                     ]
                                                 ),
-                                                "segment": "optimal_cruise",
+                                                "segment": InputDefinition(
+                                                    parameter_name="segment",
+                                                    value="optimal_cruise",
+                                                    unit=None,
+                                                    default_value=None,
+                                                    variable_name=None,
+                                                    use_opposite=False,
+                                                    is_relative=False,
+                                                ),
                                             },
                                         ),
                                         (
@@ -220,70 +571,189 @@ def test_initialization():
                                             [
                                                 OrderedDict(
                                                     [
-                                                        ("phase", "descent"),
-                                                        ("engine_setting", {"value": "idle"}),
+                                                        (
+                                                            "phase",
+                                                            InputDefinition(
+                                                                parameter_name="phase",
+                                                                value="descent",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "engine_setting",
+                                                            InputDefinition(
+                                                                parameter_name="engine_setting",
+                                                                value="idle",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "polar",
                                                             OrderedDict(
                                                                 [
                                                                     (
                                                                         "CL",
-                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                        InputDefinition(
+                                                                            parameter_name="CL",
+                                                                            value="data:aerodynamics:aircraft:cruise:CL",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                     (
                                                                         "CD",
-                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                        InputDefinition(
+                                                                            parameter_name="CD",
+                                                                            value="data:aerodynamics:aircraft:cruise:CD",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                 ]
                                                             ),
                                                         ),
                                                         (
                                                             "thrust_rate",
-                                                            "data:propulsion:descent:thrust_rate",
+                                                            InputDefinition(
+                                                                parameter_name="thrust_rate",
+                                                                value="data:propulsion:descent:thrust_rate",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:propulsion:descent:thrust_rate",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                         (
                                                             "parts",
                                                             [
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 300,
-                                                                        },
-                                                                        "mach": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=300,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "mach": InputDefinition(
+                                                                            parameter_name="mach",
+                                                                            value="constant",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 10000.0,
-                                                                        },
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=10000.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "speed_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="speed_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 250.0,
-                                                                        }
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=250.0,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        )
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": "~final_altitude",
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value="data:mission:sizing:main:descent:final_altitude",
+                                                                            unit="m",
+                                                                            default_value=None,
+                                                                            variable_name="data:mission:sizing:main:descent:final_altitude",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                             ],
@@ -296,63 +766,211 @@ def test_initialization():
                                 ),
                                 OrderedDict(
                                     [
-                                        ("route", "diversion"),
-                                        ("range", None),
-                                        ("distance_accuracy", {"unit": "km", "value": 0.1}),
+                                        (
+                                            "route",
+                                            InputDefinition(
+                                                parameter_name="route",
+                                                value="diversion",
+                                                unit=None,
+                                                default_value=None,
+                                                variable_name=None,
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
+                                        (
+                                            "range",
+                                            InputDefinition(
+                                                parameter_name="range",
+                                                value="data:mission:sizing:diversion:range",
+                                                unit="m",
+                                                default_value=None,
+                                                variable_name="data:mission:sizing:diversion:range",
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
+                                        (
+                                            "distance_accuracy",
+                                            InputDefinition(
+                                                parameter_name="distance_accuracy",
+                                                value=0.1,
+                                                unit="km",
+                                                default_value=None,
+                                                variable_name=None,
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
                                         (
                                             "climb_parts",
                                             [
                                                 OrderedDict(
                                                     [
-                                                        ("phase", "diversion_climb"),
-                                                        ("engine_setting", "climb"),
+                                                        (
+                                                            "phase",
+                                                            InputDefinition(
+                                                                parameter_name="phase",
+                                                                value="diversion_climb",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "engine_setting",
+                                                            InputDefinition(
+                                                                parameter_name="engine_setting",
+                                                                value="climb",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "polar",
                                                             OrderedDict(
                                                                 [
                                                                     (
                                                                         "CL",
-                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                        InputDefinition(
+                                                                            parameter_name="CL",
+                                                                            value="data:aerodynamics:aircraft:cruise:CL",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                     (
                                                                         "CD",
-                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                        InputDefinition(
+                                                                            parameter_name="CD",
+                                                                            value="data:aerodynamics:aircraft:cruise:CD",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                 ]
                                                             ),
                                                         ),
-                                                        ("thrust_rate", 0.93),
-                                                        ("time_step", {"unit": "s", "value": 5.0}),
+                                                        (
+                                                            "thrust_rate",
+                                                            InputDefinition(
+                                                                parameter_name="thrust_rate",
+                                                                value=0.93,
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "time_step",
+                                                            InputDefinition(
+                                                                parameter_name="time_step",
+                                                                value=5.0,
+                                                                unit="s",
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "parts",
                                                             [
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 10000.0,
-                                                                        },
-                                                                        "equivalent_airspeed": "constant",
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=10000.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "speed_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="speed_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 300.0,
-                                                                        }
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=300.0,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        )
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 22000.0,
-                                                                        },
-                                                                        "equivalent_airspeed": "constant",
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=22000.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                             ],
@@ -364,20 +982,52 @@ def test_initialization():
                                         (
                                             "cruise_part",
                                             {
-                                                "engine_setting": "cruise",
+                                                "engine_setting": InputDefinition(
+                                                    parameter_name="engine_setting",
+                                                    value="cruise",
+                                                    unit=None,
+                                                    default_value=None,
+                                                    variable_name=None,
+                                                    use_opposite=False,
+                                                    is_relative=False,
+                                                ),
                                                 "polar": OrderedDict(
                                                     [
                                                         (
                                                             "CL",
-                                                            "data:aerodynamics:aircraft:cruise:CL",
+                                                            InputDefinition(
+                                                                parameter_name="CL",
+                                                                value="data:aerodynamics:aircraft:cruise:CL",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                         (
                                                             "CD",
-                                                            "data:aerodynamics:aircraft:cruise:CD",
+                                                            InputDefinition(
+                                                                parameter_name="CD",
+                                                                value="data:aerodynamics:aircraft:cruise:CD",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                     ]
                                                 ),
-                                                "segment": "cruise",
+                                                "segment": InputDefinition(
+                                                    parameter_name="segment",
+                                                    value="cruise",
+                                                    unit=None,
+                                                    default_value=None,
+                                                    variable_name=None,
+                                                    use_opposite=False,
+                                                    is_relative=False,
+                                                ),
                                             },
                                         ),
                                         (
@@ -385,70 +1035,189 @@ def test_initialization():
                                             [
                                                 OrderedDict(
                                                     [
-                                                        ("phase", "descent"),
-                                                        ("engine_setting", {"value": "idle"}),
+                                                        (
+                                                            "phase",
+                                                            InputDefinition(
+                                                                parameter_name="phase",
+                                                                value="descent",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "engine_setting",
+                                                            InputDefinition(
+                                                                parameter_name="engine_setting",
+                                                                value="idle",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "polar",
                                                             OrderedDict(
                                                                 [
                                                                     (
                                                                         "CL",
-                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                        InputDefinition(
+                                                                            parameter_name="CL",
+                                                                            value="data:aerodynamics:aircraft:cruise:CL",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                     (
                                                                         "CD",
-                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                        InputDefinition(
+                                                                            parameter_name="CD",
+                                                                            value="data:aerodynamics:aircraft:cruise:CD",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                 ]
                                                             ),
                                                         ),
                                                         (
                                                             "thrust_rate",
-                                                            "data:propulsion:descent:thrust_rate",
+                                                            InputDefinition(
+                                                                parameter_name="thrust_rate",
+                                                                value="data:propulsion:descent:thrust_rate",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:propulsion:descent:thrust_rate",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                         (
                                                             "parts",
                                                             [
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 300,
-                                                                        },
-                                                                        "mach": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=300,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "mach": InputDefinition(
+                                                                            parameter_name="mach",
+                                                                            value="constant",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 10000.0,
-                                                                        },
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=10000.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "speed_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="speed_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 250.0,
-                                                                        }
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=250.0,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        )
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": "~final_altitude",
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value="data:mission:sizing:diversion:descent:final_altitude",
+                                                                            unit="m",
+                                                                            default_value=None,
+                                                                            variable_name="data:mission:sizing:diversion:descent:final_altitude",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                             ],
@@ -461,7 +1230,18 @@ def test_initialization():
                                 ),
                                 OrderedDict(
                                     [
-                                        ("phase", "holding"),
+                                        (
+                                            "phase",
+                                            InputDefinition(
+                                                parameter_name="phase",
+                                                value="holding",
+                                                unit=None,
+                                                default_value=None,
+                                                variable_name=None,
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
                                         (
                                             "parts",
                                             [
@@ -470,16 +1250,50 @@ def test_initialization():
                                                         [
                                                             (
                                                                 "CL",
-                                                                "data:aerodynamics:aircraft:cruise:CL",
+                                                                InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    value="data:aerodynamics:aircraft:cruise:CL",
+                                                                    unit=None,
+                                                                    default_value=None,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                    use_opposite=False,
+                                                                    is_relative=False,
+                                                                ),
                                                             ),
                                                             (
                                                                 "CD",
-                                                                "data:aerodynamics:aircraft:cruise:CD",
+                                                                InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    value="data:aerodynamics:aircraft:cruise:CD",
+                                                                    unit=None,
+                                                                    default_value=None,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                    use_opposite=False,
+                                                                    is_relative=False,
+                                                                ),
                                                             ),
                                                         ]
                                                     ),
-                                                    "segment": "holding",
-                                                    "target": {"delta_time": "~duration"},
+                                                    "segment": InputDefinition(
+                                                        parameter_name="segment",
+                                                        value="holding",
+                                                        unit=None,
+                                                        default_value=None,
+                                                        variable_name=None,
+                                                        use_opposite=False,
+                                                        is_relative=False,
+                                                    ),
+                                                    "target": {
+                                                        "delta_time": InputDefinition(
+                                                            parameter_name="time",
+                                                            value="data:mission:sizing:holding:duration",
+                                                            unit="s",
+                                                            default_value=None,
+                                                            variable_name="data:mission:sizing:holding:duration",
+                                                            use_opposite=False,
+                                                            is_relative=True,
+                                                        )
+                                                    },
                                                 }
                                             ],
                                         ),
@@ -487,21 +1301,90 @@ def test_initialization():
                                 ),
                                 OrderedDict(
                                     [
-                                        ("phase", "taxi_in"),
-                                        ("thrust_rate", None),
+                                        (
+                                            "phase",
+                                            InputDefinition(
+                                                parameter_name="phase",
+                                                value="taxi_in",
+                                                unit=None,
+                                                default_value=None,
+                                                variable_name=None,
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
+                                        (
+                                            "thrust_rate",
+                                            InputDefinition(
+                                                parameter_name="thrust_rate",
+                                                value="data:mission:sizing:taxi_in:thrust_rate",
+                                                unit=None,
+                                                default_value=None,
+                                                variable_name="data:mission:sizing:taxi_in:thrust_rate",
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
                                         (
                                             "parts",
                                             [
                                                 {
-                                                    "segment": "taxi",
-                                                    "target": {"delta_time": "~duration"},
-                                                    "true_airspeed": 0.0,
+                                                    "segment": InputDefinition(
+                                                        parameter_name="segment",
+                                                        value="taxi",
+                                                        unit=None,
+                                                        default_value=None,
+                                                        variable_name=None,
+                                                        use_opposite=False,
+                                                        is_relative=False,
+                                                    ),
+                                                    "target": {
+                                                        "delta_time": InputDefinition(
+                                                            parameter_name="time",
+                                                            value="data:mission:sizing:taxi_in:duration",
+                                                            unit="s",
+                                                            default_value=None,
+                                                            variable_name="data:mission:sizing:taxi_in:duration",
+                                                            use_opposite=False,
+                                                            is_relative=True,
+                                                        )
+                                                    },
+                                                    "true_airspeed": InputDefinition(
+                                                        parameter_name="true_airspeed",
+                                                        value=0.0,
+                                                        unit="m/s",
+                                                        default_value=None,
+                                                        variable_name=None,
+                                                        use_opposite=False,
+                                                        is_relative=False,
+                                                    ),
                                                 }
                                             ],
                                         ),
                                     ]
                                 ),
-                                {"reserve": {"multiplier": 0.03, "ref": "main"}},
+                                {
+                                    "reserve": {
+                                        "multiplier": InputDefinition(
+                                            parameter_name="multiplier",
+                                            value=0.03,
+                                            unit=None,
+                                            default_value=None,
+                                            variable_name=None,
+                                            use_opposite=False,
+                                            is_relative=False,
+                                        ),
+                                        "ref": InputDefinition(
+                                            parameter_name="ref",
+                                            value="main",
+                                            unit=None,
+                                            default_value=None,
+                                            variable_name=None,
+                                            use_opposite=False,
+                                            is_relative=False,
+                                        ),
+                                    }
+                                },
                             ],
                         ),
                     ]
@@ -511,21 +1394,77 @@ def test_initialization():
                 "operational",
                 OrderedDict(
                     [
-                        ("mission", "operational"),
+                        (
+                            "mission",
+                            InputDefinition(
+                                parameter_name="mission",
+                                value="operational",
+                                unit=None,
+                                default_value=None,
+                                variable_name=None,
+                                use_opposite=False,
+                                is_relative=False,
+                            ),
+                        ),
                         (
                             "parts",
                             [
                                 OrderedDict(
                                     [
-                                        ("phase", "taxi_out"),
+                                        (
+                                            "phase",
+                                            InputDefinition(
+                                                parameter_name="phase",
+                                                value="taxi_out",
+                                                unit=None,
+                                                default_value=None,
+                                                variable_name=None,
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
                                         (
                                             "parts",
                                             [
                                                 {
-                                                    "segment": "taxi",
-                                                    "target": {"delta_time": "~duration"},
-                                                    "thrust_rate": None,
-                                                    "true_airspeed": 0.0,
+                                                    "segment": InputDefinition(
+                                                        parameter_name="segment",
+                                                        value="taxi",
+                                                        unit=None,
+                                                        default_value=None,
+                                                        variable_name=None,
+                                                        use_opposite=False,
+                                                        is_relative=False,
+                                                    ),
+                                                    "target": {
+                                                        "delta_time": InputDefinition(
+                                                            parameter_name="time",
+                                                            value="data:mission:operational:taxi_out:duration",
+                                                            unit="s",
+                                                            default_value=None,
+                                                            variable_name="data:mission:operational:taxi_out:duration",
+                                                            use_opposite=False,
+                                                            is_relative=True,
+                                                        )
+                                                    },
+                                                    "thrust_rate": InputDefinition(
+                                                        parameter_name="thrust_rate",
+                                                        value="data:mission:operational:taxi_out:thrust_rate",
+                                                        unit=None,
+                                                        default_value=None,
+                                                        variable_name="data:mission:operational:taxi_out:thrust_rate",
+                                                        use_opposite=False,
+                                                        is_relative=False,
+                                                    ),
+                                                    "true_airspeed": InputDefinition(
+                                                        parameter_name="true_airspeed",
+                                                        value=0.0,
+                                                        unit="m/s",
+                                                        default_value=None,
+                                                        variable_name=None,
+                                                        use_opposite=False,
+                                                        is_relative=False,
+                                                    ),
                                                 }
                                             ],
                                         ),
@@ -533,37 +1472,138 @@ def test_initialization():
                                 ),
                                 OrderedDict(
                                     [
-                                        ("route", "main"),
-                                        ("range", None),
-                                        ("distance_accuracy", 500),
+                                        (
+                                            "route",
+                                            InputDefinition(
+                                                parameter_name="route",
+                                                value="main",
+                                                unit=None,
+                                                default_value=None,
+                                                variable_name=None,
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
+                                        (
+                                            "range",
+                                            InputDefinition(
+                                                parameter_name="range",
+                                                value="data:mission:operational:main:range",
+                                                unit="m",
+                                                default_value=None,
+                                                variable_name="data:mission:operational:main:range",
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
+                                        (
+                                            "distance_accuracy",
+                                            InputDefinition(
+                                                parameter_name="distance_accuracy",
+                                                value=500,
+                                                unit="m",
+                                                default_value=None,
+                                                variable_name=None,
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
                                         (
                                             "climb_parts",
                                             [
                                                 OrderedDict(
                                                     [
-                                                        ("phase", "initial_climb"),
-                                                        ("engine_setting", "takeoff"),
+                                                        (
+                                                            "phase",
+                                                            InputDefinition(
+                                                                parameter_name="phase",
+                                                                value="initial_climb",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "engine_setting",
+                                                            InputDefinition(
+                                                                parameter_name="engine_setting",
+                                                                value="takeoff",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "polar",
                                                             {
-                                                                "CD": [0.0, 0.03, 0.12],
-                                                                "CL": [0.0, 0.5, 1.0],
+                                                                "CD": InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    value=[0.0, 0.03, 0.12],
+                                                                    unit=None,
+                                                                    default_value=None,
+                                                                    variable_name=None,
+                                                                    use_opposite=False,
+                                                                    is_relative=False,
+                                                                ),
+                                                                "CL": InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    value=[0.0, 0.5, 1.0],
+                                                                    unit=None,
+                                                                    default_value=None,
+                                                                    variable_name=None,
+                                                                    use_opposite=False,
+                                                                    is_relative=False,
+                                                                ),
                                                             },
                                                         ),
-                                                        ("thrust_rate", {"value": 1.0}),
+                                                        (
+                                                            "thrust_rate",
+                                                            InputDefinition(
+                                                                parameter_name="thrust_rate",
+                                                                value=1.0,
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "parts",
                                                             [
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 400.0,
-                                                                        },
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=400.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
@@ -571,36 +1611,100 @@ def test_initialization():
                                                                         [
                                                                             (
                                                                                 "CL",
-                                                                                "data:aerodynamics:aircraft:takeoff:CL",
+                                                                                InputDefinition(
+                                                                                    parameter_name="CL",
+                                                                                    value="data:aerodynamics:aircraft:takeoff:CL",
+                                                                                    unit=None,
+                                                                                    default_value=None,
+                                                                                    variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                                                    use_opposite=False,
+                                                                                    is_relative=False,
+                                                                                ),
                                                                             ),
                                                                             (
                                                                                 "CD",
-                                                                                "data:aerodynamics:aircraft:takeoff:CD",
+                                                                                InputDefinition(
+                                                                                    parameter_name="CD",
+                                                                                    value="data:aerodynamics:aircraft:takeoff:CD",
+                                                                                    unit=None,
+                                                                                    default_value=None,
+                                                                                    variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                                                    use_opposite=False,
+                                                                                    is_relative=False,
+                                                                                ),
                                                                             ),
                                                                         ]
                                                                     ),
-                                                                    "segment": "speed_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="speed_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 250,
-                                                                        }
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=250,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        )
                                                                     },
                                                                 },
                                                                 {
                                                                     "polar": {
-                                                                        "CD": "data:aerodynamics:aircraft:takeoff:CD",
-                                                                        "CL": "data:aerodynamics:aircraft:takeoff:CL",
+                                                                        "CD": InputDefinition(
+                                                                            parameter_name="CD",
+                                                                            value="data:aerodynamics:aircraft:takeoff:CD",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "CL": InputDefinition(
+                                                                            parameter_name="CL",
+                                                                            value="data:aerodynamics:aircraft:takeoff:CL",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 1500.0,
-                                                                        },
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=1500.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                             ],
@@ -609,65 +1713,189 @@ def test_initialization():
                                                 ),
                                                 OrderedDict(
                                                     [
-                                                        ("phase", "climb"),
-                                                        ("engine_setting", "climb"),
+                                                        (
+                                                            "phase",
+                                                            InputDefinition(
+                                                                parameter_name="phase",
+                                                                value="climb",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "engine_setting",
+                                                            InputDefinition(
+                                                                parameter_name="engine_setting",
+                                                                value="climb",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "polar",
                                                             OrderedDict(
                                                                 [
                                                                     (
                                                                         "CL",
-                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                        InputDefinition(
+                                                                            parameter_name="CL",
+                                                                            value="data:aerodynamics:aircraft:cruise:CL",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                     (
                                                                         "CD",
-                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                        InputDefinition(
+                                                                            parameter_name="CD",
+                                                                            value="data:aerodynamics:aircraft:cruise:CD",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                 ]
                                                             ),
                                                         ),
                                                         (
                                                             "thrust_rate",
-                                                            "data:propulsion:climb:thrust_rate",
+                                                            InputDefinition(
+                                                                parameter_name="thrust_rate",
+                                                                value="data:propulsion:climb:thrust_rate",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:propulsion:climb:thrust_rate",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                         (
                                                             "parts",
                                                             [
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 10000.0,
-                                                                        },
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=10000.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "speed_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="speed_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 300.0,
-                                                                        }
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=300.0,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        )
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": "constant",
-                                                                        "mach": "data:TLAR:cruise_mach",
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "mach": InputDefinition(
+                                                                            parameter_name="mach",
+                                                                            value="data:TLAR:cruise_mach",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:TLAR:cruise_mach",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "value": -20000.0
-                                                                        },
-                                                                        "mach": "constant",
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=-20000.0,
+                                                                            unit="m",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "mach": InputDefinition(
+                                                                            parameter_name="mach",
+                                                                            value="constant",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                             ],
@@ -679,20 +1907,52 @@ def test_initialization():
                                         (
                                             "cruise_part",
                                             {
-                                                "engine_setting": "cruise",
+                                                "engine_setting": InputDefinition(
+                                                    parameter_name="engine_setting",
+                                                    value="cruise",
+                                                    unit=None,
+                                                    default_value=None,
+                                                    variable_name=None,
+                                                    use_opposite=False,
+                                                    is_relative=False,
+                                                ),
                                                 "polar": OrderedDict(
                                                     [
                                                         (
                                                             "CL",
-                                                            "data:aerodynamics:aircraft:cruise:CL",
+                                                            InputDefinition(
+                                                                parameter_name="CL",
+                                                                value="data:aerodynamics:aircraft:cruise:CL",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                         (
                                                             "CD",
-                                                            "data:aerodynamics:aircraft:cruise:CD",
+                                                            InputDefinition(
+                                                                parameter_name="CD",
+                                                                value="data:aerodynamics:aircraft:cruise:CD",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                     ]
                                                 ),
-                                                "segment": "optimal_cruise",
+                                                "segment": InputDefinition(
+                                                    parameter_name="segment",
+                                                    value="optimal_cruise",
+                                                    unit=None,
+                                                    default_value=None,
+                                                    variable_name=None,
+                                                    use_opposite=False,
+                                                    is_relative=False,
+                                                ),
                                             },
                                         ),
                                         (
@@ -700,70 +1960,189 @@ def test_initialization():
                                             [
                                                 OrderedDict(
                                                     [
-                                                        ("phase", "descent"),
-                                                        ("engine_setting", {"value": "idle"}),
+                                                        (
+                                                            "phase",
+                                                            InputDefinition(
+                                                                parameter_name="phase",
+                                                                value="descent",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "engine_setting",
+                                                            InputDefinition(
+                                                                parameter_name="engine_setting",
+                                                                value="idle",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name=None,
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
+                                                        ),
                                                         (
                                                             "polar",
                                                             OrderedDict(
                                                                 [
                                                                     (
                                                                         "CL",
-                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                        InputDefinition(
+                                                                            parameter_name="CL",
+                                                                            value="data:aerodynamics:aircraft:cruise:CL",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                     (
                                                                         "CD",
-                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                        InputDefinition(
+                                                                            parameter_name="CD",
+                                                                            value="data:aerodynamics:aircraft:cruise:CD",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     ),
                                                                 ]
                                                             ),
                                                         ),
                                                         (
                                                             "thrust_rate",
-                                                            "data:propulsion:descent:thrust_rate",
+                                                            InputDefinition(
+                                                                parameter_name="thrust_rate",
+                                                                value="data:propulsion:descent:thrust_rate",
+                                                                unit=None,
+                                                                default_value=None,
+                                                                variable_name="data:propulsion:descent:thrust_rate",
+                                                                use_opposite=False,
+                                                                is_relative=False,
+                                                            ),
                                                         ),
                                                         (
                                                             "parts",
                                                             [
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 300,
-                                                                        },
-                                                                        "mach": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=300,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "mach": InputDefinition(
+                                                                            parameter_name="mach",
+                                                                            value="constant",
+                                                                            unit=None,
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": {
-                                                                            "unit": "ft",
-                                                                            "value": 10000.0,
-                                                                        },
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value=10000.0,
+                                                                            unit="ft",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "speed_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="speed_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "equivalent_airspeed": {
-                                                                            "unit": "kn",
-                                                                            "value": 250.0,
-                                                                        }
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value=250.0,
+                                                                            unit="kn",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        )
                                                                     },
                                                                 },
                                                                 {
-                                                                    "segment": "altitude_change",
+                                                                    "segment": InputDefinition(
+                                                                        parameter_name="segment",
+                                                                        value="altitude_change",
+                                                                        unit=None,
+                                                                        default_value=None,
+                                                                        variable_name=None,
+                                                                        use_opposite=False,
+                                                                        is_relative=False,
+                                                                    ),
                                                                     "target": {
-                                                                        "altitude": "~final_altitude",
-                                                                        "equivalent_airspeed": {
-                                                                            "value": "constant"
-                                                                        },
+                                                                        "altitude": InputDefinition(
+                                                                            parameter_name="altitude",
+                                                                            value="data:mission:operational:main:descent:final_altitude",
+                                                                            unit="m",
+                                                                            default_value=None,
+                                                                            variable_name="data:mission:operational:main:descent:final_altitude",
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
+                                                                        "equivalent_airspeed": InputDefinition(
+                                                                            parameter_name="equivalent_airspeed",
+                                                                            value="constant",
+                                                                            unit="m/s",
+                                                                            default_value=None,
+                                                                            variable_name=None,
+                                                                            use_opposite=False,
+                                                                            is_relative=False,
+                                                                        ),
                                                                     },
                                                                 },
                                                             ],
@@ -776,21 +2155,90 @@ def test_initialization():
                                 ),
                                 OrderedDict(
                                     [
-                                        ("phase", "taxi_in"),
-                                        ("thrust_rate", None),
+                                        (
+                                            "phase",
+                                            InputDefinition(
+                                                parameter_name="phase",
+                                                value="taxi_in",
+                                                unit=None,
+                                                default_value=None,
+                                                variable_name=None,
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
+                                        (
+                                            "thrust_rate",
+                                            InputDefinition(
+                                                parameter_name="thrust_rate",
+                                                value="data:mission:operational:taxi_in:thrust_rate",
+                                                unit=None,
+                                                default_value=None,
+                                                variable_name="data:mission:operational:taxi_in:thrust_rate",
+                                                use_opposite=False,
+                                                is_relative=False,
+                                            ),
+                                        ),
                                         (
                                             "parts",
                                             [
                                                 {
-                                                    "segment": "taxi",
-                                                    "target": {"delta_time": "~duration"},
-                                                    "true_airspeed": 0.0,
+                                                    "segment": InputDefinition(
+                                                        parameter_name="segment",
+                                                        value="taxi",
+                                                        unit=None,
+                                                        default_value=None,
+                                                        variable_name=None,
+                                                        use_opposite=False,
+                                                        is_relative=False,
+                                                    ),
+                                                    "target": {
+                                                        "delta_time": InputDefinition(
+                                                            parameter_name="time",
+                                                            value="data:mission:operational:taxi_in:duration",
+                                                            unit="s",
+                                                            default_value=None,
+                                                            variable_name="data:mission:operational:taxi_in:duration",
+                                                            use_opposite=False,
+                                                            is_relative=True,
+                                                        )
+                                                    },
+                                                    "true_airspeed": InputDefinition(
+                                                        parameter_name="true_airspeed",
+                                                        value=0.0,
+                                                        unit="m/s",
+                                                        default_value=None,
+                                                        variable_name=None,
+                                                        use_opposite=False,
+                                                        is_relative=False,
+                                                    ),
                                                 }
                                             ],
                                         ),
                                     ]
                                 ),
-                                {"reserve": {"multiplier": 0.02, "ref": "main"}},
+                                {
+                                    "reserve": {
+                                        "multiplier": InputDefinition(
+                                            parameter_name="multiplier",
+                                            value=0.02,
+                                            unit=None,
+                                            default_value=None,
+                                            variable_name=None,
+                                            use_opposite=False,
+                                            is_relative=False,
+                                        ),
+                                        "ref": InputDefinition(
+                                            parameter_name="ref",
+                                            value="main",
+                                            unit=None,
+                                            default_value=None,
+                                            variable_name=None,
+                                            use_opposite=False,
+                                            is_relative=False,
+                                        ),
+                                    }
+                                },
                             ],
                         ),
                     ]
