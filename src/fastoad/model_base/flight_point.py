@@ -11,9 +11,10 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+from copy import deepcopy
 from dataclasses import asdict, dataclass, fields
-from typing import Any, List, Mapping
+from numbers import Number
+from typing import Any, List, Mapping, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -120,9 +121,44 @@ class FlightPoint:
         acceleration="m/s**2",
     )
 
+    def __post_init__(self):
+        self._relative_parameters = {"ground_distance", "time"}
+
+    def set_as_relative(self, field_names: Union[Sequence[str], str]):
+        if isinstance(field_names, str):
+            self._relative_parameters.add(field_names)
+        else:
+            self._relative_parameters |= set(field_names)
+
+    def set_as_absolute(self, field_names: Union[Sequence[str], str]):
+        if isinstance(field_names, str):
+            self._relative_parameters.remove(field_names)
+        else:
+            self._relative_parameters -= set(field_names)
+
+    def is_relative(self, field_name) -> bool:
+        return field_name in self._relative_parameters
+
+    def make_absolute(self, reference_point: "FlightPoint") -> "FlightPoint":
+        """
+        Computes a copy flight point where no field is relative.
+
+        :param reference_point: relative fields will be made absolute using this point.
+        :return: the copied flight point with no relative field.
+        """
+        new_point = deepcopy(self)
+        for field in fields(new_point):
+            reference_value = getattr(reference_point, field.name)
+            target_value = getattr(new_point, field.name)
+            if isinstance(target_value, Number) and new_point.is_relative(field.name):
+                setattr(new_point, field.name, reference_value + target_value)
+                new_point._relative_parameters.remove(field.name)
+        new_point.scalarize()
+        return new_point
+
     @classmethod
     def get_field_names(cls):
-        return [field.name for field in fields(cls)]
+        return [field.name for field in fields(cls) if not field.name.startswith("_")]
 
     @classmethod
     def get_units(cls) -> dict:
