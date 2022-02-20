@@ -129,9 +129,7 @@ class RangedRoute(SimpleRoute):
         ground_distances = []
         for flight_part in phase.flight_sequence:
             if isinstance(flight_part, FlightSegment):
-                # target.ground_distance being relative, it is signaled by a
-                # non-null (meaningless) imaginary part.
-                ground_distances.append(np.real(flight_part.target.ground_distance))
+                ground_distances.append(flight_part.target.ground_distance)
             else:
                 ground_distances.extend(cls._get_ground_distances(flight_part))
 

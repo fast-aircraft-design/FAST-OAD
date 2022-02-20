@@ -364,7 +364,7 @@ class MissionComponent(om.ExplicitComponent):
         cruise_mach = 0.1
 
         breguet = BreguetCruiseSegment(
-            FlightPoint(ground_distance=distance),
+            target=FlightPoint(ground_distance=distance),
             propulsion=propulsion_model,
             polar=high_speed_polar,
             use_max_lift_drag_ratio=True,

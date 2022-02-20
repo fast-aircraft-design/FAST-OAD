@@ -14,8 +14,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, fields
-from numbers import Number
+from dataclasses import dataclass
 from typing import Dict, List, Tuple, Type
 
 import numpy as np
@@ -35,7 +34,6 @@ from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 DEFAULT_TIME_STEP = 0.2
-RELATIVE_FIELD_FLAG = 1.0e6j
 
 
 class SegmentDefinitions(Enum):
@@ -170,6 +168,11 @@ class FlightSegment(IFlightPart):
 
         cls.target = property(_get_target, _set_target)
 
+    def __post_init__(self):
+        # It is better to have this method ready so subclasses can call it, even if
+        # it does nothing right now.
+        pass
+
     @classmethod
     def get_attribute_unit(cls, attribute_name: str) -> str:
         return cls._attribute_units.get(attribute_name)
@@ -194,8 +197,7 @@ class FlightSegment(IFlightPart):
             start.time = 0.0
         if start.ground_distance is None:
             start.ground_distance = 0.0
-
-        self.make_target_absolute(start)
+        self._set_start_point(start)
 
         self.complete_flight_point(start)
 
@@ -257,29 +259,8 @@ class FlightSegment(IFlightPart):
 
         return flight_points_df
 
-    def make_target_absolute(self, start_point: FlightPoint):
-        """
-        For any field of self.target with a relative value (i.e. a complex value by convention),
-        uses start values to ensure all values of self.target are absolute.
-
-        Also, self.target.time and self.target.ground_distance are always assumed to be relative
-        to start point.
-
-        :param start_point:
-        """
-        start_point.scalarize()
-        self.target.scalarize()
-        for field in fields(FlightPoint):
-            start_value = getattr(start_point, field.name)
-            target_value = getattr(self.target, field.name)
-            if field.name in ["time", "ground_distance"]:
-                # target values for these fields are always considered relative.
-                target_value = np.real(target_value) + RELATIVE_FIELD_FLAG
-            if (
-                isinstance(target_value, Number)
-                and np.abs(np.imag(target_value - RELATIVE_FIELD_FLAG) / RELATIVE_FIELD_FLAG) < 1e-8
-            ):
-                setattr(self.target, field.name, start_value + np.real(target_value))
+    def _set_start_point(self, start_point):
+        self._target = self._target.make_absolute(start_point)
 
     def _check_values(self, flight_point: FlightPoint) -> str:
         """
@@ -496,6 +477,7 @@ class RegulatedThrustSegment(FlightSegment, ABC):
     time_step: float = 60.0
 
     def __post_init__(self):
+        super().__post_init__()
         self.target.mach = self.CONSTANT_VALUE
 
     def compute_propulsion(self, flight_point: FlightPoint):
