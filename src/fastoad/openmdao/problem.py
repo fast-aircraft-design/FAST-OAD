@@ -11,12 +11,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import warnings
 from copy import deepcopy
 from typing import Tuple
 
 import numpy as np
+import openmdao
 import openmdao.api as om
 from openmdao.core.constants import _SetupStatus
+from openmdao.core.system import _MetadataDict
+from packaging import version
 
 from fastoad.io import DataFile, VariableIO
 from fastoad.module_management.service_registry import RegisterSubmodel
@@ -195,8 +199,8 @@ class FASTOADProblem(om.Problem):
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
         self.model.set_order([subsystem_name] + previous_order)
 
-    @staticmethod
-    def _get_undetermined_dynamic_vars_metadata(problem):
+    @classmethod
+    def _get_undetermined_dynamic_vars_metadata(cls, problem):
         """
         Provides dict (name, metadata) for dynamically shaped inputs that are not
         fed by an existing output (assuming overall variable promotion).
@@ -209,12 +213,12 @@ class FASTOADProblem(om.Problem):
         # output, its shaped will be determined.
         output_var_names = []
         for system in problem.model.system_iter(recurse=False):
-            io_metadata = system.get_io_metadata("output")
+            io_metadata = cls._get_io_metadata(system, "output")
             output_var_names += [meta["prom_name"] for meta in io_metadata.values()]
 
         dynamic_vars = {}
         for system in problem.model.system_iter(recurse=False):
-            io_metadata = system.get_io_metadata("input")
+            io_metadata = cls._get_io_metadata(system, "input")
             dynamic_vars.update(
                 {
                     meta["prom_name"]: meta
@@ -223,6 +227,43 @@ class FASTOADProblem(om.Problem):
                 }
             )
         return dynamic_vars
+
+    @staticmethod
+    def _get_io_metadata(
+        system,
+        iotypes,
+    ):
+        # In OpenMDAO >3.16, get_io_metadata() won't complain after dynamically shaped, non-
+        # connected inputs.
+        if version.parse(openmdao.__version__) > version.parse("3.16"):
+            return system.get_io_metadata(iotypes)
+        else:
+            # For OpenMDAO<=3.16, we try the vanilla get_io_metadata() and if it fails, we
+            # try with our simplified implementation.
+            try:
+                return system.get_io_metadata(iotypes)
+            except RuntimeError:
+                prefix = system.pathname + "." if system.pathname else ""
+                rel_idx = len(prefix)
+                if isinstance(iotypes, str):
+                    iotypes = (iotypes,)
+
+                result = {}
+                for iotype in iotypes:
+                    for abs_name, prom in system._var_abs2prom[iotype].items():
+                        rel_name = abs_name[rel_idx:]
+                        meta = system._var_allprocs_abs2meta[iotype].get(abs_name)
+                        ret_meta = _MetadataDict(meta) if meta is not None else None
+                        if ret_meta is not None:
+                            ret_meta["prom_name"] = prom
+                            result[rel_name] = ret_meta
+
+                warnings.warn(
+                    "Dynamically shaped problem inputs are better managed with OpenMDAO>3.16 "
+                    "Upgrade is recommended.",
+                    DeprecationWarning,
+                )
+                return result
 
 
 class AutoUnitsDefaultGroup(om.Group):
