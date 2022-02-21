@@ -11,6 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import warnings
 from copy import deepcopy
 from typing import Tuple
 
@@ -257,6 +258,11 @@ class FASTOADProblem(om.Problem):
                             ret_meta["prom_name"] = prom
                             result[rel_name] = ret_meta
 
+                warnings.warn(
+                    "Dynamically shaped problem inputs are better managed with OpenMDAO>3.16 "
+                    "Upgrade is recommended.",
+                    DeprecationWarning,
+                )
                 return result
 
 
