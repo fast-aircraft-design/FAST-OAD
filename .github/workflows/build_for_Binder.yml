@@ -5,7 +5,7 @@ on:
       - master
 
 jobs:
-  Create-Tag:
+  build-binder:
     runs-on: ubuntu-latest
     steps:
       - name: cache binder build on mybinder.org

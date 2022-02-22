@@ -30,14 +30,8 @@ jobs:
             })
 
   build-binder-image:
-    needs: build-publish-package
-    runs-on: ubuntu-latest
-    steps:
-      - name: cache binder build on mybinder.org
-        uses: jupyterhub/repo2docker-action@master
-        with:
-          NO_PUSH: true
-          MYBINDERORG_TAG: latest-release
+    needs: move-tag
+    uses: ./.github/workflows/build_for_Binder.yml
 
   build-publish-package:
     runs-on: ${{ matrix.os }}
