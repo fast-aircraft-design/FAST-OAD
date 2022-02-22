@@ -122,13 +122,21 @@ def test_generate_configuration_file_plugin_1(cleanup, with_dummy_plugins, plugi
 def test_generate_configuration_file_plugin_1_alone(cleanup, with_dummy_plugin_1):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
 
-    # No plugin specified only one plugin is available
+    # No plugin specified, only one plugin is available
+    api.generate_configuration_file(configuration_file_path, overwrite=True)
+
+
+def test_generate_configuration_file_plugin_1_and_3(
+    cleanup, with_dummy_plugin_distribution_1_and_3
+):
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1_again.yml")
+
+    # No plugin specified, several plugins available, but only one with a conf file
     api.generate_configuration_file(configuration_file_path, overwrite=True)
 
 
 def test_generate_configuration_file_plugin_2(cleanup, with_dummy_plugins, plugin_root_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_2.yml")
-
     api.generate_configuration_file(
         configuration_file_path,
         overwrite=True,
@@ -136,6 +144,13 @@ def test_generate_configuration_file_plugin_2(cleanup, with_dummy_plugins, plugi
         sample_file_name="dummy_conf_2-1.yml",
     )
 
+    # As conf file names are unique, it is possible to omit distribution_name
+    configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_2_again.yml")
+    api.generate_configuration_file(
+        configuration_file_path,
+        overwrite=True,
+        sample_file_name="dummy_conf_2-1.yml",
+    )
     original_file = pth.join(
         plugin_root_path, "dist_2", "dummy_plugin_2", "configurations", "dummy_conf_2-1.yml"
     )

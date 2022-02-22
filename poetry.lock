@@ -340,6 +340,22 @@ optional = false
 python-versions = ">=2.7"
 
 [[package]]
+name = "fast-oad-cs25"
+version = "0.1.0"
+description = "FAST-OAD_CS25 is a FAST-OAD plugin with CS25/FAR25-related models."
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[package.dependencies]
+fast-oad = ">=1.3.0,<2.0.0"
+numpy = ">=1.17.3,<2.0.0"
+openmdao = ">=3.10,<4.0"
+pandas = ">=1.1.0,<2.0.0"
+scipy = ">=1.4.1,<2.0.0"
+stdatm = ">=0.1.0,<0.2.0"
+
+[[package]]
 name = "filelock"
 version = "3.3.0"
 description = "A platform independent file lock."
@@ -1838,7 +1854,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "f0fe476f8faca863555f8408791b8c64be2d094df6126d3eb58d8789ef698bd5"
+content-hash = "ace45fd1700ca5a76e32dacb313193792f715a00f286fa6a511f089c7311a0cf"
 
 [metadata.files]
 aenum = [
@@ -2087,6 +2103,10 @@ ensure = [
 entrypoints = [
     {file = "entrypoints-0.3-py2.py3-none-any.whl", hash = "sha256:589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19"},
     {file = "entrypoints-0.3.tar.gz", hash = "sha256:c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451"},
+]
+fast-oad-cs25 = [
+    {file = "FAST-OAD-CS25-0.1.0.tar.gz", hash = "sha256:af062d67f38b6689ac307046a5888e19fe3f3e6c959b02d7584019f5b5d35b65"},
+    {file = "FAST_OAD_CS25-0.1.0-py3-none-any.whl", hash = "sha256:1c0fb02e57227aae422a5b021ed610c241ff59ae64a9a271b2d4fcd1c08455c7"},
 ]
 filelock = [
     {file = "filelock-3.3.0-py3-none-any.whl", hash = "sha256:bbc6a0382fe8ec4744ecdf6683a2e07f65eb10ff1aff53fc02a202565446cde0"},

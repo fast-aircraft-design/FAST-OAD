@@ -33,7 +33,6 @@ from fastoad.io.configuration.configuration import (
     FASTOADProblemConfigurator,
     _IConfigurationModifier,
 )
-from tests import root_folder_path
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -85,7 +84,7 @@ def test_non_regression_breguet(cleanup, xfoil_path):
 def test_non_regression_mission_only(cleanup):
     run_non_regression_test(
         "oad_process_mission_only.yml",
-        "CeRAS01_legacy_mission_result.xml",
+        "CeRAS01_legacy_mission_only_result.xml",
         "non_regression_mission_only",
         use_xfoil=False,
         vars_to_check=["data:mission:sizing:needed_block_fuel"],
@@ -223,15 +222,7 @@ def test_api_eval_breguet(cleanup):
 
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(
-        root_folder_path,
-        "src",
-        "fastoad",
-        "notebooks",
-        "01_tutorial",
-        "data",
-        "CeRAS01_baseline.xml",
-    )
+    source_xml = pth.join(DATA_FOLDER_PATH, "CeRAS01_notebooks.xml")
     api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run model ---------------------------------------------------------------
@@ -270,15 +261,7 @@ def test_api_eval_mission(cleanup):
 
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(
-        root_folder_path,
-        "src",
-        "fastoad",
-        "notebooks",
-        "01_tutorial",
-        "data",
-        "CeRAS01_baseline.xml",
-    )
+    source_xml = pth.join(DATA_FOLDER_PATH, "CeRAS01_notebooks.xml")
     api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run model ---------------------------------------------------------------
@@ -306,15 +289,7 @@ def test_api_optim(cleanup):
 
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(
-        root_folder_path,
-        "src",
-        "fastoad",
-        "notebooks",
-        "01_tutorial",
-        "data",
-        "CeRAS01_baseline.xml",
-    )
+    source_xml = pth.join(DATA_FOLDER_PATH, "CeRAS01_notebooks.xml")
     api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run optim ---------------------------------------------------------------

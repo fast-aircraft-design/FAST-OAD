@@ -193,6 +193,44 @@ def with_dummy_plugin_distribution_1():
 
 
 @pytest.fixture
+def with_dummy_plugin_distribution_1_and_3():
+    """
+    Reduces plugin list to dummy-dist-1 and dummy-dist-3
+    (one configuration file (in dist 1), models, notebook folder).
+
+    Any previous state of plugins is restored during teardown.
+    """
+    _setup()
+    dummy_dist_1 = Mock(Distribution)
+    dummy_dist_1.name = "dummy-dist-1"
+    dummy_dist_3 = Mock(Distribution)
+    dummy_dist_3.name = "dummy-dist-3"
+    entry_points = [
+        EntryPoint(
+            name="test_plugin_1",
+            value="tests.dummy_plugins.dist_1.dummy_plugin_1",
+            group=MODEL_PLUGIN_ID,
+        ),
+        EntryPoint(
+            name="test_plugin_4",
+            value="tests.dummy_plugins.dist_1.dummy_plugin_4",
+            group=MODEL_PLUGIN_ID,
+        ),
+        EntryPoint(
+            name="test_plugin_5",
+            value="tests.dummy_plugins.dist_3.dummy_plugin_5",
+            group=MODEL_PLUGIN_ID,
+        ),
+    ]
+    entry_points[0].dist = entry_points[1].dist = dummy_dist_1
+    entry_points[2].dist = dummy_dist_3
+
+    _update_entry_map(entry_points)
+    yield
+    _teardown()
+
+
+@pytest.fixture
 def with_dummy_plugins():
     """
     Reduces plugin list to:
