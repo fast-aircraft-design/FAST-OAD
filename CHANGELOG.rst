@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 1.2.1
+Version 1.3.0
 =============
 - Changes:
     - Rework of plugin system. (#409 - #417)
