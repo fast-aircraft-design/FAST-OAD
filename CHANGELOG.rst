@@ -5,6 +5,22 @@ Changelog
 Version 1.2.1
 =============
 - Changes:
+    - Rework of plugin system. (#409 - #417)
+        - Plugin group identifier is now `fastoad.plugins` (usage of `fastoad_model` is deprecated)
+        - A plugin can now provide, besides models, notebooks and sample configuration files.
+        - CLI and API have been updated to allow choosing the source when generating a configuration file, and to provide the needed information about installed plugin (`fastoad plugin_info`)
+        - Models are loaded only when needed (speeds up some basic operations like `fastoad -h`)
+    - CS25-related models are now in separate package [FAST-OAD-CS25](https://pypi.org/project/fast-oad-cs25/). This package is still installed along with FAST-OAD to preserve backward-compatibility. Also, package [FAST-OAD-core](https://pypi.org/project/fast-oad-core/) is now available, which does NOT install FAST-OAD-CS25 (thus contains only the mission model). (#414)
+    - IndepVarComp variables in FAST-OAD models are now correctly handled and included in input data file. (#408)
+    - Changes in mission module. Most noticeable change is that the number of engines is no more an input of the mission module, but should be handled by the propulsion model. No impact when using the base CS-25 process, since the variable name has not changed.(#411)
+
+- Bug fixes:
+    - FAST-OAD is now able to manage dynamically shaped problem inputs. (#416 - #418)
+
+
+Version 1.2.1
+=============
+- Changes:
   - Updated dependency requirements. All used libraries are now compatible with Jupyter lab 3 without need for building extensions. (#392)
   - Now Atmosphere class is part of the [stdatm](https://pypi.org/project/stdatm/) package (#398)
   - For `list_variables` command, the output format can now be chosen, with the addition of the format of variables_description.txt (for custom modules now generate a variable descriptions. (#399)
