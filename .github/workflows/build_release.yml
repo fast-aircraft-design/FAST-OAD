@@ -61,21 +61,17 @@ jobs:
           poetry build
         shell: bash
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: wheel
-          path: dist/*.whl
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: source
-          path: dist/*.gz
+      - name: build FAST-OAD-core
+        run: |
+          poetry remove FAST-OAD-CS25
+          sed -i s/'name = "FAST-OAD"'/'name = "FAST-OAD-core"'/ pyproject.toml
+          poetry build
+        shell: bash
 
       - name: publish to PyPI
         env:
-          TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would
-          # write it plainly in the log
+          TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
         run: |
           poetry config pypi-token.pypi "$TOKEN"
           poetry publish
-
