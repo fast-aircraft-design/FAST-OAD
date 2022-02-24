@@ -19,22 +19,18 @@ It proposes multi-disciplinary analysis and optimisation by relying on
 the [OpenMDAO framework](https://openmdao.org/).
 
 FAST-OAD allows easy switching between models for a same discipline, and
-also adding/removing disciplines to match the need of your study.
+also adding/removing/developing models to match the need of your study.
 
-Currently, FAST-OAD is bundled with models for commercial transport
-aircraft of years 1990-2000. Other models will come, and you may create
-your own models and use them instead of bundled ones.
+More details can be found in the [official documentation](https://fast-oad.readthedocs.io/).
 
-More details can be found in the [official
-documentation](https://fast-oad.readthedocs.io/).
-
->**_Note_**:
+> **Important notice:**
 >
-> Since version 1.0, FAST-OAD aims at providing a stable core software to 
-> propose a safe base for development of custom models.
->
-> Models in FAST-OAD are still a work in progress.
-
+> Since version 1.3.0, FAST-OAD models for commercial transport aircraft have moved in package  
+> [FAST-OAD-CS25](https://pypi.org/project/fast-oad-cs25/). This package is installed along with 
+> FAST-OAD, to keep backward compatibility.
+> Keep in mind that any update of these models will now come through new releases of FAST-OAD-CS25
+> To get FAST-OAD without these models, you may install
+> [FAST-OAD-core](https://pypi.org/project/fast-oad-core/).
 
 Want to try quickly?
 --------------------
@@ -61,4 +57,10 @@ You can install the latest version with this command:
 
 ``` {.bash}
 $ pip install --upgrade fast-oad
+```
+
+or, if you want the minimum installation without the CS25-related models:
+
+``` {.bash}
+$ pip install --upgrade fast-oad-core
 ```

@@ -1,6 +1,7 @@
 name: Build PyPI package and Binder image
 
 on:
+  workflow_dispatch:
   release:
     types: [ published ]
 
@@ -30,14 +31,8 @@ jobs:
             })
 
   build-binder-image:
-    needs: build-publish-package
-    runs-on: ubuntu-latest
-    steps:
-      - name: cache binder build on mybinder.org
-        uses: jupyterhub/repo2docker-action@master
-        with:
-          NO_PUSH: true
-          MYBINDERORG_TAG: latest-release
+    needs: move-tag
+    uses: ./.github/workflows/build_for_Binder.yml
 
   build-publish-package:
     runs-on: ${{ matrix.os }}
@@ -67,21 +62,23 @@ jobs:
           poetry build
         shell: bash
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: wheel
-          path: dist/*.whl
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: source
-          path: dist/*.gz
-
       - name: publish to PyPI
         env:
-          TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would
-          # write it plainly in the log
+          TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
         run: |
           poetry config pypi-token.pypi "$TOKEN"
           poetry publish
 
+      - name: build FAST-OAD-core
+        run: |
+          poetry remove FAST-OAD-CS25
+          sed -i 's/name = "FAST-OAD"/name = "FAST-OAD-core"/' pyproject.toml
+          poetry build
+        shell: bash
+
+      - name: publish FAST-OAD-core to PyPI
+        env:
+          TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
+        run: |
+          poetry config pypi-token.pypi "$TOKEN"
+          poetry publish

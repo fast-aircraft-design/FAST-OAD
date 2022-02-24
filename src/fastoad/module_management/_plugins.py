@@ -17,6 +17,7 @@ Plugin system for declaration of FAST-OAD models.
 import logging
 import os.path as pth
 import sys
+import warnings
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Callable, Dict, List
@@ -133,6 +134,11 @@ class DistributionPluginDefinition(dict):
         self[entry_point.name] = plugin_definition
 
         if group == OLD_MODEL_PLUGIN_ID:
+            warnings.warn(
+                f'"{self.dist_name}" package uses `fastoad_model` as plugin group ID, which is '
+                "deprecated. `fastoad.plugins` should be used instead.",
+                DeprecationWarning,
+            )
             self[entry_point.name].subpackages[SubPackageNames.MODELS] = entry_point.module
 
         if group == MODEL_PLUGIN_ID:
