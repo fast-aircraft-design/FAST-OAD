@@ -37,6 +37,7 @@ jobs:
         shell: bash
 
       - uses: actions/cache@v2
+        if: ${{ ! startsWith(runner.os, 'Windows') }} # With time, caching on Windows eventually ends crashing.
         with:
           path: ~/poetry_cache
           key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
