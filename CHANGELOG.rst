@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 1.3.0.post0
+===================
+- Modified package organization. (#420)
+
 Version 1.3.0
 =============
 - Changes:
