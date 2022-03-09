@@ -1,6 +1,7 @@
 name: Build Binder image for master branch
 on:
   workflow_dispatch:
+  workflow_call:
   push:
     branches:
       - master

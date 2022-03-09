@@ -301,7 +301,7 @@ def _update_entry_map(new_plugin_entry_points: List[EntryPoint]):
 
     :param new_plugin_entry_points:
     """
-    dist: Distribution = distribution("FAST-OAD")
+    dist: Distribution = distribution("FAST-OAD-core")
 
     entry_points = EntryPoints(
         [ep for ep in dist.entry_points if ep.group != MODEL_PLUGIN_ID] + new_plugin_entry_points
