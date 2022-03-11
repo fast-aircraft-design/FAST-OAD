@@ -21,7 +21,7 @@ else:
 
 try:
     # Change here if project is renamed and does not equal the package name
-    dist_name = "FAST-OAD"
+    dist_name = "FAST-OAD-core"
     __version__ = distribution(dist_name).version
 except PackageNotFoundError:
     __version__ = "unknown"
