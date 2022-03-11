@@ -73,7 +73,9 @@ jobs:
         run: |
           cd release
           cp ../README.md .
-          poetry version $( echo ${{ github.ref }} | sed 's%refs/tags/%%' )
+          export VERSION=$( echo ${{ github.ref }} | sed 's%refs/tags/%%' )
+          poetry version $VERSION
+          sed -i 's/fast-oad-core = "^1.3.0"/fast-oad-core = "^'$VERSION'"/' pyproject.toml
           poetry build
         shell: bash
 
