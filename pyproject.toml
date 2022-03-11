@@ -68,7 +68,7 @@ click = "^8.0.3"
 importlib-metadata = { version = "^4.2", python = "<3.10" }
 
 [tool.poetry.dev-dependencies]
-fast-oad-cs25 = "^0.1.0"
+fast-oad-cs25 = "0.*"
 pytest = "^6.2"
 pytest-cov = "^3.0"
 coverage = { extras = ["toml"], version = "^5.5" }
