@@ -101,6 +101,7 @@
           <V2 units="m/s" is_input="True">86.1<!--takeoff safety speed for mission "sizing"--></V2>
           <altitude units="m" is_input="True">0.0<!--altitude of airport for mission "sizing"--></altitude>
           <fuel units="kg" is_input="True">93.6891205669<!--burned fuel during takeoff phase of mission "sizing"--></fuel>
+          <duration units="min">0.668666666667<!--duration of takeoff phase in sizing mission--></duration>
         </takeoff>
         <taxi_in>
           <distance units="km" is_input="False">0.0<!--covered ground distance during phase "taxi_in" in mission "sizing"--></distance>

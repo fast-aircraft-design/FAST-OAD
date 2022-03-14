@@ -15,6 +15,7 @@ phases:
             value: 35
             unit: ft
           delta_mass: -data:mission:sizing:takeoff:fuel
+          time: data:mission:sizing:takeoff:duration
           true_airspeed: data:mission:sizing:takeoff:V2
 
   climb:
