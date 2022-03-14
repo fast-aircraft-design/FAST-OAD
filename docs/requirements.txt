@@ -71,7 +71,7 @@ nbval==0.9.6
 networkx==2.6.3; python_version >= "3.7" and python_version < "4.0"
 nodeenv==1.6.0; python_full_version >= "3.6.1"
 notebook==6.0.0; python_version >= "3.5"
-numpy==1.19.3; python_version >= "3.6"
+numpy==1.21.0; python_version >= "3.7"
 openmdao-extensions==1.0.2; python_version >= "3.6"
 openmdao==3.10.0; python_version >= "3.6"
 packaging==21.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
