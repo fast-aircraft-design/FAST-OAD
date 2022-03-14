@@ -304,14 +304,16 @@ class MissionBuilder:
                     # Otherwise, the string after the "~" is used as suffix.
                     suffix = key if value is None else value[1:]
                     value = prefix + prefix_addition + ":" + suffix
+                    struct[key] = value
                 if isinstance(value, str) and ":" in value:
+                    if value.startswith("-"):
+                        value = value[1:]
                     if SEGMENT_TAG in struct:
                         parent = struct[SEGMENT_TAG]
-                    input_definition[value] = (
+                    input_definition[value.strip(" -")] = (
                         self._get_base_unit(key, parent),
                         "Input defined by the mission.",
                     )
-                    struct[key] = value
                 elif isinstance(value, (dict, list)):
                     self._identify_inputs(
                         input_definition, value, prefix=prefix + prefix_addition, parent=key
@@ -514,8 +516,16 @@ class MissionBuilder:
         """
         if inputs:
             for key, value in parameter_definition.items():
-                if isinstance(value, str) and value in inputs:
-                    parameter_definition[key] = inputs[value]
+                if isinstance(value, str):
+                    negative = False
+                    if value.startswith("-"):
+                        value = value.strip(" -")
+                        negative = True
+                    if value in inputs:
+                        if negative:
+                            parameter_definition[key] = -inputs[value]
+                        else:
+                            parameter_definition[key] = inputs[value]
 
     @staticmethod
     def _get_base_unit(attribute_name: str, parent_entity: str):
