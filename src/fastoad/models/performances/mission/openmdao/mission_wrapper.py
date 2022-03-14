@@ -71,7 +71,7 @@ class MissionWrapper(MissionBuilder):
                 component.add_input(name, np.nan, units=units, desc=desc)
 
         for name, (units, desc) in output_definition.items():
-            component.add_output(name, units=units, desc=desc)
+            component.add_output(name, 0.0, units=units, desc=desc)
 
         # Mission start inputs
         component.add_input(
