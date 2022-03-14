@@ -460,6 +460,7 @@
                         82.4<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
                     <slat_angle units="deg">
                         18.0<!--slat angle during takeoff phase in sizing mission--></slat_angle>
+                    <duration units="s">0.0</duration>
                 </takeoff>
                 <taxi_in>
                     <distance units="m">39443.94626640342</distance>
