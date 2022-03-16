@@ -112,7 +112,7 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
         climb_segment.target = self.target
 
         cruise_segment = CruiseSegment(
-            target=self.target,
+            target=deepcopy(self.target),  # deepcopy needed because altitude will be modified.
             propulsion=self.propulsion,
             reference_area=self.reference_area,
             polar=self.polar,
