@@ -17,7 +17,7 @@ from shutil import rmtree
 
 import pytest
 from numpy.testing import assert_allclose
-from scipy.constants import foot, knot
+from scipy.constants import foot, knot, nautical_mile
 
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
@@ -104,7 +104,8 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
         ivc,
     )
     # plot_flight(problem.model.component.flight_points, "test_mission.png")
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6581.0, atol=1.0)
+
+    # Note: tested value are obtained by asking 1 meter of accuracy for distance routes
 
     assert_allclose(
         problem["data:mission:operational:main_route:initial_climb:duration"], 34.0, atol=1.0
@@ -123,20 +124,26 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     )
 
     assert_allclose(
-        problem["data:mission:operational:main_route:cruise:duration"], 14734.0, atol=1.0
+        problem["data:mission:operational:main_route:cruise:duration"], 14736.0, atol=10.0
     )
     assert_allclose(problem["data:mission:operational:main_route:cruise:fuel"], 5161.0, atol=1.0)
     assert_allclose(
-        problem["data:mission:operational:main_route:cruise:distance"], 3392703.0, atol=1.0
+        problem["data:mission:operational:main_route:cruise:distance"], 3392995.0, atol=500.0
     )
 
     assert_allclose(
-        problem["data:mission:operational:main_route:descent:duration"], 1424.0, atol=1.0
+        problem["data:mission:operational:main_route:descent:duration"], 1424.0, atol=10.0
     )
     assert_allclose(problem["data:mission:operational:main_route:descent:fuel"], 192.0, atol=1.0)
     assert_allclose(
-        problem["data:mission:operational:main_route:descent:distance"], 264417.0, atol=1.0
+        problem["data:mission:operational:main_route:descent:distance"], 264416.0, atol=500.0
     )
+
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6581.0, atol=1.0)
+    assert_allclose(
+        problem["data:mission:operational:distance"], 2000.0 * nautical_mile, atol=500.0
+    )
+    assert_allclose(problem["data:mission:operational:duration"], 16430.0, atol=10.0)
 
 
 def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
