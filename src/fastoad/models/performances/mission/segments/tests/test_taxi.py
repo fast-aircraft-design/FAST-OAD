@@ -31,15 +31,22 @@ def test_taxi():
         true_airspeed=10.0,
         engine_setting=EngineSetting.IDLE,  # The engine model does not use this setting
     )
-    flight_points = segment.compute_from(FlightPoint(altitude=10.0, mass=50000.0, time=10000.0))
 
-    last_point = flight_points.iloc[-1]
-    assert_allclose(last_point.altitude, 10.0, atol=1.0)
-    assert_allclose(last_point.time, 10500.0, rtol=1e-2)
-    assert_allclose(last_point.true_airspeed, 10.0, atol=0.1)
-    assert_allclose(last_point.mass, 49973.0, rtol=1e-4)
-    assert_allclose(last_point.ground_distance, 5000.0)
-    assert last_point.engine_setting == EngineSetting.IDLE
+    def run():
+        flight_points = segment.compute_from(FlightPoint(altitude=10.0, mass=50000.0, time=10000.0))
+
+        last_point = flight_points.iloc[-1]
+        assert_allclose(last_point.altitude, 10.0, atol=1.0)
+        assert_allclose(last_point.time, 10500.0, rtol=1e-2)
+        assert_allclose(last_point.true_airspeed, 10.0, atol=0.1)
+        assert_allclose(last_point.mass, 49973.0, rtol=1e-4)
+        assert_allclose(last_point.ground_distance, 5000.0)
+        assert last_point.engine_setting == EngineSetting.IDLE
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
 
 
 def test_taxi_with_target_mass():
@@ -52,14 +59,21 @@ def test_taxi_with_target_mass():
         true_airspeed=10.0,
         engine_setting=EngineSetting.IDLE,  # The engine model does not use this setting
     )
-    flight_points = segment.compute_from(FlightPoint(altitude=10.0, time=10000.0))
 
-    start_point = flight_points.iloc[0]
-    last_point = flight_points.iloc[-1]
-    assert_allclose(last_point.altitude, 10.0, atol=1.0)
-    assert_allclose(last_point.time, 10500.0, rtol=1e-2)
-    assert_allclose(last_point.true_airspeed, 10.0, atol=0.1)
-    assert_allclose(start_point.mass, 50027.0, rtol=1e-4)
-    assert_allclose(last_point.mass, 50000.0, rtol=1e-4)
-    assert_allclose(last_point.ground_distance, 5000.0)
-    assert last_point.engine_setting == EngineSetting.IDLE
+    def run():
+        flight_points = segment.compute_from(FlightPoint(altitude=10.0, time=10000.0))
+
+        start_point = flight_points.iloc[0]
+        last_point = flight_points.iloc[-1]
+        assert_allclose(last_point.altitude, 10.0, atol=1.0)
+        assert_allclose(last_point.time, 10500.0, rtol=1e-2)
+        assert_allclose(last_point.true_airspeed, 10.0, atol=0.1)
+        assert_allclose(start_point.mass, 50027.0, rtol=1e-4)
+        assert_allclose(last_point.mass, 50000.0, rtol=1e-4)
+        assert_allclose(last_point.ground_distance, 5000.0)
+        assert last_point.engine_setting == EngineSetting.IDLE
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()

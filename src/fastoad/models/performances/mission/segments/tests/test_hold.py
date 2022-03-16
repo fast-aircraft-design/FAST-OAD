@@ -31,14 +31,21 @@ def test_hold(polar):
         polar=polar,
         engine_setting=EngineSetting.CRUISE,  # The engine model does not use this setting
     )
-    flight_points = segment.compute_from(
-        FlightPoint(altitude=500.0, equivalent_airspeed=250.0, mass=60000.0)
-    )
 
-    last_point = flight_points.iloc[-1]
-    assert_allclose(last_point.time, 3000.0)
-    assert_allclose(last_point.altitude, 500.0)
-    assert_allclose(last_point.equivalent_airspeed, 250.0, atol=0.1)
-    assert_allclose(last_point.mass, 57776.0, rtol=1e-4)
-    assert_allclose(last_point.ground_distance, 768323.0, rtol=1.0e-3)
-    assert last_point.engine_setting == EngineSetting.CRUISE
+    def run():
+        flight_points = segment.compute_from(
+            FlightPoint(altitude=500.0, equivalent_airspeed=250.0, mass=60000.0)
+        )
+
+        last_point = flight_points.iloc[-1]
+        assert_allclose(last_point.time, 3000.0)
+        assert_allclose(last_point.altitude, 500.0)
+        assert_allclose(last_point.equivalent_airspeed, 250.0, atol=0.1)
+        assert_allclose(last_point.mass, 57776.0, rtol=1e-4)
+        assert_allclose(last_point.ground_distance, 768323.0, rtol=1.0e-3)
+        assert last_point.engine_setting == EngineSetting.CRUISE
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
