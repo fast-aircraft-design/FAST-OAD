@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -200,6 +200,7 @@ def _get_expected_dict():
         "routes": {
             "main": {
                 "range": None,
+                "distance_accuracy": 500,
                 "climb_parts": [{"phase": "initial_climb"}, {"phase": "climb"}],
                 "cruise_part": {
                     "segment": "optimal_cruise",
@@ -213,6 +214,7 @@ def _get_expected_dict():
             },
             "diversion": {
                 "range": None,
+                "distance_accuracy": {"value": 0.1, "unit": "km"},
                 "climb_parts": [{"phase": "diversion_climb"}],
                 "cruise_part": {
                     "segment": "cruise",

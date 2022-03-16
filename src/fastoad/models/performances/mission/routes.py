@@ -2,7 +2,7 @@
 Classes for computation of routes (i.e. assemblies of climb, cruise and descent phases).
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -146,7 +146,7 @@ class RangedRoute(SimpleRoute):
             args=(start,),
             x0=self.flight_distance * 0.5,
             x1=self.flight_distance * 0.25,
-            xtol=0.5e3,
+            xtol=self.distance_accuracy,
             method="secant",
         )
 
