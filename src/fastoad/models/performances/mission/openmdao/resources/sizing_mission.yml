@@ -118,6 +118,9 @@ phases:
 routes:
   main_route:
     range: data:TLAR:range
+    distance_accuracy:
+      value: 0.5
+      unit: km
     climb_parts:
       - phase: initial_climb
       - phase: climb
@@ -131,6 +134,9 @@ routes:
     descent_parts:
       - phase: descent
   diversion:
+    distance_accuracy:
+      value: 0.5
+      unit: km
     range: data:mission:sizing:diversion:distance
     climb_parts:
       - phase: diversion_climb
