@@ -28,16 +28,22 @@ def test_dummy_takeoff():
     target.set_as_relative(["mass", "altitude"])
     dummy_takeoff = DummyTransitionSegment(target=target)
 
-    flight_points = dummy_takeoff.compute_from(
-        FlightPoint(time=500, altitude=0.0, mass=50000, mach=0.0, ground_distance=100.0e3)
-    )
+    def run():
+        flight_points = dummy_takeoff.compute_from(
+            FlightPoint(time=500, altitude=0.0, mass=50000, mach=0.0, ground_distance=100.0e3)
+        )
 
-    assert_allclose(flight_points.time, [500, 545])
-    assert_allclose(flight_points.mass, [50000, 49900])
-    assert_allclose(flight_points.altitude, [0.0, 10.0])
-    assert_allclose(flight_points.ground_distance, [100.0e3, 100.0e3])
-    assert_allclose(flight_points.true_airspeed, [0.0, 50.0])
-    assert_allclose(flight_points.mach, [0.0, 0.1469], rtol=1.0e-3)
+        assert_allclose(flight_points.time, [500, 545])
+        assert_allclose(flight_points.mass, [50000, 49900])
+        assert_allclose(flight_points.altitude, [0.0, 10.0])
+        assert_allclose(flight_points.ground_distance, [100.0e3, 100.0e3])
+        assert_allclose(flight_points.true_airspeed, [0.0, 50.0])
+        assert_allclose(flight_points.mach, [0.0, 0.1469], rtol=1.0e-3)
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
 
 
 def test_dummy_climb():
@@ -45,15 +51,21 @@ def test_dummy_climb():
         target=FlightPoint(altitude=9.0e3, mach=0.8, ground_distance=400.0e3), mass_ratio=0.8
     )
 
-    flight_points = dummy_climb.compute_from(
-        FlightPoint(altitude=0.0, mass=100.0e3, mach=0.0, ground_distance=100.0e3)
-    )
+    def run():
+        flight_points = dummy_climb.compute_from(
+            FlightPoint(altitude=0.0, mass=100.0e3, mach=0.0, ground_distance=100.0e3)
+        )
 
-    assert_allclose(flight_points.mass, [100.0e3, 80.0e3])
-    assert_allclose(flight_points.altitude, [0.0, 9.0e3])
-    assert_allclose(flight_points.ground_distance, [100.0e3, 500.0e3])
-    assert_allclose(flight_points.mach, [0.0, 0.8])
-    assert_allclose(flight_points.true_airspeed, [0.0, 243.04], rtol=1.0e-4)
+        assert_allclose(flight_points.mass, [100.0e3, 80.0e3])
+        assert_allclose(flight_points.altitude, [0.0, 9.0e3])
+        assert_allclose(flight_points.ground_distance, [100.0e3, 500.0e3])
+        assert_allclose(flight_points.mach, [0.0, 0.8])
+        assert_allclose(flight_points.true_airspeed, [0.0, 243.04], rtol=1.0e-4)
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
 
 
 def test_dummy_descent_with_reserve():
@@ -62,23 +74,37 @@ def test_dummy_descent_with_reserve():
         mass_ratio=0.9,
         reserve_mass_ratio=0.08,
     )
-    flight_points = dummy_descent_reserve.compute_from(
-        FlightPoint(altitude=9.0e3, mass=60.0e3, mach=0.8)
-    )
-    assert_allclose(flight_points.mass, [60.0e3, 54.0e3, 50.0e3])
-    assert_allclose(flight_points.altitude, [9.0e3, 0.0, 0.0])
-    assert_allclose(flight_points.ground_distance, [0.0, 500.0e3, 500.0e3])
-    assert_allclose(flight_points.mach, [0.8, 0.0, 0.0])
-    assert_allclose(flight_points.true_airspeed, [243.04, 0.0, 0.0], rtol=1.0e-4)
+
+    def run():
+        flight_points = dummy_descent_reserve.compute_from(
+            FlightPoint(altitude=9.0e3, mass=60.0e3, mach=0.8)
+        )
+        assert_allclose(flight_points.mass, [60.0e3, 54.0e3, 50.0e3])
+        assert_allclose(flight_points.altitude, [9.0e3, 0.0, 0.0])
+        assert_allclose(flight_points.ground_distance, [0.0, 500.0e3, 500.0e3])
+        assert_allclose(flight_points.mach, [0.8, 0.0, 0.0])
+        assert_allclose(flight_points.true_airspeed, [243.04, 0.0, 0.0], rtol=1.0e-4)
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
 
 
 def test_dummy_reserve():
     dummy_reserve = DummyTransitionSegment(
         target=FlightPoint(altitude=0.0, mach=0.0), reserve_mass_ratio=0.1
     )
-    flight_points = dummy_reserve.compute_from(FlightPoint(altitude=0.0, mach=0.0, mass=55.0e3))
-    assert_allclose(flight_points.mass, [55.0e3, 55.0e3, 50.0e3])
-    assert_allclose(flight_points.altitude, [0.0, 0.0, 0.0])
-    assert_allclose(flight_points.ground_distance, [0.0, 0.0, 0.0])
-    assert_allclose(flight_points.mach, [0.0, 0.0, 0.0])
-    assert_allclose(flight_points.true_airspeed, [0.0, 0.0, 0.0], rtol=1.0e-4)
+
+    def run():
+        flight_points = dummy_reserve.compute_from(FlightPoint(altitude=0.0, mach=0.0, mass=55.0e3))
+        assert_allclose(flight_points.mass, [55.0e3, 55.0e3, 50.0e3])
+        assert_allclose(flight_points.altitude, [0.0, 0.0, 0.0])
+        assert_allclose(flight_points.ground_distance, [0.0, 0.0, 0.0])
+        assert_allclose(flight_points.mach, [0.0, 0.0, 0.0])
+        assert_allclose(flight_points.true_airspeed, [0.0, 0.0, 0.0], rtol=1.0e-4)
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
