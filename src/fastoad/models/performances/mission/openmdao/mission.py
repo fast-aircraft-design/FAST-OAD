@@ -402,9 +402,9 @@ class MissionComponent(om.ExplicitComponent):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
         high_speed_polar = self._get_initial_polar(inputs)
-        distance = np.asscalar(
-            np.sum(self._mission_wrapper.get_route_ranges(inputs, self.options["mission_name"]))
-        )
+        distance = np.sum(
+            self._mission_wrapper.get_route_ranges(inputs, self.options["mission_name"])
+        ).item()
 
         altitude = 100.0
         cruise_mach = 0.1
@@ -503,7 +503,7 @@ class MissionComponent(om.ExplicitComponent):
 
         def as_scalar(value):
             if isinstance(value, np.ndarray):
-                return np.asscalar(value)
+                return value.item()
             return value
 
         self.flight_points = self.flight_points.applymap(as_scalar)

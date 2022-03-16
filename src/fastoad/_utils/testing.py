@@ -16,6 +16,7 @@ Convenience functions for helping tests
 
 import logging
 
+import numpy as np
 import openmdao.api as om
 from openmdao.core.system import System
 
@@ -37,8 +38,13 @@ def run_system(
         model.linear_solver = om.DirectSolver()
 
     problem.setup(mode=setup_mode)
-    variables = VariableList.from_unconnected_inputs(problem)
-    assert not variables, "These inputs are not provided: %s" % variables.names()
+    variable_names = [
+        var.name
+        for var in VariableList.from_problem(problem, io_status="inputs")
+        if np.any(np.isnan(var.val))
+    ]
+
+    assert not variable_names, "These inputs are not provided: %s" % variable_names
 
     problem.run_model()
 
