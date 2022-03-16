@@ -135,6 +135,7 @@ phases:
 routes:
   main:
     range: ~
+    distance_accuracy: 500
     climb_parts:
       - phase: initial_climb
       - phase: climb
@@ -147,6 +148,9 @@ routes:
 
   diversion:
     range: ~
+    distance_accuracy:
+      value: 0.1
+      unit: km
     climb_parts:
       - phase: diversion_climb
     cruise_part:

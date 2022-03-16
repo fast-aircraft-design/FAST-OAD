@@ -2,7 +2,7 @@
 Mission generator.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -48,6 +48,7 @@ BASE_UNITS = {
     "true_airspeed": "m/s",
     "equivalent_airspeed": "m/s",
     "range": "m",
+    "distance_accuracy": "m",
     "time": "s",
     "ground_distance": "m",
 }
@@ -379,6 +380,9 @@ class MissionBuilder:
         else:
             route = FlightSequence()
             route.flight_sequence.extend(climb_phases)
+
+        if "distance_accuracy" in route_structure:
+            route.distance_accuracy = route_structure["distance_accuracy"]
 
         return route
 

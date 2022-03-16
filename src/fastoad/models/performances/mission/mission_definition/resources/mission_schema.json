@@ -265,6 +265,9 @@
         "range": {
           "$ref": "#/definitions/parameter_value_with_unit"
         },
+        "distance_accuracy": {
+          "$ref": "#/definitions/parameter_value_with_unit"
+        },
         "climb_parts": {
           "description": "Flight phases before cruise",
           "$ref": "#/definitions/route_parts"
