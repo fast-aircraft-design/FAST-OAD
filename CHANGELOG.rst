@@ -5,7 +5,7 @@ Changelog
 Version 1.3.1
 =============
 - Fixed:
-    - Version requirement for StdAtm and FAST-OAD-CS25 were unwillingly pinned to 0.1.x. (#422)
+    - Version requirements for StdAtm and FAST-OAD-CS25 were unwillingly pinned to 0.1.x. (#422)
     - `fastoad -v` was producing `unknown` when only FAST-OAD-core was installed. (#422)
     - Fixed some deprecation warnings. (#423)
 
