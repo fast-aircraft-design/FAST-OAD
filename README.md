@@ -25,12 +25,19 @@ More details can be found in the [official documentation](https://fast-oad.readt
 
 > **Important notice:**
 >
-> Since version 1.3.0, FAST-OAD models for commercial transport aircraft have moved in package  
+> Since version 1.3.0, FAST-OAD models for commercial transport aircraft have moved in 
+> package  
 > [FAST-OAD-CS25](https://pypi.org/project/fast-oad-cs25/). This package is installed along with 
 > FAST-OAD, to keep backward compatibility.
-> Keep in mind that any update of these models will now come through new releases of FAST-OAD-CS25
+> 
+> Keep in mind that any update of these models will now come through new releases of FAST-OAD-CS25.
+> 
 > To get FAST-OAD without these models, you may install
 > [FAST-OAD-core](https://pypi.org/project/fast-oad-core/).
+> 
+> :warning: Upgrading from an earlier version than 1.3 may break the `fastoad` command line (no 
+> impact on PythonAPI). See [this issue](https://github.com/fast-aircraft-design/FAST-OAD/issues/425)
+> for details and fix.
 
 Want to try quickly?
 --------------------
