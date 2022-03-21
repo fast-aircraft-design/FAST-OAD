@@ -12,9 +12,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
+from collections import OrderedDict
 from unittest.mock import Mock
 
 import numpy as np
+import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot
@@ -30,6 +32,772 @@ from ..mission_builder import MissionBuilder
 from ..schema import MissionDefinition
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+
+
+def test_initialization():
+    mission_builder = MissionBuilder(
+        pth.join(DATA_FOLDER_PATH, "mission.yml"),
+        propulsion=Mock(IPropulsion),
+        reference_area=100.0,
+    )
+
+    assert mission_builder._structure == OrderedDict(
+        [
+            (
+                "sizing",
+                OrderedDict(
+                    [
+                        ("mission", "sizing"),
+                        (
+                            "parts",
+                            [
+                                OrderedDict(
+                                    [
+                                        ("route", "main"),
+                                        ("range", None),
+                                        ("distance_accuracy", 500),
+                                        (
+                                            "climb_parts",
+                                            [
+                                                OrderedDict(
+                                                    [
+                                                        ("phase", "initial_climb"),
+                                                        ("engine_setting", "takeoff"),
+                                                        (
+                                                            "polar",
+                                                            {
+                                                                "CD": [0.0, 0.03, 0.12],
+                                                                "CL": [0.0, 0.5, 1.0],
+                                                            },
+                                                        ),
+                                                        ("thrust_rate", {"value": 1.0}),
+                                                        (
+                                                            "parts",
+                                                            [
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 400.0,
+                                                                        },
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "polar": OrderedDict(
+                                                                        [
+                                                                            (
+                                                                                "CL",
+                                                                                "data:aerodynamics:aircraft:takeoff:CL",
+                                                                            ),
+                                                                            (
+                                                                                "CD",
+                                                                                "data:aerodynamics:aircraft:takeoff:CD",
+                                                                            ),
+                                                                        ]
+                                                                    ),
+                                                                    "segment": "speed_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 250,
+                                                                        }
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "polar": {
+                                                                        "CD": "data:aerodynamics:aircraft:takeoff:CD",
+                                                                        "CL": "data:aerodynamics:aircraft:takeoff:CL",
+                                                                    },
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 1500.0,
+                                                                        },
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ]
+                                                ),
+                                                OrderedDict(
+                                                    [
+                                                        ("phase", "climb"),
+                                                        ("engine_setting", "climb"),
+                                                        (
+                                                            "polar",
+                                                            OrderedDict(
+                                                                [
+                                                                    (
+                                                                        "CL",
+                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                    ),
+                                                                    (
+                                                                        "CD",
+                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "thrust_rate",
+                                                            "data:propulsion:climb:thrust_rate",
+                                                        ),
+                                                        (
+                                                            "parts",
+                                                            [
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 10000.0,
+                                                                        },
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "speed_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 300.0,
+                                                                        }
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": "constant",
+                                                                        "mach": "data:TLAR:cruise_mach",
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "value": -20000.0
+                                                                        },
+                                                                        "mach": "constant",
+                                                                    },
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ]
+                                                ),
+                                            ],
+                                        ),
+                                        (
+                                            "cruise_part",
+                                            {
+                                                "engine_setting": "cruise",
+                                                "polar": OrderedDict(
+                                                    [
+                                                        (
+                                                            "CL",
+                                                            "data:aerodynamics:aircraft:cruise:CL",
+                                                        ),
+                                                        (
+                                                            "CD",
+                                                            "data:aerodynamics:aircraft:cruise:CD",
+                                                        ),
+                                                    ]
+                                                ),
+                                                "segment": "optimal_cruise",
+                                            },
+                                        ),
+                                        (
+                                            "descent_parts",
+                                            [
+                                                OrderedDict(
+                                                    [
+                                                        ("phase", "descent"),
+                                                        ("engine_setting", {"value": "idle"}),
+                                                        (
+                                                            "polar",
+                                                            OrderedDict(
+                                                                [
+                                                                    (
+                                                                        "CL",
+                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                    ),
+                                                                    (
+                                                                        "CD",
+                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "thrust_rate",
+                                                            "data:propulsion:descent:thrust_rate",
+                                                        ),
+                                                        (
+                                                            "parts",
+                                                            [
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 300,
+                                                                        },
+                                                                        "mach": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 10000.0,
+                                                                        },
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "speed_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 250.0,
+                                                                        }
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": "~final_altitude",
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ]
+                                                )
+                                            ],
+                                        ),
+                                    ]
+                                ),
+                                OrderedDict(
+                                    [
+                                        ("route", "diversion"),
+                                        ("range", None),
+                                        ("distance_accuracy", {"unit": "km", "value": 0.1}),
+                                        (
+                                            "climb_parts",
+                                            [
+                                                OrderedDict(
+                                                    [
+                                                        ("phase", "diversion_climb"),
+                                                        ("engine_setting", "climb"),
+                                                        (
+                                                            "polar",
+                                                            OrderedDict(
+                                                                [
+                                                                    (
+                                                                        "CL",
+                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                    ),
+                                                                    (
+                                                                        "CD",
+                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ),
+                                                        ("thrust_rate", 0.93),
+                                                        ("time_step", {"unit": "s", "value": 5.0}),
+                                                        (
+                                                            "parts",
+                                                            [
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 10000.0,
+                                                                        },
+                                                                        "equivalent_airspeed": "constant",
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "speed_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 300.0,
+                                                                        }
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 22000.0,
+                                                                        },
+                                                                        "equivalent_airspeed": "constant",
+                                                                    },
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ]
+                                                )
+                                            ],
+                                        ),
+                                        (
+                                            "cruise_part",
+                                            {
+                                                "engine_setting": "cruise",
+                                                "polar": OrderedDict(
+                                                    [
+                                                        (
+                                                            "CL",
+                                                            "data:aerodynamics:aircraft:cruise:CL",
+                                                        ),
+                                                        (
+                                                            "CD",
+                                                            "data:aerodynamics:aircraft:cruise:CD",
+                                                        ),
+                                                    ]
+                                                ),
+                                                "segment": "cruise",
+                                            },
+                                        ),
+                                        (
+                                            "descent_parts",
+                                            [
+                                                OrderedDict(
+                                                    [
+                                                        ("phase", "descent"),
+                                                        ("engine_setting", {"value": "idle"}),
+                                                        (
+                                                            "polar",
+                                                            OrderedDict(
+                                                                [
+                                                                    (
+                                                                        "CL",
+                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                    ),
+                                                                    (
+                                                                        "CD",
+                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "thrust_rate",
+                                                            "data:propulsion:descent:thrust_rate",
+                                                        ),
+                                                        (
+                                                            "parts",
+                                                            [
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 300,
+                                                                        },
+                                                                        "mach": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 10000.0,
+                                                                        },
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "speed_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 250.0,
+                                                                        }
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": "~final_altitude",
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ]
+                                                )
+                                            ],
+                                        ),
+                                    ]
+                                ),
+                                OrderedDict(
+                                    [
+                                        ("phase", "holding"),
+                                        (
+                                            "parts",
+                                            [
+                                                {
+                                                    "polar": OrderedDict(
+                                                        [
+                                                            (
+                                                                "CL",
+                                                                "data:aerodynamics:aircraft:cruise:CL",
+                                                            ),
+                                                            (
+                                                                "CD",
+                                                                "data:aerodynamics:aircraft:cruise:CD",
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    "segment": "holding",
+                                                    "target": {"delta_time": "~duration"},
+                                                }
+                                            ],
+                                        ),
+                                    ]
+                                ),
+                                OrderedDict(
+                                    [
+                                        ("phase", "taxi_in"),
+                                        ("thrust_rate", None),
+                                        (
+                                            "parts",
+                                            [
+                                                {
+                                                    "segment": "taxi",
+                                                    "target": {"delta_time": "~duration"},
+                                                    "true_airspeed": 0.0,
+                                                }
+                                            ],
+                                        ),
+                                    ]
+                                ),
+                                {"reserve": {"multiplier": 0.03, "ref": "main"}},
+                            ],
+                        ),
+                    ]
+                ),
+            ),
+            (
+                "operational",
+                OrderedDict(
+                    [
+                        ("mission", "operational"),
+                        (
+                            "parts",
+                            [
+                                OrderedDict(
+                                    [
+                                        ("phase", "taxi_out"),
+                                        (
+                                            "parts",
+                                            [
+                                                {
+                                                    "segment": "taxi",
+                                                    "target": {"delta_time": "~duration"},
+                                                    "thrust_rate": None,
+                                                    "true_airspeed": 0.0,
+                                                }
+                                            ],
+                                        ),
+                                    ]
+                                ),
+                                OrderedDict(
+                                    [
+                                        ("route", "main"),
+                                        ("range", None),
+                                        ("distance_accuracy", 500),
+                                        (
+                                            "climb_parts",
+                                            [
+                                                OrderedDict(
+                                                    [
+                                                        ("phase", "initial_climb"),
+                                                        ("engine_setting", "takeoff"),
+                                                        (
+                                                            "polar",
+                                                            {
+                                                                "CD": [0.0, 0.03, 0.12],
+                                                                "CL": [0.0, 0.5, 1.0],
+                                                            },
+                                                        ),
+                                                        ("thrust_rate", {"value": 1.0}),
+                                                        (
+                                                            "parts",
+                                                            [
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 400.0,
+                                                                        },
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "polar": OrderedDict(
+                                                                        [
+                                                                            (
+                                                                                "CL",
+                                                                                "data:aerodynamics:aircraft:takeoff:CL",
+                                                                            ),
+                                                                            (
+                                                                                "CD",
+                                                                                "data:aerodynamics:aircraft:takeoff:CD",
+                                                                            ),
+                                                                        ]
+                                                                    ),
+                                                                    "segment": "speed_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 250,
+                                                                        }
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "polar": {
+                                                                        "CD": "data:aerodynamics:aircraft:takeoff:CD",
+                                                                        "CL": "data:aerodynamics:aircraft:takeoff:CL",
+                                                                    },
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 1500.0,
+                                                                        },
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ]
+                                                ),
+                                                OrderedDict(
+                                                    [
+                                                        ("phase", "climb"),
+                                                        ("engine_setting", "climb"),
+                                                        (
+                                                            "polar",
+                                                            OrderedDict(
+                                                                [
+                                                                    (
+                                                                        "CL",
+                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                    ),
+                                                                    (
+                                                                        "CD",
+                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "thrust_rate",
+                                                            "data:propulsion:climb:thrust_rate",
+                                                        ),
+                                                        (
+                                                            "parts",
+                                                            [
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 10000.0,
+                                                                        },
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "speed_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 300.0,
+                                                                        }
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": "constant",
+                                                                        "mach": "data:TLAR:cruise_mach",
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "value": -20000.0
+                                                                        },
+                                                                        "mach": "constant",
+                                                                    },
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ]
+                                                ),
+                                            ],
+                                        ),
+                                        (
+                                            "cruise_part",
+                                            {
+                                                "engine_setting": "cruise",
+                                                "polar": OrderedDict(
+                                                    [
+                                                        (
+                                                            "CL",
+                                                            "data:aerodynamics:aircraft:cruise:CL",
+                                                        ),
+                                                        (
+                                                            "CD",
+                                                            "data:aerodynamics:aircraft:cruise:CD",
+                                                        ),
+                                                    ]
+                                                ),
+                                                "segment": "optimal_cruise",
+                                            },
+                                        ),
+                                        (
+                                            "descent_parts",
+                                            [
+                                                OrderedDict(
+                                                    [
+                                                        ("phase", "descent"),
+                                                        ("engine_setting", {"value": "idle"}),
+                                                        (
+                                                            "polar",
+                                                            OrderedDict(
+                                                                [
+                                                                    (
+                                                                        "CL",
+                                                                        "data:aerodynamics:aircraft:cruise:CL",
+                                                                    ),
+                                                                    (
+                                                                        "CD",
+                                                                        "data:aerodynamics:aircraft:cruise:CD",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ),
+                                                        (
+                                                            "thrust_rate",
+                                                            "data:propulsion:descent:thrust_rate",
+                                                        ),
+                                                        (
+                                                            "parts",
+                                                            [
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 300,
+                                                                        },
+                                                                        "mach": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": {
+                                                                            "unit": "ft",
+                                                                            "value": 10000.0,
+                                                                        },
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "speed_change",
+                                                                    "target": {
+                                                                        "equivalent_airspeed": {
+                                                                            "unit": "kn",
+                                                                            "value": 250.0,
+                                                                        }
+                                                                    },
+                                                                },
+                                                                {
+                                                                    "segment": "altitude_change",
+                                                                    "target": {
+                                                                        "altitude": "~final_altitude",
+                                                                        "equivalent_airspeed": {
+                                                                            "value": "constant"
+                                                                        },
+                                                                    },
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ]
+                                                )
+                                            ],
+                                        ),
+                                    ]
+                                ),
+                                OrderedDict(
+                                    [
+                                        ("phase", "taxi_in"),
+                                        ("thrust_rate", None),
+                                        (
+                                            "parts",
+                                            [
+                                                {
+                                                    "segment": "taxi",
+                                                    "target": {"delta_time": "~duration"},
+                                                    "true_airspeed": 0.0,
+                                                }
+                                            ],
+                                        ),
+                                    ]
+                                ),
+                                {"reserve": {"multiplier": 0.02, "ref": "main"}},
+                            ],
+                        ),
+                    ]
+                ),
+            ),
+        ]
+    )
 
 
 def test_inputs():
@@ -49,13 +817,13 @@ def test_inputs():
         "data:aerodynamics:aircraft:takeoff:CL": (None, "Input defined by the mission."),
         "data:mission:sizing:diversion:descent:final_altitude": (
             "m",
-            "Input defined by " "the mission.",
+            "Input defined by the mission.",
         ),
         "data:mission:sizing:diversion:range": ("m", "Input defined by the mission."),
         "data:mission:sizing:holding:duration": ("s", "Input defined by the mission."),
         "data:mission:sizing:main:descent:final_altitude": (
             "m",
-            "Input defined by the " "mission.",
+            "Input defined by the mission.",
         ),
         "data:mission:sizing:main:range": ("m", "Input defined by the mission."),
         "data:mission:sizing:taxi_in:duration": ("s", "Input defined by the mission."),
@@ -71,13 +839,13 @@ def test_inputs():
         "data:aerodynamics:aircraft:takeoff:CL": (None, "Input defined by the mission."),
         "data:mission:operational:main:descent:final_altitude": (
             "m",
-            "Input defined by " "the mission.",
+            "Input defined by the mission.",
         ),
         "data:mission:operational:main:range": ("m", "Input defined by the mission."),
         "data:mission:operational:taxi_in:duration": ("s", "Input defined by the mission."),
-        "data:mission:operational:taxi_in:thrust_rate": (None, "Input defined by the " "mission."),
-        "data:mission:operational:taxi_out:duration": ("s", "Input defined by the " "mission."),
-        "data:mission:operational:taxi_out:thrust_rate": (None, "Input defined by the " "mission."),
+        "data:mission:operational:taxi_in:thrust_rate": (None, "Input defined by the mission."),
+        "data:mission:operational:taxi_out:duration": ("s", "Input defined by the mission."),
+        "data:mission:operational:taxi_out:thrust_rate": (None, "Input defined by the mission."),
         "data:propulsion:climb:thrust_rate": (None, "Input defined by the mission."),
         "data:propulsion:descent:thrust_rate": (None, "Input defined by the mission."),
     }
@@ -121,6 +889,7 @@ def test_build():
     main_route = mission.flight_sequence[0]
     assert isinstance(main_route, FlightSequence)
     assert len(main_route.flight_sequence) == 4
+    assert main_route.distance_accuracy == 500.0
     assert main_route.flight_sequence[0].name == "sizing:main:initial_climb"
     assert main_route.flight_sequence[1].name == "sizing:main:climb"
     assert main_route.flight_sequence[2].name == "sizing:main:cruise"
@@ -129,6 +898,7 @@ def test_build():
     initial_climb = main_route.flight_sequence[0]
     assert isinstance(initial_climb, FlightSequence)
     assert len(initial_climb.flight_sequence) == 3
+    assert_allclose([segment.thrust_rate for segment in initial_climb.flight_sequence], 1.0)
 
     climb1 = initial_climb.flight_sequence[0]
     assert isinstance(climb1, AltitudeChangeSegment)
@@ -161,7 +931,7 @@ def test_build():
     assert isinstance(taxi_in, TaxiSegment)
 
 
-def test_get_flight_ranges():
+def test_get_route_ranges():
     mission_definition = MissionDefinition(pth.join(DATA_FOLDER_PATH, "mission.yml"))
     mission_builder = MissionBuilder(
         mission_definition, propulsion=Mock(IPropulsion), reference_area=100.0
@@ -196,3 +966,32 @@ def test_get_flight_ranges():
 
     assert_allclose(mission_builder.get_route_ranges(inputs, "sizing"), [8000.0e3, 926.0e3])
     assert_allclose(mission_builder.get_route_ranges(inputs, "operational"), [500.0e3])
+
+
+def test_get_reserve():
+    mission_builder = MissionBuilder(
+        pth.join(DATA_FOLDER_PATH, "mission.yml"),
+        propulsion=Mock(IPropulsion),
+        reference_area=100.0,
+    )
+
+    flight_points = pd.DataFrame(
+        dict(
+            mass=[70000, 65000, 55000, 45000],
+            name=[
+                "data:mission:sizing:main:start",
+                "data:mission:sizing:main:climb",
+                "data:mission:sizing:other:start",
+                "data:mission:sizing:other:climb",
+            ],
+        )
+    )
+    assert_allclose(mission_builder.get_reserve(flight_points, "sizing"), 5000 * 0.03)
+
+    flight_points.name = [
+        "data:mission:sizing:main:start",
+        "data:mission:sizing:main:climb",
+        "data:mission:sizing:main:cruise",
+        "data:mission:sizing:main:cruise",
+    ]
+    assert_allclose(mission_builder.get_reserve(flight_points, "sizing"), 25000 * 0.03)

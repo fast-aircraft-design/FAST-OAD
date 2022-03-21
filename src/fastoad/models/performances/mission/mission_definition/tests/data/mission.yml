@@ -167,9 +167,15 @@ missions:
       - route: diversion
       - phase: holding
       - phase: taxi_in
+      - reserve:
+          ref: main
+          multiplier: 0.03
   operational:
     parts:
       - phase: taxi_out
       - route: main
       - phase: taxi_in
+      - reserve:
+          ref: main
+          multiplier: 0.02
 
