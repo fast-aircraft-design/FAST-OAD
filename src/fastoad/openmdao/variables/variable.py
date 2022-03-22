@@ -277,6 +277,24 @@ class Variable(Hashable):
     def is_input(self, value):
         self.metadata["is_input"] = value
 
+    def get_openmdao_kwargs(self, keys: Iterable = None):
+        if not keys:
+            keys = {
+                "name",
+                "val",
+                "units",
+                "desc",
+            }
+            if self.metadata["shape_by_conn"] or self.metadata["copy_shape"]:
+                keys.add("shape_by_conn")
+                keys.add("copy_shape")
+            else:
+                keys.add("shape")
+
+        kwargs = {key: self.metadata[key] for key in self.get_openmdao_keys() if key in keys}
+        kwargs["name"] = self.name
+        return kwargs
+
     def _set_default_shape(self):
         """Automatically sets shape if not set"""
         if self.metadata["shape"] is None:

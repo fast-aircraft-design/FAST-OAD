@@ -62,13 +62,12 @@ class MissionWrapper(MissionBuilder):
         input_definition = self.get_input_variables(mission_name)
         output_definition = self._identify_outputs()
         output_definition = {
-            name: value for name, value in output_definition.items() if name not in input_definition
+            name: value
+            for name, value in output_definition.items()
+            if name not in input_definition.names()
         }
-        for name, (units, desc) in input_definition.items():
-            if name.endswith(":CD") or name.endswith(":CL"):
-                component.add_input(name, np.nan, shape_by_conn=True, desc=desc)
-            else:
-                component.add_input(name, np.nan, units=units, desc=desc)
+        for variable in input_definition:
+            component.add_input(**variable.get_openmdao_kwargs())
 
         for name, (units, desc) in output_definition.items():
             component.add_output(name, 0.0, units=units, desc=desc)
