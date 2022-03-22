@@ -27,6 +27,7 @@ from fastoad.models.performances.mission.segments.altitude_change import Altitud
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
+from fastoad.openmdao.variables import Variable
 from ..exceptions import FastMissionFileMissingMissionNameError
 from ..mission_builder import InputDefinition, MissionBuilder
 from ..schema import MissionDefinition
@@ -2257,45 +2258,37 @@ def test_inputs():
     with pytest.raises(FastMissionFileMissingMissionNameError):
         mission_builder.get_input_variables()
 
-    assert mission_builder.get_input_variables("sizing") == {
-        "data:TLAR:cruise_mach": (None, "Input defined by the mission."),
-        "data:aerodynamics:aircraft:cruise:CD": (None, "Input defined by the mission."),
-        "data:aerodynamics:aircraft:cruise:CL": (None, "Input defined by the mission."),
-        "data:aerodynamics:aircraft:takeoff:CD": (None, "Input defined by the mission."),
-        "data:aerodynamics:aircraft:takeoff:CL": (None, "Input defined by the mission."),
-        "data:mission:sizing:diversion:descent:final_altitude": (
-            "m",
-            "Input defined by the mission.",
-        ),
-        "data:mission:sizing:diversion:range": ("m", "Input defined by the mission."),
-        "data:mission:sizing:holding:duration": ("s", "Input defined by the mission."),
-        "data:mission:sizing:main:descent:final_altitude": (
-            "m",
-            "Input defined by the mission.",
-        ),
-        "data:mission:sizing:main:range": ("m", "Input defined by the mission."),
-        "data:mission:sizing:taxi_in:duration": ("s", "Input defined by the mission."),
-        "data:mission:sizing:taxi_in:thrust_rate": (None, "Input defined by the mission."),
-        "data:propulsion:climb:thrust_rate": (None, "Input defined by the mission."),
-        "data:propulsion:descent:thrust_rate": (None, "Input defined by the mission."),
+    assert set(mission_builder.get_input_variables("sizing")) == {
+        Variable("data:TLAR:cruise_mach", val=np.nan),
+        Variable("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape_by_conn=True),
+        Variable("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape_by_conn=True),
+        Variable("data:aerodynamics:aircraft:takeoff:CD", val=np.nan, shape_by_conn=True),
+        Variable("data:aerodynamics:aircraft:takeoff:CL", val=np.nan, shape_by_conn=True),
+        Variable("data:mission:sizing:diversion:descent:final_altitude", val=np.nan, units="m"),
+        Variable("data:mission:sizing:diversion:range", val=np.nan, units="m"),
+        Variable("data:mission:sizing:holding:duration", val=np.nan, units="s"),
+        Variable("data:mission:sizing:main:descent:final_altitude", val=np.nan, units="m"),
+        Variable("data:mission:sizing:main:range", val=np.nan, units="m"),
+        Variable("data:mission:sizing:taxi_in:duration", val=np.nan, units="s"),
+        Variable("data:mission:sizing:taxi_in:thrust_rate", val=np.nan),
+        Variable("data:propulsion:climb:thrust_rate", val=np.nan),
+        Variable("data:propulsion:descent:thrust_rate", val=np.nan),
     }
-    assert mission_builder.get_input_variables("operational") == {
-        "data:TLAR:cruise_mach": (None, "Input defined by the mission."),
-        "data:aerodynamics:aircraft:cruise:CD": (None, "Input defined by the mission."),
-        "data:aerodynamics:aircraft:cruise:CL": (None, "Input defined by the mission."),
-        "data:aerodynamics:aircraft:takeoff:CD": (None, "Input defined by the mission."),
-        "data:aerodynamics:aircraft:takeoff:CL": (None, "Input defined by the mission."),
-        "data:mission:operational:main:descent:final_altitude": (
-            "m",
-            "Input defined by the mission.",
-        ),
-        "data:mission:operational:main:range": ("m", "Input defined by the mission."),
-        "data:mission:operational:taxi_in:duration": ("s", "Input defined by the mission."),
-        "data:mission:operational:taxi_in:thrust_rate": (None, "Input defined by the mission."),
-        "data:mission:operational:taxi_out:duration": ("s", "Input defined by the mission."),
-        "data:mission:operational:taxi_out:thrust_rate": (None, "Input defined by the mission."),
-        "data:propulsion:climb:thrust_rate": (None, "Input defined by the mission."),
-        "data:propulsion:descent:thrust_rate": (None, "Input defined by the mission."),
+
+    assert set(mission_builder.get_input_variables("operational")) == {
+        Variable("data:TLAR:cruise_mach", val=np.nan),
+        Variable("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape_by_conn=True),
+        Variable("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape_by_conn=True),
+        Variable("data:aerodynamics:aircraft:takeoff:CD", val=np.nan, shape_by_conn=True),
+        Variable("data:aerodynamics:aircraft:takeoff:CL", val=np.nan, shape_by_conn=True),
+        Variable("data:mission:operational:main:descent:final_altitude", val=np.nan, units="m"),
+        Variable("data:mission:operational:main:range", val=np.nan, units="m"),
+        Variable("data:mission:operational:taxi_in:duration", val=np.nan, units="s"),
+        Variable("data:mission:operational:taxi_in:thrust_rate", val=np.nan),
+        Variable("data:mission:operational:taxi_out:duration", val=np.nan, units="s"),
+        Variable("data:mission:operational:taxi_out:thrust_rate", val=np.nan),
+        Variable("data:propulsion:climb:thrust_rate", val=np.nan),
+        Variable("data:propulsion:descent:thrust_rate", val=np.nan),
     }
 
 

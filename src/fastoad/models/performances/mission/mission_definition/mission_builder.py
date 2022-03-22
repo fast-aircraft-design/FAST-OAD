@@ -18,7 +18,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from dataclasses import dataclass, field
 from numbers import Number
-from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Mapping, Optional, Union
 
 import numpy as np
 import openmdao.api as om
@@ -27,6 +27,7 @@ import pandas as pd
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
+from fastoad.openmdao.variables import Variable, VariableList
 from .exceptions import FastMissionFileMissingMissionNameError
 from .schema import (
     CLIMB_PARTS_TAG,
@@ -290,23 +291,20 @@ class MissionBuilder:
 
         return 0.0
 
-    def get_input_variables(self, mission_name=None) -> Dict[str, Tuple[Optional[str], str]]:
+    def get_input_variables(self, mission_name=None) -> VariableList:
         """
         Identify variables for a defined mission.
 
         :param mission_name: mission name (can be omitted if only one mission is defined)
-        :return: a dict where key, values are names, units.
+        :return: a VariableList instance.
         """
         if mission_name is None:
             mission_name = self.get_unique_mission_name()
 
-        input_definition = {}
+        input_definition = VariableList()
         for input_def in self._input_definitions[mission_name]:
-            if input_def.variable_name:
-                input_definition[input_def.variable_name] = (
-                    input_def.unit,
-                    "Input defined by the mission.",
-                )
+            if input_def.variable_name and input_def.variable_name not in input_definition.names():
+                input_definition.append(input_def.get_input_definition())
 
         return input_definition
 
