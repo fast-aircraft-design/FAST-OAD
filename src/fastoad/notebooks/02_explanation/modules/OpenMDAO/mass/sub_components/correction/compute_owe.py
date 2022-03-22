@@ -17,7 +17,7 @@ class ComputeOwe(ExplicitComponent):
 
         # Defining the output(s)
 
-        self.add_output(name="owe", units="kg", val=np.nan)
+        self.add_output(name="owe", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

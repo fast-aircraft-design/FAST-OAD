@@ -10,7 +10,7 @@ def compute_mass(mtow, wing_area, aspect_ratio):
     :param wing_area: Wing area, in m2
     :param aspect_ratio: Wing aspect ratio, no unit
 
-    :return wing mass: the wing_mass, in kg
+    :return owe: the structural mass, in kg
     """
 
     # Let's start by computing the wing mass
