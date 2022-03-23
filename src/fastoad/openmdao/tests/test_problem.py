@@ -54,6 +54,11 @@ def test_write_outputs():
     ]
 
     problem["x"] = 2.0
+    problem["z"] = [
+        5.0,
+        2.0,
+    ]  # Since version 3.17 of OpenMDAO, the np.nan input definition of z is chosen.
+
     problem.run_model()
     problem.write_outputs()
     variables = VariableIO(problem.output_file_path).read()

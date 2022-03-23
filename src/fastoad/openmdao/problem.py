@@ -159,7 +159,8 @@ class FASTOADProblem(om.Problem):
             # set_val() will crash if input_var.metadata["val"] is a list, so
             # we ensure it is a numpy array
             input_var.metadata["val"] = np.asarray(input_var.metadata["val"])
-            self.set_val(input_var.name, **input_var.metadata)
+
+            self.set_val(input_var.name, val=input_var.val, units=input_var.units)
 
     def _read_inputs_without_setup_done(self):
         """
