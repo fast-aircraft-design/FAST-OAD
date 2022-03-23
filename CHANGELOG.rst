@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.3.2
+=============
+- Fixed:
+    - Compatibility with OpenMDAO 3.17.0. (#428)
+
 Version 1.3.1
 =============
 - Fixed:
