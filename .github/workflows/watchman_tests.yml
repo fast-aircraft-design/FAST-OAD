@@ -1,20 +1,21 @@
 name: Watchman Tests
 # This workflow will run tests with an up-to-date production environment instead
 # of the locked one.
-# It will warn developers if the update of a dependency broke something.
+# It will warn developers if any update of a dependency broke something.
 
 on:
   push:
-    branches:
-      - '**'
-    tags-ignore:
-      - '**'
+    branches: [ master ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ master ]
+  schedule:
+    - cron: '12 5 * * *'
 
 
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
-    if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
         python-version: [ 3.9 ]
@@ -27,8 +28,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install # installing pytest-cov is needed because of pytest.ini
+      - name: Install
+        # Development version of OpenMDAO is installed to ensure preview of any problem.
+        # Installing pytest-cov is needed because of pytest.ini
         run: |
+          pip install git+https://github.com/OpenMDAO/OpenMDAO.git
           pip install .
           pip install pytest pytest-cov nbval
         shell: bash
@@ -38,6 +42,5 @@ jobs:
         shell: bash
 
       - name: Notebook tests
-#        if: ${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[test nb]') || github.ref == 'refs/heads/master' }}
         run: pytest --no-cov --nbval-lax -p no:python src/fastoad/notebooks
         shell: bash
