@@ -18,7 +18,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from dataclasses import dataclass, field
 from numbers import Number
-from typing import Dict, Iterable, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Union
 
 import numpy as np
 import openmdao.api as om
@@ -63,61 +63,67 @@ class InputDefinition:
 
     """
 
-    #: The parameter this input is defined for
+    #: The parameter this input is defined for.
     parameter_name: str
 
-    value: Union[str, Number, Iterable]
-
-    #: Unit used for defining value and/or default value.
-    unit: Optional[str] = None
+    #: Unit used by self.set_value().
+    input_unit: Optional[str] = None
 
     #: Default value. Used if value is a variable name.
     default_value: Optional[Number] = None
-    variable_name: Optional[str] = None
+
+    #: True if the opposite value should be used, if input is defined by a variable.
     use_opposite: bool = False
+
+    #: True if variable is defined as relative.
     is_relative: bool = False
 
-    #: Unit used for mission computation. Automatically determined from self.parameter_name,
+    #: Unit used by self.get_value(). Automatically determined from self.parameter_name,
     #: mainly from unit definition for FlightPoint class.
-    default_unit: Optional[str] = field(default=None, init=False, repr=False)
+    output_unit: Optional[str] = field(default=None, init=False, repr=False)
 
-    _value: Union[str, Number] = field(default=None, init=False, repr=False)
+    _value: Optional[Union[str, Number]] = field(default=None)
+
+    _variable_name: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if self.parameter_name.startswith("delta_"):
             self.is_relative = True
             self.parameter_name = self.parameter_name[6:]
 
-        self.default_unit = FlightPoint.get_units().get(self.parameter_name)
-        if self.default_unit is None:
-            self.default_unit = BASE_UNITS.get(self.parameter_name)
-        if self.default_unit == "-":
-            self.default_unit = None
+        self.output_unit = FlightPoint.get_units().get(self.parameter_name)
+        if self.output_unit is None:
+            self.output_unit = BASE_UNITS.get(self.parameter_name)
+        if self.output_unit == "-":
+            self.output_unit = None
 
-        if self.unit is None:
-            self.unit = self.default_unit
+        if self.input_unit is None:
+            self.input_unit = self.output_unit
 
-        if isinstance(self.value, str) and ":" in self.value:
-            if self.value.startswith("-"):
-                self.use_opposite = True
-            self.variable_name = self.value.strip("- ")
-
-    @property
-    def value(self):
+    def get_value(self):
         """
-        Value of variable in DEFAULT unit (unit used by mission calculation).
 
-        Exception: if defined value is a variable and self.set_variable_value() has been
-        called, the value should be the actual numeric value.
+        :return: Value of variable in DEFAULT unit (unit used by mission calculation), or None
+                 if input is a variable and set_variable_input() has NOT been called.
         """
         try:
-            return om.convert_units(self._value, self.unit, self.default_unit)
+            return om.convert_units(self._value, self.input_unit, self.output_unit)
         except TypeError:
             return self._value
 
-    @value.setter
-    def value(self, value):
-        self._value = value
+    def set_value(self, value):
+        """
+        Sets value or associated variable name.
+
+        If a numerical value is provided, it is expected to match self.input_unit.
+
+        :param value:
+        """
+        if isinstance(value, str) and ":" in value:
+            self.variable_name = value
+            self._value = None
+        else:
+            self._value = value
 
     @classmethod
     def from_dict(cls, parameter_name, definition_dict: dict):
@@ -132,16 +138,16 @@ class InputDefinition:
 
         input_def = cls(
             parameter_name,
-            value=definition_dict["value"],
-            unit=definition_dict.get("unit"),
+            input_unit=definition_dict.get("unit"),
             default_value=definition_dict.get("default"),
         )
-
+        input_def.variable_name = definition_dict.get("variable_name")
+        input_def.set_value(definition_dict.get("value"))
         return input_def
 
     def set_variable_value(self, inputs: Mapping):
         """
-        Sets self.value from OpenMDAO inputs.
+        Sets numerical value from OpenMDAO inputs.
 
         OpenMDAO value is assumed to be provided with unit self.unit.
 
@@ -149,9 +155,9 @@ class InputDefinition:
         """
         if self.variable_name and self.variable_name in inputs:
             if self.use_opposite:
-                self.value = -inputs[self.variable_name]
+                self.set_value(-inputs[self.variable_name])
             else:
-                self.value = inputs[self.variable_name]
+                self.set_value(inputs[self.variable_name])
 
     def get_input_definition(self) -> Optional[Variable]:
         """
@@ -165,13 +171,27 @@ class InputDefinition:
                 name=self.variable_name,
                 val=np.nan,
                 shape_by_conn=shape_by_conn,
-                units=self.unit,
+                units=self.input_unit,
                 desc="Input defined by the mission.",
             )
         return None
 
+    @property
+    def variable_name(self):
+        """Associated variable name."""
+        return self._variable_name
+
+    @variable_name.setter
+    def variable_name(self, var_name: Optional[str]):
+        if isinstance(var_name, str):
+            if var_name.startswith("-"):
+                self.use_opposite = True
+            self._variable_name = var_name.strip("- ")
+        else:
+            self._variable_name = None
+
     def __str__(self):
-        return str(self.value)
+        return str(self._value)
 
 
 class MissionBuilder:
@@ -280,8 +300,8 @@ class MissionBuilder:
 
         last_part_spec = self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG][-1]
         if RESERVE_TAG in last_part_spec:
-            ref_name = last_part_spec[RESERVE_TAG]["ref"].value
-            multiplier = last_part_spec[RESERVE_TAG]["multiplier"].value
+            ref_name = last_part_spec[RESERVE_TAG]["ref"].get_value()
+            multiplier = last_part_spec[RESERVE_TAG]["multiplier"].get_value()
 
             route_points = flight_points.loc[
                 flight_points.name.str.contains("%s:%s" % (mission_name, ref_name))
@@ -303,7 +323,10 @@ class MissionBuilder:
 
         input_definition = VariableList()
         for input_def in self._input_definitions[mission_name]:
-            if input_def.variable_name and input_def.variable_name not in input_definition.names():
+            if (
+                input_def._variable_name
+                and input_def._variable_name not in input_definition.names()
+            ):
                 input_definition.append(input_def.get_input_definition())
 
         return input_definition
@@ -443,7 +466,7 @@ class MissionBuilder:
             phase.name = list(part_structure.values())[0]
 
         if "range" in route_structure:
-            flight_range = route_structure["range"].value
+            flight_range = route_structure["range"].get_value()
             route = RangedRoute(
                 climb_phases, cruise_phase, descent_phases, flight_distance=flight_range
             )
@@ -452,7 +475,7 @@ class MissionBuilder:
             route.flight_sequence.extend(climb_phases)
 
         if "distance_accuracy" in route_structure:
-            route.distance_accuracy = route_structure["distance_accuracy"].value
+            route.distance_accuracy = route_structure["distance_accuracy"].get_value()
 
         return route
 
@@ -493,11 +516,11 @@ class MissionBuilder:
         part_kwargs.update(self._base_kwargs)
         for key, value in part_kwargs.items():
             if key == "polar":
-                value = Polar(value["CL"].value, value["CD"].value)
+                value = Polar(value["CL"].get_value(), value["CD"].get_value())
             elif key == "target":
                 if not isinstance(value, FlightPoint):
                     target_parameters = {
-                        param.parameter_name: param.value for param in value.values()
+                        param.parameter_name: param.get_value() for param in value.values()
                     }
                     relative_fields = [
                         param.parameter_name for param in value.values() if param.is_relative
@@ -519,7 +542,7 @@ class MissionBuilder:
     def _replace_input_definitions_by_values(part_kwargs):
         for key, input_def in part_kwargs.items():
             if isinstance(input_def, InputDefinition):
-                part_kwargs[key] = input_def.value
+                part_kwargs[key] = input_def.get_value()
 
     def _propagate_name(self, part: IFlightPart, new_name: str):
         """
@@ -572,7 +595,8 @@ class MissionBuilder:
                         suffix = key if value is None else value[1:]
                         value = prefix + prefix_addition + ":" + suffix
 
-                    definition[key] = InputDefinition(key, value)
+                    definition[key] = InputDefinition(key)
+                    definition[key].set_value(value)
                     self._input_definitions[mission_name].append(definition[key])
                 else:
                     self._parse_inputs(
