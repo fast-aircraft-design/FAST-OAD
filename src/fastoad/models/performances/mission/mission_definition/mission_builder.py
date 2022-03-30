@@ -591,12 +591,19 @@ class MissionBuilder:
                 elif not isinstance(value, dict) and (
                     not isinstance(value, list) or is_numeric_list
                 ):
-                    if (isinstance(value, str) and value.startswith("~")) or value is None:
+                    if value is None:
                         # "~" alone is interpreted as "null" by the yaml parser
-                        # In that case, the parameter name in the mission file is used as suffix.
+                        # We get back to "~" to make the next step easier.
+                        value = "~"
+                    if isinstance(value, str) and value.startswith(("~", "-~")):
+                        # If value is "~", the parameter name in the mission file is used as suffix.
                         # Otherwise, the string after the "~" is used as suffix.
-                        suffix = key if value is None else value[1:]
-                        value = prefix + prefix_addition + ":" + suffix
+                        suffix = value.strip("-~")
+                        replacement = prefix + prefix_addition + ":"
+                        if suffix == "":
+                            replacement += key
+
+                        value = value.replace("~", replacement)
 
                     definition[key] = InputDefinition(key)
                     definition[key].set_value(value)
