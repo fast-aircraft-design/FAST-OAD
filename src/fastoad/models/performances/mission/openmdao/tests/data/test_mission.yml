@@ -3,7 +3,9 @@ phases:
     parts:
       - segment: taxi
         thrust_rate: data:mission:operational:taxi_out:thrust_rate
-        true_airspeed: 0.
+        true_airspeed:
+          value: data:mission:operational:taxi_out:true_airspeed
+          default: 0.
         target:
           time: data:mission:operational:taxi_out:duration
           mass: data:mission:operational:TOW
@@ -12,7 +14,8 @@ phases:
       - segment: transition
         target:
           delta_altitude:
-            value: 35
+            value: data:mission:operational:takeoff:safety_altitude
+            default: 35
             unit: ft
           delta_mass: -data:mission:operational:takeoff:fuel
           true_airspeed: data:mission:operational:takeoff:V2
